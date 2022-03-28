@@ -6,9 +6,9 @@ function CustomApp({ Component, pageProps }: AppProps) {
 	return (
 		<>
 			<Head>
-				<title>Welcome to site!</title>
+				<title>Self-Learning</title>
 			</Head>
-			<main className="app">
+			<main className="min-h-screen h-screen bg-gray-800 text-white">
 				<Component {...pageProps} />
 			</main>
 		</>
