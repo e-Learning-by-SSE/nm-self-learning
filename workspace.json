@@ -2,6 +2,7 @@
 	"version": 2,
 	"projects": {
 		"cms": "apps/cms",
+		"data-access-cms-api": "libs/data-access/cms-api",
 		"database": "libs/data-access/database",
 		"site": "apps/site",
 		"site-e2e": "apps/site-e2e"

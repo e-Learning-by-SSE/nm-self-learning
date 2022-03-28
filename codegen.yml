@@ -1,0 +1,15 @@
+overwrite: true
+schema: "http://localhost:1337/graphql"
+documents: "libs/data-access/cms-api/src/lib/**/*.graphql"
+hooks:
+    afterAllFileWrite:
+        - prettier --write
+generates:
+    libs/data-access/cms-api/src/lib/generated-graphql.ts:
+        plugins:
+            - "typescript"
+            - "typescript-operations"
+            - "typescript-graphql-request"
+    libs/data-access/cms-api/graphql.schema.json:
+        plugins:
+            - "introspection"

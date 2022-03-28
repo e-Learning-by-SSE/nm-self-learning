@@ -1,0 +1,2 @@
+schema: "libs/data-access/cms-api/graphql.schema.json"
+documents: "libs/data-access/cms-api/src/lib/**/*.{ts,graphql}"

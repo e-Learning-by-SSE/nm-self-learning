@@ -8,7 +8,8 @@
 		"test": "nx test",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write **/*",
-		"prisma": "prisma"
+		"prisma": "prisma",
+		"graphql-codegen": "graphql-codegen --config codegen.yml"
 	},
 	"private": true,
 	"prisma": {
@@ -16,9 +17,12 @@
 		"seed": "ts-node --require tsconfig-paths/register libs/data-access/database/src/lib/seed.ts"
 	},
 	"dependencies": {
+		"@graphql-codegen/cli": "^2.6.2",
 		"@nrwl/next": "13.9.5",
 		"@prisma/client": "^3.11.1",
 		"core-js": "^3.6.5",
+		"graphql": "^16.3.0",
+		"graphql-request": "^4.2.0",
 		"next": "12.1.0",
 		"react": "17.0.2",
 		"react-dom": "17.0.2",
@@ -26,6 +30,11 @@
 		"tslib": "^2.0.0"
 	},
 	"devDependencies": {
+		"@graphql-codegen/cli": "2.6.2",
+		"@graphql-codegen/introspection": "2.1.1",
+		"@graphql-codegen/typescript": "2.4.8",
+		"@graphql-codegen/typescript-graphql-request": "^4.4.4",
+		"@graphql-codegen/typescript-operations": "2.3.5",
 		"@nrwl/cli": "13.9.5",
 		"@nrwl/cypress": "13.9.5",
 		"@nrwl/eslint-plugin-nx": "13.9.5",
@@ -55,7 +64,9 @@
 		"eslint-plugin-jsx-a11y": "6.5.1",
 		"eslint-plugin-react": "7.29.3",
 		"eslint-plugin-react-hooks": "4.3.0",
+		"install": "^0.13.0",
 		"jest": "27.2.3",
+		"npm": "^8.5.5",
 		"nx": "13.9.5",
 		"postcss": "^8.4.12",
 		"prettier": "^2.5.1",

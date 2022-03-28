@@ -1,0 +1,17 @@
+query authors {
+	authors {
+		data {
+			attributes {
+				slug
+				name
+				image {
+					data {
+						attributes {
+							url
+						}
+					}
+				}
+			}
+		}
+	}
+}

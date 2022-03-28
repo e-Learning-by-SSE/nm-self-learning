@@ -15,6 +15,7 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
+			"@self-learning/cms-api": ["libs/data-access/cms-api/src/index.ts"],
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"]
 		}
 	},
