@@ -1,0 +1,23 @@
+{
+	"root": "libs/data-access/database",
+	"sourceRoot": "libs/data-access/database/src",
+	"projectType": "library",
+	"targets": {
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["libs/data-access/database/**/*.ts"]
+			}
+		},
+		"test": {
+			"executor": "@nrwl/jest:jest",
+			"outputs": ["coverage/libs/data-access/database"],
+			"options": {
+				"jestConfig": "libs/data-access/database/jest.config.js",
+				"passWithNoTests": true
+			}
+		}
+	},
+	"tags": []
+}

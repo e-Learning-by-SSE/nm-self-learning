@@ -7,11 +7,17 @@
 		"build": "nx build",
 		"test": "nx test",
 		"prettier:check": "prettier --check **/*",
-		"prettier:write": "prettier --write **/*"
+		"prettier:write": "prettier --write **/*",
+		"prisma": "prisma"
 	},
 	"private": true,
+	"prisma": {
+		"schema": "libs/data-access/database/prisma/schema.prisma",
+		"seed": "ts-node --require tsconfig-paths/register libs/data-access/database/src/lib/seed.ts"
+	},
 	"dependencies": {
 		"@nrwl/next": "13.9.5",
+		"@prisma/client": "^3.11.1",
 		"core-js": "^3.6.5",
 		"next": "12.1.0",
 		"react": "17.0.2",
@@ -52,9 +58,11 @@
 		"nx": "13.9.5",
 		"postcss": "^8.4.12",
 		"prettier": "^2.5.1",
+		"prisma": "^3.11.1",
 		"react-test-renderer": "17.0.2",
 		"tailwindcss": "^3.0.23",
 		"ts-jest": "27.0.5",
+		"tsconfig-paths": "^3.14.1",
 		"typescript": "~4.5.2"
 	}
 }
