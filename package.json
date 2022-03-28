@@ -35,6 +35,7 @@
 		"@nrwl/react": "13.9.5",
 		"@nrwl/web": "13.9.5",
 		"@nrwl/workspace": "13.9.5",
+		"@nx-extend/strapi": "^2.0.2",
 		"@testing-library/react": "12.1.4",
 		"@testing-library/react-hooks": "7.0.2",
 		"@types/jest": "27.0.2",
