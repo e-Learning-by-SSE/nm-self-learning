@@ -4,8 +4,9 @@
 		"cms": "apps/cms",
 		"data-access-cms-api": "libs/data-access/cms-api",
 		"database": "libs/data-access/database",
-		"docs-storybook": "libs/docs/storybook",
+		"docs-storybook": "docs/storybook",
 		"site": "apps/site",
-		"site-e2e": "apps/site-e2e"
+		"site-e2e": "apps/site-e2e",
+		"util-markdown": "libs/util/markdown"
 	}
 }
