@@ -34,15 +34,13 @@ export const getStaticProps: GetStaticProps<IndexPageProps> = async ({ params })
 export function Index({ users, mdDocument, mdContent }: IndexPageProps) {
 	return (
 		<div className="flex items-center justify-center h-full flex-col gap-16">
-			<h1 className="font-bold text-4xl">Hello World</h1>
+			<h1 className="font-bold text-6xl">Hello World</h1>
 			<ul>
 				{users.map(user => (
-					<li key={user.id} className="font-bold ">
-						{user.displayName}
-					</li>
+					<li key={user.id}>{user.displayName}</li>
 				))}
 			</ul>
-			<div className="">
+			<div className="prose prose-slate">
 				<MDXRemote {...mdContent}></MDXRemote>
 			</div>
 		</div>

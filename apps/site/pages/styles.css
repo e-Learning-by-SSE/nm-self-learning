@@ -2,8 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+	font-family: "Inter";
+	font-style: normal;
+	font-weight: 100 900;
+	src: url(../public/Inter-roman.var.woff2) format("woff2");
+}
+
 html {
+	font-family: Inter;
 	scroll-behavior: smooth;
+	letter-spacing: -0.02em;
+	-webkit-font-smoothing: auto;
+	-moz-osx-font-smoothing: auto;
+	@apply text-slate-700;
+}
+
+h1,
+h2,
+h3 {
+	@apply text-slate-900;
+	letter-spacing: -0.05em;
 }
 
 #__next {
