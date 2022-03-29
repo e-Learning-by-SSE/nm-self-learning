@@ -33,7 +33,7 @@ export const getStaticProps: GetStaticProps<IndexPageProps> = async ({ params })
 
 export function Index({ users, mdDocument, mdContent }: IndexPageProps) {
 	return (
-		<div className="flex items-center justify-center h-full flex-col gap-16">
+		<div className="flex items-center h-full flex-col gap-16 py-16">
 			<h1 className="font-bold text-6xl">Hello World</h1>
 			<ul>
 				{users.map(user => (

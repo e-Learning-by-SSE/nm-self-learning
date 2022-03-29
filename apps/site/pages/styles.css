@@ -15,6 +15,8 @@ html {
 	letter-spacing: -0.02em;
 	-webkit-font-smoothing: auto;
 	-moz-osx-font-smoothing: auto;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
 	@apply text-slate-700;
 }
 
