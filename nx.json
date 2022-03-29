@@ -41,6 +41,17 @@
 				"style": "css",
 				"linter": "eslint"
 			}
+		},
+		"@nrwl/workspace:library": {
+			"importPath": "@self-learning/LIBRARY_NAME",
+			"standaloneConfig": true,
+			"strict": true
+		},
+		"@nrwl/react:library": {
+			"style": "none",
+			"importPath": "@self-learning/LIBRARY_NAME",
+			"standaloneConfig": true,
+			"strict": true
 		}
 	},
 	"defaultProject": "site"
