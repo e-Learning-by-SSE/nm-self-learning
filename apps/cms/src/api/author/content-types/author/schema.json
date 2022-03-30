@@ -29,6 +29,12 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "nanomodules": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::nanomodule.nanomodule",
+      "mappedBy": "authors"
     }
   }
 }

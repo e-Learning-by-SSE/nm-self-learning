@@ -17,6 +17,7 @@ export type Scalars = {
 	DateTime: any;
 	/** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
 	JSON: any;
+	NanomoduleContentDynamicZoneInput: any;
 	/** The `Upload` scalar type represents a file upload. */
 	Upload: any;
 };
@@ -26,8 +27,15 @@ export type Author = {
 	createdAt?: Maybe<Scalars["DateTime"]>;
 	image?: Maybe<UploadFileEntityResponse>;
 	name: Scalars["String"];
+	nanomodules?: Maybe<NanomoduleRelationResponseCollection>;
 	slug: Scalars["String"];
 	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type AuthorNanomodulesArgs = {
+	filters?: InputMaybe<NanomoduleFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
 
 export type AuthorEntity = {
@@ -52,6 +60,7 @@ export type AuthorFiltersInput = {
 	createdAt?: InputMaybe<DateTimeFilterInput>;
 	id?: InputMaybe<IdFilterInput>;
 	name?: InputMaybe<StringFilterInput>;
+	nanomodules?: InputMaybe<NanomoduleFiltersInput>;
 	not?: InputMaybe<AuthorFiltersInput>;
 	or?: InputMaybe<Array<InputMaybe<AuthorFiltersInput>>>;
 	slug?: InputMaybe<StringFilterInput>;
@@ -61,7 +70,13 @@ export type AuthorFiltersInput = {
 export type AuthorInput = {
 	image?: InputMaybe<Scalars["ID"]>;
 	name?: InputMaybe<Scalars["String"]>;
+	nanomodules?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 	slug?: InputMaybe<Scalars["String"]>;
+};
+
+export type AuthorRelationResponseCollection = {
+	__typename?: "AuthorRelationResponseCollection";
+	data: Array<AuthorEntity>;
 };
 
 export type BooleanFilterInput = {
@@ -87,6 +102,24 @@ export type BooleanFilterInput = {
 	startsWith?: InputMaybe<Scalars["Boolean"]>;
 };
 
+export type ComponentNanomoduleArticle = {
+	__typename?: "ComponentNanomoduleArticle";
+	id: Scalars["ID"];
+	richText: Scalars["String"];
+};
+
+export type ComponentNanomoduleVideo = {
+	__typename?: "ComponentNanomoduleVideo";
+	id: Scalars["ID"];
+	video: UploadFileEntityResponse;
+};
+
+export type ComponentNanomoduleYoutubeVideo = {
+	__typename?: "ComponentNanomoduleYoutubeVideo";
+	id: Scalars["ID"];
+	url?: Maybe<Scalars["String"]>;
+};
+
 export type DateTimeFilterInput = {
 	and?: InputMaybe<Array<InputMaybe<Scalars["DateTime"]>>>;
 	between?: InputMaybe<Array<InputMaybe<Scalars["DateTime"]>>>;
@@ -108,6 +141,12 @@ export type DateTimeFilterInput = {
 	null?: InputMaybe<Scalars["Boolean"]>;
 	or?: InputMaybe<Array<InputMaybe<Scalars["DateTime"]>>>;
 	startsWith?: InputMaybe<Scalars["DateTime"]>;
+};
+
+export type Error = {
+	__typename?: "Error";
+	code: Scalars["String"];
+	message?: Maybe<Scalars["String"]>;
 };
 
 export type FileInfoInput = {
@@ -141,7 +180,11 @@ export type FloatFilterInput = {
 
 export type GenericMorph =
 	| Author
+	| ComponentNanomoduleArticle
+	| ComponentNanomoduleVideo
+	| ComponentNanomoduleYoutubeVideo
 	| I18NLocale
+	| Nanomodule
 	| UploadFile
 	| UsersPermissionsPermission
 	| UsersPermissionsRole
@@ -255,12 +298,14 @@ export type JsonFilterInput = {
 export type Mutation = {
 	__typename?: "Mutation";
 	createAuthor?: Maybe<AuthorEntityResponse>;
+	createNanomodule?: Maybe<NanomoduleEntityResponse>;
 	createUploadFile?: Maybe<UploadFileEntityResponse>;
 	/** Create a new role */
 	createUsersPermissionsRole?: Maybe<UsersPermissionsCreateRolePayload>;
 	/** Create a new user */
 	createUsersPermissionsUser: UsersPermissionsUserEntityResponse;
 	deleteAuthor?: Maybe<AuthorEntityResponse>;
+	deleteNanomodule?: Maybe<NanomoduleEntityResponse>;
 	deleteUploadFile?: Maybe<UploadFileEntityResponse>;
 	/** Delete an existing role */
 	deleteUsersPermissionsRole?: Maybe<UsersPermissionsDeleteRolePayload>;
@@ -279,6 +324,7 @@ export type Mutation = {
 	resetPassword?: Maybe<UsersPermissionsLoginPayload>;
 	updateAuthor?: Maybe<AuthorEntityResponse>;
 	updateFileInfo: UploadFileEntityResponse;
+	updateNanomodule?: Maybe<NanomoduleEntityResponse>;
 	updateUploadFile?: Maybe<UploadFileEntityResponse>;
 	/** Update an existing role */
 	updateUsersPermissionsRole?: Maybe<UsersPermissionsUpdateRolePayload>;
@@ -289,6 +335,10 @@ export type Mutation = {
 
 export type MutationCreateAuthorArgs = {
 	data: AuthorInput;
+};
+
+export type MutationCreateNanomoduleArgs = {
+	data: NanomoduleInput;
 };
 
 export type MutationCreateUploadFileArgs = {
@@ -304,6 +354,10 @@ export type MutationCreateUsersPermissionsUserArgs = {
 };
 
 export type MutationDeleteAuthorArgs = {
+	id: Scalars["ID"];
+};
+
+export type MutationDeleteNanomoduleArgs = {
 	id: Scalars["ID"];
 };
 
@@ -362,6 +416,11 @@ export type MutationUpdateFileInfoArgs = {
 	info?: InputMaybe<FileInfoInput>;
 };
 
+export type MutationUpdateNanomoduleArgs = {
+	data: NanomoduleInput;
+	id: Scalars["ID"];
+};
+
 export type MutationUpdateUploadFileArgs = {
 	data: UploadFileInput;
 	id: Scalars["ID"];
@@ -383,6 +442,80 @@ export type MutationUploadArgs = {
 	info?: InputMaybe<FileInfoInput>;
 	ref?: InputMaybe<Scalars["String"]>;
 	refId?: InputMaybe<Scalars["ID"]>;
+};
+
+export type Nanomodule = {
+	__typename?: "Nanomodule";
+	authors?: Maybe<AuthorRelationResponseCollection>;
+	content: Array<Maybe<NanomoduleContentDynamicZone>>;
+	createdAt?: Maybe<Scalars["DateTime"]>;
+	description?: Maybe<Scalars["String"]>;
+	image?: Maybe<UploadFileEntityResponse>;
+	meta?: Maybe<Scalars["JSON"]>;
+	slug: Scalars["String"];
+	subtitle?: Maybe<Scalars["String"]>;
+	title: Scalars["String"];
+	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type NanomoduleAuthorsArgs = {
+	filters?: InputMaybe<AuthorFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type NanomoduleContentDynamicZone =
+	| ComponentNanomoduleArticle
+	| ComponentNanomoduleVideo
+	| ComponentNanomoduleYoutubeVideo
+	| Error;
+
+export type NanomoduleEntity = {
+	__typename?: "NanomoduleEntity";
+	attributes?: Maybe<Nanomodule>;
+	id?: Maybe<Scalars["ID"]>;
+};
+
+export type NanomoduleEntityResponse = {
+	__typename?: "NanomoduleEntityResponse";
+	data?: Maybe<NanomoduleEntity>;
+};
+
+export type NanomoduleEntityResponseCollection = {
+	__typename?: "NanomoduleEntityResponseCollection";
+	data: Array<NanomoduleEntity>;
+	meta: ResponseCollectionMeta;
+};
+
+export type NanomoduleFiltersInput = {
+	and?: InputMaybe<Array<InputMaybe<NanomoduleFiltersInput>>>;
+	authors?: InputMaybe<AuthorFiltersInput>;
+	createdAt?: InputMaybe<DateTimeFilterInput>;
+	description?: InputMaybe<StringFilterInput>;
+	id?: InputMaybe<IdFilterInput>;
+	meta?: InputMaybe<JsonFilterInput>;
+	not?: InputMaybe<NanomoduleFiltersInput>;
+	or?: InputMaybe<Array<InputMaybe<NanomoduleFiltersInput>>>;
+	slug?: InputMaybe<StringFilterInput>;
+	subtitle?: InputMaybe<StringFilterInput>;
+	title?: InputMaybe<StringFilterInput>;
+	updatedAt?: InputMaybe<DateTimeFilterInput>;
+};
+
+export type NanomoduleInput = {
+	authors?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+	content?: InputMaybe<Array<Scalars["NanomoduleContentDynamicZoneInput"]>>;
+	description?: InputMaybe<Scalars["String"]>;
+	image?: InputMaybe<Scalars["ID"]>;
+	meta?: InputMaybe<Scalars["JSON"]>;
+	slug?: InputMaybe<Scalars["String"]>;
+	subtitle?: InputMaybe<Scalars["String"]>;
+	title?: InputMaybe<Scalars["String"]>;
+};
+
+export type NanomoduleRelationResponseCollection = {
+	__typename?: "NanomoduleRelationResponseCollection";
+	data: Array<NanomoduleEntity>;
 };
 
 export type Pagination = {
@@ -407,6 +540,8 @@ export type Query = {
 	i18NLocale?: Maybe<I18NLocaleEntityResponse>;
 	i18NLocales?: Maybe<I18NLocaleEntityResponseCollection>;
 	me?: Maybe<UsersPermissionsMe>;
+	nanomodule?: Maybe<NanomoduleEntityResponse>;
+	nanomodules?: Maybe<NanomoduleEntityResponseCollection>;
 	uploadFile?: Maybe<UploadFileEntityResponse>;
 	uploadFiles?: Maybe<UploadFileEntityResponseCollection>;
 	usersPermissionsRole?: Maybe<UsersPermissionsRoleEntityResponse>;
@@ -431,6 +566,16 @@ export type QueryI18NLocaleArgs = {
 
 export type QueryI18NLocalesArgs = {
 	filters?: InputMaybe<I18NLocaleFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type QueryNanomoduleArgs = {
+	id?: InputMaybe<Scalars["ID"]>;
+};
+
+export type QueryNanomodulesArgs = {
+	filters?: InputMaybe<NanomoduleFiltersInput>;
 	pagination?: InputMaybe<PaginationArg>;
 	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
@@ -807,6 +952,82 @@ export type AuthorsQuery = {
 	} | null;
 };
 
+export type NanomoduleBySlugQueryVariables = Exact<{
+	slug?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type NanomoduleBySlugQuery = {
+	__typename?: "Query";
+	nanomodules?: {
+		__typename?: "NanomoduleEntityResponseCollection";
+		data: Array<{
+			__typename?: "NanomoduleEntity";
+			attributes?: {
+				__typename?: "Nanomodule";
+				slug: string;
+				title: string;
+				subtitle?: string | null;
+				description?: string | null;
+				meta?: any | null;
+				image?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: {
+							__typename?: "UploadFile";
+							url: string;
+							alternativeText?: string | null;
+						} | null;
+					} | null;
+				} | null;
+				content: Array<
+					| { __typename: "ComponentNanomoduleArticle"; richText: string }
+					| {
+							__typename: "ComponentNanomoduleVideo";
+							video: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: {
+										__typename?: "UploadFile";
+										url: string;
+										mime: string;
+									} | null;
+								} | null;
+							};
+					  }
+					| { __typename: "ComponentNanomoduleYoutubeVideo"; url?: string | null }
+					| { __typename?: "Error" }
+					| null
+				>;
+				authors?: {
+					__typename?: "AuthorRelationResponseCollection";
+					data: Array<{
+						__typename?: "AuthorEntity";
+						attributes?: {
+							__typename?: "Author";
+							slug: string;
+							name: string;
+							image?: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: {
+										__typename?: "UploadFile";
+										previewUrl?: string | null;
+										url: string;
+										alternativeText?: string | null;
+									} | null;
+								} | null;
+							} | null;
+						} | null;
+					}>;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export const AuthorsDocument = gql`
 	query authors {
 		authors {
@@ -818,6 +1039,67 @@ export const AuthorsDocument = gql`
 						data {
 							attributes {
 								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
+export const NanomoduleBySlugDocument = gql`
+	query nanomoduleBySlug($slug: String) {
+		nanomodules(filters: { slug: { eq: $slug } }) {
+			data {
+				attributes {
+					slug
+					title
+					subtitle
+					description
+					meta
+					image {
+						data {
+							attributes {
+								url
+								alternativeText
+							}
+						}
+					}
+					content {
+						... on ComponentNanomoduleArticle {
+							__typename
+							richText
+						}
+						... on ComponentNanomoduleVideo {
+							__typename
+							video {
+								data {
+									attributes {
+										url
+										mime
+									}
+								}
+							}
+						}
+						... on ComponentNanomoduleYoutubeVideo {
+							__typename
+							url
+						}
+					}
+					authors {
+						data {
+							attributes {
+								slug
+								name
+								image {
+									data {
+										attributes {
+											previewUrl
+											url
+											alternativeText
+										}
+									}
+								}
 							}
 						}
 					}
@@ -848,6 +1130,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"authors",
+				"query"
+			);
+		},
+		nanomoduleBySlug(
+			variables?: NanomoduleBySlugQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<NanomoduleBySlugQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<NanomoduleBySlugQuery>(NanomoduleBySlugDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"nanomoduleBySlug",
 				"query"
 			);
 		}

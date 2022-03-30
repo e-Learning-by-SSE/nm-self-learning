@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_nanomodule_component_youtube_videos",
+  "info": {
+    "displayName": "YoutubeVideo",
+    "icon": "video",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "url": {
+      "type": "string"
+    }
+  }
+}

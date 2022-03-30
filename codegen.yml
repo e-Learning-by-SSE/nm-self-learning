@@ -1,6 +1,6 @@
 overwrite: true
 schema: "http://localhost:1337/graphql"
-documents: "libs/data-access/cms-api/src/lib/**/*.graphql"
+documents: "libs/data-access/cms-api/src/lib/**/*.{graphql,ts}"
 hooks:
     afterAllFileWrite:
         - prettier --write

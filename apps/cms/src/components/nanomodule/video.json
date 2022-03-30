@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_nanomodule_component_videos",
+  "info": {
+    "displayName": "Video",
+    "icon": "photo-video",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "video": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "videos"
+      ]
+    }
+  }
+}
