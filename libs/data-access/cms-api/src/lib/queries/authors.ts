@@ -24,3 +24,48 @@ gql`
 		}
 	}
 `;
+
+export async function getAuthorBySlug(slug: string) {
+	const result = await cmsGraphqlClient.authorBySlug({ slug });
+	return result.authors?.data[0]?.attributes ?? null;
+}
+
+gql`
+	query authorBySlug($slug: String) {
+		authors(filters: { slug: { eq: $slug } }) {
+			data {
+				attributes {
+					slug
+					name
+					image {
+						data {
+							attributes {
+								url
+								alternativeText
+							}
+						}
+					}
+					nanomodules {
+						data {
+							attributes {
+								slug
+								title
+								subtitle
+								createdAt
+								updatedAt
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;

@@ -4,6 +4,7 @@ import { compileMarkdown, extractFrontMatter, MarkdownDocument } from "@self-lea
 import { readFile } from "fs/promises";
 import { GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
+import Link from "next/link";
 
 type IndexPageProps = {
 	users: User[];
@@ -35,6 +36,9 @@ export function Index({ users, mdDocument, mdContent }: IndexPageProps) {
 	return (
 		<div className="flex items-center h-full flex-col gap-16 py-16">
 			<h1 className="font-bold text-6xl">Hello World</h1>
+			<Link href="/lessons/a-beginners-guide-to-react-introduction">
+				<a className="underline">Lesson #1</a>
+			</Link>
 			<ul>
 				{users.map(user => (
 					<li key={user.id}>{user.displayName}</li>

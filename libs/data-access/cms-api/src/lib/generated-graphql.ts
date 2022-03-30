@@ -952,6 +952,61 @@ export type AuthorsQuery = {
 	} | null;
 };
 
+export type AuthorBySlugQueryVariables = Exact<{
+	slug?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type AuthorBySlugQuery = {
+	__typename?: "Query";
+	authors?: {
+		__typename?: "AuthorEntityResponseCollection";
+		data: Array<{
+			__typename?: "AuthorEntity";
+			attributes?: {
+				__typename?: "Author";
+				slug: string;
+				name: string;
+				image?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: {
+							__typename?: "UploadFile";
+							url: string;
+							alternativeText?: string | null;
+						} | null;
+					} | null;
+				} | null;
+				nanomodules?: {
+					__typename?: "NanomoduleRelationResponseCollection";
+					data: Array<{
+						__typename?: "NanomoduleEntity";
+						attributes?: {
+							__typename?: "Nanomodule";
+							slug: string;
+							title: string;
+							subtitle?: string | null;
+							createdAt?: any | null;
+							updatedAt?: any | null;
+							image?: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: {
+										__typename?: "UploadFile";
+										url: string;
+										alternativeText?: string | null;
+									} | null;
+								} | null;
+							} | null;
+						} | null;
+					}>;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export type NanomoduleBySlugQueryVariables = Exact<{
 	slug?: InputMaybe<Scalars["String"]>;
 }>;
@@ -969,6 +1024,8 @@ export type NanomoduleBySlugQuery = {
 				subtitle?: string | null;
 				description?: string | null;
 				meta?: any | null;
+				createdAt?: any | null;
+				updatedAt?: any | null;
 				image?: {
 					__typename?: "UploadFileEntityResponse";
 					data?: {
@@ -1047,6 +1104,45 @@ export const AuthorsDocument = gql`
 		}
 	}
 `;
+export const AuthorBySlugDocument = gql`
+	query authorBySlug($slug: String) {
+		authors(filters: { slug: { eq: $slug } }) {
+			data {
+				attributes {
+					slug
+					name
+					image {
+						data {
+							attributes {
+								url
+								alternativeText
+							}
+						}
+					}
+					nanomodules {
+						data {
+							attributes {
+								slug
+								title
+								subtitle
+								createdAt
+								updatedAt
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
 export const NanomoduleBySlugDocument = gql`
 	query nanomoduleBySlug($slug: String) {
 		nanomodules(filters: { slug: { eq: $slug } }) {
@@ -1057,6 +1153,8 @@ export const NanomoduleBySlugDocument = gql`
 					subtitle
 					description
 					meta
+					createdAt
+					updatedAt
 					image {
 						data {
 							attributes {
@@ -1130,6 +1228,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"authors",
+				"query"
+			);
+		},
+		authorBySlug(
+			variables?: AuthorBySlugQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<AuthorBySlugQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<AuthorBySlugQuery>(AuthorBySlugDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"authorBySlug",
 				"query"
 			);
 		},

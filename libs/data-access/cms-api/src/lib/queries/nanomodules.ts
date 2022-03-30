@@ -16,6 +16,8 @@ gql`
 					subtitle
 					description
 					meta
+					createdAt
+					updatedAt
 					image {
 						data {
 							attributes {
