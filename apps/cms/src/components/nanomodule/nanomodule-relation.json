@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_nanomodule_nanomodule_relations",
+  "info": {
+    "displayName": "NanomoduleRelation",
+    "icon": "hand-point-right"
+  },
+  "options": {},
+  "attributes": {
+    "nanomodule": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::nanomodule.nanomodule"
+    }
+  }
+}

@@ -35,6 +35,12 @@
       "relation": "manyToMany",
       "target": "api::nanomodule.nanomodule",
       "mappedBy": "authors"
+    },
+    "courses": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::course.course",
+      "mappedBy": "authors"
     }
   }
 }
