@@ -13,6 +13,7 @@ export type Scalars = {
 	Boolean: boolean;
 	Int: number;
 	Float: number;
+	CourseContentDynamicZoneInput: any;
 	/** A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar. */
 	DateTime: any;
 	/** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
@@ -24,12 +25,20 @@ export type Scalars = {
 
 export type Author = {
 	__typename?: "Author";
+	courses?: Maybe<CourseRelationResponseCollection>;
 	createdAt?: Maybe<Scalars["DateTime"]>;
 	image?: Maybe<UploadFileEntityResponse>;
 	name: Scalars["String"];
 	nanomodules?: Maybe<NanomoduleRelationResponseCollection>;
 	slug: Scalars["String"];
 	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type AuthorCoursesArgs = {
+	filters?: InputMaybe<CourseFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	publicationState?: InputMaybe<PublicationState>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
 
 export type AuthorNanomodulesArgs = {
@@ -57,6 +66,7 @@ export type AuthorEntityResponseCollection = {
 
 export type AuthorFiltersInput = {
 	and?: InputMaybe<Array<InputMaybe<AuthorFiltersInput>>>;
+	courses?: InputMaybe<CourseFiltersInput>;
 	createdAt?: InputMaybe<DateTimeFilterInput>;
 	id?: InputMaybe<IdFilterInput>;
 	name?: InputMaybe<StringFilterInput>;
@@ -68,6 +78,7 @@ export type AuthorFiltersInput = {
 };
 
 export type AuthorInput = {
+	courses?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 	image?: InputMaybe<Scalars["ID"]>;
 	name?: InputMaybe<Scalars["String"]>;
 	nanomodules?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
@@ -102,10 +113,51 @@ export type BooleanFilterInput = {
 	startsWith?: InputMaybe<Scalars["Boolean"]>;
 };
 
+export type ComponentAuthorAuthorRelation = {
+	__typename?: "ComponentAuthorAuthorRelation";
+	id: Scalars["ID"];
+};
+
 export type ComponentNanomoduleArticle = {
 	__typename?: "ComponentNanomoduleArticle";
 	id: Scalars["ID"];
 	richText: Scalars["String"];
+};
+
+export type ComponentNanomoduleChapter = {
+	__typename?: "ComponentNanomoduleChapter";
+	courses?: Maybe<CourseRelationResponseCollection>;
+	id: Scalars["ID"];
+	lessons?: Maybe<NanomoduleRelationResponseCollection>;
+	title: Scalars["String"];
+};
+
+export type ComponentNanomoduleChapterCoursesArgs = {
+	filters?: InputMaybe<CourseFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	publicationState?: InputMaybe<PublicationState>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type ComponentNanomoduleChapterLessonsArgs = {
+	filters?: InputMaybe<NanomoduleFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type ComponentNanomoduleNanomoduleRelation = {
+	__typename?: "ComponentNanomoduleNanomoduleRelation";
+	id: Scalars["ID"];
+	nanomodule?: Maybe<NanomoduleEntityResponse>;
+};
+
+export type ComponentNanomoduleNestedNanomodule = {
+	__typename?: "ComponentNanomoduleNestedNanomodule";
+	description?: Maybe<Scalars["String"]>;
+	id: Scalars["ID"];
+	image?: Maybe<UploadFileEntityResponse>;
+	subtitle?: Maybe<Scalars["String"]>;
+	title: Scalars["String"];
 };
 
 export type ComponentNanomoduleVideo = {
@@ -118,6 +170,79 @@ export type ComponentNanomoduleYoutubeVideo = {
 	__typename?: "ComponentNanomoduleYoutubeVideo";
 	id: Scalars["ID"];
 	url?: Maybe<Scalars["String"]>;
+};
+
+export type Course = {
+	__typename?: "Course";
+	authors?: Maybe<AuthorRelationResponseCollection>;
+	content?: Maybe<Array<Maybe<CourseContentDynamicZone>>>;
+	createdAt?: Maybe<Scalars["DateTime"]>;
+	description?: Maybe<Scalars["String"]>;
+	image?: Maybe<UploadFileEntityResponse>;
+	publishedAt?: Maybe<Scalars["DateTime"]>;
+	slug: Scalars["String"];
+	subtitle?: Maybe<Scalars["String"]>;
+	title: Scalars["String"];
+	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type CourseAuthorsArgs = {
+	filters?: InputMaybe<AuthorFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type CourseContentDynamicZone =
+	| ComponentNanomoduleChapter
+	| ComponentNanomoduleNanomoduleRelation
+	| Error;
+
+export type CourseEntity = {
+	__typename?: "CourseEntity";
+	attributes?: Maybe<Course>;
+	id?: Maybe<Scalars["ID"]>;
+};
+
+export type CourseEntityResponse = {
+	__typename?: "CourseEntityResponse";
+	data?: Maybe<CourseEntity>;
+};
+
+export type CourseEntityResponseCollection = {
+	__typename?: "CourseEntityResponseCollection";
+	data: Array<CourseEntity>;
+	meta: ResponseCollectionMeta;
+};
+
+export type CourseFiltersInput = {
+	and?: InputMaybe<Array<InputMaybe<CourseFiltersInput>>>;
+	authors?: InputMaybe<AuthorFiltersInput>;
+	createdAt?: InputMaybe<DateTimeFilterInput>;
+	description?: InputMaybe<StringFilterInput>;
+	id?: InputMaybe<IdFilterInput>;
+	not?: InputMaybe<CourseFiltersInput>;
+	or?: InputMaybe<Array<InputMaybe<CourseFiltersInput>>>;
+	publishedAt?: InputMaybe<DateTimeFilterInput>;
+	slug?: InputMaybe<StringFilterInput>;
+	subtitle?: InputMaybe<StringFilterInput>;
+	title?: InputMaybe<StringFilterInput>;
+	updatedAt?: InputMaybe<DateTimeFilterInput>;
+};
+
+export type CourseInput = {
+	authors?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+	content?: InputMaybe<Array<Scalars["CourseContentDynamicZoneInput"]>>;
+	description?: InputMaybe<Scalars["String"]>;
+	image?: InputMaybe<Scalars["ID"]>;
+	publishedAt?: InputMaybe<Scalars["DateTime"]>;
+	slug?: InputMaybe<Scalars["String"]>;
+	subtitle?: InputMaybe<Scalars["String"]>;
+	title?: InputMaybe<Scalars["String"]>;
+};
+
+export type CourseRelationResponseCollection = {
+	__typename?: "CourseRelationResponseCollection";
+	data: Array<CourseEntity>;
 };
 
 export type DateTimeFilterInput = {
@@ -180,9 +305,14 @@ export type FloatFilterInput = {
 
 export type GenericMorph =
 	| Author
+	| ComponentAuthorAuthorRelation
 	| ComponentNanomoduleArticle
+	| ComponentNanomoduleChapter
+	| ComponentNanomoduleNanomoduleRelation
+	| ComponentNanomoduleNestedNanomodule
 	| ComponentNanomoduleVideo
 	| ComponentNanomoduleYoutubeVideo
+	| Course
 	| I18NLocale
 	| Nanomodule
 	| UploadFile
@@ -298,6 +428,7 @@ export type JsonFilterInput = {
 export type Mutation = {
 	__typename?: "Mutation";
 	createAuthor?: Maybe<AuthorEntityResponse>;
+	createCourse?: Maybe<CourseEntityResponse>;
 	createNanomodule?: Maybe<NanomoduleEntityResponse>;
 	createUploadFile?: Maybe<UploadFileEntityResponse>;
 	/** Create a new role */
@@ -305,6 +436,7 @@ export type Mutation = {
 	/** Create a new user */
 	createUsersPermissionsUser: UsersPermissionsUserEntityResponse;
 	deleteAuthor?: Maybe<AuthorEntityResponse>;
+	deleteCourse?: Maybe<CourseEntityResponse>;
 	deleteNanomodule?: Maybe<NanomoduleEntityResponse>;
 	deleteUploadFile?: Maybe<UploadFileEntityResponse>;
 	/** Delete an existing role */
@@ -323,6 +455,7 @@ export type Mutation = {
 	/** Reset user password. Confirm with a code (resetToken from forgotPassword) */
 	resetPassword?: Maybe<UsersPermissionsLoginPayload>;
 	updateAuthor?: Maybe<AuthorEntityResponse>;
+	updateCourse?: Maybe<CourseEntityResponse>;
 	updateFileInfo: UploadFileEntityResponse;
 	updateNanomodule?: Maybe<NanomoduleEntityResponse>;
 	updateUploadFile?: Maybe<UploadFileEntityResponse>;
@@ -335,6 +468,10 @@ export type Mutation = {
 
 export type MutationCreateAuthorArgs = {
 	data: AuthorInput;
+};
+
+export type MutationCreateCourseArgs = {
+	data: CourseInput;
 };
 
 export type MutationCreateNanomoduleArgs = {
@@ -354,6 +491,10 @@ export type MutationCreateUsersPermissionsUserArgs = {
 };
 
 export type MutationDeleteAuthorArgs = {
+	id: Scalars["ID"];
+};
+
+export type MutationDeleteCourseArgs = {
 	id: Scalars["ID"];
 };
 
@@ -408,6 +549,11 @@ export type MutationResetPasswordArgs = {
 
 export type MutationUpdateAuthorArgs = {
 	data: AuthorInput;
+	id: Scalars["ID"];
+};
+
+export type MutationUpdateCourseArgs = {
+	data: CourseInput;
 	id: Scalars["ID"];
 };
 
@@ -533,10 +679,17 @@ export type PaginationArg = {
 	start?: InputMaybe<Scalars["Int"]>;
 };
 
+export enum PublicationState {
+	Live = "LIVE",
+	Preview = "PREVIEW"
+}
+
 export type Query = {
 	__typename?: "Query";
 	author?: Maybe<AuthorEntityResponse>;
 	authors?: Maybe<AuthorEntityResponseCollection>;
+	course?: Maybe<CourseEntityResponse>;
+	courses?: Maybe<CourseEntityResponseCollection>;
 	i18NLocale?: Maybe<I18NLocaleEntityResponse>;
 	i18NLocales?: Maybe<I18NLocaleEntityResponseCollection>;
 	me?: Maybe<UsersPermissionsMe>;
@@ -557,6 +710,17 @@ export type QueryAuthorArgs = {
 export type QueryAuthorsArgs = {
 	filters?: InputMaybe<AuthorFiltersInput>;
 	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type QueryCourseArgs = {
+	id?: InputMaybe<Scalars["ID"]>;
+};
+
+export type QueryCoursesArgs = {
+	filters?: InputMaybe<CourseFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	publicationState?: InputMaybe<PublicationState>;
 	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
 
@@ -1007,6 +1171,96 @@ export type AuthorBySlugQuery = {
 	} | null;
 };
 
+export type CourseBySlugQueryVariables = Exact<{
+	slug: Scalars["String"];
+}>;
+
+export type CourseBySlugQuery = {
+	__typename?: "Query";
+	courses?: {
+		__typename?: "CourseEntityResponseCollection";
+		data: Array<{
+			__typename?: "CourseEntity";
+			id?: string | null;
+			attributes?: {
+				__typename?: "Course";
+				title: string;
+				slug: string;
+				subtitle?: string | null;
+				description?: string | null;
+				createdAt?: any | null;
+				updatedAt?: any | null;
+				image?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: {
+							__typename?: "UploadFile";
+							url: string;
+							alternativeText?: string | null;
+						} | null;
+					} | null;
+				} | null;
+				authors?: {
+					__typename?: "AuthorRelationResponseCollection";
+					data: Array<{
+						__typename?: "AuthorEntity";
+						attributes?: {
+							__typename?: "Author";
+							slug: string;
+							name: string;
+							image?: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: {
+										__typename?: "UploadFile";
+										url: string;
+										alternativeText?: string | null;
+									} | null;
+								} | null;
+							} | null;
+						} | null;
+					}>;
+				} | null;
+				content?: Array<
+					| {
+							__typename: "ComponentNanomoduleChapter";
+							title: string;
+							lessons?: {
+								__typename?: "NanomoduleRelationResponseCollection";
+								data: Array<{
+									__typename?: "NanomoduleEntity";
+									attributes?: {
+										__typename?: "Nanomodule";
+										slug: string;
+										title: string;
+									} | null;
+								}>;
+							} | null;
+					  }
+					| {
+							__typename: "ComponentNanomoduleNanomoduleRelation";
+							nanomodule?: {
+								__typename?: "NanomoduleEntityResponse";
+								data?: {
+									__typename?: "NanomoduleEntity";
+									attributes?: {
+										__typename?: "Nanomodule";
+										slug: string;
+										title: string;
+									} | null;
+								} | null;
+							} | null;
+					  }
+					| { __typename: "Error" }
+					| null
+				> | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export type NanomoduleBySlugQueryVariables = Exact<{
 	slug?: InputMaybe<Scalars["String"]>;
 }>;
@@ -1143,6 +1397,72 @@ export const AuthorBySlugDocument = gql`
 		}
 	}
 `;
+export const CourseBySlugDocument = gql`
+	query courseBySlug($slug: String!) {
+		courses(filters: { slug: { eq: $slug } }) {
+			data {
+				id
+				attributes {
+					title
+					slug
+					subtitle
+					description
+					createdAt
+					updatedAt
+					image {
+						data {
+							attributes {
+								url
+								alternativeText
+							}
+						}
+					}
+					authors {
+						data {
+							attributes {
+								slug
+								name
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
+							}
+						}
+					}
+					content {
+						__typename
+						... on ComponentNanomoduleChapter {
+							__typename
+							title
+							lessons {
+								data {
+									attributes {
+										slug
+										title
+									}
+								}
+							}
+						}
+						... on ComponentNanomoduleNanomoduleRelation {
+							nanomodule {
+								data {
+									attributes {
+										slug
+										title
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
 export const NanomoduleBySlugDocument = gql`
 	query nanomoduleBySlug($slug: String) {
 		nanomodules(filters: { slug: { eq: $slug } }) {
@@ -1242,6 +1562,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"authorBySlug",
+				"query"
+			);
+		},
+		courseBySlug(
+			variables: CourseBySlugQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<CourseBySlugQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<CourseBySlugQuery>(CourseBySlugDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"courseBySlug",
 				"query"
 			);
 		},

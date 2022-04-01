@@ -51,7 +51,7 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 			<div className="mx-auto flex flex-col py-16 px-2 md:px-0 lg:max-w-screen-lg">
 				<div className="flex flex-col gap-8">
 					<h1 className="text-5xl">{title}</h1>
-					<span className="text-2xl tracking-tight">{subtitle}</span>
+					{subtitle && <span className="text-2xl tracking-tight">{subtitle}</span>}
 					<div className="flex flex-col">
 						{nanomodule.authors?.data.map(author => (
 							<div key={author.attributes?.slug} className="flex items-center gap-2">
