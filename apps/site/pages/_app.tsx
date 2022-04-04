@@ -8,7 +8,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			<Head>
 				<title>Self-Learning</title>
 			</Head>
-			<main className="min-h-screen h-screen">
+			<main className="min-h-screen">
 				<Component {...pageProps} />
 			</main>
 		</>

@@ -10,6 +10,18 @@
 	src: url(../public/Inter-roman.var.woff2) format("woff2");
 }
 
+.sidenav::-webkit-scrollbar {
+	width: 8px;
+}
+
+.sidenav::-webkit-scrollbar-track {
+	@apply bg-transparent;
+}
+
+.sidenav::-webkit-scrollbar-thumb {
+	@apply bg-slate-600;
+}
+
 html {
 	font-family: Inter;
 	scroll-behavior: smooth;
@@ -24,7 +36,7 @@ html {
 h1,
 h2,
 h3 {
-	@apply text-slate-900 font-bold;
+	@apply font-bold text-slate-900;
 	letter-spacing: -0.05em;
 }
 

@@ -18,7 +18,8 @@
 			"@self-learning/cms-api": ["libs/data-access/cms-api/src/index.ts"],
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],
 			"@self-learning/docs/storybook": ["docs/storybook/src/index.ts"],
-			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"]
+			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
+			"@self-learning/ui/layouts": ["libs/ui/layouts/src/index.ts"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]
