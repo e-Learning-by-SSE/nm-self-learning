@@ -38,9 +38,6 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 	const { title, subtitle, description } = nanomodule;
 	const imgUrl = `http://localhost:1337${nanomodule.image?.data?.attributes?.url}`;
 	const imgAlt = nanomodule.image?.data?.attributes?.alternativeText ?? "";
-
-	console.log(nanomodule);
-
 	const { url } = nanomodule.content[0] as cmsTypes.ComponentNanomoduleYoutubeVideo;
 
 	return (

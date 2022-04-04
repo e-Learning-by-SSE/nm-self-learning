@@ -17,7 +17,6 @@ export const getStaticProps: GetStaticProps<AuthorProps> = async ({ params }) =>
 	}
 
 	const author = (await getAuthorBySlug(slug)) as Author;
-	console.log(author);
 
 	return {
 		props: {
