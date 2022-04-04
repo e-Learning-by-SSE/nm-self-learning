@@ -12,7 +12,7 @@ type NanomoduleProps = {
 };
 
 export const getStaticProps: GetStaticProps<NanomoduleProps> = async ({ params }) => {
-	const slug = params?.slug as string;
+	const slug = params?.lessonSlug as string;
 
 	if (!slug) {
 		throw new Error("No slug provided.");
