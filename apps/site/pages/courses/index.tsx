@@ -41,10 +41,10 @@ export default function Courses() {
 
 			<h2 className="mt-16 mb-4 text-2xl">Suche nach Lerninhalten</h2>
 			<div className="flex flex-col">
-				<InstantSearch searchClient={searchClient} indexName="development_nanomodules">
+				{/* <InstantSearch searchClient={searchClient} indexName="development_nanomodules">
 					<CustomSearchBox />
 					<CustomHits />
-				</InstantSearch>
+				</InstantSearch> */}
 			</div>
 		</SidebarLayout>
 	);

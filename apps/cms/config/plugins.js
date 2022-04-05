@@ -1,6 +1,6 @@
 module.exports = {
 	search: {
-		enabled: true,
+		enabled: false,
 		config: {
 			provider: "algolia",
 			providerOptions: {
