@@ -10,6 +10,8 @@
 		"strapi": "strapi"
 	},
 	"dependencies": {
+		"@mattie-bundle/strapi-plugin-search": "^1.0.0-alpha.3",
+		"@mattie-bundle/strapi-provider-search-algolia": "^1.0.0-alpha.3",
 		"@strapi/design-system": "^0.0.1-alpha.79",
 		"@strapi/plugin-graphql": "^4.1.7",
 		"@strapi/plugin-i18n": "4.1.7",
