@@ -5,9 +5,9 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
 	content: [
-		join(__dirname, "**/!(*.stories|*.spec).tsx"),
+		join(__dirname, "./**/!(*.stories|*.spec).tsx"),
 		join(__dirname, "./pages/styles.css"),
-		"./libs/**/!(*.stories|*.spec).tsx"
+		...createGlobPatternsForDependencies(__dirname, "/**/!(*.stories|*.spec).tsx")
 	],
 	theme: {
 		extend: {
