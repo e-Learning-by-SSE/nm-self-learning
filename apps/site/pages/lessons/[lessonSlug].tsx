@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from "@heroicons/react/solid";
 import { cmsTypes, getNanomoduleBySlug } from "@self-learning/cms-api";
 import { SidebarLayout } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -36,7 +37,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 export default function Nanomodule({ nanomodule }: NanomoduleProps) {
-	const { title, subtitle, description } = nanomodule;
+	const { title, subtitle, description, slug } = nanomodule;
 	const imgUrl = `http://localhost:1337${nanomodule.image?.data?.attributes?.url}`;
 	const imgAlt = nanomodule.image?.data?.attributes?.alternativeText ?? "";
 	const { url } = nanomodule.content[0] as cmsTypes.ComponentNanomoduleYoutubeVideo;
@@ -74,6 +75,14 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 					</div>
 					{description && <span className="">{description}</span>}
 					<div className="h-[728px] w-full">{url && <YoutubeEmbed url={url} />}</div>
+					<Link href={`${slug}/questions`}>
+						<a className="self-end">
+							<button className="flex items-center gap-2 rounded bg-emerald-500 px-8 py-2 font-semibold text-white">
+								<span>Zur Lernkontrolle</span>
+								<ChevronRightIcon className="h-5" />
+							</button>
+						</a>
+					</Link>
 				</div>
 			</SidebarLayout>
 		</>

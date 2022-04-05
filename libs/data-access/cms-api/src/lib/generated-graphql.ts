@@ -113,11 +113,6 @@ export type BooleanFilterInput = {
 	startsWith?: InputMaybe<Scalars["Boolean"]>;
 };
 
-export type ComponentAuthorAuthorRelation = {
-	__typename?: "ComponentAuthorAuthorRelation";
-	id: Scalars["ID"];
-};
-
 export type ComponentNanomoduleArticle = {
 	__typename?: "ComponentNanomoduleArticle";
 	id: Scalars["ID"];
@@ -149,15 +144,6 @@ export type ComponentNanomoduleNanomoduleRelation = {
 	__typename?: "ComponentNanomoduleNanomoduleRelation";
 	id: Scalars["ID"];
 	nanomodule?: Maybe<NanomoduleEntityResponse>;
-};
-
-export type ComponentNanomoduleNestedNanomodule = {
-	__typename?: "ComponentNanomoduleNestedNanomodule";
-	description?: Maybe<Scalars["String"]>;
-	id: Scalars["ID"];
-	image?: Maybe<UploadFileEntityResponse>;
-	subtitle?: Maybe<Scalars["String"]>;
-	title: Scalars["String"];
 };
 
 export type ComponentNanomoduleVideo = {
@@ -305,11 +291,9 @@ export type FloatFilterInput = {
 
 export type GenericMorph =
 	| Author
-	| ComponentAuthorAuthorRelation
 	| ComponentNanomoduleArticle
 	| ComponentNanomoduleChapter
 	| ComponentNanomoduleNanomoduleRelation
-	| ComponentNanomoduleNestedNanomodule
 	| ComponentNanomoduleVideo
 	| ComponentNanomoduleYoutubeVideo
 	| Course
@@ -598,6 +582,7 @@ export type Nanomodule = {
 	description?: Maybe<Scalars["String"]>;
 	image?: Maybe<UploadFileEntityResponse>;
 	meta?: Maybe<Scalars["JSON"]>;
+	questions?: Maybe<Scalars["JSON"]>;
 	slug: Scalars["String"];
 	subtitle?: Maybe<Scalars["String"]>;
 	title: Scalars["String"];
@@ -642,6 +627,7 @@ export type NanomoduleFiltersInput = {
 	meta?: InputMaybe<JsonFilterInput>;
 	not?: InputMaybe<NanomoduleFiltersInput>;
 	or?: InputMaybe<Array<InputMaybe<NanomoduleFiltersInput>>>;
+	questions?: InputMaybe<JsonFilterInput>;
 	slug?: InputMaybe<StringFilterInput>;
 	subtitle?: InputMaybe<StringFilterInput>;
 	title?: InputMaybe<StringFilterInput>;
@@ -654,6 +640,7 @@ export type NanomoduleInput = {
 	description?: InputMaybe<Scalars["String"]>;
 	image?: InputMaybe<Scalars["ID"]>;
 	meta?: InputMaybe<Scalars["JSON"]>;
+	questions?: InputMaybe<Scalars["JSON"]>;
 	slug?: InputMaybe<Scalars["String"]>;
 	subtitle?: InputMaybe<Scalars["String"]>;
 	title?: InputMaybe<Scalars["String"]>;
@@ -1188,8 +1175,6 @@ export type CourseBySlugQuery = {
 				slug: string;
 				subtitle?: string | null;
 				description?: string | null;
-				createdAt?: any | null;
-				updatedAt?: any | null;
 				image?: {
 					__typename?: "UploadFileEntityResponse";
 					data?: {
@@ -1238,6 +1223,17 @@ export type CourseBySlugQuery = {
 									} | null;
 								}>;
 							} | null;
+							courses?: {
+								__typename?: "CourseRelationResponseCollection";
+								data: Array<{
+									__typename?: "CourseEntity";
+									attributes?: {
+										__typename?: "Course";
+										title: string;
+										slug: string;
+									} | null;
+								}>;
+							} | null;
 					  }
 					| {
 							__typename: "ComponentNanomoduleNanomoduleRelation";
@@ -1256,6 +1252,37 @@ export type CourseBySlugQuery = {
 					| { __typename: "Error" }
 					| null
 				> | null;
+			} | null;
+		}>;
+	} | null;
+};
+
+export type GetNanomoduleQuestionsBySlugQueryVariables = Exact<{
+	slug: Scalars["String"];
+}>;
+
+export type GetNanomoduleQuestionsBySlugQuery = {
+	__typename?: "Query";
+	nanomodules?: {
+		__typename?: "NanomoduleEntityResponseCollection";
+		data: Array<{
+			__typename?: "NanomoduleEntity";
+			attributes?: {
+				__typename?: "Nanomodule";
+				slug: string;
+				title: string;
+				questions?: any | null;
+				image?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: {
+							__typename?: "UploadFile";
+							url: string;
+							alternativeText?: string | null;
+						} | null;
+					} | null;
+				} | null;
 			} | null;
 		}>;
 	} | null;
@@ -1407,8 +1434,6 @@ export const CourseBySlugDocument = gql`
 					slug
 					subtitle
 					description
-					createdAt
-					updatedAt
 					image {
 						data {
 							attributes {
@@ -1446,6 +1471,14 @@ export const CourseBySlugDocument = gql`
 									}
 								}
 							}
+							courses {
+								data {
+									attributes {
+										title
+										slug
+									}
+								}
+							}
 						}
 						... on ComponentNanomoduleNanomoduleRelation {
 							nanomodule {
@@ -1455,6 +1488,27 @@ export const CourseBySlugDocument = gql`
 										title
 									}
 								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
+export const GetNanomoduleQuestionsBySlugDocument = gql`
+	query getNanomoduleQuestionsBySlug($slug: String!) {
+		nanomodules(filters: { slug: { eq: $slug } }) {
+			data {
+				attributes {
+					slug
+					title
+					questions
+					image {
+						data {
+							attributes {
+								url
+								alternativeText
 							}
 						}
 					}
@@ -1576,6 +1630,21 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"courseBySlug",
+				"query"
+			);
+		},
+		getNanomoduleQuestionsBySlug(
+			variables: GetNanomoduleQuestionsBySlugQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<GetNanomoduleQuestionsBySlugQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<GetNanomoduleQuestionsBySlugQuery>(
+						GetNanomoduleQuestionsBySlugDocument,
+						variables,
+						{ ...requestHeaders, ...wrappedRequestHeaders }
+					),
+				"getNanomoduleQuestionsBySlug",
 				"query"
 			);
 		},

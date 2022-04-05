@@ -850,33 +850,6 @@
 			},
 			{
 				"kind": "OBJECT",
-				"name": "ComponentAuthorAuthorRelation",
-				"description": null,
-				"fields": [
-					{
-						"name": "id",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "SCALAR",
-								"name": "ID",
-								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"inputFields": null,
-				"interfaces": [],
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "OBJECT",
 				"name": "ComponentNanomoduleArticle",
 				"description": null,
 				"fields": [
@@ -1108,85 +1081,6 @@
 							"kind": "OBJECT",
 							"name": "NanomoduleEntityResponse",
 							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"inputFields": null,
-				"interfaces": [],
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "OBJECT",
-				"name": "ComponentNanomoduleNestedNanomodule",
-				"description": null,
-				"fields": [
-					{
-						"name": "description",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "id",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "SCALAR",
-								"name": "ID",
-								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "image",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "OBJECT",
-							"name": "UploadFileEntityResponse",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "subtitle",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "title",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "SCALAR",
-								"name": "String",
-								"ofType": null
-							}
 						},
 						"isDeprecated": false,
 						"deprecationReason": null
@@ -2589,11 +2483,6 @@
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentAuthorAuthorRelation",
-						"ofType": null
-					},
-					{
-						"kind": "OBJECT",
 						"name": "ComponentNanomoduleArticle",
 						"ofType": null
 					},
@@ -2605,11 +2494,6 @@
 					{
 						"kind": "OBJECT",
 						"name": "ComponentNanomoduleNanomoduleRelation",
-						"ofType": null
-					},
-					{
-						"kind": "OBJECT",
-						"name": "ComponentNanomoduleNestedNanomodule",
 						"ofType": null
 					},
 					{
@@ -4970,6 +4854,18 @@
 						"deprecationReason": null
 					},
 					{
+						"name": "questions",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "JSON",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
 						"name": "slug",
 						"description": null,
 						"args": [],
@@ -5292,6 +5188,18 @@
 						"deprecationReason": null
 					},
 					{
+						"name": "questions",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "JSONFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
 						"name": "slug",
 						"description": null,
 						"type": {
@@ -5412,6 +5320,18 @@
 					},
 					{
 						"name": "meta",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "JSON",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "questions",
 						"description": null,
 						"type": {
 							"kind": "SCALAR",
