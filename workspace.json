@@ -4,6 +4,7 @@
 		"cms": "apps/cms",
 		"data-access-cms-api": "libs/data-access/cms-api",
 		"database": "libs/data-access/database",
+		"docs-storybook": "docs/storybook",
 		"site": "apps/site",
 		"site-e2e": "apps/site-e2e",
 		"ui-layouts": "libs/ui/layouts",

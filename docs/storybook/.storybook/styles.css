@@ -1,0 +1,23 @@
+@import "../../../apps/site/pages/styles.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+	font-family: Inter;
+	scroll-behavior: smooth;
+	letter-spacing: -0.02em;
+	-webkit-font-smoothing: auto;
+	-moz-osx-font-smoothing: auto;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	color: theme("colors.slate.700");
+}
+
+h1,
+h2,
+h3 {
+	font-weight: 700;
+	letter-spacing: -0.05em;
+	color: theme("colors.slate.900");
+}
