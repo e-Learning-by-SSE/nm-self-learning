@@ -16,6 +16,8 @@ gql`
 					slug
 					subtitle
 					description
+					createdAt
+					updatedAt
 					image {
 						data {
 							attributes {

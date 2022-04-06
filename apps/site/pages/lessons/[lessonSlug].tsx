@@ -75,7 +75,7 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 					</div>
 					{description && <span className="">{description}</span>}
 					<div className="h-[728px] w-full">{url && <YoutubeEmbed url={url} />}</div>
-					<Link href={`${slug}/questions`}>
+					<Link href={`/lessons/${slug}/questions`}>
 						<a className="self-end">
 							<button className="flex items-center gap-2 rounded bg-emerald-500 px-8 py-2 font-semibold text-white">
 								<span>Zur Lernkontrolle</span>

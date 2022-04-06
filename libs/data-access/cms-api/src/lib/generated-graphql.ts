@@ -1175,6 +1175,8 @@ export type CourseBySlugQuery = {
 				slug: string;
 				subtitle?: string | null;
 				description?: string | null;
+				createdAt?: any | null;
+				updatedAt?: any | null;
 				image?: {
 					__typename?: "UploadFileEntityResponse";
 					data?: {
@@ -1434,6 +1436,8 @@ export const CourseBySlugDocument = gql`
 					slug
 					subtitle
 					description
+					createdAt
+					updatedAt
 					image {
 						data {
 							attributes {
