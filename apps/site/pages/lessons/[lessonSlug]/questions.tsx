@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
 import { getNanomoduleQuestionsBySlug } from "@self-learning/cms-api";
-import { SidebarLayout } from "@self-learning/ui/layouts";
+import { CenteredContainer, SidebarLayout } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -128,57 +128,61 @@ export default function Questions({ nanomodule }: QuestionsProps) {
 
 	return (
 		<SidebarLayout>
-			<div className="flex flex-col">
-				<Link href={`/lessons/${slug}`}>
-					<a className="flex items-center text-sm text-slate-400">
-						<ChevronLeftIcon className="h-4" />
-						<span>Zurück zum Inhalt</span>
-					</a>
-				</Link>
-				<h1 className="mb-12 mt-2 text-2xl">Lernkontrolle</h1>
+			<CenteredContainer defaultPadding={true}>
+				<div className="flex flex-col">
+					<Link href={`/lessons/${slug}`}>
+						<a className="flex items-center text-sm text-slate-400">
+							<ChevronLeftIcon className="h-4" />
+							<span>Zurück zum Inhalt</span>
+						</a>
+					</Link>
+					<h1 className="mb-12 mt-2 text-2xl">Lernkontrolle</h1>
 
-				<div className="flex flex-col gap-8">
-					<h2 className="text-4xl">{currentQuestion.question}</h2>
+					<div className="flex flex-col gap-8">
+						<h2 className="text-4xl">{currentQuestion.question}</h2>
 
-					<ul className="flex flex-col gap-4">
-						{currentQuestion.answers.map(answer => (
-							<label
-								htmlFor={answer.text}
-								key={answer.text}
-								className="flex items-center gap-2 rounded bg-slate-100 p-4"
-							>
-								<input type="checkbox" className="" id={answer.text} />
-								{answer.text}
-							</label>
-						))}
-					</ul>
+						<ul className="flex flex-col gap-4">
+							{currentQuestion.answers.map(answer => (
+								<label
+									htmlFor={answer.text}
+									key={answer.text}
+									className="flex items-center gap-2 rounded bg-slate-100 p-4"
+								>
+									<input type="checkbox" className="" id={answer.text} />
+									{answer.text}
+								</label>
+							))}
+						</ul>
 
-					<div className="flex place-content-end gap-4">
-						{nextIndex > 1 && (
-							<button
-								className="flex w-fit items-center gap-2 self-start rounded bg-slate-800 px-8 py-2 font-semibold text-white"
-								onClick={() =>
-									router.push(`/lessons/${slug}/questions?index=${nextIndex - 2}`)
-								}
-							>
-								<ChevronLeftIcon className="h-5" />
-								<span>Vorherige Frage</span>
-							</button>
-						)}
-						{nextIndex < questions.length && (
-							<button
-								className="flex w-fit items-center gap-2 self-end rounded bg-emerald-500 px-8 py-2 font-semibold text-white"
-								onClick={() =>
-									router.push(`/lessons/${slug}/questions?index=${nextIndex}`)
-								}
-							>
-								<span>Nächste Frage</span>
-								<ChevronRightIcon className="h-5" />
-							</button>
-						)}
+						<div className="flex place-content-end gap-4">
+							{nextIndex > 1 && (
+								<button
+									className="flex w-fit items-center gap-2 self-start rounded bg-slate-800 px-8 py-2 font-semibold text-white"
+									onClick={() =>
+										router.push(
+											`/lessons/${slug}/questions?index=${nextIndex - 2}`
+										)
+									}
+								>
+									<ChevronLeftIcon className="h-5" />
+									<span>Vorherige Frage</span>
+								</button>
+							)}
+							{nextIndex < questions.length && (
+								<button
+									className="flex w-fit items-center gap-2 self-end rounded bg-emerald-500 px-8 py-2 font-semibold text-white"
+									onClick={() =>
+										router.push(`/lessons/${slug}/questions?index=${nextIndex}`)
+									}
+								>
+									<span>Nächste Frage</span>
+									<ChevronRightIcon className="h-5" />
+								</button>
+							)}
+						</div>
 					</div>
 				</div>
-			</div>
+			</CenteredContainer>
 		</SidebarLayout>
 	);
 }

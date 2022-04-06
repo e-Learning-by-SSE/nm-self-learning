@@ -1,6 +1,7 @@
 import { XIcon } from "@heroicons/react/solid";
-import { SidebarLayout } from "@self-learning/ui/layouts";
+import { CenteredContainer, SidebarLayout } from "@self-learning/ui/layouts";
 import Image from "next/image";
+import Link from "next/link";
 import { connectHits, connectSearchBox } from "react-instantsearch-dom";
 
 // const searchClient = algoliasearch(
@@ -27,24 +28,26 @@ type NanomoduleHit = {
 export default function Courses() {
 	return (
 		<SidebarLayout>
-			<div className="flex flex-col">
-				<h1 className="mb-8 text-3xl">Empfohlene Kurse</h1>
-				<div className="flex flex-wrap gap-4">
-					{["A", "B", "C", "D"].map(key => (
-						<div className="rounded bg-slate-100 p-4" key={key}>
-							<h2>{key}</h2>
-						</div>
-					))}
+			<CenteredContainer defaultPadding={true}>
+				<div className="flex flex-col">
+					<h1 className="mb-8 text-3xl">Empfohlene Kurse</h1>
+					<div className="flex flex-wrap gap-4">
+						<Link href="/courses/the-example-course">
+							<a className="rounded bg-slate-100 p-4">
+								<span className="font-semibold">The Example Course</span>
+							</a>
+						</Link>
+					</div>
 				</div>
-			</div>
 
-			<h2 className="mt-16 mb-4 text-2xl">Suche nach Lerninhalten</h2>
-			<div className="flex flex-col">
-				{/* <InstantSearch searchClient={searchClient} indexName="development_nanomodules">
+				<h2 className="mt-16 mb-4 text-2xl">Suche nach Lerninhalten</h2>
+				<div className="flex flex-col">
+					{/* <InstantSearch searchClient={searchClient} indexName="development_nanomodules">
 					<CustomSearchBox />
 					<CustomHits />
 				</InstantSearch> */}
-			</div>
+				</div>
+			</CenteredContainer>
 		</SidebarLayout>
 	);
 }

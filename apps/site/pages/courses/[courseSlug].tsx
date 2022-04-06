@@ -1,4 +1,5 @@
 import { getCourseBySlug } from "@self-learning/cms-api";
+import { CenteredContainer, SidebarLayout } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,8 +36,8 @@ export default function Course({ course }: CourseProps) {
 	const { url, alternativeText } = course.image?.data?.attributes || {};
 
 	return (
-		<div className="flex flex-col py-16">
-			<div className="mx-auto flex flex-col gap-8 px-4 md:max-w-screen-md md:px-0">
+		<SidebarLayout>
+			<CenteredContainer defaultPadding={true}>
 				<h1 className="text-5xl">{course.title}</h1>
 				{course.subtitle && (
 					<div className="text-2xl tracking-tight">{course.subtitle}</div>
@@ -124,7 +125,7 @@ export default function Course({ course }: CourseProps) {
 						);
 					}
 				})}
-			</div>
-		</div>
+			</CenteredContainer>
+		</SidebarLayout>
 	);
 }

@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "@heroicons/react/solid";
 import { cmsTypes, getNanomoduleBySlug } from "@self-learning/cms-api";
-import { SidebarLayout } from "@self-learning/ui/layouts";
+import { CenteredContainer, SidebarLayout } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -48,7 +48,7 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 				<title>{title}</title>
 			</Head>
 			<SidebarLayout>
-				<div className="flex flex-col gap-8">
+				<CenteredContainer defaultPadding={true}>
 					<h1 className="text-5xl">{title}</h1>
 					{subtitle && <span className="text-2xl tracking-tight">{subtitle}</span>}
 					<div className="flex flex-col">
@@ -83,7 +83,7 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 							</button>
 						</a>
 					</Link>
-				</div>
+				</CenteredContainer>
 			</SidebarLayout>
 		</>
 	);

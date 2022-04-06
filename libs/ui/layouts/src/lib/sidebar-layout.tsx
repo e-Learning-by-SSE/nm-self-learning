@@ -25,11 +25,7 @@ export function SidebarLayout({ children }: PropsWithChildren<unknown>) {
 				</button>
 			)}
 
-			<div className={`w-full py-16 ${open && "sm:ml-64"}`}>
-				<div className="mx-auto flex w-full flex-col px-4 lg:max-w-screen-lg">
-					{children}
-				</div>
-			</div>
+			<div className={`w-full ${open && "sm:ml-64"}`}>{children}</div>
 		</div>
 	);
 }
