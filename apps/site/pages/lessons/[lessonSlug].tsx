@@ -47,7 +47,7 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 			<Head>
 				<title>{title}</title>
 			</Head>
-			<SidebarLayout isSidebarOpen={true}>
+			<SidebarLayout>
 				<div className="flex flex-col gap-8">
 					<h1 className="text-5xl">{title}</h1>
 					{subtitle && <span className="text-2xl tracking-tight">{subtitle}</span>}
@@ -93,14 +93,15 @@ function YoutubeEmbed({ url }: { url: string }) {
 	const videoId = useMemo(() => url.match(/\?v=(.+)$/)?.at(1), [url]);
 
 	return (
-		<iframe
-			height="100%"
-			width="100%"
-			src={`https://www.youtube-nocookie.com//embed/${videoId}`}
-			title="YouTube video player"
-			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-			allowFullScreen
-		></iframe>
+		<div className="h-full bg-neutral-400"></div>
+		// <iframe
+		// 	height="100%"
+		// 	width="100%"
+		// 	src={`https://www.youtube-nocookie.com//embed/${videoId}`}
+		// 	title="YouTube video player"
+		// 	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+		// 	allowFullScreen
+		// ></iframe>
 	);
 }
 

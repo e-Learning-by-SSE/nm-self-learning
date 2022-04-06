@@ -124,11 +124,10 @@ export default function Questions({ nanomodule }: QuestionsProps) {
 			setCurrentQuestion(questions[0]);
 			setNextIndex(1);
 		}
-		console.log(nextIndex);
 	}, [index, nextIndex, questions]);
 
 	return (
-		<SidebarLayout isSidebarOpen={true}>
+		<SidebarLayout>
 			<div className="flex flex-col">
 				<Link href={`/lessons/${slug}`}>
 					<a className="flex items-center text-sm text-slate-400">

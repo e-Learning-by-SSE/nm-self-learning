@@ -1,13 +1,12 @@
 import { XIcon } from "@heroicons/react/solid";
 import { SidebarLayout } from "@self-learning/ui/layouts";
-import algoliasearch from "algoliasearch/lite";
 import Image from "next/image";
-import { connectHits, connectSearchBox, InstantSearch } from "react-instantsearch-dom";
+import { connectHits, connectSearchBox } from "react-instantsearch-dom";
 
-const searchClient = algoliasearch(
-	process.env.NEXT_PUBLIC_ALGOLIA_APPLICATION_ID ?? "",
-	process.env.NEXT_PUBLIC_ALGOLIA_PUBLIC_API_KEY ?? ""
-);
+// const searchClient = algoliasearch(
+// 	process.env.NEXT_PUBLIC_ALGOLIA_APPLICATION_ID ?? "",
+// 	process.env.NEXT_PUBLIC_ALGOLIA_PUBLIC_API_KEY ?? ""
+// );
 
 type NanomoduleHit = {
 	objectID: string;
@@ -27,7 +26,7 @@ type NanomoduleHit = {
 
 export default function Courses() {
 	return (
-		<SidebarLayout isSidebarOpen={true}>
+		<SidebarLayout>
 			<div className="flex flex-col">
 				<h1 className="mb-8 text-3xl">Empfohlene Kurse</h1>
 				<div className="flex flex-wrap gap-4">
