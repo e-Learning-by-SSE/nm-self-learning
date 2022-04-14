@@ -1,7 +1,7 @@
+import { PlusCircleIcon } from "@heroicons/react/outline";
 import { PlayIcon } from "@heroicons/react/solid";
 import { getCourseBySlug } from "@self-learning/cms-api";
-import { Card } from "@self-learning/ui/common";
-import { CenteredContainer, SidebarLayout } from "@self-learning/ui/layouts";
+import { CenteredContainer } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,42 +38,51 @@ export default function Course({ course }: CourseProps) {
 	const { url, alternativeText } = course.image?.data?.attributes || {};
 
 	return (
-		<div className="min-h-screen">
+		<div className="relative min-h-screen">
 			<div className="multi-gradient absolute -z-10 h-[728px] w-full"></div>
+			<div className="absolute top-[728px] -z-10 h-screen min-h-screen w-full bg-indigo-50"></div>
 			<div className="px-2 pt-8 sm:px-8">
 				<CenteredContainer>
-					<CreatedUpdatedDates
-						createdAt={new Date(course.createdAt).toLocaleDateString()}
-						updatedAt={new Date(course.updatedAt).toLocaleDateString()}
-					/>
-					<div className="flex flex-wrap-reverse gap-8 md:flex-nowrap">
-						<div className="flex flex-col">
-							<div className="flex flex-grow flex-col gap-8">
-								<div className="flex flex-col-reverse gap-8 md:flex-col">
-									<Authors authors={course.authors}></Authors>
-									<h1 className="text-4xl md:text-6xl">{course.title}</h1>
+					<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
+						<div className="flex flex-col justify-between gap-8">
+							<div className="flex flex-col-reverse gap-12 md:flex-col">
+								<Authors authors={course.authors}></Authors>
+								<div>
+									<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
+									{course.subtitle && (
+										<div className="text-lg tracking-tight">
+											{course.subtitle}
+										</div>
+									)}
 								</div>
-
-								{course.subtitle && (
-									<div className="text-lg tracking-tight">{course.subtitle}</div>
-								)}
 							</div>
+
+							<CreatedUpdatedDates
+								createdAt={new Date(course.createdAt).toLocaleDateString()}
+								updatedAt={new Date(course.updatedAt).toLocaleDateString()}
+							/>
 						</div>
 
 						<div className="flex w-full flex-col gap-4 rounded">
 							<div className="relative h-64 w-full">
 								<Image
-									className="rounded"
+									className="rounded-lg"
 									objectFit="cover"
 									layout="fill"
 									src={`http://localhost:1337${url}` ?? ""}
 									alt={alternativeText ?? ""}
 								></Image>
 							</div>
-							<button className="glass flex place-content-center gap-2 rounded-full py-2 font-semibold transition-colors hover:bg-opacity-90">
-								<span>Starten</span>
-								<PlayIcon className="h-6" />
-							</button>
+							<div className="grid gap-2">
+								<button className="flex w-full place-content-center gap-2 rounded-lg bg-indigo-500 py-2 font-semibold text-white transition-colors hover:bg-indigo-600">
+									<span>Starten</span>
+									<PlayIcon className="h-6" />
+								</button>
+								<button className="glass flex w-full place-content-center gap-2 rounded-lg py-2 font-semibold transition-colors hover:bg-opacity-90">
+									<span>Zum Lernplan hinzfügen</span>
+									<PlusCircleIcon className="h-6" />
+								</button>
+							</div>
 						</div>
 					</div>
 				</CenteredContainer>
@@ -159,13 +168,14 @@ function TableOfContent({ content }: { content: Course["content"] }) {
 					return (
 						<div
 							key={chapterOrLesson.nanomodule?.data?.attributes?.slug}
-							className="card border border-slate-200"
+							className="card flex items-center justify-between border border-slate-200"
 						>
 							<Link href={"/lessons/" + nanomodule?.slug}>
 								<a className="text-xl font-bold hover:underline">
 									{nanomodule?.title}
 								</a>
 							</Link>
+							<span className="text-xs">4:20</span>
 						</div>
 					);
 				}
