@@ -80,3 +80,33 @@ gql`
 		}
 	}
 `;
+
+export async function getCoursesWithSlugs(slugs: string[]) {
+	const result = await cmsGraphqlClient.coursesWithSlugs({ slugs });
+	return (
+		result.courses?.data.map(
+			data => data.attributes as Exclude<typeof data["attributes"], null | undefined>
+		) ?? []
+	);
+}
+
+gql`
+	query coursesWithSlugs($slugs: [String]!) {
+		courses(filters: { slug: { in: $slugs } }) {
+			data {
+				attributes {
+					slug
+					title
+					subtitle
+					image {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;

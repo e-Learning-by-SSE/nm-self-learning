@@ -1259,6 +1259,33 @@ export type CourseBySlugQuery = {
 	} | null;
 };
 
+export type CoursesWithSlugsQueryVariables = Exact<{
+	slugs: Array<InputMaybe<Scalars["String"]>> | InputMaybe<Scalars["String"]>;
+}>;
+
+export type CoursesWithSlugsQuery = {
+	__typename?: "Query";
+	courses?: {
+		__typename?: "CourseEntityResponseCollection";
+		data: Array<{
+			__typename?: "CourseEntity";
+			attributes?: {
+				__typename?: "Course";
+				slug: string;
+				title: string;
+				subtitle?: string | null;
+				image?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: { __typename?: "UploadFile"; url: string } | null;
+					} | null;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export type GetNanomoduleQuestionsBySlugQueryVariables = Exact<{
 	slug: Scalars["String"];
 }>;
@@ -1500,6 +1527,26 @@ export const CourseBySlugDocument = gql`
 		}
 	}
 `;
+export const CoursesWithSlugsDocument = gql`
+	query coursesWithSlugs($slugs: [String]!) {
+		courses(filters: { slug: { in: $slugs } }) {
+			data {
+				attributes {
+					slug
+					title
+					subtitle
+					image {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
 export const GetNanomoduleQuestionsBySlugDocument = gql`
 	query getNanomoduleQuestionsBySlug($slug: String!) {
 		nanomodules(filters: { slug: { eq: $slug } }) {
@@ -1634,6 +1681,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"courseBySlug",
+				"query"
+			);
+		},
+		coursesWithSlugs(
+			variables: CoursesWithSlugsQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<CoursesWithSlugsQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<CoursesWithSlugsQuery>(CoursesWithSlugsDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"coursesWithSlugs",
 				"query"
 			);
 		},

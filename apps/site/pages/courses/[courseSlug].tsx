@@ -1,10 +1,13 @@
 import { PlusCircleIcon } from "@heroicons/react/outline";
 import { PlayIcon } from "@heroicons/react/solid";
+import { useApi } from "@self-learning/api";
 import { getCourseBySlug } from "@self-learning/cms-api";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo } from "react";
+import { CoursesOfUser } from "../api/users/[username]/courses";
 
 type Course = Exclude<Awaited<ReturnType<typeof getCourseBySlug>>, null>;
 
@@ -35,6 +38,13 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 export default function Course({ course }: CourseProps) {
+	const { data } = useApi<CoursesOfUser>("/users/potter/courses");
+
+	const isEnrolled = useMemo(() => {
+		if (!data) return false;
+		return !!data.find(d => d.courseId === course.slug);
+	}, [data, course]);
+
 	const { url, alternativeText } = course.image?.data?.attributes || {};
 
 	return (
@@ -134,7 +144,7 @@ function Author({ name, slug, imgUrl }: { name: string; slug: string; imgUrl: st
 function TableOfContent({ content }: { content: Course["content"] }) {
 	return (
 		<div className="glass card flex flex-col gap-4">
-			<h2 className="mb-4 text-3xl">Content</h2>
+			<h2 className="mb-4 text-3xl">Inhalt</h2>
 
 			{content?.map(chapterOrLesson => {
 				if (chapterOrLesson?.__typename === "ComponentNanomoduleChapter") {

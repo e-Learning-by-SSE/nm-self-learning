@@ -11,6 +11,27 @@ datasource db {
 }
 
 model User {
-	id String @id
+	username String @id @map("id")
 	displayName String
+	courses Enrollments[]
+}
+
+model Course {
+	id String @id
+	slug String @unique
+	students Enrollments[]
+}
+
+model Enrollments {
+	status String
+	createdAt DateTime @default(now())
+	completedAt DateTime?
+
+	courseId String
+	course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+	username String
+	student User @relation(fields: [username], references: [username], onDelete: Cascade)
+
+	@@id([courseId, username])
 }

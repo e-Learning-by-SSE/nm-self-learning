@@ -46,7 +46,7 @@ h3 {
 }
 
 .glass {
-	@apply border border-white bg-white bg-opacity-50 shadow-lg backdrop-blur;
+	@apply border border-white bg-white bg-opacity-75 shadow-lg backdrop-blur;
 }
 
 .glass-hover {
