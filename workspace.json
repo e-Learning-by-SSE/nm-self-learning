@@ -8,6 +8,7 @@
 		"docs-storybook": "docs/storybook",
 		"site": "apps/site",
 		"site-e2e": "apps/site-e2e",
+		"ui-common": "libs/ui/common",
 		"ui-layouts": "libs/ui/layouts",
 		"util-markdown": "libs/util/markdown"
 	}
