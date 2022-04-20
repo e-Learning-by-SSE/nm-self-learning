@@ -1,1 +1,1 @@
-export * from "./lib/author-chip";
+export * from "./lib/author/author-chip";
