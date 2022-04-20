@@ -30,7 +30,7 @@ export function AuthorChip({ name, slug, imgUrl }: AuthorProps) {
 
 export function AuthorsList({ authors }: { authors: AuthorProps[] }) {
 	return (
-		<div className="flex w-full flex-wrap gap-2 md:gap-8">
+		<div className="flex flex-wrap gap-2 md:gap-8">
 			{authors?.map(author => (
 				<AuthorChip
 					key={author.slug}
