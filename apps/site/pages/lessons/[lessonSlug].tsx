@@ -1,11 +1,10 @@
-import { ChevronDownIcon, ChevronUpIcon, LockClosedIcon, PlayIcon } from "@heroicons/react/solid";
+import { PlayIcon } from "@heroicons/react/solid";
 import { cmsTypes, getNanomoduleBySlug } from "@self-learning/cms-api";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
+import { Playlist } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 
 type Nanomodule = Exclude<Awaited<ReturnType<typeof getNanomoduleBySlug>>, null | undefined>;
 
@@ -36,6 +35,51 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
+type Lesson = { title: string; slug: string; imgUrl?: string };
+
+const fakeLessons: Lesson[] = [
+	{
+		slug: "a-beginners-guide-to-react-introduction",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "2",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "3",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "4",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "5",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "6",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "7",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "8",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "9",
+		title: "A Beginners Guide to React Introduction"
+	},
+	{
+		slug: "10",
+		title: "A Beginners Guide to React Introduction"
+	}
+];
+
 export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 	const { title, subtitle, description, slug } = nanomodule;
 	const imgUrl = `http://localhost:1337${nanomodule.image?.data?.attributes?.url}`;
@@ -57,8 +101,8 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 				<title>{title}</title>
 			</Head>
 
-			<div className="flex min-h-screen flex-col bg-indigo-50 md:py-16">
-				<div className="flex w-full flex-col gap-4 2xl:px-64">
+			<div className="flex min-h-screen flex-col bg-neutral-200 md:py-16">
+				<div className="mx-auto flex w-full flex-col gap-4 lg:container">
 					<VideoPlayerWithPlaylist videoUrl={url as string} />
 					<LessonHeader lesson={nanomodule} authors={authors} />
 				</div>
@@ -69,139 +113,19 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 
 function VideoPlayerWithPlaylist({ videoUrl }: { videoUrl: string }) {
 	return (
-		<div className="grid w-full xl:grid-cols-4">
+		<div className="grid w-full gap-8 xl:grid-cols-4">
 			<div className="h-[512px] lg:h-[728px] xl:col-span-3">
 				<YoutubeEmbed url={videoUrl}></YoutubeEmbed>
 			</div>
-			<div className="max-h-[728px] w-full overflow-hidden xl:col-span-1">
-				<Playlist />
+			<div className="max-h-[728px] overflow-hidden xl:col-span-1">
+				<Playlist
+					lessons={fakeLessons}
+					currentLesson={fakeLessons[0]}
+					course={{ title: "Dein Lernpfad" }}
+					chapter={{ title: "Kapitel: Grundlagen (4/20)" }}
+				/>
 			</div>
 		</div>
-	);
-}
-
-type Lesson = { title: string; slug: string; imgUrl: string };
-
-function Playlist() {
-	const [collapsed, setCollapsed] = useState(false);
-
-	return (
-		<div
-			className={`w-full border border-white bg-white bg-opacity-75 backdrop-blur ${
-				collapsed ? "h-fit" : "h-full"
-			}`}
-		>
-			<div className="flex items-center justify-between gap-4 py-3 px-3">
-				<div className="flex flex-col gap-1">
-					<span className="text-base font-semibold">Dein Lernpfad</span>
-					<span className="text-sm">Kapitel: Grundlagen (4/20)</span>
-				</div>
-
-				<button
-					className="rounded-full p-2 hover:bg-neutral-200"
-					title="Show/Hide Playlist"
-					onClick={() => setCollapsed(previous => !previous)}
-				>
-					{collapsed ? (
-						<ChevronDownIcon className="h-6" />
-					) : (
-						<ChevronUpIcon className="h-6" />
-					)}
-				</button>
-			</div>
-			{!collapsed && (
-				<div className="playlist-scroll overflow-auto">
-					<div className="flex flex-grow flex-col divide-y divide-white">
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-							isActive={true}
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-							isLocked={true}
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-							isLocked={true}
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-							imgUrl="http://localhost:1337/uploads/a_beginners_guide_to_react_39990bb89a.webp"
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-						/>
-						<Lesson
-							slug="a-beginners-guide-to-react-introduction"
-							title="A Beginners Guide to React Introduction"
-						/>
-					</div>
-				</div>
-			)}
-		</div>
-	);
-}
-
-function Lesson({
-	title,
-	slug,
-	imgUrl,
-	isActive,
-	isLocked
-}: {
-	title: string;
-	slug: string;
-	imgUrl?: string;
-	isActive?: boolean;
-	isLocked?: boolean;
-}) {
-	return (
-		<Link href={`lessons/${slug}`}>
-			<a
-				className={`flex h-20 w-full ${
-					isActive ? "bg-indigo-500 text-white" : "bg-indigo-100 hover:bg-indigo-200"
-				}`}
-			>
-				<div className="relative aspect-square h-full">
-					{imgUrl ? (
-						<Image layout="fill" className="bg-white" src={imgUrl} alt="" />
-					) : (
-						<div className="h-full w-full bg-neutral-500"></div>
-					)}
-				</div>
-				<div className="flex w-full items-center gap-3 overflow-hidden px-3">
-					{isActive && <PlayIcon className="h-6 shrink-0" />}
-					{isLocked && <LockClosedIcon className="h-6 shrink-0" />}
-					<div className="max-w-md truncate text-sm font-semibold">
-						Lorem ipsum dolor sit amet consectetur adipisicing elit. Sint fugiat aperiam
-						sequi error veritatis excepturi quibusdam illum nisi eius praesentium
-						perferendis quidem repellendus dicta, accusantium pariatur modi molestias.
-						Similique, dolores!
-					</div>
-				</div>
-			</a>
-		</Link>
 	);
 }
 
