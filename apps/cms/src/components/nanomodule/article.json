@@ -1,15 +1,15 @@
 {
-  "collectionName": "components_nanomodule_component_articles",
-  "info": {
-    "displayName": "article",
-    "icon": "text-height",
-    "description": ""
-  },
-  "options": {},
-  "attributes": {
-    "richText": {
-      "type": "richtext",
-      "required": true
-    }
-  }
+	"collectionName": "components_nanomodule_component_articles",
+	"info": {
+		"displayName": "article",
+		"icon": "text-height",
+		"description": ""
+	},
+	"options": {},
+	"attributes": {
+		"richText": {
+			"type": "richtext",
+			"required": true
+		}
+	}
 }

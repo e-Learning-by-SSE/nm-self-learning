@@ -4,23 +4,23 @@
  *
  */
 
-import { useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
-import pluginId from '../../pluginId';
+import { useEffect, useRef } from "react";
+import PropTypes from "prop-types";
+import pluginId from "../../pluginId";
 
 const Initializer = ({ setPlugin }) => {
-  const ref = useRef();
-  ref.current = setPlugin;
+	const ref = useRef();
+	ref.current = setPlugin;
 
-  useEffect(() => {
-    ref.current(pluginId);
-  }, []);
+	useEffect(() => {
+		ref.current(pluginId);
+	}, []);
 
-  return null;
+	return null;
 };
 
 Initializer.propTypes = {
-  setPlugin: PropTypes.func.isRequired,
+	setPlugin: PropTypes.func.isRequired
 };
 
 export default Initializer;

@@ -1,46 +1,44 @@
 {
-  "kind": "collectionType",
-  "collectionName": "authors",
-  "info": {
-    "singularName": "author",
-    "pluralName": "authors",
-    "displayName": "Author",
-    "description": ""
-  },
-  "options": {
-    "draftAndPublish": false
-  },
-  "pluginOptions": {},
-  "attributes": {
-    "slug": {
-      "type": "uid",
-      "required": true,
-      "targetField": "name"
-    },
-    "name": {
-      "type": "string",
-      "required": true,
-      "minLength": 3
-    },
-    "image": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
-    "nanomodules": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::nanomodule.nanomodule",
-      "mappedBy": "authors"
-    },
-    "courses": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::course.course",
-      "mappedBy": "authors"
-    }
-  }
+	"kind": "collectionType",
+	"collectionName": "authors",
+	"info": {
+		"singularName": "author",
+		"pluralName": "authors",
+		"displayName": "Author",
+		"description": ""
+	},
+	"options": {
+		"draftAndPublish": false
+	},
+	"pluginOptions": {},
+	"attributes": {
+		"slug": {
+			"type": "uid",
+			"required": true,
+			"targetField": "name"
+		},
+		"name": {
+			"type": "string",
+			"required": true,
+			"minLength": 3
+		},
+		"image": {
+			"type": "media",
+			"multiple": false,
+			"required": false,
+			"allowedTypes": ["images"]
+		},
+		"nanomodules": {
+			"type": "relation",
+			"relation": "manyToMany",
+			"target": "api::nanomodule.nanomodule",
+			"mappedBy": "authors"
+		},
+		"courses": {
+			"type": "relation",
+			"relation": "manyToMany",
+			"target": "api::course.course",
+			"mappedBy": "authors"
+		}
+	}
 }

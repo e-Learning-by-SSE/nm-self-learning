@@ -6,23 +6,23 @@ import Link from "next/link";
 export default function DesignSystem() {
 	return (
 		<div className="min-h-screen w-full px-32 py-16">
-			<div className="flex gap-8 mb-16 items-center">
+			<div className="mb-16 flex items-center gap-8">
 				<h1 className="text-4xl">Design System</h1>
 				<Link href="/">
 					<a className="text-sky-500">Go Back</a>
 				</Link>
 			</div>
 
-			<div className="flex gap-8 flex-wrap">
-				<div className="flex flex-col gap-8 p-8 border border-slate-300 w-fit h-fit rounded">
-					<span className="font-bold text-xl mb-4">Headings</span>
+			<div className="flex flex-wrap gap-8">
+				<div className="flex h-fit w-fit flex-col gap-8 rounded border border-slate-300 p-8">
+					<span className="mb-4 text-xl font-bold">Headings</span>
 					<h1 className="text-6xl">Heading 1</h1>
 					<h2 className="text-4xl">Heading 2</h2>
 					<h3 className="text-2xl">Heading 3</h3>
 				</div>
 
-				<div className="grid gap-8 p-8 border max-w-prose border-slate-300 w-fit h-fit rounded">
-					<span className="font-bold text-xl mb-4">Text</span>
+				<div className="grid h-fit w-fit max-w-prose gap-8 rounded border border-slate-300 p-8">
+					<span className="mb-4 text-xl font-bold">Text</span>
 					<p className="text-xs">
 						<span className="font-bold">text-xs:</span> Lorem, ipsum dolor sit amet
 						consectetur adipisicing elit. Natus, ipsa excepturi. Minima sunt consequatur
@@ -67,21 +67,21 @@ export default function DesignSystem() {
 					</p>
 				</div>
 
-				<div className="flex flex-col gap-8 p-8 border border-slate-300 w-fit h-fit rounded">
-					<span className="font-bold text-xl mb-4">Buttons</span>
-					<button className="px-8 py-2 rounded bg-slate-800 text-white font-semibold">
+				<div className="flex h-fit w-fit flex-col gap-8 rounded border border-slate-300 p-8">
+					<span className="mb-4 text-xl font-bold">Buttons</span>
+					<button className="rounded bg-slate-800 px-8 py-2 font-semibold text-white">
 						Primary
 					</button>
-					<button className="px-8 py-2 rounded bg-emerald-500 text-white font-semibold">
+					<button className="rounded bg-emerald-500 px-8 py-2 font-semibold text-white">
 						Secondary
 					</button>
-					<button className="px-8 py-2 rounded border border-slate-800 font-semibold">
+					<button className="rounded border border-slate-800 px-8 py-2 font-semibold">
 						Outline
 					</button>
 				</div>
 
-				<div className="flex flex-col gap-8 p-8 border border-slate-300 w-fit h-fit rounded">
-					<span className="font-bold text-xl mb-4">Gradients</span>
+				<div className="flex h-fit w-fit flex-col gap-8 rounded border border-slate-300 p-8">
+					<span className="mb-4 text-xl font-bold">Gradients</span>
 					<div className="h-64 w-64 bg-gradient-to-br from-slate-200 to-emerald-50"></div>
 				</div>
 			</div>

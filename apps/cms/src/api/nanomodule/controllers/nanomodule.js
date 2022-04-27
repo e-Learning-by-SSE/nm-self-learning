@@ -1,9 +1,9 @@
-'use strict';
+"use strict";
 
 /**
  *  nanomodule controller
  */
 
-const { createCoreController } = require('@strapi/strapi').factories;
+const { createCoreController } = require("@strapi/strapi").factories;
 
-module.exports = createCoreController('api::nanomodule.nanomodule');
+module.exports = createCoreController("api::nanomodule.nanomodule");
