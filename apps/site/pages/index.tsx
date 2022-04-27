@@ -44,7 +44,7 @@ export function Index({ users, mdDocument, mdContent }: IndexPageProps) {
 			</Link>
 			<ul>
 				{users.map(user => (
-					<li key={user.id}>{user.displayName}</li>
+					<li key={user.username}>{user.displayName}</li>
 				))}
 			</ul>
 			<div className="prose prose-slate">

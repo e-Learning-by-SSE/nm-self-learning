@@ -1,6 +1,6 @@
 module.exports = {
-	displayName: "data-access-cms-api",
-	preset: "../../../jest.preset.js",
+	displayName: "util-markdown",
+
 	globals: {
 		"ts-jest": {
 			tsconfig: "<rootDir>/tsconfig.spec.json"
@@ -10,5 +10,6 @@ module.exports = {
 		"^.+\\.[tj]sx?$": "ts-jest"
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-	coverageDirectory: "../../../coverage/libs/data-access/cms-api"
+	coverageDirectory: "../../../coverage/libs/util/markdown",
+	preset: "../../../jest.preset.ts"
 };

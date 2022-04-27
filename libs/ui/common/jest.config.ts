@@ -1,9 +1,10 @@
 module.exports = {
-	displayName: "ui-layouts",
-	preset: "../../../jest.preset.js",
+	displayName: "ui-common",
+
 	transform: {
 		"^.+\\.[tj]sx?$": "babel-jest"
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-	coverageDirectory: "../../../coverage/libs/ui/layouts"
+	coverageDirectory: "../../../coverage/libs/ui/common",
+	preset: "../../../jest.preset.ts"
 };

@@ -14,5 +14,5 @@ export async function fetchFromApi({ queryKey }: { queryKey: unknown }) {
 }
 
 export function useApi<ReturnType>(url: string) {
-	return useQuery<ReturnType>(url, fetchFromApi);
+	return useQuery<ReturnType>([url], fetchFromApi);
 }

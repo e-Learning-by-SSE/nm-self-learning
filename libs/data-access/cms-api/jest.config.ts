@@ -1,6 +1,6 @@
 module.exports = {
-	displayName: "ui-lesson",
-	preset: "../../../jest.preset.js",
+	displayName: "data-access-cms-api",
+
 	globals: {
 		"ts-jest": {
 			tsconfig: "<rootDir>/tsconfig.spec.json"
@@ -10,5 +10,6 @@ module.exports = {
 		"^.+\\.[tj]sx?$": "ts-jest"
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-	coverageDirectory: "../../../coverage/libs/ui/lesson"
+	coverageDirectory: "../../../coverage/libs/data-access/cms-api",
+	preset: "../../../jest.preset.ts"
 };

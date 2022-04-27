@@ -48,7 +48,7 @@ export function Playlist({
 			</div>
 			{!collapsed && (
 				<div className="playlist-scroll overflow-auto">
-					<div className="flex flex-col divide-y divide-white">
+					<div className="flex flex-col divide-y divide-neutral-200">
 						{lessons.map(lesson => (
 							<Lesson
 								key={lesson.slug}
@@ -80,7 +80,7 @@ function Lesson({
 		<Link href={`/lessons/${lesson.slug}`}>
 			<a
 				className={`flex h-20 w-full ${
-					isActive ? "bg-indigo-500 text-white" : "bg-indigo-100 hover:bg-indigo-200"
+					isActive ? "bg-indigo-500 text-white" : "bg-transparent hover:bg-indigo-100"
 				}`}
 			>
 				<div className="relative aspect-square h-full">

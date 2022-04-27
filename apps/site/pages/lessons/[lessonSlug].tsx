@@ -154,18 +154,24 @@ function VideoPlayer({ url }: { url: string }) {
 
 function LessonHeader({ lesson, authors }: { lesson: Nanomodule; authors: AuthorProps[] }) {
 	return (
-		<div className="flex flex-col">
+		<div className="flex flex-col px-2 sm:px-0">
 			<div className="multi-gradient card flex flex-wrap justify-between gap-8">
-				<AuthorsList authors={authors} />
 				<button className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
 					<span>Zur Lernkontrolle</span>
 					<PlayIcon className="h-6 shrink-0" />
 				</button>
 			</div>
 
-			<div className="flex flex-grow flex-col">
-				<h1 className="mb-8 mt-8 text-4xl xl:text-6xl">{lesson.title}</h1>
-				{lesson.subtitle && <div className="text-lg tracking-tight">{lesson.subtitle}</div>}
+			<div className="mx-auto mt-8 flex flex-grow flex-col items-center gap-8">
+				<h1 className="text-4xl xl:text-6xl">{lesson.title}</h1>
+				{lesson.subtitle && (
+					<div className="max-w-3xl text-lg tracking-tight">{lesson.subtitle}</div>
+				)}
+				<AuthorsList authors={authors} />
+
+				<div className="glass card center max-w-3xl">
+					{lesson.description && <p>{lesson.description}</p>}
+				</div>
 			</div>
 		</div>
 	);

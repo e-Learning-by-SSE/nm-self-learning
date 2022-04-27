@@ -1,6 +1,6 @@
 module.exports = {
-	displayName: "util-markdown",
-	preset: "../../../jest.preset.js",
+	displayName: "ui-lesson",
+
 	globals: {
 		"ts-jest": {
 			tsconfig: "<rootDir>/tsconfig.spec.json"
@@ -10,5 +10,6 @@ module.exports = {
 		"^.+\\.[tj]sx?$": "ts-jest"
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-	coverageDirectory: "../../../coverage/libs/util/markdown"
+	coverageDirectory: "../../../coverage/libs/ui/lesson",
+	preset: "../../../jest.preset.ts"
 };
