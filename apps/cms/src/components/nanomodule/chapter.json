@@ -1,26 +1,24 @@
 {
-	"collectionName": "components_nanomodule_chapters",
-	"info": {
-		"displayName": "Chapter",
-		"icon": "list",
-		"description": ""
-	},
-	"options": {},
-	"attributes": {
-		"title": {
-			"type": "string",
-			"required": true,
-			"minLength": 3
-		},
-		"courses": {
-			"type": "relation",
-			"relation": "oneToMany",
-			"target": "api::course.course"
-		},
-		"lessons": {
-			"type": "relation",
-			"relation": "oneToMany",
-			"target": "api::nanomodule.nanomodule"
-		}
-	}
+  "collectionName": "components_nanomodule_chapters",
+  "info": {
+    "displayName": "Chapter",
+    "icon": "list",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 3
+    },
+    "lessons": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::nanomodule.nanomodule"
+    },
+    "description": {
+      "type": "text"
+    }
+  }
 }

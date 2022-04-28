@@ -4,6 +4,7 @@ import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { Playlist } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import React, { useMemo } from "react";
 
 type Nanomodule = Exclude<Awaited<ReturnType<typeof getNanomoduleBySlug>>, null | undefined>;
@@ -156,16 +157,20 @@ function LessonHeader({ lesson, authors }: { lesson: Nanomodule; authors: Author
 	return (
 		<div className="flex flex-col px-2 sm:px-0">
 			<div className="multi-gradient card flex flex-wrap justify-between gap-8">
-				<button className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
-					<span>Zur Lernkontrolle</span>
-					<PlayIcon className="h-6 shrink-0" />
-				</button>
+				<Link href={`/lessons/${lesson.slug}/questions`}>
+					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
+						<span>Zur Lernkontrolle</span>
+						<PlayIcon className="h-6 shrink-0" />
+					</a>
+				</Link>
 			</div>
 
 			<div className="mx-auto mt-8 flex flex-grow flex-col items-center gap-8">
 				<h1 className="text-4xl xl:text-6xl">{lesson.title}</h1>
 				{lesson.subtitle && (
-					<div className="max-w-3xl text-lg tracking-tight">{lesson.subtitle}</div>
+					<div className="max-w-3xl text-xl tracking-tight text-indigo-700">
+						{lesson.subtitle}
+					</div>
 				)}
 				<AuthorsList authors={authors} />
 

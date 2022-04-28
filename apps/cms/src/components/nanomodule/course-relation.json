@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_nanomodule_course_relations",
+  "info": {
+    "displayName": "CourseRelation",
+    "icon": "archway"
+  },
+  "options": {},
+  "attributes": {
+    "course": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course.course"
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 3
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

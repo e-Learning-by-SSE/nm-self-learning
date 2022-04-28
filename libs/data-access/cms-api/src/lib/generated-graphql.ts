@@ -121,23 +121,24 @@ export type ComponentNanomoduleArticle = {
 
 export type ComponentNanomoduleChapter = {
 	__typename?: "ComponentNanomoduleChapter";
-	courses?: Maybe<CourseRelationResponseCollection>;
+	description?: Maybe<Scalars["String"]>;
 	id: Scalars["ID"];
 	lessons?: Maybe<NanomoduleRelationResponseCollection>;
 	title: Scalars["String"];
-};
-
-export type ComponentNanomoduleChapterCoursesArgs = {
-	filters?: InputMaybe<CourseFiltersInput>;
-	pagination?: InputMaybe<PaginationArg>;
-	publicationState?: InputMaybe<PublicationState>;
-	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
 
 export type ComponentNanomoduleChapterLessonsArgs = {
 	filters?: InputMaybe<NanomoduleFiltersInput>;
 	pagination?: InputMaybe<PaginationArg>;
 	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type ComponentNanomoduleCourseRelation = {
+	__typename?: "ComponentNanomoduleCourseRelation";
+	course?: Maybe<CourseEntityResponse>;
+	description?: Maybe<Scalars["String"]>;
+	id: Scalars["ID"];
+	title: Scalars["String"];
 };
 
 export type ComponentNanomoduleNanomoduleRelation = {
@@ -180,6 +181,7 @@ export type CourseAuthorsArgs = {
 
 export type CourseContentDynamicZone =
 	| ComponentNanomoduleChapter
+	| ComponentNanomoduleCourseRelation
 	| ComponentNanomoduleNanomoduleRelation
 	| Error;
 
@@ -293,6 +295,7 @@ export type GenericMorph =
 	| Author
 	| ComponentNanomoduleArticle
 	| ComponentNanomoduleChapter
+	| ComponentNanomoduleCourseRelation
 	| ComponentNanomoduleNanomoduleRelation
 	| ComponentNanomoduleVideo
 	| ComponentNanomoduleYoutubeVideo
@@ -1214,6 +1217,7 @@ export type CourseBySlugQuery = {
 					| {
 							__typename: "ComponentNanomoduleChapter";
 							title: string;
+							description?: string | null;
 							lessons?: {
 								__typename?: "NanomoduleRelationResponseCollection";
 								data: Array<{
@@ -1225,16 +1229,31 @@ export type CourseBySlugQuery = {
 									} | null;
 								}>;
 							} | null;
-							courses?: {
-								__typename?: "CourseRelationResponseCollection";
-								data: Array<{
+					  }
+					| {
+							__typename: "ComponentNanomoduleCourseRelation";
+							title: string;
+							description?: string | null;
+							course?: {
+								__typename?: "CourseEntityResponse";
+								data?: {
 									__typename?: "CourseEntity";
 									attributes?: {
 										__typename?: "Course";
 										title: string;
-										slug: string;
+										subtitle?: string | null;
+										image?: {
+											__typename?: "UploadFileEntityResponse";
+											data?: {
+												__typename?: "UploadFileEntity";
+												attributes?: {
+													__typename?: "UploadFile";
+													url: string;
+												} | null;
+											} | null;
+										} | null;
 									} | null;
-								}>;
+								} | null;
 							} | null;
 					  }
 					| {
@@ -1494,6 +1513,7 @@ export const CourseBySlugDocument = gql`
 						... on ComponentNanomoduleChapter {
 							__typename
 							title
+							description
 							lessons {
 								data {
 									attributes {
@@ -1502,16 +1522,28 @@ export const CourseBySlugDocument = gql`
 									}
 								}
 							}
-							courses {
+						}
+						... on ComponentNanomoduleCourseRelation {
+							title
+							description
+							course {
 								data {
 									attributes {
 										title
-										slug
+										subtitle
+										image {
+											data {
+												attributes {
+													url
+												}
+											}
+										}
 									}
 								}
 							}
 						}
 						... on ComponentNanomoduleNanomoduleRelation {
+							__typename
 							nanomodule {
 								data {
 									attributes {

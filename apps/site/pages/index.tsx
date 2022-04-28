@@ -41,7 +41,7 @@ export function Index({ users, mdDocument, mdContent }: IndexPageProps) {
 			</Link>
 			<Link href="/courses/the-example-course">
 				<a className="underline">Course #1</a>
-			</Link>
+			</Link>{" "}
 			<ul>
 				{users.map(user => (
 					<li key={user.username}>{user.displayName}</li>

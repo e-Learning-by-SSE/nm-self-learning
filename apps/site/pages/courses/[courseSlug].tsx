@@ -51,10 +51,10 @@ export default function Course({ course }: CourseProps) {
 			})) as AuthorProps[]
 	);
 
-	const isEnrolled = useMemo(() => {
-		if (!data) return false;
-		return !!data.find(d => d.courseId === course.slug);
-	}, [data, course]);
+	// const isEnrolled = useMemo(() => {
+	// 	if (!data) return false;
+	// 	return !!data.find(d => d.courseId === course.slug);
+	// }, [data, course]);
 
 	const { url, alternativeText } = course.image?.data?.attributes || {};
 
@@ -133,7 +133,14 @@ function TableOfContent({ content }: { content: Course["content"] }) {
 	return (
 		<div className="glass card flex flex-col gap-4">
 			<h2 className="mb-4 text-3xl">Inhalt</h2>
+			<TableOfContentInner content={content} />
+		</div>
+	);
+}
 
+function TableOfContentInner({ content }: { content: Course["content"] }) {
+	return (
+		<>
 			{content?.map(chapterOrLesson => {
 				if (chapterOrLesson?.__typename === "ComponentNanomoduleChapter") {
 					return (
@@ -142,21 +149,59 @@ function TableOfContent({ content }: { content: Course["content"] }) {
 							className="card flex flex-col gap-4 border border-slate-200"
 						>
 							<span className="text-xl font-bold">{chapterOrLesson.title}</span>
-							<ul className="flex flex-col">
-								{chapterOrLesson.lessons?.data.map(lesson => (
-									<li
-										key={lesson.attributes?.slug}
-										className="flex items-center justify-between rounded border border-slate-200 p-2"
-									>
-										<Link href={"/lessons/" + lesson.attributes?.slug}>
-											<a className="hover:underline">
-												{lesson.attributes?.title}
-											</a>
-										</Link>
-										<div className="text-xs">4:20</div>
-									</li>
-								))}
-							</ul>
+							{
+								<ul className="flex flex-col">
+									{chapterOrLesson.lessons?.data.map(lesson => (
+										<li
+											key={lesson.attributes?.slug}
+											className="flex items-center justify-between rounded border border-slate-200 p-2"
+										>
+											<Link href={"/lessons/" + lesson.attributes?.slug}>
+												<a className="hover:underline">
+													{lesson.attributes?.title}
+												</a>
+											</Link>
+											<div className="text-xs">4:20</div>
+										</li>
+									))}
+								</ul>
+							}
+						</div>
+					);
+				}
+
+				if (chapterOrLesson?.__typename === "ComponentNanomoduleCourseRelation") {
+					const { title, description, course } = chapterOrLesson;
+					const imgUrl = course?.data?.attributes?.image?.data?.attributes?.url ?? "";
+
+					return (
+						<div
+							key={title}
+							className="card flex flex-col gap-4 border border-slate-200"
+						>
+							<span className="text-xl font-bold">{title}</span>
+							{description && description.length > 0 && (
+								<div className="">{description}</div>
+							)}
+							<div className="flex rounded-lg bg-slate-100">
+								<div className="relative w-[256px]">
+									<Image
+										src={`http://localhost:1337${imgUrl}`}
+										alt=""
+										layout="fill"
+										objectFit="cover"
+										className="rounded-l-lg"
+									></Image>
+								</div>
+								<div className="flex flex-col gap-4 p-4">
+									<span className="text-lg font-bold">
+										{course?.data?.attributes?.title}
+									</span>
+									<span className="text-sm">
+										{course?.data?.attributes?.subtitle}
+									</span>
+								</div>
+							</div>
 						</div>
 					);
 				}
@@ -178,7 +223,7 @@ function TableOfContent({ content }: { content: Course["content"] }) {
 					);
 				}
 			})}
-		</div>
+		</>
 	);
 }
 

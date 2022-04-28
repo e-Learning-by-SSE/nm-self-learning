@@ -47,6 +47,7 @@ gql`
 						... on ComponentNanomoduleChapter {
 							__typename
 							title
+							description
 							lessons {
 								data {
 									attributes {
@@ -55,16 +56,28 @@ gql`
 									}
 								}
 							}
-							courses {
+						}
+						... on ComponentNanomoduleCourseRelation {
+							title
+							description
+							course {
 								data {
 									attributes {
 										title
-										slug
+										subtitle
+										image {
+											data {
+												attributes {
+													url
+												}
+											}
+										}
 									}
 								}
 							}
 						}
 						... on ComponentNanomoduleNanomoduleRelation {
+							__typename
 							nanomodule {
 								data {
 									attributes {
