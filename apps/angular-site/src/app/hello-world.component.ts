@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, NgModule } from "@angular/core";
 @Component({
 	selector: "self-learning-hello-world",
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	template: "Hello Angular"
+	template: "Hello World"
 })
 export class HelloWorldComponent {}
 
