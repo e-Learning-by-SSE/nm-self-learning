@@ -30,18 +30,18 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 				>Counter with UI Component</a
 			>
 			<a
-				#customizableCounter="routerLinkActive"
-				routerLinkActive
-				[class]="customizableCounter.isActive ? 'px-8 underline' : 'px-8'"
-				[routerLink]="['customizable-counter']"
-				>Customizable Counter</a
-			>
-			<a
 				#sharedCounter="routerLinkActive"
 				routerLinkActive
 				[class]="sharedCounter.isActive ? 'px-8 underline' : 'px-8'"
 				[routerLink]="['shared-counter']"
 				>Shared Counter</a
+			>
+			<a
+				#customizableCounter="routerLinkActive"
+				routerLinkActive
+				[class]="customizableCounter.isActive ? 'px-8 underline' : 'px-8'"
+				[routerLink]="['customizable-counter']"
+				>Customizable Counter</a
 			>
 		</div>
 		<div>

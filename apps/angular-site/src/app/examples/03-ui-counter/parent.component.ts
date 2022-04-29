@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, ChangeDetectionStrategy, NgModule } from "@angular/core";
-import { CounterUiComponentModule } from "./counter-ui.componen";
+import { CounterUiComponentModule } from "./counter-ui.component";
 
 @Component({
 	selector: "self-learning-counter-parent",

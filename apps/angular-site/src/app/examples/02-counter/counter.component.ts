@@ -1,14 +1,6 @@
 import { CommonModule } from "@angular/common";
-import {
-	ChangeDetectionStrategy,
-	Component,
-	EventEmitter,
-	Input,
-	NgModule,
-	Output
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, NgModule } from "@angular/core";
 
-//#region Simple Counter
 @Component({
 	selector: "self-learning-counter",
 	changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,7 +10,7 @@ import {
 			<button class="btn-secondary" (click)="decrease()">Decrease</button>
 			<button class="btn-primary" (click)="increase()">Increase</button>
 		</div>
-	</div> `
+	</div>`
 })
 export class CounterComponent {
 	count = 0;
@@ -36,4 +28,3 @@ export class CounterComponent {
 	exports: [CounterComponent]
 })
 export class CounterComponentModule {}
-//#endregion

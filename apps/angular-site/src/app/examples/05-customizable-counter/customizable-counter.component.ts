@@ -13,14 +13,14 @@ import { ChangeDetectionStrategy, Component, Input, NgModule, TemplateRef } from
 		</div>
 
 		<div class="grid gap-4">
-			<span class="text-green-700">The decrease templates will be displayed here:</span>
+			<span class="text-green-700">The decrease template will be displayed here:</span>
 			<div class="w-fit">
 				<ng-container *ngTemplateOutlet="decreaseTemplate"></ng-container>
 			</div>
 		</div>
 
 		<div class="grid gap-4">
-			<span class="text-green-700">The increase templates will be displayed here:</span>
+			<span class="text-green-700">The increase template will be displayed here:</span>
 			<div class="w-fit">
 				<ng-container *ngTemplateOutlet="increaseTemplate"></ng-container>
 			</div>
