@@ -77,6 +77,6 @@ h3 {
 	@apply rounded-lg p-8;
 }
 
-.multi-gradient {
-	background: linear-gradient(62deg, #8ec5fca9, #e0c3fcb9);
+.gradient {
+	background: linear-gradient(62deg, #c2dbf3, #d7b6f5);
 }

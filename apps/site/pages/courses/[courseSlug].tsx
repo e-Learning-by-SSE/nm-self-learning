@@ -1,15 +1,15 @@
 import { PlusCircleIcon } from "@heroicons/react/outline";
 import { PlayIcon } from "@heroicons/react/solid";
-import { useApi } from "@self-learning/api";
+import { useApi, useEnrollmentMutations } from "@self-learning/api";
 import { getCourseBySlug } from "@self-learning/cms-api";
+import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { AuthorChip, AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { GetStaticPaths, GetStaticProps } from "next";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CoursesOfUser } from "../api/users/[username]/courses";
-import Head from "next/head";
 
 type Course = Exclude<Awaited<ReturnType<typeof getCourseBySlug>>, null>;
 
@@ -40,7 +40,9 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 export default function Course({ course }: CourseProps) {
-	const { data } = useApi<CoursesOfUser>("/users/potter/courses");
+	const username = "potter";
+	const { data: enrollments } = useApi<CoursesOfUser>(["user", `users/${username}/courses`]);
+	const { signUpMutation, signOutMutation } = useEnrollmentMutations();
 
 	const [authors] = useState(
 		() =>
@@ -51,10 +53,10 @@ export default function Course({ course }: CourseProps) {
 			})) as AuthorProps[]
 	);
 
-	// const isEnrolled = useMemo(() => {
-	// 	if (!data) return false;
-	// 	return !!data.find(d => d.courseId === course.slug);
-	// }, [data, course]);
+	const isEnrolled = useMemo(() => {
+		if (!enrollments) return false;
+		return !!enrollments.find(e => e.courseId === course.slug);
+	}, [enrollments, course]);
 
 	const { url, alternativeText } = course.image?.data?.attributes || {};
 
@@ -66,10 +68,8 @@ export default function Course({ course }: CourseProps) {
 				<meta name="author" content={authors[0].name} />
 				<meta name="image" content={course.image?.data?.attributes?.url} />
 			</Head>
-			<div className="relative min-h-screen">
-				<div className="multi-gradient absolute -z-10 h-[728px] w-full"></div>
-				<div className="absolute top-[728px] -z-10 h-screen min-h-screen w-full bg-indigo-50"></div>
-				<div className="px-2 pt-8 sm:px-8">
+			<div className="relative min-h-screen bg-slate-50 pb-32">
+				<div className="gradient px-2 pt-16 pb-32 sm:px-8">
 					<CenteredContainer>
 						<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 							<div className="flex flex-col justify-between gap-8">
@@ -104,23 +104,40 @@ export default function Course({ course }: CourseProps) {
 									></Image>
 								</div>
 								<div className="grid gap-2">
-									<button className="btn-primary">
-										<span>Starten</span>
+									<button
+										className="btn-primary"
+										onClick={() =>
+											signUpMutation.mutate({
+												course: course.slug,
+												username
+											})
+										}
+									>
+										<span>{isEnrolled ? "Fortfahren" : "Starten"}</span>
 										<PlayIcon className="h-6" />
 									</button>
-									<button className="btn-secondary">
+									<button
+										className="btn-secondary"
+										onClick={() =>
+											signOutMutation.mutate({
+												course: course.slug,
+												username
+											})
+										}
+									>
 										<span>Zum Lernplan hinzfügen</span>
 										<PlusCircleIcon className="h-6" />
 									</button>
 								</div>
 							</div>
 						</div>
+
+						{course.description && <Description text={course.description} />}
 					</CenteredContainer>
 				</div>
 
-				<div className="py-8 px-8">
+				<div className="-mt-16 px-2 sm:px-8">
 					<CenteredContainer>
-						{course.description && <Description text={course.description} />}
 						<TableOfContent content={course.content}></TableOfContent>
 					</CenteredContainer>
 				</div>

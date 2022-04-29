@@ -1,0 +1,49 @@
+import { database } from "@self-learning/database";
+import { NextApiHandler } from "next";
+
+const handler: NextApiHandler = async (req, res) => {
+	const { username, courseSlug } = req.query;
+	if (typeof username !== "string") {
+		throw new Error("[username] must be a string");
+	}
+
+	if (typeof courseSlug !== "string") {
+		throw new Error("[courseSlug] must be a string");
+	}
+
+	switch (req.method) {
+		case "POST": {
+			const enrollment = await database.enrollments.create({
+				data: {
+					courseId: courseSlug,
+					username: username,
+					status: "ACTIVE"
+				}
+			});
+
+			console.log("[Enrollment] Created:", enrollment);
+			return res.status(201).json(enrollment);
+		}
+		case "DELETE": {
+			const enrollment = await database.enrollments.delete({
+				where: {
+					courseId_username: {
+						courseId: courseSlug,
+						username: username
+					}
+				}
+			});
+
+			console.log("[Enrollment] Deleted:", enrollment);
+			return res.status(200).json({
+				message: "Enrollment deleted.",
+				enrollment
+			});
+		}
+		default: {
+			res.send(405);
+		}
+	}
+};
+
+export default handler;

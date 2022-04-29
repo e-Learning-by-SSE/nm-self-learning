@@ -63,6 +63,10 @@ async function createCourses(): Promise<void> {
 		{
 			id: "the-example-course",
 			slug: "the-example-course"
+		},
+		{
+			id: "the-second-course",
+			slug: "the-second-course"
 		}
 	];
 

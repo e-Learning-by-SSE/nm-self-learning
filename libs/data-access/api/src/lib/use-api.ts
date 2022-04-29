@@ -2,9 +2,8 @@ import { useQuery } from "react-query";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
 
-export async function fetchFromApi({ queryKey }: { queryKey: unknown }) {
-	console.log(`${API_URL}/api/${queryKey}`);
-	const response = await fetch(`${API_URL}/api/${queryKey}`);
+export async function fetchFromApi({ queryKey }: { queryKey: any }) {
+	const response = await fetch(`${API_URL}/api/${queryKey.at(-1)}`);
 
 	if (!response.ok) {
 		throw { status: response.status, statusText: response.statusText };
@@ -13,6 +12,6 @@ export async function fetchFromApi({ queryKey }: { queryKey: unknown }) {
 	return response.json();
 }
 
-export function useApi<ReturnType>(url: string) {
-	return useQuery<ReturnType>([url], fetchFromApi);
+export function useApi<ReturnType>(queryKey: string[]) {
+	return useQuery<ReturnType>(queryKey, fetchFromApi);
 }
