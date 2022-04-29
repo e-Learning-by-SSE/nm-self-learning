@@ -1,0 +1,87 @@
+{
+	"projectType": "application",
+	"root": "apps/angular-site",
+	"sourceRoot": "apps/angular-site/src",
+	"prefix": "self-learning",
+	"targets": {
+		"build": {
+			"executor": "@angular-devkit/build-angular:browser",
+			"outputs": ["{options.outputPath}"],
+			"options": {
+				"outputPath": "dist/apps/angular-site",
+				"index": "apps/angular-site/src/index.html",
+				"main": "apps/angular-site/src/main.ts",
+				"polyfills": "apps/angular-site/src/polyfills.ts",
+				"tsConfig": "apps/angular-site/tsconfig.app.json",
+				"assets": ["apps/angular-site/src/favicon.ico", "apps/angular-site/src/assets"],
+				"styles": ["apps/angular-site/src/styles.css"],
+				"scripts": []
+			},
+			"configurations": {
+				"production": {
+					"budgets": [
+						{
+							"type": "initial",
+							"maximumWarning": "500kb",
+							"maximumError": "1mb"
+						},
+						{
+							"type": "anyComponentStyle",
+							"maximumWarning": "2kb",
+							"maximumError": "4kb"
+						}
+					],
+					"fileReplacements": [
+						{
+							"replace": "apps/angular-site/src/environments/environment.ts",
+							"with": "apps/angular-site/src/environments/environment.prod.ts"
+						}
+					],
+					"outputHashing": "all"
+				},
+				"development": {
+					"buildOptimizer": false,
+					"optimization": false,
+					"vendorChunk": true,
+					"extractLicenses": false,
+					"sourceMap": true,
+					"namedChunks": true
+				}
+			},
+			"defaultConfiguration": "production"
+		},
+		"serve": {
+			"executor": "@angular-devkit/build-angular:dev-server",
+			"configurations": {
+				"production": {
+					"browserTarget": "angular-site:build:production"
+				},
+				"development": {
+					"browserTarget": "angular-site:build:development"
+				}
+			},
+			"defaultConfiguration": "development"
+		},
+		"extract-i18n": {
+			"executor": "@angular-devkit/build-angular:extract-i18n",
+			"options": {
+				"browserTarget": "angular-site:build"
+			}
+		},
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"options": {
+				"lintFilePatterns": ["apps/angular-site/**/*.ts", "apps/angular-site/**/*.html"]
+			}
+		},
+		"test": {
+			"executor": "@nrwl/jest:jest",
+			"outputs": ["coverage/apps/angular-site"],
+			"options": {
+				"jestConfig": "apps/angular-site/jest.config.ts",
+				"passWithNoTests": true
+			}
+		}
+	},
+	"tags": []
+}

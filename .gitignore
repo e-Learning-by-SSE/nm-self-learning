@@ -43,3 +43,4 @@ data.db
 
 # ENV
 .env
+.angular
