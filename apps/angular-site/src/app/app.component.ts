@@ -43,6 +43,13 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 				[routerLink]="['customizable-counter']"
 				>Customizable Counter</a
 			>
+			<a
+				#customizableCounterWithContext="routerLinkActive"
+				routerLinkActive
+				[class]="customizableCounterWithContext.isActive ? 'px-8 underline' : 'px-8'"
+				[routerLink]="['customizable-counter-with-context']"
+				>Customizable Counter with Context</a
+			>
 		</div>
 		<div>
 			<router-outlet></router-outlet>
