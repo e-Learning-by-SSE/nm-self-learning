@@ -3,9 +3,9 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 @Component({
 	selector: "self-learning-root",
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	template: `<div class="mx-auto flex max-w-5xl flex-col gap-16 p-16 px-2 xl:px-0">
+	template: `<div class="mx-auto flex md:p-16">
 		<div
-			class="flex flex-col justify-center divide-x-2 divide-indigo-300 rounded bg-indigo-500 py-4 text-sm font-semibold text-white sm:flex-row"
+			class="flex h-fit w-[256px] shrink-0 flex-col gap-4 rounded bg-indigo-500 py-4 text-sm font-semibold text-white"
 		>
 			<a
 				*ngFor="let route of routes"
@@ -17,7 +17,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 				>{{ route.title }}</a
 			>
 		</div>
-		<div>
+		<div class="px-16">
 			<router-outlet></router-outlet>
 		</div>
 	</div>`
