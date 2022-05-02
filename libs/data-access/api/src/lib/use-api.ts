@@ -13,5 +13,5 @@ export async function fetchFromApi({ queryKey }: { queryKey: any }) {
 }
 
 export function useApi<ReturnType>(queryKey: string[]) {
-	return useQuery<ReturnType>(queryKey, fetchFromApi);
+	return useQuery<ReturnType>(queryKey, fetchFromApi, { staleTime: 5_000 });
 }

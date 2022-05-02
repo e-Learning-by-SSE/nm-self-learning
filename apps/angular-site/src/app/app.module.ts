@@ -1,3 +1,4 @@
+import { HttpClientModule } from "@angular/common/http";
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { RouterModule } from "@angular/router";
@@ -8,11 +9,14 @@ import { CounterParentComponent } from "./examples/03-ui-counter/parent.componen
 import { SharedCounterComponent } from "./examples/04-shared-counters/shared-counter.component";
 import { CustomizableCounterParentComponent } from "./examples/05-customizable-counter/parent.component";
 import { CustomizableCounterWithContextParentComponent } from "./examples/06-customizable-with-context/parent.component";
+import { HttpRequestExampleComponent } from "./examples/07-http-request/http-request-example.component";
+import { HttpRequestWithCachingComponent } from "./examples/08-http-request-with-caching/http-request-with-caching.component";
 
 @NgModule({
 	declarations: [AppComponent],
 	imports: [
 		BrowserModule,
+		HttpClientModule,
 		RouterModule.forRoot(
 			[
 				{ path: "", component: HelloWorldComponent },
@@ -23,6 +27,14 @@ import { CustomizableCounterWithContextParentComponent } from "./examples/06-cus
 				{
 					path: "customizable-counter-with-context",
 					component: CustomizableCounterWithContextParentComponent
+				},
+				{
+					path: "http-request",
+					component: HttpRequestExampleComponent
+				},
+				{
+					path: "http-request-with-caching",
+					component: HttpRequestWithCachingComponent
 				}
 			],
 			{

@@ -15,6 +15,14 @@ const routes = [
 	{
 		url: "/examples/07-counter-hook",
 		title: "07-Counter Hook"
+	},
+	{
+		url: "/examples/08-http-request",
+		title: "07-Http Request"
+	},
+	{
+		url: "/examples/09-http-request-caching",
+		title: "08-Http Request with Caching"
 	}
 ];
 
@@ -22,8 +30,8 @@ export function ExampleLayout({ children }: PropsWithChildren<unknown>) {
 	const router = useRouter();
 
 	return (
-		<div className="mx-auto flex max-w-5xl flex-col gap-16 p-16 px-2 xl:px-0">
-			<div className="flex flex-col justify-center divide-indigo-300 rounded bg-indigo-500 py-4 text-sm font-semibold text-white sm:flex-row sm:divide-x-2">
+		<div className="mx-auto flex md:p-16">
+			<div className="flex h-fit w-[256px] shrink-0 flex-col gap-4 rounded bg-indigo-500 py-4 text-sm font-semibold text-white">
 				{routes.map(route => (
 					<Link href={route.url} key={route.url}>
 						<a className={`px-8 ${router.pathname === route.url && "underline"}`}>
@@ -32,7 +40,7 @@ export function ExampleLayout({ children }: PropsWithChildren<unknown>) {
 					</Link>
 				))}
 			</div>
-			<div>{children}</div>
+			<div className="px-16">{children}</div>
 		</div>
 	);
 }
