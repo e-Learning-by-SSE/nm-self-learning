@@ -41,6 +41,12 @@
       "relation": "manyToMany",
       "target": "api::course.course",
       "mappedBy": "authors"
+    },
+    "teams": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::team.team",
+      "inversedBy": "authors"
     }
   }
 }
