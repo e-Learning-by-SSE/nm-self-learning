@@ -943,6 +943,7 @@ export type Speciality = {
 	imageCard?: Maybe<UploadFileEntityResponse>;
 	slug: Scalars["String"];
 	subject?: Maybe<SubjectEntityResponse>;
+	subtitle: Scalars["String"];
 	title: Scalars["String"];
 	updatedAt?: Maybe<Scalars["DateTime"]>;
 };
@@ -973,6 +974,7 @@ export type SpecialityFiltersInput = {
 	or?: InputMaybe<Array<InputMaybe<SpecialityFiltersInput>>>;
 	slug?: InputMaybe<StringFilterInput>;
 	subject?: InputMaybe<SubjectFiltersInput>;
+	subtitle?: InputMaybe<StringFilterInput>;
 	title?: InputMaybe<StringFilterInput>;
 	updatedAt?: InputMaybe<DateTimeFilterInput>;
 };
@@ -983,6 +985,7 @@ export type SpecialityInput = {
 	imageCard?: InputMaybe<Scalars["ID"]>;
 	slug?: InputMaybe<Scalars["String"]>;
 	subject?: InputMaybe<Scalars["ID"]>;
+	subtitle?: InputMaybe<Scalars["String"]>;
 	title?: InputMaybe<Scalars["String"]>;
 };
 
@@ -1784,6 +1787,60 @@ export type SubjectsQuery = {
 	} | null;
 };
 
+export type SubjectBySlugQueryVariables = Exact<{
+	slug: Scalars["String"];
+}>;
+
+export type SubjectBySlugQuery = {
+	__typename?: "Query";
+	subjects?: {
+		__typename?: "SubjectEntityResponseCollection";
+		data: Array<{
+			__typename?: "SubjectEntity";
+			attributes?: {
+				__typename?: "Subject";
+				title: string;
+				slug: string;
+				subtitle: string;
+				description?: string | null;
+				specialities?: {
+					__typename?: "SpecialityRelationResponseCollection";
+					data: Array<{
+						__typename?: "SpecialityEntity";
+						attributes?: {
+							__typename?: "Speciality";
+							title: string;
+							slug: string;
+							subtitle: string;
+							imageCard?: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: { __typename?: "UploadFile"; url: string } | null;
+								} | null;
+							} | null;
+						} | null;
+					}>;
+				} | null;
+				imageBanner?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: { __typename?: "UploadFile"; url: string } | null;
+					} | null;
+				} | null;
+				imageCard?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: { __typename?: "UploadFile"; url: string } | null;
+					} | null;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export const AuthorsDocument = gql`
 	query authors {
 		authors {
@@ -2053,6 +2110,50 @@ export const SubjectsDocument = gql`
 		}
 	}
 `;
+export const SubjectBySlugDocument = gql`
+	query subjectBySlug($slug: String!) {
+		subjects(filters: { slug: { eq: $slug } }) {
+			data {
+				attributes {
+					title
+					slug
+					subtitle
+					description
+					specialities {
+						data {
+							attributes {
+								title
+								slug
+								subtitle
+								imageCard {
+									data {
+										attributes {
+											url
+										}
+									}
+								}
+							}
+						}
+					}
+					imageBanner {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+					imageCard {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
 
 export type SdkFunctionWrapper = <T>(
 	action: (requestHeaders?: Record<string, string>) => Promise<T>,
@@ -2160,6 +2261,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"subjects",
+				"query"
+			);
+		},
+		subjectBySlug(
+			variables: SubjectBySlugQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<SubjectBySlugQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<SubjectBySlugQuery>(SubjectBySlugDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"subjectBySlug",
 				"query"
 			);
 		}

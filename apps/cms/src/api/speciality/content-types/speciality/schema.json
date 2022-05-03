@@ -4,7 +4,8 @@
   "info": {
     "singularName": "speciality",
     "pluralName": "specialities",
-    "displayName": "Speciality"
+    "displayName": "Speciality",
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -25,24 +26,30 @@
       "type": "text"
     },
     "imageBanner": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "imageCard": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "subject": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::subject.subject",
       "inversedBy": "specialities"
+    },
+    "subtitle": {
+      "type": "text",
+      "required": true
     }
   }
 }
