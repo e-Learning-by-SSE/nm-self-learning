@@ -31,6 +31,7 @@ export type Author = {
 	name: Scalars["String"];
 	nanomodules?: Maybe<NanomoduleRelationResponseCollection>;
 	slug: Scalars["String"];
+	teams?: Maybe<TeamRelationResponseCollection>;
 	updatedAt?: Maybe<Scalars["DateTime"]>;
 };
 
@@ -43,6 +44,12 @@ export type AuthorCoursesArgs = {
 
 export type AuthorNanomodulesArgs = {
 	filters?: InputMaybe<NanomoduleFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type AuthorTeamsArgs = {
+	filters?: InputMaybe<TeamFiltersInput>;
 	pagination?: InputMaybe<PaginationArg>;
 	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
@@ -74,6 +81,7 @@ export type AuthorFiltersInput = {
 	not?: InputMaybe<AuthorFiltersInput>;
 	or?: InputMaybe<Array<InputMaybe<AuthorFiltersInput>>>;
 	slug?: InputMaybe<StringFilterInput>;
+	teams?: InputMaybe<TeamFiltersInput>;
 	updatedAt?: InputMaybe<DateTimeFilterInput>;
 };
 
@@ -83,6 +91,7 @@ export type AuthorInput = {
 	name?: InputMaybe<Scalars["String"]>;
 	nanomodules?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 	slug?: InputMaybe<Scalars["String"]>;
+	teams?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 };
 
 export type AuthorRelationResponseCollection = {
@@ -301,7 +310,11 @@ export type GenericMorph =
 	| ComponentNanomoduleYoutubeVideo
 	| Course
 	| I18NLocale
+	| Institution
 	| Nanomodule
+	| Speciality
+	| Subject
+	| Team
 	| UploadFile
 	| UsersPermissionsPermission
 	| UsersPermissionsRole
@@ -366,6 +379,47 @@ export type IdFilterInput = {
 	startsWith?: InputMaybe<Scalars["ID"]>;
 };
 
+export type Institution = {
+	__typename?: "Institution";
+	createdAt?: Maybe<Scalars["DateTime"]>;
+	slug: Scalars["String"];
+	title: Scalars["String"];
+	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type InstitutionEntity = {
+	__typename?: "InstitutionEntity";
+	attributes?: Maybe<Institution>;
+	id?: Maybe<Scalars["ID"]>;
+};
+
+export type InstitutionEntityResponse = {
+	__typename?: "InstitutionEntityResponse";
+	data?: Maybe<InstitutionEntity>;
+};
+
+export type InstitutionEntityResponseCollection = {
+	__typename?: "InstitutionEntityResponseCollection";
+	data: Array<InstitutionEntity>;
+	meta: ResponseCollectionMeta;
+};
+
+export type InstitutionFiltersInput = {
+	and?: InputMaybe<Array<InputMaybe<InstitutionFiltersInput>>>;
+	createdAt?: InputMaybe<DateTimeFilterInput>;
+	id?: InputMaybe<IdFilterInput>;
+	not?: InputMaybe<InstitutionFiltersInput>;
+	or?: InputMaybe<Array<InputMaybe<InstitutionFiltersInput>>>;
+	slug?: InputMaybe<StringFilterInput>;
+	title?: InputMaybe<StringFilterInput>;
+	updatedAt?: InputMaybe<DateTimeFilterInput>;
+};
+
+export type InstitutionInput = {
+	slug?: InputMaybe<Scalars["String"]>;
+	title?: InputMaybe<Scalars["String"]>;
+};
+
 export type IntFilterInput = {
 	and?: InputMaybe<Array<InputMaybe<Scalars["Int"]>>>;
 	between?: InputMaybe<Array<InputMaybe<Scalars["Int"]>>>;
@@ -416,7 +470,11 @@ export type Mutation = {
 	__typename?: "Mutation";
 	createAuthor?: Maybe<AuthorEntityResponse>;
 	createCourse?: Maybe<CourseEntityResponse>;
+	createInstitution?: Maybe<InstitutionEntityResponse>;
 	createNanomodule?: Maybe<NanomoduleEntityResponse>;
+	createSpeciality?: Maybe<SpecialityEntityResponse>;
+	createSubject?: Maybe<SubjectEntityResponse>;
+	createTeam?: Maybe<TeamEntityResponse>;
 	createUploadFile?: Maybe<UploadFileEntityResponse>;
 	/** Create a new role */
 	createUsersPermissionsRole?: Maybe<UsersPermissionsCreateRolePayload>;
@@ -424,7 +482,11 @@ export type Mutation = {
 	createUsersPermissionsUser: UsersPermissionsUserEntityResponse;
 	deleteAuthor?: Maybe<AuthorEntityResponse>;
 	deleteCourse?: Maybe<CourseEntityResponse>;
+	deleteInstitution?: Maybe<InstitutionEntityResponse>;
 	deleteNanomodule?: Maybe<NanomoduleEntityResponse>;
+	deleteSpeciality?: Maybe<SpecialityEntityResponse>;
+	deleteSubject?: Maybe<SubjectEntityResponse>;
+	deleteTeam?: Maybe<TeamEntityResponse>;
 	deleteUploadFile?: Maybe<UploadFileEntityResponse>;
 	/** Delete an existing role */
 	deleteUsersPermissionsRole?: Maybe<UsersPermissionsDeleteRolePayload>;
@@ -444,7 +506,11 @@ export type Mutation = {
 	updateAuthor?: Maybe<AuthorEntityResponse>;
 	updateCourse?: Maybe<CourseEntityResponse>;
 	updateFileInfo: UploadFileEntityResponse;
+	updateInstitution?: Maybe<InstitutionEntityResponse>;
 	updateNanomodule?: Maybe<NanomoduleEntityResponse>;
+	updateSpeciality?: Maybe<SpecialityEntityResponse>;
+	updateSubject?: Maybe<SubjectEntityResponse>;
+	updateTeam?: Maybe<TeamEntityResponse>;
 	updateUploadFile?: Maybe<UploadFileEntityResponse>;
 	/** Update an existing role */
 	updateUsersPermissionsRole?: Maybe<UsersPermissionsUpdateRolePayload>;
@@ -461,8 +527,24 @@ export type MutationCreateCourseArgs = {
 	data: CourseInput;
 };
 
+export type MutationCreateInstitutionArgs = {
+	data: InstitutionInput;
+};
+
 export type MutationCreateNanomoduleArgs = {
 	data: NanomoduleInput;
+};
+
+export type MutationCreateSpecialityArgs = {
+	data: SpecialityInput;
+};
+
+export type MutationCreateSubjectArgs = {
+	data: SubjectInput;
+};
+
+export type MutationCreateTeamArgs = {
+	data: TeamInput;
 };
 
 export type MutationCreateUploadFileArgs = {
@@ -485,7 +567,23 @@ export type MutationDeleteCourseArgs = {
 	id: Scalars["ID"];
 };
 
+export type MutationDeleteInstitutionArgs = {
+	id: Scalars["ID"];
+};
+
 export type MutationDeleteNanomoduleArgs = {
+	id: Scalars["ID"];
+};
+
+export type MutationDeleteSpecialityArgs = {
+	id: Scalars["ID"];
+};
+
+export type MutationDeleteSubjectArgs = {
+	id: Scalars["ID"];
+};
+
+export type MutationDeleteTeamArgs = {
 	id: Scalars["ID"];
 };
 
@@ -549,8 +647,28 @@ export type MutationUpdateFileInfoArgs = {
 	info?: InputMaybe<FileInfoInput>;
 };
 
+export type MutationUpdateInstitutionArgs = {
+	data: InstitutionInput;
+	id: Scalars["ID"];
+};
+
 export type MutationUpdateNanomoduleArgs = {
 	data: NanomoduleInput;
+	id: Scalars["ID"];
+};
+
+export type MutationUpdateSpecialityArgs = {
+	data: SpecialityInput;
+	id: Scalars["ID"];
+};
+
+export type MutationUpdateSubjectArgs = {
+	data: SubjectInput;
+	id: Scalars["ID"];
+};
+
+export type MutationUpdateTeamArgs = {
+	data: TeamInput;
 	id: Scalars["ID"];
 };
 
@@ -682,9 +800,17 @@ export type Query = {
 	courses?: Maybe<CourseEntityResponseCollection>;
 	i18NLocale?: Maybe<I18NLocaleEntityResponse>;
 	i18NLocales?: Maybe<I18NLocaleEntityResponseCollection>;
+	institution?: Maybe<InstitutionEntityResponse>;
+	institutions?: Maybe<InstitutionEntityResponseCollection>;
 	me?: Maybe<UsersPermissionsMe>;
 	nanomodule?: Maybe<NanomoduleEntityResponse>;
 	nanomodules?: Maybe<NanomoduleEntityResponseCollection>;
+	specialities?: Maybe<SpecialityEntityResponseCollection>;
+	speciality?: Maybe<SpecialityEntityResponse>;
+	subject?: Maybe<SubjectEntityResponse>;
+	subjects?: Maybe<SubjectEntityResponseCollection>;
+	team?: Maybe<TeamEntityResponse>;
+	teams?: Maybe<TeamEntityResponseCollection>;
 	uploadFile?: Maybe<UploadFileEntityResponse>;
 	uploadFiles?: Maybe<UploadFileEntityResponseCollection>;
 	usersPermissionsRole?: Maybe<UsersPermissionsRoleEntityResponse>;
@@ -724,12 +850,52 @@ export type QueryI18NLocalesArgs = {
 	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
 
+export type QueryInstitutionArgs = {
+	id?: InputMaybe<Scalars["ID"]>;
+};
+
+export type QueryInstitutionsArgs = {
+	filters?: InputMaybe<InstitutionFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
 export type QueryNanomoduleArgs = {
 	id?: InputMaybe<Scalars["ID"]>;
 };
 
 export type QueryNanomodulesArgs = {
 	filters?: InputMaybe<NanomoduleFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type QuerySpecialitiesArgs = {
+	filters?: InputMaybe<SpecialityFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type QuerySpecialityArgs = {
+	id?: InputMaybe<Scalars["ID"]>;
+};
+
+export type QuerySubjectArgs = {
+	id?: InputMaybe<Scalars["ID"]>;
+};
+
+export type QuerySubjectsArgs = {
+	filters?: InputMaybe<SubjectFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type QueryTeamArgs = {
+	id?: InputMaybe<Scalars["ID"]>;
+};
+
+export type QueryTeamsArgs = {
+	filters?: InputMaybe<TeamFiltersInput>;
 	pagination?: InputMaybe<PaginationArg>;
 	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
@@ -769,6 +935,62 @@ export type ResponseCollectionMeta = {
 	pagination: Pagination;
 };
 
+export type Speciality = {
+	__typename?: "Speciality";
+	createdAt?: Maybe<Scalars["DateTime"]>;
+	description?: Maybe<Scalars["String"]>;
+	imageBanner?: Maybe<UploadFileEntityResponse>;
+	imageCard?: Maybe<UploadFileEntityResponse>;
+	slug: Scalars["String"];
+	subject?: Maybe<SubjectEntityResponse>;
+	title: Scalars["String"];
+	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type SpecialityEntity = {
+	__typename?: "SpecialityEntity";
+	attributes?: Maybe<Speciality>;
+	id?: Maybe<Scalars["ID"]>;
+};
+
+export type SpecialityEntityResponse = {
+	__typename?: "SpecialityEntityResponse";
+	data?: Maybe<SpecialityEntity>;
+};
+
+export type SpecialityEntityResponseCollection = {
+	__typename?: "SpecialityEntityResponseCollection";
+	data: Array<SpecialityEntity>;
+	meta: ResponseCollectionMeta;
+};
+
+export type SpecialityFiltersInput = {
+	and?: InputMaybe<Array<InputMaybe<SpecialityFiltersInput>>>;
+	createdAt?: InputMaybe<DateTimeFilterInput>;
+	description?: InputMaybe<StringFilterInput>;
+	id?: InputMaybe<IdFilterInput>;
+	not?: InputMaybe<SpecialityFiltersInput>;
+	or?: InputMaybe<Array<InputMaybe<SpecialityFiltersInput>>>;
+	slug?: InputMaybe<StringFilterInput>;
+	subject?: InputMaybe<SubjectFiltersInput>;
+	title?: InputMaybe<StringFilterInput>;
+	updatedAt?: InputMaybe<DateTimeFilterInput>;
+};
+
+export type SpecialityInput = {
+	description?: InputMaybe<Scalars["String"]>;
+	imageBanner?: InputMaybe<Scalars["ID"]>;
+	imageCard?: InputMaybe<Scalars["ID"]>;
+	slug?: InputMaybe<Scalars["String"]>;
+	subject?: InputMaybe<Scalars["ID"]>;
+	title?: InputMaybe<Scalars["String"]>;
+};
+
+export type SpecialityRelationResponseCollection = {
+	__typename?: "SpecialityRelationResponseCollection";
+	data: Array<SpecialityEntity>;
+};
+
 export type StringFilterInput = {
 	and?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 	between?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
@@ -790,6 +1012,129 @@ export type StringFilterInput = {
 	null?: InputMaybe<Scalars["Boolean"]>;
 	or?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 	startsWith?: InputMaybe<Scalars["String"]>;
+};
+
+export type Subject = {
+	__typename?: "Subject";
+	createdAt?: Maybe<Scalars["DateTime"]>;
+	description?: Maybe<Scalars["String"]>;
+	imageBanner?: Maybe<UploadFileEntityResponse>;
+	imageCard?: Maybe<UploadFileEntityResponse>;
+	slug: Scalars["String"];
+	specialities?: Maybe<SpecialityRelationResponseCollection>;
+	subtitle: Scalars["String"];
+	title: Scalars["String"];
+	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type SubjectSpecialitiesArgs = {
+	filters?: InputMaybe<SpecialityFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type SubjectEntity = {
+	__typename?: "SubjectEntity";
+	attributes?: Maybe<Subject>;
+	id?: Maybe<Scalars["ID"]>;
+};
+
+export type SubjectEntityResponse = {
+	__typename?: "SubjectEntityResponse";
+	data?: Maybe<SubjectEntity>;
+};
+
+export type SubjectEntityResponseCollection = {
+	__typename?: "SubjectEntityResponseCollection";
+	data: Array<SubjectEntity>;
+	meta: ResponseCollectionMeta;
+};
+
+export type SubjectFiltersInput = {
+	and?: InputMaybe<Array<InputMaybe<SubjectFiltersInput>>>;
+	createdAt?: InputMaybe<DateTimeFilterInput>;
+	description?: InputMaybe<StringFilterInput>;
+	id?: InputMaybe<IdFilterInput>;
+	not?: InputMaybe<SubjectFiltersInput>;
+	or?: InputMaybe<Array<InputMaybe<SubjectFiltersInput>>>;
+	slug?: InputMaybe<StringFilterInput>;
+	specialities?: InputMaybe<SpecialityFiltersInput>;
+	subtitle?: InputMaybe<StringFilterInput>;
+	title?: InputMaybe<StringFilterInput>;
+	updatedAt?: InputMaybe<DateTimeFilterInput>;
+};
+
+export type SubjectInput = {
+	description?: InputMaybe<Scalars["String"]>;
+	imageBanner?: InputMaybe<Scalars["ID"]>;
+	imageCard?: InputMaybe<Scalars["ID"]>;
+	slug?: InputMaybe<Scalars["String"]>;
+	specialities?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+	subtitle?: InputMaybe<Scalars["String"]>;
+	title?: InputMaybe<Scalars["String"]>;
+};
+
+export type Team = {
+	__typename?: "Team";
+	authors?: Maybe<AuthorRelationResponseCollection>;
+	createdAt?: Maybe<Scalars["DateTime"]>;
+	description?: Maybe<Scalars["String"]>;
+	image?: Maybe<UploadFileEntityResponse>;
+	institution?: Maybe<InstitutionEntityResponse>;
+	slug: Scalars["String"];
+	title: Scalars["String"];
+	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type TeamAuthorsArgs = {
+	filters?: InputMaybe<AuthorFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type TeamEntity = {
+	__typename?: "TeamEntity";
+	attributes?: Maybe<Team>;
+	id?: Maybe<Scalars["ID"]>;
+};
+
+export type TeamEntityResponse = {
+	__typename?: "TeamEntityResponse";
+	data?: Maybe<TeamEntity>;
+};
+
+export type TeamEntityResponseCollection = {
+	__typename?: "TeamEntityResponseCollection";
+	data: Array<TeamEntity>;
+	meta: ResponseCollectionMeta;
+};
+
+export type TeamFiltersInput = {
+	and?: InputMaybe<Array<InputMaybe<TeamFiltersInput>>>;
+	authors?: InputMaybe<AuthorFiltersInput>;
+	createdAt?: InputMaybe<DateTimeFilterInput>;
+	description?: InputMaybe<StringFilterInput>;
+	id?: InputMaybe<IdFilterInput>;
+	institution?: InputMaybe<InstitutionFiltersInput>;
+	not?: InputMaybe<TeamFiltersInput>;
+	or?: InputMaybe<Array<InputMaybe<TeamFiltersInput>>>;
+	slug?: InputMaybe<StringFilterInput>;
+	title?: InputMaybe<StringFilterInput>;
+	updatedAt?: InputMaybe<DateTimeFilterInput>;
+};
+
+export type TeamInput = {
+	authors?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+	description?: InputMaybe<Scalars["String"]>;
+	image?: InputMaybe<Scalars["ID"]>;
+	institution?: InputMaybe<Scalars["ID"]>;
+	slug?: InputMaybe<Scalars["String"]>;
+	title?: InputMaybe<Scalars["String"]>;
+};
+
+export type TeamRelationResponseCollection = {
+	__typename?: "TeamRelationResponseCollection";
+	data: Array<TeamEntity>;
 };
 
 export type UploadFile = {
@@ -1414,6 +1759,31 @@ export type NanomoduleBySlugQuery = {
 	} | null;
 };
 
+export type SubjectsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type SubjectsQuery = {
+	__typename?: "Query";
+	subjects?: {
+		__typename?: "SubjectEntityResponseCollection";
+		data: Array<{
+			__typename?: "SubjectEntity";
+			attributes?: {
+				__typename?: "Subject";
+				title: string;
+				slug: string;
+				subtitle: string;
+				imageCard?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: { __typename?: "UploadFile"; url: string } | null;
+					} | null;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export const AuthorsDocument = gql`
 	query authors {
 		authors {
@@ -1663,6 +2033,26 @@ export const NanomoduleBySlugDocument = gql`
 		}
 	}
 `;
+export const SubjectsDocument = gql`
+	query subjects {
+		subjects {
+			data {
+				attributes {
+					title
+					slug
+					subtitle
+					imageCard {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
 
 export type SdkFunctionWrapper = <T>(
 	action: (requestHeaders?: Record<string, string>) => Promise<T>,
@@ -1756,6 +2146,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"nanomoduleBySlug",
+				"query"
+			);
+		},
+		subjects(
+			variables?: SubjectsQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<SubjectsQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<SubjectsQuery>(SubjectsDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"subjects",
 				"query"
 			);
 		}

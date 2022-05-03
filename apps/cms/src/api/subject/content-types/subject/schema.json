@@ -49,6 +49,10 @@
       "targetField": "title",
       "required": true,
       "minLength": 3
+    },
+    "subtitle": {
+      "type": "text",
+      "required": true
     }
   }
 }
