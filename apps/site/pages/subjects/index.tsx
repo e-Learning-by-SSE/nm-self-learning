@@ -1,5 +1,6 @@
 import { CollectionIcon, VideoCameraIcon } from "@heroicons/react/outline";
 import { getSubjects } from "@self-learning/cms-api";
+import { ImageCard } from "@self-learning/ui/common";
 import { GetStaticProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -54,37 +55,25 @@ function SubjectCard({
 }) {
 	return (
 		<Link href={`/subjects/${slug}`}>
-			<a className="flex flex-col">
-				{!imgUrl || imgUrl.length == 0 ? (
-					<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-gradient-to-br from-purple-500 to-blue-400"></div>
-				) : (
-					<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-white">
-						<Image
-							className="rounded-t-lg"
-							src={`http://localhost:1337${imgUrl}`}
-							alt=""
-							layout="fill"
-							objectFit="cover"
-						></Image>
-					</div>
-				)}
-
-				<div className="glass flex h-full flex-col justify-between gap-8 rounded-b-lg p-4">
-					<div className="flex flex-col gap-4">
-						<h2 className="text-2xl">{title}</h2>
-						<span className="text-sm text-slate-500">{subtitle}</span>
-					</div>
-					<div className="flex flex-col">
-						<span className="flex items-center gap-3">
-							<CollectionIcon className="h-5" />
-							<span>12 Spezialisierungen</span>
-						</span>
-						<span className="flex items-center gap-3">
-							<VideoCameraIcon className="h-5" />
-							<span>420 Nanomodule</span>
-						</span>
-					</div>
-				</div>
+			<a className="flex">
+				<ImageCard
+					slug={slug}
+					title={title}
+					subtitle={subtitle}
+					imgUrl={imgUrl}
+					footer={
+						<>
+							<span className="flex items-center gap-3">
+								<CollectionIcon className="h-5" />
+								<span>12 Spezialisierungen</span>
+							</span>
+							<span className="flex items-center gap-3">
+								<VideoCameraIcon className="h-5" />
+								<span>420 Nanomodule</span>
+							</span>
+						</>
+					}
+				/>
 			</a>
 		</Link>
 	);

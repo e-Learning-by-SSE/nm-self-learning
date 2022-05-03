@@ -3,4 +3,5 @@ export * from "./lib/queries/nanomodules";
 export * from "./lib/queries/nanomodule-questions";
 export * from "./lib/queries/courses";
 export * from "./lib/queries/subjects";
+export * from "./lib/queries/specialization";
 export * as cmsTypes from "./lib/generated-graphql";

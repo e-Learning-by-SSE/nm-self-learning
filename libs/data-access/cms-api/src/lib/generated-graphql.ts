@@ -1762,6 +1762,41 @@ export type NanomoduleBySlugQuery = {
 	} | null;
 };
 
+export type SpecializationBySlugQueryVariables = Exact<{
+	slug: Scalars["String"];
+}>;
+
+export type SpecializationBySlugQuery = {
+	__typename?: "Query";
+	specialities?: {
+		__typename?: "SpecialityEntityResponseCollection";
+		data: Array<{
+			__typename?: "SpecialityEntity";
+			attributes?: {
+				__typename?: "Speciality";
+				slug: string;
+				title: string;
+				subtitle: string;
+				description?: string | null;
+				subject?: {
+					__typename?: "SubjectEntityResponse";
+					data?: {
+						__typename?: "SubjectEntity";
+						attributes?: { __typename?: "Subject"; title: string; slug: string } | null;
+					} | null;
+				} | null;
+				imageBanner?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: { __typename?: "UploadFile"; url: string } | null;
+					} | null;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export type SubjectsQueryVariables = Exact<{ [key: string]: never }>;
 
 export type SubjectsQuery = {
@@ -2090,6 +2125,35 @@ export const NanomoduleBySlugDocument = gql`
 		}
 	}
 `;
+export const SpecializationBySlugDocument = gql`
+	query specializationBySlug($slug: String!) {
+		specialities(filters: { slug: { eq: $slug } }) {
+			data {
+				attributes {
+					slug
+					title
+					subtitle
+					description
+					subject {
+						data {
+							attributes {
+								title
+								slug
+							}
+						}
+					}
+					imageBanner {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
 export const SubjectsDocument = gql`
 	query subjects {
 		subjects {
@@ -2247,6 +2311,21 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"nanomoduleBySlug",
+				"query"
+			);
+		},
+		specializationBySlug(
+			variables: SpecializationBySlugQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<SpecializationBySlugQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<SpecializationBySlugQuery>(
+						SpecializationBySlugDocument,
+						variables,
+						{ ...requestHeaders, ...wrappedRequestHeaders }
+					),
+				"specializationBySlug",
 				"query"
 			);
 		},
