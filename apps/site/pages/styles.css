@@ -58,11 +58,15 @@ h3 {
 }
 
 .btn-primary {
-	@apply flex place-content-center items-center gap-2 rounded-lg bg-indigo-500 px-8 py-2 font-semibold text-white transition-colors hover:bg-indigo-600;
+	@apply flex place-content-center items-center gap-2 rounded-lg bg-indigo-500 px-8 py-2 font-semibold text-white transition-colors hover:bg-indigo-600 disabled:bg-opacity-25;
 }
 
 .btn-secondary {
 	@apply glass flex place-content-center items-center gap-2 rounded-lg py-2 px-8 font-semibold transition-colors hover:bg-opacity-90;
+}
+
+.btn-stroked {
+	@apply flex place-content-center items-center gap-2 rounded-lg border border-indigo-100 px-8 py-2 font-semibold disabled:opacity-25;
 }
 
 .glass {

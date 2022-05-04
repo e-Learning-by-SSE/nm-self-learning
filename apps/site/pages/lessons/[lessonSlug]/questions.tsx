@@ -1,8 +1,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
 import { getNanomoduleQuestionsBySlug } from "@self-learning/cms-api";
-import { CenteredContainer, SidebarLayout } from "@self-learning/ui/layouts";
+import { TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -11,11 +10,11 @@ type NanomoduleWithQuestions = Exclude<
 	undefined | null
 >;
 
-type QuestionsProps = {
+type QuestionsPageProps = {
 	nanomodule: NanomoduleWithQuestions;
 };
 
-type Question = {
+type QuestionType = {
 	type: "multiple-choice";
 	question: string;
 	answers: {
@@ -24,7 +23,7 @@ type Question = {
 	}[];
 };
 
-export const getStaticProps: GetStaticProps<QuestionsProps> = async ({ params }) => {
+export const getStaticProps: GetStaticProps<QuestionsPageProps> = async ({ params }) => {
 	const slug = params?.lessonSlug as string | undefined;
 
 	if (!slug) {
@@ -107,12 +106,24 @@ export const getStaticPaths: GetStaticPaths = () => {
 	return { paths: [], fallback: "blocking" };
 };
 
-export default function Questions({ nanomodule }: QuestionsProps) {
+export default function QuestionsPage({ nanomodule }: QuestionsPageProps) {
 	const { slug, title, questions, image } = nanomodule;
-	const [currentQuestion, setCurrentQuestion] = useState(questions[0] as Question);
+	const [currentQuestion, setCurrentQuestion] = useState(questions[0] as QuestionType);
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
+
+	function goToNextQuestion() {
+		router.push(`/lessons/${slug}/questions?index=${nextIndex}`, undefined, {
+			shallow: true
+		});
+	}
+
+	function goToPreviousQuestion() {
+		router.push(`/lessons/${slug}/questions?index=${nextIndex - 2}`, undefined, {
+			shallow: true
+		});
+	}
 
 	useEffect(() => {
 		const indexNumber = Number(index);
@@ -124,71 +135,72 @@ export default function Questions({ nanomodule }: QuestionsProps) {
 			setCurrentQuestion(questions[0]);
 			setNextIndex(1);
 		}
-	}, [index, nextIndex, questions]);
+	}, [index, questions]);
 
 	return (
-		<div className="mx-auto flex w-full flex-col py-16 px-2 md:max-w-3xl md:px-2">
-			<Link href={`/lessons/${slug}`}>
-				<a className="flex items-center text-sm text-slate-400">
-					<ChevronLeftIcon className="h-4" />
-					<span>Zurück zum Inhalt</span>
-				</a>
-			</Link>
-			<h1 className="mb-12 mt-2 text-2xl">Lernkontrolle</h1>
+		<div className="gradient flex min-h-screen bg-fixed">
+			<div className="mx-auto flex w-full flex-col px-2 pb-16 md:max-w-3xl md:px-2">
+				<TopicHeader
+					imgUrlBanner={image?.data?.attributes?.url}
+					title="Lernkontrolle"
+					subtitle={""}
+					parentTitle={title}
+					parentLink={`/lessons/${nanomodule.slug}`}
+				>
+					<div className="flex flex-wrap items-center justify-between gap-6 pt-4">
+						<span>
+							Frage {nextIndex} von {nanomodule.questions?.length}
+						</span>
+						<div className="flex flex-wrap place-content-end gap-4">
+							<button
+								disabled={nextIndex === 1}
+								className="btn-stroked w-full sm:w-fit"
+								onClick={goToPreviousQuestion}
+							>
+								<ChevronLeftIcon className="h-5" />
+								<span>Vorherige Frage</span>
+							</button>
+							<button
+								disabled={nextIndex >= questions.length}
+								className="btn-primary w-full sm:w-fit"
+								onClick={goToNextQuestion}
+							>
+								<span>Nächste Frage</span>
+								<ChevronRightIcon className="h-5" />
+							</button>
+						</div>
+					</div>
+				</TopicHeader>
 
-			<div className="flex flex-col gap-8">
-				<h2 className="text-4xl">{currentQuestion.question}</h2>
-
-				<ul className="multi-gradient flex flex-col gap-4 rounded-lg p-8">
-					{currentQuestion.answers.map(answer => (
-						<label
-							htmlFor={answer.text}
-							key={answer.text}
-							className="card glass flex items-center gap-2"
-						>
-							<input
-								type="checkbox"
-								className="wih checked:bg-indigo-500 focus:ring-1 focus:ring-indigo-500"
-								id={answer.text}
-							/>
-							{answer.text}
-						</label>
-					))}
-				</ul>
-
-				<div className="flex place-content-end gap-4">
-					{nextIndex > 1 && (
-						<button
-							className="flex items-center gap-2 rounded-lg border border-indigo-100 py-2 px-8 font-semibold"
-							onClick={() =>
-								router.push(
-									`/lessons/${slug}/questions?index=${nextIndex - 2}`,
-									undefined,
-									{ shallow: true }
-								)
-							}
-						>
-							<ChevronLeftIcon className="h-5" />
-							<span>Vorherige Frage</span>
-						</button>
-					)}
-					{nextIndex < questions.length && (
-						<button
-							className="btn-primary"
-							onClick={() =>
-								router.push(
-									`/lessons/${slug}/questions?index=${nextIndex}`,
-									undefined,
-									{ shallow: true }
-								)
-							}
-						>
-							<span>Nächste Frage</span>
-							<ChevronRightIcon className="h-5" />
-						</button>
-					)}
+				<div className="flex flex-col gap-16 pt-16">
+					<Question title={currentQuestion.question} answers={currentQuestion.answers} />
 				</div>
 			</div>
 		</div>
+	);
+}
+
+function Question({ title, answers }: { title: string; answers: { text: string }[] }) {
+	return (
+		<>
+			<h2 className="text-4xl">{title}</h2>
+
+			<ul className="flex flex-col gap-4">
+				{answers.map(answer => (
+					<label
+						htmlFor={answer.text}
+						key={answer.text}
+						className="card glass flex items-center gap-2"
+					>
+						<input
+							type="checkbox"
+							className="wih checked:bg-indigo-500 focus:ring-1 focus:ring-indigo-500"
+							id={answer.text}
+						/>
+						{answer.text}
+					</label>
+				))}
+			</ul>
+		</>
 	);
 }
