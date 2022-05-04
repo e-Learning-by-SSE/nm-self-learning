@@ -114,9 +114,9 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 function VideoPlayerWithPlaylist({ videoUrl }: { videoUrl: string }) {
 	return (
 		<div className="grid w-full xl:grid-cols-4">
-			<div className="h-[512px] lg:h-[720px] xl:col-span-3">
+			<div className="h-[512px] bg-black lg:h-[720px] xl:col-span-3">
 				{/* <YoutubeEmbed url={videoUrl}></YoutubeEmbed> */}
-				<VideoPlayer url={videoUrl} />
+				{/* <VideoPlayer url={videoUrl} /> */}
 			</div>
 			<div className="max-h-[512px] overflow-hidden xl:col-span-1 xl:max-h-[720px]">
 				<Playlist
@@ -156,7 +156,7 @@ function VideoPlayer({ url }: { url: string }) {
 function LessonHeader({ lesson, authors }: { lesson: Nanomodule; authors: AuthorProps[] }) {
 	return (
 		<div className="flex flex-col px-2 sm:px-0">
-			<div className="multi-gradient card flex flex-wrap justify-between gap-8">
+			<div className="gradient card flex flex-wrap justify-between gap-8">
 				<Link href={`/lessons/${lesson.slug}/questions`}>
 					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
 						<span>Zur Lernkontrolle</span>
