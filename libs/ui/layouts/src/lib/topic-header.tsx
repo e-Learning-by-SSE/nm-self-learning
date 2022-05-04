@@ -10,7 +10,7 @@ export function TopicHeader({
 	imgUrlBanner,
 	children
 }: PropsWithChildren<{
-	imgUrlBanner: string | null;
+	imgUrlBanner?: string | null;
 	parentTitle: string;
 	parentLink: string;
 	title: string;
@@ -18,15 +18,17 @@ export function TopicHeader({
 }>) {
 	return (
 		<div className="flex flex-col">
-			<div className="relative h-48 w-full">
-				<Image
-					className=""
-					src={`http://localhost:1337${imgUrlBanner}`}
-					layout="fill"
-					alt=""
-					objectFit="cover"
-				/>
-			</div>
+			{imgUrlBanner && (
+				<div className="relative h-48 w-full bg-white">
+					<Image
+						className=""
+						src={`http://localhost:1337${imgUrlBanner}`}
+						layout="fill"
+						alt=""
+						objectFit="cover"
+					/>
+				</div>
+			)}
 
 			<div className="glass flex w-full flex-col rounded-b-lg px-8 py-4">
 				<Link href={parentLink}>
