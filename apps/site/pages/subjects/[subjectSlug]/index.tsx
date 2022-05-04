@@ -46,14 +46,17 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 	return (
 		<div className="gradient min-h-screen pb-32">
 			<div className="mx-auto flex flex-col lg:max-w-screen-lg">
-				<TopicHeader imgUrlBanner={imgUrlBanner}>
-					<h1 className="text-6xl">{title}</h1>
-					<div className="mt-4 text-slate-500">{subtitle}</div>
-				</TopicHeader>
-				<div className="px-4 pt-8 lg:max-w-screen-lg lg:px-0">
+				<TopicHeader
+					imgUrlBanner={imgUrlBanner}
+					parentLink="/subjects"
+					parentTitle="Fachgebiet"
+					title={title}
+					subtitle={subtitle}
+				/>
+				<div className="px-4 pt-16 lg:max-w-screen-lg lg:px-0">
 					<h2 className="text-3xl">Spezialisierungen</h2>
 
-					<div className="mt-6 grid gap-16 md:grid-cols-2 lg:grid-cols-3">
+					<div className="mt-8 grid gap-16 md:grid-cols-2 lg:grid-cols-3">
 						{specialities?.data.map(({ attributes }) => (
 							<SpecializationCard
 								key={attributes!.slug}

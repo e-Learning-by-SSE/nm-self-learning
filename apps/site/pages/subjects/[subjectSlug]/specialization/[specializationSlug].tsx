@@ -42,15 +42,13 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 	return (
 		<div className="gradient min-h-screen pb-32">
 			<div className="mx-auto flex flex-col lg:max-w-screen-lg">
-				<TopicHeader imgUrlBanner={imgUrlBanner}>
-					<Link href={`/subjects/${subjectSlug}`}>
-						<a>
-							<h2 className="text-2xl text-indigo-500">{subjectTitle}</h2>
-						</a>
-					</Link>
-					<h1 className="mt-2 text-6xl">{title}</h1>
-					<div className="mt-4 text-slate-500">{subtitle}</div>
-				</TopicHeader>
+				<TopicHeader
+					imgUrlBanner={imgUrlBanner}
+					parentLink={`/subjects/${subjectSlug}`}
+					parentTitle={subjectTitle as string}
+					title={title}
+					subtitle={subtitle}
+				/>
 				<div className="px-4 pt-12 lg:max-w-screen-lg lg:px-0">
 					<div className="grid gap-16 md:grid-cols-2 lg:grid-cols-3">
 						<CourseCard
