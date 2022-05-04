@@ -68,8 +68,8 @@ export default function Course({ course }: CourseProps) {
 				<meta name="author" content={authors[0].name} />
 				<meta name="image" content={course.image?.data?.attributes?.url} />
 			</Head>
-			<div className="relative min-h-screen bg-slate-50 pb-32">
-				<div className="gradient px-2 pt-16 pb-32 sm:px-8">
+			<div className="gradient min-h-screen bg-slate-50 bg-fixed pb-32">
+				<div className="px-2 pt-16 pb-32 sm:px-8">
 					<CenteredContainer>
 						<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 							<div className="flex flex-col justify-between gap-8">
@@ -148,7 +148,7 @@ export default function Course({ course }: CourseProps) {
 
 function TableOfContent({ content }: { content: Course["content"] }) {
 	return (
-		<div className="glass card flex flex-col gap-4">
+		<div className="flex flex-col gap-4">
 			<h2 className="mb-4 text-3xl">Inhalt</h2>
 			<TableOfContentInner content={content} />
 		</div>
@@ -163,7 +163,7 @@ function TableOfContentInner({ content }: { content: Course["content"] }) {
 					return (
 						<div
 							key={chapterOrLesson.title}
-							className="card flex flex-col gap-4 border border-slate-200"
+							className="glass card flex flex-col gap-4 border border-slate-200"
 						>
 							<span className="text-xl font-bold">{chapterOrLesson.title}</span>
 							{
@@ -194,7 +194,7 @@ function TableOfContentInner({ content }: { content: Course["content"] }) {
 					return (
 						<div
 							key={title}
-							className="card flex flex-col gap-4 border border-slate-200"
+							className="glass card flex flex-col gap-4 border border-slate-200"
 						>
 							<span className="text-xl font-bold">{title}</span>
 							{description && description.length > 0 && (
@@ -210,7 +210,7 @@ function TableOfContentInner({ content }: { content: Course["content"] }) {
 										className="rounded-l-lg"
 									></Image>
 								</div>
-								<div className="flex flex-col gap-4 p-4">
+								<div className="flex flex-col gap-4 rounded-r-lg border border-slate-400 p-4">
 									<span className="text-lg font-bold">
 										{course?.data?.attributes?.title}
 									</span>
@@ -228,7 +228,7 @@ function TableOfContentInner({ content }: { content: Course["content"] }) {
 					return (
 						<div
 							key={chapterOrLesson.nanomodule?.data?.attributes?.slug}
-							className="card flex items-center justify-between border border-slate-200"
+							className="glass card flex items-center justify-between border border-slate-200"
 						>
 							<Link href={"/lessons/" + nanomodule?.slug}>
 								<a className="text-xl font-bold hover:underline">
