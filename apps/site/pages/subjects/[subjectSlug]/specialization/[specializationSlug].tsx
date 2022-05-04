@@ -3,7 +3,6 @@ import { getSpecializationBySlug } from "@self-learning/cms-api";
 import { ImageCard } from "@self-learning/ui/common";
 import { TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 type SpecializationPageProps = {
