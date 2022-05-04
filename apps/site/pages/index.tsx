@@ -1,54 +1,36 @@
-import type { User } from "@prisma/client";
-import { database } from "@self-learning/database";
-import { compileMarkdown, extractFrontMatter, MarkdownDocument } from "@self-learning/markdown";
-import { readFile } from "fs/promises";
-import { GetStaticProps } from "next";
-import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
+import { ReactComponent as StudyingSvg } from "../svg/studying.svg";
 
-type IndexPageProps = {
-	users: User[];
-	mdDocument: MarkdownDocument;
-	mdContent: Awaited<ReturnType<typeof compileMarkdown>>;
-};
-
-export const getStaticProps: GetStaticProps<IndexPageProps> = async ({ params }) => {
-	const users = await database.user.findMany();
-
-	const markdown = await readFile(
-		"./libs/util/markdown/src/lib/test-examples/with-frontmatter.md",
-		"utf8"
-	);
-	const mdDocument = extractFrontMatter(markdown);
-	const mdContent = await compileMarkdown(mdDocument.content ?? "");
-	mdDocument.content = null;
-
-	return {
-		props: {
-			users,
-			mdDocument,
-			mdContent
-		}
-	};
-};
-
-export function Index({ users, mdDocument, mdContent }: IndexPageProps) {
+export function Index() {
 	return (
-		<div className="flex h-full flex-col items-center gap-16 py-16">
-			<h1 className="text-6xl font-bold">Hello World</h1>
-			<Link href="/lessons/a-beginners-guide-to-react-introduction">
-				<a className="underline">Lesson #1</a>
-			</Link>
-			<Link href="/courses/the-example-course">
-				<a className="underline">Course #1</a>
-			</Link>{" "}
-			<ul>
-				{users.map(user => (
-					<li key={user.username}>{user.displayName}</li>
-				))}
-			</ul>
-			<div className="prose prose-slate">
-				<MDXRemote {...mdContent}></MDXRemote>
+		<div className="relative flex h-full flex-col gap-16">
+			<div className="absolute left-4 top-4 flex flex-col text-sm text-slate-400">
+				<Link href="/subjects">
+					<a className="underline">Fachgebiete</a>
+				</Link>
+				<Link href="/lessons/a-beginners-guide-to-react-introduction">
+					<a className="underline">Example Lesson</a>
+				</Link>
+				<Link href="/courses/the-example-course">
+					<a className="underline">Example Course</a>
+				</Link>
+			</div>
+			<div className="mx-auto flex gap-32 px-64">
+				<div className="z-20 flex max-w-2xl shrink-0 flex-col py-48">
+					<h1 className="text-8xl">SELF-le@rning</h1>
+					<h2 className="mt-4 text-3xl font-light">Universität Hildesheim</h2>
+
+					<span className="mt-8 text-xl text-slate-600">
+						Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quos, nisi. Vitae
+						magnam perferendis officia, fugiat a, odit velit deleniti consequatur
+						dignissimos sit esse itaque soluta ex corrupti accusantium illo numquam.
+					</span>
+
+					<button className="btn-primary mt-8 w-fit">Call to Action</button>
+				</div>
+				<div className="h-[728px] w-[728px] shrink-0 pt-24">
+					<StudyingSvg />
+				</div>
 			</div>
 		</div>
 	);
