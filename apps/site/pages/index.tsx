@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ReactComponent as StudyingSvg } from "../svg/studying.svg";
 
-export function Index() {
+export function LandingPage() {
 	return (
 		<div className="relative flex h-full flex-col gap-16">
 			<div className="absolute left-4 top-4 flex flex-col text-sm text-slate-400">
@@ -36,4 +36,4 @@ export function Index() {
 	);
 }
 
-export default Index;
+export default LandingPage;
