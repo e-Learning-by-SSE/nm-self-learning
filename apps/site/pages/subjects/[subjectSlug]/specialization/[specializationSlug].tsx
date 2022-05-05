@@ -1,7 +1,7 @@
 import { UserGroupIcon } from "@heroicons/react/solid";
 import { getSpecializationBySlug } from "@self-learning/cms-api";
 import { ImageCard } from "@self-learning/ui/common";
-import { TopicHeader } from "@self-learning/ui/layouts";
+import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 
@@ -49,14 +49,14 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 					subtitle={subtitle}
 				/>
 				<div className="px-4 pt-12 lg:max-w-screen-lg lg:px-0">
-					<div className="grid gap-16 md:grid-cols-2 lg:grid-cols-3">
+					<ItemCardGrid>
 						<CourseCard
 							imgUrl={null}
 							slug="the-example-course"
 							title="Programmierung mit Java"
 							subtitle="A boilerplate driven language designed for writing verbose object-oriented instant legacy code."
 						/>
-					</div>
+					</ItemCardGrid>
 				</div>
 			</div>
 		</div>
@@ -72,7 +72,7 @@ function CourseCard({
 	title: string;
 	slug: string;
 	subtitle: string;
-	imgUrl: string | null;
+	imgUrl?: string | null;
 }) {
 	return (
 		<Link href={`/courses/${slug}`}>

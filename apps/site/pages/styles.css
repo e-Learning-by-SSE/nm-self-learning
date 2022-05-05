@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+	--color-secondary: theme("colors.indigo.500");
+}
+
 @font-face {
 	font-family: "Inter";
 	font-style: normal;
@@ -70,7 +74,7 @@ h3 {
 }
 
 .glass {
-	@apply border border-white bg-white bg-opacity-75 shadow-lg backdrop-blur;
+	@apply border border-white bg-white bg-opacity-75 shadow-lg;
 }
 
 .glass-hover {

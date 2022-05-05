@@ -16,7 +16,7 @@ export function Playlist({
 	course: {
 		title: string;
 	};
-	chapter: {
+	chapter?: {
 		title: string;
 	};
 }) {
@@ -31,7 +31,7 @@ export function Playlist({
 			<div className="flex items-center justify-between gap-4 py-3 px-3">
 				<div className="flex flex-col gap-1">
 					<span className="text-base font-semibold">{course.title}</span>
-					<span className="text-sm">{chapter.title}</span>
+					{chapter && <span className="text-sm">{chapter.title}</span>}
 				</div>
 
 				<button

@@ -14,6 +14,18 @@
 				"description": null,
 				"fields": [
 					{
+						"name": "aboutMe",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
 						"name": "courses",
 						"description": null,
 						"args": [
@@ -374,6 +386,18 @@
 				"fields": null,
 				"inputFields": [
 					{
+						"name": "aboutMe",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
 						"name": "and",
 						"description": null,
 						"type": {
@@ -524,6 +548,18 @@
 				"description": null,
 				"fields": null,
 				"inputFields": [
+					{
+						"name": "aboutMe",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
 					{
 						"name": "courses",
 						"description": null,

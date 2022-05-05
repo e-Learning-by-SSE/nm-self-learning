@@ -29,7 +29,7 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::author.author",
-      "inversedBy": "teams"
+      "mappedBy": "teams"
     },
     "institution": {
       "type": "relation",

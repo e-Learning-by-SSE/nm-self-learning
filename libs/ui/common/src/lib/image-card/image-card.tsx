@@ -11,12 +11,12 @@ export function ImageCard({
 	title: string;
 	subtitle: string | null;
 	slug: string;
-	imgUrl: string | null;
+	imgUrl?: string | null;
 	footer?: ReactElement;
 	badge?: ReactElement;
 }) {
 	return (
-		<div className="relative flex flex-col">
+		<div className="relative flex h-full flex-col">
 			{!imgUrl || imgUrl.length === 0 ? (
 				<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-gradient-to-br from-purple-500 to-blue-400"></div>
 			) : (

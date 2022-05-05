@@ -25,6 +25,7 @@ export type Scalars = {
 
 export type Author = {
 	__typename?: "Author";
+	aboutMe?: Maybe<Scalars["String"]>;
 	courses?: Maybe<CourseRelationResponseCollection>;
 	createdAt?: Maybe<Scalars["DateTime"]>;
 	image?: Maybe<UploadFileEntityResponse>;
@@ -72,6 +73,7 @@ export type AuthorEntityResponseCollection = {
 };
 
 export type AuthorFiltersInput = {
+	aboutMe?: InputMaybe<StringFilterInput>;
 	and?: InputMaybe<Array<InputMaybe<AuthorFiltersInput>>>;
 	courses?: InputMaybe<CourseFiltersInput>;
 	createdAt?: InputMaybe<DateTimeFilterInput>;
@@ -86,6 +88,7 @@ export type AuthorFiltersInput = {
 };
 
 export type AuthorInput = {
+	aboutMe?: InputMaybe<Scalars["String"]>;
 	courses?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 	image?: InputMaybe<Scalars["ID"]>;
 	name?: InputMaybe<Scalars["String"]>;
@@ -1468,6 +1471,7 @@ export type AuthorBySlugQuery = {
 				__typename?: "Author";
 				slug: string;
 				name: string;
+				aboutMe?: string | null;
 				image?: {
 					__typename?: "UploadFileEntityResponse";
 					data?: {
@@ -1478,6 +1482,53 @@ export type AuthorBySlugQuery = {
 							alternativeText?: string | null;
 						} | null;
 					} | null;
+				} | null;
+				teams?: {
+					__typename?: "TeamRelationResponseCollection";
+					data: Array<{
+						__typename?: "TeamEntity";
+						attributes?: {
+							__typename?: "Team";
+							slug: string;
+							title: string;
+							image?: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: {
+										__typename?: "UploadFile";
+										url: string;
+										alternativeText?: string | null;
+									} | null;
+								} | null;
+							} | null;
+						} | null;
+					}>;
+				} | null;
+				courses?: {
+					__typename?: "CourseRelationResponseCollection";
+					data: Array<{
+						__typename?: "CourseEntity";
+						attributes?: {
+							__typename?: "Course";
+							slug: string;
+							title: string;
+							subtitle?: string | null;
+							createdAt?: any | null;
+							updatedAt?: any | null;
+							image?: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: {
+										__typename?: "UploadFile";
+										url: string;
+										alternativeText?: string | null;
+									} | null;
+								} | null;
+							} | null;
+						} | null;
+					}>;
 				} | null;
 				nanomodules?: {
 					__typename?: "NanomoduleRelationResponseCollection";
@@ -1902,11 +1953,47 @@ export const AuthorBySlugDocument = gql`
 				attributes {
 					slug
 					name
+					aboutMe
 					image {
 						data {
 							attributes {
 								url
 								alternativeText
+							}
+						}
+					}
+					teams {
+						data {
+							attributes {
+								slug
+								title
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
+							}
+						}
+					}
+					courses {
+						data {
+							attributes {
+								slug
+								title
+								subtitle
+								createdAt
+								updatedAt
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
 							}
 						}
 					}

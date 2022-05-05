@@ -47,6 +47,9 @@
       "relation": "manyToMany",
       "target": "api::team.team",
       "inversedBy": "authors"
+    },
+    "aboutMe": {
+      "type": "richtext"
     }
   }
 }

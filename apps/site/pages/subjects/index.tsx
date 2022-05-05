@@ -1,8 +1,8 @@
 import { CollectionIcon, VideoCameraIcon } from "@heroicons/react/outline";
 import { getSubjects } from "@self-learning/cms-api";
 import { ImageCard } from "@self-learning/ui/common";
+import { ItemCardGrid } from "@self-learning/ui/layouts";
 import { GetStaticProps } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 type Subject = Awaited<ReturnType<typeof getSubjects>>[0];
@@ -26,17 +26,21 @@ export default function Subjects({ subjects }: SubjectsProps) {
 		<div className="gradient min-h-screen py-16">
 			<div className="mx-auto px-4 lg:max-w-screen-lg lg:px-0">
 				<h1 className="text-4xl sm:text-6xl">Fachgebiete</h1>
-				<div className="mt-16 grid gap-16 md:grid-cols-2 lg:grid-cols-3">
-					{subjects.map(subject => (
-						<SubjectCard
-							key={subject.attributes!.slug}
-							title={subject.attributes!.title}
-							subtitle={subject.attributes!.subtitle}
-							slug={subject.attributes!.slug}
-							imgUrl={subject.attributes!.imageCard!.data!.attributes!.url}
-						/>
+				<ItemCardGrid>
+					{subjects.map(({ attributes }) => (
+						<>
+							{attributes && (
+								<SubjectCard
+									key={attributes.slug}
+									title={attributes.title}
+									subtitle={attributes.subtitle}
+									slug={attributes.slug}
+									imgUrl={attributes.imageCard?.data?.attributes?.url}
+								/>
+							)}
+						</>
 					))}
-				</div>
+				</ItemCardGrid>
 			</div>
 		</div>
 	);
@@ -51,7 +55,7 @@ function SubjectCard({
 	title: string;
 	subtitle: string | null;
 	slug: string;
-	imgUrl: string | null;
+	imgUrl?: string | null;
 }) {
 	return (
 		<Link href={`/subjects/${slug}`}>

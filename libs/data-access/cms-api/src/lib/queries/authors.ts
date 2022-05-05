@@ -37,11 +37,47 @@ gql`
 				attributes {
 					slug
 					name
+					aboutMe
 					image {
 						data {
 							attributes {
 								url
 								alternativeText
+							}
+						}
+					}
+					teams {
+						data {
+							attributes {
+								slug
+								title
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
+							}
+						}
+					}
+					courses {
+						data {
+							attributes {
+								slug
+								title
+								subtitle
+								createdAt
+								updatedAt
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
 							}
 						}
 					}

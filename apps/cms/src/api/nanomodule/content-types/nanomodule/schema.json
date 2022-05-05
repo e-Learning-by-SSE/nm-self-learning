@@ -1,61 +1,67 @@
 {
-	"kind": "collectionType",
-	"collectionName": "nanomodules",
-	"info": {
-		"singularName": "nanomodule",
-		"pluralName": "nanomodules",
-		"displayName": "Nanomodule",
-		"description": ""
-	},
-	"options": {
-		"draftAndPublish": false
-	},
-	"pluginOptions": {},
-	"attributes": {
-		"title": {
-			"type": "string",
-			"required": true,
-			"minLength": 3
-		},
-		"slug": {
-			"type": "uid",
-			"targetField": "title",
-			"required": true,
-			"minLength": 3
-		},
-		"authors": {
-			"type": "relation",
-			"relation": "manyToMany",
-			"target": "api::author.author",
-			"inversedBy": "nanomodules"
-		},
-		"content": {
-			"type": "dynamiczone",
-			"components": ["nanomodule.article", "nanomodule.video", "nanomodule.youtube-video"],
-			"required": true
-		},
-		"questions": {
-			"type": "json",
-			"pluginOptions": {
-				"questions-json": {
-					"enabled": false
-				}
-			}
-		},
-		"description": {
-			"type": "text"
-		},
-		"image": {
-			"type": "media",
-			"multiple": false,
-			"required": false,
-			"allowedTypes": ["images"]
-		},
-		"meta": {
-			"type": "json"
-		},
-		"subtitle": {
-			"type": "text"
-		}
-	}
+  "kind": "collectionType",
+  "collectionName": "nanomodules",
+  "info": {
+    "singularName": "nanomodule",
+    "pluralName": "nanomodules",
+    "displayName": "Nanomodule",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 3
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true,
+      "minLength": 3
+    },
+    "authors": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::author.author",
+      "inversedBy": "nanomodules"
+    },
+    "content": {
+      "type": "dynamiczone",
+      "components": [
+        "nanomodule.article",
+        "nanomodule.video",
+        "nanomodule.youtube-video"
+      ],
+      "required": true
+    },
+    "questions": {
+      "type": "json",
+      "pluginOptions": {
+        "questions-json": {
+          "enabled": false
+        }
+      }
+    },
+    "description": {
+      "type": "text"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "meta": {
+      "type": "json"
+    },
+    "subtitle": {
+      "type": "text"
+    }
+  }
 }
