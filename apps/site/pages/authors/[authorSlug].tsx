@@ -48,7 +48,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps) {
 	return (
 		<div className="gradient min-h-screen pb-32">
-			<CenteredContainer>
+			<CenteredContainer className="gap-8">
 				<AuthorHeader author={author} />
 
 				{/* <div className="card glass w-full">
