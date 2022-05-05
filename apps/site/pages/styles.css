@@ -4,6 +4,7 @@
 
 :root {
 	--color-secondary: theme("colors.indigo.500");
+	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
 }
 
 @font-face {
@@ -86,7 +87,7 @@ h3 {
 }
 
 .gradient {
-	background: linear-gradient(62deg, #c2dbf3, #d7b6f5);
+	background: var(--gradient);
 }
 
 .count {

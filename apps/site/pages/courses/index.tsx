@@ -28,7 +28,7 @@ type NanomoduleHit = {
 export default function Courses() {
 	return (
 		<SidebarLayout>
-			<CenteredContainer defaultPadding={true}>
+			<CenteredContainer>
 				<div className="flex flex-col">
 					<h1 className="mb-8 text-3xl">Empfohlene Kurse</h1>
 					<div className="flex flex-wrap gap-4">

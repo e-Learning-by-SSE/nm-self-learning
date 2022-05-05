@@ -5,12 +5,12 @@ import { PropsWithChildren } from "react";
  */
 export function CenteredContainer({
 	children,
-	defaultPadding
-}: PropsWithChildren<{ defaultPadding?: boolean }>) {
+	className
+}: PropsWithChildren<{ className?: string }>) {
 	return (
 		<div
-			className={`mx-auto flex w-full flex-col gap-8 lg:max-w-screen-lg ${
-				defaultPadding ? "py-16 px-4 lg:px-0" : ""
+			className={`mx-auto flex w-full flex-col px-4 lg:max-w-screen-lg xl:px-0 ${
+				className ? className : ""
 			}`}
 		>
 			{children}

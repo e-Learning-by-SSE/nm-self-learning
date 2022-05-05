@@ -1,11 +1,9 @@
-import { PlusCircleIcon } from "@heroicons/react/outline";
-import { PlayIcon } from "@heroicons/react/solid";
+import { CheckCircleIcon, PlayIcon, PlusCircleIcon, XCircleIcon } from "@heroicons/react/solid";
 import { useApi, useEnrollmentMutations } from "@self-learning/api";
 import { getCourseBySlug } from "@self-learning/cms-api";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
-import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -40,6 +38,30 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 export default function Course({ course }: CourseProps) {
+	return (
+		<div className="flex flex-col">
+			<div className="gradient py-16">
+				<CenteredContainer>
+					<CourseHeader course={course} />
+				</CenteredContainer>
+			</div>
+
+			<div className="py-16">
+				<CenteredContainer>
+					<Competences />
+				</CenteredContainer>
+			</div>
+
+			<div className="flex h-full flex-grow bg-neutral-100 pt-16 pb-32">
+				<CenteredContainer>
+					<TableOfContent content={course.content}></TableOfContent>
+				</CenteredContainer>
+			</div>
+		</div>
+	);
+}
+
+function CourseHeader({ course }: { course: Course }) {
 	const username = "potter";
 	const { data: enrollments } = useApi<CoursesOfUser>(["user", `users/${username}/courses`]);
 	const { signUpMutation, signOutMutation } = useEnrollmentMutations();
@@ -61,95 +83,73 @@ export default function Course({ course }: CourseProps) {
 	const { url, alternativeText } = course.image?.data?.attributes || {};
 
 	return (
-		<>
-			<Head>
-				<title>{course.title}</title>
-				<meta name="description" content={course.description ?? ""} />
-				<meta name="author" content={authors[0].name} />
-				<meta name="image" content={course.image?.data?.attributes?.url} />
-			</Head>
-			<div className="gradient min-h-screen bg-slate-50 bg-fixed pb-32">
-				<div className="px-2 pt-16 pb-32 sm:px-8">
-					<CenteredContainer>
-						<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
-							<div className="flex flex-col justify-between gap-8">
-								<div className="flex flex-col-reverse gap-12 md:flex-col">
-									<AuthorsList authors={authors} />
-									<div>
-										<h1 className="mb-12 text-4xl md:text-6xl">
-											{course.title}
-										</h1>
-										{course.subtitle && (
-											<div className="text-lg tracking-tight">
-												{course.subtitle}
-											</div>
-										)}
-									</div>
-								</div>
-
-								<CreatedUpdatedDates
-									createdAt={new Date(course.createdAt).toLocaleDateString()}
-									updatedAt={new Date(course.updatedAt).toLocaleDateString()}
-								/>
-							</div>
-
-							<div className="flex w-full flex-col gap-4 rounded">
-								<div className="relative h-64 w-full">
-									<Image
-										className="rounded-lg"
-										objectFit="cover"
-										layout="fill"
-										src={`http://localhost:1337${url}` ?? ""}
-										alt={alternativeText ?? ""}
-									></Image>
-								</div>
-								<div className="grid gap-2">
-									<button
-										className="btn-primary"
-										onClick={() =>
-											signUpMutation.mutate({
-												course: course.slug,
-												username
-											})
-										}
-									>
-										<span>{isEnrolled ? "Fortfahren" : "Starten"}</span>
-										<PlayIcon className="h-6" />
-									</button>
-									<button
-										className="btn-secondary"
-										onClick={() =>
-											signOutMutation.mutate({
-												course: course.slug,
-												username
-											})
-										}
-									>
-										<span>Zum Lernplan hinzfügen</span>
-										<PlusCircleIcon className="h-6" />
-									</button>
-								</div>
-							</div>
+		<div className="flex flex-col gap-16">
+			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
+				<div className="flex flex-col justify-between gap-8">
+					<div className="flex flex-col-reverse gap-12 md:flex-col">
+						<AuthorsList authors={authors} />
+						<div>
+							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
+							{course.subtitle && (
+								<div className="text-lg tracking-tight">{course.subtitle}</div>
+							)}
 						</div>
+					</div>
 
-						{course.description && <Description text={course.description} />}
-					</CenteredContainer>
+					<CreatedUpdatedDates
+						createdAt={new Date(course.createdAt).toLocaleDateString()}
+						updatedAt={new Date(course.updatedAt).toLocaleDateString()}
+					/>
 				</div>
 
-				<div className="-mt-16 px-2 sm:px-8">
-					<CenteredContainer>
-						<TableOfContent content={course.content}></TableOfContent>
-					</CenteredContainer>
+				<div className="flex w-full flex-col gap-4 rounded">
+					<div className="relative h-64 w-full shrink-0">
+						<Image
+							className="shrink-0 rounded-lg"
+							objectFit="cover"
+							layout="fill"
+							src={`http://localhost:1337${url}` ?? ""}
+							alt={alternativeText ?? ""}
+						></Image>
+					</div>
+					<div className="grid gap-2">
+						<button
+							className="btn-primary"
+							onClick={() =>
+								signUpMutation.mutate({
+									course: course.slug,
+									username
+								})
+							}
+						>
+							<span>{isEnrolled ? "Fortfahren" : "Starten"}</span>
+							<PlayIcon className="h-6" />
+						</button>
+						<button
+							className="btn-secondary"
+							onClick={() =>
+								signOutMutation.mutate({
+									course: course.slug,
+									username
+								})
+							}
+						>
+							<span>Zum Lernplan hinzfügen</span>
+							<PlusCircleIcon className="h-6" />
+						</button>
+					</div>
 				</div>
 			</div>
-		</>
+
+			{course.description && <Description text={course.description} />}
+		</div>
 	);
 }
 
 function TableOfContent({ content }: { content: Course["content"] }) {
 	return (
-		<div className="flex flex-col gap-4">
-			<h2 className="mb-4 text-3xl">Inhalt</h2>
+		<div className="flex flex-col gap-8">
+			<h2 className="mb-4 text-4xl">Inhalt</h2>
 			<TableOfContentInner content={content} />
 		</div>
 	);
@@ -263,5 +263,83 @@ function Description({ text }: { text: string }) {
 		<div className="glass card">
 			<p>{text}</p>
 		</div>
+	);
+}
+
+export function Competences() {
+	return (
+		<div className="grid gap-16 divide-y divide-slate-200 md:grid-cols-2 md:gap-0 md:divide-x md:divide-y-0">
+			<div className="flex flex-col gap-12 md:pr-16">
+				<span className="text-lg font-bold">Du benötigst folgende Voraussetzungen...</span>
+
+				<div className="flex flex-col gap-4">
+					<RequirementCompetence
+						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
+						checked={true}
+					/>
+					<RequirementCompetence
+						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
+						checked={true}
+					/>
+					<RequirementCompetence
+						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
+						checked={false}
+					/>
+				</div>
+			</div>
+			<div className="flex flex-col gap-12 pt-16 md:pl-16 md:pt-0">
+				<span className="text-lg font-bold">Du erwirbst folgende Kompetenzen...</span>
+				<div className="flex flex-col gap-4">
+					<AwardedCompetence
+						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
+						checked={true}
+					/>
+					<AwardedCompetence
+						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
+						checked={false}
+					/>
+					<AwardedCompetence
+						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
+						checked={true}
+					/>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function RequirementCompetence({ text, checked }: { text: string; checked: boolean }) {
+	return (
+		<span className="flex items-center gap-4">
+			{checked ? (
+				<>
+					<CheckCircleIcon className="h-8 shrink-0 text-emerald-500" />
+					<span className="text-slate-400">{text}</span>
+				</>
+			) : (
+				<>
+					<XCircleIcon className="h-8 shrink-0 text-red-500" />
+					<span className="font-semibold">{text}</span>
+				</>
+			)}
+		</span>
+	);
+}
+
+function AwardedCompetence({ text, checked }: { text: string; checked: boolean }) {
+	return (
+		<span className="flex items-center gap-4">
+			{checked ? (
+				<>
+					<CheckCircleIcon className="h-8 shrink-0 text-emerald-500" />
+					<span className="text-slate-400">{text}</span>
+				</>
+			) : (
+				<>
+					<PlusCircleIcon className="h-8 shrink-0 text-indigo-500" />
+					<span className="font-semibold">{text}</span>
+				</>
+			)}
+		</span>
 	);
 }
