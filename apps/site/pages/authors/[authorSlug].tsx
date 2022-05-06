@@ -47,80 +47,90 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps) {
 	return (
-		<div className="gradient min-h-screen pb-32">
-			<CenteredContainer className="gap-8">
-				<AuthorHeader author={author} />
+		<div className="gradient min-h-screen">
+			<div className="gradient">
+				<CenteredContainer className="py-16">
+					<AuthorHeader author={author} aboutMeMarkdown={aboutMeMarkdown} />
+				</CenteredContainer>
+			</div>
 
-				{/* <div className="card glass w-full">
-					<div className="prose">
-						<MDXRemote {...aboutMeMarkdown}></MDXRemote>
-					</div>
-				</div> */}
-
-				<span>
-					<h2 className="text-3xl">Kurse</h2>
-					<Link href={`/authors/${author.slug}/courses`}>
-						<a className="text-sm text-secondary hover:underline">Alle anzeigen</a>
-					</Link>
-				</span>
-				<ItemCardGrid>
-					{author.courses?.data.map(({ attributes }) => (
-						<Link href={`/courses/${attributes!.slug}`} key={attributes!.slug}>
-							<a>
-								<ImageCard
-									slug={attributes!.slug}
-									title={attributes!.title}
-									subtitle={attributes!.subtitle ?? ""}
-									imgUrl={attributes!.image?.data?.attributes?.url}
-								/>
-							</a>
+			<div className="bg-white py-16">
+				<CenteredContainer className="gap-8">
+					<span>
+						<h2 className="text-3xl">Kurse</h2>
+						<Link href={`/authors/${author.slug}/courses`}>
+							<a className="text-sm text-secondary hover:underline">Alle anzeigen</a>
 						</Link>
-					))}
-				</ItemCardGrid>
+					</span>
+					<ItemCardGrid>
+						{author.courses?.data.map(({ attributes }) => (
+							<Link href={`/courses/${attributes!.slug}`} key={attributes!.slug}>
+								<a>
+									<ImageCard
+										slug={attributes!.slug}
+										title={attributes!.title}
+										subtitle={attributes!.subtitle ?? ""}
+										imgUrl={attributes!.image?.data?.attributes?.url}
+									/>
+								</a>
+							</Link>
+						))}
+					</ItemCardGrid>
 
-				<span className="mt-8 mb-8 h-[1px] bg-indigo-300"></span>
+					{/* <span className="mt-8 mb-8 h-[1px] bg-indigo-300"></span> */}
+				</CenteredContainer>
+			</div>
 
-				<span className="">
-					<h2 className="text-3xl">Nanomodule</h2>
-					<Link href={`/authors/${author.slug}/lessons`}>
-						<a className="text-sm text-secondary hover:underline">Alle anzeigen</a>
-					</Link>
-				</span>
-				<ItemCardGrid>
-					{author.nanomodules?.data.map(({ attributes }) => (
-						<Link href={`/courses/${attributes!.slug}`} key={attributes?.slug}>
-							<a>
-								<ImageCard
-									slug={attributes!.slug}
-									title={attributes!.title}
-									subtitle={attributes!.subtitle ?? ""}
-									imgUrl={attributes!.image?.data?.attributes?.url}
-								/>
-							</a>
+			<div className="bg-gray-100 py-16">
+				<CenteredContainer className="gap-8">
+					<span className="">
+						<h2 className="text-3xl">Nanomodule</h2>
+						<Link href={`/authors/${author.slug}/lessons`}>
+							<a className="text-sm text-secondary hover:underline">Alle anzeigen</a>
 						</Link>
-					))}
-				</ItemCardGrid>
-			</CenteredContainer>
+					</span>
+					<ItemCardGrid>
+						{author.nanomodules?.data.map(({ attributes }) => (
+							<Link href={`/courses/${attributes!.slug}`} key={attributes?.slug}>
+								<a>
+									<ImageCard
+										slug={attributes!.slug}
+										title={attributes!.title}
+										subtitle={attributes!.subtitle ?? ""}
+										imgUrl={attributes!.image?.data?.attributes?.url}
+									/>
+								</a>
+							</Link>
+						))}
+					</ItemCardGrid>
+				</CenteredContainer>
+			</div>
 		</div>
 	);
 }
 
-export function AuthorHeader({ author }: { author: Author }) {
+export function AuthorHeader({
+	author,
+	aboutMeMarkdown
+}: {
+	author: Author;
+	aboutMeMarkdown: AuthorPageProps["aboutMeMarkdown"];
+}) {
 	return (
-		<div className="glass flex flex-wrap items-center gap-8 rounded-b-lg px-8 py-4">
-			<div className="relative mx-auto shrink-0 sm:mx-0">
+		<div className="flex flex-col gap-8 lg:flex-row">
+			<div className="relative mx-auto shrink-0 lg:mx-0">
 				<Image
 					className="rounded-lg"
-					height="128"
-					width="128"
+					height="256"
+					width="256"
 					src={`http://localhost:1337${author?.image?.data?.attributes?.url}` ?? ""}
 					alt={author?.image?.data?.attributes?.alternativeText ?? ""}
 				></Image>
 			</div>
-			<div className="mx-auto flex flex-col place-items-center sm:mx-0">
-				<h1 className="text-3xl sm:text-6xl">{author.name}</h1>
+			<div className="flex flex-col place-items-center lg:place-content-start">
+				<h1 className="text-center text-3xl sm:text-6xl lg:self-start">{author.name}</h1>
 
-				<div className="mt-4 flex flex-wrap place-content-center items-center gap-4">
+				<div className="mt-8 flex flex-wrap place-content-center gap-4 lg:self-start">
 					{author.teams?.data.map(({ attributes }) => (
 						<TeamChip
 							key={attributes!.slug}
@@ -129,6 +139,14 @@ export function AuthorHeader({ author }: { author: Author }) {
 						/>
 					))}
 				</div>
+
+				{aboutMeMarkdown && (
+					<div className="card glass mt-8 w-fit">
+						<div className="prose max-w-full">
+							<MDXRemote {...aboutMeMarkdown}></MDXRemote>
+						</div>
+					</div>
+				)}
 			</div>
 		</div>
 	);
