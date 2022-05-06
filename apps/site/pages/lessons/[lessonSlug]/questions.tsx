@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
 import { getNanomoduleQuestionsBySlug } from "@self-learning/cms-api";
-import { TopicHeader } from "@self-learning/ui/layouts";
+import { CenteredContainer, TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -138,8 +138,8 @@ export default function QuestionsPage({ nanomodule }: QuestionsPageProps) {
 	}, [index, questions]);
 
 	return (
-		<div className="gradient flex min-h-screen bg-fixed">
-			<div className="mx-auto flex w-full flex-col px-2 pb-16 md:max-w-3xl md:px-2">
+		<div className="gradient min-h-screen">
+			<CenteredContainer className="pb-16">
 				<TopicHeader
 					imgUrlBanner={image?.data?.attributes?.url}
 					title="Lernkontrolle"
@@ -171,8 +171,10 @@ export default function QuestionsPage({ nanomodule }: QuestionsPageProps) {
 						</div>
 					</div>
 				</TopicHeader>
+			</CenteredContainer>
 
-				<div className="flex flex-col gap-16 pt-16">
+			<div className="bg-neutral-100 py-16">
+				<div className="mx-auto max-w-3xl px-4 lg:px-0">
 					<Question title={currentQuestion.question} answers={currentQuestion.answers} />
 				</div>
 			</div>
@@ -182,25 +184,33 @@ export default function QuestionsPage({ nanomodule }: QuestionsPageProps) {
 
 function Question({ title, answers }: { title: string; answers: { text: string }[] }) {
 	return (
-		<>
+		<div className="flex flex-col gap-16">
 			<h2 className="text-4xl">{title}</h2>
 
-			<ul className="flex flex-col gap-4">
+			<ul className="flex flex-col gap-8">
 				{answers.map(answer => (
-					<label
-						htmlFor={answer.text}
-						key={answer.text}
-						className="card glass flex items-center gap-2"
-					>
-						<input
-							type="checkbox"
-							className="wih checked:bg-indigo-500 focus:ring-1 focus:ring-indigo-500"
-							id={answer.text}
-						/>
-						{answer.text}
-					</label>
+					<Answer key={answer.text} answer={answer} />
 				))}
 			</ul>
-		</>
+		</div>
+	);
+}
+
+function Answer({ answer }: { answer: { text: string } }) {
+	const [selected, setSelected] = useState(false);
+
+	function toggleSelected() {
+		setSelected(value => !value);
+	}
+
+	return (
+		<button
+			className={`card text-start flex w-full border shadow-lg ${
+				selected ? "border-indigo-400 bg-indigo-500 text-white" : "border-white bg-white"
+			}`}
+			onClick={toggleSelected}
+		>
+			<span className="font">{answer.text}</span>
+		</button>
 	);
 }
