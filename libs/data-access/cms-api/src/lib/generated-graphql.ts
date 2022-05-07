@@ -1927,6 +1927,70 @@ export type SubjectBySlugQuery = {
 	} | null;
 };
 
+export type TeamBySlugQueryVariables = Exact<{
+	slug: Scalars["String"];
+}>;
+
+export type TeamBySlugQuery = {
+	__typename?: "Query";
+	teams?: {
+		__typename?: "TeamEntityResponseCollection";
+		data: Array<{
+			__typename?: "TeamEntity";
+			attributes?: {
+				__typename?: "Team";
+				slug: string;
+				title: string;
+				description?: string | null;
+				image?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: {
+							__typename?: "UploadFile";
+							url: string;
+							alternativeText?: string | null;
+						} | null;
+					} | null;
+				} | null;
+				authors?: {
+					__typename?: "AuthorRelationResponseCollection";
+					data: Array<{
+						__typename?: "AuthorEntity";
+						attributes?: {
+							__typename?: "Author";
+							slug: string;
+							name: string;
+							image?: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: {
+										__typename?: "UploadFile";
+										url: string;
+										alternativeText?: string | null;
+									} | null;
+								} | null;
+							} | null;
+						} | null;
+					}>;
+				} | null;
+				institution?: {
+					__typename?: "InstitutionEntityResponse";
+					data?: {
+						__typename?: "InstitutionEntity";
+						attributes?: {
+							__typename?: "Institution";
+							title: string;
+							slug: string;
+						} | null;
+					} | null;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export const AuthorsDocument = gql`
 	query authors {
 		authors {
@@ -2305,6 +2369,51 @@ export const SubjectBySlugDocument = gql`
 		}
 	}
 `;
+export const TeamBySlugDocument = gql`
+	query teamBySlug($slug: String!) {
+		teams(filters: { slug: { eq: $slug } }) {
+			data {
+				attributes {
+					slug
+					title
+					description
+					image {
+						data {
+							attributes {
+								url
+								alternativeText
+							}
+						}
+					}
+					authors {
+						data {
+							attributes {
+								slug
+								name
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
+							}
+						}
+					}
+					institution {
+						data {
+							attributes {
+								title
+								slug
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
 
 export type SdkFunctionWrapper = <T>(
 	action: (requestHeaders?: Record<string, string>) => Promise<T>,
@@ -2441,6 +2550,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"subjectBySlug",
+				"query"
+			);
+		},
+		teamBySlug(
+			variables: TeamBySlugQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<TeamBySlugQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<TeamBySlugQuery>(TeamBySlugDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"teamBySlug",
 				"query"
 			);
 		}
