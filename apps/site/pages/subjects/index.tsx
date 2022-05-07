@@ -4,6 +4,7 @@ import { ImageCard } from "@self-learning/ui/common";
 import { ItemCardGrid } from "@self-learning/ui/layouts";
 import { GetStaticProps } from "next";
 import Link from "next/link";
+import { Fragment } from "react";
 
 type Subject = Awaited<ReturnType<typeof getSubjects>>[0];
 
@@ -28,17 +29,13 @@ export default function Subjects({ subjects }: SubjectsProps) {
 				<h1 className="mb-16 text-4xl sm:text-6xl">Fachgebiete</h1>
 				<ItemCardGrid>
 					{subjects.map(({ attributes }) => (
-						<>
-							{attributes && (
-								<SubjectCard
-									key={attributes.slug}
-									title={attributes.title}
-									subtitle={attributes.subtitle}
-									slug={attributes.slug}
-									imgUrl={attributes.imageCard?.data?.attributes?.url}
-								/>
-							)}
-						</>
+						<SubjectCard
+							key={attributes!.slug}
+							title={attributes!.title}
+							subtitle={attributes!.subtitle}
+							slug={attributes!.slug}
+							imgUrl={attributes!.imageCard?.data?.attributes?.url}
+						/>
 					))}
 				</ItemCardGrid>
 			</div>
