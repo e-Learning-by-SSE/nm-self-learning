@@ -2,7 +2,7 @@ import { CheckCircleIcon, PlayIcon, PlusCircleIcon, XCircleIcon } from "@heroico
 import { useApi, useEnrollmentMutations } from "@self-learning/api";
 import { getCourseBySlug } from "@self-learning/cms-api";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -39,24 +39,18 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 export default function Course({ course }: CourseProps) {
 	return (
-		<div className="flex flex-col">
-			<div className="gradient py-16">
-				<CenteredContainer>
-					<CourseHeader course={course} />
-				</CenteredContainer>
-			</div>
+		<div className="bg-neutral-100 pb-32">
+			<CenteredSection className="gradient">
+				<CourseHeader course={course} />
+			</CenteredSection>
 
-			<div className="py-16">
-				<CenteredContainer>
-					<Competences />
-				</CenteredContainer>
-			</div>
+			<CenteredSection className="bg-white">
+				<Competences />
+			</CenteredSection>
 
-			<div className="flex h-full flex-grow bg-neutral-100 pt-16 pb-32">
-				<CenteredContainer>
-					<TableOfContent content={course.content}></TableOfContent>
-				</CenteredContainer>
-			</div>
+			<CenteredSection className="bg-neutral-100">
+				<TableOfContent content={course.content}></TableOfContent>
+			</CenteredSection>
 		</div>
 	);
 }

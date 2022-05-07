@@ -1,11 +1,11 @@
 import { getAuthorBySlug } from "@self-learning/cms-api";
 import { compileMarkdown } from "@self-learning/markdown";
 import { ImageCard } from "@self-learning/ui/common";
-import { CenteredContainer, ItemCardGrid } from "@self-learning/ui/layouts";
+import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
+import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { MDXRemote } from "next-mdx-remote";
 
 type Author = ResolvedValue<typeof getAuthorBySlug>;
 
@@ -47,15 +47,21 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps) {
 	return (
-		<div className="gradient min-h-screen">
-			<div className="gradient">
-				<CenteredContainer className="py-16">
-					<AuthorHeader author={author} aboutMeMarkdown={aboutMeMarkdown} />
-				</CenteredContainer>
-			</div>
+		<div className="min-h-screen">
+			<CenteredSection className="gradient">
+				<AuthorHeader author={author} />
+			</CenteredSection>
 
-			<div className="bg-white py-16">
-				<CenteredContainer className="gap-8">
+			{aboutMeMarkdown && (
+				<CenteredSection className="bg-white">
+					<div className="prose max-w-full">
+						<MDXRemote {...aboutMeMarkdown}></MDXRemote>
+					</div>
+				</CenteredSection>
+			)}
+
+			<CenteredSection className="bg-neutral-100">
+				<div className="flex flex-col gap-8">
 					<span>
 						<h2 className="text-3xl">Kurse</h2>
 						<Link href={`/authors/${author.slug}/courses`}>
@@ -76,13 +82,11 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 							</Link>
 						))}
 					</ItemCardGrid>
+				</div>
+			</CenteredSection>
 
-					{/* <span className="mt-8 mb-8 h-[1px] bg-indigo-300"></span> */}
-				</CenteredContainer>
-			</div>
-
-			<div className="bg-gray-100 py-16">
-				<CenteredContainer className="gap-8">
+			<CenteredSection className="bg-white">
+				<div className="flex flex-col gap-8">
 					<span className="">
 						<h2 className="text-3xl">Nanomodule</h2>
 						<Link href={`/authors/${author.slug}/lessons`}>
@@ -103,21 +107,15 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 							</Link>
 						))}
 					</ItemCardGrid>
-				</CenteredContainer>
-			</div>
+				</div>
+			</CenteredSection>
 		</div>
 	);
 }
 
-export function AuthorHeader({
-	author,
-	aboutMeMarkdown
-}: {
-	author: Author;
-	aboutMeMarkdown: AuthorPageProps["aboutMeMarkdown"];
-}) {
+export function AuthorHeader({ author }: { author: Author }) {
 	return (
-		<div className="flex flex-col gap-8 lg:flex-row">
+		<div className="flex flex-col place-items-center gap-16">
 			<div className="relative mx-auto shrink-0 lg:mx-0">
 				<Image
 					className="rounded-lg"
@@ -127,10 +125,10 @@ export function AuthorHeader({
 					alt={author?.image?.data?.attributes?.alternativeText ?? ""}
 				></Image>
 			</div>
-			<div className="flex flex-col place-items-center lg:place-content-start">
-				<h1 className="text-center text-3xl sm:text-6xl lg:self-start">{author.name}</h1>
+			<div className="flex flex-col place-items-center gap-16">
+				<h1 className="text-3xl sm:text-6xl">{author.name}</h1>
 
-				<div className="mt-8 flex flex-wrap place-content-center gap-4 lg:self-start">
+				<div className="flex flex-wrap gap-4">
 					{author.teams?.data.map(({ attributes }) => (
 						<TeamChip
 							key={attributes!.slug}
@@ -139,14 +137,6 @@ export function AuthorHeader({
 						/>
 					))}
 				</div>
-
-				{aboutMeMarkdown && (
-					<div className="card glass mt-8 w-fit">
-						<div className="prose max-w-full">
-							<MDXRemote {...aboutMeMarkdown}></MDXRemote>
-						</div>
-					</div>
-				)}
 			</div>
 		</div>
 	);
