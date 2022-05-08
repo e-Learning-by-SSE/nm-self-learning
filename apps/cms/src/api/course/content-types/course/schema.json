@@ -20,9 +20,6 @@
     "subtitle": {
       "type": "text"
     },
-    "description": {
-      "type": "text"
-    },
     "image": {
       "type": "media",
       "multiple": false,
@@ -41,8 +38,8 @@
       "type": "dynamiczone",
       "components": [
         "nanomodule.chapter",
-        "nanomodule.nanomodule-relation",
-        "nanomodule.course-relation"
+        "nanomodule.course-relation",
+        "nanomodule.nanomodule-relation"
       ]
     },
     "authors": {
@@ -50,6 +47,9 @@
       "relation": "manyToMany",
       "target": "api::author.author",
       "inversedBy": "courses"
+    },
+    "description": {
+      "type": "richtext"
     }
   }
 }

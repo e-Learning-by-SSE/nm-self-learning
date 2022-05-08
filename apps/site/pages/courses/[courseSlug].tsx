@@ -1,18 +1,21 @@
 import { CheckCircleIcon, PlayIcon, PlusCircleIcon, XCircleIcon } from "@heroicons/react/solid";
 import { useApi, useEnrollmentMutations } from "@self-learning/api";
 import { getCourseBySlug } from "@self-learning/cms-api";
+import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
-import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
+import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CoursesOfUser } from "../api/users/[username]/courses";
 
-type Course = Exclude<Awaited<ReturnType<typeof getCourseBySlug>>, null>;
+type Course = ResolvedValue<typeof getCourseBySlug>;
 
 type CourseProps = {
 	course: Course;
+	markdownDescription: CompiledMarkdown | null;
 };
 
 export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) => {
@@ -24,8 +27,15 @@ export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) =>
 
 	const course = (await getCourseBySlug(courseSlug)) as Course;
 
+	let markdownDescription = null;
+
+	if (course?.description && course.description.length > 0) {
+		markdownDescription = await compileMarkdown(course.description);
+		course.description = null;
+	}
+
 	return {
-		props: { course },
+		props: { course, markdownDescription },
 		notFound: !course
 	};
 };
@@ -37,11 +47,11 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
-export default function Course({ course }: CourseProps) {
+export default function Course({ course, markdownDescription }: CourseProps) {
 	return (
 		<div className="bg-neutral-100 pb-32">
 			<CenteredSection className="gradient">
-				<CourseHeader course={course} />
+				<CourseHeader course={course} markdownDescription={markdownDescription} />
 			</CenteredSection>
 
 			<CenteredSection className="bg-white">
@@ -55,7 +65,13 @@ export default function Course({ course }: CourseProps) {
 	);
 }
 
-function CourseHeader({ course }: { course: Course }) {
+function CourseHeader({
+	course,
+	markdownDescription
+}: {
+	course: Course;
+	markdownDescription: CompiledMarkdown | null;
+}) {
 	const username = "potter";
 	const { data: enrollments } = useApi<CoursesOfUser>(["user", `users/${username}/courses`]);
 	const { signUpMutation, signOutMutation } = useEnrollmentMutations();
@@ -135,7 +151,7 @@ function CourseHeader({ course }: { course: Course }) {
 				</div>
 			</div>
 
-			{course.description && <Description text={course.description} />}
+			{markdownDescription && <Description content={markdownDescription} />}
 		</div>
 	);
 }
@@ -252,10 +268,10 @@ function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; upda
 	);
 }
 
-function Description({ text }: { text: string }) {
+function Description({ content }: { content: CompiledMarkdown }) {
 	return (
-		<div className="glass card">
-			<p>{text}</p>
+		<div className="glass card prose max-w-full">
+			<MDXRemote {...content}></MDXRemote>
 		</div>
 	);
 }

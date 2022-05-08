@@ -19,3 +19,5 @@ import { serialize } from "next-mdx-remote/serialize";
 export function compileMarkdown(markdown: string) {
 	return serialize(markdown);
 }
+
+export type CompiledMarkdown = Awaited<ReturnType<typeof compileMarkdown>>;
