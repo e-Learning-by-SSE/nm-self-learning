@@ -20,4 +20,18 @@ export function compileMarkdown(markdown: string) {
 	return serialize(markdown);
 }
 
+/**
+ * Return type of the {@link compileMarkdown} function.
+ * @example
+ * type PageProps = {
+ * 	markdownContent: CompiledMarkdown;
+ * }
+ *
+ * export const getStaticProps: GetStaticProps<PageProps> = async ({ params }) => {
+ * 	const markdownContent = await compileMarkdown(team.description);
+ * 	return {
+ * 		props: { markdownContent }
+ * 	};
+ * };
+ */
 export type CompiledMarkdown = Awaited<ReturnType<typeof compileMarkdown>>;

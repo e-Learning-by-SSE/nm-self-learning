@@ -1,7 +1,7 @@
 import { getTeamBySlug } from "@self-learning/cms-api";
-import { compileMarkdown } from "@self-learning/markdown";
+import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { AuthorChip } from "@self-learning/ui/common";
-import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
@@ -10,7 +10,7 @@ type Team = ResolvedValue<typeof getTeamBySlug>;
 
 type TeamPageProps = {
 	team: Team;
-	markdownDescription: Awaited<ReturnType<typeof compileMarkdown>> | null;
+	markdownDescription: CompiledMarkdown | null;
 };
 
 export const getStaticProps: GetStaticProps<TeamPageProps> = async ({ params }) => {

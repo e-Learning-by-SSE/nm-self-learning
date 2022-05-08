@@ -1,5 +1,5 @@
 import { getAuthorBySlug } from "@self-learning/cms-api";
-import { compileMarkdown } from "@self-learning/markdown";
+import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -11,7 +11,7 @@ type Author = ResolvedValue<typeof getAuthorBySlug>;
 
 type AuthorPageProps = {
 	author: Author;
-	aboutMeMarkdown: Awaited<ReturnType<typeof compileMarkdown>> | null;
+	aboutMeMarkdown: CompiledMarkdown | null;
 };
 
 export const getStaticProps: GetStaticProps<AuthorPageProps> = async ({ params }) => {
