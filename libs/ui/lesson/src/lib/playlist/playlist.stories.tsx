@@ -50,7 +50,7 @@ export default {
 } as ComponentMeta<typeof Playlist>;
 
 const Template: ComponentStory<typeof Playlist> = args => (
-	<div className="card multi-gradient h-[728px] w-[420px] overflow-hidden px-8">
+	<div className="card gradient h-[728px] w-[420px] overflow-hidden px-8">
 		<Playlist {...args} />
 	</div>
 );

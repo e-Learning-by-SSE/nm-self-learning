@@ -11,7 +11,7 @@ Displays a list of authors.
 
 <Canvas>
 	<Story name="Default">
-		<div className="multi-gradient card p-8">
+		<div className="gradient card p-8">
 			<AuthorsList
 				authors={[
 					{
@@ -41,7 +41,7 @@ When `imgUrl` is not specified, a placeholder will be rendered.
 
 <Canvas>
 	<Story name="Missing Image">
-		<div className="multi-gradient card p-8">
+		<div className="gradient card p-8">
 			<AuthorChip name="Max Mustermann" slug="max-mustermann" />
 		</div>
 	</Story>
@@ -53,7 +53,7 @@ When `imgUrl` cannot be resolved, a placeholder will be rendered.
 
 <Canvas>
 	<Story name="Invalid URL">
-		<div className="multi-gradient card p-8">
+		<div className="gradient card p-8">
 			<AuthorChip name="Max Mustermann" slug="max-mustermann" imgUrl="/invalid-url" />
 		</div>
 	</Story>

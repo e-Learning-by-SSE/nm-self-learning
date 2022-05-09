@@ -7,7 +7,7 @@ export default {
 } as ComponentMeta<typeof AuthorChip>;
 
 const Template: ComponentStory<typeof AuthorChip> = args => (
-	<div className="multi-gradient w-fit p-16">
+	<div className="gradient w-fit p-16">
 		<AuthorChip {...args} />
 	</div>
 );

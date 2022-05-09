@@ -18,39 +18,152 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) => {
-	const courseSlug = params?.courseSlug as string | undefined;
+// export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) => {
+// 	const courseSlug = params?.courseSlug as string | undefined;
 
-	if (!courseSlug) {
-		throw new Error("No slug provided.");
-	}
+// 	if (!courseSlug) {
+// 		throw new Error("No slug provided.");
+// 	}
 
-	const course = (await getCourseBySlug(courseSlug)) as Course;
+// 	const course = (await getCourseBySlug(courseSlug)) as Course;
 
-	let markdownDescription = null;
+// 	let markdownDescription = null;
 
-	if (course?.description && course.description.length > 0) {
-		markdownDescription = await compileMarkdown(course.description);
-		course.description = null;
-	}
+// 	if (course?.description && course.description.length > 0) {
+// 		markdownDescription = await compileMarkdown(course.description);
+// 		course.description = null;
+// 	}
 
-	return {
-		props: { course, markdownDescription },
-		notFound: !course
-	};
+// 	return {
+// 		props: { course, markdownDescription },
+// 		notFound: !course
+// 	};
+// };
+
+// export const getStaticPaths: GetStaticPaths = () => {
+// 	return {
+// 		paths: [],
+// 		fallback: "blocking"
+// 	};
+// };
+
+const course = {
+	title: "The Example Course",
+	slug: "the-example-course",
+	subtitle:
+		"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.",
+	description: null,
+	createdAt: "2022-04-01T13:20:38.591Z",
+	updatedAt: "2022-05-08T09:32:41.573Z",
+	image: {
+		data: {
+			attributes: {
+				url: "/uploads/Screenshot_2022_04_01_151614_2c2c4eee22.png",
+				alternativeText: "Screenshot 2022-04-01 151614.png"
+			}
+		}
+	},
+	authors: {
+		data: [
+			{
+				attributes: {
+					slug: "patrick-bateman",
+					name: "Patrick Bateman",
+					image: {
+						data: {
+							attributes: {
+								url: "/uploads/patrick_bateman_ba863d3f83.jpg",
+								alternativeText: "Picture of Patrick Bateman"
+							}
+						}
+					}
+				}
+			},
+			{
+				attributes: {
+					slug: "kent-c-dodds",
+					name: "Kent C. Dodds",
+					image: {
+						data: {
+							attributes: {
+								url: "/uploads/kent_c_dodds_9f253d7344.png",
+								alternativeText: "Picture of Kent C. Dodds"
+							}
+						}
+					}
+				}
+			}
+		]
+	},
+	content: [
+		{
+			__typename: "ComponentNanomoduleNanomoduleRelation",
+			nanomodule: {
+				data: {
+					attributes: {
+						slug: "summary-of-the-example-course",
+						title: "Example Course Summary"
+					}
+				}
+			}
+		},
+		{
+			__typename: "ComponentNanomoduleChapter",
+			title: "Chapter One",
+			description:
+				"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.",
+			lessons: {
+				data: [
+					{
+						attributes: {
+							slug: "a-beginners-guide-to-react-introduction",
+							title: "A Beginners Guide to React Introduction"
+						}
+					},
+					{
+						attributes: {
+							slug: "create-a-user-interface-with-vanilla-java-script-and-dom",
+							title: "Create a User Interface with Vanilla JavaScript and DOM"
+						}
+					},
+					{
+						attributes: {
+							slug: "create-a-user-interface-with-react-s-create-element-api",
+							title: "Create a User Interface with React’s createElement API"
+						}
+					}
+				]
+			}
+		},
+		{
+			__typename: "ComponentNanomoduleCourseRelation",
+			title: "A Nested Course",
+			description:
+				"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.",
+			course: {
+				data: {
+					attributes: {
+						title: "The Example Course",
+						subtitle:
+							"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.",
+						image: {
+							data: {
+								attributes: {
+									url: "/uploads/Screenshot_2022_04_01_151614_2c2c4eee22.png"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	]
 };
 
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		paths: [],
-		fallback: "blocking"
-	};
-};
-
-export default function Course({ course, markdownDescription }: CourseProps) {
+export default function Course() {
 	return (
-		<div className="bg-neutral-100 pb-32">
-			<CenteredSection className="gradient">
+		<div className="min-h-screen bg-neutral-100 pb-32">
+			{/* <CenteredSection className="gradient">
 				<CourseHeader course={course} markdownDescription={markdownDescription} />
 			</CenteredSection>
 
@@ -60,7 +173,7 @@ export default function Course({ course, markdownDescription }: CourseProps) {
 
 			<CenteredSection className="bg-neutral-100">
 				<TableOfContent content={course.content}></TableOfContent>
-			</CenteredSection>
+			</CenteredSection> */}
 		</div>
 	);
 }

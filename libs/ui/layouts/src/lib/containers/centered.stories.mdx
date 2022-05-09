@@ -1,0 +1,47 @@
+import { Canvas, Meta, Story } from "@storybook/addon-docs";
+import { CenteredSection } from "./centered-section.tsx";
+import { CenteredContainer } from "./centered-container.tsx";
+
+<Meta title="Layouts/Containers/Centered" />
+
+# Centered
+
+## Centered Section
+
+A `CenteredSection` is a wrapper for `CenteredContainer` that adds some vertical padding and uses 100% width.
+You can use the `className` property to add a background color to a section.
+
+<Canvas>
+	<Story name="Centered Section">
+		<CenteredSection className="gradient flex">
+			<div className="bg-white p-4">Container 1</div>
+		</CenteredSection>
+		<CenteredSection className="flex bg-neutral-100">
+			<div className="bg-white p-4">Container 2</div>
+		</CenteredSection>
+		<CenteredSection className="flex bg-neutral-200">
+			<div className="bg-white p-4">Container 3</div>
+		</CenteredSection>
+	</Story>
+</Canvas>
+
+## Centered Container
+
+A `CenteredContainer` is a horizontally centered container with restricted width (1024px). At small breakpoints,
+it will automatically add some horizontal padding.
+
+<Canvas>
+	<Story name="Centered Container">
+		<div className="flex flex-col bg-slate-200">
+			<CenteredContainer className="gradient">
+				<div className="p-4">Container 1</div>
+			</CenteredContainer>
+			<CenteredContainer className="bg-neutral-100">
+				<div className="p-4">Container 2</div>
+			</CenteredContainer>
+			<CenteredContainer className="bg-neutral-200">
+				<div className="p-4">Container 3</div>
+			</CenteredContainer>
+		</div>
+	</Story>
+</Canvas>

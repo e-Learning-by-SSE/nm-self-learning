@@ -1,7 +1,7 @@
 import { PropsWithChildren } from "react";
 
 /**
- * Returns a horizontally centered `flex flex-col` container with restricted width.
+ * Returns a horizontally centered container with restricted width.
  */
 export function CenteredContainer({
 	children,
