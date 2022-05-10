@@ -60,7 +60,7 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 				</CenteredSection>
 			)}
 
-			<CenteredSection className="bg-neutral-100">
+			<CenteredSection className="bg-gray-50">
 				<div className="flex flex-col gap-8">
 					<span>
 						<h2 className="text-3xl">Kurse</h2>

@@ -173,7 +173,7 @@ export default function QuestionsPage({ nanomodule }: QuestionsPageProps) {
 				</TopicHeader>
 			</CenteredContainer>
 
-			<div className="bg-neutral-100 py-16">
+			<div className="bg-gray-50 py-16">
 				<div className="mx-auto max-w-3xl px-4 lg:px-0">
 					<Question title={currentQuestion.question} answers={currentQuestion.answers} />
 				</div>

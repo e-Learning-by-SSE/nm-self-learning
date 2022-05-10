@@ -35,7 +35,7 @@ export function Playlist({
 				</div>
 
 				<button
-					className="rounded-full p-2 hover:bg-neutral-200"
+					className="rounded-full p-2 hover:bg-gray-50"
 					title="Show/Hide Playlist"
 					onClick={() => setCollapsed(previous => !previous)}
 				>
