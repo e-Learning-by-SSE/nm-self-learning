@@ -191,7 +191,6 @@ function Question({ title, answers }: { title: string; answers: { text: string }
 				{answers.map(answer => (
 					<Answer key={answer.text} answer={answer} />
 				))}
-				1
 			</ul>
 		</div>
 	);
