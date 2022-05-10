@@ -89,20 +89,3 @@ h3 {
 .gradient {
 	background: var(--gradient);
 }
-
-.count {
-	@apply mx-auto text-6xl;
-}
-
-.counter {
-	@apply gradient flex w-fit flex-col gap-8 rounded-lg p-8;
-}
-
-.actions {
-	display: flex;
-	gap: 32px;
-}
-
-.wrapper {
-	@apply grid gap-8 rounded border border-indigo-600 p-4;
-}

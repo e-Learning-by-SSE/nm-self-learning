@@ -1,8 +1,6 @@
 {
 	"version": 2,
 	"projects": {
-		"angular-api": "apps/angular-api",
-		"angular-site": "apps/angular-site",
 		"cms": "apps/cms",
 		"data-access-api": "libs/data-access/api",
 		"data-access-cms-api": "libs/data-access/cms-api",
