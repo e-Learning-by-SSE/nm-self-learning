@@ -169,7 +169,7 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 					if (component.__typename === "ComponentNanomoduleNanomoduleRelation") {
 						return (
 							<Fragment key={component.nanomodule?.data?.attributes?.slug}>
-								<ToC.Section isUnlocked={true} unlockRequired={false}>
+								<ToC.Section isCompleted={true} isRequired={false}>
 									<ToC.SingleLesson
 										slug={
 											component.nanomodule?.data?.attributes?.slug as string
@@ -180,17 +180,14 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 									/>
 								</ToC.Section>
 								{showConnector && (
-									<ToC.SectionConnector
-										isUnlocked={true}
-										unlockRequired={false}
-									/>
+									<ToC.SectionConnector isCompleted={true} isRequired={false} />
 								)}
 							</Fragment>
 						);
 					} else if (component?.__typename === "ComponentNanomoduleChapter") {
 						return (
 							<Fragment key={component.title}>
-								<ToC.Section isUnlocked={false} unlockRequired={false}>
+								<ToC.Section isCompleted={false} isRequired={false}>
 									<ToC.Chapter
 										title={component.title as string}
 										description={component.description as string}
@@ -204,17 +201,14 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 									/>
 								</ToC.Section>
 								{showConnector && (
-									<ToC.SectionConnector
-										isUnlocked={false}
-										unlockRequired={true}
-									/>
+									<ToC.SectionConnector isCompleted={false} isRequired={true} />
 								)}
 							</Fragment>
 						);
 					} else if (component.__typename === "ComponentNanomoduleCourseRelation") {
 						return (
 							<Fragment key={component.title}>
-								<ToC.Section isUnlocked={false} unlockRequired={true}>
+								<ToC.Section isCompleted={false} isRequired={true}>
 									<ToC.NestedCourse
 										title={component.title as string}
 										slug={component.course?.data?.attributes?.slug as string}
@@ -230,7 +224,7 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 									/>
 								</ToC.Section>
 								{showConnector && (
-									<ToC.SectionConnector isUnlocked={true} unlockRequired={true} />
+									<ToC.SectionConnector isCompleted={true} isRequired={true} />
 								)}
 							</Fragment>
 						);

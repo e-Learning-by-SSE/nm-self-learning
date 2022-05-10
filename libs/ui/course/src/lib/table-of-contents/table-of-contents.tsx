@@ -4,16 +4,16 @@ import Link from "next/link";
 import { PropsWithChildren } from "react";
 
 export function SectionConnector({
-	isUnlocked,
-	unlockRequired
+	isCompleted,
+	isRequired
 }: {
-	isUnlocked: boolean;
-	unlockRequired: boolean;
+	isCompleted: boolean;
+	isRequired: boolean;
 }) {
 	let bgColor = "bg-slate-200";
 	let textColor = "text-slate-200";
 
-	if (isUnlocked) {
+	if (isCompleted) {
 		bgColor = "bg-green-500";
 		textColor = "text-green-500";
 	}
@@ -23,8 +23,8 @@ export function SectionConnector({
 			<div className="w-[1px] pt-1">
 				<div className={`h-12 ${bgColor}`}></div>
 			</div>
-			{unlockRequired ? (
-				isUnlocked ? (
+			{isRequired ? (
+				isCompleted ? (
 					<CheckCircleIcon className={`h-10 ${textColor}`} />
 				) : (
 					<XCircleIcon className={`h-10 ${textColor}`} />
@@ -43,12 +43,12 @@ export function SectionConnector({
 
 export function Section({
 	children,
-	isUnlocked,
-	unlockRequired
-}: PropsWithChildren<{ isUnlocked: boolean; unlockRequired: boolean }>) {
+	isCompleted,
+	isRequired
+}: PropsWithChildren<{ isCompleted: boolean; isRequired: boolean }>) {
 	let borderColor = "border-slate-200";
 
-	if (isUnlocked) {
+	if (isCompleted) {
 		borderColor = "border-green-500";
 	}
 
@@ -132,7 +132,9 @@ export function Chapter({
 								}`}
 							>
 								<span className="text-sm font-semibold">{lesson.title}</span>
-								<CheckCircleIcon className="h-6 shrink-0 text-green-500" />
+								{lesson.isCompleted && (
+									<CheckCircleIcon className="h-6 shrink-0 text-green-500" />
+								)}
 							</li>
 						</a>
 					</Link>
