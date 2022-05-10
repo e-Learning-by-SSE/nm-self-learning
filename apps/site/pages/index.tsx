@@ -15,20 +15,22 @@ export function LandingPage() {
 					<a className="underline">Example Course</a>
 				</Link>
 			</div>
-			<div className="mx-auto flex gap-32 px-64">
+			<div className="mx-auto flex flex-wrap gap-32 px-64">
 				<div className="z-20 flex max-w-2xl shrink-0 flex-col py-48">
 					<h1 className="text-8xl">SELF-le@rning</h1>
-					<h2 className="mt-4 text-3xl font-light">Universität Hildesheim</h2>
+					<h2 className="mt-4 text-3xl font-light text-slate-400">
+						Universität Hildesheim
+					</h2>
 
-					<span className="mt-8 text-xl text-slate-600">
+					<span className="mt-16 text-xl text-slate-600">
 						Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quos, nisi. Vitae
 						magnam perferendis officia, fugiat a, odit velit deleniti consequatur
 						dignissimos sit esse itaque soluta ex corrupti accusantium illo numquam.
 					</span>
 
-					<button className="btn-primary mt-8 w-fit">Call to Action</button>
+					<button className="btn-primary mt-16 w-fit">Call to Action</button>
 				</div>
-				<div className="h-[728px] w-[728px] shrink-0 pt-24">
+				<div className="h-[728px] w-[728px] shrink-0 pt-32">
 					<StudyingSvg />
 				</div>
 			</div>
