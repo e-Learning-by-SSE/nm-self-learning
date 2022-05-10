@@ -73,14 +73,6 @@ export default function TeamPage({ team, markdownDescription }: TeamPageProps) {
 									imgUrl={attributes?.image?.data?.attributes?.url}
 								/>
 							))}
-							{team.authors?.data.map(({ attributes }) => (
-								<AuthorChip
-									key={attributes!.slug}
-									slug={attributes!.slug}
-									name={attributes!.name}
-									imgUrl={attributes?.image?.data?.attributes?.url}
-								/>
-							))}
 						</div>
 					</div>
 				</div>
