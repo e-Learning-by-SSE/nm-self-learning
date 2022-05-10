@@ -21,6 +21,7 @@
 			"@self-learning/docs/storybook": ["docs/storybook/src/index.ts"],
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
 			"@self-learning/ui/common": ["libs/ui/common/src/index.ts"],
+			"@self-learning/ui/course": ["libs/ui/course/src/index.ts"],
 			"@self-learning/ui/layouts": ["libs/ui/layouts/src/index.ts"],
 			"@self-learning/ui/lesson": ["libs/ui/lesson/src/index.ts"]
 		}

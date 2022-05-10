@@ -11,6 +11,7 @@
 		"site": "apps/site",
 		"site-e2e": "apps/site-e2e",
 		"ui-common": "libs/ui/common",
+		"ui-course": "libs/ui/course",
 		"ui-layouts": "libs/ui/layouts",
 		"ui-lesson": "libs/ui/lesson",
 		"util-markdown": "libs/util/markdown"

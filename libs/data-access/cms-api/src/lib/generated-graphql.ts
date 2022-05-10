@@ -1639,6 +1639,7 @@ export type CourseBySlugQuery = {
 									__typename?: "CourseEntity";
 									attributes?: {
 										__typename?: "Course";
+										slug: string;
 										title: string;
 										subtitle?: string | null;
 										image?: {
@@ -2142,6 +2143,7 @@ export const CourseBySlugDocument = gql`
 							course {
 								data {
 									attributes {
+										slug
 										title
 										subtitle
 										image {

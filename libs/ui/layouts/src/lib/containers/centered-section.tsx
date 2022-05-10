@@ -9,7 +9,7 @@ export function CenteredSection({
 	className
 }: PropsWithChildren<{ className?: string }>) {
 	return (
-		<div className={`py-16 ${className ? className : ""}`}>
+		<div className={`py-24 ${className ? className : ""}`}>
 			<CenteredContainer>{children}</CenteredContainer>
 		</div>
 	);

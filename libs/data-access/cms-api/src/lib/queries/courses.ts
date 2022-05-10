@@ -63,6 +63,7 @@ gql`
 							course {
 								data {
 									attributes {
+										slug
 										title
 										subtitle
 										image {
