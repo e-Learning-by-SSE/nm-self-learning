@@ -20,7 +20,7 @@ export function SectionConnector({
 
 	return (
 		<>
-			<div className="w-[2px] pt-1">
+			<div className="w-[1px] pt-1">
 				<div className={`h-12 ${bgColor}`}></div>
 			</div>
 			{unlockRequired ? (
@@ -30,11 +30,11 @@ export function SectionConnector({
 					<XCircleIcon className={`h-10 ${textColor}`} />
 				)
 			) : (
-				<div className="w-[2px]">
+				<div className="w-[1px]">
 					<div className={`h-10 ${bgColor}`}></div>
 				</div>
 			)}
-			<div className="w-[2px] pb-1">
+			<div className="w-[1px] pb-1">
 				<div className={`h-12 ${bgColor}`}></div>
 			</div>
 		</>
@@ -53,7 +53,7 @@ export function Section({
 	}
 
 	return (
-		<div className={`flex w-full flex-col rounded-lg border-2 bg-white p-8 ${borderColor}`}>
+		<div className={`flex w-full flex-col rounded-lg border bg-white p-8 ${borderColor}`}>
 			{children}
 		</div>
 	);
