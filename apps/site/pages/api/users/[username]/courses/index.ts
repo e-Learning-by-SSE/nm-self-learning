@@ -23,7 +23,7 @@ const handler: NextApiHandler = async (req, res) => {
 export default handler;
 
 export async function getCoursesOfUser(username: string) {
-	const enrollments = await database.enrollments.findMany({
+	const enrollments = await database.enrollment.findMany({
 		where: { username }
 	});
 

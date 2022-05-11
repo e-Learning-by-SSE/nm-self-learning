@@ -2,14 +2,31 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const users: Prisma.UserCreateInput[] = [
+	{
+		username: "potter",
+		displayName: "Harry Potter"
+	},
+	{ username: "weasley", displayName: "Ronald Weasley" }
+];
+
+const competences: Prisma.CompetenceCreateInput[] = [
+	{ competenceId: "competence-1" },
+	{ competenceId: "competence-2" },
+	{ competenceId: "competence-3" }
+];
+
 async function seed(): Promise<void> {
 	await prisma.user.deleteMany();
 	await prisma.course.deleteMany();
-	await prisma.enrollments.deleteMany();
+	await prisma.enrollment.deleteMany();
+	await prisma.competence.deleteMany();
 
 	await createUsers();
 	await createCourses();
 	await createEnrollments();
+	await createCompetences();
+	await createAchievedCompetences();
 
 	console.log("🌱 Database has been seeded! 🌱");
 }
@@ -34,7 +51,7 @@ async function createEnrollments(): Promise<void> {
 	];
 
 	for (const enrollment of enrollments) {
-		await prisma.enrollments.create({
+		await prisma.enrollment.create({
 			data: enrollment
 		});
 		console.log(`[Enrollment] created: ${enrollment.courseId}+${enrollment.username}`);
@@ -42,14 +59,6 @@ async function createEnrollments(): Promise<void> {
 }
 
 async function createUsers(): Promise<void> {
-	const users: Prisma.UserCreateInput[] = [
-		{
-			username: "potter",
-			displayName: "Harry Potter"
-		},
-		{ username: "weasley", displayName: "Ronald Weasley" }
-	];
-
 	for (const user of users) {
 		await prisma.user.create({
 			data: user
@@ -76,4 +85,44 @@ async function createCourses(): Promise<void> {
 		});
 		console.log(`[Course] created: ${course.id}`);
 	}
+}
+
+async function createCompetences(): Promise<void> {
+	console.log(competences);
+	const promises = competences.map(({ competenceId }) =>
+		prisma.competence.create({
+			data: { competenceId }
+		})
+	);
+
+	await Promise.all(promises);
+
+	console.log(`[Competence]: created ${competences.length} entries`);
+}
+
+async function createAchievedCompetences(): Promise<void> {
+	const achievedCompetences = [
+		{
+			username: users[0].username,
+			competenceId: competences[0].competenceId
+		},
+		{
+			username: users[0].username,
+			competenceId: competences[1].competenceId
+		}
+	];
+
+	const promises = achievedCompetences.map(({ competenceId, username }) =>
+		prisma.achievedCompetence.create({
+			data: {
+				competenceId,
+				username,
+				lessonSlug: "a-beginners-guide-to-react-introduction",
+				achievedAt: new Date(2022, 5, 20)
+			}
+		})
+	);
+
+	await Promise.all(promises);
+	console.log(`[AchievedCompetence]: created ${achievedCompetences.length} entries`);
 }

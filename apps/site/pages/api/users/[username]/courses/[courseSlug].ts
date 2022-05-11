@@ -13,7 +13,7 @@ const handler: NextApiHandler = async (req, res) => {
 
 	switch (req.method) {
 		case "POST": {
-			const enrollment = await database.enrollments.create({
+			const enrollment = await database.enrollment.create({
 				data: {
 					courseId: courseSlug,
 					username: username,
@@ -25,7 +25,7 @@ const handler: NextApiHandler = async (req, res) => {
 			return res.status(201).json(enrollment);
 		}
 		case "DELETE": {
-			const enrollment = await database.enrollments.delete({
+			const enrollment = await database.enrollment.delete({
 				where: {
 					courseId_username: {
 						courseId: courseSlug,

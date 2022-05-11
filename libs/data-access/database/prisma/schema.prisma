@@ -2,36 +2,58 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-	username String @id
-	displayName String
-	courses Enrollments[]
+    username    String               @id
+    displayName String
+    enrollments Enrollment[]
+    competences AchievedCompetence[]
 }
 
 model Course {
-	id String @id
-	slug String @unique
-	students Enrollments[]
+    id          String       @id
+    slug        String       @unique
+    enrollments Enrollment[]
 }
 
-model Enrollments {
-	status String
-	createdAt DateTime @default(now())
-	completedAt DateTime?
+model Enrollment {
+    status      String
+    createdAt   DateTime  @default(now())
+    completedAt DateTime?
 
-	courseId String
-	course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    courseId String
+    course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-	username String
-	student User @relation(fields: [username], references: [username], onDelete: Cascade)
+    username String
+    student  User   @relation(fields: [username], references: [username], onDelete: Cascade)
 
-	@@id([courseId, username])
+    @@id([courseId, username])
+}
+
+model Competence {
+    competenceId        String               @id
+    achievedCompetences AchievedCompetence[]
+}
+
+model AchievedCompetence {
+    achievedCompetenceId Int @id @default(autoincrement())
+
+    lessonSlug String
+    achievedAt DateTime @default(now())
+
+    competenceId String
+    competence   Competence @relation(fields: [competenceId], references: [competenceId], onDelete: Cascade)
+
+    username String
+    student  User   @relation(fields: [username], references: [username], onDelete: Cascade)
+
+    @@unique([lessonSlug, competenceId, username])
+    @@index([competenceId, username])
 }
