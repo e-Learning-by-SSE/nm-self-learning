@@ -1,0 +1,23 @@
+{
+	"root": "libs/util/validation",
+	"sourceRoot": "libs/util/validation/src",
+	"projectType": "library",
+	"targets": {
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["libs/util/validation/**/*.ts"]
+			}
+		},
+		"test": {
+			"executor": "@nrwl/jest:jest",
+			"outputs": ["coverage/libs/util/validation"],
+			"options": {
+				"jestConfig": "libs/util/validation/jest.config.ts",
+				"passWithNoTests": true
+			}
+		}
+	},
+	"tags": []
+}

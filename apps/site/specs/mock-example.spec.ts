@@ -26,7 +26,7 @@ afterAll(() => server.close());
 describe("/api/users/[username]/courses", () => {
 	describe("getCoursesOfUser", () => {
 		it("1", async () => {
-			database.enrollments.findMany = jest.fn().mockImplementation(() => {
+			database.enrollment.findMany = jest.fn().mockImplementation(() => {
 				return Promise.resolve([{ courseId: "testing" }]);
 			});
 			await getCoursesOfUser("username");
@@ -43,7 +43,7 @@ describe("/api/users/[username]/courses", () => {
 				})
 			);
 
-			database.enrollments.findMany = jest.fn().mockImplementation(() => {
+			database.enrollment.findMany = jest.fn().mockImplementation(() => {
 				return Promise.resolve([{ courseId: "testing2" }]);
 			});
 			await getCoursesOfUser("username");

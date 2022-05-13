@@ -91,6 +91,7 @@
 		"eslint-plugin-react-hooks": "4.4.0",
 		"jest": "27.5.1",
 		"msw": "^0.39.2",
+		"next-test-api-route-handler": "^3.1.2",
 		"nx": "14.0.3",
 		"postcss": "^8.4.12",
 		"prettier": "^2.6.1",

@@ -12,6 +12,7 @@
 		"ui-course": "libs/ui/course",
 		"ui-layouts": "libs/ui/layouts",
 		"ui-lesson": "libs/ui/lesson",
-		"util-markdown": "libs/util/markdown"
+		"util-markdown": "libs/util/markdown",
+		"util-validation": "libs/util/validation"
 	}
 }
