@@ -1,5 +1,7 @@
 import { getCoursesWithSlugs } from "@self-learning/cms-api";
 import { database } from "@self-learning/database";
+import { MethodNotAllowed, withApiError } from "@self-learning/util/http";
+import { StatusCodes } from "http-status-codes";
 import { NextApiHandler } from "next";
 
 const handler: NextApiHandler = async (req, res) => {
@@ -8,16 +10,12 @@ const handler: NextApiHandler = async (req, res) => {
 		throw new Error("[username] must be a string");
 	}
 
-	switch (req.method) {
-		case "GET": {
-			const courses = await getCoursesOfUser(username);
-			res.status(200).json(courses);
-			break;
-		}
-		default: {
-			res.send(405);
-		}
+	if (req.method !== "GET") {
+		return withApiError(res, MethodNotAllowed(req.method));
 	}
+
+	const courses = await getCoursesOfUser(username);
+	res.status(StatusCodes.OK).json(courses);
 };
 
 export default handler;

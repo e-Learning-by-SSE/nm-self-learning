@@ -3,10 +3,10 @@ import {
 	AlreadyExists,
 	ApiError,
 	MethodNotAllowed,
-	validationConfig,
 	ValidationFailed,
 	withApiError
-} from "@self-learning/util/validation";
+} from "@self-learning/util/http";
+import { validationConfig } from "@self-learning/util/validate";
 import { NextApiHandler } from "next";
 import * as yup from "yup";
 

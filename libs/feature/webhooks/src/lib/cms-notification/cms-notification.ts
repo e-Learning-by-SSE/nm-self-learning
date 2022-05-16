@@ -1,4 +1,5 @@
-import { validationConfig, ValidationFailed } from "@self-learning/util/validation";
+import { ValidationFailed } from "@self-learning/util/http";
+import { validationConfig } from "@self-learning/util/validate";
 import * as yup from "yup";
 import { courseNotificationHandler } from "./handlers/course-notification-handler";
 import { CmsNotification, NotificationHandlerResult, notificationSchema } from "./types";

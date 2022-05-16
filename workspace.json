@@ -13,6 +13,7 @@
 		"ui-course": "libs/ui/course",
 		"ui-layouts": "libs/ui/layouts",
 		"ui-lesson": "libs/ui/lesson",
+		"util-http": "libs/util/http",
 		"util-markdown": "libs/util/markdown",
 		"util-validation": "libs/util/validation"
 	}

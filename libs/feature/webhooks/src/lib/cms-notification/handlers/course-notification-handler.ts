@@ -1,6 +1,6 @@
 import { Course } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { validationConfig } from "@self-learning/util/validation";
+import { validationConfig } from "@self-learning/util/validate";
 import * as yup from "yup";
 import { NotificationHandler } from "../types";
 

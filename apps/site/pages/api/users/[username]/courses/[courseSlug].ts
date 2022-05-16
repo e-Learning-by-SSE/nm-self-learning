@@ -1,4 +1,5 @@
 import { database } from "@self-learning/database";
+import { StatusCodes } from "http-status-codes";
 import { NextApiHandler } from "next";
 
 const handler: NextApiHandler = async (req, res) => {
@@ -22,7 +23,7 @@ const handler: NextApiHandler = async (req, res) => {
 			});
 
 			console.log("[Enrollment] Created:", enrollment);
-			return res.status(201).json(enrollment);
+			return res.status(StatusCodes.CREATED).json(enrollment);
 		}
 		case "DELETE": {
 			const enrollment = await database.enrollment.delete({
@@ -35,7 +36,7 @@ const handler: NextApiHandler = async (req, res) => {
 			});
 
 			console.log("[Enrollment] Deleted:", enrollment);
-			return res.status(200).json({
+			return res.status(StatusCodes.OK).json({
 				message: "Enrollment deleted.",
 				enrollment
 			});

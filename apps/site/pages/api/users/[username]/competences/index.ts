@@ -1,4 +1,6 @@
 import { database } from "@self-learning/database";
+import { MethodNotAllowed, withApiError } from "@self-learning/util/http";
+import { StatusCodes } from "http-status-codes";
 import { NextApiHandler } from "next";
 
 type AchievedCompetenceDbResult = {
@@ -20,34 +22,32 @@ export const getCompetencesOfUserApiHandler: NextApiHandler = async (req, res) =
 	const { username } = req.query;
 
 	if (typeof username !== "string") {
-		return res.status(400).json({
+		return res.status(StatusCodes.BAD_REQUEST).json({
 			error: "[username] must be a string."
 		});
 	}
 
-	switch (req.method) {
-		case "GET": {
-			const achievedCompetences: AchievedCompetenceDbResult =
-				await database.achievedCompetence.findMany({
-					where: { username },
-					select: {
-						competence: {
-							select: {
-								competenceId: true
-							}
-						},
-						lessonSlug: true,
-						achievedAt: true
-					}
-				});
-
-			const competencesById = mapCompetencesById(achievedCompetences);
-			return res.status(200).json(competencesById);
-		}
-		default: {
-			res.status(405).end(`Method ${req.method} Not Allowed`);
-		}
+	if (req.method !== "GET") {
+		return withApiError(res, MethodNotAllowed(req.method));
 	}
+
+	const achievedCompetences: AchievedCompetenceDbResult =
+		await database.achievedCompetence.findMany({
+			where: { username },
+			select: {
+				competence: {
+					select: {
+						competenceId: true
+					}
+				},
+				lessonSlug: true,
+				achievedAt: true
+			}
+		});
+
+	const competencesById = mapCompetencesById(achievedCompetences);
+
+	return res.status(StatusCodes.OK).json(competencesById);
 };
 
 export default getCompetencesOfUserApiHandler;

@@ -1,3 +1,4 @@
+import { StatusCodes } from "http-status-codes";
 import type { NextApiResponse } from "next";
 
 type Error = {
@@ -8,18 +9,24 @@ type Error = {
 };
 
 type ValidationError = {
-	statusCode: 400;
+	statusCode: StatusCodes.BAD_REQUEST;
 	name: "ValidationError";
 	errors: string[];
 };
 
 type MethodNotAllowedError = {
-	statusCode: 405;
+	statusCode: StatusCodes.METHOD_NOT_ALLOWED;
 	name: "MethodNotAllowed";
 	method?: string;
 };
 
-type ErrorTypes = Error | ValidationError | MethodNotAllowedError;
+type InternalServerErrorType = {
+	statusCode: StatusCodes.INTERNAL_SERVER_ERROR;
+	name: "InternalServerError";
+	message?: string;
+};
+
+type ErrorTypes = Error | ValidationError | MethodNotAllowedError | InternalServerErrorType;
 
 export class ApiError {
 	constructor(readonly error: ErrorTypes) {}
@@ -54,5 +61,21 @@ export function MethodNotAllowed(method?: string) {
 		statusCode: 405,
 		name: "MethodNotAllowed",
 		method
+	});
+}
+
+export function Forbidden(message?: string) {
+	return new ApiError({
+		statusCode: StatusCodes.FORBIDDEN,
+		name: "Forbidden",
+		message: message ?? "Unauthorized request."
+	});
+}
+
+export function InternalServerError(message?: string) {
+	return new ApiError({
+		statusCode: 500,
+		name: "InternalServerError",
+		message: message ?? "Something went wrong."
 	});
 }
