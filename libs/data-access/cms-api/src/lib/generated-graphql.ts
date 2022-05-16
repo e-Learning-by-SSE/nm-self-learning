@@ -175,6 +175,7 @@ export type Course = {
 	__typename?: "Course";
 	authors?: Maybe<AuthorRelationResponseCollection>;
 	content?: Maybe<Array<Maybe<CourseContentDynamicZone>>>;
+	courseId: Scalars["String"];
 	createdAt?: Maybe<Scalars["DateTime"]>;
 	description?: Maybe<Scalars["String"]>;
 	image?: Maybe<UploadFileEntityResponse>;
@@ -217,6 +218,7 @@ export type CourseEntityResponseCollection = {
 export type CourseFiltersInput = {
 	and?: InputMaybe<Array<InputMaybe<CourseFiltersInput>>>;
 	authors?: InputMaybe<AuthorFiltersInput>;
+	courseId?: InputMaybe<StringFilterInput>;
 	createdAt?: InputMaybe<DateTimeFilterInput>;
 	description?: InputMaybe<StringFilterInput>;
 	id?: InputMaybe<IdFilterInput>;
@@ -232,6 +234,7 @@ export type CourseFiltersInput = {
 export type CourseInput = {
 	authors?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 	content?: InputMaybe<Array<Scalars["CourseContentDynamicZoneInput"]>>;
+	courseId?: InputMaybe<Scalars["String"]>;
 	description?: InputMaybe<Scalars["String"]>;
 	image?: InputMaybe<Scalars["ID"]>;
 	publishedAt?: InputMaybe<Scalars["DateTime"]>;

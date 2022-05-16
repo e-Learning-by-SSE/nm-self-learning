@@ -1,55 +1,58 @@
 {
-  "kind": "collectionType",
-  "collectionName": "courses",
-  "info": {
-    "singularName": "course",
-    "pluralName": "courses",
-    "displayName": "Course",
-    "description": ""
-  },
-  "options": {
-    "draftAndPublish": true
-  },
-  "pluginOptions": {},
-  "attributes": {
-    "title": {
-      "type": "string",
-      "required": true,
-      "minLength": 3
-    },
-    "subtitle": {
-      "type": "text"
-    },
-    "image": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
-    "slug": {
-      "type": "uid",
-      "targetField": "title",
-      "required": true,
-      "minLength": 3
-    },
-    "content": {
-      "type": "dynamiczone",
-      "components": [
-        "nanomodule.chapter",
-        "nanomodule.course-relation",
-        "nanomodule.nanomodule-relation"
-      ]
-    },
-    "authors": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::author.author",
-      "inversedBy": "courses"
-    },
-    "description": {
-      "type": "richtext"
-    }
-  }
+	"kind": "collectionType",
+	"collectionName": "courses",
+	"info": {
+		"singularName": "course",
+		"pluralName": "courses",
+		"displayName": "Course",
+		"description": ""
+	},
+	"options": {
+		"draftAndPublish": true
+	},
+	"pluginOptions": {},
+	"attributes": {
+		"title": {
+			"type": "string",
+			"required": true,
+			"minLength": 3
+		},
+		"subtitle": {
+			"type": "text"
+		},
+		"image": {
+			"type": "media",
+			"multiple": false,
+			"required": false,
+			"allowedTypes": ["images"]
+		},
+		"slug": {
+			"type": "uid",
+			"targetField": "title",
+			"required": true,
+			"minLength": 3
+		},
+		"content": {
+			"type": "dynamiczone",
+			"components": [
+				"nanomodule.chapter",
+				"nanomodule.course-relation",
+				"nanomodule.nanomodule-relation"
+			]
+		},
+		"authors": {
+			"type": "relation",
+			"relation": "manyToMany",
+			"target": "api::author.author",
+			"inversedBy": "courses"
+		},
+		"description": {
+			"type": "richtext"
+		},
+		"courseId": {
+			"type": "uid",
+			"default": "tbd",
+			"required": true
+		}
+	}
 }
