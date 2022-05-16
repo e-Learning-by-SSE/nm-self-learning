@@ -18,7 +18,11 @@ model User {
 }
 
 model Course {
-    id          String       @id
+    courseId String  @id
+    title    String
+    subtitle String
+    imgUrl   String?
+
     slug        String       @unique
     enrollments Enrollment[]
 }
@@ -29,7 +33,7 @@ model Enrollment {
     completedAt DateTime?
 
     courseId String
-    course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    course   Course @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
 
     username String
     student  User   @relation(fields: [username], references: [username], onDelete: Cascade)

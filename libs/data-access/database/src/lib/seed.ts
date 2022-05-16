@@ -68,14 +68,20 @@ async function createUsers(): Promise<void> {
 }
 
 async function createCourses(): Promise<void> {
-	const courses = [
+	const courses: Prisma.CourseCreateInput[] = [
 		{
-			id: "the-example-course",
-			slug: "the-example-course"
+			courseId: "the-example-course",
+			slug: "the-example-course",
+			title: "The Example Course",
+			subtitle: "lorem ipsum...",
+			imgUrl: null
 		},
 		{
-			id: "the-second-course",
-			slug: "the-second-course"
+			courseId: "the-second-course",
+			slug: "the-second-course",
+			title: "The Second Course",
+			subtitle: "lorem ipsum...",
+			imgUrl: null
 		}
 	];
 
@@ -83,7 +89,7 @@ async function createCourses(): Promise<void> {
 		await prisma.course.create({
 			data: course
 		});
-		console.log(`[Course] created: ${course.id}`);
+		console.log(`[Course] created: ${course.courseId}`);
 	}
 }
 
