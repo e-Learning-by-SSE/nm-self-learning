@@ -18,6 +18,8 @@ export const courseEntrySchema = yup
 		"'entry' must be an object with the following keys: courseId, title, slug, subtitle, image.url (optional)"
 	);
 
+export type CourseEntry = yup.InferType<typeof courseEntrySchema>;
+
 export const courseNotificationHandler: NotificationHandler<Course> = async notification => {
 	const entry = courseEntrySchema.validateSync(notification.entry, validationConfig);
 

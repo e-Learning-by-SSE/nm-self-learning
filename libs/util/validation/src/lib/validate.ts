@@ -20,7 +20,8 @@ export const validationConfig: ValidateOptions = {
  * 	}
  * }
  */
-export function tryParseJson(value: unknown): unknown {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function tryParseJson(value: unknown): any {
 	try {
 		return JSON.parse(value as string);
 	} catch (error) {
