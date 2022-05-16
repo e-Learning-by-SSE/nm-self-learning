@@ -74,7 +74,7 @@ Object {
 Object {
   "error": Object {
     "errors": Array [
-      "Request body must be a JSON object.",
+      "Request body must be an object with the following keys: lessonSlug",
     ],
     "name": "ValidationError",
     "statusCode": 400,
@@ -89,6 +89,7 @@ Object {
 	it("Body: Empty [lessonSlug] -> ValidationError (400)", async () => {
 		return testApiHandler({
 			handler: addCompetenceApiHandler,
+			requestPatcher: req => (req.headers = { "content-type": "application/json" }),
 			params: {
 				username: "mustermann",
 				competenceId: "competence-1"
@@ -122,6 +123,7 @@ Object {
 
 		return testApiHandler({
 			handler: addCompetenceApiHandler,
+			requestPatcher: req => (req.headers = { "content-type": "application/json" }),
 			params: {
 				username: "mustermann",
 				competenceId: "competence-1"

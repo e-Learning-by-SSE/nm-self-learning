@@ -3,7 +3,6 @@ import {
 	AlreadyExists,
 	ApiError,
 	MethodNotAllowed,
-	tryParseJson,
 	validationConfig,
 	ValidationFailed,
 	withApiError
@@ -20,12 +19,12 @@ const bodySchema = yup
 	.object({
 		lessonSlug: yup.string().required()
 	})
-	.typeError("Request body must be a JSON object.");
+	.typeError("Request body must be an object with the following keys: lessonSlug");
 
 export const addCompetenceApiHandler: NextApiHandler = async (req, res) => {
 	try {
 		const { username, competenceId } = querySchema.validateSync(req.query, validationConfig);
-		const { lessonSlug } = bodySchema.validateSync(tryParseJson(req.body), validationConfig);
+		const { lessonSlug } = bodySchema.validateSync(req.body, validationConfig);
 
 		if (req.method !== "POST") {
 			throw MethodNotAllowed(req.method);
