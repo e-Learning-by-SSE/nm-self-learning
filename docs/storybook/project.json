@@ -1,5 +1,4 @@
 {
-	"root": "docs/storybook",
 	"sourceRoot": "docs/storybook/src",
 	"projectType": "library",
 	"tags": [],

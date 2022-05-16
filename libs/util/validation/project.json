@@ -1,5 +1,4 @@
 {
-	"root": "libs/util/validation",
 	"sourceRoot": "libs/util/validation/src",
 	"projectType": "library",
 	"targets": {

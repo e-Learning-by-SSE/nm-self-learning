@@ -1,5 +1,4 @@
 {
-	"root": "apps/cms",
 	"projectType": "application",
 	"sourceRoot": "apps/cms/src",
 	"targets": {

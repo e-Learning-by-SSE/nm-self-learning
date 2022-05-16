@@ -1,4 +1,4 @@
-module.exports = {
+export default {
 	displayName: "data-access-cms-api",
 
 	globals: {
@@ -11,5 +11,5 @@ module.exports = {
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
 	coverageDirectory: "../../../coverage/libs/data-access/cms-api",
-	preset: "../../../jest.preset.ts"
+	preset: "../../../jest.preset.js"
 };

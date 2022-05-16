@@ -1,5 +1,4 @@
 {
-	"root": "libs/data-access/cms-api",
 	"sourceRoot": "libs/data-access/cms-api/src",
 	"projectType": "library",
 	"targets": {

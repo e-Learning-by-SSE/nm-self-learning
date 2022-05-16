@@ -1,5 +1,4 @@
 {
-	"root": "libs/ui/common",
 	"sourceRoot": "libs/ui/common/src",
 	"projectType": "library",
 	"tags": [],

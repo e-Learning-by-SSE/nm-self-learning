@@ -1,4 +1,4 @@
-module.exports = {
+export default {
 	displayName: "ui-lesson",
 
 	globals: {
@@ -11,5 +11,5 @@ module.exports = {
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
 	coverageDirectory: "../../../coverage/libs/ui/lesson",
-	preset: "../../../jest.preset.ts"
+	preset: "../../../jest.preset.js"
 };
