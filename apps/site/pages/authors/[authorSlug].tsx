@@ -127,16 +127,17 @@ export function AuthorHeader({ author }: { author: Author }) {
 			</div>
 			<div className="flex flex-col place-items-center gap-16">
 				<h1 className="text-3xl sm:text-6xl">{author.name}</h1>
-
-				<div className="flex flex-wrap gap-4">
-					{author.teams?.data.map(({ attributes }) => (
-						<TeamChip
-							key={attributes!.slug}
-							slug={attributes!.slug}
-							name={attributes!.title}
-						/>
-					))}
-				</div>
+				{author.teams?.data && author.teams.data.length > 0 && (
+					<div className="flex flex-wrap gap-4">
+						{author.teams.data.map(({ attributes }) => (
+							<TeamChip
+								key={attributes!.slug}
+								slug={attributes!.slug}
+								name={attributes!.title}
+							/>
+						))}
+					</div>
+				)}
 			</div>
 		</div>
 	);
