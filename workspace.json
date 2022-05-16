@@ -6,6 +6,7 @@
 		"data-access-cms-api": "libs/data-access/cms-api",
 		"database": "libs/data-access/database",
 		"docs-storybook": "docs/storybook",
+		"feature-webhooks": "libs/feature/webhooks",
 		"site": "apps/site",
 		"site-e2e": "apps/site-e2e",
 		"ui-common": "libs/ui/common",
