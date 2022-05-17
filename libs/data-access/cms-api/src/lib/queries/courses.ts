@@ -44,20 +44,23 @@ gql`
 					}
 					content {
 						__typename
-						... on ComponentNanomoduleChapter {
+						... on ComponentTableOfContentsChapter {
 							__typename
 							title
 							description
 							lessons {
-								data {
-									attributes {
-										slug
-										title
+								lesson {
+									data {
+										attributes {
+											lessonId
+											slug
+											title
+										}
 									}
 								}
 							}
 						}
-						... on ComponentNanomoduleCourseRelation {
+						... on ComponentTableOfContentsCourseRelation {
 							title
 							description
 							course {
@@ -77,13 +80,23 @@ gql`
 								}
 							}
 						}
-						... on ComponentNanomoduleNanomoduleRelation {
+						... on ComponentTableOfContentsLessonRelation {
 							__typename
-							nanomodule {
+							lesson {
 								data {
 									attributes {
+										lessonId
 										slug
 										title
+										subtitle
+										image {
+											data {
+												attributes {
+													url
+													alternativeText
+												}
+											}
+										}
 									}
 								}
 							}

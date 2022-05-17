@@ -94,7 +94,7 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 						</Link>
 					</span>
 					<ItemCardGrid>
-						{author.nanomodules?.data.map(({ attributes }) => (
+						{author.lessons?.data.map(({ attributes }) => (
 							<Link href={`/courses/${attributes!.slug}`} key={attributes?.slug}>
 								<a>
 									<ImageCard

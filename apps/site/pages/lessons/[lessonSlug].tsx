@@ -1,5 +1,5 @@
 import { PlayIcon } from "@heroicons/react/solid";
-import { getNanomoduleBySlug } from "@self-learning/cms-api";
+import { getLessonBySlug } from "@self-learning/cms-api";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { Playlist } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -7,7 +7,7 @@ import Head from "next/head";
 import Link from "next/link";
 import React, { useMemo } from "react";
 
-type Nanomodule = Exclude<Awaited<ReturnType<typeof getNanomoduleBySlug>>, null | undefined>;
+type Nanomodule = Exclude<Awaited<ReturnType<typeof getLessonBySlug>>, null | undefined>;
 
 type NanomoduleProps = {
 	nanomodule: Nanomodule;
@@ -20,7 +20,7 @@ export const getStaticProps: GetStaticProps<NanomoduleProps> = async ({ params }
 		throw new Error("No slug provided.");
 	}
 
-	const nanomodule = (await getNanomoduleBySlug(slug)) as Nanomodule;
+	const nanomodule = (await getLessonBySlug(slug)) as Nanomodule;
 
 	return {
 		props: { nanomodule },

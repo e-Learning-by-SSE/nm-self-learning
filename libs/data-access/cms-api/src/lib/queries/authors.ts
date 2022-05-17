@@ -81,7 +81,7 @@ gql`
 							}
 						}
 					}
-					nanomodules {
+					lessons {
 						data {
 							attributes {
 								slug

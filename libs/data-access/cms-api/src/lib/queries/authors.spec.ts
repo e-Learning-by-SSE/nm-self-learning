@@ -12,7 +12,7 @@ describe("Authors API", () => {
 			const slug = "kent-c-dodds";
 			const author = await getAuthorBySlug(slug);
 			expect(author?.slug).toEqual(slug);
-			expect(author?.nanomodules?.data.length).toBeGreaterThan(0);
+			expect(author?.lessons?.data.length).toBeGreaterThan(0);
 		});
 	});
 });

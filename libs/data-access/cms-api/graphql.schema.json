@@ -115,23 +115,7 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "name",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "SCALAR",
-								"name": "String",
-								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "nanomodules",
+						"name": "lessons",
 						"description": null,
 						"args": [
 							{
@@ -139,7 +123,7 @@
 								"description": null,
 								"type": {
 									"kind": "INPUT_OBJECT",
-									"name": "NanomoduleFiltersInput",
+									"name": "LessonFiltersInput",
 									"ofType": null
 								},
 								"defaultValue": null,
@@ -177,8 +161,24 @@
 						],
 						"type": {
 							"kind": "OBJECT",
-							"name": "NanomoduleRelationResponseCollection",
+							"name": "LessonRelationResponseCollection",
 							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "name",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							}
 						},
 						"isDeprecated": false,
 						"deprecationReason": null
@@ -450,11 +450,11 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "name",
+						"name": "lessons",
 						"description": null,
 						"type": {
 							"kind": "INPUT_OBJECT",
-							"name": "StringFilterInput",
+							"name": "LessonFiltersInput",
 							"ofType": null
 						},
 						"defaultValue": null,
@@ -462,11 +462,11 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "nanomodules",
+						"name": "name",
 						"description": null,
 						"type": {
 							"kind": "INPUT_OBJECT",
-							"name": "NanomoduleFiltersInput",
+							"name": "StringFilterInput",
 							"ofType": null
 						},
 						"defaultValue": null,
@@ -589,19 +589,7 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "name",
-						"description": null,
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "nanomodules",
+						"name": "lessons",
 						"description": null,
 						"type": {
 							"kind": "LIST",
@@ -611,6 +599,18 @@
 								"name": "ID",
 								"ofType": null
 							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "name",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
 						},
 						"defaultValue": null,
 						"isDeprecated": false,
@@ -967,7 +967,7 @@
 			},
 			{
 				"kind": "OBJECT",
-				"name": "ComponentNanomoduleArticle",
+				"name": "ComponentContentArticle",
 				"description": null,
 				"fields": [
 					{
@@ -1010,7 +1010,89 @@
 			},
 			{
 				"kind": "OBJECT",
-				"name": "ComponentNanomoduleChapter",
+				"name": "ComponentContentVideo",
+				"description": null,
+				"fields": [
+					{
+						"name": "id",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "ID",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "video",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "OBJECT",
+								"name": "UploadFileEntityResponse",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "ComponentContentYoutubeVideo",
+				"description": null,
+				"fields": [
+					{
+						"name": "id",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "ID",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "url",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "ComponentTableOfContentsChapter",
 				"description": null,
 				"fields": [
 					{
@@ -1050,7 +1132,7 @@
 								"description": null,
 								"type": {
 									"kind": "INPUT_OBJECT",
-									"name": "NanomoduleFiltersInput",
+									"name": "ComponentTableOfContentsLessonRelationFiltersInput",
 									"ofType": null
 								},
 								"defaultValue": null,
@@ -1087,9 +1169,13 @@
 							}
 						],
 						"type": {
-							"kind": "OBJECT",
-							"name": "NanomoduleRelationResponseCollection",
-							"ofType": null
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "OBJECT",
+								"name": "ComponentTableOfContentsLessonRelation",
+								"ofType": null
+							}
 						},
 						"isDeprecated": false,
 						"deprecationReason": null
@@ -1118,7 +1204,7 @@
 			},
 			{
 				"kind": "OBJECT",
-				"name": "ComponentNanomoduleCourseRelation",
+				"name": "ComponentTableOfContentsCourseRelation",
 				"description": null,
 				"fields": [
 					{
@@ -1185,7 +1271,7 @@
 			},
 			{
 				"kind": "OBJECT",
-				"name": "ComponentNanomoduleNanomoduleRelation",
+				"name": "ComponentTableOfContentsLessonRelation",
 				"description": null,
 				"fields": [
 					{
@@ -1205,12 +1291,12 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "nanomodule",
+						"name": "lesson",
 						"description": null,
 						"args": [],
 						"type": {
 							"kind": "OBJECT",
-							"name": "NanomoduleEntityResponse",
+							"name": "LessonEntityResponse",
 							"ofType": null
 						},
 						"isDeprecated": false,
@@ -1223,84 +1309,69 @@
 				"possibleTypes": null
 			},
 			{
-				"kind": "OBJECT",
-				"name": "ComponentNanomoduleVideo",
+				"kind": "INPUT_OBJECT",
+				"name": "ComponentTableOfContentsLessonRelationFiltersInput",
 				"description": null,
-				"fields": [
+				"fields": null,
+				"inputFields": [
 					{
-						"name": "id",
+						"name": "and",
 						"description": null,
-						"args": [],
 						"type": {
-							"kind": "NON_NULL",
+							"kind": "LIST",
 							"name": null,
 							"ofType": {
-								"kind": "SCALAR",
-								"name": "ID",
+								"kind": "INPUT_OBJECT",
+								"name": "ComponentTableOfContentsLessonRelationFiltersInput",
 								"ofType": null
 							}
 						},
+						"defaultValue": null,
 						"isDeprecated": false,
 						"deprecationReason": null
 					},
 					{
-						"name": "video",
+						"name": "lesson",
 						"description": null,
-						"args": [],
 						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "OBJECT",
-								"name": "UploadFileEntityResponse",
-								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"inputFields": null,
-				"interfaces": [],
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "OBJECT",
-				"name": "ComponentNanomoduleYoutubeVideo",
-				"description": null,
-				"fields": [
-					{
-						"name": "id",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "SCALAR",
-								"name": "ID",
-								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "url",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
+							"kind": "INPUT_OBJECT",
+							"name": "LessonFiltersInput",
 							"ofType": null
 						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "not",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "ComponentTableOfContentsLessonRelationFiltersInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "or",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "INPUT_OBJECT",
+								"name": "ComponentTableOfContentsLessonRelationFiltersInput",
+								"ofType": null
+							}
+						},
+						"defaultValue": null,
 						"isDeprecated": false,
 						"deprecationReason": null
 					}
 				],
-				"inputFields": null,
-				"interfaces": [],
+				"interfaces": null,
 				"enumValues": null,
 				"possibleTypes": null
 			},
@@ -1515,17 +1586,17 @@
 				"possibleTypes": [
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleChapter",
+						"name": "ComponentTableOfContentsChapter",
 						"ofType": null
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleCourseRelation",
+						"name": "ComponentTableOfContentsCourseRelation",
 						"ofType": null
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleNanomoduleRelation",
+						"name": "ComponentTableOfContentsLessonRelation",
 						"ofType": null
 					},
 					{
@@ -2659,32 +2730,32 @@
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleArticle",
+						"name": "ComponentContentArticle",
 						"ofType": null
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleChapter",
+						"name": "ComponentContentVideo",
 						"ofType": null
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleCourseRelation",
+						"name": "ComponentContentYoutubeVideo",
 						"ofType": null
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleNanomoduleRelation",
+						"name": "ComponentTableOfContentsChapter",
 						"ofType": null
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleVideo",
+						"name": "ComponentTableOfContentsCourseRelation",
 						"ofType": null
 					},
 					{
 						"kind": "OBJECT",
-						"name": "ComponentNanomoduleYoutubeVideo",
+						"name": "ComponentTableOfContentsLessonRelation",
 						"ofType": null
 					},
 					{
@@ -2704,7 +2775,7 @@
 					},
 					{
 						"kind": "OBJECT",
-						"name": "Nanomodule",
+						"name": "Lesson",
 						"ofType": null
 					},
 					{
@@ -4198,6 +4269,661 @@
 			},
 			{
 				"kind": "OBJECT",
+				"name": "Lesson",
+				"description": null,
+				"fields": [
+					{
+						"name": "authors",
+						"description": null,
+						"args": [
+							{
+								"name": "filters",
+								"description": null,
+								"type": {
+									"kind": "INPUT_OBJECT",
+									"name": "AuthorFiltersInput",
+									"ofType": null
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "pagination",
+								"description": null,
+								"type": {
+									"kind": "INPUT_OBJECT",
+									"name": "PaginationArg",
+									"ofType": null
+								},
+								"defaultValue": "{}",
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "sort",
+								"description": null,
+								"type": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									}
+								},
+								"defaultValue": "[]",
+								"isDeprecated": false,
+								"deprecationReason": null
+							}
+						],
+						"type": {
+							"kind": "OBJECT",
+							"name": "AuthorRelationResponseCollection",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "content",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "UNION",
+								"name": "LessonContentDynamicZone",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "createdAt",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "DateTime",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "description",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "image",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "OBJECT",
+							"name": "UploadFileEntityResponse",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "lessonId",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "slug",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "subtitle",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "title",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "updatedAt",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "DateTime",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "UNION",
+				"name": "LessonContentDynamicZone",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": [
+					{
+						"kind": "OBJECT",
+						"name": "ComponentContentArticle",
+						"ofType": null
+					},
+					{
+						"kind": "OBJECT",
+						"name": "ComponentContentVideo",
+						"ofType": null
+					},
+					{
+						"kind": "OBJECT",
+						"name": "ComponentContentYoutubeVideo",
+						"ofType": null
+					},
+					{
+						"kind": "OBJECT",
+						"name": "Error",
+						"ofType": null
+					}
+				]
+			},
+			{
+				"kind": "SCALAR",
+				"name": "LessonContentDynamicZoneInput",
+				"description": null,
+				"fields": null,
+				"inputFields": null,
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "LessonEntity",
+				"description": null,
+				"fields": [
+					{
+						"name": "attributes",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "OBJECT",
+							"name": "Lesson",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "id",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "ID",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "LessonEntityResponse",
+				"description": null,
+				"fields": [
+					{
+						"name": "data",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "OBJECT",
+							"name": "LessonEntity",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "LessonEntityResponseCollection",
+				"description": null,
+				"fields": [
+					{
+						"name": "data",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "NON_NULL",
+									"name": null,
+									"ofType": {
+										"kind": "OBJECT",
+										"name": "LessonEntity",
+										"ofType": null
+									}
+								}
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "meta",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "OBJECT",
+								"name": "ResponseCollectionMeta",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "LessonFiltersInput",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "and",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "INPUT_OBJECT",
+								"name": "LessonFiltersInput",
+								"ofType": null
+							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "authors",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "AuthorFiltersInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "createdAt",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "DateTimeFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "description",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "id",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "IDFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "lessonId",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "not",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "LessonFiltersInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "or",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "INPUT_OBJECT",
+								"name": "LessonFiltersInput",
+								"ofType": null
+							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "slug",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "subtitle",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "title",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "updatedAt",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "DateTimeFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "LessonInput",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "authors",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "ID",
+								"ofType": null
+							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "content",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "LessonContentDynamicZoneInput",
+									"ofType": null
+								}
+							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "description",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "image",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "ID",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "lessonId",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "slug",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "subtitle",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "title",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "LessonRelationResponseCollection",
+				"description": null,
+				"fields": [
+					{
+						"name": "data",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "NON_NULL",
+									"name": null,
+									"ofType": {
+										"kind": "OBJECT",
+										"name": "LessonEntity",
+										"ofType": null
+									}
+								}
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
 				"name": "Mutation",
 				"description": null,
 				"fields": [
@@ -4289,7 +5015,7 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "createNanomodule",
+						"name": "createLesson",
 						"description": null,
 						"args": [
 							{
@@ -4300,7 +5026,7 @@
 									"name": null,
 									"ofType": {
 										"kind": "INPUT_OBJECT",
-										"name": "NanomoduleInput",
+										"name": "LessonInput",
 										"ofType": null
 									}
 								},
@@ -4311,7 +5037,7 @@
 						],
 						"type": {
 							"kind": "OBJECT",
-							"name": "NanomoduleEntityResponse",
+							"name": "LessonEntityResponse",
 							"ofType": null
 						},
 						"isDeprecated": false,
@@ -4583,7 +5309,7 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "deleteNanomodule",
+						"name": "deleteLesson",
 						"description": null,
 						"args": [
 							{
@@ -4605,7 +5331,7 @@
 						],
 						"type": {
 							"kind": "OBJECT",
-							"name": "NanomoduleEntityResponse",
+							"name": "LessonEntityResponse",
 							"ofType": null
 						},
 						"isDeprecated": false,
@@ -5261,7 +5987,7 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "updateNanomodule",
+						"name": "updateLesson",
 						"description": null,
 						"args": [
 							{
@@ -5272,7 +5998,7 @@
 									"name": null,
 									"ofType": {
 										"kind": "INPUT_OBJECT",
-										"name": "NanomoduleInput",
+										"name": "LessonInput",
 										"ofType": null
 									}
 								},
@@ -5299,7 +6025,7 @@
 						],
 						"type": {
 							"kind": "OBJECT",
-							"name": "NanomoduleEntityResponse",
+							"name": "LessonEntityResponse",
 							"ofType": null
 						},
 						"isDeprecated": false,
@@ -5655,697 +6381,6 @@
 								"kind": "OBJECT",
 								"name": "UploadFileEntityResponse",
 								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"inputFields": null,
-				"interfaces": [],
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "OBJECT",
-				"name": "Nanomodule",
-				"description": null,
-				"fields": [
-					{
-						"name": "authors",
-						"description": null,
-						"args": [
-							{
-								"name": "filters",
-								"description": null,
-								"type": {
-									"kind": "INPUT_OBJECT",
-									"name": "AuthorFiltersInput",
-									"ofType": null
-								},
-								"defaultValue": null,
-								"isDeprecated": false,
-								"deprecationReason": null
-							},
-							{
-								"name": "pagination",
-								"description": null,
-								"type": {
-									"kind": "INPUT_OBJECT",
-									"name": "PaginationArg",
-									"ofType": null
-								},
-								"defaultValue": "{}",
-								"isDeprecated": false,
-								"deprecationReason": null
-							},
-							{
-								"name": "sort",
-								"description": null,
-								"type": {
-									"kind": "LIST",
-									"name": null,
-									"ofType": {
-										"kind": "SCALAR",
-										"name": "String",
-										"ofType": null
-									}
-								},
-								"defaultValue": "[]",
-								"isDeprecated": false,
-								"deprecationReason": null
-							}
-						],
-						"type": {
-							"kind": "OBJECT",
-							"name": "AuthorRelationResponseCollection",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "content",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "UNION",
-									"name": "NanomoduleContentDynamicZone",
-									"ofType": null
-								}
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "createdAt",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "DateTime",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "description",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "image",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "OBJECT",
-							"name": "UploadFileEntityResponse",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "meta",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "JSON",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "questions",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "JSON",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "slug",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "SCALAR",
-								"name": "String",
-								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "subtitle",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "title",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "SCALAR",
-								"name": "String",
-								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "updatedAt",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "DateTime",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"inputFields": null,
-				"interfaces": [],
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "UNION",
-				"name": "NanomoduleContentDynamicZone",
-				"description": null,
-				"fields": null,
-				"inputFields": null,
-				"interfaces": null,
-				"enumValues": null,
-				"possibleTypes": [
-					{
-						"kind": "OBJECT",
-						"name": "ComponentNanomoduleArticle",
-						"ofType": null
-					},
-					{
-						"kind": "OBJECT",
-						"name": "ComponentNanomoduleVideo",
-						"ofType": null
-					},
-					{
-						"kind": "OBJECT",
-						"name": "ComponentNanomoduleYoutubeVideo",
-						"ofType": null
-					},
-					{
-						"kind": "OBJECT",
-						"name": "Error",
-						"ofType": null
-					}
-				]
-			},
-			{
-				"kind": "SCALAR",
-				"name": "NanomoduleContentDynamicZoneInput",
-				"description": null,
-				"fields": null,
-				"inputFields": null,
-				"interfaces": null,
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "OBJECT",
-				"name": "NanomoduleEntity",
-				"description": null,
-				"fields": [
-					{
-						"name": "attributes",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "OBJECT",
-							"name": "Nanomodule",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "id",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "SCALAR",
-							"name": "ID",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"inputFields": null,
-				"interfaces": [],
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "OBJECT",
-				"name": "NanomoduleEntityResponse",
-				"description": null,
-				"fields": [
-					{
-						"name": "data",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "OBJECT",
-							"name": "NanomoduleEntity",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"inputFields": null,
-				"interfaces": [],
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "OBJECT",
-				"name": "NanomoduleEntityResponseCollection",
-				"description": null,
-				"fields": [
-					{
-						"name": "data",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "NON_NULL",
-									"name": null,
-									"ofType": {
-										"kind": "OBJECT",
-										"name": "NanomoduleEntity",
-										"ofType": null
-									}
-								}
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "meta",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "OBJECT",
-								"name": "ResponseCollectionMeta",
-								"ofType": null
-							}
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"inputFields": null,
-				"interfaces": [],
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "INPUT_OBJECT",
-				"name": "NanomoduleFiltersInput",
-				"description": null,
-				"fields": null,
-				"inputFields": [
-					{
-						"name": "and",
-						"description": null,
-						"type": {
-							"kind": "LIST",
-							"name": null,
-							"ofType": {
-								"kind": "INPUT_OBJECT",
-								"name": "NanomoduleFiltersInput",
-								"ofType": null
-							}
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "authors",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "AuthorFiltersInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "createdAt",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "DateTimeFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "description",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "StringFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "id",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "IDFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "meta",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "JSONFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "not",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "NanomoduleFiltersInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "or",
-						"description": null,
-						"type": {
-							"kind": "LIST",
-							"name": null,
-							"ofType": {
-								"kind": "INPUT_OBJECT",
-								"name": "NanomoduleFiltersInput",
-								"ofType": null
-							}
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "questions",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "JSONFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "slug",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "StringFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "subtitle",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "StringFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "title",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "StringFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "updatedAt",
-						"description": null,
-						"type": {
-							"kind": "INPUT_OBJECT",
-							"name": "DateTimeFilterInput",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"interfaces": null,
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "INPUT_OBJECT",
-				"name": "NanomoduleInput",
-				"description": null,
-				"fields": null,
-				"inputFields": [
-					{
-						"name": "authors",
-						"description": null,
-						"type": {
-							"kind": "LIST",
-							"name": null,
-							"ofType": {
-								"kind": "SCALAR",
-								"name": "ID",
-								"ofType": null
-							}
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "content",
-						"description": null,
-						"type": {
-							"kind": "LIST",
-							"name": null,
-							"ofType": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "NanomoduleContentDynamicZoneInput",
-									"ofType": null
-								}
-							}
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "description",
-						"description": null,
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "image",
-						"description": null,
-						"type": {
-							"kind": "SCALAR",
-							"name": "ID",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "meta",
-						"description": null,
-						"type": {
-							"kind": "SCALAR",
-							"name": "JSON",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "questions",
-						"description": null,
-						"type": {
-							"kind": "SCALAR",
-							"name": "JSON",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "slug",
-						"description": null,
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "subtitle",
-						"description": null,
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "title",
-						"description": null,
-						"type": {
-							"kind": "SCALAR",
-							"name": "String",
-							"ofType": null
-						},
-						"defaultValue": null,
-						"isDeprecated": false,
-						"deprecationReason": null
-					}
-				],
-				"interfaces": null,
-				"enumValues": null,
-				"possibleTypes": null
-			},
-			{
-				"kind": "OBJECT",
-				"name": "NanomoduleRelationResponseCollection",
-				"description": null,
-				"fields": [
-					{
-						"name": "data",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "NON_NULL",
-							"name": null,
-							"ofType": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "NON_NULL",
-									"name": null,
-									"ofType": {
-										"kind": "OBJECT",
-										"name": "NanomoduleEntity",
-										"ofType": null
-									}
-								}
 							}
 						},
 						"isDeprecated": false,
@@ -6844,19 +6879,7 @@
 						"deprecationReason": null
 					},
 					{
-						"name": "me",
-						"description": null,
-						"args": [],
-						"type": {
-							"kind": "OBJECT",
-							"name": "UsersPermissionsMe",
-							"ofType": null
-						},
-						"isDeprecated": false,
-						"deprecationReason": null
-					},
-					{
-						"name": "nanomodule",
+						"name": "lesson",
 						"description": null,
 						"args": [
 							{
@@ -6874,14 +6897,14 @@
 						],
 						"type": {
 							"kind": "OBJECT",
-							"name": "NanomoduleEntityResponse",
+							"name": "LessonEntityResponse",
 							"ofType": null
 						},
 						"isDeprecated": false,
 						"deprecationReason": null
 					},
 					{
-						"name": "nanomodules",
+						"name": "lessons",
 						"description": null,
 						"args": [
 							{
@@ -6889,7 +6912,7 @@
 								"description": null,
 								"type": {
 									"kind": "INPUT_OBJECT",
-									"name": "NanomoduleFiltersInput",
+									"name": "LessonFiltersInput",
 									"ofType": null
 								},
 								"defaultValue": null,
@@ -6927,7 +6950,19 @@
 						],
 						"type": {
 							"kind": "OBJECT",
-							"name": "NanomoduleEntityResponseCollection",
+							"name": "LessonEntityResponseCollection",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "me",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "OBJECT",
+							"name": "UsersPermissionsMe",
 							"ofType": null
 						},
 						"isDeprecated": false,

@@ -1,21 +1,21 @@
 import { gql } from "graphql-request";
 import { cmsGraphqlClient } from "../cms-graphql-client";
 
-export async function getNanomoduleBySlug(slug: string) {
-	const result = await cmsGraphqlClient.nanomoduleBySlug({ slug });
-	return result.nanomodules?.data[0] ? result.nanomodules.data[0].attributes : null;
+export async function getLessonBySlug(slug: string) {
+	const result = await cmsGraphqlClient.lessonBySlug({ slug });
+	return result.lessons?.data[0] ? result.lessons.data[0].attributes : null;
 }
 
 gql`
-	query nanomoduleBySlug($slug: String) {
-		nanomodules(filters: { slug: { eq: $slug } }) {
+	query lessonBySlug($slug: String) {
+		lessons(filters: { slug: { eq: $slug } }) {
 			data {
 				attributes {
+					lessonId
 					slug
 					title
 					subtitle
 					description
-					meta
 					createdAt
 					updatedAt
 					image {
@@ -27,11 +27,11 @@ gql`
 						}
 					}
 					content {
-						... on ComponentNanomoduleArticle {
+						... on ComponentContentArticle {
 							__typename
 							richText
 						}
-						... on ComponentNanomoduleVideo {
+						... on ComponentContentVideo {
 							__typename
 							video {
 								data {
@@ -42,7 +42,7 @@ gql`
 								}
 							}
 						}
-						... on ComponentNanomoduleYoutubeVideo {
+						... on ComponentContentYoutubeVideo {
 							__typename
 							url
 						}
@@ -55,7 +55,6 @@ gql`
 								image {
 									data {
 										attributes {
-											previewUrl
 											url
 											alternativeText
 										}

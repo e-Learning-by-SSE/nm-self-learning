@@ -35,9 +35,9 @@
 		"content": {
 			"type": "dynamiczone",
 			"components": [
-				"nanomodule.chapter",
-				"nanomodule.course-relation",
-				"nanomodule.nanomodule-relation"
+				"table-of-contents.chapter",
+				"table-of-contents.course-relation",
+				"table-of-contents.lesson-relation"
 			]
 		},
 		"authors": {
