@@ -11,9 +11,9 @@ const users: Prisma.UserCreateInput[] = [
 ];
 
 const competences: Prisma.CompetenceCreateInput[] = [
-	{ competenceId: "competence-1" },
-	{ competenceId: "competence-2" },
-	{ competenceId: "competence-3" }
+	{ competenceId: "competence-1", title: "Competence #1" },
+	{ competenceId: "competence-2", title: "Competence #2" },
+	{ competenceId: "competence-3", title: "Competence #3" }
 ];
 
 async function seed(): Promise<void> {
@@ -94,10 +94,9 @@ async function createCourses(): Promise<void> {
 }
 
 async function createCompetences(): Promise<void> {
-	console.log(competences);
-	const promises = competences.map(({ competenceId }) =>
+	const promises = competences.map(competence =>
 		prisma.competence.create({
-			data: { competenceId }
+			data: competence
 		})
 	);
 

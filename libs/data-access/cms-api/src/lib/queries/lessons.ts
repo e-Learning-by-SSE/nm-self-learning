@@ -68,3 +68,51 @@ gql`
 		}
 	}
 `;
+
+export async function getLessonsForSync() {
+	const result = await cmsGraphqlClient.lessonsForSync();
+	return {
+		_total: result.lessons?.meta.pagination.total,
+		lessons:
+			result.lessons?.data.map(({ attributes }) => {
+				const attr = attributes as Exclude<typeof attributes, undefined | null>;
+				const { lessonId, slug, title, subtitle } = attr;
+				const imgUrl = attr.image?.data?.attributes?.url;
+
+				return {
+					lessonId,
+					slug,
+					title,
+					subtitle,
+					imgUrl
+				};
+			}) ?? []
+	};
+}
+
+gql`
+	query lessonsForSync {
+		lessons {
+			meta {
+				pagination {
+					total
+				}
+			}
+			data {
+				attributes {
+					lessonId
+					slug
+					title
+					subtitle
+					image {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;

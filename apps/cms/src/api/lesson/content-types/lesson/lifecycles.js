@@ -1,7 +1,7 @@
 const { randomBytes } = require("crypto");
 
 function setGeneratedCourseId(event) {
-	event.params.data.courseId = randomBytes(4).toString("hex");
+	event.params.data.lessonId = randomBytes(4).toString("hex");
 }
 
 module.exports = {
@@ -9,7 +9,7 @@ module.exports = {
 		setGeneratedCourseId(event);
 	},
 	beforeUpdate(event) {
-		if (event.params.data.courseId === "tbd") {
+		if (event.params.data.lessonId === "tbd") {
 			setGeneratedCourseId(event);
 		}
 	}

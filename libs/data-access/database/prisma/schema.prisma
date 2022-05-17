@@ -41,9 +41,21 @@ model Enrollment {
     @@id([courseId, username])
 }
 
+model Lesson {
+    lessonId    String       @id
+    slug        String
+    title       String
+    subtitle    String?
+    imgUrl      String?
+    competences Competence[]
+}
+
 model Competence {
     competenceId        String               @id
+    title               String
+    description         String?
     achievedCompetences AchievedCompetence[]
+    lessons             Lesson[]
 }
 
 model AchievedCompetence {

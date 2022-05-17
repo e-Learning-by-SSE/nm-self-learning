@@ -23,17 +23,22 @@ export type CourseEntry = yup.InferType<typeof courseEntrySchema>;
 export const courseNotificationHandler: NotificationHandler<Course> = async notification => {
 	const entry = courseEntrySchema.validateSync(notification.entry, validationConfig);
 
+	const existingCourse = await database.course.findUnique({
+		rejectOnNotFound: false,
+		where: { courseId: entry.courseId }
+	});
+
 	if (notification.event === "entry.delete") {
+		if (!existingCourse) {
+			return { operation: "NOOP" };
+		}
+
 		const course = await database.course.delete({ where: { courseId: entry.courseId } });
 		return {
 			operation: "DELETED",
 			data: course
 		};
 	}
-
-	const existingCourse = await database.course.findUnique({
-		where: { courseId: entry.courseId }
-	});
 
 	const courseData = {
 		courseId: entry.courseId,

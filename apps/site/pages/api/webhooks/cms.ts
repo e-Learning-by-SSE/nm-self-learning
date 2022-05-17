@@ -31,15 +31,15 @@ const webhookApiHandler: NextApiHandler = async (req, res) => {
 			.status(result.operation === "CREATED" ? StatusCodes.CREATED : StatusCodes.OK)
 			.json(result);
 	} catch (error) {
-		if (error instanceof ApiError) {
-			return withApiError(res, error);
-		}
-
 		console.error("[api/webhooks/cms]: Failed to process a webhook\n", {
 			event: req.body.event,
 			model: req.body.model
 		});
 		console.error(error);
+
+		if (error instanceof ApiError) {
+			return withApiError(res, error);
+		}
 
 		return withApiError(res, InternalServerError("Failed to process a webhook"));
 	}

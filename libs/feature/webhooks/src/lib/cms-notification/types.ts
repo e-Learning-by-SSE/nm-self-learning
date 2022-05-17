@@ -8,7 +8,7 @@ export type CmsEvent =
 	| "entry.publish"
 	| "entry.unpublish";
 
-type CmsModelName = "course" | "nanomodule";
+type CmsModelName = "course" | "lesson";
 
 export const notificationSchema = yup
 	.object({
@@ -23,7 +23,7 @@ export const notificationSchema = yup
 				"entry.unpublish"
 			])
 			.required(),
-		model: yup.mixed<CmsModelName>().oneOf(["course", "nanomodule"]).required(),
+		model: yup.mixed<CmsModelName>().oneOf(["course", "lesson"]).required(),
 		entry: yup.object().required()
 	})
 	.typeError("Request body must contain an object with the following keys: event, model, entry");
@@ -32,7 +32,7 @@ export type CmsNotification = yup.InferType<typeof notificationSchema>;
 
 export type NotificationHandlerResult<T = undefined> = {
 	operation: "CREATED" | "UPDATED" | "DELETED" | "NOOP";
-	data: T;
+	data?: T;
 };
 
 export type NotificationHandler<T = unknown> = (

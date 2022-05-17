@@ -1836,14 +1836,16 @@ export type LessonBySlugQuery = {
 	} | null;
 };
 
-export type GetNanomoduleQuestionsBySlugQueryVariables = Exact<{
-	slug: Scalars["String"];
-}>;
+export type LessonsForSyncQueryVariables = Exact<{ [key: string]: never }>;
 
-export type GetNanomoduleQuestionsBySlugQuery = {
+export type LessonsForSyncQuery = {
 	__typename?: "Query";
 	lessons?: {
 		__typename?: "LessonEntityResponseCollection";
+		meta: {
+			__typename?: "ResponseCollectionMeta";
+			pagination: { __typename?: "Pagination"; total: number };
+		};
 		data: Array<{
 			__typename?: "LessonEntity";
 			attributes?: {
@@ -1851,15 +1853,12 @@ export type GetNanomoduleQuestionsBySlugQuery = {
 				lessonId: string;
 				slug: string;
 				title: string;
+				subtitle?: string | null;
 				image?: {
 					__typename?: "UploadFileEntityResponse";
 					data?: {
 						__typename?: "UploadFileEntity";
-						attributes?: {
-							__typename?: "UploadFile";
-							url: string;
-							alternativeText?: string | null;
-						} | null;
+						attributes?: { __typename?: "UploadFile"; url: string } | null;
 					} | null;
 				} | null;
 			} | null;
@@ -2348,19 +2347,24 @@ export const LessonBySlugDocument = gql`
 		}
 	}
 `;
-export const GetNanomoduleQuestionsBySlugDocument = gql`
-	query getNanomoduleQuestionsBySlug($slug: String!) {
-		lessons(filters: { slug: { eq: $slug } }) {
+export const LessonsForSyncDocument = gql`
+	query lessonsForSync {
+		lessons {
+			meta {
+				pagination {
+					total
+				}
+			}
 			data {
 				attributes {
 					lessonId
 					slug
 					title
+					subtitle
 					image {
 						data {
 							attributes {
 								url
-								alternativeText
 							}
 						}
 					}
@@ -2602,18 +2606,17 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 				"query"
 			);
 		},
-		getNanomoduleQuestionsBySlug(
-			variables: GetNanomoduleQuestionsBySlugQueryVariables,
+		lessonsForSync(
+			variables?: LessonsForSyncQueryVariables,
 			requestHeaders?: Dom.RequestInit["headers"]
-		): Promise<GetNanomoduleQuestionsBySlugQuery> {
+		): Promise<LessonsForSyncQuery> {
 			return withWrapper(
 				wrappedRequestHeaders =>
-					client.request<GetNanomoduleQuestionsBySlugQuery>(
-						GetNanomoduleQuestionsBySlugDocument,
-						variables,
-						{ ...requestHeaders, ...wrappedRequestHeaders }
-					),
-				"getNanomoduleQuestionsBySlug",
+					client.request<LessonsForSyncQuery>(LessonsForSyncDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"lessonsForSync",
 				"query"
 			);
 		},
