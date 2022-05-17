@@ -45,7 +45,7 @@ async function createEnrollments(): Promise<void> {
 		{
 			status: "ACTIVE",
 			createdAt: new Date(2022, 4, 20),
-			courseId: "the-example-course",
+			courseId: "the-first-course",
 			username: "potter"
 		}
 	];
@@ -70,9 +70,9 @@ async function createUsers(): Promise<void> {
 async function createCourses(): Promise<void> {
 	const courses: Prisma.CourseCreateInput[] = [
 		{
-			courseId: "the-example-course",
-			slug: "the-example-course",
-			title: "The Example Course",
+			courseId: "the-first-course",
+			slug: "the-first-course",
+			title: "The First Course",
 			subtitle: "lorem ipsum...",
 			imgUrl: null
 		},
