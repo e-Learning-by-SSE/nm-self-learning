@@ -38,7 +38,7 @@ export function ImageCard({
 					<h2 className="text-2xl">{title}</h2>
 					<span className="text-sm text-slate-500">{subtitle}</span>
 				</div>
-				{footer && <div className="flex flex-col">{footer}</div>}
+				{footer && <div className="flex flex-col text-slate-500">{footer}</div>}
 			</div>
 		</div>
 	);
