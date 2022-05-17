@@ -1708,6 +1708,36 @@ export type CoursesWithSlugsQuery = {
 	} | null;
 };
 
+export type CoursesForSyncQueryVariables = Exact<{ [key: string]: never }>;
+
+export type CoursesForSyncQuery = {
+	__typename?: "Query";
+	courses?: {
+		__typename?: "CourseEntityResponseCollection";
+		meta: {
+			__typename?: "ResponseCollectionMeta";
+			pagination: { __typename?: "Pagination"; total: number };
+		};
+		data: Array<{
+			__typename?: "CourseEntity";
+			attributes?: {
+				__typename?: "Course";
+				courseId: string;
+				slug: string;
+				title: string;
+				subtitle?: string | null;
+				image?: {
+					__typename?: "UploadFileEntityResponse";
+					data?: {
+						__typename?: "UploadFileEntity";
+						attributes?: { __typename?: "UploadFile"; url: string } | null;
+					} | null;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
 export type GetNanomoduleQuestionsBySlugQueryVariables = Exact<{
 	slug: Scalars["String"];
 }>;
@@ -2197,6 +2227,32 @@ export const CoursesWithSlugsDocument = gql`
 		}
 	}
 `;
+export const CoursesForSyncDocument = gql`
+	query coursesForSync {
+		courses {
+			meta {
+				pagination {
+					total
+				}
+			}
+			data {
+				attributes {
+					courseId
+					slug
+					title
+					subtitle
+					image {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
 export const GetNanomoduleQuestionsBySlugDocument = gql`
 	query getNanomoduleQuestionsBySlug($slug: String!) {
 		nanomodules(filters: { slug: { eq: $slug } }) {
@@ -2483,6 +2539,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"coursesWithSlugs",
+				"query"
+			);
+		},
+		coursesForSync(
+			variables?: CoursesForSyncQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<CoursesForSyncQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<CoursesForSyncQuery>(CoursesForSyncDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"coursesForSync",
 				"query"
 			);
 		},

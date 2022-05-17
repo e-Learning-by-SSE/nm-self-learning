@@ -3,7 +3,7 @@ import { cmsGraphqlClient } from "../cms-graphql-client";
 
 export async function getCourseBySlug(slug: string) {
 	const result = await cmsGraphqlClient.courseBySlug({ slug });
-	return result.courses?.data[0].attributes ?? null;
+	return result.courses?.data[0]?.attributes ?? null;
 }
 
 gql`
@@ -109,6 +109,52 @@ gql`
 		courses(filters: { slug: { in: $slugs } }) {
 			data {
 				attributes {
+					slug
+					title
+					subtitle
+					image {
+						data {
+							attributes {
+								url
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
+
+export async function getCoursesForSync() {
+	const result = await cmsGraphqlClient.coursesForSync();
+
+	return {
+		courses:
+			result.courses?.data.map(({ attributes }) => {
+				const attr = attributes as Exclude<typeof attributes, undefined | null>;
+				return {
+					courseId: attr.courseId,
+					slug: attr.slug,
+					title: attr.title,
+					subtitle: attr.subtitle,
+					imgUrl: attr.image?.data?.attributes?.url
+				};
+			}) ?? [],
+		_total: result.courses?.meta.pagination.total
+	};
+}
+
+gql`
+	query coursesForSync {
+		courses {
+			meta {
+				pagination {
+					total
+				}
+			}
+			data {
+				attributes {
+					courseId
 					slug
 					title
 					subtitle
