@@ -166,17 +166,13 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 
 					if (!component) return undefined;
 
-					if (component.__typename === "ComponentNanomoduleNanomoduleRelation") {
+					if (component.__typename === "ComponentTableOfContentsLessonRelation") {
 						return (
-							<Fragment key={component.nanomodule?.data?.attributes?.slug}>
+							<Fragment key={component.lesson?.data?.attributes?.slug}>
 								<ToC.Section isCompleted={true} isRequired={false}>
 									<ToC.SingleLesson
-										slug={
-											component.nanomodule?.data?.attributes?.slug as string
-										}
-										title={
-											component.nanomodule?.data?.attributes?.title as string
-										}
+										slug={component.lesson?.data?.attributes?.slug as string}
+										title={component.lesson?.data?.attributes?.title as string}
 									/>
 								</ToC.Section>
 								{showConnector && (
@@ -184,7 +180,7 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 								)}
 							</Fragment>
 						);
-					} else if (component?.__typename === "ComponentNanomoduleChapter") {
+					} else if (component?.__typename === "ComponentTableOfContentsChapter") {
 						return (
 							<Fragment key={component.title}>
 								<ToC.Section isCompleted={false} isRequired={false}>
@@ -192,9 +188,11 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 										title={component.title as string}
 										description={component.description as string}
 										lessons={
-											component.lessons?.data.map(lesson => ({
-												title: lesson.attributes?.title as string,
-												slug: lesson.attributes?.slug as string,
+											component.lessons?.map(lesson => ({
+												title: lesson?.lesson?.data?.attributes
+													?.title as string,
+												slug: lesson?.lesson?.data?.attributes
+													?.slug as string,
 												isCompleted: true
 											})) ?? []
 										}
@@ -205,7 +203,7 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 								)}
 							</Fragment>
 						);
-					} else if (component.__typename === "ComponentNanomoduleCourseRelation") {
+					} else if (component.__typename === "ComponentTableOfContentsCourseRelation") {
 						return (
 							<Fragment key={component.title}>
 								<ToC.Section isCompleted={false} isRequired={true}>
