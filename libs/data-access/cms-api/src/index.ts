@@ -5,3 +5,5 @@ export * from "./lib/queries/lessons";
 export * from "./lib/queries/specialization";
 export * from "./lib/queries/subjects";
 export * from "./lib/queries/teams";
+export * from "./lib/queries/competences";
+export * from "./lib/mutations/competences";

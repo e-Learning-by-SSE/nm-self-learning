@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "competences",
+  "info": {
+    "singularName": "competence",
+    "pluralName": "competences",
+    "displayName": "Competence",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "competenceId": {
+      "type": "uid",
+      "default": "tbd",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 3
+    },
+    "description": {
+      "type": "text"
+    },
+    "subjects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subject.subject"
+    },
+    "specialities": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::speciality.speciality"
+    }
+  }
+}

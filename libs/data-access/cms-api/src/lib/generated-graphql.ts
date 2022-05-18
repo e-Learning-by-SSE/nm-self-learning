@@ -125,6 +125,68 @@ export type BooleanFilterInput = {
 	startsWith?: InputMaybe<Scalars["Boolean"]>;
 };
 
+export type Competence = {
+	__typename?: "Competence";
+	competenceId: Scalars["String"];
+	createdAt?: Maybe<Scalars["DateTime"]>;
+	description?: Maybe<Scalars["String"]>;
+	specialities?: Maybe<SpecialityRelationResponseCollection>;
+	subjects?: Maybe<SubjectRelationResponseCollection>;
+	title: Scalars["String"];
+	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type CompetenceSpecialitiesArgs = {
+	filters?: InputMaybe<SpecialityFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type CompetenceSubjectsArgs = {
+	filters?: InputMaybe<SubjectFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type CompetenceEntity = {
+	__typename?: "CompetenceEntity";
+	attributes?: Maybe<Competence>;
+	id?: Maybe<Scalars["ID"]>;
+};
+
+export type CompetenceEntityResponse = {
+	__typename?: "CompetenceEntityResponse";
+	data?: Maybe<CompetenceEntity>;
+};
+
+export type CompetenceEntityResponseCollection = {
+	__typename?: "CompetenceEntityResponseCollection";
+	data: Array<CompetenceEntity>;
+	meta: ResponseCollectionMeta;
+};
+
+export type CompetenceFiltersInput = {
+	and?: InputMaybe<Array<InputMaybe<CompetenceFiltersInput>>>;
+	competenceId?: InputMaybe<StringFilterInput>;
+	createdAt?: InputMaybe<DateTimeFilterInput>;
+	description?: InputMaybe<StringFilterInput>;
+	id?: InputMaybe<IdFilterInput>;
+	not?: InputMaybe<CompetenceFiltersInput>;
+	or?: InputMaybe<Array<InputMaybe<CompetenceFiltersInput>>>;
+	specialities?: InputMaybe<SpecialityFiltersInput>;
+	subjects?: InputMaybe<SubjectFiltersInput>;
+	title?: InputMaybe<StringFilterInput>;
+	updatedAt?: InputMaybe<DateTimeFilterInput>;
+};
+
+export type CompetenceInput = {
+	competenceId?: InputMaybe<Scalars["String"]>;
+	description?: InputMaybe<Scalars["String"]>;
+	specialities?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+	subjects?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+	title?: InputMaybe<Scalars["String"]>;
+};
+
 export type ComponentContentArticle = {
 	__typename?: "ComponentContentArticle";
 	id: Scalars["ID"];
@@ -315,6 +377,7 @@ export type FloatFilterInput = {
 
 export type GenericMorph =
 	| Author
+	| Competence
 	| ComponentContentArticle
 	| ComponentContentVideo
 	| ComponentContentYoutubeVideo
@@ -556,6 +619,7 @@ export type LessonRelationResponseCollection = {
 export type Mutation = {
 	__typename?: "Mutation";
 	createAuthor?: Maybe<AuthorEntityResponse>;
+	createCompetence?: Maybe<CompetenceEntityResponse>;
 	createCourse?: Maybe<CourseEntityResponse>;
 	createInstitution?: Maybe<InstitutionEntityResponse>;
 	createLesson?: Maybe<LessonEntityResponse>;
@@ -568,6 +632,7 @@ export type Mutation = {
 	/** Create a new user */
 	createUsersPermissionsUser: UsersPermissionsUserEntityResponse;
 	deleteAuthor?: Maybe<AuthorEntityResponse>;
+	deleteCompetence?: Maybe<CompetenceEntityResponse>;
 	deleteCourse?: Maybe<CourseEntityResponse>;
 	deleteInstitution?: Maybe<InstitutionEntityResponse>;
 	deleteLesson?: Maybe<LessonEntityResponse>;
@@ -591,6 +656,7 @@ export type Mutation = {
 	/** Reset user password. Confirm with a code (resetToken from forgotPassword) */
 	resetPassword?: Maybe<UsersPermissionsLoginPayload>;
 	updateAuthor?: Maybe<AuthorEntityResponse>;
+	updateCompetence?: Maybe<CompetenceEntityResponse>;
 	updateCourse?: Maybe<CourseEntityResponse>;
 	updateFileInfo: UploadFileEntityResponse;
 	updateInstitution?: Maybe<InstitutionEntityResponse>;
@@ -608,6 +674,10 @@ export type Mutation = {
 
 export type MutationCreateAuthorArgs = {
 	data: AuthorInput;
+};
+
+export type MutationCreateCompetenceArgs = {
+	data: CompetenceInput;
 };
 
 export type MutationCreateCourseArgs = {
@@ -647,6 +717,10 @@ export type MutationCreateUsersPermissionsUserArgs = {
 };
 
 export type MutationDeleteAuthorArgs = {
+	id: Scalars["ID"];
+};
+
+export type MutationDeleteCompetenceArgs = {
 	id: Scalars["ID"];
 };
 
@@ -721,6 +795,11 @@ export type MutationResetPasswordArgs = {
 
 export type MutationUpdateAuthorArgs = {
 	data: AuthorInput;
+	id: Scalars["ID"];
+};
+
+export type MutationUpdateCompetenceArgs = {
+	data: CompetenceInput;
 	id: Scalars["ID"];
 };
 
@@ -806,6 +885,8 @@ export type Query = {
 	__typename?: "Query";
 	author?: Maybe<AuthorEntityResponse>;
 	authors?: Maybe<AuthorEntityResponseCollection>;
+	competence?: Maybe<CompetenceEntityResponse>;
+	competences?: Maybe<CompetenceEntityResponseCollection>;
 	course?: Maybe<CourseEntityResponse>;
 	courses?: Maybe<CourseEntityResponseCollection>;
 	i18NLocale?: Maybe<I18NLocaleEntityResponse>;
@@ -835,6 +916,16 @@ export type QueryAuthorArgs = {
 
 export type QueryAuthorsArgs = {
 	filters?: InputMaybe<AuthorFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type QueryCompetenceArgs = {
+	id?: InputMaybe<Scalars["ID"]>;
+};
+
+export type QueryCompetencesArgs = {
+	filters?: InputMaybe<CompetenceFiltersInput>;
 	pagination?: InputMaybe<PaginationArg>;
 	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
@@ -1085,6 +1176,11 @@ export type SubjectInput = {
 	specialities?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 	subtitle?: InputMaybe<Scalars["String"]>;
 	title?: InputMaybe<Scalars["String"]>;
+};
+
+export type SubjectRelationResponseCollection = {
+	__typename?: "SubjectRelationResponseCollection";
+	data: Array<SubjectEntity>;
 };
 
 export type Team = {
@@ -1440,6 +1536,47 @@ export type UsersPermissionsUserRelationResponseCollection = {
 	data: Array<UsersPermissionsUserEntity>;
 };
 
+export type CreateCompetenceMutationVariables = Exact<{
+	data: CompetenceInput;
+}>;
+
+export type CreateCompetenceMutation = {
+	__typename?: "Mutation";
+	createCompetence?: {
+		__typename?: "CompetenceEntityResponse";
+		data?: {
+			__typename?: "CompetenceEntity";
+			attributes?: {
+				__typename?: "Competence";
+				title: string;
+				description?: string | null;
+				subjects?: {
+					__typename?: "SubjectRelationResponseCollection";
+					data: Array<{
+						__typename?: "SubjectEntity";
+						attributes?: { __typename?: "Subject"; title: string } | null;
+					}>;
+				} | null;
+			} | null;
+		} | null;
+	} | null;
+};
+
+export type DeleteCompetenceMutationVariables = Exact<{
+	id: Scalars["ID"];
+}>;
+
+export type DeleteCompetenceMutation = {
+	__typename?: "Mutation";
+	deleteCompetence?: {
+		__typename?: "CompetenceEntityResponse";
+		data?: {
+			__typename?: "CompetenceEntity";
+			attributes?: { __typename?: "Competence"; competenceId: string; title: string } | null;
+		} | null;
+	} | null;
+};
+
 export type AuthorsQueryVariables = Exact<{ [key: string]: never }>;
 
 export type AuthorsQuery = {
@@ -1559,6 +1696,43 @@ export type AuthorBySlugQuery = {
 									} | null;
 								} | null;
 							} | null;
+						} | null;
+					}>;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+};
+
+export type CompetencesQueryVariables = Exact<{ [key: string]: never }>;
+
+export type CompetencesQuery = {
+	__typename?: "Query";
+	competences?: {
+		__typename?: "CompetenceEntityResponseCollection";
+		data: Array<{
+			__typename?: "CompetenceEntity";
+			id?: string | null;
+			attributes?: {
+				__typename?: "Competence";
+				competenceId: string;
+				title: string;
+				description?: string | null;
+				subjects?: {
+					__typename?: "SubjectRelationResponseCollection";
+					data: Array<{
+						__typename?: "SubjectEntity";
+						attributes?: { __typename?: "Subject"; slug: string; title: string } | null;
+					}>;
+				} | null;
+				specialities?: {
+					__typename?: "SpecialityRelationResponseCollection";
+					data: Array<{
+						__typename?: "SpecialityEntity";
+						attributes?: {
+							__typename?: "Speciality";
+							slug: string;
+							title: string;
 						} | null;
 					}>;
 				} | null;
@@ -2044,6 +2218,37 @@ export type TeamBySlugQuery = {
 	} | null;
 };
 
+export const CreateCompetenceDocument = gql`
+	mutation createCompetence($data: CompetenceInput!) {
+		createCompetence(data: $data) {
+			data {
+				attributes {
+					title
+					description
+					subjects {
+						data {
+							attributes {
+								title
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
+export const DeleteCompetenceDocument = gql`
+	mutation deleteCompetence($id: ID!) {
+		deleteCompetence(id: $id) {
+			data {
+				attributes {
+					competenceId
+					title
+				}
+			}
+		}
+	}
+`;
 export const AuthorsDocument = gql`
 	query authors {
 		authors {
@@ -2130,6 +2335,36 @@ export const AuthorBySlugDocument = gql`
 										}
 									}
 								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+`;
+export const CompetencesDocument = gql`
+	query competences {
+		competences {
+			data {
+				id
+				attributes {
+					competenceId
+					title
+					description
+					subjects {
+						data {
+							attributes {
+								slug
+								title
+							}
+						}
+					}
+					specialities {
+						data {
+							attributes {
+								slug
+								title
 							}
 						}
 					}
@@ -2522,6 +2757,34 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
 	return {
+		createCompetence(
+			variables: CreateCompetenceMutationVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<CreateCompetenceMutation> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<CreateCompetenceMutation>(CreateCompetenceDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"createCompetence",
+				"mutation"
+			);
+		},
+		deleteCompetence(
+			variables: DeleteCompetenceMutationVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<DeleteCompetenceMutation> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<DeleteCompetenceMutation>(DeleteCompetenceDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"deleteCompetence",
+				"mutation"
+			);
+		},
 		authors(
 			variables?: AuthorsQueryVariables,
 			requestHeaders?: Dom.RequestInit["headers"]
@@ -2547,6 +2810,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
 						...wrappedRequestHeaders
 					}),
 				"authorBySlug",
+				"query"
+			);
+		},
+		competences(
+			variables?: CompetencesQueryVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<CompetencesQuery> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<CompetencesQuery>(CompetencesDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"competences",
 				"query"
 			);
 		},

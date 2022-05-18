@@ -967,6 +967,530 @@
 			},
 			{
 				"kind": "OBJECT",
+				"name": "Competence",
+				"description": null,
+				"fields": [
+					{
+						"name": "competenceId",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "createdAt",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "DateTime",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "description",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "specialities",
+						"description": null,
+						"args": [
+							{
+								"name": "filters",
+								"description": null,
+								"type": {
+									"kind": "INPUT_OBJECT",
+									"name": "SpecialityFiltersInput",
+									"ofType": null
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "pagination",
+								"description": null,
+								"type": {
+									"kind": "INPUT_OBJECT",
+									"name": "PaginationArg",
+									"ofType": null
+								},
+								"defaultValue": "{}",
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "sort",
+								"description": null,
+								"type": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									}
+								},
+								"defaultValue": "[]",
+								"isDeprecated": false,
+								"deprecationReason": null
+							}
+						],
+						"type": {
+							"kind": "OBJECT",
+							"name": "SpecialityRelationResponseCollection",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "subjects",
+						"description": null,
+						"args": [
+							{
+								"name": "filters",
+								"description": null,
+								"type": {
+									"kind": "INPUT_OBJECT",
+									"name": "SubjectFiltersInput",
+									"ofType": null
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "pagination",
+								"description": null,
+								"type": {
+									"kind": "INPUT_OBJECT",
+									"name": "PaginationArg",
+									"ofType": null
+								},
+								"defaultValue": "{}",
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "sort",
+								"description": null,
+								"type": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									}
+								},
+								"defaultValue": "[]",
+								"isDeprecated": false,
+								"deprecationReason": null
+							}
+						],
+						"type": {
+							"kind": "OBJECT",
+							"name": "SubjectRelationResponseCollection",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "title",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "updatedAt",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "DateTime",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "CompetenceEntity",
+				"description": null,
+				"fields": [
+					{
+						"name": "attributes",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "OBJECT",
+							"name": "Competence",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "id",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "ID",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "CompetenceEntityResponse",
+				"description": null,
+				"fields": [
+					{
+						"name": "data",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "OBJECT",
+							"name": "CompetenceEntity",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "CompetenceEntityResponseCollection",
+				"description": null,
+				"fields": [
+					{
+						"name": "data",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "NON_NULL",
+									"name": null,
+									"ofType": {
+										"kind": "OBJECT",
+										"name": "CompetenceEntity",
+										"ofType": null
+									}
+								}
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "meta",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "OBJECT",
+								"name": "ResponseCollectionMeta",
+								"ofType": null
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "CompetenceFiltersInput",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "and",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "INPUT_OBJECT",
+								"name": "CompetenceFiltersInput",
+								"ofType": null
+							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "competenceId",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "createdAt",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "DateTimeFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "description",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "id",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "IDFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "not",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "CompetenceFiltersInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "or",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "INPUT_OBJECT",
+								"name": "CompetenceFiltersInput",
+								"ofType": null
+							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "specialities",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "SpecialityFiltersInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "subjects",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "SubjectFiltersInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "title",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "StringFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "updatedAt",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "DateTimeFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "CompetenceInput",
+				"description": null,
+				"fields": null,
+				"inputFields": [
+					{
+						"name": "competenceId",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "description",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "specialities",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "ID",
+								"ofType": null
+							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "subjects",
+						"description": null,
+						"type": {
+							"kind": "LIST",
+							"name": null,
+							"ofType": {
+								"kind": "SCALAR",
+								"name": "ID",
+								"ofType": null
+							}
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "title",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
 				"name": "ComponentContentArticle",
 				"description": null,
 				"fields": [
@@ -2726,6 +3250,11 @@
 					{
 						"kind": "OBJECT",
 						"name": "Author",
+						"ofType": null
+					},
+					{
+						"kind": "OBJECT",
+						"name": "Competence",
 						"ofType": null
 					},
 					{
@@ -4957,6 +5486,35 @@
 						"deprecationReason": null
 					},
 					{
+						"name": "createCompetence",
+						"description": null,
+						"args": [
+							{
+								"name": "data",
+								"description": null,
+								"type": {
+									"kind": "NON_NULL",
+									"name": null,
+									"ofType": {
+										"kind": "INPUT_OBJECT",
+										"name": "CompetenceInput",
+										"ofType": null
+									}
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							}
+						],
+						"type": {
+							"kind": "OBJECT",
+							"name": "CompetenceEntityResponse",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
 						"name": "createCourse",
 						"description": null,
 						"args": [
@@ -5245,6 +5803,35 @@
 						"type": {
 							"kind": "OBJECT",
 							"name": "AuthorEntityResponse",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "deleteCompetence",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"kind": "NON_NULL",
+									"name": null,
+									"ofType": {
+										"kind": "SCALAR",
+										"name": "ID",
+										"ofType": null
+									}
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							}
+						],
+						"type": {
+							"kind": "OBJECT",
+							"name": "CompetenceEntityResponse",
 							"ofType": null
 						},
 						"isDeprecated": false,
@@ -5846,6 +6433,51 @@
 						"type": {
 							"kind": "OBJECT",
 							"name": "AuthorEntityResponse",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "updateCompetence",
+						"description": null,
+						"args": [
+							{
+								"name": "data",
+								"description": null,
+								"type": {
+									"kind": "NON_NULL",
+									"name": null,
+									"ofType": {
+										"kind": "INPUT_OBJECT",
+										"name": "CompetenceInput",
+										"ofType": null
+									}
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"kind": "NON_NULL",
+									"name": null,
+									"ofType": {
+										"kind": "SCALAR",
+										"name": "ID",
+										"ofType": null
+									}
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							}
+						],
+						"type": {
+							"kind": "OBJECT",
+							"name": "CompetenceEntityResponse",
 							"ofType": null
 						},
 						"isDeprecated": false,
@@ -6627,6 +7259,84 @@
 						"type": {
 							"kind": "OBJECT",
 							"name": "AuthorEntityResponseCollection",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "competence",
+						"description": null,
+						"args": [
+							{
+								"name": "id",
+								"description": null,
+								"type": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							}
+						],
+						"type": {
+							"kind": "OBJECT",
+							"name": "CompetenceEntityResponse",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "competences",
+						"description": null,
+						"args": [
+							{
+								"name": "filters",
+								"description": null,
+								"type": {
+									"kind": "INPUT_OBJECT",
+									"name": "CompetenceFiltersInput",
+									"ofType": null
+								},
+								"defaultValue": null,
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "pagination",
+								"description": null,
+								"type": {
+									"kind": "INPUT_OBJECT",
+									"name": "PaginationArg",
+									"ofType": null
+								},
+								"defaultValue": "{}",
+								"isDeprecated": false,
+								"deprecationReason": null
+							},
+							{
+								"name": "sort",
+								"description": null,
+								"type": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									}
+								},
+								"defaultValue": "[]",
+								"isDeprecated": false,
+								"deprecationReason": null
+							}
+						],
+						"type": {
+							"kind": "OBJECT",
+							"name": "CompetenceEntityResponseCollection",
 							"ofType": null
 						},
 						"isDeprecated": false,
@@ -8799,6 +9509,41 @@
 					}
 				],
 				"interfaces": null,
+				"enumValues": null,
+				"possibleTypes": null
+			},
+			{
+				"kind": "OBJECT",
+				"name": "SubjectRelationResponseCollection",
+				"description": null,
+				"fields": [
+					{
+						"name": "data",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "NON_NULL",
+							"name": null,
+							"ofType": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "NON_NULL",
+									"name": null,
+									"ofType": {
+										"kind": "OBJECT",
+										"name": "SubjectEntity",
+										"ofType": null
+									}
+								}
+							}
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					}
+				],
+				"inputFields": null,
+				"interfaces": [],
 				"enumValues": null,
 				"possibleTypes": null
 			},
