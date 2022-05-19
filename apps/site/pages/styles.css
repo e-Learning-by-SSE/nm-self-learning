@@ -50,8 +50,7 @@ html {
 }
 
 #__next {
-	height: 100%;
-	min-height: 100vh;
+	@apply flex h-full min-h-screen flex-col;
 }
 
 h1,

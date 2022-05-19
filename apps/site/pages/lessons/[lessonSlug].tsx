@@ -101,7 +101,7 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 				<title>{title}</title>
 			</Head>
 
-			<div className="flex min-h-screen flex-col bg-gray-50 md:pb-16 md:pt-4">
+			<div className="flex flex-col bg-gray-50 md:pb-16 md:pt-4">
 				<div className="mx-auto flex w-full flex-col gap-4 lg:container">
 					<VideoPlayerWithPlaylist videoUrl={url as string} />
 					<LessonHeader lesson={nanomodule} authors={authors} />

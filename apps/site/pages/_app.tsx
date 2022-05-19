@@ -20,7 +20,8 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<Head>
 					<title>Self-Learning</title>
 				</Head>
-				<main className="min-h-screen">
+				{/* <Navbar /> */}
+				<main className="grid grow">
 					<Component {...pageProps} />
 				</main>
 				<ReactQueryDevtools initialIsOpen={false} position="bottom-right" />

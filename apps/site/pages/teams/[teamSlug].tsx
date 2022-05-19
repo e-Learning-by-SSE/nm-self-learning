@@ -49,7 +49,7 @@ export default function TeamPage({ team, markdownDescription }: TeamPageProps) {
 	const imgUrl = team.image?.data?.attributes?.url ?? "";
 
 	return (
-		<div className="flex min-h-screen flex-col bg-white">
+		<div className="flex flex-col bg-white">
 			<CenteredSection className="gradient">
 				<div className="flex flex-col gap-16">
 					<div className="relative m-auto h-[256px] w-[256px] shrink-0 rounded-lg bg-white">

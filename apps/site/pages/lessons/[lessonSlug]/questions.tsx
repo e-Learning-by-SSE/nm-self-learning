@@ -122,7 +122,7 @@ export default function QuestionsPage({ nanomodule }: QuestionsPageProps) {
 	}, [index, questions]);
 
 	return (
-		<div className="min-h-screen bg-gray-50">
+		<div className="bg-gray-50">
 			<CenteredContainer>
 				<TopicHeader
 					// imgUrlBanner={image?.data?.attributes?.url}

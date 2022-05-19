@@ -50,7 +50,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 export default function Course({ course, markdownDescription }: CourseProps) {
 	return (
-		<div className="min-h-screen bg-gray-50 pb-32">
+		<div className="bg-gray-50 pb-32">
 			<CenteredSection className="gradient">
 				<CourseHeader course={course} />
 			</CenteredSection>

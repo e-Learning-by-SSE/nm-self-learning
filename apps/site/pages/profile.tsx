@@ -42,7 +42,7 @@ export const getServerSideProps = async ({ req }: GetServerSidePropsContext) => 
 
 export default function Profile({ user }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	return (
-		<div className="min-h-screen pb-16">
+		<div className="pb-16">
 			<CenteredSection className="gradient">
 				<div className="flex flex-col place-items-center gap-16">
 					<div className="relative h-[256px] w-[256px] rounded-lg bg-black"></div>
