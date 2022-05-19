@@ -11,10 +11,11 @@ datasource db {
 }
 
 model User {
-    username    String               @id
-    displayName String
-    enrollments Enrollment[]
-    competences AchievedCompetence[]
+    username         String               @id
+    displayName      String
+    enrollments      Enrollment[]
+    competences      AchievedCompetence[]
+    completedLessons CompletedLesson[]
 }
 
 model Course {
@@ -42,12 +43,25 @@ model Enrollment {
 }
 
 model Lesson {
-    lessonId    String       @id
+    lessonId    String            @id
     slug        String
     title       String
     subtitle    String?
     imgUrl      String?
     competences Competence[]
+    completions CompletedLesson[]
+}
+
+model CompletedLesson {
+    completedLessonId Int @id @default(autoincrement())
+
+    lessonId  String
+    lesson    Lesson   @relation(fields: [lessonId], references: [lessonId])
+    username  String
+    user      User     @relation(fields: [username], references: [username])
+    createdAt DateTime @default(now())
+
+    @@index([username, lessonId])
 }
 
 model Competence {
