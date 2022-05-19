@@ -26,7 +26,18 @@ type InternalServerErrorType = {
 	message?: string;
 };
 
-type ErrorTypes = Error | ValidationError | MethodNotAllowedError | InternalServerErrorType;
+type NotFoundError = {
+	statusCode: StatusCodes.NOT_FOUND;
+	name: "NotFound";
+	params: Record<string, unknown>;
+};
+
+type ErrorTypes =
+	| Error
+	| ValidationError
+	| MethodNotAllowedError
+	| NotFoundError
+	| InternalServerErrorType;
 
 export class ApiError {
 	constructor(readonly error: ErrorTypes) {}
@@ -53,6 +64,14 @@ export function ValidationFailed(errors: string[]) {
 		statusCode: 400,
 		name: "ValidationError",
 		errors
+	});
+}
+
+export function NotFound(params: Record<string, unknown>) {
+	return new ApiError({
+		statusCode: 404,
+		name: "NotFound",
+		params
 	});
 }
 
