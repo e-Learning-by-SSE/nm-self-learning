@@ -21,6 +21,7 @@ async function seed(): Promise<void> {
 	await prisma.course.deleteMany();
 	await prisma.enrollment.deleteMany();
 	await prisma.competence.deleteMany();
+	await prisma.lesson.deleteMany();
 
 	await createUsers();
 	await createCourses();

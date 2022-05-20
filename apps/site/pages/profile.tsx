@@ -1,21 +1,23 @@
 import { database } from "@self-learning/database";
 import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
+import { formatDistance } from "date-fns";
+import { de } from "date-fns/locale";
 import {
 	GetServerSidePropsContext,
 	GetServerSidePropsResult,
 	InferGetServerSidePropsType
 } from "next";
 import Link from "next/link";
+import { Fragment } from "react";
 
-export const getServerSideProps = async ({ req }: GetServerSidePropsContext) => {
-	const user = await database.user.findUnique({
+function getUser() {
+	return database.user.findUnique({
 		rejectOnNotFound: true,
 		where: { username: "potter" },
 		select: {
 			username: true,
 			displayName: true,
-			competences: true,
 			enrollments: {
 				select: {
 					status: true,
@@ -34,23 +36,95 @@ export const getServerSideProps = async ({ req }: GetServerSidePropsContext) => 
 			}
 		}
 	});
+}
+
+export const getServerSideProps = async ({ req, query }: GetServerSidePropsContext) => {
+	const user = await getUser();
+
+	const completedLessons = await database.user.findUnique({
+		where: { username: "potter" },
+		select: {
+			completedLessons: {
+				skip: 0,
+				take: 10,
+				orderBy: { createdAt: "desc" },
+				select: {
+					createdAt: true,
+					lesson: {
+						select: {
+							lessonId: true,
+							title: true,
+							slug: true
+						}
+					}
+				}
+			},
+			_count: {
+				select: {
+					completedLessons: true
+				}
+			}
+		}
+	});
+
+	const props = {
+		user,
+		completedLessons: {
+			count: completedLessons?._count.completedLessons ?? 0,
+			data: completedLessons?.completedLessons ?? []
+		}
+	};
 
 	return {
-		props: { user: JSON.parse(JSON.stringify(user)) }
-	} as GetServerSidePropsResult<{ user: typeof user }>;
+		props: JSON.parse(JSON.stringify(props))
+	} as GetServerSidePropsResult<typeof props>;
 };
 
-export default function Profile({ user }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Profile({
+	user,
+	completedLessons
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	return (
-		<div className="pb-16">
-			<CenteredSection className="gradient">
-				<div className="flex flex-col place-items-center gap-16">
-					<div className="relative h-[256px] w-[256px] rounded-lg bg-black"></div>
-					<h1 className="text-6xl">{user.displayName}</h1>
+		<>
+			<CenteredSection className="bg-gray-50">
+				<div className="flex flex-col gap-16 lg:flex-row-reverse">
+					<div className="flex flex-col place-items-center lg:place-items-start">
+						<div className="relative h-[256px] w-[256px] rounded-lg bg-black"></div>
+						<h1 className="mt-8 text-4xl">{user.displayName}</h1>
+
+						<div className="mt-8 grid gap-1">
+							<span className="text-light">Studiengang:</span>
+							<span className="font-semibold text-secondary">
+								Wirtschaftsinformatik, B. Sc.
+							</span>
+						</div>
+					</div>
+
+					<div className="grid grow items-start rounded-lg bg-white p-8">
+						<span className="mb-8 text-lg font-semibold ">Aktivität</span>
+
+						<ul className="grid items-start">
+							{completedLessons.data.map(lesson => (
+								<Fragment key={lesson.createdAt as unknown as string}>
+									<li className="flex grow flex-wrap items-center justify-between gap-2">
+										<Link href={`/lessons/${lesson.lesson.slug}`}>
+											<a className="text-sm hover:text-secondary">
+												{lesson.lesson.title}
+											</a>
+										</Link>
+										<span className="text-sm text-light">
+											{toDateAgo(lesson.createdAt)}
+										</span>
+									</li>
+									<span className="my-4 h-[1px] bg-light-border last:invisible last:my-0"></span>
+								</Fragment>
+							))}
+						</ul>
+					</div>
 				</div>
 			</CenteredSection>
 
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection className="bg-white">
 				<div className="flex flex-col gap-12">
 					<h2 className="text-3xl">Aktuelle Kurse</h2>
 
@@ -89,7 +163,7 @@ export default function Profile({ user }: InferGetServerSidePropsType<typeof get
 				</div>
 			</CenteredSection>
 
-			<CenteredSection className="bg-white">
+			<CenteredSection className="bg-gray-50">
 				<div className="flex flex-col gap-12">
 					<h2 className="text-3xl">Abgeschlossene Kurse</h2>
 					<ItemCardGrid>
@@ -121,6 +195,13 @@ export default function Profile({ user }: InferGetServerSidePropsType<typeof get
 					</ItemCardGrid>
 				</div>
 			</CenteredSection>
-		</div>
+		</>
 	);
+}
+
+function toDateAgo(date: Date | string | number) {
+	return formatDistance(new Date(date), Date.now(), {
+		addSuffix: true,
+		locale: de
+	});
 }

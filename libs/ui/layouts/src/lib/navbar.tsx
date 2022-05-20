@@ -21,7 +21,10 @@ export function Navbar() {
 							</div>
 						</a>
 					</Link>
-					<div className="flex gap-2 text-sm">
+					<div className="flex gap-16 text-sm">
+						<Link href="/profile">
+							<a>Profil</a>
+						</Link>
 						<Link href="/subjects">
 							<a>Fachgebiete</a>
 						</Link>

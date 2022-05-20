@@ -1,3 +1,4 @@
+import { Navbar } from "@self-learning/ui/layouts";
 import { AppProps } from "next/app";
 import Head from "next/head";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -20,7 +21,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<Head>
 					<title>Self-Learning</title>
 				</Head>
-				{/* <Navbar /> */}
+				<Navbar />
 				<main className="grid grow">
 					<Component {...pageProps} />
 				</main>

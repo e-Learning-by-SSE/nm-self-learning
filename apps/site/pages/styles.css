@@ -4,6 +4,8 @@
 
 :root {
 	--color-secondary: theme("colors.indigo.500");
+	--color-light: theme("colors.slate.500");
+	--color-light-border: theme("colors.slate.200");
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
 }
 
@@ -74,7 +76,7 @@ h3 {
 }
 
 .glass {
-	@apply border border-white bg-white bg-opacity-75 shadow-lg;
+	@apply border border-white bg-white shadow-lg;
 }
 
 .glass-hover {

@@ -15,7 +15,9 @@ module.exports = {
 				sans: ["Inter", ...defaultTheme.fontFamily.sans]
 			},
 			colors: {
-				secondary: "var(--color-secondary)"
+				secondary: "var(--color-secondary)",
+				light: "var(--color-light)",
+				"light-border": "var(--color-light-border)"
 			}
 		}
 	},

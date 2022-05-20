@@ -56,9 +56,9 @@ model CompletedLesson {
     completedLessonId Int @id @default(autoincrement())
 
     lessonId  String
-    lesson    Lesson   @relation(fields: [lessonId], references: [lessonId])
+    lesson    Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
     username  String
-    user      User     @relation(fields: [username], references: [username])
+    user      User     @relation(fields: [username], references: [username], onDelete: Cascade)
     createdAt DateTime @default(now())
 
     @@index([username, lessonId])
