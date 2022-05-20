@@ -80,6 +80,6 @@ async function synchronizeLessons() {
 
 	await Promise.all(promises);
 	console.log(
-		`[${cmsSyncApiHandler.name}]: Successfully synchronized ${lessons.length} courses.`
+		`[${cmsSyncApiHandler.name}]: Successfully synchronized ${lessons.length} lessons.`
 	);
 }
