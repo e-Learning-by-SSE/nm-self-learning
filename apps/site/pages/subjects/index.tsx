@@ -24,7 +24,7 @@ export const getStaticProps: GetStaticProps<SubjectsProps> = async () => {
 
 export default function Subjects({ subjects }: SubjectsProps) {
 	return (
-		<div className="gradient py-16">
+		<div className="bg-gray-50 py-16">
 			<div className="mx-auto px-4 lg:max-w-screen-lg lg:px-0">
 				<h1 className="mb-16 text-4xl sm:text-6xl">Fachgebiete</h1>
 				<ItemCardGrid>

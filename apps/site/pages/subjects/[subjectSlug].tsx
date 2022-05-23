@@ -45,7 +45,7 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 	const imgUrlBanner = imageBanner?.data?.attributes?.url ?? "";
 
 	return (
-		<div className="gradient pb-32">
+		<div className="bg-gray-50 pb-32">
 			<div className="mx-auto flex flex-col lg:max-w-screen-lg">
 				<TopicHeader
 					imgUrlBanner={imgUrlBanner}
