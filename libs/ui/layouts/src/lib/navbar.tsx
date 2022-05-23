@@ -1,5 +1,7 @@
-import { useSession, signIn, signOut } from "next-auth/react";
-import { AcademicCapIcon } from "@heroicons/react/outline";
+import { Menu } from "@headlessui/react";
+import { AcademicCapIcon, LogoutIcon } from "@heroicons/react/outline";
+import { ChevronDownIcon } from "@heroicons/react/solid";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 
 export function Navbar() {
@@ -29,32 +31,46 @@ export function Navbar() {
 						</Link>
 					</div>
 				</div>
-				<div className="flex flex-col">
-					{!session?.user ? (
-						<button
-							className="rounded-lg border border-indigo-100 px-8 py-1 font-semibold"
-							onClick={() => signIn()}
-						>
-							Login
-						</button>
-					) : (
-						<button
-							className="rounded-lg border border-indigo-100 px-8 py-1 font-semibold"
-							onClick={() => signOut()}
-						>
-							Logout
-						</button>
-					)}
-				</div>
+				{!session?.user ? (
+					<button
+						className="rounded-lg border border-indigo-100 px-8 py-1 font-semibold"
+						onClick={() => signIn()}
+					>
+						Login
+					</button>
+				) : (
+					<div className="flex items-center gap-4">
+						<span className="text-sm">Max Mustermann</span>
+						<NavbarDropdownMenu signOut={signOut} />
+					</div>
+				)}
 			</div>
 		</div>
 	);
-	// return (
-	// 	<div className="flex h-12 items-center bg-white px-2 text-black">
-	// 		<div className="flex gap-4">
-	// 			<MenuIcon className="h-6" />
-	// 			<span className="font-semibold">SELF-le@rning</span>
-	// 		</div>
-	// 	</div>
-	// );
+}
+
+export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
+	return (
+		<Menu as="div" className="relative flex">
+			<Menu.Button className="flex items-center gap-1">
+				<div className="gradient h-12 w-12 rounded-full"></div>
+				<ChevronDownIcon className="h-6 text-gray-400" />
+			</Menu.Button>
+			<Menu.Items className="absolute top-14 right-0 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white text-sm shadow-lg ring-1 ring-indigo-500 ring-opacity-5 focus:outline-none">
+				<Menu.Item as="div" className="p-1">
+					{({ active }) => (
+						<button
+							onClick={signOut}
+							className={`${
+								active ? "bg-indigo-500 text-white" : ""
+							} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+						>
+							<LogoutIcon className="h-5" />
+							<span>Logout</span>
+						</button>
+					)}
+				</Menu.Item>
+			</Menu.Items>
+		</Menu>
+	);
 }
