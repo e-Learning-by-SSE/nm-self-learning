@@ -4,6 +4,7 @@ import { ImageCard } from "@self-learning/ui/common";
 import { TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
+import { ReactComponent as VoidSvg } from "../../svg/void.svg";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ResolvedValue<Fn extends (...args: any) => unknown> = Exclude<
@@ -53,22 +54,33 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 					title={title}
 					subtitle={subtitle}
 				/>
-				<div className="px-4 pt-16 lg:max-w-screen-lg lg:px-0">
-					<h2 className="text-3xl">Spezialisierungen</h2>
+				{specialities?.data && specialities?.data.length > 0 ? (
+					<div className="px-4 pt-16 lg:max-w-screen-lg lg:px-0">
+						<h2 className="text-3xl">Spezialisierungen</h2>
 
-					<div className="mt-8 grid gap-16 md:grid-cols-2 lg:grid-cols-3">
-						{specialities?.data.map(({ attributes }) => (
-							<SpecializationCard
-								key={attributes!.slug}
-								slug={attributes!.slug ?? ""}
-								subjectSlug={slug}
-								title={attributes!.title}
-								subtitle={attributes!.subtitle}
-								imgUrl={attributes?.imageCard?.data?.attributes?.url ?? ""}
-							/>
-						))}
+						<div className="mt-8 grid gap-16 md:grid-cols-2 lg:grid-cols-3">
+							{specialities.data.map(({ attributes }) => (
+								<SpecializationCard
+									key={attributes!.slug}
+									slug={attributes!.slug ?? ""}
+									subjectSlug={slug}
+									title={attributes!.title}
+									subtitle={attributes!.subtitle}
+									imgUrl={attributes?.imageCard?.data?.attributes?.url ?? ""}
+								/>
+							))}
+						</div>
 					</div>
-				</div>
+				) : (
+					<div className="grid gap-16 pt-16 lg:gap-24 lg:pt-24">
+						<span className="mx-auto font-semibold">
+							Leider gibt es hier noch keine Inhalte.
+						</span>
+						<div className="mx-auto w-full max-w-md ">
+							<VoidSvg />
+						</div>
+					</div>
+				)}
 			</div>
 		</div>
 	);
