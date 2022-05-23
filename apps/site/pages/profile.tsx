@@ -12,10 +12,10 @@ import { getSession } from "next-auth/react";
 import Link from "next/link";
 import { Fragment } from "react";
 
-function getUser() {
+function getUser(username: string) {
 	return database.student.findUnique({
-		rejectOnNotFound: false,
-		where: { username: "potter" },
+		rejectOnNotFound: true,
+		where: { username },
 		select: {
 			username: true,
 			displayName: true,
@@ -40,14 +40,21 @@ function getUser() {
 }
 
 export const getServerSideProps = async ({ req, res }: GetServerSidePropsContext) => {
-	const user = await getUser();
-
 	const session = await getSession({ req });
 
-	console.log(session?.user);
+	if (!session?.user?.name) {
+		return {
+			redirect: {
+				destination: "/login?callbackUrl=profile",
+				permanent: false
+			}
+		};
+	}
+
+	const user = await getUser(session.user.name);
 
 	const completedLessons = await database.student.findUnique({
-		where: { username: "potter" },
+		where: { username: user.username },
 		select: {
 			completedLessons: {
 				skip: 0,

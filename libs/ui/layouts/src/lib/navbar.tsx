@@ -1,5 +1,5 @@
 import { Menu } from "@headlessui/react";
-import { AcademicCapIcon, LogoutIcon } from "@heroicons/react/outline";
+import { AcademicCapIcon, LogoutIcon, UserIcon } from "@heroicons/react/outline";
 import { ChevronDownIcon } from "@heroicons/react/solid";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -23,7 +23,7 @@ export function Navbar() {
 					<div className="flex gap-16 text-sm">
 						{session?.user && (
 							<Link href="/profile">
-								<a>Profil ({session.user.name})</a>
+								<a>Mein Profil</a>
 							</Link>
 						)}
 						<Link href="/subjects">
@@ -41,7 +41,7 @@ export function Navbar() {
 				) : (
 					<div className="flex items-center gap-4">
 						<span className="text-sm">{session.user.name}</span>
-						<NavbarDropdownMenu signOut={signOut} />
+						<NavbarDropdownMenu signOut={() => signOut({ callbackUrl: "/" })} />
 					</div>
 				)}
 			</div>
@@ -57,6 +57,20 @@ export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
 				<ChevronDownIcon className="h-6 text-gray-400" />
 			</Menu.Button>
 			<Menu.Items className="absolute right-0 top-14 z-10 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white text-sm shadow-lg ring-1 ring-indigo-500 ring-opacity-5 focus:outline-none">
+				<Menu.Item as="div" className="p-1">
+					{({ active }) => (
+						<Link href="/profile">
+							<a
+								className={`${
+									active ? "bg-indigo-500 text-white" : ""
+								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+							>
+								<UserIcon className="h-5" />
+								<span>Mein Profil</span>
+							</a>
+						</Link>
+					)}
+				</Menu.Item>
 				<Menu.Item as="div" className="p-1">
 					{({ active }) => (
 						<button
