@@ -14,12 +14,13 @@ const students = [
 ];
 
 const users: Prisma.UserCreateInput[] = students.map(student => ({
+	name: student.username,
 	accounts: {
 		create: [
 			{
-				provider: "development",
+				provider: "demo",
 				providerAccountId: `${student.username}-dev`,
-				type: "development-account"
+				type: "demo-account"
 			}
 		]
 	},
