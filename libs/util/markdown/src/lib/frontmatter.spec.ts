@@ -19,7 +19,7 @@ describe("extractFrontMatter", () => {
 
 		expect(result.frontmatter).toEqual({});
 		expect(result.content).toEqual(expectedContent);
-		expect(result.excerpt).toBeUndefined();
+		expect(result.excerpt).toBeNull();
 	});
 
 	it("Document front matter and excerpt", async () => {
@@ -39,12 +39,14 @@ describe("extractFrontMatter", () => {
 			"-   Three"
 		].join("\n");
 
-		expect(result.frontmatter).toEqual({
-			title: "With Frontmatter Example",
-			slug: "with-front-matter-example",
-			author: "Max Mustermann",
-			date: new Date("2022-01-01T00:00:00.000Z")
-		});
+		expect(result.frontmatter).toMatchInlineSnapshot(`
+		Object {
+		  "author": "Max Mustermann",
+		  "date": "2022-01-01T00:00:00.000Z",
+		  "slug": "with-front-matter-example",
+		  "title": "With Frontmatter Example",
+		}
+	`);
 		expect(result.content).toEqual(expectedContent);
 		expect(result.excerpt).toEqual("This is the excerpt.");
 	});
@@ -56,14 +58,16 @@ describe("extractFrontMatter", () => {
 		);
 		const result = extractFrontMatter(mdFile);
 
-		expect(result.frontmatter).toEqual({
-			title: "Only Frontmatter",
-			slug: "only-frontmatter",
-			author: "Max Mustermann",
-			date: new Date("2022-01-01T00:00:00.000Z")
-		});
-		expect(result.content).toBeUndefined();
-		expect(result.excerpt).toBeUndefined();
+		expect(result.frontmatter).toMatchInlineSnapshot(`
+		Object {
+		  "author": "Max Mustermann",
+		  "date": "2022-01-01T00:00:00.000Z",
+		  "slug": "only-frontmatter",
+		  "title": "Only Frontmatter",
+		}
+	`);
+		expect(result.content).toBeNull();
+		expect(result.excerpt).toBeNull();
 	});
 
 	it("Document with front matter, content and no excerpt", async () => {
@@ -80,13 +84,15 @@ describe("extractFrontMatter", () => {
 			"-   Three"
 		].join("\n");
 
-		expect(result.frontmatter).toEqual({
-			title: "No Excerpt",
-			slug: "no-excerpt",
-			author: "Max Mustermann",
-			date: new Date("2022-01-01T00:00:00.000Z")
-		});
+		expect(result.frontmatter).toMatchInlineSnapshot(`
+		Object {
+		  "author": "Max Mustermann",
+		  "date": "2022-01-01T00:00:00.000Z",
+		  "slug": "no-excerpt",
+		  "title": "No Excerpt",
+		}
+	`);
 		expect(result.content).toEqual(expectedContent);
-		expect(result.excerpt).toBeUndefined();
+		expect(result.excerpt).toBeNull();
 	});
 });
