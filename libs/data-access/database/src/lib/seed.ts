@@ -2,13 +2,31 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const users: Prisma.UserCreateInput[] = [
+const students = [
 	{
-		username: "potter",
-		displayName: "Harry Potter"
+		displayName: "Harry Potter",
+		username: "potter"
 	},
-	{ username: "weasley", displayName: "Ronald Weasley" }
+	{
+		displayName: "Ronald Weasley",
+		username: "weasley"
+	}
 ];
+
+const users: Prisma.UserCreateInput[] = students.map(student => ({
+	accounts: {
+		create: [
+			{
+				provider: "development",
+				providerAccountId: `${student.username}-dev`,
+				type: "development-account"
+			}
+		]
+	},
+	student: {
+		create: student
+	}
+}));
 
 const competences: Prisma.CompetenceCreateInput[] = [
 	{ competenceId: "competence-1", title: "Competence #1" },
@@ -64,7 +82,7 @@ async function createUsers(): Promise<void> {
 		await prisma.user.create({
 			data: user
 		});
-		console.log(`[User] created: ${user.username}`);
+		console.log(`[User] created: ${user.student?.create?.username}`);
 	}
 }
 
@@ -109,11 +127,11 @@ async function createCompetences(): Promise<void> {
 async function createAchievedCompetences(): Promise<void> {
 	const achievedCompetences = [
 		{
-			username: users[0].username,
+			username: users[0].student?.create?.username,
 			competenceId: competences[0].competenceId
 		},
 		{
-			username: users[0].username,
+			username: students[0].username,
 			competenceId: competences[1].competenceId
 		}
 	];

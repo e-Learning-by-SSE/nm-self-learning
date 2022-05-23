@@ -1,8 +1,8 @@
 import { Navbar } from "@self-learning/ui/layouts";
+import { SessionProvider } from "next-auth/react";
 import { AppProps } from "next/app";
 import Head from "next/head";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
 import "./styles.css";
 
 const queryClient = new QueryClient({
@@ -17,16 +17,18 @@ const queryClient = new QueryClient({
 function CustomApp({ Component, pageProps }: AppProps) {
 	return (
 		<>
-			<QueryClientProvider client={queryClient}>
-				<Head>
-					<title>Self-Learning</title>
-				</Head>
-				<Navbar />
-				<main className="grid grow">
-					<Component {...pageProps} />
-				</main>
-				<ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
-			</QueryClientProvider>
+			<SessionProvider session={pageProps.session}>
+				<QueryClientProvider client={queryClient}>
+					<Head>
+						<title>Self-Learning</title>
+					</Head>
+					<Navbar />
+					<main className="grid grow">
+						<Component {...pageProps} />
+					</main>
+					{/* <ReactQueryDevtools initialIsOpen={false} position="bottom-right" /> */}
+				</QueryClientProvider>
+			</SessionProvider>
 		</>
 	);
 }

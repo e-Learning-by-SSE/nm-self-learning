@@ -8,12 +8,13 @@ import {
 	GetServerSidePropsResult,
 	InferGetServerSidePropsType
 } from "next";
+import { getSession } from "next-auth/react";
 import Link from "next/link";
 import { Fragment } from "react";
 
 function getUser() {
-	return database.user.findUnique({
-		rejectOnNotFound: true,
+	return database.student.findUnique({
+		rejectOnNotFound: false,
 		where: { username: "potter" },
 		select: {
 			username: true,
@@ -38,10 +39,14 @@ function getUser() {
 	});
 }
 
-export const getServerSideProps = async ({ req, query }: GetServerSidePropsContext) => {
+export const getServerSideProps = async ({ req, res }: GetServerSidePropsContext) => {
 	const user = await getUser();
 
-	const completedLessons = await database.user.findUnique({
+	const session = await getSession({ req });
+
+	console.log(session?.user);
+
+	const completedLessons = await database.student.findUnique({
 		where: { username: "potter" },
 		select: {
 			completedLessons: {
@@ -68,7 +73,7 @@ export const getServerSideProps = async ({ req, query }: GetServerSidePropsConte
 	});
 
 	const props = {
-		user,
+		user: user as Exclude<typeof user, null>,
 		completedLessons: {
 			count: completedLessons?._count.completedLessons ?? 0,
 			data: completedLessons?.completedLessons ?? []
