@@ -33,14 +33,14 @@ export function Navbar() {
 				</div>
 				{!session?.user ? (
 					<button
-						className="rounded-lg border border-indigo-100 px-8 py-1 font-semibold"
+						className="text-w rounded-lg bg-indigo-500 px-8 py-2 font-semibold text-white"
 						onClick={() => signIn()}
 					>
 						Login
 					</button>
 				) : (
 					<div className="flex items-center gap-4">
-						<span className="text-sm">Max Mustermann</span>
+						<span className="text-sm">{session.user.name}</span>
 						<NavbarDropdownMenu signOut={signOut} />
 					</div>
 				)}
@@ -56,7 +56,7 @@ export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
 				<div className="gradient h-12 w-12 rounded-full"></div>
 				<ChevronDownIcon className="h-6 text-gray-400" />
 			</Menu.Button>
-			<Menu.Items className="absolute top-14 right-0 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white text-sm shadow-lg ring-1 ring-indigo-500 ring-opacity-5 focus:outline-none">
+			<Menu.Items className="absolute right-0 top-14 z-10 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white text-sm shadow-lg ring-1 ring-indigo-500 ring-opacity-5 focus:outline-none">
 				<Menu.Item as="div" className="p-1">
 					{({ active }) => (
 						<button
