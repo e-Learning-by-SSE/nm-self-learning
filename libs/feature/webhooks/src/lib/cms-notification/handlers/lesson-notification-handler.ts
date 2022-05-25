@@ -10,9 +10,11 @@ export const lessonEntrySchema = yup
 		slug: yup.string().required(),
 		title: yup.string().required(),
 		subtitle: yup.string().nullable(),
-		image: yup.object({
-			url: yup.string()
-		})
+		image: yup
+			.object({
+				url: yup.string()
+			})
+			.nullable()
 	})
 	.typeError("entry must be an object with keys: lessonId, slug, title, subtitle");
 

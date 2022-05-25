@@ -10,9 +10,11 @@ export const courseEntrySchema = yup
 		title: yup.string().required(),
 		slug: yup.string().required(),
 		subtitle: yup.string().required(),
-		image: yup.object({
-			url: yup.string()
-		})
+		image: yup
+			.object({
+				url: yup.string()
+			})
+			.nullable()
 	})
 	.typeError(
 		"'entry' must be an object with the following keys: courseId, title, slug, subtitle, image.url (optional)"
