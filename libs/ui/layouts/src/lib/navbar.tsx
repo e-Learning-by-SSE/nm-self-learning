@@ -9,7 +9,7 @@ export function Navbar() {
 
 	return (
 		<div className="h-20 border-b border-b-gray-200 bg-white">
-			<div className="container mx-auto flex h-full items-center justify-between gap-4 px-4">
+			<div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between gap-4 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/">
 						<a className="flex items-center gap-2">

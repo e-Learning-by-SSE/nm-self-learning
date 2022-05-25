@@ -46,7 +46,7 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 
 	return (
 		<div className="bg-gray-50 pb-32">
-			<div className="mx-auto flex flex-col lg:max-w-screen-lg">
+			<div className="mx-auto flex max-w-screen-2xl flex-col">
 				<TopicHeader
 					imgUrlBanner={imgUrlBanner}
 					parentLink="/subjects"

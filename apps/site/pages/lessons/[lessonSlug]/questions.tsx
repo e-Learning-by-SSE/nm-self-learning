@@ -123,7 +123,7 @@ export default function QuestionsPage({ nanomodule }: QuestionsPageProps) {
 
 	return (
 		<div className="bg-gray-50">
-			<CenteredContainer>
+			<div className="mx-auto max-w-screen-lg">
 				<TopicHeader
 					// imgUrlBanner={image?.data?.attributes?.url}
 					title="Lernkontrolle"
@@ -140,7 +140,7 @@ export default function QuestionsPage({ nanomodule }: QuestionsPageProps) {
 						goToPrevious={goToPreviousQuestion}
 					/>
 				</TopicHeader>
-			</CenteredContainer>
+			</div>
 
 			<div className="grid items-start gap-16 bg-gray-50 py-16 px-4 lg:px-0">
 				<div className="mx-auto max-w-3xl">

@@ -21,6 +21,7 @@ export function TopicHeader({
 			{imgUrlBanner && (
 				<div className="relative h-48 w-full bg-white">
 					<Image
+						priority
 						className=""
 						src={`http://localhost:1337${imgUrlBanner}`}
 						layout="fill"
