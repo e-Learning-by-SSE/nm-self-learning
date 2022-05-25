@@ -76,7 +76,7 @@ h3 {
 }
 
 .glass {
-	@apply border border-white bg-white shadow-lg;
+	@apply bg-white shadow-lg;
 }
 
 .glass-hover {

@@ -16,7 +16,7 @@ export function ImageCard({
 	badge?: ReactElement;
 }) {
 	return (
-		<div className="relative flex h-full flex-col">
+		<div className="glass relative flex h-full flex-col rounded-lg">
 			{!imgUrl || imgUrl.length === 0 ? (
 				<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-gradient-to-br from-purple-500 to-blue-400"></div>
 			) : (
@@ -33,7 +33,7 @@ export function ImageCard({
 
 			{badge && <div className="absolute p-2">{badge}</div>}
 
-			<div className="glass flex h-full flex-col justify-between gap-4 rounded-b-lg p-4">
+			<div className="flex h-full flex-col justify-between gap-4 rounded-b-lg p-4">
 				<div className="flex flex-col gap-4">
 					<h2 className="text-2xl">{title}</h2>
 					<span className="text-sm text-slate-500">{subtitle}</span>
