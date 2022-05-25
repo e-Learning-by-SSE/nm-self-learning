@@ -30,6 +30,24 @@ gql`
 							}
 						}
 					}
+					courses {
+						data {
+							attributes {
+								courseId
+								slug
+								title
+								subtitle
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}

@@ -17,3 +17,23 @@ type ResolvedValue<Fn extends (...args: any) => unknown> = Exclude<
 	Awaited<ReturnType<Fn>>,
 	null | undefined
 >;
+
+/**
+ * Type alias that excludes `null` and `undefined` from the given type.
+ *
+ * @example
+ * const value: string | undefined = getStringOrUndefined();
+ * const str: string = Defined<typeof value>;
+ *
+ * @example
+ * // Next.js - getServerSideProps
+ *	const course = await getCourseBySlug(slug);
+ *
+ *	return {
+ *		props: {
+ *			course: course as Defined<typeof course>
+ *		},
+ *		notFound: !course
+ *	};
+ */
+type Defined<T> = Exclude<T, undefined | null>;

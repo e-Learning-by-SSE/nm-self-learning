@@ -20,7 +20,7 @@ export const getStaticProps: GetStaticProps<SpecializationPageProps> = async ({ 
 
 	return {
 		props: {
-			specialization: specialization as ResolvedValue<typeof getSpecializationBySlug>
+			specialization: specialization as Defined<typeof specialization>
 		},
 		notFound: !specialization
 	};
@@ -34,13 +34,13 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
-	const { slug, title, subtitle, imageBanner, subject } = specialization;
+	const { slug, title, subtitle, imageBanner, subject, courses } = specialization;
 	const imgUrlBanner = imageBanner?.data?.attributes?.url ?? null;
 	const { title: subjectTitle, slug: subjectSlug } = subject?.data?.attributes || {};
 
 	return (
 		<div className="bg-gray-50 pb-32">
-			<div className="mx-auto flex flex-col lg:max-w-screen-lg">
+			<div className="mx-auto flex max-w-screen-2xl flex-col">
 				<TopicHeader
 					imgUrlBanner={imgUrlBanner}
 					parentLink={`/subjects/${subjectSlug}`}
@@ -50,12 +50,15 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 				/>
 				<div className="px-4 pt-12 lg:max-w-screen-lg lg:px-0">
 					<ItemCardGrid>
-						<CourseCard
-							imgUrl={null}
-							slug="the-example-course"
-							title="Programmierung mit Java"
-							subtitle="A boilerplate driven language designed for writing verbose object-oriented instant legacy code."
-						/>
+						{courses?.data.map(({ attributes }) => (
+							<CourseCard
+								key={attributes!.slug}
+								slug={attributes!.slug}
+								title={attributes!.title}
+								subtitle={attributes!.subtitle}
+								imgUrl={attributes!.image?.data?.attributes?.url}
+							/>
+						))}
 					</ItemCardGrid>
 				</div>
 			</div>

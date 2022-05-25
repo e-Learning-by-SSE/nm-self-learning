@@ -250,13 +250,20 @@ export type Course = {
 	image?: Maybe<UploadFileEntityResponse>;
 	publishedAt?: Maybe<Scalars["DateTime"]>;
 	slug: Scalars["String"];
-	subtitle?: Maybe<Scalars["String"]>;
+	specialities?: Maybe<SpecialityRelationResponseCollection>;
+	subtitle: Scalars["String"];
 	title: Scalars["String"];
 	updatedAt?: Maybe<Scalars["DateTime"]>;
 };
 
 export type CourseAuthorsArgs = {
 	filters?: InputMaybe<AuthorFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
+
+export type CourseSpecialitiesArgs = {
+	filters?: InputMaybe<SpecialityFiltersInput>;
 	pagination?: InputMaybe<PaginationArg>;
 	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
@@ -295,6 +302,7 @@ export type CourseFiltersInput = {
 	or?: InputMaybe<Array<InputMaybe<CourseFiltersInput>>>;
 	publishedAt?: InputMaybe<DateTimeFilterInput>;
 	slug?: InputMaybe<StringFilterInput>;
+	specialities?: InputMaybe<SpecialityFiltersInput>;
 	subtitle?: InputMaybe<StringFilterInput>;
 	title?: InputMaybe<StringFilterInput>;
 	updatedAt?: InputMaybe<DateTimeFilterInput>;
@@ -308,6 +316,7 @@ export type CourseInput = {
 	image?: InputMaybe<Scalars["ID"]>;
 	publishedAt?: InputMaybe<Scalars["DateTime"]>;
 	slug?: InputMaybe<Scalars["String"]>;
+	specialities?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 	subtitle?: InputMaybe<Scalars["String"]>;
 	title?: InputMaybe<Scalars["String"]>;
 };
@@ -1038,6 +1047,7 @@ export type ResponseCollectionMeta = {
 
 export type Speciality = {
 	__typename?: "Speciality";
+	courses?: Maybe<CourseRelationResponseCollection>;
 	createdAt?: Maybe<Scalars["DateTime"]>;
 	description?: Maybe<Scalars["String"]>;
 	imageBanner?: Maybe<UploadFileEntityResponse>;
@@ -1047,6 +1057,13 @@ export type Speciality = {
 	subtitle: Scalars["String"];
 	title: Scalars["String"];
 	updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type SpecialityCoursesArgs = {
+	filters?: InputMaybe<CourseFiltersInput>;
+	pagination?: InputMaybe<PaginationArg>;
+	publicationState?: InputMaybe<PublicationState>;
+	sort?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
 };
 
 export type SpecialityEntity = {
@@ -1068,6 +1085,7 @@ export type SpecialityEntityResponseCollection = {
 
 export type SpecialityFiltersInput = {
 	and?: InputMaybe<Array<InputMaybe<SpecialityFiltersInput>>>;
+	courses?: InputMaybe<CourseFiltersInput>;
 	createdAt?: InputMaybe<DateTimeFilterInput>;
 	description?: InputMaybe<StringFilterInput>;
 	id?: InputMaybe<IdFilterInput>;
@@ -1081,6 +1099,7 @@ export type SpecialityFiltersInput = {
 };
 
 export type SpecialityInput = {
+	courses?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 	description?: InputMaybe<Scalars["String"]>;
 	imageBanner?: InputMaybe<Scalars["ID"]>;
 	imageCard?: InputMaybe<Scalars["ID"]>;
@@ -1657,7 +1676,7 @@ export type AuthorBySlugQuery = {
 							__typename?: "Course";
 							slug: string;
 							title: string;
-							subtitle?: string | null;
+							subtitle: string;
 							createdAt?: any | null;
 							updatedAt?: any | null;
 							image?: {
@@ -1756,7 +1775,7 @@ export type CourseBySlugQuery = {
 				__typename?: "Course";
 				title: string;
 				slug: string;
-				subtitle?: string | null;
+				subtitle: string;
 				description?: string | null;
 				createdAt?: any | null;
 				updatedAt?: any | null;
@@ -1826,7 +1845,7 @@ export type CourseBySlugQuery = {
 										__typename?: "Course";
 										slug: string;
 										title: string;
-										subtitle?: string | null;
+										subtitle: string;
 										image?: {
 											__typename?: "UploadFileEntityResponse";
 											data?: {
@@ -1890,7 +1909,7 @@ export type CoursesWithSlugsQuery = {
 				__typename?: "Course";
 				slug: string;
 				title: string;
-				subtitle?: string | null;
+				subtitle: string;
 				image?: {
 					__typename?: "UploadFileEntityResponse";
 					data?: {
@@ -1920,7 +1939,7 @@ export type CoursesForSyncQuery = {
 				courseId: string;
 				slug: string;
 				title: string;
-				subtitle?: string | null;
+				subtitle: string;
 				image?: {
 					__typename?: "UploadFileEntityResponse";
 					data?: {
@@ -2069,6 +2088,30 @@ export type SpecializationBySlugQuery = {
 						__typename?: "UploadFileEntity";
 						attributes?: { __typename?: "UploadFile"; url: string } | null;
 					} | null;
+				} | null;
+				courses?: {
+					__typename?: "CourseRelationResponseCollection";
+					data: Array<{
+						__typename?: "CourseEntity";
+						attributes?: {
+							__typename?: "Course";
+							courseId: string;
+							slug: string;
+							title: string;
+							subtitle: string;
+							image?: {
+								__typename?: "UploadFileEntityResponse";
+								data?: {
+									__typename?: "UploadFileEntity";
+									attributes?: {
+										__typename?: "UploadFile";
+										url: string;
+										alternativeText?: string | null;
+									} | null;
+								} | null;
+							} | null;
+						} | null;
+					}>;
 				} | null;
 			} | null;
 		}>;
@@ -2629,6 +2672,24 @@ export const SpecializationBySlugDocument = gql`
 						data {
 							attributes {
 								url
+							}
+						}
+					}
+					courses {
+						data {
+							attributes {
+								courseId
+								slug
+								title
+								subtitle
+								image {
+									data {
+										attributes {
+											url
+											alternativeText
+										}
+									}
+								}
 							}
 						}
 					}
