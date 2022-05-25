@@ -1555,6 +1555,67 @@ export type UsersPermissionsUserRelationResponseCollection = {
 	data: Array<UsersPermissionsUserEntity>;
 };
 
+export type CreateLessonMutationVariables = Exact<{
+	data: LessonInput;
+}>;
+
+export type CreateLessonMutation = {
+	__typename?: "Mutation";
+	createLesson?: {
+		__typename?: "LessonEntityResponse";
+		data?: {
+			__typename?: "LessonEntity";
+			attributes?: {
+				__typename?: "Lesson";
+				lessonId: string;
+				slug: string;
+				title: string;
+			} | null;
+		} | null;
+	} | null;
+};
+
+export type UpdateLessonMutationVariables = Exact<{
+	id: Scalars["ID"];
+	data: LessonInput;
+}>;
+
+export type UpdateLessonMutation = {
+	__typename?: "Mutation";
+	updateLesson?: {
+		__typename?: "LessonEntityResponse";
+		data?: {
+			__typename?: "LessonEntity";
+			attributes?: {
+				__typename?: "Lesson";
+				lessonId: string;
+				slug: string;
+				title: string;
+			} | null;
+		} | null;
+	} | null;
+};
+
+export type CreateCourseMutationVariables = Exact<{
+	data: CourseInput;
+}>;
+
+export type CreateCourseMutation = {
+	__typename?: "Mutation";
+	createCourse?: {
+		__typename?: "CourseEntityResponse";
+		data?: {
+			__typename?: "CourseEntity";
+			attributes?: {
+				__typename?: "Course";
+				courseId: string;
+				slug: string;
+				title: string;
+			} | null;
+		} | null;
+	} | null;
+};
+
 export type CreateCompetenceMutationVariables = Exact<{
 	data: CompetenceInput;
 }>;
@@ -2261,6 +2322,45 @@ export type TeamBySlugQuery = {
 	} | null;
 };
 
+export const CreateLessonDocument = gql`
+	mutation createLesson($data: LessonInput!) {
+		createLesson(data: $data) {
+			data {
+				attributes {
+					lessonId
+					slug
+					title
+				}
+			}
+		}
+	}
+`;
+export const UpdateLessonDocument = gql`
+	mutation updateLesson($id: ID!, $data: LessonInput!) {
+		updateLesson(id: $id, data: $data) {
+			data {
+				attributes {
+					lessonId
+					slug
+					title
+				}
+			}
+		}
+	}
+`;
+export const CreateCourseDocument = gql`
+	mutation createCourse($data: CourseInput!) {
+		createCourse(data: $data) {
+			data {
+				attributes {
+					courseId
+					slug
+					title
+				}
+			}
+		}
+	}
+`;
 export const CreateCompetenceDocument = gql`
 	mutation createCompetence($data: CompetenceInput!) {
 		createCompetence(data: $data) {
@@ -2818,6 +2918,48 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
 	return {
+		createLesson(
+			variables: CreateLessonMutationVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<CreateLessonMutation> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<CreateLessonMutation>(CreateLessonDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"createLesson",
+				"mutation"
+			);
+		},
+		updateLesson(
+			variables: UpdateLessonMutationVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<UpdateLessonMutation> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<UpdateLessonMutation>(UpdateLessonDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"updateLesson",
+				"mutation"
+			);
+		},
+		createCourse(
+			variables: CreateCourseMutationVariables,
+			requestHeaders?: Dom.RequestInit["headers"]
+		): Promise<CreateCourseMutation> {
+			return withWrapper(
+				wrappedRequestHeaders =>
+					client.request<CreateCourseMutation>(CreateCourseDocument, variables, {
+						...requestHeaders,
+						...wrappedRequestHeaders
+					}),
+				"createCourse",
+				"mutation"
+			);
+		},
 		createCompetence(
 			variables: CreateCompetenceMutationVariables,
 			requestHeaders?: Dom.RequestInit["headers"]
