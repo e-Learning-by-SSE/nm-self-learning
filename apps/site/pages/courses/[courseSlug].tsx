@@ -117,7 +117,7 @@ function CourseHeader({ course }: { course: Course }) {
 					<div className="relative h-64 w-full shrink-0">
 						<Image
 							priority
-							className="shrink-0 rounded-lg"
+							className="shrink-0 rounded-lg bg-white"
 							objectFit="cover"
 							layout="fill"
 							src={`http://localhost:1337${url}` ?? ""}
