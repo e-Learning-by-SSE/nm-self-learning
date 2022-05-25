@@ -5,6 +5,7 @@
 	"scripts": {
 		"start": "nx serve",
 		"build": "nx build",
+		"cms:watch": "cd apps/cms && npm run develop --watch-admin",
 		"test": "nx test",
 		"storybook": "env TAILWIND_MODE=watch nx run docs-storybook:storybook --watch",
 		"prettier:check": "prettier --check **/*",

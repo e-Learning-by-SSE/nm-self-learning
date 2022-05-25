@@ -11,6 +11,7 @@
 		"site-e2e": "apps/site-e2e",
 		"ui-common": "libs/ui/common",
 		"ui-course": "libs/ui/course",
+		"ui-forms": "libs/ui/forms",
 		"ui-layouts": "libs/ui/layouts",
 		"ui-lesson": "libs/ui/lesson",
 		"util-http": "libs/util/http",
