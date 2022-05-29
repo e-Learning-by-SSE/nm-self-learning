@@ -36,50 +36,12 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 type Lesson = { title: string; slug: string; imgUrl?: string };
 
-const fakeLessons: Lesson[] = [
-	{
-		slug: "a-beginners-guide-to-react-introduction",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "2",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "3",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "4",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "5",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "6",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "7",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "8",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "9",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "10",
-		title: "A Beginners Guide to React Introduction"
-	}
-];
+const fakeLessons: Lesson[] = new Array(25).fill(0).map((_, index) => ({
+	slug: index.toString(),
+	title: "A Beginners Guide to React Introduction"
+}));
 
-export default function Nanomodule({ lesson }: LessonProps) {
+export default function Lesson({ lesson }: LessonProps) {
 	const { title } = lesson;
 	const { url } = lesson.content?.[0] as cmsTypes.ComponentContentYoutubeVideo;
 
@@ -98,8 +60,8 @@ export default function Nanomodule({ lesson }: LessonProps) {
 				<title>{title}</title>
 			</Head>
 
-			<div className="flex flex-col bg-gray-50 md:pb-16 md:pt-4">
-				<div className="mx-auto flex w-full flex-col gap-4 lg:container">
+			<div className=" bg-gray-50 md:pb-32">
+				<div className="flex flex-col gap-4">
 					<VideoPlayerWithPlaylist videoUrl={url as string} />
 					<LessonHeader lesson={lesson} authors={authors} />
 				</div>
@@ -110,12 +72,12 @@ export default function Nanomodule({ lesson }: LessonProps) {
 
 function VideoPlayerWithPlaylist({ videoUrl }: { videoUrl: string }) {
 	return (
-		<div className="grid w-full xl:grid-cols-4">
-			<div className="h-[512px] bg-black lg:h-[720px] xl:col-span-3">
+		<div className="mx-auto flex w-full flex-col bg-white xl:max-h-[75vh] xl:flex-row xl:px-4">
+			<div className="aspect-video grow bg-black">
 				<YoutubeEmbed url={videoUrl}></YoutubeEmbed>
 				{/* <VideoPlayer url={videoUrl} /> */}
 			</div>
-			<div className="max-h-[512px] overflow-hidden xl:col-span-1 xl:max-h-[720px]">
+			<div className="h-[400px] overflow-hidden xl:h-auto xl:min-w-[400px]">
 				<Playlist
 					lessons={fakeLessons}
 					currentLesson={fakeLessons[0]}
@@ -158,7 +120,7 @@ function LessonHeader({
 	authors: AuthorProps[];
 }) {
 	return (
-		<div className="flex flex-col px-2 sm:px-0">
+		<div className="mx-auto flex w-full flex-col px-2 sm:px-0 lg:container">
 			<div className="gradient card flex flex-wrap justify-between gap-8">
 				<Link href={`/lessons/${lesson.slug}/questions`}>
 					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">

@@ -24,7 +24,7 @@ export function Playlist({
 
 	return (
 		<div
-			className={`flex w-full flex-col border border-white bg-white bg-opacity-75 backdrop-blur ${
+			className={`flex w-full flex-col border-r border-b border-light-border bg-white ${
 				collapsed ? "h-fit" : "h-full"
 			}`}
 		>
@@ -90,10 +90,9 @@ function Lesson({
 						<div className="h-full w-full bg-neutral-500"></div>
 					)}
 				</div>
-				<div className="flex w-full items-center gap-3 overflow-hidden px-3">
-					{/* {isActive && <PlayIcon className="h-6 shrink-0" />}
-					{isLocked && <LockClosedIcon className="h-6 shrink-0" />} */}
-					<div className="max-w-md truncate text-sm font-semibold">{lesson.title}</div>
+				<div className="my-auto grid gap-1 overflow-hidden pl-4 pr-6">
+					<span className="max-w-md truncate text-sm font-semibold">{lesson.title}</span>
+					<span className="text-sm font-light">4:20</span>
 				</div>
 			</a>
 		</Link>
