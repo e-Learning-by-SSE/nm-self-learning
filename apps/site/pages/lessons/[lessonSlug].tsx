@@ -1,5 +1,5 @@
 import { PlayIcon } from "@heroicons/react/solid";
-import { getLessonBySlug } from "@self-learning/cms-api";
+import { cmsTypes, getLessonBySlug } from "@self-learning/cms-api";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { Playlist } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -7,25 +7,23 @@ import Head from "next/head";
 import Link from "next/link";
 import React, { useMemo } from "react";
 
-type Nanomodule = Exclude<Awaited<ReturnType<typeof getLessonBySlug>>, null | undefined>;
-
-type NanomoduleProps = {
-	nanomodule: Nanomodule;
+type LessonProps = {
+	lesson: ResolvedValue<typeof getLessonBySlug>;
 };
 
-export const getStaticProps: GetStaticProps<NanomoduleProps> = async ({ params }) => {
+export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) => {
 	const slug = params?.lessonSlug as string;
 
 	if (!slug) {
 		throw new Error("No slug provided.");
 	}
 
-	const nanomodule = (await getLessonBySlug(slug)) as Nanomodule;
+	const lesson = await getLessonBySlug(slug);
 
 	return {
-		props: { nanomodule },
+		props: { lesson: lesson as Defined<typeof lesson> },
 		revalidate: 60,
-		notFound: !nanomodule
+		notFound: !lesson
 	};
 };
 
@@ -81,12 +79,11 @@ const fakeLessons: Lesson[] = [
 	}
 ];
 
-export default function Nanomodule({ nanomodule }: NanomoduleProps) {
-	const { title } = nanomodule;
-	//const { url } = nanomodule.content[0] as cmsTypes.ComponentNanomoduleYoutubeVideo;
-	const url = "http://localhost:1337/uploads/sample_video_7b4e24c005.mp4";
+export default function Nanomodule({ lesson }: LessonProps) {
+	const { title } = lesson;
+	const { url } = lesson.content?.[0] as cmsTypes.ComponentContentYoutubeVideo;
 
-	const authors = nanomodule.authors?.data.map(
+	const authors = lesson.authors?.data.map(
 		author =>
 			({
 				name: author.attributes?.name,
@@ -104,7 +101,7 @@ export default function Nanomodule({ nanomodule }: NanomoduleProps) {
 			<div className="flex flex-col bg-gray-50 md:pb-16 md:pt-4">
 				<div className="mx-auto flex w-full flex-col gap-4 lg:container">
 					<VideoPlayerWithPlaylist videoUrl={url as string} />
-					<LessonHeader lesson={nanomodule} authors={authors} />
+					<LessonHeader lesson={lesson} authors={authors} />
 				</div>
 			</div>
 		</>
@@ -115,7 +112,7 @@ function VideoPlayerWithPlaylist({ videoUrl }: { videoUrl: string }) {
 	return (
 		<div className="grid w-full xl:grid-cols-4">
 			<div className="h-[512px] bg-black lg:h-[720px] xl:col-span-3">
-				{/* <YoutubeEmbed url={videoUrl}></YoutubeEmbed> */}
+				<YoutubeEmbed url={videoUrl}></YoutubeEmbed>
 				{/* <VideoPlayer url={videoUrl} /> */}
 			</div>
 			<div className="max-h-[512px] overflow-hidden xl:col-span-1 xl:max-h-[720px]">
@@ -153,7 +150,13 @@ function VideoPlayer({ url }: { url: string }) {
 	);
 }
 
-function LessonHeader({ lesson, authors }: { lesson: Nanomodule; authors: AuthorProps[] }) {
+function LessonHeader({
+	lesson,
+	authors
+}: {
+	lesson: LessonProps["lesson"];
+	authors: AuthorProps[];
+}) {
 	return (
 		<div className="flex flex-col px-2 sm:px-0">
 			<div className="gradient card flex flex-wrap justify-between gap-8">
