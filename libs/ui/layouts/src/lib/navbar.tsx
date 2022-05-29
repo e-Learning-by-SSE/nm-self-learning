@@ -20,7 +20,7 @@ export function Navbar() {
 							</div>
 						</a>
 					</Link>
-					<div className="flex gap-16 text-sm">
+					<div className="flex gap-16 text-sm font-medium">
 						{session?.user && (
 							<Link href="/profile">
 								<a>Mein Profil</a>
