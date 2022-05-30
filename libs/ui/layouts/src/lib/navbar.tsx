@@ -13,10 +13,10 @@ export function Navbar() {
 				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/">
 						<a className="flex items-center gap-2">
-							<AcademicCapIcon className="h-12 shrink-0 text-indigo-600" />
+							<AcademicCapIcon className="h-12 shrink-0 text-secondary" />
 							<div className="invisible flex w-0 flex-col md:visible md:w-fit">
-								<span className="font-light">Universität Hildesheim</span>
-								<span className="font-bold">SELF-le@rning</span>
+								<span className="text-light">Universität Hildesheim</span>
+								<span className="font-bold text-secondary">SELF-le@rning</span>
 							</div>
 						</a>
 					</Link>
