@@ -3,22 +3,18 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/solid";
 import Link from "next/link";
 import Image from "next/image";
 
-type Lesson = { title: string; slug: string; imgUrl?: string };
+type Lesson = { title: string; slug: string; imgUrl?: string | null };
 
 export function Playlist({
 	lessons,
 	currentLesson,
 	course,
-	chapter
+	subtitle
 }: {
 	lessons: Lesson[];
 	currentLesson: Lesson;
-	course: {
-		title: string;
-	};
-	chapter?: {
-		title: string;
-	};
+	course: { title: string; slug: string };
+	subtitle?: string;
 }) {
 	const [collapsed, setCollapsed] = useState(false);
 
@@ -31,7 +27,7 @@ export function Playlist({
 			<div className="flex items-center justify-between gap-4 py-3 px-3">
 				<div className="flex flex-col gap-1">
 					<span className="text-base font-semibold">{course.title}</span>
-					{chapter && <span className="text-sm">{chapter.title}</span>}
+					{subtitle && <span className="text-sm">{subtitle}</span>}
 				</div>
 
 				<button
@@ -52,6 +48,7 @@ export function Playlist({
 						{lessons.map(lesson => (
 							<Lesson
 								key={lesson.slug}
+								href={`/courses/${course.slug}/${lesson.slug}`}
 								lesson={lesson}
 								isActive={currentLesson.slug === lesson.slug}
 							/>
@@ -66,18 +63,20 @@ export function Playlist({
 function Lesson({
 	lesson,
 	isActive,
+	href,
 	isLocked
 }: {
 	lesson: {
 		title: string;
 		slug: string;
-		imgUrl?: string;
+		imgUrl?: string | null;
 	};
+	href: string;
 	isActive?: boolean;
 	isLocked?: boolean;
 }) {
 	return (
-		<Link href={`/lessons/${lesson.slug}`}>
+		<Link href={href}>
 			<a
 				className={`flex h-20 w-full ${
 					isActive ? "bg-indigo-500 text-white" : "bg-transparent hover:bg-indigo-100"

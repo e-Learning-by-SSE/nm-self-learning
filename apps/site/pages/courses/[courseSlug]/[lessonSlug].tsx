@@ -1,47 +1,75 @@
 import { PlayIcon } from "@heroicons/react/solid";
 import { cmsTypes, getLessonBySlug } from "@self-learning/cms-api";
+import { database } from "@self-learning/database";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { Playlist } from "@self-learning/ui/lesson";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import React, { useMemo } from "react";
 
 type LessonProps = {
 	lesson: ResolvedValue<typeof getLessonBySlug>;
+	course: {
+		title: string;
+		slug: string;
+		courseId: string;
+		lessons: { lessonId: string; title: string; slug: string; imgUrl?: string | null }[];
+	};
 };
 
-export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) => {
-	const slug = params?.lessonSlug as string;
+type Chapter = {
+	title: string;
+	description?: string;
+	lessons: { lessonId: string }[];
+};
 
-	if (!slug) {
-		throw new Error("No slug provided.");
+export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params, query }) => {
+	const courseSlug = params?.courseSlug as string;
+	const lessonSlug = params?.lessonSlug as string;
+
+	if (!courseSlug || !lessonSlug) {
+		throw new Error("No course/lesson slug provided.");
 	}
 
-	const lesson = await getLessonBySlug(slug);
+	const [lesson, course] = await Promise.all([
+		getLessonBySlug(lessonSlug),
+		database.course.findUnique({ where: { slug: courseSlug } })
+	]);
+
+	if (!course || !lesson) {
+		return { notFound: true };
+	}
+
+	const content: Chapter[] = JSON.parse(course.content ?? "[]");
+
+	const lessonIds = content.flatMap(chapter =>
+		chapter.lessons.flatMap(lesson => lesson.lessonId)
+	);
+
+	const lessons = await database.lesson.findMany({
+		where: {
+			lessonId: {
+				in: lessonIds
+			}
+		}
+	});
+
+	const mappedCourse = {
+		title: course.title,
+		slug: course.slug,
+		courseId: course.courseId,
+		lessons
+	};
 
 	return {
-		props: { lesson: lesson as Defined<typeof lesson> },
-		revalidate: 60,
-		notFound: !lesson
+		props: { lesson: lesson as Defined<typeof lesson>, course: mappedCourse }
 	};
 };
 
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		paths: [],
-		fallback: "blocking"
-	};
-};
+type Lesson = { title: string; slug: string; imgUrl?: string | null };
 
-type Lesson = { title: string; slug: string; imgUrl?: string };
-
-const fakeLessons: Lesson[] = new Array(25).fill(0).map((_, index) => ({
-	slug: index.toString(),
-	title: "A Beginners Guide to React Introduction"
-}));
-
-export default function Lesson({ lesson }: LessonProps) {
+export default function Lesson({ lesson, course }: LessonProps) {
 	const { title } = lesson;
 	const { url } = lesson.content?.[0] as cmsTypes.ComponentContentYoutubeVideo;
 
@@ -62,7 +90,13 @@ export default function Lesson({ lesson }: LessonProps) {
 
 			<div className=" bg-gray-50 md:pb-32">
 				<div className="flex flex-col gap-4">
-					<VideoPlayerWithPlaylist videoUrl={url as string} />
+					<VideoPlayerWithPlaylist
+						videoUrl={url as string}
+						lessons={course.lessons}
+						currentLesson={lesson}
+						course={course}
+						chapter={{ title: "Chapter #1" }}
+					/>
 					<LessonHeader lesson={lesson} authors={authors} />
 				</div>
 			</div>
@@ -70,19 +104,30 @@ export default function Lesson({ lesson }: LessonProps) {
 	);
 }
 
-function VideoPlayerWithPlaylist({ videoUrl }: { videoUrl: string }) {
+function VideoPlayerWithPlaylist({
+	videoUrl,
+	currentLesson,
+	lessons,
+	course
+}: {
+	videoUrl: string;
+	currentLesson: Lesson;
+	lessons: { title: string; slug: string; imgUrl?: string | null }[];
+	course: LessonProps["course"];
+	chapter: any; // TODO
+}) {
 	return (
 		<div className="mx-auto flex w-full flex-col bg-white xl:max-h-[75vh] xl:flex-row xl:px-4">
 			<div className="aspect-video grow bg-black">
 				<YoutubeEmbed url={videoUrl}></YoutubeEmbed>
 				{/* <VideoPlayer url={videoUrl} /> */}
 			</div>
-			<div className="h-[400px] overflow-hidden xl:h-auto xl:min-w-[400px]">
+			<div className="h-[400px] overflow-hidden xl:h-auto xl:min-w-[500px]">
 				<Playlist
-					lessons={fakeLessons}
-					currentLesson={fakeLessons[0]}
-					course={{ title: "Dein Lernpfad" }}
-					chapter={{ title: "Kapitel: Grundlagen (4/20)" }}
+					lessons={lessons}
+					currentLesson={currentLesson}
+					course={course}
+					subtitle="Kapitel: Grundlagen (4/20)"
 				/>
 			</div>
 		</div>

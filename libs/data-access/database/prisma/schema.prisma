@@ -67,12 +67,12 @@ model Student {
 }
 
 model Course {
-    courseId String  @id
-    title    String
-    subtitle String
-    imgUrl   String?
-
+    courseId    String       @id
     slug        String       @unique
+    title       String
+    subtitle    String
+    imgUrl      String?
+    content     String?
     enrollments Enrollment[]
 }
 

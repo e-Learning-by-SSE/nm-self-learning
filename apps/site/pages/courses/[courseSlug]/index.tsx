@@ -8,9 +8,8 @@ import { CenteredSection } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
-import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
-import { CoursesOfUser } from "../api/users/[username]/courses";
+import { CoursesOfUser } from "../../api/users/[username]/courses";
 
 type Course = ResolvedValue<typeof getCourseBySlug>;
 
@@ -66,7 +65,7 @@ export default function Course({ course, markdownDescription }: CourseProps) {
 			</CenteredSection>
 
 			<CenteredSection className="bg-gray-50">
-				<TableOfContents content={course.content} />
+				<TableOfContents content={course.content} course={course} />
 			</CenteredSection>
 		</div>
 	);
@@ -156,7 +155,7 @@ function CourseHeader({ course }: { course: Course }) {
 	);
 }
 
-function TableOfContents({ content }: { content: Course["content"] }) {
+function TableOfContents({ content, course }: { content: Course["content"]; course: Course }) {
 	return (
 		<div className="flex flex-col gap-8">
 			<h2 className="mb-4 text-4xl">Inhalt</h2>
@@ -185,6 +184,7 @@ function TableOfContents({ content }: { content: Course["content"] }) {
 							<Fragment key={component.title}>
 								<ToC.Section isCompleted={false} isRequired={false}>
 									<ToC.Chapter
+										courseSlug={course.slug}
 										title={component.title as string}
 										description={component.description as string}
 										lessons={

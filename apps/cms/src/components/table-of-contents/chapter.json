@@ -1,24 +1,24 @@
 {
-	"collectionName": "components_table_of_contents_chapters",
-	"info": {
-		"displayName": "Chapter",
-		"icon": "list",
-		"description": ""
-	},
-	"options": {},
-	"attributes": {
-		"title": {
-			"type": "string",
-			"required": true,
-			"minLength": 3
-		},
-		"description": {
-			"type": "text"
-		},
-		"lessons": {
-			"type": "component",
-			"repeatable": true,
-			"component": "table-of-contents.lesson-relation"
-		}
-	}
+  "collectionName": "components_table_of_contents_chapters",
+  "info": {
+    "displayName": "Chapter",
+    "icon": "list",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 3
+    },
+    "description": {
+      "type": "text"
+    },
+    "lessons": {
+      "type": "component",
+      "repeatable": true,
+      "component": "table-of-contents.lesson-relation"
+    }
+  }
 }

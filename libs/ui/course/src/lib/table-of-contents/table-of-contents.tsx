@@ -108,10 +108,12 @@ export function NestedCourse({
 }
 
 export function Chapter({
+	courseSlug,
 	title,
 	description,
 	lessons
 }: {
+	courseSlug: string;
 	title: string;
 	description?: string;
 	lessons: { title: string; slug: string; isCompleted: boolean }[];
@@ -124,7 +126,7 @@ export function Chapter({
 			)}
 			<ul className="mt-8 flex flex-col gap-2">
 				{lessons.map(lesson => (
-					<Link href={`/lessons/${lesson.slug}`} key={lesson.slug}>
+					<Link href={`/courses/${courseSlug}/${lesson.slug}`} key={lesson.slug}>
 						<a>
 							<li
 								className={`flex items-center justify-between gap-8 rounded-r-lg border-l-2 bg-gray-50 px-3 py-2 ${

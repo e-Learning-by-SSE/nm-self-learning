@@ -1,4 +1,4 @@
-import { Course } from "@prisma/client";
+import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { validationConfig } from "@self-learning/util/validate";
 import * as yup from "yup";
@@ -14,7 +14,23 @@ export const courseEntrySchema = yup
 			.object({
 				url: yup.string()
 			})
-			.nullable()
+			.nullable(),
+		content: yup.array().of(
+			yup.object({
+				title: yup.string().required(),
+				description: yup.string().nullable(),
+				lessons: yup.array().of(
+					yup.object({
+						lesson: yup.object({
+							lessonId: yup.string().required(),
+							slug: yup.string().required(),
+							title: yup.string().required(),
+							subtitle: yup.string().nullable()
+						})
+					})
+				)
+			})
+		)
 	})
 	.typeError(
 		"'entry' must be an object with the following keys: courseId, title, slug, subtitle, image.url (optional)"
@@ -42,12 +58,20 @@ export const courseNotificationHandler: NotificationHandler<Course> = async noti
 		};
 	}
 
-	const courseData = {
+	const content =
+		entry.content?.map(chapter => ({
+			title: chapter.title,
+			description: chapter.description,
+			lessons: chapter.lessons?.map(lesson => ({ lessonId: lesson.lesson.lessonId })) ?? []
+		})) ?? [];
+
+	const courseData: Prisma.CourseCreateInput = {
 		courseId: entry.courseId,
 		slug: entry.slug,
 		title: entry.title,
 		subtitle: entry.subtitle,
-		imgUrl: entry.image?.url
+		imgUrl: entry.image?.url,
+		content: JSON.stringify(content)
 	};
 
 	if (existingCourse) {
