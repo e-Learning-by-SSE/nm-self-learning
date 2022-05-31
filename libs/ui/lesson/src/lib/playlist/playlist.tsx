@@ -78,6 +78,7 @@ function Lesson({
 	return (
 		<Link href={href}>
 			<a
+				title={lesson.title}
 				className={`flex h-20 w-full ${
 					isActive ? "bg-indigo-500 text-white" : "bg-transparent hover:bg-indigo-100"
 				}`}

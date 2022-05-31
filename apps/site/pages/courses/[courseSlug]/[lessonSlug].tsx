@@ -117,12 +117,12 @@ function VideoPlayerWithPlaylist({
 	chapter: any; // TODO
 }) {
 	return (
-		<div className="mx-auto flex w-full flex-col bg-white xl:max-h-[75vh] xl:flex-row xl:px-4">
+		<div className="mx-auto flex w-full flex-col bg-white xl:max-h-[75vh] xl:flex-row">
 			<div className="aspect-video grow bg-black">
 				<YoutubeEmbed url={videoUrl}></YoutubeEmbed>
 				{/* <VideoPlayer url={videoUrl} /> */}
 			</div>
-			<div className="h-[400px] overflow-hidden xl:h-auto xl:min-w-[500px]">
+			<div className="h-[400px] overflow-hidden xl:h-auto xl:w-[400px]">
 				<Playlist
 					lessons={lessons}
 					currentLesson={currentLesson}
@@ -165,7 +165,7 @@ function LessonHeader({
 	authors: AuthorProps[];
 }) {
 	return (
-		<div className="mx-auto flex w-full flex-col px-2 sm:px-0 lg:container">
+		<div className="mx-auto flex w-full max-w-screen-xl flex-col px-2 sm:px-0">
 			<div className="gradient card flex flex-wrap justify-between gap-8">
 				<Link href={`/lessons/${lesson.slug}/questions`}>
 					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
@@ -175,8 +175,8 @@ function LessonHeader({
 				</Link>
 			</div>
 
-			<div className="mx-auto mt-8 flex flex-grow flex-col items-center gap-8">
-				<h1 className="text-4xl xl:text-6xl">{lesson.title}</h1>
+			<div className="mx-auto mt-8 flex flex-grow flex-col items-center gap-12">
+				<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
 				{lesson.subtitle && (
 					<div className="max-w-3xl text-xl tracking-tight text-indigo-700">
 						{lesson.subtitle}
@@ -184,7 +184,7 @@ function LessonHeader({
 				)}
 				<AuthorsList authors={authors} />
 
-				<div className="glass card center max-w-3xl">
+				<div className="mx-auto max-w-prose text-justify">
 					{lesson.description && <p>{lesson.description}</p>}
 				</div>
 			</div>
