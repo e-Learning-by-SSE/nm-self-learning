@@ -92,7 +92,7 @@ export async function getLessonsForSync() {
 
 gql`
 	query lessonsForSync {
-		lessons {
+		lessons(pagination: { limit: -1 }) {
 			meta {
 				pagination {
 					total

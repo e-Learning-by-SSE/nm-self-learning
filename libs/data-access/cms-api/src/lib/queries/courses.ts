@@ -159,7 +159,7 @@ export async function getCoursesForSync() {
 
 gql`
 	query coursesForSync {
-		courses {
+		courses(pagination: { limit: -1 }) {
 			meta {
 				pagination {
 					total
@@ -175,6 +175,20 @@ gql`
 						data {
 							attributes {
 								url
+							}
+						}
+					}
+					content {
+						... on ComponentTableOfContentsChapter {
+							__typename
+							lessons {
+								lesson {
+									data {
+										attributes {
+											lessonId
+										}
+									}
+								}
 							}
 						}
 					}

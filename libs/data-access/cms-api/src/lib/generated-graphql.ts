@@ -2008,6 +2008,28 @@ export type CoursesForSyncQuery = {
 						attributes?: { __typename?: "UploadFile"; url: string } | null;
 					} | null;
 				} | null;
+				content?: Array<
+					| {
+							__typename: "ComponentTableOfContentsChapter";
+							lessons?: Array<{
+								__typename?: "ComponentTableOfContentsLessonRelation";
+								lesson?: {
+									__typename?: "LessonEntityResponse";
+									data?: {
+										__typename?: "LessonEntity";
+										attributes?: {
+											__typename?: "Lesson";
+											lessonId: string;
+										} | null;
+									} | null;
+								} | null;
+							} | null> | null;
+					  }
+					| { __typename?: "ComponentTableOfContentsCourseRelation" }
+					| { __typename?: "ComponentTableOfContentsLessonRelation" }
+					| { __typename?: "Error" }
+					| null
+				> | null;
 			} | null;
 		}>;
 	} | null;
@@ -2639,7 +2661,7 @@ export const CoursesWithSlugsDocument = gql`
 `;
 export const CoursesForSyncDocument = gql`
 	query coursesForSync {
-		courses {
+		courses(pagination: { limit: -1 }) {
 			meta {
 				pagination {
 					total
@@ -2655,6 +2677,20 @@ export const CoursesForSyncDocument = gql`
 						data {
 							attributes {
 								url
+							}
+						}
+					}
+					content {
+						... on ComponentTableOfContentsChapter {
+							__typename
+							lessons {
+								lesson {
+									data {
+										attributes {
+											lessonId
+										}
+									}
+								}
 							}
 						}
 					}
@@ -2727,7 +2763,7 @@ export const LessonBySlugDocument = gql`
 `;
 export const LessonsForSyncDocument = gql`
 	query lessonsForSync {
-		lessons {
+		lessons(pagination: { limit: -1 }) {
 			meta {
 				pagination {
 					total

@@ -1,12 +1,11 @@
-import { Prisma } from "@prisma/client";
 import { getCoursesForSync, getLessonsForSync } from "@self-learning/cms-api";
-import { database } from "@self-learning/database";
 import {
 	ApiError,
 	InternalServerError,
 	MethodNotAllowed,
 	withApiError
 } from "@self-learning/util/http";
+import { synchronizeCourses, synchronizeLessons } from "@self-learning/webhooks";
 import { NextApiHandler } from "next";
 
 const cmsSyncApiHandler: NextApiHandler = async (req, res) => {
@@ -14,9 +13,38 @@ const cmsSyncApiHandler: NextApiHandler = async (req, res) => {
 		return withApiError(res, MethodNotAllowed(req.method));
 	}
 
+	const start = Date.now();
+
 	try {
-		await synchronizeCourses();
-		await synchronizeLessons();
+		await synchronizeCourses(async () => {
+			const result = await getCoursesForSync();
+			console.log(
+				`[cmsSyncApiHandler]: Fetched ${result.courses.length} of ${result._total} courses from CMS.`
+			);
+
+			if (result._total !== result.courses.length) {
+				console.log("[cmsSyncApiHandler]: WARNING - CMS did not return all courses.");
+			}
+			return result;
+		});
+
+		console.log("[cmsSyncApiHandler]: Successfully synchronized courses.");
+
+		await synchronizeLessons(async () => {
+			const result = await getLessonsForSync();
+			console.log(
+				`[cmsSyncApiHandler]: Fetched ${result.lessons.length} of ${result._total} lessons from CMS.`
+			);
+
+			if (result._total !== result.lessons.length) {
+				console.log("[cmsSyncApiHandler]: WARNING - CMS did not return all lessons.");
+			}
+			return result;
+		});
+
+		console.log("[cmsSyncApiHandler]: Successfully synchronized lessons.");
+
+		console.log(`[cmsSyncApiHandler]: Synchronization took ${Date.now() - start}ms.`);
 
 		res.status(200).end();
 	} catch (error) {
@@ -30,56 +58,3 @@ const cmsSyncApiHandler: NextApiHandler = async (req, res) => {
 };
 
 export default cmsSyncApiHandler;
-
-async function synchronizeCourses() {
-	const { courses, _total } = await getCoursesForSync();
-
-	console.log(
-		`[${cmsSyncApiHandler.name}]: Fetched ${courses.length} of ${_total} courses from CMS.`
-	);
-
-	const promises = courses.map(course => {
-		const courseInput: Prisma.CourseCreateInput = {
-			...course,
-			subtitle: ""
-		};
-
-		const promise = database.course.upsert({
-			where: { courseId: course.courseId },
-			create: courseInput,
-			update: courseInput
-		});
-
-		return promise;
-	});
-
-	await Promise.all(promises);
-	console.log(
-		`[${cmsSyncApiHandler.name}]: Successfully synchronized ${courses.length} courses.`
-	);
-}
-
-async function synchronizeLessons() {
-	const { lessons, _total } = await getLessonsForSync();
-
-	console.log(
-		`[${cmsSyncApiHandler.name}]: Fetched ${lessons.length} of ${_total} lessons from CMS.`
-	);
-
-	const promises = lessons.map(lesson => {
-		const input: Prisma.LessonCreateInput = lesson;
-
-		const promise = database.lesson.upsert({
-			where: { lessonId: lesson.lessonId },
-			create: input,
-			update: input
-		});
-
-		return promise;
-	});
-
-	await Promise.all(promises);
-	console.log(
-		`[${cmsSyncApiHandler.name}]: Successfully synchronized ${lessons.length} lessons.`
-	);
-}

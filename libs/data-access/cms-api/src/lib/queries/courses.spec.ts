@@ -1,3 +1,4 @@
+import { cmsGraphqlClient } from "../cms-graphql-client";
 import { getCourseBySlug, getCoursesWithSlugs } from "./courses";
 
 describe("Courses API", () => {
@@ -23,6 +24,13 @@ describe("Courses API", () => {
 			const courses = await getCoursesWithSlugs(slugs);
 			expect(courses).toHaveLength(1);
 			expect(courses[0].slug).toEqual(slugs[0]);
+		});
+	});
+
+	xdescribe("getCoursesForSync", () => {
+		it("Log result", async () => {
+			const result = await cmsGraphqlClient.coursesForSync();
+			console.log(JSON.stringify(result, null, 4));
 		});
 	});
 });
