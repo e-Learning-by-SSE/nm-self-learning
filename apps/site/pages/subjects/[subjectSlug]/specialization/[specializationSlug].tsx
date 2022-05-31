@@ -40,7 +40,7 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 
 	return (
 		<div className="bg-gray-50 pb-32">
-			<div className="mx-auto flex max-w-screen-2xl flex-col">
+			<div className="mx-auto flex max-w-screen-xl flex-col">
 				<TopicHeader
 					imgUrlBanner={imgUrlBanner}
 					parentLink={`/subjects/${subjectSlug}`}

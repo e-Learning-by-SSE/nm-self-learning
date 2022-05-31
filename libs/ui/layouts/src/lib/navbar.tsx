@@ -9,11 +9,13 @@ export function Navbar() {
 
 	return (
 		<div className="h-20 border-b border-b-gray-200 bg-white">
-			<div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between gap-4 px-4">
+			<div className="mx-auto flex h-full max-w-screen-xl items-center justify-between gap-4 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/">
-						<a className="flex items-center gap-2">
-							<AcademicCapIcon className="h-12 shrink-0 text-secondary" />
+						<a className="flex items-center gap-4">
+							<div className="rounded-full bg-secondary p-1">
+								<AcademicCapIcon className="h-10 shrink-0 text-white" />
+							</div>
 							<div className="invisible flex w-0 flex-col md:visible md:w-fit">
 								<span className="text-light">Universität Hildesheim</span>
 								<span className="font-bold text-secondary">SELF-le@rning</span>
