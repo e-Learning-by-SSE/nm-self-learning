@@ -1,6 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { ValidationError } from "yup";
-import { ApiError, InternalServerError, ValidationFailed, withApiError } from "./error";
+import {
+	ApiError,
+	InternalServerError,
+	MethodNotAllowed,
+	ValidationFailed,
+	withApiError
+} from "./error";
 
 /**
  * Wraps a {@link NextApiHandler} with a try-catch.
@@ -8,9 +14,14 @@ import { ApiError, InternalServerError, ValidationFailed, withApiError } from ".
 export async function apiHandler(
 	req: NextApiRequest,
 	res: NextApiResponse,
+	method: "POST" | "PUT" | "GET" | "PATCH" | "DELETE",
 	handler: () => Promise<void> | void
 ) {
 	try {
+		if (req.method !== method) {
+			throw MethodNotAllowed(req.method);
+		}
+
 		return await handler();
 	} catch (error) {
 		if (error instanceof ValidationError) {

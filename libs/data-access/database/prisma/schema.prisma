@@ -45,7 +45,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    Student       Student?
+    student       Student?
 }
 
 model VerificationToken {
@@ -64,6 +64,7 @@ model Student {
     enrollments      Enrollment[]
     competences      AchievedCompetence[]
     completedLessons CompletedLesson[]
+    quizAttempts     QuizAttempt[]
 }
 
 model Course {
@@ -91,13 +92,15 @@ model Enrollment {
 }
 
 model Lesson {
-    lessonId    String            @id
-    slug        String
-    title       String
-    subtitle    String?
-    imgUrl      String?
-    competences Competence[]
-    completions CompletedLesson[]
+    lessonId     String            @id
+    slug         String            @unique
+    title        String
+    subtitle     String?
+    imgUrl       String?
+    quiz         String?
+    competences  Competence[]
+    completions  CompletedLesson[]
+    quizAttempts QuizAttempt[]
 }
 
 model CompletedLesson {
@@ -134,4 +137,20 @@ model AchievedCompetence {
 
     @@unique([lessonSlug, competenceId, username])
     @@index([competenceId, username])
+}
+
+model QuizAttempt {
+    attemptId String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    state     String
+
+    student  Student @relation(fields: [username], references: [username])
+    username String
+
+    lesson   Lesson @relation(fields: [lessonId], references: [lessonId])
+    lessonId String
+
+    answers String
+
+    @@index([username, lessonId])
 }

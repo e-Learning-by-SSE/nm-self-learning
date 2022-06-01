@@ -1,4 +1,4 @@
-import { StatusCodes } from "http-status-codes";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { NextApiResponse } from "next";
 
 type Error = {
@@ -87,6 +87,14 @@ export function Forbidden(message?: string) {
 	return new ApiError({
 		statusCode: StatusCodes.FORBIDDEN,
 		name: "Forbidden",
+		message: message ?? "Unauthorized request."
+	});
+}
+
+export function Unauthorized(message?: string) {
+	return new ApiError({
+		statusCode: StatusCodes.UNAUTHORIZED,
+		name: "Unauthorized",
 		message: message ?? "Unauthorized request."
 	});
 }

@@ -10,7 +10,7 @@ const routeParams = object({
 });
 
 const markAsCompletedApiHandler: NextApiHandler = async (req, res) => {
-	return apiHandler(req, res, async () => {
+	return apiHandler(req, res, "PUT", async () => {
 		const { username, lessonId } = routeParams.validateSync({
 			username: req.query.username,
 			lessonId: req.query.lessonId

@@ -1,6 +1,12 @@
 import { CourseEntry } from "./schemas";
 
-export function mapCourseContent(contentFromCms: CourseEntry["content"]) {
+type Chapter = {
+	title: string;
+	description?: string | null;
+	lessons: { lessonId: string }[];
+};
+
+export function mapCourseContent(contentFromCms: CourseEntry["content"]): Chapter[] {
 	return (
 		contentFromCms?.map(chapter => ({
 			title: chapter.title,
