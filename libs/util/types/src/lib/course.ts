@@ -5,8 +5,17 @@ export type CourseChapter = {
 };
 
 export type CourseCompletion = {
-	createdAt: Date;
-	lessonId: string;
-	title: string;
-	slug: string;
+	courseCompletionPercentage: number;
+	chapters: {
+		chapterTitle: string;
+		completedLessonsCount: number;
+		completedLessonsPercentage: number;
+	}[];
+	completedLessons: {
+		[lessonId: string]: {
+			createdAt: Date;
+			title: string;
+			slug: string;
+		};
+	};
 };

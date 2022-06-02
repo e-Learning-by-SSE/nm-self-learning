@@ -1,6 +1,7 @@
 import { CheckCircleIcon, PlayIcon, PlusCircleIcon, XCircleIcon } from "@heroicons/react/solid";
 import { useApi, useEnrollmentMutations } from "@self-learning/api";
 import { getCourseBySlug } from "@self-learning/cms-api";
+import { useCourseCompletion } from "@self-learning/completion";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
@@ -117,7 +118,7 @@ function CourseHeader({ course }: { course: Course }) {
 						<Image
 							priority
 							className="shrink-0 rounded-lg bg-white"
-							objectFit="cover"
+							objectFit="contain"
 							layout="fill"
 							src={`http://localhost:1337${url}` ?? ""}
 							alt={alternativeText ?? ""}
@@ -154,8 +155,10 @@ function CourseHeader({ course }: { course: Course }) {
 		</div>
 	);
 }
-
 function TableOfContents({ content, course }: { content: Course["content"]; course: Course }) {
+	const { courseCompletion } = useCourseCompletion(course.slug);
+	console.log("courseCompletion", courseCompletion);
+
 	return (
 		<div className="flex flex-col gap-8">
 			<h2 className="mb-4 text-4xl">Inhalt</h2>
@@ -165,35 +168,35 @@ function TableOfContents({ content, course }: { content: Course["content"]; cour
 
 					if (!component) return undefined;
 
-					if (component.__typename === "ComponentTableOfContentsLessonRelation") {
-						return (
-							<Fragment key={component.lesson?.data?.attributes?.slug}>
-								<ToC.Section isCompleted={true} isRequired={false}>
-									<ToC.SingleLesson
-										slug={component.lesson?.data?.attributes?.slug as string}
-										title={component.lesson?.data?.attributes?.title as string}
-									/>
-								</ToC.Section>
-								{showConnector && (
-									<ToC.SectionConnector isCompleted={true} isRequired={false} />
-								)}
-							</Fragment>
-						);
-					} else if (component?.__typename === "ComponentTableOfContentsChapter") {
+					if (component?.__typename === "ComponentTableOfContentsChapter") {
+						const isCompleted =
+							(courseCompletion?.chapters[index] &&
+								courseCompletion.chapters[index].completedLessonsPercentage >=
+									100) ??
+							false;
+
 						return (
 							<Fragment key={component.title}>
-								<ToC.Section isCompleted={false} isRequired={false}>
+								<ToC.Section isCompleted={isCompleted} isRequired={false}>
 									<ToC.Chapter
 										courseSlug={course.slug}
 										title={component.title as string}
 										description={component.description as string}
 										lessons={
 											component.lessons?.map(lesson => ({
+												lessonId: lesson?.lesson?.data?.attributes
+													?.lessonId as string,
 												title: lesson?.lesson?.data?.attributes
 													?.title as string,
 												slug: lesson?.lesson?.data?.attributes
 													?.slug as string,
-												isCompleted: true
+												isCompleted:
+													(courseCompletion?.completedLessons &&
+														!!courseCompletion.completedLessons[
+															lesson!.lesson!.data!.attributes!
+																.lessonId
+														]) ??
+													false
 											})) ?? []
 										}
 									/>
@@ -203,29 +206,43 @@ function TableOfContents({ content, course }: { content: Course["content"]; cour
 								)}
 							</Fragment>
 						);
-					} else if (component.__typename === "ComponentTableOfContentsCourseRelation") {
-						return (
-							<Fragment key={component.title}>
-								<ToC.Section isCompleted={false} isRequired={true}>
-									<ToC.NestedCourse
-										title={component.title as string}
-										slug={component.course?.data?.attributes?.slug as string}
-										description={component.description as string}
-										course={{
-											title: component.course?.data?.attributes
-												?.title as string,
-											subtitle: component.course?.data?.attributes
-												?.subtitle as string,
-											imgUrl: component.course?.data?.attributes?.image?.data
-												?.attributes?.url as string
-										}}
-									/>
-								</ToC.Section>
-								{showConnector && (
-									<ToC.SectionConnector isCompleted={true} isRequired={true} />
-								)}
-							</Fragment>
-						);
+						// } else if (component.__typename === "ComponentTableOfContentsLessonRelation") {
+						// 	return (
+						// 		<Fragment key={component.lesson?.data?.attributes?.slug}>
+						// 			<ToC.Section isCompleted={true} isRequired={false}>
+						// 				<ToC.SingleLesson
+						// 					slug={component.lesson?.data?.attributes?.slug as string}
+						// 					title={component.lesson?.data?.attributes?.title as string}
+						// 				/>
+						// 			</ToC.Section>
+						// 			{showConnector && (
+						// 				<ToC.SectionConnector isCompleted={true} isRequired={false} />
+						// 			)}
+						// 		</Fragment>
+						// 	);
+						// } else if (component.__typename === "ComponentTableOfContentsCourseRelation") {
+						// 	return (
+						// 		<Fragment key={component.title}>
+						// 			<ToC.Section isCompleted={false} isRequired={true}>
+						// 				<ToC.NestedCourse
+						// 					title={component.title as string}
+						// 					slug={component.course?.data?.attributes?.slug as string}
+						// 					description={component.description as string}
+						// 					course={{
+						// 						title: component.course?.data?.attributes
+						// 							?.title as string,
+						// 						subtitle: component.course?.data?.attributes
+						// 							?.subtitle as string,
+						// 						imgUrl: component.course?.data?.attributes?.image?.data
+						// 							?.attributes?.url as string
+						// 					}}
+						// 				/>
+						// 			</ToC.Section>
+						// 			{showConnector && (
+						// 				<ToC.SectionConnector isCompleted={true} isRequired={true} />
+						// 			)}
+						// 		</Fragment>
+						// 	);
 					} else {
 						<div className="bg-red-200">
 							<span className="text-red-500">Unknown Component</span>

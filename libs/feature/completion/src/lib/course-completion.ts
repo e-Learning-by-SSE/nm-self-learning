@@ -1,7 +1,10 @@
 import { database } from "@self-learning/database";
 import { CourseChapter, CourseCompletion } from "@self-learning/types";
 
-export async function getCourseCompletionOfStudent(courseSlug: string, username: string) {
+export async function getCourseCompletionOfStudent(
+	courseSlug: string,
+	username: string
+): Promise<CourseCompletion> {
 	const course = await database.course.findUnique({
 		where: { slug: courseSlug },
 		rejectOnNotFound: true
@@ -24,19 +27,49 @@ export async function getCourseCompletionOfStudent(courseSlug: string, username:
 				username,
 				lessonId: { in: lessonIds }
 			}
-		}
+		},
+		orderBy: { createdAt: "asc" },
+		distinct: ["lessonId"]
 	});
 
-	const lessonIdMap: { [lessonId: string]: CourseCompletion } = {};
+	const lessonIdMap: CourseCompletion["completedLessons"] = {};
 
 	for (const lesson of completedLessons) {
 		lessonIdMap[lesson.lessonId] = {
 			createdAt: lesson.createdAt,
-			lessonId: lesson.lessonId,
 			slug: lesson.lesson.slug,
 			title: lesson.lesson.title
 		};
 	}
 
-	return lessonIdMap;
+	const contentWithCompletion: CourseCompletion["chapters"] = content.map(chapter => {
+		let completed = 0;
+		for (const lesson of chapter.lessons) {
+			if (lesson.lessonId in lessonIdMap) {
+				completed++;
+			}
+		}
+
+		return {
+			chapterTitle: chapter.title,
+			completedLessonsCount: completed,
+			completedLessonsPercentage:
+				chapter.lessons.length > 0 ? (completed / chapter.lessons.length) * 100 : 100
+		};
+	});
+
+	const completedLessonsCount = Object.keys(lessonIdMap).length;
+	const totalLessonsCount = content.reduce(
+		(count, chapter) => (count += chapter.lessons.length),
+		0
+	);
+
+	const completion: CourseCompletion = {
+		courseCompletionPercentage:
+			totalLessonsCount > 0 ? (completedLessonsCount / totalLessonsCount) * 100 : 100,
+		chapters: contentWithCompletion,
+		completedLessons: lessonIdMap
+	};
+
+	return completion;
 }
