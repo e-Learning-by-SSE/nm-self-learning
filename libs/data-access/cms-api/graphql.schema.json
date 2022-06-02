@@ -5008,6 +5008,18 @@
 						"deprecationReason": null
 					},
 					{
+						"name": "quiz",
+						"description": null,
+						"args": [],
+						"type": {
+							"kind": "SCALAR",
+							"name": "JSON",
+							"ofType": null
+						},
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
 						"name": "slug",
 						"description": null,
 						"args": [],
@@ -5330,6 +5342,18 @@
 						"deprecationReason": null
 					},
 					{
+						"name": "quiz",
+						"description": null,
+						"type": {
+							"kind": "INPUT_OBJECT",
+							"name": "JSONFilterInput",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
 						"name": "slug",
 						"description": null,
 						"type": {
@@ -5454,6 +5478,18 @@
 						"type": {
 							"kind": "SCALAR",
 							"name": "String",
+							"ofType": null
+						},
+						"defaultValue": null,
+						"isDeprecated": false,
+						"deprecationReason": null
+					},
+					{
+						"name": "quiz",
+						"description": null,
+						"type": {
+							"kind": "SCALAR",
+							"name": "JSON",
 							"ofType": null
 						},
 						"defaultValue": null,

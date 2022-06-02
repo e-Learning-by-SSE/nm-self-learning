@@ -17,10 +17,12 @@
 		"paths": {
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/cms-api": ["libs/data-access/cms-api/src/index.ts"],
+			"@self-learning/completion": ["libs/feature/completion/src/index.ts"],
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],
 			"@self-learning/docs/storybook": ["docs/storybook/src/index.ts"],
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
 			"@self-learning/quiz": ["libs/feature/quiz/src/index.ts"],
+			"@self-learning/types": ["libs/util/types/src/index.ts"],
 			"@self-learning/ui/common": ["libs/ui/common/src/index.ts"],
 			"@self-learning/ui/course": ["libs/ui/course/src/index.ts"],
 			"@self-learning/ui/forms": ["libs/ui/forms/src/index.ts"],

@@ -1,12 +1,7 @@
+import { CourseChapter } from "@self-learning/types";
 import { CourseEntry } from "./schemas";
 
-type Chapter = {
-	title: string;
-	description?: string | null;
-	lessons: { lessonId: string }[];
-};
-
-export function mapCourseContent(contentFromCms: CourseEntry["content"]): Chapter[] {
+export function mapCourseContent(contentFromCms: CourseEntry["content"]): CourseChapter[] {
 	return (
 		contentFromCms?.map(chapter => ({
 			title: chapter.title,

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
+    provider = "postgres"
     url      = env("DATABASE_URL")
 }
 
@@ -73,7 +73,7 @@ model Course {
     title       String
     subtitle    String
     imgUrl      String?
-    content     String?
+    content     Json?
     enrollments Enrollment[]
 }
 
@@ -150,7 +150,7 @@ model QuizAttempt {
     lesson   Lesson @relation(fields: [lessonId], references: [lessonId])
     lessonId String
 
-    answers String
+    answers Json
 
     @@index([username, lessonId])
 }

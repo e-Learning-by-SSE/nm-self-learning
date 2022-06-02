@@ -33,7 +33,7 @@ export const courseNotificationHandler: NotificationHandler<Course> = async noti
 		title: entry.title,
 		subtitle: entry.subtitle,
 		imgUrl: entry.image?.url,
-		content: JSON.stringify(content)
+		content: content
 	};
 
 	if (existingCourse) {

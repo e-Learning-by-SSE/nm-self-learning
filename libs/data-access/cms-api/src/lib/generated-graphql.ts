@@ -559,6 +559,7 @@ export type Lesson = {
 	description?: Maybe<Scalars["String"]>;
 	image?: Maybe<UploadFileEntityResponse>;
 	lessonId: Scalars["String"];
+	quiz?: Maybe<Scalars["JSON"]>;
 	slug: Scalars["String"];
 	subtitle?: Maybe<Scalars["String"]>;
 	title: Scalars["String"];
@@ -603,6 +604,7 @@ export type LessonFiltersInput = {
 	lessonId?: InputMaybe<StringFilterInput>;
 	not?: InputMaybe<LessonFiltersInput>;
 	or?: InputMaybe<Array<InputMaybe<LessonFiltersInput>>>;
+	quiz?: InputMaybe<JsonFilterInput>;
 	slug?: InputMaybe<StringFilterInput>;
 	subtitle?: InputMaybe<StringFilterInput>;
 	title?: InputMaybe<StringFilterInput>;
@@ -615,6 +617,7 @@ export type LessonInput = {
 	description?: InputMaybe<Scalars["String"]>;
 	image?: InputMaybe<Scalars["ID"]>;
 	lessonId?: InputMaybe<Scalars["String"]>;
+	quiz?: InputMaybe<Scalars["JSON"]>;
 	slug?: InputMaybe<Scalars["String"]>;
 	subtitle?: InputMaybe<Scalars["String"]>;
 	title?: InputMaybe<Scalars["String"]>;
@@ -2011,6 +2014,8 @@ export type CoursesForSyncQuery = {
 				content?: Array<
 					| {
 							__typename: "ComponentTableOfContentsChapter";
+							title: string;
+							description?: string | null;
 							lessons?: Array<{
 								__typename?: "ComponentTableOfContentsLessonRelation";
 								lesson?: {
@@ -2683,6 +2688,8 @@ export const CoursesForSyncDocument = gql`
 					content {
 						... on ComponentTableOfContentsChapter {
 							__typename
+							title
+							description
 							lessons {
 								lesson {
 									data {

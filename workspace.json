@@ -6,6 +6,7 @@
 		"data-access-cms-api": "libs/data-access/cms-api",
 		"database": "libs/data-access/database",
 		"docs-storybook": "docs/storybook",
+		"feature-completion": "libs/feature/completion",
 		"feature-quiz": "libs/feature/quiz",
 		"feature-webhooks": "libs/feature/webhooks",
 		"site": "apps/site",
@@ -17,6 +18,7 @@
 		"ui-lesson": "libs/ui/lesson",
 		"util-http": "libs/util/http",
 		"util-markdown": "libs/util/markdown",
+		"util-types": "libs/util/types",
 		"util-validation": "libs/util/validation"
 	}
 }

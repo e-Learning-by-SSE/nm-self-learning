@@ -145,12 +145,17 @@ export async function getCoursesForSync() {
 		courses:
 			result.courses?.data.map(({ attributes }) => {
 				const attr = attributes as Exclude<typeof attributes, undefined | null>;
+
+				console.log("Get Course for sync");
+				console.log(JSON.stringify(attr.content, null, 4));
+
 				return {
 					courseId: attr.courseId,
 					slug: attr.slug,
 					title: attr.title,
 					subtitle: attr.subtitle,
-					imgUrl: attr.image?.data?.attributes?.url
+					imgUrl: attr.image?.data?.attributes?.url,
+					content: attr.content
 				};
 			}) ?? [],
 		_total: result.courses?.meta.pagination.total
@@ -181,6 +186,8 @@ gql`
 					content {
 						... on ComponentTableOfContentsChapter {
 							__typename
+							title
+							description
 							lessons {
 								lesson {
 									data {

@@ -1,6 +1,7 @@
 import { PlayIcon } from "@heroicons/react/solid";
 import { cmsTypes, getLessonBySlug } from "@self-learning/cms-api";
 import { database } from "@self-learning/database";
+import { CourseChapter } from "@self-learning/types";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { Playlist } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
@@ -16,12 +17,6 @@ type LessonProps = {
 		courseId: string;
 		lessons: { lessonId: string; title: string; slug: string; imgUrl?: string | null }[];
 	};
-};
-
-type Chapter = {
-	title: string;
-	description?: string;
-	lessons: { lessonId: string }[];
 };
 
 export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params, query }) => {
@@ -41,7 +36,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		return { notFound: true };
 	}
 
-	const content: Chapter[] = JSON.parse(course.content ?? "[]");
+	const content = course.content as CourseChapter[];
 
 	const lessonIds = content.flatMap(chapter =>
 		chapter.lessons.flatMap(lesson => lesson.lessonId)
