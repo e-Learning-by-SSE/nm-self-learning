@@ -8,28 +8,25 @@ export async function synchronizeCourses(getCoursesFn: typeof getCoursesForSync)
 	const { courses } = await getCoursesFn();
 
 	const promises = courses.map(course => {
-		console.log(course);
 		const mappedContent = course.content
-			? course.content
-					.map(chapter => {
-						if (chapter?.__typename === "ComponentTableOfContentsChapter") {
-							return {
-								title: chapter.title,
-								description: chapter.description,
-								lessons:
-									chapter.lessons?.map(lesson => ({
+			? course.content.map(chapter => {
+					if (chapter?.__typename === "ComponentTableOfContentsChapter") {
+						return {
+							title: chapter.title,
+							description: chapter.description,
+							lessons:
+								chapter.lessons?.map(lesson => ({
+									lesson: {
 										lessonId: lesson?.lesson?.data?.attributes
 											?.lessonId as string
-									})) ?? []
-							};
-						}
+									}
+								})) ?? []
+						};
+					}
 
-						return undefined; // TODO
-					})
-					.filter(Boolean)
+					return undefined; // TODO
+			  })
 			: [];
-
-		console.log(JSON.stringify(mappedContent, null, 4));
 
 		const courseInput: Prisma.CourseCreateInput = {
 			...course,

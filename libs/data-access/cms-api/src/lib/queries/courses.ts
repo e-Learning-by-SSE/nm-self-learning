@@ -145,10 +145,6 @@ export async function getCoursesForSync() {
 		courses:
 			result.courses?.data.map(({ attributes }) => {
 				const attr = attributes as Exclude<typeof attributes, undefined | null>;
-
-				console.log("Get Course for sync");
-				console.log(JSON.stringify(attr.content, null, 4));
-
 				return {
 					courseId: attr.courseId,
 					slug: attr.slug,
