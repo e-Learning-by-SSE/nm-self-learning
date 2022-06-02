@@ -116,7 +116,7 @@ export function Chapter({
 	courseSlug: string;
 	title: string;
 	description?: string;
-	lessons: { title: string; slug: string; isCompleted: boolean }[];
+	lessons: { title: string; slug: string; lessonId: string; isCompleted: boolean }[];
 }) {
 	return (
 		<>
@@ -126,22 +126,34 @@ export function Chapter({
 			)}
 			<ul className="mt-8 flex flex-col gap-2">
 				{lessons.map(lesson => (
-					<Link href={`/courses/${courseSlug}/${lesson.slug}`} key={lesson.slug}>
-						<a>
-							<li
-								className={`flex items-center justify-between gap-8 rounded-r-lg border-l-2 bg-gray-50 px-3 py-2 ${
-									lesson.isCompleted ? "border-green-500" : "border-slate-200"
-								}`}
-							>
-								<span className="text-sm font-semibold">{lesson.title}</span>
-								{lesson.isCompleted && (
-									<CheckCircleIcon className="h-6 shrink-0 text-green-500" />
-								)}
-							</li>
-						</a>
-					</Link>
+					<Lesson
+						lesson={lesson}
+						href={`/courses/${courseSlug}/${lesson.slug}`}
+						key={lesson.lessonId}
+					/>
 				))}
 			</ul>
 		</>
+	);
+}
+
+function Lesson({
+	lesson,
+	href
+}: {
+	href: string;
+	lesson: { title: string; slug: string; lessonId: string; isCompleted: boolean };
+}) {
+	return (
+		<li
+			className={`flex items-center justify-between gap-8 rounded-r-lg border-l-2 bg-gray-50 px-3 py-2 ${
+				lesson.isCompleted ? "border-green-500" : "border-slate-200"
+			}`}
+		>
+			<Link href={href}>
+				<a className="text-sm font-semibold">{lesson.title}</a>
+			</Link>
+			{lesson.isCompleted && <CheckCircleIcon className="h-6 shrink-0 text-green-500" />}
+		</li>
 	);
 }
