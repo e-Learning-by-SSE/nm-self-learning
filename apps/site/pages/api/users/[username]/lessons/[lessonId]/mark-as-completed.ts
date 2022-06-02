@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { markAsCompleted } from "@self-learning/completion";
 import { apiHandler } from "@self-learning/util/http";
 import { StatusCodes } from "http-status-codes";
 import { NextApiHandler } from "next";
@@ -10,30 +10,13 @@ const routeParams = object({
 });
 
 const markAsCompletedApiHandler: NextApiHandler = async (req, res) => {
-	return apiHandler(req, res, "PUT", async () => {
+	return apiHandler(req, res, "POST", async () => {
 		const { username, lessonId } = routeParams.validateSync({
 			username: req.query.username,
 			lessonId: req.query.lessonId
 		});
 
-		const completedLesson = await database.completedLesson.create({
-			data: {
-				lessonId,
-				username
-			},
-			select: {
-				createdAt: true,
-				username: true,
-				lessonId: true,
-				lesson: {
-					select: {
-						lessonId: true,
-						title: true,
-						slug: true
-					}
-				}
-			}
-		});
+		const completedLesson = markAsCompleted({ lessonId, username });
 
 		return res.status(StatusCodes.OK).json(completedLesson);
 	});
