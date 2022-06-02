@@ -19,7 +19,7 @@ const users: Prisma.UserCreateInput[] = students.map(student => ({
 		create: [
 			{
 				provider: "demo",
-				providerAccountId: `${student.username}-dev`,
+				providerAccountId: `${student.username}`,
 				type: "demo-account"
 			}
 		]
@@ -128,7 +128,7 @@ async function createCompetences(): Promise<void> {
 async function createAchievedCompetences(): Promise<void> {
 	const achievedCompetences = [
 		{
-			username: users[0].student?.create?.username,
+			username: users[0].student?.create?.username as string,
 			competenceId: competences[0].competenceId
 		},
 		{
