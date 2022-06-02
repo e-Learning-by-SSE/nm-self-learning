@@ -1,7 +1,8 @@
 import { database } from "@self-learning/database";
 import { ValidationError } from "yup";
+import { CourseEntry } from "../../schemas";
 import { CmsNotification } from "../types";
-import { CourseEntry, courseNotificationHandler } from "./course-notification-handler";
+import { courseNotificationHandler } from "./course-notification-handler";
 
 describe("Course Notification Handler", () => {
 	it("[entry.create] Course does not exist -> Creates course", async () => {
