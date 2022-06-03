@@ -1,25 +1,27 @@
 import { PlayIcon } from "@heroicons/react/solid";
 import { cmsTypes, getLessonBySlug } from "@self-learning/cms-api";
+import { checkLessonCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { CourseChapter } from "@self-learning/types";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
-import { Playlist } from "@self-learning/ui/lesson";
+import { Playlist, PlaylistLesson } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import React, { useMemo } from "react";
 
 type LessonProps = {
 	lesson: ResolvedValue<typeof getLessonBySlug>;
+	lessons: PlaylistLesson[];
 	course: {
 		title: string;
 		slug: string;
 		courseId: string;
-		lessons: { lessonId: string; title: string; slug: string; imgUrl?: string | null }[];
 	};
 };
 
-export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params, query }) => {
+export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params, req }) => {
 	const courseSlug = params?.courseSlug as string;
 	const lessonSlug = params?.lessonSlug as string;
 
@@ -27,44 +29,50 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const [lesson, course] = await Promise.all([
+	const [lesson, course, session] = await Promise.all([
 		getLessonBySlug(lessonSlug),
-		database.course.findUnique({ where: { slug: courseSlug } })
+		database.course.findUnique({ where: { slug: courseSlug } }),
+		getSession({ req })
 	]);
 
 	if (!course || !lesson) {
 		return { notFound: true };
 	}
 
-	const content = course.content as CourseChapter[];
+	const lessonIds = extractLessonIds(course.content as CourseChapter[]);
 
-	const lessonIds = content.flatMap(chapter =>
-		chapter.lessons.flatMap(lesson => lesson.lessonId)
-	);
-
-	const lessons = await database.lesson.findMany({
+	const lessons = (await database.lesson.findMany({
+		select: {
+			lessonId: true,
+			slug: true,
+			title: true,
+			imgUrl: true
+		},
 		where: {
 			lessonId: {
 				in: lessonIds
 			}
 		}
-	});
+	})) as PlaylistLesson[];
 
-	const mappedCourse = {
-		title: course.title,
-		slug: course.slug,
-		courseId: course.courseId,
-		lessons
-	};
+	if (session?.user?.name) {
+		const completion = await checkLessonCompletion(session.user.name, lessonIds);
+
+		for (const lesson of lessons) {
+			lesson.isCompleted = lesson.lessonId in completion;
+		}
+	}
 
 	return {
-		props: { lesson: lesson as Defined<typeof lesson>, course: mappedCourse }
+		props: { lesson: lesson as Defined<typeof lesson>, lessons, course }
 	};
 };
 
-type Lesson = { title: string; slug: string; imgUrl?: string | null };
+function extractLessonIds(content: CourseChapter[]) {
+	return content.flatMap(chapter => chapter.lessons.flatMap(lesson => lesson.lessonId));
+}
 
-export default function Lesson({ lesson, course }: LessonProps) {
+export default function Lesson({ lesson, lessons, course }: LessonProps) {
 	const { title } = lesson;
 	const { url } = lesson.content?.[0] as cmsTypes.ComponentContentYoutubeVideo;
 
@@ -87,7 +95,7 @@ export default function Lesson({ lesson, course }: LessonProps) {
 				<div className="flex flex-col gap-4">
 					<VideoPlayerWithPlaylist
 						videoUrl={url as string}
-						lessons={course.lessons}
+						lessons={lessons}
 						currentLesson={lesson}
 						course={course}
 						chapter={{ title: "Chapter #1" }}
@@ -106,8 +114,8 @@ function VideoPlayerWithPlaylist({
 	course
 }: {
 	videoUrl: string;
-	currentLesson: Lesson;
-	lessons: { title: string; slug: string; imgUrl?: string | null }[];
+	currentLesson: LessonProps["lesson"];
+	lessons: LessonProps["lessons"];
 	course: LessonProps["course"];
 	chapter: any; // TODO
 }) {

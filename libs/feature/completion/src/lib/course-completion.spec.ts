@@ -9,9 +9,10 @@ const createLesson = (index: number): Prisma.LessonCreateManyInput => ({
 	title: `Lesson ${index}`
 });
 
+const username = "potter";
+
 describe("getCourseCompletion", () => {
 	const courseSlug = "test-course-with-completion";
-	const username = "potter";
 
 	beforeEach(async () => {
 		await database.course.deleteMany({ where: { slug: courseSlug } });
