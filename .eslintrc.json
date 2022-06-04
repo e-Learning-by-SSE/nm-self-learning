@@ -27,7 +27,8 @@
 			"rules": {
 				"semi": ["error", "always"],
 				"quotes": ["error", "double"],
-				"indent": ["error", "tab", { "SwitchCase": 1 }]
+				"indent": ["error", "tab", { "SwitchCase": 1 }],
+				"jsx-a11y/anchor-is-valid": ["off"]
 			}
 		},
 		{
