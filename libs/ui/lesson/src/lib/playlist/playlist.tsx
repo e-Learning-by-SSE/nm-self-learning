@@ -29,7 +29,8 @@ export function NestablePlaylist({
 				<div className="flex flex-col gap-1">
 					<span className="text-base font-semibold">{course.title}</span>
 					<span className="text-sm">
-						Fortschritt: {courseCompletion?.courseCompletionPercentage ?? 0}%
+						Fortschritt: {Math.floor(courseCompletion?.courseCompletionPercentage ?? 0)}
+						%
 					</span>
 				</div>
 			</div>
