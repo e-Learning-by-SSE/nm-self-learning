@@ -14,8 +14,8 @@ export function SectionConnector({
 	let textColor = "text-slate-200";
 
 	if (isCompleted) {
-		bgColor = "bg-green-500";
-		textColor = "text-green-500";
+		bgColor = "bg-secondary";
+		textColor = "text-secondary";
 	}
 
 	return (
@@ -46,17 +46,7 @@ export function Section({
 	isCompleted,
 	isRequired
 }: PropsWithChildren<{ isCompleted: boolean; isRequired: boolean }>) {
-	let borderColor = "border-slate-200";
-
-	if (isCompleted) {
-		borderColor = "border-green-500";
-	}
-
-	return (
-		<div className={`flex w-full flex-col rounded-lg border bg-white p-8 ${borderColor}`}>
-			{children}
-		</div>
-	);
+	return <div className="flex w-full flex-col rounded-lg border bg-white p-8">{children}</div>;
 }
 
 export function SingleLesson({ title, slug }: { title: string; slug: string }) {
@@ -147,13 +137,13 @@ function Lesson({
 	return (
 		<li
 			className={`flex items-center justify-between gap-8 rounded-r-lg border-l-2 bg-gray-50 px-3 py-2 ${
-				lesson.isCompleted ? "border-green-500" : "border-slate-200"
+				lesson.isCompleted ? "border-secondary" : "border-slate-200"
 			}`}
 		>
 			<Link href={href}>
 				<a className="text-sm font-semibold">{lesson.title}</a>
 			</Link>
-			{lesson.isCompleted && <CheckCircleIcon className="h-6 shrink-0 text-green-500" />}
+			{lesson.isCompleted && <CheckCircleIcon className="h-6 shrink-0 text-secondary" />}
 		</li>
 	);
 }
