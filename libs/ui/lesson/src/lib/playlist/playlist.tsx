@@ -8,6 +8,7 @@ import {
 import { useCourseCompletion } from "@self-learning/completion";
 import Image from "next/image";
 import Link from "next/link";
+import { ReactElement } from "react";
 import { useCollapseToggle } from "./use-collapse-toggle";
 
 export type PlaylistLesson = {
@@ -34,9 +35,9 @@ export function NestablePlaylist({
 	return (
 		<div className="flex h-fit w-full flex-col overflow-hidden bg-white">
 			<div className="flex items-center justify-between gap-4 border-b border-light-border p-3">
-				<div className="flex flex-col gap-1">
+				<div className="flex flex-col gap-2">
 					<span className="text-base font-semibold">{course.title}</span>
-					<span className="text-sm">
+					<span className="text-sm text-light">
 						Fortschritt: {Math.floor(courseCompletion?.courseCompletionPercentage ?? 0)}
 						%
 					</span>
@@ -44,6 +45,7 @@ export function NestablePlaylist({
 
 				<button
 					onClick={() => globalCollapseToggle(prev => !prev)}
+					title="Open/Close All Sections"
 					className="rounded-full p-2 text-light hover:bg-gray-50"
 				>
 					{globalCollapsed ? (
@@ -57,6 +59,11 @@ export function NestablePlaylist({
 			<div className="playlist-scroll overflow-auto">
 				{content.map((chapter, index) => (
 					<Playlist
+						subtitleElement={
+							<span className="pl-6 text-sm text-light">
+								{chapter.lessons.length} Lerneinheiten
+							</span>
+						}
 						collapsed={collapsedSections[index]}
 						toggleOpenClosed={() => toggleCollapse(index)}
 						index={index + 1}
@@ -77,7 +84,7 @@ export function Playlist({
 	lessons,
 	currentLesson,
 	course,
-	subtitle,
+	subtitleElement,
 	title,
 	collapsed,
 	toggleOpenClosed
@@ -87,23 +94,24 @@ export function Playlist({
 	lessons: PlaylistLesson[];
 	currentLesson: PlaylistLesson;
 	course: { title: string; slug: string };
-	subtitle?: string;
+	subtitleElement: ReactElement;
 	collapsed: boolean;
 	toggleOpenClosed: () => void;
 }) {
 	return (
 		<div className="flex h-fit w-full flex-col bg-white">
 			<div className="flex items-center justify-between gap-4 border-b border-light-border py-3 px-3">
-				<div className="flex flex-col gap-1">
-					<span className="text-base font-semibold">
-						{index}. {title}
+				<div className="flex flex-col gap-2">
+					<span className="flex gap-3 text-base font-semibold">
+						<span>{index}.</span>
+						<span>{title}</span>
 					</span>
-					{subtitle && <span className="text-sm">{subtitle}</span>}
+					{subtitleElement}
 				</div>
 
 				<button
 					className="rounded-full p-2 text-light hover:bg-gray-50"
-					title="Show/Hide Playlist"
+					title="Show/Hide Section"
 					onClick={toggleOpenClosed}
 				>
 					{collapsed ? (
