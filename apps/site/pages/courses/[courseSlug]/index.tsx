@@ -156,7 +156,7 @@ function CourseHeader({ course }: { course: Course }) {
 	);
 }
 function TableOfContents({ content, course }: { content: Course["content"]; course: Course }) {
-	const { courseCompletion } = useCourseCompletion(course.slug);
+	const courseCompletion = useCourseCompletion(course.slug);
 	console.log("courseCompletion", courseCompletion);
 
 	return (
@@ -202,7 +202,10 @@ function TableOfContents({ content, course }: { content: Course["content"]; cour
 									/>
 								</ToC.Section>
 								{showConnector && (
-									<ToC.SectionConnector isCompleted={false} isRequired={true} />
+									<ToC.SectionConnector
+										isCompleted={isCompleted}
+										isRequired={true}
+									/>
 								)}
 							</Fragment>
 						);

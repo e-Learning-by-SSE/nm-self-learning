@@ -1,7 +1,8 @@
-import { useState } from "react";
 import { CheckCircleIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/solid";
-import Link from "next/link";
+import { useCourseCompletion } from "@self-learning/completion";
 import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 export type PlaylistLesson = {
 	title: string;
@@ -11,12 +12,54 @@ export type PlaylistLesson = {
 	imgUrl?: string | null;
 };
 
+export function NestablePlaylist({
+	course,
+	currentLesson,
+	content
+}: {
+	course: { title: string; slug: string };
+	currentLesson: PlaylistLesson;
+	content: { title: string; lessons: PlaylistLesson[] }[];
+}) {
+	const courseCompletion = useCourseCompletion(course.slug);
+
+	return (
+		<div className="flex h-fit w-full flex-col overflow-hidden bg-white">
+			<div className="flex items-center justify-between gap-4 border-b border-light-border py-3 px-3">
+				<div className="flex flex-col gap-1">
+					<span className="text-base font-semibold">{course.title}</span>
+					<span className="text-sm">
+						Fortschritt: {courseCompletion?.courseCompletionPercentage ?? 0}%
+					</span>
+				</div>
+			</div>
+
+			<div className="playlist-scroll overflow-auto">
+				{content.map((chapter, index) => (
+					<Playlist
+						index={index + 1}
+						key={chapter.title}
+						title={chapter.title}
+						course={course}
+						lessons={chapter.lessons}
+						currentLesson={currentLesson}
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
+
 export function Playlist({
+	index,
 	lessons,
 	currentLesson,
 	course,
-	subtitle
+	subtitle,
+	title
 }: {
+	index: number;
+	title: string;
 	lessons: PlaylistLesson[];
 	currentLesson: PlaylistLesson;
 	course: { title: string; slug: string };
@@ -25,10 +68,12 @@ export function Playlist({
 	const [collapsed, setCollapsed] = useState(false);
 
 	return (
-		<div className={`flex w-full flex-col bg-white ${collapsed ? "h-fit" : "h-full"}`}>
+		<div className="flex h-fit w-full flex-col bg-white">
 			<div className="flex items-center justify-between gap-4 border-b border-light-border py-3 px-3">
 				<div className="flex flex-col gap-1">
-					<span className="text-base font-semibold">{course.title}</span>
+					<span className="text-base font-semibold">
+						{index}. {title}
+					</span>
 					{subtitle && <span className="text-sm">{subtitle}</span>}
 				</div>
 

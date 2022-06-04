@@ -23,5 +23,5 @@ export function useCourseCompletion(courseSlug: string) {
 		{ enabled: !!session.data?.user?.name }
 	);
 
-	return { courseCompletion };
+	return courseCompletion;
 }

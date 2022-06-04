@@ -1,19 +1,24 @@
-import { PlayIcon } from "@heroicons/react/solid";
+import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
 import { cmsTypes, getLessonBySlug } from "@self-learning/cms-api";
-import { checkLessonCompletion } from "@self-learning/completion";
+import {
+	checkLessonCompletion,
+	useCourseCompletion,
+	useMarkAsCompleted
+} from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseChapter } from "@self-learning/types";
+import { CourseChapter, CourseCompletion, CourseContent } from "@self-learning/types";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
-import { Playlist, PlaylistLesson } from "@self-learning/ui/lesson";
+import { NestablePlaylist, PlaylistLesson } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import React, { useMemo } from "react";
+import { useRouter } from "next/router";
+import React, { useCallback, useMemo } from "react";
 
 type LessonProps = {
 	lesson: ResolvedValue<typeof getLessonBySlug>;
-	lessons: PlaylistLesson[];
+	chapters: { title: string; lessons: PlaylistLesson[] }[];
 	course: {
 		title: string;
 		slug: string;
@@ -55,16 +60,29 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		}
 	})) as PlaylistLesson[];
 
+	const lessonsById = new Map<string, typeof lessons[0]>();
+
+	for (const lesson of lessons) {
+		lessonsById.set(lesson.lessonId, lesson);
+	}
+
+	const chapters = (course.content as CourseContent).map(chapter => ({
+		title: chapter.title,
+		lessons: chapter.lessons.map(lesson => lessonsById.get(lesson.lessonId) as PlaylistLesson)
+	}));
+
 	if (session?.user?.name) {
 		const completion = await checkLessonCompletion(session.user.name, lessonIds);
 
-		for (const lesson of lessons) {
-			lesson.isCompleted = lesson.lessonId in completion;
+		for (const chapter of chapters) {
+			for (const lesson of chapter.lessons) {
+				lesson.isCompleted = lesson.lessonId in completion;
+			}
 		}
 	}
 
 	return {
-		props: { lesson: lesson as Defined<typeof lesson>, lessons, course }
+		props: { lesson: lesson as Defined<typeof lesson>, chapters, course }
 	};
 };
 
@@ -72,7 +90,7 @@ function extractLessonIds(content: CourseChapter[]) {
 	return content.flatMap(chapter => chapter.lessons.flatMap(lesson => lesson.lessonId));
 }
 
-export default function Lesson({ lesson, lessons, course }: LessonProps) {
+export default function Lesson({ lesson, chapters, course }: LessonProps) {
 	const { title } = lesson;
 	const { url } = lesson.content?.[0] as cmsTypes.ComponentContentYoutubeVideo;
 
@@ -95,10 +113,9 @@ export default function Lesson({ lesson, lessons, course }: LessonProps) {
 				<div className="flex flex-col gap-4">
 					<VideoPlayerWithPlaylist
 						videoUrl={url as string}
-						lessons={lessons}
+						chapters={chapters}
 						currentLesson={lesson}
 						course={course}
-						chapter={{ title: "Chapter #1" }}
 					/>
 					<LessonHeader lesson={lesson} authors={authors} />
 				</div>
@@ -110,14 +127,13 @@ export default function Lesson({ lesson, lessons, course }: LessonProps) {
 function VideoPlayerWithPlaylist({
 	videoUrl,
 	currentLesson,
-	lessons,
+	chapters,
 	course
 }: {
 	videoUrl: string;
 	currentLesson: LessonProps["lesson"];
-	lessons: LessonProps["lessons"];
+	chapters: LessonProps["chapters"];
 	course: LessonProps["course"];
-	chapter: any; // TODO
 }) {
 	return (
 		<div className="mx-auto flex w-full flex-col bg-white xl:max-h-[75vh] xl:flex-row">
@@ -125,12 +141,11 @@ function VideoPlayerWithPlaylist({
 				<YoutubeEmbed url={videoUrl}></YoutubeEmbed>
 				{/* <VideoPlayer url={videoUrl} /> */}
 			</div>
-			<div className="h-[400px] overflow-hidden xl:h-auto xl:w-[400px]">
-				<Playlist
-					lessons={lessons}
-					currentLesson={currentLesson}
+			<div className="flex h-[400px] flex-col xl:h-auto xl:w-[400px]">
+				<NestablePlaylist
 					course={course}
-					subtitle="Kapitel: Grundlagen (4/20)"
+					currentLesson={currentLesson}
+					content={chapters}
 				/>
 			</div>
 		</div>
@@ -167,6 +182,15 @@ function LessonHeader({
 	lesson: LessonProps["lesson"];
 	authors: AuthorProps[];
 }) {
+	const router = useRouter();
+
+	const onSettled = useCallback(() => {
+		router.replace(router.asPath, undefined, { scroll: false });
+	}, [router]);
+
+	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, onSettled);
+	const courseCompletion = useCourseCompletion("the-beginners-guide-to-react");
+
 	return (
 		<div className="mx-auto flex w-full max-w-screen-xl flex-col px-2 sm:px-0">
 			<div className="gradient card flex flex-wrap justify-between gap-8">
@@ -176,8 +200,18 @@ function LessonHeader({
 						<PlayIcon className="h-6 shrink-0" />
 					</a>
 				</Link>
-			</div>
 
+				<button
+					className="btn-primary flex w-full flex-wrap-reverse md:w-fit"
+					onClick={markAsCompleted}
+				>
+					<span>Als abgeschlossen markieren</span>
+					<CheckCircleIcon className="h-6 shrink-0" />
+				</button>
+			</div>
+			<div className="bg-white p-4 text-xs">
+				<pre>{JSON.stringify(courseCompletion, null, 4)}</pre>
+			</div>
 			<div className="mx-auto mt-8 flex flex-grow flex-col items-center gap-12">
 				<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
 				{lesson.subtitle && (

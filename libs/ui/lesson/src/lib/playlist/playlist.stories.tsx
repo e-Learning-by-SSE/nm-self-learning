@@ -1,48 +1,14 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 import { Playlist } from "./playlist";
 
-const fakeLessons = [
-	{
-		slug: "a-beginners-guide-to-react-introduction",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "2",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "3",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "4",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "5",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "6",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "7",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "8",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "9",
-		title: "A Beginners Guide to React Introduction"
-	},
-	{
-		slug: "10",
-		title: "A Beginners Guide to React Introduction"
-	}
-];
+const fakeLessons: Parameters<typeof Playlist>[0]["lessons"] = new Array(10)
+	.fill(0)
+	.map((_, index) => ({
+		slug: `a-beginners-guide-to-react-introduction-${index}`,
+		title: "A Beginners Guide to React Introduction",
+		lessonId: index.toString(),
+		isCompleted: index < 4
+	}));
 
 export default {
 	component: Playlist,
@@ -58,14 +24,14 @@ const Template: ComponentStory<typeof Playlist> = args => (
 export const Default = Template.bind({});
 Default.args = {
 	lessons: fakeLessons,
-	chapter: {
-		title: "Chapter: Webtechnologies (4/20)"
-	},
+	subtitle: "Chapter: Webtechnologies (4/20)",
 	course: {
-		title: "Software Engineering"
+		title: "Software Engineering",
+		slug: "software-engineering"
 	},
 	currentLesson: {
-		slug: "a-beginners-guide-to-react-introduction",
-		title: "A Beginners Guide to React Introduction"
+		slug: "a-beginners-guide-to-react-introduction-2",
+		title: "A Beginners Guide to React Introduction",
+		lessonId: "2"
 	}
 };

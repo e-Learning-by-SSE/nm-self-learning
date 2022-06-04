@@ -1,3 +1,5 @@
+export type CourseContent = CourseChapter[];
+
 export type CourseChapter = {
 	title: string;
 	description?: string | null;
@@ -7,7 +9,7 @@ export type CourseChapter = {
 export type CourseCompletion = {
 	courseCompletionPercentage: number;
 	chapters: {
-		chapterTitle: string;
+		title: string;
 		completedLessonsCount: number;
 		completedLessonsPercentage: number;
 	}[];

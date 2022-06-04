@@ -15,7 +15,7 @@ async function fetchMarkAsCompleted(vars: { lessonId: string; username: string }
 	return true;
 }
 
-export function useMarkAsCompleted(lessonId: string) {
+export function useMarkAsCompleted(lessonId: string, onSettled?: () => void) {
 	const session = useSession();
 	const queryClient = useQueryClient();
 
@@ -37,8 +37,24 @@ export function useMarkAsCompleted(lessonId: string) {
 			};
 		}
 
-		return mutate({ lessonId, username });
-	}, [lessonId, session.data?.user?.name, mutate]);
+		return mutate(
+			{ lessonId, username },
+			{
+				onSettled: (data, error) => {
+					if (!error) {
+						console.log(`Lesson ${lessonId} marked as completed.`);
+						console.log(data);
+					} else {
+						console.error(error);
+					}
+
+					if (onSettled) {
+						onSettled();
+					}
+				}
+			}
+		);
+	}, [lessonId, session.data?.user?.name, mutate, onSettled]);
 
 	return markAsCompleted;
 }
