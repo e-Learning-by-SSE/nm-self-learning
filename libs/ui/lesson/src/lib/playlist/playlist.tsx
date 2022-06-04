@@ -1,8 +1,14 @@
-import { CheckCircleIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/solid";
+import {
+	CheckCircleIcon,
+	ChevronDoubleDownIcon,
+	ChevronDoubleUpIcon,
+	ChevronDownIcon,
+	ChevronUpIcon
+} from "@heroicons/react/solid";
 import { useCourseCompletion } from "@self-learning/completion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useCollapseToggle } from "./use-collapse-toggle";
 
 export type PlaylistLesson = {
 	title: string;
@@ -22,10 +28,12 @@ export function NestablePlaylist({
 	content: { title: string; lessons: PlaylistLesson[] }[];
 }) {
 	const courseCompletion = useCourseCompletion(course.slug);
+	const { globalCollapsed, collapsedSections, globalCollapseToggle, toggleCollapse } =
+		useCollapseToggle(content);
 
 	return (
 		<div className="flex h-fit w-full flex-col overflow-hidden bg-white">
-			<div className="flex items-center justify-between gap-4 border-b border-light-border py-3 px-3">
+			<div className="flex items-center justify-between gap-4 border-b border-light-border p-3">
 				<div className="flex flex-col gap-1">
 					<span className="text-base font-semibold">{course.title}</span>
 					<span className="text-sm">
@@ -33,11 +41,24 @@ export function NestablePlaylist({
 						%
 					</span>
 				</div>
+
+				<button
+					onClick={() => globalCollapseToggle(prev => !prev)}
+					className="rounded-full p-2 text-light hover:bg-gray-50"
+				>
+					{globalCollapsed ? (
+						<ChevronDoubleDownIcon className="h-6" />
+					) : (
+						<ChevronDoubleUpIcon className="h-6" />
+					)}
+				</button>
 			</div>
 
 			<div className="playlist-scroll overflow-auto">
 				{content.map((chapter, index) => (
 					<Playlist
+						collapsed={collapsedSections[index]}
+						toggleOpenClosed={() => toggleCollapse(index)}
 						index={index + 1}
 						key={chapter.title}
 						title={chapter.title}
@@ -57,7 +78,9 @@ export function Playlist({
 	currentLesson,
 	course,
 	subtitle,
-	title
+	title,
+	collapsed,
+	toggleOpenClosed
 }: {
 	index: number;
 	title: string;
@@ -65,9 +88,9 @@ export function Playlist({
 	currentLesson: PlaylistLesson;
 	course: { title: string; slug: string };
 	subtitle?: string;
+	collapsed: boolean;
+	toggleOpenClosed: () => void;
 }) {
-	const [collapsed, setCollapsed] = useState(false);
-
 	return (
 		<div className="flex h-fit w-full flex-col bg-white">
 			<div className="flex items-center justify-between gap-4 border-b border-light-border py-3 px-3">
@@ -79,9 +102,9 @@ export function Playlist({
 				</div>
 
 				<button
-					className="rounded-full p-2 hover:bg-gray-50"
+					className="rounded-full p-2 text-light hover:bg-gray-50"
 					title="Show/Hide Playlist"
-					onClick={() => setCollapsed(previous => !previous)}
+					onClick={toggleOpenClosed}
 				>
 					{collapsed ? (
 						<ChevronDownIcon className="h-6" />
