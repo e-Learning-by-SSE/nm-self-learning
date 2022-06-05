@@ -16,13 +16,13 @@ export function Navbar() {
 							<div className="rounded-full bg-secondary p-1">
 								<AcademicCapIcon className="h-10 shrink-0 text-white" />
 							</div>
-							<div className="invisible flex w-0 flex-col md:visible md:w-fit">
+							<div className="invisible flex w-0 flex-col sm:visible sm:w-fit">
 								<span className="text-light">Universität Hildesheim</span>
 								<span className="font-bold text-secondary">SELF-le@rning</span>
 							</div>
 						</a>
 					</Link>
-					<div className="flex gap-16 text-sm font-medium">
+					<div className="invisible flex w-0 gap-16 text-sm font-medium md:visible md:w-fit">
 						{session?.user && (
 							<Link href="/profile">
 								<a>Mein Profil</a>
