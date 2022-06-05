@@ -6,15 +6,18 @@ import {
 	useMarkAsCompleted
 } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseChapter, CourseCompletion, CourseContent } from "@self-learning/types";
+import { CourseChapter, CourseContent } from "@self-learning/types";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { NestablePlaylist, PlaylistLesson } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
+
+const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 type LessonProps = {
 	lesson: ResolvedValue<typeof getLessonBySlug>;
@@ -138,8 +141,7 @@ function VideoPlayerWithPlaylist({
 	return (
 		<div className="mx-auto flex w-full flex-col bg-white xl:max-h-[75vh] xl:flex-row">
 			<div className="aspect-video grow bg-black">
-				<YoutubeEmbed url={videoUrl}></YoutubeEmbed>
-				{/* <VideoPlayer url={videoUrl} /> */}
+				<VideoPlayer url={videoUrl} />
 			</div>
 			<div className="flex h-[400px] flex-col xl:h-auto xl:w-[400px]">
 				<NestablePlaylist
@@ -152,25 +154,10 @@ function VideoPlayerWithPlaylist({
 	);
 }
 
-function YoutubeEmbed({ url }: { url: string }) {
-	const videoId = useMemo(() => url.match(/\?v=(.+)$/)?.at(1), [url]);
-
-	return (
-		<iframe
-			height="100%"
-			width="100%"
-			src={`https://www.youtube-nocookie.com/embed/${videoId}`}
-			title="YouTube video player"
-			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-			allowFullScreen
-		></iframe>
-	);
-}
-
 function VideoPlayer({ url }: { url: string }) {
 	return (
 		<div className="flex h-full w-full bg-black">
-			<video controls src={url}></video>
+			<ReactPlayer url={url} height="100%" width="100%" controls={true} />
 		</div>
 	);
 }

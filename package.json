@@ -42,6 +42,7 @@
 		"react-dom": "18.1.0",
 		"react-instantsearch-dom": "^6.23.3",
 		"react-is": "18.1.0",
+		"react-player": "^2.10.1",
 		"react-query": "4.0.0-beta.7",
 		"react-responsive": "^9.0.0-beta.6",
 		"regenerator-runtime": "0.13.7",
