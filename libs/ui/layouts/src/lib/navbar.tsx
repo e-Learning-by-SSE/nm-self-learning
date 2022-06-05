@@ -8,7 +8,7 @@ export function Navbar() {
 	const { data: session } = useSession();
 
 	return (
-		<div className="h-20 border-b border-b-gray-200 bg-white">
+		<nav className="h-20 border-b border-b-gray-200 bg-white">
 			<div className="mx-auto flex h-full max-w-screen-xl items-center justify-between gap-4 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/">
@@ -47,7 +47,7 @@ export function Navbar() {
 					</div>
 				)}
 			</div>
-		</div>
+		</nav>
 	);
 }
 
