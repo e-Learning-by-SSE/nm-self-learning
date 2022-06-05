@@ -1,36 +1,18 @@
-import { LightBulbIcon } from "@heroicons/react/outline";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
 import { getLessonBySlug } from "@self-learning/cms-api";
 import { compileMarkdown } from "@self-learning/markdown";
-import { useQuizAttempt, useQuizAttemptsInfo } from "@self-learning/quiz";
-import { TopicHeader } from "@self-learning/ui/layouts";
+import { Question, Answer, useQuizAttempt } from "@self-learning/quiz";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
-import { MDXRemote } from "next-mdx-remote";
 import { useRouter } from "next/router";
-import { ReactElement, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-type Question = {
-	type: "multiple-choice";
-	questionId: string;
-	content: string;
-	answers: {
-		answerId: string;
-		content: string;
-		isCorrect: boolean;
-	}[];
-	hint?: {
-		disabled?: boolean;
-		content: string;
-	};
-};
-
-function getQuiz(slug: string): Question[] {
+function getQuiz(slug: string): QuestionType[] {
 	return [
 		{
 			type: "multiple-choice",
 			questionId: "923d78a5-af38-4599-980a-2b4cb62e4014",
-			content: `
+			statement: `
 			# How way your day?
 
 			Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure! Fugiat, optio!
@@ -38,17 +20,7 @@ function getQuiz(slug: string): Question[] {
 			answers: [
 				{
 					answerId: "35d310ee-1acf-48e0-8f8c-090acd0e873a",
-					content: `
-					# Answer #1
-
-					## Good
-
-					[Look at this](#)
-
-					![Image](http://localhost:4200/_next/image?url=http%3A%2F%2Flocalhost%3A1337%2Fuploads%2Fa_beginners_guide_to_react_39990bb89a.webp&w=1920&q=75)
-					
-					Select this answer, if your day was good.
-					`.trim(),
+					content: "Good",
 					isCorrect: true
 				},
 				{
@@ -60,13 +32,25 @@ function getQuiz(slug: string): Question[] {
 			hint: {
 				content: "Just get smarter."
 			}
+		},
+		{
+			type: "short-text",
+			questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
+			statement: "# Was ist 1 + 1 ?",
+			answers: null
+		},
+		{
+			type: "text",
+			questionId: "34fca2c2-c547-4f66-9a4e-927770a55090",
+			statement: "# Was ist 1 + 1 ?",
+			answers: null
 		}
 	];
 }
 
 type QuestionProps = {
 	lesson: ResolvedValue<typeof getLessonBySlug>;
-	questions: Question[];
+	questions: QuestionType[];
 	markdown: {
 		questionsMd: MdLookup;
 		answersMd: MdLookup;
@@ -92,14 +76,16 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 	const hintsMd: MdLookup = {};
 
 	for (const question of questions) {
-		questionsMd[question.questionId] = await compileMarkdown(question.content);
+		questionsMd[question.questionId] = await compileMarkdown(question.statement);
 
 		if (question.hint && !question.hint.disabled) {
 			hintsMd[question.questionId] = await compileMarkdown(question.hint.content);
 		}
 
-		for (const answer of question.answers) {
-			answersMd[answer.answerId] = await compileMarkdown(answer.content);
+		if (question.answers) {
+			for (const answer of question.answers) {
+				answersMd[answer.answerId] = await compileMarkdown(answer.content);
+			}
 		}
 	}
 
@@ -131,8 +117,7 @@ export default function QuestionsPage({ lesson, questions, markdown }: QuestionP
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
-	const { submitAnswers } = useQuizAttempt();
-	const { data: session } = useSession({ required: true });
+
 	// const { quizAttemptsInfo } = useQuizAttemptsInfo(
 	// 	lesson.lessonId,
 	// 	session?.user?.name as string
@@ -164,14 +149,10 @@ export default function QuestionsPage({ lesson, questions, markdown }: QuestionP
 
 	return (
 		<div className="bg-gray-50">
-			<div className="mx-auto max-w-screen-lg">
-				<TopicHeader
-					title="Lernkontrolle"
-					subtitle={""}
-					parentTitle={title}
-					parentLink={`/lessons/${lesson.slug}`}
-				>
+			<div className="grid items-start gap-16 bg-gray-50 px-4 pb-16 lg:px-0">
+				<div className="mx-auto grid w-full max-w-3xl items-start gap-8">
 					<QuestionNavigation
+						lesson={lesson}
 						amount={questions.length}
 						current={nextIndex}
 						hasPrevious={nextIndex > 1}
@@ -179,69 +160,15 @@ export default function QuestionsPage({ lesson, questions, markdown }: QuestionP
 						goToNext={goToNextQuestion}
 						goToPrevious={goToPreviousQuestion}
 					/>
-
-					<button
-						className="btn-primary mt-8"
-						onClick={() =>
-							submitAnswers({
-								username: session?.user?.name as string,
-								lessonId: lesson.lessonId,
-								answers: [],
-								state: "COMPLETED"
-							})
-						}
-					>
-						Submit Answers
-					</button>
-				</TopicHeader>
-			</div>
-
-			<div className="grid items-start gap-16 bg-gray-50 py-16 px-4 lg:px-0">
-				<div className="mx-auto max-w-3xl">
-					<QuestionX question={currentQuestion} markdown={markdown} />
-					{/* <Question title={currentQuestion.content} answers={currentQuestion.answers} /> */}
+					<Question question={currentQuestion} markdown={markdown} />
 				</div>
 			</div>
 		</div>
 	);
 }
 
-function QuestionX({
-	question,
-	markdown
-}: {
-	question: QuestionProps["questions"][0];
-	markdown: QuestionProps["markdown"];
-}) {
-	return (
-		<div className="prose prose-indigo max-w-full">
-			{markdown.questionsMd[question.questionId] ? (
-				<MDXRemote {...markdown.questionsMd[question.questionId]} />
-			) : (
-				<span className="text-red-500">Error: No markdown content found.</span>
-			)}
-
-			<div className="mt-12 flex flex-col gap-8">
-				{question.answers.map(answer => (
-					<AnswerX
-						key={answer.answerId}
-						content={
-							markdown.answersMd[answer.answerId] ? (
-								<MDXRemote {...markdown.answersMd[answer.answerId]} />
-							) : (
-								<span className="text-red-500">
-									Error: No markdown content found.
-								</span>
-							)
-						}
-					/>
-				))}
-			</div>
-		</div>
-	);
-}
-
 function QuestionNavigation({
+	lesson,
 	current,
 	amount,
 	hasPrevious,
@@ -249,6 +176,7 @@ function QuestionNavigation({
 	goToNext,
 	goToPrevious
 }: {
+	lesson: QuestionProps["lesson"];
 	current: number;
 	amount: number;
 	hasPrevious: boolean;
@@ -256,102 +184,103 @@ function QuestionNavigation({
 	goToNext: () => void;
 	goToPrevious: () => void;
 }) {
+	const { submitAnswers } = useQuizAttempt();
+	const { data: session } = useSession({ required: true });
+
 	return (
-		<div className="flex flex-wrap items-center justify-between gap-6 pt-4">
-			<span>
-				Frage {current} von {amount}
-			</span>
-			<div className="flex flex-wrap place-content-end gap-4">
-				<button
-					disabled={!hasPrevious}
-					className="btn-stroked w-full sm:w-fit"
-					onClick={goToPrevious}
-				>
-					<ChevronLeftIcon className="h-5" />
-					<span>Vorherige Frage</span>
-				</button>
-				<button
-					disabled={!hasNext}
-					className="btn-primary w-full sm:w-fit"
-					onClick={goToNext}
-				>
-					<span>Nächste Frage</span>
-					<ChevronRightIcon className="h-5" />
-				</button>
+		<div className="flex flex-col gap-4 rounded-b-lg border-x border-b border-light-border bg-white p-4">
+			<div className="flex flex-col gap-2">
+				<h2 className="text-lg text-secondary">{lesson.title}</h2>
+				<h1 className="text-4xl">Lernkontrolle</h1>
 			</div>
-		</div>
-	);
-}
-
-function Question({ title, answers }: { title: string; answers: { text: string }[] }) {
-	return (
-		<div className="flex flex-col gap-16">
-			<h2 className="text-4xl">{title}</h2>
-
-			<ul className="flex flex-col gap-8">
-				{answers.map(answer => (
-					<Answer key={answer.text} answer={answer} />
-				))}
-			</ul>
-
-			{/* <Cloze /> */}
-
-			<Certainty />
-
-			<div className="grid items-start gap-4">
-				<button className="flex place-content-center gap-4 rounded-lg border border-slate-200 px-3 py-2">
-					<LightBulbIcon className="h-6" /> Ich benötige einen Hinweis.
-				</button>
-				<span className="text-sm text-slate-400">
-					Achtung: Das Verwenden von Hinweisen verringert die Anzahl der vergebenen
-					Skill-Punkte.
+			<div className="flex flex-wrap items-center justify-between gap-6">
+				<span>
+					Frage {current} von {amount}
 				</span>
+				<div className="flex flex-wrap place-content-end gap-4">
+					<button
+						disabled={!hasPrevious}
+						className="btn-stroked w-full sm:w-fit"
+						onClick={goToPrevious}
+					>
+						<ChevronLeftIcon className="h-5" />
+						<span>Vorherige Frage</span>
+					</button>
+					<button
+						disabled={!hasNext}
+						className="btn-primary w-full sm:w-fit"
+						onClick={goToNext}
+					>
+						<span>Nächste Frage</span>
+						<ChevronRightIcon className="h-5" />
+					</button>
+				</div>
+				{/* <button
+				className="btn-primary mt-8"
+				onClick={() =>
+					submitAnswers({
+						username: session?.user?.name as string,
+						lessonId: lesson.lessonId,
+						answers: [],
+						state: "COMPLETED"
+					})
+				}
+			>
+				Submit Answers
+			</button> */}
 			</div>
 		</div>
 	);
 }
 
-function AnswerX({ content }: { content: ReactElement }) {
-	const [selected, setSelected] = useState(false);
+// function Question({ title, answers }: { title: string; answers: { text: string }[] }) {
+// 	return (
+// 		<div className="flex flex-col gap-16">
+// 			<h2 className="text-4xl">{title}</h2>
 
-	function toggleSelected() {
-		setSelected(value => !value);
-	}
+// 			<ul className="flex flex-col gap-8">
+// 				{answers.map(answer => (
+// 					<Answer key={answer.text} answer={answer} />
+// 				))}
+// 			</ul>
 
-	return (
-		<button
-			className={`flex w-full flex-col rounded-lg border p-4 transition-colors ${
-				selected
-					? "border-indigo-200 bg-indigo-500 text-white prose-headings:text-white prose-a:text-white"
-					: "border-slate-200 bg-white"
-			}`}
-			onClick={toggleSelected}
-		>
-			{content}
-		</button>
-	);
-}
+// 			{/* <Cloze /> */}
 
-function Answer({ answer }: { answer: { text: string } }) {
-	const [selected, setSelected] = useState(false);
+// 			<Certainty />
 
-	function toggleSelected() {
-		setSelected(value => !value);
-	}
+// 			<div className="grid items-start gap-4">
+// 				<button className="flex place-content-center gap-4 rounded-lg border border-slate-200 px-3 py-2">
+// 					<LightBulbIcon className="h-6" /> Ich benötige einen Hinweis.
+// 				</button>
+// 				<span className="text-sm text-slate-400">
+// 					Achtung: Das Verwenden von Hinweisen verringert die Anzahl der vergebenen
+// 					Skill-Punkte.
+// 				</span>
+// 			</div>
+// 		</div>
+// 	);
+// }
 
-	return (
-		<button
-			className={`flex w-full rounded-lg border p-4 transition-colors ${
-				selected
-					? "border-indigo-200 bg-indigo-500 text-white"
-					: "border-slate-200 bg-white"
-			}`}
-			onClick={toggleSelected}
-		>
-			<span className="">{answer.text}</span>
-		</button>
-	);
-}
+// function Answer({ answer }: { answer: { text: string } }) {
+// 	const [selected, setSelected] = useState(false);
+
+// 	function toggleSelected() {
+// 		setSelected(value => !value);
+// 	}
+
+// 	return (
+// 		<button
+// 			className={`flex w-full rounded-lg border p-4 transition-colors ${
+// 				selected
+// 					? "border-indigo-200 bg-indigo-500 text-white"
+// 					: "border-slate-200 bg-white"
+// 			}`}
+// 			onClick={toggleSelected}
+// 		>
+// 			<span className="">{answer.text}</span>
+// 		</button>
+// 	);
+// }
 
 function Certainty() {
 	const { certainty, certaintyPhrase, setCertainty } = useCertainty(100);
