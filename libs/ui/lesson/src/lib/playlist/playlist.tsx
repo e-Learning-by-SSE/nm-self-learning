@@ -34,7 +34,7 @@ export function NestablePlaylist({
 
 	return (
 		<div className="flex h-fit w-full flex-col overflow-hidden bg-white">
-			<div className="flex items-center justify-between gap-4 border-b border-light-border p-3">
+			<div className="grid grid-cols-[1fr_auto] border-b border-light-border p-4">
 				<div className="flex flex-col gap-2">
 					<span className="text-base font-semibold">{course.title}</span>
 					<span className="text-sm text-light">
@@ -46,7 +46,7 @@ export function NestablePlaylist({
 				<button
 					onClick={() => globalCollapseToggle(prev => !prev)}
 					title="Open/Close All Sections"
-					className="rounded-full p-2 text-light hover:bg-gray-50"
+					className="self-center rounded-full p-2 text-light hover:bg-gray-50"
 				>
 					{globalCollapsed ? (
 						<ChevronDoubleDownIcon className="h-6" />
@@ -60,7 +60,7 @@ export function NestablePlaylist({
 				{content.map((chapter, index) => (
 					<Playlist
 						subtitleElement={
-							<span className="pl-6 text-sm text-light">
+							<span className="text-sm text-light">
 								{chapter.lessons.length} Lerneinheiten
 							</span>
 						}
@@ -100,17 +100,14 @@ export function Playlist({
 }) {
 	return (
 		<div className="flex h-fit w-full flex-col bg-white">
-			<div className="flex items-center justify-between gap-4 border-b border-light-border py-3 px-3">
+			<div className="grid grid-cols-[32px_1fr_auto] items-start border-b border-light-border p-4">
+				<span className="text-base font-semibold">{index}.</span>
 				<div className="flex flex-col gap-2">
-					<span className="flex gap-3 text-base font-semibold">
-						<span>{index}.</span>
-						<span>{title}</span>
-					</span>
+					<span className="flex gap-3 text-base font-semibold">{title}</span>
 					{subtitleElement}
 				</div>
-
 				<button
-					className="rounded-full p-2 text-light hover:bg-gray-50"
+					className="self-center rounded-full p-2 text-light hover:bg-gray-50"
 					title="Show/Hide Section"
 					onClick={toggleOpenClosed}
 				>
