@@ -46,6 +46,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     student       Student?
+    Author        Author?
 }
 
 model VerificationToken {
@@ -67,19 +68,51 @@ model Student {
     quizAttempts     QuizAttempt[]
 }
 
-model Course {
-    courseId    String       @id
-    slug        String       @unique
+model Author {
+    id          Int      @id @default(autoincrement())
+    userId      String   @unique
+    user        User     @relation(fields: [userId], references: [id])
+    displayName String
+    lessons     Lesson[]
+    courses     Course[]
+}
+
+model Subject {
+    subjectId   Int         @id @default(autoincrement())
+    slug        String      @unique
     title       String
-    subtitle    String
-    imgUrl      String?
-    content     Json?
-    enrollments Enrollment[]
+    Course      Course[]
+    specialties Specialty[]
+}
+
+model Specialty {
+    specialtyId Int      @id @default(autoincrement())
+    slug        String   @unique
+    title       String
+    subject     Subject  @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
+    courses     Course[]
+    subjectId   Int
+}
+
+model Course {
+    courseId        String            @id
+    slug            String            @unique
+    title           String
+    subtitle        String
+    description     String?
+    imgUrl          String?
+    content         Json?
+    enrollments     Enrollment[]
+    CompletedLesson CompletedLesson[]
+    subject         Subject           @relation(fields: [subjectId], references: [subjectId])
+    subjectId       Int
+    specialty       Specialty[]
+    authors         Author[]
 }
 
 model Enrollment {
-    status      String
-    createdAt   DateTime  @default(now())
+    status      EnrollmentStatus
+    createdAt   DateTime         @default(now())
     completedAt DateTime?
 
     courseId String
@@ -91,26 +124,35 @@ model Enrollment {
     @@id([courseId, username])
 }
 
+enum EnrollmentStatus {
+    ACTIVE
+    INACTIVE
+    COMPLETED
+}
+
 model Lesson {
     lessonId     String            @id
     slug         String            @unique
     title        String
     subtitle     String?
+    description  String?
     imgUrl       String?
     quiz         String?
     competences  Competence[]
     completions  CompletedLesson[]
     quizAttempts QuizAttempt[]
+    authors      Author[]
 }
 
 model CompletedLesson {
-    completedLessonId Int @id @default(autoincrement())
-
-    lessonId  String
-    lesson    Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
-    username  String
-    user      Student  @relation(fields: [username], references: [username], onDelete: Cascade)
-    createdAt DateTime @default(now())
+    completedLessonId Int      @id @default(autoincrement())
+    courseId          String?
+    course            Course?  @relation(fields: [courseId], references: [courseId])
+    lessonId          String
+    lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+    username          String
+    user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
+    createdAt         DateTime @default(now())
 
     @@index([username, lessonId])
 }
@@ -150,7 +192,17 @@ model QuizAttempt {
     lesson   Lesson @relation(fields: [lessonId], references: [lessonId])
     lessonId String
 
-    answers Json
-
+    QuizAnswer QuizAnswer[]
     @@index([username, lessonId])
+}
+
+model QuizAnswer {
+    answerId      Int         @id @default(autoincrement())
+    quizAttemptId String
+    quizAttempt   QuizAttempt @relation(fields: [quizAttemptId], references: [attemptId], onDelete: Cascade)
+    questionId    String
+    answer        Json
+    isCorrect     Boolean
+
+    @@index([questionId])
 }
