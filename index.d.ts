@@ -2,6 +2,7 @@ declare var process: {
 	env: {
 		NODE_ENV: "development" | "production";
 		DATABASE_URL: string;
+		CMS_REST_API_URL: string;
 		CMS_GRAPHQL_URL: string;
 		NEXT_PUBLIC_API_URL: string;
 		STRAPI_WEBHOOK_TOKEN: string;

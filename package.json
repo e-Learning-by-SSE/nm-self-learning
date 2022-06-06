@@ -6,13 +6,13 @@
 		"start": "nx serve",
 		"build": "nx build",
 		"cms:watch": "cd apps/cms && npm run develop --watch-admin",
+		"cms:seed": "jest './libs/data-access/cms-api/src/lib/admin/seed-cms.spec.ts' -c './libs/data-access/cms-api/jest.config.ts' -t 'Seed CMS'",
 		"test": "nx test",
 		"storybook": "env TAILWIND_MODE=watch nx run docs-storybook:storybook --watch",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write **/*",
 		"prisma": "prisma",
-		"graphql-codegen": "graphql-codegen --config codegen.yml",
-		"cms:seed": "ts-node --require tsconfig-paths/register libs/data-access/cms-api/src/lib/seed.ts"
+		"graphql-codegen": "graphql-codegen --config codegen.yml"
 	},
 	"private": true,
 	"prisma": {
@@ -52,6 +52,7 @@
 	"devDependencies": {
 		"@babel/core": "7.12.13",
 		"@babel/preset-typescript": "7.12.13",
+		"@faker-js/faker": "^7.1.0",
 		"@graphql-codegen/cli": "2.6.2",
 		"@graphql-codegen/introspection": "2.1.1",
 		"@graphql-codegen/typescript": "2.4.8",

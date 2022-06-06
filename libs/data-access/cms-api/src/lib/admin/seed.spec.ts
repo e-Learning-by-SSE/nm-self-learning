@@ -1,15 +1,15 @@
 import { ComponentContentYoutubeVideo } from "../generated-graphql";
 import { CmsSeedManager } from "./seed";
-import { lessons } from "./example-data";
 
-xdescribe("Seed", () => {
+xdescribe("Seed Tests", () => {
 	const manager = new CmsSeedManager();
 
 	beforeAll(async () => {
 		await manager.init(process.env.CMS_GRAPHQL_URL as string);
+		await manager.deleteAll();
 	});
 
-	xit("Create Lesson", async () => {
+	it("Create Lesson", async () => {
 		const result = await manager.createLesson({
 			slug: "a-new-lesson",
 			title: "A New Lesson",
@@ -19,12 +19,7 @@ xdescribe("Seed", () => {
 		expect(result.slug).toEqual("a-new-lesson");
 	});
 
-	it("Create all lessons", async () => {
-		const promises = lessons.map(lesson => manager.createLesson(lesson));
-		const result = await Promise.all(promises);
-		expect(result.length).toEqual(promises.length);
-	});
-
+	// TODO: Can't update, because ID is unknown.
 	xit("Update Lesson", async () => {
 		const youtubeVideo: Partial<ComponentContentYoutubeVideo> = {
 			__typename: "ComponentContentYoutubeVideo",
@@ -39,14 +34,14 @@ xdescribe("Seed", () => {
 				authors: ["1", "2"],
 				content: [youtubeVideo]
 			},
-			"3"
+			"3" // <- ID is unknown
 		);
 
 		expect(result.slug).toEqual("a-new-lesson");
 		expect(result.title).toEqual("Updated Lesson");
 	});
 
-	xit("Create Course", async () => {
+	it("Create Course", async () => {
 		const course: Parameters<CmsSeedManager["createCourse"]>[0] = {
 			slug: "a-new-course",
 			title: "A New Course",

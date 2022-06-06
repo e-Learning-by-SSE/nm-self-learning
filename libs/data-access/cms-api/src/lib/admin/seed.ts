@@ -1,6 +1,7 @@
 import { gql, GraphQLClient } from "graphql-request";
 import { CourseInput, getSdk, LessonInput } from "../generated-graphql";
 import { loginAsAdmin } from "./login";
+import axios from "axios";
 
 export class CmsSeedManager {
 	private gqlClient!: ReturnType<typeof getSdk>;
@@ -17,6 +18,11 @@ export class CmsSeedManager {
 				}
 			})
 		);
+	}
+
+	/** Deletes all (configured) entities from the CMS. */
+	async deleteAll() {
+		await axios.delete(`${process.env.CMS_REST_API_URL as string}/demo/delete-all`);
 	}
 
 	async createLesson(data: LessonInput) {
