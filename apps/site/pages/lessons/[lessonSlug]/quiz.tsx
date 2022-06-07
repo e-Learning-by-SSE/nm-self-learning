@@ -1,7 +1,13 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
-import { getLessonBySlug } from "@self-learning/cms-api";
+import { database } from "@self-learning/database";
 import { compileMarkdown } from "@self-learning/markdown";
-import { Question, Answer, useQuizAttempt } from "@self-learning/quiz";
+import {
+	Question,
+	Answer,
+	useQuizAttempt,
+	QuestionType,
+	useQuizAttemptsInfo
+} from "@self-learning/quiz";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -49,7 +55,7 @@ function getQuiz(slug: string): QuestionType[] {
 }
 
 type QuestionProps = {
-	lesson: ResolvedValue<typeof getLessonBySlug>;
+	lesson: ResolvedValue<typeof getLesson>;
 	questions: QuestionType[];
 	markdown: {
 		questionsMd: MdLookup;
@@ -67,7 +73,7 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 		throw new Error("No [lessonSlug] provided.");
 	}
 
-	const lesson = await getLessonBySlug(slug);
+	const lesson = await getLesson(slug);
 
 	const questions = getQuiz(slug ?? "");
 
@@ -111,8 +117,20 @@ export const getStaticPaths: GetStaticPaths = () => {
 	return { paths: [], fallback: "blocking" };
 };
 
+async function getLesson(slug: string | undefined) {
+	return await database.lesson.findUnique({
+		where: { slug },
+		select: {
+			lessonId: true,
+			slug: true,
+			title: true,
+			quiz: true
+		}
+	});
+}
+
 export default function QuestionsPage({ lesson, questions, markdown }: QuestionProps) {
-	const { slug, title } = lesson;
+	const { slug, lessonId } = lesson;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
 	const { index } = router.query;
@@ -161,6 +179,7 @@ export default function QuestionsPage({ lesson, questions, markdown }: QuestionP
 						goToPrevious={goToPreviousQuestion}
 					/>
 					<Question question={currentQuestion} markdown={markdown} />
+					<Certainty />
 				</div>
 			</div>
 		</div>
