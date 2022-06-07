@@ -25,7 +25,7 @@ export function Navbar() {
 					<div className="invisible flex w-0 gap-16 text-sm font-medium md:visible md:w-fit">
 						{session?.user && (
 							<Link href="/profile">
-								<a>Mein Profil</a>
+								<a>Mein Lernfortschritt</a>
 							</Link>
 						)}
 						<Link href="/subjects">

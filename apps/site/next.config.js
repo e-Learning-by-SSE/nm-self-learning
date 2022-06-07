@@ -6,7 +6,14 @@ const withNx = require("@nrwl/next/plugins/with-nx");
  **/
 const nextConfig = {
 	images: {
-		domains: ["localhost"]
+		domains: [
+			"localhost",
+			"source.unsplash.com",
+			"images.unsplash.com",
+			"loremflickr.com",
+			"cloudflare-ipfs.com",
+			"raw.githubusercontent.com"
+		]
 	},
 	nx: {
 		// Set this to true if you would like to to use SVGR

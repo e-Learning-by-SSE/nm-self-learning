@@ -18,7 +18,7 @@ export function useCourseCompletion(courseSlug: string) {
 	const session = useSession();
 
 	const { data: courseCompletion } = useQuery(
-		["course-completion"],
+		["course-completion", courseSlug],
 		() => fetchCourseCompletion(courseSlug, session.data?.user?.name as string),
 		{ enabled: !!session.data?.user?.name }
 	);

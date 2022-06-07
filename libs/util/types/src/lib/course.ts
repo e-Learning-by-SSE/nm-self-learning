@@ -3,7 +3,7 @@ export type CourseContent = CourseChapter[];
 export type CourseChapter = {
 	title: string;
 	description?: string | null;
-	lessons: { lessonId: string }[];
+	lessonIds: string[];
 };
 
 export type CourseCompletion = {

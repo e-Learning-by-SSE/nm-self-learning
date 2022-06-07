@@ -1,4 +1,5 @@
 import {
+	BookmarkIcon,
 	CheckCircleIcon,
 	ChevronDoubleDownIcon,
 	ChevronDoubleUpIcon,
@@ -26,7 +27,7 @@ export function NestablePlaylist({
 }: {
 	course: { title: string; slug: string };
 	currentLesson: PlaylistLesson;
-	content: { title: string; lessons: PlaylistLesson[] }[];
+	content: { title: string; lessons: PlaylistLesson[]; isActive: boolean }[];
 }) {
 	const courseCompletion = useCourseCompletion(course.slug);
 	const { globalCollapsed, collapsedSections, globalCollapseToggle, toggleCollapse } =
@@ -61,13 +62,16 @@ export function NestablePlaylist({
 					<Playlist
 						subtitleElement={
 							<span className="text-sm text-light">
-								{chapter.lessons.length} Lerneinheiten
+								{chapter.lessons.length === 1
+									? "1 Lerneinheit"
+									: `${chapter.lessons.length} Lerneinheiten`}
 							</span>
 						}
 						collapsed={collapsedSections[index]}
 						toggleOpenClosed={() => toggleCollapse(index)}
 						index={index + 1}
 						key={chapter.title}
+						isActive={chapter.isActive}
 						title={chapter.title}
 						course={course}
 						lessons={chapter.lessons}
@@ -86,6 +90,7 @@ export function Playlist({
 	course,
 	subtitleElement,
 	title,
+	isActive,
 	collapsed,
 	toggleOpenClosed
 }: {
@@ -95,6 +100,7 @@ export function Playlist({
 	currentLesson: PlaylistLesson;
 	course: { title: string; slug: string };
 	subtitleElement: ReactElement;
+	isActive: boolean;
 	collapsed: boolean;
 	toggleOpenClosed: () => void;
 }) {
@@ -103,7 +109,10 @@ export function Playlist({
 			<div className="grid grid-cols-[32px_1fr_auto] items-start border-b border-light-border p-4">
 				<span className="text-base font-semibold">{index}.</span>
 				<div className="flex flex-col gap-2">
-					<span className="flex gap-3 text-base font-semibold">{title}</span>
+					<span className="flex items-center gap-2 text-base font-semibold">
+						<span>{title}</span>
+						{isActive && <div className="h-2 w-2 rounded-full bg-secondary" />}
+					</span>
 					{subtitleElement}
 				</div>
 				<button
@@ -164,12 +173,13 @@ function Lesson({
 				</div>
 				<div className="relative my-auto grid w-full gap-1 overflow-hidden pl-4 pr-6">
 					<span className="max-w-md truncate text-sm font-semibold">{lesson.title}</span>
-					<span className="flex items-center justify-between gap-2">
+					<span className="flex items-center gap-2">
 						<span className="text-sm font-light">4:20</span>
 						{lesson.isCompleted && (
 							<CheckCircleIcon
-								className="
-						 h-6 rounded-full bg-white text-secondary"
+								className={`h-5 rounded-full ${
+									isActive ? "text-white" : "bg-white text-secondary"
+								}`}
 							/>
 						)}
 					</span>

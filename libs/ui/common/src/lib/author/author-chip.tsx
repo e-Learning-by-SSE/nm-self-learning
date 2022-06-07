@@ -16,7 +16,7 @@ export function AuthorChip({ name, slug, imgUrl }: AuthorProps) {
 						className="relative flex-shrink-0 rounded-full"
 						height="36"
 						width="36"
-						src={`http://localhost:1337${imgUrl}`}
+						src={imgUrl}
 						alt={`Picture of ${name}`}
 					/>
 				) : (

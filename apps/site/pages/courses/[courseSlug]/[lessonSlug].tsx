@@ -1,12 +1,11 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
-import { cmsTypes, getLessonBySlug } from "@self-learning/cms-api";
 import {
 	checkLessonCompletion,
 	useCourseCompletion,
 	useMarkAsCompleted
 } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseChapter, CourseContent } from "@self-learning/types";
+import { CourseContent, LessonContent } from "@self-learning/types";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import { NestablePlaylist, PlaylistLesson } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
@@ -20,14 +19,40 @@ import React, { useCallback } from "react";
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 type LessonProps = {
-	lesson: ResolvedValue<typeof getLessonBySlug>;
-	chapters: { title: string; lessons: PlaylistLesson[] }[];
+	lesson: ResolvedValue<typeof getLesson>;
+	chapters: { title: string; lessons: PlaylistLesson[]; isActive: boolean }[];
 	course: {
 		title: string;
 		slug: string;
-		courseId: string;
 	};
 };
+
+async function getLesson(slug: string) {
+	return database.lesson.findUnique({
+		where: { slug },
+		select: {
+			lessonId: true,
+			slug: true,
+			title: true,
+			subtitle: true,
+			description: true,
+			content: true,
+			competences: {
+				select: {
+					competenceId: true,
+					title: true
+				}
+			},
+			authors: {
+				select: {
+					displayName: true,
+					slug: true,
+					imgUrl: true
+				}
+			}
+		}
+	});
+}
 
 export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params, req }) => {
 	const courseSlug = params?.courseSlug as string;
@@ -38,8 +63,15 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	}
 
 	const [lesson, course, session] = await Promise.all([
-		getLessonBySlug(lessonSlug),
-		database.course.findUnique({ where: { slug: courseSlug } }),
+		getLesson(lessonSlug),
+		database.course.findUnique({
+			where: { slug: courseSlug },
+			select: {
+				content: true,
+				title: true,
+				slug: true
+			}
+		}),
 		getSession({ req })
 	]);
 
@@ -47,7 +79,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		return { notFound: true };
 	}
 
-	const lessonIds = extractLessonIds(course.content as CourseChapter[]);
+	const lessonIds = (course.content as CourseContent).flatMap(chapter => chapter.lessonIds);
 
 	const lessons = (await database.lesson.findMany({
 		select: {
@@ -71,7 +103,8 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 
 	const chapters = (course.content as CourseContent).map(chapter => ({
 		title: chapter.title,
-		lessons: chapter.lessons.map(lesson => lessonsById.get(lesson.lessonId) as PlaylistLesson)
+		lessons: chapter.lessonIds.map(lessonId => lessonsById.get(lessonId) as PlaylistLesson),
+		isActive: chapter.lessonIds.includes(lesson.lessonId)
 	}));
 
 	if (session?.user?.name) {
@@ -89,27 +122,23 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	};
 };
 
-function extractLessonIds(content: CourseChapter[]) {
-	return content.flatMap(chapter => chapter.lessons.flatMap(lesson => lesson.lessonId));
-}
-
 export default function Lesson({ lesson, chapters, course }: LessonProps) {
-	const { title } = lesson;
-	const { url } = lesson.content?.[0] as cmsTypes.ComponentContentYoutubeVideo;
+	console.log(lesson);
 
-	const authors = lesson.authors?.data.map(
+	const url = (lesson.content as LessonContent)[0].url;
+	const authors = lesson.authors.map(
 		author =>
 			({
-				name: author.attributes?.name,
-				slug: author.attributes?.slug,
-				imgUrl: author.attributes?.image?.data?.attributes?.url
+				name: author.displayName,
+				slug: author.slug,
+				imgUrl: author.imgUrl
 			} as AuthorProps)
 	) as AuthorProps[];
 
 	return (
 		<>
 			<Head>
-				<title>{title}</title>
+				<title>{lesson.title}</title>
 			</Head>
 
 			<div className=" bg-gray-50 md:pb-32">
@@ -120,7 +149,7 @@ export default function Lesson({ lesson, chapters, course }: LessonProps) {
 						currentLesson={lesson}
 						course={course}
 					/>
-					<LessonHeader lesson={lesson} authors={authors} />
+					<LessonHeader lesson={lesson} authors={authors} course={course} />
 				</div>
 			</div>
 		</>
@@ -143,7 +172,7 @@ function VideoPlayerWithPlaylist({
 			<div className="aspect-video grow bg-black">
 				<VideoPlayer url={videoUrl} />
 			</div>
-			<div className="flex h-[400px] flex-col xl:h-auto xl:w-[400px]">
+			<div className="flex h-[400px] flex-col xl:h-auto xl:w-[500px]">
 				<NestablePlaylist
 					course={course}
 					currentLesson={currentLesson}
@@ -163,9 +192,11 @@ function VideoPlayer({ url }: { url: string }) {
 }
 
 function LessonHeader({
+	course,
 	lesson,
 	authors
 }: {
+	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 	authors: AuthorProps[];
 }) {
@@ -176,7 +207,7 @@ function LessonHeader({
 	}, [router]);
 
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, onSettled);
-	const courseCompletion = useCourseCompletion("the-beginners-guide-to-react");
+	const courseCompletion = useCourseCompletion(course.slug);
 
 	return (
 		<div className="mx-auto flex w-full max-w-screen-xl flex-col px-2 sm:px-0">
@@ -196,18 +227,20 @@ function LessonHeader({
 					<CheckCircleIcon className="h-6 shrink-0" />
 				</button>
 			</div>
-			<div className="bg-white p-4 text-xs">
+			{/* <div className="bg-white p-4 text-xs">
 				<pre>{JSON.stringify(courseCompletion, null, 4)}</pre>
-			</div>
+			</div> */}
 			<div className="mx-auto mt-8 flex flex-grow flex-col items-center gap-12">
+				<Link href={`/courses/${course.slug}`}>
+					<a className="text-xl font-semibold text-secondary">{course.title}</a>
+				</Link>
 				<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
 				{lesson.subtitle && (
-					<div className="max-w-3xl text-xl tracking-tight text-indigo-700">
+					<div className="max-w-3xl text-xl tracking-tight text-light">
 						{lesson.subtitle}
 					</div>
 				)}
 				<AuthorsList authors={authors} />
-
 				<div className="mx-auto max-w-prose text-justify">
 					{lesson.description && <p>{lesson.description}</p>}
 				</div>

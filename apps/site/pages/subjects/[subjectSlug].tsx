@@ -1,19 +1,13 @@
 import { CollectionIcon, VideoCameraIcon } from "@heroicons/react/outline";
-import { getSubjectBySlug } from "@self-learning/cms-api";
+import { database } from "@self-learning/database";
 import { ImageCard } from "@self-learning/ui/common";
 import { TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { ReactComponent as VoidSvg } from "../../svg/void.svg";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ResolvedValue<Fn extends (...args: any) => unknown> = Exclude<
-	Awaited<ReturnType<Fn>>,
-	null | undefined
->;
-
 type SubjectPageProps = {
-	subject: ResolvedValue<typeof getSubjectBySlug>;
+	subject: ResolvedValue<typeof getSubject>;
 };
 
 export const getStaticProps: GetStaticProps<SubjectPageProps> = async ({ params }) => {
@@ -23,11 +17,11 @@ export const getStaticProps: GetStaticProps<SubjectPageProps> = async ({ params 
 		throw new Error("[subjectSlug] must be a string.");
 	}
 
-	const subject = await getSubjectBySlug(subjectSlug);
+	const subject = await getSubject(subjectSlug);
 
 	return {
 		props: {
-			subject: subject as ResolvedValue<typeof getSubjectBySlug>
+			subject: subject as ResolvedValue<typeof getSubject>
 		},
 		notFound: !subject
 	};
@@ -40,9 +34,24 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
+async function getSubject(subjectSlug: string) {
+	return await database.subject.findUnique({
+		where: { slug: subjectSlug },
+		include: {
+			specializations: {
+				select: {
+					slug: true,
+					title: true,
+					subtitle: true,
+					cardImgUrl: true
+				}
+			}
+		}
+	});
+}
+
 export default function SubjectPage({ subject }: SubjectPageProps) {
-	const { title, subtitle, specialities, imageBanner, slug } = subject;
-	const imgUrlBanner = imageBanner?.data?.attributes?.url ?? "";
+	const { title, subtitle, specializations, imgUrlBanner } = subject;
 
 	return (
 		<div className="bg-gray-50 pb-32">
@@ -54,19 +63,19 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 					title={title}
 					subtitle={subtitle}
 				/>
-				{specialities?.data && specialities?.data.length > 0 ? (
+				{specializations.length > 0 ? (
 					<div className="px-4 pt-16 lg:max-w-screen-lg lg:px-0">
 						<h2 className="text-3xl">Spezialisierungen</h2>
 
 						<div className="mt-8 grid gap-16 md:grid-cols-2 lg:grid-cols-3">
-							{specialities.data.map(({ attributes }) => (
+							{specializations.map(specialization => (
 								<SpecializationCard
-									key={attributes!.slug}
-									slug={attributes!.slug ?? ""}
-									subjectSlug={slug}
-									title={attributes!.title}
-									subtitle={attributes!.subtitle}
-									imgUrl={attributes?.imageCard?.data?.attributes?.url ?? ""}
+									key={specialization.slug}
+									slug={specialization.slug}
+									subjectSlug={subject.slug}
+									title={specialization.title}
+									subtitle={specialization.subtitle}
+									imgUrl={specialization.cardImgUrl}
 								/>
 							))}
 						</div>
@@ -101,7 +110,7 @@ function SpecializationCard({
 }) {
 	return (
 		<Link href={`/subjects/${subjectSlug}/specialization/${slug}`}>
-			<a className="flex">
+			<a>
 				<ImageCard
 					slug={slug}
 					title={title}

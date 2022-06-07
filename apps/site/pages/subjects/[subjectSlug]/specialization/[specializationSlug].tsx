@@ -1,12 +1,12 @@
 import { UserGroupIcon } from "@heroicons/react/solid";
-import { getSpecializationBySlug } from "@self-learning/cms-api";
+import { database } from "@self-learning/database";
 import { ImageCard } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 
 type SpecializationPageProps = {
-	specialization: ResolvedValue<typeof getSpecializationBySlug>;
+	specialization: ResolvedValue<typeof getSpecialization>;
 };
 
 export const getStaticProps: GetStaticProps<SpecializationPageProps> = async ({ params }) => {
@@ -16,7 +16,7 @@ export const getStaticProps: GetStaticProps<SpecializationPageProps> = async ({ 
 		throw new Error("[specializationSlug] must be a string.");
 	}
 
-	const specialization = await getSpecializationBySlug(specializationSlug);
+	const specialization = await getSpecialization(specializationSlug);
 
 	return {
 		props: {
@@ -33,30 +33,54 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
+async function getSpecialization(specializationSlug: string) {
+	return await database.specialization.findUnique({
+		where: { slug: specializationSlug },
+		select: {
+			imgUrlBanner: true,
+			slug: true,
+			title: true,
+			subtitle: true,
+			courses: {
+				select: {
+					slug: true,
+					imgUrl: true,
+					title: true,
+					subtitle: true
+				}
+			},
+			subject: {
+				select: {
+					slug: true,
+					title: true
+				}
+			}
+		}
+	});
+}
+
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
-	const { slug, title, subtitle, imageBanner, subject, courses } = specialization;
-	const imgUrlBanner = imageBanner?.data?.attributes?.url ?? null;
-	const { title: subjectTitle, slug: subjectSlug } = subject?.data?.attributes || {};
+	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
 
 	return (
 		<div className="bg-gray-50 pb-32">
 			<div className="mx-auto flex max-w-screen-xl flex-col">
 				<TopicHeader
 					imgUrlBanner={imgUrlBanner}
-					parentLink={`/subjects/${subjectSlug}`}
-					parentTitle={subjectTitle as string}
+					parentLink={`/subjects/${subject.slug}`}
+					parentTitle={subject.title}
 					title={title}
 					subtitle={subtitle}
 				/>
 				<div className="px-4 pt-12 lg:max-w-screen-lg lg:px-0">
 					<ItemCardGrid>
-						{courses?.data.map(({ attributes }) => (
+						{courses.map(course => (
 							<CourseCard
-								key={attributes!.slug}
-								slug={attributes!.slug}
-								title={attributes!.title}
-								subtitle={attributes!.subtitle}
-								imgUrl={attributes!.image?.data?.attributes?.url}
+								key={course.slug}
+								slug={course.slug}
+								title={course.title}
+								subtitle={course.subtitle}
+								imgUrl={course.imgUrl}
 							/>
 						))}
 					</ItemCardGrid>

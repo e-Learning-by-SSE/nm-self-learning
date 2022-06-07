@@ -1,21 +1,62 @@
 import { CheckCircleIcon, PlayIcon, PlusCircleIcon, XCircleIcon } from "@heroicons/react/solid";
 import { useApi, useEnrollmentMutations } from "@self-learning/api";
-import { getCourseBySlug } from "@self-learning/cms-api";
 import { useCourseCompletion } from "@self-learning/completion";
+import { database } from "@self-learning/database";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
+import { CourseContent } from "@self-learning/types";
 import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { formatDistance } from "date-fns";
+import { de } from "date-fns/locale";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import { Fragment, useMemo, useState } from "react";
 import { CoursesOfUser } from "../../api/users/[username]/courses";
 
-type Course = ResolvedValue<typeof getCourseBySlug>;
+type Course = ResolvedValue<typeof getCourse>;
+
+type ChapterWithLessons = {
+	title: string;
+	description: string | null | undefined;
+	lessons: {
+		lessonId: string;
+		slug: string;
+		title: string;
+	}[];
+};
+
+async function mapCourseContent(content: CourseContent): Promise<ChapterWithLessons[]> {
+	const lessonIds = (content ?? []).flatMap(chapter => chapter.lessonIds);
+
+	const lessons = await database.lesson.findMany({
+		where: { lessonId: { in: lessonIds } },
+		select: {
+			lessonId: true,
+			slug: true,
+			title: true
+		}
+	});
+
+	const map = new Map<string, typeof lessons[0]>();
+
+	for (const lesson of lessons) {
+		map.set(lesson.lessonId, lesson);
+	}
+
+	const mappedContent = content.map(chapter => ({
+		title: chapter.title,
+		description: chapter.description,
+		lessons: chapter.lessonIds.map(lessonId => map.get(lessonId) as Defined<typeof lessons[0]>)
+	}));
+
+	return mappedContent;
+}
 
 type CourseProps = {
 	course: Course;
+	content: ChapterWithLessons[];
 	markdownDescription: CompiledMarkdown | null;
 };
 
@@ -26,17 +67,23 @@ export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) =>
 		throw new Error("No slug provided.");
 	}
 
-	const course = (await getCourseBySlug(courseSlug)) as Course;
-
+	const course = await getCourse(courseSlug);
+	const content = await mapCourseContent(course?.content as CourseContent);
 	let markdownDescription = null;
 
-	if (course?.description && course.description.length > 0) {
-		markdownDescription = await compileMarkdown(course.description);
-		course.description = null;
+	if (course) {
+		if (course.description && course.description.length > 0) {
+			markdownDescription = await compileMarkdown(course.description);
+			course.description = null;
+		}
 	}
 
 	return {
-		props: { course, markdownDescription },
+		props: {
+			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
+			content,
+			markdownDescription
+		},
 		notFound: !course
 	};
 };
@@ -48,7 +95,22 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
-export default function Course({ course, markdownDescription }: CourseProps) {
+async function getCourse(courseSlug: string) {
+	return await database.course.findUnique({
+		where: { slug: courseSlug },
+		include: {
+			authors: {
+				select: {
+					slug: true,
+					displayName: true,
+					imgUrl: true
+				}
+			}
+		}
+	});
+}
+
+export default function Course({ course, content, markdownDescription }: CourseProps) {
 	return (
 		<div className="bg-gray-50 pb-32">
 			<CenteredSection className="gradient">
@@ -66,10 +128,17 @@ export default function Course({ course, markdownDescription }: CourseProps) {
 			</CenteredSection>
 
 			<CenteredSection className="bg-gray-50">
-				<TableOfContents content={course.content} course={course} />
+				<TableOfContents content={content} course={course} />
 			</CenteredSection>
 		</div>
 	);
+}
+
+function toDateAgo(date: Date | string | number) {
+	return formatDistance(new Date(date), Date.now(), {
+		addSuffix: true,
+		locale: de
+	});
 }
 
 function CourseHeader({ course }: { course: Course }) {
@@ -79,50 +148,50 @@ function CourseHeader({ course }: { course: Course }) {
 
 	const [authors] = useState(
 		() =>
-			course.authors?.data.map(author => ({
-				slug: author.attributes?.slug as string,
-				name: author.attributes?.name as string,
-				imgUrl: author.attributes?.image?.data?.attributes?.url as string
+			course.authors.map(author => ({
+				slug: author.slug,
+				name: author.displayName,
+				imgUrl: author.imgUrl
 			})) as AuthorProps[]
 	);
 
 	const isEnrolled = useMemo(() => {
 		if (!enrollments) return false;
-		return !!enrollments.find(e => e.courseId === course.slug);
+		return !!enrollments.find(e => e.course.slug === course.slug);
 	}, [enrollments, course]);
-
-	const { url, alternativeText } = course.image?.data?.attributes || {};
 
 	return (
 		<div className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 				<div className="flex flex-col justify-between gap-8">
 					<div className="flex flex-col-reverse gap-12 md:flex-col">
-						<AuthorsList authors={authors} />
 						<div>
 							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
 							{course.subtitle && (
 								<div className="text-lg tracking-tight">{course.subtitle}</div>
 							)}
 						</div>
+						<AuthorsList authors={authors} />
 					</div>
 
 					<CreatedUpdatedDates
-						createdAt={new Date(course.createdAt).toLocaleDateString()}
-						updatedAt={new Date(course.updatedAt).toLocaleDateString()}
+						createdAt={toDateAgo(course.createdAt)}
+						updatedAt={toDateAgo(course.updatedAt)}
 					/>
 				</div>
 
 				<div className="flex w-full flex-col gap-4 rounded">
 					<div className="relative h-64 w-full shrink-0">
-						<Image
-							priority
-							className="shrink-0 rounded-lg bg-white"
-							objectFit="contain"
-							layout="fill"
-							src={`http://localhost:1337${url}` ?? ""}
-							alt={alternativeText ?? ""}
-						></Image>
+						{course.imgUrl && (
+							<Image
+								priority
+								className="shrink-0 rounded-lg bg-white"
+								objectFit="cover"
+								layout="fill"
+								src={course.imgUrl}
+								alt=""
+							></Image>
+						)}
 					</div>
 					<div className="grid gap-2">
 						<button
@@ -155,7 +224,8 @@ function CourseHeader({ course }: { course: Course }) {
 		</div>
 	);
 }
-function TableOfContents({ content, course }: { content: Course["content"]; course: Course }) {
+
+function TableOfContents({ content, course }: { content: ChapterWithLessons[]; course: Course }) {
 	const courseCompletion = useCourseCompletion(course.slug);
 	console.log("courseCompletion", courseCompletion);
 
@@ -163,94 +233,41 @@ function TableOfContents({ content, course }: { content: Course["content"]; cour
 		<div className="flex flex-col gap-8">
 			<h2 className="mb-4 text-4xl">Inhalt</h2>
 			<div className="flex flex-col place-items-center">
-				{content?.map((component, index, content) => {
+				{content.map((chapter, index) => {
 					const showConnector = index < content.length - 1;
 
-					if (!component) return undefined;
+					const isCompleted =
+						(courseCompletion?.chapters[index] &&
+							courseCompletion.chapters[index].completedLessonsPercentage >= 100) ??
+						false;
 
-					if (component?.__typename === "ComponentTableOfContentsChapter") {
-						const isCompleted =
-							(courseCompletion?.chapters[index] &&
-								courseCompletion.chapters[index].completedLessonsPercentage >=
-									100) ??
-							false;
-
-						return (
-							<Fragment key={component.title}>
-								<ToC.Section isCompleted={isCompleted} isRequired={false}>
-									<ToC.Chapter
-										courseSlug={course.slug}
-										title={component.title as string}
-										description={component.description as string}
-										lessons={
-											component.lessons?.map(lesson => ({
-												lessonId: lesson?.lesson?.data?.attributes
-													?.lessonId as string,
-												title: lesson?.lesson?.data?.attributes
-													?.title as string,
-												slug: lesson?.lesson?.data?.attributes
-													?.slug as string,
-												isCompleted:
-													(courseCompletion?.completedLessons &&
-														!!courseCompletion.completedLessons[
-															lesson!.lesson!.data!.attributes!
-																.lessonId
-														]) ??
-													false
-											})) ?? []
-										}
-									/>
-								</ToC.Section>
-								{showConnector && (
-									<ToC.SectionConnector
-										isCompleted={isCompleted}
-										isRequired={true}
-									/>
-								)}
-							</Fragment>
-						);
-						// } else if (component.__typename === "ComponentTableOfContentsLessonRelation") {
-						// 	return (
-						// 		<Fragment key={component.lesson?.data?.attributes?.slug}>
-						// 			<ToC.Section isCompleted={true} isRequired={false}>
-						// 				<ToC.SingleLesson
-						// 					slug={component.lesson?.data?.attributes?.slug as string}
-						// 					title={component.lesson?.data?.attributes?.title as string}
-						// 				/>
-						// 			</ToC.Section>
-						// 			{showConnector && (
-						// 				<ToC.SectionConnector isCompleted={true} isRequired={false} />
-						// 			)}
-						// 		</Fragment>
-						// 	);
-						// } else if (component.__typename === "ComponentTableOfContentsCourseRelation") {
-						// 	return (
-						// 		<Fragment key={component.title}>
-						// 			<ToC.Section isCompleted={false} isRequired={true}>
-						// 				<ToC.NestedCourse
-						// 					title={component.title as string}
-						// 					slug={component.course?.data?.attributes?.slug as string}
-						// 					description={component.description as string}
-						// 					course={{
-						// 						title: component.course?.data?.attributes
-						// 							?.title as string,
-						// 						subtitle: component.course?.data?.attributes
-						// 							?.subtitle as string,
-						// 						imgUrl: component.course?.data?.attributes?.image?.data
-						// 							?.attributes?.url as string
-						// 					}}
-						// 				/>
-						// 			</ToC.Section>
-						// 			{showConnector && (
-						// 				<ToC.SectionConnector isCompleted={true} isRequired={true} />
-						// 			)}
-						// 		</Fragment>
-						// 	);
-					} else {
-						<div className="bg-red-200">
-							<span className="text-red-500">Unknown Component</span>
-						</div>;
-					}
+					return (
+						<Fragment key={chapter.title}>
+							<ToC.Section isCompleted={isCompleted} isRequired={false}>
+								<ToC.Chapter
+									courseSlug={course.slug}
+									title={chapter.title as string}
+									description={chapter.description}
+									lessons={
+										chapter.lessons.map(lesson => ({
+											lessonId: lesson.lessonId,
+											slug: lesson.slug,
+											title: lesson.title,
+											isCompleted:
+												(courseCompletion?.completedLessons &&
+													!!courseCompletion.completedLessons[
+														lesson.lessonId
+													]) ??
+												false
+										})) ?? []
+									}
+								/>
+							</ToC.Section>
+							{showConnector && (
+								<ToC.SectionConnector isCompleted={isCompleted} isRequired={true} />
+							)}
+						</Fragment>
+					);
 				})}
 			</div>
 		</div>
@@ -261,11 +278,11 @@ function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; upda
 	return (
 		<div className="flex flex-wrap gap-2 text-xs">
 			<span>
-				Created: <span>{createdAt}</span>
+				Erstellt: <span>{createdAt}</span>
 			</span>
 			<span>|</span>
 			<span>
-				Last updated: <span>{updatedAt}</span>
+				Letzte Änderung: <span>{updatedAt}</span>
 			</span>
 		</div>
 	);

@@ -23,7 +23,7 @@ export function ImageCard({
 				<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-white">
 					<Image
 						className="rounded-t-lg"
-						src={`http://localhost:1337${imgUrl}`}
+						src={imgUrl}
 						alt=""
 						layout="fill"
 						objectFit="cover"

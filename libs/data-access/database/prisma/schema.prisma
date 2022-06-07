@@ -46,7 +46,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     student       Student?
-    Author        Author?
+    author        Author?
 }
 
 model VerificationToken {
@@ -71,27 +71,43 @@ model Student {
 model Author {
     id          Int      @id @default(autoincrement())
     userId      String   @unique
-    user        User     @relation(fields: [userId], references: [id])
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     displayName String
+    slug        String   @unique
+    imgUrl      String?
     lessons     Lesson[]
     courses     Course[]
+    teams       Team[]
+}
+
+model Team {
+    teamId  Int      @id @default(autoincrement())
+    name    String
+    slug    String
+    authors Author[]
 }
 
 model Subject {
-    subjectId   Int         @id @default(autoincrement())
-    slug        String      @unique
-    title       String
-    Course      Course[]
-    specialties Specialty[]
+    subjectId       Int              @id @default(autoincrement())
+    slug            String           @unique
+    title           String
+    subtitle        String
+    imgUrlBanner    String?
+    cardImgUrl      String?
+    courses         Course[]
+    specializations Specialization[]
 }
 
-model Specialty {
-    specialtyId Int      @id @default(autoincrement())
-    slug        String   @unique
-    title       String
-    subject     Subject  @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
-    courses     Course[]
-    subjectId   Int
+model Specialization {
+    specializationId Int      @id @default(autoincrement())
+    slug             String   @unique
+    title            String
+    subtitle         String
+    imgUrlBanner     String?
+    cardImgUrl       String?
+    subject          Subject  @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
+    courses          Course[]
+    subjectId        Int
 }
 
 model Course {
@@ -102,11 +118,13 @@ model Course {
     description     String?
     imgUrl          String?
     content         Json?
+    createdAt       DateTime          @default(now())
+    updatedAt       DateTime          @updatedAt
     enrollments     Enrollment[]
-    CompletedLesson CompletedLesson[]
+    completions     CompletedLesson[]
     subject         Subject           @relation(fields: [subjectId], references: [subjectId])
     subjectId       Int
-    specialty       Specialty[]
+    specializations Specialization[]
     authors         Author[]
 }
 
@@ -137,6 +155,7 @@ model Lesson {
     subtitle     String?
     description  String?
     imgUrl       String?
+    content      Json
     quiz         String?
     competences  Competence[]
     completions  CompletedLesson[]

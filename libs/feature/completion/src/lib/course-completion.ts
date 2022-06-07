@@ -12,9 +12,7 @@ export async function getCourseCompletionOfStudent(
 
 	const content = course.content as CourseChapter[];
 
-	const lessonIds = content.flatMap(chapter =>
-		chapter.lessons.flatMap(lesson => lesson.lessonId)
-	);
+	const lessonIds = content.flatMap(chapter => chapter.lessonIds);
 
 	const completedLessons = await database.completedLesson.findMany({
 		select: {
@@ -44,23 +42,23 @@ export async function getCourseCompletionOfStudent(
 
 	const contentWithCompletion: CourseCompletion["chapters"] = content.map(chapter => {
 		let completed = 0;
-		for (const lesson of chapter.lessons) {
-			if (lesson.lessonId in lessonIdMap) {
+		for (const lessonId of chapter.lessonIds) {
+			if (lessonId in lessonIdMap) {
 				completed++;
 			}
 		}
 
 		return {
-			chapterTitle: chapter.title,
+			title: chapter.title,
 			completedLessonsCount: completed,
 			completedLessonsPercentage:
-				chapter.lessons.length > 0 ? (completed / chapter.lessons.length) * 100 : 100
+				chapter.lessonIds.length > 0 ? (completed / chapter.lessonIds.length) * 100 : 100
 		};
 	});
 
 	const completedLessonsCount = Object.keys(lessonIdMap).length;
 	const totalLessonsCount = content.reduce(
-		(count, chapter) => (count += chapter.lessons.length),
+		(count, chapter) => (count += chapter.lessonIds.length),
 		0
 	);
 

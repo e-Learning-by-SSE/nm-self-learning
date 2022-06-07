@@ -23,7 +23,7 @@ export function TopicHeader({
 					<Image
 						priority
 						className=""
-						src={`http://localhost:1337${imgUrlBanner}`}
+						src={imgUrlBanner}
 						layout="fill"
 						alt=""
 						objectFit="cover"

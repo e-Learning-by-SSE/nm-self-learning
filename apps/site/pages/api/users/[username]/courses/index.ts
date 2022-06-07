@@ -1,4 +1,3 @@
-import { getCoursesWithSlugs } from "@self-learning/cms-api";
 import { database } from "@self-learning/database";
 import { MethodNotAllowed, withApiError } from "@self-learning/util/http";
 import { StatusCodes } from "http-status-codes";
@@ -22,23 +21,20 @@ export default handler;
 
 export async function getCoursesOfUser(username: string) {
 	const enrollments = await database.enrollment.findMany({
-		where: { username }
+		where: { username },
+		select: {
+			completedAt: true,
+			status: true,
+			course: {
+				select: {
+					title: true,
+					slug: true
+				}
+			}
+		}
 	});
 
-	if (enrollments.length == 0) {
-		return [];
-	}
-
-	const courseSlugs = enrollments.map(e => e.courseId);
-
-	const courses = courseSlugs.length > 0 ? await getCoursesWithSlugs(courseSlugs) : [];
-
-	const enrollmentsWithCourses = enrollments.map(enrollment => ({
-		...enrollment,
-		courseInfo: courses.find(course => course.slug === enrollment.courseId)
-	}));
-
-	return enrollmentsWithCourses;
+	return enrollments;
 }
 
 export type CoursesOfUser = Awaited<ReturnType<typeof getCoursesOfUser>>;

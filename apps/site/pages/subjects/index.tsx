@@ -1,19 +1,17 @@
 import { CollectionIcon, VideoCameraIcon } from "@heroicons/react/outline";
-import { getSubjects } from "@self-learning/cms-api";
+import { Subject } from "@prisma/client";
+import { database } from "@self-learning/database";
 import { ImageCard } from "@self-learning/ui/common";
 import { ItemCardGrid } from "@self-learning/ui/layouts";
 import { GetStaticProps } from "next";
 import Link from "next/link";
-import { Fragment } from "react";
-
-type Subject = Awaited<ReturnType<typeof getSubjects>>[0];
 
 type SubjectsProps = {
 	subjects: Subject[];
 };
 
 export const getStaticProps: GetStaticProps<SubjectsProps> = async () => {
-	const subjects = await getSubjects();
+	const subjects = await database.subject.findMany();
 
 	return {
 		props: {
@@ -28,13 +26,13 @@ export default function Subjects({ subjects }: SubjectsProps) {
 			<div className="mx-auto px-4 lg:max-w-screen-lg lg:px-0">
 				<h1 className="mb-16 text-4xl sm:text-6xl">Fachgebiete</h1>
 				<ItemCardGrid>
-					{subjects.map(({ attributes }) => (
+					{subjects.map(subject => (
 						<SubjectCard
-							key={attributes!.slug}
-							title={attributes!.title}
-							subtitle={attributes!.subtitle}
-							slug={attributes!.slug}
-							imgUrl={attributes!.imageCard?.data?.attributes?.url}
+							key={subject.subjectId}
+							title={subject.title}
+							subtitle={subject.subtitle}
+							slug={subject.slug}
+							imgUrl={subject.imgUrlBanner}
 						/>
 					))}
 				</ItemCardGrid>
@@ -56,7 +54,7 @@ function SubjectCard({
 }) {
 	return (
 		<Link href={`/subjects/${slug}`}>
-			<a className="flex">
+			<a>
 				<ImageCard
 					slug={slug}
 					title={title}

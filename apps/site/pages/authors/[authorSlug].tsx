@@ -1,4 +1,4 @@
-import { getAuthorBySlug } from "@self-learning/cms-api";
+import { database } from "@self-learning/database";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
@@ -7,7 +7,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 
-type Author = ResolvedValue<typeof getAuthorBySlug>;
+type Author = ResolvedValue<typeof getAuthor>;
 
 type AuthorPageProps = {
 	author: Author;
@@ -21,13 +21,19 @@ export const getStaticProps: GetStaticProps<AuthorPageProps> = async ({ params }
 		throw new Error("No slug provided.");
 	}
 
-	const author = (await getAuthorBySlug(slug)) as Author;
+	const author = await getAuthor(slug);
 
 	let aboutMeMarkdown = null;
 
-	if (author.aboutMe && author.aboutMe?.length > 0) {
-		aboutMeMarkdown = await compileMarkdown(author.aboutMe);
-		author.aboutMe = null;
+	// if (author.aboutMe && author.aboutMe?.length > 0) {
+	// 	aboutMeMarkdown = await compileMarkdown(author.aboutMe);
+	// 	author.aboutMe = null;
+	// }
+
+	if (!author) {
+		return {
+			notFound: true
+		};
 	}
 
 	return {
@@ -44,6 +50,31 @@ export const getStaticPaths: GetStaticPaths = () => {
 		fallback: "blocking"
 	};
 };
+
+function getAuthor(slug: string | undefined) {
+	return database.author.findUnique({
+		where: { slug },
+		select: {
+			slug: true,
+			displayName: true,
+			imgUrl: true,
+			teams: {
+				select: {
+					name: true,
+					slug: true
+				}
+			},
+			courses: {
+				select: {
+					slug: true,
+					title: true,
+					subtitle: true,
+					imgUrl: true
+				}
+			}
+		}
+	});
+}
 
 export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps) {
 	return (
@@ -69,14 +100,14 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 						</Link>
 					</span>
 					<ItemCardGrid>
-						{author.courses?.data.map(({ attributes }) => (
-							<Link href={`/courses/${attributes!.slug}`} key={attributes!.slug}>
+						{author.courses.map(course => (
+							<Link href={`/courses/${course.slug}`} key={course.slug}>
 								<a>
 									<ImageCard
-										slug={attributes!.slug}
-										title={attributes!.title}
-										subtitle={attributes!.subtitle ?? ""}
-										imgUrl={attributes!.image?.data?.attributes?.url}
+										slug={course.slug}
+										title={course.title}
+										subtitle={course.subtitle}
+										imgUrl={course.imgUrl}
 									/>
 								</a>
 							</Link>
@@ -85,7 +116,7 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 				</div>
 			</CenteredSection>
 
-			<CenteredSection className="bg-white">
+			{/* <CenteredSection className="bg-white">
 				<div className="flex flex-col gap-8">
 					<span className="">
 						<h2 className="text-3xl">Nanomodule</h2>
@@ -108,7 +139,7 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 						))}
 					</ItemCardGrid>
 				</div>
-			</CenteredSection>
+			</CenteredSection> */}
 		</div>
 	);
 }
@@ -117,24 +148,22 @@ export function AuthorHeader({ author }: { author: Author }) {
 	return (
 		<div className="flex flex-col place-items-center gap-16">
 			<div className="relative mx-auto shrink-0 lg:mx-0">
-				<Image
-					className="rounded-lg"
-					height="256"
-					width="256"
-					src={`http://localhost:1337${author?.image?.data?.attributes?.url}` ?? ""}
-					alt={author?.image?.data?.attributes?.alternativeText ?? ""}
-				></Image>
+				{author.imgUrl && (
+					<Image
+						className="rounded-lg"
+						height="256"
+						width="256"
+						src={author.imgUrl}
+						alt=""
+					></Image>
+				)}
 			</div>
 			<div className="flex flex-col place-items-center gap-16">
-				<h1 className="text-3xl sm:text-6xl">{author.name}</h1>
-				{author.teams?.data && author.teams.data.length > 0 && (
+				<h1 className="text-3xl sm:text-6xl">{author.displayName}</h1>
+				{author.teams.length > 0 && (
 					<div className="flex flex-wrap gap-4">
-						{author.teams.data.map(({ attributes }) => (
-							<TeamChip
-								key={attributes!.slug}
-								slug={attributes!.slug}
-								name={attributes!.title}
-							/>
+						{author.teams.map(({ slug, name }) => (
+							<TeamChip key={slug} slug={slug} name={name} />
 						))}
 					</div>
 				)}

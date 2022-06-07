@@ -17,7 +17,7 @@
 	"private": true,
 	"prisma": {
 		"schema": "libs/data-access/database/prisma/schema.prisma",
-		"seed": "ts-node --require tsconfig-paths/register libs/data-access/database/src/lib/seed.ts"
+		"seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} --project libs/data-access/database/tsconfig.json --require tsconfig-paths/register libs/data-access/database/src/lib/seed.ts"
 	},
 	"dependencies": {
 		"@graphql-codegen/cli": "^2.6.2",
