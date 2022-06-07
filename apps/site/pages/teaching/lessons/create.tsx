@@ -2,8 +2,18 @@ import { PlusIcon } from "@heroicons/react/solid";
 import { TextArea, Textfield } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { PropsWithChildren, useMemo, useState } from "react";
+import slugify from "slugify";
 
 export default function CreateLessonPage() {
+	const [title, setTitle] = useState("");
+	const [slug, setSlug] = useState("");
+
+	function slugifyTitle() {
+		if (slug === "") {
+			setSlug(slugify(title));
+		}
+	}
+
 	return (
 		<div>
 			<CenteredSection>
@@ -17,17 +27,27 @@ export default function CreateLessonPage() {
 				<div className="grid items-start gap-16">
 					<FormCard title="Daten" subtitle="Informationen über die neue Lerneinheit.">
 						<Textfield
+							value={title}
+							onChange={e => setTitle(e.target.value)}
 							label="Titel"
 							name="title"
 							required={true}
 							placeholder="Die Neue Lerneinheit"
+							onBlur={slugifyTitle}
 						/>
-						<Textfield
-							label="Slug"
-							name="slug"
-							required={true}
-							placeholder='Wird in URL angezeigt, z. B. "die-neue-lerneinheit"'
-						/>
+						<div className="flex gap-2">
+							<Textfield
+								value={slug}
+								onChange={e => setSlug(e.target.value)}
+								label="Slug"
+								name="slug"
+								required={true}
+								placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
+							/>
+							<button className="btn-stroked h-fit self-end" onClick={slugifyTitle}>
+								Generieren
+							</button>
+						</div>
 						<TextArea
 							label="Untertitel"
 							name="subtitle"
