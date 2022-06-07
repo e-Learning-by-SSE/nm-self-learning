@@ -212,7 +212,7 @@ function LessonHeader({
 	return (
 		<div className="mx-auto flex w-full max-w-screen-xl flex-col px-2 sm:px-0">
 			<div className="gradient card flex flex-wrap justify-between gap-8">
-				<Link href={`/lessons/${lesson.slug}/questions`}>
+				<Link href={`/lessons/${lesson.slug}/quiz`}>
 					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
 						<span>Zur Lernkontrolle</span>
 						<PlayIcon className="h-6 shrink-0" />

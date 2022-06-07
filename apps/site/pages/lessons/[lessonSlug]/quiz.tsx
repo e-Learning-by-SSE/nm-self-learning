@@ -124,13 +124,13 @@ export default function QuestionsPage({ lesson, questions, markdown }: QuestionP
 	// );
 
 	function goToNextQuestion() {
-		router.push(`/lessons/${slug}/questions?index=${nextIndex}`, undefined, {
+		router.push(`/lessons/${slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true
 		});
 	}
 
 	function goToPreviousQuestion() {
-		router.push(`/lessons/${slug}/questions?index=${nextIndex - 2}`, undefined, {
+		router.push(`/lessons/${slug}/quiz?index=${nextIndex - 2}`, undefined, {
 			shallow: true
 		});
 	}
