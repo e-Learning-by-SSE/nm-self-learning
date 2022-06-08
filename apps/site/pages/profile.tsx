@@ -112,7 +112,7 @@ export default function Profile({
 						</div>
 					</div>
 
-					<div className="grid grow items-start rounded-lg bg-white p-8">
+					<div className="flex grow flex-col rounded-lg bg-white p-8">
 						<span className="mb-8 text-lg font-semibold ">Aktivität</span>
 
 						<ul className="grid items-start">
