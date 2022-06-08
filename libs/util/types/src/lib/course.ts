@@ -1,3 +1,5 @@
+import type { EnrollmentStatus } from "@prisma/client";
+
 export type CourseContent = CourseChapter[];
 
 export type CourseChapter = {
@@ -19,5 +21,14 @@ export type CourseCompletion = {
 			title: string;
 			slug: string;
 		};
+	};
+};
+
+export type CourseEnrollment = {
+	completedAt: Date | null;
+	status: EnrollmentStatus;
+	course: {
+		title: string;
+		slug: string;
 	};
 };

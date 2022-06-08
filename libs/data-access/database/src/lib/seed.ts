@@ -109,7 +109,10 @@ const lessons: Prisma.LessonCreateManyInput[] = [
 	"Handle HTTP Errors with React",
 	"Install and use React DevTools",
 	"Build and deploy a React Application with Codesandbox, GitHub, and Netlify",
-	"A Beginners Guide to React Outro"
+	"A Beginners Guide to React Outro",
+	// Other lessons
+	"What is Python?",
+	"Hello World in Python"
 ].map(title => ({
 	title,
 	lessonId: faker.random.alphaNumeric(8),
@@ -156,6 +159,24 @@ const courses: Prisma.CourseCreateManyInput[] = [
 				title: "Summary",
 				description: faker.lorem.sentences(1),
 				lessonIds: [lessons.at(-1)?.lessonId ?? ""]
+			}
+		] as CourseContent
+	},
+	{
+		courseId: faker.random.alphaNumeric(8),
+		title: "Python Tutorial",
+		slug: "python-tutorial",
+		subtitle: faker.lorem.paragraph(2),
+		description: faker.lorem.paragraphs(3),
+		imgUrl: "https://images.unsplash.com/photo-1613677135043-a2512fbf49fa?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2172&q=80",
+		subjectId: 1,
+		createdAt: new Date(2022, 4, 20),
+		updatedAt: new Date(2022, 5, 1),
+		content: [
+			{
+				title: "Content",
+				description: faker.lorem.sentences(2),
+				lessonIds: [lessons.at(-2)?.lessonId, lessons.at(-1)?.lessonId]
 			}
 		] as CourseContent
 	}
@@ -244,10 +265,11 @@ async function seed(): Promise<void> {
 		where: { specializationId: 1 },
 		data: {
 			courses: {
-				connect: [{ courseId: courses[0].courseId }]
+				connect: [{ courseId: courses[0].courseId }, { courseId: courses[1].courseId }]
 			}
 		}
 	});
+
 	console.log("✅ Connect Specialization to Course");
 
 	await prisma.user.create({ data: authors[0] });

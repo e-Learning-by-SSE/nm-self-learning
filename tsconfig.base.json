@@ -20,6 +20,7 @@
 			"@self-learning/completion": ["libs/feature/completion/src/index.ts"],
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],
 			"@self-learning/docs/storybook": ["docs/storybook/src/index.ts"],
+			"@self-learning/enrollment": ["libs/feature/enrollment/src/index.ts"],
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
 			"@self-learning/quiz": ["libs/feature/quiz/src/index.ts"],
 			"@self-learning/types": ["libs/util/types/src/index.ts"],

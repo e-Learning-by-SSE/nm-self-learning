@@ -1,9 +1,10 @@
 import { database } from "@self-learning/database";
+import { CourseEnrollment } from "@self-learning/types";
 import { MethodNotAllowed, withApiError } from "@self-learning/util/http";
 import { StatusCodes } from "http-status-codes";
 import { NextApiHandler } from "next";
 
-const handler: NextApiHandler = async (req, res) => {
+const handler: NextApiHandler<CourseEnrollment[]> = async (req, res) => {
 	const { username } = req.query;
 	if (typeof username !== "string") {
 		throw new Error("[username] must be a string");
@@ -19,7 +20,7 @@ const handler: NextApiHandler = async (req, res) => {
 
 export default handler;
 
-export async function getCoursesOfUser(username: string) {
+export async function getCoursesOfUser(username: string): Promise<CourseEnrollment[]> {
 	const enrollments = await database.enrollment.findMany({
 		where: { username },
 		select: {
@@ -36,5 +37,3 @@ export async function getCoursesOfUser(username: string) {
 
 	return enrollments;
 }
-
-export type CoursesOfUser = Awaited<ReturnType<typeof getCoursesOfUser>>;

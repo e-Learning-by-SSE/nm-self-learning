@@ -1,5 +1,5 @@
 import { CheckCircleIcon, PlayIcon, PlusCircleIcon, XCircleIcon } from "@heroicons/react/solid";
-import { useApi, useEnrollmentMutations } from "@self-learning/api";
+import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -12,8 +12,8 @@ import { de } from "date-fns/locale";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
+import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
-import { CoursesOfUser } from "../../api/users/[username]/courses";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -114,7 +114,7 @@ export default function Course({ course, content, markdownDescription }: CourseP
 	return (
 		<div className="bg-gray-50 pb-32">
 			<CenteredSection className="gradient">
-				<CourseHeader course={course} />
+				<CourseHeader course={course} content={content} />
 			</CenteredSection>
 
 			{markdownDescription && (
@@ -141,10 +141,16 @@ function toDateAgo(date: Date | string | number) {
 	});
 }
 
-function CourseHeader({ course }: { course: Course }) {
-	const username = "potter";
-	const { data: enrollments } = useApi<CoursesOfUser>(["user", `users/${username}/courses`]);
-	const { signUpMutation, signOutMutation } = useEnrollmentMutations();
+function CourseHeader({
+	course,
+	content
+}: {
+	course: CourseProps["course"];
+	content: CourseProps["content"];
+}) {
+	const enrollments = useEnrollments();
+	const { enroll } = useEnrollmentMutations(course.slug);
+	const completion = useCourseCompletion(course.slug);
 
 	const [authors] = useState(
 		() =>
@@ -159,6 +165,24 @@ function CourseHeader({ course }: { course: Course }) {
 		if (!enrollments) return false;
 		return !!enrollments.find(e => e.course.slug === course.slug);
 	}, [enrollments, course]);
+
+	const nextLesson = useMemo(() => {
+		if (completion) {
+			for (const chapter of content) {
+				for (const lesson of chapter.lessons) {
+					if (!(lesson.lessonId in completion.completedLessons)) {
+						return lesson;
+					}
+				}
+			}
+
+			console.log("Course has already completed. Going to first lesson.");
+			if (content[0] && content[0].lessons[0]) {
+				const firstLesson = content[0].lessons[0];
+				return firstLesson;
+			}
+		}
+	}, [completion, content]);
 
 	return (
 		<div className="flex flex-col gap-16">
@@ -193,32 +217,25 @@ function CourseHeader({ course }: { course: Course }) {
 							></Image>
 						)}
 					</div>
-					<div className="grid gap-2">
+
+					{isEnrolled && (
+						<Link href={`/courses/${course.slug}/${nextLesson?.slug}`}>
+							<a className="btn-primary">
+								<span>Fortfahren</span>
+								<PlayIcon className="h-6" />
+							</a>
+						</Link>
+					)}
+
+					{!isEnrolled && (
 						<button
-							className="btn-primary"
-							onClick={() =>
-								signUpMutation.mutate({
-									course: course.slug,
-									username
-								})
-							}
-						>
-							<span>{isEnrolled ? "Fortfahren" : "Starten"}</span>
-							<PlayIcon className="h-6" />
-						</button>
-						<button
-							className="btn-secondary"
-							onClick={() =>
-								signOutMutation.mutate({
-									course: course.slug,
-									username
-								})
-							}
+							className="btn-secondary disabled:opacity-50"
+							onClick={() => enroll()}
 						>
 							<span>Zum Lernplan hinzfügen</span>
 							<PlusCircleIcon className="h-6" />
 						</button>
-					</div>
+					)}
 				</div>
 			</div>
 		</div>
