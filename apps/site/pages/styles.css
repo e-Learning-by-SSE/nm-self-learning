@@ -49,6 +49,7 @@ html {
 	background-repeat: no-repeat;
 	background-attachment: fixed;
 	color: theme("colors.slate.700");
+	accent-color: var(--color-secondary);
 }
 
 #__next {

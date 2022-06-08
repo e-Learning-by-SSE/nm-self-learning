@@ -2,9 +2,10 @@ export type BaseQuestion = {
 	questionId: string;
 	type: string;
 	statement: string;
-	hint?: {
+	withCertainty?: boolean;
+	hints?: {
 		disabled?: boolean;
-		content: string;
+		content: string[];
 	};
 	answers:
 		| {

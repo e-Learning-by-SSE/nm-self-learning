@@ -35,3 +35,6 @@ export function compileMarkdown(markdown: string) {
  * };
  */
 export type CompiledMarkdown = Awaited<ReturnType<typeof compileMarkdown>>;
+
+export type MdLookup = { [id: string]: CompiledMarkdown };
+export type MdLookupArray = { [id: string]: CompiledMarkdown[] };

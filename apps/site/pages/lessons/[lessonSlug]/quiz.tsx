@@ -1,17 +1,20 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
 import { database } from "@self-learning/database";
-import { compileMarkdown } from "@self-learning/markdown";
-import {
-	Question,
-	Answer,
-	useQuizAttempt,
-	QuestionType,
-	useQuizAttemptsInfo
-} from "@self-learning/quiz";
+import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
+import { Question, QuestionType, useQuizAttempt } from "@self-learning/quiz";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+
+const text = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur nostrum dolorem ### at placeat. Ad corrupti fugit, magnam ipsam iste similique voluptates. Doloribus repellat velit expedita molestias eaque consectetur nesciunt.
+Temporibus, repellendus aspernatur provident unde ipsa voluptates delectus a adipisci itaque quam impedit suscipit harum illo voluptas saepe facere est distinctio non cum nesciunt. Dicta rerum dignissimos commodi cum molestias?
+Quia nisi delectus quos, possimus eos id. Tempore iure sint harum nihil ### facilis expedita eveniet reprehenderit ipsa! Inventore ab similique, voluptatibus consectetur deleniti perspiciatis enim hic nesciunt, omnis sint blanditiis.
+Expedita quo voluptatum, obcaecati accusamus in saepe esse maxime, neque soluta ### itaque! Aliquam est at dignissimos nobis illo delectus recusandae amet! ### beatae ea consequatur nobis natus repellendus vel!
+// eslint-disable-next-line indent
+Harum, adipisci vel corrupti, corporis error pariatur ad quasi quisquam, ### rem reiciendis! Repellendus velit minima veritatis vitae porro iure earum quas libero, error, qui exercitationem nihil et, cum veniam?`;
+
+const textArray = text.split("###");
 
 function getQuiz(slug: string): QuestionType[] {
 	return [
@@ -35,21 +38,35 @@ function getQuiz(slug: string): QuestionType[] {
 					isCorrect: true
 				}
 			],
-			hint: {
-				content: "Just get smarter."
-			}
+			hints: {
+				content: [
+					"Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero laudantium sequi illo, veritatis labore culpa, eligendi, quod consequatur autem ad dolorem explicabo quos alias harum fuga sapiente reiciendis. Incidunt, voluptates.",
+					"# Lorem ipsum dolor \n- Eins\n- Zwei"
+				]
+			},
+			withCertainty: true
 		},
 		{
 			type: "short-text",
 			questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
 			statement: "# Was ist 1 + 1 ?",
-			answers: null
+			answers: null,
+			withCertainty: true
 		},
 		{
 			type: "text",
 			questionId: "34fca2c2-c547-4f66-9a4e-927770a55090",
 			statement: "# Was ist 1 + 1 ?",
-			answers: null
+			answers: null,
+			withCertainty: true
+		},
+		{
+			type: "cloze",
+			questionId: "49497f71-8ed2-44a6-b36c-a44a4b0617d1",
+			statement: "# Lückentext",
+			answers: null,
+			withCertainty: false,
+			textArray: textArray
 		}
 	];
 }
@@ -60,11 +77,9 @@ type QuestionProps = {
 	markdown: {
 		questionsMd: MdLookup;
 		answersMd: MdLookup;
-		hintsMd: MdLookup;
+		hintsMd: MdLookupArray;
 	};
 };
-
-type MdLookup = { [id: string]: ResolvedValue<typeof compileMarkdown> };
 
 export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) => {
 	const slug = params?.lessonSlug as string | undefined;
@@ -79,13 +94,17 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 
 	const questionsMd: MdLookup = {};
 	const answersMd: MdLookup = {};
-	const hintsMd: MdLookup = {};
+	const hintsMd: MdLookupArray = {};
 
 	for (const question of questions) {
 		questionsMd[question.questionId] = await compileMarkdown(question.statement);
 
-		if (question.hint && !question.hint.disabled) {
-			hintsMd[question.questionId] = await compileMarkdown(question.hint.content);
+		if (question.hints && !question.hints.disabled) {
+			hintsMd[question.questionId] = [];
+
+			for (const hint of question.hints.content) {
+				hintsMd[question.questionId].push(await compileMarkdown(hint));
+			}
 		}
 
 		if (question.answers) {
@@ -179,7 +198,6 @@ export default function QuestionsPage({ lesson, questions, markdown }: QuestionP
 						goToPrevious={goToPreviousQuestion}
 					/>
 					<Question question={currentQuestion} markdown={markdown} />
-					<Certainty />
 				</div>
 			</div>
 		</div>
@@ -247,141 +265,6 @@ function QuestionNavigation({
 			>
 				Submit Answers
 			</button> */}
-			</div>
-		</div>
-	);
-}
-
-// function Question({ title, answers }: { title: string; answers: { text: string }[] }) {
-// 	return (
-// 		<div className="flex flex-col gap-16">
-// 			<h2 className="text-4xl">{title}</h2>
-
-// 			<ul className="flex flex-col gap-8">
-// 				{answers.map(answer => (
-// 					<Answer key={answer.text} answer={answer} />
-// 				))}
-// 			</ul>
-
-// 			{/* <Cloze /> */}
-
-// 			<Certainty />
-
-// 			<div className="grid items-start gap-4">
-// 				<button className="flex place-content-center gap-4 rounded-lg border border-slate-200 px-3 py-2">
-// 					<LightBulbIcon className="h-6" /> Ich benötige einen Hinweis.
-// 				</button>
-// 				<span className="text-sm text-slate-400">
-// 					Achtung: Das Verwenden von Hinweisen verringert die Anzahl der vergebenen
-// 					Skill-Punkte.
-// 				</span>
-// 			</div>
-// 		</div>
-// 	);
-// }
-
-// function Answer({ answer }: { answer: { text: string } }) {
-// 	const [selected, setSelected] = useState(false);
-
-// 	function toggleSelected() {
-// 		setSelected(value => !value);
-// 	}
-
-// 	return (
-// 		<button
-// 			className={`flex w-full rounded-lg border p-4 transition-colors ${
-// 				selected
-// 					? "border-indigo-200 bg-indigo-500 text-white"
-// 					: "border-slate-200 bg-white"
-// 			}`}
-// 			onClick={toggleSelected}
-// 		>
-// 			<span className="">{answer.text}</span>
-// 		</button>
-// 	);
-// }
-
-function Certainty() {
-	const { certainty, certaintyPhrase, setCertainty } = useCertainty(100);
-	return (
-		<div className="grid items-start gap-4">
-			<span className="text-xl tracking-tighter">Wie sicher bist du dir ?</span>
-
-			<div className="mt-2 flex flex-col">
-				<input
-					type="range"
-					min={0}
-					max={100}
-					step={25}
-					value={certainty}
-					onChange={e => setCertainty(e.target.valueAsNumber)}
-					className="bg-indigo-20 w-full"
-				/>
-				<span className="mt-1 text-right text-slate-400">
-					Ich bin mir{" "}
-					<span className="font-semibold text-slate-700">{certaintyPhrase}</span>.
-				</span>
-			</div>
-		</div>
-	);
-}
-
-function useCertainty(initialCertainty: number) {
-	const [certainty, setCertainty] = useState(initialCertainty);
-
-	const certaintyPhrase = useMemo(() => {
-		return mapCertainty(certainty);
-	}, [certainty]);
-
-	return { certainty, setCertainty, certaintyPhrase };
-}
-
-function mapCertainty(certainty: number): string {
-	if (certainty < 25) {
-		return "überhaupt nicht sicher";
-	}
-	if (certainty < 50) {
-		return "leicht unsicher";
-	}
-	if (certainty < 75) {
-		return "leicht sicher";
-	}
-	if (certainty < 100) {
-		return "sehr sicher";
-	}
-	if (certainty >= 100) {
-		return "absolut sicher";
-	}
-
-	return "";
-}
-
-const text = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur nostrum dolorem ### at placeat. Ad corrupti fugit, magnam ipsam iste similique voluptates. Doloribus repellat velit expedita molestias eaque consectetur nesciunt.
-Temporibus, repellendus aspernatur provident unde ipsa voluptates delectus a adipisci itaque quam impedit suscipit harum illo voluptas saepe facere est distinctio non cum nesciunt. Dicta rerum dignissimos commodi cum molestias?
-Quia nisi delectus quos, possimus eos id. Tempore iure sint harum nihil ### facilis expedita eveniet reprehenderit ipsa! Inventore ab similique, voluptatibus consectetur deleniti perspiciatis enim hic nesciunt, omnis sint blanditiis.
-Expedita quo voluptatum, obcaecati accusamus in saepe esse maxime, neque soluta ### itaque! Aliquam est at dignissimos nobis illo delectus recusandae amet! ### beatae ea consequatur nobis natus repellendus vel!
-Harum, adipisci vel corrupti, corporis error pariatur ad quasi quisquam, ### rem reiciendis! Repellendus velit minima veritatis vitae porro iure earum quas libero, error, qui exercitationem nihil et, cum veniam?`;
-
-const transformedText = text.split("###");
-
-function Cloze() {
-	return (
-		<div className="grid items-start gap-8">
-			<span className="text-slate-400">Vervollständige den nachfolgenden Text:</span>
-
-			<div className="leading-loose">
-				{transformedText.map((text, index) => (
-					<span key={text}>
-						{text}
-						{index < transformedText.length - 1 && (
-							<input
-								type="text"
-								className="h-fit border border-gray-100 border-b-slate-500 bg-gray-100 py-1 focus:border-gray-100 focus:border-b-indigo-500"
-								placeholder="BatChest"
-							/>
-						)}
-					</span>
-				))}
 			</div>
 		</div>
 	);
