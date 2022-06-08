@@ -227,7 +227,6 @@ function CourseHeader({ course }: { course: Course }) {
 
 function TableOfContents({ content, course }: { content: ChapterWithLessons[]; course: Course }) {
 	const courseCompletion = useCourseCompletion(course.slug);
-	console.log("courseCompletion", courseCompletion);
 
 	return (
 		<div className="flex flex-col gap-8">
