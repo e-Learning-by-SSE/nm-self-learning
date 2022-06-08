@@ -1,7 +1,8 @@
 import { PlusIcon } from "@heroicons/react/solid";
+import { SectionCard } from "@self-learning/ui/common";
 import { TextArea, Textfield } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { PropsWithChildren, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import slugify from "slugify";
 
 export default function CreateLessonPage() {
@@ -25,7 +26,7 @@ export default function CreateLessonPage() {
 			<CenteredSection className="bg-gray-50">
 				<button className="btn-primary mb-12 ml-auto mr-0">Erstellen</button>
 				<div className="grid items-start gap-16">
-					<FormCard title="Daten" subtitle="Informationen über die neue Lerneinheit.">
+					<SectionCard title="Daten" subtitle="Informationen über die neue Lerneinheit.">
 						<Textfield
 							value={title}
 							onChange={e => setTitle(e.target.value)}
@@ -60,32 +61,16 @@ export default function CreateLessonPage() {
 							placeholder="Eine längere Beschreibung dieser Lerneinheit. Unterstützt Markdown."
 							rows={4}
 						></TextArea>
-					</FormCard>
+					</SectionCard>
 
-					<FormCard
+					<SectionCard
 						title="Inhalt"
 						subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente angelegt werden, kann der Student selber entscheiden, welches Medium angezeigt werden soll."
 					>
 						<LessonContent />
-					</FormCard>
+					</SectionCard>
 				</div>
 			</CenteredSection>
-		</div>
-	);
-}
-
-export function FormCard({
-	children,
-	title,
-	subtitle
-}: PropsWithChildren<{ title: string; subtitle: string }>) {
-	return (
-		<div className="card grid items-start rounded-lg border border-light-border bg-white">
-			<div className="grid items-start gap-2">
-				<h2 className="text-2xl">{title}</h2>
-				<span className="text-light">{subtitle}</span>
-			</div>
-			<div className="mt-12 grid items-start gap-8">{children}</div>
 		</div>
 	);
 }

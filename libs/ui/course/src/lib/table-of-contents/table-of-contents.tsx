@@ -1,7 +1,6 @@
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/solid";
-import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
+import { ImageCard, ImageCardBadge, SectionCard } from "@self-learning/ui/common";
 import Link from "next/link";
-import { PropsWithChildren } from "react";
 
 export function SectionConnector({
 	isCompleted,
@@ -39,14 +38,6 @@ export function SectionConnector({
 			</div>
 		</>
 	);
-}
-
-export function Section({
-	children,
-	isCompleted,
-	isRequired
-}: PropsWithChildren<{ isCompleted: boolean; isRequired: boolean }>) {
-	return <div className="flex w-full flex-col rounded-lg border bg-white p-8">{children}</div>;
 }
 
 export function SingleLesson({ title, slug }: { title: string; slug: string }) {
@@ -109,12 +100,8 @@ export function Chapter({
 	lessons: { title: string; slug: string; lessonId: string; isCompleted: boolean }[];
 }) {
 	return (
-		<>
-			<h3 className="mb-8 text-xl">{title}</h3>
-			{description && description.length > 0 && (
-				<p className="text-slate-400">{description}</p>
-			)}
-			<ul className="mt-8 flex flex-col gap-2">
+		<SectionCard title={title} subtitle={description}>
+			<ul className="flex flex-col gap-2">
 				{lessons.map(lesson => (
 					<Lesson
 						lesson={lesson}
@@ -123,7 +110,7 @@ export function Chapter({
 					/>
 				))}
 			</ul>
-		</>
+		</SectionCard>
 	);
 }
 

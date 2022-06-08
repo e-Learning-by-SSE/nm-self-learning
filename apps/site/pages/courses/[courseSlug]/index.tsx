@@ -221,7 +221,11 @@ function CourseHeader({
 					{isEnrolled && (
 						<Link href={`/courses/${course.slug}/${nextLesson?.slug}`}>
 							<a className="btn-primary">
-								<span>Fortfahren</span>
+								<span>
+									{completion?.courseCompletionPercentage === 0
+										? "Starten"
+										: "Fortfahren"}
+								</span>
 								<PlayIcon className="h-6" />
 							</a>
 						</Link>
@@ -259,26 +263,24 @@ function TableOfContents({ content, course }: { content: ChapterWithLessons[]; c
 
 					return (
 						<Fragment key={chapter.title}>
-							<ToC.Section isCompleted={isCompleted} isRequired={false}>
-								<ToC.Chapter
-									courseSlug={course.slug}
-									title={chapter.title as string}
-									description={chapter.description}
-									lessons={
-										chapter.lessons.map(lesson => ({
-											lessonId: lesson.lessonId,
-											slug: lesson.slug,
-											title: lesson.title,
-											isCompleted:
-												(courseCompletion?.completedLessons &&
-													!!courseCompletion.completedLessons[
-														lesson.lessonId
-													]) ??
-												false
-										})) ?? []
-									}
-								/>
-							</ToC.Section>
+							<ToC.Chapter
+								courseSlug={course.slug}
+								title={chapter.title as string}
+								description={chapter.description}
+								lessons={
+									chapter.lessons.map(lesson => ({
+										lessonId: lesson.lessonId,
+										slug: lesson.slug,
+										title: lesson.title,
+										isCompleted:
+											(courseCompletion?.completedLessons &&
+												!!courseCompletion.completedLessons[
+													lesson.lessonId
+												]) ??
+											false
+									})) ?? []
+								}
+							/>
 							{showConnector && (
 								<ToC.SectionConnector isCompleted={isCompleted} isRequired={true} />
 							)}
