@@ -5,6 +5,7 @@ import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
 import { GetServerSideProps, GetServerSidePropsResult } from "next";
 import { getSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
 
@@ -111,7 +112,15 @@ export default function Profile({ user, completedLessons }: ProfileProps) {
 			<CenteredSection className="bg-gray-50">
 				<div className="flex flex-col gap-16 lg:flex-row-reverse">
 					<div className="flex flex-col place-items-center lg:place-items-start">
-						<div className="relative h-[256px] w-[256px] rounded-lg bg-black"></div>
+						<div className="relative h-[256px] w-[256px] rounded-lg bg-black">
+							<Image
+								src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80"
+								height={256}
+								width={256}
+								alt=""
+								className="rounded-lg object-cover object-top"
+							></Image>
+						</div>
 						<h1 className="mt-8 text-4xl">{user.displayName}</h1>
 
 						<div className="mt-8 grid gap-1">
