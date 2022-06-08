@@ -1,10 +1,8 @@
 {
+	"$schema": "./node_modules/nx/schemas/nx-schema.json",
 	"npmScope": "self-learning",
 	"affected": {
 		"defaultBase": "master"
-	},
-	"cli": {
-		"defaultCollection": "@nrwl/next"
 	},
 	"implicitDependencies": {
 		"package.json": {
