@@ -3,14 +3,18 @@ import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
 import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
-import {
-	GetServerSidePropsContext,
-	GetServerSidePropsResult,
-	InferGetServerSidePropsType
-} from "next";
+import { GetServerSideProps, GetServerSidePropsResult } from "next";
 import { getSession } from "next-auth/react";
 import Link from "next/link";
 import { Fragment } from "react";
+
+type ProfileProps = {
+	user: ResolvedValue<typeof getUser>;
+	completedLessons: {
+		count: number;
+		data: ResolvedValue<typeof getCompletedLessons>["completedLessons"];
+	};
+};
 
 function getUser(username: string) {
 	return database.student.findUnique({
@@ -39,22 +43,9 @@ function getUser(username: string) {
 	});
 }
 
-export const getServerSideProps = async ({ req, res }: GetServerSidePropsContext) => {
-	const session = await getSession({ req });
-
-	if (!session?.user?.name) {
-		return {
-			redirect: {
-				destination: "/login?callbackUrl=profile",
-				permanent: false
-			}
-		};
-	}
-
-	const user = await getUser(session.user.name);
-
-	const completedLessons = await database.student.findUnique({
-		where: { username: user.username },
+async function getCompletedLessons(username: string) {
+	return await database.student.findUnique({
+		where: { username },
 		select: {
 			completedLessons: {
 				skip: 0,
@@ -62,6 +53,12 @@ export const getServerSideProps = async ({ req, res }: GetServerSidePropsContext
 				orderBy: { createdAt: "desc" },
 				select: {
 					createdAt: true,
+					course: {
+						select: {
+							title: true,
+							slug: true
+						}
+					},
 					lesson: {
 						select: {
 							lessonId: true,
@@ -78,6 +75,22 @@ export const getServerSideProps = async ({ req, res }: GetServerSidePropsContext
 			}
 		}
 	});
+}
+
+export const getServerSideProps: GetServerSideProps<ProfileProps> = async ({ req }) => {
+	const session = await getSession({ req });
+
+	if (!session?.user?.name) {
+		return {
+			redirect: {
+				destination: "/login?callbackUrl=profile",
+				permanent: false
+			}
+		};
+	}
+
+	const user = await getUser(session.user.name);
+	const completedLessons = await getCompletedLessons(user.username);
 
 	const props = {
 		user: user as Exclude<typeof user, null>,
@@ -92,10 +105,7 @@ export const getServerSideProps = async ({ req, res }: GetServerSidePropsContext
 	} as GetServerSidePropsResult<typeof props>;
 };
 
-export default function Profile({
-	user,
-	completedLessons
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Profile({ user, completedLessons }: ProfileProps) {
 	return (
 		<>
 			<CenteredSection className="bg-gray-50">
@@ -113,25 +123,8 @@ export default function Profile({
 					</div>
 
 					<div className="flex grow flex-col rounded-lg bg-white p-8">
-						<span className="mb-8 text-lg font-semibold ">Aktivität</span>
-
-						<ul className="grid items-start">
-							{completedLessons.data.map(lesson => (
-								<Fragment key={lesson.createdAt as unknown as string}>
-									<li className="flex grow flex-wrap items-center justify-between gap-2">
-										<Link href={`/lessons/${lesson.lesson.slug}`}>
-											<a className="text-sm hover:text-secondary">
-												{lesson.lesson.title}
-											</a>
-										</Link>
-										<span className="text-sm text-light">
-											{toDateAgo(lesson.createdAt)}
-										</span>
-									</li>
-									<span className="my-4 h-[1px] bg-light-border last:invisible last:my-0"></span>
-								</Fragment>
-							))}
-						</ul>
+						<span className="mb-4 text-lg font-semibold ">Aktivität</span>
+						<Activity completedLessons={completedLessons.data} />
 					</div>
 				</div>
 			</CenteredSection>
@@ -216,4 +209,52 @@ function toDateAgo(date: Date | string | number) {
 		addSuffix: true,
 		locale: de
 	});
+}
+
+function Activity({
+	completedLessons
+}: {
+	completedLessons: ProfileProps["completedLessons"]["data"];
+}) {
+	return (
+		<>
+			{completedLessons.length > 0 ? (
+				<ul className="grid items-start">
+					{completedLessons.map(lesson => (
+						<Fragment key={lesson.createdAt as unknown as string}>
+							<li className="flex grow flex-wrap items-center justify-between gap-2 rounded-lg">
+								<div className="flex flex-col gap-1">
+									<Link
+										href={`/courses/${lesson.course?.slug}/lessons/${lesson.lesson.slug}`}
+									>
+										<a className="text-sm hover:text-secondary">
+											{lesson.lesson.title}
+										</a>
+									</Link>
+									{lesson.course && (
+										<span className="pl-4 text-sm text-secondary ">
+											in{" "}
+											<Link href={`/courses/${lesson.course.slug}`}>
+												<a className="hover:text-secondary">
+													{lesson.course.title}
+												</a>
+											</Link>
+										</span>
+									)}
+								</div>
+								<span className="self-start text-sm text-light">
+									{toDateAgo(lesson.createdAt)}
+								</span>
+							</li>
+							<span className="my-4 h-[1px] bg-light-border last:invisible last:my-0"></span>
+						</Fragment>
+					))}
+				</ul>
+			) : (
+				<span className="text-sm text-light">
+					Du hast bisher noch keine Lerneinheit abgeschlossen.
+				</span>
+			)}
+		</>
+	);
 }
