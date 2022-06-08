@@ -136,14 +136,22 @@ function Lesson({
 }) {
 	return (
 		<li
-			className={`flex items-center justify-between gap-8 rounded-r-lg border-l-2 bg-gray-50 px-3 py-2 ${
+			className={`flex items-center justify-between gap-8 rounded-r-lg bg-gray-50 px-3 py-2 ${
 				lesson.isCompleted ? "border-secondary" : "border-slate-200"
 			}`}
 		>
-			<Link href={href}>
-				<a className="text-sm font-semibold">{lesson.title}</a>
-			</Link>
-			{lesson.isCompleted && <CheckCircleIcon className="h-6 shrink-0 text-secondary" />}
+			<span className="flex items-center gap-4">
+				<CheckCircleIcon
+					className={`h-5 shrink-0 ${
+						lesson.isCompleted ? "text-secondary" : "text-slate-300"
+					}`}
+				/>
+				<Link href={href}>
+					<a className="text-sm font-medium">{lesson.title}</a>
+				</Link>
+			</span>
+
+			<span className="text-sm text-light">4:20</span>
 		</li>
 	);
 }
