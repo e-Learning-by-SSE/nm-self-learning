@@ -43,4 +43,7 @@ data.db
 
 # ENV
 .env
-.angular
+.env.development
+.env.production
+.env.test.local
+.env.local
