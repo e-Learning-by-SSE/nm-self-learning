@@ -123,8 +123,6 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 };
 
 export default function Lesson({ lesson, chapters, course }: LessonProps) {
-	console.log(lesson);
-
 	const url = (lesson.content as LessonContent)[0].url;
 	const authors = lesson.authors.map(
 		author =>
