@@ -27,40 +27,45 @@ export default function CreateLessonPage() {
 				<button className="btn-primary mb-12 ml-auto mr-0">Erstellen</button>
 				<div className="grid items-start gap-16">
 					<SectionCard title="Daten" subtitle="Informationen über die neue Lerneinheit.">
-						<Textfield
-							value={title}
-							onChange={e => setTitle(e.target.value)}
-							label="Titel"
-							name="title"
-							required={true}
-							placeholder="Die Neue Lerneinheit"
-							onBlur={slugifyTitle}
-						/>
-						<div className="flex gap-2">
+						<div className="flex flex-col gap-8">
 							<Textfield
-								value={slug}
-								onChange={e => setSlug(e.target.value)}
-								label="Slug"
-								name="slug"
+								value={title}
+								onChange={e => setTitle(e.target.value)}
+								label="Titel"
+								name="title"
 								required={true}
-								placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
+								placeholder="Die Neue Lerneinheit"
+								onBlur={slugifyTitle}
 							/>
-							<button className="btn-stroked h-fit self-end" onClick={slugifyTitle}>
-								Generieren
-							</button>
+							<div className="flex gap-2">
+								<Textfield
+									value={slug}
+									onChange={e => setSlug(e.target.value)}
+									label="Slug"
+									name="slug"
+									required={true}
+									placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
+								/>
+								<button
+									className="btn-stroked h-fit self-end"
+									onClick={slugifyTitle}
+								>
+									Generieren
+								</button>
+							</div>
+							<TextArea
+								label="Untertitel"
+								name="subtitle"
+								placeholder="1-2 Sätze über diese Lerneinheit."
+								required={true}
+							></TextArea>
+							<TextArea
+								label="Beschreibung"
+								name="description"
+								placeholder="Eine längere Beschreibung dieser Lerneinheit. Unterstützt Markdown."
+								rows={4}
+							></TextArea>
 						</div>
-						<TextArea
-							label="Untertitel"
-							name="subtitle"
-							placeholder="1-2 Sätze über diese Lerneinheit."
-							required={true}
-						></TextArea>
-						<TextArea
-							label="Beschreibung"
-							name="description"
-							placeholder="Eine längere Beschreibung dieser Lerneinheit. Unterstützt Markdown."
-							rows={4}
-						></TextArea>
 					</SectionCard>
 
 					<SectionCard
