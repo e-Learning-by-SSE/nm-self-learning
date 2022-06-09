@@ -81,10 +81,12 @@ model Author {
 }
 
 model Team {
-    teamId  Int      @id @default(autoincrement())
-    name    String
-    slug    String
-    authors Author[]
+    teamId      Int      @id @default(autoincrement())
+    slug        String   @unique
+    name        String
+    description String?
+    imgUrl      String?
+    authors     Author[]
 }
 
 model Subject {

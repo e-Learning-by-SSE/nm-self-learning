@@ -1,4 +1,4 @@
-import { getTeamBySlug } from "@self-learning/cms-api";
+import { database } from "@self-learning/database";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { AuthorChip } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -6,7 +6,7 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 
-type Team = ResolvedValue<typeof getTeamBySlug>;
+type Team = ResolvedValue<typeof getTeam>;
 
 type TeamPageProps = {
 	team: Team;
@@ -14,17 +14,21 @@ type TeamPageProps = {
 };
 
 export const getStaticProps: GetStaticProps<TeamPageProps> = async ({ params }) => {
-	const teamSlug = params?.teamSlug;
+	const slug = params?.teamSlug;
 
-	if (typeof teamSlug !== "string") {
-		throw new Error("[teamSlug] must be a string.");
+	if (typeof slug !== "string") {
+		throw new Error("[slug] must be a string.");
 	}
 
-	const team = await getTeamBySlug(teamSlug);
+	const team = await getTeam(slug);
+
+	if (!team) {
+		return { notFound: true };
+	}
 
 	let markdownDescription = null;
 
-	if (team?.description && team.description.length > 0) {
+	if (team.description && team.description.length > 0) {
 		markdownDescription = await compileMarkdown(team.description);
 		team.description = null;
 	}
@@ -45,32 +49,51 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
-export default function TeamPage({ team, markdownDescription }: TeamPageProps) {
-	const imgUrl = team.image?.data?.attributes?.url ?? "";
+async function getTeam(slug: string) {
+	return await database.team.findUnique({
+		where: { slug },
+		select: {
+			slug: true,
+			name: true,
+			imgUrl: true,
+			description: true,
+			authors: {
+				select: {
+					slug: true,
+					displayName: true,
+					imgUrl: true
+				}
+			}
+		}
+	});
+}
 
+export default function TeamPage({ team, markdownDescription }: TeamPageProps) {
 	return (
 		<div className="flex flex-col bg-white">
 			<CenteredSection className="gradient">
 				<div className="flex flex-col gap-16">
 					<div className="relative m-auto h-[256px] w-[256px] shrink-0 rounded-lg bg-white">
-						<Image
-							className="rounded-lg"
-							objectFit="contain"
-							layout="fill"
-							src={`http://localhost:1337${imgUrl}`}
-							alt={team.image?.data?.attributes?.alternativeText ?? ""}
-						/>
+						{team.imgUrl && (
+							<Image
+								className="rounded-lg"
+								objectFit="contain"
+								layout="fill"
+								src={team.imgUrl}
+								alt=""
+							/>
+						)}
 					</div>
 
 					<div className="flex flex-col place-items-center gap-16">
-						<h1 className="text-3xl sm:text-6xl">{team.title}</h1>
+						<h1 className="text-3xl sm:text-6xl">{team.name}</h1>
 						<div className="flex flex-wrap gap-4">
-							{team.authors?.data.map(({ attributes }) => (
+							{team.authors.map(author => (
 								<AuthorChip
-									key={attributes!.slug}
-									slug={attributes!.slug}
-									name={attributes!.name}
-									imgUrl={attributes?.image?.data?.attributes?.url}
+									key={author.slug}
+									slug={author.slug}
+									name={author.displayName}
+									imgUrl={author.imgUrl}
 								/>
 							))}
 						</div>
