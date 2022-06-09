@@ -11,7 +11,7 @@ export default function CreateLessonPage() {
 
 	function slugifyTitle() {
 		if (slug === "") {
-			setSlug(slugify(title));
+			setSlug(slugify(title, { lower: true }));
 		}
 	}
 
