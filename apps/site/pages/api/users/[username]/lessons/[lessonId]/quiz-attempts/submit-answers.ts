@@ -22,8 +22,7 @@ const submitAnswersApiHandler: NextApiHandler = async (req, res) =>
 			data: {
 				username,
 				lessonId,
-				state,
-				answers: JSON.stringify(answers)
+				state
 			}
 		});
 
