@@ -29,13 +29,15 @@ describe("getAllAttempts", () => {
 		const lesson: Prisma.LessonCreateInput = {
 			lessonId: "lesson-1",
 			slug: "test-lesson",
-			title: "Test Lesson"
+			title: "Test Lesson",
+			content: []
 		};
 
 		const otherLesson: Prisma.LessonCreateInput = {
 			lessonId: "other-lesson",
 			slug: "other-lesson",
-			title: "Other Lesson"
+			title: "Other Lesson",
+			content: []
 		};
 
 		await database.lesson.create({ data: lesson });
@@ -46,7 +48,6 @@ describe("getAllAttempts", () => {
 
 		await database.quizAttempt.create({
 			data: {
-				answers: "[]",
 				state: "COMPLETED",
 				lessonId: lesson.lessonId,
 				username: username
@@ -55,7 +56,6 @@ describe("getAllAttempts", () => {
 
 		await database.quizAttempt.create({
 			data: {
-				answers: "[]",
 				state: "COMPLETED",
 				lessonId: lesson.lessonId,
 				username: username
@@ -64,7 +64,6 @@ describe("getAllAttempts", () => {
 
 		await database.quizAttempt.create({
 			data: {
-				answers: "[]",
 				state: "COMPLETED",
 				lessonId: otherLesson.lessonId,
 				username: username
@@ -73,7 +72,6 @@ describe("getAllAttempts", () => {
 
 		await database.quizAttempt.create({
 			data: {
-				answers: "[]",
 				state: "COMPLETED",
 				lessonId: otherLesson.lessonId,
 				username: otherUser
