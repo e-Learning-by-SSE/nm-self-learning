@@ -1,8 +1,22 @@
+import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { checkLessonCompletion } from "./lesson-completion";
 
 const username = "potter";
+
 describe("checkLessonCompletion", () => {
+	const createLesson = (index: number): Prisma.LessonCreateManyInput => ({
+		lessonId: `lesson-${index}`,
+		slug: `lesson-${index}-slug`,
+		title: `Lesson ${index}`,
+		content: []
+	});
+
+	beforeAll(async () => {
+		const lessons = new Array(4).fill(0).map((_, i) => createLesson(i));
+		await database.lesson.createMany({ data: lessons, skipDuplicates: true });
+	});
+
 	it("Empty lessons array -> Empty object", async () => {
 		await database.completedLesson.deleteMany();
 		await database.completedLesson.createMany({

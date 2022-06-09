@@ -46,7 +46,10 @@ describe("getCourseCompletion", () => {
 	});
 
 	it("No lessons completed -> 0 completion", async () => {
+		await database.completedLesson.deleteMany();
+
 		const result = await getCourseCompletionOfStudent(courseSlug, username);
+
 		expect(result.completedLessons).toEqual({});
 		expect(result.courseCompletionPercentage).toEqual(0);
 	});
