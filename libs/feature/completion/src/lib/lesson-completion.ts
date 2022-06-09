@@ -24,10 +24,18 @@ export async function checkLessonCompletion(
 		distinct: ["lessonId"]
 	});
 
-	const result: { [lessonId: string]: true } = {};
+	const completedLessonsById: { [lessonId: string]: true } = {};
 
 	for (const lesson of completedLessons) {
-		result[lesson.lessonId] = true;
+		completedLessonsById[lesson.lessonId] = true;
+	}
+
+	const result: { [lessonId: string]: true } = {};
+
+	for (const id of lessonIds) {
+		if (id in completedLessonsById) {
+			result[id] = true;
+		}
 	}
 
 	return result;
