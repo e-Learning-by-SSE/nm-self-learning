@@ -3,13 +3,15 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {
+		"nx": "nx",
 		"start": "nx serve",
 		"build": "nx build",
 		"test": "nx run-many --target=test --all",
 		"storybook": "env TAILWIND_MODE=watch nx run docs-storybook:storybook --watch",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write **/*",
-		"prisma": "prisma"
+		"prisma": "prisma",
+		"start:prod": "cd dist/apps/site && npm run start"
 	},
 	"private": true,
 	"prisma": {
@@ -39,6 +41,7 @@
 		"react-player": "^2.10.1",
 		"react-query": "4.0.0-beta.23",
 		"regenerator-runtime": "0.13.7",
+		"sharp": "^0.30.6",
 		"tslib": "^2.0.0",
 		"yup": "^0.32.11"
 	},
