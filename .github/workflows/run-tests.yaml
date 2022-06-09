@@ -27,6 +27,7 @@ jobs:
             - uses: actions/setup-node@v3
               with:
                   node-version: "16"
+                  cache: "npm"
             - run: npm ci
             - run: npm run prisma db push
             - run: npm run test
