@@ -16,11 +16,11 @@ nx serve
 -   Node.js
 -   Postgres instance
 -   Environment variables (see [.env.example](.env.example)):
-    -   DATABASE_URL="postgresql://username:password@localhost:5432/SelfLearningDb"
+    -   `DATABASE_URL="postgresql://username:password@localhost:5432/SelfLearningDb"`
         -   see https://www.prisma.io/docs/concepts/database-connectors/postgresql#connection-url
-    -   NEXTAUTH_URL="http://localhost:3000"
+    -   `NEXTAUTH_URL="http://localhost:3000"`
         -   see https://next-auth.js.org/configuration/options
-    -   NEXTAUTH_SECRET="YOUR_SECRET"
+    -   `NEXTAUTH_SECRET="YOUR_SECRET"`
         -   You can generate a secret via this command: `openssl rand -base64 32`
 
 ```
