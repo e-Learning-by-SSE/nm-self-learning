@@ -1,2 +1,0 @@
-schema: "http://localhost:1337/graphql"
-documents: "libs/data-access/cms-api/src/lib/**/*.{ts,graphql}"
