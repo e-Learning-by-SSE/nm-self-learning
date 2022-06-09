@@ -41,7 +41,7 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 		title: "Informatik",
 		subtitle: faker.lorem.sentences(2),
 		cardImgUrl:
-			"https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+			"https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80",
 		imgUrlBanner:
 			"https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
 	},
@@ -51,7 +51,7 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 		title: "Mathematik",
 		subtitle: faker.lorem.sentences(2),
 		cardImgUrl:
-			"https://images.unsplash.com/photo-1509869175650-a1d97972541a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+			"https://images.unsplash.com/photo-1509869175650-a1d97972541a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80",
 		imgUrlBanner:
 			"https://images.unsplash.com/photo-1635372722656-389f87a941b7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2062&q=80"
 	},
@@ -60,8 +60,10 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 		slug: "psychologie",
 		title: "Psychologie",
 		subtitle: faker.lorem.sentences(2),
-		cardImgUrl: faker.image.unsplash.technology(undefined, undefined, "psychology"),
-		imgUrlBanner: faker.image.unsplash.technology(undefined, undefined, "psychology")
+		cardImgUrl:
+			"https://images.unsplash.com/photo-1651687965938-93e47d7683f5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80",
+		imgUrlBanner:
+			"https://images.unsplash.com/photo-1651687965938-93e47d7683f5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=987&q=80"
 	}
 ];
 
@@ -73,7 +75,7 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		title: "Softwareentwicklung",
 		subtitle: faker.lorem.sentences(2),
 		cardImgUrl:
-			"https://images.unsplash.com/photo-1580920461931-fcb03a940df5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80",
+			"https://images.unsplash.com/photo-1580920461931-fcb03a940df5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80",
 		imgUrlBanner:
 			"https://images.unsplash.com/photo-1580920461931-fcb03a940df5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"
 	}
