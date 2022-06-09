@@ -124,8 +124,8 @@ model Course {
     updatedAt       DateTime          @updatedAt
     enrollments     Enrollment[]
     completions     CompletedLesson[]
-    subject         Subject           @relation(fields: [subjectId], references: [subjectId])
-    subjectId       Int
+    subject         Subject?          @relation(fields: [subjectId], references: [subjectId])
+    subjectId       Int?
     specializations Specialization[]
     authors         Author[]
 }
@@ -207,10 +207,10 @@ model QuizAttempt {
     createdAt DateTime @default(now())
     state     String
 
-    student  Student @relation(fields: [username], references: [username])
+    student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
     username String
 
-    lesson   Lesson @relation(fields: [lessonId], references: [lessonId])
+    lesson   Lesson @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
     lessonId String
 
     QuizAnswer QuizAnswer[]

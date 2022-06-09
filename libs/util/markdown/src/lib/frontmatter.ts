@@ -24,16 +24,18 @@ function excerptFn(file: matter.GrayMatterFile<string>) {
 }
 
 export function extractFrontMatter(markdown: string): MarkdownDocument {
-	return null as any; // TODO
-	// const { data, content, excerpt } = matter(markdown, {
-	// 	// Typing from matter is wrong, see https://github.com/jonschlinkert/gray-matter/issues/125
-	// 	excerpt: excerptFn as any,
-	// 	excerpt_separator: separator
-	// });
+	// TODO: Type Error: This expression is not callable when building for production
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
+	const { data, content, excerpt } = matter(markdown, {
+		// Typing from matter is wrong, see https://github.com/jonschlinkert/gray-matter/issues/125
+		excerpt: excerptFn as any,
+		excerpt_separator: separator
+	});
 
-	// return {
-	// 	frontmatter: JSON.parse(JSON.stringify(data)), // Ensures that everything is serializable
-	// 	content: content?.length > 0 ? content : null,
-	// 	excerpt: excerpt && excerpt.length > 0 ? excerpt : null
-	// };
+	return {
+		frontmatter: JSON.parse(JSON.stringify(data)), // Ensures that everything is serializable
+		content: content?.length > 0 ? content : null,
+		excerpt: excerpt && excerpt.length > 0 ? excerpt : null
+	};
 }

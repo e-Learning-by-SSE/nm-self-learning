@@ -6,7 +6,8 @@ import { getCourseCompletionOfStudent } from "./course-completion";
 const createLesson = (index: number): Prisma.LessonCreateManyInput => ({
 	lessonId: `lesson-${index}`,
 	slug: `lesson-${index}-slug`,
-	title: `Lesson ${index}`
+	title: `Lesson ${index}`,
+	content: []
 });
 
 const username = "potter";
@@ -23,11 +24,11 @@ describe("getCourseCompletion", () => {
 		const chapters: CourseChapter[] = [
 			{
 				title: "Chapter 1",
-				lessons: [{ lessonId: lessons[0].lessonId }, { lessonId: lessons[1].lessonId }]
+				lessonIds: [lessons[0].lessonId, lessons[1].lessonId]
 			},
 			{
 				title: "Chapter 2",
-				lessons: [{ lessonId: lessons[2].lessonId }, { lessonId: lessons[3].lessonId }]
+				lessonIds: [lessons[2].lessonId, lessons[3].lessonId]
 			}
 		];
 
@@ -81,14 +82,14 @@ describe("getCourseCompletion", () => {
 		Object {
 		  "chapters": Array [
 		    Object {
-		      "chapterTitle": "Chapter 1",
 		      "completedLessonsCount": 2,
 		      "completedLessonsPercentage": 100,
+		      "title": "Chapter 1",
 		    },
 		    Object {
-		      "chapterTitle": "Chapter 2",
 		      "completedLessonsCount": 1,
 		      "completedLessonsPercentage": 50,
+		      "title": "Chapter 2",
 		    },
 		  ],
 		  "completedLessons": Object {

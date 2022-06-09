@@ -24,6 +24,7 @@ import { getAllAttempts } from "../../pages/api/users/[username]/lessons/[lesson
 
 describe("getAllAttempts", () => {
 	it("Gets all attempts of user for a lesson", async () => {
+		await database.lesson.deleteMany();
 		await database.quizAttempt.deleteMany();
 
 		const lesson: Prisma.LessonCreateInput = {
