@@ -68,7 +68,12 @@ export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) =>
 	}
 
 	const course = await getCourse(courseSlug);
-	const content = await mapCourseContent(course?.content as CourseContent);
+
+	if (!course) {
+		return { notFound: true };
+	}
+
+	const content = await mapCourseContent(course.content as CourseContent);
 	let markdownDescription = null;
 
 	if (course) {
