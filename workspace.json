@@ -10,7 +10,6 @@
 		"feature-completion": "libs/feature/completion",
 		"feature-enrollment": "libs/feature/enrollment",
 		"feature-quiz": "libs/feature/quiz",
-		"feature-webhooks": "libs/feature/webhooks",
 		"site": "apps/site",
 		"site-e2e": "apps/site-e2e",
 		"ui-common": "libs/ui/common",
