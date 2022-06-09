@@ -5,14 +5,11 @@
 	"scripts": {
 		"start": "nx serve",
 		"build": "nx build",
-		"cms:watch": "cd apps/cms && npm run develop --watch-admin",
-		"cms:seed": "jest './libs/data-access/cms-api/src/lib/admin/seed-cms.spec.ts' -c './libs/data-access/cms-api/jest.config.ts' -t 'Seed CMS'",
 		"test": "nx test",
 		"storybook": "env TAILWIND_MODE=watch nx run docs-storybook:storybook --watch",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write **/*",
-		"prisma": "prisma",
-		"graphql-codegen": "graphql-codegen --config codegen.yml"
+		"prisma": "prisma"
 	},
 	"private": true,
 	"prisma": {
@@ -20,7 +17,6 @@
 		"seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} --project libs/data-access/database/tsconfig.json --require tsconfig-paths/register libs/data-access/database/src/lib/seed.ts"
 	},
 	"dependencies": {
-		"@graphql-codegen/cli": "^2.6.2",
 		"@headlessui/react": "^1.6.4",
 		"@heroicons/react": "^1.0.6",
 		"@next-auth/prisma-adapter": "^1.0.3",
@@ -31,8 +27,6 @@
 		"core-js": "^3.6.5",
 		"date-fns": "^2.28.0",
 		"framer-motion": "^6.3.11",
-		"graphql": "^16.3.0",
-		"graphql-request": "^4.2.0",
 		"gray-matter": "^4.0.3",
 		"http-status-codes": "^2.2.0",
 		"next": "12.1.5",
@@ -52,10 +46,6 @@
 		"@babel/core": "7.12.13",
 		"@babel/preset-typescript": "7.12.13",
 		"@faker-js/faker": "^7.1.0",
-		"@graphql-codegen/cli": "2.6.2",
-		"@graphql-codegen/introspection": "2.1.1",
-		"@graphql-codegen/typescript": "2.4.8",
-		"@graphql-codegen/typescript-graphql-request": "^4.4.4",
 		"@graphql-codegen/typescript-operations": "2.3.5",
 		"@nrwl/cli": "14.2.1",
 		"@nrwl/cypress": "14.2.1",
@@ -67,7 +57,6 @@
 		"@nrwl/storybook": "14.2.1",
 		"@nrwl/web": "14.2.1",
 		"@nrwl/workspace": "14.2.1",
-		"@nx-extend/strapi": "^2.0.2",
 		"@storybook/addon-essentials": "6.5.7",
 		"@storybook/builder-webpack5": "6.5.7",
 		"@storybook/core-server": "6.5.7",

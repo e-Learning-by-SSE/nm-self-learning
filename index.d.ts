@@ -2,15 +2,7 @@ declare var process: {
 	env: {
 		NODE_ENV: "development" | "production";
 		DATABASE_URL: string;
-		CMS_REST_API_URL: string;
-		CMS_GRAPHQL_URL: string;
 		NEXT_PUBLIC_API_URL: string;
-		STRAPI_WEBHOOK_TOKEN: string;
-		STRAPI_HOST: string;
-		STRAPI_PORT: string;
-		STRAPI_APP_KEYS: string;
-		STRAPI_JWT_SECRET: string;
-		STRAPI_API_TOKEN_SALT: string;
 		AUTH0_SECRET: string;
 		AUTH0_BASE_URL: string;
 		AUTH0_ISSUER_BASE_URL: string;

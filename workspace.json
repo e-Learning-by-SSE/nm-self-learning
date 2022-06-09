@@ -4,7 +4,6 @@
 	"projects": {
 		"cms": "apps/cms",
 		"data-access-api": "libs/data-access/api",
-		"data-access-cms-api": "libs/data-access/cms-api",
 		"database": "libs/data-access/database",
 		"docs-storybook": "docs/storybook",
 		"feature-completion": "libs/feature/completion",

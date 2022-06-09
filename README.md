@@ -5,13 +5,7 @@
 **Site**:
 
 ```
-nx serve site
-```
-
-**CMS (Strapi)**:
-
-```
-nx serve cms
+nx serve
 ```
 
 ## Testing
@@ -69,42 +63,3 @@ Fill database with demo data, which is defined in [seed.ts](libs/data-access/dat
 ```
 npm run prisma seed
 ```
-
-## GraphQL API
-
-[Strapi](https://strapi.io/), the headless CMS used in this project, provides a GraphQL API that we can use to access its data.
-To create a query or mutation, create a `.graphql` file or wrap it in a `gql` template string like so:
-
-```ts
-import { gql } from "graphql-request";
-
-gql`
-	query authors {
-		authors {
-			data {
-				attributes {
-					slug
-					name
-				}
-			}
-		}
-	}
-`;
-```
-
-If the API is online (locally), you should also receive IntelliSense for available attributes. Afterwards, you can invoke the following command to generate a type-safe query:
-
-```
-npm run graphql-codegen
-```
-
-The query/mutation will now be available on the following object:
-
-````ts
-import { cmsGraphqlClient } from "@self-learning/cms-api";
-// authors is a query called "authors"
-cmsGraphqlClient.authors();
-```
-````
-
-See [libs/data-access/cms-api/src/lib//queries](libs/data-access/cms-api/src/lib//queries) for more examples.
