@@ -1,11 +1,12 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
-import { database } from "@self-learning/database";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { Question, QuestionType, useQuizAttempt } from "@self-learning/quiz";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { getStaticPropsForLayout, LessonLayout, LessonProps } from "./index";
 
 const text = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur nostrum dolorem ### at placeat. Ad corrupti fugit, magnam ipsam iste similique voluptates. Doloribus repellat velit expedita molestias eaque consectetur nesciunt.
 Temporibus, repellendus aspernatur provident unde ipsa voluptates delectus a adipisci itaque quam impedit suscipit harum illo voluptas saepe facere est distinctio non cum nesciunt. Dicta rerum dignissimos commodi cum molestias?
@@ -71,8 +72,7 @@ function getQuiz(slug: string): QuestionType[] {
 	];
 }
 
-type QuestionProps = {
-	lesson: ResolvedValue<typeof getLesson>;
+type QuestionProps = LessonProps & {
 	questions: QuestionType[];
 	markdown: {
 		questionsMd: MdLookup;
@@ -82,15 +82,13 @@ type QuestionProps = {
 };
 
 export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) => {
-	const slug = params?.lessonSlug as string | undefined;
+	const parentProps = await getStaticPropsForLayout(params);
 
-	if (!slug) {
-		throw new Error("No [lessonSlug] provided.");
-	}
+	if ("notFound" in parentProps) return { notFound: true };
 
-	const lesson = await getLesson(slug);
+	const { lesson, chapters, course } = parentProps;
 
-	const questions = getQuiz(slug ?? "");
+	const questions = getQuiz(lesson?.slug ?? "");
 
 	const questionsMd: MdLookup = {};
 	const answersMd: MdLookup = {};
@@ -114,13 +112,10 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 		}
 	}
 
-	if (!slug) {
-		throw new Error("No slug provided.");
-	}
-
 	return {
-		notFound: !lesson,
 		props: {
+			course,
+			chapters,
 			lesson: lesson as Defined<typeof lesson>,
 			questions: questions,
 			markdown: {
@@ -136,20 +131,8 @@ export const getStaticPaths: GetStaticPaths = () => {
 	return { paths: [], fallback: "blocking" };
 };
 
-async function getLesson(slug: string | undefined) {
-	return await database.lesson.findUnique({
-		where: { slug },
-		select: {
-			lessonId: true,
-			slug: true,
-			title: true,
-			quiz: true
-		}
-	});
-}
-
-export default function QuestionsPage({ lesson, questions, markdown }: QuestionProps) {
-	const { slug, lessonId } = lesson;
+export default function QuestionsPage({ course, lesson, questions, markdown }: QuestionProps) {
+	const { slug } = lesson;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
 	const { index } = router.query;
@@ -161,13 +144,13 @@ export default function QuestionsPage({ lesson, questions, markdown }: QuestionP
 	// );
 
 	function goToNextQuestion() {
-		router.push(`/lessons/${slug}/quiz?index=${nextIndex}`, undefined, {
+		router.push(`/courses/${course.slug}/${slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true
 		});
 	}
 
 	function goToPreviousQuestion() {
-		router.push(`/lessons/${slug}/quiz?index=${nextIndex - 2}`, undefined, {
+		router.push(`/courses/${course.slug}/${slug}/quiz?index=${nextIndex - 2}`, undefined, {
 			shallow: true
 		});
 	}
@@ -185,27 +168,29 @@ export default function QuestionsPage({ lesson, questions, markdown }: QuestionP
 	}, [index, questions]);
 
 	return (
-		<div className="bg-gray-50">
-			<div className="grid items-start gap-16 bg-gray-50 px-4 pb-16 lg:px-0">
-				<div className="mx-auto grid w-full max-w-3xl items-start gap-8">
-					<QuestionNavigation
-						lesson={lesson}
-						amount={questions.length}
-						current={nextIndex}
-						hasPrevious={nextIndex > 1}
-						hasNext={nextIndex < questions.length}
-						goToNext={goToNextQuestion}
-						goToPrevious={goToPreviousQuestion}
-					/>
-					<Question question={currentQuestion} markdown={markdown} />
-				</div>
+		<div className="grid grow items-start gap-16 bg-gray-50 px-4 pb-16 lg:px-0">
+			<div className="mx-auto grid w-full max-w-3xl items-start gap-8">
+				<QuestionNavigation
+					lesson={lesson}
+					course={course}
+					amount={questions.length}
+					current={nextIndex}
+					hasPrevious={nextIndex > 1}
+					hasNext={nextIndex < questions.length}
+					goToNext={goToNextQuestion}
+					goToPrevious={goToPreviousQuestion}
+				/>
+				<Question question={currentQuestion} markdown={markdown} />
 			</div>
 		</div>
 	);
 }
 
+QuestionsPage.getLayout = LessonLayout;
+
 function QuestionNavigation({
 	lesson,
+	course,
 	current,
 	amount,
 	hasPrevious,
@@ -214,6 +199,7 @@ function QuestionNavigation({
 	goToPrevious
 }: {
 	lesson: QuestionProps["lesson"];
+	course: QuestionProps["course"];
 	current: number;
 	amount: number;
 	hasPrevious: boolean;
@@ -227,8 +213,12 @@ function QuestionNavigation({
 	return (
 		<div className="flex flex-col gap-4 rounded-b-lg border-x border-b border-light-border bg-white p-4">
 			<div className="flex flex-col gap-2">
-				<h2 className="text-lg text-secondary">{lesson.title}</h2>
-				<h1 className="text-4xl">Lernkontrolle</h1>
+				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
+					<a>
+						<h1 className="text-lg text-secondary">{lesson.title}</h1>
+					</a>
+				</Link>
+				<h2 className="text-4xl">Lernkontrolle</h2>
 			</div>
 			<div className="flex flex-wrap items-center justify-between gap-6">
 				<span>

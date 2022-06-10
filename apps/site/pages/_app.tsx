@@ -15,6 +15,12 @@ const queryClient = new QueryClient({
 });
 
 function CustomApp({ Component, pageProps }: AppProps) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const Layout = (Component as any).getLayout
+		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+		  (Component as any).getLayout(Component, pageProps)
+		: null;
+
 	return (
 		<>
 			<SessionProvider session={pageProps.session}>
@@ -24,7 +30,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 					</Head>
 					<Navbar />
 					<main className="grid grow">
-						<Component {...pageProps} />
+						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 					</main>
 					{/* <ReactQueryDevtools initialIsOpen={false} position="bottom-right" /> */}
 				</QueryClientProvider>

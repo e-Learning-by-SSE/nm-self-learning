@@ -2,18 +2,18 @@ import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { CourseCompletion, CourseContent, LessonContent } from "@self-learning/types";
-import { AuthorsList } from "@self-learning/ui/common";
 import { NestablePlaylist } from "@self-learning/ui/lesson";
-import { GetServerSideProps } from "next";
+import { GetStaticPaths, GetStaticProps, NextComponentType, NextPageContext } from "next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import type { ParsedUrlQuery } from "querystring";
 import { useMemo } from "react";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
-type LessonProps = {
+export type LessonProps = {
 	lesson: ResolvedValue<typeof getLesson>;
 	chapters: {
 		title: string;
@@ -36,6 +36,7 @@ async function getLesson(slug: string) {
 			subtitle: true,
 			description: true,
 			content: true,
+			quiz: true,
 			competences: {
 				select: {
 					competenceId: true,
@@ -53,7 +54,9 @@ async function getLesson(slug: string) {
 	});
 }
 
-export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params, req }) => {
+export async function getStaticPropsForLayout(
+	params?: ParsedUrlQuery | undefined
+): Promise<LessonProps | { notFound: true }> {
 	const courseSlug = params?.courseSlug as string;
 	const lessonSlug = params?.lessonSlug as string;
 
@@ -112,13 +115,67 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		isActive: chapter.lessonIds.includes(lesson.lessonId)
 	}));
 
+	return { lesson: lesson as Defined<typeof lesson>, chapters, course };
+}
+
+export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) => {
+	const props = await getStaticPropsForLayout(params);
+
+	if ("notFound" in props) return { notFound: true };
+
+	const { lesson, chapters, course } = props;
+
 	return {
 		props: { lesson: lesson as Defined<typeof lesson>, chapters, course }
 	};
 };
 
-export default function Lesson({ lesson, chapters, course }: LessonProps) {
+export const getStaticPaths: GetStaticPaths = () => {
+	return {
+		fallback: "blocking",
+		paths: []
+	};
+};
+
+export default function Lesson({ lesson, course }: LessonProps) {
 	const url = (lesson.content as LessonContent)[0].url;
+
+	return (
+		<div className="playlist-scroll grow overflow-auto xl:h-[calc(100vh-80px)]">
+			<div className="aspect-video h-full w-full bg-black xl:max-h-[75vh]">
+				<VideoPlayer url={url} />
+			</div>
+			<LessonControls course={course} lesson={lesson} />
+			<LessonHeader lesson={lesson} authors={lesson.authors} course={course} />
+		</div>
+	);
+}
+
+Lesson.getLayout = LessonLayout;
+
+export function LessonLayout(
+	Component: NextComponentType<NextPageContext, unknown, LessonProps>,
+	pageProps: LessonProps
+) {
+	return (
+		<>
+			<Head>
+				<title>{pageProps.lesson.title}</title>
+			</Head>
+
+			<div className=" overflow-hidden md:pb-32 xl:h-[calc(100vh-80px)]">
+				<div className="flex flex-col">
+					<div className="mx-auto flex w-full flex-col xl:flex-row">
+						<Component {...pageProps} />
+						<PlaylistArea {...pageProps} />
+					</div>
+				</div>
+			</div>
+		</>
+	);
+}
+
+function PlaylistArea({ chapters, course, lesson }: LessonProps) {
 	const courseCompletion = useCourseCompletion(course.slug);
 
 	const content = useMemo(() => {
@@ -132,36 +189,9 @@ export default function Lesson({ lesson, chapters, course }: LessonProps) {
 	}, [courseCompletion, chapters]);
 
 	return (
-		<>
-			<Head>
-				<title>{lesson.title}</title>
-			</Head>
-
-			<div className=" overflow-hidden md:pb-32 xl:h-[calc(100vh-80px)]">
-				<div className="flex flex-col gap-4">
-					<div className="mx-auto flex w-full flex-col xl:flex-row">
-						<div className="playlist-scroll grow overflow-auto xl:h-[calc(100vh-80px)] ">
-							<div className="aspect-video h-full w-full bg-black xl:max-h-[75vh]">
-								<VideoPlayer url={url} />
-							</div>
-							<LessonControls course={course} lesson={lesson} />
-							<LessonHeader
-								lesson={lesson}
-								authors={lesson.authors}
-								course={course}
-							/>
-						</div>
-						<div className="sticky flex h-[400px] flex-col xl:h-[calc(100vh-80px)] xl:w-[500px]">
-							<NestablePlaylist
-								course={course}
-								currentLesson={lesson}
-								content={content}
-							/>
-						</div>
-					</div>
-				</div>
-			</div>
-		</>
+		<div className="sticky flex h-[400px] flex-col xl:h-[calc(100vh-80px)] xl:w-[500px]">
+			<NestablePlaylist course={course} currentLesson={lesson} content={content} />
+		</div>
 	);
 }
 
