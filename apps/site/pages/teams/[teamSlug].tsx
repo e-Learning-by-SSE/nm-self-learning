@@ -92,7 +92,7 @@ export default function TeamPage({ team, markdownDescription }: TeamPageProps) {
 								<AuthorChip
 									key={author.slug}
 									slug={author.slug}
-									name={author.displayName}
+									displayName={author.displayName}
 									imgUrl={author.imgUrl}
 								/>
 							))}
