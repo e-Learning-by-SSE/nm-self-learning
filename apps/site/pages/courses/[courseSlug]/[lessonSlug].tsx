@@ -1,26 +1,25 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
-import {
-	checkLessonCompletion,
-	useCourseCompletion,
-	useMarkAsCompleted
-} from "@self-learning/completion";
+import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseContent, LessonContent } from "@self-learning/types";
-import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
-import { NestablePlaylist, PlaylistLesson } from "@self-learning/ui/lesson";
+import { CourseCompletion, CourseContent, LessonContent } from "@self-learning/types";
+import { AuthorsList } from "@self-learning/ui/common";
+import { NestablePlaylist } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import React, { useCallback } from "react";
+import { useMemo } from "react";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 type LessonProps = {
 	lesson: ResolvedValue<typeof getLesson>;
-	chapters: { title: string; lessons: PlaylistLesson[]; isActive: boolean }[];
+	chapters: {
+		title: string;
+		lessons: { lessonId: string; slug: string; title: string; imgUrl?: string | null }[];
+		isActive: boolean;
+	}[];
 	course: {
 		title: string;
 		slug: string;
@@ -62,7 +61,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const [lesson, course, session] = await Promise.all([
+	const [lesson, course] = await Promise.all([
 		getLesson(lessonSlug),
 		database.course.findUnique({
 			where: { slug: courseSlug },
@@ -71,8 +70,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 				title: true,
 				slug: true
 			}
-		}),
-		getSession({ req })
+		})
 	]);
 
 	if (!course || !lesson) {
@@ -81,7 +79,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 
 	const lessonIds = (course.content as CourseContent).flatMap(chapter => chapter.lessonIds);
 
-	const lessons = (await database.lesson.findMany({
+	const lessons = await database.lesson.findMany({
 		select: {
 			lessonId: true,
 			slug: true,
@@ -93,7 +91,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 				in: lessonIds
 			}
 		}
-	})) as PlaylistLesson[];
+	});
 
 	const lessonsById = new Map<string, typeof lessons[0]>();
 
@@ -103,19 +101,16 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 
 	const chapters = (course.content as CourseContent).map(chapter => ({
 		title: chapter.title,
-		lessons: chapter.lessonIds.map(lessonId => lessonsById.get(lessonId) as PlaylistLesson),
+		lessons: chapter.lessonIds.map(
+			lessonId =>
+				lessonsById.get(lessonId) ?? {
+					title: "Removed",
+					lessonId: "removed",
+					slug: "removed"
+				}
+		),
 		isActive: chapter.lessonIds.includes(lesson.lessonId)
 	}));
-
-	if (session?.user?.name) {
-		const completion = await checkLessonCompletion(session.user.name, lessonIds);
-
-		for (const chapter of chapters) {
-			for (const lesson of chapter.lessons) {
-				lesson.isCompleted = lesson.lessonId in completion;
-			}
-		}
-	}
 
 	return {
 		props: { lesson: lesson as Defined<typeof lesson>, chapters, course }
@@ -124,14 +119,17 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 
 export default function Lesson({ lesson, chapters, course }: LessonProps) {
 	const url = (lesson.content as LessonContent)[0].url;
-	const authors = lesson.authors.map(
-		author =>
-			({
-				name: author.displayName,
-				slug: author.slug,
-				imgUrl: author.imgUrl
-			} as AuthorProps)
-	) as AuthorProps[];
+	const courseCompletion = useCourseCompletion(course.slug);
+
+	const content = useMemo(() => {
+		if (!courseCompletion) {
+			return chapters;
+		}
+
+		const contentWithCompletion = addCompletionInfo(chapters, courseCompletion);
+
+		return contentWithCompletion;
+	}, [courseCompletion, chapters]);
 
 	return (
 		<>
@@ -139,19 +137,50 @@ export default function Lesson({ lesson, chapters, course }: LessonProps) {
 				<title>{lesson.title}</title>
 			</Head>
 
-			<div className=" bg-gray-50 md:pb-32">
+			<div className=" overflow-hidden md:pb-32 xl:h-[calc(100vh-80px)]">
 				<div className="flex flex-col gap-4">
-					<VideoPlayerWithPlaylist
-						videoUrl={url as string}
-						chapters={chapters}
-						currentLesson={lesson}
-						course={course}
-					/>
-					<LessonHeader lesson={lesson} authors={authors} course={course} />
+					<div className="mx-auto flex w-full flex-col xl:flex-row">
+						<div className="playlist-scroll grow overflow-auto xl:h-[calc(100vh-80px)] ">
+							<div className="aspect-video h-full w-full bg-black xl:max-h-[75vh]">
+								<VideoPlayer url={url} />
+							</div>
+							<LessonControls course={course} lesson={lesson} />
+							<LessonHeader
+								lesson={lesson}
+								authors={lesson.authors}
+								course={course}
+							/>
+						</div>
+						<div className="sticky flex h-[400px] flex-col xl:h-[calc(100vh-80px)] xl:w-[500px]">
+							<NestablePlaylist
+								course={course}
+								currentLesson={lesson}
+								content={content}
+							/>
+						</div>
+					</div>
 				</div>
 			</div>
 		</>
 	);
+}
+
+function addCompletionInfo(
+	chapters: {
+		title: string;
+		lessons: { lessonId: string; slug: string; title: string; imgUrl?: string | null }[];
+		isActive: boolean;
+	}[],
+	courseCompletion: CourseCompletion
+) {
+	return chapters.map(chapter => ({
+		title: chapter.title,
+		isActive: chapter.isActive,
+		lessons: chapter.lessons.map(lesson => ({
+			...lesson,
+			isCompleted: lesson.lessonId in courseCompletion.completedLessons
+		}))
+	}));
 }
 
 function VideoPlayerWithPlaylist({
@@ -182,11 +211,7 @@ function VideoPlayerWithPlaylist({
 }
 
 function VideoPlayer({ url }: { url: string }) {
-	return (
-		<div className="flex h-full w-full bg-black">
-			<ReactPlayer url={url} height="100%" width="100%" controls={true} />
-		</div>
-	);
+	return <ReactPlayer url={url} height="100%" width="100%" controls={true} />;
 }
 
 function LessonHeader({
@@ -196,53 +221,99 @@ function LessonHeader({
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
-	authors: AuthorProps[];
+	authors: {
+		slug: string;
+		displayName: string;
+		imgUrl: string | null;
+	}[];
 }) {
-	const router = useRouter();
+	return (
+		<div className="flex flex-grow flex-col items-center gap-12 px-4 pt-8 pb-24">
+			<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
+			<Link href={`/courses/${course.slug}`}>
+				<a className="text-xl font-semibold text-secondary">{course.title}</a>
+			</Link>
+			<div className="flex flex-wrap gap-4">
+				{authors.map(author => (
+					<Link href={`/authors/${author.slug}`} key={author.slug}>
+						<a>
+							<div
+								className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
+								key={author.slug}
+							>
+								<div className="relative h-12 w-12">
+									{author.imgUrl && (
+										<Image
+											src={author.imgUrl}
+											alt=""
+											layout="fill"
+											objectFit="cover"
+										></Image>
+									)}
+								</div>
+								<span className="p-4 text-sm font-medium">
+									{author.displayName}
+								</span>
+							</div>
+						</a>
+					</Link>
+				))}
+			</div>
+			{lesson.subtitle && (
+				<div className="max-w-3xl text-center text-xl tracking-tight text-light">
+					{lesson.subtitle}
+				</div>
+			)}
 
-	const onSettled = useCallback(() => {
-		router.replace(router.asPath, undefined, { scroll: false });
-	}, [router]);
+			<div className="mx-auto max-w-prose text-justify">
+				{lesson.description && <p>{lesson.description}</p>}
+			</div>
+		</div>
+	);
+}
 
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, onSettled);
-	const courseCompletion = useCourseCompletion(course.slug);
+function LessonControls({
+	lesson,
+	course
+}: {
+	course: LessonProps["course"];
+	lesson: LessonProps["lesson"];
+}) {
+	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
+
+	const completion = useCourseCompletion(course.slug);
+	const isCompletedLesson = isCompleted(lesson, completion);
 
 	return (
-		<div className="mx-auto flex w-full max-w-screen-xl flex-col px-2 sm:px-0">
-			<div className="gradient card flex flex-wrap justify-between gap-8">
-				<Link href={`/lessons/${lesson.slug}/quiz`}>
-					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
-						<span>Zur Lernkontrolle</span>
-						<PlayIcon className="h-6 shrink-0" />
-					</a>
-				</Link>
+		<div className="flex flex-wrap justify-end gap-8 p-4">
+			<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
+				<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
+					<span>Zur Lernkontrolle</span>
+					<PlayIcon className="h-6 shrink-0" />
+				</a>
+			</Link>
 
+			{!isCompletedLesson ? (
 				<button
-					className="btn-primary flex w-full flex-wrap-reverse md:w-fit"
+					className="btn-stroked flex w-full flex-wrap-reverse md:w-fit"
 					onClick={markAsCompleted}
 				>
 					<span>Als abgeschlossen markieren</span>
 					<CheckCircleIcon className="h-6 shrink-0" />
 				</button>
-			</div>
-			{/* <div className="bg-white p-4 text-xs">
-				<pre>{JSON.stringify(courseCompletion, null, 4)}</pre>
-			</div> */}
-			<div className="mx-auto mt-8 flex flex-grow flex-col items-center gap-12">
-				<Link href={`/courses/${course.slug}`}>
-					<a className="text-xl font-semibold text-secondary">{course.title}</a>
-				</Link>
-				<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
-				{lesson.subtitle && (
-					<div className="max-w-3xl text-xl tracking-tight text-light">
-						{lesson.subtitle}
-					</div>
-				)}
-				<AuthorsList authors={authors} />
-				<div className="mx-auto max-w-prose text-justify">
-					{lesson.description && <p>{lesson.description}</p>}
-				</div>
-			</div>
+			) : (
+				<button
+					className="btn-stroked flex w-full flex-wrap-reverse md:w-fit"
+					onClick={markAsCompleted}
+				>
+					<span>Als wiederholt markieren</span>
+					<CheckCircleIcon className="h-6 shrink-0" />
+				</button>
+			)}
 		</div>
 	);
+}
+
+function isCompleted(lesson: { lessonId: string }, completion?: CourseCompletion): boolean {
+	return !!completion?.completedLessons[lesson.lessonId];
 }

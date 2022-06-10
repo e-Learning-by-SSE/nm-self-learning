@@ -1,5 +1,4 @@
 import {
-	BookmarkIcon,
 	CheckCircleIcon,
 	ChevronDoubleDownIcon,
 	ChevronDoubleUpIcon,
@@ -34,7 +33,7 @@ export function NestablePlaylist({
 		useCollapseToggle(content);
 
 	return (
-		<div className="flex h-fit w-full flex-col overflow-hidden bg-white">
+		<div className="flex h-full w-full flex-col overflow-hidden border-l border-l-light-border">
 			<div className="grid grid-cols-[1fr_auto] border-b border-light-border p-4">
 				<div className="flex flex-col gap-2">
 					<span className="text-base font-semibold">{course.title}</span>
