@@ -48,7 +48,10 @@ async function mapCourseContent(content: CourseContent): Promise<ChapterWithLess
 	const mappedContent = content.map(chapter => ({
 		title: chapter.title,
 		description: chapter.description,
-		lessons: chapter.lessonIds.map(lessonId => map.get(lessonId) as Defined<typeof lessons[0]>)
+		lessons: chapter.lessonIds.map(
+			lessonId =>
+				map.get(lessonId) ?? { lessonId: "removed", slug: "removed", title: "Removed" }
+		)
 	}));
 
 	return mappedContent;
@@ -74,6 +77,7 @@ export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) =>
 	}
 
 	const content = await mapCourseContent(course.content as CourseContent);
+
 	let markdownDescription = null;
 
 	if (course) {
@@ -82,7 +86,6 @@ export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) =>
 			course.description = null;
 		}
 	}
-
 	return {
 		props: {
 			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
