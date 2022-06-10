@@ -61,9 +61,13 @@ pipeline {
                             cd ~/Self-Learning
                             git reset --hard
                             git pull
-                            npm install
+                            npm ci
+                            cp -f ~/Self-Learning.env ~/Self-Learning/.env
+                            npm run prisma db push --accept-data-loss
+                            npm run prisma db seed
+                            npm run build --prod
                             rm ~/.pm2/logs/npm-error.log
-                            pm2 restart 0 --wait-ready # requires project intialized with: pm2 start npm -- run start:demo
+                            pm2 restart Self-Learning --wait-ready # requires project intialized with: pm2 start npm -- run start:demo
                             cd ..
                             sleep 30
                             ./chk_logs_for_err.sh
