@@ -5,7 +5,7 @@
 	"scripts": {
 		"start": "nx serve",
 		"build": "nx build",
-		"test": "nx run-many --target=test --all --cache=false --runInBand",
+		"test": "nx run-many --target=test --all --cache=false --skip-nx-cache --runInBand",
 		"storybook": "env TAILWIND_MODE=watch nx run docs-storybook:storybook --watch",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write **/*",
