@@ -77,13 +77,6 @@ pipeline {
                 findText(textFinders: [textFinder(regexp: '(- error TS\\*)|(Cannot find module.*or its corresponding type declarations\\.)', alsoCheckConsoleOutput: true, buildResult: 'FAILURE')])
             }
         }
-        
-        stage('Publish Results') {
-            steps {
-                archiveArtifacts artifacts: '*.tar.gz'
-            }
-        }
-
     }
     
     post {
