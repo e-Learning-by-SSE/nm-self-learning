@@ -9,13 +9,13 @@ export function Navbar() {
 	const { data: session } = useSession();
 
 	return (
-		<nav className="h-20 border-b border-b-gray-200 bg-white">
+		<nav className="h-14 border-b border-b-gray-200 bg-white sm:h-20">
 			<div className="mx-auto flex h-full max-w-screen-xl items-center justify-between gap-4 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/">
 						<a className="flex items-center gap-4">
 							<div className="rounded-full bg-secondary p-1">
-								<AcademicCapIcon className="h-10 shrink-0 text-white" />
+								<AcademicCapIcon className="h-7 shrink-0 text-white sm:h-10" />
 							</div>
 							<div className="invisible flex w-0 flex-col sm:visible sm:w-fit">
 								<span className="text-light">Universität Hildesheim</span>
