@@ -1,10 +1,10 @@
 import { CheckCircleIcon, PlayIcon, PlusCircleIcon, XCircleIcon } from "@heroicons/react/solid";
-import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
+import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { CourseContent } from "@self-learning/types";
-import { AuthorProps, AuthorsList } from "@self-learning/ui/common";
+import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { formatDistance } from "date-fns";
@@ -13,7 +13,7 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -160,15 +160,6 @@ function CourseHeader({
 	const { enroll } = useEnrollmentMutations(course.slug);
 	const completion = useCourseCompletion(course.slug);
 
-	const [authors] = useState(
-		() =>
-			course.authors.map(author => ({
-				slug: author.slug,
-				name: author.displayName,
-				imgUrl: author.imgUrl
-			})) as AuthorProps[]
-	);
-
 	const isEnrolled = useMemo(() => {
 		if (!enrollments) return false;
 		return !!enrollments.find(e => e.course.slug === course.slug);
@@ -203,7 +194,7 @@ function CourseHeader({
 								<div className="text-lg tracking-tight">{course.subtitle}</div>
 							)}
 						</div>
-						<AuthorsList authors={authors} />
+						<AuthorsList authors={course.authors} />
 					</div>
 
 					<CreatedUpdatedDates
