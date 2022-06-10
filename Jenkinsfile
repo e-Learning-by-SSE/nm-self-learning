@@ -46,7 +46,7 @@ pipeline {
             steps {
                 sh 'npm run build --prod'
                 sh 'rm -f Self-Learning.tar.gz'
-                sh 'tar czf Self-Learning.tar.gz dist src test config package.json ormconfig.ts tsconfig.json'
+                // sh 'tar czf Self-Learning.tar.gz dist src test config package.json ormconfig.ts tsconfig.json'
             }
         }
 
