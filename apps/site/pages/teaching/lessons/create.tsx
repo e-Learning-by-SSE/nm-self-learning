@@ -5,9 +5,12 @@ import { CenteredSection } from "@self-learning/ui/layouts";
 import { useMemo, useState } from "react";
 import slugify from "slugify";
 
+import Editor from "@monaco-editor/react";
+
 export default function CreateLessonPage() {
 	const [title, setTitle] = useState("");
 	const [slug, setSlug] = useState("");
+	const [editorText, setEditorText] = useState<string | null | undefined>(null);
 
 	function slugifyTitle() {
 		if (slug === "") {
@@ -66,6 +69,22 @@ export default function CreateLessonPage() {
 								rows={4}
 							></TextArea>
 						</div>
+					</SectionCard>
+
+					<SectionCard title="Markdown"></SectionCard>
+
+					<SectionCard title="Monaco Editor" subtitle={editorText}>
+						<Editor
+							options={{
+								minimap: { enabled: false },
+								tabSize: 4,
+								insertSpaces: false
+							}}
+							height="500px"
+							defaultLanguage="json"
+							defaultValue=""
+							onChange={value => setEditorText(value)}
+						/>
 					</SectionCard>
 
 					<SectionCard
