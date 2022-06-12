@@ -1,5 +1,14 @@
 import { serialize } from "next-mdx-remote/serialize";
 
+// Remark packages
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+// Rehype packages
+import rehypeKatex from "rehype-katex";
+import rehypeCitation from "rehype-citation";
+import rehypePrismPlus from "rehype-prism-plus";
+import rehypePresetMinify from "rehype-preset-minify";
+
 /**
  * Converts a markdown document to an object that can be rendered in a {@link MDXRemote} component.
  * The given markdown string should not include front matter.
@@ -17,7 +26,13 @@ import { serialize } from "next-mdx-remote/serialize";
  *
  */
 export function compileMarkdown(markdown: string) {
-	return serialize(markdown);
+	return serialize(markdown, {
+		parseFrontmatter: true,
+		mdxOptions: {
+			remarkPlugins: [remarkGfm, remarkMath],
+			rehypePlugins: [rehypeKatex, rehypeCitation, rehypePrismPlus, rehypePresetMinify]
+		}
+	});
 }
 
 /**
