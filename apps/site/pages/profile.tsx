@@ -4,7 +4,7 @@ import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
 import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
 import { GetServerSideProps, GetServerSidePropsResult } from "next";
-import { getSession } from "next-auth/react";
+import { getToken } from "next-auth/jwt";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
@@ -79,9 +79,9 @@ async function getCompletedLessons(username: string) {
 }
 
 export const getServerSideProps: GetServerSideProps<ProfileProps> = async ({ req }) => {
-	const session = await getSession({ req });
+	const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-	if (!session?.user?.name) {
+	if (!token?.name) {
 		return {
 			redirect: {
 				destination: "/login?callbackUrl=profile",
@@ -90,8 +90,10 @@ export const getServerSideProps: GetServerSideProps<ProfileProps> = async ({ req
 		};
 	}
 
-	const user = await getUser(session.user.name);
-	const completedLessons = await getCompletedLessons(user.username);
+	const [user, completedLessons] = await Promise.all([
+		getUser(token.name),
+		getCompletedLessons(token.name)
+	]);
 
 	const props = {
 		user: user as Exclude<typeof user, null>,
