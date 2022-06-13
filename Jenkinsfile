@@ -29,7 +29,7 @@ pipeline {
                 POSTGRES_USER = 'postgres'
                 POSTGRES_PASSWORD = 'admin'
                 PORT = '5432'
-                TEST_DB_URL = 'postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@localhost:${env.POSTGRES_PORT}/${env.POSTGRES_DB}'
+                TEST_DB_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@localhost:${env.POSTGRES_PORT}/${env.POSTGRES_DB}"
             }
             steps {
                 script {
