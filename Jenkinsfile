@@ -6,8 +6,6 @@ pipeline {
     environment {
         DEMO_SERVER = '147.172.178.30'
         DEMO_SERVER_PORT = '8080'
-        API_FILE = 'api-json'
-        API_URL = "http://${env.DEMO_SERVER}:${env.DEMO_SERVER_PORT}/stmgmt/${env.API_FILE}"
     }
     
     stages {
@@ -31,11 +29,13 @@ pipeline {
                 POSTGRES_USER = 'postgres'
                 POSTGRES_PASSWORD = 'admin'
                 PORT = '5432'
+                TEST_DB_URL = 'postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@localhost:${env.POSTGRES_PORT}/${env.POSTGRES_DB}'
             }
             steps {
                 script {
                     // Sidecar Pattern: https://www.jenkins.io/doc/book/pipeline/docker/#running-sidecar-containers
                     docker.image('postgres:14.1-alpine').withRun("-e POSTGRES_USER=${env.POSTGRES_USER} -e POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD} -e POSTGRES_DB=${env.POSTGRES_DB} -p ${env.PORT}:${env.PORT}") { c ->
+                        sh 'export DATABASE_URL=\"${env.TEST_DB_URL}\"'
                         sh 'npm run test'
                     }
                 }
