@@ -86,9 +86,7 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 
 	if ("notFound" in parentProps) return { notFound: true };
 
-	const { lesson, chapters, course } = parentProps;
-
-	const questions = getQuiz(lesson?.slug ?? "");
+	const questions = getQuiz(parentProps.lesson?.slug ?? "");
 
 	const questionsMd: MdLookup = {};
 	const answersMd: MdLookup = {};
@@ -114,9 +112,7 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 
 	return {
 		props: {
-			course,
-			chapters,
-			lesson: lesson as Defined<typeof lesson>,
+			...parentProps,
 			questions: questions,
 			markdown: {
 				questionsMd,
