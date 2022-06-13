@@ -16,6 +16,20 @@ describe("getCourseCompletion", () => {
 	const courseSlug = "test-course-with-completion";
 
 	beforeEach(async () => {
+		await database.student.upsert({
+			where: { username },
+			create: {
+				displayName: "Harry Potter",
+				username: "potter",
+				user: {
+					create: {
+						name: "potter"
+					}
+				}
+			},
+			update: {}
+		});
+
 		await database.course.deleteMany({ where: { slug: courseSlug } });
 		await database.lesson.deleteMany();
 

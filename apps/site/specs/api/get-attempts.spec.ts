@@ -24,6 +24,34 @@ import { getAllAttempts } from "../../pages/api/users/[username]/lessons/[lesson
 
 describe("getAllAttempts", () => {
 	it("Gets all attempts of user for a lesson", async () => {
+		await database.student.upsert({
+			where: { username: "potter" },
+			create: {
+				displayName: "Harry Potter",
+				username: "potter",
+				user: {
+					create: {
+						name: "potter"
+					}
+				}
+			},
+			update: {}
+		});
+
+		await database.student.upsert({
+			where: { username: "weasley" },
+			create: {
+				displayName: "Ronald Weasley",
+				username: "weasley",
+				user: {
+					create: {
+						name: "weasley"
+					}
+				}
+			},
+			update: {}
+		});
+
 		await database.lesson.deleteMany();
 		await database.quizAttempt.deleteMany();
 
