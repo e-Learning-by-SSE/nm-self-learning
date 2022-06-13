@@ -29,13 +29,15 @@ pipeline {
                 POSTGRES_USER = 'postgres'
                 POSTGRES_PASSWORD = 'admin'
                 PORT = '5432'
-                TEST_DB_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@localhost:${env.POSTGRES_PORT}/${env.POSTGRES_DB}"
+                DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@localhost:${env.PORT}/${env.POSTGRES_DB}"
             }
             steps {
                 script {
                     // Sidecar Pattern: https://www.jenkins.io/doc/book/pipeline/docker/#running-sidecar-containers
-                    docker.image('postgres:14.1-alpine').withRun("-e POSTGRES_USER=${env.POSTGRES_USER} -e POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD} -e POSTGRES_DB=${env.POSTGRES_DB} -p ${env.PORT}:${env.PORT}") { c ->
-                        sh "export DATABASE_URL=${env.TEST_DB_URL}"
+                    docker.image('postgres:14.3-alpine').withRun("-e POSTGRES_USER=${env.POSTGRES_USER} -e POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD} -e POSTGRES_DB=${env.POSTGRES_DB} -p ${env.PORT}:${env.PORT}") { c ->
+                        sh "docker inspect ${c.id}"
+                        sh "sleep 20"
+                        sh 'npm run prisma db push'
                         sh 'npm run test'
                     }
                 }
