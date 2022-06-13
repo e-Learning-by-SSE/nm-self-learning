@@ -215,9 +215,9 @@ function PlaylistArea({ chapters, course, lesson }: LessonProps) {
 	}, []);
 
 	return (
-		<div className="flex h-[400px] w-[500px] border-x border-light-border bg-white xl:h-full xl:border-t-0">
+		<div className="flex h-[500px] w-full border-l border-light-border bg-white xl:h-full xl:w-[500px] xl:border-t-0">
 			<motion.div
-				className="right-0 flex h-full xl:fixed xl:w-[500px]"
+				className="right-0 flex h-full w-full xl:fixed xl:w-[500px]"
 				transition={{ type: "tween", duration: 0.2 }}
 				animate={{ top: offset > 80 ? "0px" : `${80 - offset}px` }}
 			>
