@@ -1,20 +1,26 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { database } from "@self-learning/database";
+import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { CourseCompletion, CourseContent, LessonContent } from "@self-learning/types";
 import { NestablePlaylist } from "@self-learning/ui/lesson";
+import { motion } from "framer-motion";
 import { GetStaticPaths, GetStaticProps, NextComponentType, NextPageContext } from "next";
+import { MDXRemote } from "next-mdx-remote";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import Math from "../../../../components/math";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export type LessonProps = {
 	lesson: ResolvedValue<typeof getLesson>;
+	mdDescription: CompiledMarkdown | null;
 	chapters: {
 		title: string;
 		lessons: { lessonId: string; slug: string; title: string; imgUrl?: string | null }[];
@@ -115,7 +121,7 @@ export async function getStaticPropsForLayout(
 		isActive: chapter.lessonIds.includes(lesson.lessonId)
 	}));
 
-	return { lesson: lesson as Defined<typeof lesson>, chapters, course };
+	return { lesson: lesson as Defined<typeof lesson>, chapters, course, mdDescription: null };
 }
 
 export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) => {
@@ -125,8 +131,14 @@ export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) =>
 
 	const { lesson, chapters, course } = props;
 
+	let mdDescription = null;
+
+	if (lesson.description) {
+		mdDescription = await compileMarkdown(lesson.description);
+	}
+
 	return {
-		props: { lesson: lesson as Defined<typeof lesson>, chapters, course }
+		props: { lesson: lesson as Defined<typeof lesson>, mdDescription, chapters, course }
 	};
 };
 
@@ -137,16 +149,21 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
-export default function Lesson({ lesson, course }: LessonProps) {
+export default function Lesson({ lesson, course, mdDescription }: LessonProps) {
 	const url = (lesson.content as LessonContent)[0].url;
 
 	return (
-		<div className="playlist-scroll grow overflow-auto xl:h-[calc(100vh-80px)]">
+		<div className="playlist-scroll grow">
 			<div className="aspect-video h-full w-full bg-black xl:max-h-[75vh]">
 				<VideoPlayer url={url} />
 			</div>
 			<LessonControls course={course} lesson={lesson} />
-			<LessonHeader lesson={lesson} authors={lesson.authors} course={course} />
+			<LessonHeader
+				lesson={lesson}
+				authors={lesson.authors}
+				course={course}
+				mdDescription={mdDescription}
+			/>
 		</div>
 	);
 }
@@ -163,7 +180,7 @@ export function LessonLayout(
 				<title>{pageProps.lesson.title}</title>
 			</Head>
 
-			<div className=" overflow-hidden md:pb-32 xl:h-[calc(100vh-80px)]">
+			<div className="md:pb-32">
 				<div className="flex flex-col">
 					<div className="mx-auto flex w-full flex-col xl:flex-row">
 						<Component {...pageProps} />
@@ -188,9 +205,24 @@ function PlaylistArea({ chapters, course, lesson }: LessonProps) {
 		return contentWithCompletion;
 	}, [courseCompletion, chapters]);
 
+	const [offset, setOffset] = useState(0);
+
+	useEffect(() => {
+		const onScroll = () => setOffset(window.pageYOffset);
+		window.removeEventListener("scroll", onScroll);
+		window.addEventListener("scroll", onScroll, { passive: true });
+		return () => window.removeEventListener("scroll", onScroll);
+	}, []);
+
 	return (
-		<div className="sticky flex h-[400px] flex-col xl:h-[calc(100vh-80px)] xl:w-[500px]">
-			<NestablePlaylist course={course} currentLesson={lesson} content={content} />
+		<div className="flex h-[400px] w-[500px] border-x border-light-border bg-white xl:h-full xl:border-t-0">
+			<motion.div
+				className="right-0 flex h-full xl:fixed xl:w-[500px]"
+				transition={{ type: "tween", duration: 0.2 }}
+				animate={{ top: offset > 80 ? "0px" : `${80 - offset}px` }}
+			>
+				<NestablePlaylist course={course} currentLesson={lesson} content={content} />
+			</motion.div>
 		</div>
 	);
 }
@@ -213,33 +245,6 @@ function addCompletionInfo(
 	}));
 }
 
-function VideoPlayerWithPlaylist({
-	videoUrl,
-	currentLesson,
-	chapters,
-	course
-}: {
-	videoUrl: string;
-	currentLesson: LessonProps["lesson"];
-	chapters: LessonProps["chapters"];
-	course: LessonProps["course"];
-}) {
-	return (
-		<div className="mx-auto flex w-full flex-col bg-white xl:max-h-[75vh] xl:flex-row">
-			<div className="aspect-video grow bg-black">
-				<VideoPlayer url={videoUrl} />
-			</div>
-			<div className="flex h-[400px] flex-col xl:h-auto xl:w-[500px]">
-				<NestablePlaylist
-					course={course}
-					currentLesson={currentLesson}
-					content={chapters}
-				/>
-			</div>
-		</div>
-	);
-}
-
 function VideoPlayer({ url }: { url: string }) {
 	return <ReactPlayer url={url} height="100%" width="100%" controls={true} />;
 }
@@ -247,7 +252,8 @@ function VideoPlayer({ url }: { url: string }) {
 function LessonHeader({
 	course,
 	lesson,
-	authors
+	authors,
+	mdDescription
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
@@ -256,6 +262,7 @@ function LessonHeader({
 		displayName: string;
 		imgUrl: string | null;
 	}[];
+	mdDescription?: LessonProps["mdDescription"];
 }) {
 	return (
 		<div className="flex flex-grow flex-col items-center gap-12 px-4 pt-8 pb-24">
@@ -263,40 +270,43 @@ function LessonHeader({
 			<Link href={`/courses/${course.slug}`}>
 				<a className="text-xl font-semibold text-secondary">{course.title}</a>
 			</Link>
-			<div className="flex flex-wrap gap-4">
-				{authors.map(author => (
-					<Link href={`/authors/${author.slug}`} key={author.slug}>
-						<a>
-							<div
-								className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
-								key={author.slug}
-							>
-								<div className="relative h-12 w-12">
-									{author.imgUrl && (
-										<Image
-											src={author.imgUrl}
-											alt=""
-											layout="fill"
-											objectFit="cover"
-										></Image>
-									)}
+			{authors.length > 0 && (
+				<div className="flex flex-wrap gap-4">
+					{authors.map(author => (
+						<Link href={`/authors/${author.slug}`} key={author.slug}>
+							<a>
+								<div
+									className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
+									key={author.slug}
+								>
+									<div className="relative h-12 w-12">
+										{author.imgUrl && (
+											<Image
+												src={author.imgUrl}
+												alt=""
+												layout="fill"
+												objectFit="cover"
+											></Image>
+										)}
+									</div>
+									<span className="p-4 text-sm font-medium">
+										{author.displayName}
+									</span>
 								</div>
-								<span className="p-4 text-sm font-medium">
-									{author.displayName}
-								</span>
-							</div>
-						</a>
-					</Link>
-				))}
-			</div>
+							</a>
+						</Link>
+					))}
+				</div>
+			)}
 			{lesson.subtitle && (
 				<div className="max-w-3xl text-center text-xl tracking-tight text-light">
 					{lesson.subtitle}
 				</div>
 			)}
 
-			<div className="mx-auto max-w-prose text-justify">
-				{lesson.description && <p>{lesson.description}</p>}
+			<div className="prose w-full max-w-prose">
+				<Math />
+				{mdDescription && <MDXRemote {...mdDescription} />}
 			</div>
 		</div>
 	);
