@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 const cacheKey = ["user-enrollments"];
 
 async function fetchEnrollments(username: string) {
-	const response = await fetch(`/api/users/${username}/courses`);
+	const response = await fetch(`/api/students/${username}/courses`);
 
 	if (!response.ok) {
 		throw { status: response.status, statusText: response.statusText };
@@ -51,7 +51,7 @@ export function useEnrollmentMutations(courseSlug: string) {
 }
 
 async function fetchEnroll(course: string, username: string) {
-	const response = await fetch(`/api/users/${username}/courses/${course}/enrollment/enroll`, {
+	const response = await fetch(`/api/students/${username}/courses/${course}/enrollment/enroll`, {
 		method: "POST"
 	});
 
@@ -63,9 +63,12 @@ async function fetchEnroll(course: string, username: string) {
 }
 
 async function fetchDisenroll(course: string, username: string) {
-	const response = await fetch(`/api/users/${username}/courses/${course}/enrollment/disenroll`, {
-		method: "DELETE"
-	});
+	const response = await fetch(
+		`/api/students/${username}/courses/${course}/enrollment/disenroll`,
+		{
+			method: "DELETE"
+		}
+	);
 
 	if (!response.ok) {
 		throw await response.json();

@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "react-query";
 
 async function fetchMarkAsCompleted(vars: { lessonId: string; username: string }) {
 	const response = await fetch(
-		`/api/users/${vars.username}/lessons/${vars.lessonId}/mark-as-completed`,
+		`/api/students/${vars.username}/lessons/${vars.lessonId}/mark-as-completed`,
 		{ method: "POST" }
 	);
 

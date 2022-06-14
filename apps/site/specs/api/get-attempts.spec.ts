@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { getAllAttempts } from "../../pages/api/users/[username]/lessons/[lessonId]/quiz-attempts/get-attempts";
+import { getAllAttempts } from "../../pages/api/students/[username]/lessons/[lessonId]/quiz-attempts/get-attempts";
 
 // describe("getAttemptsApiHandler", () => {
 // 	// it("Query: Missing [username] -> ValidationError (400)", async () => {

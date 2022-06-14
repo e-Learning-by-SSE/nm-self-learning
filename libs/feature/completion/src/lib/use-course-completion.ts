@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { useQuery } from "react-query";
 
 async function fetchCourseCompletion(courseSlug: string, username: string) {
-	const response = await fetch(`/api/users/${username}/courses/${courseSlug}/completion`);
+	const response = await fetch(`/api/students/${username}/courses/${courseSlug}/completion`);
 
 	if (!response.ok) {
 		throw new Error(await response.text());

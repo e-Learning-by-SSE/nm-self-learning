@@ -1,6 +1,6 @@
 import { database } from "@self-learning/database";
 import { testApiHandler } from "next-test-api-route-handler";
-import { addCompetenceApiHandler } from "../../pages/api/users/[username]/competences/[competenceId]/add-competence";
+import { addCompetenceApiHandler } from "../../pages/api/students/[username]/competences/[competenceId]/add-competence";
 
 describe("addCompetenceApiHandler", () => {
 	it("Query: Missing [username] -> ValidationError (400)", async () => {

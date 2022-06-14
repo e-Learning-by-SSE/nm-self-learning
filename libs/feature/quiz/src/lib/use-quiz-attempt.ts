@@ -3,7 +3,7 @@ import { SubmitAnswerType } from "./schema";
 
 async function submitQuizAttempt(vars: SubmitAnswerType & { lessonId: string; username: string }) {
 	const response = await fetch(
-		`/api/users/${vars.username}/lessons/${vars.lessonId}/quiz-attempts/submit-answers`,
+		`/api/students/${vars.username}/lessons/${vars.lessonId}/quiz-attempts/submit-answers`,
 		{
 			method: "POST",
 			body: JSON.stringify({
@@ -45,7 +45,7 @@ async function fetchQuizAttempts(vars: {
 	username: string;
 }): Promise<QuizAttemptsInfoResponse> {
 	const response = await fetch(
-		`/api/users/${vars.username}/lessons/${vars.lessonId}/quiz-attempts/get-attempts`
+		`/api/students/${vars.username}/lessons/${vars.lessonId}/quiz-attempts/get-attempts`
 	);
 
 	if (!response.ok) {
