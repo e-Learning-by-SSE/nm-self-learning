@@ -4,7 +4,6 @@ import { database } from "@self-learning/database";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { CourseCompletion, CourseContent, LessonContent } from "@self-learning/types";
 import { NestablePlaylist } from "@self-learning/ui/lesson";
-import { motion } from "framer-motion";
 import { GetStaticPaths, GetStaticProps, NextComponentType, NextPageContext } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import dynamic from "next/dynamic";
@@ -12,8 +11,7 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import type { ParsedUrlQuery } from "querystring";
-import { useEffect, useMemo, useState } from "react";
-
+import { useMemo } from "react";
 import Math from "../../../../components/math";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
@@ -153,8 +151,8 @@ export default function Lesson({ lesson, course, mdDescription }: LessonProps) {
 	const url = (lesson.content as LessonContent)[0].url;
 
 	return (
-		<div className="playlist-scroll grow">
-			<div className="aspect-video h-full w-full bg-black xl:max-h-[75vh]">
+		<div className="grow">
+			<div className="h aspect-video w-full bg-black sm:h-[500px] xl:h-full xl:max-h-[75vh]">
 				<VideoPlayer url={url} />
 			</div>
 			<LessonControls course={course} lesson={lesson} />
@@ -180,13 +178,9 @@ export function LessonLayout(
 				<title>{pageProps.lesson.title}</title>
 			</Head>
 
-			<div className="md:pb-32">
-				<div className="flex flex-col">
-					<div className="mx-auto flex w-full flex-col xl:flex-row">
-						<Component {...pageProps} />
-						<PlaylistArea {...pageProps} />
-					</div>
-				</div>
+			<div className="flex w-full flex-col xl:flex-row">
+				<Component {...pageProps} />
+				<PlaylistArea {...pageProps} />
 			</div>
 		</>
 	);
@@ -205,24 +199,11 @@ function PlaylistArea({ chapters, course, lesson }: LessonProps) {
 		return contentWithCompletion;
 	}, [courseCompletion, chapters]);
 
-	const [offset, setOffset] = useState(0);
-
-	useEffect(() => {
-		const onScroll = () => setOffset(window.pageYOffset);
-		window.removeEventListener("scroll", onScroll);
-		window.addEventListener("scroll", onScroll, { passive: true });
-		return () => window.removeEventListener("scroll", onScroll);
-	}, []);
-
 	return (
-		<div className="flex h-[500px] w-full border-l border-light-border bg-white xl:h-full xl:w-[500px] xl:border-t-0">
-			<motion.div
-				className="right-0 flex h-full w-full xl:fixed xl:w-[500px]"
-				transition={{ type: "tween", duration: 0.2 }}
-				animate={{ top: offset > 80 ? "0px" : `${80 - offset}px` }}
-			>
+		<div className="flex h-[500px] w-full shrink-0 border-l border-light-border bg-white xl:h-full xl:w-[500px] xl:border-t-0">
+			<div className="right-0 flex w-full xl:fixed xl:h-[calc(100vh-80px)] xl:w-[500px]">
 				<NestablePlaylist course={course} currentLesson={lesson} content={content} />
-			</motion.div>
+			</div>
 		</div>
 	);
 }

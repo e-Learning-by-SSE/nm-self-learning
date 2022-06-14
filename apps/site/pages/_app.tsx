@@ -29,7 +29,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 						<title>Self-Learning</title>
 					</Head>
 					<Navbar />
-					<main className="grid grow">
+					<main className="mt-14 grid grow sm:mt-20">
 						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 					</main>
 					{/* <ReactQueryDevtools initialIsOpen={false} position="bottom-right" /> */}
