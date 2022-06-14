@@ -47,3 +47,5 @@ data.db
 .env.production
 .env.test.local
 .env.local
+
+/docs/markdown-examples
