@@ -125,7 +125,9 @@ const lessons: Prisma.LessonCreateManyInput[] = [
 	content: [
 		{
 			type: "video",
-			url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+			value: {
+				url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+			}
 		}
 	] as LessonContent
 }));

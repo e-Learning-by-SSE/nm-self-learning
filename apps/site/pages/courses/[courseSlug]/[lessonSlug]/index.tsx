@@ -2,7 +2,14 @@ import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { CourseCompletion, CourseContent, LessonContent } from "@self-learning/types";
+import {
+	CourseCompletion,
+	CourseContent,
+	findContentType,
+	LessonContent,
+	LessonContentMediaType,
+	LessonContentType
+} from "@self-learning/types";
 import { NestablePlaylist } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps, NextComponentType, NextPageContext } from "next";
 import { MDXRemote } from "next-mdx-remote";
@@ -10,15 +17,19 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Math from "../../../../components/math";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export type LessonProps = {
 	lesson: ResolvedValue<typeof getLesson>;
-	mdDescription: CompiledMarkdown | null;
+	markdown: {
+		description: CompiledMarkdown | null;
+		article: CompiledMarkdown | null;
+	};
 	chapters: {
 		title: string;
 		lessons: { lessonId: string; slug: string; title: string; imgUrl?: string | null }[];
@@ -119,7 +130,12 @@ export async function getStaticPropsForLayout(
 		isActive: chapter.lessonIds.includes(lesson.lessonId)
 	}));
 
-	return { lesson: lesson as Defined<typeof lesson>, chapters, course, mdDescription: null };
+	return {
+		lesson: lesson as Defined<typeof lesson>,
+		chapters,
+		course,
+		markdown: { article: null, description: null }
+	};
 }
 
 export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) => {
@@ -129,14 +145,35 @@ export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) =>
 
 	const { lesson, chapters, course } = props;
 
+	lesson.quiz = null; // Not needed on this page, but on /quiz
 	let mdDescription = null;
+	let mdArticle = null;
 
 	if (lesson.description) {
 		mdDescription = await compileMarkdown(lesson.description);
 	}
 
+	const { content: article, index } = findContentType("article", lesson.content as LessonContent);
+
+	if (article) {
+		mdArticle = await compileMarkdown(article.value.content ?? "Kein Inhalt.");
+
+		(lesson.content as LessonContent)[index] = {
+			type: "article",
+			value: {}
+		};
+	}
+
 	return {
-		props: { lesson: lesson as Defined<typeof lesson>, mdDescription, chapters, course }
+		props: {
+			lesson: lesson as Defined<typeof lesson>,
+			markdown: {
+				article: mdArticle,
+				description: mdDescription
+			},
+			chapters,
+			course
+		}
 	};
 };
 
@@ -147,21 +184,55 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
-export default function Lesson({ lesson, course, mdDescription }: LessonProps) {
-	const url = (lesson.content as LessonContent)[0].url;
+function usePreferredMediaType(defaultType: LessonContentType["type"]) {
+	const router = useRouter();
+	const [preferredMediaType, setPreferredMediaType] = useState(defaultType ?? null);
+
+	useEffect(() => {
+		const { type } = router.query;
+		let fromLocalStorage: string | null = null;
+
+		if (type && typeof type === "string") {
+			setPreferredMediaType(type as LessonContentType["type"]);
+		} else if (typeof window !== "undefined") {
+			fromLocalStorage = window.localStorage.getItem("preferredMediaType");
+			if (fromLocalStorage) {
+				setPreferredMediaType(fromLocalStorage as LessonContentType["type"]);
+			}
+		} else {
+			setPreferredMediaType("video");
+		}
+	}, [router]);
+
+	return preferredMediaType;
+}
+
+export default function Lesson({ lesson, course, markdown }: LessonProps) {
+	const { content: video } = findContentType("video", lesson.content as LessonContent);
+	const url = video?.value.url;
+	const preferredMediaType = usePreferredMediaType(url ? "video" : "article");
 
 	return (
 		<div className="grow">
-			<div className="h aspect-video w-full bg-black sm:h-[500px] xl:h-full xl:max-h-[75vh]">
-				<VideoPlayer url={url} />
-			</div>
-			<LessonControls course={course} lesson={lesson} />
+			{preferredMediaType === "video" && url && (
+				<div className="w-full bg-black sm:h-[500px] xl:h-full xl:max-h-[75vh]">
+					<VideoPlayer url={url} />
+				</div>
+			)}
+			<LessonControls course={course} lesson={lesson} currentMediaType={preferredMediaType} />
 			<LessonHeader
 				lesson={lesson}
 				authors={lesson.authors}
 				course={course}
-				mdDescription={mdDescription}
+				mdDescription={markdown.description}
 			/>
+			{preferredMediaType === "article" && markdown.article && (
+				<div className="px-4">
+					<div className="prose mx-auto max-w-prose">
+						<MDXRemote {...markdown.article} />
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -243,10 +314,10 @@ function LessonHeader({
 		displayName: string;
 		imgUrl: string | null;
 	}[];
-	mdDescription?: LessonProps["mdDescription"];
+	mdDescription?: CompiledMarkdown | null;
 }) {
 	return (
-		<div className="flex flex-grow flex-col items-center gap-12 px-4 pt-8 pb-24">
+		<div className="flex flex-grow flex-col items-center gap-12 px-4 pt-8 pb-12">
 			<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
 			<Link href={`/courses/${course.slug}`}>
 				<a className="text-xl font-semibold text-secondary">{course.title}</a>
@@ -295,10 +366,12 @@ function LessonHeader({
 
 function LessonControls({
 	lesson,
-	course
+	course,
+	currentMediaType
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
+	currentMediaType: LessonContentType["type"];
 }) {
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
 
@@ -306,35 +379,81 @@ function LessonControls({
 	const isCompletedLesson = isCompleted(lesson, completion);
 
 	return (
-		<div className="flex flex-wrap justify-end gap-8 p-4">
-			<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-				<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
-					<span>Zur Lernkontrolle</span>
-					<PlayIcon className="h-6 shrink-0" />
-				</a>
-			</Link>
+		<div className="flex justify-between p-4">
+			<MediaTypeSelector course={course} lesson={lesson} current={currentMediaType} />
 
-			{!isCompletedLesson ? (
-				<button
-					className="btn-stroked flex w-full flex-wrap-reverse md:w-fit"
-					onClick={markAsCompleted}
-				>
-					<span>Als abgeschlossen markieren</span>
-					<CheckCircleIcon className="h-6 shrink-0" />
-				</button>
-			) : (
-				<button
-					className="btn-stroked flex w-full flex-wrap-reverse md:w-fit"
-					onClick={markAsCompleted}
-				>
-					<span>Als wiederholt markieren</span>
-					<CheckCircleIcon className="h-6 shrink-0" />
-				</button>
-			)}
+			<div className="flex flex-wrap gap-8">
+				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
+					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
+						<span>Zur Lernkontrolle</span>
+						<PlayIcon className="h-6 shrink-0" />
+					</a>
+				</Link>
+
+				{!isCompletedLesson ? (
+					<button
+						className="btn-stroked flex w-full flex-wrap-reverse self-end md:w-fit"
+						onClick={markAsCompleted}
+					>
+						<span>Als abgeschlossen markieren</span>
+						<CheckCircleIcon className="h-6 shrink-0" />
+					</button>
+				) : (
+					<button
+						className="btn-stroked flex w-full flex-wrap-reverse self-end md:w-fit"
+						onClick={markAsCompleted}
+					>
+						<span>Als wiederholt markieren</span>
+						<CheckCircleIcon className="h-6 shrink-0" />
+					</button>
+				)}
+			</div>
 		</div>
 	);
 }
 
 function isCompleted(lesson: { lessonId: string }, completion?: CourseCompletion): boolean {
 	return !!completion?.completedLessons[lesson.lessonId];
+}
+
+function MediaTypeSelector({
+	current,
+	lesson,
+	course
+}: {
+	current: LessonContentMediaType;
+	course: LessonProps["course"];
+	lesson: LessonProps["lesson"];
+}) {
+	const router = useRouter();
+
+	function changeMediaType(type: LessonContentType["type"]) {
+		window.localStorage.setItem("preferredMediaType", type);
+
+		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
+			shallow: true
+		});
+	}
+
+	return (
+		<>
+			{(lesson.content as LessonContent).length > 1 && (
+				<div className="flex flex-wrap gap-4">
+					{(lesson.content as LessonContent).map(({ type }) => (
+						<button
+							key={type}
+							className={`text-sm ${
+								current === type
+									? "border-b-2 border-secondary px-3 py-0 text-secondary"
+									: ""
+							}`}
+							onClick={() => changeMediaType(type)}
+						>
+							{type}
+						</button>
+					))}
+				</div>
+			)}
+		</>
+	);
 }

@@ -1,6 +1,13 @@
 import { DocumentTextIcon, VideoCameraIcon } from "@heroicons/react/solid";
 import { Prisma } from "@prisma/client";
 import { apiFetch } from "@self-learning/api";
+import {
+	Article,
+	LessonContent,
+	LessonContentType,
+	ValueByContentType,
+	Video
+} from "@self-learning/types";
 import { SectionCard } from "@self-learning/ui/common";
 import { EditorField, TextArea, Textfield } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -55,10 +62,9 @@ export function LessonEditor({
 	const [slug, setSlug] = useState(lesson.slug);
 	const [subtitle, setSubtitle] = useState(lesson.subtitle ?? "");
 	const [description, setDescription] = useState(lesson.description);
-	const [content, setContent] = useState<ContentType[]>([
+	const [content, setContent] = useState<LessonContent>([
 		{
 			type: "article",
-			rndId: "abc",
 			value: { content: "# Hello World\nInhalt der neuen Lerneinheit\n#Thema 1\nThema 1..." }
 		}
 	]);
@@ -160,33 +166,21 @@ export function LessonEditor({
 	);
 }
 
-type Video = { type: "video"; rndId: string; value: { url?: string } };
-type Article = { type: "article"; rndId: string; value: { content?: string } };
-type ContentType = Video | Article;
-
-type InferContentType<CType extends ContentType["type"], Union = ContentType> = Union extends {
-	type: CType;
-}
-	? Union
-	: never;
-
-type ValueByContentType<CType extends ContentType["type"]> = InferContentType<CType>["value"];
-
-type SetValueFn = <CType extends ContentType["type"]>(
+type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
-	rndKey: string,
-	value: ValueByContentType<CType> | undefined
+	value: ValueByContentType<CType> | undefined,
+	index: number
 ) => void;
 
 function LessonContent({
 	content,
 	setContent
 }: {
-	content: ContentType[];
-	setContent: Dispatch<SetStateAction<ContentType[]>>;
+	content: LessonContentType[];
+	setContent: Dispatch<SetStateAction<LessonContentType[]>>;
 }) {
-	function addContent(type: ContentType["type"]) {
-		let initialValue: ContentType["value"];
+	function addContent(type: LessonContentType["type"]) {
+		let initialValue: LessonContentType["value"];
 
 		if (type === "article") {
 			initialValue = { content: "" };
@@ -200,27 +194,24 @@ function LessonContent({
 			...prev,
 			{
 				type,
-				rndId: Math.random().toString(16).slice(2),
 				value: initialValue as any
 			}
 		]);
 	}
 
 	const onRemove = useCallback(
-		(rndId: string) => {
+		(index: number) => {
 			const confirmed = window.confirm("Inhalt entfernen ?");
 
 			if (confirmed) {
-				setContent(prev => prev.filter(item => item.rndId !== rndId));
+				setContent(prev => prev.filter((item, i) => index !== i));
 			}
 		},
 		[setContent]
 	);
 
-	function setValue(type: string, rndId: string, value: unknown) {
-		const index = content.findIndex(i => i.rndId === rndId);
-
-		if (index >= 0) {
+	function setValue(type: string, value: unknown, index: number) {
+		if (index >= 0 && index < content.length) {
 			const copy = [...content];
 			(copy[index] as { value: unknown }).value = value;
 			setContent(copy);
@@ -231,9 +222,10 @@ function LessonContent({
 		<div className="grid gap-16">
 			{content.length > 0 && (
 				<div className="grid gap-8">
-					{content.map(content => (
+					{content.map((content, index) => (
 						<RenderContentType
-							key={content.rndId}
+							key={index}
+							index={index}
 							content={content}
 							onRemove={onRemove}
 							setValue={setValue}
@@ -264,20 +256,23 @@ function LessonContent({
 }
 
 function RenderContentType({
+	index,
 	content,
 	onRemove,
 	setValue
 }: {
-	content: ContentType;
+	index: number;
+	content: LessonContentType;
 	setValue: SetValueFn;
-	onRemove: (rndId: string) => void;
+	onRemove: (index: number) => void;
 }) {
 	if (content.type === "video") {
 		return (
 			<YoutubeVideoInput
+				index={index}
 				video={content}
 				setValue={setValue}
-				remove={() => onRemove(content.rndId)}
+				remove={() => onRemove(index)}
 			/>
 		);
 	}
@@ -285,9 +280,10 @@ function RenderContentType({
 	if (content.type === "article") {
 		return (
 			<ArticleInput
+				index={index}
 				article={content}
 				setValue={setValue}
-				onRemove={() => onRemove(content.rndId)}
+				onRemove={() => onRemove(index)}
 			/>
 		);
 	}
@@ -300,10 +296,12 @@ function RenderContentType({
 }
 
 function YoutubeVideoInput({
+	index,
 	video,
 	setValue,
 	remove
 }: {
+	index: number;
 	video: Video;
 	setValue: SetValueFn;
 	remove: () => void;
@@ -331,7 +329,7 @@ function YoutubeVideoInput({
 				label="URL"
 				required={true}
 				value={video.value.url}
-				onChange={event => setValue("video", video.rndId, { url: event.target.value })}
+				onChange={event => setValue("video", { url: event.target.value }, index)}
 				placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 			/>
 			<div className="aspect-video max-h-[512px] grow-0 bg-black">
@@ -344,10 +342,12 @@ function YoutubeVideoInput({
 }
 
 function ArticleInput({
+	index,
 	onRemove,
 	article,
 	setValue
 }: {
+	index: number;
 	setValue: SetValueFn;
 	article: Article;
 	onRemove: () => void;
@@ -365,7 +365,7 @@ function ArticleInput({
 			<EditorField
 				label="Inhalt"
 				language="markdown"
-				onChange={v => setValue(article.type, article.rndId, { content: v })}
+				onChange={v => setValue(article.type, { content: v }, index)}
 				value={article.value.content}
 			/>
 		</div>
