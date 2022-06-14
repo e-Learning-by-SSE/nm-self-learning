@@ -7,6 +7,7 @@
 		"docs-storybook": "docs/storybook",
 		"feature-completion": "libs/feature/completion",
 		"feature-enrollment": "libs/feature/enrollment",
+		"feature-lesson": "libs/feature/lesson",
 		"feature-quiz": "libs/feature/quiz",
 		"site": "apps/site",
 		"site-e2e": "apps/site-e2e",

@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { getStaticPropsForLayout, LessonLayout, LessonProps } from "./index";
+import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
 
 const text = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur nostrum dolorem ### at placeat. Ad corrupti fugit, magnam ipsam iste similique voluptates. Doloribus repellat velit expedita molestias eaque consectetur nesciunt.
 Temporibus, repellendus aspernatur provident unde ipsa voluptates delectus a adipisci itaque quam impedit suscipit harum illo voluptas saepe facere est distinctio non cum nesciunt. Dicta rerum dignissimos commodi cum molestias?
@@ -72,7 +72,7 @@ function getQuiz(slug: string): QuestionType[] {
 	];
 }
 
-type QuestionProps = LessonProps & {
+type QuestionProps = LessonLayoutProps & {
 	questions: QuestionType[];
 	markdown: {
 		questionsMd: MdLookup;
