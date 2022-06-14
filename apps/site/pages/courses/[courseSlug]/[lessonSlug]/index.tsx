@@ -210,10 +210,10 @@ function LessonControls({
 	const isCompletedLesson = isCompleted(lesson, completion);
 
 	return (
-		<div className="flex justify-between p-4">
+		<div className="flex p-4">
 			<MediaTypeSelector course={course} lesson={lesson} current={currentMediaType} />
 
-			<div className="flex flex-wrap gap-8">
+			<div className="flex grow flex-wrap justify-end gap-8">
 				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
 					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
 						<span>Zur Lernkontrolle</span>
