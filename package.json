@@ -81,7 +81,6 @@
 		"@typescript-eslint/eslint-plugin": "5.24.0",
 		"@typescript-eslint/parser": "5.24.0",
 		"autoprefixer": "^10.4.4",
-		"axios": "^0.27.2",
 		"babel-jest": "27.5.1",
 		"babel-loader": "8.1.0",
 		"cypress": "^9.1.0",
