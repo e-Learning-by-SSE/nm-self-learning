@@ -1,8 +1,8 @@
 import { Lesson } from "@prisma/client";
 import { apiFetch } from "@self-learning/api";
 import { database } from "@self-learning/database";
+import { LessonEditor } from "@self-learning/teaching";
 import { GetServerSideProps } from "next";
-import { LessonEditor } from "../create";
 
 type EditLessonProps = {
 	lesson: Lesson;

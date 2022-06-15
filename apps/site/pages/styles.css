@@ -53,7 +53,7 @@ html {
 }
 
 #__next {
-	@apply flex h-full min-h-screen flex-col;
+	@apply flex h-full min-h-screen flex-col bg-white;
 }
 
 h1,

@@ -1,0 +1,23 @@
+{
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/feature/teaching/src",
+	"projectType": "library",
+	"tags": [],
+	"targets": {
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["libs/feature/teaching/**/*.{ts,tsx,js,jsx}"]
+			}
+		},
+		"test": {
+			"executor": "@nrwl/jest:jest",
+			"outputs": ["coverage/libs/feature/teaching"],
+			"options": {
+				"jestConfig": "libs/feature/teaching/jest.config.ts",
+				"passWithNoTests": true
+			}
+		}
+	}
+}

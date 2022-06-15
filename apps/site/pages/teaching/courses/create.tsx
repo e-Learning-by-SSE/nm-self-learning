@@ -1,8 +1,9 @@
 import { apiFetch } from "@self-learning/api";
+import { CourseContent } from "@self-learning/types";
 import { SectionCard } from "@self-learning/ui/common";
 import { EditorField, TextArea, Textfield } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import slugify from "slugify";
 
 async function createCourse(course: any) {
@@ -14,7 +15,7 @@ export default function CreateCoursePage() {
 	const [subtitle, setSubtitle] = useState("abcs");
 	const [slug, setSlug] = useState("abc");
 	const [description, setDescription] = useState<string | undefined>("sdsdsdsddfgfgfg");
-	const [content, setContent] = useState<any[]>([]);
+	const [content, setContent] = useState<CourseContent>([]);
 
 	function slugifyTitle() {
 		if (slug === "") {
@@ -94,7 +95,7 @@ export default function CreateCoursePage() {
 						title="Inhalt"
 						subtitle="Hier können Lerneinheiten hinzugefügt und durch Kapitel strukturiert werden."
 					>
-						<CourseContent content={content} setContent={setContent} />
+						<CourseContentEditor content={content} setContent={setContent} />
 					</SectionCard>
 				</div>
 				<button className="btn-primary mt-8 ml-auto mr-0" onClick={onCreate}>
@@ -105,12 +106,64 @@ export default function CreateCoursePage() {
 	);
 }
 
-function CourseContent({
+function CourseContentEditor({
 	content,
 	setContent
 }: {
-	content: any;
-	setContent: (value: any) => void;
+	content: CourseContent;
+	setContent: Dispatch<SetStateAction<CourseContent>>;
 }) {
-	return <div className="flex flex-col">content.</div>;
+	function addChapter() {
+		setContent(prev => [
+			...prev,
+			{
+				lessonIds: [],
+				title: "",
+				description: ""
+			}
+		]);
+	}
+
+	function removeChapter(index: number) {
+		setContent(prev => prev.filter((item, i) => index !== i));
+	}
+
+	return (
+		<div className="flex flex-col gap-8">
+			{/* <button className="btn-primary" onClick={addChapter}>
+				Hinzufügen
+			</button>
+
+			{content.map((chapter, index) => (
+				<div
+					key={index}
+					className="relative flex flex-col gap-8 rounded-lg border border-light-border p-8"
+				>
+					<button
+						className="absolute right-4 top-4 text-sm text-red-500"
+						onClick={() => removeChapter(index)}
+					>
+						Entfernen
+					</button>
+					<Textfield
+						label="Titel"
+						value={chapter.title}
+						onChange={e => (chapter.title = e.target.value)}
+					/>
+					<TextArea
+						label="Beschreibung"
+						rows={3}
+						value={chapter.description as string}
+						onChange={e => (chapter.description = e.target.value)}
+					/>
+
+					<div className="flex flex-col">
+						{chapter.lessonIds.map(lessonId => (
+							<div key={lessonId}>{lessonId}</div>
+						))}
+					</div>
+				</div>
+			))} */}
+		</div>
+	);
 }

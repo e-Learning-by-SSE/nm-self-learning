@@ -2,7 +2,8 @@ declare var process: {
 	env: {
 		NODE_ENV: "development" | "production";
 		DATABASE_URL: string;
-		NEXT_PUBLIC_API_URL: string;
+		NEXT_PUBLIC_SUPABASE_URL: string;
+		NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
 		AUTH0_SECRET: string;
 		AUTH0_BASE_URL: string;
 		AUTH0_ISSUER_BASE_URL: string;
