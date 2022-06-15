@@ -29,3 +29,13 @@ export function findContentType<CType extends LessonContentType["type"]>(
 
 	return { content: null, index };
 }
+
+export function includesMediaType(
+	types: LessonContentType["type"][],
+	type: string
+): { isIncluded: boolean; type: LessonContentType["type"] } {
+	return {
+		isIncluded: types.includes(type as LessonContentType["type"]),
+		type: type as LessonContentType["type"]
+	};
+}

@@ -5,20 +5,19 @@ import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	CourseCompletion,
 	findContentType,
+	includesMediaType,
 	LessonContent,
 	LessonContentMediaType,
 	LessonContentType
 } from "@self-learning/types";
+import { VideoPlayer } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Math from "../../../../components/math";
-
-const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -73,25 +72,31 @@ export const getStaticPaths: GetStaticPaths = () => {
 	};
 };
 
-function usePreferredMediaType(defaultType: LessonContentType["type"]) {
+function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	const router = useRouter();
-	const [preferredMediaType, setPreferredMediaType] = useState(defaultType ?? null);
+	const [preferredMediaType, setPreferredMediaType] = useState(
+		(lesson.content as LessonContent)[0].type
+	);
 
 	useEffect(() => {
-		const { type } = router.query;
-		let fromLocalStorage: string | null = null;
+		const availableMediaTypes = (lesson.content as LessonContent).map(c => c.type);
 
-		if (type && typeof type === "string") {
-			setPreferredMediaType(type as LessonContentType["type"]);
-		} else if (typeof window !== "undefined") {
-			fromLocalStorage = window.localStorage.getItem("preferredMediaType");
-			if (fromLocalStorage) {
-				setPreferredMediaType(fromLocalStorage as LessonContentType["type"]);
-			}
-		} else {
-			setPreferredMediaType("video");
+		const { type: typeFromRoute } = router.query;
+		let typeFromStorage: string | null = null;
+
+		if (typeof window !== "undefined") {
+			typeFromStorage = window.localStorage.getItem("preferredMediaType");
 		}
-	}, [router]);
+
+		const { isIncluded, type } = includesMediaType(
+			availableMediaTypes,
+			(typeFromRoute as string) ?? typeFromStorage
+		);
+
+		if (isIncluded) {
+			setPreferredMediaType(type);
+		}
+	}, [router, lesson]);
 
 	return preferredMediaType;
 }
@@ -99,7 +104,8 @@ function usePreferredMediaType(defaultType: LessonContentType["type"]) {
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const url = video?.value.url;
-	const preferredMediaType = usePreferredMediaType(url ? "video" : "article");
+
+	const preferredMediaType = usePreferredMediaType(lesson);
 
 	return (
 		<div className="grow">
@@ -116,7 +122,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 				mdDescription={markdown.description}
 			/>
 			{preferredMediaType === "article" && markdown.article && (
-				<div className="px-4">
+				<div className="px-4 pb-32">
 					<div className="prose mx-auto max-w-prose">
 						<MDXRemote {...markdown.article} />
 					</div>
@@ -127,10 +133,6 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 }
 
 Lesson.getLayout = LessonLayout;
-
-function VideoPlayer({ url }: { url: string }) {
-	return <ReactPlayer url={url} height="100%" width="100%" controls={true} />;
-}
 
 function LessonHeader({
 	course,
