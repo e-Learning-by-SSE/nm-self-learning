@@ -110,7 +110,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	return (
 		<div className="grow">
 			{preferredMediaType === "video" && (
-				<div className="w-full bg-black sm:h-[500px] xl:h-full xl:max-h-[75vh]">
+				<div className="h-[500px] w-full bg-black xl:h-full xl:max-h-[75vh]">
 					{url ? (
 						<VideoPlayer url={url} />
 					) : (
@@ -216,7 +216,7 @@ function LessonControls({
 	const isCompletedLesson = isCompleted(lesson, completion);
 
 	return (
-		<div className="flex p-4">
+		<div className="flex flex-wrap gap-4 p-4">
 			<MediaTypeSelector course={course} lesson={lesson} current={currentMediaType} />
 
 			<div className="flex grow flex-wrap justify-end gap-8">
