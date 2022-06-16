@@ -1,25 +1,11 @@
-import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
-import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
+import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import {
-	CourseCompletion,
-	CourseContent,
-	findContentType,
-	LessonContent,
-	LessonContentMediaType,
-	LessonContentType
-} from "@self-learning/types";
+import { CourseCompletion, CourseContent } from "@self-learning/types";
 import { NestablePlaylist } from "@self-learning/ui/lesson";
-import { GetStaticPaths, GetStaticProps, NextComponentType, NextPageContext } from "next";
-import { MDXRemote } from "next-mdx-remote";
-import dynamic from "next/dynamic";
+import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/router";
 import type { ParsedUrlQuery } from "querystring";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 export type LessonLayoutProps = {
 	lesson: ResolvedValue<typeof getLesson>;
