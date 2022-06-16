@@ -1,1 +1,1 @@
-export * from "./lib/lesson-editor";
+export * from "./lib/lesson/lesson-editor";

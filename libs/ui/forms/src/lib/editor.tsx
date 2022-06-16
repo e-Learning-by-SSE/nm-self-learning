@@ -1,15 +1,18 @@
 import Editor from "@monaco-editor/react";
+import "katex/dist/katex.css";
 
 export function EditorField({
 	label,
 	value,
 	onChange,
-	language
+	language,
+	height
 }: {
 	label: string;
 	value: string | undefined;
 	onChange: (value: string | undefined) => void;
 	language?: "json" | "markdown";
+	height?: string;
 }) {
 	return (
 		<div className="flex w-full flex-col gap-2">
@@ -21,7 +24,7 @@ export function EditorField({
 					tabSize: 4,
 					insertSpaces: false
 				}}
-				height="500px"
+				height={height ?? "500px"}
 				defaultLanguage={language}
 				value={value}
 				onChange={onChange}
