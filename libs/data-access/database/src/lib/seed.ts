@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { CourseContent, LessonContent } from "@self-learning/types";
+import { readFileSync } from "fs";
+import { join } from "path";
 import slugify from "slugify";
 
 faker.seed(1);
@@ -81,7 +83,7 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 	}
 ];
 
-const lessons: Prisma.LessonCreateManyInput[] = [
+const reactLessons: Prisma.LessonCreateManyInput[] = [
 	"A Beginners Guide to React Introduction",
 	"Create a User Interface with Vanilla JavaScript and DOM",
 	"Create a User Interface with React’s createElement API",
@@ -111,8 +113,25 @@ const lessons: Prisma.LessonCreateManyInput[] = [
 	"Handle HTTP Errors with React",
 	"Install and use React DevTools",
 	"Build and deploy a React Application with Codesandbox, GitHub, and Netlify",
-	"A Beginners Guide to React Outro",
-	// Other lessons
+	"A Beginners Guide to React Outro"
+].map(title => ({
+	title,
+	lessonId: faker.random.alphaNumeric(8),
+	slug: slugify(title, { lower: true, strict: true }),
+	subtitle: faker.lorem.paragraph(1),
+	description: faker.lorem.paragraphs(3),
+	imgUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=256",
+	content: [
+		{
+			type: "video",
+			value: {
+				url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+			}
+		}
+	] as LessonContent
+}));
+
+const pythonLessons: Prisma.LessonCreateManyInput[] = [
 	"What is Python?",
 	"Hello World in Python"
 ].map(title => ({
@@ -127,6 +146,12 @@ const lessons: Prisma.LessonCreateManyInput[] = [
 			type: "video",
 			value: {
 				url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+			}
+		},
+		{
+			type: "article",
+			value: {
+				content: readFileSync(join(__dirname, "./markdown-example.mdx"), "utf8")
 			}
 		}
 	] as LessonContent
@@ -147,22 +172,22 @@ const courses: Prisma.CourseCreateManyInput[] = [
 			{
 				title: "Introduction",
 				description: faker.lorem.sentences(2),
-				lessonIds: [lessons[0].lessonId]
+				lessonIds: [reactLessons[0].lessonId]
 			},
 			{
 				title: "React Basics",
 				description: faker.lorem.sentences(2),
-				lessonIds: new Array(13).fill(0).map((_, i) => lessons[i + 1].lessonId)
+				lessonIds: new Array(13).fill(0).map((_, i) => reactLessons[i + 1].lessonId)
 			},
 			{
 				title: "Advanced React",
 				description: faker.lorem.sentences(2),
-				lessonIds: new Array(15).fill(0).map((_, i) => lessons[i + 14].lessonId)
+				lessonIds: new Array(15).fill(0).map((_, i) => reactLessons[i + 14].lessonId)
 			},
 			{
 				title: "Summary",
 				description: faker.lorem.sentences(1),
-				lessonIds: [lessons.at(-1)?.lessonId ?? ""]
+				lessonIds: [reactLessons.at(-1)?.lessonId ?? ""]
 			}
 		] as CourseContent
 	},
@@ -180,7 +205,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 			{
 				title: "Content",
 				description: faker.lorem.sentences(2),
-				lessonIds: [lessons.at(-2)?.lessonId, lessons.at(-1)?.lessonId]
+				lessonIds: pythonLessons.map(lesson => lesson.lessonId)
 			}
 		] as CourseContent
 	}
@@ -209,7 +234,7 @@ const authors: Prisma.UserCreateInput[] = [
 					}
 				},
 				lessons: {
-					connect: lessons.map(({ lessonId }) => ({ lessonId }))
+					connect: reactLessons.map(({ lessonId }) => ({ lessonId }))
 				},
 				teams: {
 					create: []
@@ -254,7 +279,7 @@ async function seed(): Promise<void> {
 	console.log("✅ Specialties");
 	await prisma.course.createMany({ data: courses });
 	console.log("✅ Courses");
-	await prisma.lesson.createMany({ data: lessons });
+	await prisma.lesson.createMany({ data: [...reactLessons, ...pythonLessons] });
 	console.log("✅ Lessons");
 	await createUsers();
 	console.log("✅ Users");
