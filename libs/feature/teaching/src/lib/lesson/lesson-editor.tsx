@@ -127,13 +127,6 @@ export function LessonEditor({
 				</div>
 			</CenteredSection>
 
-			{/* <CenteredSection>
-				<SectionCard
-					title="Inhalt"
-					subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente angelegt werden, kann der Student selber entscheiden, welches Medium angezeigt werden soll."
-				></SectionCard>
-			</CenteredSection> */}
-
 			<LessonContentEditor content={content} setContent={setContent} />
 
 			<CenteredContainer>
