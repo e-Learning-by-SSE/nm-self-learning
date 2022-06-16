@@ -27,7 +27,7 @@ export function ArticleInput({
 				</button>
 
 				<MarkdownField
-					content={article.value.content}
+					content={article}
 					setValue={value => setValue(article.type, { content: value }, index)}
 					cacheKey={cacheKey}
 				/>

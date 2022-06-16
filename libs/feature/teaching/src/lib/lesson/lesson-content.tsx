@@ -156,7 +156,7 @@ export function LessonContentEditor({
 				/>
 			) : (
 				<CenteredContainer>
-					<div className="rounded-lg border border-light-border py-80 text-center text-light">
+					<div className="rounded-lg border border-light-border bg-white py-80 text-center text-light">
 						Diese Lerneinheit hat noch keinen Inhalt.
 					</div>
 				</CenteredContainer>

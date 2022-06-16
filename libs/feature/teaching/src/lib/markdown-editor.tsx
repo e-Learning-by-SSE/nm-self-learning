@@ -1,4 +1,5 @@
 import { CompiledMarkdown } from "@self-learning/markdown";
+import { Article } from "@self-learning/types";
 import { EditorField } from "@self-learning/ui/forms";
 import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
@@ -9,7 +10,7 @@ export function MarkdownField({
 	setValue,
 	cacheKey
 }: {
-	content: string | undefined;
+	content: Article; // TODO: Preview not fetched when string is used
 	setValue: (v: string | undefined) => void;
 	cacheKey: string[];
 }) {
@@ -18,9 +19,9 @@ export function MarkdownField({
 		isLoading,
 		isRefetching,
 		error
-	} = useQuery(cacheKey, () => fetchPreview(content ?? ""));
+	} = useQuery(cacheKey, () => fetchPreview(content.value.content ?? ""));
 
-	useDebouncedPreview(content, cacheKey);
+	useDebouncedPreview(content.value.content, cacheKey);
 
 	const [height, setHeight] = useState("500px");
 
@@ -38,7 +39,7 @@ export function MarkdownField({
 					label="Inhalt"
 					language="markdown"
 					onChange={setValue}
-					value={content}
+					value={content.value.content}
 					height={height}
 				/>
 
@@ -86,9 +87,7 @@ function useDebouncedPreview(content: string | undefined, cacheKey: string[]) {
 }
 
 async function fetchPreview(content: string) {
-	if (content === "") {
-		return null;
-	}
+	if (content === "") return null;
 
 	const response = await fetch("/api/teachers/mdx", {
 		method: "PUT",
