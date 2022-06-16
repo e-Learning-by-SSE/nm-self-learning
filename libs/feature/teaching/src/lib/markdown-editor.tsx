@@ -50,10 +50,10 @@ export function MarkdownField({
 					>
 						{(isLoading || isRefetching) && (
 							<span className="absolute top-2 left-2 text-sm text-light">
-								{isLoading || isRefetching ? "Compiling..." : ""}
+								Compiling...
 							</span>
 						)}
-						{error && (
+						{!!error && (
 							<pre className="text-xs text-red-500">{JSON.stringify(error)}</pre>
 						)}
 						<div className="prose w-full">{preview && <MDXRemote {...preview} />}</div>
