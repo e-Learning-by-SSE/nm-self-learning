@@ -38,14 +38,32 @@ export default function TeachingPage({
 					</a>
 				</Link>
 
-				<div className="flex flex-col gap-2">
-					{lessons.map(lesson => (
-						<Link key={lesson.lessonId} href={`/teaching/lessons/edit/${lesson.slug}`}>
-							<a className="text-sm font-medium">
-								<span>{lesson.title} editieren</span>
-							</a>
-						</Link>
-					))}
+				<h2 className="mt-12 text-4xl">Lerneinheiten</h2>
+
+				<div className="rounded-lg border border-light-border">
+					<table className="w-full">
+						<thead className="rounded-lg bg-gray-50">
+							<tr className="block py-4 px-8 text-start">
+								<th className="text-md font-semibold">Titel</th>
+							</tr>
+						</thead>
+						<tbody className="">
+							{lessons.map(lesson => (
+								<tr
+									key={lesson.lessonId}
+									className="block border-b border-b-light-border px-8 py-3"
+								>
+									<td>
+										<Link href={`/teaching/lessons/edit/${lesson.slug}`}>
+											<a className="text-sm font-medium">
+												<span>{lesson.title} editieren</span>
+											</a>
+										</Link>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</CenteredSection>
