@@ -109,9 +109,13 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	return (
 		<div className="grow">
-			{preferredMediaType === "video" && url && (
+			{preferredMediaType === "video" && (
 				<div className="w-full bg-black sm:h-[500px] xl:h-full xl:max-h-[75vh]">
-					<VideoPlayer url={url} />
+					{url ? (
+						<VideoPlayer url={url} />
+					) : (
+						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
+					)}
 				</div>
 			)}
 			<LessonControls course={course} lesson={lesson} currentMediaType={preferredMediaType} />
@@ -275,10 +279,10 @@ function MediaTypeSelector({
 					{(lesson.content as LessonContent).map(({ type }) => (
 						<button
 							key={type}
-							className={`text-sm ${
+							className={`border-b-2 px-2 py-1 text-sm ${
 								current === type
-									? "border-b-2 border-secondary px-3 py-0 text-secondary"
-									: ""
+									? "border-b-secondary font-semibold text-secondary"
+									: "border-b-transparent"
 							}`}
 							onClick={() => changeMediaType(type)}
 						>
