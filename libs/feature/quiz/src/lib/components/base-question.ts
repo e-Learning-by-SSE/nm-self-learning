@@ -7,11 +7,11 @@ export type BaseQuestion = {
 		disabled?: boolean;
 		content: string[];
 	};
-	answers:
-		| {
-				answerId: string;
-				content: string;
-				isCorrect: boolean;
-		  }[]
-		| null;
+	answers: QuestionAnswers | null;
 };
+
+export type QuestionAnswers = {
+	answerId: string;
+	content: string;
+	isCorrect: boolean;
+}[];

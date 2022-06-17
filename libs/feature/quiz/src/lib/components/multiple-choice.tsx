@@ -1,6 +1,6 @@
 import { MdLookup } from "@self-learning/markdown";
 import { MDXRemote } from "next-mdx-remote";
-import { ReactElement, useContext } from "react";
+import { PropsWithChildren, useContext } from "react";
 import { BaseQuestion } from "./base-question";
 import { AnswerContext } from "./question";
 
@@ -14,44 +14,50 @@ export type MultipleChoiceQuestion = BaseQuestion & {
 };
 
 export function MultipleChoiceAnswer({ answersMd }: { answersMd: MdLookup }) {
-	const { question } = useContext(AnswerContext);
+	const { question, setAnswer, answer } = useContext(AnswerContext);
 
 	return (
 		<div className="flex flex-col gap-4">
-			{question.answers?.map(answer => (
+			{question.answers?.map(option => (
 				<MultipleChoiceOption
-					key={answer.answerId}
-					answerId={answer.answerId}
-					content={
-						answersMd[answer.answerId] ? (
-							<MDXRemote {...answersMd[answer.answerId]} />
-						) : (
-							<span className="text-red-500">Error: No markdown content found.</span>
-						)
+					key={option.answerId}
+					isSelected={answer[option.answerId] === true}
+					onToggle={() =>
+						setAnswer(old => ({
+							...old,
+							[option.answerId]: old[option.answerId] === true ? false : true
+						}))
 					}
-				/>
+				>
+					{answersMd[option.answerId] ? (
+						<MDXRemote {...answersMd[option.answerId]} />
+					) : (
+						<span className="text-red-500">Error: No markdown content found.</span>
+					)}
+				</MultipleChoiceOption>
 			))}
 		</div>
 	);
 }
 
-function MultipleChoiceOption({ content, answerId }: { content: ReactElement; answerId: string }) {
-	const { answer, setAnswer } = useContext(AnswerContext);
-
-	function toggleAnswer() {
-		setAnswer(old => ({ ...old, [answerId]: old[answerId] === true ? false : true }));
-	}
-
+export function MultipleChoiceOption({
+	children,
+	isSelected,
+	onToggle
+}: PropsWithChildren<{
+	isSelected: boolean;
+	onToggle: () => void;
+}>) {
 	return (
 		<button
-			className={`flex w-full flex-col rounded-lg border px-4 py-1 text-left transition-colors ${
-				answer[answerId] === true
+			className={`flex w-full flex-col rounded-lg border px-4 py-4 text-left transition-colors ${
+				isSelected
 					? "border-indigo-200 bg-indigo-500 text-white prose-headings:text-white prose-a:text-white"
 					: "border-slate-200 bg-white"
 			}`}
-			onClick={toggleAnswer}
+			onClick={onToggle}
 		>
-			{content}
+			{children}
 		</button>
 	);
 }

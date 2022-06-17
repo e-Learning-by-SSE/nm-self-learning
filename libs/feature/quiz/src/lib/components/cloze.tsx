@@ -15,7 +15,7 @@ export function ClozeAnswer({ textArray }: { textArray: string[] }) {
 					<span key={text}>
 						{text}
 						{index < textArray.length - 1 && (
-							<input type="text" className="textfield" placeholder="BatChest" />
+							<input type="text" className="textfield" />
 						)}
 					</span>
 				))}

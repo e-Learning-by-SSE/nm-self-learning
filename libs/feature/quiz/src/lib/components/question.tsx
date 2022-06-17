@@ -14,16 +14,22 @@ import { Hints } from "./hints";
 import { MultipleChoiceAnswer, MultipleChoiceQuestion } from "./multiple-choice";
 import { ShortTextAnswer, ShortTextQuestion } from "./short-text";
 import { TextAnswer, TextQuestion } from "./text";
+import { VorwissenAnswer, VorwissenQuestion } from "./vorwissen";
 
 export type QuestionType =
 	| MultipleChoiceQuestion
 	| ShortTextQuestion
 	| TextQuestion
-	| ClozeQuestion;
+	| ClozeQuestion
+	| VorwissenQuestion;
 
 export const AnswerContext = createContext(
 	null as unknown as {
 		question: QuestionType;
+		markdown: {
+			questionsMd: MdLookup;
+			answersMd: MdLookup;
+		};
 		answer: Record<string, unknown>;
 		setAnswer: Dispatch<SetStateAction<Record<string, unknown>>>;
 	}
@@ -31,17 +37,43 @@ export const AnswerContext = createContext(
 
 export function AnswerContextProvider({
 	children,
-	question
-}: PropsWithChildren<{ question: QuestionType }>) {
+	question,
+	markdown
+}: PropsWithChildren<{
+	question: QuestionType;
+	markdown: {
+		questionsMd: MdLookup;
+		answersMd: MdLookup;
+	};
+}>) {
 	const [answer, setAnswer] = useState<Record<string, unknown>>({});
 
 	const value = {
 		question,
+		markdown,
 		answer,
 		setAnswer
 	};
 
 	return <AnswerContext.Provider value={value}>{children}</AnswerContext.Provider>;
+}
+
+export function useQuestion<
+	QType extends QuestionType["type"],
+	AnswerType = Record<string, unknown>
+>() {
+	const value = useContext(AnswerContext);
+
+	// Attention: Might break when type is changed
+	return value as unknown as {
+		question: QType; // Use exact type
+		setAnswer: Dispatch<SetStateAction<AnswerType>>;
+		answer: AnswerType;
+		markdown: {
+			questionsMd: MdLookup;
+			answersMd: MdLookup;
+		};
+	};
 }
 
 export function Question({
@@ -70,9 +102,9 @@ export function Question({
 	}
 
 	return (
-		<AnswerContextProvider question={question}>
+		<AnswerContextProvider question={question} markdown={markdown}>
 			<div className="max-w-full">
-				<CheckResult />
+				{/* <CheckResult /> */}
 
 				<div className="mb-1 font-semibold text-secondary">{question.type}</div>
 
@@ -85,7 +117,7 @@ export function Question({
 						<span className="text-red-500">Error: No markdown content found.</span>
 					)}
 
-					<div className="prose mt-8 flex max-w-full flex-col gap-8">
+					<div className="mt-8 flex max-w-full flex-col gap-8">
 						<Answer question={question} answersMd={markdown.answersMd} />
 					</div>
 
@@ -140,6 +172,10 @@ function Answer({ question, answersMd }: { question: QuestionType; answersMd: Md
 
 	if (question.type === "cloze") {
 		return <ClozeAnswer textArray={question.textArray} />;
+	}
+
+	if (question.type === "vorwissen") {
+		return <VorwissenAnswer question={question} />;
 	}
 
 	return (
