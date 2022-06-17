@@ -1,27 +1,32 @@
 import { CompiledMarkdown } from "@self-learning/markdown";
-import { Article } from "@self-learning/types";
 import { EditorField } from "@self-learning/ui/forms";
 import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 
 export function MarkdownField({
 	content,
 	setValue,
 	cacheKey
 }: {
-	content: Article; // TODO: Preview not fetched when string is used
+	content: string | undefined;
 	setValue: (v: string | undefined) => void;
 	cacheKey: string[];
 }) {
+	const debounced = useDebounce(content, 500);
+
 	const {
 		data: preview,
 		isLoading,
 		isRefetching,
-		error
-	} = useQuery(cacheKey, () => fetchPreview(content.value.content ?? ""));
+		isError,
+		refetch
+	} = useQuery(cacheKey, () => fetchPreview(content));
 
-	useDebouncedPreview(content.value.content, cacheKey);
+	useEffect(() => {
+		// Triggers compilation of new `preview`
+		refetch();
+	}, [debounced, cacheKey, refetch]);
 
 	const [height, setHeight] = useState("500px");
 
@@ -39,7 +44,7 @@ export function MarkdownField({
 					label="Inhalt"
 					language="markdown"
 					onChange={setValue}
-					value={content.value.content}
+					value={content}
 					height={height}
 				/>
 
@@ -54,8 +59,10 @@ export function MarkdownField({
 								Compiling...
 							</span>
 						)}
-						{!!error && (
-							<pre className="text-xs text-red-500">{JSON.stringify(error)}</pre>
+						{isError && (
+							<span className="absolute top-2 left-2 text-sm text-red-500 text-light">
+								ERROR
+							</span>
 						)}
 						<div className="prose w-full">{preview && <MDXRemote {...preview} />}</div>
 					</div>
@@ -65,29 +72,22 @@ export function MarkdownField({
 	);
 }
 
-function useDebouncedPreview(content: string | undefined, cacheKey: string[]) {
-	const queryClient = useQueryClient();
+function useDebounce<T>(value: T, delay: number) {
+	const [debouncedValue, setDebouncedValue] = useState(value);
 
-	useEffect(
-		() => {
-			// Update debounced value after delay
-			const handler = setTimeout(() => {
-				queryClient.invalidateQueries(cacheKey);
-			}, 500);
+	useEffect(() => {
+		const handler = setTimeout(() => {
+			setDebouncedValue(value);
+		}, delay);
 
-			// Cancel the timeout if value changes (also on delay change or unmount)
-			// This is how we prevent debounced value from updating if value is changed ...
-			// .. within the delay period. Timeout gets cleared and restarted.
-			return () => {
-				clearTimeout(handler);
-			};
-		},
-		[content, queryClient, cacheKey] // Only re-call effect if value or delay changes
-	);
+		return () => clearTimeout(handler);
+	}, [value, delay]);
+
+	return debouncedValue;
 }
 
-async function fetchPreview(content: string) {
-	if (content === "") return null;
+async function fetchPreview(content: string | undefined) {
+	if (!content || content === "") return null;
 
 	const response = await fetch("/api/teachers/mdx", {
 		method: "PUT",
