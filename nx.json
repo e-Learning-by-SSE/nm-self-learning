@@ -20,14 +20,6 @@
 			}
 		}
 	},
-	"targetDependencies": {
-		"build": [
-			{
-				"target": "build",
-				"projects": "dependencies"
-			}
-		]
-	},
 	"generators": {
 		"@nrwl/react": {
 			"application": {
@@ -82,5 +74,10 @@
 			"skipTests": true
 		}
 	},
-	"defaultProject": "site"
+	"defaultProject": "site",
+	"targetDefaults": {
+		"build": {
+			"dependsOn": ["^build"]
+		}
+	}
 }
