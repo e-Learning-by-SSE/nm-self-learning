@@ -12,6 +12,7 @@ import { Certainty } from "./certainty";
 import { ClozeAnswer, ClozeQuestion } from "./cloze";
 import { Hints } from "./hints";
 import { MultipleChoiceAnswer, MultipleChoiceQuestion } from "./multiple-choice";
+import { ProgrammingAnswer, ProgrammingQuestion } from "./programming";
 import { ShortTextAnswer, ShortTextQuestion } from "./short-text";
 import { TextAnswer, TextQuestion } from "./text";
 import { VorwissenAnswer, VorwissenQuestion } from "./vorwissen";
@@ -21,7 +22,8 @@ export type QuestionType =
 	| ShortTextQuestion
 	| TextQuestion
 	| ClozeQuestion
-	| VorwissenQuestion;
+	| VorwissenQuestion
+	| ProgrammingQuestion;
 
 export const AnswerContext = createContext(
 	null as unknown as {
@@ -176,6 +178,10 @@ function Answer({ question, answersMd }: { question: QuestionType; answersMd: Md
 
 	if (question.type === "vorwissen") {
 		return <VorwissenAnswer question={question} />;
+	}
+
+	if (question.type === "programming") {
+		return <ProgrammingAnswer question={question} />;
 	}
 
 	return (

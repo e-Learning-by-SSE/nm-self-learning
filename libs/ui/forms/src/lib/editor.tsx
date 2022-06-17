@@ -11,7 +11,7 @@ export function EditorField({
 	label: string;
 	value: string | undefined;
 	onChange: (value: string | undefined) => void;
-	language?: "json" | "markdown";
+	language?: string;
 	height?: string;
 }) {
 	return (

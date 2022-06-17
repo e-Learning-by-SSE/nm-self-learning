@@ -98,6 +98,27 @@ function getQuiz(slug: string): QuestionType[] {
 			],
 			requireExplanationForAnswerIds: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
 			withCertainty: false
+		},
+		{
+			type: "programming",
+			answers: null,
+			language: "typescript",
+			questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
+			statement: `Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
+				## Beispiel
+
+				**Eingabe**: \`[1, 2, 3, 4, 5]\`
+
+				**Ausgabe**: \`15\`
+				`,
+			template:
+				"export function sum(numbers: number[]): number {\n\t// DEINE LÖSUNG HIER\n\n\treturn 0;\t\t\n}",
+			expectedOutput: "123",
+			hints: {
+				content: [
+					"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
+				]
+			}
 		}
 	];
 }
