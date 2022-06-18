@@ -1,5 +1,6 @@
 import Editor from "@monaco-editor/react";
 import "katex/dist/katex.css";
+import { LabeledField } from "./labeled-field";
 
 export function EditorField({
 	label,
@@ -15,8 +16,7 @@ export function EditorField({
 	height?: string;
 }) {
 	return (
-		<div className="flex w-full flex-col gap-2">
-			<label className="text-sm font-semibold">{label}</label>
+		<LabeledField label={label}>
 			<Editor
 				className="border border-light-border"
 				options={{
@@ -29,6 +29,6 @@ export function EditorField({
 				value={value}
 				onChange={onChange}
 			/>
-		</div>
+		</LabeledField>
 	);
 }

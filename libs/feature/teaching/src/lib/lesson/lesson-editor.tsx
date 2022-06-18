@@ -1,11 +1,14 @@
 import { Prisma } from "@prisma/client";
-import { LessonContent } from "@self-learning/types";
-import { SectionCard } from "@self-learning/ui/common";
-import { EditorField, TextArea, Textfield } from "@self-learning/ui/forms";
+import { LessonContent, QuizContent } from "@self-learning/types";
+import { SectionCard, SectionHeader } from "@self-learning/ui/common";
+import { EditorField, LabeledField, TextArea, Textfield } from "@self-learning/ui/forms";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { useState } from "react";
 import slugify from "slugify";
+import { ImageUploadWidget } from "../image-upload";
+import { getSupabaseUrl } from "../supabase";
 import { LessonContentEditor } from "./lesson-content";
+import { QuizEditor } from "./quiz-editor";
 
 type Lesson = Prisma.LessonCreateInput;
 
@@ -24,6 +27,7 @@ export function LessonEditor({
 	const [description, setDescription] = useState(lesson.description);
 	const [content, setContent] = useState<LessonContent>(lesson.content as LessonContent);
 	const [imgUrl, setImgUrl] = useState<string | null>(lesson.imgUrl ?? null);
+	const [quiz, setQuiz] = useState<QuizContent>((lesson.quiz as QuizContent) ?? []);
 
 	function slugifyTitle(overwrite?: boolean) {
 		if (slug === "" || overwrite) {
@@ -32,16 +36,20 @@ export function LessonEditor({
 	}
 
 	function onCreate() {
-		onConfirm({
-			lessonId: "",
-			title,
-			slug,
-			subtitle,
-			description,
-			content,
-			imgUrl,
-			quiz: null
-		});
+		const confirmed = window.confirm(`${lesson.title || "Lerneinheit"} wirklich erstellen?`);
+
+		if (confirmed) {
+			onConfirm({
+				lessonId: "",
+				title,
+				slug,
+				subtitle,
+				description,
+				content,
+				imgUrl,
+				quiz
+			});
+		}
 	}
 
 	return (
@@ -60,28 +68,19 @@ export function LessonEditor({
 				</h1>
 			</CenteredSection>
 
-			{/* <CenteredSection className="bg-indigo-100">
-				<ImageUploadWidget
-					url={imgUrl}
-					onUpload={filepath => {
-						console.log(filepath);
+			<div className="flex flex-col gap-32 bg-gray-50 pt-8 pb-24">
+				<CenteredContainer>
+					<button className="btn-primary ml-auto mr-0" onClick={onCreate}>
+						{isNew ? "Erstellen" : "Speichern"}
+					</button>
 
-						const { publicURL, error } = getSupabaseUrl("images", filepath);
-						if (!error) {
-							setImgUrl(publicURL as string);
-						}
-					}}
-					size={256}
-				/>
-			</CenteredSection> */}
+					<CenteredContainer>
+						<SectionHeader
+							title="Daten"
+							subtitle="Informationen über diese Lerneinheit"
+						/>
 
-			<CenteredSection className="bg-gray-50 pt-8">
-				<button className="btn-primary mb-8 ml-auto mr-0" onClick={onCreate}>
-					{isNew ? "Erstellen" : "Speichern"}
-				</button>
-				<div className="grid items-start gap-16">
-					<SectionCard title="Daten" subtitle="Informationen über die neue Lerneinheit.">
-						<div className="flex flex-col gap-8">
+						<SectionCard className="gap-8">
 							<Textfield
 								value={title}
 								onChange={e => setTitle(e.target.value)}
@@ -91,7 +90,8 @@ export function LessonEditor({
 								placeholder="Die Neue Lerneinheit"
 								onBlur={() => slugifyTitle()}
 							/>
-							<div className="flex gap-2">
+
+							<div className="grid items-start gap-2 sm:flex">
 								<Textfield
 									value={slug}
 									onChange={e => setSlug(e.target.value)}
@@ -107,6 +107,7 @@ export function LessonEditor({
 									Generieren
 								</button>
 							</div>
+
 							<TextArea
 								label="Untertitel"
 								name="subtitle"
@@ -115,6 +116,7 @@ export function LessonEditor({
 								value={subtitle}
 								onChange={e => setSubtitle(e.target.value)}
 							></TextArea>
+
 							<EditorField
 								label="Beschreibung"
 								value={description as string}
@@ -122,18 +124,38 @@ export function LessonEditor({
 								language="markdown"
 								height="128px"
 							/>
-						</div>
-					</SectionCard>
-				</div>
-			</CenteredSection>
 
-			<LessonContentEditor content={content} setContent={setContent} />
+							<LabeledField label="Bild">
+								<ImageUploadWidget
+									url={imgUrl}
+									onUpload={filepath => {
+										console.log(filepath);
 
-			<CenteredContainer>
-				<button className="btn-primary mt-8 ml-auto mr-0" onClick={onCreate}>
-					{isNew ? "Erstellen" : "Speichern"}
-				</button>
-			</CenteredContainer>
+										const { publicURL, error } = getSupabaseUrl(
+											"images",
+											filepath
+										);
+										if (!error) {
+											setImgUrl(publicURL as string);
+										}
+									}}
+									size={256}
+								/>
+							</LabeledField>
+						</SectionCard>
+					</CenteredContainer>
+				</CenteredContainer>
+
+				<LessonContentEditor content={content} setContent={setContent} />
+
+				<QuizEditor quiz={quiz} setQuiz={setQuiz}></QuizEditor>
+
+				<CenteredContainer>
+					<button className="btn-primary mt-8 ml-auto mr-0 self-end" onClick={onCreate}>
+						{isNew ? "Erstellen" : "Speichern"}
+					</button>
+				</CenteredContainer>
+			</div>
 		</div>
 	);
 }

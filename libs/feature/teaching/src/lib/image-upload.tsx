@@ -8,7 +8,7 @@ export function ImageUploadWidget({
 	onUpload
 }: {
 	url: string | null;
-	size: number;
+	size: number | string;
 	onUpload: (filepath: string) => void;
 }) {
 	const [uploading, setUploading] = useState(false);
@@ -47,14 +47,14 @@ export function ImageUploadWidget({
 			{url ? (
 				<img
 					src={url}
-					alt="Avatar"
-					className="rounded-lg"
+					alt=""
+					className="rounded-lg object-cover"
 					style={{ height: size, width: size }}
 				/>
 			) : (
 				<div className="rounded-lg bg-neutral-300" style={{ height: size, width: size }} />
 			)}
-			<div className="btn-primary mt-8 w-fit">
+			<div className="btn-primary mt-4 w-fit">
 				<label className="button primary block" htmlFor="single">
 					{uploading ? "Uploading ..." : "Upload"}
 				</label>
@@ -114,7 +114,7 @@ export function VideoUploadWidget({
 
 	return (
 		<div className="flex flex-col">
-			<div className="h-[512px] bg-neutral-500">
+			<div className="aspect-video w-full bg-neutral-500">
 				<VideoPlayer url={url as string} />
 			</div>
 

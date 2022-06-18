@@ -8,7 +8,9 @@ export function CenteredContainer({
 	className
 }: PropsWithChildren<{ className?: string }>) {
 	return (
-		<div className={`mx-auto px-4 lg:max-w-screen-lg xl:px-0 ${className ? className : ""}`}>
+		<div
+			className={`mx-auto w-full max-w-screen-lg px-4 xl:px-0 ${className ? className : ""}`}
+		>
 			{children}
 		</div>
 	);

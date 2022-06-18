@@ -1,5 +1,6 @@
 import { DocumentTextIcon, VideoCameraIcon } from "@heroicons/react/solid";
 import { LessonContent, LessonContentType, ValueByContentType } from "@self-learning/types";
+import { SectionHeader } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { ArticleInput } from "./content-types/article";
@@ -97,36 +98,32 @@ export function LessonContentEditor({
 	}
 
 	return (
-		<div className="bg-gray-50">
-			<CenteredContainer className="flex flex-col gap-8 pb-8">
-				<h2 className="text-4xl">Inhalt</h2>
-				<p className="text-light">
-					Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
+		<section>
+			<CenteredContainer className="flex flex-col">
+				<SectionHeader
+					title="Inhalt"
+					subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
 					angelegt werden, kann der Student selber entscheiden, welches Medium angezeigt
-					werden soll.
-				</p>
+					werden soll."
+				/>
 
 				<div className="flex gap-4">
-					<button
-						className="flex place-content-center place-items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white disabled:opacity-50"
-						onClick={() => addContent("video")}
-						disabled={typesWithUsage["video"]}
-					>
-						<VideoCameraIcon className="h-5" />
-						<span>Video</span>
-					</button>
+					{!typesWithUsage["video"] && (
+						<button className="btn-primary w-fit" onClick={() => addContent("video")}>
+							<VideoCameraIcon className="h-5" />
+							<span>Video hinzufügen</span>
+						</button>
+					)}
 
-					<button
-						className="flex place-content-center place-items-center gap-2 rounded-lg bg-blue-500 px-8 py-2 font-semibold text-white disabled:opacity-50"
-						onClick={() => addContent("article")}
-						disabled={typesWithUsage["article"]}
-					>
-						<DocumentTextIcon className="h-5" />
-						<span>Artikel</span>
-					</button>
+					{!typesWithUsage["article"] && (
+						<button className="btn-primary w-fit" onClick={() => addContent("article")}>
+							<DocumentTextIcon className="h-5" />
+							<span>Artikel hinzufügen</span>
+						</button>
+					)}
 				</div>
 
-				<div className="flex gap-4">
+				<div className="mt-8 flex gap-4">
 					{content.length > 0 && (
 						<>
 							{content.map((c, index) => (
@@ -161,7 +158,7 @@ export function LessonContentEditor({
 					</div>
 				</CenteredContainer>
 			)}
-		</div>
+		</section>
 	);
 }
 
