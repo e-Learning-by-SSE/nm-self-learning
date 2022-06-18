@@ -1,16 +1,10 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
+import { VorwissenQuestion } from "@self-learning/types";
 import { TextArea } from "@self-learning/ui/forms";
 import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
-import { BaseQuestion, QuestionAnswers } from "./base-question";
 import { MultipleChoiceOption } from "./multiple-choice";
 import { useQuestion } from "./question";
-
-export type VorwissenQuestion = BaseQuestion & {
-	type: "vorwissen";
-	answers: QuestionAnswers;
-	requireExplanationForAnswerIds: string;
-};
 
 type Answer = {
 	vorwissen: string;

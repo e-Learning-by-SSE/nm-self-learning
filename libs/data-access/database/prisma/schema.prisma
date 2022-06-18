@@ -158,7 +158,7 @@ model Lesson {
     description  String?
     imgUrl       String?
     content      Json
-    quiz         String?
+    quiz         Json?
     competences  Competence[]
     completions  CompletedLesson[]
     quizAttempts QuizAttempt[]

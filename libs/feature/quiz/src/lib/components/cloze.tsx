@@ -1,10 +1,3 @@
-import { BaseQuestion } from "./base-question";
-
-export type ClozeQuestion = BaseQuestion & {
-	type: "cloze";
-	textArray: string[];
-};
-
 export function ClozeAnswer({ textArray }: { textArray: string[] }) {
 	return (
 		<div className="grid items-start gap-8">

@@ -1,17 +1,7 @@
 import { MdLookup } from "@self-learning/markdown";
 import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren, useContext } from "react";
-import { BaseQuestion } from "./base-question";
 import { AnswerContext } from "./question";
-
-export type MultipleChoiceQuestion = BaseQuestion & {
-	type: "multiple-choice";
-	answers: {
-		answerId: string;
-		content: string;
-		isCorrect: boolean;
-	}[];
-};
 
 export function MultipleChoiceAnswer({ answersMd }: { answersMd: MdLookup }) {
 	const { question, setAnswer, answer } = useContext(AnswerContext);

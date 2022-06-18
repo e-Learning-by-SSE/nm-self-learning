@@ -1,15 +1,7 @@
+import { ProgrammingQuestion } from "@self-learning/types";
 import { EditorField } from "@self-learning/ui/forms";
 import { useState } from "react";
-import { BaseQuestion } from "./base-question";
 import { useQuestion } from "./question";
-
-export type ProgrammingQuestion = BaseQuestion & {
-	type: "programming";
-	answers: null;
-	language: string;
-	template: string;
-	expectedOutput: string;
-};
 
 type Answer = {
 	program: string;

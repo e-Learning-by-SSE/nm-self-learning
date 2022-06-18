@@ -1,4 +1,5 @@
 import type { CompiledMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
+import { QuestionType } from "@self-learning/types";
 import { MDXRemote } from "next-mdx-remote";
 import {
 	createContext,
@@ -9,21 +10,13 @@ import {
 	useState
 } from "react";
 import { Certainty } from "./certainty";
-import { ClozeAnswer, ClozeQuestion } from "./cloze";
+import { ClozeAnswer } from "./cloze";
 import { Hints } from "./hints";
-import { MultipleChoiceAnswer, MultipleChoiceQuestion } from "./multiple-choice";
-import { ProgrammingAnswer, ProgrammingQuestion } from "./programming";
-import { ShortTextAnswer, ShortTextQuestion } from "./short-text";
-import { TextAnswer, TextQuestion } from "./text";
-import { VorwissenAnswer, VorwissenQuestion } from "./vorwissen";
-
-export type QuestionType =
-	| MultipleChoiceQuestion
-	| ShortTextQuestion
-	| TextQuestion
-	| ClozeQuestion
-	| VorwissenQuestion
-	| ProgrammingQuestion;
+import { MultipleChoiceAnswer } from "./multiple-choice";
+import { ProgrammingAnswer } from "./programming";
+import { ShortTextAnswer } from "./short-text";
+import { TextAnswer } from "./text";
+import { VorwissenAnswer } from "./vorwissen";
 
 export const AnswerContext = createContext(
 	null as unknown as {
