@@ -1,5 +1,5 @@
 import { Video } from "@self-learning/types";
-import { SectionCard } from "@self-learning/ui/common";
+import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
 import { Textfield } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { VideoUploadWidget } from "../../image-upload";
@@ -19,10 +19,12 @@ export function VideoInput({
 }) {
 	return (
 		<CenteredContainer className="w-full">
-			<SectionCard
-				title="Video"
-				subtitle="Verlinke ein Video oder lade ein neues Video hoch."
-			>
+			<SectionCard>
+				<SectionCardHeader
+					title="Video"
+					subtitle="Verlinke ein Video oder lade ein neues Video hoch."
+				/>
+
 				<div className="flex flex-col gap-8">
 					<Textfield
 						name="url"
@@ -46,6 +48,7 @@ export function VideoInput({
 					/>
 
 					<button
+						type="button"
 						className="absolute top-8 right-8 w-fit self-end text-sm text-red-500"
 						onClick={remove}
 					>

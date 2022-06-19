@@ -1,5 +1,10 @@
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/solid";
-import { ImageCard, ImageCardBadge, SectionCard } from "@self-learning/ui/common";
+import {
+	ImageCard,
+	ImageCardBadge,
+	SectionCard,
+	SectionCardHeader
+} from "@self-learning/ui/common";
 import Link from "next/link";
 
 export function SectionConnector({
@@ -100,7 +105,8 @@ export function Chapter({
 	lessons: { title: string; slug: string; lessonId: string; isCompleted: boolean }[];
 }) {
 	return (
-		<SectionCard title={title} subtitle={description}>
+		<SectionCard>
+			<SectionCardHeader title={title} subtitle={description} />
 			<ul className="flex flex-col gap-2">
 				{lessons.map(lesson => (
 					<Lesson

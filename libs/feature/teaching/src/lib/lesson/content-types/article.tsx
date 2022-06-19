@@ -1,5 +1,5 @@
 import { Article } from "@self-learning/types";
-import { SectionCard } from "@self-learning/ui/common";
+import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
 import { MarkdownField } from "../../markdown-editor";
 import { SetValueFn } from "../lesson-content";
 
@@ -18,8 +18,14 @@ export function ArticleInput({
 }) {
 	return (
 		<div className="mx-auto w-[90vw]">
-			<SectionCard title="Artikel" subtitle="Schreibe einen Artikel. Unterstützt Markdown.">
+			<SectionCard>
+				<SectionCardHeader
+					title="Artikel"
+					subtitle="Schreibe einen Artikel. Unterstützt Markdown."
+				/>
+
 				<button
+					type="button"
 					className="absolute top-8 right-8 w-fit text-sm text-red-500"
 					onClick={onRemove}
 				>
