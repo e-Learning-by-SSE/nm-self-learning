@@ -23,7 +23,7 @@ export function Navbar() {
 							</div>
 						</a>
 					</Link>
-					<div className="invisible flex w-0 gap-16 text-sm font-medium md:visible md:w-fit">
+					<div className="invisible flex w-0 items-center gap-16 text-sm font-medium lg:visible lg:w-fit">
 						{session?.user && (
 							<Link href="/profile">
 								<a>Mein Lernfortschritt</a>
@@ -43,7 +43,9 @@ export function Navbar() {
 					</button>
 				) : (
 					<div className="flex items-center gap-4">
-						<span className="text-sm">{session.user.name}</span>
+						<span className="invisible w-0 text-sm sm:visible sm:w-fit">
+							{session.user.name}
+						</span>
 						<NavbarDropdownMenu signOut={() => signOut({ callbackUrl: "/" })} />
 					</div>
 				)}
