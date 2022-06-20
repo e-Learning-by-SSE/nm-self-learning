@@ -1,3 +1,11 @@
-const nxPreset = require('@nrwl/jest/preset').default;
+const nxPreset = require("@nrwl/jest/preset").default;
 
-module.exports = { ...nxPreset, setupFiles: ["dotenv/config"] };
+module.exports = {
+	...nxPreset,
+	setupFiles: ["dotenv/config"],
+	globals: {
+		"ts-jest": {
+			isolatedModules: true
+		}
+	}
+};
