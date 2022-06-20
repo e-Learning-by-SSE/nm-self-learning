@@ -7,11 +7,13 @@ import { useQuery } from "react-query";
 export function MarkdownField({
 	content,
 	setValue,
-	cacheKey
+	cacheKey,
+	minHeight
 }: {
 	content: string | undefined;
 	setValue: (v: string | undefined) => void;
 	cacheKey: string[];
+	minHeight?: string;
 }) {
 	const debounced = useDebounce(content, 500);
 
@@ -26,17 +28,19 @@ export function MarkdownField({
 	useEffect(() => {
 		// Triggers compilation of new `preview`
 		refetch();
-	}, [debounced, cacheKey, refetch]);
+	}, [debounced, refetch]);
 
-	const [height, setHeight] = useState("500px");
+	const _minHeight = minHeight ?? "500px";
+	const [height, setHeight] = useState(_minHeight);
 
 	return (
 		<div className="flex flex-col">
 			<button
-				onClick={() => setHeight(prev => (prev === "500px" ? "75vh" : "500px"))}
+				type="button"
+				onClick={() => setHeight(prev => (prev === _minHeight ? "75vh" : _minHeight))}
 				className="self-start text-sm text-secondary"
 			>
-				{height === "500px" ? "Ansicht vergrößern" : "Ansicht verkleinern"}
+				{height === _minHeight ? "Ansicht vergrößern" : "Ansicht verkleinern"}
 			</button>
 
 			<div className="mt-4 grid grid-cols-2 items-start gap-8">
@@ -51,7 +55,7 @@ export function MarkdownField({
 				<div className="flex h-full w-full flex-col gap-2">
 					<label className="text-sm font-semibold">Preview</label>
 					<div
-						className="relative flex w-full grow overflow-auto border border-light-border p-8"
+						className="relative flex w-full grow overflow-auto border border-light-border bg-white p-8"
 						style={{ maxHeight: height }}
 					>
 						{(isLoading || isRefetching) && (

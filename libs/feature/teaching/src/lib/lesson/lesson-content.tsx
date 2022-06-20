@@ -99,7 +99,7 @@ export function LessonContentEditor({
 
 	return (
 		<section>
-			<CenteredContainer className="flex flex-col">
+			<CenteredContainer className="mb-4 flex flex-col">
 				<SectionHeader
 					title="Inhalt"
 					subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
@@ -109,14 +109,22 @@ export function LessonContentEditor({
 
 				<div className="flex gap-4">
 					{!typesWithUsage["video"] && (
-						<button className="btn-primary w-fit" onClick={() => addContent("video")}>
+						<button
+							type="button"
+							className="btn-primary w-fit"
+							onClick={() => addContent("video")}
+						>
 							<VideoCameraIcon className="h-5" />
 							<span>Video hinzufügen</span>
 						</button>
 					)}
 
 					{!typesWithUsage["article"] && (
-						<button className="btn-primary w-fit" onClick={() => addContent("article")}>
+						<button
+							type="button"
+							className="btn-primary w-fit"
+							onClick={() => addContent("article")}
+						>
 							<DocumentTextIcon className="h-5" />
 							<span>Artikel hinzufügen</span>
 						</button>

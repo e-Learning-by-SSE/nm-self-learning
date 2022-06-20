@@ -20,7 +20,7 @@ export function SectionCardHeader({
 	subtitle?: string | null;
 }) {
 	return (
-		<div className="grid items-start gap-2">
+		<div className="mb-8 grid items-start gap-2">
 			<h2 className="text-2xl">{title}</h2>
 			{subtitle && <span className="text-light">{subtitle}</span>}
 		</div>
