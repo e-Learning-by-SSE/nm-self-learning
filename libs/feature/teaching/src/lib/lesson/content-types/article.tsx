@@ -1,21 +1,10 @@
-import { Article } from "@self-learning/types";
 import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
+import { Controller } from "react-hook-form";
 import { MarkdownField } from "../../markdown-editor";
-import { SetValueFn } from "../lesson-content";
 
 const cacheKey = ["mdx-article"];
 
-export function ArticleInput({
-	index,
-	onRemove,
-	article,
-	setValue
-}: {
-	index: number;
-	setValue: SetValueFn;
-	article: Article;
-	onRemove: () => void;
-}) {
+export function ArticleInput({ index, onRemove }: { index: number; onRemove: () => void }) {
 	return (
 		<div className="mx-auto w-[90vw]">
 			<SectionCard>
@@ -32,11 +21,16 @@ export function ArticleInput({
 					Entfernen
 				</button>
 
-				<MarkdownField
-					content={article.value.content}
-					setValue={value => setValue(article.type, { content: value }, index)}
-					cacheKey={cacheKey}
-				/>
+				<Controller
+					name={`content.${index}.value.content`}
+					render={({ field }) => (
+						<MarkdownField
+							content={field.value}
+							setValue={value => field.onChange(value)}
+							cacheKey={cacheKey}
+						/>
+					)}
+				></Controller>
 			</SectionCard>
 		</div>
 	);

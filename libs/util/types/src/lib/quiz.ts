@@ -12,11 +12,10 @@ export type BaseQuestion = {
 	questionId: string;
 	type: string;
 	statement: string;
-	withCertainty?: boolean;
-	hints?: {
-		disabled?: boolean;
-		content: string[];
-	};
+	withCertainty: boolean;
+	hints: {
+		content: string;
+	}[];
 	answers: QuestionAnswers | null;
 };
 

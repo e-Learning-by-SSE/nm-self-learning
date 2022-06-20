@@ -7,7 +7,7 @@ export function ImageUploadWidget({
 	size,
 	onUpload
 }: {
-	url: string | null;
+	url?: string | null;
 	size: number | string;
 	onUpload: (filepath: string) => void;
 }) {

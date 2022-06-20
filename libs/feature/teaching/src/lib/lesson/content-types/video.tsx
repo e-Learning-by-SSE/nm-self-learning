@@ -1,22 +1,19 @@
 import { Video } from "@self-learning/types";
 import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
-import { Textfield } from "@self-learning/ui/forms";
+import { LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { VideoUploadWidget } from "../../image-upload";
 import { getSupabaseUrl } from "../../supabase";
-import { SetValueFn } from "../lesson-content";
 
-export function VideoInput({
-	index,
-	video,
-	setValue,
-	remove
-}: {
-	index: number;
-	video: Video;
-	setValue: SetValueFn;
-	remove: () => void;
-}) {
+export function VideoInput({ index, remove }: { index: number; remove: () => void }) {
+	const { register, watch } = useFormContext<{ content: Video[] }>();
+	const { update } = useFieldArray<{ content: Video[] }>({
+		name: "content"
+	});
+
+	const url = watch(`content.${index}.value.url`);
+
 	return (
 		<CenteredContainer className="w-full">
 			<SectionCard>
@@ -26,27 +23,27 @@ export function VideoInput({
 				/>
 
 				<div className="flex flex-col gap-8">
-					<Textfield
-						name="url"
-						label="URL"
-						required={true}
-						value={video.value.url}
-						onChange={event => setValue("video", { url: event.target.value }, index)}
-						placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-					/>
+					<LabeledField label="URL">
+						<input
+							{...register(`content.${index}.value.url`)}
+							placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+						/>
+					</LabeledField>
 
 					<VideoUploadWidget
-						url={video.value.url as string}
+						url={url ?? null}
 						onUpload={filepath => {
 							console.log(filepath);
 
 							const { publicURL, error } = getSupabaseUrl("videos", filepath);
 							if (!error) {
-								setValue("video", { url: publicURL as string }, index);
+								update(index, {
+									type: "video",
+									value: { url: publicURL as string }
+								});
 							}
 						}}
 					/>
-
 					<button
 						type="button"
 						className="absolute top-8 right-8 w-fit self-end text-sm text-red-500"

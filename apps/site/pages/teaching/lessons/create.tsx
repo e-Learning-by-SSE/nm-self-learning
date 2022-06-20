@@ -24,6 +24,8 @@ export default function CreateLessonPage() {
 				title: "",
 				subtitle: "",
 				description: "",
+				imgUrl: "",
+				quiz: [],
 				content: []
 			}}
 		/>

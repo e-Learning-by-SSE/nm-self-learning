@@ -2,9 +2,10 @@ import { DocumentTextIcon, VideoCameraIcon } from "@heroicons/react/solid";
 import { LessonContent, LessonContentType, ValueByContentType } from "@self-learning/types";
 import { SectionHeader } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
-import { ArticleInput } from "./content-types/article";
-import { VideoInput } from "./content-types/video";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useFieldArray } from "react-hook-form";
+import { ArticleInput } from "../content-types/article";
+import { VideoInput } from "../content-types/video";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -29,13 +30,15 @@ function useContentTypeUsage(content: LessonContent) {
 	return typesWithUsage;
 }
 
-export function LessonContentEditor({
-	content,
-	setContent
-}: {
-	content: LessonContentType[];
-	setContent: Dispatch<SetStateAction<LessonContentType[]>>;
-}) {
+export function LessonContentEditor() {
+	const {
+		append,
+		remove,
+		fields: content
+	} = useFieldArray<{ content: LessonContent }>({
+		name: "content"
+	});
+
 	const [contentTabIndex, setContentTabIndex] = useState<number | undefined>(
 		content.length > 0 ? 0 : undefined
 	);
@@ -50,10 +53,10 @@ export function LessonContentEditor({
 		}
 	}, [contentTabIndex, content]);
 
-	const typesWithUsage = useContentTypeUsage(content);
+	const typesWithUsage = useContentTypeUsage([]);
 
 	function addContent(type: LessonContentType["type"]) {
-		let initialValue: LessonContentType["value"];
+		let initialValue: LessonContentType["value"] = {};
 
 		if (type === "article") {
 			initialValue = { content: "" };
@@ -63,14 +66,7 @@ export function LessonContentEditor({
 			initialValue = { url: "" };
 		}
 
-		setContent(prev => [
-			...prev,
-			{
-				type,
-				value: initialValue as any
-			}
-		]);
-
+		append({ type, value: initialValue } as any);
 		setContentTabIndex(content.length);
 	}
 
@@ -79,23 +75,11 @@ export function LessonContentEditor({
 			const confirmed = window.confirm("Inhalt entfernen ?");
 
 			if (confirmed) {
-				setContent(prev => prev.filter((item, i) => index !== i));
+				remove(index);
 			}
 		},
-		[setContent]
+		[remove]
 	);
-
-	function setValue(type: string, value: unknown, index: number) {
-		if (index >= 0 && index < content.length) {
-			const copy = [...content];
-			(copy[index] as { value: unknown }).value = value;
-			setContent(copy);
-		}
-	}
-
-	if (contentTabIndex) {
-		console.log(content[contentTabIndex]);
-	}
 
 	return (
 		<section>
@@ -134,17 +118,18 @@ export function LessonContentEditor({
 				<div className="mt-8 flex gap-4">
 					{content.length > 0 && (
 						<>
-							{content.map((c, index) => (
+							{content.map((record, index) => (
 								<button
+									type="button"
 									onClick={() => setContentTabIndex(index)}
 									className={`border-b-2 px-2 pb-1 ${
 										index === contentTabIndex
 											? "border-b-secondary font-semibold text-secondary"
 											: "border-b-transparent text-light"
 									}`}
-									key={c.type}
+									key={record.id}
 								>
-									{c.type}
+									{record.type}
 								</button>
 							))}
 						</>
@@ -157,7 +142,6 @@ export function LessonContentEditor({
 					index={contentTabIndex}
 					content={content[contentTabIndex]}
 					onRemove={onRemove}
-					setValue={setValue}
 				/>
 			) : (
 				<CenteredContainer>
@@ -173,34 +157,18 @@ export function LessonContentEditor({
 function RenderContentType({
 	index,
 	content,
-	onRemove,
-	setValue
+	onRemove
 }: {
 	index: number;
 	content: LessonContentType;
-	setValue: SetValueFn;
 	onRemove: (index: number) => void;
 }) {
 	if (content.type === "video") {
-		return (
-			<VideoInput
-				index={index}
-				video={content}
-				setValue={setValue}
-				remove={() => onRemove(index)}
-			/>
-		);
+		return <VideoInput index={index} remove={() => onRemove(index)} />;
 	}
 
 	if (content.type === "article") {
-		return (
-			<ArticleInput
-				index={index}
-				article={content}
-				setValue={setValue}
-				onRemove={() => onRemove(index)}
-			/>
-		);
+		return <ArticleInput index={index} onRemove={() => onRemove(index)} />;
 	}
 
 	return (
