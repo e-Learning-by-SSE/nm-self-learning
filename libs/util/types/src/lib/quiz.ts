@@ -38,6 +38,10 @@ export type MultipleChoiceQuestion = BaseQuestion & {
 export type ShortTextQuestion = BaseQuestion & {
 	type: "short-text";
 	answers: null;
+	acceptedAnswers: {
+		acceptedAnswerId: string;
+		value: string;
+	}[];
 };
 
 export type TextQuestion = BaseQuestion & {

@@ -2,6 +2,7 @@ import { PlusIcon } from "@heroicons/react/solid";
 import { MultipleChoiceQuestion } from "@self-learning/types";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import { MarkdownField } from "../../../markdown-editor";
+import { getRandomId } from "../../../random-id";
 import { LessonFormModel } from "../../lesson-editor";
 
 export function MultipleChoiceForm({
@@ -25,7 +26,7 @@ export function MultipleChoiceForm({
 
 	function addAnswer() {
 		append({
-			answerId: window.crypto.randomUUID(),
+			answerId: getRandomId(),
 			isCorrect: false,
 			content: ""
 		});
@@ -36,7 +37,7 @@ export function MultipleChoiceForm({
 	}
 
 	return (
-		<div className="flex flex-col gap-8">
+		<section className="flex flex-col gap-8">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
 
@@ -87,6 +88,6 @@ export function MultipleChoiceForm({
 					></Controller>
 				</div>
 			))}
-		</div>
+		</section>
 	);
 }

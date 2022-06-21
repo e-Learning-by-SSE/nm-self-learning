@@ -1,12 +1,14 @@
 import { PlusIcon } from "@heroicons/react/outline";
-import { QuestionType } from "@self-learning/types";
-import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
+import { BaseQuestion, QuestionType } from "@self-learning/types";
+import { Divider, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { MarkdownField } from "../../markdown-editor";
+import { getRandomId } from "../../random-id";
 import { LessonFormModel } from "../lesson-editor";
 import { MultipleChoiceForm } from "./questions/multiple-choice-form";
+import { ShortTextForm } from "./questions/short-text-form";
 
 export function QuizEditor() {
 	const { control } = useFormContext<LessonFormModel>();
@@ -19,13 +21,29 @@ export function QuizEditor() {
 	const currentQuestion = quiz[questionIndex];
 
 	function appendQuestion(type: QuestionType["type"]) {
+		const baseQuestion: BaseQuestion = {
+			type: "",
+			questionId: getRandomId(),
+			statement: "",
+			withCertainty: false,
+			hints: [],
+			answers: null
+		};
+
 		if (type === "multiple-choice") {
-			append({
+			return append({
+				...baseQuestion,
 				type: "multiple-choice",
-				questionId: window.crypto.randomUUID(),
-				answers: [],
-				statement: "",
-				withCertainty: false
+				answers: []
+			});
+		}
+
+		if (type === "short-text") {
+			return append({
+				...baseQuestion,
+				type: "short-text",
+				answers: null,
+				acceptedAnswers: []
 			});
 		}
 	}
@@ -40,14 +58,25 @@ export function QuizEditor() {
 					erfolgreich abzuschließen."
 				/>
 
-				<button
-					type="button"
-					className="btn-primary mb-8 w-fit"
-					onClick={() => appendQuestion("multiple-choice")}
-				>
-					<PlusIcon className="h-5" />
-					<span>Multiple-Choice</span>
-				</button>
+				<div className="flex flex-wrap gap-4">
+					<button
+						type="button"
+						className="btn-primary mb-8 w-fit"
+						onClick={() => appendQuestion("multiple-choice")}
+					>
+						<PlusIcon className="h-5" />
+						<span>Multiple-Choice</span>
+					</button>
+
+					<button
+						type="button"
+						className="btn-primary mb-8 w-fit"
+						onClick={() => appendQuestion("short-text")}
+					>
+						<PlusIcon className="h-5" />
+						<span>Kurze Antwort</span>
+					</button>
+				</div>
 
 				<Tabs selectedIndex={questionIndex} onChange={index => setQuestionIndex(index)}>
 					{quiz.map((_, index) => (
@@ -74,6 +103,10 @@ function RenderQuestionTypeForm({ question, index }: { question: QuestionType; i
 		return <MultipleChoiceForm question={question} index={index} />;
 	}
 
+	if (question.type === "short-text") {
+		return <ShortTextForm question={question} index={index} />;
+	}
+
 	return <span className="text-red-500">Unknown question type: {question.type}</span>;
 }
 
@@ -91,7 +124,7 @@ function BaseQuestionForm({
 	return (
 		<div className="mx-auto mt-8 flex w-full flex-col rounded-lg border border-light-border bg-white p-8 xl:w-[90vw]">
 			<h4 className="font-semibold text-secondary">{currentQuestion.type}</h4>
-			<div className="flex flex-col gap-16">
+			<div className="flex flex-col gap-8">
 				<section>
 					<h5 className="mb-4 mt-8 text-2xl font-semibold tracking-tight">Frage</h5>
 
@@ -112,7 +145,11 @@ function BaseQuestionForm({
 					</div>
 				</section>
 
-				<section>{children}</section>
+				<Divider />
+
+				{children}
+
+				<Divider />
 
 				<HintForm questionIndex={index} />
 			</div>
@@ -134,7 +171,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 
 	function addHint() {
 		append({
-			hintId: window.crypto.randomUUID(),
+			hintId: getRandomId(),
 			content: ""
 		});
 	}
@@ -150,7 +187,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 		<section className="flex flex-col gap-8">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
-				<button className="btn-stroked w-fit items-center" onClick={addHint}>
+				<button type="button" className="btn-stroked w-fit items-center" onClick={addHint}>
 					<PlusIcon className="h-5" />
 					<span>Hinweis hinzufügen</span>
 				</button>
