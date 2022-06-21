@@ -18,6 +18,11 @@ export function EditorField({
 	return (
 		<LabeledField label={label}>
 			<Editor
+				onMount={editor => {
+					setTimeout(() => {
+						editor?.getAction("editor.action.formatDocument")?.run();
+					}, 500);
+				}}
 				className="border border-light-border"
 				options={{
 					minimap: { enabled: false },

@@ -1,6 +1,9 @@
-import { LessonContent, QuestionType, QuizContent } from "@self-learning/types";
+import { Dialog } from "@headlessui/react";
+import { LessonContent, QuizContent } from "@self-learning/types";
+import { EditorField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { FormProvider, useForm } from "react-hook-form";
+import { useState } from "react";
+import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
@@ -130,6 +133,7 @@ export function LessonEditor({
 	onConfirm: (lesson: LessonFormModel) => void;
 }) {
 	const isNew = lesson.lessonId === "";
+	const [isJsonDialogOpen, setIsJsonDialogOpen] = useState(false);
 
 	const methods = useForm({
 		defaultValues: {
@@ -144,6 +148,16 @@ export function LessonEditor({
 		}
 	});
 
+	function openAsJson() {
+		const formValue = methods.getValues();
+		console.log(JSON.stringify(formValue, null, 4));
+		setIsJsonDialogOpen(true);
+	}
+
+	function setFromJsonDialog(value: LessonFormModel) {
+		methods.reset(value);
+	}
+
 	return (
 		<div className="bg-gray-50 pb-24">
 			<FormProvider {...methods}>
@@ -153,7 +167,7 @@ export function LessonEditor({
 					})}
 					className="flex flex-col"
 				>
-					<CenteredContainer className="flex items-center justify-between gap-16 py-16">
+					<CenteredContainer className="relative flex items-center justify-between gap-16 py-16">
 						<h1 className="text-3xl sm:text-5xl">
 							{isNew ? (
 								<>
@@ -171,6 +185,22 @@ export function LessonEditor({
 						<button className="btn-primary h-fit w-fit" type="submit">
 							{isNew ? "Erstellen" : "Speichern"}
 						</button>
+
+						<button
+							type="button"
+							className="absolute bottom-8 text-sm font-semibold text-secondary"
+							onClick={openAsJson}
+						>
+							Als JSON bearbeiten
+						</button>
+
+						{isJsonDialogOpen && (
+							<JsonEditorDialog
+								isOpen={isJsonDialogOpen}
+								setIsOpen={setIsJsonDialogOpen}
+								onClose={setFromJsonDialog}
+							/>
+						)}
 					</CenteredContainer>
 
 					<div className="flex flex-col gap-32">
@@ -186,5 +216,75 @@ export function LessonEditor({
 				</form>
 			</FormProvider>
 		</div>
+	);
+}
+
+function JsonEditorDialog({
+	isOpen,
+	setIsOpen,
+	onClose
+}: {
+	isOpen: boolean;
+	setIsOpen: (bool: boolean) => void;
+	onClose: (value: LessonFormModel) => void;
+}) {
+	const { getValues } = useFormContext<LessonFormModel>();
+	const [value, setValue] = useState(JSON.stringify(getValues()));
+	const [error, setError] = useState<string | null>(null);
+
+	function closeWithReturn() {
+		try {
+			const parsedJson = JSON.parse(value);
+			onClose(parsedJson);
+			setIsOpen(false);
+		} catch (e) {
+			setError("JSON-Format ist ungültig.");
+		}
+	}
+
+	return (
+		<Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
+			{/* The backdrop, rendered as a fixed sibling to the panel container */}
+			<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+			{/* Full-screen scrollable container */}
+			<div className="fixed inset-0 flex items-center justify-center p-4">
+				{/* Container to center the panel */}
+				<div className="flex min-h-full items-center justify-center">
+					{/* The actual dialog panel  */}
+					<Dialog.Panel className="mx-auto w-[50vw] rounded bg-white px-8 pb-8">
+						<Dialog.Title className="py-8 text-xl">Als JSON bearbeiten</Dialog.Title>
+
+						{error && <div className="pb-4 text-red-500">{error}</div>}
+
+						<EditorField
+							label="JSON"
+							language="json"
+							value={value}
+							height="60vh"
+							onChange={value => setValue(value ?? "{}")}
+						/>
+
+						<div className="mt-8 flex gap-4">
+							<button
+								type="button"
+								className="btn-primary  w-fit"
+								onClick={closeWithReturn}
+							>
+								Übernehmen
+							</button>
+
+							<button
+								type="button"
+								className="btn-stroked w-fit"
+								onClick={() => setIsOpen(false)}
+							>
+								Abbrechen
+							</button>
+						</div>
+					</Dialog.Panel>
+				</div>
+			</div>
+		</Dialog>
 	);
 }
