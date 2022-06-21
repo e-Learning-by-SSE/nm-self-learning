@@ -83,8 +83,7 @@ export function Question({
 	};
 }) {
 	const [usedHints, setUsedHints] = useState<CompiledMarkdown[]>([]);
-	const hintsAvailable =
-		question.hints && !question.hints.disabled && question.hints.content.length > 0;
+	const hintsAvailable = question.hints && question.hints.length > 0;
 	const allHints = markdown.hintsMd[question.questionId] ?? [];
 
 	function useHint() {

@@ -1,12 +1,13 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
-import { Question, QuestionType, useQuizAttempt } from "@self-learning/quiz";
+import { Question, useQuizAttempt } from "@self-learning/quiz";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
+import { QuestionType } from "@self-learning/types";
 
 const text = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur nostrum dolorem ### at placeat. Ad corrupti fugit, magnam ipsam iste similique voluptates. Doloribus repellat velit expedita molestias eaque consectetur nesciunt.
 Temporibus, repellendus aspernatur provident unde ipsa voluptates delectus a adipisci itaque quam impedit suscipit harum illo voluptas saepe facere est distinctio non cum nesciunt. Dicta rerum dignissimos commodi cum molestias?
@@ -27,6 +28,7 @@ function getQuiz(slug: string): QuestionType[] {
 
 			Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure! Fugiat, optio!
 			`.trim(),
+			withCertainty: true,
 			answers: [
 				{
 					answerId: "35d310ee-1acf-48e0-8f8c-090acd0e873a",
@@ -39,27 +41,34 @@ function getQuiz(slug: string): QuestionType[] {
 					isCorrect: true
 				}
 			],
-			hints: {
-				content: [
-					"Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero laudantium sequi illo, veritatis labore culpa, eligendi, quod consequatur autem ad dolorem explicabo quos alias harum fuga sapiente reiciendis. Incidunt, voluptates.",
-					"# Lorem ipsum dolor \n- Eins\n- Zwei"
-				]
-			},
-			withCertainty: true
+			hints: [
+				{
+					hintId: "abc",
+					content:
+						"Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero laudantium sequi illo, veritatis labore culpa, eligendi, quod consequatur autem ad dolorem explicabo quos alias harum fuga sapiente reiciendis. Incidunt, voluptates."
+				},
+				{
+					hintId: "def",
+					content: "# Lorem ipsum dolor \n- Eins\n- Zwei"
+				}
+			]
 		},
 		{
 			type: "short-text",
 			questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
 			statement: "# Was ist 1 + 1 ?",
 			answers: null,
-			withCertainty: true
+			withCertainty: true,
+			acceptedAnswers: [],
+			hints: []
 		},
 		{
 			type: "text",
 			questionId: "34fca2c2-c547-4f66-9a4e-927770a55090",
 			statement: "# Was ist 1 + 1 ?",
 			answers: null,
-			withCertainty: true
+			withCertainty: true,
+			hints: []
 		},
 		{
 			type: "cloze",
@@ -67,12 +76,13 @@ function getQuiz(slug: string): QuestionType[] {
 			statement: "# Lückentext",
 			answers: null,
 			withCertainty: false,
-			textArray: textArray
+			textArray: textArray,
+			hints: []
 		},
 		{
 			type: "vorwissen",
 			questionId: "c9de042a-6962-4f21-bc57-bf58841be5f2",
-			statement: `lorem ipsum dolor sit amet consectetur adipisicing elit. **Quasi** molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure ? 
+			statement: `lorem ipsum dolor sit amet consectetur adipisicing elit. **Quasi** molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure ?
 			![image](https://images.unsplash.com/photo-1523875194681-bedd468c58bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1742&q=80)`,
 			answers: [
 				{
@@ -97,12 +107,14 @@ function getQuiz(slug: string): QuestionType[] {
 				}
 			],
 			requireExplanationForAnswerIds: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
-			withCertainty: false
+			withCertainty: false,
+			hints: []
 		},
 		{
 			type: "programming",
 			answers: null,
 			language: "typescript",
+			withCertainty: false,
 			questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
 			statement: `Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
 				## Beispiel
@@ -114,11 +126,13 @@ function getQuiz(slug: string): QuestionType[] {
 			template:
 				"export function sum(numbers: number[]): number {\n\t// DEINE LÖSUNG HIER\n\n\treturn 0;\t\t\n}",
 			expectedOutput: "123",
-			hints: {
-				content: [
-					"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
-				]
-			}
+			hints: [
+				{
+					hintId: "dskfjsdk",
+					content:
+						"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
+				}
+			]
 		}
 	];
 }
@@ -146,11 +160,11 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 	for (const question of questions) {
 		questionsMd[question.questionId] = await compileMarkdown(question.statement);
 
-		if (question.hints && !question.hints.disabled) {
+		if (question.hints?.length > 0) {
 			hintsMd[question.questionId] = [];
 
-			for (const hint of question.hints.content) {
-				hintsMd[question.questionId].push(await compileMarkdown(hint));
+			for (const hint of question.hints) {
+				hintsMd[question.questionId].push(await compileMarkdown(hint.content));
 			}
 		}
 

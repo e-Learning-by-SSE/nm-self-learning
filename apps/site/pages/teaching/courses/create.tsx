@@ -1,6 +1,6 @@
 import { apiFetch } from "@self-learning/api";
 import { CourseContent } from "@self-learning/types";
-import { SectionCard } from "@self-learning/ui/common";
+import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
 import { EditorField, TextArea, Textfield } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -47,7 +47,11 @@ export default function CreateCoursePage() {
 					Erstellen
 				</button>
 				<div className="grid items-start gap-16">
-					<SectionCard title="Daten" subtitle="Informationen über die neue Lerneinheit.">
+					<SectionCard>
+						<SectionCardHeader
+							title="Daten"
+							subtitle="Informationen über die neue Lerneinheit."
+						/>
 						<div className="flex flex-col gap-8">
 							<Textfield
 								value={title}
@@ -91,10 +95,11 @@ export default function CreateCoursePage() {
 						</div>
 					</SectionCard>
 
-					<SectionCard
-						title="Inhalt"
-						subtitle="Hier können Lerneinheiten hinzugefügt und durch Kapitel strukturiert werden."
-					>
+					<SectionCard>
+						<SectionCardHeader
+							title="Inhalt"
+							subtitle="Hier können Lerneinheiten hinzugefügt und durch Kapitel strukturiert werden."
+						/>
 						<CourseContentEditor content={content} setContent={setContent} />
 					</SectionCard>
 				</div>
