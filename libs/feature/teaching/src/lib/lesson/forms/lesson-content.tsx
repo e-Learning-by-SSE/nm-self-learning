@@ -53,7 +53,7 @@ export function LessonContentEditor() {
 		}
 	}, [contentTabIndex, content]);
 
-	const typesWithUsage = useContentTypeUsage([]);
+	const typesWithUsage = useContentTypeUsage(content);
 
 	function addContent(type: LessonContentType["type"]) {
 		let initialValue: LessonContentType["value"] = {};
@@ -92,27 +92,25 @@ export function LessonContentEditor() {
 				/>
 
 				<div className="flex gap-4">
-					{!typesWithUsage["video"] && (
-						<button
-							type="button"
-							className="btn-primary w-fit"
-							onClick={() => addContent("video")}
-						>
-							<VideoCameraIcon className="h-5" />
-							<span>Video hinzufügen</span>
-						</button>
-					)}
+					<button
+						type="button"
+						className="btn-primary w-fit"
+						onClick={() => addContent("video")}
+						disabled={typesWithUsage["video"]}
+					>
+						<VideoCameraIcon className="h-5" />
+						<span>Video hinzufügen</span>
+					</button>
 
-					{!typesWithUsage["article"] && (
-						<button
-							type="button"
-							className="btn-primary w-fit"
-							onClick={() => addContent("article")}
-						>
-							<DocumentTextIcon className="h-5" />
-							<span>Artikel hinzufügen</span>
-						</button>
-					)}
+					<button
+						type="button"
+						className="btn-primary w-fit"
+						onClick={() => addContent("article")}
+						disabled={typesWithUsage["article"]}
+					>
+						<DocumentTextIcon className="h-5" />
+						<span>Artikel hinzufügen</span>
+					</button>
 				</div>
 
 				<div className="mt-8 flex gap-4">
