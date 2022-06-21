@@ -14,6 +14,7 @@ export type BaseQuestion = {
 	statement: string;
 	withCertainty: boolean;
 	hints: {
+		hintId: string;
 		content: string;
 	}[];
 	answers: QuestionAnswers | null;

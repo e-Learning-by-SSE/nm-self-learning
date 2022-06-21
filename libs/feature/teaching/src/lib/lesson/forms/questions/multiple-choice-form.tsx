@@ -1,3 +1,4 @@
+import { PlusIcon } from "@heroicons/react/solid";
 import { MultipleChoiceQuestion } from "@self-learning/types";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import { MarkdownField } from "../../../markdown-editor";
@@ -9,7 +10,7 @@ export function MultipleChoiceForm({
 	question: { type: MultipleChoiceQuestion["type"] };
 	index: number;
 }) {
-	const { control, register } = useFormContext<LessonFormModel>();
+	const { control, register, watch } = useFormContext<LessonFormModel>();
 	const {
 		fields: answers,
 		append,
@@ -18,6 +19,9 @@ export function MultipleChoiceForm({
 		control,
 		name: `quiz.${index}.answers`
 	});
+
+	/** Unlike `answers` (see above), this will always be rendered with latest data. */
+	const watchedAnswers = watch(`quiz.${index}.answers`);
 
 	function addAnswer() {
 		append({
@@ -32,15 +36,26 @@ export function MultipleChoiceForm({
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<button type="button" className="btn-stroked w-fit" onClick={addAnswer}>
-				Antwort hinzufügen
-			</button>
+		<div className="flex flex-col gap-8">
+			<div className="flex items-center gap-4">
+				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
+
+				<button
+					type="button"
+					className="btn-stroked h-fit w-fit items-center"
+					onClick={addAnswer}
+				>
+					<PlusIcon className="h-5" />
+					<span>Antwort hinzufügen</span>
+				</button>
+			</div>
 
 			{answers.map((answer, answerIndex) => (
 				<div
 					key={answer.answerId}
-					className="relative flex flex-col gap-4 rounded-lg border border-light-border bg-indigo-50 p-4"
+					className={`relative flex flex-col gap-4 rounded-lg border border-light-border p-4 ${
+						watchedAnswers?.[answerIndex]?.isCorrect ? "bg-indigo-300" : "bg-indigo-50"
+					}`}
 				>
 					<button
 						type="button"
@@ -49,7 +64,7 @@ export function MultipleChoiceForm({
 					>
 						Entfernen
 					</button>
-					<label className="flex items-center gap-2">
+					<label className="flex w-fit items-center gap-2">
 						<input
 							type="checkbox"
 							className="rounded text-secondary"
