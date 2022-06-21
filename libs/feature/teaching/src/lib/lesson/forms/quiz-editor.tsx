@@ -17,7 +17,7 @@ export function QuizEditor() {
 		name: "quiz"
 	});
 
-	const [questionIndex, setQuestionIndex] = useState<number>(0);
+	const [questionIndex, setQuestionIndex] = useState<number>(-1);
 	const currentQuestion = quiz[questionIndex];
 
 	function appendQuestion(type: QuestionType["type"]) {
@@ -29,6 +29,8 @@ export function QuizEditor() {
 			hints: [],
 			answers: null
 		};
+
+		setQuestionIndex(old => old + 1);
 
 		if (type === "multiple-choice") {
 			return append({
