@@ -51,17 +51,23 @@ export function LessonInfoEditor() {
 				></Controller>
 
 				<LabeledField label="Bild">
-					<ImageUploadWidget
-						url={getValues("imgUrl")}
-						onUpload={filepath => {
-							console.log(filepath);
+					<Controller
+						control={control}
+						name="imgUrl"
+						render={({ field }) => (
+							<ImageUploadWidget
+								url={field.value}
+								onUpload={filepath => {
+									console.log(filepath);
 
-							const { publicURL, error } = getSupabaseUrl("images", filepath);
-							if (!error) {
-								setValue("imgUrl", publicURL as string);
-							}
-						}}
-						size={256}
+									const { publicURL, error } = getSupabaseUrl("images", filepath);
+									if (!error) {
+										field.onChange(publicURL);
+									}
+								}}
+								size={256}
+							/>
+						)}
 					/>
 				</LabeledField>
 			</SectionCard>
