@@ -11,6 +11,7 @@
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write **/*",
 		"prisma": "prisma",
+		"algolia:sync": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' --project libs/feature/search/tsconfig.json --require tsconfig-paths/register libs/feature/search/src/lib/algolia-sync.ts",
 		"start:prod": "cd dist/apps/site && npm run start"
 	},
 	"private": true,

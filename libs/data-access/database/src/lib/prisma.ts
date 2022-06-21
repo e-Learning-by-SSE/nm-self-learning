@@ -28,6 +28,6 @@ if (typeof window === "undefined") {
 		// @ts-ignore
 		database = global.prisma;
 	}
-} else if (process.env["NODE_ENV"] === "test") {
+} else if ((process.env.NODE_ENV as string) === "test") {
 	database = new PrismaClient();
 }

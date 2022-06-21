@@ -9,6 +9,7 @@
 		"feature-enrollment": "libs/feature/enrollment",
 		"feature-lesson": "libs/feature/lesson",
 		"feature-quiz": "libs/feature/quiz",
+		"feature-search": "libs/feature/search",
 		"feature-teaching": "libs/feature/teaching",
 		"site": "apps/site",
 		"site-e2e": "apps/site-e2e",
