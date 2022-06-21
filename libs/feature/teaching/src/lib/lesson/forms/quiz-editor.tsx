@@ -122,36 +122,38 @@ function BaseQuestionForm({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="mx-auto mt-8 flex w-full flex-col rounded-lg border border-light-border bg-white p-8 xl:w-[90vw]">
-			<h4 className="font-semibold text-secondary">{currentQuestion.type}</h4>
-			<div className="flex flex-col gap-8">
-				<section>
-					<h5 className="mb-4 mt-8 text-2xl font-semibold tracking-tight">Frage</h5>
+		<div className="px-4 xl:px-0">
+			<div className="mx-auto mt-8 flex w-full flex-col rounded-lg border border-light-border bg-white p-8 xl:w-[90vw]">
+				<h4 className="font-semibold text-secondary">{currentQuestion.type}</h4>
+				<div className="flex flex-col gap-8">
+					<section>
+						<h5 className="mb-4 mt-8 text-2xl font-semibold tracking-tight">Frage</h5>
 
-					<div className="rounded-lg bg-indigo-50 p-4">
-						<Controller
-							key={currentQuestion.questionId}
-							control={control}
-							name={`quiz.${index}.statement`}
-							render={({ field }) => (
-								<MarkdownField
-									minHeight="128px"
-									cacheKey={[`q-${currentQuestion.questionId}`]}
-									content={field.value}
-									setValue={field.onChange}
-								/>
-							)}
-						/>
-					</div>
-				</section>
+						<div className="rounded-lg bg-indigo-50 p-4">
+							<Controller
+								key={currentQuestion.questionId}
+								control={control}
+								name={`quiz.${index}.statement`}
+								render={({ field }) => (
+									<MarkdownField
+										minHeight="128px"
+										cacheKey={[`q-${currentQuestion.questionId}`]}
+										content={field.value}
+										setValue={field.onChange}
+									/>
+								)}
+							/>
+						</div>
+					</section>
 
-				<Divider />
+					<Divider />
 
-				{children}
+					{children}
 
-				<Divider />
+					<Divider />
 
-				<HintForm questionIndex={index} />
+					<HintForm questionIndex={index} />
+				</div>
 			</div>
 		</div>
 	);
