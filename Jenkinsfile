@@ -38,7 +38,7 @@ pipeline {
                         sh "docker inspect ${c.id}"
                         sh "sleep 20"
                         sh 'npm run prisma db push'
-                        sh 'npm run test'
+                        sh 'npm run test:ci'
                     }
                 }
             }

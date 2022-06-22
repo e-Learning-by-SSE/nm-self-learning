@@ -5,7 +5,8 @@
 	"scripts": {
 		"start": "nx serve",
 		"build": "nx build",
-		"test": "env TZ='Europe/Berlin' nx run-many --target=test --all --cache=false --skip-nx-cache --runInBand",
+		"test": "env TZ='Europe/Berlin' nx run-many --target=test --all --runInBand",
+		"test:ci": "env TZ='Europe/Berlin' nx run-many --target=test --all --cache=false --skip-nx-cache --runInBand",
 		"cypress": "cypress open --project=apps/site-e2e",
 		"storybook": "env TAILWIND_MODE=watch nx run docs-storybook:storybook --watch",
 		"prettier:check": "prettier --check **/*",
