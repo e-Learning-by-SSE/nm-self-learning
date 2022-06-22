@@ -4,11 +4,13 @@ import { supabase } from "./supabase";
 
 export function ImageUploadWidget({
 	url,
-	size,
+	width,
+	height,
 	onUpload
 }: {
 	url?: string | null;
-	size: number | string;
+	width: number | string;
+	height: number | string;
 	onUpload: (filepath: string) => void;
 }) {
 	const [uploading, setUploading] = useState(false);
@@ -49,10 +51,10 @@ export function ImageUploadWidget({
 					src={url}
 					alt=""
 					className="rounded-lg object-cover"
-					style={{ height: size, width: size }}
+					style={{ height, width }}
 				/>
 			) : (
-				<div className="rounded-lg bg-neutral-300" style={{ height: size, width: size }} />
+				<div className="rounded-lg bg-neutral-300" style={{ height, width }} />
 			)}
 			<div className="btn-primary mt-4 w-fit">
 				<label className="button primary block" htmlFor="single">

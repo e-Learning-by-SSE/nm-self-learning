@@ -1,5 +1,5 @@
-import { SectionCard, SectionHeader } from "@self-learning/ui/common";
-import { EditorField, LabeledField } from "@self-learning/ui/forms";
+import { SectionHeader } from "@self-learning/ui/common";
+import { EditorField, Form, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import { ImageUploadWidget } from "../../image-upload";
@@ -7,13 +7,13 @@ import { getSupabaseUrl } from "../../supabase";
 import { LessonFormModel } from "../lesson-editor";
 
 export function LessonInfoEditor() {
-	const { register, getValues, setValue, control } = useFormContext<LessonFormModel>();
+	const { register, control } = useFormContext<LessonFormModel>();
 
 	return (
 		<CenteredContainer>
 			<SectionHeader title="Daten" subtitle="Informationen über diese Lerneinheit" />
 
-			<SectionCard className="gap-8">
+			<Form.SectionCard>
 				<LabeledField label="Titel">
 					<input {...register("title")} placeholder="Die Neue Lerneinheit" />
 				</LabeledField>
@@ -65,12 +65,13 @@ export function LessonInfoEditor() {
 										field.onChange(publicURL);
 									}
 								}}
-								size={256}
+								width={256}
+								height={256}
 							/>
 						)}
 					/>
 				</LabeledField>
-			</SectionCard>
+			</Form.SectionCard>
 		</CenteredContainer>
 	);
 }
