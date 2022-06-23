@@ -14,6 +14,7 @@ export type CourseFormModel = {
 	description: string | null;
 	imgUrl: string | null;
 	content: {
+		chapterId: string;
 		title: string;
 		description: string | null;
 		lessons: {
