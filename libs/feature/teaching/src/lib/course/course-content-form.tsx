@@ -221,18 +221,21 @@ export function LessonSelector({
 				<div className="absolute flex min-h-full translate-y-1/4 justify-center">
 					{/* The actual dialog panel  */}
 					<Dialog.Panel
-						className="mx-auto flex w-[90vw] flex-col overflow-hidden rounded bg-white lg:w-[800px]"
+						className="mx-auto flex h-fit w-[90vw] flex-col overflow-hidden rounded-lg bg-white lg:w-[800px]"
 						style={{ maxHeight: "624px" }}
 					>
 						<Combobox
 							value={null as unknown as FindLessonsResponse[0]}
 							onChange={onClose}
 						>
-							<Combobox.Input
-								placeholder="Suche nach Titel..."
-								className="rounded-t border-b border-light-border"
-								onChange={e => setTitle(e.target.value)}
-							/>
+							<span className="flex items-center border-b border-b-light-border py-1 px-3">
+								<SearchIcon className="h-6 text-light" />
+								<Combobox.Input
+									className="w-full border-none focus:ring-0"
+									placeholder="Suche nach Titel"
+									onChange={e => setTitle(e.target.value)}
+								/>
+							</span>
 							<div className="divide-border-light playlist-scroll mt-8 flex flex-col divide-y overflow-auto">
 								<Combobox.Options className="flex flex-col divide-y divide-light-border">
 									{data?.map(lesson => (
