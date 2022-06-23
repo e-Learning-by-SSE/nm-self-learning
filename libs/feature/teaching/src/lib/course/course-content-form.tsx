@@ -208,48 +208,61 @@ function Lessons({ chapterIndex }: { chapterIndex: number }) {
 
 	return (
 		<LabeledField label="Lerneinheiten">
-			<div className="flex flex-col divide-y divide-light-border">
-				{lessons.map((lesson, lessonIndex) => (
-					<div
-						key={lesson.lessonId}
-						className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
-					>
-						<Link href={`/teaching/lessons/edit/${lesson.slug}`}>
-							<a className="flex gap-4 text-sm font-medium">
-								<span className="text-secondary">{lessonIndex + 1}.</span>
-								<span>{lesson.title}</span>
-							</a>
-						</Link>
-						<div className="flex gap-2">
-							<button
-								type="button"
-								className="rounded border border-light-border p-1 disabled:text-slate-200"
-								title="Nach oben verschieben"
-								onClick={() => swapLesson(lessonIndex, lessonIndex - 1)}
-								disabled={lessonIndex === 0}
-							>
-								<ArrowSmUpIcon className="h-5" />
-							</button>
-							<button
-								type="button"
-								className="rounded border border-light-border p-1 disabled:text-slate-200"
-								title="Nach unten verschieben"
-								onClick={() => swapLesson(lessonIndex, lessonIndex + 1)}
-								disabled={lessonIndex === lessons.length - 1}
-							>
-								<ArrowSmDownIcon className="h-5" />
-							</button>
-							<button
-								type="button"
-								className="rounded border border-light-border p-1 text-red-500"
-								title="Entfernen"
-								onClick={() => removeLesson(lessonIndex)}
-							>
-								<XIcon className="h-5" />
-							</button>
-						</div>
-					</div>
-				))}
+			<motion.div
+				className="flex flex-col divide-y divide-light-border"
+				layout="size"
+				initial={{ height: 0 }}
+				animate={{ height: "auto" }}
+				exit={{ height: 0 }}
+				transition={{ duration: 0.3, type: "tween" }}
+			>
+				<AnimatePresence>
+					{lessons.map((lesson, lessonIndex) => (
+						<motion.div
+							key={lesson.lessonId}
+							className="flex flex-wrap items-center justify-between gap-2 p-3"
+							layout
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+						>
+							<Link href={`/teaching/lessons/edit/${lesson.slug}`}>
+								<a className="flex gap-4 text-sm font-medium">
+									<span className="text-secondary">{lessonIndex + 1}.</span>
+									<span>{lesson.title}</span>
+								</a>
+							</Link>
+							<div className="flex gap-2">
+								<button
+									type="button"
+									className="rounded border border-light-border p-1 disabled:text-slate-200"
+									title="Nach oben verschieben"
+									onClick={() => swapLesson(lessonIndex, lessonIndex - 1)}
+									disabled={lessonIndex === 0}
+								>
+									<ArrowSmUpIcon className="h-5" />
+								</button>
+								<button
+									type="button"
+									className="rounded border border-light-border p-1 disabled:text-slate-200"
+									title="Nach unten verschieben"
+									onClick={() => swapLesson(lessonIndex, lessonIndex + 1)}
+									disabled={lessonIndex === lessons.length - 1}
+								>
+									<ArrowSmDownIcon className="h-5" />
+								</button>
+								<button
+									type="button"
+									className="rounded border border-light-border p-1 text-red-500"
+									title="Entfernen"
+									onClick={() => removeLesson(lessonIndex)}
+								>
+									<XIcon className="h-5" />
+								</button>
+							</div>
+						</motion.div>
+					))}
+				</AnimatePresence>
 				<div className="py-1">
 					<button
 						type="button"
@@ -259,7 +272,7 @@ function Lessons({ chapterIndex }: { chapterIndex: number }) {
 						<PlusIcon className="h-5" />
 					</button>
 				</div>
-			</div>
+			</motion.div>
 			{open && <LessonSelector open={open} onClose={onLessonSelected} />}
 		</LabeledField>
 	);
