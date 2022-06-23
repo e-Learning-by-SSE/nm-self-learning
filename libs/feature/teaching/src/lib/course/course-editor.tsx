@@ -1,5 +1,4 @@
-import { CourseContent } from "@self-learning/types";
-import { Form, FormTitleContainer } from "@self-learning/ui/forms";
+import { Form } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -14,7 +13,15 @@ export type CourseFormModel = {
 	subtitle: string;
 	description: string | null;
 	imgUrl: string | null;
-	content: CourseContent;
+	content: {
+		title: string;
+		description: string | null;
+		lessons: {
+			title: string;
+			slug: string;
+			lessonId: string;
+		}[];
+	}[];
 	subjectId: number;
 };
 

@@ -1,3 +1,4 @@
+import { Combobox, Dialog } from "@headlessui/react";
 import {
 	ArrowSmDownIcon,
 	ArrowSmUpIcon,
@@ -5,10 +6,12 @@ import {
 	SearchIcon,
 	XIcon
 } from "@heroicons/react/solid";
+import { apiFetch, FindLessonsResponse } from "@self-learning/api";
 import { SectionHeader } from "@self-learning/ui/common";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { Fragment, useCallback, useState } from "react";
 import {
 	useFieldArray,
@@ -17,10 +20,8 @@ import {
 	useFormContext,
 	UseFormRegister
 } from "react-hook-form";
-import { CourseFormModel } from "./course-editor";
-import { apiFetch, FindLessonsResponse } from "@self-learning/api";
 import { useQuery } from "react-query";
-import { Combobox, Dialog } from "@headlessui/react";
+import { CourseFormModel } from "./course-editor";
 
 /**
  * Allows the user to edit the course content.
@@ -54,7 +55,7 @@ export function CourseContentForm() {
 		append({
 			title: "",
 			description: "",
-			lessonIds: []
+			lessons: []
 		});
 	}, [append]);
 
@@ -129,8 +130,6 @@ function ChapterForm({
 	remove: UseFieldArrayRemove;
 	isLast: boolean;
 }) {
-	const [open, setOpen] = useState(false);
-
 	return (
 		<Form.SectionCard>
 			<LabeledField label={`Kapitel ${index + 1}`}>
@@ -148,18 +147,7 @@ function ChapterForm({
 				/>
 			</LabeledField>
 
-			<LabeledField label="Lerneinheiten">
-				<div className="flex flex-col gap-4">
-					<button
-						type="button"
-						className="w-fit rounded border border-light-border p-1 text-light"
-						onClick={() => setOpen(true)}
-					>
-						<PlusIcon className="h-5" />
-					</button>
-				</div>
-				{open && <LessonSelector open={open} onClose={() => setOpen(false)} />}
-			</LabeledField>
+			<Lessons chapterIndex={index} />
 
 			<div className="flex w-full justify-center gap-4">
 				<button
@@ -193,6 +181,90 @@ function ChapterForm({
 	);
 }
 
+function Lessons({ chapterIndex }: { chapterIndex: number }) {
+	const [open, setOpen] = useState(false);
+
+	const { control } = useFormContext<CourseFormModel>();
+	const {
+		append: addLesson,
+		remove: removeLesson,
+		swap: swapLesson,
+		fields: lessons
+	} = useFieldArray({
+		control,
+		name: `content.${chapterIndex}.lessons`
+	});
+
+	function onLessonSelected(lesson?: FindLessonsResponse[0]) {
+		setOpen(false);
+		if (lesson) {
+			addLesson({
+				lessonId: lesson.lessonId,
+				slug: lesson.slug,
+				title: lesson.title
+			});
+		}
+	}
+
+	return (
+		<LabeledField label="Lerneinheiten">
+			<div className="flex flex-col divide-y divide-light-border">
+				{lessons.map((lesson, lessonIndex) => (
+					<div
+						key={lesson.lessonId}
+						className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
+					>
+						<Link href={`/teaching/lessons/edit/${lesson.slug}`}>
+							<a className="flex gap-4 text-sm font-medium">
+								<span className="text-secondary">{lessonIndex + 1}.</span>
+								<span>{lesson.title}</span>
+							</a>
+						</Link>
+						<div className="flex gap-2">
+							<button
+								type="button"
+								className="rounded border border-light-border p-1 disabled:text-slate-200"
+								title="Nach oben verschieben"
+								onClick={() => swapLesson(lessonIndex, lessonIndex - 1)}
+								disabled={lessonIndex === 0}
+							>
+								<ArrowSmUpIcon className="h-5" />
+							</button>
+							<button
+								type="button"
+								className="rounded border border-light-border p-1 disabled:text-slate-200"
+								title="Nach unten verschieben"
+								onClick={() => swapLesson(lessonIndex, lessonIndex + 1)}
+								disabled={lessonIndex === lessons.length - 1}
+							>
+								<ArrowSmDownIcon className="h-5" />
+							</button>
+							<button
+								type="button"
+								className="rounded border border-light-border p-1 text-red-500"
+								title="Entfernen"
+								onClick={() => removeLesson(lessonIndex)}
+							>
+								<XIcon className="h-5" />
+							</button>
+						</div>
+					</div>
+				))}
+				<div className="py-1">
+					<button
+						type="button"
+						className="btn-stroked mt-2 w-full"
+						onClick={() => setOpen(true)}
+					>
+						<PlusIcon className="h-5" />
+					</button>
+				</div>
+			</div>
+			{open && <LessonSelector open={open} onClose={onLessonSelected} />}
+		</LabeledField>
+	);
+}
+
 export function LessonSelector({
 	open,
 	onClose
@@ -204,8 +276,7 @@ export function LessonSelector({
 	const { data } = useQuery(
 		["lessons", title],
 		() => {
-			console.log("fetching...", title);
-			return apiFetch<FindLessonsResponse, never>("GET", `/api/lessons/find?title=${title}`);
+			return apiFetch<FindLessonsResponse, void>("GET", `/api/lessons/find?title=${title}`);
 		},
 		{ staleTime: 10_000, placeholderData: [], keepPreviousData: true } // Cache for 10 seconds
 	);
