@@ -1,5 +1,5 @@
 import { SectionHeader } from "@self-learning/ui/common";
-import { EditorField, Form, LabeledField } from "@self-learning/ui/forms";
+import { Form, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import { ImageUploadWidget } from "../../image-upload";
@@ -29,48 +29,40 @@ export function LessonInfoEditor() {
 					<button className="btn-stroked h-fit self-end">Generieren</button>
 				</div>
 
-				<LabeledField label="Untertitel">
-					<textarea
-						{...register("subtitle")}
-						placeholder="1-2 Sätze über diese Lerneinheit."
-					/>
-				</LabeledField>
-
-				<Controller
-					control={control}
-					name="description"
-					render={({ field }) => (
-						<EditorField
-							label="Beschreibung"
-							value={field.value}
-							onChange={field.onChange}
-							language="markdown"
-							height="128px"
+				<div className="grid gap-8 md:grid-cols-[1fr_auto]">
+					<LabeledField label="Untertitel">
+						<textarea
+							{...register("subtitle")}
+							placeholder="1-2 Sätze über diese Lerneinheit."
+							className="h-full"
 						/>
-					)}
-				></Controller>
+					</LabeledField>
 
-				<LabeledField label="Bild">
-					<Controller
-						control={control}
-						name="imgUrl"
-						render={({ field }) => (
-							<ImageUploadWidget
-								url={field.value}
-								onUpload={filepath => {
-									console.log(filepath);
+					<LabeledField label="Bild">
+						<Controller
+							control={control}
+							name="imgUrl"
+							render={({ field }) => (
+								<ImageUploadWidget
+									url={field.value}
+									onUpload={filepath => {
+										console.log(filepath);
 
-									const { publicURL, error } = getSupabaseUrl("images", filepath);
-									if (!error) {
-										field.onChange(publicURL);
-									}
-								}}
-								width={256}
-								height={256}
-							/>
-						)}
-					/>
-				</LabeledField>
+										const { publicURL, error } = getSupabaseUrl(
+											"images",
+											filepath
+										);
+										if (!error) {
+											field.onChange(publicURL);
+										}
+									}}
+									width={256}
+									height={256}
+								/>
+							)}
+						/>
+					</LabeledField>
+				</div>
 			</Form.SectionCard>
 		</CenteredContainer>
 	);

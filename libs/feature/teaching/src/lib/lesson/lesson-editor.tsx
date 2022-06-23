@@ -1,9 +1,11 @@
 import { LessonContent, QuizContent } from "@self-learning/types";
-import { Form } from "@self-learning/ui/forms";
+import { SectionHeader } from "@self-learning/ui/common";
+import { EditorField, Form } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { useRef, useState } from "react";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { JsonEditorDialog } from "../json-editor-dialog";
+import { MarkdownField } from "../markdown-editor";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
@@ -101,6 +103,7 @@ export function LessonEditor({
 
 					<Form.Container>
 						<LessonInfoEditor />
+						<LessonDescriptionForm />
 						<LessonContentEditor />
 						<QuizEditor />
 						<CenteredContainer>
@@ -112,5 +115,35 @@ export function LessonEditor({
 				</form>
 			</FormProvider>
 		</div>
+	);
+}
+
+function LessonDescriptionForm() {
+	const cacheKey = useRef(["lesson-description"]);
+	const methods = useForm<LessonFormModel>();
+
+	return (
+		<section>
+			<CenteredContainer>
+				<SectionHeader
+					title="Beschreibung"
+					subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
+				/>
+			</CenteredContainer>
+			<Form.MarkdownWithPreviewContainer>
+				<Controller
+					control={methods.control}
+					name="description"
+					render={({ field }) => (
+						<MarkdownField
+							cacheKey={cacheKey.current}
+							content={field.value}
+							setValue={field.onChange}
+							minHeight="300px"
+						/>
+					)}
+				></Controller>
+			</Form.MarkdownWithPreviewContainer>
+		</section>
 	);
 }
