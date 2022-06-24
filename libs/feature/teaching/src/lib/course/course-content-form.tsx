@@ -11,7 +11,6 @@ import { SectionHeader } from "@self-learning/ui/common";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { AnimatePresence, motion, Reorder } from "framer-motion";
-import Link from "next/link";
 import { Fragment, useCallback, useState } from "react";
 import {
 	useFieldArray,
@@ -21,6 +20,7 @@ import {
 	UseFormRegister
 } from "react-hook-form";
 import { useQuery } from "react-query";
+import { getRandomId } from "../random-id";
 import { CourseFormModel } from "./course-editor";
 
 /**
@@ -40,7 +40,7 @@ import { CourseFormModel } from "./course-editor";
  * )
  */
 export function CourseContentForm() {
-	const { register, control, setValue, watch } = useFormContext<CourseFormModel>();
+	const { register, control, watch } = useFormContext<CourseFormModel>();
 	const {
 		append,
 		remove,
@@ -53,15 +53,12 @@ export function CourseContentForm() {
 
 	const addChapter = useCallback(() => {
 		append({
+			chapterId: getRandomId(),
 			title: "",
 			description: "",
 			lessons: []
 		});
 	}, [append]);
-
-	function onReorder(chaps: CourseFormModel["content"]) {
-		setValue("content", chaps);
-	}
 
 	const chapterList = watch("content");
 
@@ -69,25 +66,20 @@ export function CourseContentForm() {
 		<CenteredContainer>
 			<SectionHeader title="Inhalt" subtitle="Inhalte des Kurses." />
 
-			<Reorder.Group
-				axis="y"
-				values={chapterList}
-				onReorder={onReorder}
-				layout="size"
+			<motion.ul
+				layout="position"
 				className="flex flex-col gap-16"
-				initial={{ height: 0 }}
 				animate={{ height: "auto" }}
 				transition={{ duration: 0.3, type: "tween" }}
 			>
 				<AnimatePresence>
 					{chapterList.map((chapter, index) => (
-						<Reorder.Item
+						<motion.li
 							key={chapter.chapterId}
-							value={chapter}
 							layoutId={chapter.chapterId}
 							layout
 							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
+							animate={{ opacity: 1, height: "auto" }}
 							exit={{ opacity: 0 }}
 						>
 							<ChapterForm
@@ -98,10 +90,10 @@ export function CourseContentForm() {
 								swap={swap}
 								isLast={index === chapters.length - 1}
 							/>
-						</Reorder.Item>
+						</motion.li>
 					))}
 				</AnimatePresence>
-			</Reorder.Group>
+			</motion.ul>
 
 			{chapters.length === 0 ? (
 				<button
@@ -227,23 +219,20 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 	}
 
 	return (
-		<LabeledField label="Lerneinheiten">
+		<LabeledField label="Lerneinheiten" key={chapterId}>
 			<Reorder.Group
 				onReorder={onReorder}
 				values={lessonList}
 				axis="y"
 				className="flex flex-col divide-y divide-light-border"
 				layout="size"
-				initial={{ height: 0 }}
 				animate={{ height: "auto" }}
-				exit={{ height: 0 }}
 				transition={{ duration: 0.3, type: "tween" }}
 			>
 				<AnimatePresence>
 					{lessonList.map((lesson, lessonIndex) => (
 						<Reorder.Item
 							value={lesson}
-							drag
 							key={lesson.lessonId}
 							className="flex flex-wrap items-center justify-between gap-2 bg-white p-3"
 							layoutId={lesson.lessonId}
@@ -285,19 +274,20 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 							</div>
 						</Reorder.Item>
 					))}
-
-					<div className="py-1">
-						<motion.button
-							layoutId={`add-${chapterId}`}
-							type="button"
-							className="btn-stroked mt-2 w-full"
-							onClick={() => setOpen(true)}
-						>
-							<PlusIcon className="h-5" />
-						</motion.button>
-					</div>
 				</AnimatePresence>
+				<div className="py-1">
+					<motion.button
+						layoutId={`add-${chapterId}`}
+						layout="position"
+						type="button"
+						className="btn-stroked mt-2 w-full"
+						onClick={() => setOpen(true)}
+					>
+						<PlusIcon className="h-5" />
+					</motion.button>
+				</div>
 			</Reorder.Group>
+
 			{open && <LessonSelector open={open} onClose={onLessonSelected} />}
 		</LabeledField>
 	);
