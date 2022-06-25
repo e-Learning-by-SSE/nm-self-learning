@@ -10,6 +10,7 @@ import { apiFetch, FindLessonsResponse } from "@self-learning/api";
 import { SectionHeader } from "@self-learning/ui/common";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
+import { getRandomId } from "@self-learning/util/common";
 import { AnimatePresence, motion, Reorder } from "framer-motion";
 import { Fragment, useCallback, useState } from "react";
 import {
@@ -21,7 +22,6 @@ import {
 	useWatch
 } from "react-hook-form";
 import { useQuery } from "react-query";
-import { getRandomId } from "../random-id";
 import { CourseFormModel } from "./course-form-model";
 
 /**

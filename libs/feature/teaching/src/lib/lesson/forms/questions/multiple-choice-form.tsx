@@ -1,8 +1,8 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { MultipleChoiceQuestion } from "@self-learning/types";
-import { useFormContext, useFieldArray, Controller } from "react-hook-form";
+import { getRandomId } from "@self-learning/util/common";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { MarkdownField } from "../../../markdown-editor";
-import { getRandomId } from "../../../random-id";
 import { LessonFormModel } from "../../lesson-editor";
 
 export function MultipleChoiceForm({

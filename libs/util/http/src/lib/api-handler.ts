@@ -1,6 +1,8 @@
+import { Prisma } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ValidationError } from "yup";
 import {
+	AlreadyExists,
 	ApiError,
 	InternalServerError,
 	MethodNotAllowed,
@@ -30,6 +32,12 @@ export async function apiHandler(
 
 		if (error instanceof ApiError) {
 			return withApiError(res, error);
+		}
+
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === "P2002") {
+				return withApiError(res, AlreadyExists("A unique constraint failed.", error.meta));
+			}
 		}
 
 		console.error(`[${new Date().toLocaleString()}]: Uncaught error in apiHandler:`);

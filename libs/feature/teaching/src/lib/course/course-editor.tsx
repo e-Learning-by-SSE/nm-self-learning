@@ -8,7 +8,13 @@ import { CourseContentForm } from "./course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
 
-export function CourseEditor({ course }: { course: CourseFormModel }) {
+export function CourseEditor({
+	course,
+	onConfirm
+}: {
+	course: CourseFormModel;
+	onConfirm: (course: CourseFormModel) => void;
+}) {
 	const [openAsJson, setOpenAsJson] = useState(false);
 	const isNew = course.courseId === "";
 
@@ -29,7 +35,8 @@ export function CourseEditor({ course }: { course: CourseFormModel }) {
 						data => {
 							console.log("data", data);
 							try {
-								courseFormSchema.validateSync(data);
+								const validated = courseFormSchema.validateSync(data);
+								onConfirm(validated);
 							} catch (error) {
 								console.error(error);
 							}

@@ -1,5 +1,6 @@
 import { VideoPlayer } from "@self-learning/ui/lesson";
 import { useState } from "react";
+import { getRandomId } from "@self-learning/util/common";
 import { supabase } from "./supabase";
 
 export function ImageUploadWidget({
@@ -25,7 +26,7 @@ export function ImageUploadWidget({
 
 			const file = event.target.files[0];
 			const fileExt = file.name.split(".").pop();
-			const fileName = `${Math.random().toString(16).slice(2)}.${fileExt}`;
+			const fileName = `${getRandomId()}.${fileExt}`;
 			const filePath = `${fileName}`;
 
 			const { error: uploadError } = await supabase.storage

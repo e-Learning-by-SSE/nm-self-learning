@@ -32,6 +32,7 @@
 			"@self-learning/ui/forms": ["libs/ui/forms/src/index.ts"],
 			"@self-learning/ui/layouts": ["libs/ui/layouts/src/index.ts"],
 			"@self-learning/ui/lesson": ["libs/ui/lesson/src/index.ts"],
+			"@self-learning/util/common": ["libs/util/common/src/index.ts"],
 			"@self-learning/util/http": ["libs/util/http/src/index.ts"],
 			"@self-learning/util/testing": ["libs/util/testing/src/index.ts"],
 			"@self-learning/util/validate": ["libs/util/validation/src/index.ts"],

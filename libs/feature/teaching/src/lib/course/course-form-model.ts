@@ -2,7 +2,7 @@ import { array, InferType, number, object, string } from "yup";
 
 export const courseFormSchema = object({
 	courseId: string().nullable(),
-	subjectId: number(),
+	subjectId: number().nullable(),
 	slug: string().required(),
 	title: string().required(),
 	subtitle: string().required(),
