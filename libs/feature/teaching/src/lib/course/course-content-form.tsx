@@ -17,11 +17,12 @@ import {
 	UseFieldArrayRemove,
 	UseFieldArraySwap,
 	useFormContext,
-	UseFormRegister
+	UseFormRegister,
+	useWatch
 } from "react-hook-form";
 import { useQuery } from "react-query";
 import { getRandomId } from "../random-id";
-import { CourseFormModel } from "./course-editor";
+import { CourseFormModel } from "./course-form-model";
 
 /**
  * Allows the user to edit the course content.
@@ -40,7 +41,7 @@ import { CourseFormModel } from "./course-editor";
  * )
  */
 export function CourseContentForm() {
-	const { register, control, watch } = useFormContext<CourseFormModel>();
+	const { register, control } = useFormContext<CourseFormModel>();
 	const {
 		append,
 		remove,
@@ -60,7 +61,7 @@ export function CourseContentForm() {
 		});
 	}, [append]);
 
-	const chapterList = watch("content");
+	const chapterList = useWatch({ name: "content", control });
 
 	return (
 		<CenteredContainer>
@@ -136,9 +137,16 @@ function ChapterForm({
 	remove: UseFieldArrayRemove;
 	isLast: boolean;
 }) {
+	const {
+		formState: { errors }
+	} = useFormContext<CourseFormModel>();
+
 	return (
 		<Form.SectionCard>
-			<LabeledField label={`Kapitel ${index + 1}`}>
+			<LabeledField
+				label={`Kapitel ${index + 1}`}
+				error={errors.content?.[index]?.title?.message}
+			>
 				<input
 					{...register(`content.${index}.title`)}
 					placeholder={`Kapitel ${index + 1}`}
@@ -190,7 +198,7 @@ function ChapterForm({
 function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId: string }) {
 	const [open, setOpen] = useState(false);
 
-	const { control, setValue, watch } = useFormContext<CourseFormModel>();
+	const { control, setValue } = useFormContext<CourseFormModel>();
 	const {
 		append: addLesson,
 		remove: removeLesson,
@@ -201,7 +209,7 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 		name: `content.${chapterIndex}.lessons`
 	});
 
-	const lessonList = watch(`content.${chapterIndex}.lessons`);
+	const lessonList = useWatch({ name: `content.${chapterIndex}.lessons`, control });
 
 	function onLessonSelected(lesson?: FindLessonsResponse[0]) {
 		setOpen(false);
@@ -224,7 +232,7 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 				onReorder={onReorder}
 				values={lessonList}
 				axis="y"
-				className="flex flex-col divide-y divide-light-border"
+				className="flex flex-col divide-y divide-light-border overflow-hidden"
 				layout="size"
 				animate={{ height: "auto" }}
 				transition={{ duration: 0.3, type: "tween" }}

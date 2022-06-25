@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { ImageUploadWidget } from "../image-upload";
 import { MarkdownField } from "../markdown-editor";
-import { CourseFormModel } from "./course-editor";
+import { CourseFormModel } from "./course-form-model";
 
 /**
  * Allows the user to edit basic information about a course,
@@ -25,7 +25,11 @@ import { CourseFormModel } from "./course-editor";
  * )
  */
 export function CourseInfoForm() {
-	const { register, control } = useFormContext<CourseFormModel>();
+	const {
+		register,
+		control,
+		formState: { errors }
+	} = useFormContext<CourseFormModel>();
 	const cacheKey = useRef(["kurs-beschreibung"]);
 
 	return (
@@ -34,12 +38,12 @@ export function CourseInfoForm() {
 				<SectionHeader title="Daten" subtitle="Informationen über diesen Kurs." />
 
 				<Form.SectionCard>
-					<LabeledField label="Titel">
+					<LabeledField label="Titel" error={errors.title?.message}>
 						<input {...register("title")} placeholder="Der Neue Kurs" />
 					</LabeledField>
 
 					<div className="grid items-start gap-2 sm:flex">
-						<LabeledField label="Slug">
+						<LabeledField label="Slug" error={errors.slug?.message}>
 							<input
 								{...register("slug")}
 								placeholder='Wird in der URL angezeigt, z. B.: "der-neue-kurs"'
@@ -50,7 +54,7 @@ export function CourseInfoForm() {
 					</div>
 
 					<div className="grid gap-8 md:grid-cols-[1fr_auto]">
-						<LabeledField label="Untertitel">
+						<LabeledField label="Untertitel" error={errors.subtitle?.message}>
 							<textarea
 								{...register("subtitle")}
 								placeholder="1-2 Sätze über diesen Kurs."
