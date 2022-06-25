@@ -3,6 +3,7 @@ import { SessionProvider } from "next-auth/react";
 import { AppProps } from "next/app";
 import Head from "next/head";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { Toaster } from "react-hot-toast";
 import "./styles.css";
 
 const queryClient = new QueryClient({
@@ -32,6 +33,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 					<main className="mt-14 grid grow sm:mt-20">
 						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 					</main>
+					<Toaster containerStyle={{ top: 96 }} position="top-right" />
 					{/* <ReactQueryDevtools initialIsOpen={false} position="bottom-right" /> */}
 				</QueryClientProvider>
 			</SessionProvider>

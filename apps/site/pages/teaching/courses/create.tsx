@@ -1,7 +1,6 @@
 import { apiFetch } from "@self-learning/api";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useState } from "react";
+import { showToast } from "@self-learning/ui/common";
 
 async function createCourse(course: CourseFormModel): Promise<{ title: string; slug: string }> {
 	return apiFetch<{ title: string; slug: string }, CourseFormModel>(
@@ -12,15 +11,17 @@ async function createCourse(course: CourseFormModel): Promise<{ title: string; s
 }
 
 export default function CreateCoursePage() {
-	const [error, setError] = useState<unknown>(null);
-
 	function onConfirm(course: CourseFormModel) {
 		async function create() {
 			try {
-				setError(null);
-				await createCourse(course);
+				const { title } = await createCourse(course);
+				showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
 			} catch (error) {
-				setError(error);
+				showToast({
+					type: "error",
+					title: "Fehler",
+					subtitle: JSON.stringify(error, null, 2)
+				});
 			}
 		}
 		create();
@@ -28,28 +29,19 @@ export default function CreateCoursePage() {
 
 	return (
 		<div className="grow bg-gray-50">
-			<>
-				{error && (
-					<CenteredContainer className="p-4">
-						<pre className="rounded-lg bg-red-50 p-8 text-xs text-red-500">
-							{JSON.stringify(error, null, 4)}
-						</pre>
-					</CenteredContainer>
-				)}
-				<CourseEditor
-					onConfirm={onConfirm}
-					course={{
-						courseId: "",
-						title: "",
-						slug: "",
-						description: "",
-						subtitle: "",
-						imgUrl: "",
-						subjectId: null,
-						content: []
-					}}
-				/>
-			</>
+			<CourseEditor
+				onConfirm={onConfirm}
+				course={{
+					courseId: "",
+					title: "",
+					slug: "",
+					description: "",
+					subtitle: "",
+					imgUrl: "",
+					subjectId: null,
+					content: []
+				}}
+			/>
 		</div>
 	);
 }
