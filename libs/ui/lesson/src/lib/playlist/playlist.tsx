@@ -5,7 +5,7 @@ import {
 	ChevronDownIcon,
 	ChevronUpIcon
 } from "@heroicons/react/solid";
-import { useCourseCompletion } from "@self-learning/completion";
+import { CourseCompletion } from "@self-learning/types";
 import Image from "next/image";
 import Link from "next/link";
 import { ReactElement } from "react";
@@ -19,21 +19,24 @@ export type PlaylistLesson = {
 	imgUrl?: string | null;
 };
 
+type PlaylistContent = { title: string; lessons: PlaylistLesson[]; isActive: boolean };
+
 export function NestablePlaylist({
 	course,
 	currentLesson,
-	content
+	content,
+	courseCompletion
 }: {
 	course: { title: string; slug: string };
 	currentLesson: PlaylistLesson;
-	content: { title: string; lessons: PlaylistLesson[]; isActive: boolean }[];
+	content: PlaylistContent[];
+	courseCompletion?: CourseCompletion;
 }) {
-	const courseCompletion = useCourseCompletion(course.slug);
 	const { globalCollapsed, collapsedSections, globalCollapseToggle, toggleCollapse } =
 		useCollapseToggle(content);
 
 	return (
-		<div className="flex h-full w-full flex-col overflow-hidden border-l border-t border-l-light-border border-t-light-border xl:border-t-0">
+		<div className="flex h-full w-full flex-col overflow-hidden border-l border-t border-l-light-border border-t-light-border bg-white xl:border-t-0">
 			<div className="grid grid-cols-[1fr_auto] border-b border-light-border p-4">
 				<div className="flex flex-col gap-2">
 					<span className="text-base font-semibold">{course.title}</span>
@@ -59,13 +62,7 @@ export function NestablePlaylist({
 			<div className="playlist-scroll overflow-auto">
 				{content.map((chapter, index) => (
 					<Playlist
-						subtitleElement={
-							<span className="text-sm text-light">
-								{chapter.lessons.length === 1
-									? "1 Lerneinheit"
-									: `${chapter.lessons.length} Lerneinheiten`}
-							</span>
-						}
+						subtitleElement={<PlaylistSubtitle chapter={chapter} />}
 						collapsed={collapsedSections[index]}
 						toggleOpenClosed={() => toggleCollapse(index)}
 						index={index + 1}
@@ -79,6 +76,16 @@ export function NestablePlaylist({
 				))}
 			</div>
 		</div>
+	);
+}
+
+export function PlaylistSubtitle({ chapter }: { chapter: PlaylistContent }) {
+	return (
+		<span className="text-sm text-light">
+			{chapter.lessons.length === 1
+				? "1 Lerneinheit"
+				: `${chapter.lessons.length} Lerneinheiten`}
+		</span>
 	);
 }
 
@@ -130,7 +137,7 @@ export function Playlist({
 				<div className="playlist-scroll overflow-auto">
 					<div className="flex flex-col">
 						{lessons.map(lesson => (
-							<Lesson
+							<PlaylistLesson
 								key={lesson.slug}
 								href={`/courses/${course.slug}/${lesson.slug}`}
 								lesson={lesson}
@@ -144,7 +151,7 @@ export function Playlist({
 	);
 }
 
-function Lesson({
+export function PlaylistLesson({
 	lesson,
 	isActive,
 	href,
@@ -160,7 +167,7 @@ function Lesson({
 			<a
 				title={lesson.title}
 				className={`flex h-20 w-full border-b border-light-border ${
-					isActive ? "bg-indigo-500 text-white" : "bg-transparent hover:bg-indigo-100"
+					isActive ? "bg-indigo-500 text-white" : "bg-white hover:bg-indigo-100"
 				}`}
 			>
 				<div className="relative aspect-square h-full">

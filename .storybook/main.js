@@ -2,6 +2,9 @@ const { resolve } = require("path");
 
 module.exports = {
 	stories: [],
+	features: {
+		previewMdx2: true
+	},
 	addons: [
 		"@storybook/addon-essentials",
 		{

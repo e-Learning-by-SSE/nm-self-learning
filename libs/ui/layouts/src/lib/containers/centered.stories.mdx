@@ -2,46 +2,64 @@ import { Canvas, Meta, Story } from "@storybook/addon-docs";
 import { CenteredSection } from "./centered-section.tsx";
 import { CenteredContainer } from "./centered-container.tsx";
 
-<Meta title="Layouts/Containers/Centered" />
+<Meta title="Layouts/Containers" />
 
-# Centered
+<h1 className="mb-8 text-5xl">Containers</h1>
 
-## Centered Section
+The following components are used to horizontally center content and restrict its width.
+They are commonly used throughout the entire application.
+
+```tsx
+function SomePage() {
+	return (
+		<div className="flex flex-col">
+			<CenteredSection>
+				<h1>The Heading</h1>
+				<p>
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod,
+					nisi eu consectetur euismod, nisl nisl consectetur nisl, eu consectetur nisl
+					nisl euismod nisl.
+				</p>
+			</CenteredSection>
+			<div>Some content that requires the entire page width.</div>
+			<CenteredContainer>
+				<h2>More Centered Content</h2>
+			</CenteredContainer>
+		</div>
+	);
+}
+```
+
+<h2 className="mt-16 mb-4 text-3xl">CenteredContainer</h2>
+
+A `CenteredContainer` is a **horizontally centered** container with **restricted width (1024px)**. At small breakpoints,
+it will automatically add some horizontal padding.
+
+<Canvas>
+	<Story name="Centered Container">
+		<div className="flex flex-col border border-black">
+			<div className>Above</div>
+			<CenteredContainer className="bg-gray-200">
+				<button className="btn-primary">Content</button>
+			</CenteredContainer>
+			<div className>Below</div>
+		</div>
+	</Story>
+</Canvas>
+
+<h2 className="mt-16 mb-4 text-3xl">CenteredSection</h2>
 
 A `CenteredSection` is a wrapper for `CenteredContainer` that adds some vertical padding and uses 100% width.
 You can use the `className` property to add a background color to a section.
 
 <Canvas>
 	<Story name="Centered Section">
-		<CenteredSection className="gradient flex">
-			<div className="bg-white p-4">Container 1</div>
-		</CenteredSection>
-		<CenteredSection className="flex bg-neutral-100">
-			<div className="bg-white p-4">Container 2</div>
-		</CenteredSection>
-		<CenteredSection className="flex bg-neutral-200">
-			<div className="bg-white p-4">Container 3</div>
-		</CenteredSection>
-	</Story>
-</Canvas>
-
-## Centered Container
-
-A `CenteredContainer` is a horizontally centered container with restricted width (1024px). At small breakpoints,
-it will automatically add some horizontal padding.
-
-<Canvas>
-	<Story name="Centered Container">
-		<div className="flex flex-col bg-slate-200">
-			<CenteredContainer className="gradient">
-				<div className="p-4">Container 1</div>
-			</CenteredContainer>
-			<CenteredContainer className="bg-neutral-100">
-				<div className="p-4">Container 2</div>
-			</CenteredContainer>
-			<CenteredContainer className="bg-neutral-200">
-				<div className="p-4">Container 3</div>
-			</CenteredContainer>
+		<div className="border border-black">
+			<div className>Above</div>
+			<CenteredSection className="flex bg-gray-200">
+				<button className="btn-primary">Content</button>
+			</CenteredSection>
+			<div className>Below</div>
 		</div>
 	</Story>
 </Canvas>

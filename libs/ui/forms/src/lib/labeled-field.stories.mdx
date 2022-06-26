@@ -1,0 +1,28 @@
+import { Canvas, Meta, Story } from "@storybook/addon-docs";
+import { LabeledField } from "./labeled-field.tsx";
+
+<Meta title="Forms/Fields" />
+
+<h1 className="mb-16 text-5xl">LabeledField</h1>
+
+A `LabeledField` is a generic component that can be used to render a field with a label inside of a form.
+
+The `children` of a `LabeledField` can contain any valid React Element, such as a native `input` or `textarea` element, or a custom component.
+
+<Canvas>
+	<Story name="With Label">
+		<LabeledField label="Title">
+			<input type="text" className="textfield" />
+		</LabeledField>
+	</Story>
+</Canvas>
+
+You can also pass an error message to the `LabeledField` to display an error message.
+
+<Canvas>
+	<Story name="With Error">
+		<LabeledField label="Title" error="Title is missing.">
+			<input type="text" className="textfield" />
+		</LabeledField>
+	</Story>
+</Canvas>

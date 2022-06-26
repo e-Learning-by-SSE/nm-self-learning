@@ -1,0 +1,20 @@
+import { Canvas, Meta, Story } from "@storybook/addon-docs";
+import { SectionCard, SectionCardHeader } from "./section-card.tsx";
+
+<Meta title="Common/Section Card" component={SectionCard} />
+
+<h1 className="mb-16 text-5xl">Section Card</h1>
+
+<Canvas>
+	<Story name="Section Card">
+		<div className="card bg-gray-50">
+			<SectionCard>
+				<SectionCardHeader
+					title="The Section Title"
+					subtitle="Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum."
+				/>
+				<div className="border border-dashed border-black bg-gray-100 p-4">Content</div>
+			</SectionCard>
+		</div>
+	</Story>
+</Canvas>

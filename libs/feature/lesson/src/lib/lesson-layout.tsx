@@ -150,7 +150,12 @@ function PlaylistArea({ chapters, course, lesson }: LessonLayoutProps) {
 	return (
 		<div className="flex h-[500px] w-full shrink-0 border-l border-light-border bg-white xl:h-full xl:w-[500px] xl:border-t-0">
 			<div className="right-0 flex w-full xl:fixed xl:h-[calc(100vh-80px)] xl:w-[500px]">
-				<NestablePlaylist course={course} currentLesson={lesson} content={content} />
+				<NestablePlaylist
+					course={course}
+					currentLesson={lesson}
+					content={content}
+					courseCompletion={courseCompletion}
+				/>
 			</div>
 		</div>
 	);
