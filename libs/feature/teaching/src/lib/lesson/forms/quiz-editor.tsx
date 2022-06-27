@@ -1,4 +1,5 @@
 import { PlusIcon } from "@heroicons/react/outline";
+import { ArrowSmLeftIcon, ArrowSmRightIcon, XCircleIcon, XIcon } from "@heroicons/react/solid";
 import { BaseQuestion, QuestionType } from "@self-learning/types";
 import { Divider, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
@@ -12,7 +13,12 @@ import { ShortTextForm } from "./questions/short-text-form";
 
 export function QuizEditor() {
 	const { control } = useFormContext<LessonFormModel>();
-	const { append, fields: quiz } = useFieldArray({
+	const {
+		append,
+		remove,
+		fields: quiz,
+		swap
+	} = useFieldArray({
 		control,
 		name: "quiz"
 	});
@@ -26,8 +32,7 @@ export function QuizEditor() {
 			questionId: getRandomId(),
 			statement: "",
 			withCertainty: false,
-			hints: [],
-			answers: null
+			hints: []
 		};
 
 		setQuestionIndex(old => old + 1);
@@ -44,9 +49,22 @@ export function QuizEditor() {
 			return append({
 				...baseQuestion,
 				type: "short-text",
-				answers: null,
 				acceptedAnswers: []
 			});
+		}
+	}
+
+	function swapQuestions(fromIndex: number, toIndex: number) {
+		swap(fromIndex, toIndex);
+		setQuestionIndex(toIndex);
+	}
+
+	function removeQuestion() {
+		const confirm = window.confirm("Frage entfernen?");
+
+		if (confirm) {
+			remove(questionIndex);
+			setQuestionIndex(quiz.length - 2); // set to last index or -1 if no questions exist
 		}
 	}
 
@@ -80,11 +98,47 @@ export function QuizEditor() {
 					</button>
 				</div>
 
-				<Tabs selectedIndex={questionIndex} onChange={index => setQuestionIndex(index)}>
-					{quiz.map((_, index) => (
-						<Tab key={index}>Frage {index + 1}</Tab>
-					))}
-				</Tabs>
+				{questionIndex >= 0 && (
+					<>
+						<Tabs
+							selectedIndex={questionIndex}
+							onChange={index => setQuestionIndex(index)}
+						>
+							{quiz.map((_, index) => (
+								<Tab key={index}>Frage {index + 1}</Tab>
+							))}
+						</Tabs>
+
+						<div className="flex flex-wrap gap-4 pt-8">
+							<button
+								type="button"
+								className="btn-small"
+								disabled={questionIndex === 0}
+								title="Nach links verschieben"
+								onClick={() => swapQuestions(questionIndex, questionIndex - 1)}
+							>
+								<ArrowSmLeftIcon className="h-5" />
+							</button>
+							<button
+								type="button"
+								className="btn-small"
+								disabled={questionIndex === quiz.length - 1}
+								title="Nach rechts verschieben"
+								onClick={() => swapQuestions(questionIndex, questionIndex + 1)}
+							>
+								<ArrowSmRightIcon className="h-5" />
+							</button>
+							<button
+								type="button"
+								className="btn-small text-red-500"
+								title="Entfernen"
+								onClick={removeQuestion}
+							>
+								<XIcon className="h-5" />
+							</button>
+						</div>
+					</>
+				)}
 			</CenteredContainer>
 
 			{currentQuestion && (
