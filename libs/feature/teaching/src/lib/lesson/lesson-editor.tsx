@@ -1,25 +1,16 @@
-import { LessonContent, QuizContent } from "@self-learning/types";
 import { SectionHeader } from "@self-learning/ui/common";
-import { EditorField, Form } from "@self-learning/ui/forms";
+import { Form } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { JsonEditorDialog } from "../json-editor-dialog";
 import { MarkdownField } from "../markdown-editor";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
-
-export type LessonFormModel = {
-	lessonId: string;
-	title: string;
-	slug: string;
-	subtitle: string;
-	description: string;
-	imgUrl: string;
-	content: LessonContent;
-	quiz: QuizContent;
-};
+import { LessonFormModel } from "./lesson-form-model";
+import { lessonSchema } from "@self-learning/types";
 
 export function LessonEditor({
 	lesson,
@@ -32,6 +23,7 @@ export function LessonEditor({
 	const [isJsonDialogOpen, setIsJsonDialogOpen] = useState(false);
 
 	const methods = useForm<LessonFormModel>({
+		resolver: zodResolver(lessonSchema),
 		defaultValues: {
 			lessonId: lesson.lessonId,
 			title: lesson.title,
@@ -137,7 +129,7 @@ function LessonDescriptionForm() {
 					render={({ field }) => (
 						<MarkdownField
 							cacheKey={cacheKey.current}
-							content={field.value}
+							content={field.value as string}
 							setValue={field.onChange}
 							minHeight="300px"
 						/>

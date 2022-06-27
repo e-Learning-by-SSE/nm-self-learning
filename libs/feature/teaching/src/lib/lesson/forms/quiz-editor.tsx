@@ -6,7 +6,7 @@ import { getRandomId } from "@self-learning/util/common";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { MarkdownField } from "../../markdown-editor";
-import { LessonFormModel } from "../lesson-editor";
+import { LessonFormModel } from "../lesson-form-model";
 import { MultipleChoiceForm } from "./questions/multiple-choice-form";
 import { ShortTextForm } from "./questions/short-text-form";
 

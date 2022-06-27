@@ -1,15 +1,15 @@
 import { Prisma } from "@prisma/client";
 import { apiFetch } from "@self-learning/api";
-import { LessonEditor } from "@self-learning/teaching";
+import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 
 type Lesson = Prisma.LessonCreateInput;
 
-async function createLesson(lesson: Lesson) {
-	return apiFetch<Lesson, Lesson>("POST", "/api/teachers/lessons/create", lesson);
+async function createLesson(lesson: LessonFormModel) {
+	return apiFetch<Lesson, LessonFormModel>("POST", "/api/teachers/lessons/create", lesson);
 }
 
 export default function CreateLessonPage() {
-	async function onConfirm(lesson: Lesson) {
+	async function onConfirm(lesson: LessonFormModel) {
 		const result = await createLesson(lesson);
 
 		console.log(result);

@@ -4,22 +4,26 @@ import { CenteredContainer } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import { ImageUploadWidget } from "../../image-upload";
 import { getSupabaseUrl } from "../../supabase";
-import { LessonFormModel } from "../lesson-editor";
+import { LessonFormModel } from "../lesson-form-model";
 
 export function LessonInfoEditor() {
-	const { register, control } = useFormContext<LessonFormModel>();
+	const {
+		register,
+		control,
+		formState: { errors }
+	} = useFormContext<LessonFormModel>();
 
 	return (
 		<CenteredContainer>
 			<SectionHeader title="Daten" subtitle="Informationen über diese Lerneinheit" />
 
 			<Form.SectionCard>
-				<LabeledField label="Titel">
+				<LabeledField label="Titel" error={errors.title?.message}>
 					<input {...register("title")} placeholder="Die Neue Lerneinheit" />
 				</LabeledField>
 
 				<div className="grid items-start gap-2 sm:flex">
-					<LabeledField label="Slug">
+					<LabeledField label="Slug" error={errors.slug?.message}>
 						<input
 							{...register("slug")}
 							placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
@@ -30,7 +34,7 @@ export function LessonInfoEditor() {
 				</div>
 
 				<div className="grid gap-8 md:grid-cols-[1fr_auto]">
-					<LabeledField label="Untertitel">
+					<LabeledField label="Untertitel" error={errors.subtitle?.message}>
 						<textarea
 							{...register("subtitle")}
 							placeholder="1-2 Sätze über diese Lerneinheit."
@@ -38,7 +42,7 @@ export function LessonInfoEditor() {
 						/>
 					</LabeledField>
 
-					<LabeledField label="Bild">
+					<LabeledField label="Bild" error={errors.imgUrl?.message}>
 						<Controller
 							control={control}
 							name="imgUrl"

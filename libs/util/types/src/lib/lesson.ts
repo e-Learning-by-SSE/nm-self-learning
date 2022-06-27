@@ -1,41 +1,14 @@
-export type LessonContent = LessonContentType[];
-export type LessonContentType = Video | Article;
-export type LessonContentMediaType = LessonContentType["type"];
+import { z } from "zod";
+import { lessonContentSchema } from "./lesson-content";
 
-export type Video = { type: "video"; value: { url?: string } };
-export type Article = { type: "article"; value: { content?: string } };
+export const lessonSchema = z.object({
+	lessonId: z.string().nullable(),
+	slug: z.string().min(3),
+	title: z.string().min(3),
+	subtitle: z.string(),
+	description: z.string().nullable().optional(),
+	imgUrl: z.string().nullable().optional(),
+	content: z.array(lessonContentSchema)
+});
 
-type InferContentType<
-	CType extends LessonContentType["type"],
-	Union = LessonContentType
-> = Union extends {
-	type: CType;
-}
-	? Union
-	: never;
-
-export type ValueByContentType<CType extends LessonContentType["type"]> =
-	InferContentType<CType>["value"];
-
-export function findContentType<CType extends LessonContentType["type"]>(
-	type: CType,
-	content: LessonContent
-): { content: InferContentType<CType> | null; index: number } {
-	const index = content.findIndex(c => c.type === type);
-
-	if (index >= 0) {
-		return { content: content[index] as InferContentType<CType>, index };
-	}
-
-	return { content: null, index };
-}
-
-export function includesMediaType(
-	types: LessonContentType["type"][],
-	type: string
-): { isIncluded: boolean; type: LessonContentType["type"] } {
-	return {
-		isIncluded: types.includes(type as LessonContentType["type"]),
-		type: type as LessonContentType["type"]
-	};
-}
+export type Lesson = z.infer<typeof lessonSchema>;

@@ -56,17 +56,14 @@ export function LessonContentEditor() {
 	const typesWithUsage = useContentTypeUsage(content);
 
 	function addContent(type: LessonContentType["type"]) {
-		let initialValue: LessonContentType["value"] = {};
-
 		if (type === "article") {
-			initialValue = { content: "" };
+			append({ type, value: { content: "" } });
 		}
 
 		if (type === "video") {
-			initialValue = { url: "" };
+			append({ type, value: { url: "" } });
 		}
 
-		append({ type, value: initialValue } as any);
 		setContentTabIndex(content.length);
 	}
 

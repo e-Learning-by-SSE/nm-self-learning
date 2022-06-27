@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonInfoEditor } from "./forms/lesson-info";
-import { LessonFormModel } from "./lesson-editor";
+import { LessonFormModel } from "./lesson-form-model";
 
 describe("Lesson Editor", () => {
 	it("LessonInfoEditor", async () => {
