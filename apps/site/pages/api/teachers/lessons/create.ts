@@ -1,24 +1,13 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
+import { lessonSchema } from "@self-learning/types";
 import { apiHandler } from "@self-learning/util/http";
-import { validationConfig } from "@self-learning/util/validate";
 import { randomBytes } from "crypto";
 import { NextApiHandler } from "next";
-import { array, object, string } from "yup";
-
-const lessonSchema = object({
-	title: string().required().min(3),
-	slug: string().required().min(3),
-	subtitle: string().required().min(3),
-	description: string().nullable(),
-	content: array()
-});
 
 const lessonCreateApiHandler: NextApiHandler = async (req, res) =>
 	apiHandler(req, res, "POST", async () => {
-		console.log(req.body);
-
-		const lesson = lessonSchema.validateSync(req.body, validationConfig);
+		const lesson = lessonSchema.parse(req.body);
 
 		const createdLesson = await database.lesson.create({
 			data: {
@@ -33,7 +22,7 @@ const lessonCreateApiHandler: NextApiHandler = async (req, res) =>
 			}
 		});
 
-		console.log("[lessonCreateApiHandler]: Created lesson", {});
+		console.log("[lessonCreateApiHandler]: Created lesson", createdLesson);
 		return res.status(201).json(createdLesson);
 	});
 

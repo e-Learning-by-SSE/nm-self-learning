@@ -1,4 +1,4 @@
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import type { NextApiResponse } from "next";
 
 type Error = {

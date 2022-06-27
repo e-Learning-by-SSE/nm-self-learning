@@ -16,6 +16,7 @@ export async function apiFetch<TResult, TInput>(
 	const json = await response.json();
 
 	if (!response.ok) {
+		console.error(json);
 		throw json;
 	}
 

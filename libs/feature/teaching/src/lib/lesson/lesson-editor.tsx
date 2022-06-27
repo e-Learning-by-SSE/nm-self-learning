@@ -51,7 +51,7 @@ export function LessonEditor({
 			<FormProvider {...methods}>
 				<form
 					onSubmit={methods.handleSubmit(data => {
-						console.log(data);
+						onConfirm(data);
 					})}
 					className="flex flex-col"
 				>
