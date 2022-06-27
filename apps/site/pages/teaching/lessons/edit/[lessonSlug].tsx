@@ -1,7 +1,7 @@
-import { Lesson } from "@prisma/client";
 import { apiFetch } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { LessonEditor } from "@self-learning/teaching";
+import { Lesson, lessonSchema } from "@self-learning/types";
 import { GetServerSideProps } from "next";
 
 type EditLessonProps = {
@@ -19,13 +19,15 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 		throw new Error("No [lessonSlug] provided.");
 	}
 
-	const lesson = await database.lesson.findUnique({
+	const lessonFromDb = await database.lesson.findUnique({
 		where: { slug }
 	});
 
-	if (!lesson) {
+	if (!lessonFromDb) {
 		return { notFound: true };
 	}
+
+	const lesson = lessonSchema.parse(lessonFromDb);
 
 	return {
 		props: { lesson }

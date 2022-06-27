@@ -1,69 +1,82 @@
+import { z } from "zod";
+
+const baseQuestionSchema = z.object({
+	questionId: z.string(),
+	type: z.string(),
+	statement: z.string(),
+	withCertainty: z.boolean(),
+	hints: z.array(
+		z.object({
+			hintId: z.string(),
+			content: z.string()
+		})
+	)
+});
+
+export type BaseQuestion = z.infer<typeof baseQuestionSchema>;
+
+const questionAnswerSchema = z.object({
+	answerId: z.string(),
+	content: z.string(),
+	isCorrect: z.boolean()
+});
+
+const multipleChoiceQuestionSchema = baseQuestionSchema.extend({
+	type: z.literal("multiple-choice"),
+	answers: z.array(questionAnswerSchema)
+});
+
+export type MultipleChoiceQuestion = z.infer<typeof multipleChoiceQuestionSchema>;
+
+const shortTextQuestionSchema = baseQuestionSchema.extend({
+	type: z.literal("short-text"),
+	acceptedAnswers: z.array(
+		z.object({
+			acceptedAnswerId: z.string(),
+			value: z.string()
+		})
+	)
+});
+
+export type ShortTextQuestion = z.infer<typeof shortTextQuestionSchema>;
+
+const textQuestionSchema = baseQuestionSchema.extend({
+	type: z.literal("text")
+});
+
+export type TextQuestion = z.infer<typeof textQuestionSchema>;
+
+const clozeQuestionSchema = baseQuestionSchema.extend({
+	type: z.literal("cloze"),
+	textArray: z.array(z.string())
+});
+
+export type ClozeQuestion = z.infer<typeof clozeQuestionSchema>;
+
+const vorwissenQuestionSchema = baseQuestionSchema.extend({
+	type: z.literal("vorwissen"),
+	answers: z.array(questionAnswerSchema),
+	requireExplanationForAnswerIds: z.boolean()
+});
+
+export type VorwissenQuestion = z.infer<typeof vorwissenQuestionSchema>;
+
+const programmingQuestionSchema = baseQuestionSchema.extend({
+	type: z.literal("programming"),
+	language: z.string(),
+	template: z.string(),
+	expectedOutput: z.string()
+});
+
+export type ProgrammingQuestion = z.infer<typeof programmingQuestionSchema>;
+
+export const quizContentSchema = z.discriminatedUnion("type", [
+	multipleChoiceQuestionSchema,
+	shortTextQuestionSchema,
+	textQuestionSchema,
+	vorwissenQuestionSchema,
+	programmingQuestionSchema
+]);
+
+export type QuestionType = z.infer<typeof quizContentSchema>;
 export type QuizContent = QuestionType[];
-
-export type QuestionType =
-	| MultipleChoiceQuestion
-	| ShortTextQuestion
-	| TextQuestion
-	| ClozeQuestion
-	| VorwissenQuestion
-	| ProgrammingQuestion;
-
-export type BaseQuestion = {
-	questionId: string;
-	type: string;
-	statement: string;
-	withCertainty: boolean;
-	hints: {
-		hintId: string;
-		content: string;
-	}[];
-	answers: QuestionAnswers | null;
-};
-
-export type QuestionAnswers = {
-	answerId: string;
-	content: string;
-	isCorrect: boolean;
-}[];
-
-export type MultipleChoiceQuestion = BaseQuestion & {
-	type: "multiple-choice";
-	answers: {
-		answerId: string;
-		content: string;
-		isCorrect: boolean;
-	}[];
-};
-
-export type ShortTextQuestion = BaseQuestion & {
-	type: "short-text";
-	answers: null;
-	acceptedAnswers: {
-		acceptedAnswerId: string;
-		value: string;
-	}[];
-};
-
-export type TextQuestion = BaseQuestion & {
-	type: "text";
-	answers: null;
-};
-
-export type ClozeQuestion = BaseQuestion & {
-	type: "cloze";
-	textArray: string[];
-};
-
-export type VorwissenQuestion = BaseQuestion & {
-	type: "vorwissen";
-	answers: QuestionAnswers;
-	requireExplanationForAnswerIds: string;
-};
-
-export type ProgrammingQuestion = BaseQuestion & {
-	type: "programming";
-	answers: null;
-	language: string;
-	template: string;
-	expectedOutput: string;
-};

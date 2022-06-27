@@ -1,14 +1,16 @@
 import { z } from "zod";
 import { lessonContentSchema } from "./lesson-content";
+import { quizContentSchema } from "./quiz";
 
 export const lessonSchema = z.object({
 	lessonId: z.string().nullable(),
 	slug: z.string().min(3),
 	title: z.string().min(3),
-	subtitle: z.string(),
+	subtitle: z.string().nullable().optional(),
 	description: z.string().nullable().optional(),
 	imgUrl: z.string().nullable().optional(),
-	content: z.array(lessonContentSchema)
+	content: z.array(lessonContentSchema),
+	quiz: z.array(quizContentSchema)
 });
 
 export type Lesson = z.infer<typeof lessonSchema>;

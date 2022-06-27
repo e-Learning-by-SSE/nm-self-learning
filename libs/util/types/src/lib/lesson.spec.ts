@@ -3,8 +3,8 @@ import { Lesson, lessonSchema } from "./lesson";
 const minValidLesson: Lesson = {
 	lessonId: "id-1",
 	content: [],
+	quiz: [],
 	slug: "slug-1",
-	subtitle: "The Subtitle",
 	title: "The Title"
 };
 
@@ -76,8 +76,8 @@ describe("lessonSchema", () => {
 			Object {
 			  "content": Array [],
 			  "lessonId": "id-1",
+			  "quiz": Array [],
 			  "slug": "slug-1",
-			  "subtitle": "The Subtitle",
 			  "title": "The Title",
 			}
 		`);
