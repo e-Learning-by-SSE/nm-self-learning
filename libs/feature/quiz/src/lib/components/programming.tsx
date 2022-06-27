@@ -9,7 +9,7 @@ type Answer = {
 };
 
 export function ProgrammingAnswer({ question }: { question: ProgrammingQuestion }) {
-	const { markdown, setAnswer, answer } = useQuestion<"programming", Answer>();
+	const { markdown, setAnswer, answer } = useQuestion<ProgrammingQuestion, Answer>();
 
 	const [program, setProgram] = useState(question.template);
 

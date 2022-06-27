@@ -1,10 +1,11 @@
 import { MdLookup } from "@self-learning/markdown";
+import { MultipleChoiceQuestion } from "@self-learning/types";
 import { MDXRemote } from "next-mdx-remote";
-import { PropsWithChildren, useContext } from "react";
-import { AnswerContext } from "./question";
+import { PropsWithChildren } from "react";
+import { useQuestion } from "./question";
 
 export function MultipleChoiceAnswer({ answersMd }: { answersMd: MdLookup }) {
-	const { question, setAnswer, answer } = useContext(AnswerContext);
+	const { question, setAnswer, answer } = useQuestion<MultipleChoiceQuestion>();
 
 	return (
 		<div className="flex flex-col gap-4">

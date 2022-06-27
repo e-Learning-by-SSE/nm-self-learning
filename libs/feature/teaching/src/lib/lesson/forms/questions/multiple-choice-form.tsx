@@ -3,7 +3,7 @@ import { MultipleChoiceQuestion } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { MarkdownField } from "../../../markdown-editor";
-import { LessonFormModel } from "../../lesson-editor";
+import { LessonFormModel } from "../../lesson-form-model";
 
 export function MultipleChoiceForm({
 	index

@@ -1,3 +1,3 @@
-import { Lesson, QuizContent } from "@self-learning/types";
+import { Lesson } from "@self-learning/types";
 
-export type LessonFormModel = Lesson & { quiz: QuizContent };
+export type LessonFormModel = Lesson;

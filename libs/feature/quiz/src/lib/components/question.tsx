@@ -53,10 +53,7 @@ export function AnswerContextProvider({
 	return <AnswerContext.Provider value={value}>{children}</AnswerContext.Provider>;
 }
 
-export function useQuestion<
-	QType extends QuestionType["type"],
-	AnswerType = Record<string, unknown>
->() {
+export function useQuestion<QType extends QuestionType, AnswerType = Record<string, unknown>>() {
 	const value = useContext(AnswerContext);
 
 	// Attention: Might break when type is changed

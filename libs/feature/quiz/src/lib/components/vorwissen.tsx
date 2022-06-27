@@ -16,7 +16,7 @@ type Answer = {
 };
 
 export function VorwissenAnswer({ question }: { question: VorwissenQuestion }) {
-	const { markdown, setAnswer, answer } = useQuestion<"vorwissen", Answer>();
+	const { markdown, setAnswer, answer } = useQuestion<VorwissenQuestion, Answer>();
 
 	const [vorwissen, setVorwissen] = useState("");
 	const [explanation, setExplanation] = useState("");
