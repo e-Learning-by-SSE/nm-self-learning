@@ -2,15 +2,18 @@ import { Dialog } from "@headlessui/react";
 import { EditorField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { ZodSchema } from "zod";
 
 export function JsonEditorDialog<T>({
 	initialValue,
 	isOpen,
 	setIsOpen,
-	onClose
+	onClose,
+	validationSchema
 }: {
 	initialValue: T;
 	isOpen: boolean;
+	validationSchema?: ZodSchema;
 	setIsOpen: (bool: boolean) => void;
 	onClose: (value: T) => void;
 }) {
@@ -21,6 +24,16 @@ export function JsonEditorDialog<T>({
 	function closeWithReturn() {
 		try {
 			const parsedJson = JSON.parse(value);
+
+			if (validationSchema) {
+				const validation = validationSchema.safeParse(parsedJson);
+
+				if (!validation.success) {
+					setError(validation.error.message);
+					return;
+				}
+			}
+
 			onClose(parsedJson);
 			setIsOpen(false);
 		} catch (e) {
@@ -41,7 +54,13 @@ export function JsonEditorDialog<T>({
 					<Dialog.Panel className="mx-auto w-[50vw] rounded bg-white px-8 pb-8">
 						<Dialog.Title className="py-8 text-xl">Als JSON bearbeiten</Dialog.Title>
 
-						{error && <div className="pb-4 text-red-500">{error}</div>}
+						{error && (
+							<div className="mb-8 max-h-32 overflow-auto">
+								<pre className="rounded-lg bg-red-50 p-4 pb-4 text-xs text-red-500">
+									{error}
+								</pre>
+							</div>
+						)}
 
 						<EditorField
 							label="JSON"

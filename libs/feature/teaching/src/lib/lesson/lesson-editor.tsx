@@ -93,6 +93,7 @@ export function LessonEditor({
 										isOpen={isJsonDialogOpen}
 										setIsOpen={setIsJsonDialogOpen}
 										onClose={setFromJsonDialog}
+										validationSchema={lessonSchema}
 									/>
 								)}
 							</button>
