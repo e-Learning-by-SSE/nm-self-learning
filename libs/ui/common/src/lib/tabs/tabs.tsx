@@ -1,5 +1,6 @@
-import { ReactNode } from "react";
+import { Fragment, ReactNode } from "react";
 import { Tab as HeadlessTab } from "@headlessui/react";
+import { motion } from "framer-motion";
 
 export function Tabs({
 	children,
@@ -19,16 +20,28 @@ export function Tabs({
 
 export function Tab({ children }: { children: ReactNode }) {
 	return (
-		<HeadlessTab
-			className={({ selected }) =>
-				`border-b-2 px-2 pb-1 focus:ring-0 focus-visible:outline-secondary ${
-					selected
-						? "border-b-secondary font-semibold text-secondary"
-						: "border-b-transparent text-light"
-				}`
-			}
-		>
-			{children}
+		<HeadlessTab as={Fragment}>
+			{({ selected }) => (
+				<button
+					type="button"
+					className="flex flex-col gap-1 pb-1 focus:ring-0 focus-visible:outline-secondary"
+				>
+					<span
+						className={`px-2  ${
+							selected ? "font-semibold text-secondary" : "text-light"
+						}`}
+					>
+						{children}
+					</span>
+
+					{selected && (
+						<motion.span
+							layoutId="selectedTab"
+							className="h-[4px] w-full rounded-lg bg-secondary"
+						></motion.span>
+					)}
+				</button>
+			)}
 		</HeadlessTab>
 	);
 }
