@@ -57,7 +57,6 @@ function getQuiz(slug: string): QuestionType[] {
 			type: "short-text",
 			questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
 			statement: "# Was ist 1 + 1 ?",
-			answers: null,
 			withCertainty: true,
 			acceptedAnswers: [],
 			hints: []
@@ -66,7 +65,6 @@ function getQuiz(slug: string): QuestionType[] {
 			type: "text",
 			questionId: "34fca2c2-c547-4f66-9a4e-927770a55090",
 			statement: "# Was ist 1 + 1 ?",
-			answers: null,
 			withCertainty: true,
 			hints: []
 		},
@@ -74,7 +72,6 @@ function getQuiz(slug: string): QuestionType[] {
 			type: "cloze",
 			questionId: "49497f71-8ed2-44a6-b36c-a44a4b0617d1",
 			statement: "# Lückentext",
-			answers: null,
 			withCertainty: false,
 			textArray: textArray,
 			hints: []
@@ -112,7 +109,6 @@ function getQuiz(slug: string): QuestionType[] {
 		},
 		{
 			type: "programming",
-			answers: null,
 			language: "typescript",
 			withCertainty: false,
 			questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
@@ -168,7 +164,7 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 			}
 		}
 
-		if (question.answers) {
+		if (question.type === "multiple-choice") {
 			for (const answer of question.answers) {
 				answersMd[answer.answerId] = await compileMarkdown(answer.content);
 			}

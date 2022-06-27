@@ -56,7 +56,7 @@ export type ClozeQuestion = z.infer<typeof clozeQuestionSchema>;
 const vorwissenQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("vorwissen"),
 	answers: z.array(questionAnswerSchema),
-	requireExplanationForAnswerIds: z.boolean()
+	requireExplanationForAnswerIds: z.string()
 });
 
 export type VorwissenQuestion = z.infer<typeof vorwissenQuestionSchema>;
@@ -75,7 +75,8 @@ export const quizContentSchema = z.discriminatedUnion("type", [
 	shortTextQuestionSchema,
 	textQuestionSchema,
 	vorwissenQuestionSchema,
-	programmingQuestionSchema
+	programmingQuestionSchema,
+	clozeQuestionSchema
 ]);
 
 export type QuestionType = z.infer<typeof quizContentSchema>;
