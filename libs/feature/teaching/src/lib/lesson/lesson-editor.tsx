@@ -39,13 +39,16 @@ export function LessonEditor({
 
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
-		const validation = lessonSchema.safeParse(lesson);
+		// Only validate when the lesson is not new, because otherwise the form is empty
+		if (lesson.lessonId !== "") {
+			const validation = lessonSchema.safeParse(lesson);
 
-		if (!validation.success) {
-			console.error(
-				"The lesson object that was passed into the LessonEditor is invalid.",
-				validation.error
-			);
+			if (!validation.success) {
+				console.error(
+					"The lesson object that was passed into the LessonEditor is invalid.",
+					validation.error
+				);
+			}
 		}
 	}, [lesson]);
 
