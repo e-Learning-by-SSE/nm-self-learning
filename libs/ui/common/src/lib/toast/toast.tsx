@@ -1,4 +1,9 @@
-import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/outline";
+import {
+	CheckCircleIcon,
+	ExclamationIcon,
+	InformationCircleIcon,
+	XCircleIcon
+} from "@heroicons/react/outline";
 import { XIcon } from "@heroicons/react/solid";
 import toast from "react-hot-toast";
 
@@ -17,6 +22,8 @@ export function Toast({ id, title, subtitle, type }: ToastProps & { id: string }
 		<div className="relative grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-lg border border-light-border bg-white p-4 shadow-lg sm:w-96">
 			{type === "success" && <CheckCircleIcon className="h-6 text-green-500" />}
 			{type === "error" && <XCircleIcon className="h-6 text-red-500" />}
+			{type === "info" && <InformationCircleIcon className="h-6 text-blue-500" />}
+			{type === "warning" && <ExclamationIcon className="h-6 text-orange-500" />}
 			<div className="flex flex-col gap-1">
 				<span className="text-sm font-semibold">{title}</span>
 				<span className="text-sm text-light">{subtitle}</span>

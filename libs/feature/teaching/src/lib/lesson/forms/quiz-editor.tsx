@@ -1,5 +1,5 @@
 import { PlusIcon } from "@heroicons/react/outline";
-import { ArrowSmLeftIcon, ArrowSmRightIcon, XCircleIcon, XIcon } from "@heroicons/react/solid";
+import { ArrowSmLeftIcon, ArrowSmRightIcon, XIcon } from "@heroicons/react/solid";
 import { BaseQuestion, QuestionType } from "@self-learning/types";
 import { Divider, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";

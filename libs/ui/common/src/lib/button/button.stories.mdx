@@ -1,23 +1,40 @@
 import { Canvas, Meta, Story } from "@storybook/addon-docs";
+import { ArrowSmLeftIcon, ArrowSmRightIcon, XIcon } from "@heroicons/react/solid";
 
 <Meta title="Common/Buttons" />
 
 <h1 className="mb-16 text-5xl">Buttons</h1>
 
-<div className="gradient card flex gap-8 p-8">
+<div className="flex flex-col gap-4">
+	<div className="gradient card flex gap-8 p-8">
 	<button className="btn-primary">Primary Button</button>
 	<button className="btn-secondary">Secondary Button</button>
 	<button className="btn-stroked">Stroked Button</button>
 </div>
 
-<div className="card flex  gap-8 bg-gray-50 p-8">
+<div className="card flex gap-8 bg-gray-50 p-8">
 	<button className="btn-primary">Primary Button</button>
 	<button className="btn-secondary">Secondary Button</button>
 	<button className="btn-stroked">Stroked Button</button>
 </div>
 
-<div className="card flex  gap-8 p-8">
+<div className="card flex gap-8 border border-light-border p-8">
 	<button className="btn-primary">Primary Button</button>
 	<button className="btn-secondary">Secondary Button</button>
 	<button className="btn-stroked">Stroked Button</button>
+</div>
+</div>
+
+<h2 className="mb-8 mt-16 text-3xl">Small Buttons</h2>
+
+<div className="card flex gap-8 border border-light-border p-8">
+	<button className="btn-small">
+		<ArrowSmLeftIcon className="h-5" />
+	</button>
+	<button className="btn-small">
+		<ArrowSmRightIcon className="h-5" />
+	</button>
+	<button className="btn-small">
+		<XIcon className="h-5 text-red-500" />
+	</button>
 </div>
