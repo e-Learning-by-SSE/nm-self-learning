@@ -1,7 +1,9 @@
+import { Lesson } from "@prisma/client";
 import { apiFetch } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { LessonEditor } from "@self-learning/teaching";
-import { Lesson, lessonSchema } from "@self-learning/types";
+import {} from "@self-learning/types";
+import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 
 type EditLessonProps = {
@@ -19,15 +21,13 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 		throw new Error("No [lessonSlug] provided.");
 	}
 
-	const lessonFromDb = await database.lesson.findUnique({
+	const lesson = await database.lesson.findUnique({
 		where: { slug }
 	});
 
-	if (!lessonFromDb) {
+	if (!lesson) {
 		return { notFound: true };
 	}
-
-	const lesson = lessonSchema.parse(lessonFromDb);
 
 	return {
 		props: { lesson }
@@ -36,15 +36,25 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
 	async function onConfirm(updatedLesson: Lesson) {
-		const result = await editLesson({
-			...updatedLesson,
-			lessonId: lesson.lessonId
-		});
+		try {
+			const result = await editLesson({
+				...updatedLesson,
+				lessonId: lesson.lessonId
+			});
 
-		console.log(result);
-
-		// Open updated lesson in a new tab
-		window.open(`/courses/python-tutorial/${result.slug}`, "_blank");
+			showToast({
+				type: "success",
+				title: "Änderungen gespeichert!",
+				subtitle: result.title
+			});
+		} catch (error) {
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle:
+					"Das Speichern der Lerneinheit ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
+			});
+		}
 	}
 
 	return <LessonEditor lesson={lesson as any} onConfirm={onConfirm as any} />;

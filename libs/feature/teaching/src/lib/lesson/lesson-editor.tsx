@@ -1,16 +1,16 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { lessonSchema } from "@self-learning/types";
 import { SectionHeader } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { JsonEditorDialog } from "../json-editor-dialog";
 import { MarkdownField } from "../markdown-editor";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
-import { lessonSchema } from "@self-learning/types";
 
 export function LessonEditor({
 	lesson,
@@ -24,16 +24,7 @@ export function LessonEditor({
 
 	const methods = useForm<LessonFormModel>({
 		resolver: zodResolver(lessonSchema),
-		defaultValues: {
-			lessonId: lesson.lessonId,
-			title: lesson.title,
-			slug: lesson.slug,
-			subtitle: lesson.subtitle,
-			description: lesson.description,
-			imgUrl: lesson.imgUrl,
-			content: lesson.content,
-			quiz: lesson.quiz
-		}
+		defaultValues: lesson
 	});
 
 	function openAsJson() {
@@ -45,6 +36,18 @@ export function LessonEditor({
 	function setFromJsonDialog(value: LessonFormModel) {
 		methods.reset(value);
 	}
+
+	useEffect(() => {
+		// Log an error, if given lesson data does not match the form's expected schema
+		const validation = lessonSchema.safeParse(lesson);
+
+		if (!validation.success) {
+			console.error(
+				"The lesson object that was passed into the LessonEditor is invalid.",
+				validation.error
+			);
+		}
+	}, [lesson]);
 
 	return (
 		<div className="bg-gray-50 pb-32">

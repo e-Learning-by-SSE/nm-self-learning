@@ -48,7 +48,9 @@ export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) =>
 
 		(lesson.content as LessonContent)[index] = {
 			type: "article",
-			value: {}
+			value: {
+				content: ""
+			}
 		};
 	}
 
