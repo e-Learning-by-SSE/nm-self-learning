@@ -3,8 +3,8 @@ import { VorwissenQuestion } from "@self-learning/types";
 import { TextArea } from "@self-learning/ui/forms";
 import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
-import { MultipleChoiceOption } from "./multiple-choice";
-import { useQuestion } from "./question";
+import { useQuestion } from "../../use-question-hook";
+import { MultipleChoiceOption } from "../multiple-choice/component";
 
 type Answer = {
 	vorwissen: string;

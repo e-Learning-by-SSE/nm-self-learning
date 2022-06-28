@@ -166,8 +166,10 @@ export function PlaylistLesson({
 		<Link href={href}>
 			<a
 				title={lesson.title}
-				className={`flex h-20 w-full border-b border-light-border ${
-					isActive ? "bg-indigo-500 text-white" : "bg-white hover:bg-indigo-100"
+				className={`flex h-20 w-full border-b border-light-border focus:outline-0 focus:ring-0 focus-visible:bg-indigo-100 ${
+					isActive
+						? "bg-indigo-500 text-white focus-visible:bg-indigo-300"
+						: "bg-white hover:bg-indigo-100 focus-visible:bg-indigo-100"
 				}`}
 			>
 				<div className="relative aspect-square h-full">

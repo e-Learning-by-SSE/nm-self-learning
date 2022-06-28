@@ -1,9 +1,8 @@
 import { PlusIcon } from "@heroicons/react/solid";
-import { MultipleChoiceQuestion } from "@self-learning/types";
+import { Lesson, MultipleChoiceAnswerType, MultipleChoiceQuestion } from "@self-learning/types";
+import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
-import { MarkdownField } from "../../../markdown-editor";
-import { LessonFormModel } from "../../lesson-form-model";
+import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
 export function MultipleChoiceForm({
 	index
@@ -11,18 +10,17 @@ export function MultipleChoiceForm({
 	question: { type: MultipleChoiceQuestion["type"] };
 	index: number;
 }) {
-	const { control, register, watch } = useFormContext<LessonFormModel>();
-	const {
-		fields: answers,
-		append,
-		remove
-	} = useFieldArray({
+	const { control, register } = useFormContext<Lesson>();
+	const { append, remove } = useFieldArray({
 		control,
 		name: `quiz.${index}.answers`
 	});
 
 	/** Unlike `answers` (see above), this will always be rendered with latest data. */
-	const watchedAnswers = watch(`quiz.${index}.answers`);
+	const answers = useWatch({
+		name: `quiz.${index}.answers`,
+		control
+	}) as MultipleChoiceAnswerType[];
 
 	function addAnswer() {
 		append({
@@ -55,7 +53,7 @@ export function MultipleChoiceForm({
 				<div
 					key={answer.answerId}
 					className={`relative flex flex-col gap-4 rounded-lg border border-light-border p-4 ${
-						watchedAnswers?.[answerIndex]?.isCorrect ? "bg-indigo-300" : "bg-indigo-50"
+						answers?.[answerIndex]?.isCorrect ? "bg-indigo-300" : "bg-indigo-50"
 					}`}
 				>
 					<button

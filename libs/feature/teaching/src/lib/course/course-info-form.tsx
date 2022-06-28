@@ -4,7 +4,7 @@ import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { ImageUploadWidget } from "../image-upload";
-import { MarkdownField } from "../markdown-editor";
+import { MarkdownField } from "@self-learning/ui/forms";
 import { CourseFormModel } from "./course-form-model";
 
 /**

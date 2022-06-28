@@ -6,7 +6,7 @@ import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { JsonEditorDialog } from "../json-editor-dialog";
-import { MarkdownField } from "../markdown-editor";
+import { MarkdownField } from "@self-learning/ui/forms";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";

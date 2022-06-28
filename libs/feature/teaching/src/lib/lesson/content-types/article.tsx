@@ -1,6 +1,6 @@
 import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
 import { Controller } from "react-hook-form";
-import { MarkdownField } from "../../markdown-editor";
+import { MarkdownField } from "@self-learning/ui/forms";
 
 const cacheKey = ["mdx-article"];
 

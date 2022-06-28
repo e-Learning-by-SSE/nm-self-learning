@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { SubmitAnswerType } from "./schema";
 
-async function submitQuizAttempt(vars: SubmitAnswerType & { lessonId: string; username: string }) {
+async function submitQuizAttempt(vars: any & { lessonId: string; username: string }) {
 	const response = await fetch(
 		`/api/students/${vars.username}/lessons/${vars.lessonId}/quiz-attempts/submit-answers`,
 		{

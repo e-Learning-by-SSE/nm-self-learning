@@ -1,15 +1,19 @@
 import { PlusIcon } from "@heroicons/react/outline";
 import { ArrowSmLeftIcon, ArrowSmRightIcon, XIcon } from "@heroicons/react/solid";
-import { BaseQuestion, QuestionType } from "@self-learning/types";
+
 import { Divider, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { getRandomId } from "@self-learning/util/common";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
-import { MarkdownField } from "../../markdown-editor";
+import { MarkdownField } from "@self-learning/ui/forms";
 import { LessonFormModel } from "../lesson-form-model";
-import { MultipleChoiceForm } from "./questions/multiple-choice-form";
-import { ShortTextForm } from "./questions/short-text-form";
+import {
+	BaseQuestion,
+	MultipleChoiceForm,
+	QuestionType,
+	ShortTextForm
+} from "@self-learning/question-types";
 
 export function QuizEditor() {
 	const { control } = useFormContext<LessonFormModel>();

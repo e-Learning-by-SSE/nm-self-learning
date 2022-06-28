@@ -1,5 +1,5 @@
 import { PlusIcon } from "@heroicons/react/solid";
-import { ShortTextQuestion } from "@self-learning/types";
+import { ShortTextQuestion } from "@self-learning/question-types";
 import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
 

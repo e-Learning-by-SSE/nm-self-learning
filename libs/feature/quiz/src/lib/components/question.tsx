@@ -1,72 +1,19 @@
 import type { CompiledMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
-import { QuestionType } from "@self-learning/types";
-import { MDXRemote } from "next-mdx-remote";
 import {
-	createContext,
-	Dispatch,
-	PropsWithChildren,
-	SetStateAction,
-	useContext,
-	useState
-} from "react";
+	AnswerContextProvider,
+	ClozeAnswer,
+	MultipleChoiceAnswer,
+	ProgrammingAnswer,
+	QuestionType,
+	ShortTextAnswer,
+	TextAnswer,
+	useQuestion,
+	VorwissenAnswer
+} from "@self-learning/question-types";
+import { MDXRemote } from "next-mdx-remote";
+import { useState } from "react";
 import { Certainty } from "./certainty";
-import { ClozeAnswer } from "./cloze";
 import { Hints } from "./hints";
-import { MultipleChoiceAnswer } from "./multiple-choice";
-import { ProgrammingAnswer } from "./programming";
-import { ShortTextAnswer } from "./short-text";
-import { TextAnswer } from "./text";
-import { VorwissenAnswer } from "./vorwissen";
-
-export const AnswerContext = createContext(
-	null as unknown as {
-		question: QuestionType;
-		markdown: {
-			questionsMd: MdLookup;
-			answersMd: MdLookup;
-		};
-		answer: Record<string, unknown>;
-		setAnswer: Dispatch<SetStateAction<Record<string, unknown>>>;
-	}
-);
-
-export function AnswerContextProvider({
-	children,
-	question,
-	markdown
-}: PropsWithChildren<{
-	question: QuestionType;
-	markdown: {
-		questionsMd: MdLookup;
-		answersMd: MdLookup;
-	};
-}>) {
-	const [answer, setAnswer] = useState<Record<string, unknown>>({});
-
-	const value = {
-		question,
-		markdown,
-		answer,
-		setAnswer
-	};
-
-	return <AnswerContext.Provider value={value}>{children}</AnswerContext.Provider>;
-}
-
-export function useQuestion<QType extends QuestionType, AnswerType = Record<string, unknown>>() {
-	const value = useContext(AnswerContext);
-
-	// Attention: Might break when type is changed
-	return value as unknown as {
-		question: QType; // Use exact type
-		setAnswer: Dispatch<SetStateAction<AnswerType>>;
-		answer: AnswerType;
-		markdown: {
-			questionsMd: MdLookup;
-			answersMd: MdLookup;
-		};
-	};
-}
 
 export function Question({
 	question,
@@ -134,7 +81,7 @@ export function Question({
 }
 
 function CheckResult() {
-	const { answer } = useContext(AnswerContext);
+	const { answer } = useQuestion();
 
 	function checkResult() {
 		console.log("checking...");
@@ -150,7 +97,7 @@ function CheckResult() {
 
 function Answer({ question, answersMd }: { question: QuestionType; answersMd: MdLookup }) {
 	if (question.type === "multiple-choice") {
-		return <MultipleChoiceAnswer answersMd={answersMd} />;
+		return <MultipleChoiceAnswer />;
 	}
 
 	if (question.type === "short-text") {
