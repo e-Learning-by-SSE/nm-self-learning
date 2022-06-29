@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
-import { QuestionType } from "@self-learning/types";
+import { QuestionType, QuizContent } from "@self-learning/question-types";
 
 const text = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur nostrum dolorem ### at placeat. Ad corrupti fugit, magnam ipsam iste similique voluptates. Doloribus repellat velit expedita molestias eaque consectetur nesciunt.
 Temporibus, repellendus aspernatur provident unde ipsa voluptates delectus a adipisci itaque quam impedit suscipit harum illo voluptas saepe facere est distinctio non cum nesciunt. Dicta rerum dignissimos commodi cum molestias?
@@ -18,7 +18,7 @@ Harum, adipisci vel corrupti, corporis error pariatur ad quasi quisquam, ### rem
 
 const textArray = text.split("###");
 
-function getQuiz(slug: string): QuestionType[] {
+function getQuiz(slug: string): QuizContent {
 	return [
 		{
 			type: "multiple-choice",
@@ -31,6 +31,11 @@ function getQuiz(slug: string): QuestionType[] {
 			withCertainty: true,
 			answers: [
 				{
+					answerId: "1fc74b31-7772-4ea8-b570-60b5c104f804",
+					content: "Very Good",
+					isCorrect: true
+				},
+				{
 					answerId: "35d310ee-1acf-48e0-8f8c-090acd0e873a",
 					content: "Good",
 					isCorrect: true
@@ -38,7 +43,12 @@ function getQuiz(slug: string): QuestionType[] {
 				{
 					answerId: "cd33a2ef-95e8-4353-ad1d-de778d62ad57",
 					content: "Bad",
-					isCorrect: true
+					isCorrect: false
+				},
+				{
+					answerId: "211b5171-d7b2-4fc9-98ab-88af35f53df2",
+					content: "Very Bad",
+					isCorrect: false
 				}
 			],
 			hints: [

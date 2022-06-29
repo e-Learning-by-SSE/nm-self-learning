@@ -7,3 +7,13 @@ export const clozeQuestionSchema = baseQuestionSchema.extend({
 });
 
 export type ClozeQuestion = z.infer<typeof clozeQuestionSchema>;
+
+export type Cloze = {
+	type: "cloze";
+	question: ClozeQuestion;
+	answer: {
+		type: "cloze";
+		value: unknown;
+	};
+	evaluation: unknown;
+};

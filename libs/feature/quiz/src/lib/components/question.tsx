@@ -2,6 +2,7 @@ import type { CompiledMarkdown, MdLookup, MdLookupArray } from "@self-learning/m
 import {
 	AnswerContextProvider,
 	ClozeAnswer,
+	EVALUATION_FUNCTIONS,
 	MultipleChoiceAnswer,
 	ProgrammingAnswer,
 	QuestionType,
@@ -11,7 +12,7 @@ import {
 	VorwissenAnswer
 } from "@self-learning/question-types";
 import { MDXRemote } from "next-mdx-remote";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Certainty } from "./certainty";
 import { Hints } from "./hints";
 
@@ -26,6 +27,7 @@ export function Question({
 		hintsMd: MdLookupArray;
 	};
 }) {
+	const [showResult, setShowResult] = useState(false);
 	const [usedHints, setUsedHints] = useState<CompiledMarkdown[]>([]);
 	const hintsAvailable = question.hints && question.hints.length > 0;
 	const allHints = markdown.hintsMd[question.questionId] ?? [];
@@ -40,9 +42,14 @@ export function Question({
 	}
 
 	return (
-		<AnswerContextProvider question={question} markdown={markdown}>
+		<AnswerContextProvider question={question} markdown={markdown} showResult={showResult}>
 			<div className="max-w-full">
-				{/* <CheckResult /> */}
+				<div className="flex gap-4">
+					<button className="btn-stroked h-fit" onClick={() => setShowResult(v => !v)}>
+						Toggle
+					</button>
+					<CheckResult setShowResult={setShowResult} />
+				</div>
 
 				<div className="mb-1 font-semibold text-secondary">{question.type}</div>
 
@@ -80,12 +87,19 @@ export function Question({
 	);
 }
 
-function CheckResult() {
-	const { answer } = useQuestion();
+function CheckResult({ setShowResult }: { setShowResult: Dispatch<SetStateAction<boolean>> }) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const { question, answer, setEvaluation } = useQuestion();
 
 	function checkResult() {
 		console.log("checking...");
-		console.log(answer);
+		const evaluation = EVALUATION_FUNCTIONS[question.type as QuestionType["type"]](question, {
+			type: question.type,
+			value: answer
+		} as any);
+		console.log(evaluation);
+		setEvaluation(evaluation);
+		setShowResult(true);
 	}
 
 	return (

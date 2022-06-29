@@ -14,3 +14,9 @@ export const baseQuestionSchema = z.object({
 });
 
 export type BaseQuestion = z.infer<typeof baseQuestionSchema>;
+
+export const baseAnswerSchema = z.object({
+	questionId: z.string(),
+	type: z.string(),
+	value: z.any()
+});

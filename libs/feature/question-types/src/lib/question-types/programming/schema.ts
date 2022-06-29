@@ -9,3 +9,16 @@ export const programmingQuestionSchema = baseQuestionSchema.extend({
 });
 
 export type ProgrammingQuestion = z.infer<typeof programmingQuestionSchema>;
+
+export type Programming = {
+	type: "programming";
+	question: ProgrammingQuestion;
+	answer: {
+		type: "programming";
+		value: {
+			code: string;
+			output: string;
+		};
+	};
+	evaluation: unknown;
+};

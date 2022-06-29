@@ -2,7 +2,7 @@ import { PlusIcon } from "@heroicons/react/solid";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { MultipleChoiceAnswerType, MultipleChoiceQuestion } from "./schema";
+import { MultipleChoiceQuestion } from "./schema";
 
 export function MultipleChoiceForm({
 	index
@@ -20,7 +20,7 @@ export function MultipleChoiceForm({
 	const answers = useWatch({
 		name: `quiz.${index}.answers`,
 		control
-	}) as MultipleChoiceAnswerType[];
+	}) as MultipleChoiceQuestion["answers"];
 
 	function addAnswer() {
 		append({

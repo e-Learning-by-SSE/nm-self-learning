@@ -6,3 +6,13 @@ export const textQuestionSchema = baseQuestionSchema.extend({
 });
 
 export type TextQuestion = z.infer<typeof textQuestionSchema>;
+
+export type Text = {
+	type: "text";
+	question: TextQuestion;
+	answer: {
+		type: "text";
+		value: string;
+	};
+	evaluation: unknown;
+};

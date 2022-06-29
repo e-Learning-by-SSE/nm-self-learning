@@ -6,6 +6,7 @@ import {
 	ChevronUpIcon
 } from "@heroicons/react/solid";
 import { CourseCompletion } from "@self-learning/types";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { ReactElement } from "react";
 import { useCollapseToggle } from "./use-collapse-toggle";
@@ -166,30 +167,36 @@ export function PlaylistLesson({
 		<Link href={href}>
 			<a
 				title={lesson.title}
-				className={`flex w-full border-b border-light-border py-2 focus:outline-0 focus:ring-0 focus-visible:bg-indigo-100 ${
-					isActive
-						? "bg-indigo-500 text-white focus-visible:bg-indigo-300"
-						: "bg-white hover:bg-indigo-100 focus-visible:bg-indigo-100"
+				className={`relative flex w-full border-b border-light-border hover:bg-indigo-50 focus:outline-0 focus:ring-0  focus-visible:bg-indigo-100 ${
+					isActive ? "bg-indigo-50" : ""
 				}`}
 			>
-				<div className="relative flex w-full overflow-hidden pr-4">
+				{isActive && (
+					<motion.span
+						layoutId="activeLesson"
+						className="absolute h-full w-1 bg-secondary"
+					></motion.span>
+				)}
+				<div className="relative flex w-full overflow-hidden py-2 pr-4">
 					<div className="flex flex-col items-start px-4 text-center">
 						<span
 							className={`mx-auto my-auto w-6 text-xs ${
-								isActive ? "text-white" : "text-light"
+								isActive ? "text-light" : "text-light"
 							}`}
 						>
 							{lessonNumber}
 						</span>
 					</div>
 					<div>
-						<span className="max-w-md truncate align-top text-sm font-medium">
+						<span
+							className={`max-w-md truncate align-top text-sm font-medium ${
+								isActive ? "text-secondary" : ""
+							}`}
+						>
 							{lesson.title}
 						</span>
 						<span className="flex gap-2">
-							<span className={`text-xs ${isActive ? "text-white" : "text-light"}`}>
-								4:20
-							</span>
+							<span className="text-xs text-light">4:20</span>
 							{lesson.isCompleted && (
 								<CheckCircleIcon
 									className={`h-4 rounded-full ${
