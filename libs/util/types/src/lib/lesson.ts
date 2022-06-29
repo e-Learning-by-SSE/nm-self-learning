@@ -1,6 +1,6 @@
+import { quizContentSchema } from "@self-learning/question-types";
 import { z } from "zod";
 import { lessonContentSchema } from "./lesson-content";
-import { quizContentSchema } from "./quiz-schema";
 
 export const lessonSchema = z.object({
 	lessonId: z.string().nullable(),

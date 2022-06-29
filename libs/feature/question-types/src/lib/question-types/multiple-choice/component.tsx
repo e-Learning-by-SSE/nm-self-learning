@@ -1,7 +1,7 @@
-import { MultipleChoiceQuestion } from "@self-learning/types";
 import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren } from "react";
 import { useQuestion } from "../../use-question-hook";
+import { MultipleChoiceQuestion } from "./schema";
 
 export function MultipleChoiceAnswer() {
 	const { question, setAnswer, answer, markdown } = useQuestion<MultipleChoiceQuestion>();

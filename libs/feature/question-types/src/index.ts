@@ -17,3 +17,6 @@ export * from "./lib/question-types/vorwissen/component";
 //export * from "./lib/question-types/vorwissen/form";
 
 export * from "./lib/use-question-hook";
+
+export * from "./lib/base-question";
+export * from "./lib/quiz-schema";

@@ -1,10 +1,10 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
-import { VorwissenQuestion } from "@self-learning/types";
 import { TextArea } from "@self-learning/ui/forms";
 import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 import { MultipleChoiceOption } from "../multiple-choice/component";
+import { VorwissenQuestion } from "./schema";
 
 type Answer = {
 	vorwissen: string;

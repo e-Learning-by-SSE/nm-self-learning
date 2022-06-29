@@ -1,7 +1,7 @@
 import { EditorField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useQuestion } from "../../use-question-hook";
-import { ProgrammingQuestion } from "./programming";
+import { ProgrammingQuestion } from "./schema";
 
 type Answer = {
 	program: string;

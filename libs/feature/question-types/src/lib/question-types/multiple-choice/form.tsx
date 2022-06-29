@@ -1,8 +1,8 @@
 import { PlusIcon } from "@heroicons/react/solid";
-import { Lesson, MultipleChoiceAnswerType, MultipleChoiceQuestion } from "@self-learning/types";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { MultipleChoiceAnswerType, MultipleChoiceQuestion } from "./schema";
 
 export function MultipleChoiceForm({
 	index
@@ -10,7 +10,7 @@ export function MultipleChoiceForm({
 	question: { type: MultipleChoiceQuestion["type"] };
 	index: number;
 }) {
-	const { control, register } = useFormContext<Lesson>();
+	const { control, register } = useFormContext<{ quiz: MultipleChoiceQuestion[] }>();
 	const { append, remove } = useFieldArray({
 		control,
 		name: `quiz.${index}.answers`

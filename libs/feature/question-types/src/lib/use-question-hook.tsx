@@ -1,5 +1,4 @@
 import { MdLookup } from "@self-learning/markdown";
-import { QuestionType } from "@self-learning/types";
 import {
 	createContext,
 	Dispatch,
@@ -8,6 +7,7 @@ import {
 	useContext,
 	useState
 } from "react";
+import { QuestionType } from "./quiz-schema";
 
 export const AnswerContext = createContext(
 	null as unknown as {

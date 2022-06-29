@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { baseQuestionSchema } from "../base-question";
-import { multipleChoiceAnswerSchema } from "./multiple-choice";
+import { baseQuestionSchema } from "../../base-question";
+import { multipleChoiceAnswerSchema } from "../multiple-choice/schema";
 
 export const vorwissenQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("vorwissen"),

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseQuestionSchema } from "../base-question";
+import { baseQuestionSchema } from "../../base-question";
 
 export const textQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("text")
