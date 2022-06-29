@@ -1,4 +1,3 @@
-import { quizContentSchema } from "@self-learning/question-types";
 import { z } from "zod";
 import { lessonContentSchema } from "./lesson-content";
 
@@ -10,7 +9,7 @@ export const lessonSchema = z.object({
 	description: z.string().nullable().optional(),
 	imgUrl: z.string().nullable().optional(),
 	content: z.array(lessonContentSchema),
-	quiz: z.array(quizContentSchema)
+	quiz: z.array(z.any()) //TODO: quizContentSchema causes "Jest failed to parse a file"
 });
 
 export type Lesson = z.infer<typeof lessonSchema>;

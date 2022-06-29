@@ -11,7 +11,6 @@ export function evaluateMultipleChoice(
 	}
 
 	return {
-		type: "multiple-choice",
 		answers: evaluatedAnswers,
 		isCorrect: Object.values(evaluatedAnswers).every(x => x === true),
 		errorCount: Object.values(evaluatedAnswers).filter(x => x === false).length

@@ -1,5 +1,4 @@
 import { database } from "@self-learning/database";
-import { submitAnswerSchema } from "@self-learning/quiz";
 import { apiHandler, Forbidden, Unauthorized } from "@self-learning/util/http";
 import { NextApiHandler, NextApiRequest } from "next";
 import { getSession } from "next-auth/react";
@@ -16,7 +15,7 @@ const submitAnswersApiHandler: NextApiHandler = async (req, res) =>
 			throw Forbidden("Username did not match username of caller.");
 		}
 
-		const { answers, state } = submitAnswerSchema.validateSync(req.body);
+		const { answers, state } = req.body;
 
 		const result = await database.quizAttempt.create({
 			data: {

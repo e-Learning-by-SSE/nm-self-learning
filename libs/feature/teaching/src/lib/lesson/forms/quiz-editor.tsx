@@ -219,7 +219,7 @@ function BaseQuestionForm({
 }
 
 function HintForm({ questionIndex }: { questionIndex: number }) {
-	const { control } = useFormContext<LessonFormModel>();
+	const { control } = useFormContext<{ quiz: QuestionType[] }>();
 
 	const {
 		append,
