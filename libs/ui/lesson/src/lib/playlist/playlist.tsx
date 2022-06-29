@@ -6,7 +6,6 @@ import {
 	ChevronUpIcon
 } from "@heroicons/react/solid";
 import { CourseCompletion } from "@self-learning/types";
-import Image from "next/image";
 import Link from "next/link";
 import { ReactElement } from "react";
 import { useCollapseToggle } from "./use-collapse-toggle";
@@ -112,7 +111,7 @@ export function Playlist({
 }) {
 	return (
 		<div className="flex h-fit w-full flex-col bg-white">
-			<div className="grid grid-cols-[32px_1fr_auto] items-start border-b border-light-border p-4">
+			<div className="grid grid-cols-[32px_1fr_auto] items-start border-b border-light-border bg-gray-100 p-4">
 				<span className="text-base font-semibold">{index}.</span>
 				<div className="flex flex-col gap-2">
 					<span className="flex items-center gap-2 text-base font-semibold">
@@ -136,12 +135,13 @@ export function Playlist({
 			{!collapsed && (
 				<div className="playlist-scroll overflow-auto">
 					<div className="flex flex-col">
-						{lessons.map(lesson => (
+						{lessons.map((lesson, index) => (
 							<PlaylistLesson
 								key={lesson.slug}
 								href={`/courses/${course.slug}/${lesson.slug}`}
 								lesson={lesson}
 								isActive={currentLesson.slug === lesson.slug}
+								lessonNumber={index + 1}
 							/>
 						))}
 					</div>
@@ -155,42 +155,50 @@ export function PlaylistLesson({
 	lesson,
 	isActive,
 	href,
-	isLocked
+	lessonNumber
 }: {
 	lesson: PlaylistLesson;
 	href: string;
+	lessonNumber: number;
 	isActive?: boolean;
-	isLocked?: boolean;
 }) {
 	return (
 		<Link href={href}>
 			<a
 				title={lesson.title}
-				className={`flex h-20 w-full border-b border-light-border focus:outline-0 focus:ring-0 focus-visible:bg-indigo-100 ${
+				className={`flex w-full border-b border-light-border py-2 focus:outline-0 focus:ring-0 focus-visible:bg-indigo-100 ${
 					isActive
 						? "bg-indigo-500 text-white focus-visible:bg-indigo-300"
 						: "bg-white hover:bg-indigo-100 focus-visible:bg-indigo-100"
 				}`}
 			>
-				<div className="relative aspect-square h-full">
-					{lesson.imgUrl ? (
-						<Image layout="fill" className="bg-white" src={lesson.imgUrl} alt="" />
-					) : (
-						<div className="h-full w-full bg-neutral-500"></div>
-					)}
-				</div>
-				<div className="relative my-auto grid w-full gap-1 overflow-hidden pl-4 pr-6">
-					<span className="max-w-md truncate text-sm font-semibold">{lesson.title}</span>
-					<span className="flex items-center gap-2">
-						<span className="text-sm font-light">4:20</span>
-						{lesson.isCompleted && (
-							<CheckCircleIcon
-								className={`h-5 rounded-full ${
-									isActive ? "text-white" : "bg-white text-secondary"
-								}`}
-							/>
-						)}
-					</span>
+				<div className="relative flex w-full overflow-hidden pr-4">
+					<div className="flex flex-col items-start px-4 text-center">
+						<span
+							className={`mx-auto my-auto w-6 text-xs ${
+								isActive ? "text-white" : "text-light"
+							}`}
+						>
+							{lessonNumber}
+						</span>
+					</div>
+					<div>
+						<span className="max-w-md truncate align-top text-sm font-medium">
+							{lesson.title}
+						</span>
+						<span className="flex gap-2">
+							<span className={`text-xs ${isActive ? "text-white" : "text-light"}`}>
+								4:20
+							</span>
+							{lesson.isCompleted && (
+								<CheckCircleIcon
+									className={`h-4 rounded-full ${
+										isActive ? "text-white" : "bg-white text-secondary"
+									}`}
+								/>
+							)}
+						</span>
+					</div>
 				</div>
 			</a>
 		</Link>
