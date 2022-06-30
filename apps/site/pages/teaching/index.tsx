@@ -1,8 +1,11 @@
-import { PlusIcon } from "@heroicons/react/solid";
 import { database } from "@self-learning/database";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { InferGetServerSidePropsType } from "next";
 import Link from "next/link";
+import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
+import { ReactComponent as SoftwareEngineerSvg } from "../../svg/software-engineer.svg";
+import { ReactComponent as TeamsSvg } from "../../svg/teams.svg";
+import { ReactComponent as PersonalInformationSvg } from "../../svg/personal-information.svg";
 
 export const getServerSideProps = async () => {
 	const lessons = await database.lesson.findMany({
@@ -22,50 +25,55 @@ export default function TeachingPage({
 	lessons
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	return (
-		<CenteredSection>
-			<div className="flex flex-col gap-8">
-				<Link href="/teaching/lessons/create">
-					<a className="btn-primary w-fit">
-						<PlusIcon className="h-5" />
-						<span>Lerneinheit hinzufügen</span>
-					</a>
-				</Link>
+		<CenteredSection className="bg-gray-50">
+			<h1 className="mb-16 text-5xl">Verwaltung</h1>
 
-				<Link href="/teaching/courses/create">
-					<a className="btn-primary w-fit">
-						<PlusIcon className="h-5" />
-						<span>Kurs hinzufügen</span>
-					</a>
-				</Link>
+			<div className="grid gap-16 md:grid-cols-2">
+				<Card
+					href="/teaching/lessons"
+					imageElement={<TutorialSvg />}
+					title="Lerneinheiten verwalten"
+				/>
 
-				<h2 className="mt-12 text-4xl">Lerneinheiten</h2>
+				<Card
+					href="/teaching/courses"
+					imageElement={<SoftwareEngineerSvg />}
+					title="Kurse verwalten"
+				/>
 
-				<div className="rounded-lg border border-light-border">
-					<table className="w-full">
-						<thead className="rounded-lg bg-gray-50">
-							<tr className="block py-4 px-8 text-start">
-								<th className="text-md font-semibold">Titel</th>
-							</tr>
-						</thead>
-						<tbody className="">
-							{lessons.map(lesson => (
-								<tr
-									key={lesson.lessonId}
-									className="block border-b border-b-light-border px-8 py-3"
-								>
-									<td>
-										<Link href={`/teaching/lessons/edit/${lesson.slug}`}>
-											<a className="text-sm font-medium">
-												<span>{lesson.title} editieren</span>
-											</a>
-										</Link>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+				<Card
+					href="/"
+					imageElement={<PersonalInformationSvg />}
+					title="Autoren verwalten (nicht implementiert)"
+				/>
+
+				<Card
+					href="/"
+					imageElement={<TeamsSvg />}
+					title="Arbeitsgruppen verwalten (nicht implementiert)"
+				/>
 			</div>
 		</CenteredSection>
+	);
+}
+
+function Card({
+	imageElement,
+	title,
+	href
+}: {
+	imageElement: React.ReactNode;
+	title: string;
+	href: string;
+}) {
+	return (
+		<Link href={href}>
+			<a className="flex flex-col place-items-center gap-4 rounded-lg border border-light-border bg-white pt-4">
+				<div className="flex aspect-square w-64">{imageElement}</div>
+				<span className="w-full rounded-b-lg bg-secondary p-4 text-center font-semibold text-white">
+					{title}
+				</span>
+			</a>
+		</Link>
 	);
 }

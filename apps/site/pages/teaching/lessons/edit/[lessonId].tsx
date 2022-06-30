@@ -5,6 +5,7 @@ import { LessonEditor } from "@self-learning/teaching";
 import {} from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
 
 type EditLessonProps = {
 	lesson: Lesson;
@@ -15,14 +16,14 @@ async function editLesson(lesson: Lesson) {
 }
 
 export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ params }) => {
-	const slug = params?.lessonSlug;
+	const lessonId = params?.lessonId;
 
-	if (typeof slug !== "string") {
-		throw new Error("No [lessonSlug] provided.");
+	if (typeof lessonId !== "string") {
+		throw new Error("No [lessolessonIdnSlug] provided.");
 	}
 
 	const lesson = await database.lesson.findUnique({
-		where: { slug }
+		where: { lessonId }
 	});
 
 	if (!lesson) {
@@ -35,6 +36,8 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 };
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
+	const router = useRouter();
+
 	async function onConfirm(updatedLesson: Lesson) {
 		try {
 			const result = await editLesson({
@@ -47,6 +50,8 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 				title: "Änderungen gespeichert!",
 				subtitle: result.title
 			});
+
+			router.replace(router.asPath);
 		} catch (error) {
 			showToast({
 				type: "error",
