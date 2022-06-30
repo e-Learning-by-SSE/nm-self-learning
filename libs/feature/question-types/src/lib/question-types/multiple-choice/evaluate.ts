@@ -1,13 +1,11 @@
-import { MultipleChoiceAnswer, MultipleChoiceEvaluation, MultipleChoiceQuestion } from "./schema";
+import { EvaluationFn } from "../../quiz-schema";
 
-export function evaluateMultipleChoice(
-	question: MultipleChoiceQuestion,
-	answer: MultipleChoiceAnswer
-): MultipleChoiceEvaluation {
+export const evaluateMultipleChoice: EvaluationFn<"multiple-choice"> = (question, answer) => {
 	const evaluatedAnswers: { [answerId: string]: boolean } = {};
 
 	for (const option of question.answers) {
-		evaluatedAnswers[option.answerId] = answer.value[option.answerId] === option.isCorrect;
+		evaluatedAnswers[option.answerId] =
+			(answer.value[option.answerId] ?? false) === option.isCorrect;
 	}
 
 	return {
@@ -15,4 +13,4 @@ export function evaluateMultipleChoice(
 		isCorrect: Object.values(evaluatedAnswers).every(x => x === true),
 		errorCount: Object.values(evaluatedAnswers).filter(x => x === false).length
 	};
-}
+};
