@@ -1,16 +1,17 @@
 import { database } from "@self-learning/database";
 import { courseFormSchema, mapFromCourseFormToDbSchema } from "@self-learning/teaching";
-import { getRandomId } from "@self-learning/util/common";
 import { apiHandler } from "@self-learning/util/http";
 import { NextApiHandler } from "next";
 
-const createCourseApiHandler: NextApiHandler = async (req, res) =>
+const editCourseApiHandler: NextApiHandler = async (req, res) =>
 	apiHandler(req, res, "POST", async () => {
+		const courseId = req.query.courseId as string;
 		const course = courseFormSchema.parse(req.body);
 
-		const courseForDb = mapFromCourseFormToDbSchema(course, getRandomId());
+		const courseForDb = mapFromCourseFormToDbSchema(course, courseId);
 
-		const created = await database.course.create({
+		const updated = await database.course.update({
+			where: { courseId },
 			data: courseForDb,
 			select: {
 				title: true,
@@ -19,8 +20,8 @@ const createCourseApiHandler: NextApiHandler = async (req, res) =>
 			}
 		});
 
-		console.log("[createCourseApiHandler]: Created course", created);
-		return res.status(201).json(created);
+		console.log("[editCourseApiHandler]: Course updated", updated);
+		return res.status(200).json(updated);
 	});
 
-export default createCourseApiHandler;
+export default editCourseApiHandler;

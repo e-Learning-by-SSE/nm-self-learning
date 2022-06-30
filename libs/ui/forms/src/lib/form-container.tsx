@@ -67,7 +67,7 @@ export function Title({
 	title: React.ReactNode;
 }) {
 	return (
-		<CenteredContainer className="relative flex items-center justify-between gap-16 pt-16 pb-24">
+		<CenteredContainer className="relative flex justify-between gap-16 pt-16 pb-24">
 			<h1 className="text-3xl sm:text-5xl">{title}</h1>
 			{button}
 			{specialButtons}

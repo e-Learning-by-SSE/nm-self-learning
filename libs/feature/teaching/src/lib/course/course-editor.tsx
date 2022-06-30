@@ -1,4 +1,4 @@
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
@@ -20,7 +20,7 @@ export function CourseEditor({
 
 	const methods = useForm<CourseFormModel>({
 		defaultValues: { ...course },
-		resolver: yupResolver(courseFormSchema)
+		resolver: zodResolver(courseFormSchema)
 	});
 
 	function onJsonDialogClose(value: CourseFormModel) {
@@ -35,7 +35,7 @@ export function CourseEditor({
 						data => {
 							console.log("data", data);
 							try {
-								const validated = courseFormSchema.validateSync(data);
+								const validated = courseFormSchema.parse(data);
 								onConfirm(validated);
 							} catch (error) {
 								console.error(error);

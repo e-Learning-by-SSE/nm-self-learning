@@ -4,7 +4,7 @@ export type CourseContent = CourseChapter[];
 
 export type CourseChapter = {
 	title: string;
-	description?: string | null;
+	description: string | null;
 	lessonIds: string[];
 };
 
