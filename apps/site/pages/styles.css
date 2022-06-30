@@ -83,7 +83,7 @@ h3 {
 input,
 textarea,
 .textfield {
-	@apply rounded-lg border border-light-border p-2 placeholder:text-slate-400 focus:border-secondary;
+	@apply rounded-lg border border-light-border p-2 placeholder:text-slate-400 focus:border-secondary disabled:bg-gray-100;
 }
 
 .glass {

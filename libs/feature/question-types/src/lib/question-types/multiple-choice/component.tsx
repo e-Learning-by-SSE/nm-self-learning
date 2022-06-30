@@ -1,4 +1,4 @@
-import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/solid";
+import { CheckCircleIcon } from "@heroicons/react/solid";
 import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren } from "react";
@@ -6,7 +6,7 @@ import { useQuestion } from "../../use-question-hook";
 import { MultipleChoiceAnswer, MultipleChoiceEvaluation, MultipleChoiceQuestion } from "./schema";
 
 export function MultipleChoiceAnswer() {
-	const { question, setAnswer, answer, markdown, showResult, evaluation } = useQuestion<
+	const { question, setAnswer, answer, markdown, evaluation } = useQuestion<
 		MultipleChoiceQuestion,
 		MultipleChoiceAnswer["value"],
 		MultipleChoiceEvaluation
@@ -17,7 +17,7 @@ export function MultipleChoiceAnswer() {
 			{question.answers?.map(option => (
 				<MultipleChoiceOption
 					key={option.answerId}
-					showResult={showResult}
+					showResult={!!evaluation}
 					isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
 					isCorrect={option.isCorrect}
 					isSelected={answer[option.answerId] === true}

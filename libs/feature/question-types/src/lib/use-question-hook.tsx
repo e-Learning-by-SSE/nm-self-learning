@@ -18,7 +18,7 @@ export const AnswerContext = createContext(
 		};
 		answer: Record<string, unknown>;
 		setAnswer: Dispatch<SetStateAction<Record<string, unknown>>>;
-		showResult: boolean;
+		evaluation: unknown | null;
 	}
 );
 
@@ -26,25 +26,22 @@ export function AnswerContextProvider({
 	children,
 	question,
 	markdown,
-	showResult
+	evaluation
 }: PropsWithChildren<{
 	question: QuestionType;
-	showResult: boolean;
+	evaluation: unknown | null;
 	markdown: {
 		questionsMd: MdLookup;
 		answersMd: MdLookup;
 	};
 }>) {
 	const [answer, setAnswer] = useState<Record<string, unknown>>({});
-	const [evaluation, setEvaluation] = useState<unknown | null>(null);
 
 	const value = {
 		question,
 		markdown,
 		answer,
 		setAnswer,
-		setEvaluation,
-		showResult,
 		evaluation
 	};
 
@@ -58,7 +55,7 @@ export function AnswerContextProvider({
  * @param _questionType The question type, i.e., "multiple-choice". Enables type inference of concrete question type object.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useQuestion<Q = any, A = any, E = any>() {
+export function useQuestion<Q = QuestionType, A = any, E = any>() {
 	const value = useContext(AnswerContext);
 
 	// Attention: Might break when type is changed
@@ -72,6 +69,5 @@ export function useQuestion<Q = any, A = any, E = any>() {
 			questionsMd: MdLookup;
 			answersMd: MdLookup;
 		};
-		showResult: boolean;
 	};
 }

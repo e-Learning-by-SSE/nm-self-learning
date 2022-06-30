@@ -27,7 +27,7 @@ export function Question({
 		hintsMd: MdLookupArray;
 	};
 }) {
-	const [showResult, setShowResult] = useState(false);
+	const [evaluation, setEvaluation] = useState<unknown | null>(null);
 	const [usedHints, setUsedHints] = useState<CompiledMarkdown[]>([]);
 	const hintsAvailable = question.hints && question.hints.length > 0;
 	const allHints = markdown.hintsMd[question.questionId] ?? [];
@@ -42,13 +42,13 @@ export function Question({
 	}
 
 	return (
-		<AnswerContextProvider question={question} markdown={markdown} showResult={showResult}>
+		<AnswerContextProvider question={question} markdown={markdown} evaluation={evaluation}>
 			<div className="max-w-full">
 				<div className="flex gap-4">
-					<button className="btn-stroked h-fit" onClick={() => setShowResult(v => !v)}>
-						Toggle
+					<button className="btn-stroked h-fit" onClick={() => setEvaluation(null)}>
+						Reset
 					</button>
-					<CheckResult setShowResult={setShowResult} />
+					<CheckResult setEvaluation={setEvaluation} />
 				</div>
 
 				<div className="mb-1 font-semibold text-secondary">{question.type}</div>
@@ -87,19 +87,25 @@ export function Question({
 	);
 }
 
-function CheckResult({ setShowResult }: { setShowResult: Dispatch<SetStateAction<boolean>> }) {
+function CheckResult({
+	setEvaluation
+}: {
+	setEvaluation: Dispatch<SetStateAction<unknown | null>>;
+}) {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const { question, answer, setEvaluation } = useQuestion();
+	const { question, answer } = useQuestion();
 
 	function checkResult() {
 		console.log("checking...");
-		const evaluation = EVALUATION_FUNCTIONS[question.type as QuestionType["type"]](question, {
-			type: question.type,
-			value: answer
-		} as any);
-		console.log(evaluation);
+		const evaluation = EVALUATION_FUNCTIONS[question.type](
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			question as any,
+			answer
+		);
+		console.log("question", question);
+		console.log("answer", answer);
+		console.log("evaluation", evaluation);
 		setEvaluation(evaluation);
-		setShowResult(true);
 	}
 
 	return (

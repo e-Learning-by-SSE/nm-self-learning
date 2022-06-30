@@ -7,6 +7,7 @@ import {
 	multipleChoiceQuestionSchema
 } from "./question-types/multiple-choice/schema";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
+import { evaluateShortText } from "./question-types/short-text/evaluate";
 import {
 	ShortText,
 	shortTextAnswerSchema,
@@ -31,7 +32,7 @@ export const quizAnswerSchema = z.discriminatedUnion("type", [
 
 export type QuestionTypeUnion = MultipleChoice | ShortText | Text | Vorwissen | Programming | Cloze;
 
-type EvaluationFn<QType extends QuestionType["type"]> = (
+export type EvaluationFn<QType extends QuestionType["type"]> = (
 	question: InferQuestionType<QType>["question"],
 	answer: InferQuestionType<QType>["answer"]
 ) => InferQuestionType<QType>["evaluation"];
@@ -44,9 +45,7 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 	text: (q, a) => {
 		return "Not implemented.";
 	},
-	"short-text": (q, a) => {
-		return "Not implemented.";
-	},
+	"short-text": evaluateShortText,
 	vorwissen: (q, a) => {
 		return "Not implemented.";
 	},

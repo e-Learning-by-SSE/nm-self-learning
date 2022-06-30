@@ -68,7 +68,12 @@ function getQuiz(slug: string): QuizContent {
 			questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
 			statement: "# Was ist 1 + 1 ?",
 			withCertainty: true,
-			acceptedAnswers: [],
+			acceptedAnswers: [
+				{
+					acceptedAnswerId: "724f781e-56b2-4057-831e-b1d6962c48b1",
+					value: "2"
+				}
+			],
 			hints: []
 		},
 		{
@@ -247,7 +252,11 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 					goToNext={goToNextQuestion}
 					goToPrevious={goToPreviousQuestion}
 				/>
-				<Question question={currentQuestion} markdown={markdown} />
+				<Question
+					key={currentQuestion.questionId}
+					question={currentQuestion}
+					markdown={markdown}
+				/>
 			</div>
 		</div>
 	);
