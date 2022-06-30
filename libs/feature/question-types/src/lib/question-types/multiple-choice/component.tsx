@@ -14,7 +14,7 @@ export function MultipleChoiceAnswer() {
 
 	if (!answer.value) {
 		setAnswer(a => ({ ...a, value: {} }));
-		return;
+		return null;
 	}
 
 	return (

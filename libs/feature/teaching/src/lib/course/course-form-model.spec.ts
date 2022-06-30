@@ -1,10 +1,9 @@
-import { validationConfig } from "@self-learning/util/validate";
 import { ValidationError } from "yup";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 
 function getErrors(value: unknown) {
 	try {
-		courseFormSchema.validateSync(value, validationConfig);
+		courseFormSchema.parse(value);
 		throw Error("Expected validation error.");
 	} catch (error) {
 		return (error as ValidationError).errors;
@@ -16,10 +15,10 @@ const minValidCourse: CourseFormModel = {
 	slug: "a-course",
 	subtitle: "A Subtitle",
 	content: [],
-	courseId: undefined,
-	description: undefined,
-	imgUrl: undefined,
-	subjectId: undefined
+	courseId: null,
+	description: null,
+	imgUrl: null,
+	subjectId: null
 };
 
 describe("courseFormSchema", () => {
@@ -27,8 +26,13 @@ describe("courseFormSchema", () => {
 		it("null", () => {
 			expect(getErrors(null)).toMatchInlineSnapshot(`
 			Array [
-			  "this must be a \`object\` type, but the final value was: \`null\`.
-			 If \\"null\\" is intended as an empty value be sure to mark the schema as \`.nullable()\`",
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "object",
+			    "message": "Expected object, received null",
+			    "path": Array [],
+			    "received": "null",
+			  },
 			]
 		`);
 		});
@@ -36,10 +40,78 @@ describe("courseFormSchema", () => {
 		it("{}", () => {
 			expect(getErrors({})).toMatchInlineSnapshot(`
 			Array [
-			  "slug is a required field",
-			  "subtitle is a required field",
-			  "title is a required field",
-			  "content is a required field",
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "string",
+			    "message": "Required",
+			    "path": Array [
+			      "courseId",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "number",
+			    "message": "Required",
+			    "path": Array [
+			      "subjectId",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "string",
+			    "message": "Required",
+			    "path": Array [
+			      "slug",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "string",
+			    "message": "Required",
+			    "path": Array [
+			      "title",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "string",
+			    "message": "Required",
+			    "path": Array [
+			      "subtitle",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "string",
+			    "message": "Required",
+			    "path": Array [
+			      "description",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "string",
+			    "message": "Required",
+			    "path": Array [
+			      "imgUrl",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "array",
+			    "message": "Required",
+			    "path": Array [
+			      "content",
+			    ],
+			    "received": "undefined",
+			  },
 			]
 		`);
 		});
@@ -52,7 +124,15 @@ describe("courseFormSchema", () => {
 
 			expect(getErrors(course)).toMatchInlineSnapshot(`
 			Array [
-			  "title is a required field",
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "string",
+			    "message": "Required",
+			    "path": Array [
+			      "title",
+			    ],
+			    "received": "undefined",
+			  },
 			]
 		`);
 		});
@@ -65,7 +145,15 @@ describe("courseFormSchema", () => {
 
 			expect(getErrors(course)).toMatchInlineSnapshot(`
 			Array [
-			  "slug is a required field",
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "string",
+			    "message": "Required",
+			    "path": Array [
+			      "slug",
+			    ],
+			    "received": "undefined",
+			  },
 			]
 		`);
 		});
@@ -78,7 +166,15 @@ describe("courseFormSchema", () => {
 
 			expect(getErrors(course)).toMatchInlineSnapshot(`
 			Array [
-			  "content is a required field",
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "array",
+			    "message": "Required",
+			    "path": Array [
+			      "content",
+			    ],
+			    "received": "undefined",
+			  },
 			]
 		`);
 		});
@@ -86,7 +182,7 @@ describe("courseFormSchema", () => {
 
 	describe("valid", () => {
 		it("minimal information", () => {
-			expect(courseFormSchema.isValidSync(minValidCourse)).toEqual(true);
+			expect(courseFormSchema.safeParse(minValidCourse).success).toBeDefined();
 		});
 
 		it("full information", () => {
@@ -114,7 +210,7 @@ describe("courseFormSchema", () => {
 				subjectId: 1
 			};
 
-			expect(courseFormSchema.isValidSync(course)).toEqual(true);
+			expect(courseFormSchema.safeParse(course).success).toBeDefined();
 		});
 	});
 });

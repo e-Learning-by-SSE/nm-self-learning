@@ -16,7 +16,7 @@ type Answer = {
 };
 
 export function VorwissenAnswer({ question }: { question: VorwissenQuestion }) {
-	const { markdown, setAnswer, answer, showResult } = useQuestion<VorwissenQuestion, Answer>();
+	const { markdown, setAnswer, answer, evaluation } = useQuestion<VorwissenQuestion, Answer>();
 
 	const [vorwissen, setVorwissen] = useState("");
 	const [explanation, setExplanation] = useState("");
@@ -122,7 +122,7 @@ export function VorwissenAnswer({ question }: { question: VorwissenQuestion }) {
 								key={option.answerId}
 								isCorrect={option.isCorrect}
 								isUserAnswerCorrect={true} // TODO
-								showResult={showResult}
+								showResult={!!evaluation}
 								isSelected={answer.selectedAnswers[option.answerId] === true}
 								onToggle={() =>
 									setSelectedAnswers(old => ({
