@@ -78,9 +78,8 @@ export function CourseContentForm() {
 						<motion.li
 							key={chapter.chapterId}
 							layoutId={chapter.chapterId}
-							layout
 							initial={{ opacity: 0 }}
-							animate={{ opacity: 1, height: "auto" }}
+							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
 						>
 							<ChapterForm
@@ -209,7 +208,10 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 		name: `content.${chapterIndex}.lessons`
 	});
 
-	const lessonList = useWatch({ name: `content.${chapterIndex}.lessons`, control });
+	const lessonList = useWatch({
+		name: `content.${chapterIndex}.lessons`,
+		control
+	});
 
 	function onLessonSelected(lesson?: FindLessonsResponse[0]) {
 		setOpen(false);
@@ -227,15 +229,12 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 	}
 
 	return (
-		<LabeledField label="Lerneinheiten" key={chapterId}>
+		<LabeledField label="Lerneinheiten">
 			<Reorder.Group
 				onReorder={onReorder}
 				values={lessonList}
 				axis="y"
 				className="flex flex-col divide-y divide-light-border overflow-hidden"
-				layout="size"
-				animate={{ height: "auto" }}
-				transition={{ duration: 0.3, type: "tween" }}
 			>
 				<AnimatePresence>
 					{lessonList.map((lesson, lessonIndex) => (
@@ -243,7 +242,6 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 							value={lesson}
 							key={lesson.lessonId}
 							className="flex flex-wrap items-center justify-between gap-2 bg-white p-3"
-							layoutId={lesson.lessonId}
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
