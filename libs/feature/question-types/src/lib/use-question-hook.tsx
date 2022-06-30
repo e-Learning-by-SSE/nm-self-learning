@@ -35,7 +35,11 @@ export function AnswerContextProvider({
 		answersMd: MdLookup;
 	};
 }>) {
-	const [answer, setAnswer] = useState<Record<string, unknown>>({});
+	const [answer, setAnswer] = useState<Record<string, unknown>>({
+		type: question.type,
+		questionId: question.questionId,
+		value: null
+	});
 
 	const value = {
 		question,

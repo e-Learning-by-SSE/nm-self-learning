@@ -8,9 +8,14 @@ import { MultipleChoiceAnswer, MultipleChoiceEvaluation, MultipleChoiceQuestion 
 export function MultipleChoiceAnswer() {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion<
 		MultipleChoiceQuestion,
-		MultipleChoiceAnswer["value"],
+		MultipleChoiceAnswer,
 		MultipleChoiceEvaluation
 	>();
+
+	if (!answer.value) {
+		setAnswer(a => ({ ...a, value: {} }));
+		return;
+	}
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -20,11 +25,15 @@ export function MultipleChoiceAnswer() {
 					showResult={!!evaluation}
 					isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
 					isCorrect={option.isCorrect}
-					isSelected={answer[option.answerId] === true}
+					isSelected={answer.value[option.answerId] === true}
 					onToggle={() =>
 						setAnswer(old => ({
 							...old,
-							[option.answerId]: old[option.answerId] === true ? false : true
+							value: {
+								...old.value,
+								[option.answerId]:
+									old.value[option.answerId] === true ? false : true
+							}
 						}))
 					}
 				>
