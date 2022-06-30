@@ -204,7 +204,7 @@ function CourseHeader({
 				</div>
 
 				<div className="flex w-full flex-col gap-4 rounded">
-					<div className="relative h-64 w-full shrink-0">
+					<div className="relative h-64 w-full shrink-0 grow">
 						{course.imgUrl && (
 							<Image
 								priority
