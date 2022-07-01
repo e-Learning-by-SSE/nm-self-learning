@@ -4,33 +4,33 @@ import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 import { MultipleChoiceOption } from "../multiple-choice/component";
-import { VorwissenQuestion } from "./schema";
-
-type Answer = {
-	vorwissen: string;
-	explanation: {
-		content: string;
-		doesNotKnow: boolean;
-	};
-	selectedAnswers: { [answerId: string]: boolean };
-};
+import { Vorwissen, VorwissenQuestion } from "./schema";
 
 export function VorwissenAnswer({ question }: { question: VorwissenQuestion }) {
-	const { markdown, setAnswer, answer, evaluation } = useQuestion<VorwissenQuestion, Answer>();
+	const { markdown, setAnswer, answer, evaluation } = useQuestion<
+		Vorwissen["question"],
+		Vorwissen["answer"],
+		Vorwissen["evaluation"]
+	>();
 
 	const [vorwissen, setVorwissen] = useState("");
 	const [explanation, setExplanation] = useState("");
 	const [doesNotKnow, setDoesNotKnow] = useState(false);
-	const [selectedAnswers, setSelectedAnswers] = useState<Answer["selectedAnswers"]>({});
+	const [selectedAnswers, setSelectedAnswers] = useState<
+		Vorwissen["answer"]["value"]["selectedAnswers"]
+	>({});
 
 	useEffect(() => {
 		setAnswer({
-			vorwissen,
-			explanation: {
-				content: explanation,
-				doesNotKnow
-			},
-			selectedAnswers
+			type: "vorwissen",
+			value: {
+				vorwissen,
+				explanation: {
+					content: explanation,
+					doesNotKnow
+				},
+				selectedAnswers
+			}
 		});
 	}, [setAnswer, vorwissen, explanation, doesNotKnow, selectedAnswers]);
 
@@ -73,9 +73,16 @@ export function VorwissenAnswer({ question }: { question: VorwissenQuestion }) {
 					</p>
 
 					<div className="prose mb-8 max-w-full rounded-lg border border-light-border bg-white p-4">
-						<MDXRemote
-							{...markdown.answersMd[question.requireExplanationForAnswerIds]}
-						/>
+						{markdown.answersMd[question.requireExplanationForAnswerIds] ? (
+							<MDXRemote
+								{...markdown.answersMd[question.requireExplanationForAnswerIds]}
+							/>
+						) : (
+							<span className="text-sm text-red-500">
+								Error: No markdown found for answer{" "}
+								{question.requireExplanationForAnswerIds}
+							</span>
+						)}
 					</div>
 
 					<TextArea
@@ -89,7 +96,7 @@ export function VorwissenAnswer({ question }: { question: VorwissenQuestion }) {
 						<input
 							type="checkbox"
 							className="rounded text-secondary"
-							checked={answer.explanation.doesNotKnow}
+							checked={answer.value.explanation.doesNotKnow}
 							onChange={() => setDoesNotKnow(prev => !prev)}
 						/>
 						Ich weiß es noch nicht.
@@ -123,7 +130,7 @@ export function VorwissenAnswer({ question }: { question: VorwissenQuestion }) {
 								isCorrect={option.isCorrect}
 								isUserAnswerCorrect={true} // TODO
 								showResult={!!evaluation}
-								isSelected={answer.selectedAnswers[option.answerId] === true}
+								isSelected={answer.value.selectedAnswers[option.answerId] === true}
 								onToggle={() =>
 									setSelectedAnswers(old => ({
 										...old,

@@ -20,7 +20,14 @@ export type Vorwissen = {
 	question: VorwissenQuestion;
 	answer: {
 		type: "vorwissen";
-		value: unknown;
+		value: {
+			vorwissen: string;
+			explanation: {
+				content: string;
+				doesNotKnow: boolean;
+			};
+			selectedAnswers: { [answerId: string]: boolean };
+		};
 	};
 	evaluation: unknown;
 };

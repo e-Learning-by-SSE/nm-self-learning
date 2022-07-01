@@ -179,7 +179,7 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 			}
 		}
 
-		if (question.type === "multiple-choice") {
+		if (question.type === "multiple-choice" || question.type === "vorwissen") {
 			for (const answer of question.answers) {
 				answersMd[answer.answerId] = await compileMarkdown(answer.content);
 			}
