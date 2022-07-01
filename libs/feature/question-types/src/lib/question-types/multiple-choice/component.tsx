@@ -69,18 +69,12 @@ export function MultipleChoiceOption({
 	}
 
 	if (showResult) {
-		if (isUserAnswerCorrect) {
-			if (isCorrect) {
-				className = "bg-green-500 text-white";
-			} else {
-				className = "bg-green-50";
-			}
-		} else {
-			if (isCorrect) {
-				className = "bg-green-200";
-			} else {
-				className = isSelected ? "bg-red-500 text-white" : "bg-red-200";
-			}
+		if (isUserAnswerCorrect && isCorrect) {
+			className = "bg-green-500 text-white";
+		} else if (isSelected && !isUserAnswerCorrect) {
+			className = "bg-red-500 text-white";
+		} else if (!isSelected && isCorrect) {
+			className = "bg-red-200";
 		}
 	}
 
