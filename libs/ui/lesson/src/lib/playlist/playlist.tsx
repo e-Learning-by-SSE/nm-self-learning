@@ -167,7 +167,7 @@ export function PlaylistLesson({
 		<Link href={href}>
 			<a
 				title={lesson.title}
-				className={`relative flex w-full border-b border-light-border hover:bg-indigo-50 focus:outline-0 focus:ring-0  focus-visible:bg-indigo-100 ${
+				className={`relative flex w-full border-b border-light-border bg-white hover:bg-indigo-50 focus:outline-0 focus:ring-0  focus-visible:bg-indigo-100 ${
 					isActive ? "bg-indigo-50" : ""
 				}`}
 			>
