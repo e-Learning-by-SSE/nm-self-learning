@@ -198,11 +198,7 @@ export function PlaylistLesson({
 						<span className="flex gap-2">
 							<span className="text-xs text-light">4:20</span>
 							{lesson.isCompleted && (
-								<CheckCircleIcon
-									className={`h-4 rounded-full ${
-										isActive ? "text-white" : "bg-white text-secondary"
-									}`}
-								/>
+								<CheckCircleIcon className="h-4 rounded-full text-secondary" />
 							)}
 						</span>
 					</div>
