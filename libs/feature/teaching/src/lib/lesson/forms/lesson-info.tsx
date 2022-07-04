@@ -47,7 +47,11 @@ export function LessonInfoEditor() {
 						/>
 					</LabeledField>
 
-					<button className="btn-stroked h-fit self-end" onClick={slugifyTitle}>
+					<button
+						type="button"
+						className="btn-stroked h-fit self-end"
+						onClick={slugifyTitle}
+					>
 						Generieren
 					</button>
 				</div>
