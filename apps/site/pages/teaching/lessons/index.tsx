@@ -1,33 +1,21 @@
 import { PlusIcon } from "@heroicons/react/solid";
-import { database } from "@self-learning/database";
+import { apiFetch, FindLessonsResponse } from "@self-learning/api";
+import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { InferGetServerSidePropsType } from "next";
 import Link from "next/link";
+import { useState } from "react";
+import { useQuery } from "react-query";
 
-export const getServerSideProps = async () => {
-	const lessons = await database.lesson.findMany({
-		select: {
-			title: true,
-			authors: {
-				select: {
-					displayName: true,
-					id: true,
-					slug: true
-				}
-			},
-			slug: true,
-			lessonId: true
-		}
-	});
+export default function LessonManagementPage() {
+	const [title, setTitle] = useState("");
+	const { data } = useQuery(
+		["lessons", title],
+		() => {
+			return apiFetch<FindLessonsResponse, void>("GET", `/api/lessons/find?title=${title}`);
+		},
+		{ staleTime: 10_000, keepPreviousData: true } // Cache for 10 seconds
+	);
 
-	return {
-		props: { lessons }
-	};
-};
-
-export default function LessonManagementPage({
-	lessons
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	return (
 		<CenteredSection className="bg-gray-50">
 			<div className="mb-16 flex items-center justify-between gap-4 ">
@@ -41,6 +29,8 @@ export default function LessonManagementPage({
 				</Link>
 			</div>
 
+			<SearchField placeholder="Suche nach Titel" onChange={e => setTitle(e.target.value)} />
+
 			<div className="light-border rounded-lg border-x border-b bg-white">
 				<table className="w-full table-auto">
 					<thead className="rounded-lg border-b border-b-light-border bg-gray-100">
@@ -50,7 +40,7 @@ export default function LessonManagementPage({
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-light-border">
-						{lessons.map(lesson => (
+						{data?.lessons?.map(lesson => (
 							<tr key={lesson.lessonId}>
 								<td className="py-4 px-8 text-sm font-medium">
 									<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>

@@ -1,25 +1,44 @@
+import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 
-export function findLessons(title?: unknown) {
-	return database.lesson.findMany({
-		select: {
-			lessonId: true,
-			title: true,
-			slug: true,
-			authors: {
-				select: {
-					displayName: true
+export async function findLessons({
+	title,
+	skip,
+	take
+}: {
+	title?: string;
+	skip?: number;
+	take?: number;
+}) {
+	const where: Prisma.LessonWhereInput = {
+		title:
+			typeof title === "string" && title.length > 0
+				? { contains: title, mode: "insensitive" }
+				: undefined
+	};
+
+	const [lessons, count] = await Promise.all([
+		database.lesson.findMany({
+			select: {
+				lessonId: true,
+				title: true,
+				slug: true,
+				authors: {
+					select: {
+						displayName: true
+					}
 				}
-			}
-		},
-		where: {
-			title:
-				typeof title === "string" && title.length > 0
-					? { contains: title, mode: "insensitive" }
-					: undefined
-		},
-		take: 10
-	});
+			},
+			where,
+			take,
+			skip
+		}),
+		database.lesson.count({
+			where
+		})
+	]);
+
+	return { lessons, count };
 }
 
 export type FindLessonsResponse = ResolvedValue<typeof findLessons>;

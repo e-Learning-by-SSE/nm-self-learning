@@ -3,6 +3,7 @@ import { SessionProvider } from "next-auth/react";
 import { AppProps } from "next/app";
 import Head from "next/head";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
 import { Toaster } from "react-hot-toast";
 import "./styles.css";
 
@@ -34,7 +35,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 					</main>
 					<Toaster containerStyle={{ top: 96 }} position="top-right" />
-					{/* <ReactQueryDevtools initialIsOpen={false} position="bottom-right" /> */}
+					<ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
 				</QueryClientProvider>
 			</SessionProvider>
 		</>
