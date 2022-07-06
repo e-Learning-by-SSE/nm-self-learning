@@ -1,16 +1,10 @@
-import { apiFetch } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
 
-async function createCourse(course: CourseFormModel): Promise<{ title: string; slug: string }> {
-	return apiFetch<{ title: string; slug: string }, CourseFormModel>(
-		"POST",
-		"/api/teachers/courses/create",
-		course
-	);
-}
-
 export default function CreateCoursePage() {
+	const { mutateAsync: createCourse } = trpc.useMutation(["courses.create"]);
+
 	function onConfirm(course: CourseFormModel) {
 		async function create() {
 			try {

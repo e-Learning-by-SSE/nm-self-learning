@@ -1,29 +1,11 @@
-import { database } from "@self-learning/database";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { InferGetServerSidePropsType } from "next";
 import Link from "next/link";
-import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
+import { ReactComponent as PersonalInformationSvg } from "../../svg/personal-information.svg";
 import { ReactComponent as SoftwareEngineerSvg } from "../../svg/software-engineer.svg";
 import { ReactComponent as TeamsSvg } from "../../svg/teams.svg";
-import { ReactComponent as PersonalInformationSvg } from "../../svg/personal-information.svg";
+import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
 
-export const getServerSideProps = async () => {
-	const lessons = await database.lesson.findMany({
-		select: {
-			title: true,
-			slug: true,
-			lessonId: true
-		}
-	});
-
-	return {
-		props: { lessons }
-	};
-};
-
-export default function TeachingPage({
-	lessons
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function TeachingPage() {
 	return (
 		<CenteredSection className="bg-gray-50">
 			<h1 className="mb-16 text-5xl">Verwaltung</h1>

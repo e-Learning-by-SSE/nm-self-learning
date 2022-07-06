@@ -233,7 +233,7 @@ function CourseHeader({
 					{!isEnrolled && (
 						<button
 							className="btn-secondary disabled:opacity-50"
-							onClick={() => enroll()}
+							onClick={() => enroll({ courseId: course.courseId })}
 						>
 							<span>Zum Lernplan hinzfügen</span>
 							<PlusCircleIcon className="h-6" />

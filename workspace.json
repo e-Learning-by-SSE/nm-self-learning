@@ -3,6 +3,7 @@
 	"version": 2,
 	"projects": {
 		"data-access-api": "libs/data-access/api",
+		"data-access-api-client": "libs/data-access/api-client",
 		"database": "libs/data-access/database",
 		"docs-storybook": "docs/storybook",
 		"feature-completion": "libs/feature/completion",

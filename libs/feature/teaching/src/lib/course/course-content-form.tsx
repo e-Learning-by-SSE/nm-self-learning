@@ -11,7 +11,7 @@ import {
 	XIcon
 } from "@heroicons/react/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { apiFetch, FindLessonsResponse } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { lessonSchema } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { Form, LabeledField } from "@self-learning/ui/forms";
@@ -28,7 +28,6 @@ import {
 	UseFormRegister,
 	useWatch
 } from "react-hook-form";
-import { useQuery } from "react-query";
 import slugify from "slugify";
 import { LessonFormModel } from "../lesson/lesson-form-model";
 import { CourseFormModel } from "./course-form-model";
@@ -267,7 +266,7 @@ function Chapter({
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const [expanded, setExpanded] = useState(true);
 
-	function onCloseLessonSelector(lesson: any) {
+	function onCloseLessonSelector(lesson?: LessonSummary) {
 		console.log(lesson);
 		setLessonSelectorOpen(false);
 	}
@@ -596,7 +595,7 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 		control
 	});
 
-	function onLessonSelected(lesson?: FindLessonsResponse["lessons"][0]) {
+	function onLessonSelected(lesson?: LessonSummary) {
 		setOpen(false);
 		if (lesson) {
 			addLesson({
@@ -607,7 +606,7 @@ function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId:
 		}
 	}
 
-	function onReorder(lessons: FindLessonsResponse["lessons"]) {
+	function onReorder(lessons: LessonSummary[]) {
 		setValue(`content.${chapterIndex}.lessons`, lessons);
 	}
 
@@ -687,16 +686,13 @@ export function LessonSelector({
 	onClose
 }: {
 	open: boolean;
-	onClose: (lesson?: FindLessonsResponse["lessons"][0]) => void;
+	onClose: (lesson?: LessonSummary) => void;
 }) {
 	const [title, setTitle] = useState("");
-	const { data } = useQuery(
-		["lessons", title],
-		() => {
-			return apiFetch<FindLessonsResponse, void>("GET", `/api/lessons/find?title=${title}`);
-		},
-		{ staleTime: 10_000, keepPreviousData: true } // Cache for 10 seconds
-	);
+	const { data } = trpc.useQuery(["lessons.findMany", { title }], {
+		staleTime: 10_000,
+		keepPreviousData: true
+	});
 
 	return (
 		<HeadlessDialog open={open} onClose={() => onClose(undefined)} className="relative z-50">
@@ -762,3 +758,5 @@ export function LessonSelector({
 		</HeadlessDialog>
 	);
 }
+
+type LessonSummary = { lessonId: string; title: string; slug: string };

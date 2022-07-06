@@ -1,20 +1,16 @@
 import { PlusIcon } from "@heroicons/react/solid";
-import { apiFetch, FindLessonsResponse } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useState } from "react";
-import { useQuery } from "react-query";
 
 export default function LessonManagementPage() {
 	const [title, setTitle] = useState("");
-	const { data } = useQuery(
-		["lessons", title],
-		() => {
-			return apiFetch<FindLessonsResponse, void>("GET", `/api/lessons/find?title=${title}`);
-		},
-		{ staleTime: 10_000, keepPreviousData: true } // Cache for 10 seconds
-	);
+	const { data } = trpc.useQuery(["lessons.findMany", { title }], {
+		staleTime: 10_000,
+		keepPreviousData: true
+	});
 
 	return (
 		<CenteredSection className="bg-gray-50">

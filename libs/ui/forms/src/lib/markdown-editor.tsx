@@ -1,13 +1,11 @@
-import { CompiledMarkdown } from "@self-learning/markdown";
-import { EditorField } from "@self-learning/ui/forms";
+import { trpc } from "@self-learning/api-client";
 import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
+import { EditorField } from "./editor";
 
 export function MarkdownField({
 	content,
 	setValue,
-	cacheKey,
 	minHeight
 }: {
 	content: string | undefined;
@@ -17,18 +15,12 @@ export function MarkdownField({
 }) {
 	const debounced = useDebounce(content, 500);
 
-	const {
-		data: preview,
-		isLoading,
-		isRefetching,
-		isError,
-		refetch
-	} = useQuery(cacheKey, () => fetchPreview(content));
+	const { data: preview, mutate, isLoading, isError } = trpc.useMutation(["mdx"]);
 
 	useEffect(() => {
 		// Triggers compilation of new `preview`
-		refetch();
-	}, [debounced, refetch]);
+		mutate(debounced ?? "");
+	}, [debounced, mutate]);
 
 	const _minHeight = minHeight ?? "500px";
 	const [height, setHeight] = useState(_minHeight);
@@ -58,7 +50,7 @@ export function MarkdownField({
 						className="relative flex w-full grow overflow-auto border border-light-border bg-white p-8"
 						style={{ maxHeight: height }}
 					>
-						{(isLoading || isRefetching) && (
+						{isLoading && (
 							<span className="absolute top-2 left-2 text-sm text-light">
 								Compiling...
 							</span>
@@ -88,20 +80,4 @@ function useDebounce<T>(value: T, delay: number) {
 	}, [value, delay]);
 
 	return debouncedValue;
-}
-
-async function fetchPreview(content: string | undefined) {
-	if (!content || content === "") return null;
-
-	const response = await fetch("/api/teachers/mdx", {
-		method: "PUT",
-		body: content
-	});
-
-	if (!response.ok) {
-		// eslint-disable-next-line no-throw-literal
-		throw { status: response.status, statusText: response.statusText };
-	}
-
-	return (await response.json()) as CompiledMarkdown;
 }

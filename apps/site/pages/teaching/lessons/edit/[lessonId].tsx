@@ -1,7 +1,7 @@
 import { Lesson } from "@prisma/client";
-import { apiFetch } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { LessonEditor } from "@self-learning/teaching";
+import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import {} from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
@@ -10,10 +10,6 @@ import { useRouter } from "next/router";
 type EditLessonProps = {
 	lesson: Lesson;
 };
-
-async function editLesson(lesson: Lesson) {
-	return apiFetch<Lesson, Lesson>("PUT", `/api/teachers/lessons/edit/${lesson.lessonId}`, lesson);
-}
 
 export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ params }) => {
 	const lessonId = params?.lessonId;
@@ -37,11 +33,12 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
 	const router = useRouter();
+	const { mutateAsync: updateLesson } = trpc.useMutation("lessons.edit");
 
-	async function onConfirm(updatedLesson: Lesson) {
+	async function onConfirm(updatedLesson: LessonFormModel) {
 		try {
-			const result = await editLesson({
-				...updatedLesson,
+			const result = await updateLesson({
+				lesson: updatedLesson,
 				lessonId: lesson.lessonId
 			});
 
@@ -62,5 +59,5 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		}
 	}
 
-	return <LessonEditor lesson={lesson as any} onConfirm={onConfirm as any} />;
+	return <LessonEditor lesson={lesson as LessonFormModel} onConfirm={onConfirm} />;
 }

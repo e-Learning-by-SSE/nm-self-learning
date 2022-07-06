@@ -1,4 +1,4 @@
-import { apiFetch } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { CourseContent } from "@self-learning/types";
@@ -78,23 +78,19 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 	};
 };
 
-async function updateCourse(course: CourseFormModel): Promise<{ title: string; slug: string }> {
-	return apiFetch<{ title: string; slug: string }, CourseFormModel>(
-		"POST",
-		`/api/teachers/courses/edit/${course.courseId}`,
-		course
-	);
-}
-
 export default function EditCoursePage({
 	course
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+	const { mutateAsync: updateCourse } = trpc.useMutation("courses.edit");
 	const router = useRouter();
 
-	function onConfirm(course: CourseFormModel) {
+	function onConfirm(updatedCourse: CourseFormModel) {
 		async function create() {
 			try {
-				const { title } = await updateCourse(course);
+				const { title } = await updateCourse({
+					courseId: course.courseId as string,
+					course: updatedCourse
+				});
 				showToast({ type: "success", title: "Änderung gespeichert!", subtitle: title });
 				router.replace(router.asPath);
 			} catch (error) {

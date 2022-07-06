@@ -1,15 +1,10 @@
-import { Prisma } from "@prisma/client";
-import { apiFetch } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
 
-type Lesson = Prisma.LessonCreateInput;
-
-async function createLesson(lesson: LessonFormModel) {
-	return apiFetch<Lesson, LessonFormModel>("POST", "/api/teachers/lessons/create", lesson);
-}
-
 export default function CreateLessonPage() {
+	const { mutateAsync: createLesson } = trpc.useMutation("lessons.create");
+
 	async function onConfirm(lesson: LessonFormModel) {
 		try {
 			const result = await createLesson(lesson);

@@ -1,21 +1,17 @@
 import { PlusIcon } from "@heroicons/react/solid";
-import { apiFetch, FindCoursesResponse } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { useQuery } from "react-query";
 
 export default function CoursesPage() {
 	const [title, setTitle] = useState("");
-	const { data: courses } = useQuery(
-		["courses", title],
-		() => {
-			return apiFetch<FindCoursesResponse, void>("GET", `/api/courses/find?title=${title}`);
-		},
-		{ staleTime: 10_000, placeholderData: [], keepPreviousData: true } // Cache for 10 seconds
-	);
+	const { data: courses } = trpc.useQuery(["courses.findMany", { title }], {
+		staleTime: 10_000,
+		keepPreviousData: true
+	});
 
 	return (
 		<CenteredSection className="bg-gray-50">

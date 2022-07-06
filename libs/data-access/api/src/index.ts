@@ -1,3 +1,3 @@
-export * from "./lib/api-fetch";
-export * from "./lib/courses/find-courses";
-export * from "./lib/lessons/find-lessons";
+export * from "./lib/trpc/routers/app.router";
+export * from "./lib/trpc/context";
+export * from "./lib/auth";

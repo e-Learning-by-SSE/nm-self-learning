@@ -1,29 +1,15 @@
+import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import { useCallback } from "react";
-import { useMutation, useQueryClient } from "react-query";
-
-async function fetchMarkAsCompleted(vars: { lessonId: string; username: string }) {
-	const response = await fetch(
-		`/api/students/${vars.username}/lessons/${vars.lessonId}/mark-as-completed`,
-		{ method: "POST" }
-	);
-
-	if (!response.ok) {
-		throw new Error(await response.text());
-	}
-
-	return true;
-}
 
 export function useMarkAsCompleted(lessonId: string, onSettled?: () => void) {
 	const session = useSession();
-	const queryClient = useQueryClient();
 
-	const { mutate } = useMutation(fetchMarkAsCompleted, {
-		onSettled: (data, error) => {
+	const { mutate } = trpc.useMutation("user-completion.markAsCompleted", {
+		onSettled(data, error) {
 			console.log(data);
 			console.log(error);
-			queryClient.invalidateQueries(["course-completion"]);
+			trpc.useContext().invalidateQueries(["user-completion.getCourseCompletion"]);
 		}
 	});
 
@@ -38,7 +24,7 @@ export function useMarkAsCompleted(lessonId: string, onSettled?: () => void) {
 		}
 
 		return mutate(
-			{ lessonId, username },
+			{ lessonId },
 			{
 				onSettled: (data, error) => {
 					if (!error) {
