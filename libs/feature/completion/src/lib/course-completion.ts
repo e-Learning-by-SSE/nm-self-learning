@@ -5,9 +5,8 @@ export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
 ): Promise<CourseCompletion> {
-	const course = await database.course.findUnique({
-		where: { slug: courseSlug },
-		rejectOnNotFound: true
+	const course = await database.course.findUniqueOrThrow({
+		where: { slug: courseSlug }
 	});
 
 	const content = course.content as CourseChapter[];

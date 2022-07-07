@@ -35,8 +35,7 @@ export const authOptions: NextAuthOptions = {
 					return null;
 				}
 
-				const account = await database.account.findUnique({
-					rejectOnNotFound: false,
+				const account = await database.account.findUniqueOrThrow({
 					where: {
 						provider_providerAccountId: {
 							providerAccountId: username,

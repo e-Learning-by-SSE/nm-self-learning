@@ -18,8 +18,7 @@ type ProfileProps = {
 };
 
 function getUser(username: string) {
-	return database.student.findUnique({
-		rejectOnNotFound: true,
+	return database.student.findUniqueOrThrow({
 		where: { username },
 		select: {
 			username: true,

@@ -52,8 +52,7 @@ export async function getEnrollmentsOfUser(username: string): Promise<CourseEnro
 }
 
 export async function enrollUser({ courseId, username }: { courseId: string; username: string }) {
-	const course = await database.course.findUnique({
-		rejectOnNotFound: true,
+	const course = await database.course.findUniqueOrThrow({
 		where: { courseId },
 		select: {
 			courseId: true,
