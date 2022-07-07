@@ -1,36 +1,32 @@
 import { Combobox, Dialog as HeadlessDialog } from "@headlessui/react";
 import {
-	ArrowSmDownIcon,
-	ArrowSmUpIcon,
 	ChevronDownIcon,
 	ChevronRightIcon,
 	LinkIcon,
 	PencilIcon,
 	PlusIcon,
 	SearchIcon,
-	XIcon
+	SwitchVerticalIcon
 } from "@heroicons/react/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
 import { lessonSchema } from "@self-learning/types";
-import { Dialog, DialogActions, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
-import { Form, LabeledField } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
-import { getRandomId } from "@self-learning/util/common";
-import { AnimatePresence, motion, Reorder } from "framer-motion";
-import { Fragment, useState } from "react";
 import {
-	useFieldArray,
-	UseFieldArrayRemove,
-	UseFieldArraySwap,
-	useForm,
-	useFormContext,
-	UseFormRegister,
-	useWatch
-} from "react-hook-form";
+	Dialog,
+	DialogActions,
+	Divider,
+	IconButton,
+	OnDialogCloseFn,
+	SectionCard,
+	SectionCardHeader
+} from "@self-learning/ui/common";
+import { LabeledField } from "@self-learning/ui/forms";
+import { getRandomId } from "@self-learning/util/common";
+import { AnimatePresence, motion } from "framer-motion";
+import { createContext, Fragment, useCallback, useContext, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import slugify from "slugify";
 import { LessonFormModel } from "../lesson/lesson-form-model";
-import { CourseFormModel } from "./course-form-model";
 
 type Chapter = {
 	type: "chapter";
@@ -51,20 +47,35 @@ type Lesson = {
 	type: "lesson";
 	title: string;
 	lessonId: string;
+	hasQuiz: boolean;
+	requires?: Competence[];
+	rewards?: Competence[];
 };
 
+type Competence = { title: string; level: number; context?: string };
+
 type Content = (Chapter | Lesson)[];
+
+type Summary = {
+	count: {
+		lessons: number;
+		chapters: number;
+		quizzes: number;
+	};
+	competences: Map<string, Competence>;
+};
+
 type MappedContent = (ChapterWithNr | LessonWithNr)[];
 
 function mapContent(content: Content, lessonNrPtr = { lessonNr: 1 }): MappedContent {
 	let chapterNr = 1;
 
-	return content.map((item): MappedContent[0] => {
+	const mappedContent: MappedContent = content.map((item): MappedContent[0] => {
 		if (item.type === "chapter") {
 			return {
 				type: "chapter",
-				chapterId: getRandomId(),
 				chapterNr: chapterNr++,
+				chapterId: getRandomId(),
 				content: mapContent(item.content, lessonNrPtr),
 				title: item.title
 			};
@@ -72,74 +83,62 @@ function mapContent(content: Content, lessonNrPtr = { lessonNr: 1 }): MappedCont
 
 		if (item.type === "lesson") {
 			return {
-				type: "lesson",
-				lessonId: item.lessonId,
-				title: item.title,
+				...item,
 				lessonNr: lessonNrPtr.lessonNr++
 			};
 		}
 
 		return item;
 	});
+
+	return mappedContent;
 }
 
-const baseContent: Chapter[] = [
-	{
-		type: "chapter",
-		title: "Chapter 1",
-		content: [
-			{ type: "lesson", title: "Lesson 1", lessonId: getRandomId() },
-			{ type: "lesson", title: "Lesson 2", lessonId: getRandomId() },
-			{
-				type: "chapter",
-				title: "Chapter 1.1",
-				content: [
-					{ type: "lesson", title: "Lesson 3", lessonId: getRandomId() },
-					{ type: "lesson", title: "Lesson 4", lessonId: getRandomId() }
-				]
-			},
-			{
-				type: "chapter",
-				title: "Chapter 1.2",
-				content: [
-					{ type: "lesson", title: "Lesson 5", lessonId: getRandomId() },
-					{ type: "lesson", title: "Lesson 6", lessonId: getRandomId() },
-					{
-						type: "chapter",
-						title: "Nested Chapter",
-						content: [
-							{ type: "lesson", title: "Nested Lesson 1", lessonId: getRandomId() },
-							{ type: "lesson", title: "Nested Lesson 2", lessonId: getRandomId() }
-						]
-					}
-				]
+function traverseContent(content: MappedContent, fn: (c: MappedContent[0]) => void) {
+	content.forEach(item => {
+		if (item.type === "chapter") {
+			fn(item);
+			traverseContent(item.content, fn);
+		} else {
+			fn(item);
+		}
+	});
+}
+
+function createSummary(content: MappedContent) {
+	const summary: Summary = {
+		competences: new Map<string, Competence>(),
+		count: {
+			chapters: 0,
+			lessons: 0,
+			quizzes: 0
+		}
+	};
+
+	traverseContent(content, item => {
+		if (item.type === "chapter") {
+			summary.count.chapters++;
+		} else if (item.type === "lesson") {
+			summary.count.lessons++;
+
+			if (item.hasQuiz) {
+				summary.count.quizzes++;
 			}
-		]
-	},
-	{
-		type: "chapter",
-		title: "Chapter 2",
-		content: [
-			{
-				type: "chapter",
-				title: "Chapter 2.1",
-				content: [
-					{ type: "lesson", title: "Lesson 7", lessonId: getRandomId() },
-					{ type: "lesson", title: "Lesson 8", lessonId: getRandomId() }
-				]
-			},
-			{
-				type: "chapter",
-				title: "Chapter 2.2",
-				content: [
-					{ type: "lesson", title: "Lesson 9", lessonId: getRandomId() },
-					{ type: "lesson", title: "Lesson 10", lessonId: getRandomId() }
-				]
-			},
-			{ type: "lesson", title: "Lesson 11", lessonId: getRandomId() }
-		]
-	}
-];
+
+			if (item.rewards) {
+				for (const competence of item.rewards) {
+					const exists = summary.competences.get(competence.title);
+
+					if (!exists || exists.level < competence.level) {
+						summary.competences.set(competence.title, competence);
+					}
+				}
+			}
+		}
+	});
+
+	return summary;
+}
 
 function findChapterById(content: MappedContent, id: string): ChapterWithNr | null {
 	for (const chapter of content) {
@@ -158,6 +157,13 @@ function findChapterById(content: MappedContent, id: string): ChapterWithNr | nu
 	return null;
 }
 
+const HighlightContext = createContext({
+	highlightedCompetence: null as string | null,
+	setHighlightedCompetence: (title: string | null) => {
+		/** */
+	}
+});
+
 /**
  * Allows the user to edit the course content.
  *
@@ -175,29 +181,155 @@ function findChapterById(content: MappedContent, id: string): ChapterWithNr | nu
  * )
  */
 export function CourseContentForm() {
-	// const { register, control } = useFormContext<CourseFormModel>();
-	// const {
-	// 	append,
-	// 	remove,
-	// 	swap,
-	// 	fields: chapters
-	// } = useFieldArray({
-	// 	control,
-	// 	name: "content"
-	// });
+	const [content, setContent] = useState<MappedContent>(
+		mapContent([
+			{
+				type: "chapter",
+				title: "Chapter 1",
+				content: [
+					{
+						type: "lesson",
+						title: "Lesson 1",
+						lessonId: getRandomId(),
+						hasQuiz: true,
+						requires: [],
+						rewards: [
+							{ level: 1, title: "elementary-command" },
+							{ level: 1, title: "basic-program-structure" }
+						]
+					},
+					{
+						type: "lesson",
+						title: "Lesson 2",
+						lessonId: getRandomId(),
+						hasQuiz: true,
+						requires: [{ level: 1, title: "elementary-command" }],
+						rewards: [{ level: 2, title: "elementary-command" }]
+					},
+					{
+						type: "chapter",
+						title: "Chapter 1.1",
+						content: [
+							{
+								type: "lesson",
+								title: "Lesson 3",
+								lessonId: getRandomId(),
+								hasQuiz: true,
+								requires: [
+									{ level: 2, title: "elementary-command" },
+									{ level: 2, title: "basic-program-structure" }
+								],
+								rewards: [{ level: 3, title: "elementary-command" }]
+							},
+							{
+								type: "lesson",
+								title: "Lesson 4",
+								hasQuiz: false,
+								lessonId: getRandomId()
+							}
+						]
+					},
+					{
+						type: "chapter",
+						title: "Chapter 1.2",
+						content: [
+							{
+								type: "lesson",
+								title: "Lesson 5",
+								hasQuiz: false,
+								lessonId: getRandomId()
+							},
+							{
+								type: "lesson",
+								title: "Lesson 6",
+								hasQuiz: false,
+								lessonId: getRandomId()
+							},
+							{
+								type: "chapter",
+								title: "Nested Chapter",
+								content: [
+									{
+										type: "lesson",
+										title: "Nested Lesson 1",
+										hasQuiz: true,
+										lessonId: getRandomId()
+									},
+									{
+										type: "lesson",
+										title: "Nested Lesson 2",
+										hasQuiz: true,
+										lessonId: getRandomId()
+									}
+								]
+							}
+						]
+					}
+				]
+			},
+			{
+				type: "chapter",
+				title: "Chapter 2",
+				content: [
+					{
+						type: "chapter",
+						title: "Chapter 2.1",
+						content: [
+							{
+								type: "lesson",
+								title: "Lesson 7",
+								hasQuiz: true,
+								lessonId: getRandomId()
+							},
+							{
+								type: "lesson",
+								title: "Lesson 8",
+								hasQuiz: true,
+								lessonId: getRandomId()
+							}
+						]
+					},
+					{
+						type: "chapter",
+						title: "Chapter 2.2",
+						content: [
+							{
+								type: "lesson",
+								title: "Lesson 9",
+								hasQuiz: true,
+								lessonId: getRandomId()
+							},
+							{
+								type: "lesson",
+								title: "Lesson 10",
+								hasQuiz: true,
+								lessonId: getRandomId()
+							}
+						]
+					},
+					{ type: "lesson", title: "Lesson 11", hasQuiz: true, lessonId: getRandomId() }
+				]
+			}
+		])
+	);
 
-	// const addChapter = useCallback(() => {
-	// 	append({
-	// 		chapterId: getRandomId(),
-	// 		title: "",
-	// 		description: "",
-	// 		lessons: []
-	// 	});
-	// }, [append]);
+	const summary = useMemo(() => {
+		const sum = createSummary(content);
+		return { count: sum.count, competences: [...sum.competences.values()] };
+	}, [content]);
 
-	const [content, setContent] = useState<MappedContent>(mapContent(baseContent));
 	const [openNewChapterDialog, setOpenNewChapterDialog] = useState(false);
 	const [addChapterTarget, setAddChapterTarget] = useState<string | null>(null);
+	const [showInfo, setShowInfo] = useState(true);
+	const [highlightedCompetence, _setHighlightedCompetence] = useState<string | null>(null);
+
+	const setHighlightedCompetence = useCallback(
+		(title: string | null) => {
+			setShowInfo(true);
+			_setHighlightedCompetence(current => (current === title ? null : title));
+		},
+		[_setHighlightedCompetence]
+	);
 
 	function onAddChapter(chapterId: string) {
 		// Find chapter with chapterId
@@ -232,32 +364,109 @@ export function CourseContentForm() {
 	}
 
 	return (
-		<CenteredContainer>
-			<SectionHeader title="Inhalt" subtitle="Inhalte des Kurses." />
+		<HighlightContext.Provider value={{ highlightedCompetence, setHighlightedCompetence }}>
+			<section>
+				<div className="grid gap-8 px-4 xl:grid-cols-[1fr_500px] xl:px-64">
+					<SectionCard>
+						<SectionCardHeader title="Inhalt" subtitle="Inhalte des Kurses." />
+						<button
+							type="button"
+							className="mb-8 w-fit text-sm text-secondary"
+							onClick={() => setShowInfo(v => !v)}
+						>
+							{showInfo ? "Details ausblenden" : "Details anzeigen"}
+						</button>
 
-			<div className="card overflow-hidden bg-white">
-				<ul className="playlist-scroll flex flex-col overflow-auto">
-					{content.map((chapter, index) => (
-						<Chapter
-							key={index}
-							parentChapter=""
-							chapter={chapter as ChapterWithNr}
-							onAddChapter={onAddChapter}
-						/>
-					))}
-				</ul>
+						<ul className="flex flex-col gap-4 rounded-lg border border-light-border bg-gray-50 p-4">
+							{content.map((chapter, index) => (
+								<Chapter
+									key={index}
+									parentChapter=""
+									chapter={chapter as ChapterWithNr}
+									onAddChapter={onAddChapter}
+									showInfo={showInfo}
+								/>
+							))}
+						</ul>
+					</SectionCard>
+
+					<SummaryPanel summary={summary} />
+				</div>
+
+				{openNewChapterDialog && <NewChapterDialog onClose={addChapterDialogClosed} />}
+			</section>
+		</HighlightContext.Provider>
+	);
+}
+
+function SummaryPanel({
+	summary
+}: {
+	summary: { count: Summary["count"]; competences: Competence[] };
+}) {
+	const { highlightedCompetence, setHighlightedCompetence } = useContext(HighlightContext);
+
+	return (
+		<div className="flex flex-col rounded-lg border border-light-border bg-white p-8">
+			<SectionCardHeader title="Zusammenfassung" />
+
+			<div className="grid grid-cols-2 gap-4">
+				<span className="flex flex-col items-center rounded-lg border border-light-border p-4 text-light">
+					<span className="font-semibold text-secondary">{summary.count.chapters}</span>
+					<span>Kapitel</span>
+				</span>
+				<span className="flex flex-col items-center rounded-lg border border-light-border p-4 text-light">
+					<span className="font-semibold text-secondary">{summary.count.lessons}</span>
+					<span>Lerneinheiten</span>
+				</span>
+				<span className="flex flex-col items-center rounded-lg border border-light-border p-4 text-light">
+					<span className="font-semibold text-secondary">{summary.count.quizzes}</span>
+					<span>Lernkontrollen</span>
+				</span>
+				<span className="flex flex-col items-center rounded-lg border border-light-border p-4 text-light">
+					<span className="font-semibold text-secondary">
+						{summary.competences.length}
+					</span>
+					<span>Kompetenzen</span>
+				</span>
 			</div>
 
-			{openNewChapterDialog && <NewChapterDialog onClose={addChapterDialogClosed} />}
-		</CenteredContainer>
+			<section className="mt-8 flex flex-col gap-4">
+				<div>
+					<p className="text-lg font-semibold">Kompetenzen</p>
+					<p className="mt-2 text-sm text-light">
+						Klicke auf eine Kompetenz, um zugehörige Lernheiten hervorzuheben.
+					</p>
+				</div>
+
+				<ul className="flex flex-col gap-1 text-sm">
+					{summary.competences.map(competence => (
+						<button
+							key={competence.title}
+							type="button"
+							onClick={() => setHighlightedCompetence(competence.title)}
+							className={`w-fit ${
+								highlightedCompetence === competence.title
+									? "font-semibold text-secondary"
+									: "text-light"
+							}`}
+						>
+							{competence.title} ({competence.level})
+						</button>
+					))}
+				</ul>
+			</section>
+		</div>
 	);
 }
 
 function Chapter({
 	parentChapter,
 	chapter,
-	onAddChapter
+	onAddChapter,
+	showInfo
 }: {
+	showInfo: boolean;
 	chapter: ChapterWithNr;
 	parentChapter: string;
 	onAddChapter(chapterId: string): void;
@@ -276,65 +485,64 @@ function Chapter({
 		setCreateLessonDialogOpen(false);
 	}
 
+	const chapterNr =
+		parentChapter.length > 0 ? `${parentChapter}.${chapter.chapterNr}` : `${chapter.chapterNr}`;
+
+	const depth = chapterNr.split(".").length;
+
+	// increase background opacity for each level
+
 	return (
-		<li className="group flex flex-col pt-2">
-			<span className="relative flex items-center gap-4">
-				<button
-					type="button"
-					className="absolute text-gray-400"
-					onClick={() => setExpanded(v => !v)}
-				>
-					{expanded ? (
-						<ChevronDownIcon className="h-5" />
-					) : (
-						<ChevronRightIcon className="h-5" />
-					)}
-				</button>
-				<span className="group ml-2 grid grid-cols-[auto_1fr] gap-4 whitespace-nowrap py-1 pl-[32px]">
-					<span className="w-fit min-w-[32px] text-center text-light">
-						{parentChapter.length > 0
-							? `${parentChapter}.${chapter.chapterNr}`
-							: `${chapter.chapterNr}`}
+		<li className="flex flex-col py-4">
+			<span className="relative flex items-center justify-between gap-4">
+				<span className="flex items-center">
+					<button
+						type="button"
+						className="absolute rounded-full p-2 text-gray-400 hover:bg-gray-100"
+						onClick={() => setExpanded(v => !v)}
+					>
+						{expanded ? (
+							<ChevronDownIcon className="h-5" />
+						) : (
+							<ChevronRightIcon className="h-5" />
+						)}
+					</button>
+					<span className="ml-2 grid grid-cols-[auto_1fr] gap-4 whitespace-nowrap py-1 pl-[32px]">
+						<span className="w-fit min-w-[32px] text-center text-light">
+							{chapterNr}
+						</span>
+						<span className="font-semibold text-secondary">{chapter.title}</span>
 					</span>
-					<span className="font-semibold">{chapter.title}</span>
 				</span>
 
 				<div className="group flex gap-2">
-					<button
-						type="button"
-						className="flex shrink-0 items-center gap-1 rounded-full border border-light-border  p-1 px-3 text-gray-300 transition-colors hover:bg-secondary hover:text-white"
-					>
-						<PencilIcon className="h-5" />
-						<span className="text-xs">Ändern</span>
-					</button>
-					<button
-						type="button"
-						className="flex shrink-0 items-center gap-1 rounded-full border border-light-border  p-1 px-3 text-gray-300 transition-colors hover:bg-secondary hover:text-white"
-						title="Neue Lerneinheit erstellen"
+					<IconButton text="Ändern" icon={<PencilIcon className="h-5" />} />
+					<IconButton
+						text="Le. erstellen"
+						icon={<PlusIcon className="h-5" />}
 						onClick={() => setCreateLessonDialogOpen(true)}
-					>
-						<PlusIcon className="h-5" />
-						<span className="text-xs">Le. erstellen</span>
-					</button>
-					<button
-						type="button"
-						className="flex shrink-0 items-center gap-1 rounded-full border border-light-border  p-1 px-3 text-gray-300 transition-colors hover:bg-secondary hover:text-white"
-						title="Existierende Lerneinheit verknüpfen"
+					/>
+					<IconButton
+						text="Le. verknüpfen"
+						icon={<LinkIcon className="h-5" />}
 						onClick={() => setLessonSelectorOpen(true)}
-					>
-						<LinkIcon className="h-5" />
-						<span className="text-xs">Le. verknüpfen</span>
-					</button>
-					<button
-						type="button"
-						className="flex shrink-0 items-center gap-1 rounded-full border border-light-border  p-1 px-3 text-gray-300 transition-colors hover:bg-secondary hover:text-white"
+					/>
+					<IconButton
+						text="Unterkapitel"
+						icon={<PlusIcon className="h-5" />}
 						onClick={() => onAddChapter(chapter.chapterId)}
-					>
-						<PlusIcon className="h-5" />
-						<span className="text-xs">Unterkapitel</span>
-					</button>
+					/>
 				</div>
 			</span>
+
+			{showInfo && (
+				<p className="py-2 pl-12 text-xs text-light">
+					Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore impedit sequi
+					id enim dolores repellat sapiente officiis, distinctio deserunt dignissimos
+					cupiditate optio laboriosam assumenda eaque? Placeat impedit ut cum qui.
+				</p>
+			)}
+
 			<AnimatePresence initial={false}>
 				{expanded && (
 					<motion.ul
@@ -342,17 +550,19 @@ function Chapter({
 						animate={{ height: "auto" }}
 						exit={{ height: 0 }}
 						transition={{ type: "tween", duration: 0.2 }}
-						className="ml-2 flex flex-col overflow-hidden border-l border-light-border py-2 pl-8"
+						className="ml-2 flex flex-col gap-2 overflow-hidden py-2 pl-8"
 					>
 						{chapter.content.map((chapterOrLesson, elementIndex) =>
 							chapterOrLesson.type === "lesson" ? (
 								<Lesson
 									key={elementIndex}
 									lesson={chapterOrLesson as LessonWithNr}
+									showInfo={showInfo}
 								/>
 							) : (
 								<Chapter
 									key={elementIndex}
+									showInfo={showInfo}
 									parentChapter={
 										parentChapter.length > 0
 											? `${parentChapter}.${chapter.chapterNr}`
@@ -374,12 +584,73 @@ function Chapter({
 	);
 }
 
-function Lesson({ lesson }: { lesson: LessonWithNr }) {
+function Lesson({ lesson, showInfo }: { lesson: LessonWithNr; showInfo: boolean }) {
 	return (
-		<li className="grid grid-cols-[auto_1fr] gap-4 whitespace-nowrap py-1 text-sm">
-			<span className="min-w-[32px] text-center text-light">{lesson.lessonNr}</span>
-			<span>{lesson.title}</span>
+		<li className="grid grid-cols-[auto_1fr_auto] gap-1 whitespace-nowrap rounded-lg border border-light-border bg-white py-2 text-sm">
+			<span className="my-auto min-w-[32px] px-4 text-center text-light">
+				{lesson.lessonNr}
+			</span>
+			<span className="my-auto flex flex-col gap-1">
+				<span className="font-medium">{lesson.title}</span>
+				{showInfo && <Competences requires={lesson.requires} rewards={lesson.rewards} />}
+			</span>
+			<span className="flex items-center gap-2 px-2 text-xs text-gray-400">
+				<button type="button" className="h-fit rounded-full p-2 hover:bg-gray-100">
+					<PencilIcon className="h-4" />
+				</button>
+				<button type="button" className="h-fit rounded-full p-2 hover:bg-gray-100">
+					<SwitchVerticalIcon className="h-4" />
+				</button>
+			</span>
 		</li>
+	);
+}
+
+function Competences({ requires, rewards }: { requires?: Competence[]; rewards?: Competence[] }) {
+	const { highlightedCompetence, setHighlightedCompetence } = useContext(HighlightContext);
+
+	return (
+		<div className="mt-2 flex flex-col gap-1 text-xs text-light">
+			<span className="flex gap-2">
+				<span className="font-light text-gray-400">Benötigt:</span>
+				<ul className="flex flex-wrap gap-2 text-xs text-light">
+					{requires?.map(competence => (
+						<button
+							key={competence.title}
+							type="button"
+							className={
+								competence.title === highlightedCompetence
+									? "font-semibold text-secondary"
+									: ""
+							}
+							onClick={() => setHighlightedCompetence(competence.title)}
+						>
+							{competence.title} ({competence.level})
+						</button>
+					))}
+				</ul>
+			</span>
+			<Divider />
+			<span className="flex gap-2">
+				<span className="font-light text-gray-400">Bringt bei:</span>
+				<ul className="flex gap-2 text-xs text-light">
+					{rewards?.map(competence => (
+						<button
+							key={competence.title}
+							type="button"
+							className={
+								competence.title === highlightedCompetence
+									? "font-semibold text-secondary"
+									: ""
+							}
+							onClick={() => setHighlightedCompetence(competence.title)}
+						>
+							{competence.title} ({competence.level})
+						</button>
+					))}
+				</ul>
+			</span>
+		</div>
 	);
 }
 
@@ -503,184 +774,6 @@ function CreateLessonDialog({ onClose }: { onClose: OnDialogCloseFn<any> }) {
 	);
 }
 
-function ChapterForm({
-	index,
-	chapterId,
-	remove,
-	register,
-	swap,
-	isLast
-}: {
-	index: number;
-	chapterId: string;
-	register: UseFormRegister<CourseFormModel>;
-	swap: UseFieldArraySwap;
-	remove: UseFieldArrayRemove;
-	isLast: boolean;
-}) {
-	const {
-		formState: { errors }
-	} = useFormContext<CourseFormModel>();
-
-	return (
-		<Form.SectionCard>
-			<LabeledField
-				label={`Kapitel ${index + 1}`}
-				error={errors.content?.[index]?.title?.message}
-			>
-				<input
-					{...register(`content.${index}.title`)}
-					placeholder={`Kapitel ${index + 1}`}
-				/>
-			</LabeledField>
-
-			<LabeledField label="Beschreibung">
-				<textarea
-					rows={3}
-					{...register(`content.${index}.description`)}
-					placeholder="Beschreibung des Kapitels"
-				/>
-			</LabeledField>
-
-			<Lessons chapterIndex={index} chapterId={chapterId} />
-
-			<div className="flex w-full justify-center gap-4">
-				<button
-					type="button"
-					className="rounded border border-light-border p-1 disabled:text-slate-200"
-					title="Nach oben verschieben"
-					onClick={() => swap(index, index - 1)}
-					disabled={index === 0}
-				>
-					<ArrowSmUpIcon className="h-5" />
-				</button>
-				<button
-					type="button"
-					className="rounded border border-light-border p-1 disabled:text-slate-200"
-					title="Nach unten verschieben"
-					onClick={() => swap(index, index + 1)}
-					disabled={isLast}
-				>
-					<ArrowSmDownIcon className="h-5" />
-				</button>
-				<button
-					type="button"
-					className="rounded border border-light-border p-1 text-red-500"
-					title="Entfernen"
-					onClick={() => remove(index)}
-				>
-					<XIcon className="h-5" />
-				</button>
-			</div>
-		</Form.SectionCard>
-	);
-}
-
-function Lessons({ chapterIndex, chapterId }: { chapterIndex: number; chapterId: string }) {
-	const [open, setOpen] = useState(false);
-
-	const { control, setValue } = useFormContext<CourseFormModel>();
-	const {
-		append: addLesson,
-		remove: removeLesson,
-		swap: swapLesson,
-		fields: lessons
-	} = useFieldArray({
-		control,
-		name: `content.${chapterIndex}.lessons`
-	});
-
-	const lessonList = useWatch({
-		name: `content.${chapterIndex}.lessons`,
-		control
-	});
-
-	function onLessonSelected(lesson?: LessonSummary) {
-		setOpen(false);
-		if (lesson) {
-			addLesson({
-				lessonId: lesson.lessonId,
-				slug: lesson.slug,
-				title: lesson.title
-			});
-		}
-	}
-
-	function onReorder(lessons: LessonSummary[]) {
-		setValue(`content.${chapterIndex}.lessons`, lessons);
-	}
-
-	return (
-		<LabeledField label="Lerneinheiten">
-			<Reorder.Group
-				onReorder={onReorder}
-				values={lessonList}
-				axis="y"
-				className="flex flex-col divide-y divide-light-border overflow-hidden"
-			>
-				<AnimatePresence>
-					{lessonList.map((lesson, lessonIndex) => (
-						<Reorder.Item
-							value={lesson}
-							key={lesson.lessonId}
-							className="flex flex-wrap items-center justify-between gap-2 bg-white p-3"
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
-						>
-							<span className="flex gap-4 text-sm font-medium">
-								<span className="text-secondary">{lessonIndex + 1}.</span>
-								<span>{lesson.title}</span>
-							</span>
-							<div className="flex gap-2">
-								<button
-									type="button"
-									className="rounded border border-light-border p-1 disabled:text-slate-200"
-									title="Nach oben verschieben"
-									onClick={() => swapLesson(lessonIndex, lessonIndex - 1)}
-									disabled={lessonIndex === 0}
-								>
-									<ArrowSmUpIcon className="h-5" />
-								</button>
-								<button
-									type="button"
-									className="rounded border border-light-border p-1 disabled:text-slate-200"
-									title="Nach unten verschieben"
-									onClick={() => swapLesson(lessonIndex, lessonIndex + 1)}
-									disabled={lessonIndex === lessons.length - 1}
-								>
-									<ArrowSmDownIcon className="h-5" />
-								</button>
-								<button
-									type="button"
-									className="rounded border border-light-border p-1 text-red-500"
-									title="Entfernen"
-									onClick={() => removeLesson(lessonIndex)}
-								>
-									<XIcon className="h-5" />
-								</button>
-							</div>
-						</Reorder.Item>
-					))}
-				</AnimatePresence>
-				<div className="py-1">
-					<motion.button
-						layoutId={`add-${chapterId}`}
-						layout="position"
-						type="button"
-						className="btn-stroked mt-2 w-full"
-						onClick={() => setOpen(true)}
-					>
-						<PlusIcon className="h-5" />
-					</motion.button>
-				</div>
-			</Reorder.Group>
-
-			{open && <LessonSelector open={open} onClose={onLessonSelected} />}
-		</LabeledField>
-	);
-}
-
 export function LessonSelector({
 	open,
 	onClose
@@ -691,7 +784,8 @@ export function LessonSelector({
 	const [title, setTitle] = useState("");
 	const { data } = trpc.useQuery(["lessons.findMany", { title }], {
 		staleTime: 10_000,
-		keepPreviousData: true
+		keepPreviousData: true,
+		enabled: title.length > 0
 	});
 
 	return (

@@ -13,7 +13,9 @@ export function Tabs({
 }) {
 	return (
 		<HeadlessTab.Group selectedIndex={selectedIndex} onChange={onChange}>
-			<HeadlessTab.List className="flex gap-4">{children}</HeadlessTab.List>
+			<HeadlessTab.List className="flex gap-4 border-b border-light-border">
+				{children}
+			</HeadlessTab.List>
 		</HeadlessTab.Group>
 	);
 }
@@ -24,11 +26,11 @@ export function Tab({ children }: { children: ReactNode }) {
 			{({ selected }) => (
 				<button
 					type="button"
-					className="flex flex-col gap-1 pb-1 focus:ring-0 focus-visible:outline-secondary"
+					className="flex min-w-[128px] flex-col gap-1 focus:ring-0 focus-visible:outline-secondary"
 				>
 					<span
-						className={`px-2  ${
-							selected ? "font-semibold text-secondary" : "text-light"
+						className={`mx-auto px-2 py-2 font-semibold ${
+							selected ? "text-secondary" : "text-light"
 						}`}
 					>
 						{children}
@@ -37,7 +39,7 @@ export function Tab({ children }: { children: ReactNode }) {
 					{selected && (
 						<motion.span
 							layoutId="selectedTab"
-							className="h-[4px] w-full rounded-lg bg-secondary"
+							className="h-[2px] w-full bg-secondary"
 						></motion.span>
 					)}
 				</button>

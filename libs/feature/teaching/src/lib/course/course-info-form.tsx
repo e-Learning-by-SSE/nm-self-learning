@@ -33,7 +33,7 @@ export function CourseInfoForm() {
 	const cacheKey = useRef(["kurs-beschreibung"]);
 
 	return (
-		<>
+		<Form.Container>
 			<CenteredContainer>
 				<SectionHeader title="Daten" subtitle="Informationen über diesen Kurs." />
 
@@ -103,6 +103,6 @@ export function CourseInfoForm() {
 					/>
 				</Form.MarkdownWithPreviewContainer>
 			</section>
-		</>
+		</Form.Container>
 	);
 }
