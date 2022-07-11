@@ -30,7 +30,6 @@ export function CourseInfoForm() {
 		control,
 		formState: { errors }
 	} = useFormContext<CourseFormModel>();
-	const cacheKey = useRef(["kurs-beschreibung"]);
 
 	return (
 		<Form.Container>
@@ -94,7 +93,6 @@ export function CourseInfoForm() {
 						name="description"
 						render={({ field }) => (
 							<MarkdownField
-								cacheKey={cacheKey.current}
 								content={field.value as string}
 								setValue={field.onChange}
 								minHeight="500px"

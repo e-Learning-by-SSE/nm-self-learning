@@ -27,72 +27,15 @@ import { createContext, Fragment, useCallback, useContext, useMemo, useState } f
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
 import { LessonFormModel } from "../lesson/lesson-form-model";
-
-type Chapter = {
-	type: "chapter";
-	title: string;
-	content: Content;
-};
-
-type ChapterWithNr = {
-	type: "chapter";
-	title: string;
-	chapterNr: number;
-	chapterId: string;
-	content: MappedContent;
-};
-type LessonWithNr = Lesson & { lessonNr: number; lessonId: string };
-
-type Lesson = {
-	type: "lesson";
-	title: string;
-	lessonId: string;
-	hasQuiz: boolean;
-	requires?: Competence[];
-	rewards?: Competence[];
-};
-
-type Competence = { title: string; level: number; context?: string };
-
-type Content = (Chapter | Lesson)[];
-
-type Summary = {
-	count: {
-		lessons: number;
-		chapters: number;
-		quizzes: number;
-	};
-	competences: Map<string, Competence>;
-};
-
-type MappedContent = (ChapterWithNr | LessonWithNr)[];
-
-function mapContent(content: Content, lessonNrPtr = { lessonNr: 1 }): MappedContent {
-	let chapterNr = 1;
-
-	const mappedContent: MappedContent = content.map((item): MappedContent[0] => {
-		if (item.type === "chapter") {
-			return {
-				type: "chapter",
-				chapterNr: chapterNr++,
-				chapterId: getRandomId(),
-				content: mapContent(item.content, lessonNrPtr),
-				title: item.title
-			};
-		}
-
-		if (item.type === "lesson") {
-			return {
-				...item,
-				lessonNr: lessonNrPtr.lessonNr++
-			};
-		}
-
-		return item;
-	});
-
-	return mappedContent;
-}
+import { EditLessonDialog } from "./course-content-editor/dialogs/edit-lesson-dialog";
+import {
+	ChapterWithNr,
+	Competence,
+	LessonWithNr,
+	mapContent,
+	MappedContent,
+	Summary
+} from "./course-content-editor/types";
 
 function traverseContent(content: MappedContent, fn: (c: MappedContent[0]) => void) {
 	content.forEach(item => {
@@ -352,7 +295,7 @@ export function CourseContentForm() {
 						chapterId: getRandomId(),
 						title: result.title,
 						content: [],
-						chapterNr: 0 // will be set by mapContent
+						chapterNr: "" // will be set by mapContent
 					});
 				}
 
@@ -366,7 +309,9 @@ export function CourseContentForm() {
 	return (
 		<HighlightContext.Provider value={{ highlightedCompetence, setHighlightedCompetence }}>
 			<section>
-				<div className="grid gap-8 px-4 xl:grid-cols-[1fr_500px] xl:px-64">
+				<div className="grid gap-8 px-4 xl:grid-cols-[300px_1fr_500px]">
+					<OverviewPanel content={content} />
+
 					<SectionCard>
 						<SectionCardHeader title="Inhalt" subtitle="Inhalte des Kurses." />
 						<button
@@ -396,6 +341,68 @@ export function CourseContentForm() {
 				{openNewChapterDialog && <NewChapterDialog onClose={addChapterDialogClosed} />}
 			</section>
 		</HighlightContext.Provider>
+	);
+}
+
+function OverviewPanel({ content }: { content: MappedContent }) {
+	return (
+		<div className="overflow-hidden rounded-lg border border-light-border bg-white py-4 pl-4">
+			<ul className="playlist-scroll overflow-auto">
+				{content.map((chapterOrLesson, elementIndex) =>
+					chapterOrLesson.type === "lesson" ? (
+						<li key={chapterOrLesson.lessonId}>{chapterOrLesson.title}</li>
+					) : (
+						<SimpleChapter key={elementIndex} chapter={chapterOrLesson} />
+					)
+				)}
+			</ul>
+		</div>
+	);
+}
+
+function SimpleChapter({ chapter }: { chapter: ChapterWithNr }) {
+	const [expanded, setExpanded] = useState(true);
+
+	return (
+		<li className="flex flex-col">
+			<span className="flex items-center justify-between gap-4 py-1">
+				<button
+					type="button"
+					className="absolute -ml-2 text-gray-400"
+					onClick={() => setExpanded(v => !v)}
+				>
+					{expanded ? (
+						<ChevronDownIcon className="h-5" />
+					) : (
+						<ChevronRightIcon className="h-5" />
+					)}
+				</button>
+				<span className="-ml-2 grid grid-cols-[auto_1fr] gap-4 whitespace-nowrap py-1 pl-[32px] text-sm">
+					<span className="w-fit min-w-[16px] text-center text-light">
+						{chapter.chapterNr}
+					</span>
+					<span className="font-semibold">{chapter.title}</span>
+				</span>
+			</span>
+
+			{expanded && (
+				<ul className="flex flex-col border-l border-light-border pl-4">
+					{chapter.content.map((chapterOrLesson, elementIndex) =>
+						chapterOrLesson.type === "lesson" ? (
+							<a
+								href={`#${chapterOrLesson.lessonId}`}
+								key={chapterOrLesson.lessonId}
+								className="whitespace-nowrap text-sm text-light"
+							>
+								{chapterOrLesson.title}
+							</a>
+						) : (
+							<SimpleChapter key={elementIndex} chapter={chapterOrLesson} />
+						)
+					)}
+				</ul>
+			)}
+		</li>
 	);
 }
 
@@ -485,15 +492,8 @@ function Chapter({
 		setCreateLessonDialogOpen(false);
 	}
 
-	const chapterNr =
-		parentChapter.length > 0 ? `${parentChapter}.${chapter.chapterNr}` : `${chapter.chapterNr}`;
-
-	const depth = chapterNr.split(".").length;
-
-	// increase background opacity for each level
-
 	return (
-		<li className="flex flex-col py-4">
+		<li className="flex flex-col">
 			<span className="relative flex items-center justify-between gap-4">
 				<span className="flex items-center">
 					<button
@@ -509,7 +509,7 @@ function Chapter({
 					</button>
 					<span className="ml-2 grid grid-cols-[auto_1fr] gap-4 whitespace-nowrap py-1 pl-[32px]">
 						<span className="w-fit min-w-[32px] text-center text-light">
-							{chapterNr}
+							{chapter.chapterNr}
 						</span>
 						<span className="font-semibold text-secondary">{chapter.title}</span>
 					</span>
@@ -579,14 +579,19 @@ function Chapter({
 			{lessonSelectorOpen && (
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 			)}
-			{createLessonDialogOpen && <CreateLessonDialog onClose={onCreateLesson} />}
+			{createLessonDialogOpen && <EditLessonDialog onClose={onCreateLesson} />}
 		</li>
 	);
 }
 
 function Lesson({ lesson, showInfo }: { lesson: LessonWithNr; showInfo: boolean }) {
 	return (
-		<li className="grid grid-cols-[auto_1fr_auto] gap-1 whitespace-nowrap rounded-lg border border-light-border bg-white py-2 text-sm">
+		<li
+			id={lesson.lessonId}
+			className={`grid grid-cols-[auto_1fr_auto] gap-1 whitespace-nowrap rounded-lg border border-light-border bg-white text-sm ${
+				showInfo ? "py-2" : ""
+			}`}
+		>
 			<span className="my-auto min-w-[32px] px-4 text-center text-light">
 				{lesson.lessonNr}
 			</span>
@@ -699,77 +704,6 @@ function NewChapterDialog({ onClose }: { onClose: (result?: NewChapterDialogResu
 					</button>
 				</DialogActions>
 			</div>
-		</Dialog>
-	);
-}
-
-function CreateLessonDialog({ onClose }: { onClose: OnDialogCloseFn<any> }) {
-	const {
-		register,
-		getValues,
-		setValue,
-		handleSubmit,
-		formState: { errors }
-	} = useForm<LessonFormModel>({
-		defaultValues: {
-			content: [],
-			quiz: [],
-			title: "",
-			slug: ""
-		},
-		resolver: zodResolver(lessonSchema)
-	});
-
-	function slugifyTitle() {
-		const title = getValues("title");
-		const slug = slugify(title, { lower: true });
-		setValue("slug", slug);
-	}
-
-	return (
-		<Dialog title="Neue Lerneinheit erstellen" onClose={onClose}>
-			<form
-				id="lessonForm"
-				className="flex flex-col gap-8 overflow-auto"
-				onSubmit={handleSubmit(data => {
-					console.log(data);
-				})}
-			>
-				<LabeledField label="Titel" error={errors.title?.message}>
-					<input
-						{...register("title")}
-						placeholder="Die Neue Lerneinheit"
-						onBlur={() => {
-							if (getValues("slug") === "") {
-								slugifyTitle();
-							}
-						}}
-					/>
-				</LabeledField>
-
-				<div className="grid items-start gap-2 sm:flex">
-					<LabeledField label="Slug" error={errors.slug?.message}>
-						<input
-							{...register("slug")}
-							placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
-						/>
-					</LabeledField>
-
-					<button
-						type="button"
-						className="btn-stroked h-fit self-end"
-						onClick={slugifyTitle}
-					>
-						Generieren
-					</button>
-				</div>
-
-				<DialogActions onClose={onClose}>
-					<button type="submit" className="btn-primary" form="lessonForm">
-						Erstellen
-					</button>
-				</DialogActions>
-			</form>
 		</Dialog>
 	);
 }

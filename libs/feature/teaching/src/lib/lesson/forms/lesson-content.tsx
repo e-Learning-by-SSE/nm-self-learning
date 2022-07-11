@@ -3,7 +3,7 @@ import { LessonContent, LessonContentType, ValueByContentType } from "@self-lear
 import { SectionHeader } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useFieldArray } from "react-hook-form";
+import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { ArticleInput } from "../content-types/article";
 import { VideoInput } from "../content-types/video";
 
@@ -30,13 +30,14 @@ function useContentTypeUsage(content: LessonContent) {
 	return typesWithUsage;
 }
 
-export function LessonContentEditor() {
+export function useLessonContentEditor(control: Control<{ content: LessonContent }>) {
 	const {
 		append,
 		remove,
 		fields: content
 	} = useFieldArray<{ content: LessonContent }>({
-		name: "content"
+		name: "content",
+		control
 	});
 
 	const [contentTabIndex, setContentTabIndex] = useState<number | undefined>(
@@ -67,7 +68,7 @@ export function LessonContentEditor() {
 		setContentTabIndex(content.length);
 	}
 
-	const onRemove = useCallback(
+	const removeContent = useCallback(
 		(index: number) => {
 			const confirmed = window.confirm("Inhalt entfernen ?");
 
@@ -77,6 +78,27 @@ export function LessonContentEditor() {
 		},
 		[remove]
 	);
+
+	return {
+		content,
+		addContent,
+		removeContent,
+		contentTabIndex,
+		typesWithUsage,
+		setContentTabIndex
+	};
+}
+
+export function LessonContentEditor() {
+	const { control } = useFormContext<{ content: LessonContent }>();
+	const {
+		content,
+		addContent,
+		removeContent,
+		contentTabIndex,
+		setContentTabIndex,
+		typesWithUsage
+	} = useLessonContentEditor(control);
 
 	return (
 		<section>
@@ -136,7 +158,7 @@ export function LessonContentEditor() {
 				<RenderContentType
 					index={contentTabIndex}
 					content={content[contentTabIndex]}
-					onRemove={onRemove}
+					onRemove={removeContent}
 				/>
 			) : (
 				<CenteredContainer>

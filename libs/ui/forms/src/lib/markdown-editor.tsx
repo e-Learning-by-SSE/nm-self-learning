@@ -10,7 +10,6 @@ export function MarkdownField({
 }: {
 	content: string | undefined;
 	setValue: (v: string | undefined) => void;
-	cacheKey: string[];
 	minHeight?: string;
 }) {
 	const debounced = useDebounce(content, 500);

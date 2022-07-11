@@ -196,7 +196,6 @@ function BaseQuestionForm({
 								render={({ field }) => (
 									<MarkdownField
 										minHeight="128px"
-										cacheKey={[`q-${currentQuestion.questionId}`]}
 										content={field.value}
 										setValue={field.onChange}
 									/>
@@ -279,7 +278,6 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 							<MarkdownField
 								content={field.value}
 								setValue={field.onChange}
-								cacheKey={[`hint-${hintIndex}`]}
 								minHeight="128px"
 							/>
 						)}

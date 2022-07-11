@@ -79,7 +79,6 @@ export function MultipleChoiceForm({
 							<MarkdownField
 								content={field.value}
 								setValue={field.onChange}
-								cacheKey={[`answer-${answer.answerId}`]}
 								minHeight="128px"
 							/>
 						)}

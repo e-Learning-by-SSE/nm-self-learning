@@ -2,6 +2,7 @@ import { VideoPlayer } from "@self-learning/ui/lesson";
 import { useState } from "react";
 import { getRandomId } from "@self-learning/util/common";
 import { supabase } from "./supabase";
+import { UploadIcon } from "@heroicons/react/solid";
 
 export function ImageUploadWidget({
 	url,
@@ -117,13 +118,14 @@ export function VideoUploadWidget({
 
 	return (
 		<div className="flex flex-col">
-			<div className="aspect-video w-full bg-neutral-500">
+			<div className="mx-auto aspect-video max-h-56  bg-neutral-500">
 				<VideoPlayer url={url as string} />
 			</div>
 
-			<div className="btn-primary mt-8 w-fit">
-				<label className="button primary block" htmlFor="video-upload">
-					{uploading ? "Uploading ..." : "Upload"}
+			<div className="btn-primary mt-4 w-fit">
+				<label className="flex items-center gap-2" htmlFor="video-upload">
+					<UploadIcon className="h-5" />
+					<span>{uploading ? "Uploading ..." : "Upload"}</span>
 				</label>
 				<input
 					style={{

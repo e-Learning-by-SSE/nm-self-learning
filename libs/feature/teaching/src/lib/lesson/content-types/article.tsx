@@ -1,8 +1,6 @@
 import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
-import { Controller } from "react-hook-form";
 import { MarkdownField } from "@self-learning/ui/forms";
-
-const cacheKey = ["mdx-article"];
+import { Controller } from "react-hook-form";
 
 export function ArticleInput({ index, onRemove }: { index: number; onRemove: () => void }) {
 	return (
@@ -27,7 +25,6 @@ export function ArticleInput({ index, onRemove }: { index: number; onRemove: () 
 						<MarkdownField
 							content={field.value}
 							setValue={value => field.onChange(value)}
-							cacheKey={cacheKey}
 						/>
 					)}
 				></Controller>

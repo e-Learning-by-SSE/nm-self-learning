@@ -33,8 +33,12 @@ export function LessonEditor({
 		setIsJsonDialogOpen(true);
 	}
 
-	function setFromJsonDialog(value: LessonFormModel) {
-		methods.reset(value);
+	function setFromJsonDialog(value: LessonFormModel | undefined) {
+		if (value) {
+			methods.reset(value);
+		}
+
+		setIsJsonDialogOpen(false);
 	}
 
 	useEffect(() => {
@@ -89,9 +93,6 @@ export function LessonEditor({
 								Als JSON bearbeiten
 								{isJsonDialogOpen && (
 									<JsonEditorDialog
-										initialValue={methods.getValues() as LessonFormModel}
-										isOpen={isJsonDialogOpen}
-										setIsOpen={setIsJsonDialogOpen}
 										onClose={setFromJsonDialog}
 										validationSchema={lessonSchema}
 									/>
@@ -118,7 +119,6 @@ export function LessonEditor({
 }
 
 function LessonDescriptionForm() {
-	const cacheKey = useRef(["lesson-description"]);
 	const methods = useForm<LessonFormModel>();
 
 	return (
@@ -135,7 +135,6 @@ function LessonDescriptionForm() {
 					name="description"
 					render={({ field }) => (
 						<MarkdownField
-							cacheKey={cacheKey.current}
 							content={field.value as string}
 							setValue={field.onChange}
 							minHeight="300px"

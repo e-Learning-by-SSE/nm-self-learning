@@ -1,6 +1,5 @@
-import { Fragment, ReactNode } from "react";
 import { Tab as HeadlessTab } from "@headlessui/react";
-import { motion } from "framer-motion";
+import { Fragment, ReactNode } from "react";
 
 export function Tabs({
 	children,
@@ -36,12 +35,7 @@ export function Tab({ children }: { children: ReactNode }) {
 						{children}
 					</span>
 
-					{selected && (
-						<motion.span
-							layoutId="selectedTab"
-							className="h-[2px] w-full bg-secondary"
-						></motion.span>
-					)}
+					{selected && <span className="h-[2px] w-full bg-secondary"></span>}
 				</button>
 			)}
 		</HeadlessTab>
@@ -70,10 +64,7 @@ export function VerticalTab({ children }: { children: ReactNode }) {
 			{({ selected }) => (
 				<li className="grid grid-cols-[4px_1fr] gap-2">
 					{selected && (
-						<motion.span
-							layoutId="selectedTab"
-							className="flex h-full w-[4px] rounded-lg bg-secondary"
-						></motion.span>
+						<span className="flex h-full w-[4px] rounded-lg bg-secondary"></span>
 					)}
 					{!selected && <span></span>}
 					<button

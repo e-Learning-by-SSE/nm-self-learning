@@ -5,17 +5,11 @@ import { useFormContext } from "react-hook-form";
 import { ZodSchema } from "zod";
 
 export function JsonEditorDialog<T>({
-	initialValue,
-	isOpen,
-	setIsOpen,
 	onClose,
 	validationSchema
 }: {
-	initialValue: T;
-	isOpen: boolean;
 	validationSchema?: ZodSchema;
-	setIsOpen: (bool: boolean) => void;
-	onClose: (value: T) => void;
+	onClose: (value: T | undefined) => void;
 }) {
 	const { getValues } = useFormContext();
 	const [value, setValue] = useState(JSON.stringify(getValues()));
@@ -35,14 +29,13 @@ export function JsonEditorDialog<T>({
 			}
 
 			onClose(parsedJson);
-			setIsOpen(false);
 		} catch (e) {
 			setError("JSON-Format ist ungültig.");
 		}
 	}
 
 	return (
-		<Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
+		<Dialog open={true} onClose={() => onClose(undefined)} className="relative z-50">
 			{/* The backdrop, rendered as a fixed sibling to the panel container */}
 			<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
@@ -82,7 +75,7 @@ export function JsonEditorDialog<T>({
 							<button
 								type="button"
 								className="btn-stroked w-fit"
-								onClick={() => setIsOpen(false)}
+								onClick={() => onClose(undefined)}
 							>
 								Abbrechen
 							</button>

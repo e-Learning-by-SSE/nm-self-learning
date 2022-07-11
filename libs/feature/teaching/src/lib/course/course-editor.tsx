@@ -25,8 +25,12 @@ export function CourseEditor({
 		resolver: zodResolver(courseFormSchema)
 	});
 
-	function onJsonDialogClose(value: CourseFormModel) {
-		methods.reset(value);
+	function onJsonDialogClose(value: CourseFormModel | undefined) {
+		if (value) {
+			methods.reset(value);
+		}
+
+		setOpenAsJson(false);
 	}
 
 	return (
@@ -73,14 +77,7 @@ export function CourseEditor({
 								onClick={() => setOpenAsJson(true)}
 							>
 								<span>Als JSON bearbeiten</span>
-								{openAsJson && (
-									<JsonEditorDialog
-										initialValue={methods.getValues() as CourseFormModel}
-										isOpen={openAsJson}
-										setIsOpen={setOpenAsJson}
-										onClose={onJsonDialogClose}
-									/>
-								)}
+								{openAsJson && <JsonEditorDialog onClose={onJsonDialogClose} />}
 							</button>
 						}
 					/>
