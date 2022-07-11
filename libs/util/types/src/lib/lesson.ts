@@ -13,3 +13,17 @@ export const lessonSchema = z.object({
 });
 
 export type Lesson = z.infer<typeof lessonSchema>;
+
+/** Returns a {@link Lesson} object with empty/null values.  */
+export function createEmptyLesson(): Lesson {
+	return {
+		lessonId: null,
+		slug: "",
+		title: "",
+		subtitle: null,
+		description: null,
+		imgUrl: null,
+		content: [],
+		quiz: []
+	};
+}

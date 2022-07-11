@@ -8,15 +8,12 @@ import {
 	SearchIcon,
 	SwitchVerticalIcon
 } from "@heroicons/react/solid";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
-import { lessonSchema } from "@self-learning/types";
 import {
 	Dialog,
 	DialogActions,
 	Divider,
 	IconButton,
-	OnDialogCloseFn,
 	SectionCard,
 	SectionCardHeader
 } from "@self-learning/ui/common";
@@ -24,8 +21,6 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { AnimatePresence, motion } from "framer-motion";
 import { createContext, Fragment, useCallback, useContext, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import slugify from "slugify";
 import { LessonFormModel } from "../lesson/lesson-form-model";
 import { EditLessonDialog } from "./course-content-editor/dialogs/edit-lesson-dialog";
 import {
@@ -487,8 +482,8 @@ function Chapter({
 		setLessonSelectorOpen(false);
 	}
 
-	function onCreateLesson(a: any) {
-		//
+	function handleLessonEditorClosed(lesson?: LessonFormModel) {
+		console.log(lesson);
 		setCreateLessonDialogOpen(false);
 	}
 
@@ -579,7 +574,7 @@ function Chapter({
 			{lessonSelectorOpen && (
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 			)}
-			{createLessonDialogOpen && <EditLessonDialog onClose={onCreateLesson} />}
+			{createLessonDialogOpen && <EditLessonDialog onClose={handleLessonEditorClosed} />}
 		</li>
 	);
 }

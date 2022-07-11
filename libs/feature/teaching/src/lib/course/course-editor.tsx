@@ -37,20 +37,25 @@ export function CourseEditor({
 		<div className="bg-gray-50 pb-32">
 			<FormProvider {...methods}>
 				<form
-					onSubmit={methods.handleSubmit(
-						data => {
-							console.log("data", data);
-							try {
-								const validated = courseFormSchema.parse(data);
-								onConfirm(validated);
-							} catch (error) {
-								console.error(error);
-							}
-						},
-						invalid => {
-							console.log("invalid", invalid);
+					id="courseform"
+					onSubmit={e => {
+						if ((e.target as any)["id"] === "courseform") {
+							methods.handleSubmit(
+								data => {
+									console.log("data", data);
+									try {
+										const validated = courseFormSchema.parse(data);
+										onConfirm(validated);
+									} catch (error) {
+										console.error(error);
+									}
+								},
+								invalid => {
+									console.log("invalid", invalid);
+								}
+							);
 						}
-					)}
+					}}
 				>
 					<Form.Title
 						title={

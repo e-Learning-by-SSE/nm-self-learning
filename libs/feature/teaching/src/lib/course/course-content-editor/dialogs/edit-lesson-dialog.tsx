@@ -1,7 +1,8 @@
+import { Combobox } from "@headlessui/react";
 import { DocumentTextIcon, VideoCameraIcon } from "@heroicons/react/outline";
-import { XIcon } from "@heroicons/react/solid";
+import { CheckIcon, SearchIcon, XIcon } from "@heroicons/react/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LessonContentType, lessonSchema, Video } from "@self-learning/types";
+import { createEmptyLesson, LessonContentType, lessonSchema, Video } from "@self-learning/types";
 import {
 	Dialog,
 	DialogActions,
@@ -11,7 +12,7 @@ import {
 	Tabs
 } from "@self-learning/ui/common";
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Controller, FormProvider, useFieldArray, useForm, useFormContext } from "react-hook-form";
 import slugify from "slugify";
 import { VideoUploadWidget } from "../../../image-upload";
@@ -34,7 +35,7 @@ export function EditLessonDialog({
 
 	const methods = useForm<LessonFormModel>({
 		context: undefined,
-		defaultValues: initialLesson,
+		defaultValues: initialLesson ?? createEmptyLesson(),
 		resolver: zodResolver(lessonSchema)
 	});
 
@@ -54,8 +55,8 @@ export function EditLessonDialog({
 			<FormProvider {...methods}>
 				<form
 					id="lessonform"
+					onSubmit={methods.handleSubmit(onClose, console.log)}
 					className="flex h-full flex-col overflow-hidden"
-					onSubmit={methods.handleSubmit(data => console.log(data))}
 				>
 					{openJsonEditor && (
 						<JsonEditorDialog
@@ -74,7 +75,7 @@ export function EditLessonDialog({
 						</Tabs>
 
 						<div className="playlist-scroll flex h-full flex-col gap-4 overflow-auto">
-							{selectedTab === 0 && <BasicDataAndContent />}
+							{selectedTab === 0 && <Overview />}
 							{selectedTab === 1 && <QuizEditor />}
 						</div>
 					</div>
@@ -90,7 +91,7 @@ export function EditLessonDialog({
 	);
 }
 
-function BasicDataAndContent() {
+function Overview() {
 	const {
 		control,
 		register,
@@ -115,7 +116,7 @@ function BasicDataAndContent() {
 	}
 
 	return (
-		<div className="grid h-full grid-cols-3 gap-8">
+		<div className="grid h-full gap-8 xl:grid-cols-3">
 			<div className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
 				<h3 className="text-xl">Grunddaten</h3>
 
@@ -279,9 +280,69 @@ function Competencies() {
 }
 
 function AddCompetenceDialog({ onClose }: { onClose: OnDialogCloseFn<any> }) {
+	const [search, setSearch] = useState("");
+	const [selectedValue, setSelectedValue] = useState("");
+	const [filteredCompetencies, setfilteredCompetencies] = useState<any[]>([
+		"Eins",
+		"Zwei",
+		"Drei"
+	]);
+
 	return (
 		<Dialog title="Kompetenz hinzufügen" onClose={() => onClose(undefined)}>
-			TODO
+			<div className="grid grid-cols-2">
+				<div className="flex flex-col gap-8">
+					<div>
+						<Combobox value={selectedValue} onChange={setSelectedValue}>
+							<span className="flex items-center rounded-lg border border-light-border py-1 px-3">
+								<SearchIcon className="h-6 text-light" />
+								<Combobox.Input
+									className="w-full border-none focus:ring-0"
+									placeholder="Suche nach Kompetenz"
+									autoComplete="off"
+									onChange={e => setSearch(e.target.value)}
+								/>
+							</span>
+							<div className="divide-border-light playlist-scroll mt-2 flex flex-col divide-y overflow-auto">
+								<Combobox.Options className="flex flex-col divide-y divide-light-border">
+									{filteredCompetencies.map(comp => (
+										<Combobox.Option value={comp} key={comp} as={Fragment}>
+											{({ active }) => (
+												<button
+													type="button"
+													className={`flex flex-col gap-1 rounded px-4 py-2 ${
+														active ? "bg-secondary text-white" : ""
+													}`}
+												>
+													<span className="text-sm font-medium ">
+														{comp}
+													</span>
+													<span
+														className={`text-xs font-normal ${
+															active ? "text-white" : "text-light"
+														}`}
+													>
+														in Java
+													</span>
+												</button>
+											)}
+										</Combobox.Option>
+									))}
+								</Combobox.Options>
+							</div>
+						</Combobox>
+					</div>
+
+					<Divider />
+
+					<div className="flex flex-col gap-4">
+						<h3 className="text-xl">Neue Kompetenz erstellen</h3>
+						<LabeledField label="Titel">
+							<input />
+						</LabeledField>
+					</div>
+				</div>
+			</div>
 		</Dialog>
 	);
 }
