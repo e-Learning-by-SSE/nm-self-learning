@@ -3,6 +3,7 @@ import { useState } from "react";
 import { getRandomId } from "@self-learning/util/common";
 import { supabase } from "./supabase";
 import { UploadIcon } from "@heroicons/react/solid";
+import { LabeledField } from "@self-learning/ui/forms";
 
 export function ImageUploadWidget({
 	url,
@@ -117,28 +118,33 @@ export function VideoUploadWidget({
 	}
 
 	return (
-		<div className="flex flex-col">
-			<div className="mx-auto aspect-video max-h-56  bg-neutral-500">
-				<VideoPlayer url={url as string} />
-			</div>
+		<div className="flex flex-col gap-8">
+			<div className="flex gap-2">
+				<LabeledField label="URL">
+					<input placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
+				</LabeledField>
 
-			<div className="btn-primary mt-4 w-fit">
-				<label className="flex items-center gap-2" htmlFor="video-upload">
-					<UploadIcon className="h-5" />
-					<span>{uploading ? "Uploading ..." : "Upload"}</span>
-				</label>
-				<input
-					style={{
-						visibility: "hidden",
-						position: "absolute"
-					}}
-					id="video-upload"
-					name="video-upload"
-					type="file"
-					accept="video/mp4,video/x-m4v,video/*"
-					onChange={uploadVideo}
-					disabled={uploading}
-				/>
+				<div className="btn-primary mt-4 h-fit w-fit self-end text-sm">
+					<label className="flex items-center gap-2" htmlFor="video-upload">
+						<UploadIcon className="h-5" />
+						<span>{uploading ? "Uploading ..." : "Upload"}</span>
+					</label>
+					<input
+						style={{
+							visibility: "hidden",
+							position: "absolute"
+						}}
+						id="video-upload"
+						name="video-upload"
+						type="file"
+						accept="video/mp4,video/x-m4v,video/*"
+						onChange={uploadVideo}
+						disabled={uploading}
+					/>
+				</div>
+			</div>
+			<div className="mx-auto aspect-video h-56  bg-neutral-500">
+				<VideoPlayer url={url as string} />
 			</div>
 		</div>
 	);

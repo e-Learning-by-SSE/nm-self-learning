@@ -1,6 +1,6 @@
 import { Combobox } from "@headlessui/react";
 import { DocumentTextIcon, VideoCameraIcon } from "@heroicons/react/outline";
-import { CheckIcon, SearchIcon, XIcon } from "@heroicons/react/solid";
+import { SearchIcon, XIcon } from "@heroicons/react/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, LessonContentType, lessonSchema, Video } from "@self-learning/types";
 import {
@@ -11,7 +11,7 @@ import {
 	Tab,
 	Tabs
 } from "@self-learning/ui/common";
-import { EditorField, LabeledField } from "@self-learning/ui/forms";
+import { EditorField, LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { Controller, FormProvider, useFieldArray, useForm, useFormContext } from "react-hook-form";
 import slugify from "slugify";
@@ -115,49 +115,89 @@ function Overview() {
 		setValue("slug", slug);
 	}
 
+	const [openDescriptionEditor, setOpenDescriptionEditor] = useState(false);
+
 	return (
 		<div className="grid h-full gap-8 xl:grid-cols-3">
-			<div className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
-				<h3 className="text-xl">Grunddaten</h3>
+			<div className="flex flex-col gap-8">
+				<div className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
+					<h3 className="text-xl">Grunddaten</h3>
 
-				<LabeledField label="Titel" error={errors.title?.message}>
-					<input
-						{...register("title")}
-						placeholder="Die Neue Lerneinheit"
-						onBlur={() => {
-							if (getValues("slug") === "") {
-								slugifyTitle();
-							}
-						}}
-					/>
-				</LabeledField>
-
-				<div className="grid items-start gap-2 sm:flex">
-					<LabeledField label="Slug" error={errors.slug?.message}>
+					<LabeledField label="Titel" error={errors.title?.message}>
 						<input
-							{...register("slug")}
-							placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
+							{...register("title")}
+							placeholder="Die Neue Lerneinheit"
+							onBlur={() => {
+								if (getValues("slug") === "") {
+									slugifyTitle();
+								}
+							}}
 						/>
 					</LabeledField>
 
-					<button
-						type="button"
-						className="btn-stroked h-fit self-end text-sm"
-						onClick={slugifyTitle}
-					>
-						Generieren
-					</button>
+					<div className="grid items-start gap-2 sm:flex">
+						<LabeledField label="Slug" error={errors.slug?.message}>
+							<input
+								{...register("slug")}
+								placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
+							/>
+						</LabeledField>
+
+						<button
+							type="button"
+							className="btn-stroked h-fit self-end text-sm"
+							onClick={slugifyTitle}
+						>
+							Generieren
+						</button>
+					</div>
+
+					<LabeledField label="Untertitel" optional={true}>
+						<textarea
+							{...register("subtitle")}
+							placeholder="1-2 Sätze über diese Lerneinheit."
+						/>
+					</LabeledField>
+
+					<LabeledField label="Beschreibung" optional={true}>
+						<textarea
+							{...register("description")}
+							placeholder="Beschreibung dieser Lernheit. Unterstützt Markdown."
+						/>
+
+						<button
+							type="button"
+							className="btn-stroked text-sm"
+							onClick={() => setOpenDescriptionEditor(true)}
+						>
+							Markdown Editor öffnen
+						</button>
+
+						{openDescriptionEditor && (
+							<Controller
+								control={control}
+								name="description"
+								render={({ field }) => (
+									<MarkdownEditorDialog
+										onClose={v => {
+											setValue("description", v);
+											setOpenDescriptionEditor(false);
+										}}
+										initialValue={field.value ?? ""}
+									/>
+								)}
+							/>
+						)}
+					</LabeledField>
 				</div>
 
-				<div className="py-4">
-					<Divider />
+				<div className="rounded-lg border border-light-border p-4">
+					<h3 className="text-xl">Metadaten</h3>
+
+					<LabeledField label="Tags">
+						<textarea placeholder="Eins, Zwei, Drei" rows={4} />
+					</LabeledField>
 				</div>
-
-				<h3 className="text-xl">Metadaten</h3>
-
-				<LabeledField label="Tags">
-					<textarea placeholder="Eins, Zwei, Drei" rows={4} />
-				</LabeledField>
 			</div>
 
 			<div className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
@@ -392,12 +432,7 @@ export function VideoInput({ index, remove }: { index: number; remove: () => voi
 
 	return (
 		<div className="flex flex-col gap-4">
-			<LabeledField label="URL">
-				<input
-					{...register(`content.${index}.value.url`)}
-					placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-				/>
-			</LabeledField>
+			<p className="text-sm text-light">Video verlinken oder hochladen.</p>
 
 			<VideoUploadWidget
 				url={url ?? null}
