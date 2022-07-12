@@ -84,9 +84,11 @@ function useDebounce<T>(value: T, delay: number) {
 }
 
 export function MarkdownEditorDialog({
+	title,
 	initialValue,
 	onClose
 }: {
+	title: string;
 	initialValue: string;
 	onClose: OnDialogCloseFn<string>;
 }) {
@@ -103,7 +105,7 @@ export function MarkdownEditorDialog({
 		<Dialog
 			style={{ height: "85vh", width: "85vw" }}
 			onClose={() => onClose(undefined)}
-			title="Markdown Editor"
+			title={title}
 		>
 			<div className="grid h-full items-start overflow-hidden">
 				<div className="grid h-full grid-cols-2 items-start gap-8">

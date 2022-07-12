@@ -5,7 +5,7 @@ import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { JsonEditorDialog } from "../json-editor-dialog";
-import { CourseContentForm } from "./course-content-form";
+import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
 

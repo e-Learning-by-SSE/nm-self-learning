@@ -13,7 +13,14 @@ import {
 } from "@self-learning/ui/common";
 import { EditorField, LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
-import { Controller, FormProvider, useFieldArray, useForm, useFormContext } from "react-hook-form";
+import {
+	Controller,
+	FormProvider,
+	useFieldArray,
+	useForm,
+	useFormContext,
+	useWatch
+} from "react-hook-form";
 import slugify from "slugify";
 import { VideoUploadWidget } from "../../../image-upload";
 import { JsonEditorDialog } from "../../../json-editor-dialog";
@@ -132,6 +139,7 @@ function Overview() {
 									slugifyTitle();
 								}
 							}}
+							autoComplete="off"
 						/>
 					</LabeledField>
 
@@ -140,6 +148,7 @@ function Overview() {
 							<input
 								{...register("slug")}
 								placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
+								autoComplete="off"
 							/>
 						</LabeledField>
 
@@ -179,6 +188,7 @@ function Overview() {
 								name="description"
 								render={({ field }) => (
 									<MarkdownEditorDialog
+										title="Beschreibung"
 										onClose={v => {
 											setValue("description", v);
 											setOpenDescriptionEditor(false);
@@ -423,12 +433,12 @@ function ArticleInput({ index, onRemove }: { index: number; onRemove: () => void
 }
 
 export function VideoInput({ index, remove }: { index: number; remove: () => void }) {
-	const { register, watch } = useFormContext<{ content: Video[] }>();
+	const { control } = useFormContext<{ content: Video[] }>();
 	const { update } = useFieldArray<{ content: Video[] }>({
 		name: "content"
 	});
 
-	const url = watch(`content.${index}.value.url`);
+	const url = useWatch({ control, name: `content.${index}.value.url` });
 
 	return (
 		<div className="flex flex-col gap-4">
