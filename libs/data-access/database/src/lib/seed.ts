@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { CourseContent, LessonContent } from "@self-learning/types";
+import { CourseContent, createChapter, createLesson, LessonContent } from "@self-learning/types";
 import { readFileSync } from "fs";
 import { join } from "path";
 import slugify from "slugify";
@@ -169,26 +169,31 @@ const courses: Prisma.CourseCreateManyInput[] = [
 		createdAt: new Date(2022, 4, 20),
 		updatedAt: new Date(2022, 5, 1),
 		content: [
-			{
-				title: "Introduction",
-				description: faker.lorem.sentences(2),
-				lessonIds: [reactLessons[0].lessonId]
-			},
-			{
-				title: "React Basics",
-				description: faker.lorem.sentences(2),
-				lessonIds: new Array(13).fill(0).map((_, i) => reactLessons[i + 1].lessonId)
-			},
-			{
-				title: "Advanced React",
-				description: faker.lorem.sentences(2),
-				lessonIds: new Array(15).fill(0).map((_, i) => reactLessons[i + 14].lessonId)
-			},
-			{
-				title: "Summary",
-				description: faker.lorem.sentences(1),
-				lessonIds: [reactLessons.at(-1)?.lessonId ?? ""]
-			}
+			createLesson(reactLessons[0].lessonId),
+			createChapter("Learning React", [
+				createChapter(
+					"React Basics",
+					new Array(13).fill(0).map((_, i) => createLesson(reactLessons[i + 1].lessonId)),
+					faker.lorem.sentences(3)
+				),
+				createChapter("Advanced React", [
+					createChapter(
+						"Part One",
+						new Array(8)
+							.fill(0)
+							.map((_, i) => createLesson(reactLessons[i + 14].lessonId)),
+						faker.lorem.sentences(3)
+					),
+					createChapter(
+						"Part Two",
+						new Array(7)
+							.fill(0)
+							.map((_, i) => createLesson(reactLessons[i + 22].lessonId)),
+						faker.lorem.sentences(3)
+					)
+				])
+			]),
+			createLesson(reactLessons.at(-1)?.lessonId ?? "")
 		] as CourseContent
 	},
 	{
@@ -201,13 +206,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 		subjectId: 1,
 		createdAt: new Date(2022, 4, 20),
 		updatedAt: new Date(2022, 5, 1),
-		content: [
-			{
-				title: "Content",
-				description: faker.lorem.sentences(2),
-				lessonIds: pythonLessons.map(lesson => lesson.lessonId)
-			}
-		] as CourseContent
+		content: pythonLessons.map(lesson => createLesson(lesson.lessonId)) as CourseContent
 	}
 ];
 

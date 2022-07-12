@@ -1,3 +1,4 @@
+import { traverseCourseContent } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
 import { useState, useMemo, useCallback } from "react";
 import { MappedContent, mapContent, ChapterWithNr, Competence, Summary } from "./types";
@@ -235,7 +236,7 @@ function createSummary(content: MappedContent) {
 		}
 	};
 
-	traverseContent(content, item => {
+	traverseCourseContent(content, item => {
 		if (item.type === "chapter") {
 			summary.count.chapters++;
 		} else if (item.type === "lesson") {
@@ -275,15 +276,4 @@ function findChapterById(content: MappedContent, id: string): ChapterWithNr | nu
 	}
 
 	return null;
-}
-
-function traverseContent(content: MappedContent, fn: (c: MappedContent[0]) => void) {
-	content.forEach(item => {
-		if (item.type === "chapter") {
-			fn(item);
-			traverseContent(item.content, fn);
-		} else {
-			fn(item);
-		}
-	});
 }

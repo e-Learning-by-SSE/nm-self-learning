@@ -7,6 +7,25 @@ import {
 } from "@self-learning/ui/common";
 import Link from "next/link";
 
+type TocLesson = {
+	type: "lesson";
+	lessonNr: number;
+	title: string;
+	lessonId: string;
+	slug: string;
+	isCompleted: boolean;
+};
+
+type ToCChapter = {
+	type: "chapter";
+	chapterNr: string;
+	description: string | null;
+	title: string;
+	content: (TocLesson | ToCChapter)[];
+};
+
+export type ToCContent = (TocLesson | ToCChapter)[];
+
 export function SectionConnector({
 	isCompleted,
 	isRequired
@@ -47,11 +66,9 @@ export function SectionConnector({
 
 export function SingleLesson({ title, slug }: { title: string; slug: string }) {
 	return (
-		<div className="flex">
+		<div className="flex rounded-lg border border-light-border bg-white py-2 px-4">
 			<Link href={`/lessons/${slug}`}>
-				<a>
-					<h3 className="text-xl">{title}</h3>
-				</a>
+				<a className="font-medium">{title}</a>
 			</Link>
 		</div>
 	);
@@ -93,54 +110,49 @@ export function NestedCourse({
 	);
 }
 
-export function Chapter({
-	courseSlug,
-	title,
-	description,
-	lessons
-}: {
-	courseSlug: string;
-	title: string;
-	description?: string | null;
-	lessons: { title: string; slug: string; lessonId: string; isCompleted: boolean }[];
-}) {
+export function Chapter({ courseSlug, chapter }: { courseSlug: string; chapter: ToCChapter }) {
 	return (
-		<SectionCard>
-			<SectionCardHeader title={title} subtitle={description} />
+		<li className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
+			<span className="flex items-center gap-8 text-xl">
+				<span className="text-light">{chapter.chapterNr}</span>
+				<span className="font-semibold tracking-tighter">{chapter.title}</span>
+			</span>
+
+			{chapter.description && chapter.description.length > 0 && (
+				<p className="text-sm text-light">{chapter.description}</p>
+			)}
+
 			<ul className="flex flex-col gap-2">
-				{lessons.map(lesson => (
-					<Lesson
-						lesson={lesson}
-						href={`/courses/${courseSlug}/${lesson.slug}`}
-						key={lesson.lessonId}
-					/>
-				))}
+				{chapter.content.map((chapterOrLesson, index) =>
+					chapterOrLesson.type === "chapter" ? (
+						<Chapter chapter={chapterOrLesson} courseSlug={courseSlug} key={index} />
+					) : (
+						<Lesson href="" lesson={chapterOrLesson} key={index} />
+					)
+				)}
 			</ul>
-		</SectionCard>
+		</li>
 	);
 }
 
-function Lesson({
-	lesson,
-	href
-}: {
-	href: string;
-	lesson: { title: string; slug: string; lessonId: string; isCompleted: boolean };
-}) {
+function Lesson({ lesson, href }: { href: string; lesson: TocLesson }) {
 	return (
 		<li
-			className={`flex items-center justify-between gap-8 rounded-r-lg bg-gray-50 px-3 py-2 ${
+			className={`flex items-center justify-between gap-8 rounded-lg py-2 px-3 ${
 				lesson.isCompleted ? "border-secondary" : "border-slate-200"
 			}`}
 		>
 			<span className="flex items-center gap-4">
-				<CheckCircleIcon
+				{/* <CheckCircleIcon
 					className={`h-5 shrink-0 ${
 						lesson.isCompleted ? "text-secondary" : "text-slate-300"
 					}`}
-				/>
+				/> */}
 				<Link href={href}>
-					<a className="text-sm font-medium">{lesson.title}</a>
+					<a className="flex gap-2 text-sm">
+						<span className="min-w-[32px] text-light">{lesson.lessonNr}</span>
+						<span className="font-medium">{lesson.title}</span>
+					</a>
 				</Link>
 			</span>
 

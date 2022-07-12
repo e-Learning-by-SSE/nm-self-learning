@@ -3,9 +3,8 @@ import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { CourseContent } from "@self-learning/types";
+import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
-import * as ToC from "@self-learning/ui/course";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
@@ -13,22 +12,56 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment, useMemo } from "react";
+import { useMemo } from "react";
+import * as ToC from "@self-learning/ui/course";
 
 type Course = ResolvedValue<typeof getCourse>;
 
-type ChapterWithLessons = {
-	title: string;
-	description: string | null | undefined;
-	lessons: {
-		lessonId: string;
-		slug: string;
-		title: string;
-	}[];
-};
+function addChapterAndLessonNr(
+	content: CourseContent,
+	lessonIdMap: Map<string, { lessonId: string; slug: string; title: string }>,
+	lessonNrRef = { lessonNr: 1 },
+	parentChapter = ""
+): ToC.ToCContent {
+	let chapterCount = 1;
 
-async function mapCourseContent(content: CourseContent): Promise<ChapterWithLessons[]> {
-	const lessonIds = (content ?? []).flatMap(chapter => chapter.lessonIds);
+	const mappedContent: ToC.ToCContent = content.map((item): ToC.ToCContent[0] => {
+		if (item.type === "chapter") {
+			const chapterNr =
+				parentChapter === "" ? `${chapterCount}` : `${parentChapter}.${chapterCount}`;
+
+			chapterCount++;
+
+			return {
+				...item,
+				chapterNr: chapterNr,
+				content: addChapterAndLessonNr(item.content, lessonIdMap, lessonNrRef, chapterNr)
+			};
+		} else if (item.type === "lesson") {
+			const lesson = lessonIdMap.get(item.lessonId) ?? {
+				lessonNr: 0,
+				title: "Removed",
+				lessonId: "removed",
+				slug: "removed",
+				type: "lesson"
+			};
+
+			return {
+				...lesson,
+				type: "lesson",
+				lessonNr: lessonNrRef.lessonNr++,
+				isCompleted: false // TODO
+			};
+		}
+
+		return item;
+	});
+
+	return mappedContent;
+}
+
+async function mapCourseContent(content: CourseContent): Promise<ToC.ToCContent> {
+	const lessonIds = extractLessonIds(content);
 
 	const lessons = await database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
@@ -45,21 +78,12 @@ async function mapCourseContent(content: CourseContent): Promise<ChapterWithLess
 		map.set(lesson.lessonId, lesson);
 	}
 
-	const mappedContent = content.map(chapter => ({
-		title: chapter.title,
-		description: chapter.description,
-		lessons: chapter.lessonIds.map(
-			lessonId =>
-				map.get(lessonId) ?? { lessonId: "removed", slug: "removed", title: "Removed" }
-		)
-	}));
-
-	return mappedContent;
+	return addChapterAndLessonNr(content, map);
 }
 
 type CourseProps = {
 	course: Course;
-	content: ChapterWithLessons[];
+	content: ToC.ToCContent;
 	markdownDescription: CompiledMarkdown | null;
 };
 
@@ -166,21 +190,22 @@ function CourseHeader({
 	}, [enrollments, course]);
 
 	const nextLesson = useMemo(() => {
-		if (completion) {
-			for (const chapter of content) {
-				for (const lesson of chapter.lessons) {
-					if (!(lesson.lessonId in completion.completedLessons)) {
-						return lesson;
-					}
-				}
-			}
+		return null as any;
+		// if (completion) {
+		// 	for (const chapter of content) {
+		// 		for (const lesson of chapter.lessons) {
+		// 			if (!(lesson.lessonId in completion.completedLessons)) {
+		// 				return lesson;
+		// 			}
+		// 		}
+		// 	}
 
-			console.log("Course has already completed. Going to first lesson.");
-			if (content[0] && content[0].lessons[0]) {
-				const firstLesson = content[0].lessons[0];
-				return firstLesson;
-			}
-		}
+		// 	console.log("Course has already completed. Going to first lesson.");
+		// 	if (content[0] && content[0].lessons[0]) {
+		// 		const firstLesson = content[0].lessons[0];
+		// 		return firstLesson;
+		// 	}
+		// }
 	}, [completion, content]);
 
 	return (
@@ -245,14 +270,17 @@ function CourseHeader({
 	);
 }
 
-function TableOfContents({ content, course }: { content: ChapterWithLessons[]; course: Course }) {
+function TableOfContents({ content, course }: { content: ToC.ToCContent; course: Course }) {
 	const courseCompletion = useCourseCompletion(course.slug);
 
 	return (
 		<div className="flex flex-col gap-8">
 			<h2 className="mb-4 text-4xl">Inhalt</h2>
-			<div className="flex flex-col place-items-center">
-				{content.map((chapter, index) => {
+			<div className="flex flex-col gap-8">
+				{content.map((chapterOrLesson, index) => (
+					<TocElement chapterOrLesson={chapterOrLesson} course={course} key={index} />
+				))}
+				{/* {content.map((chapter, index) => {
 					const showConnector = index < content.length - 1;
 
 					const isCompleted =
@@ -261,34 +289,50 @@ function TableOfContents({ content, course }: { content: ChapterWithLessons[]; c
 						false;
 
 					return (
-						<Fragment key={chapter.title}>
-							<ToC.Chapter
-								courseSlug={course.slug}
-								title={chapter.title as string}
-								description={chapter.description}
-								lessons={
-									chapter.lessons.map(lesson => ({
-										lessonId: lesson.lessonId,
-										slug: lesson.slug,
-										title: lesson.title,
-										isCompleted:
-											(courseCompletion?.completedLessons &&
-												!!courseCompletion.completedLessons[
-													lesson.lessonId
-												]) ??
-											false
-									})) ?? []
-								}
-							/>
-							{showConnector && (
-								<ToC.SectionConnector isCompleted={isCompleted} isRequired={true} />
-							)}
-						</Fragment>
+						
+
+						// <Fragment key={chapter.title}>
+						// 	<ToC.Chapter
+						// 		courseSlug={course.slug}
+						// 		title={chapter.title as string}
+						// 		description={chapter.description}
+						// 		lessons={
+						// 			chapter.lessons.map(lesson => ({
+						// 				lessonId: lesson.lessonId,
+						// 				slug: lesson.slug,
+						// 				title: lesson.title,
+						// 				isCompleted:
+						// 					(courseCompletion?.completedLessons &&
+						// 						!!courseCompletion.completedLessons[
+						// 							lesson.lessonId
+						// 						]) ??
+						// 					false
+						// 			})) ?? []
+						// 		}
+						// 	/>
+						// 	{showConnector && (
+						// 		<ToC.SectionConnector isCompleted={isCompleted} isRequired={true} />
+						// 	)}
+						// </Fragment>
 					);
-				})}
+				})} */}
 			</div>
 		</div>
 	);
+}
+
+export function TocElement({
+	chapterOrLesson,
+	course
+}: {
+	chapterOrLesson: ToC.ToCContent[0];
+	course: Course;
+}) {
+	if (chapterOrLesson.type === "chapter") {
+		return <ToC.Chapter courseSlug={course.slug} chapter={chapterOrLesson} />;
+	}
+
+	return <ToC.SingleLesson title={chapterOrLesson.title} slug={chapterOrLesson.slug} />;
 }
 
 function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; updatedAt: string }) {

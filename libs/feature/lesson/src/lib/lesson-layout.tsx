@@ -1,19 +1,31 @@
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseCompletion, CourseContent } from "@self-learning/types";
+import { CourseCompletion, CourseContent, extractLessonIds } from "@self-learning/types";
 import { NestablePlaylist } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
 import { useMemo } from "react";
 
+type PlaylistLesson = {
+	type: "lesson";
+	lessonId: string;
+	title: string;
+	slug: string;
+};
+
+type PlaylistChapter = {
+	type: "chapter";
+	title: string;
+	description: string | null;
+	content: PlaylistContent;
+};
+
+type PlaylistContent = (PlaylistLesson | PlaylistChapter)[];
+
 export type LessonLayoutProps = {
 	lesson: ResolvedValue<typeof getLesson>;
-	chapters: {
-		title: string;
-		lessons: { lessonId: string; slug: string; title: string; imgUrl?: string | null }[];
-		isActive: boolean;
-	}[];
+	content: PlaylistContent;
 	course: {
 		title: string;
 		slug: string;
@@ -74,14 +86,13 @@ export async function getStaticPropsForLayout(
 		return { notFound: true };
 	}
 
-	const lessonIds = (course.content as CourseContent).flatMap(chapter => chapter.lessonIds);
+	const lessonIds = extractLessonIds(course.content as CourseContent);
 
 	const lessons = await database.lesson.findMany({
 		select: {
 			lessonId: true,
 			slug: true,
-			title: true,
-			imgUrl: true
+			title: true
 		},
 		where: {
 			lessonId: {
@@ -96,18 +107,20 @@ export async function getStaticPropsForLayout(
 		lessonsById.set(lesson.lessonId, lesson);
 	}
 
-	const chapters = (course.content as CourseContent).map(chapter => ({
-		title: chapter.title,
-		lessons: chapter.lessonIds.map(
-			lessonId =>
-				lessonsById.get(lessonId) ?? {
-					title: "Removed",
-					lessonId: "removed",
-					slug: "removed"
-				}
-		),
-		isActive: chapter.lessonIds.includes(lesson.lessonId)
-	}));
+	// const chapters = (course.content as CourseContent).map(chapter => ({
+	// 	title: chapter.title,
+	// 	lessons: chapter.lessonIds.map(
+	// 		lessonId =>
+	// 			lessonsById.get(lessonId) ?? {
+	// 				title: "Removed",
+	// 				lessonId: "removed",
+	// 				slug: "removed"
+	// 			}
+	// 	),
+	// 	isActive: chapter.lessonIds.includes(lesson.lessonId)
+	// }));
+
+	//const content =
 
 	return {
 		lesson: lesson as Defined<typeof lesson>,
