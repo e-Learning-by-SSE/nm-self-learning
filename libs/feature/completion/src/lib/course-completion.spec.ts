@@ -1,132 +1,291 @@
-import { Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
-import { CourseChapter } from "@self-learning/types";
-import { getCourseCompletionOfStudent } from "./course-completion";
+import { CourseContent, createChapter, createLesson } from "@self-learning/types";
+import { mapToCourseCompletion } from "./course-completion";
 
-const createLesson = (index: number): Prisma.LessonCreateManyInput => ({
-	lessonId: `lesson-${index}`,
-	slug: `lesson-${index}-slug`,
-	title: `Lesson ${index}`,
-	content: []
-});
+function completedLessonMap(...lessonIds: string[]) {
+	const lessonIdMap: { [lessonId: string]: { createdAt: Date; slug: string; title: string } } =
+		{};
 
-const username = "potter";
+	for (const lessonId of lessonIds) {
+		lessonIdMap[lessonId] = {
+			createdAt: new Date(),
+			slug: `${lessonId}`,
+			title: `${lessonId}`
+		};
+	}
 
-describe("getCourseCompletion", () => {
-	const courseSlug = "test-course-with-completion";
+	return lessonIdMap;
+}
 
-	beforeEach(async () => {
-		await database.student.upsert({
-			where: { username },
-			create: {
-				displayName: "Harry Potter",
-				username: "potter",
-				user: {
-					create: {
-						name: "potter"
-					}
-				}
-			},
-			update: {}
-		});
+describe("mapToCourseCompletion", () => {
+	it("Flat", () => {
+		const content: CourseContent = [createLesson("lesson-1"), createLesson("lesson-2")];
 
-		await database.course.deleteMany({ where: { slug: courseSlug } });
-		await database.lesson.deleteMany();
+		const courseCompletion = mapToCourseCompletion(content, completedLessonMap("lesson-1"));
 
-		const lessons = new Array(4).fill(0).map((_, i) => createLesson(i));
-
-		const chapters: CourseChapter[] = [
-			{
-				title: "Chapter 1",
-				lessonIds: [lessons[0].lessonId, lessons[1].lessonId]
-			},
-			{
-				title: "Chapter 2",
-				lessonIds: [lessons[2].lessonId, lessons[3].lessonId]
-			}
-		];
-
-		await database.course.create({
-			data: {
-				courseId: courseSlug,
-				slug: courseSlug,
-				subtitle: "...",
-				title: "Test Course",
-				content: chapters
-			}
-		});
-
-		await database.lesson.createMany({ data: lessons });
-	});
-
-	it("No lessons completed -> 0 completion", async () => {
-		await database.completedLesson.deleteMany();
-
-		const result = await getCourseCompletionOfStudent(courseSlug, username);
-
-		expect(result.completedLessons).toEqual({});
-		expect(result.courseCompletionPercentage).toEqual(0);
-	});
-
-	it("Some lessons completed -> Completion info", async () => {
-		await database.completedLesson.deleteMany();
-		await database.completedLesson.createMany({
-			data: [
-				{
-					username,
-					lessonId: "lesson-0",
-					createdAt: new Date(2022, 4, 20)
-				},
-				{
-					username,
-					lessonId: "lesson-1",
-					createdAt: new Date(2022, 5, 21)
-				},
-				{
-					username,
-					lessonId: "lesson-2",
-					createdAt: new Date(2022, 6, 22)
-				}
-			]
-		});
-
-		const result = await getCourseCompletionOfStudent(courseSlug, username);
-
-		expect(result.courseCompletionPercentage).toEqual(75);
-		expect(Object.keys(result.completedLessons).length).toEqual(3);
-
-		expect(result).toMatchInlineSnapshot(`
+		expect(courseCompletion.completion.lessonCount).toEqual(2);
+		expect(courseCompletion.completion.completedLessonCount).toEqual(1);
+		expect(courseCompletion).toMatchInlineSnapshot(`
 		Object {
-		  "chapters": Array [
+		  "completion": Object {
+		    "completedLessonCount": 1,
+		    "completionPercentage": 50,
+		    "lessonCount": 2,
+		  },
+		  "content": Array [
 		    Object {
-		      "completedLessonsCount": 2,
-		      "completedLessonsPercentage": 100,
-		      "title": "Chapter 1",
+		      "isCompleted": true,
+		      "lessonId": "lesson-1",
+		      "type": "lesson",
 		    },
 		    Object {
-		      "completedLessonsCount": 1,
-		      "completedLessonsPercentage": 50,
-		      "title": "Chapter 2",
+		      "isCompleted": false,
+		      "lessonId": "lesson-2",
+		      "type": "lesson",
 		    },
 		  ],
-		  "completedLessons": Object {
-		    "lesson-0": Object {
-		      "createdAt": 2022-05-19T22:00:00.000Z,
-		      "slug": "lesson-0-slug",
-		      "title": "Lesson 0",
-		    },
-		    "lesson-1": Object {
-		      "createdAt": 2022-06-20T22:00:00.000Z,
-		      "slug": "lesson-1-slug",
-		      "title": "Lesson 1",
-		    },
-		    "lesson-2": Object {
-		      "createdAt": 2022-07-21T22:00:00.000Z,
-		      "slug": "lesson-2-slug",
-		      "title": "Lesson 2",
-		    },
+		}
+	`);
+	});
+
+	it("Chapter with lessons", () => {
+		const content: CourseContent = [
+			createChapter("chapter-1", [createLesson("lesson-1"), createLesson("lesson-2")])
+		];
+
+		const courseCompletion = mapToCourseCompletion(content, completedLessonMap("lesson-1"));
+
+		expect(courseCompletion.completion.lessonCount).toEqual(2);
+		expect(courseCompletion.completion.completedLessonCount).toEqual(1);
+	});
+
+	it("Mixed chapters and lessons on same level", () => {
+		const content: CourseContent = [
+			createLesson("lesson-1"),
+			createChapter("chapter-1", [createLesson("lesson-2"), createLesson("lesson-3")]),
+			createLesson("lesson-4")
+		];
+
+		const courseCompletion = mapToCourseCompletion(
+			content,
+			completedLessonMap("lesson-1", "lesson-2")
+		);
+
+		expect(courseCompletion.completion.lessonCount).toEqual(4);
+		expect(courseCompletion.completion.completedLessonCount).toEqual(2);
+	});
+
+	it("Multiple chapters on same level", () => {
+		const content: CourseContent = [
+			createChapter("chapter-1", [createLesson("lesson-1"), createLesson("lesson-2")]),
+			createChapter("chapter-2", [createLesson("lesson-3"), createLesson("lesson-4")])
+		];
+
+		const courseCompletion = mapToCourseCompletion(
+			content,
+			completedLessonMap("lesson-1", "lesson-3")
+		);
+
+		expect(courseCompletion.completion.lessonCount).toEqual(4);
+		expect(courseCompletion.completion.completedLessonCount).toEqual(2);
+
+		const [chapter1, chapter2] = courseCompletion.content;
+
+		if (chapter1.type === "chapter" && chapter2.type === "chapter") {
+			expect(chapter1.completion).toMatchInlineSnapshot(`
+			Object {
+			  "completedLessonCount": 1,
+			  "completionPercentage": 50,
+			  "lessonCount": 2,
+			}
+		`);
+			expect(chapter2.completion).toMatchInlineSnapshot(`
+			Object {
+			  "completedLessonCount": 1,
+			  "completionPercentage": 50,
+			  "lessonCount": 2,
+			}
+		`);
+		}
+	});
+
+	it("Nested chapter", () => {
+		const content: CourseContent = [
+			createChapter("chapter-1", [
+				createLesson("lesson-1"),
+				createChapter("chapter-2", [createLesson("lesson-2"), createLesson("lesson-3")]),
+				createLesson("lesson-4")
+			])
+		];
+
+		const courseCompletion = mapToCourseCompletion(
+			content,
+			completedLessonMap("lesson-1", "lesson-2")
+		);
+
+		expect(courseCompletion.completion.lessonCount).toEqual(4);
+		expect(courseCompletion.completion.completedLessonCount).toEqual(2);
+		expect(courseCompletion).toMatchInlineSnapshot(`
+		Object {
+		  "completion": Object {
+		    "completedLessonCount": 2,
+		    "completionPercentage": 50,
+		    "lessonCount": 4,
 		  },
-		  "courseCompletionPercentage": 75,
+		  "content": Array [
+		    Object {
+		      "completion": Object {
+		        "completedLessonCount": 2,
+		        "completionPercentage": 50,
+		        "lessonCount": 4,
+		      },
+		      "content": Array [
+		        Object {
+		          "isCompleted": true,
+		          "lessonId": "lesson-1",
+		          "type": "lesson",
+		        },
+		        Object {
+		          "completion": Object {
+		            "completedLessonCount": 1,
+		            "completionPercentage": 50,
+		            "lessonCount": 2,
+		          },
+		          "content": Array [
+		            Object {
+		              "isCompleted": true,
+		              "lessonId": "lesson-2",
+		              "type": "lesson",
+		            },
+		            Object {
+		              "isCompleted": false,
+		              "lessonId": "lesson-3",
+		              "type": "lesson",
+		            },
+		          ],
+		          "description": null,
+		          "title": "chapter-2",
+		          "type": "chapter",
+		        },
+		        Object {
+		          "isCompleted": false,
+		          "lessonId": "lesson-4",
+		          "type": "lesson",
+		        },
+		      ],
+		      "description": null,
+		      "title": "chapter-1",
+		      "type": "chapter",
+		    },
+		  ],
+		}
+	`);
+	});
+
+	it("Nested chapters (multiple levels)", () => {
+		const content: CourseContent = [
+			createChapter("chapter-1", [
+				createLesson("lesson-1"),
+				createChapter("chapter-2", [
+					createLesson("lesson-2"),
+					createChapter("chapter-3", [
+						createLesson("lesson-3"),
+						createLesson("lesson-4")
+					]),
+					createLesson("lesson-5")
+				]),
+				createLesson("lesson-6")
+			])
+		];
+
+		const courseCompletion = mapToCourseCompletion(
+			content,
+			completedLessonMap(
+				"lesson-1",
+				"lesson-2",
+				"lesson-3",
+				"lesson-4",
+				"lesson-5",
+				"lesson-6"
+			)
+		);
+
+		expect(courseCompletion.completion.lessonCount).toEqual(6);
+		expect(courseCompletion.completion.completedLessonCount).toEqual(6);
+		expect(courseCompletion).toMatchInlineSnapshot(`
+		Object {
+		  "completion": Object {
+		    "completedLessonCount": 6,
+		    "completionPercentage": 100,
+		    "lessonCount": 6,
+		  },
+		  "content": Array [
+		    Object {
+		      "completion": Object {
+		        "completedLessonCount": 6,
+		        "completionPercentage": 100,
+		        "lessonCount": 6,
+		      },
+		      "content": Array [
+		        Object {
+		          "isCompleted": true,
+		          "lessonId": "lesson-1",
+		          "type": "lesson",
+		        },
+		        Object {
+		          "completion": Object {
+		            "completedLessonCount": 4,
+		            "completionPercentage": 100,
+		            "lessonCount": 4,
+		          },
+		          "content": Array [
+		            Object {
+		              "isCompleted": true,
+		              "lessonId": "lesson-2",
+		              "type": "lesson",
+		            },
+		            Object {
+		              "completion": Object {
+		                "completedLessonCount": 2,
+		                "completionPercentage": 100,
+		                "lessonCount": 2,
+		              },
+		              "content": Array [
+		                Object {
+		                  "isCompleted": true,
+		                  "lessonId": "lesson-3",
+		                  "type": "lesson",
+		                },
+		                Object {
+		                  "isCompleted": true,
+		                  "lessonId": "lesson-4",
+		                  "type": "lesson",
+		                },
+		              ],
+		              "description": null,
+		              "title": "chapter-3",
+		              "type": "chapter",
+		            },
+		            Object {
+		              "isCompleted": true,
+		              "lessonId": "lesson-5",
+		              "type": "lesson",
+		            },
+		          ],
+		          "description": null,
+		          "title": "chapter-2",
+		          "type": "chapter",
+		        },
+		        Object {
+		          "isCompleted": true,
+		          "lessonId": "lesson-6",
+		          "type": "lesson",
+		        },
+		      ],
+		      "description": null,
+		      "title": "chapter-1",
+		      "type": "chapter",
+		    },
+		  ],
 		}
 	`);
 	});

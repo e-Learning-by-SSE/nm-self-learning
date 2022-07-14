@@ -329,10 +329,10 @@ export function TocElement({
 	course: Course;
 }) {
 	if (chapterOrLesson.type === "chapter") {
-		return <ToC.Chapter courseSlug={course.slug} chapter={chapterOrLesson} />;
+		return <ToC.Chapter courseSlug={course.slug} chapter={chapterOrLesson} depth={0} />;
 	}
 
-	return <ToC.SingleLesson title={chapterOrLesson.title} slug={chapterOrLesson.slug} />;
+	return <ToC.SingleLesson courseSlug={course.slug} lesson={chapterOrLesson} />;
 }
 
 function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; updatedAt: string }) {

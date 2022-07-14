@@ -1,19 +1,25 @@
 import type { EnrollmentStatus } from "@prisma/client";
 
+export type Completion = {
+	/** Number of lessons in this chapter (includes nested chapters). */
+	lessonCount: number;
+	/** Number of completed lessons in this chapter (includes nested chapters). */
+	completedLessonCount: number;
+	completionPercentage: number;
+};
+
 export type CourseCompletion = {
-	courseCompletionPercentage: number;
-	chapters: {
-		title: string;
-		completedLessonsCount: number;
-		completedLessonsPercentage: number;
-	}[];
-	completedLessons: {
-		[lessonId: string]: {
-			createdAt: Date;
-			title: string;
-			slug: string;
-		};
-	};
+	completion: Completion;
+	content: (LessonWithCompletion | ChapterWithCompletion)[];
+};
+
+type ChapterWithCompletion = CourseChapter & {
+	completion: Completion;
+	content: (LessonWithCompletion | ChapterWithCompletion)[];
+};
+
+type LessonWithCompletion = Lesson & {
+	isCompleted: boolean;
 };
 
 export type CourseEnrollment = {
@@ -27,6 +33,8 @@ export type CourseEnrollment = {
 
 export type CourseChapter = {
 	type: "chapter";
+	/** Dot-separated chapter number, i.e. `1` or `1.1` or `1.1.1` */
+	chapterNr: string;
 	title: string;
 	description: string | null;
 	content: CourseContent;

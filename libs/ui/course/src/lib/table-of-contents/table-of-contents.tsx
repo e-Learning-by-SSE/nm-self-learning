@@ -1,11 +1,12 @@
-import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/solid";
 import {
-	ImageCard,
-	ImageCardBadge,
-	SectionCard,
-	SectionCardHeader
-} from "@self-learning/ui/common";
+	CheckCircleIcon,
+	ChevronDownIcon,
+	ChevronLeftIcon,
+	XCircleIcon
+} from "@heroicons/react/solid";
+import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import Link from "next/link";
+import { useState } from "react";
 
 type TocLesson = {
 	type: "lesson";
@@ -64,11 +65,14 @@ export function SectionConnector({
 	);
 }
 
-export function SingleLesson({ title, slug }: { title: string; slug: string }) {
+export function SingleLesson({ lesson, courseSlug }: { lesson: TocLesson; courseSlug: string }) {
 	return (
 		<div className="flex rounded-lg border border-light-border bg-white py-2 px-4">
-			<Link href={`/lessons/${slug}`}>
-				<a className="font-medium">{title}</a>
+			<Link href={`/courses/${courseSlug}/lessons/${lesson.slug}`}>
+				<a className="flex gap-2 text-sm">
+					<span className="min-w-[32px] text-light">{lesson.lessonNr}</span>
+					<span className="font-medium">{lesson.title}</span>
+				</a>
 			</Link>
 		</div>
 	);
@@ -110,27 +114,72 @@ export function NestedCourse({
 	);
 }
 
-export function Chapter({ courseSlug, chapter }: { courseSlug: string; chapter: ToCChapter }) {
+export function Chapter({
+	courseSlug,
+	chapter,
+	depth
+}: {
+	courseSlug: string;
+	chapter: ToCChapter;
+	depth: number;
+}) {
+	const [collapsed, setCollapsed] = useState(false);
+	const hasLessonsOnThisLevel = chapter.content.some(c => c.type === "lesson");
+
 	return (
-		<li className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
-			<span className="flex items-center gap-8 text-xl">
-				<span className="text-light">{chapter.chapterNr}</span>
-				<span className="font-semibold tracking-tighter">{chapter.title}</span>
+		<li
+			className={`flex flex-col gap-4 rounded-lg  border-light-border ${
+				depth === 0 ? "p-4" : "py-4 pl-4"
+			} ${hasLessonsOnThisLevel ? "border bg-white" : "bg-gray-100"}`}
+		>
+			<span className="flex justify-between gap-4">
+				<span className="flex items-center gap-8 text-xl">
+					<span className="text-light">{chapter.chapterNr}</span>
+					<span className="font-semibold tracking-tighter text-secondary">
+						{chapter.title}
+					</span>
+				</span>
+				<button
+					title="Aufklappen/Zuklappen"
+					className={`rounded-full p-2 text-gray-400 hover:bg-gray-50 ${
+						depth > 0 ? "mr-4" : ""
+					}`}
+					onClick={() => setCollapsed(v => !v)}
+				>
+					{collapsed ? (
+						<ChevronLeftIcon className="h-6 " />
+					) : (
+						<ChevronDownIcon className="h-6 " />
+					)}
+				</button>
 			</span>
 
 			{chapter.description && chapter.description.length > 0 && (
 				<p className="text-sm text-light">{chapter.description}</p>
 			)}
 
-			<ul className="flex flex-col gap-2">
-				{chapter.content.map((chapterOrLesson, index) =>
-					chapterOrLesson.type === "chapter" ? (
-						<Chapter chapter={chapterOrLesson} courseSlug={courseSlug} key={index} />
-					) : (
-						<Lesson href="" lesson={chapterOrLesson} key={index} />
-					)
-				)}
-			</ul>
+			{!collapsed && (
+				<ul className="flex flex-col">
+					{chapter.content.map((chapterOrLesson, index) =>
+						chapterOrLesson.type === "chapter" ? (
+							<div key={index} className="mb-4 pl-8 last:mb-0">
+								<Chapter
+									depth={depth + 1}
+									chapter={chapterOrLesson}
+									courseSlug={courseSlug}
+									key={index}
+								/>
+							</div>
+						) : (
+							<Lesson
+								href={`courses/${courseSlug}/${chapterOrLesson.slug}`}
+								lesson={chapterOrLesson}
+								key={index}
+							/>
+						)
+					)}
+				</ul>
+			)}
 		</li>
 	);
 }
@@ -138,7 +187,7 @@ export function Chapter({ courseSlug, chapter }: { courseSlug: string; chapter: 
 function Lesson({ lesson, href }: { href: string; lesson: TocLesson }) {
 	return (
 		<li
-			className={`flex items-center justify-between gap-8 rounded-lg py-2 px-3 ${
+			className={`mr-4 flex items-center justify-between gap-8 rounded-lg py-2 px-3 odd:bg-gray-50 ${
 				lesson.isCompleted ? "border-secondary" : "border-slate-200"
 			}`}
 		>

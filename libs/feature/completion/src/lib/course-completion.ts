@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { CourseChapter, CourseCompletion } from "@self-learning/types";
+import { CourseCompletion, CourseContent, extractLessonIds } from "@self-learning/types";
 
 export async function getCourseCompletionOfStudent(
 	courseSlug: string,
@@ -9,9 +9,8 @@ export async function getCourseCompletionOfStudent(
 		where: { slug: courseSlug }
 	});
 
-	const content = course.content as CourseChapter[];
-
-	const lessonIds = content.flatMap(chapter => chapter.lessonIds);
+	const content = course.content as CourseContent;
+	const lessonIds = extractLessonIds(content);
 
 	const completedLessons = await database.completedLesson.findMany({
 		select: {
@@ -29,7 +28,8 @@ export async function getCourseCompletionOfStudent(
 		distinct: ["lessonId"]
 	});
 
-	const lessonIdMap: CourseCompletion["completedLessons"] = {};
+	const lessonIdMap: { [lessonId: string]: { createdAt: Date; slug: string; title: string } } =
+		{};
 
 	for (const lesson of completedLessons) {
 		lessonIdMap[lesson.lessonId] = {
@@ -39,34 +39,57 @@ export async function getCourseCompletionOfStudent(
 		};
 	}
 
-	const contentWithCompletion: CourseCompletion["chapters"] = content.map(chapter => {
-		let completed = 0;
-		for (const lessonId of chapter.lessonIds) {
-			if (lessonId in lessonIdMap) {
-				completed++;
-			}
+	return mapToCourseCompletion(content, lessonIdMap);
+}
+
+/**
+ * Recursively aggregates information about course and chapter completion.
+ */
+export function mapToCourseCompletion(
+	content: CourseContent,
+	completedLessonsMap: { [lessonId: string]: unknown }
+): CourseCompletion {
+	const completion: CourseCompletion = {
+		completion: {
+			lessonCount: 0,
+			completedLessonCount: 0,
+			completionPercentage: 0
+		},
+		content: []
+	};
+
+	for (const chapterOrLesson of content) {
+		if (chapterOrLesson.type === "chapter") {
+			const innerCompletion = mapToCourseCompletion(
+				chapterOrLesson.content,
+				completedLessonsMap
+			);
+
+			completion.completion.completedLessonCount +=
+				innerCompletion.completion.completedLessonCount;
+			completion.completion.lessonCount += innerCompletion.completion.lessonCount;
+
+			completion.content.push({
+				...chapterOrLesson,
+				...innerCompletion
+			});
 		}
 
-		return {
-			title: chapter.title,
-			completedLessonsCount: completed,
-			completedLessonsPercentage:
-				chapter.lessonIds.length > 0 ? (completed / chapter.lessonIds.length) * 100 : 100
-		};
-	});
+		if (chapterOrLesson.type === "lesson") {
+			completion.completion.lessonCount++;
+			const isCompleted = chapterOrLesson.lessonId in completedLessonsMap;
 
-	const completedLessonsCount = Object.keys(lessonIdMap).length;
-	const totalLessonsCount = content.reduce(
-		(count, chapter) => (count += chapter.lessonIds.length),
-		0
+			if (isCompleted) {
+				completion.completion.completedLessonCount++;
+			}
+
+			completion.content.push({ ...chapterOrLesson, isCompleted });
+		}
+	}
+
+	completion.completion.completionPercentage = Math.floor(
+		(completion.completion.completedLessonCount / completion.completion.lessonCount) * 100
 	);
-
-	const completion: CourseCompletion = {
-		courseCompletionPercentage:
-			totalLessonsCount > 0 ? (completedLessonsCount / totalLessonsCount) * 100 : 100,
-		chapters: contentWithCompletion,
-		completedLessons: lessonIdMap
-	};
 
 	return completion;
 }

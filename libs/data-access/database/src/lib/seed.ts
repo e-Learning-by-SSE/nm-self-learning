@@ -170,29 +170,39 @@ const courses: Prisma.CourseCreateManyInput[] = [
 		updatedAt: new Date(2022, 5, 1),
 		content: [
 			createLesson(reactLessons[0].lessonId),
-			createChapter("Learning React", [
-				createChapter(
-					"React Basics",
-					new Array(13).fill(0).map((_, i) => createLesson(reactLessons[i + 1].lessonId)),
-					faker.lorem.sentences(3)
-				),
-				createChapter("Advanced React", [
+			createChapter(
+				"Learning React",
+				[
 					createChapter(
-						"Part One",
-						new Array(8)
+						"React Basics",
+						new Array(13)
 							.fill(0)
-							.map((_, i) => createLesson(reactLessons[i + 14].lessonId)),
+							.map((_, i) => createLesson(reactLessons[i + 1].lessonId)),
 						faker.lorem.sentences(3)
 					),
 					createChapter(
-						"Part Two",
-						new Array(7)
-							.fill(0)
-							.map((_, i) => createLesson(reactLessons[i + 22].lessonId)),
-						faker.lorem.sentences(3)
+						"Advanced React",
+						[
+							createChapter(
+								"Part One",
+								new Array(8)
+									.fill(0)
+									.map((_, i) => createLesson(reactLessons[i + 14].lessonId)),
+								faker.lorem.sentences(3)
+							),
+							createChapter(
+								"Part Two",
+								new Array(7)
+									.fill(0)
+									.map((_, i) => createLesson(reactLessons[i + 22].lessonId)),
+								faker.lorem.sentences(3)
+							)
+						],
+						faker.lorem.paragraph(3)
 					)
-				])
-			]),
+				],
+				faker.lorem.paragraphs(2)
+			),
 			createLesson(reactLessons.at(-1)?.lessonId ?? "")
 		] as CourseContent
 	},
