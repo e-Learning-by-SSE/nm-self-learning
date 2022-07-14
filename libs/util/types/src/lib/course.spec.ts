@@ -3,6 +3,7 @@ import {
 	createChapter,
 	createLesson,
 	extractLessonIds,
+	createCourseContent,
 	traverseCourseContent
 } from "./course";
 
@@ -63,5 +64,65 @@ describe("traverseCourseContent", () => {
 
 		expect(chapterCount).toBe(3);
 		expect(lessonCount).toBe(6);
+	});
+});
+
+describe("createCourseContent", () => {
+	it("Adds numbers to chapters and lessons", () => {
+		const content: CourseContent = [
+			createLesson("lesson-1"),
+			createChapter("chapter-1", [
+				createLesson("lesson-2"),
+				createChapter("chapter-1.1", [
+					createLesson("lesson-3"),
+					createChapter("chapter-1.1.1", [createLesson("lesson-4")])
+				]),
+				createChapter("chapter-1.2", [
+					createLesson("lesson-5"),
+					createChapter("chapter-1.2.1", [createLesson("lesson-6")]),
+					createChapter("chapter-1.2.2", [createLesson("lesson-7")])
+				])
+			]),
+			createChapter("chapter-2", [createLesson("lesson-8")]),
+			createLesson("lesson-9")
+		];
+
+		const result = createCourseContent(content);
+
+		const chapterNrs: string[] = [];
+		const lessonNrs: number[] = [];
+
+		traverseCourseContent(result, chapterOrLesson => {
+			if (chapterOrLesson.type === "chapter") {
+				chapterNrs.push(chapterOrLesson.chapterNr);
+			} else if (chapterOrLesson.type === "lesson") {
+				lessonNrs.push(chapterOrLesson.lessonNr);
+			}
+		});
+
+		expect(chapterNrs).toMatchInlineSnapshot(`
+		Array [
+		  "1",
+		  "1.1",
+		  "1.1.1",
+		  "1.2",
+		  "1.2.1",
+		  "1.2.2",
+		  "2",
+		]
+	`);
+		expect(lessonNrs).toMatchInlineSnapshot(`
+		Array [
+		  1,
+		  2,
+		  3,
+		  4,
+		  5,
+		  6,
+		  7,
+		  8,
+		  9,
+		]
+	`);
 	});
 });

@@ -1,5 +1,10 @@
 import { database } from "@self-learning/database";
-import { CourseCompletion, CourseContent, extractLessonIds } from "@self-learning/types";
+import {
+	Completion,
+	CourseCompletion,
+	CourseContent,
+	extractLessonIds
+} from "@self-learning/types";
 
 export async function getCourseCompletionOfStudent(
 	courseSlug: string,
@@ -92,4 +97,53 @@ export function mapToCourseCompletion(
 	);
 
 	return completion;
+}
+
+/**
+ * Recursively aggregates information about course and chapter completion.
+ */
+export function mapToCourseCompletionFlat(
+	content: CourseContent,
+	completedLessonsMap: { [lessonId: string]: unknown },
+	completionMap: Map<string, Completion> = new Map(),
+	chapterNr = "course"
+): Map<string, Completion> {
+	const completion: Completion = {
+		lessonCount: 0,
+		completedLessonCount: 0,
+		completionPercentage: 0
+	};
+
+	for (const chapterOrLesson of content) {
+		if (chapterOrLesson.type === "chapter") {
+			const innerCompletion = mapToCourseCompletionFlat(
+				chapterOrLesson.content,
+				completedLessonsMap,
+				completionMap,
+				chapterOrLesson.chapterNr
+			);
+
+			completion.completedLessonCount += innerCompletion.get(
+				chapterOrLesson.chapterNr
+			)!.completedLessonCount;
+			completion.lessonCount += innerCompletion.get(chapterOrLesson.chapterNr)!.lessonCount;
+		}
+
+		if (chapterOrLesson.type === "lesson") {
+			completion.lessonCount++;
+			const isCompleted = chapterOrLesson.lessonId in completedLessonsMap;
+
+			if (isCompleted) {
+				completion.completedLessonCount++;
+			}
+		}
+	}
+
+	completion.completionPercentage = Math.floor(
+		(completion.completedLessonCount / completion.lessonCount) * 100
+	);
+
+	completionMap.set(chapterNr, completion);
+
+	return completionMap;
 }

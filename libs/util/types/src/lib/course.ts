@@ -42,6 +42,7 @@ export type CourseChapter = {
 
 type Lesson = {
 	type: "lesson";
+	lessonNr: number;
 	lessonId: string;
 };
 
@@ -71,7 +72,8 @@ export function createChapter(
 		type: "chapter",
 		title,
 		description: description ?? null,
-		content
+		content,
+		chapterNr: title
 	};
 }
 
@@ -79,7 +81,8 @@ export function createChapter(
 export function createLesson(lessonId: string): Lesson {
 	return {
 		type: "lesson",
-		lessonId
+		lessonId,
+		lessonNr: 0
 	};
 }
 
@@ -105,4 +108,30 @@ export function traverseCourseContent<
 			fn(item);
 		}
 	});
+}
+
+/** Sets `chapterNr` and `lessonNr` for each chapter/lesson. */
+export function createCourseContent(
+	content: CourseContent,
+	lessonNrRef = { value: 1 },
+	parentChapterNr = ""
+): CourseContent {
+	let chapterNr = 1;
+
+	for (const chapterOrLesson of content) {
+		if (chapterOrLesson.type === "chapter") {
+			chapterOrLesson.chapterNr =
+				parentChapterNr === "" ? `${chapterNr}` : `${parentChapterNr}.${chapterNr}`;
+			chapterOrLesson.content = createCourseContent(
+				chapterOrLesson.content,
+				lessonNrRef,
+				chapterOrLesson.chapterNr
+			);
+			chapterNr++;
+		} else {
+			chapterOrLesson.lessonNr = lessonNrRef.value++;
+		}
+	}
+
+	return content;
 }

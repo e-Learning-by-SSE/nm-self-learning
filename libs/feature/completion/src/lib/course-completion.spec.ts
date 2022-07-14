@@ -1,5 +1,10 @@
-import { CourseContent, createChapter, createLesson } from "@self-learning/types";
-import { mapToCourseCompletion } from "./course-completion";
+import {
+	CourseContent,
+	createChapter,
+	createLesson,
+	createCourseContent
+} from "@self-learning/types";
+import { mapToCourseCompletion, mapToCourseCompletionFlat } from "./course-completion";
 
 function completedLessonMap(...lessonIds: string[]) {
 	const lessonIdMap: { [lessonId: string]: { createdAt: Date; slug: string; title: string } } =
@@ -286,6 +291,104 @@ describe("mapToCourseCompletion", () => {
 		      "type": "chapter",
 		    },
 		  ],
+		}
+	`);
+	});
+});
+
+describe("mapToCourseCompletionFlat", () => {
+	it("Flat", () => {
+		const content: CourseContent = createCourseContent([
+			createLesson("lesson-1"),
+			createLesson("lesson-2")
+		]);
+
+		const courseCompletion = mapToCourseCompletionFlat(content, completedLessonMap("lesson-1"));
+
+		expect(courseCompletion).toMatchInlineSnapshot(`
+		Map {
+		  "course" => Object {
+		    "completedLessonCount": 1,
+		    "completionPercentage": 50,
+		    "lessonCount": 2,
+		  },
+		}
+	`);
+	});
+
+	it("", () => {
+		const content: CourseContent = createCourseContent([
+			createLesson("lesson-1"),
+			createChapter("chapter-1", [
+				createLesson("lesson-2"),
+				createChapter("chapter-1.1", [
+					createLesson("lesson-3"),
+					createChapter("chapter-1.1.1", [createLesson("lesson-4")])
+				]),
+				createChapter("chapter-1.2", [
+					createLesson("lesson-5"),
+					createChapter("chapter-1.2.1", [createLesson("lesson-6")]),
+					createChapter("chapter-1.2.2", [createLesson("lesson-7")])
+				])
+			]),
+			createChapter("chapter-2", [createLesson("lesson-8")]),
+			createLesson("lesson-9")
+		]);
+
+		const courseCompletion = mapToCourseCompletionFlat(
+			content,
+			completedLessonMap(
+				"lesson-1",
+				"lesson-2",
+				"lesson-3",
+				"lesson-4",
+				"lesson-5",
+				"lesson-6"
+			)
+		);
+
+		expect(courseCompletion).toMatchInlineSnapshot(`
+		Map {
+		  "1.1.1" => Object {
+		    "completedLessonCount": 1,
+		    "completionPercentage": 100,
+		    "lessonCount": 1,
+		  },
+		  "1.1" => Object {
+		    "completedLessonCount": 2,
+		    "completionPercentage": 100,
+		    "lessonCount": 2,
+		  },
+		  "1.2.1" => Object {
+		    "completedLessonCount": 1,
+		    "completionPercentage": 100,
+		    "lessonCount": 1,
+		  },
+		  "1.2.2" => Object {
+		    "completedLessonCount": 0,
+		    "completionPercentage": 0,
+		    "lessonCount": 1,
+		  },
+		  "1.2" => Object {
+		    "completedLessonCount": 2,
+		    "completionPercentage": 66,
+		    "lessonCount": 3,
+		  },
+		  "1" => Object {
+		    "completedLessonCount": 5,
+		    "completionPercentage": 83,
+		    "lessonCount": 6,
+		  },
+		  "2" => Object {
+		    "completedLessonCount": 0,
+		    "completionPercentage": 0,
+		    "lessonCount": 1,
+		  },
+		  "course" => Object {
+		    "completedLessonCount": 6,
+		    "completionPercentage": 66,
+		    "lessonCount": 9,
+		  },
 		}
 	`);
 	});

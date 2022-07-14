@@ -1,6 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { CourseContent, createChapter, createLesson, LessonContent } from "@self-learning/types";
+import {
+	CourseContent,
+	createChapter,
+	createCourseContent,
+	createLesson,
+	LessonContent
+} from "@self-learning/types";
 import { readFileSync } from "fs";
 import { join } from "path";
 import slugify from "slugify";
@@ -168,7 +174,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 		subjectId: 1,
 		createdAt: new Date(2022, 4, 20),
 		updatedAt: new Date(2022, 5, 1),
-		content: [
+		content: createCourseContent([
 			createLesson(reactLessons[0].lessonId),
 			createChapter(
 				"Learning React",
@@ -204,7 +210,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 				faker.lorem.paragraphs(2)
 			),
 			createLesson(reactLessons.at(-1)?.lessonId ?? "")
-		] as CourseContent
+		])
 	},
 	{
 		courseId: faker.random.alphaNumeric(8),
@@ -216,7 +222,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 		subjectId: 1,
 		createdAt: new Date(2022, 4, 20),
 		updatedAt: new Date(2022, 5, 1),
-		content: pythonLessons.map(lesson => createLesson(lesson.lessonId)) as CourseContent
+		content: createCourseContent(pythonLessons.map(lesson => createLesson(lesson.lessonId)))
 	}
 ];
 
