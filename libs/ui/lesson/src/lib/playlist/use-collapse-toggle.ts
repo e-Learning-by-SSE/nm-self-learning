@@ -1,20 +1,31 @@
+import { traverseCourseContent } from "@self-learning/types";
 import { useCallback, useEffect, useState } from "react";
+import { PlaylistContent } from "./playlist";
 
 /** Hook that provides the current  toggle-state and methods to toggle one or all sections at once. */
-export function useCollapseToggle(content: unknown[]) {
+export function useCollapseToggle(content: PlaylistContent) {
 	const [globalCollapsed, globalCollapseToggle] = useState(false);
-	const [collapsedSections, setCollapsedSections] = useState(content.map(c => true));
+	const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(
+		getAllChapterNrs(content)
+	);
 
-	const toggleCollapse = useCallback((index: number) => {
+	const toggleCollapse = useCallback((chapterNr: string) => {
 		setCollapsedSections(items => {
-			const newItems = [...items];
-			newItems[index] = !newItems[index];
-			return newItems;
+			return {
+				...items,
+				[chapterNr]: !items[chapterNr]
+			};
 		});
 	}, []);
 
 	useEffect(() => {
-		setCollapsedSections(items => items.map(() => globalCollapsed));
+		setCollapsedSections(chapters => {
+			for (const chapter of Object.keys(chapters)) {
+				chapters[chapter] = globalCollapsed;
+			}
+
+			return { ...chapters };
+		});
 	}, [globalCollapsed]);
 
 	return {
@@ -24,7 +35,19 @@ export function useCollapseToggle(content: unknown[]) {
 		globalCollapseToggle,
 		/** Toggles the open/closed state for a specific section. */
 		toggleCollapse,
-		/** Array that contains the open/closed state of each section. */
+		/** Object that contains the open/closed state of each section. */
 		collapsedSections
 	};
+}
+
+function getAllChapterNrs(content: PlaylistContent): Record<string, boolean> {
+	const chapterNrs: Record<string, boolean> = {};
+
+	traverseCourseContent(content, chapterOrLesson => {
+		if (chapterOrLesson.type === "chapter") {
+			chapterNrs[chapterOrLesson.chapterNr] = false;
+		}
+	});
+
+	return chapterNrs;
 }

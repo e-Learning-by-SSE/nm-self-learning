@@ -3,7 +3,6 @@ import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completi
 import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
-	CourseCompletion,
 	findContentType,
 	includesMediaType,
 	LessonContent,
@@ -31,7 +30,7 @@ export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) =>
 
 	if ("notFound" in props) return { notFound: true };
 
-	const { lesson, chapters, course } = props;
+	const { lesson } = props;
 
 	lesson.quiz = null; // Not needed on this page, but on /quiz
 	let mdDescription = null;
@@ -56,13 +55,11 @@ export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) =>
 
 	return {
 		props: {
-			lesson: lesson as Defined<typeof lesson>,
+			...props,
 			markdown: {
 				article: mdArticle,
 				description: mdDescription
-			},
-			chapters,
-			course
+			}
 		}
 	};
 };
@@ -213,9 +210,8 @@ function LessonControls({
 	currentMediaType: LessonContentType["type"];
 }) {
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
-
 	const completion = useCourseCompletion(course.slug);
-	const isCompletedLesson = isCompleted(lesson, completion);
+	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 
 	return (
 		<div className="flex flex-wrap gap-4 p-4">
@@ -249,10 +245,6 @@ function LessonControls({
 			</div>
 		</div>
 	);
-}
-
-function isCompleted(lesson: { lessonId: string }, completion?: CourseCompletion): boolean {
-	return !!completion?.completedLessons[lesson.lessonId];
 }
 
 function MediaTypeSelector({

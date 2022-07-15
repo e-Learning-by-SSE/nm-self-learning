@@ -18,7 +18,7 @@ type ChapterWithCompletion = CourseChapter & {
 	content: (LessonWithCompletion | ChapterWithCompletion)[];
 };
 
-type LessonWithCompletion = Lesson & {
+type LessonWithCompletion = CourseLesson & {
 	isCompleted: boolean;
 };
 
@@ -40,13 +40,13 @@ export type CourseChapter = {
 	content: CourseContent;
 };
 
-type Lesson = {
+export type CourseLesson = {
 	type: "lesson";
 	lessonNr: number;
 	lessonId: string;
 };
 
-export type CourseContent = (CourseChapter | Lesson)[];
+export type CourseContent = (CourseChapter | CourseLesson)[];
 
 export function extractLessonIds(content: CourseContent): string[] {
 	const lessonIds: string[] = [];
@@ -77,8 +77,8 @@ export function createChapter(
 	};
 }
 
-/** Creates an object with the shape of a {@link Lesson}. */
-export function createLesson(lessonId: string): Lesson {
+/** Creates an object with the shape of a {@link CourseLesson}. */
+export function createLesson(lessonId: string): CourseLesson {
 	return {
 		type: "lesson",
 		lessonId,

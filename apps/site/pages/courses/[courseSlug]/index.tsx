@@ -5,6 +5,7 @@ import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollmen
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { CourseContent, extractLessonIds, traverseCourseContent } from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
+import * as ToC from "@self-learning/ui/course";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
@@ -13,8 +14,6 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
-import * as ToC from "@self-learning/ui/course";
-import { number } from "yup/lib/locale";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -275,7 +274,7 @@ function CourseHeader({
 						<Link href={`/courses/${course.slug}/${nextLesson?.slug}`}>
 							<a className="btn-primary">
 								<span>
-									{completion?.["course"].completionPercentage === 0
+									{completion?.completion["course"].completionPercentage === 0
 										? "Starten"
 										: "Fortfahren"}
 								</span>

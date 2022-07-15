@@ -1,25 +1,26 @@
 import {
-	CheckCircleIcon,
 	ChevronDoubleDownIcon,
 	ChevronDoubleUpIcon,
 	ChevronDownIcon,
 	ChevronUpIcon
 } from "@heroicons/react/solid";
-import { CourseCompletion } from "@self-learning/types";
+import { CourseCompletionX } from "@self-learning/completion";
+import { CourseChapter, CourseLesson, traverseCourseContent } from "@self-learning/types";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ReactElement } from "react";
 import { useCollapseToggle } from "./use-collapse-toggle";
 
-export type PlaylistLesson = {
+type PlaylistLesson = CourseLesson & {
 	title: string;
 	slug: string;
-	lessonId: string;
-	isCompleted?: boolean;
-	imgUrl?: string | null;
 };
 
-type PlaylistContent = { title: string; lessons: PlaylistLesson[]; isActive: boolean };
+type PlaylistChapter = CourseChapter & {
+	content: PlaylistContent;
+};
+
+export type PlaylistContent = (PlaylistLesson | PlaylistChapter)[];
 
 export function NestablePlaylist({
 	course,
@@ -28,9 +29,9 @@ export function NestablePlaylist({
 	courseCompletion
 }: {
 	course: { title: string; slug: string };
-	currentLesson: PlaylistLesson;
-	content: PlaylistContent[];
-	courseCompletion?: CourseCompletion;
+	currentLesson: { slug: string; lessonId: string };
+	content: PlaylistContent;
+	courseCompletion?: CourseCompletionX;
 }) {
 	const { globalCollapsed, collapsedSections, globalCollapseToggle, toggleCollapse } =
 		useCollapseToggle(content);
@@ -41,8 +42,7 @@ export function NestablePlaylist({
 				<div className="flex flex-col gap-2">
 					<span className="text-base font-semibold">{course.title}</span>
 					<span className="text-sm text-light">
-						Fortschritt: {Math.floor(courseCompletion?.courseCompletionPercentage ?? 0)}
-						%
+						<>Fortschritt: {courseCompletion?.completion["course"] ?? 0}%</>
 					</span>
 				</div>
 
@@ -60,63 +60,75 @@ export function NestablePlaylist({
 			</div>
 
 			<div className="playlist-scroll overflow-auto">
-				{content.map((chapter, index) => (
-					<Playlist
-						subtitleElement={<PlaylistSubtitle chapter={chapter} />}
-						collapsed={collapsedSections[index]}
-						toggleOpenClosed={() => toggleCollapse(index)}
-						index={index + 1}
-						key={chapter.title}
-						isActive={chapter.isActive}
-						title={chapter.title}
-						course={course}
-						lessons={chapter.lessons}
-						currentLesson={currentLesson}
-					/>
-				))}
+				{content.map(chapterOrLesson =>
+					chapterOrLesson.type === "chapter" ? (
+						<Playlist
+							key={chapterOrLesson.chapterNr}
+							chapter={chapterOrLesson}
+							subtitleElement={<PlaylistSubtitle chapter={chapterOrLesson} />}
+							collapsedSections={collapsedSections}
+							collapsed={collapsedSections[chapterOrLesson.chapterNr] === true}
+							toggleCollapse={toggleCollapse}
+							isActive={false}
+							course={course}
+							currentLesson={currentLesson}
+						/>
+					) : (
+						<PlaylistLesson
+							key={chapterOrLesson.lessonId}
+							href={`/courses/${course.slug}/${chapterOrLesson.slug}`}
+							lesson={chapterOrLesson}
+							isActive={currentLesson.lessonId === chapterOrLesson.lessonId}
+						/>
+					)
+				)}
 			</div>
 		</div>
 	);
 }
 
-export function PlaylistSubtitle({ chapter }: { chapter: PlaylistContent }) {
+export function PlaylistSubtitle({ chapter }: { chapter: PlaylistChapter }) {
+	let lessonCount = 0;
+
+	traverseCourseContent(chapter.content, chapterOrLesson => {
+		if (chapterOrLesson.type === "lesson") {
+			lessonCount++;
+		}
+	});
+
 	return (
 		<span className="text-sm text-light">
-			{chapter.lessons.length === 1
-				? "1 Lerneinheit"
-				: `${chapter.lessons.length} Lerneinheiten`}
+			{lessonCount === 1 ? "1 Lerneinheit" : `${lessonCount} Lerneinheiten`}
 		</span>
 	);
 }
 
 export function Playlist({
-	index,
-	lessons,
-	currentLesson,
 	course,
+	currentLesson,
+	chapter,
 	subtitleElement,
-	title,
 	isActive,
 	collapsed,
-	toggleOpenClosed
+	toggleCollapse,
+	collapsedSections
 }: {
-	index: number;
-	title: string;
-	lessons: PlaylistLesson[];
-	currentLesson: PlaylistLesson;
+	chapter: PlaylistChapter;
+	currentLesson: { slug: string; lessonId: string };
 	course: { title: string; slug: string };
 	subtitleElement: ReactElement;
 	isActive: boolean;
 	collapsed: boolean;
-	toggleOpenClosed: () => void;
+	toggleCollapse: (chapterNr: string) => void;
+	collapsedSections: { [chapterNr: string]: boolean };
 }) {
 	return (
 		<div className="flex h-fit w-full flex-col bg-white">
-			<div className="grid grid-cols-[32px_1fr_auto] items-start border-b border-light-border bg-gray-100 p-4">
-				<span className="text-base font-semibold">{index}.</span>
+			<div className="grid grid-cols-[auto_1fr_auto] items-start gap-2 border-b border-light-border bg-gray-100 p-4">
+				<span className="min-w-[32px]">{chapter.chapterNr}</span>
 				<div className="flex flex-col gap-2">
 					<span className="flex items-center gap-2 text-base font-semibold">
-						<span>{title}</span>
+						<span className="text-secondary">{chapter.title}</span>
 						{isActive && <div className="h-2 w-2 rounded-full bg-secondary" />}
 					</span>
 					{subtitleElement}
@@ -124,7 +136,7 @@ export function Playlist({
 				<button
 					className="self-center rounded-full p-2 text-light hover:bg-gray-50"
 					title="Show/Hide Section"
-					onClick={toggleOpenClosed}
+					onClick={() => toggleCollapse(chapter.chapterNr)}
 				>
 					{collapsed ? (
 						<ChevronDownIcon className="h-6" />
@@ -136,15 +148,36 @@ export function Playlist({
 			{!collapsed && (
 				<div className="playlist-scroll overflow-auto">
 					<div className="flex flex-col">
-						{lessons.map((lesson, index) => (
-							<PlaylistLesson
-								key={lesson.slug}
-								href={`/courses/${course.slug}/${lesson.slug}`}
-								lesson={lesson}
-								isActive={currentLesson.slug === lesson.slug}
-								lessonNumber={index + 1}
-							/>
-						))}
+						{chapter.content.map(chapterOrLesson =>
+							chapterOrLesson.type === "chapter" ? (
+								<Playlist
+									key={chapterOrLesson.chapterNr}
+									course={course}
+									isActive={false}
+									collapsedSections={collapsedSections}
+									toggleCollapse={toggleCollapse}
+									chapter={chapterOrLesson as PlaylistChapter}
+									subtitleElement={
+										<PlaylistSubtitle
+											chapter={chapterOrLesson as PlaylistChapter}
+										/>
+									}
+									collapsed={
+										collapsedSections[chapterOrLesson.chapterNr] === true
+									}
+									currentLesson={currentLesson}
+								/>
+							) : (
+								<PlaylistLesson
+									key={chapterOrLesson.lessonId}
+									href={`/courses/${course.slug}/${
+										(chapterOrLesson as PlaylistLesson).slug
+									}`}
+									lesson={chapterOrLesson as PlaylistLesson}
+									isActive={currentLesson.lessonId === chapterOrLesson.lessonId}
+								/>
+							)
+						)}
 					</div>
 				</div>
 			)}
@@ -155,12 +188,10 @@ export function Playlist({
 export function PlaylistLesson({
 	lesson,
 	isActive,
-	href,
-	lessonNumber
+	href
 }: {
 	lesson: PlaylistLesson;
 	href: string;
-	lessonNumber: number;
 	isActive?: boolean;
 }) {
 	return (
@@ -184,7 +215,7 @@ export function PlaylistLesson({
 								isActive ? "text-light" : "text-light"
 							}`}
 						>
-							{lessonNumber}
+							{lesson.lessonNr}
 						</span>
 					</div>
 					<div>
@@ -197,9 +228,9 @@ export function PlaylistLesson({
 						</span>
 						<span className="flex gap-2">
 							<span className="text-xs text-light">4:20</span>
-							{lesson.isCompleted && (
+							{/* {lesson.isCompleted && (
 								<CheckCircleIcon className="h-4 rounded-full text-secondary" />
-							)}
+							)} */}
 						</span>
 					</div>
 				</div>

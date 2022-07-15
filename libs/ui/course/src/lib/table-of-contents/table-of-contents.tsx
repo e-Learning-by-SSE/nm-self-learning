@@ -172,7 +172,7 @@ export function Chapter({
 							</div>
 						) : (
 							<Lesson
-								href={`courses/${courseSlug}/${chapterOrLesson.slug}`}
+								href={`/courses/${courseSlug}/${chapterOrLesson.slug}`}
 								lesson={chapterOrLesson}
 								key={index}
 							/>

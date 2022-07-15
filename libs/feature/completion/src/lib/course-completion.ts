@@ -7,11 +7,17 @@ import {
 } from "@self-learning/types";
 
 export type CompletionMap = { [chapterId: string]: Completion };
+type CompletedLessonsMap = { [lessonId: string]: { createdAt: Date; slug: string; title: string } };
+
+export type CourseCompletionX = {
+	completion: CompletionMap;
+	completedLessons: CompletedLessonsMap;
+};
 
 export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
-): Promise<CompletionMap> {
+): Promise<CourseCompletionX> {
 	const course = await database.course.findUniqueOrThrow({
 		where: { slug: courseSlug }
 	});
@@ -35,18 +41,20 @@ export async function getCourseCompletionOfStudent(
 		distinct: ["lessonId"]
 	});
 
-	const lessonIdMap: { [lessonId: string]: { createdAt: Date; slug: string; title: string } } =
-		{};
+	const completedLessonsMap: CompletedLessonsMap = {};
 
 	for (const lesson of completedLessons) {
-		lessonIdMap[lesson.lessonId] = {
+		completedLessonsMap[lesson.lessonId] = {
 			createdAt: lesson.createdAt,
 			slug: lesson.lesson.slug,
 			title: lesson.lesson.title
 		};
 	}
 
-	return mapToCourseCompletionFlat(content, lessonIdMap);
+	return {
+		completion: mapToCourseCompletionFlat(content, completedLessonsMap),
+		completedLessons: completedLessonsMap
+	};
 }
 
 /**
