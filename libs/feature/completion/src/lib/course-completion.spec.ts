@@ -23,7 +23,10 @@ function completedLessonMap(...lessonIds: string[]) {
 
 describe("mapToCourseCompletion", () => {
 	it("Flat", () => {
-		const content: CourseContent = [createLesson("lesson-1"), createLesson("lesson-2")];
+		const content: CourseContent = createCourseContent([
+			createLesson("lesson-1"),
+			createLesson("lesson-2")
+		]);
 
 		const courseCompletion = mapToCourseCompletion(content, completedLessonMap("lesson-1"));
 
@@ -40,11 +43,13 @@ describe("mapToCourseCompletion", () => {
 		    Object {
 		      "isCompleted": true,
 		      "lessonId": "lesson-1",
+		      "lessonNr": 1,
 		      "type": "lesson",
 		    },
 		    Object {
 		      "isCompleted": false,
 		      "lessonId": "lesson-2",
+		      "lessonNr": 2,
 		      "type": "lesson",
 		    },
 		  ],
@@ -53,9 +58,9 @@ describe("mapToCourseCompletion", () => {
 	});
 
 	it("Chapter with lessons", () => {
-		const content: CourseContent = [
+		const content: CourseContent = createCourseContent([
 			createChapter("chapter-1", [createLesson("lesson-1"), createLesson("lesson-2")])
-		];
+		]);
 
 		const courseCompletion = mapToCourseCompletion(content, completedLessonMap("lesson-1"));
 
@@ -80,10 +85,10 @@ describe("mapToCourseCompletion", () => {
 	});
 
 	it("Multiple chapters on same level", () => {
-		const content: CourseContent = [
+		const content: CourseContent = createCourseContent([
 			createChapter("chapter-1", [createLesson("lesson-1"), createLesson("lesson-2")]),
 			createChapter("chapter-2", [createLesson("lesson-3"), createLesson("lesson-4")])
-		];
+		]);
 
 		const courseCompletion = mapToCourseCompletion(
 			content,
@@ -114,13 +119,13 @@ describe("mapToCourseCompletion", () => {
 	});
 
 	it("Nested chapter", () => {
-		const content: CourseContent = [
+		const content: CourseContent = createCourseContent([
 			createChapter("chapter-1", [
 				createLesson("lesson-1"),
 				createChapter("chapter-2", [createLesson("lesson-2"), createLesson("lesson-3")]),
 				createLesson("lesson-4")
 			])
-		];
+		]);
 
 		const courseCompletion = mapToCourseCompletion(
 			content,
@@ -138,6 +143,7 @@ describe("mapToCourseCompletion", () => {
 		  },
 		  "content": Array [
 		    Object {
+		      "chapterNr": "1",
 		      "completion": Object {
 		        "completedLessonCount": 2,
 		        "completionPercentage": 50,
@@ -147,9 +153,11 @@ describe("mapToCourseCompletion", () => {
 		        Object {
 		          "isCompleted": true,
 		          "lessonId": "lesson-1",
+		          "lessonNr": 1,
 		          "type": "lesson",
 		        },
 		        Object {
+		          "chapterNr": "1.1",
 		          "completion": Object {
 		            "completedLessonCount": 1,
 		            "completionPercentage": 50,
@@ -159,11 +167,13 @@ describe("mapToCourseCompletion", () => {
 		            Object {
 		              "isCompleted": true,
 		              "lessonId": "lesson-2",
+		              "lessonNr": 2,
 		              "type": "lesson",
 		            },
 		            Object {
 		              "isCompleted": false,
 		              "lessonId": "lesson-3",
+		              "lessonNr": 3,
 		              "type": "lesson",
 		            },
 		          ],
@@ -174,6 +184,7 @@ describe("mapToCourseCompletion", () => {
 		        Object {
 		          "isCompleted": false,
 		          "lessonId": "lesson-4",
+		          "lessonNr": 4,
 		          "type": "lesson",
 		        },
 		      ],
@@ -187,7 +198,7 @@ describe("mapToCourseCompletion", () => {
 	});
 
 	it("Nested chapters (multiple levels)", () => {
-		const content: CourseContent = [
+		const content: CourseContent = createCourseContent([
 			createChapter("chapter-1", [
 				createLesson("lesson-1"),
 				createChapter("chapter-2", [
@@ -200,7 +211,7 @@ describe("mapToCourseCompletion", () => {
 				]),
 				createLesson("lesson-6")
 			])
-		];
+		]);
 
 		const courseCompletion = mapToCourseCompletion(
 			content,
@@ -225,6 +236,7 @@ describe("mapToCourseCompletion", () => {
 		  },
 		  "content": Array [
 		    Object {
+		      "chapterNr": "1",
 		      "completion": Object {
 		        "completedLessonCount": 6,
 		        "completionPercentage": 100,
@@ -234,9 +246,11 @@ describe("mapToCourseCompletion", () => {
 		        Object {
 		          "isCompleted": true,
 		          "lessonId": "lesson-1",
+		          "lessonNr": 1,
 		          "type": "lesson",
 		        },
 		        Object {
+		          "chapterNr": "1.1",
 		          "completion": Object {
 		            "completedLessonCount": 4,
 		            "completionPercentage": 100,
@@ -246,9 +260,11 @@ describe("mapToCourseCompletion", () => {
 		            Object {
 		              "isCompleted": true,
 		              "lessonId": "lesson-2",
+		              "lessonNr": 2,
 		              "type": "lesson",
 		            },
 		            Object {
+		              "chapterNr": "1.1.1",
 		              "completion": Object {
 		                "completedLessonCount": 2,
 		                "completionPercentage": 100,
@@ -258,11 +274,13 @@ describe("mapToCourseCompletion", () => {
 		                Object {
 		                  "isCompleted": true,
 		                  "lessonId": "lesson-3",
+		                  "lessonNr": 3,
 		                  "type": "lesson",
 		                },
 		                Object {
 		                  "isCompleted": true,
 		                  "lessonId": "lesson-4",
+		                  "lessonNr": 4,
 		                  "type": "lesson",
 		                },
 		              ],
@@ -273,6 +291,7 @@ describe("mapToCourseCompletion", () => {
 		            Object {
 		              "isCompleted": true,
 		              "lessonId": "lesson-5",
+		              "lessonNr": 5,
 		              "type": "lesson",
 		            },
 		          ],
@@ -283,6 +302,7 @@ describe("mapToCourseCompletion", () => {
 		        Object {
 		          "isCompleted": true,
 		          "lessonId": "lesson-6",
+		          "lessonNr": 6,
 		          "type": "lesson",
 		        },
 		      ],
