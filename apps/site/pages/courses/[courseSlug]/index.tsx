@@ -3,7 +3,7 @@ import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { CourseContent, extractLessonIds } from "@self-learning/types";
+import { CourseContent, extractLessonIds, traverseCourseContent } from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { formatDistance } from "date-fns";
@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 import * as ToC from "@self-learning/ui/course";
+import { number } from "yup/lib/locale";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -71,8 +72,29 @@ async function mapCourseContent(content: CourseContent): Promise<ToC.ToCContent>
 	return mapToTocContent(content, map);
 }
 
+type Summary = {
+	lessons: number;
+	chapters: number;
+};
+
+function createCourseSummary(content: CourseContent) {
+	let lessons = 0;
+	let chapters = 0;
+
+	traverseCourseContent(content, chapterOrLesson => {
+		if (chapterOrLesson.type === "chapter") {
+			chapters++;
+		} else {
+			lessons++;
+		}
+	});
+
+	return { lessons, chapters };
+}
+
 type CourseProps = {
 	course: Course;
+	summary: Summary;
 	content: ToC.ToCContent;
 	markdownDescription: CompiledMarkdown | null;
 };
@@ -100,9 +122,13 @@ export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) =>
 			course.description = null;
 		}
 	}
+
+	const summary = createCourseSummary(content);
+
 	return {
 		props: {
 			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
+			summary,
 			content,
 			markdownDescription
 		},
@@ -132,11 +158,11 @@ async function getCourse(courseSlug: string) {
 	});
 }
 
-export default function Course({ course, content, markdownDescription }: CourseProps) {
+export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
 	return (
 		<div className="bg-gray-50 pb-32">
 			<CenteredSection className="gradient">
-				<CourseHeader course={course} content={content} />
+				<CourseHeader course={course} content={content} summary={summary} />
 			</CenteredSection>
 
 			{markdownDescription && (
@@ -165,9 +191,11 @@ function toDateAgo(date: Date | string | number) {
 
 function CourseHeader({
 	course,
+	summary,
 	content
 }: {
 	course: CourseProps["course"];
+	summary: CourseProps["summary"];
 	content: CourseProps["content"];
 }) {
 	const enrollments = useEnrollments();
@@ -230,13 +258,24 @@ function CourseHeader({
 								alt=""
 							></Image>
 						)}
+
+						<ul className="absolute bottom-0 grid w-full grid-cols-2 divide-x divide-secondary rounded-b-lg bg-white p-2 text-center ">
+							<li className="flex flex-col">
+								<span className="font-semibold text-secondary">Lerneinheiten</span>
+								<span className="text-light">{summary.lessons}</span>
+							</li>
+							<li className="flex flex-col">
+								<span className="font-semibold text-secondary">Kapitel</span>
+								<span className="text-light">{summary.chapters}</span>
+							</li>
+						</ul>
 					</div>
 
 					{isEnrolled && (
 						<Link href={`/courses/${course.slug}/${nextLesson?.slug}`}>
 							<a className="btn-primary">
 								<span>
-									{completion?.courseCompletionPercentage === 0
+									{completion?.["course"].completionPercentage === 0
 										? "Starten"
 										: "Fortfahren"}
 								</span>

@@ -6,10 +6,12 @@ import {
 	extractLessonIds
 } from "@self-learning/types";
 
+export type CompletionMap = { [chapterId: string]: Completion };
+
 export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
-): Promise<Map<string, Completion>> {
+): Promise<CompletionMap> {
 	const course = await database.course.findUniqueOrThrow({
 		where: { slug: courseSlug }
 	});
@@ -44,15 +46,7 @@ export async function getCourseCompletionOfStudent(
 		};
 	}
 
-	const completion = mapToCourseCompletionFlat(content, lessonIdMap);
-
-	// convert map to object
-	const obj: { [chapterNr: string]: Completion } = {};
-	for (const [key, value] of Object.entries(completion)) {
-		obj[key] = value;
-	}
-
-	return obj;
+	return mapToCourseCompletionFlat(content, lessonIdMap);
 }
 
 /**
@@ -107,10 +101,8 @@ export function mapToCourseCompletion(
 	return completion;
 }
 
-type CompletionMap = { [chapterId: string]: Completion };
-
 /**
- * Recursively aggregates information about course and chapter completion.
+ * Recursively aggregates information about course and chapter completion and stores a {@link Completion} entry for each (sub)chapter.
  */
 export function mapToCourseCompletionFlat(
 	content: CourseContent,
