@@ -50,9 +50,5 @@ export function mapFromCourseFormToDbSchema(
 }
 
 function mapContent(contentFromForm: CourseFormModel["content"]): CourseContent {
-	return contentFromForm.map(chapter => ({
-		title: chapter.title,
-		description: chapter.description,
-		lessonIds: chapter.lessons.map(lesson => lesson.lessonId)
-	}));
+	return []; // TODO
 }

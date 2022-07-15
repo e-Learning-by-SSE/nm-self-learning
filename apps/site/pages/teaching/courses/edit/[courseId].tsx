@@ -1,9 +1,8 @@
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { CourseContent } from "@self-learning/types";
+import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { getRandomId } from "@self-learning/util/common";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { useRouter } from "next/router";
 
@@ -32,7 +31,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		};
 	}
 
-	const lessonIds = (course?.content as CourseContent).flatMap(chapter => chapter.lessonIds);
+	const lessonIds = extractLessonIds(course.content as CourseContent);
 
 	const lessons = await database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
@@ -57,19 +56,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		imgUrl: course.imgUrl,
 		slug: course.slug,
 		subjectId: course.subject?.subjectId ?? null,
-		content: (course.content as CourseContent).map(chapter => ({
-			chapterId: getRandomId(),
-			title: chapter.title,
-			description: chapter.description,
-			lessons: chapter.lessonIds.map(
-				id =>
-					lessonsById.get(id) ?? {
-						title: "Removed",
-						lessonId: `removed-${id}`,
-						slug: `removed-${id}`
-					}
-			)
-		}))
+		content: [] // TODO
 	};
 
 	return {
