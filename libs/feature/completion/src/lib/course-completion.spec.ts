@@ -306,8 +306,8 @@ describe("mapToCourseCompletionFlat", () => {
 		const courseCompletion = mapToCourseCompletionFlat(content, completedLessonMap("lesson-1"));
 
 		expect(courseCompletion).toMatchInlineSnapshot(`
-		Map {
-		  "course" => Object {
+		Object {
+		  "course": Object {
 		    "completedLessonCount": 1,
 		    "completionPercentage": 50,
 		    "lessonCount": 2,
@@ -348,43 +348,43 @@ describe("mapToCourseCompletionFlat", () => {
 		);
 
 		expect(courseCompletion).toMatchInlineSnapshot(`
-		Map {
-		  "1.1.1" => Object {
-		    "completedLessonCount": 1,
-		    "completionPercentage": 100,
-		    "lessonCount": 1,
-		  },
-		  "1.1" => Object {
-		    "completedLessonCount": 2,
-		    "completionPercentage": 100,
-		    "lessonCount": 2,
-		  },
-		  "1.2.1" => Object {
-		    "completedLessonCount": 1,
-		    "completionPercentage": 100,
-		    "lessonCount": 1,
-		  },
-		  "1.2.2" => Object {
-		    "completedLessonCount": 0,
-		    "completionPercentage": 0,
-		    "lessonCount": 1,
-		  },
-		  "1.2" => Object {
-		    "completedLessonCount": 2,
-		    "completionPercentage": 66,
-		    "lessonCount": 3,
-		  },
-		  "1" => Object {
+		Object {
+		  "1": Object {
 		    "completedLessonCount": 5,
 		    "completionPercentage": 83,
 		    "lessonCount": 6,
 		  },
-		  "2" => Object {
+		  "1.1": Object {
+		    "completedLessonCount": 2,
+		    "completionPercentage": 100,
+		    "lessonCount": 2,
+		  },
+		  "1.1.1": Object {
+		    "completedLessonCount": 1,
+		    "completionPercentage": 100,
+		    "lessonCount": 1,
+		  },
+		  "1.2": Object {
+		    "completedLessonCount": 2,
+		    "completionPercentage": 66,
+		    "lessonCount": 3,
+		  },
+		  "1.2.1": Object {
+		    "completedLessonCount": 1,
+		    "completionPercentage": 100,
+		    "lessonCount": 1,
+		  },
+		  "1.2.2": Object {
 		    "completedLessonCount": 0,
 		    "completionPercentage": 0,
 		    "lessonCount": 1,
 		  },
-		  "course" => Object {
+		  "2": Object {
+		    "completedLessonCount": 0,
+		    "completionPercentage": 0,
+		    "lessonCount": 1,
+		  },
+		  "course": Object {
 		    "completedLessonCount": 6,
 		    "completionPercentage": 66,
 		    "lessonCount": 9,

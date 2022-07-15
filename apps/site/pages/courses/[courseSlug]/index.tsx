@@ -17,25 +17,15 @@ import * as ToC from "@self-learning/ui/course";
 
 type Course = ResolvedValue<typeof getCourse>;
 
-function addChapterAndLessonNr(
+function mapToTocContent(
 	content: CourseContent,
-	lessonIdMap: Map<string, { lessonId: string; slug: string; title: string }>,
-	lessonNrRef = { lessonNr: 1 },
-	parentChapter = ""
+	lessonIdMap: Map<string, { lessonId: string; slug: string; title: string }>
 ): ToC.ToCContent {
-	let chapterCount = 1;
-
 	const mappedContent: ToC.ToCContent = content.map((item): ToC.ToCContent[0] => {
 		if (item.type === "chapter") {
-			const chapterNr =
-				parentChapter === "" ? `${chapterCount}` : `${parentChapter}.${chapterCount}`;
-
-			chapterCount++;
-
 			return {
 				...item,
-				chapterNr: chapterNr,
-				content: addChapterAndLessonNr(item.content, lessonIdMap, lessonNrRef, chapterNr)
+				content: mapToTocContent(item.content, lessonIdMap)
 			};
 		} else if (item.type === "lesson") {
 			const lesson = lessonIdMap.get(item.lessonId) ?? {
@@ -49,7 +39,7 @@ function addChapterAndLessonNr(
 			return {
 				...lesson,
 				type: "lesson",
-				lessonNr: lessonNrRef.lessonNr++,
+				lessonNr: item.lessonNr,
 				isCompleted: false // TODO
 			};
 		}
@@ -78,7 +68,7 @@ async function mapCourseContent(content: CourseContent): Promise<ToC.ToCContent>
 		map.set(lesson.lessonId, lesson);
 	}
 
-	return addChapterAndLessonNr(content, map);
+	return mapToTocContent(content, map);
 }
 
 type CourseProps = {

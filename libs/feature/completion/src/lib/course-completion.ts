@@ -9,7 +9,7 @@ import {
 export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
-): Promise<CourseCompletion> {
+): Promise<Map<string, Completion>> {
 	const course = await database.course.findUniqueOrThrow({
 		where: { slug: courseSlug }
 	});
@@ -44,7 +44,15 @@ export async function getCourseCompletionOfStudent(
 		};
 	}
 
-	return mapToCourseCompletion(content, lessonIdMap);
+	const completion = mapToCourseCompletionFlat(content, lessonIdMap);
+
+	// convert map to object
+	const obj: { [chapterNr: string]: Completion } = {};
+	for (const [key, value] of Object.entries(completion)) {
+		obj[key] = value;
+	}
+
+	return obj;
 }
 
 /**
@@ -99,15 +107,17 @@ export function mapToCourseCompletion(
 	return completion;
 }
 
+type CompletionMap = { [chapterId: string]: Completion };
+
 /**
  * Recursively aggregates information about course and chapter completion.
  */
 export function mapToCourseCompletionFlat(
 	content: CourseContent,
 	completedLessonsMap: { [lessonId: string]: unknown },
-	completionMap: Map<string, Completion> = new Map(),
+	completionMap: CompletionMap = {},
 	chapterNr = "course"
-): Map<string, Completion> {
+): CompletionMap {
 	const completion: Completion = {
 		lessonCount: 0,
 		completedLessonCount: 0,
@@ -123,17 +133,13 @@ export function mapToCourseCompletionFlat(
 				chapterOrLesson.chapterNr
 			);
 
-			completion.completedLessonCount += innerCompletion.get(
-				chapterOrLesson.chapterNr
-			)!.completedLessonCount;
-			completion.lessonCount += innerCompletion.get(chapterOrLesson.chapterNr)!.lessonCount;
-		}
-
-		if (chapterOrLesson.type === "lesson") {
+			completion.completedLessonCount +=
+				innerCompletion[chapterOrLesson.chapterNr].completedLessonCount;
+			completion.lessonCount += innerCompletion[chapterOrLesson.chapterNr].lessonCount;
+		} else {
 			completion.lessonCount++;
-			const isCompleted = chapterOrLesson.lessonId in completedLessonsMap;
 
-			if (isCompleted) {
+			if (chapterOrLesson.lessonId in completedLessonsMap) {
 				completion.completedLessonCount++;
 			}
 		}
@@ -143,7 +149,7 @@ export function mapToCourseCompletionFlat(
 		(completion.completedLessonCount / completion.lessonCount) * 100
 	);
 
-	completionMap.set(chapterNr, completion);
+	completionMap[chapterNr] = completion;
 
 	return completionMap;
 }
