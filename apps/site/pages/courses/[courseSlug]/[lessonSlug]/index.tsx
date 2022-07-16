@@ -40,17 +40,13 @@ export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) =>
 		mdDescription = await compileMarkdown(lesson.description);
 	}
 
-	const { content: article, index } = findContentType("article", lesson.content as LessonContent);
+	const { content: article } = findContentType("article", lesson.content as LessonContent);
 
 	if (article) {
 		mdArticle = await compileMarkdown(article.value.content ?? "Kein Inhalt.");
 
-		(lesson.content as LessonContent)[index] = {
-			type: "article",
-			value: {
-				content: ""
-			}
-		};
+		// Remove article content to avoid duplication
+		article.value.content = "(replaced)";
 	}
 
 	return {

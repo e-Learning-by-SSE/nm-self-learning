@@ -58,11 +58,11 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 
 	function addContent(type: LessonContentType["type"]) {
 		if (type === "article") {
-			append({ type, value: { content: "" } });
+			append({ type: "article", value: { content: "" }, meta: { estimatedDuration: 0 } });
 		}
 
 		if (type === "video") {
-			append({ type, value: { url: "" } });
+			append({ type: "video", value: { url: "" }, meta: { duration: 0 } });
 		}
 
 		setContentTabIndex(content.length);

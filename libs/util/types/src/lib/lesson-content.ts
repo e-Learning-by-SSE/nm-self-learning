@@ -4,6 +4,9 @@ export const videoSchema = z.object({
 	type: z.literal("video"),
 	value: z.object({
 		url: z.string()
+	}),
+	meta: z.object({
+		duration: z.number()
 	})
 });
 
@@ -11,6 +14,9 @@ export const articleSchema = z.object({
 	type: z.literal("article"),
 	value: z.object({
 		content: z.string()
+	}),
+	meta: z.object({
+		estimatedDuration: z.number()
 	})
 });
 
@@ -34,6 +40,9 @@ type InferContentType<
 
 export type ValueByContentType<CType extends LessonContentType["type"]> =
 	InferContentType<CType>["value"];
+
+export type MetaByContentType<CType extends LessonContentType["type"]> =
+	InferContentType<CType>["meta"];
 
 export function findContentType<CType extends LessonContentType["type"]>(
 	type: CType,

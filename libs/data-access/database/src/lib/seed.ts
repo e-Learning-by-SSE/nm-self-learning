@@ -5,6 +5,7 @@ import {
 	createChapter,
 	createCourseContent,
 	createLesson,
+	createLessonMeta,
 	LessonContent
 } from "@self-learning/types";
 import { readFileSync } from "fs";
@@ -120,48 +121,71 @@ const reactLessons: Prisma.LessonCreateManyInput[] = [
 	"Install and use React DevTools",
 	"Build and deploy a React Application with Codesandbox, GitHub, and Netlify",
 	"A Beginners Guide to React Outro"
-].map(title => ({
-	title,
-	lessonId: faker.random.alphaNumeric(8),
-	slug: slugify(title, { lower: true, strict: true }),
-	subtitle: faker.lorem.paragraph(1),
-	description: faker.lorem.paragraphs(3),
-	imgUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=256",
-	content: [
-		{
-			type: "video",
-			value: {
-				url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+].map(title => {
+	const lesson: Prisma.LessonCreateInput = {
+		title,
+		lessonId: faker.random.alphaNumeric(8),
+		slug: slugify(title, { lower: true, strict: true }),
+		subtitle: faker.lorem.paragraph(1),
+		description: faker.lorem.paragraphs(3),
+		imgUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=256",
+		content: [
+			{
+				type: "video",
+				value: {
+					url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+				},
+				meta: {
+					duration: 300
+				}
 			}
-		}
-	] as LessonContent
-}));
+		] as LessonContent,
+		meta: {}
+	};
+
+	lesson.meta = createLessonMeta(lesson as any) as unknown as Prisma.JsonObject;
+
+	return lesson;
+});
 
 const pythonLessons: Prisma.LessonCreateManyInput[] = [
 	"What is Python?",
 	"Hello World in Python"
-].map(title => ({
-	title,
-	lessonId: faker.random.alphaNumeric(8),
-	slug: slugify(title, { lower: true, strict: true }),
-	subtitle: faker.lorem.paragraph(1),
-	description: faker.lorem.paragraphs(3),
-	imgUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=256",
-	content: [
-		{
-			type: "video",
-			value: {
-				url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+].map(title => {
+	const lesson: Prisma.LessonCreateManyInput = {
+		title,
+		lessonId: faker.random.alphaNumeric(8),
+		slug: slugify(title, { lower: true, strict: true }),
+		subtitle: faker.lorem.paragraph(1),
+		description: faker.lorem.paragraphs(3),
+		imgUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=256",
+		content: [
+			{
+				type: "video",
+				value: {
+					url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+				},
+				meta: {
+					duration: 300
+				}
+			},
+			{
+				type: "article",
+				value: {
+					content: readFileSync(join(__dirname, "./markdown-example.mdx"), "utf8")
+				},
+				meta: {
+					estimatedDuration: 300
+				}
 			}
-		},
-		{
-			type: "article",
-			value: {
-				content: readFileSync(join(__dirname, "./markdown-example.mdx"), "utf8")
-			}
-		}
-	] as LessonContent
-}));
+		] as LessonContent,
+		meta: {}
+	};
+
+	lesson.meta = createLessonMeta(lesson as any) as unknown as Prisma.JsonObject;
+
+	return lesson;
+});
 
 const courses: Prisma.CourseCreateManyInput[] = [
 	{

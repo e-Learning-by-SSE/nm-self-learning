@@ -91,12 +91,18 @@ describe("lessonSchema", () => {
 						type: "video",
 						value: {
 							url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+						},
+						meta: {
+							duration: 120
 						}
 					},
 					{
 						type: "article",
 						value: {
 							content: "This is an article"
+						},
+						meta: {
+							estimatedDuration: 300
 						}
 					}
 				]

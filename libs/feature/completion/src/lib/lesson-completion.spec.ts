@@ -9,7 +9,8 @@ describe("checkLessonCompletion", () => {
 		lessonId: `lesson-${index}`,
 		slug: `lesson-${index}-slug`,
 		title: `Lesson ${index}`,
-		content: []
+		content: [],
+		meta: {}
 	});
 
 	beforeAll(async () => {

@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { lessonSchema } from "@self-learning/types";
+import { createLessonMeta, lessonSchema } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
 import { z } from "zod";
 import { createProtectedRouter } from "../create-router";
@@ -21,7 +21,8 @@ export const lessonRouter = createProtectedRouter()
 				data: {
 					...input,
 					content: input.content as Prisma.InputJsonArray,
-					lessonId: getRandomId()
+					lessonId: getRandomId(),
+					meta: createLessonMeta(input) as unknown as Prisma.JsonObject
 				},
 				select: {
 					lessonId: true,
@@ -44,7 +45,8 @@ export const lessonRouter = createProtectedRouter()
 				where: { lessonId: input.lessonId },
 				data: {
 					...input.lesson,
-					lessonId: input.lessonId
+					lessonId: input.lessonId,
+					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},
 				select: {
 					lessonId: true,
