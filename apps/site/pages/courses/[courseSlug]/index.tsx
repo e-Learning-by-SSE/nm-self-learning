@@ -12,6 +12,7 @@ import {
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { formatSeconds } from "@self-learning/util/common";
 import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -84,23 +85,32 @@ async function mapCourseContent(content: CourseContent): Promise<ToC.ToCContent>
 }
 
 type Summary = {
+	/** Total number of lessons in this course. */
 	lessons: number;
+	/** Total number of chapters in this course. Includes subchapters (tbd). */
 	chapters: number;
+	/** Duration in seconds of video material. */
+	duration: number;
 };
 
-function createCourseSummary(content: CourseContent) {
+function createCourseSummary(content: ToC.ToCContent): Summary {
 	let lessons = 0;
 	let chapters = 0;
+	let duration = 0;
 
 	traverseCourseContent(content, chapterOrLesson => {
 		if (chapterOrLesson.type === "chapter") {
 			chapters++;
 		} else {
 			lessons++;
+
+			if (chapterOrLesson.meta.mediaTypes.video?.duration) {
+				duration += chapterOrLesson.meta.mediaTypes.video.duration;
+			}
 		}
 	});
 
-	return { lessons, chapters };
+	return { lessons, chapters, duration };
 }
 
 type CourseProps = {
@@ -270,7 +280,7 @@ function CourseHeader({
 							></Image>
 						)}
 
-						<ul className="absolute bottom-0 grid w-full grid-cols-2 divide-x divide-secondary rounded-b-lg bg-white p-2 text-center ">
+						<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg bg-white p-2 text-center ">
 							<li className="flex flex-col">
 								<span className="font-semibold text-secondary">Lerneinheiten</span>
 								<span className="text-light">{summary.lessons}</span>
@@ -278,6 +288,12 @@ function CourseHeader({
 							<li className="flex flex-col">
 								<span className="font-semibold text-secondary">Kapitel</span>
 								<span className="text-light">{summary.chapters}</span>
+							</li>
+							<li className="flex flex-col">
+								<span className="font-semibold text-secondary">Dauer</span>
+								<span className="text-light">
+									{formatSeconds(summary.duration)}
+								</span>
 							</li>
 						</ul>
 					</div>
@@ -320,42 +336,6 @@ function TableOfContents({ content, course }: { content: ToC.ToCContent; course:
 				{content.map((chapterOrLesson, index) => (
 					<TocElement chapterOrLesson={chapterOrLesson} course={course} key={index} />
 				))}
-				{/* {content.map((chapter, index) => {
-					const showConnector = index < content.length - 1;
-
-					const isCompleted =
-						(courseCompletion?.chapters[index] &&
-							courseCompletion.chapters[index].completedLessonsPercentage >= 100) ??
-						false;
-
-					return (
-						
-
-						// <Fragment key={chapter.title}>
-						// 	<ToC.Chapter
-						// 		courseSlug={course.slug}
-						// 		title={chapter.title as string}
-						// 		description={chapter.description}
-						// 		lessons={
-						// 			chapter.lessons.map(lesson => ({
-						// 				lessonId: lesson.lessonId,
-						// 				slug: lesson.slug,
-						// 				title: lesson.title,
-						// 				isCompleted:
-						// 					(courseCompletion?.completedLessons &&
-						// 						!!courseCompletion.completedLessons[
-						// 							lesson.lessonId
-						// 						]) ??
-						// 					false
-						// 			})) ?? []
-						// 		}
-						// 	/>
-						// 	{showConnector && (
-						// 		<ToC.SectionConnector isCompleted={isCompleted} isRequired={true} />
-						// 	)}
-						// </Fragment>
-					);
-				})} */}
 			</div>
 		</div>
 	);
