@@ -2,12 +2,12 @@
 import { Lesson } from "./lesson";
 import { LessonContentMediaType, MetaByContentType } from "./lesson-content";
 
-export interface LessonMeta {
+export type LessonMeta = {
 	hasQuiz: boolean;
 	mediaTypes: {
 		[mediaType in LessonContentMediaType]?: MetaByContentType<mediaType>;
 	};
-}
+};
 
 /** Extracts information about a lesson. */
 export function createLessonMeta(lesson: Lesson): LessonMeta {

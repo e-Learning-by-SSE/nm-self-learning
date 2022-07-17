@@ -3,7 +3,12 @@ import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { CourseContent, extractLessonIds, traverseCourseContent } from "@self-learning/types";
+import {
+	CourseContent,
+	extractLessonIds,
+	LessonMeta,
+	traverseCourseContent
+} from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -17,9 +22,11 @@ import { useMemo } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
+type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
+
 function mapToTocContent(
 	content: CourseContent,
-	lessonIdMap: Map<string, { lessonId: string; slug: string; title: string }>
+	lessonIdMap: Map<string, LessonInfo>
 ): ToC.ToCContent {
 	const mappedContent: ToC.ToCContent = content.map((item): ToC.ToCContent[0] => {
 		if (item.type === "chapter") {
@@ -33,7 +40,11 @@ function mapToTocContent(
 				title: "Removed",
 				lessonId: "removed",
 				slug: "removed",
-				type: "lesson"
+				type: "lesson",
+				meta: {
+					hasQuiz: false,
+					mediaTypes: {}
+				}
 			};
 
 			return {
@@ -58,14 +69,15 @@ async function mapCourseContent(content: CourseContent): Promise<ToC.ToCContent>
 		select: {
 			lessonId: true,
 			slug: true,
-			title: true
+			title: true,
+			meta: true
 		}
 	});
 
-	const map = new Map<string, typeof lessons[0]>();
+	const map = new Map<string, LessonInfo>();
 
 	for (const lesson of lessons) {
-		map.set(lesson.lessonId, lesson);
+		map.set(lesson.lessonId, lesson as LessonInfo);
 	}
 
 	return mapToTocContent(content, map);

@@ -5,7 +5,13 @@ import {
 	ChevronUpIcon
 } from "@heroicons/react/solid";
 import { CourseCompletionX } from "@self-learning/completion";
-import { CourseChapter, CourseLesson, traverseCourseContent } from "@self-learning/types";
+import {
+	CourseChapter,
+	CourseLesson,
+	LessonMeta,
+	traverseCourseContent
+} from "@self-learning/types";
+import { formatSeconds } from "@self-learning/util/common";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ReactElement } from "react";
@@ -14,6 +20,7 @@ import { useCollapseToggle } from "./use-collapse-toggle";
 type PlaylistLesson = CourseLesson & {
 	title: string;
 	slug: string;
+	meta: LessonMeta;
 };
 
 type PlaylistChapter = CourseChapter & {
@@ -194,6 +201,9 @@ export function PlaylistLesson({
 	href: string;
 	isActive?: boolean;
 }) {
+	const duration =
+		lesson.meta.mediaTypes.video?.duration ?? lesson.meta.mediaTypes.article?.estimatedDuration;
+
 	return (
 		<Link href={href}>
 			<a
@@ -227,7 +237,9 @@ export function PlaylistLesson({
 							{lesson.title}
 						</span>
 						<span className="flex gap-2">
-							<span className="text-xs text-light">4:20</span>
+							<span className="text-xs text-light">
+								{duration ? formatSeconds(duration) : "??:??"}
+							</span>
 							{/* {lesson.isCompleted && (
 								<CheckCircleIcon className="h-4 rounded-full text-secondary" />
 							)} */}

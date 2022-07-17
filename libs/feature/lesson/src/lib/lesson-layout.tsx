@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { CourseContent, extractLessonIds } from "@self-learning/types";
+import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { NestablePlaylist, PlaylistContent } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
@@ -13,6 +13,8 @@ export type LessonLayoutProps = {
 		slug: string;
 	};
 };
+
+type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 
 async function getLesson(slug: string) {
 	return database.lesson.findUnique({
@@ -74,7 +76,8 @@ export async function getStaticPropsForLayout(
 		select: {
 			lessonId: true,
 			slug: true,
-			title: true
+			title: true,
+			meta: true
 		},
 		where: {
 			lessonId: {
@@ -83,10 +86,10 @@ export async function getStaticPropsForLayout(
 		}
 	});
 
-	const lessonsById = new Map<string, typeof lessons[0]>();
+	const lessonsById = new Map<string, LessonInfo>();
 
 	for (const lesson of lessons) {
-		lessonsById.set(lesson.lessonId, lesson);
+		lessonsById.set(lesson.lessonId, lesson as LessonInfo);
 	}
 
 	const content = mapToPlaylistContent(course.content as CourseContent, lessonsById);
@@ -103,7 +106,7 @@ export async function getStaticPropsForLayout(
 
 function mapToPlaylistContent(
 	content: CourseContent,
-	lessons: Map<string, { lessonId: string; slug: string; title: string }>
+	lessons: Map<string, LessonInfo>
 ): PlaylistContent {
 	const playlistContent: PlaylistContent = [];
 
@@ -118,7 +121,11 @@ function mapToPlaylistContent(
 			const lesson = lessons.get(chapterOrLesson.lessonId) ?? {
 				lessonId: "removed",
 				slug: "removed",
-				title: "Removed"
+				title: "Removed",
+				meta: {
+					hasQuiz: false,
+					mediaTypes: {}
+				}
 			};
 
 			playlistContent.push({

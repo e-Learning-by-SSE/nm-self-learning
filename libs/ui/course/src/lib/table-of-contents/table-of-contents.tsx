@@ -4,7 +4,10 @@ import {
 	ChevronLeftIcon,
 	XCircleIcon
 } from "@heroicons/react/solid";
+import { LessonMeta } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
+import { formatSeconds } from "@self-learning/util/common";
+import {} from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -14,6 +17,7 @@ type TocLesson = {
 	title: string;
 	lessonId: string;
 	slug: string;
+	meta: LessonMeta;
 	isCompleted: boolean;
 };
 
@@ -185,6 +189,9 @@ export function Chapter({
 }
 
 function Lesson({ lesson, href }: { href: string; lesson: TocLesson }) {
+	const duration =
+		lesson.meta.mediaTypes.video?.duration ?? lesson.meta.mediaTypes.article?.estimatedDuration;
+
 	return (
 		<li
 			className={`mr-4 flex items-center justify-between gap-8 rounded-lg py-2 px-3 odd:bg-gray-50 ${
@@ -205,7 +212,9 @@ function Lesson({ lesson, href }: { href: string; lesson: TocLesson }) {
 				</Link>
 			</span>
 
-			<span className="text-sm text-light">4:20</span>
+			<span className="text-xs text-light">
+				{duration ? formatSeconds(duration) : "??:??"}
+			</span>
 		</li>
 	);
 }
