@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
+import { createTestUser } from "@self-learning/util/testing";
 import { checkLessonCompletion } from "./lesson-completion";
 
 const username = "potter";
@@ -15,6 +16,7 @@ describe("checkLessonCompletion", () => {
 
 	beforeAll(async () => {
 		const lessons = new Array(4).fill(0).map((_, i) => createLesson(i));
+		await createTestUser(username);
 		await database.lesson.deleteMany();
 		await database.lesson.createMany({ data: lessons });
 	});
