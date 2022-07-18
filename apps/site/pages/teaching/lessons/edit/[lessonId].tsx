@@ -1,14 +1,14 @@
-import { Lesson } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
+import { QuizContent } from "@self-learning/question-types";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
-import {} from "@self-learning/types";
+import { LessonContent } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
 type EditLessonProps = {
-	lesson: Lesson;
+	lesson: LessonFormModel;
 };
 
 export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ params }) => {
@@ -26,8 +26,15 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 		return { notFound: true };
 	}
 
+	const lessonForm: LessonFormModel = {
+		...lesson,
+		// Need type casting because JsonArray from prisma causes error
+		content: lesson.content as LessonContent,
+		quiz: (lesson.quiz ?? []) as QuizContent
+	};
+
 	return {
-		props: { lesson }
+		props: { lesson: lessonForm }
 	};
 };
 
@@ -39,7 +46,7 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		try {
 			const result = await updateLesson({
 				lesson: updatedLesson,
-				lessonId: lesson.lessonId
+				lessonId: lesson.lessonId as string
 			});
 
 			showToast({
