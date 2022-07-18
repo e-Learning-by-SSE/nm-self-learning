@@ -1,151 +1,30 @@
 import { traverseCourseContent } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
-import { useState, useMemo, useCallback } from "react";
-import { MappedContent, mapContent, ChapterWithNr, Competence, Summary } from "./types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useFieldArray, useFormContext } from "react-hook-form";
+import { ChapterWithNr, Competence, mapContent, MappedContent, Summary } from "./types";
 
 export type NewChapterDialogResult = { title: string; description?: string };
 
 export function useCourseContentForm() {
-	const [content, setContent] = useState<MappedContent>(
-		mapContent([
-			{
-				type: "chapter",
-				title: "Chapter 1",
-				content: [
-					{
-						type: "lesson",
-						title: "Lesson 1",
-						lessonId: getRandomId(),
-						hasQuiz: true,
-						requires: [],
-						rewards: [
-							{ level: 1, title: "elementary-command" },
-							{ level: 1, title: "basic-program-structure" }
-						]
-					},
-					{
-						type: "lesson",
-						title: "Lesson 2",
-						lessonId: getRandomId(),
-						hasQuiz: true,
-						requires: [{ level: 1, title: "elementary-command" }],
-						rewards: [{ level: 2, title: "elementary-command" }]
-					},
-					{
-						type: "chapter",
-						title: "Chapter 1.1",
-						content: [
-							{
-								type: "lesson",
-								title: "Lesson 3",
-								lessonId: getRandomId(),
-								hasQuiz: true,
-								requires: [
-									{ level: 2, title: "elementary-command" },
-									{ level: 2, title: "basic-program-structure" }
-								],
-								rewards: [{ level: 3, title: "elementary-command" }]
-							},
-							{
-								type: "lesson",
-								title: "Lesson 4",
-								hasQuiz: false,
-								lessonId: getRandomId()
-							}
-						]
-					},
-					{
-						type: "chapter",
-						title: "Chapter 1.2",
-						content: [
-							{
-								type: "lesson",
-								title: "Lesson 5",
-								hasQuiz: false,
-								lessonId: getRandomId()
-							},
-							{
-								type: "lesson",
-								title: "Lesson 6",
-								hasQuiz: false,
-								lessonId: getRandomId()
-							},
-							{
-								type: "chapter",
-								title: "Nested Chapter",
-								content: [
-									{
-										type: "lesson",
-										title: "Nested Lesson 1",
-										hasQuiz: true,
-										lessonId: getRandomId()
-									},
-									{
-										type: "lesson",
-										title: "Nested Lesson 2",
-										hasQuiz: true,
-										lessonId: getRandomId()
-									}
-								]
-							}
-						]
-					}
-				]
-			},
-			{
-				type: "chapter",
-				title: "Chapter 2",
-				content: [
-					{
-						type: "chapter",
-						title: "Chapter 2.1",
-						content: [
-							{
-								type: "lesson",
-								title: "Lesson 7",
-								hasQuiz: true,
-								lessonId: getRandomId()
-							},
-							{
-								type: "lesson",
-								title: "Lesson 8",
-								hasQuiz: true,
-								lessonId: getRandomId()
-							}
-						]
-					},
-					{
-						type: "chapter",
-						title: "Chapter 2.2",
-						content: [
-							{
-								type: "lesson",
-								title: "Lesson 9",
-								hasQuiz: true,
-								lessonId: getRandomId()
-							},
-							{
-								type: "lesson",
-								title: "Lesson 10",
-								hasQuiz: true,
-								lessonId: getRandomId()
-							}
-						]
-					},
-					{ type: "lesson", title: "Lesson 11", hasQuiz: true, lessonId: getRandomId() }
-				]
-			}
-		])
-	);
+	const { control, setValue } = useFormContext<{ content: unknown[] }>();
+	const { fields } = useFieldArray({ control, name: "content" });
+
+	const [content, setContent] = useState<MappedContent>(mapContent(fields as any)); // TODO: fix types
 
 	const summary = useMemo(() => {
 		const sum = createSummary(content);
 		return { count: sum.count, competences: [...sum.competences.values()] };
 	}, [content]);
 
+	useEffect(() => {
+		// Update form whenever the internally managed `content` changes
+		setValue("content", content);
+	}, [content, setValue]);
+
 	const [openNewChapterDialog, setOpenNewChapterDialog] = useState(false);
 	const [addChapterTarget, setAddChapterTarget] = useState<string | null>(null);
-	const [showInfo, setShowInfo] = useState(true);
+	const [showInfo, setShowInfo] = useState(false);
 	const [highlightedCompetence, _setHighlightedCompetence] = useState<string | null>(null);
 
 	const setHighlightedCompetence = useCallback(

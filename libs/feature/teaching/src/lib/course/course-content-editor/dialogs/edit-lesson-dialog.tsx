@@ -257,7 +257,6 @@ function Overview() {
 						</Tabs>
 						<RenderContentType
 							index={contentTabIndex}
-							onRemove={removeContent}
 							content={content[contentTabIndex]}
 						/>
 					</>
@@ -398,15 +397,7 @@ function AddCompetenceDialog({ onClose }: { onClose: OnDialogCloseFn<any> }) {
 	);
 }
 
-function RenderContentType({
-	index,
-	content,
-	onRemove
-}: {
-	index: number;
-	content: LessonContentType;
-	onRemove: (index: number) => void;
-}) {
+function RenderContentType({ index, content }: { index: number; content: LessonContentType }) {
 	if (content.type === "video") {
 		return <VideoInput index={index} />;
 	}

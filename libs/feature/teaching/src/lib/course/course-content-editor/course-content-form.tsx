@@ -3,8 +3,7 @@ import {
 	ChevronRightIcon,
 	LinkIcon,
 	PencilIcon,
-	PlusIcon,
-	SwitchVerticalIcon
+	PlusIcon
 } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -63,8 +62,8 @@ export function CourseContentForm() {
 	return (
 		<HighlightContext.Provider value={{ highlightedCompetence, setHighlightedCompetence }}>
 			<section>
-				<div className="grid gap-8 px-4 xl:grid-cols-[300px_1fr_500px]">
-					<OverviewPanel content={content} />
+				<div className="grid items-stretch gap-8 px-4 xl:grid-cols-[400px_1fr_500px]">
+					<TreeView content={content} />
 
 					<SectionCard>
 						<SectionCardHeader title="Inhalt" subtitle="Inhalte des Kurses." />
@@ -77,16 +76,24 @@ export function CourseContentForm() {
 						</button>
 
 						<ul className="flex flex-col gap-4">
-							{content.map((chapter, index) => (
-								<Chapter
-									key={index}
-									parentChapter=""
-									chapter={chapter as ChapterWithNr}
-									showInfo={showInfo}
-									onAddChapter={onAddChapter}
-									onAddLesson={onAddLesson}
-								/>
-							))}
+							{content.map((chapterOrLesson, index) =>
+								chapterOrLesson.type === "chapter" ? (
+									<Chapter
+										key={chapterOrLesson.chapterNr}
+										parentChapter=""
+										chapter={chapterOrLesson as ChapterWithNr}
+										showInfo={showInfo}
+										onAddChapter={onAddChapter}
+										onAddLesson={onAddLesson}
+									/>
+								) : (
+									<Lesson
+										lesson={chapterOrLesson}
+										showInfo={showInfo}
+										key={chapterOrLesson.lessonId}
+									/>
+								)
+							)}
 						</ul>
 					</SectionCard>
 
@@ -99,19 +106,61 @@ export function CourseContentForm() {
 	);
 }
 
-function OverviewPanel({ content }: { content: MappedContent }) {
+function TreeView({ content }: { content: MappedContent }) {
 	return (
-		<div className="overflow-hidden rounded-lg border border-light-border bg-white py-4 pl-4">
+		<div className="flex overflow-hidden rounded-lg border border-light-border bg-white py-4 px-4">
 			<ul className="playlist-scroll overflow-auto">
 				{content.map((chapterOrLesson, elementIndex) =>
 					chapterOrLesson.type === "lesson" ? (
-						<li key={chapterOrLesson.lessonId}>{chapterOrLesson.title}</li>
+						<LessonNode key={chapterOrLesson.lessonId} lesson={chapterOrLesson} />
 					) : (
 						<SimpleChapter key={elementIndex} chapter={chapterOrLesson} />
 					)
 				)}
 			</ul>
 		</div>
+	);
+}
+
+function LessonNode({ lesson }: { lesson: { title: string; lessonId: string; lessonNr: number } }) {
+	const [openEditor, setOpenEditor] = useState(false);
+	const { mutateAsync: editLessonAsync } = trpc.useMutation("lessons.edit");
+
+	async function handleLessonEditorClosed(editedLesson?: LessonFormModel) {
+		if (!editedLesson) {
+			return setOpenEditor(false);
+		}
+
+		try {
+			console.log("Creating lesson...", editedLesson);
+			const result = await editLessonAsync({
+				lesson: editedLesson,
+				lessonId: lesson.lessonId
+			});
+			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
+			//onAddLesson(chapter.chapterId, result);
+			setOpenEditor(false);
+		} catch (error) {
+			console.error(error);
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: "Lerneinheit konnte nicht erstellt werden."
+			});
+		}
+	}
+
+	return (
+		<button
+			type="button"
+			onClick={() => setOpenEditor(true)}
+			className="flex items-center whitespace-nowrap text-sm text-light hover:text-secondary"
+		>
+			<span className="px-2 text-center text-xs text-secondary">{lesson.lessonNr}</span>
+			<span className="text-sm">{lesson.title}</span>
+
+			{openEditor && <EditLessonDialog onClose={handleLessonEditorClosed} />}
+		</button>
 	);
 }
 
@@ -144,13 +193,7 @@ function SimpleChapter({ chapter }: { chapter: ChapterWithNr }) {
 				<ul className="flex flex-col border-l border-light-border pl-4">
 					{chapter.content.map((chapterOrLesson, elementIndex) =>
 						chapterOrLesson.type === "lesson" ? (
-							<a
-								href={`#${chapterOrLesson.lessonId}`}
-								key={chapterOrLesson.lessonId}
-								className="whitespace-nowrap text-sm text-light"
-							>
-								{chapterOrLesson.title}
-							</a>
+							<LessonNode key={chapterOrLesson.lessonId} lesson={chapterOrLesson} />
 						) : (
 							<SimpleChapter key={elementIndex} chapter={chapterOrLesson} />
 						)

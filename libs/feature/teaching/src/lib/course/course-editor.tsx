@@ -16,6 +16,8 @@ export function CourseEditor({
 	course: CourseFormModel;
 	onConfirm: (course: CourseFormModel) => void;
 }) {
+	// triggerRerender is used to force the form to re-render when course is updated from JSON dialog
+	const [triggerRerender, setTriggerRerender] = useState(0);
 	const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 	const [openAsJson, setOpenAsJson] = useState(false);
 	const isNew = course.courseId === "";
@@ -31,10 +33,11 @@ export function CourseEditor({
 		}
 
 		setOpenAsJson(false);
+		setTriggerRerender(r => r + 1);
 	}
 
 	return (
-		<div className="bg-gray-50 pb-32">
+		<div className="bg-gray-50 pb-32" key={triggerRerender}>
 			<FormProvider {...methods}>
 				<form
 					id="courseform"
@@ -53,7 +56,7 @@ export function CourseEditor({
 								invalid => {
 									console.log("invalid", invalid);
 								}
-							);
+							)(e);
 						}
 					}}
 				>

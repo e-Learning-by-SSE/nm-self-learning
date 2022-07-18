@@ -1,10 +1,9 @@
 import { SectionHeader } from "@self-learning/ui/common";
-import { Form, LabeledField } from "@self-learning/ui/forms";
+import { Form, LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useRef } from "react";
+import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { ImageUploadWidget } from "../image-upload";
-import { MarkdownField } from "@self-learning/ui/forms";
 import { CourseFormModel } from "./course-form-model";
 
 /**
@@ -28,8 +27,11 @@ export function CourseInfoForm() {
 	const {
 		register,
 		control,
+		setValue,
 		formState: { errors }
-	} = useFormContext<CourseFormModel>();
+	} = useFormContext<CourseFormModel & { content: unknown[] }>(); // widen content type to prevent circular path error
+
+	const [openDescriptionEditor, setOpenDescriptionEditor] = useState(false);
 
 	return (
 		<Form.Container>
@@ -52,13 +54,47 @@ export function CourseInfoForm() {
 						<button className="btn-stroked h-fit self-end">Generieren</button>
 					</div>
 
+					<LabeledField label="Untertitel" error={errors.subtitle?.message}>
+						<textarea
+							{...register("subtitle")}
+							placeholder="1-2 Sätze über diesen Kurs."
+							className="h-full"
+						/>
+					</LabeledField>
+
 					<div className="grid gap-8 md:grid-cols-[1fr_auto]">
-						<LabeledField label="Untertitel" error={errors.subtitle?.message}>
+						<LabeledField label="Beschreibung" optional={true}>
 							<textarea
-								{...register("subtitle")}
-								placeholder="1-2 Sätze über diesen Kurs."
+								{...register("description")}
 								className="h-full"
+								rows={5}
+								placeholder="Beschreibung dieser Lernheit. Unterstützt Markdown."
 							/>
+
+							<button
+								type="button"
+								className="btn-stroked text-sm"
+								onClick={() => setOpenDescriptionEditor(true)}
+							>
+								Markdown Editor öffnen
+							</button>
+
+							{openDescriptionEditor && (
+								<Controller
+									control={control}
+									name="description"
+									render={({ field }) => (
+										<MarkdownEditorDialog
+											title="Beschreibung"
+											onClose={v => {
+												setValue("description", v ?? "");
+												setOpenDescriptionEditor(false);
+											}}
+											initialValue={field.value ?? ""}
+										/>
+									)}
+								/>
+							)}
 						</LabeledField>
 
 						<LabeledField label="Bild">
@@ -78,29 +114,6 @@ export function CourseInfoForm() {
 					</div>
 				</Form.SectionCard>
 			</CenteredContainer>
-
-			<section>
-				<CenteredContainer>
-					<SectionHeader
-						title="Beschreibung"
-						subtitle="Ausführliche Beschreibung des Kurses. Unterstützt Markdown."
-					/>
-				</CenteredContainer>
-
-				<Form.MarkdownWithPreviewContainer>
-					<Controller
-						control={control}
-						name="description"
-						render={({ field }) => (
-							<MarkdownField
-								content={field.value as string}
-								setValue={field.onChange}
-								minHeight="500px"
-							/>
-						)}
-					/>
-				</Form.MarkdownWithPreviewContainer>
-			</section>
 		</Form.Container>
 	);
 }

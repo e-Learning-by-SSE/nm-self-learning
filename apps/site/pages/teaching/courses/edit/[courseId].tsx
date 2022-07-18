@@ -1,6 +1,10 @@
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
+import {
+	CourseEditor,
+	CourseFormModel,
+	mapCourseContentToFormContent
+} from "@self-learning/teaching";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
@@ -31,7 +35,9 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		};
 	}
 
-	const lessonIds = extractLessonIds(course.content as CourseContent);
+	const content = course.content as CourseContent;
+
+	const lessonIds = extractLessonIds(content);
 
 	const lessons = await database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
@@ -56,7 +62,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		imgUrl: course.imgUrl,
 		slug: course.slug,
 		subjectId: course.subject?.subjectId ?? null,
-		content: [] // TODO
+		content: mapCourseContentToFormContent(content, lessonsById)
 	};
 
 	return {
@@ -72,7 +78,7 @@ export default function EditCoursePage({
 	const router = useRouter();
 
 	function onConfirm(updatedCourse: CourseFormModel) {
-		async function create() {
+		async function update() {
 			try {
 				const { title } = await updateCourse({
 					courseId: course.courseId as string,
@@ -88,7 +94,7 @@ export default function EditCoursePage({
 				});
 			}
 		}
-		create();
+		update();
 	}
 
 	return <CourseEditor course={course} onConfirm={onConfirm} />;
