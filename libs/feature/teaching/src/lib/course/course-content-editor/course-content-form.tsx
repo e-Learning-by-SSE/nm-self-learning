@@ -122,7 +122,8 @@ function TreeView({ content }: { content: MappedContent }) {
 	);
 }
 
-function LessonNode({ lesson }: { lesson: { title: string; lessonId: string; lessonNr: number } }) {
+function LessonNode({ lesson }: { lesson: LessonWithNr }) {
+	const { data } = trpc.useQuery(["lessons.findOne", { lessonId: lesson.lessonId }]);
 	const [openEditor, setOpenEditor] = useState(false);
 	const { mutateAsync: editLessonAsync } = trpc.useMutation("lessons.edit");
 
@@ -157,7 +158,7 @@ function LessonNode({ lesson }: { lesson: { title: string; lessonId: string; les
 			className="flex items-center whitespace-nowrap text-sm text-light hover:text-secondary"
 		>
 			<span className="px-2 text-center text-xs text-secondary">{lesson.lessonNr}</span>
-			<span className="text-sm">{lesson.title}</span>
+			<span className="text-sm">{data ? data.title : "Loading..."}</span>
 
 			{openEditor && <EditLessonDialog onClose={handleLessonEditorClosed} />}
 		</button>
@@ -406,6 +407,8 @@ function Chapter({
 }
 
 function Lesson({ lesson, showInfo }: { lesson: LessonWithNr; showInfo: boolean }) {
+	const { data } = trpc.useQuery(["lessons.findOne", { lessonId: lesson.lessonId }]);
+
 	return (
 		<li
 			id={lesson.lessonId}
@@ -417,8 +420,8 @@ function Lesson({ lesson, showInfo }: { lesson: LessonWithNr; showInfo: boolean 
 				{lesson.lessonNr}
 			</span>
 			<span className="my-auto flex flex-col gap-1">
-				<span className="font-medium">{lesson.title}</span>
-				{showInfo && <Competences requires={lesson.requires} rewards={lesson.rewards} />}
+				<span className="font-medium">{data ? data.title : "Loading..."}</span>
+				{/* {showInfo && <Competences requires={lesson.requires} rewards={lesson.rewards} />} */}
 			</span>
 			<span className="flex items-center gap-2 px-2 text-xs text-gray-400">
 				<button type="button" className="h-fit rounded-full p-2 hover:bg-gray-100">

@@ -8,6 +8,7 @@ import { AppProps } from "next/app";
 import Head from "next/head";
 import { Toaster } from "react-hot-toast";
 import "./styles.css";
+import { ReactQueryDevtools } from "react-query/devtools";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -54,6 +55,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 				</main>
 				<Toaster containerStyle={{ top: 96 }} position="top-right" />
+				<ReactQueryDevtools position="bottom-right" />
 			</SessionProvider>
 		</>
 	);

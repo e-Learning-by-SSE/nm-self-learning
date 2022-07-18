@@ -14,7 +14,7 @@ export type ChapterWithNr = {
 	content: MappedContent;
 };
 
-export type LessonWithNr = Lesson & { lessonNr: number; lessonId: string };
+export type LessonWithNr = { type: "lesson"; lessonNr: number; lessonId: string };
 
 export type Lesson = {
 	type: "lesson";

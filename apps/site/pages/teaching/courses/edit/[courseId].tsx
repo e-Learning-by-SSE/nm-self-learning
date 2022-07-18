@@ -7,11 +7,12 @@ import {
 } from "@self-learning/teaching";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
 type EditCourseProps = {
 	course: CourseFormModel;
+	lessons: { title: string; lessonId: string; slug: string }[];
 };
 
 export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ params }) => {
@@ -71,9 +72,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 	};
 };
 
-export default function EditCoursePage({
-	course
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.useMutation("courses.edit");
 	const router = useRouter();
 
