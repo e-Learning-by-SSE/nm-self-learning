@@ -12,6 +12,7 @@ import {
 	Tabs
 } from "@self-learning/ui/common";
 import { EditorField, LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
+import { formatSeconds } from "@self-learning/util/common";
 import { Fragment, useState } from "react";
 import {
 	Controller,
@@ -407,11 +408,11 @@ function RenderContentType({
 	onRemove: (index: number) => void;
 }) {
 	if (content.type === "video") {
-		return <VideoInput index={index} remove={() => onRemove(index)} />;
+		return <VideoInput index={index} />;
 	}
 
 	if (content.type === "article") {
-		return <ArticleInput index={index} onRemove={() => onRemove(index)} />;
+		return <ArticleInput index={index} />;
 	}
 
 	return (
@@ -421,7 +422,7 @@ function RenderContentType({
 	);
 }
 
-function ArticleInput({ index, onRemove }: { index: number; onRemove: () => void }) {
+function ArticleInput({ index }: { index: number }) {
 	return (
 		<Controller
 			name={`content.${index}.value.content`}
@@ -432,13 +433,16 @@ function ArticleInput({ index, onRemove }: { index: number; onRemove: () => void
 	);
 }
 
-export function VideoInput({ index, remove }: { index: number; remove: () => void }) {
-	const { control } = useFormContext<{ content: Video[] }>();
+export function VideoInput({ index }: { index: number }) {
+	const { control, register } = useFormContext<{ content: Video[] }>();
 	const { update } = useFieldArray<{ content: Video[] }>({
 		name: "content"
 	});
 
-	const url = useWatch({ control, name: `content.${index}.value.url` });
+	const {
+		value: { url },
+		meta: { duration }
+	} = useWatch({ control, name: `content.${index}` });
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -446,18 +450,39 @@ export function VideoInput({ index, remove }: { index: number; remove: () => voi
 
 			<VideoUploadWidget
 				url={url ?? null}
-				onUpload={filepath => {
-					console.log(filepath);
+				onUrlChange={url =>
+					update(index, {
+						type: "video",
+						value: { url },
+						meta: { duration: 0 }
+					})
+				}
+				onUpload={file => {
+					console.log(file);
 
-					const { publicURL, error } = getSupabaseUrl("videos", filepath);
-					if (!error) {
+					const { publicURL, error } = getSupabaseUrl("videos", file.filepath);
+
+					if (!error && publicURL) {
 						update(index, {
 							type: "video",
-							value: { url: publicURL as string }
+							value: { url: publicURL },
+							meta: { duration: file.duration }
 						});
 					}
 				}}
 			/>
+
+			<LabeledField label="Länge in Sekunden">
+				<div className="grid grid-cols-[1fr_auto]">
+					<input
+						{...register(`content.${index}.meta.duration`)}
+						placeholder="Länge des Videos in Sekunden."
+					/>
+					<span className="my-auto px-2 text-sm text-light">
+						{formatSeconds(duration)}
+					</span>
+				</div>
+			</LabeledField>
 		</div>
 	);
 }

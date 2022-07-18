@@ -30,16 +30,31 @@ export function VideoInput({ index, remove }: { index: number; remove: () => voi
 						/>
 					</LabeledField>
 
+					<LabeledField label="Länge">
+						<input
+							{...register(`content.${index}.meta.duration`)}
+							placeholder="Länge des Videos in Sekunden."
+						/>
+					</LabeledField>
+
 					<VideoUploadWidget
 						url={url ?? null}
-						onUpload={filepath => {
-							console.log(filepath);
+						onUrlChange={url =>
+							update(index, {
+								type: "video",
+								value: { url },
+								meta: { duration: 0 }
+							})
+						}
+						onUpload={file => {
+							console.log(file);
 
-							const { publicURL, error } = getSupabaseUrl("videos", filepath);
+							const { publicURL, error } = getSupabaseUrl("videos", file.filepath);
 							if (!error) {
 								update(index, {
 									type: "video",
-									value: { url: publicURL as string }
+									value: { url: publicURL as string },
+									meta: { duration: file.duration }
 								});
 							}
 						}}

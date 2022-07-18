@@ -81,10 +81,12 @@ export function ImageUploadWidget({
 
 export function VideoUploadWidget({
 	url,
-	onUpload
+	onUpload,
+	onUrlChange
 }: {
 	url: string | null;
-	onUpload: (filepath: string) => void;
+	onUpload: (file: { filepath: string; duration: number }) => void;
+	onUrlChange: (url: string) => void;
 }) {
 	const [uploading, setUploading] = useState(false);
 
@@ -97,19 +99,20 @@ export function VideoUploadWidget({
 			}
 
 			const file = event.target.files[0];
-			const fileExt = file.name.split(".").pop();
-			const fileName = `${Math.random().toString(16).slice(2)}.${fileExt}`;
-			const filePath = `${fileName}`;
+			const duration = await getVideoDuration(file);
+
+			const ext = file.name.split(".").pop();
+			const filepath = `${Math.random().toString(16).slice(2)}.${ext}`;
 
 			const { error: uploadError } = await supabase.storage
 				.from("videos")
-				.upload(filePath, file);
+				.upload(filepath, file);
 
 			if (uploadError) {
 				throw uploadError;
 			}
 
-			onUpload(filePath);
+			onUpload({ filepath, duration });
 		} catch (error) {
 			alert((error as { message: string }).message);
 		} finally {
@@ -121,10 +124,14 @@ export function VideoUploadWidget({
 		<div className="flex flex-col gap-8">
 			<div className="flex gap-2">
 				<LabeledField label="URL">
-					<input placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
+					<input
+						placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+						value={url ?? ""}
+						onChange={e => onUrlChange(e.target.value)}
+					/>
 				</LabeledField>
 
-				<div className="btn-primary mt-4 h-fit w-fit self-end text-sm">
+				<div className="btn-primary h-fit self-end text-sm">
 					<label className="flex items-center gap-2" htmlFor="video-upload">
 						<UploadIcon className="h-5" />
 						<span>{uploading ? "Uploading ..." : "Upload"}</span>
@@ -140,6 +147,7 @@ export function VideoUploadWidget({
 						accept="video/mp4,video/x-m4v,video/*"
 						onChange={uploadVideo}
 						disabled={uploading}
+						tabIndex={0}
 					/>
 				</div>
 			</div>
@@ -148,4 +156,26 @@ export function VideoUploadWidget({
 			</div>
 		</div>
 	);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getVideoDuration(file: any) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const fileCallbackToPromise = (fileObj: any) => {
+		return Promise.race([
+			new Promise(resolve => {
+				if (fileObj instanceof HTMLImageElement) fileObj.onload = resolve;
+				else fileObj.onloadedmetadata = resolve;
+			}),
+			new Promise((_, reject) => {
+				setTimeout(reject, 1000);
+			})
+		]);
+	};
+
+	const objectUrl = URL.createObjectURL(file);
+	const video = document.createElement("video");
+	video.src = objectUrl;
+	await fileCallbackToPromise(video);
+	return video.duration;
 }
