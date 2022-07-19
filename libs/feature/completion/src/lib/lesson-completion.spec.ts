@@ -3,7 +3,7 @@ import { database } from "@self-learning/database";
 import { createTestUser } from "@self-learning/util/testing";
 import { checkLessonCompletion } from "./lesson-completion";
 
-const username = "potter";
+const username = "mustermann";
 
 describe("checkLessonCompletion", () => {
 	const createLesson = (index: number): Prisma.LessonCreateManyInput => ({
