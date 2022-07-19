@@ -12,9 +12,11 @@ export const appRouter = createRouter()
 	.merge("courses.", courseRouter)
 	.merge("lessons.", lessonRouter)
 	.mutation("mdx", {
-		input: z.string(),
+		input: z.object({
+			text: z.string()
+		}),
 		resolve({ input }) {
-			return compileMarkdown(input);
+			return compileMarkdown(input.text);
 		}
 	});
 

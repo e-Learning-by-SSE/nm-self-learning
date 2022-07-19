@@ -193,7 +193,9 @@ function Overview() {
 									<MarkdownEditorDialog
 										title="Beschreibung"
 										onClose={v => {
-											setValue("description", v);
+											if (v) {
+												setValue("description", v);
+											}
 											setOpenDescriptionEditor(false);
 										}}
 										initialValue={field.value ?? ""}
