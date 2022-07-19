@@ -228,23 +228,21 @@ function CourseHeader({
 		return !!enrollments.find(e => e.course.slug === course.slug);
 	}, [enrollments, course]);
 
-	const nextLesson = useMemo(() => {
-		return null as any;
-		// if (completion) {
-		// 	for (const chapter of content) {
-		// 		for (const lesson of chapter.lessons) {
-		// 			if (!(lesson.lessonId in completion.completedLessons)) {
-		// 				return lesson;
-		// 			}
-		// 		}
-		// 	}
+	const nextLessonSlug = useMemo(() => {
+		if (!completion) return null;
+		let firstNonCompletedLesson: string | null = null;
 
-		// 	console.log("Course has already completed. Going to first lesson.");
-		// 	if (content[0] && content[0].lessons[0]) {
-		// 		const firstLesson = content[0].lessons[0];
-		// 		return firstLesson;
-		// 	}
-		// }
+		traverseCourseContent(content, chapterOrLesson => {
+			if (
+				firstNonCompletedLesson === null &&
+				chapterOrLesson.type === "lesson" &&
+				!completion.completedLessons[chapterOrLesson.lessonId]
+			) {
+				firstNonCompletedLesson = chapterOrLesson.slug;
+			}
+		});
+
+		return firstNonCompletedLesson;
 	}, [completion, content]);
 
 	return (
@@ -299,7 +297,7 @@ function CourseHeader({
 					</div>
 
 					{isEnrolled && (
-						<Link href={`/courses/${course.slug}/${nextLesson?.slug}`}>
+						<Link href={`/courses/${course.slug}/${nextLessonSlug}`}>
 							<a className="btn-primary">
 								<span>
 									{completion?.completion["course"].completionPercentage === 0
@@ -327,7 +325,7 @@ function CourseHeader({
 }
 
 function TableOfContents({ content, course }: { content: ToC.ToCContent; course: Course }) {
-	const courseCompletion = useCourseCompletion(course.slug);
+	//const courseCompletion = useCourseCompletion(course.slug);
 
 	return (
 		<div className="flex flex-col gap-8">
