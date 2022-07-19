@@ -166,6 +166,7 @@ function Overview() {
 						<textarea
 							{...register("subtitle")}
 							placeholder="1-2 Sätze über diese Lerneinheit."
+							rows={3}
 						/>
 					</LabeledField>
 
@@ -173,6 +174,7 @@ function Overview() {
 						<textarea
 							{...register("description")}
 							placeholder="Beschreibung dieser Lernheit. Unterstützt Markdown."
+							rows={6}
 						/>
 
 						<button
@@ -240,7 +242,7 @@ function Overview() {
 					<>
 						<Tabs selectedIndex={contentTabIndex} onChange={setContentTabIndex}>
 							{content.map((value, index) => (
-								<Tab>
+								<Tab key={value.id}>
 									<span className="flex items-center gap-4">
 										<span>{value.type}</span>
 										<button

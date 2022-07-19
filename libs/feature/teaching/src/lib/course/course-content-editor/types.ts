@@ -3,12 +3,14 @@ import { getRandomId } from "@self-learning/util/common";
 export type Chapter = {
 	type: "chapter";
 	title: string;
+	description: string | null;
 	content: Content;
 };
 
 export type ChapterWithNr = {
 	type: "chapter";
 	title: string;
+	description: string | null;
 	chapterNr: string;
 	chapterId: string;
 	content: MappedContent;
@@ -41,7 +43,7 @@ export type Summary = {
 export type MappedContent = (ChapterWithNr | LessonWithNr)[];
 
 export function mapContent(
-	content: Content,
+	content: Content | MappedContent,
 	lessonNrRef = { lessonNr: 1 },
 	parentChapter = ""
 ): MappedContent {
@@ -59,7 +61,8 @@ export function mapContent(
 				chapterNr: chapterNr,
 				chapterId: getRandomId(),
 				content: mapContent(item.content, lessonNrRef, chapterNr),
-				title: item.title
+				title: item.title,
+				description: item.description
 			};
 		}
 

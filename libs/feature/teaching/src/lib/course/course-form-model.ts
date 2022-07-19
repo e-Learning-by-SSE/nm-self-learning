@@ -11,7 +11,7 @@ const lessonSchema = z.object({
 
 type FormLesson = z.infer<typeof lessonSchema>;
 
-interface FormChapter {
+export interface FormChapter {
 	type: "chapter";
 	title: string;
 	chapterNr: string;

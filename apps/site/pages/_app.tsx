@@ -1,28 +1,26 @@
 import type { AppRouter } from "@self-learning/api";
 import { Navbar } from "@self-learning/ui/layouts";
-import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
+import { httpLink } from "@trpc/client/links/httpLink";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
 import { SessionProvider } from "next-auth/react";
 import { AppProps } from "next/app";
 import Head from "next/head";
 import { Toaster } from "react-hot-toast";
+// import { ReactQueryDevtools } from "react-query/devtools";
 import "./styles.css";
-import { ReactQueryDevtools } from "react-query/devtools";
 
 export default withTRPC<AppRouter>({
 	config() {
 		return {
-			url: "/api/trpc",
 			links: [
 				loggerLink({
 					enabled: opts =>
 						process.env.NODE_ENV === "development" ||
 						(opts.direction === "down" && opts.result instanceof Error)
 				}),
-				httpBatchLink({
-					url: "/api/trpc",
-					maxBatchSize: 10
+				httpLink({
+					url: "/api/trpc"
 				})
 			],
 			queryClientConfig: {
@@ -55,7 +53,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 				</main>
 				<Toaster containerStyle={{ top: 96 }} position="top-right" />
-				<ReactQueryDevtools position="bottom-right" />
+				{/* <ReactQueryDevtools position="bottom-right" /> */}
 			</SessionProvider>
 		</>
 	);

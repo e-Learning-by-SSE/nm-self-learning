@@ -6,15 +6,19 @@ import {
 	PlusIcon
 } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
+import { QuizContent } from "@self-learning/question-types";
+import { LessonContent } from "@self-learning/types";
 import {
 	Divider,
 	IconButton,
+	OnDialogCloseFn,
 	SectionCard,
 	SectionCardHeader,
 	showToast
 } from "@self-learning/ui/common";
+import { getRandomId } from "@self-learning/util/common";
 import { AnimatePresence, motion } from "framer-motion";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useId, useState } from "react";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { EditLessonDialog } from "./dialogs/edit-lesson-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
@@ -114,7 +118,7 @@ function TreeView({ content }: { content: MappedContent }) {
 					chapterOrLesson.type === "lesson" ? (
 						<LessonNode key={chapterOrLesson.lessonId} lesson={chapterOrLesson} />
 					) : (
-						<SimpleChapter key={elementIndex} chapter={chapterOrLesson} />
+						<ChapterNode key={elementIndex} chapter={chapterOrLesson} />
 					)
 				)}
 			</ul>
@@ -124,48 +128,19 @@ function TreeView({ content }: { content: MappedContent }) {
 
 function LessonNode({ lesson }: { lesson: LessonWithNr }) {
 	const { data } = trpc.useQuery(["lessons.findOne", { lessonId: lesson.lessonId }]);
-	const [openEditor, setOpenEditor] = useState(false);
-	const { mutateAsync: editLessonAsync } = trpc.useMutation("lessons.edit");
-
-	async function handleLessonEditorClosed(editedLesson?: LessonFormModel) {
-		if (!editedLesson) {
-			return setOpenEditor(false);
-		}
-
-		try {
-			console.log("Creating lesson...", editedLesson);
-			const result = await editLessonAsync({
-				lesson: editedLesson,
-				lessonId: lesson.lessonId
-			});
-			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
-			//onAddLesson(chapter.chapterId, result);
-			setOpenEditor(false);
-		} catch (error) {
-			console.error(error);
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle: "Lerneinheit konnte nicht erstellt werden."
-			});
-		}
-	}
 
 	return (
-		<button
-			type="button"
-			onClick={() => setOpenEditor(true)}
+		<a
+			href={`#${lesson.lessonId}`}
 			className="flex items-center whitespace-nowrap text-sm text-light hover:text-secondary"
 		>
 			<span className="px-2 text-center text-xs text-secondary">{lesson.lessonNr}</span>
 			<span className="text-sm">{data ? data.title : "Loading..."}</span>
-
-			{openEditor && <EditLessonDialog onClose={handleLessonEditorClosed} />}
-		</button>
+		</a>
 	);
 }
 
-function SimpleChapter({ chapter }: { chapter: ChapterWithNr }) {
+function ChapterNode({ chapter }: { chapter: ChapterWithNr }) {
 	const [expanded, setExpanded] = useState(true);
 
 	return (
@@ -196,7 +171,7 @@ function SimpleChapter({ chapter }: { chapter: ChapterWithNr }) {
 						chapterOrLesson.type === "lesson" ? (
 							<LessonNode key={chapterOrLesson.lessonId} lesson={chapterOrLesson} />
 						) : (
-							<SimpleChapter key={elementIndex} chapter={chapterOrLesson} />
+							<ChapterNode key={elementIndex} chapter={chapterOrLesson} />
 						)
 					)}
 				</ul>
@@ -408,6 +383,40 @@ function Chapter({
 
 function Lesson({ lesson, showInfo }: { lesson: LessonWithNr; showInfo: boolean }) {
 	const { data } = trpc.useQuery(["lessons.findOne", { lessonId: lesson.lessonId }]);
+	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
+	const { mutateAsync: editLessonAsync } = trpc.useMutation("lessons.edit");
+	const trpcContext = trpc.useContext();
+
+	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
+		if (!updatedLesson) {
+			return setLessonEditorDialog(false);
+		}
+
+		try {
+			const result = await editLessonAsync({
+				lesson: updatedLesson,
+				lessonId: lesson.lessonId
+			});
+			showToast({
+				type: "success",
+				title: "Lerneinheit gespeichert!",
+				subtitle: result.title
+			});
+			setLessonEditorDialog(false);
+		} catch (error) {
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: "Die Lernheit konnte nicht gespeichert werden."
+			});
+		} finally {
+			trpcContext.invalidateQueries([
+				"lessons.findOneAllProps",
+				{ lessonId: lesson.lessonId }
+			]);
+			trpcContext.invalidateQueries(["lessons.findOne", { lessonId: lesson.lessonId }]);
+		}
+	};
 
 	return (
 		<li
@@ -424,10 +433,21 @@ function Lesson({ lesson, showInfo }: { lesson: LessonWithNr; showInfo: boolean 
 				{/* {showInfo && <Competences requires={lesson.requires} rewards={lesson.rewards} />} */}
 			</span>
 			<span className="flex items-center gap-2 px-2 text-xs text-gray-400">
-				<button type="button" className="h-fit rounded-full p-2 hover:bg-gray-100">
+				<button
+					type="button"
+					className="h-fit rounded-full p-2 hover:bg-gray-100"
+					onClick={() => setLessonEditorDialog(true)}
+				>
 					<PencilIcon className="h-4" />
 				</button>
 			</span>
+
+			{lessonEditorDialog && (
+				<EditExistingLessonDialog
+					lessonId={lesson.lessonId}
+					onClose={handleEditDialogClose}
+				/>
+			)}
 		</li>
 	);
 }
@@ -478,4 +498,25 @@ function Competences({ requires, rewards }: { requires?: Competence[]; rewards?:
 			</span>
 		</div>
 	);
+}
+
+function EditExistingLessonDialog({
+	lessonId,
+	onClose
+}: {
+	lessonId: string;
+	onClose: OnDialogCloseFn<LessonFormModel>;
+}) {
+	const { data } = trpc.useQuery(["lessons.findOneAllProps", { lessonId }]);
+
+	return data ? (
+		<EditLessonDialog
+			onClose={onClose}
+			initialLesson={{
+				...data,
+				content: (data.content ?? []) as LessonContent,
+				quiz: (data.quiz ?? []) as QuizContent
+			}}
+		/>
+	) : null;
 }

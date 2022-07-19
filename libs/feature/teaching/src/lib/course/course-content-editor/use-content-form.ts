@@ -1,4 +1,3 @@
-import { traverseCourseContent } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
@@ -10,17 +9,19 @@ export function useCourseContentForm() {
 	const { control, setValue } = useFormContext<{ content: unknown[] }>();
 	const { fields } = useFieldArray({ control, name: "content" });
 
-	const [content, setContent] = useState<MappedContent>(mapContent(fields as any)); // TODO: fix types
-
-	const summary = useMemo(() => {
-		const sum = createSummary(content);
-		return { count: sum.count, competences: [...sum.competences.values()] };
-	}, [content]);
+	const [content, setContent] = useState<MappedContent>(
+		mapContent(fields as unknown as MappedContent)
+	);
 
 	useEffect(() => {
 		// Update form whenever the internally managed `content` changes
 		setValue("content", content);
 	}, [content, setValue]);
+
+	const summary = useMemo(() => {
+		const sum = createSummary(content);
+		return { count: sum.count, competences: [...sum.competences.values()] };
+	}, [content]);
 
 	const [openNewChapterDialog, setOpenNewChapterDialog] = useState(false);
 	const [addChapterTarget, setAddChapterTarget] = useState<string | null>(null);
@@ -58,6 +59,7 @@ export function useCourseContentForm() {
 						type: "chapter",
 						chapterId: getRandomId(),
 						title: result.title,
+						description: result.description ?? "",
 						content: [],
 						chapterNr: "" // will be set by mapContent
 					});
@@ -78,9 +80,7 @@ export function useCourseContentForm() {
 				if (chapter) {
 					chapter.content.push({
 						type: "lesson",
-						title: lesson.title,
 						lessonId: lesson.lessonId,
-						hasQuiz: false,
 						lessonNr: 0 // will be set by mapContent,
 					});
 				}
@@ -115,27 +115,28 @@ function createSummary(content: MappedContent) {
 		}
 	};
 
-	traverseCourseContent(content, item => {
-		if (item.type === "chapter") {
-			summary.count.chapters++;
-		} else if (item.type === "lesson") {
-			summary.count.lessons++;
+	// TODO: Information is no longer part of form data
+	// traverseCourseContent(content, item => {
+	// 	if (item.type === "chapter") {
+	// 		summary.count.chapters++;
+	// 	} else if (item.type === "lesson") {
+	// 		summary.count.lessons++;
 
-			if (item.hasQuiz) {
-				summary.count.quizzes++;
-			}
+	// 		if (item.hasQuiz) {
+	// 			summary.count.quizzes++;
+	// 		}
 
-			if (item.rewards) {
-				for (const competence of item.rewards) {
-					const exists = summary.competences.get(competence.title);
+	// 		if (item.rewards) {
+	// 			for (const competence of item.rewards) {
+	// 				const exists = summary.competences.get(competence.title);
 
-					if (!exists || exists.level < competence.level) {
-						summary.competences.set(competence.title, competence);
-					}
-				}
-			}
-		}
-	});
+	// 				if (!exists || exists.level < competence.level) {
+	// 					summary.competences.set(competence.title, competence);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// });
 
 	return summary;
 }

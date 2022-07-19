@@ -6,12 +6,14 @@ describe("mapContent", () => {
 			{
 				type: "chapter",
 				title: "Chapter 1",
-				content: []
+				content: [],
+				description: ""
 			},
 			{
 				type: "chapter",
 				title: "Chapter 2",
-				content: []
+				content: [],
+				description: ""
 			}
 		];
 
@@ -26,16 +28,19 @@ describe("mapContent", () => {
 			{
 				type: "chapter",
 				title: "Chapter 1",
+				description: "",
 				content: [
 					{
 						type: "chapter",
 						title: "Chapter 1.1",
-						content: []
+						content: [],
+						description: ""
 					},
 					{
 						type: "chapter",
 						title: "Chapter 1.2",
-						content: []
+						content: [],
+						description: ""
 					}
 				]
 			}
@@ -53,20 +58,24 @@ describe("mapContent", () => {
 			{
 				type: "chapter",
 				title: "Chapter 1",
+				description: "",
 				content: [
 					{
 						type: "chapter",
 						title: "Chapter 1.1",
+						description: "",
 						content: [
 							{
 								type: "chapter",
 								title: "Chapter 1.1.1",
-								content: []
+								content: [],
+								description: ""
 							},
 							{
 								type: "chapter",
 								title: "Chapter 1.1.2",
-								content: []
+								content: [],
+								description: ""
 							}
 						]
 					}

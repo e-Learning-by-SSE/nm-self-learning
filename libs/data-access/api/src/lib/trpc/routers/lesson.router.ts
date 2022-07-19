@@ -6,6 +6,14 @@ import { z } from "zod";
 import { createProtectedRouter } from "../create-router";
 
 export const lessonRouter = createProtectedRouter()
+	.query("findOneAllProps", {
+		input: z.object({ lessonId: z.string() }),
+		resolve({ input }) {
+			return database.lesson.findUniqueOrThrow({
+				where: { lessonId: input.lessonId }
+			});
+		}
+	})
 	.query("findOne", {
 		input: z.object({ lessonId: z.string() }),
 		resolve({ input }) {

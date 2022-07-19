@@ -23,10 +23,7 @@ export function Tab({ children }: { children: ReactNode }) {
 	return (
 		<HeadlessTab as={Fragment}>
 			{({ selected }) => (
-				<button
-					type="button"
-					className="flex min-w-[128px] flex-col gap-1 focus:ring-0 focus-visible:outline-secondary"
-				>
+				<li className="flex min-w-[128px] flex-col gap-1 focus:ring-0 focus-visible:outline-secondary">
 					<span
 						className={`mx-auto px-2 py-2 font-semibold ${
 							selected ? "text-secondary" : "text-light"
@@ -36,7 +33,7 @@ export function Tab({ children }: { children: ReactNode }) {
 					</span>
 
 					{selected && <span className="h-[2px] w-full bg-secondary"></span>}
-				</button>
+				</li>
 			)}
 		</HeadlessTab>
 	);
