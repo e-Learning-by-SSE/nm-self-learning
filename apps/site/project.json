@@ -13,7 +13,9 @@
 			},
 			"configurations": {
 				"production": {},
-				"development": {}
+				"development": {
+					"outputPath": "tmp/apps/site"
+				}
 			}
 		},
 		"serve": {
