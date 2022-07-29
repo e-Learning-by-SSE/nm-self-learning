@@ -66,6 +66,7 @@
 	"devDependencies": {
 		"@babel/core": "7.12.13",
 		"@babel/preset-typescript": "7.12.13",
+		"@cypress/webpack-dev-server": "^2.0.0",
 		"@faker-js/faker": "^7.1.0",
 		"@nrwl/cli": "14.5.1",
 		"@nrwl/cypress": "14.5.1",
@@ -106,6 +107,7 @@
 		"eslint-plugin-jsx-a11y": "6.6.1",
 		"eslint-plugin-react": "7.30.1",
 		"eslint-plugin-react-hooks": "4.6.0",
+		"html-webpack-plugin": "^5.5.0",
 		"jest": "27.5.1",
 		"msw": "^0.42.1",
 		"next-test-api-route-handler": "^3.1.2",
