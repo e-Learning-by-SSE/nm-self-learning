@@ -17,6 +17,16 @@ The `children` of a `LabeledField` can contain any valid React Element, such as 
 	</Story>
 </Canvas>
 
+By settings the `optional` property to true, you can mark the field as optional.
+
+<Canvas>
+	<Story name="Optional">
+		<LabeledField label="Title" optional={true}>
+			<input type="text" className="textfield" />
+		</LabeledField>
+	</Story>
+</Canvas>
+
 You can also pass an error message to the `LabeledField` to display an error message.
 
 <Canvas>
