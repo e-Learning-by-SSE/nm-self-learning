@@ -10,221 +10,242 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String?
-    access_token      String?
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String?
-    session_state     String?
-
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@unique([provider, providerAccountId])
-}
-
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    student       Student?
-    author        Author?
-}
-
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
+model Course {
+    id        String    @id @default(uuid())
+    title     String
+    createdAt DateTime  @default(now())
+    students  Student[]
+    teacher   Teacher?  @relation(fields: [teacherId], references: [id])
+    teacherId String?
 }
 
 model Student {
-    userId           String               @unique
-    user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-    username         String               @id
-    displayName      String
-    enrollments      Enrollment[]
-    competences      AchievedCompetence[]
-    completedLessons CompletedLesson[]
-    quizAttempts     QuizAttempt[]
+    id      Int      @id @default(autoincrement())
+    name    String
+    courses Course[]
 }
 
-model Author {
-    id          Int      @id @default(autoincrement())
-    userId      String   @unique
-    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    displayName String
-    slug        String   @unique
-    imgUrl      String?
-    lessons     Lesson[]
-    courses     Course[]
-    teams       Team[]
+model Teacher {
+    id      String   @id @default(uuid())
+    name    String
+    courses Course[]
 }
 
-model Team {
-    teamId      Int      @id @default(autoincrement())
-    slug        String   @unique
-    name        String
-    description String?
-    imgUrl      String?
-    authors     Author[]
-}
+// model Account {
+//     id                String  @id @default(cuid())
+//     userId            String
+//     type              String
+//     provider          String
+//     providerAccountId String
+//     refresh_token     String?
+//     access_token      String?
+//     expires_at        Int?
+//     token_type        String?
+//     scope             String?
+//     id_token          String?
+//     session_state     String?
 
-model Subject {
-    subjectId       Int              @id @default(autoincrement())
-    slug            String           @unique
-    title           String
-    subtitle        String
-    imgUrlBanner    String?
-    cardImgUrl      String?
-    courses         Course[]
-    specializations Specialization[]
-}
+//     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-model Specialization {
-    specializationId Int      @id @default(autoincrement())
-    slug             String   @unique
-    title            String
-    subtitle         String
-    imgUrlBanner     String?
-    cardImgUrl       String?
-    subject          Subject  @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
-    courses          Course[]
-    subjectId        Int
-}
+//     @@unique([provider, providerAccountId])
+// }
 
-model Course {
-    courseId        String            @id
-    slug            String            @unique
-    title           String
-    subtitle        String
-    description     String?
-    imgUrl          String?
-    content         Json?
-    createdAt       DateTime          @default(now())
-    updatedAt       DateTime          @updatedAt
-    enrollments     Enrollment[]
-    completions     CompletedLesson[]
-    subject         Subject?          @relation(fields: [subjectId], references: [subjectId])
-    subjectId       Int?
-    specializations Specialization[]
-    authors         Author[]
-}
+// model Session {
+//     id           String   @id @default(cuid())
+//     sessionToken String   @unique
+//     userId       String
+//     expires      DateTime
+//     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+// }
 
-model Enrollment {
-    status      EnrollmentStatus
-    createdAt   DateTime         @default(now())
-    completedAt DateTime?
+// model User {
+//     id            String    @id @default(cuid())
+//     name          String?
+//     email         String?   @unique
+//     emailVerified DateTime?
+//     image         String?
+//     accounts      Account[]
+//     sessions      Session[]
+//     student       Student?
+//     author        Author?
+// }
 
-    courseId String
-    course   Course @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+// model VerificationToken {
+//     identifier String
+//     token      String   @unique
+//     expires    DateTime
 
-    username String
-    student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
+//     @@unique([identifier, token])
+// }
 
-    @@id([courseId, username])
-}
+// model Student {
+//     userId           String               @unique
+//     user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+//     username         String               @id
+//     displayName      String
+//     enrollments      Enrollment[]
+//     competences      AchievedCompetence[]
+//     completedLessons CompletedLesson[]
+//     quizAttempts     QuizAttempt[]
+// }
 
-enum EnrollmentStatus {
-    ACTIVE
-    INACTIVE
-    COMPLETED
-}
+// model Author {
+//     id          Int      @id @default(autoincrement())
+//     userId      String   @unique
+//     user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//     displayName String
+//     slug        String   @unique
+//     imgUrl      String?
+//     lessons     Lesson[]
+//     courses     Course[]
+//     teams       Team[]
+// }
 
-model Lesson {
-    lessonId     String            @id
-    slug         String            @unique
-    title        String
-    subtitle     String?
-    description  String?
-    imgUrl       String?
-    content      Json
-    quiz         Json?
-    meta         Json
-    competences  Competence[]
-    completions  CompletedLesson[]
-    quizAttempts QuizAttempt[]
-    authors      Author[]
-}
+// model Team {
+//     teamId      Int      @id @default(autoincrement())
+//     slug        String   @unique
+//     name        String
+//     description String?
+//     imgUrl      String?
+//     authors     Author[]
+// }
 
-model CompletedLesson {
-    completedLessonId Int      @id @default(autoincrement())
-    courseId          String?
-    course            Course?  @relation(fields: [courseId], references: [courseId])
-    lessonId          String
-    lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
-    username          String
-    user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
-    createdAt         DateTime @default(now())
+// model Subject {
+//     subjectId       Int              @id @default(autoincrement())
+//     slug            String           @unique
+//     title           String
+//     subtitle        String
+//     imgUrlBanner    String?
+//     cardImgUrl      String?
+//     courses         Course[]
+//     specializations Specialization[]
+// }
 
-    @@index([username, lessonId])
-}
+// model Specialization {
+//     specializationId Int      @id @default(autoincrement())
+//     slug             String   @unique
+//     title            String
+//     subtitle         String
+//     imgUrlBanner     String?
+//     cardImgUrl       String?
+//     subject          Subject  @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
+//     courses          Course[]
+//     subjectId        Int
+// }
 
-model Competence {
-    competenceId        String               @id
-    title               String
-    description         String?
-    achievedCompetences AchievedCompetence[]
-    lessons             Lesson[]
-}
+// model Course {
+//     courseId        String            @id
+//     slug            String            @unique
+//     title           String
+//     subtitle        String
+//     description     String?
+//     imgUrl          String?
+//     content         Json?
+//     createdAt       DateTime          @default(now())
+//     updatedAt       DateTime          @updatedAt
+//     enrollments     Enrollment[]
+//     completions     CompletedLesson[]
+//     subject         Subject?          @relation(fields: [subjectId], references: [subjectId])
+//     subjectId       Int?
+//     specializations Specialization[]
+//     authors         Author[]
+// }
 
-model AchievedCompetence {
-    achievedCompetenceId Int @id @default(autoincrement())
+// model Enrollment {
+//     status      EnrollmentStatus
+//     createdAt   DateTime         @default(now())
+//     completedAt DateTime?
 
-    lessonSlug String
-    achievedAt DateTime @default(now())
+//     courseId String
+//     course   Course @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
 
-    competenceId String
-    competence   Competence @relation(fields: [competenceId], references: [competenceId], onDelete: Cascade)
+//     username String
+//     student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
 
-    username String
-    student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
+//     @@id([courseId, username])
+// }
 
-    @@unique([lessonSlug, competenceId, username])
-    @@index([competenceId, username])
-}
+// enum EnrollmentStatus {
+//     ACTIVE
+//     INACTIVE
+//     COMPLETED
+// }
 
-model QuizAttempt {
-    attemptId String   @id @default(uuid())
-    createdAt DateTime @default(now())
-    state     String
+// model Lesson {
+//     lessonId     String            @id
+//     slug         String            @unique
+//     title        String
+//     subtitle     String?
+//     description  String?
+//     imgUrl       String?
+//     content      Json
+//     quiz         Json?
+//     meta         Json
+//     competences  Competence[]
+//     completions  CompletedLesson[]
+//     quizAttempts QuizAttempt[]
+//     authors      Author[]
+// }
 
-    student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
-    username String
+// model CompletedLesson {
+//     completedLessonId Int      @id @default(autoincrement())
+//     courseId          String?
+//     course            Course?  @relation(fields: [courseId], references: [courseId])
+//     lessonId          String
+//     lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+//     username          String
+//     user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
+//     createdAt         DateTime @default(now())
 
-    lesson   Lesson @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
-    lessonId String
+//     @@index([username, lessonId])
+// }
 
-    QuizAnswer QuizAnswer[]
-    @@index([username, lessonId])
-}
+// model Competence {
+//     competenceId        String               @id
+//     title               String
+//     description         String?
+//     achievedCompetences AchievedCompetence[]
+//     lessons             Lesson[]
+// }
 
-model QuizAnswer {
-    answerId      Int         @id @default(autoincrement())
-    quizAttemptId String
-    quizAttempt   QuizAttempt @relation(fields: [quizAttemptId], references: [attemptId], onDelete: Cascade)
-    questionId    String
-    answer        Json
-    isCorrect     Boolean
+// model AchievedCompetence {
+//     achievedCompetenceId Int @id @default(autoincrement())
 
-    @@index([questionId])
-}
+//     lessonSlug String
+//     achievedAt DateTime @default(now())
+
+//     competenceId String
+//     competence   Competence @relation(fields: [competenceId], references: [competenceId], onDelete: Cascade)
+
+//     username String
+//     student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
+
+//     @@unique([lessonSlug, competenceId, username])
+//     @@index([competenceId, username])
+// }
+
+// model QuizAttempt {
+//     attemptId String   @id @default(uuid())
+//     createdAt DateTime @default(now())
+//     state     String
+
+//     student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
+//     username String
+
+//     lesson   Lesson @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+//     lessonId String
+
+//     QuizAnswer QuizAnswer[]
+//     @@index([username, lessonId])
+// }
+
+// model QuizAnswer {
+//     answerId      Int         @id @default(autoincrement())
+//     quizAttemptId String
+//     quizAttempt   QuizAttempt @relation(fields: [quizAttemptId], references: [attemptId], onDelete: Cascade)
+//     questionId    String
+//     answer        Json
+//     isCorrect     Boolean
+
+//     @@index([questionId])
+// }

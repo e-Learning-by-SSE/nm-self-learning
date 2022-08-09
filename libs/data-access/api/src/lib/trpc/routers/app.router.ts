@@ -1,24 +1,34 @@
-import { completionRouter } from "./completion.router";
-import { createRouter } from "../create-router";
-import { enrollmentRouter } from "./enrollment.router";
-import { lessonRouter } from "./lesson.router";
-import { courseRouter } from "./course.router";
+import { database } from "@self-learning/database";
 import { z } from "zod";
-import { compileMarkdown } from "@self-learning/markdown";
+import { createRouter } from "../create-router";
+import { courseRouter } from "./course.router";
 
-export const appRouter = createRouter()
-	.merge("user-completion.", completionRouter)
-	.merge("user-enrollments.", enrollmentRouter)
-	.merge("courses.", courseRouter)
-	.merge("lessons.", lessonRouter)
-	.mutation("mdx", {
-		input: z.object({
-			text: z.string()
-		}),
+const lessonRouter = createRouter()
+	// Defines `lessons.findOne` endpoint that expects a `lessonId` as parameter and
+	// returns the lessons with its title and authors.
+	.query("findOne", {
+		input: z.object({ lessonId: z.string() }),
 		resolve({ input }) {
-			return compileMarkdown(input.text);
+			return database.lesson.findUnique({
+				where: {
+					lessonId: input.lessonId
+				},
+				select: {
+					title: true,
+					authors: {
+						select: {
+							displayName: true
+						}
+					}
+				}
+			});
 		}
 	});
+
+/** Merges all routers into a single object. */
+export const appRouter = createRouter()
+	.merge("courses.", courseRouter)
+	.merge("lessons.", lessonRouter);
 
 /** Contains type definitions of the api. */
 export type AppRouter = typeof appRouter;
