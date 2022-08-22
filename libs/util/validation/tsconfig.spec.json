@@ -15,6 +15,7 @@
 		"**/*.spec.js",
 		"**/*.test.jsx",
 		"**/*.spec.jsx",
-		"**/*.d.ts"
-, "src/lib/error.ts"	]
+		"**/*.d.ts",
+		"src/lib/error.ts"
+	]
 }
