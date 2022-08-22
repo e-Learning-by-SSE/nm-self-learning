@@ -94,6 +94,10 @@ textarea,
 	@apply transition-colors hover:bg-opacity-90;
 }
 
+.border-card {
+	@apply rounded-lg border border-light-border;
+}
+
 .card {
 	@apply rounded-lg p-8;
 }

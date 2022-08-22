@@ -1,13 +1,13 @@
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import {
-	CourseContent,
 	createChapter,
 	createCourseContent,
 	createLesson,
 	createLessonMeta,
 	LessonContent
 } from "@self-learning/types";
+import { startOfDay, subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
 import slugify from "slugify";
@@ -298,6 +298,14 @@ const enrollments: Prisma.EnrollmentCreateManyInput[] = [
 	}
 ];
 
+const completedLessons: Prisma.CompletedLessonCreateManyInput[] = reactLessons
+	.slice(0, 14)
+	.map((lesson, index) => ({
+		lessonId: lesson.lessonId,
+		username: students[0].username,
+		createdAt: subHours(Date.now(), index * 4)
+	}));
+
 async function seed(): Promise<void> {
 	const start = Date.now();
 
@@ -324,6 +332,8 @@ async function seed(): Promise<void> {
 	console.log("✅ Users");
 	await prisma.enrollment.createMany({ data: enrollments });
 	console.log("✅ Enrollments");
+	await prisma.completedLesson.createMany({ data: completedLessons });
+	console.log("✅ Completed Lessons");
 	await prisma.competence.createMany({ data: competences });
 	console.log("✅ Competences");
 	await createAchievedCompetences();

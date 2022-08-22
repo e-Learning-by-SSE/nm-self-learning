@@ -131,9 +131,12 @@ model Course {
 }
 
 model Enrollment {
-    status      EnrollmentStatus
-    createdAt   DateTime         @default(now())
-    completedAt DateTime?
+    status   EnrollmentStatus
+    progress Int              @default(0)
+
+    createdAt          DateTime  @default(now())
+    lastProgressUpdate DateTime  @default(now())
+    completedAt        DateTime?
 
     courseId String
     course   Course @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
@@ -215,6 +218,7 @@ model QuizAttempt {
     lessonId String
 
     QuizAnswer QuizAnswer[]
+
     @@index([username, lessonId])
 }
 

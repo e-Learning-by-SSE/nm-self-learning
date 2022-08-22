@@ -1,4 +1,5 @@
 import { database } from "@self-learning/database";
+import { endOfWeek, startOfWeek } from "date-fns";
 
 /**
  * Returns an object that contains the subset of completed lessons as keys.
@@ -39,4 +40,27 @@ export async function checkLessonCompletion(
 	}
 
 	return result;
+}
+
+export async function getCompletedLessonsThisWeek(username: string, dateNow: number) {
+	return database.completedLesson.findMany({
+		select: {
+			createdAt: true,
+			lesson: {
+				select: {
+					lessonId: true,
+					title: true
+				}
+			}
+		},
+		where: {
+			AND: {
+				username,
+				createdAt: {
+					gte: startOfWeek(dateNow, { weekStartsOn: 1 }),
+					lte: endOfWeek(dateNow, { weekStartsOn: 1 })
+				}
+			}
+		}
+	});
 }
