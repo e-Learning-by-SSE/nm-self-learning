@@ -1,46 +1,70 @@
-import { DotsCircleHorizontalIcon } from "@heroicons/react/outline";
+import { ArrowCircleRightIcon } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
-import { Tab, Tabs } from "@self-learning/ui/common";
+import { trpc } from "@self-learning/api-client";
+import { getCompletedLessonsThisWeek } from "@self-learning/completion";
+import { database } from "@self-learning/database";
+import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { format, isToday, isYesterday } from "date-fns";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
-import { getCompletedLessonsThisWeek } from "@self-learning/completion";
-import { isToday, isYesterday } from "date-fns";
+import Link from "next/link";
+import { ReactElement, useRef } from "react";
+
+type CompletedLesson = ResolvedValue<typeof getCompletedLessonsThisWeek>[0];
 
 type LearningDiaryProps = {
 	completedLessons: {
-		today: ResolvedValue<typeof getCompletedLessonsThisWeek>;
-		yesterday: ResolvedValue<typeof getCompletedLessonsThisWeek>;
-		week: ResolvedValue<typeof getCompletedLessonsThisWeek>;
+		today: CompletedLesson[];
+		yesterday: CompletedLesson[];
+		week: CompletedLesson[];
 	};
+	goals: string;
 };
 
 export const getServerSideProps: GetServerSideProps<LearningDiaryProps> = async ctx => {
 	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
 
 	if (!session?.user?.name) {
-		return { redirect: { destination: "/login", permanent: false } };
+		return { redirect: { destination: "/login?callbackUrl=learning-diary", permanent: false } };
 	}
 
-	const demoDate = Date.now(); // Should be Date.now()
+	const [completedLessons, learningDiary] = await Promise.all([
+		getCompletedLessonsThisWeek(session.user.name, Date.now()),
+		database.learningDiary.findUnique({
+			where: { username: session.user.name },
+			select: { goals: true }
+		})
+	]);
 
-	const completedLessons = await getCompletedLessonsThisWeek(session.user.name, demoDate);
 	const { today, yesterday, week } = groupCompletedLessons(completedLessons);
 
 	return {
 		props: {
+			goals: learningDiary?.goals ?? "",
 			completedLessons: {
-				today,
-				yesterday,
-				week
+				today: [
+					{
+						lesson: { title: "Lesson 1", lessonId: "lesson-1" },
+						createdAt: new Date(2022, 4, 20, 14, 0, 0)
+					},
+					{
+						lesson: { title: "Lesson 2", lessonId: "lesson-2" },
+						createdAt: new Date(2022, 4, 20, 12, 0, 0)
+					},
+					{
+						lesson: { title: "Lesson 3", lessonId: "lesson-3" },
+						createdAt: new Date(2022, 4, 20, 9, 0, 0)
+					}
+				],
+				yesterday: [],
+				week: []
 			}
 		}
 	};
 };
 
-function groupCompletedLessons(
-	completedLessons: ResolvedValue<typeof getCompletedLessonsThisWeek>
-) {
+function groupCompletedLessons(completedLessons: CompletedLesson[]) {
 	const today = [];
 	const yesterday = [];
 	const week = [];
@@ -57,103 +81,36 @@ function groupCompletedLessons(
 	return { today, yesterday, week };
 }
 
-export default function LearningDiary({ completedLessons }: LearningDiaryProps) {
-	console.log(completedLessons);
-
+export default function LearningDiary({ completedLessons, goals }: LearningDiaryProps) {
 	return (
 		<CenteredSection className="bg-gray-50">
-			<h1 className="mb-8 text-5xl">Mein Lerntagebuch</h1>
+			<h1 className="mb-16 text-5xl">Mein Lerntagebuch</h1>
 
-			<section className="border-card flex flex-col gap-8 bg-white p-4">
-				<div className="flex h-full flex-col gap-4">
-					<div className="flex justify-between">
-						<span className="text-lg font-semibold text-light">Meine Ziele</span>
-						<button className="btn-primary text-sm">Speichern</button>
-					</div>
-					<textarea rows={5} className="h-full" />
-				</div>
-			</section>
+			<Goals initialValue={goals} />
 
-			<div className="mt-8 mb-8">
-				<Tabs onChange={index => console.log(index)} selectedIndex={0}>
-					<Tab>Aktivität</Tab>
-					<Tab>Lernstrategien</Tab>
-					<Tab>Aufgaben</Tab>
-					<Tab>Reflexionen</Tab>
-				</Tabs>
-			</div>
+			<section className="mt-8 flex flex-col gap-12">
+				<CompletedLessonsSection
+					title="Heute"
+					summary={amount => <>Du hast heute {amount} Lerneinheiten bearbeitet.</>}
+					completedLessons={completedLessons.today}
+				/>
+				<CompletedLessonsSection
+					title="Gestern"
+					summary={amount => <>Du hast gestern {amount} Lerneinheiten bearbeitet.</>}
+					completedLessons={completedLessons.yesterday}
+				/>
+				<CompletedLessonsSection
+					title="Diese Woche"
+					summary={amount => (
+						<>Du hast in dieser Woche {amount} weitere Lerneinheiten bearbeitet.</>
+					)}
+					completedLessons={completedLessons.week}
+				/>
 
-			<section className="flex flex-col gap-12">
-				{/* <section className="flex flex-col gap-4">
-					<div className="flex flex-col gap-1">
-						<span className="font-semibold">Letzte Themen</span>
-						<span className="text-xs text-light">
-							An diesen Themen hast du zuletzt gearbeitet
-						</span>
-					</div>
-					<ul className="grid grid-cols-3 gap-2">
-						<TopicProgress />
-						<TopicProgress />
-						<TopicProgress />
-						<TopicProgress />
-						<TopicProgress />
-					</ul>
-				</section> */}
-
-				<section className="flex flex-col gap-4">
-					<div className="flex flex-col gap-1">
-						<span className="font-semibold">Heute</span>
-						<span className="text-xs text-light">
-							Du hast heute <span className="font-semibold">42</span> Lerneinheiten
-							bearbeitet.
-						</span>
-					</div>
-					<ul className="flex flex-col gap-2 text-sm">
-						<CompletedLesson />
-						<CompletedLesson />
-						<CompletedLesson />
-					</ul>
-				</section>
-
-				<section className="flex flex-col gap-4">
-					<div className="flex flex-col gap-1">
-						<span className="font-semibold">Gestern</span>
-						<span className="text-xs text-light">
-							Du hast gestern <span className="font-semibold">42</span> Lerneinheiten
-							bearbeitet.
-						</span>
-					</div>
-					<ul className="flex flex-col gap-2 text-sm">
-						<CompletedLesson />
-						<CompletedLesson />
-						<CompletedLesson />
-					</ul>
-				</section>
-
-				<section className="flex flex-col gap-4">
-					<div className="flex flex-col gap-1">
-						<span className="font-semibold">
-							Diese Woche{" "}
-							<span className="ml-4 text-xs font-normal text-light">
-								21.08-28.08.2022
-							</span>
-						</span>
-						<span className="text-xs text-light">
-							Du hast diese Woche <span className="font-semibold">42</span>{" "}
-							Lerneinheiten bearbeitet.
-						</span>
-					</div>
-					<ul className="flex flex-col gap-2 text-sm">
-						<CompletedLesson />
-						<CompletedLesson />
-						<CompletedLesson />
-					</ul>
-				</section>
-
-				<section className="flex justify-center">
-					<button className="flex flex-col items-center text-sm text-light">
+				<section className="flex justify-end">
+					<button className="flex flex-col items-end gap-2 text-sm text-light">
 						<span className="font-medium">Vorherige Woche anzeigen</span>
-						<DotsCircleHorizontalIcon className="h-6" />
+						<ArrowCircleRightIcon className="h-6" />
 					</button>
 				</section>
 			</section>
@@ -161,30 +118,105 @@ export default function LearningDiary({ completedLessons }: LearningDiaryProps) 
 	);
 }
 
-function CompletedLesson() {
+function Goals({ initialValue }: { initialValue: string }) {
+	const inputRef = useRef<HTMLTextAreaElement>(null);
+	const { mutate, isLoading: isSaving } = trpc.useMutation(["learning-diary.setGoals"], {
+		onSettled(_data, error) {
+			if (error) {
+				console.error(error);
+				showToast({
+					type: "error",
+					title: "Fehler",
+					subtitle: "Deine Ziele konnten nicht gespeichert werden."
+				});
+			} else {
+				showToast({
+					type: "success",
+					title: "Gespeichert",
+					subtitle: "Deine Ziele wurden erfolgreich gespeichert."
+				});
+			}
+		}
+	});
+
 	return (
-		<li className="border-card flex flex-wrap items-center justify-between gap-2 bg-white p-3">
-			<div className="flex flex-col gap-1">
-				<span className="font-medium">
-					Lorem ipsum dolor sit amet consectetur adipisicing elit
-				</span>
-				<span className="text-xs text-light">
-					in{" "}
-					<span className="text-secondary">
-						Lorem ipsum dolor sit amet consectetur adipisicing elit
-					</span>
-				</span>
+		<section className="border-card flex flex-col gap-8 bg-white p-4">
+			<div className="flex h-full flex-col gap-4">
+				<div className="flex justify-between">
+					<span className="text-lg font-semibold text-light">Meine Ziele</span>
+					<button
+						className="btn-primary text-sm"
+						disabled={isSaving}
+						onClick={() => {
+							mutate({
+								goals: inputRef.current?.value ?? ""
+							});
+						}}
+					>
+						Speichern
+					</button>
+				</div>
+
+				<textarea ref={inputRef} defaultValue={initialValue} rows={5} className="h-full" />
 			</div>
-			<div className="text-xs text-light">14:20 Uhr</div>
-		</li>
+		</section>
 	);
 }
 
-function TopicProgress() {
+function CompletedLessonsSection({
+	title,
+	summary,
+	completedLessons
+}: {
+	title: string;
+	summary: (amount: ReactElement) => ReactElement;
+	completedLessons: CompletedLesson[];
+}) {
 	return (
-		<li className="border-card flex flex-col gap-1 bg-white p-4 text-center">
-			<span className="text-sm">Lorem ipsum dolor sit amet</span>
-			<span className="font-semibold">42%</span>
+		<section className="flex flex-col gap-4">
+			<div className="flex flex-col gap-1">
+				<span className="font-semibold">{title}</span>
+				<span className="text-xs text-light">
+					{summary(<span className="font-semibold">{completedLessons.length}</span>)}
+				</span>
+			</div>
+			<ul className="flex flex-col gap-2 text-sm">
+				{completedLessons.map(({ lesson, createdAt }) => (
+					<CompletedLesson
+						key={lesson.lessonId}
+						title={lesson.title}
+						topic={"TODO"}
+						href={"TODO"}
+						date={createdAt}
+					/>
+				))}
+			</ul>
+		</section>
+	);
+}
+
+function CompletedLesson({
+	title,
+	href,
+	topic,
+	date
+}: {
+	title: string;
+	href: string;
+	topic: string;
+	date: Date;
+}) {
+	return (
+		<li className="border-card flex flex-wrap items-center justify-between gap-2 bg-white p-3">
+			<div className="flex flex-col gap-1">
+				<Link href={href}>
+					<a className="font-medium">{title}</a>
+				</Link>
+				<span className="text-xs text-light">
+					in <span className="text-secondary">{topic}</span>
+				</span>
+			</div>
+			<div className="text-xs text-light">{format(date, "HH:mm")}</div>
 		</li>
 	);
 }

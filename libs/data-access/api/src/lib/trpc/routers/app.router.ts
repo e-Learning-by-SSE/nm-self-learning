@@ -5,12 +5,14 @@ import { lessonRouter } from "./lesson.router";
 import { courseRouter } from "./course.router";
 import { z } from "zod";
 import { compileMarkdown } from "@self-learning/markdown";
+import { learningDiaryRouter } from "./learning-diary.router";
 
 export const appRouter = createRouter()
 	.merge("user-completion.", completionRouter)
 	.merge("user-enrollments.", enrollmentRouter)
 	.merge("courses.", courseRouter)
 	.merge("lessons.", lessonRouter)
+	.merge("learning-diary.", learningDiaryRouter)
 	.mutation("mdx", {
 		input: z.object({
 			text: z.string()

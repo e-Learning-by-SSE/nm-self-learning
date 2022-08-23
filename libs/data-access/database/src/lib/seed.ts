@@ -43,6 +43,11 @@ const users: Prisma.UserCreateInput[] = students.map(student => ({
 	}
 }));
 
+const learningDiaries: Prisma.LearningDiaryCreateManyInput[] = students.map(student => ({
+	username: student.username,
+	goals: "- Goal 1\n- Goal 2\n- Goal 3"
+}));
+
 const subjects: Prisma.SubjectCreateManyInput[] = [
 	{
 		subjectId: 1,
@@ -338,6 +343,8 @@ async function seed(): Promise<void> {
 	console.log("✅ Competences");
 	await createAchievedCompetences();
 	console.log("✅ AchievedCompetences");
+	await prisma.learningDiary.createMany({ data: learningDiaries });
+	console.log("✅ LearningDiaries");
 
 	await prisma.specialization.update({
 		where: { specializationId: 1 },

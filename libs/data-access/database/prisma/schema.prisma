@@ -66,6 +66,7 @@ model Student {
     competences      AchievedCompetence[]
     completedLessons CompletedLesson[]
     quizAttempts     QuizAttempt[]
+    learningDiary    LearningDiary?
 }
 
 model Author {
@@ -231,4 +232,10 @@ model QuizAnswer {
     isCorrect     Boolean
 
     @@index([questionId])
+}
+
+model LearningDiary {
+    student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
+    username String  @id
+    goals    String?
 }
