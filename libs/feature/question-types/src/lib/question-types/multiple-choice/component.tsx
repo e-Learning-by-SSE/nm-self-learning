@@ -1,7 +1,7 @@
 import { CheckCircleIcon } from "@heroicons/react/solid";
 import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useEffect } from "react";
 import { useQuestion } from "../../use-question-hook";
 import { MultipleChoiceAnswer, MultipleChoiceEvaluation, MultipleChoiceQuestion } from "./schema";
 
@@ -12,8 +12,13 @@ export function MultipleChoiceAnswer() {
 		MultipleChoiceEvaluation
 	>();
 
+	useEffect(() => {
+		if (!answer.value) {
+			setAnswer(a => ({ ...a, value: {} }));
+		}
+	}, [setAnswer, answer.value]);
+
 	if (!answer.value) {
-		setAnswer(a => ({ ...a, value: {} }));
 		return null;
 	}
 
