@@ -72,7 +72,7 @@ export function SectionConnector({
 export function SingleLesson({ lesson, courseSlug }: { lesson: TocLesson; courseSlug: string }) {
 	return (
 		<div className="flex rounded-lg border border-light-border bg-white py-2 px-4">
-			<Link href={`/courses/${courseSlug}/lessons/${lesson.slug}`}>
+			<Link href={`/courses/${courseSlug}/${lesson.slug}`}>
 				<a className="flex gap-2 text-sm">
 					<span className="min-w-[32px] text-light">{lesson.lessonNr}</span>
 					<span className="font-medium">{lesson.title}</span>
