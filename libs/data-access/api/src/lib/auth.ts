@@ -20,8 +20,8 @@ export const authOptions: NextAuthOptions = {
 			issuer: process.env.AUTH0_ISSUER_BASE_URL as string
 		}),
 		GitHubProvider({
-			clientId: process.env.GITHUB_CLIENT_ID,
-			clientSecret: process.env.GITHUB_CLIENT_SECRET
+			clientId: process.env.GITHUB_CLIENT_ID as string,
+			clientSecret: process.env.GITHUB_CLIENT_SECRET as string
 		}),
 		CredentialsProvider({
 			name: "Demo-Account",
