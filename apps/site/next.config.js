@@ -12,6 +12,7 @@ const nextConfig = {
 			"images.unsplash.com",
 			"loremflickr.com",
 			"cloudflare-ipfs.com",
+			"c.pxhere.com",
 			"raw.githubusercontent.com"
 		]
 	},
