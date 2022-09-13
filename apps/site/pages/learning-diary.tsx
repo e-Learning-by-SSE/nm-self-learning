@@ -89,19 +89,19 @@ export default function LearningDiary({ completedLessons, goals }: LearningDiary
 			<Goals initialValue={goals} />
 
 			<section className="mt-8 flex flex-col gap-12">
-				<CompletedLessonsSection
+				<CompletedSection
 					title="Heute"
-					summary={amount => <>Du hast heute {amount} Lerneinheiten bearbeitet.</>}
+					subtitle={amount => <>Du hast heute {amount} Lerneinheiten bearbeitet.</>}
 					completedLessons={completedLessons.today}
 				/>
-				<CompletedLessonsSection
+				<CompletedSection
 					title="Gestern"
-					summary={amount => <>Du hast gestern {amount} Lerneinheiten bearbeitet.</>}
+					subtitle={amount => <>Du hast gestern {amount} Lerneinheiten bearbeitet.</>}
 					completedLessons={completedLessons.yesterday}
 				/>
-				<CompletedLessonsSection
+				<CompletedSection
 					title="Diese Woche"
-					summary={amount => (
+					subtitle={amount => (
 						<>Du hast in dieser Woche {amount} weitere Lerneinheiten bearbeitet.</>
 					)}
 					completedLessons={completedLessons.week}
@@ -163,13 +163,13 @@ function Goals({ initialValue }: { initialValue: string }) {
 	);
 }
 
-function CompletedLessonsSection({
+function CompletedSection({
 	title,
-	summary,
+	subtitle,
 	completedLessons
 }: {
 	title: string;
-	summary: (amount: ReactElement) => ReactElement;
+	subtitle: (amount: ReactElement) => ReactElement;
 	completedLessons: CompletedLesson[];
 }) {
 	return (
@@ -177,7 +177,7 @@ function CompletedLessonsSection({
 			<div className="flex flex-col gap-1">
 				<span className="font-semibold">{title}</span>
 				<span className="text-xs text-light">
-					{summary(<span className="font-semibold">{completedLessons.length}</span>)}
+					{subtitle(<span className="font-semibold">{completedLessons.length}</span>)}
 				</span>
 			</div>
 			<ul className="flex flex-col gap-2 text-sm">
