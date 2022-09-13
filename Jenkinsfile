@@ -55,7 +55,7 @@ pipeline {
                             cd ~/Self-Learning
                             git reset --hard
                             git pull
-                            npm ci
+                            npm install
                             cp -f ~/Self-Learning.env ~/Self-Learning/.env
                             npm run prisma db push --accept-data-loss
                             npm run prisma db seed
