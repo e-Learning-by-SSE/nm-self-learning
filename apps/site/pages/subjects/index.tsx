@@ -3,14 +3,14 @@ import { Subject } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { ImageCard } from "@self-learning/ui/common";
 import { ItemCardGrid } from "@self-learning/ui/layouts";
-import { GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import Link from "next/link";
 
 type SubjectsProps = {
 	subjects: Subject[];
 };
 
-export const getStaticProps: GetStaticProps<SubjectsProps> = async () => {
+export const getServerSideProps: GetServerSideProps<SubjectsProps> = async () => {
 	const subjects = await database.subject.findMany();
 
 	return {
