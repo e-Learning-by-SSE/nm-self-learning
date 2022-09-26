@@ -71,9 +71,8 @@ pipeline {
                 findText(textFinders: [textFinder(regexp: '(- error TS\\*)|(Cannot find module.*or its corresponding type declarations\\.)', alsoCheckConsoleOutput: true, buildResult: 'FAILURE')])
             }
         }
-    }
     
-    stage('Docker') {
+        stage('Docker') {
             steps {
                 sh 'mv docker/Dockerfile Dockerfile'
                 script {
@@ -87,6 +86,7 @@ pipeline {
                 }
             }
         }
+    }
     
     post {
         always {
