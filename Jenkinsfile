@@ -73,6 +73,21 @@ pipeline {
         }
     }
     
+    stage('Docker') {
+            steps {
+                sh 'mv docker/Dockerfile Dockerfile'
+                script {
+                    env.API_VERSION = '0.1.0'
+                    echo "API: ${env.API_VERSION}"
+                    dockerImage = docker.build 'e-learning-by-sse/nm-self-learning'
+                    docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
+                        dockerImage.push("${env.API_VERSION}")
+                        dockerImage.push('latest')
+                    }
+                }
+            }
+        }
+    
     post {
         always {
              // Send e-mails if build becomes unstable/fails or returns stable
