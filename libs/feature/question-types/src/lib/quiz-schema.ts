@@ -1,19 +1,25 @@
 import { z } from "zod";
+import { ClozeAnswer } from "./question-types/cloze/component";
 import { Cloze, clozeQuestionSchema } from "./question-types/cloze/schema";
+import { MultipleChoiceAnswer } from "./question-types/multiple-choice/component";
 import { evaluateMultipleChoice } from "./question-types/multiple-choice/evaluate";
 import {
 	MultipleChoice,
 	multipleChoiceAnswerSchema,
 	multipleChoiceQuestionSchema
 } from "./question-types/multiple-choice/schema";
+import { ProgrammingAnswer } from "./question-types/programming/component";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
+import { ShortTextAnswer } from "./question-types/short-text/component";
 import { evaluateShortText } from "./question-types/short-text/evaluate";
 import {
 	ShortText,
 	shortTextAnswerSchema,
 	shortTextQuestionSchema
 } from "./question-types/short-text/schema";
+import { TextAnswer } from "./question-types/text/component";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
+import { VorwissenAnswer } from "./question-types/vorwissen/component";
 import { Vorwissen, vorwissenQuestionSchema } from "./question-types/vorwissen/schema";
 
 export const quizContentSchema = z.discriminatedUnion("type", [
@@ -54,6 +60,15 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 	}
 };
 
+export const QUESTION_ANSWER_COMPONENTS: { [QType in QuestionType["type"]]: () => JSX.Element } = {
+	"multiple-choice": MultipleChoiceAnswer,
+	"short-text": ShortTextAnswer,
+	programming: ProgrammingAnswer,
+	text: TextAnswer,
+	vorwissen: VorwissenAnswer,
+	cloze: ClozeAnswer as any
+};
+
 export type QuestionType = z.infer<typeof quizContentSchema>;
 export type QuizAnswers = z.infer<typeof quizAnswerSchema>;
 export type QuizContent = QuestionType[];
@@ -72,10 +87,10 @@ export type QuizContent = QuestionType[];
  * // }
  */
 export type InferQuestionType<
-	CType extends QuestionTypeUnion["type"],
+	QType extends QuestionTypeUnion["type"],
 	Union = QuestionTypeUnion
 > = Union extends {
-	type: CType;
+	type: QType;
 }
 	? Union
 	: never;

@@ -1,15 +1,10 @@
 import type { CompiledMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
-	ClozeAnswer,
 	EVALUATION_FUNCTIONS,
-	MultipleChoiceAnswer,
-	ProgrammingAnswer,
 	QuestionType,
-	ShortTextAnswer,
-	TextAnswer,
-	useQuestion,
-	VorwissenAnswer
+	QUESTION_ANSWER_COMPONENTS,
+	useQuestion
 } from "@self-learning/question-types";
 import { MDXRemote } from "next-mdx-remote";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -116,28 +111,10 @@ function CheckResult({
 }
 
 function Answer({ question, answersMd }: { question: QuestionType; answersMd: MdLookup }) {
-	if (question.type === "multiple-choice") {
-		return <MultipleChoiceAnswer />;
-	}
+	const component = QUESTION_ANSWER_COMPONENTS[question.type];
 
-	if (question.type === "short-text") {
-		return <ShortTextAnswer />;
-	}
-
-	if (question.type === "text") {
-		return <TextAnswer />;
-	}
-
-	if (question.type === "cloze") {
-		return <ClozeAnswer textArray={question.textArray} />;
-	}
-
-	if (question.type === "vorwissen") {
-		return <VorwissenAnswer question={question} />;
-	}
-
-	if (question.type === "programming") {
-		return <ProgrammingAnswer question={question} />;
+	if (component) {
+		return component();
 	}
 
 	return (

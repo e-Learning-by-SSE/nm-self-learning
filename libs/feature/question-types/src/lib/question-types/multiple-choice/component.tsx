@@ -3,14 +3,9 @@ import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren, useEffect } from "react";
 import { useQuestion } from "../../use-question-hook";
-import { MultipleChoiceAnswer, MultipleChoiceEvaluation, MultipleChoiceQuestion } from "./schema";
 
 export function MultipleChoiceAnswer() {
-	const { question, setAnswer, answer, markdown, evaluation } = useQuestion<
-		MultipleChoiceQuestion,
-		MultipleChoiceAnswer,
-		MultipleChoiceEvaluation
-	>();
+	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
 
 	useEffect(() => {
 		if (!answer.value) {
@@ -19,7 +14,7 @@ export function MultipleChoiceAnswer() {
 	}, [setAnswer, answer.value]);
 
 	if (!answer.value) {
-		return null;
+		return <div></div>;
 	}
 
 	return (

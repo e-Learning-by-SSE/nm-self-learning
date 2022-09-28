@@ -4,20 +4,15 @@ import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 import { MultipleChoiceOption } from "../multiple-choice/component";
-import { Vorwissen, VorwissenQuestion } from "./schema";
 
-export function VorwissenAnswer({ question }: { question: VorwissenQuestion }) {
-	const { markdown, setAnswer, answer, evaluation } = useQuestion<
-		Vorwissen["question"],
-		Vorwissen["answer"],
-		Vorwissen["evaluation"]
-	>();
+export function VorwissenAnswer() {
+	const { question, markdown, setAnswer, answer, evaluation } = useQuestion("vorwissen");
 
 	const [vorwissen, setVorwissen] = useState("");
 	const [explanation, setExplanation] = useState("");
 	const [doesNotKnow, setDoesNotKnow] = useState(false);
 	const [selectedAnswers, setSelectedAnswers] = useState<
-		Vorwissen["answer"]["value"]["selectedAnswers"]
+		typeof answer["value"]["selectedAnswers"]
 	>({});
 
 	useEffect(() => {

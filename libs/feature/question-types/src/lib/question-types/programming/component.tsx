@@ -1,15 +1,14 @@
 import { EditorField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useQuestion } from "../../use-question-hook";
-import { ProgrammingQuestion } from "./schema";
 
 type Answer = {
 	program: string;
 	isCorrect: boolean;
 };
 
-export function ProgrammingAnswer({ question }: { question: ProgrammingQuestion }) {
-	const { markdown, setAnswer, answer } = useQuestion<ProgrammingQuestion, Answer>();
+export function ProgrammingAnswer() {
+	const { markdown, setAnswer, answer, question } = useQuestion("programming");
 
 	const [program, setProgram] = useState(question.template);
 

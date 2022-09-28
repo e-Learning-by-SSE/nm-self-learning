@@ -7,7 +7,7 @@ import {
 	useContext,
 	useState
 } from "react";
-import { QuestionType } from "./quiz-schema";
+import { InferQuestionType, QuestionType, QuestionTypeUnion } from "./quiz-schema";
 
 export const AnswerContext = createContext(
 	null as unknown as {
@@ -59,7 +59,12 @@ export function AnswerContextProvider({
  * @param _questionType The question type, i.e., "multiple-choice". Enables type inference of concrete question type object.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useQuestion<Q = QuestionType, A = any, E = any>() {
+export function useQuestion<
+	QType extends QuestionTypeUnion["type"],
+	Q = InferQuestionType<QType>["question"],
+	A = InferQuestionType<QType>["answer"],
+	E = InferQuestionType<QType>["evaluation"]
+>(qtype: QType) {
 	const value = useContext(AnswerContext);
 
 	// Attention: Might break when type is changed
