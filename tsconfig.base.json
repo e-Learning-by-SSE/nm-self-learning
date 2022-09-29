@@ -17,7 +17,6 @@
 		"paths": {
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/api-client": ["libs/data-access/api-client/src/index.ts"],
-			"@self-learning/api-trpc": ["libs/data-access/trpc.ts"],
 			"@self-learning/cms-api": ["libs/data-access/cms-api/src/index.ts"],
 			"@self-learning/completion": ["libs/feature/completion/src/index.ts"],
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],

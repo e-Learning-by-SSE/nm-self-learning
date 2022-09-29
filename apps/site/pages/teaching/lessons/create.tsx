@@ -3,7 +3,7 @@ import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
 
 export default function CreateLessonPage() {
-	const { mutateAsync: createLesson } = trpc.useMutation("lessons.create");
+	const { mutateAsync: createLesson } = trpc.lesson.create.useMutation();
 
 	async function onConfirm(lesson: LessonFormModel) {
 		try {

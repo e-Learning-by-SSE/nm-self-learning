@@ -3,7 +3,7 @@ import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
 
 export default function CreateCoursePage() {
-	const { mutateAsync: createCourse } = trpc.useMutation(["courses.create"]);
+	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
 
 	function onConfirm(course: CourseFormModel) {
 		async function create() {

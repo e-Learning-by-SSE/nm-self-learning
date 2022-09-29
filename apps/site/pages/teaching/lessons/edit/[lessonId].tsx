@@ -40,7 +40,7 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
 	const router = useRouter();
-	const { mutateAsync: updateLesson } = trpc.useMutation("lessons.edit");
+	const { mutateAsync: updateLesson } = trpc.lesson.edit.useMutation();
 
 	async function onConfirm(updatedLesson: LessonFormModel) {
 		try {

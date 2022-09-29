@@ -8,10 +8,13 @@ import { useState } from "react";
 
 export default function CoursesPage() {
 	const [title, setTitle] = useState("");
-	const { data: courses } = trpc.useQuery(["courses.findMany", { title }], {
-		staleTime: 10_000,
-		keepPreviousData: true
-	});
+	const { data: courses } = trpc.course.findMany.useQuery(
+		{ title },
+		{
+			staleTime: 10_000,
+			keepPreviousData: true
+		}
+	);
 
 	return (
 		<CenteredSection className="bg-gray-50">

@@ -4,12 +4,13 @@ import { useCallback } from "react";
 
 export function useMarkAsCompleted(lessonId: string, onSettled?: () => void) {
 	const session = useSession();
+	const ctx = trpc.useContext();
 
-	const { mutate } = trpc.useMutation("user-completion.markAsCompleted", {
+	const { mutate } = trpc.completion.markAsCompleted.useMutation({
 		onSettled(data, error) {
 			console.log(data);
 			console.log(error);
-			trpc.useContext().invalidateQueries(["user-completion.getCourseCompletion"]);
+			ctx.completion.getCourseCompletion.invalidate();
 		}
 	});
 

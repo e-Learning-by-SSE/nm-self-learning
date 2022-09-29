@@ -1,37 +1,38 @@
-import { z } from "zod";
-import { createProtectedRouter } from "../create-router";
 import { database } from "@self-learning/database";
 import { CourseEnrollment } from "@self-learning/types";
 import { AlreadyExists } from "@self-learning/util/http";
+import { z } from "zod";
+import { authProcedure, t } from "../trpc";
 
-export const enrollmentRouter = createProtectedRouter()
-	.query("getEnrollments", {
-		async resolve({ ctx }) {
-			return getEnrollmentsOfUser(ctx.username);
-		}
-	})
-	.mutation("enroll", {
-		input: z.object({
-			courseId: z.string()
-		}),
-		resolve({ ctx, input }) {
+export const enrollmentRouter = t.router({
+	getEnrollments: authProcedure.query(async ({ ctx }) => {
+		return getEnrollmentsOfUser(ctx.username);
+	}),
+	enroll: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.mutation(({ ctx, input }) => {
 			return enrollUser({
 				courseId: input.courseId,
 				username: ctx.username
 			});
-		}
-	})
-	.mutation("disenroll", {
-		input: z.object({
-			courseId: z.string()
 		}),
-		resolve({ ctx, input }) {
+	disenroll: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.mutation(({ ctx, input }) => {
 			return disenrollUser({
 				courseId: input.courseId,
 				username: ctx.username
 			});
-		}
-	});
+		})
+});
 
 export async function getEnrollmentsOfUser(username: string): Promise<CourseEnrollment[]> {
 	const enrollments = await database.enrollment.findMany({

@@ -7,10 +7,13 @@ import { useState } from "react";
 
 export default function LessonManagementPage() {
 	const [title, setTitle] = useState("");
-	const { data } = trpc.useQuery(["lessons.findMany", { title }], {
-		staleTime: 10_000,
-		keepPreviousData: true
-	});
+	const { data } = trpc.lesson.findMany.useQuery(
+		{ title },
+		{
+			staleTime: 10_000,
+			keepPreviousData: true
+		}
+	);
 
 	return (
 		<CenteredSection className="bg-gray-50">

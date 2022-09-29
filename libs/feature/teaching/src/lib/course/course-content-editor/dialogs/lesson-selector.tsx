@@ -11,11 +11,14 @@ export function LessonSelector({
 	onClose: (lesson?: LessonSummary) => void;
 }) {
 	const [title, setTitle] = useState("");
-	const { data } = trpc.useQuery(["lessons.findMany", { title }], {
-		staleTime: 10_000,
-		keepPreviousData: true,
-		enabled: title.length > 0
-	});
+	const { data } = trpc.lesson.findMany.useQuery(
+		{ title },
+		{
+			staleTime: 10_000,
+			keepPreviousData: true,
+			enabled: title.length > 0
+		}
+	);
 
 	return (
 		<HeadlessDialog open={open} onClose={() => onClose(undefined)} className="relative z-50">

@@ -120,7 +120,7 @@ export default function LearningDiary({ completedLessons, goals }: LearningDiary
 
 function Goals({ initialValue }: { initialValue: string }) {
 	const inputRef = useRef<HTMLTextAreaElement>(null);
-	const { mutate, isLoading: isSaving } = trpc.useMutation(["learning-diary.setGoals"], {
+	const { mutate, isLoading: isSaving } = trpc.learningDiary.setGoals.useMutation({
 		onSettled(_data, error) {
 			if (error) {
 				console.error(error);

@@ -127,7 +127,7 @@ function TreeView({ content }: { content: MappedContent }) {
 }
 
 function LessonNode({ lesson }: { lesson: LessonWithNr }) {
-	const { data } = trpc.useQuery(["lessons.findOne", { lessonId: lesson.lessonId }]);
+	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 
 	return (
 		<a
@@ -257,7 +257,7 @@ function Chapter({
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const [expanded, setExpanded] = useState(true);
-	const { mutateAsync: createLessonAsync } = trpc.useMutation("lessons.create");
+	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	function onCloseLessonSelector(lesson?: LessonSummary) {
 		setLessonSelectorOpen(false);
@@ -382,9 +382,9 @@ function Chapter({
 }
 
 function Lesson({ lesson, showInfo }: { lesson: LessonWithNr; showInfo: boolean }) {
-	const { data } = trpc.useQuery(["lessons.findOne", { lessonId: lesson.lessonId }]);
+	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
-	const { mutateAsync: editLessonAsync } = trpc.useMutation("lessons.edit");
+	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const trpcContext = trpc.useContext();
 
 	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
@@ -410,11 +410,8 @@ function Lesson({ lesson, showInfo }: { lesson: LessonWithNr; showInfo: boolean 
 				subtitle: "Die Lernheit konnte nicht gespeichert werden."
 			});
 		} finally {
-			trpcContext.invalidateQueries([
-				"lessons.findOneAllProps",
-				{ lessonId: lesson.lessonId }
-			]);
-			trpcContext.invalidateQueries(["lessons.findOne", { lessonId: lesson.lessonId }]);
+			trpcContext.lesson.findOneAllProps.invalidate({ lessonId: lesson.lessonId });
+			trpcContext.lesson.findOne.invalidate({ lessonId: lesson.lessonId });
 		}
 	};
 
@@ -507,7 +504,7 @@ function EditExistingLessonDialog({
 	lessonId: string;
 	onClose: OnDialogCloseFn<LessonFormModel>;
 }) {
-	const { data } = trpc.useQuery(["lessons.findOneAllProps", { lessonId }]);
+	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
 
 	return data ? (
 		<EditLessonDialog

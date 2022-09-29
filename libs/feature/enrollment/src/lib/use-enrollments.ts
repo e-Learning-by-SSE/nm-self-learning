@@ -5,7 +5,9 @@ export function useEnrollments() {
 	const session = useSession();
 	const username = session.data?.user?.name as string;
 
-	const { data } = trpc.useQuery(["user-enrollments.getEnrollments"], { enabled: !!username });
+	const { data } = trpc.enrollment.getEnrollments.useQuery(undefined, {
+		enabled: !!username
+	});
 
 	return data;
 }
@@ -16,15 +18,15 @@ export function useEnrollments() {
 export function useEnrollmentMutations(courseSlug: string) {
 	const ctx = trpc.useContext();
 
-	const { mutate: enroll } = trpc.useMutation("user-enrollments.enroll", {
+	const { mutate: enroll } = trpc.enrollment.enroll.useMutation({
 		onSettled() {
-			ctx.invalidateQueries(["user-enrollments.getEnrollments"]);
+			ctx.enrollment.getEnrollments.invalidate();
 		}
 	});
 
-	const { mutate: disenroll } = trpc.useMutation("user-enrollments.disenroll", {
+	const { mutate: disenroll } = trpc.enrollment.disenroll.useMutation({
 		onSettled() {
-			ctx.invalidateQueries(["user-enrollments.getEnrollments"]);
+			ctx.enrollment.getEnrollments.invalidate();
 		}
 	});
 

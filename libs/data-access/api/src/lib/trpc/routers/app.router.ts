@@ -1,26 +1,22 @@
-import { completionRouter } from "./completion.router";
-import { createRouter } from "../create-router";
-import { enrollmentRouter } from "./enrollment.router";
-import { lessonRouter } from "./lesson.router";
-import { courseRouter } from "./course.router";
-import { z } from "zod";
 import { compileMarkdown } from "@self-learning/markdown";
+import { z } from "zod";
+import { t } from "../trpc";
+import { completionRouter } from "./completion.router";
+import { courseRouter } from "./course.router";
+import { enrollmentRouter } from "./enrollment.router";
 import { learningDiaryRouter } from "./learning-diary.router";
+import { lessonRouter } from "./lesson.router";
 
-export const appRouter = createRouter()
-	.merge("user-completion.", completionRouter)
-	.merge("user-enrollments.", enrollmentRouter)
-	.merge("courses.", courseRouter)
-	.merge("lessons.", lessonRouter)
-	.merge("learning-diary.", learningDiaryRouter)
-	.mutation("mdx", {
-		input: z.object({
-			text: z.string()
-		}),
-		resolve({ input }) {
-			return compileMarkdown(input.text);
-		}
-	});
+export const appRouter = t.router({
+	completion: completionRouter,
+	course: courseRouter,
+	enrollment: enrollmentRouter,
+	learningDiary: learningDiaryRouter,
+	lesson: lessonRouter,
+	mdx: t.procedure.input(z.string()).mutation(({ input }) => {
+		return compileMarkdown(input);
+	})
+});
 
-/** Contains type definitions of the api. */
+// export type definition of API
 export type AppRouter = typeof appRouter;

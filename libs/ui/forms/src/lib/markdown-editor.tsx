@@ -16,11 +16,11 @@ export function MarkdownField({
 }) {
 	const debounced = useDebounce(content, 500);
 
-	const { data: preview, mutate, isLoading, isError } = trpc.useMutation(["mdx"]);
+	const { data: preview, mutate, isLoading, isError } = trpc.mdx.useMutation();
 
 	useEffect(() => {
 		// Triggers compilation of new `preview`
-		mutate({ text: debounced ?? "" });
+		mutate(debounced ?? "");
 	}, [debounced, mutate]);
 
 	const _minHeight = minHeight ?? "500px";
@@ -94,11 +94,11 @@ export function MarkdownEditorDialog({
 }) {
 	const [value, setValue] = useState<string | undefined>(initialValue);
 	const debounced = useDebounce(value, 500);
-	const { data: preview, mutate, isLoading, isError } = trpc.useMutation(["mdx"]);
+	const { data: preview, mutate, isLoading, isError } = trpc.mdx.useMutation();
 
 	useEffect(() => {
 		// Triggers compilation of new `preview`
-		mutate({ text: debounced ?? "" });
+		mutate(debounced ?? "");
 	}, [debounced, mutate]);
 
 	return (
