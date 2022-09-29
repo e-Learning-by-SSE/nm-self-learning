@@ -2,6 +2,12 @@ declare var process: {
 	env: {
 		NODE_ENV: "development" | "production";
 		DATABASE_URL: string;
+		MINIO_ENDPOINT: string;
+		MINIO_PORT: string;
+		MINIO_ACCESS_KEY: string;
+		MINIO_SECRET_KEY: string;
+		MINIO_PUBLIC_URL: string;
+		MINIO_BUCKET_NAME: string;
 		NEXT_PUBLIC_SUPABASE_URL: string;
 		NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
 		AUTH0_SECRET: string;

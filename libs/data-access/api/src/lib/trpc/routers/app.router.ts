@@ -6,6 +6,7 @@ import { courseRouter } from "./course.router";
 import { enrollmentRouter } from "./enrollment.router";
 import { learningDiaryRouter } from "./learning-diary.router";
 import { lessonRouter } from "./lesson.router";
+import { storageRouter } from "./storage.router";
 
 export const appRouter = t.router({
 	completion: completionRouter,
@@ -13,6 +14,7 @@ export const appRouter = t.router({
 	enrollment: enrollmentRouter,
 	learningDiary: learningDiaryRouter,
 	lesson: lessonRouter,
+	storage: storageRouter,
 	mdx: t.procedure.input(z.string()).mutation(({ input }) => {
 		return compileMarkdown(input);
 	})
