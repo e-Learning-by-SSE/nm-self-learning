@@ -2,9 +2,13 @@ import type { CompiledMarkdown, MdLookup, MdLookupArray } from "@self-learning/m
 import {
 	AnswerContextProvider,
 	EVALUATION_FUNCTIONS,
+	MultipleChoiceAnswer,
+	ProgrammingAnswer,
 	QuestionType,
-	QUESTION_ANSWER_COMPONENTS,
-	useQuestion
+	ShortTextAnswer,
+	TextAnswer,
+	useQuestion,
+	VorwissenAnswer
 } from "@self-learning/question-types";
 import { MDXRemote } from "next-mdx-remote";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -88,14 +92,15 @@ function CheckResult({
 	setEvaluation: Dispatch<SetStateAction<unknown | null>>;
 }) {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const { question, answer } = useQuestion();
+	const { question, answer } = useQuestion(null as any);
 
 	function checkResult() {
 		console.log("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			question as any,
-			answer
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			answer as any
 		);
 		console.log("question", question);
 		console.log("answer", answer);
@@ -111,10 +116,31 @@ function CheckResult({
 }
 
 function Answer({ question, answersMd }: { question: QuestionType; answersMd: MdLookup }) {
-	const component = QUESTION_ANSWER_COMPONENTS[question.type];
+	// Works, but prevents HMR :(
+	// const component = QUESTION_ANSWER_COMPONENTS[question.type];
 
-	if (component) {
-		return component();
+	// if (component) {
+	// 	return component();
+	// }
+
+	if (question.type === "programming") {
+		return <ProgrammingAnswer />;
+	}
+
+	if (question.type === "multiple-choice") {
+		return <MultipleChoiceAnswer />;
+	}
+
+	if (question.type === "short-text") {
+		return <ShortTextAnswer />;
+	}
+
+	if (question.type === "text") {
+		return <TextAnswer />;
+	}
+
+	if (question.type === "vorwissen") {
+		return <VorwissenAnswer />;
 	}
 
 	return (

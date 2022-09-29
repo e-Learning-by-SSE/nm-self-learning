@@ -17,7 +17,7 @@ export type Programming = {
 		type: "programming";
 		value: {
 			code: string;
-			output: string;
+			stdout: string;
 		};
 	};
 	evaluation: unknown;
