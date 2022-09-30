@@ -20,7 +20,7 @@ export function MarkdownField({
 
 	useEffect(() => {
 		// Triggers compilation of new `preview`
-		mutate(debounced ?? "");
+		mutate({ text: debounced });
 	}, [debounced, mutate]);
 
 	const _minHeight = minHeight ?? "500px";
@@ -98,7 +98,7 @@ export function MarkdownEditorDialog({
 
 	useEffect(() => {
 		// Triggers compilation of new `preview`
-		mutate(debounced ?? "");
+		mutate({ text: debounced });
 	}, [debounced, mutate]);
 
 	return (

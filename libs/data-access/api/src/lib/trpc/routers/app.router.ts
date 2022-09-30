@@ -15,8 +15,8 @@ export const appRouter = t.router({
 	learningDiary: learningDiaryRouter,
 	lesson: lessonRouter,
 	storage: storageRouter,
-	mdx: t.procedure.input(z.string()).mutation(({ input }) => {
-		return compileMarkdown(input);
+	mdx: t.procedure.input(z.object({ text: z.string().default("") })).mutation(({ input }) => {
+		return compileMarkdown(input.text);
 	})
 });
 
