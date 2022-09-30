@@ -11,7 +11,8 @@ import {
 	Tab,
 	Tabs
 } from "@self-learning/ui/common";
-import { EditorField, LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
+import { EditorField, LabeledField, MarkdownEditorDialog, Upload } from "@self-learning/ui/forms";
+import { VideoPlayer } from "@self-learning/ui/lesson";
 import { formatSeconds } from "@self-learning/util/common";
 import { Fragment, useState } from "react";
 import {
@@ -23,12 +24,10 @@ import {
 	useWatch
 } from "react-hook-form";
 import slugify from "slugify";
-import { VideoUploadWidget } from "../../../image-upload";
 import { JsonEditorDialog } from "../../../json-editor-dialog";
 import { useLessonContentEditor } from "../../../lesson/forms/lesson-content";
 import { QuizEditor } from "../../../lesson/forms/quiz-editor";
 import { LessonFormModel } from "../../../lesson/lesson-form-model";
-import { getSupabaseUrl } from "../../../supabase";
 
 export function EditLessonDialog({
 	onClose,
@@ -429,7 +428,7 @@ function ArticleInput({ index }: { index: number }) {
 }
 
 export function VideoInput({ index }: { index: number }) {
-	const { control, register } = useFormContext<{ content: Video[] }>();
+	const { control } = useFormContext<{ content: Video[] }>();
 	const { update } = useFieldArray<{ content: Video[] }>({
 		name: "content"
 	});
@@ -443,35 +442,53 @@ export function VideoInput({ index }: { index: number }) {
 		<div className="flex flex-col gap-4">
 			<p className="text-sm text-light">Video verlinken oder hochladen.</p>
 
-			<VideoUploadWidget
-				url={url ?? null}
-				onUrlChange={url =>
-					update(index, {
-						type: "video",
-						value: { url },
-						meta: { duration: 0 }
-					})
-				}
-				onUpload={file => {
-					console.log(file);
+			<div className="flex flex-col gap-4">
+				<LabeledField label="URL">
+					<input
+						type={"text"}
+						className="textfield"
+						value={url}
+						onChange={e =>
+							update(index, {
+								type: "video",
+								value: { url: e.target.value },
+								meta: { duration: 0 }
+							})
+						}
+					/>
+				</LabeledField>
 
-					const { publicURL, error } = getSupabaseUrl("videos", file.filepath);
-
-					if (!error && publicURL) {
+				<Upload
+					mediaType="video"
+					preview={
+						<div className="aspect-video w-full bg-black">
+							{url ? <VideoPlayer url={url} /> : null}
+						</div>
+					}
+					onUploadCompleted={(publicUrl, meta) => {
 						update(index, {
 							type: "video",
-							value: { url: publicURL },
-							meta: { duration: file.duration }
+							value: { url: publicUrl },
+							meta: { duration: meta?.duration ?? 0 }
 						});
-					}
-				}}
-			/>
+					}}
+				/>
+			</div>
 
 			<LabeledField label="Länge in Sekunden">
 				<div className="grid grid-cols-[1fr_auto]">
 					<input
-						{...register(`content.${index}.meta.duration`)}
-						placeholder="Länge des Videos in Sekunden."
+						className="textfield"
+						type={"number"}
+						placeholder="Länge des Videos in Sekunden"
+						value={duration}
+						onChange={e =>
+							update(index, {
+								type: "video",
+								value: { url },
+								meta: { duration: e.target.valueAsNumber }
+							})
+						}
 					/>
 					<span className="my-auto px-2 text-sm text-light">
 						{formatSeconds(duration)}

@@ -1,9 +1,15 @@
 import { trpc } from "@self-learning/api-client";
-import { useState } from "react";
+import { ReactElement } from "react";
 
-export function Upload({ mediaType }: { mediaType: "image" | "video" }) {
-	const [publicUrl, setPublicUrl] = useState<string | null>(null);
-
+export function Upload({
+	mediaType,
+	onUploadCompleted,
+	preview
+}: {
+	mediaType: "image" | "video";
+	onUploadCompleted: (publicUrl: string, meta?: { duration: number }) => void;
+	preview: ReactElement;
+}) {
 	const { mutateAsync: getPresignedUrl } = trpc.storage.getPresignedUrl.useMutation();
 
 	let acceptedFiles: string | undefined = undefined;
@@ -24,26 +30,32 @@ export function Upload({ mediaType }: { mediaType: "image" | "video" }) {
 
 		console.log(file);
 
+		const meta = {
+			duration: 0
+		};
+
+		if (mediaType === "video") {
+			const vid = document.createElement("video");
+			vid.src = URL.createObjectURL(file);
+
+			vid.onloadedmetadata = () => {
+				meta.duration = Math.floor(vid.duration);
+			};
+		}
+
 		getPresignedUrl({ filename: file.name }).then(({ presignedUrl, publicUrl }) => {
 			console.log("Presigned URL:", presignedUrl);
 
 			uploadFile(file, presignedUrl).then(() => {
 				console.log("File uploaded to:", publicUrl);
-				setPublicUrl(publicUrl);
+				onUploadCompleted(publicUrl, meta);
 			});
 		});
 	}
 
 	return (
-		<div className="relative flex flex-col gap-4 py-8">
-			{publicUrl ? (
-				<>
-					{mediaType === "image" && <img src={publicUrl} alt="Uploaded file" />}
-					{mediaType === "video" && <video src={publicUrl} controls />}
-				</>
-			) : (
-				<div className="h-64 w-full rounded-lg bg-gray-200"></div>
-			)}
+		<div className="relative flex flex-col gap-4">
+			{preview}
 
 			<label className="btn-primary" htmlFor="file">
 				{mediaType === "video" && "Video hochladen"}
