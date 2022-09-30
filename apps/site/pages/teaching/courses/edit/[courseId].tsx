@@ -9,6 +9,7 @@ import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 type EditCourseProps = {
 	course: CourseFormModel;
@@ -75,6 +76,15 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
 	const router = useRouter();
+	const trpcContext = trpc.useContext();
+
+	useEffect(() => {
+		// Populate query cache with existing lessons
+		// This way, we only need to fetch newly added lessons
+		for (const lesson of lessons) {
+			trpcContext.lesson.findOne.setData(lesson, { lessonId: lesson.lessonId });
+		}
+	}, [trpcContext, lessons]);
 
 	function onConfirm(updatedCourse: CourseFormModel) {
 		async function update() {

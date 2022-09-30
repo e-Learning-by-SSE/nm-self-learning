@@ -16,9 +16,8 @@ import {
 	SectionCardHeader,
 	showToast
 } from "@self-learning/ui/common";
-import { getRandomId } from "@self-learning/util/common";
 import { AnimatePresence, motion } from "framer-motion";
-import { createContext, useContext, useEffect, useId, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { EditLessonDialog } from "./dialogs/edit-lesson-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
