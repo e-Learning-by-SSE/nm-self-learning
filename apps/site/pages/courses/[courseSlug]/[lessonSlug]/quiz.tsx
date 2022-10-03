@@ -3,6 +3,7 @@ import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import { Question } from "@self-learning/quiz";
+import { CenteredContainer } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -239,7 +240,7 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 	}, [index, questions]);
 
 	return (
-		<div className="grid grow items-start gap-16 bg-gray-50 px-4 pb-16 lg:px-0">
+		<div className="grid grow items-start gap-16 bg-gray-50 px-2 pb-16">
 			<div className="mx-auto flex w-full flex-col gap-8">
 				<QuestionNavigation
 					lesson={lesson}
@@ -286,38 +287,39 @@ function QuestionNavigation({
 	// const { data: session } = useSession({ required: true });
 
 	return (
-		<div className="mx-auto flex w-full max-w-screen-lg flex-col gap-4 rounded-b-lg border-x border-b border-light-border bg-white p-4">
-			<div className="flex flex-col gap-2">
-				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
-					<a>
-						<h1 className="text-lg text-secondary">{lesson.title}</h1>
-					</a>
-				</Link>
-				<h2 className="text-4xl">Lernkontrolle</h2>
-			</div>
-			<div className="flex flex-wrap items-center justify-between gap-6">
-				<span>
-					Frage {current} von {amount}
-				</span>
-				<div className="flex flex-wrap place-content-end gap-4">
-					<button
-						disabled={!hasPrevious}
-						className="btn-stroked w-full sm:w-fit"
-						onClick={goToPrevious}
-					>
-						<ChevronLeftIcon className="h-5" />
-						<span>Vorherige Frage</span>
-					</button>
-					<button
-						disabled={!hasNext}
-						className="btn-primary w-full sm:w-fit"
-						onClick={goToNext}
-					>
-						<span>Nächste Frage</span>
-						<ChevronRightIcon className="h-5" />
-					</button>
+		<CenteredContainer>
+			<div className="flex flex-col gap-4 rounded-b-lg border-x border-b border-light-border bg-white p-4">
+				<div className="flex flex-col gap-2">
+					<Link href={`/courses/${course.slug}/${lesson.slug}`}>
+						<a>
+							<h1 className="text-lg text-secondary">{lesson.title}</h1>
+						</a>
+					</Link>
+					<h2 className="text-4xl">Lernkontrolle</h2>
 				</div>
-				{/* <button
+				<div className="flex flex-wrap items-center justify-between gap-6">
+					<span>
+						Frage {current} von {amount}
+					</span>
+					<div className="flex flex-wrap place-content-end gap-4">
+						<button
+							disabled={!hasPrevious}
+							className="btn-stroked w-full sm:w-fit"
+							onClick={goToPrevious}
+						>
+							<ChevronLeftIcon className="h-5" />
+							<span>Vorherige Frage</span>
+						</button>
+						<button
+							disabled={!hasNext}
+							className="btn-primary w-full sm:w-fit"
+							onClick={goToNext}
+						>
+							<span>Nächste Frage</span>
+							<ChevronRightIcon className="h-5" />
+						</button>
+					</div>
+					{/* <button
 				className="btn-primary mt-8"
 				onClick={() =>
 					submitAnswers({
@@ -330,7 +332,8 @@ function QuestionNavigation({
 			>
 				Submit Answers
 			</button> */}
+				</div>
 			</div>
-		</div>
+		</CenteredContainer>
 	);
 }

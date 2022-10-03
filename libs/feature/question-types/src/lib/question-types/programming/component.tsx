@@ -1,4 +1,5 @@
 import { EditorField } from "@self-learning/ui/forms";
+import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useEffect, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 
@@ -71,24 +72,26 @@ async function getRuntimes(): Promise<Runtime[]> {
 
 export function ProgrammingAnswer() {
 	const { setAnswer, answer, question } = useQuestion("programming");
-	const [program, setProgram] = useState("console.log('Hello World!');");
+	const [program, setProgram] = useState(question.template);
 	const [isExecuting, setIsExecuting] = useState(false);
 	const [output, setOutput] = useState({
 		isError: false,
 		text: ""
 	});
 
-	const [runtimes, setRuntimes] = useState<Runtime[]>([]);
+	const [version, setVersion] = useState<string | undefined>(undefined);
 	useEffect(() => {
-		getRuntimes().then(setRuntimes);
-	}, []);
+		getRuntimes().then(runtimes => {
+			console.log("Available runtimes:", runtimes);
+			setVersion(runtimes.find(r => r.language === question.language)?.version);
+		});
+	}, [question.language]);
 
 	async function runCode() {
 		const language = question.language;
-		const version = runtimes.find(r => r.language === language)?.version;
 
 		if (!version) {
-			console.log(`Language ${language} is not available. Available runtimes:`, runtimes);
+			console.log(`Language ${language} is not available.`);
 
 			setOutput({
 				isError: true,
@@ -138,11 +141,8 @@ export function ProgrammingAnswer() {
 				});
 			} else {
 				const compileOutput = data.compile?.output ?? "";
-				let output = "";
 
-				if (compileOutput !== "") {
-					output += compileOutput + "\n" + data.run.output;
-				}
+				const output = compileOutput + "\n" + data.run.output;
 
 				setOutput({
 					isError: true,
@@ -155,25 +155,41 @@ export function ProgrammingAnswer() {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<EditorField
-				label="Code"
-				value={program}
-				onChange={setProgram as any}
-				language={question.language}
-			/>
+		<CenteredContainer>
+			<div className="flex items-center justify-between rounded-t-lg bg-gray-200 p-4">
+				<span className="text-xs text-light">
+					{question.language} ({version ?? "not installed"})
+				</span>
 
-			<button className="btn-primary w-fit self-end" onClick={runCode} disabled={isExecuting}>
-				Ausführen
-			</button>
-
-			<div className="rounded-lg bg-gray-200 p-8">
-				{output.isError ? (
-					<pre className="font-mono text-red-500">{output.text}</pre>
-				) : (
-					<pre className="font-mono">{output.text}</pre>
-				)}
+				<button
+					className="btn w-fit rounded-lg bg-green-600 py-1 px-3 text-sm font-semibold text-white hover:bg-green-500"
+					onClick={runCode}
+					disabled={isExecuting}
+				>
+					Ausführen
+				</button>
 			</div>
-		</div>
+			<div className="flex flex-wrap gap-2">
+				<div className="w-full">
+					<EditorField
+						value={program}
+						onChange={setProgram as any}
+						language={question.language}
+					/>
+				</div>
+
+				<div className="flex h-[500px] w-full shrink-0 flex-col gap-4 rounded-lg border border-light-border bg-white">
+					<div className="playlist-scroll h-full overflow-auto p-4">
+						{output.text !== "" ? (
+							<pre className={`font-mono ${output.isError ? "text-red-500" : ""}`}>
+								{output.text}
+							</pre>
+						) : (
+							<span className="text-light">Keine Ausgabe.</span>
+						)}
+					</div>
+				</div>
+			</div>
+		</CenteredContainer>
 	);
 }

@@ -1,13 +1,11 @@
 import Editor from "@monaco-editor/react";
 
 export function EditorField({
-	label,
 	value,
 	onChange,
 	language,
 	height
 }: {
-	label: string;
 	value: string | undefined;
 	onChange: (value: string | undefined) => void;
 	language?: string;
