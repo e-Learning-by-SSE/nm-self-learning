@@ -1,4 +1,5 @@
 import { CheckCircleIcon } from "@heroicons/react/solid";
+import { CenteredContainer } from "@self-learning/ui/layouts";
 import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren, useEffect } from "react";
@@ -18,7 +19,7 @@ export function MultipleChoiceAnswer() {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
+		<CenteredContainer className="flex flex-col gap-4">
 			{question.answers?.map(option => (
 				<MultipleChoiceOption
 					key={option.answerId}
@@ -44,7 +45,7 @@ export function MultipleChoiceAnswer() {
 					)}
 				</MultipleChoiceOption>
 			))}
-		</div>
+		</CenteredContainer>
 	);
 }
 

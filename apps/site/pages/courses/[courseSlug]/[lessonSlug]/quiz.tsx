@@ -1,13 +1,12 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
+import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
-import { Question, useQuizAttempt } from "@self-learning/quiz";
+import { QuestionType, QuizContent } from "@self-learning/question-types";
+import { Question } from "@self-learning/quiz";
 import { GetStaticPaths, GetStaticProps } from "next";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
-import { QuestionType, QuizContent } from "@self-learning/question-types";
 
 const text = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur nostrum dolorem ### at placeat. Ad corrupti fugit, magnam ipsam iste similique voluptates. Doloribus repellat velit expedita molestias eaque consectetur nesciunt.
 Temporibus, repellendus aspernatur provident unde ipsa voluptates delectus a adipisci itaque quam impedit suscipit harum illo voluptas saepe facere est distinctio non cum nesciunt. Dicta rerum dignissimos commodi cum molestias?
@@ -241,7 +240,7 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 
 	return (
 		<div className="grid grow items-start gap-16 bg-gray-50 px-4 pb-16 lg:px-0">
-			<div className="mx-auto grid w-full max-w-3xl items-start gap-8">
+			<div className="mx-auto flex w-full flex-col gap-8">
 				<QuestionNavigation
 					lesson={lesson}
 					course={course}
@@ -283,11 +282,11 @@ function QuestionNavigation({
 	goToNext: () => void;
 	goToPrevious: () => void;
 }) {
-	const { submitAnswers } = useQuizAttempt();
-	const { data: session } = useSession({ required: true });
+	// const { submitAnswers } = useQuizAttempt();
+	// const { data: session } = useSession({ required: true });
 
 	return (
-		<div className="flex flex-col gap-4 rounded-b-lg border-x border-b border-light-border bg-white p-4">
+		<div className="mx-auto flex w-full max-w-screen-lg flex-col gap-4 rounded-b-lg border-x border-b border-light-border bg-white p-4">
 			<div className="flex flex-col gap-2">
 				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
 					<a>

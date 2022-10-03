@@ -10,6 +10,7 @@ import {
 	useQuestion,
 	VorwissenAnswer
 } from "@self-learning/question-types";
+import { CenteredContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Certainty } from "./certainty";
@@ -42,46 +43,44 @@ export function Question({
 
 	return (
 		<AnswerContextProvider question={question} markdown={markdown} evaluation={evaluation}>
-			<div className="max-w-full">
-				<div className="flex gap-4">
-					<button className="btn-stroked h-fit" onClick={() => setEvaluation(null)}>
-						Reset
-					</button>
-					<CheckResult setEvaluation={setEvaluation} />
-				</div>
+			<CenteredContainer className="flex gap-4">
+				<button className="btn-stroked h-fit" onClick={() => setEvaluation(null)}>
+					Reset
+				</button>
+				<CheckResult setEvaluation={setEvaluation} />
+			</CenteredContainer>
 
+			<CenteredContainer>
 				<div className="mb-1 font-semibold text-secondary">{question.type}</div>
 
-				<div className="flex flex-col">
-					{markdown.questionsMd[question.questionId] ? (
-						<div className="prose max-w-full">
-							<MDXRemote {...markdown.questionsMd[question.questionId]} />
-						</div>
-					) : (
-						<span className="text-red-500">Error: No markdown content found.</span>
-					)}
-
-					<div className="mt-8 flex max-w-full flex-col gap-8">
-						<Answer question={question} answersMd={markdown.answersMd} />
+				{markdown.questionsMd[question.questionId] ? (
+					<div className="prose max-w-3xl">
+						<MDXRemote {...markdown.questionsMd[question.questionId]} />
 					</div>
+				) : (
+					<span className="text-red-500">Error: No markdown content found.</span>
+				)}
+			</CenteredContainer>
 
-					{question.withCertainty && (
-						<div className="mt-8">
-							<Certainty />
-						</div>
-					)}
-
-					{hintsAvailable && (
-						<div className="mt-8">
-							<Hints
-								totalHintsCount={allHints.length}
-								usedHints={usedHints}
-								useHint={useHint}
-							/>
-						</div>
-					)}
-				</div>
+			<div className="flex max-w-full flex-col gap-8">
+				<Answer question={question} answersMd={markdown.answersMd} />
 			</div>
+
+			{question.withCertainty && (
+				<CenteredContainer>
+					<Certainty />
+				</CenteredContainer>
+			)}
+
+			{hintsAvailable && (
+				<CenteredContainer>
+					<Hints
+						totalHintsCount={allHints.length}
+						usedHints={usedHints}
+						useHint={useHint}
+					/>
+				</CenteredContainer>
+			)}
 		</AnswerContextProvider>
 	);
 }
@@ -144,8 +143,8 @@ function Answer({ question, answersMd }: { question: QuestionType; answersMd: Md
 	}
 
 	return (
-		<span className="text-red-500">
+		<CenteredContainer className="text-red-500">
 			Error: No implementation found for "{(question as { type: string }).type}".
-		</span>
+		</CenteredContainer>
 	);
 }

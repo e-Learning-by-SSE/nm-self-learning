@@ -1,4 +1,5 @@
 import { LabeledField } from "@self-learning/ui/forms";
+import { CenteredContainer } from "@self-learning/ui/layouts";
 import { motion } from "framer-motion";
 import { useQuestion } from "../../use-question-hook";
 
@@ -6,7 +7,7 @@ export function ShortTextAnswer() {
 	const { question, answer, setAnswer, evaluation } = useQuestion("short-text");
 
 	return (
-		<div className="flex flex-col gap-8">
+		<CenteredContainer className="flex flex-col gap-8">
 			<LabeledField label="Antwort">
 				<input
 					value={answer.value ?? ""}
@@ -50,6 +51,6 @@ export function ShortTextAnswer() {
 					)}
 				</motion.div>
 			)}
-		</div>
+		</CenteredContainer>
 	);
 }
