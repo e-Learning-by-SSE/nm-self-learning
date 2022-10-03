@@ -1,5 +1,5 @@
 import { EditorField } from "@self-learning/ui/forms";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 
 export type PistonFile = {
@@ -55,6 +55,20 @@ type Output = {
 	signal: string;
 };
 
+type Runtime = { language: string; version: string };
+
+async function getRuntimes(): Promise<Runtime[]> {
+	const res = await fetch(
+		`${process.env.NEXT_PUBLIC_PISTON_URL as string}/api/v2/piston/runtimes`
+	);
+
+	if (!res.ok) {
+		throw new Error("Failed to fetch runtimes");
+	}
+
+	return res.json();
+}
+
 export function ProgrammingAnswer() {
 	const { setAnswer, answer, question } = useQuestion("programming");
 	const [program, setProgram] = useState("console.log('Hello World!');");
@@ -64,10 +78,29 @@ export function ProgrammingAnswer() {
 		text: ""
 	});
 
+	const [runtimes, setRuntimes] = useState<Runtime[]>([]);
+	useEffect(() => {
+		getRuntimes().then(setRuntimes);
+	}, []);
+
 	async function runCode() {
+		const language = question.language;
+		const version = runtimes.find(r => r.language === language)?.version;
+
+		if (!version) {
+			console.log(`Language ${language} is not available. Available runtimes:`, runtimes);
+
+			setOutput({
+				isError: true,
+				text: `Language "${language}" is not available.\` Code execution server might be offline or language is not installed.`
+			});
+
+			return;
+		}
+
 		const execute: ExecuteRequest = {
-			language: question.language,
-			version: "4.2.3",
+			language,
+			version,
 			files: [{ content: program }]
 		};
 
@@ -75,42 +108,49 @@ export function ProgrammingAnswer() {
 		setOutput({ isError: false, text: "Executing..." });
 		setIsExecuting(true);
 
-		const res = await fetch("https://emkc.org/api/v2/piston/execute", {
-			method: "POST",
-			body: JSON.stringify(execute),
-			headers: {
-				"Content-Type": "application/json"
-			}
-		});
+		try {
+			const res = await fetch(
+				`${process.env.NEXT_PUBLIC_PISTON_URL as string}/api/v2/piston/execute`,
+				{
+					method: "POST",
+					body: JSON.stringify(execute),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				}
+			);
 
-		setIsExecuting(false);
+			setIsExecuting(false);
 
-		if (!res.ok) {
-			console.error("Error running code");
-			return;
-		}
-
-		const data = (await res.json()) as ExecuteResponse;
-		console.log("ExecuteResponse", data);
-
-		// Code ran successfully
-		if (data.run.code === 0) {
-			setOutput({
-				isError: false,
-				text: data.run.output
-			});
-		} else {
-			const compileOutput = data.compile?.output ?? "";
-			let output = "";
-
-			if (compileOutput !== "") {
-				output += compileOutput + "\n" + data.run.output;
+			if (!res.ok) {
+				console.error("Error running code");
+				return;
 			}
 
-			setOutput({
-				isError: true,
-				text: output
-			});
+			const data = (await res.json()) as ExecuteResponse;
+			console.log("ExecuteResponse", data);
+
+			// Code ran successfully
+			if (data.run.code === 0) {
+				setOutput({
+					isError: false,
+					text: data.run.output
+				});
+			} else {
+				const compileOutput = data.compile?.output ?? "";
+				let output = "";
+
+				if (compileOutput !== "") {
+					output += compileOutput + "\n" + data.run.output;
+				}
+
+				setOutput({
+					isError: true,
+					text: output
+				});
+			}
+		} catch (error) {
+			console.error(error);
 		}
 	}
 
