@@ -55,8 +55,6 @@ export function Upload({
 
 	return (
 		<div className="relative flex flex-col gap-4">
-			{preview}
-
 			<label className="btn-primary" htmlFor="file">
 				{mediaType === "video" && "Video hochladen"}
 				{mediaType === "image" && "Bild hochladen"}
@@ -71,6 +69,7 @@ export function Upload({
 					position: "absolute"
 				}}
 			/>
+			{preview}
 		</div>
 	);
 }

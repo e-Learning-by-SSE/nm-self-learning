@@ -126,8 +126,8 @@ function Overview() {
 
 	return (
 		<div className="grid h-full gap-8 xl:grid-cols-3">
-			<div className="flex flex-col gap-8">
-				<div className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
+			<div className="col-span-2 flex flex-col gap-8 xl:col-span-1">
+				<div className="flex h-full w-full flex-col gap-4 rounded-lg border border-light-border p-4">
 					<h3 className="text-xl">Grunddaten</h3>
 
 					<LabeledField label="Titel" error={errors.title?.message}>
@@ -204,17 +204,9 @@ function Overview() {
 						)}
 					</LabeledField>
 				</div>
-
-				<div className="rounded-lg border border-light-border p-4">
-					<h3 className="text-xl">Metadaten</h3>
-
-					<LabeledField label="Tags">
-						<textarea placeholder="Eins, Zwei, Drei" rows={4} />
-					</LabeledField>
-				</div>
 			</div>
 
-			<div className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
+			<div className="col-span-2 flex flex-col gap-4 rounded-lg border border-light-border p-4">
 				<h3 className="text-xl">Inhalt</h3>
 
 				<div className="flex gap-4 text-xs">
@@ -269,134 +261,7 @@ function Overview() {
 					</div>
 				)}
 			</div>
-
-			<Competencies />
 		</div>
-	);
-}
-
-function Competencies() {
-	const [isOpen, setIsOpen] = useState(false);
-
-	return (
-		<div className="flex h-full flex-col gap-4 rounded-lg border border-light-border p-4">
-			<div className="flex flex-col gap-4">
-				<span className="flex items-center justify-between gap-2">
-					<h3 className="text-xl">Voraussetzungen</h3>
-					<button
-						type="button"
-						className="text-sm text-secondary"
-						onClick={() => setIsOpen(true)}
-					>
-						Hinzufügen
-					</button>
-				</span>
-
-				<ul className="text-sm">
-					<li>Lorem ipsum dolor sit (1)</li>
-					<li>Lorem ipsum dolor sit (1)</li>
-					<li>Lorem ipsum dolor sit (1)</li>
-				</ul>
-			</div>
-
-			<Divider />
-
-			<div className="flex flex-col gap-4">
-				<span className="flex items-center justify-between gap-2">
-					<h3 className="text-xl">Erworbene Kompetenzen</h3>
-					<button
-						type="button"
-						className="text-sm text-secondary"
-						onClick={() => setIsOpen(true)}
-					>
-						Hinzufügen
-					</button>
-				</span>
-
-				<ul className="text-sm">
-					<li>Lorem ipsum dolor sit (1)</li>
-					<li>Lorem ipsum dolor sit (1)</li>
-					<li>Lorem ipsum dolor sit (1)</li>
-				</ul>
-			</div>
-
-			{isOpen && (
-				<AddCompetenceDialog
-					onClose={data => {
-						setIsOpen(false);
-						console.log(data);
-					}}
-				/>
-			)}
-		</div>
-	);
-}
-
-function AddCompetenceDialog({ onClose }: { onClose: OnDialogCloseFn<any> }) {
-	const [search, setSearch] = useState("");
-	const [selectedValue, setSelectedValue] = useState("");
-	const [filteredCompetencies, setfilteredCompetencies] = useState<any[]>([
-		"Eins",
-		"Zwei",
-		"Drei"
-	]);
-
-	return (
-		<Dialog title="Kompetenz hinzufügen" onClose={() => onClose(undefined)}>
-			<div className="grid grid-cols-2">
-				<div className="flex flex-col gap-8">
-					<div>
-						<Combobox value={selectedValue} onChange={setSelectedValue}>
-							<span className="flex items-center rounded-lg border border-light-border py-1 px-3">
-								<SearchIcon className="h-6 text-light" />
-								<Combobox.Input
-									className="w-full border-none focus:ring-0"
-									placeholder="Suche nach Kompetenz"
-									autoComplete="off"
-									onChange={e => setSearch(e.target.value)}
-								/>
-							</span>
-							<div className="divide-border-light playlist-scroll mt-2 flex flex-col divide-y overflow-auto">
-								<Combobox.Options className="flex flex-col divide-y divide-light-border">
-									{filteredCompetencies.map(comp => (
-										<Combobox.Option value={comp} key={comp} as={Fragment}>
-											{({ active }) => (
-												<button
-													type="button"
-													className={`flex flex-col gap-1 rounded px-4 py-2 ${
-														active ? "bg-secondary text-white" : ""
-													}`}
-												>
-													<span className="text-sm font-medium ">
-														{comp}
-													</span>
-													<span
-														className={`text-xs font-normal ${
-															active ? "text-white" : "text-light"
-														}`}
-													>
-														in Java
-													</span>
-												</button>
-											)}
-										</Combobox.Option>
-									))}
-								</Combobox.Options>
-							</div>
-						</Combobox>
-					</div>
-
-					<Divider />
-
-					<div className="flex flex-col gap-4">
-						<h3 className="text-xl">Neue Kompetenz erstellen</h3>
-						<LabeledField label="Titel">
-							<input />
-						</LabeledField>
-					</div>
-				</div>
-			</div>
-		</Dialog>
 	);
 }
 
@@ -420,9 +285,7 @@ function ArticleInput({ index }: { index: number }) {
 	return (
 		<Controller
 			name={`content.${index}.value.content`}
-			render={({ field }) => (
-				<EditorField label="Artikel" value={field.value} onChange={field.onChange} />
-			)}
+			render={({ field }) => <EditorField value={field.value} onChange={field.onChange} />}
 		></Controller>
 	);
 }
@@ -443,20 +306,43 @@ export function VideoInput({ index }: { index: number }) {
 			<p className="text-sm text-light">Video verlinken oder hochladen.</p>
 
 			<div className="flex flex-col gap-4">
-				<LabeledField label="URL">
-					<input
-						type={"text"}
-						className="textfield"
-						value={url}
-						onChange={e =>
-							update(index, {
-								type: "video",
-								value: { url: e.target.value },
-								meta: { duration: 0 }
-							})
-						}
-					/>
-				</LabeledField>
+				<div className="flex flex-col gap-4 md:flex-row">
+					<LabeledField label="URL">
+						<input
+							type={"text"}
+							className="textfield w-full"
+							value={url}
+							onChange={e =>
+								update(index, {
+									type: "video",
+									value: { url: e.target.value },
+									meta: { duration: 0 }
+								})
+							}
+						/>
+					</LabeledField>
+
+					<LabeledField label="Länge in Sekunden">
+						<div className="flex">
+							<input
+								className="textfield w-full"
+								type={"number"}
+								placeholder="Länge des Videos in Sekunden"
+								value={duration}
+								onChange={e =>
+									update(index, {
+										type: "video",
+										value: { url },
+										meta: { duration: e.target.valueAsNumber }
+									})
+								}
+							/>
+							<span className="my-auto w-fit px-2 text-sm text-light">
+								{formatSeconds(duration)}
+							</span>
+						</div>
+					</LabeledField>
+				</div>
 
 				<Upload
 					mediaType="video"
@@ -474,27 +360,6 @@ export function VideoInput({ index }: { index: number }) {
 					}}
 				/>
 			</div>
-
-			<LabeledField label="Länge in Sekunden">
-				<div className="grid grid-cols-[1fr_auto]">
-					<input
-						className="textfield"
-						type={"number"}
-						placeholder="Länge des Videos in Sekunden"
-						value={duration}
-						onChange={e =>
-							update(index, {
-								type: "video",
-								value: { url },
-								meta: { duration: e.target.valueAsNumber }
-							})
-						}
-					/>
-					<span className="my-auto px-2 text-sm text-light">
-						{formatSeconds(duration)}
-					</span>
-				</div>
-			</LabeledField>
 		</div>
 	);
 }

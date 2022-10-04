@@ -34,88 +34,86 @@ export function CourseInfoForm() {
 	const [openDescriptionEditor, setOpenDescriptionEditor] = useState(false);
 
 	return (
-		<Form.Container>
-			<CenteredContainer>
-				<SectionHeader title="Daten" subtitle="Informationen über diesen Kurs." />
+		<CenteredContainer>
+			<SectionHeader title="Daten" subtitle="Informationen über diesen Kurs." />
 
-				<Form.SectionCard>
-					<LabeledField label="Titel" error={errors.title?.message}>
-						<input {...register("title")} placeholder="Der Neue Kurs" />
-					</LabeledField>
+			<Form.SectionCard>
+				<LabeledField label="Titel" error={errors.title?.message}>
+					<input {...register("title")} placeholder="Der Neue Kurs" />
+				</LabeledField>
 
-					<div className="grid items-start gap-2 sm:flex">
-						<LabeledField label="Slug" error={errors.slug?.message}>
-							<input
-								{...register("slug")}
-								placeholder='Wird in der URL angezeigt, z. B.: "der-neue-kurs"'
-							/>
-						</LabeledField>
-
-						<button className="btn-stroked h-fit self-end">Generieren</button>
-					</div>
-
-					<LabeledField label="Untertitel" error={errors.subtitle?.message}>
-						<textarea
-							{...register("subtitle")}
-							placeholder="1-2 Sätze über diesen Kurs."
-							className="h-full"
+				<div className="grid items-start gap-2 sm:flex">
+					<LabeledField label="Slug" error={errors.slug?.message}>
+						<input
+							{...register("slug")}
+							placeholder='Wird in der URL angezeigt, z. B.: "der-neue-kurs"'
 						/>
 					</LabeledField>
 
-					<div className="grid gap-8 md:grid-cols-[1fr_auto]">
-						<LabeledField label="Beschreibung" optional={true}>
-							<textarea
-								{...register("description")}
-								className="h-full"
-								rows={5}
-								placeholder="Beschreibung dieser Lernheit. Unterstützt Markdown."
-							/>
+					<button className="btn-stroked h-fit self-end">Generieren</button>
+				</div>
 
-							<button
-								type="button"
-								className="btn-stroked text-sm"
-								onClick={() => setOpenDescriptionEditor(true)}
-							>
-								Markdown Editor öffnen
-							</button>
+				<LabeledField label="Untertitel" error={errors.subtitle?.message}>
+					<textarea
+						{...register("subtitle")}
+						placeholder="1-2 Sätze über diesen Kurs."
+						className="h-full"
+					/>
+				</LabeledField>
 
-							{openDescriptionEditor && (
-								<Controller
-									control={control}
-									name="description"
-									render={({ field }) => (
-										<MarkdownEditorDialog
-											title="Beschreibung"
-											onClose={v => {
-												if (v) {
-													setValue("description", v);
-												}
-												setOpenDescriptionEditor(false);
-											}}
-											initialValue={field.value ?? ""}
-										/>
-									)}
-								/>
-							)}
-						</LabeledField>
+				<div className="grid gap-8 md:grid-cols-[1fr_auto]">
+					<LabeledField label="Beschreibung" optional={true}>
+						<textarea
+							{...register("description")}
+							className="h-full"
+							rows={5}
+							placeholder="Beschreibung dieser Lernheit. Unterstützt Markdown."
+						/>
 
-						<LabeledField label="Bild">
+						<button
+							type="button"
+							className="btn-stroked text-sm"
+							onClick={() => setOpenDescriptionEditor(true)}
+						>
+							Markdown Editor öffnen
+						</button>
+
+						{openDescriptionEditor && (
 							<Controller
 								control={control}
-								name="imgUrl"
+								name="description"
 								render={({ field }) => (
-									<ImageUploadWidget
-										width={256}
-										height={256}
-										url={field.value}
-										onUpload={field.onChange}
+									<MarkdownEditorDialog
+										title="Beschreibung"
+										onClose={v => {
+											if (v) {
+												setValue("description", v);
+											}
+											setOpenDescriptionEditor(false);
+										}}
+										initialValue={field.value ?? ""}
 									/>
 								)}
 							/>
-						</LabeledField>
-					</div>
-				</Form.SectionCard>
-			</CenteredContainer>
-		</Form.Container>
+						)}
+					</LabeledField>
+
+					<LabeledField label="Bild">
+						<Controller
+							control={control}
+							name="imgUrl"
+							render={({ field }) => (
+								<ImageUploadWidget
+									width={256}
+									height={256}
+									url={field.value}
+									onUpload={field.onChange}
+								/>
+							)}
+						/>
+					</LabeledField>
+				</div>
+			</Form.SectionCard>
+		</CenteredContainer>
 	);
 }

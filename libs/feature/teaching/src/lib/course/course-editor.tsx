@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Tab, Tabs } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
@@ -18,7 +17,6 @@ export function CourseEditor({
 }) {
 	// triggerRerender is used to force the form to re-render when course is updated from JSON dialog
 	const [triggerRerender, setTriggerRerender] = useState(0);
-	const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 	const [openAsJson, setOpenAsJson] = useState(false);
 	const isNew = course.courseId === "";
 
@@ -90,18 +88,10 @@ export function CourseEditor({
 						}
 					/>
 
-					<CenteredContainer className="mb-8">
-						<Tabs
-							selectedIndex={selectedTabIndex}
-							onChange={index => setSelectedTabIndex(index)}
-						>
-							<Tab>Grunddaten</Tab>
-							<Tab>Inhalt</Tab>
-						</Tabs>
-					</CenteredContainer>
-
-					{selectedTabIndex === 0 && <CourseInfoForm />}
-					{selectedTabIndex === 1 && <CourseContentForm />}
+					<Form.Container>
+						<CourseInfoForm />
+						<CourseContentForm />
+					</Form.Container>
 
 					<CenteredContainer className="mt-16">
 						<button className="btn-primary ml-auto mr-0 self-end" type="submit">

@@ -25,16 +25,6 @@ export function useCourseContentForm() {
 
 	const [openNewChapterDialog, setOpenNewChapterDialog] = useState(false);
 	const [addChapterTarget, setAddChapterTarget] = useState<string | null>(null);
-	const [showInfo, setShowInfo] = useState(false);
-	const [highlightedCompetence, _setHighlightedCompetence] = useState<string | null>(null);
-
-	const setHighlightedCompetence = useCallback(
-		(title: string | null) => {
-			setShowInfo(true);
-			_setHighlightedCompetence(current => (current === title ? null : title));
-		},
-		[_setHighlightedCompetence]
-	);
 
 	const onAddChapter = useCallback(
 		(chapterId: string) => {
@@ -97,11 +87,7 @@ export function useCourseContentForm() {
 		openNewChapterDialog,
 		addChapterDialogClosed,
 		onAddChapter,
-		onAddLesson,
-		showInfo,
-		setShowInfo,
-		highlightedCompetence,
-		setHighlightedCompetence
+		onAddLesson
 	};
 }
 
