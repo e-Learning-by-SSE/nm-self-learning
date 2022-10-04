@@ -108,7 +108,7 @@ function CheckResult({
 	}
 
 	return (
-		<button className="btn-primary mb-8 w-full" onClick={checkResult}>
+		<button className="btn-primary w-full" onClick={checkResult}>
 			Überprüfen
 		</button>
 	);

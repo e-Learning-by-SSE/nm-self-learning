@@ -1,4 +1,4 @@
-import { EditorField } from "@self-learning/ui/forms";
+import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useEffect, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
@@ -178,17 +178,21 @@ export function ProgrammingAnswer() {
 					/>
 				</div>
 
-				<div className="flex h-[500px] w-full shrink-0 flex-col gap-4 rounded-lg border border-light-border bg-white">
-					<div className="playlist-scroll h-full overflow-auto p-4">
-						{output.text !== "" ? (
-							<pre className={`font-mono ${output.isError ? "text-red-500" : ""}`}>
-								{output.text}
-							</pre>
-						) : (
-							<span className="text-light">Keine Ausgabe.</span>
-						)}
+				<LabeledField label="Ausgabe">
+					<div className="flex h-fit max-h-[400px] w-full shrink-0 flex-col gap-4 rounded-lg border border-light-border bg-white">
+						<div className="playlist-scroll h-full overflow-auto p-4">
+							{output.text !== "" ? (
+								<pre
+									className={`font-mono ${output.isError ? "text-red-500" : ""}`}
+								>
+									{output.text}
+								</pre>
+							) : (
+								<span className="text-light">Keine Ausgabe.</span>
+							)}
+						</div>
 					</div>
-				</div>
+				</LabeledField>
 			</div>
 		</CenteredContainer>
 	);
