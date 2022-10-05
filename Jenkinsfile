@@ -29,6 +29,7 @@ pipeline {
         
         stage('Compilation Test') {
             steps {
+                sh 'cp -f .env.example .env'
                 sh 'npm run build'
             }
         }
