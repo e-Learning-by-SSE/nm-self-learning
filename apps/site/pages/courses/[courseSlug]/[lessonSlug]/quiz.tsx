@@ -127,13 +127,15 @@ function getQuiz(slug: string): QuizContent {
 			language: "typescript",
 			withCertainty: false,
 			questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
-			statement: `Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
-				## Beispiel
+			statement: `# Schleifen
+			
+Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
 
-				**Eingabe**: \`[1, 2, 3, 4, 5]\`
+**Beispiel:**
 
-				**Ausgabe**: \`15\`
-				`,
+**Eingabe**: \`[1, 2, 3, 4, 5]\`  
+**Ausgabe**: \`15\`
+`,
 			template:
 				"export function sum(numbers: number[]): number {\n\t// DEINE LÖSUNG HIER\n\n\treturn 0;\t\t\n}",
 			expectedOutput: "123",

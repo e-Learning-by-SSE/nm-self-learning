@@ -63,7 +63,7 @@ export function Question({
 			</CenteredContainer>
 
 			<div className="flex max-w-full flex-col gap-8">
-				<Answer question={question} answersMd={markdown.answersMd} />
+				<Answer question={question} />
 			</div>
 
 			{question.withCertainty && (
@@ -114,7 +114,7 @@ function CheckResult({
 	);
 }
 
-function Answer({ question, answersMd }: { question: QuestionType; answersMd: MdLookup }) {
+function Answer({ question }: { question: QuestionType }) {
 	// Works, but prevents HMR :(
 	// const component = QUESTION_ANSWER_COMPONENTS[question.type];
 
