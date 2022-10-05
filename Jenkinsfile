@@ -22,6 +22,12 @@ pipeline {
                 sh 'npm install'
             }
         }
+        
+        stage('Compilation Test') {
+            steps {
+                sh 'npm run build'
+            }
+        }
 
         stage('Test') {
             environment {
