@@ -8,6 +8,10 @@ pipeline {
         DEMO_SERVER_PORT = '8080'
     }
     
+    options {
+        ansiColor('xterm')
+    }
+    
     stages {
 
         stage('Git') {
