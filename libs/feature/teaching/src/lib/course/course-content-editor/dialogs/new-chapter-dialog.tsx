@@ -16,6 +16,7 @@ export function NewChapterDialog({
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Titel">
 					<input
+						type="text"
 						className="textfield"
 						value={title}
 						onChange={e => setTitle(e.target.value)}

@@ -56,7 +56,6 @@ export function JsonEditorDialog<T>({
 						)}
 
 						<EditorField
-							label="JSON"
 							language="json"
 							value={value}
 							height="60vh"

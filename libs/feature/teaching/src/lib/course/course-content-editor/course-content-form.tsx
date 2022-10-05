@@ -119,6 +119,7 @@ export function CourseContentForm() {
 				<DndProvider backend={MultiBackend} options={backendOptions}>
 					<Tree
 						classes={{
+							root: "relative", // required for placeholder line
 							dropTarget: "bg-indigo-50"
 						}}
 						tree={treeData}
@@ -134,7 +135,7 @@ export function CourseContentForm() {
 						}}
 						onDrop={handleDrop}
 						placeholderRender={props => (
-							<div className="h-[1px] w-full bg-secondary"></div>
+							<div className="absolute h-[1px] w-full bg-secondary"></div>
 						)}
 						dragPreviewRender={props => (
 							<div className="w-fit rounded-lg border border-secondary bg-white py-1 px-3">
@@ -160,24 +161,60 @@ export function CourseContentForm() {
 								{node.data?.type === "lesson" ? (
 									<LessonNode lesson={node.data} key={node.id} />
 								) : (
-									<div className="flex items-center gap-4 rounded-lg py-2">
-										<button
-											type="button"
-											onClick={onToggle}
-											className="rounded-full p-2 hover:bg-slate-50"
-										>
-											{isOpen ? (
-												<ChevronDownIcon className="h-5 text-light" />
-											) : (
-												<ChevronRightIcon className="h-5 text-light" />
+									<div className="flex flex-col py-2">
+										<div className="flex items-center gap-4 rounded-lg py-2">
+											<button
+												type="button"
+												onClick={onToggle}
+												className="rounded-full p-2 hover:bg-slate-50"
+											>
+												{isOpen ? (
+													<ChevronDownIcon className="h-5 text-light" />
+												) : (
+													<ChevronRightIcon className="h-5 text-light" />
+												)}
+											</button>
+											{node.data && (
+												<div className="flex items-center gap-4">
+													<span className="text-light">
+														{node.data.chapterNr}
+													</span>
+													<span className="font-medium">
+														{node.data.title}
+													</span>
+													<div className="flex gap-2 text-xs text-light">
+														<button
+															type="button"
+															className="text rounded-lg border border-light-border px-2 py-1 hover:border-secondary hover:text-secondary"
+														>
+															Editieren
+														</button>
+														<button
+															type="button"
+															className="text rounded-lg border border-light-border px-2 py-1 hover:border-secondary hover:text-secondary"
+															onClick={() =>
+																onAddChapter(
+																	(node.data as ChapterWithNr)
+																		.chapterNr
+																)
+															}
+														>
+															Kapitel hinzufügen
+														</button>
+														<button
+															type="button"
+															className="text rounded-lg border border-light-border px-2 py-1 hover:border-secondary hover:text-secondary"
+														>
+															Entfernen
+														</button>
+													</div>
+												</div>
 											)}
-										</button>
-										<div className="flex">
-											<span className="pr-4 text-light">
-												{node.data?.chapterNr}
-											</span>
-											<span className="font-medium">{node.data?.title}</span>
 										</div>
+
+										<p className="pl-10 text-xs text-light">
+											{node.data?.description}
+										</p>
 									</div>
 								)}
 							</div>

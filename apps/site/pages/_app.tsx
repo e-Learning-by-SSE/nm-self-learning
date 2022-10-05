@@ -44,7 +44,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 
 	return (
 		<>
-			<SessionProvider session={pageProps.session}>
+			<SessionProvider session={(pageProps as any).session}>
 				<Head>
 					<title>Self-Learning</title>
 				</Head>

@@ -38,7 +38,6 @@ export function MarkdownField({
 
 			<div className="mt-4 grid grid-cols-2 items-start gap-8">
 				<EditorField
-					label="Inhalt"
 					language="markdown"
 					onChange={setValue}
 					value={content}
@@ -113,7 +112,6 @@ export function MarkdownEditorDialog({
 						<label className="text-sm font-semibold">Inhalt</label>
 						<div className="h-full overflow-hidden">
 							<EditorField
-								label="Inhalt"
 								language="markdown"
 								onChange={setValue}
 								value={value}
