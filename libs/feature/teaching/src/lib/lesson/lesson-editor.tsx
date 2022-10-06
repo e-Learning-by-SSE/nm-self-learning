@@ -26,12 +26,6 @@ export function LessonEditor({
 		defaultValues: lesson
 	});
 
-	function openAsJson() {
-		const formValue = methods.getValues();
-		console.log(JSON.stringify(formValue, null, 4));
-		setIsJsonDialogOpen(true);
-	}
-
 	function setFromJsonDialog(value: LessonFormModel | undefined) {
 		if (value) {
 			methods.reset(value);
@@ -100,7 +94,7 @@ export function LessonEditor({
 							<button
 								type="button"
 								className="absolute bottom-16 text-sm font-semibold text-secondary"
-								onClick={openAsJson}
+								onClick={() => setIsJsonDialogOpen(true)}
 							>
 								Als JSON bearbeiten
 								{isJsonDialogOpen && (
