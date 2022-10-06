@@ -103,7 +103,7 @@ export function MarkdownEditorDialog({
 	return (
 		<Dialog
 			style={{ height: "85vh", width: "85vw" }}
-			onClose={() => onClose(undefined)}
+			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			title={title}
 		>
 			<div className="grid h-full items-start overflow-hidden">
