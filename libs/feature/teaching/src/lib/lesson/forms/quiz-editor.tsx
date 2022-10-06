@@ -14,7 +14,7 @@ import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 
-export function QuizEditor() {
+export function useQuizEditorForm() {
 	const { control } = useFormContext<LessonFormModel>();
 	const {
 		append,
@@ -70,6 +70,30 @@ export function QuizEditor() {
 			setQuestionIndex(quiz.length - 2); // set to last index or -1 if no questions exist
 		}
 	}
+
+	return {
+		control,
+		quiz,
+		questionIndex,
+		setQuestionIndex,
+		currentQuestion,
+		appendQuestion,
+		swapQuestions,
+		removeQuestion
+	};
+}
+
+export function QuizEditor() {
+	const {
+		control,
+		quiz,
+		questionIndex,
+		setQuestionIndex,
+		currentQuestion,
+		appendQuestion,
+		swapQuestions,
+		removeQuestion
+	} = useQuizEditorForm();
 
 	return (
 		<section>
@@ -182,7 +206,7 @@ function BaseQuestionForm({
 }) {
 	return (
 		<div className="px-4 xl:px-0">
-			<div className="mx-auto mt-8 flex w-full flex-col rounded-lg border border-light-border bg-white p-8 xl:w-[90vw]">
+			<div className="mx-auto mt-8 flex w-full flex-col rounded-lg border border-light-border bg-white p-8">
 				<h4 className="font-semibold text-secondary">{currentQuestion.type}</h4>
 				<div className="flex flex-col gap-8">
 					<section>

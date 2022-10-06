@@ -1,18 +1,21 @@
 import { Video } from "@self-learning/types";
 import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
-import { LabeledField } from "@self-learning/ui/forms";
+import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useFieldArray, useFormContext } from "react-hook-form";
-import { VideoUploadWidget } from "../../image-upload";
-import { getSupabaseUrl } from "../../supabase";
+import { VideoPlayer } from "@self-learning/ui/lesson";
+import { formatSeconds } from "@self-learning/util/common";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
 export function VideoInput({ index, remove }: { index: number; remove: () => void }) {
-	const { register, watch } = useFormContext<{ content: Video[] }>();
+	const { control, register } = useFormContext<{ content: Video[] }>();
 	const { update } = useFieldArray<{ content: Video[] }>({
 		name: "content"
 	});
 
-	const url = watch(`content.${index}.value.url`);
+	const {
+		value: { url },
+		meta: { duration }
+	} = useWatch({ control, name: `content.${index}` });
 
 	return (
 		<CenteredContainer className="w-full">
@@ -23,42 +26,62 @@ export function VideoInput({ index, remove }: { index: number; remove: () => voi
 				/>
 
 				<div className="flex flex-col gap-8">
-					<LabeledField label="URL">
-						<input
-							{...register(`content.${index}.value.url`)}
-							placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-						/>
-					</LabeledField>
+					<div className="flex flex-col gap-4">
+						<div className="flex flex-col gap-4 md:flex-row">
+							<LabeledField label="URL">
+								<input
+									type={"text"}
+									className="textfield w-full"
+									value={url}
+									onChange={e =>
+										update(index, {
+											type: "video",
+											value: { url: e.target.value },
+											meta: { duration: 0 }
+										})
+									}
+								/>
+							</LabeledField>
 
-					<LabeledField label="Länge">
-						<input
-							{...register(`content.${index}.meta.duration`)}
-							placeholder="Länge des Videos in Sekunden."
-						/>
-					</LabeledField>
+							<LabeledField label="Länge in Sekunden">
+								<div className="flex">
+									<input
+										className="textfield w-full"
+										type={"number"}
+										placeholder="Länge des Videos in Sekunden"
+										value={duration}
+										onChange={e =>
+											update(index, {
+												type: "video",
+												value: { url },
+												meta: { duration: e.target.valueAsNumber }
+											})
+										}
+									/>
+									<span className="my-auto w-fit px-2 text-sm text-light">
+										{formatSeconds(duration)}
+									</span>
+								</div>
+							</LabeledField>
+						</div>
 
-					<VideoUploadWidget
-						url={url ?? null}
-						onUrlChange={url =>
-							update(index, {
-								type: "video",
-								value: { url },
-								meta: { duration: 0 }
-							})
-						}
-						onUpload={file => {
-							console.log(file);
-
-							const { publicURL, error } = getSupabaseUrl("videos", file.filepath);
-							if (!error) {
+						<Upload
+							mediaType="video"
+							preview={
+								<div className="aspect-video w-full bg-black">
+									{url && <VideoPlayer url={url} />}
+								</div>
+							}
+							onUploadCompleted={(publicUrl, meta) => {
 								update(index, {
 									type: "video",
-									value: { url: publicURL as string },
-									meta: { duration: file.duration }
+									value: { url: publicUrl },
+									meta: { duration: meta?.duration ?? 0 }
 								});
-							}
-						}}
-					/>
+							}}
+						/>
+					</div>
+
 					<button
 						type="button"
 						className="absolute top-8 right-8 w-fit self-end text-sm text-red-500"

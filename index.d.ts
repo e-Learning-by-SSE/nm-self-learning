@@ -9,8 +9,6 @@ declare var process: {
 		MINIO_PUBLIC_URL: string;
 		MINIO_BUCKET_NAME: string;
 		NEXT_PUBLIC_PISTON_URL: string;
-		NEXT_PUBLIC_SUPABASE_URL: string;
-		NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
 		AUTH0_SECRET: string;
 		AUTH0_BASE_URL: string;
 		AUTH0_ISSUER_BASE_URL: string;

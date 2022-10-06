@@ -1,10 +1,8 @@
 import { SectionHeader } from "@self-learning/ui/common";
-import { Form, LabeledField } from "@self-learning/ui/forms";
+import { Form, LabeledField, Upload } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import slugify from "slugify";
-import { ImageUploadWidget } from "../../image-upload";
-import { getSupabaseUrl } from "../../supabase";
 import { LessonFormModel } from "../lesson-form-model";
 
 export function LessonInfoEditor() {
@@ -70,21 +68,20 @@ export function LessonInfoEditor() {
 							control={control}
 							name="imgUrl"
 							render={({ field }) => (
-								<ImageUploadWidget
-									url={field.value}
-									onUpload={filepath => {
-										console.log(filepath);
-
-										const { publicURL, error } = getSupabaseUrl(
-											"images",
-											filepath
-										);
-										if (!error) {
-											field.onChange(publicURL);
-										}
-									}}
-									width={256}
-									height={256}
+								<Upload
+									mediaType="image"
+									onUploadCompleted={field.onChange}
+									preview={
+										<div className="aspect-video rounded-lg">
+											{field.value && (
+												<img
+													className="w-full rounded-lg object-contain"
+													src={field.value}
+													alt="Thumbnail"
+												/>
+											)}
+										</div>
+									}
 								/>
 							)}
 						/>
