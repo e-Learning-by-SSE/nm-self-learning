@@ -142,7 +142,7 @@ export function LessonContentEditor() {
 							className="w-full"
 							axis="x"
 							values={content}
-							onReorder={items => setContent(items)}
+							onReorder={setContent}
 						>
 							<Tabs selectedIndex={contentTabIndex} onChange={setContentTabIndex}>
 								{content.map((value, index) => (

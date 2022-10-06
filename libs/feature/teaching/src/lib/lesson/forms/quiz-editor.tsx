@@ -1,32 +1,34 @@
 import { PlusIcon } from "@heroicons/react/outline";
-import { ArrowSmLeftIcon, ArrowSmRightIcon, XIcon } from "@heroicons/react/solid";
 import {
 	BaseQuestion,
 	MultipleChoiceForm,
+	ProgrammingForm,
 	QuestionType,
+	QuizContent,
 	ShortTextForm
 } from "@self-learning/question-types";
-import { Divider, RemovableTab, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
+import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { getRandomId } from "@self-learning/util/common";
+import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
-import { LessonFormModel } from "../lesson-form-model";
 
 export function useQuizEditorForm() {
-	const { control } = useFormContext<LessonFormModel>();
+	const { control } = useFormContext<{ quiz: QuizContent }>();
 	const {
 		append,
 		remove,
 		fields: quiz,
+		replace: setQuiz,
 		swap
 	} = useFieldArray({
 		control,
 		name: "quiz"
 	});
 
-	const [questionIndex, setQuestionIndex] = useState<number>(-1);
+	const [questionIndex, setQuestionIndex] = useState<number>(quiz.length > 0 ? 0 : -1);
 	const currentQuestion = quiz[questionIndex];
 
 	function appendQuestion(type: QuestionType["type"]) {
@@ -55,6 +57,19 @@ export function useQuizEditorForm() {
 				acceptedAnswers: []
 			});
 		}
+
+		if (type === "programming") {
+			return append({
+				...baseQuestion,
+				type: "programming",
+				language: "typescript",
+				custom: {
+					mode: "standalone",
+					expectedOutput: "",
+					solutionTemplate: ""
+				}
+			});
+		}
 	}
 
 	function swapQuestions(fromIndex: number, toIndex: number) {
@@ -77,6 +92,7 @@ export function useQuizEditorForm() {
 	return {
 		control,
 		quiz,
+		setQuiz,
 		questionIndex,
 		setQuestionIndex,
 		currentQuestion,
@@ -90,6 +106,7 @@ export function QuizEditor() {
 	const {
 		control,
 		quiz,
+		setQuiz,
 		questionIndex,
 		setQuestionIndex,
 		currentQuestion,
@@ -126,42 +143,45 @@ export function QuizEditor() {
 						<PlusIcon className="h-5" />
 						<span>Kurze Antwort</span>
 					</button>
+
+					<button
+						type="button"
+						className="btn-primary mb-8 w-fit"
+						onClick={() => appendQuestion("programming")}
+					>
+						<PlusIcon className="h-5" />
+						<span>Programmieren</span>
+					</button>
 				</div>
 
 				{questionIndex >= 0 && (
-					<>
+					<Reorder.Group values={quiz} onReorder={setQuiz} axis="x" className="w-full">
 						<Tabs
 							selectedIndex={questionIndex}
 							onChange={index => setQuestionIndex(index)}
 						>
-							{quiz.map((_, index) => (
-								<RemovableTab key={index} onRemove={() => removeQuestion(index)}>
-									Frage {index + 1}
-								</RemovableTab>
+							{quiz.map((value, index) => (
+								<Reorder.Item
+									as="div"
+									value={value}
+									key={value.id}
+									className="bg-gray-50"
+								>
+									<RemovableTab
+										key={value.id}
+										onRemove={() => removeQuestion(index)}
+									>
+										<div className="flex flex-col">
+											<span className="text-xs font-normal">
+												{value.type}
+											</span>
+											<span>Frage {index + 1}</span>
+										</div>
+									</RemovableTab>
+								</Reorder.Item>
 							))}
 						</Tabs>
-
-						<div className="flex flex-wrap gap-4 pt-8">
-							<button
-								type="button"
-								className="btn-small"
-								disabled={questionIndex === 0}
-								title="Nach links verschieben"
-								onClick={() => swapQuestions(questionIndex, questionIndex - 1)}
-							>
-								<ArrowSmLeftIcon className="h-5" />
-							</button>
-							<button
-								type="button"
-								className="btn-small"
-								disabled={questionIndex === quiz.length - 1}
-								title="Nach rechts verschieben"
-								onClick={() => swapQuestions(questionIndex, questionIndex + 1)}
-							>
-								<ArrowSmRightIcon className="h-5" />
-							</button>
-						</div>
-					</>
+					</Reorder.Group>
 				)}
 			</CenteredContainer>
 
@@ -187,6 +207,10 @@ function RenderQuestionTypeForm({ question, index }: { question: QuestionType; i
 		return <ShortTextForm question={question} index={index} />;
 	}
 
+	if (question.type === "programming") {
+		return <ProgrammingForm question={question} index={index} />;
+	}
+
 	return <span className="text-red-500">Unknown question type: {question.type}</span>;
 }
 
@@ -198,11 +222,11 @@ function BaseQuestionForm({
 }: {
 	currentQuestion: QuestionType;
 	index: number;
-	control: Control<LessonFormModel, unknown>;
+	control: Control<{ quiz: QuizContent }, unknown>;
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="px-4 xl:px-0">
+		<div className="px-4">
 			<div className="mx-auto mt-8 flex w-full flex-col rounded-lg border border-light-border bg-white p-8">
 				<h4 className="font-semibold text-secondary">{currentQuestion.type}</h4>
 				<div className="flex flex-col gap-8">

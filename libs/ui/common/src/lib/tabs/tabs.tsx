@@ -49,13 +49,13 @@ export function RemovableTab({
 }) {
 	return (
 		<Tab>
-			<span className="flex items-center gap-4">
+			<span className="flex items-end gap-4">
 				<span>{children}</span>
 				<button
 					type="button"
 					title="Entfernen"
 					onClick={onRemove}
-					className="rounded-full hover:bg-red-50 hover:text-red-500"
+					className="rounded-full pb-[3px] hover:bg-red-50 hover:text-red-500"
 				>
 					<XIcon className="h-4" />
 				</button>
