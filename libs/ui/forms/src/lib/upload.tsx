@@ -1,5 +1,5 @@
 import { trpc } from "@self-learning/api-client";
-import { ReactElement } from "react";
+import { ReactElement, useId } from "react";
 
 export function Upload({
 	mediaType,
@@ -10,15 +10,8 @@ export function Upload({
 	onUploadCompleted: (publicUrl: string, meta?: { duration: number }) => void;
 	preview: ReactElement;
 }) {
+	const id = useId(); // Each file input requires a unique id ... otherwise browser will always pick the first one
 	const { mutateAsync: getPresignedUrl } = trpc.storage.getPresignedUrl.useMutation();
-
-	let acceptedFiles: string | undefined = undefined;
-
-	if (mediaType === "image") {
-		acceptedFiles = "image/*";
-	} else if (mediaType === "video") {
-		acceptedFiles = "video/mp4,video/x-m4v,video/*";
-	}
 
 	function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
 		const file = event.target.files?.[0];
@@ -55,14 +48,13 @@ export function Upload({
 
 	return (
 		<div className="relative flex flex-col gap-4">
-			<label className="btn-primary" htmlFor="file">
+			<label className="btn-primary" htmlFor={id}>
 				{mediaType === "video" && "Video hochladen"}
 				{mediaType === "image" && "Bild hochladen"}
 			</label>
 			<input
 				type="file"
-				id="file"
-				accept={acceptedFiles}
+				id={id}
 				onChange={handleUpload}
 				style={{
 					visibility: "hidden",
