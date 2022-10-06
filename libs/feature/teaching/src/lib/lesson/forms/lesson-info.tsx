@@ -69,13 +69,14 @@ export function LessonInfoEditor() {
 							name="imgUrl"
 							render={({ field }) => (
 								<Upload
+									key={"image"}
 									mediaType="image"
 									onUploadCompleted={field.onChange}
 									preview={
-										<div className="aspect-video rounded-lg">
+										<div className="aspect-video h-64 rounded-lg">
 											{field.value && (
 												<img
-													className="w-full rounded-lg object-contain"
+													className="h-64 w-full rounded-lg object-cover"
 													src={field.value}
 													alt="Thumbnail"
 												/>

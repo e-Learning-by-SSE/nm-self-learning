@@ -55,7 +55,7 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 				subtitle: result.title
 			});
 
-			router.replace(router.asPath);
+			router.replace(router.asPath, undefined, { scroll: false });
 		} catch (error) {
 			showToast({
 				type: "error",

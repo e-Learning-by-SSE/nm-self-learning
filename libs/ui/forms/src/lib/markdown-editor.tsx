@@ -37,12 +37,15 @@ export function MarkdownField({
 			</button>
 
 			<div className="mt-4 grid grid-cols-2 items-start gap-8">
-				<EditorField
-					language="markdown"
-					onChange={setValue}
-					value={content}
-					height={height}
-				/>
+				<div className="flex h-full w-full flex-col gap-2">
+					<label className="text-sm font-semibold">Markdown</label>
+					<EditorField
+						language="markdown"
+						onChange={setValue}
+						value={content}
+						height={height}
+					/>
+				</div>
 
 				<div className="flex h-full w-full flex-col gap-2">
 					<label className="text-sm font-semibold">Preview</label>

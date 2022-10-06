@@ -1,12 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { lessonSchema } from "@self-learning/types";
-import { SectionHeader } from "@self-learning/ui/common";
-import { Form } from "@self-learning/ui/forms";
+import { SectionHeader, showToast } from "@self-learning/ui/common";
+import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useEffect, useRef, useState } from "react";
-import { Controller, FormProvider, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { JsonEditorDialog } from "../json-editor-dialog";
-import { MarkdownField } from "@self-learning/ui/forms";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
@@ -60,9 +59,22 @@ export function LessonEditor({
 		<div className="bg-gray-50 pb-32">
 			<FormProvider {...methods}>
 				<form
-					onSubmit={methods.handleSubmit(data => {
-						onConfirm(data);
-					})}
+					onSubmit={methods.handleSubmit(
+						data => {
+							onConfirm(data);
+						},
+						onInvalid => {
+							console.log(
+								"Form could not be saved due to the following errors:",
+								onInvalid
+							);
+							showToast({
+								type: "error",
+								title: "Speichern fehlgeschlagen",
+								subtitle: "Das Formular enthält ungültige Werte."
+							});
+						}
+					)}
 					className="flex flex-col"
 				>
 					<Form.Title
@@ -119,7 +131,7 @@ export function LessonEditor({
 }
 
 function LessonDescriptionForm() {
-	const methods = useForm<LessonFormModel>();
+	const { control } = useFormContext<LessonFormModel>();
 
 	return (
 		<section>
@@ -131,7 +143,7 @@ function LessonDescriptionForm() {
 			</CenteredContainer>
 			<Form.MarkdownWithPreviewContainer>
 				<Controller
-					control={methods.control}
+					control={control}
 					name="description"
 					render={({ field }) => (
 						<MarkdownField

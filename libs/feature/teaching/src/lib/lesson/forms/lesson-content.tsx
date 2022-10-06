@@ -1,7 +1,8 @@
 import { DocumentTextIcon, VideoCameraIcon } from "@heroicons/react/solid";
 import { LessonContent, LessonContentType, ValueByContentType } from "@self-learning/types";
-import { SectionHeader } from "@self-learning/ui/common";
+import { RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
+import { Reorder } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { ArticleInput } from "../content-types/article";
@@ -34,6 +35,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 	const {
 		append,
 		remove,
+		replace: setContent,
 		fields: content
 	} = useFieldArray<{ content: LessonContent }>({
 		name: "content",
@@ -83,6 +85,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 		content,
 		addContent,
 		removeContent,
+		setContent,
 		contentTabIndex,
 		typesWithUsage,
 		setContentTabIndex
@@ -95,6 +98,7 @@ export function LessonContentEditor() {
 		content,
 		addContent,
 		removeContent,
+		setContent,
 		contentTabIndex,
 		setContentTabIndex,
 		typesWithUsage
@@ -110,7 +114,7 @@ export function LessonContentEditor() {
 					werden soll."
 				/>
 
-				<div className="flex gap-4">
+				<div className="flex gap-4 text-sm">
 					<button
 						type="button"
 						className="btn-primary w-fit"
@@ -134,22 +138,22 @@ export function LessonContentEditor() {
 
 				<div className="mt-8 flex gap-4">
 					{content.length > 0 && (
-						<>
-							{content.map((record, index) => (
-								<button
-									type="button"
-									onClick={() => setContentTabIndex(index)}
-									className={`border-b-2 px-2 pb-1 ${
-										index === contentTabIndex
-											? "border-b-secondary font-semibold text-secondary"
-											: "border-b-transparent text-light"
-									}`}
-									key={record.id}
-								>
-									{record.type}
-								</button>
-							))}
-						</>
+						<Reorder.Group
+							className="w-full"
+							axis="x"
+							values={content}
+							onReorder={items => setContent(items)}
+						>
+							<Tabs selectedIndex={contentTabIndex} onChange={setContentTabIndex}>
+								{content.map((value, index) => (
+									<Reorder.Item as="div" key={value.id} value={value}>
+										<RemovableTab onRemove={() => removeContent(index)}>
+											{value.type}
+										</RemovableTab>
+									</Reorder.Item>
+								))}
+							</Tabs>
+						</Reorder.Group>
 					)}
 				</div>
 			</CenteredContainer>
@@ -181,11 +185,11 @@ function RenderContentType({
 	onRemove: (index: number) => void;
 }) {
 	if (content.type === "video") {
-		return <VideoInput index={index} remove={() => onRemove(index)} />;
+		return <VideoInput index={index} />;
 	}
 
 	if (content.type === "article") {
-		return <ArticleInput index={index} onRemove={() => onRemove(index)} />;
+		return <ArticleInput index={index} />;
 	}
 
 	return (

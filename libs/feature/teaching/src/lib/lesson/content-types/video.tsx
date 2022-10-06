@@ -6,8 +6,8 @@ import { VideoPlayer } from "@self-learning/ui/lesson";
 import { formatSeconds } from "@self-learning/util/common";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
-export function VideoInput({ index, remove }: { index: number; remove: () => void }) {
-	const { control, register } = useFormContext<{ content: Video[] }>();
+export function VideoInput({ index }: { index: number }) {
+	const { control } = useFormContext<{ content: Video[] }>();
 	const { update } = useFieldArray<{ content: Video[] }>({
 		name: "content"
 	});
@@ -66,6 +66,7 @@ export function VideoInput({ index, remove }: { index: number; remove: () => voi
 						</div>
 
 						<Upload
+							key={"video"}
 							mediaType="video"
 							preview={
 								<div className="aspect-video w-full bg-black">
@@ -73,6 +74,8 @@ export function VideoInput({ index, remove }: { index: number; remove: () => voi
 								</div>
 							}
 							onUploadCompleted={(publicUrl, meta) => {
+								console.log("has changed video", publicUrl, meta);
+
 								update(index, {
 									type: "video",
 									value: { url: publicUrl },
@@ -81,14 +84,6 @@ export function VideoInput({ index, remove }: { index: number; remove: () => voi
 							}}
 						/>
 					</div>
-
-					<button
-						type="button"
-						className="absolute top-8 right-8 w-fit self-end text-sm text-red-500"
-						onClick={remove}
-					>
-						Entfernen
-					</button>
 				</div>
 			</SectionCard>
 		</CenteredContainer>

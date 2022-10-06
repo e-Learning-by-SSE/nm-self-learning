@@ -6,7 +6,7 @@ import {
 	QuestionType,
 	ShortTextForm
 } from "@self-learning/question-types";
-import { Divider, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
+import { Divider, RemovableTab, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { getRandomId } from "@self-learning/util/common";
@@ -62,12 +62,15 @@ export function useQuizEditorForm() {
 		setQuestionIndex(toIndex);
 	}
 
-	function removeQuestion() {
+	function removeQuestion(index: number) {
 		const confirm = window.confirm("Frage entfernen?");
 
 		if (confirm) {
-			remove(questionIndex);
-			setQuestionIndex(quiz.length - 2); // set to last index or -1 if no questions exist
+			remove(index);
+
+			if (index === questionIndex) {
+				setQuestionIndex(quiz.length - 2); // set to last index or -1 if no questions exist
+			}
 		}
 	}
 
@@ -105,7 +108,7 @@ export function QuizEditor() {
 					erfolgreich abzuschließen."
 				/>
 
-				<div className="flex flex-wrap gap-4">
+				<div className="flex flex-wrap gap-4 text-sm">
 					<button
 						type="button"
 						className="btn-primary mb-8 w-fit"
@@ -132,7 +135,9 @@ export function QuizEditor() {
 							onChange={index => setQuestionIndex(index)}
 						>
 							{quiz.map((_, index) => (
-								<Tab key={index}>Frage {index + 1}</Tab>
+								<RemovableTab key={index} onRemove={() => removeQuestion(index)}>
+									Frage {index + 1}
+								</RemovableTab>
 							))}
 						</Tabs>
 
@@ -154,14 +159,6 @@ export function QuizEditor() {
 								onClick={() => swapQuestions(questionIndex, questionIndex + 1)}
 							>
 								<ArrowSmRightIcon className="h-5" />
-							</button>
-							<button
-								type="button"
-								className="btn-small text-red-500"
-								title="Entfernen"
-								onClick={removeQuestion}
-							>
-								<XIcon className="h-5" />
 							</button>
 						</div>
 					</>
