@@ -9,6 +9,7 @@ import {
 	multipleChoiceQuestionSchema
 } from "./question-types/multiple-choice/schema";
 import { ProgrammingAnswer } from "./question-types/programming/component";
+import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { ShortTextAnswer } from "./question-types/short-text/component";
 import { evaluateShortText } from "./question-types/short-text/evaluate";
@@ -55,9 +56,7 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 	vorwissen: (q, a) => {
 		return "Not implemented.";
 	},
-	programming: (q, a) => {
-		return "Not implemented.";
-	}
+	programming: evaluateProgramming
 };
 
 export const QUESTION_ANSWER_COMPONENTS: { [QType in QuestionType["type"]]: () => JSX.Element } = {

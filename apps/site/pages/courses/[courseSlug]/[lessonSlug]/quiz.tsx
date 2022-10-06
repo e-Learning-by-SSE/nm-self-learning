@@ -124,9 +124,33 @@ function getQuiz(slug: string): QuizContent {
 		},
 		{
 			type: "programming",
-			language: "typescript",
+			language: "java",
 			withCertainty: false,
 			questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
+			statement: `# Hello World
+			
+Erstelle ein Programm, welches \`Hello World\` auf der Konsole ausgibt.`,
+			custom: {
+				mode: "standalone",
+				solutionTemplate: `public class HelloWorld {
+	public static void main(String[] args) {
+		System.out.println("Hello World");
+	}
+}`,
+				expectedOutput: "Hello World"
+			},
+			hints: [
+				{
+					hintId: "asdrfewq",
+					content: "```java\nSystem.out.println();```"
+				}
+			]
+		},
+		{
+			type: "programming",
+			language: "typescript",
+			withCertainty: false,
+			questionId: "dee8dfd5-ee07-4071-bf7b-33b4cb1fe623",
 			statement: `# Schleifen
 			
 Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
@@ -136,9 +160,95 @@ Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält u
 **Eingabe**: \`[1, 2, 3, 4, 5]\`  
 **Ausgabe**: \`15\`
 `,
-			template:
-				"export function sum(numbers: number[]): number {\n\t// DEINE LÖSUNG HIER\n\n\treturn 0;\t\t\n}",
-			expectedOutput: "123",
+			custom: {
+				mode: "callable",
+				solutionTemplate:
+					"export function sum(numbers: number[]): number {\n\t// DEINE LÖSUNG\n\treturn 0;\t\n}",
+				mainFile: `import { sum } from "./Solution";
+
+const testCases = [
+	[1, 1],
+	[1, 2, 3, 4, 5],
+	[7],
+	[],
+];
+
+function sumExpected(numbers: number[]): number {
+	return numbers.reduce((a, b) => a + b, 0);
+}
+
+for (const testCase of testCases) {
+	console.log(sum(testCase));
+}
+
+console.log("### EXPECTED ###")
+
+for (const testCase of testCases) {
+	console.log(sumExpected(testCase));
+}
+`
+			},
+			hints: [
+				{
+					hintId: "dskfjsdk",
+					content:
+						"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
+				}
+			]
+		},
+		{
+			type: "programming",
+			language: "java",
+			withCertainty: false,
+			questionId: "b5884b38-bed2-4f00-8c21-8a7b0737af2e",
+			statement: `# Schleifen
+			
+Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
+
+**Beispiel:**
+
+**Eingabe**: \`[1, 2, 3, 4, 5]\`  
+**Ausgabe**: \`15\`
+`,
+			custom: {
+				mode: "callable",
+				solutionTemplate: `public class Solution {
+	public int sum(int[] numbers) {
+		// DEINE LÖSUNG
+		return 0;
+	}
+}`,
+				mainFile: `import java.util.Arrays;
+
+public class Main {
+	public static void main(String[] args) {
+		int[][] testCases = new int[][] {
+			new int[] { 1, 1 },
+			new int[] { 1, 2, 3, 4, 5 },
+			new int[] { 7 },
+			new int[] { }
+		};
+
+		for (int[] testCase : testCases) {
+			System.out.println("### TEST");
+			System.out.println(Arrays.toString(testCase));
+			System.out.println("### EXPECTED");
+			System.out.println(sumExpected(testCase));
+			System.out.println("### ACTUAL");
+			System.out.println(new Solution().sum(testCase));
+		}
+	}
+
+	private static int sumExpected(int[] numbers) {
+		int sum = 0;
+		for (int number : numbers) {
+			sum += number;
+		}
+		return sum;
+	}
+}
+`
+			},
 			hints: [
 				{
 					hintId: "dskfjsdk",
