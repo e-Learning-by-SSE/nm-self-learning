@@ -1,4 +1,5 @@
 {
+	"name": "site-e2e",
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "apps/site-e2e/src",
 	"projectType": "application",
@@ -7,7 +8,7 @@
 			"executor": "@nrwl/cypress:cypress",
 			"options": {
 				"cypressConfig": "apps/site-e2e/cypress.config.ts",
-				"devServerTarget": "site:serve",
+				"devServerTarget": "site:serve:development",
 				"testingType": "e2e"
 			},
 			"configurations": {
@@ -21,13 +22,6 @@
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["apps/site-e2e/**/*.{js,ts}"]
-			}
-		},
-		"component-test": {
-			"executor": "@nrwl/cypress:cypress",
-			"options": {
-				"cypressConfig": "apps/site-e2e/cypress.config.ts",
-				"testingType": "component"
 			}
 		}
 	},
