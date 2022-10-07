@@ -1,4 +1,5 @@
 import { Tab as HeadlessTab } from "@headlessui/react";
+import { XIcon } from "@heroicons/react/outline";
 import { Fragment, ReactNode } from "react";
 
 export function Tabs({
@@ -12,7 +13,7 @@ export function Tabs({
 }) {
 	return (
 		<HeadlessTab.Group selectedIndex={selectedIndex} onChange={onChange}>
-			<HeadlessTab.List className="flex gap-4 border-b border-light-border">
+			<HeadlessTab.List className="flex w-full gap-4 border-b border-light-border">
 				{children}
 			</HeadlessTab.List>
 		</HeadlessTab.Group>
@@ -36,6 +37,30 @@ export function Tab({ children }: { children: ReactNode }) {
 				</li>
 			)}
 		</HeadlessTab>
+	);
+}
+
+export function RemovableTab({
+	children,
+	onRemove
+}: {
+	onRemove: () => void;
+	children: ReactNode;
+}) {
+	return (
+		<Tab>
+			<span className="flex items-end gap-4">
+				<span>{children}</span>
+				<button
+					type="button"
+					title="Entfernen"
+					onClick={onRemove}
+					className="rounded-full pb-[3px] hover:bg-red-50 hover:text-red-500"
+				>
+					<XIcon className="h-4" />
+				</button>
+			</span>
+		</Tab>
 	);
 }
 

@@ -1,9 +1,8 @@
 import { SectionHeader } from "@self-learning/ui/common";
-import { Form, LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
+import { Form, LabeledField, MarkdownEditorDialog, Upload } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { ImageUploadWidget } from "../image-upload";
 import { CourseFormModel } from "./course-form-model";
 
 /**
@@ -98,16 +97,25 @@ export function CourseInfoForm() {
 						)}
 					</LabeledField>
 
-					<LabeledField label="Bild">
+					<LabeledField label="Bild" error={errors.imgUrl?.message}>
 						<Controller
 							control={control}
 							name="imgUrl"
 							render={({ field }) => (
-								<ImageUploadWidget
-									width={256}
-									height={256}
-									url={field.value}
-									onUpload={field.onChange}
+								<Upload
+									mediaType="image"
+									onUploadCompleted={field.onChange}
+									preview={
+										<div className="aspect-video rounded-lg">
+											{field.value && (
+												<img
+													className="w-full rounded-lg object-contain"
+													src={field.value}
+													alt="Thumbnail"
+												/>
+											)}
+										</div>
+									}
 								/>
 							)}
 						/>

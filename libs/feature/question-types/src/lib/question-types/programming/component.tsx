@@ -1,6 +1,6 @@
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 
 export type PistonFile = {
@@ -58,10 +58,15 @@ type Output = {
 
 type Runtime = { language: string; version: string };
 
+const EXTENSION: Record<string, string> = {
+	java: "java",
+	typescript: "ts",
+	javascript: "js",
+	python: "py"
+};
+
 async function getRuntimes(): Promise<Runtime[]> {
-	const res = await fetch(
-		`${process.env.NEXT_PUBLIC_PISTON_URL as string}/api/v2/piston/runtimes`
-	);
+	const res = await fetch(`${process.env.NEXT_PUBLIC_PISTON_URL as string}/api/v2/runtimes`);
 
 	if (!res.ok) {
 		throw new Error("Failed to fetch runtimes");
@@ -71,8 +76,8 @@ async function getRuntimes(): Promise<Runtime[]> {
 }
 
 export function ProgrammingAnswer() {
-	const { setAnswer, answer, question } = useQuestion("programming");
-	const [program, setProgram] = useState(question.template);
+	const { setAnswer, answer, question, evaluation } = useQuestion("programming");
+	const program = useRef(question.custom.solutionTemplate);
 	const [isExecuting, setIsExecuting] = useState(false);
 	const [output, setOutput] = useState({
 		isError: false,
@@ -86,6 +91,24 @@ export function ProgrammingAnswer() {
 			setVersion(runtimes.find(r => r.language === question.language)?.version);
 		});
 	}, [question.language]);
+
+	console.log(answer);
+
+	useEffect(() => {
+		if (!answer.value) {
+			setAnswer({
+				type: "programming",
+				value: {
+					code: program.current,
+					stdout: ""
+				}
+			});
+		}
+	}, [answer, setAnswer]);
+
+	if (!answer.value) {
+		return <></>;
+	}
 
 	async function runCode() {
 		const language = question.language;
@@ -101,11 +124,31 @@ export function ProgrammingAnswer() {
 			return;
 		}
 
-		const execute: ExecuteRequest = {
-			language,
-			version,
-			files: [{ content: program }]
-		};
+		const files: PistonFile[] = [];
+
+		// Main file must be first item in files array
+		if (question.custom.mode === "callable") {
+			files.push({ name: `Main.${EXTENSION[language]}`, content: question.custom.mainFile });
+
+			if (question.language === "typescript") {
+				files.push({ name: "package.json", content: "{ 'type': 'module' }" });
+				files.push({
+					name: "tsconfig.json",
+					content: `{
+				"compilerOptions": {
+				"target": "es2015",
+				"module": "commonjs",
+				"rootDir": "."
+				}
+			  }
+			`
+				});
+			}
+		}
+
+		files.push({ name: `Solution.${EXTENSION[language]}`, content: program.current });
+
+		const execute: ExecuteRequest = { language, version, files };
 
 		console.log("Executing code: ", execute);
 		setOutput({ isError: false, text: "Executing..." });
@@ -113,7 +156,7 @@ export function ProgrammingAnswer() {
 
 		try {
 			const res = await fetch(
-				`${process.env.NEXT_PUBLIC_PISTON_URL as string}/api/v2/piston/execute`,
+				`${process.env.NEXT_PUBLIC_PISTON_URL as string}/api/v2/execute`,
 				{
 					method: "POST",
 					body: JSON.stringify(execute),
@@ -134,21 +177,18 @@ export function ProgrammingAnswer() {
 			console.log("ExecuteResponse", data);
 
 			// Code ran successfully
-			if (data.run.code === 0) {
-				setOutput({
-					isError: false,
-					text: data.run.output
-				});
-			} else {
-				const compileOutput = data.compile?.output ?? "";
+			setOutput({
+				isError: data.run.code !== 0,
+				text: data.run.output
+			});
 
-				const output = compileOutput + "\n" + data.run.output;
-
-				setOutput({
-					isError: true,
-					text: output
-				});
-			}
+			setAnswer({
+				type: "programming",
+				value: {
+					code: program.current,
+					stdout: data.run.output
+				}
+			});
 		} catch (error) {
 			console.error(error);
 		}
@@ -172,8 +212,10 @@ export function ProgrammingAnswer() {
 			<div className="flex flex-wrap gap-2">
 				<div className="w-full">
 					<EditorField
-						value={program}
-						onChange={setProgram as any}
+						value={program.current}
+						onChange={v => {
+							program.current = v ?? "";
+						}}
 						language={question.language}
 					/>
 				</div>

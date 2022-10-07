@@ -35,7 +35,11 @@ export function JsonEditorDialog<T>({
 	}
 
 	return (
-		<Dialog open={true} onClose={() => onClose(undefined)} className="relative z-50">
+		<Dialog
+			open={true}
+			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
+			className="relative z-50"
+		>
 			{/* The backdrop, rendered as a fixed sibling to the panel container */}
 			<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 

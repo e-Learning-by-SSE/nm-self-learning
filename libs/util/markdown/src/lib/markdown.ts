@@ -29,6 +29,7 @@ export function compileMarkdown(markdown: string) {
 	return serialize(markdown, {
 		parseFrontmatter: true,
 		mdxOptions: {
+			format: "md",
 			remarkPlugins: [remarkGfm, remarkMath],
 			rehypePlugins: [rehypeKatex, rehypeCitation, rehypePrismPlus, rehypePresetMinify]
 		}

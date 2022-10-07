@@ -5,7 +5,7 @@ export * from "./lib/question-types/multiple-choice/component";
 export * from "./lib/question-types/multiple-choice/form";
 
 export * from "./lib/question-types/programming/component";
-//export * from "./lib/question-types/programming/form";
+export * from "./lib/question-types/programming/form";
 
 export * from "./lib/question-types/short-text/component";
 export * from "./lib/question-types/short-text/form";
