@@ -10,7 +10,8 @@ RUN apk add --no-cache openssl
 RUN apk add --no-cache bash
 # pg_isready to test if DB is up, bevor application starts
 RUN apk add --no-cache postgresql-libs postgresql-client
-
+# Add Diffutils (provides cmp)
+RUN apk add --no-cache diffutils
 
 # Create app directory
 WORKDIR /app
