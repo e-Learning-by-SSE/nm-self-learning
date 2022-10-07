@@ -37,8 +37,8 @@ pipeline {
         stage('Test') {
             environment {
                 POSTGRES_DB = 'SelfLearningDb'
-                POSTGRES_USER = 'postgres'
-                POSTGRES_PASSWORD = 'admin'
+                POSTGRES_USER = 'username'
+                POSTGRES_PASSWORD = 'password'
                 PORT = '5432'
                 DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@localhost:${env.PORT}/${env.POSTGRES_DB}"
             }
