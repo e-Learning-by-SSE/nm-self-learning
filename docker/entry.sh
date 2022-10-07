@@ -42,4 +42,8 @@ if [ ! -z .env ] || ! cmp -s tmp.env .env; then
 fi
 
 # Start Next.js
-npm run start:prod
+if [ ! -z "${RUN_AS_DEMO}" ]; then
+    npm run start:demo
+else
+    npm run start:prod
+fi
