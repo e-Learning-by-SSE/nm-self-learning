@@ -46,7 +46,7 @@ pipeline {
                 script {
                     // Sidecar Pattern: https://www.jenkins.io/doc/book/pipeline/docker/#running-sidecar-containers
                     docker.image('postgres:14.3-alpine').withRun("-e POSTGRES_USER=${env.POSTGRES_USER} -e POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD} -e POSTGRES_DB=${env.POSTGRES_DB} -p ${env.PORT}:${env.PORT}") { c ->
-                        sh "sleep 20"
+                        sh "sleep 30"
                         sh 'npm run prisma db push'
                         sh 'npm run test:ci'
                     }
