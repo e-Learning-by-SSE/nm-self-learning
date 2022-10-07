@@ -37,7 +37,8 @@ if [ ! -z .env ] || ! cmp -s tmp.env .env; then
     npm run build
     
     # Clear database and apply sample data on first boot
-    npx prisma migrate reset --force --skip-generate
+    npx prisma db push --accept-data-loss
+    npx prisma db seed
 fi
 
 # Start Next.js
