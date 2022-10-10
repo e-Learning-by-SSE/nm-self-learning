@@ -92,8 +92,6 @@ export function ProgrammingAnswer() {
 		});
 	}, [question.language]);
 
-	console.log(answer);
-
 	useEffect(() => {
 		if (!answer.value) {
 			setAnswer({
@@ -110,10 +108,14 @@ export function ProgrammingAnswer() {
 		return <></>;
 	}
 
+	console.log(question);
+
 	async function runCode() {
 		const language = question.language;
 
 		if (!version) {
+			// We could also use "*" instead of supplying a version
+			// but this way we can check, whether server is online and supports language
 			console.log(`Language ${language} is not available.`);
 
 			setOutput({

@@ -62,7 +62,7 @@ export function useQuizEditorForm() {
 			return append({
 				...baseQuestion,
 				type: "programming",
-				language: "typescript",
+				language: "java",
 				custom: {
 					mode: "standalone",
 					expectedOutput: "",
