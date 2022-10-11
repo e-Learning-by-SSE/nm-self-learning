@@ -1,9 +1,16 @@
+import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
+import {
+	CourseContent,
+	extractLessonIds,
+	LessonMeta,
+	traverseCourseContent
+} from "@self-learning/types";
 import { NestablePlaylist, PlaylistContent } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
+import { useEffect, useState } from "react";
 
 export type LessonLayoutProps = {
 	lesson: ResolvedValue<typeof getLesson>;
@@ -157,14 +164,32 @@ export function LessonLayout(
 }
 
 function PlaylistArea({ content, course, lesson }: LessonLayoutProps) {
+	const courseCompletion = useCourseCompletion(course.slug);
+	const [contentWithCompletion, setContentWithCompletion] = useState(content);
+
+	useEffect(() => {
+		if (!courseCompletion) {
+			return;
+		}
+
+		traverseCourseContent(content, chapterOrLesson => {
+			if (chapterOrLesson.type === "lesson") {
+				chapterOrLesson.isCompleted =
+					!!courseCompletion.completedLessons[chapterOrLesson.lessonId];
+			}
+		});
+
+		setContentWithCompletion([...content]);
+	}, [courseCompletion, content]);
+
 	return (
 		<div className="flex h-[500px] w-full shrink-0 border-l border-light-border bg-white xl:h-full xl:w-[500px] xl:border-t-0">
 			<div className="right-0 flex w-full xl:fixed xl:h-[calc(100vh-80px)] xl:w-[500px]">
 				<NestablePlaylist
 					course={course}
 					currentLesson={lesson}
-					content={content}
-					//courseCompletion={courseCompletion}
+					content={contentWithCompletion}
+					courseCompletion={courseCompletion}
 				/>
 			</div>
 		</div>

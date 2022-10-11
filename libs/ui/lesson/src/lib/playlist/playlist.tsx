@@ -1,4 +1,5 @@
 import {
+	CheckCircleIcon,
 	ChevronDoubleDownIcon,
 	ChevronDoubleUpIcon,
 	ChevronDownIcon,
@@ -21,6 +22,7 @@ type PlaylistLesson = CourseLesson & {
 	title: string;
 	slug: string;
 	meta: LessonMeta;
+	isCompleted?: boolean;
 };
 
 type PlaylistChapter = CourseChapter & {
@@ -49,7 +51,8 @@ export function NestablePlaylist({
 				<div className="flex flex-col gap-2">
 					<span className="text-base font-semibold">{course.title}</span>
 					<span className="text-sm text-light">
-						<>Fortschritt: {courseCompletion?.completion["course"] ?? 0}%</>
+						Fortschritt:{" "}
+						{courseCompletion?.completion["course"].completionPercentage ?? 0}%
 					</span>
 				</div>
 
@@ -228,21 +231,19 @@ export function PlaylistLesson({
 							{lesson.lessonNr}
 						</span>
 					</div>
-					<div>
+					<div className="flex flex-col gap-1">
 						<span
-							className={`max-w-md truncate align-top text-sm font-medium ${
+							className={`truncate text-sm font-medium ${
 								isActive ? "text-secondary" : ""
 							}`}
 						>
 							{lesson.title}
 						</span>
-						<span className="flex gap-2">
-							<span className="text-xs text-light">
-								{duration ? formatSeconds(duration) : "??:??"}
-							</span>
-							{/* {lesson.isCompleted && (
-								<CheckCircleIcon className="h-4 rounded-full text-secondary" />
-							)} */}
+						<span className="flex  gap-2 text-xs text-light">
+							{lesson.isCompleted && (
+								<CheckCircleIcon className="h-4 shrink-0 rounded-full text-secondary" />
+							)}
+							{duration ? formatSeconds(duration) : "??:??"}
 						</span>
 					</div>
 				</div>

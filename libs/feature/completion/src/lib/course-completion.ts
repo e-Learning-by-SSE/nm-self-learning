@@ -7,7 +7,7 @@ import {
 } from "@self-learning/types";
 
 export type CompletionMap = { [chapterId: string]: Completion };
-type CompletedLessonsMap = { [lessonId: string]: { createdAt: Date; slug: string; title: string } };
+type CompletedLessonsMap = { [lessonId: string]: { slug: string; title: string } };
 
 export type CourseCompletionX = {
 	completion: CompletionMap;
@@ -45,7 +45,6 @@ export async function getCourseCompletionOfStudent(
 
 	for (const lesson of completedLessons) {
 		completedLessonsMap[lesson.lessonId] = {
-			createdAt: lesson.createdAt,
 			slug: lesson.lesson.slug,
 			title: lesson.lesson.title
 		};
