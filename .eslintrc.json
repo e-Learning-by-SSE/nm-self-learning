@@ -10,9 +10,9 @@
 			"files": ["*.ts", "*.tsx"],
 			"extends": ["plugin:@nrwl/nx/typescript"],
 			"rules": {
-				"semi": ["error", "always"],
 				"quotes": ["error", "double"],
-				"indent": ["error", "tab", { "SwitchCase": 1 }],
+				"indent": ["off", "tab", { "SwitchCase": 1 }],
+				"semi": "off",
 				"jsx-a11y/anchor-is-valid": ["off"]
 			}
 		},
