@@ -3,16 +3,27 @@ import { TestCase } from "./schema";
 
 export const evaluateProgramming: EvaluationFn<"programming"> = (question, answer) => {
 	if (question.custom.mode === "standalone") {
+		const actual = answer.value.stdout.trim();
+		const expected = question.custom.expectedOutput.trim();
+
+		const verdict = actual === expected;
 		return {
-			isCorrect: answer.value.stdout === question.custom.expectedOutput,
-			testCases: []
+			isCorrect: verdict,
+			testCases: [
+				{
+					title: "",
+					actual: actual.split("\n"),
+					expected: expected.split("\n"),
+					verdict: verdict
+				}
+			]
 		};
 	}
 
 	if (question.custom.mode === "callable") {
 		return {
 			isCorrect: false,
-			testCases: parseTestCases(answer.value.stdout)
+			testCases: parseTestCases(answer.value.stdout.trim())
 		};
 	}
 
@@ -50,6 +61,26 @@ export function parseTestCases(stdout: string): TestCase[] {
 		}
 
 		index++;
+	}
+
+	for (const testCase of testCases) {
+		console.log(testCase);
+
+		let verdict = true;
+
+		if (testCase.expected.length !== testCase.actual.length) {
+			verdict = false;
+			continue;
+		}
+
+		for (let i = 0; i < testCase.expected.length; i++) {
+			if (testCase.expected[i] !== testCase.actual[i]) {
+				verdict = false;
+				break;
+			}
+		}
+
+		testCase.verdict = verdict;
 	}
 
 	return testCases;

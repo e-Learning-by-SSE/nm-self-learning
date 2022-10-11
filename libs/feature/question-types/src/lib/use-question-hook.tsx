@@ -19,6 +19,7 @@ export const AnswerContext = createContext(
 		answer: Record<string, unknown>;
 		setAnswer: Dispatch<SetStateAction<Record<string, unknown>>>;
 		evaluation: unknown | null;
+		setEvaluation: Dispatch<SetStateAction<unknown | null>>;
 	}
 );
 
@@ -26,10 +27,12 @@ export function AnswerContextProvider({
 	children,
 	question,
 	markdown,
-	evaluation
+	evaluation,
+	setEvaluation
 }: PropsWithChildren<{
 	question: QuestionType;
 	evaluation: unknown | null;
+	setEvaluation: Dispatch<SetStateAction<unknown | null>>;
 	markdown: {
 		questionsMd: MdLookup;
 		answersMd: MdLookup;
@@ -46,7 +49,8 @@ export function AnswerContextProvider({
 		markdown,
 		answer,
 		setAnswer,
-		evaluation
+		evaluation,
+		setEvaluation
 	};
 
 	return <AnswerContext.Provider value={value}>{children}</AnswerContext.Provider>;

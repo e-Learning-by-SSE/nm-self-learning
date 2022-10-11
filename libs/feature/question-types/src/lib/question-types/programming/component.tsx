@@ -1,9 +1,12 @@
+import { CheckCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import { useEffect, useRef, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
+import { evaluateProgramming } from "./evaluate";
+import { Programming } from "./schema";
 
 export type PistonFile = {
 	name: string;
@@ -68,7 +71,7 @@ const EXTENSION: Record<string, string> = {
 };
 
 export function ProgrammingAnswer() {
-	const { setAnswer, answer, question, evaluation } = useQuestion("programming");
+	const { setAnswer, answer, question, evaluation, setEvaluation } = useQuestion("programming");
 	const program = useRef(question.custom.solutionTemplate);
 	const [isExecuting, setIsExecuting] = useState(false);
 	const [output, setOutput] = useState({
@@ -158,13 +161,17 @@ export function ProgrammingAnswer() {
 				text: data.run.output
 			});
 
-			setAnswer({
+			const newAnswer: Programming["answer"] = {
 				type: "programming",
 				value: {
 					code: program.current,
 					stdout: data.run.output
 				}
-			});
+			};
+
+			setAnswer(newAnswer);
+
+			setEvaluation(evaluateProgramming(question, newAnswer));
 		} catch (error) {
 			setIsExecuting(false);
 
@@ -211,22 +218,121 @@ export function ProgrammingAnswer() {
 					/>
 				</div>
 
-				<LabeledField label="Ausgabe">
-					<div className="flex h-fit max-h-[400px] w-full shrink-0 flex-col gap-4 rounded-lg border border-light-border bg-white">
-						<div className="playlist-scroll h-full overflow-auto p-4">
-							{output.text !== "" ? (
-								<pre
-									className={`font-mono ${output.isError ? "text-red-500" : ""}`}
-								>
-									{output.text}
-								</pre>
-							) : (
-								<span className="text-light">Keine Ausgabe.</span>
-							)}
+				{<TestCaseResult evaluation={evaluation} isExecuting={isExecuting} />}
+
+				{output.isError && (
+					<LabeledField label="Ausgabe">
+						<div className="flex h-fit max-h-[400px] w-full shrink-0 flex-col gap-4 rounded-lg border border-light-border bg-white">
+							<div className="playlist-scroll h-full overflow-auto p-4">
+								{output.text !== "" ? (
+									<pre
+										className={`font-mono ${
+											output.isError ? "text-red-500" : ""
+										}`}
+									>
+										{output.text}
+									</pre>
+								) : (
+									<span className="text-light">Keine Ausgabe.</span>
+								)}
+							</div>
 						</div>
-					</div>
-				</LabeledField>
+					</LabeledField>
+				)}
 			</div>
 		</CenteredContainer>
+	);
+}
+
+function TestCaseResult({
+	evaluation,
+	isExecuting
+}: {
+	evaluation: Programming["evaluation"] | null;
+	isExecuting: boolean;
+}) {
+	const failedCases = [];
+	const successCases = [];
+
+	const firstFailedTestIndex = evaluation?.testCases.findIndex(tc => !tc.verdict) ?? -1;
+	const firstFailedTest =
+		firstFailedTestIndex >= 0 ? evaluation?.testCases[firstFailedTestIndex] : null;
+
+	if (evaluation) {
+		for (const testCase of evaluation.testCases) {
+			if (testCase.verdict === true) {
+				successCases.push(testCase);
+			} else {
+				failedCases.push(testCase);
+			}
+		}
+	}
+
+	return (
+		<section className="flex w-full flex-col gap-4 rounded-lg border border-light-border bg-white p-4">
+			<span className="flex items-center gap-2 text-xl font-semibold tracking-tighter">
+				{isExecuting ? (
+					<LoadingCircle />
+				) : !evaluation || evaluation.testCases.length === 0 ? (
+					<QuestionMarkCircleIcon className="h-6 text-slate-400" />
+				) : successCases.length < evaluation?.testCases.length ? (
+					<XCircleIcon className="h-6 text-red-500" />
+				) : (
+					<CheckCircleIcon className="h-6 text-emerald-500" />
+				)}
+				<span>Testfälle:</span>
+				<span>
+					{successCases.length} / {evaluation?.testCases.length ?? "?"}
+				</span>
+			</span>
+
+			{firstFailedTest && (
+				<>
+					<span className="font-semibold">
+						<p className="text-red-500">Test #{firstFailedTestIndex + 1}</p>
+					</span>
+
+					<ProgramOutput label="Eingabe" output={firstFailedTest.title} />
+					<ProgramOutput label="Erwartet" output={firstFailedTest.expected.join("\n")} />
+					<ProgramOutput label="Ausgabe" output={firstFailedTest.actual.join("\n")} />
+				</>
+			)}
+		</section>
+	);
+}
+
+function ProgramOutput({ label, output }: { label: string; output: string }) {
+	return (
+		<span className="">
+			<span className="text-sm font-medium text-light">{label}:</span>
+			<pre className="playlist-scroll min-h-[32px] overflow-auto rounded bg-gray-50 px-2 py-1">
+				{output}
+			</pre>
+		</span>
+	);
+}
+
+function LoadingCircle() {
+	return (
+		<svg
+			className="h-6 w-6 animate-spin text-secondary"
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+		>
+			<circle
+				className="opacity-25"
+				cx="12"
+				cy="12"
+				r="10"
+				stroke="currentColor"
+				stroke-width="4"
+			></circle>
+			<path
+				className="opacity-75"
+				fill="currentColor"
+				d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+			></path>
+		</svg>
 	);
 }

@@ -42,7 +42,12 @@ export function Question({
 	}
 
 	return (
-		<AnswerContextProvider question={question} markdown={markdown} evaluation={evaluation}>
+		<AnswerContextProvider
+			question={question}
+			markdown={markdown}
+			evaluation={evaluation}
+			setEvaluation={setEvaluation}
+		>
 			<CenteredContainer className="flex gap-4">
 				<button className="btn-stroked h-fit" onClick={() => setEvaluation(null)}>
 					Reset

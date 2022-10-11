@@ -19,7 +19,7 @@ describe("parseTestCases", () => {
 		      "2",
 		    ],
 		    "title": "1 + 1",
-		    "verdict": false,
+		    "verdict": true,
 		  },
 		]
 	`);
@@ -50,7 +50,7 @@ Second
 		      "1",
 		    ],
 		    "title": "First",
-		    "verdict": false,
+		    "verdict": true,
 		  },
 		  Object {
 		    "actual": Array [
@@ -60,7 +60,7 @@ Second
 		      "2",
 		    ],
 		    "title": "Second",
-		    "verdict": false,
+		    "verdict": true,
 		  },
 		]
 	`);
