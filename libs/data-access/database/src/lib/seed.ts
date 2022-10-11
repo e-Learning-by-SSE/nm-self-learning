@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { QuizContent } from "@self-learning/question-types";
 import {
 	createChapter,
 	createCourseContent,
@@ -95,6 +96,253 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 	}
 ];
 
+const questions: QuizContent = [
+	{
+		type: "multiple-choice",
+		questionId: "923d78a5-af38-4599-980a-2b4cb62e4014",
+		statement: `
+		# How was your day?
+
+		Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure! Fugiat, optio!
+		`.trim(),
+		withCertainty: true,
+		answers: [
+			{
+				answerId: "1fc74b31-7772-4ea8-b570-60b5c104f804",
+				content: "Very Good",
+				isCorrect: true
+			},
+			{
+				answerId: "35d310ee-1acf-48e0-8f8c-090acd0e873a",
+				content: "Good",
+				isCorrect: true
+			},
+			{
+				answerId: "cd33a2ef-95e8-4353-ad1d-de778d62ad57",
+				content: "Bad",
+				isCorrect: false
+			},
+			{
+				answerId: "211b5171-d7b2-4fc9-98ab-88af35f53df2",
+				content: "Very Bad",
+				isCorrect: false
+			}
+		],
+		hints: [
+			{
+				hintId: "abc",
+				content:
+					"Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero laudantium sequi illo, veritatis labore culpa, eligendi, quod consequatur autem ad dolorem explicabo quos alias harum fuga sapiente reiciendis. Incidunt, voluptates."
+			},
+			{
+				hintId: "def",
+				content: "# Lorem ipsum dolor \n- Eins\n- Zwei"
+			}
+		]
+	},
+	{
+		type: "short-text",
+		questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
+		statement: "# Was ist 1 + 1 ?",
+		withCertainty: true,
+		acceptedAnswers: [
+			{
+				acceptedAnswerId: "724f781e-56b2-4057-831e-b1d6962c48b1",
+				value: "2"
+			}
+		],
+		hints: []
+	},
+	{
+		type: "text",
+		questionId: "34fca2c2-c547-4f66-9a4e-927770a55090",
+		statement: "# Was ist 1 + 1 ?",
+		withCertainty: true,
+		hints: []
+	},
+	// {
+	// 	type: "cloze",
+	// 	questionId: "49497f71-8ed2-44a6-b36c-a44a4b0617d1",
+	// 	statement: "# Lückentext",
+	// 	withCertainty: false,
+	// 	textArray: textArray,
+	// 	hints: []
+	// },
+	{
+		type: "vorwissen",
+		questionId: "c9de042a-6962-4f21-bc57-bf58841be5f2",
+		statement: `lorem ipsum dolor sit amet consectetur adipisicing elit. **Quasi** molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure ?
+		![image](https://images.unsplash.com/photo-1523875194681-bedd468c58bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1742&q=80)`,
+		answers: [
+			{
+				answerId: "f797e6fc-8d03-41a2-9c93-9fcb3da0c147",
+				content: "Statement 1",
+				isCorrect: false
+			},
+			{
+				answerId: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
+				content: "Statement 2",
+				isCorrect: false
+			},
+			{
+				answerId: "d0a1af94-92ea-4415-b1e3-cca7218b132a",
+				content: "Statement 3",
+				isCorrect: false
+			},
+			{
+				answerId: "1220605d-e1b2-4933-bc7f-31b73c7a17bf",
+				content: "Statement 4",
+				isCorrect: false
+			}
+		],
+		requireExplanationForAnswerIds: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
+		withCertainty: false,
+		hints: []
+	},
+	{
+		type: "programming",
+		language: "java",
+		withCertainty: false,
+		questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
+		statement: `# Hello World
+		
+Erstelle ein Programm, welches \`Hello World\` auf der Konsole ausgibt.`,
+		custom: {
+			mode: "standalone",
+			solutionTemplate: `public class HelloWorld {
+	public static void main(String[] args) {
+		System.out.println("Hello World");
+	}
+}`,
+			expectedOutput: "Hello World"
+		},
+		hints: [
+			{
+				hintId: "asdrfewq",
+				content: "```java\nSystem.out.println();```"
+			}
+		]
+	},
+	{
+		type: "programming",
+		language: "typescript",
+		withCertainty: false,
+		questionId: "dee8dfd5-ee07-4071-bf7b-33b4cb1fe623",
+		statement: `# Schleifen
+		
+Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
+
+**Beispiel:**
+
+**Eingabe**: \`[1, 2, 3, 4, 5]\`  
+**Ausgabe**: \`15\`
+`,
+		custom: {
+			mode: "callable",
+			solutionTemplate:
+				"export function sum(numbers: number[]): number {\n\t// DEINE LÖSUNG\n\treturn 0;\t\n}",
+			mainFile: `import { sum } from "./Solution";
+
+const testCases = [
+[1, 1],
+[1, 2, 3, 4, 5],
+[7],
+[],
+];
+
+function sumExpected(numbers: number[]): number {
+return numbers.reduce((a, b) => a + b, 0);
+}
+
+for (const testCase of testCases) {
+console.log(sum(testCase));
+}
+
+console.log("### EXPECTED ###")
+
+for (const testCase of testCases) {
+console.log(sumExpected(testCase));
+}
+`
+		},
+		hints: [
+			{
+				hintId: "dskfjsdk",
+				content:
+					"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
+			}
+		]
+	},
+	{
+		type: "programming",
+		language: "java",
+		withCertainty: false,
+		questionId: "b5884b38-bed2-4f00-8c21-8a7b0737af2e",
+		statement: `# Schleifen
+		
+Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
+
+**Beispiel:**
+
+**Eingabe**: \`[1, 2, 3, 4, 5]\`  
+**Ausgabe**: \`15\`
+`,
+		custom: {
+			mode: "callable",
+			solutionTemplate: `public class Solution {
+public int sum(int[] numbers) {
+	if (numbers.length == 0) {
+		return -1; // Produce failing test case
+	}
+
+	int sum = 0;
+	for (int number : numbers) {
+		sum += number;
+	}
+	return sum;
+}
+}`,
+			mainFile: `import java.util.Arrays;
+
+public class Main {
+public static void main(String[] args) {
+	int[][] testCases = new int[][] {
+		new int[] { 1, 1 },
+		new int[] { 1, 2, 3, 4, 5 },
+		new int[] { 7 },
+		new int[] { }
+	};
+
+	for (int[] testCase : testCases) {
+		System.out.println("### TEST");
+		System.out.println(Arrays.toString(testCase));
+		System.out.println("### EXPECTED");
+		System.out.println(sumExpected(testCase));
+		System.out.println("### ACTUAL");
+		System.out.println(new Solution().sum(testCase));
+	}
+}
+
+private static int sumExpected(int[] numbers) {
+	int sum = 0;
+	for (int number : numbers) {
+		sum += number;
+	}
+	return sum;
+}
+}
+`
+		},
+		hints: [
+			{
+				hintId: "dskfjsdk",
+				content:
+					"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
+			}
+		]
+	}
+];
+
 const reactLessons: Prisma.LessonCreateManyInput[] = [
 	"A Beginners Guide to React Introduction",
 	"Create a User Interface with Vanilla JavaScript and DOM",
@@ -145,6 +393,7 @@ const reactLessons: Prisma.LessonCreateManyInput[] = [
 				}
 			}
 		] as LessonContent,
+		quiz: questions,
 		meta: {}
 	};
 
