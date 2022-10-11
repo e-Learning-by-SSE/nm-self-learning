@@ -17,7 +17,7 @@ pipeline {
         stage('Git') {
             steps {
                 cleanWs()
-                git 'https://github.com/Student-Management-System/self-learning.git'
+                git 'https://github.com/e-Learning-by-SSE/nm-self-learning.git'
             }
         }
 
