@@ -69,7 +69,6 @@ pipeline {
                 }
             }
         }
-    }
 
 	// Based on: https://medium.com/@mosheezderman/c51581cc783c
         stage('Deploy') {
@@ -87,7 +86,7 @@ pipeline {
                 findText(textFinders: [textFinder(regexp: '(- error TS\\*)|(Cannot find module.*or its corresponding type declarations\\.)', alsoCheckConsoleOutput: true, buildResult: 'FAILURE')])
             }
         }
-
+	}
 
     post {
         always {
