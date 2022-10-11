@@ -1,10 +1,12 @@
+import { trpc } from "@self-learning/api-client";
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
+import { TRPCClientError } from "@trpc/client";
 import { useEffect, useRef, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 
 export type PistonFile = {
-	name?: string;
+	name: string;
 	content: string;
 };
 
@@ -65,16 +67,6 @@ const EXTENSION: Record<string, string> = {
 	python: "py"
 };
 
-async function getRuntimes(): Promise<Runtime[]> {
-	const res = await fetch(`${process.env.NEXT_PUBLIC_PISTON_URL as string}/api/v2/runtimes`);
-
-	if (!res.ok) {
-		throw new Error("Failed to fetch runtimes");
-	}
-
-	return res.json();
-}
-
 export function ProgrammingAnswer() {
 	const { setAnswer, answer, question, evaluation } = useQuestion("programming");
 	const program = useRef(question.custom.solutionTemplate);
@@ -84,13 +76,15 @@ export function ProgrammingAnswer() {
 		text: ""
 	});
 
+	const { data: runtimes } = trpc.programming.runtimes.useQuery();
+	const { mutateAsync: execute } = trpc.programming.execute.useMutation();
+
 	const [version, setVersion] = useState<string | undefined>(undefined);
+
 	useEffect(() => {
-		getRuntimes().then(runtimes => {
-			console.log("Available runtimes:", runtimes);
-			setVersion(runtimes.find(r => r.language === question.language)?.version);
-		});
-	}, [question.language]);
+		console.log("Available runtimes:", runtimes);
+		setVersion(runtimes?.find(r => r.language === question.language)?.version);
+	}, [question.language, runtimes]);
 
 	useEffect(() => {
 		if (!answer.value) {
@@ -105,10 +99,9 @@ export function ProgrammingAnswer() {
 	}, [answer, setAnswer]);
 
 	if (!answer.value) {
+		// eslint-disable-next-line react/jsx-no-useless-fragment
 		return <></>;
 	}
-
-	console.log(question);
 
 	async function runCode() {
 		const language = question.language;
@@ -150,37 +143,18 @@ export function ProgrammingAnswer() {
 
 		files.push({ name: `Solution.${EXTENSION[language]}`, content: program.current });
 
-		const execute: ExecuteRequest = { language, version, files };
+		const executeRequest: ExecuteRequest = { language, version, files };
 
-		console.log("Executing code: ", execute);
+		console.log("Executing code: ", executeRequest);
 		setOutput({ isError: false, text: "Executing..." });
 		setIsExecuting(true);
 
 		try {
-			const res = await fetch(
-				`${process.env.NEXT_PUBLIC_PISTON_URL as string}/api/v2/execute`,
-				{
-					method: "POST",
-					body: JSON.stringify(execute),
-					headers: {
-						"Content-Type": "application/json"
-					}
-				}
-			);
-
+			const data = await execute(executeRequest);
 			setIsExecuting(false);
 
-			if (!res.ok) {
-				console.error("Error running code");
-				return;
-			}
-
-			const data = (await res.json()) as ExecuteResponse;
-			console.log("ExecuteResponse", data);
-
-			// Code ran successfully
 			setOutput({
-				isError: data.run.code !== 0,
+				isError: data.run.code !== 0, // 0 indicates success that program ran without errors
 				text: data.run.output
 			});
 
@@ -192,6 +166,20 @@ export function ProgrammingAnswer() {
 				}
 			});
 		} catch (error) {
+			setIsExecuting(false);
+
+			if (error instanceof TRPCClientError) {
+				setOutput({
+					isError: true,
+					text: error.message
+				});
+			} else {
+				setOutput({
+					isError: true,
+					text: "UNEXPECTED SERVER ERROR"
+				});
+			}
+
 			console.error(error);
 		}
 	}
@@ -200,7 +188,8 @@ export function ProgrammingAnswer() {
 		<CenteredContainer>
 			<div className="flex items-center justify-between rounded-t-lg bg-gray-200 p-4">
 				<span className="text-xs text-light">
-					{question.language} ({version ?? "not installed"})
+					{question.language} ({version ?? "not installed"}) (mode: {question.custom.mode}
+					)
 				</span>
 
 				<button
