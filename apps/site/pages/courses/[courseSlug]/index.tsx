@@ -1,4 +1,4 @@
-import { CheckCircleIcon, PlayIcon, PlusCircleIcon, XCircleIcon } from "@heroicons/react/solid";
+import { PlayIcon, PlusCircleIcon } from "@heroicons/react/solid";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
@@ -11,7 +11,7 @@ import {
 } from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatSeconds } from "@self-learning/util/common";
 import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
@@ -182,19 +182,17 @@ async function getCourse(courseSlug: string) {
 export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
 	return (
 		<div className="bg-gray-50 pb-32">
-			<CenteredSection className="gradient">
+			<CenteredSection className="bg-gray-50">
 				<CourseHeader course={course} content={content} summary={summary} />
 			</CenteredSection>
 
 			{markdownDescription && (
-				<CenteredSection className="bg-gray-50">
-					<Description content={markdownDescription} />
-				</CenteredSection>
+				<section className="bg-white py-16">
+					<CenteredContainer>
+						<Description content={markdownDescription} />
+					</CenteredContainer>
+				</section>
 			)}
-
-			<CenteredSection className="bg-white">
-				<Competences />
-			</CenteredSection>
 
 			<CenteredSection className="bg-gray-50">
 				<TableOfContents content={content} course={course} />
@@ -246,7 +244,7 @@ function CourseHeader({
 	}, [completion, content]);
 
 	return (
-		<div className="flex flex-col gap-16">
+		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 				<div className="flex flex-col justify-between gap-8">
 					<div className="flex flex-col-reverse gap-12 md:flex-col">
@@ -265,7 +263,7 @@ function CourseHeader({
 					/>
 				</div>
 
-				<div className="flex w-full flex-col gap-4 rounded">
+				<div className="flex w-full flex-col gap-4 rounded-lg">
 					<div className="relative h-64 w-full shrink-0 grow">
 						{course.imgUrl && (
 							<Image
@@ -278,7 +276,7 @@ function CourseHeader({
 							></Image>
 						)}
 
-						<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg bg-white p-2 text-center ">
+						<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white p-2 text-center">
 							<li className="flex flex-col">
 								<span className="font-semibold text-secondary">Lerneinheiten</span>
 								<span className="text-light">{summary.lessons}</span>
@@ -320,7 +318,7 @@ function CourseHeader({
 					)}
 				</div>
 			</div>
-		</div>
+		</section>
 	);
 }
 
@@ -328,14 +326,14 @@ function TableOfContents({ content, course }: { content: ToC.ToCContent; course:
 	//const courseCompletion = useCourseCompletion(course.slug);
 
 	return (
-		<div className="flex flex-col gap-8">
+		<section className="flex flex-col gap-8">
 			<h2 className="mb-4 text-4xl">Inhalt</h2>
 			<div className="flex flex-col gap-8">
 				{content.map((chapterOrLesson, index) => (
 					<TocElement chapterOrLesson={chapterOrLesson} course={course} key={index} />
 				))}
 			</div>
-		</div>
+		</section>
 	);
 }
 
@@ -372,83 +370,5 @@ function Description({ content }: { content: CompiledMarkdown }) {
 		<div className="prose max-w-full">
 			<MDXRemote {...content}></MDXRemote>
 		</div>
-	);
-}
-
-export function Competences() {
-	return (
-		<div className="grid place-content-center gap-16 divide-y divide-slate-200 md:grid-cols-2 md:gap-0 md:divide-x md:divide-y-0">
-			<div className="flex flex-col gap-12 md:pr-16">
-				<span className="text-lg font-bold">Du benötigst folgende Voraussetzungen...</span>
-
-				<div className="flex flex-col gap-4">
-					<RequirementCompetence
-						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
-						checked={true}
-					/>
-					<RequirementCompetence
-						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
-						checked={true}
-					/>
-					<RequirementCompetence
-						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
-						checked={false}
-					/>
-				</div>
-			</div>
-			<div className="flex flex-col gap-12 pt-16 md:pl-16 md:pt-0">
-				<span className="text-lg font-bold">Du erwirbst folgende Kompetenzen...</span>
-				<div className="flex flex-col gap-4">
-					<AwardedCompetence
-						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
-						checked={true}
-					/>
-					<AwardedCompetence
-						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
-						checked={false}
-					/>
-					<AwardedCompetence
-						text="Lorem, ipsum dolor sit amet consectetur adipisicing."
-						checked={true}
-					/>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function RequirementCompetence({ text, checked }: { text: string; checked: boolean }) {
-	return (
-		<span className="flex items-center gap-4">
-			{checked ? (
-				<>
-					<CheckCircleIcon className="h-8 shrink-0 text-emerald-500" />
-					<span className="text-slate-400">{text}</span>
-				</>
-			) : (
-				<>
-					<XCircleIcon className="h-8 shrink-0 text-red-500" />
-					<span className="font-semibold">{text}</span>
-				</>
-			)}
-		</span>
-	);
-}
-
-function AwardedCompetence({ text, checked }: { text: string; checked: boolean }) {
-	return (
-		<span className="flex items-center gap-4">
-			{checked ? (
-				<>
-					<CheckCircleIcon className="h-8 shrink-0 text-emerald-500" />
-					<span className="text-slate-400">{text}</span>
-				</>
-			) : (
-				<>
-					<PlusCircleIcon className="h-8 shrink-0 text-indigo-500" />
-					<span className="font-semibold">{text}</span>
-				</>
-			)}
-		</span>
 	);
 }
