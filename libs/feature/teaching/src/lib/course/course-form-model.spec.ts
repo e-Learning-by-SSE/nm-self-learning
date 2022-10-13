@@ -18,7 +18,8 @@ const minValidCourse: CourseFormModel = {
 	courseId: null,
 	description: null,
 	imgUrl: null,
-	subjectId: null
+	subjectId: null,
+	authors: []
 };
 
 describe("courseFormSchema", () => {
@@ -100,6 +101,15 @@ describe("courseFormSchema", () => {
 			    "message": "Required",
 			    "path": Array [
 			      "imgUrl",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "array",
+			    "message": "Required",
+			    "path": Array [
+			      "authors",
 			    ],
 			    "received": "undefined",
 			  },
@@ -192,22 +202,22 @@ describe("courseFormSchema", () => {
 				subtitle: "A Subtitle",
 				content: [
 					{
-						chapterId: "a",
-						title: "A Chapter",
-						description: "a description",
-						lessons: [
-							{
-								lessonId: "la",
-								slug: "lesson-a",
-								title: "A lesson"
-							}
+						type: "chapter",
+						chapterId: "chapter-1",
+						chapterNr: "1",
+						title: "Chapter 1",
+						description: "lorem ipsum",
+						content: [
+							{ type: "lesson", lessonId: "lesson-1", lessonNr: 1 },
+							{ type: "lesson", lessonId: "lesson-2", lessonNr: 2 }
 						]
 					}
 				],
 				courseId: "abc",
 				description: "A description",
 				imgUrl: "http://example.com/image.png",
-				subjectId: 1
+				subjectId: 1,
+				authors: [{ slug: "author-a" }, { slug: "author-b" }]
 			};
 
 			expect(courseFormSchema.safeParse(course).success).toBeDefined();
