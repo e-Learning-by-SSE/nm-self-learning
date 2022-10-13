@@ -534,6 +534,42 @@ const authors: Prisma.UserCreateInput[] = [
 				}
 			}
 		}
+	},
+	{
+		name: "Albus-Dumbledore",
+		accounts: {
+			create: [
+				{
+					provider: "demo",
+					providerAccountId: "albus-dumbledore",
+					type: "demo-account"
+				}
+			]
+		},
+		author: {
+			create: {
+				displayName: "Albus Dumbledore",
+				slug: "albus-dumbledore"
+			}
+		}
+	},
+	{
+		name: "Minerva-McGonagall",
+		accounts: {
+			create: [
+				{
+					provider: "demo",
+					providerAccountId: "minerva-mcgonagall",
+					type: "demo-account"
+				}
+			]
+		},
+		author: {
+			create: {
+				displayName: "Minerva McGonagall",
+				slug: "minerva-mcgonagall"
+			}
+		}
 	}
 ];
 
@@ -606,7 +642,9 @@ async function seed(): Promise<void> {
 
 	console.log("✅ Connect Specialization to Course");
 
-	await prisma.user.create({ data: authors[0] });
+	for (const author of authors) {
+		await prisma.user.create({ data: author });
+	}
 	console.log("✅ Authors");
 
 	console.log(`\nSeed command took ${Date.now() - start}ms`);

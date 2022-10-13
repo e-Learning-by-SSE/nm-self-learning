@@ -109,7 +109,7 @@ export function CourseInfoForm() {
 										<div className="aspect-video rounded-lg">
 											{field.value && (
 												<img
-													className="w-full rounded-lg object-contain"
+													className="aspect-video h-64 rounded-lg object-cover"
 													src={field.value}
 													alt="Thumbnail"
 												/>

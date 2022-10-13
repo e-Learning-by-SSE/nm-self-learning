@@ -1,5 +1,9 @@
 import { database } from "@self-learning/database";
-import { courseFormSchema, mapFromCourseFormToDbSchema } from "@self-learning/teaching";
+import {
+	courseFormSchema,
+	mapCourseFormToInsert,
+	mapCourseFormToUpdate
+} from "@self-learning/teaching";
 import { getRandomId } from "@self-learning/util/common";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
@@ -23,7 +27,7 @@ export const courseRouter = t.router({
 			});
 		}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input }) => {
-		const courseForDb = mapFromCourseFormToDbSchema(input, getRandomId());
+		const courseForDb = mapCourseFormToInsert(input, getRandomId());
 
 		const created = await database.course.create({
 			data: courseForDb,
@@ -45,7 +49,7 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input }) => {
-			const courseForDb = mapFromCourseFormToDbSchema(input.course, input.courseId);
+			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId);
 
 			const updated = await database.course.update({
 				where: { courseId: input.courseId },

@@ -1,6 +1,7 @@
 import { compileMarkdown } from "@self-learning/markdown";
 import { z } from "zod";
 import { t } from "../trpc";
+import { authorRouter } from "./author.router";
 import { completionRouter } from "./completion.router";
 import { courseRouter } from "./course.router";
 import { enrollmentRouter } from "./enrollment.router";
@@ -10,6 +11,7 @@ import { programmingRouter } from "./programming";
 import { storageRouter } from "./storage.router";
 
 export const appRouter = t.router({
+	author: authorRouter,
 	completion: completionRouter,
 	course: courseRouter,
 	enrollment: enrollmentRouter,

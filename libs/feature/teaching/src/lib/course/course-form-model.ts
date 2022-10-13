@@ -43,16 +43,22 @@ export const courseFormSchema = z.object({
 	subtitle: z.string().min(3),
 	description: z.string().nullable(),
 	imgUrl: z.string().nullable(),
+	authors: z.array(
+		z.object({
+			slug: z.string()
+			// permissions: z.any() // currently not used, but could be added here
+		})
+	),
 	content: z.array(chapterOrLessonSchema)
 });
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
 
-export function mapFromCourseFormToDbSchema(
+export function mapCourseFormToInsert(
 	course: CourseFormModel,
 	courseId: string
 ): Prisma.CourseCreateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId } = course;
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
 		courseId,
@@ -62,6 +68,32 @@ export function mapFromCourseFormToDbSchema(
 		content: createCourseContent(mapFormContentToCourseContent(content)),
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
+		authors: {
+			connect: authors.map(author => ({ slug: author.slug }))
+		},
+		subject: subjectId ? { connect: { subjectId } } : undefined
+	};
+
+	return courseForDb;
+}
+
+export function mapCourseFormToUpdate(
+	course: CourseFormModel,
+	courseId: string
+): Prisma.CourseUpdateInput {
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
+
+	const courseForDb: Prisma.CourseUpdateInput = {
+		courseId,
+		slug,
+		title,
+		subtitle,
+		content: createCourseContent(mapFormContentToCourseContent(content)),
+		imgUrl: stringOrNull(imgUrl),
+		description: stringOrNull(description),
+		authors: {
+			set: authors.map(author => ({ slug: author.slug }))
+		},
 		subject: subjectId ? { connect: { subjectId } } : undefined
 	};
 

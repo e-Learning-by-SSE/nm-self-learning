@@ -9,7 +9,7 @@ import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 
 type EditCourseProps = {
 	course: CourseFormModel;
@@ -22,6 +22,11 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 	const course = await database.course.findUnique({
 		where: { courseId },
 		include: {
+			authors: {
+				select: {
+					slug: true
+				}
+			},
 			subject: {
 				select: {
 					subjectId: true,
@@ -64,6 +69,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		imgUrl: course.imgUrl,
 		slug: course.slug,
 		subjectId: course.subject?.subjectId ?? null,
+		authors: course.authors.map(author => ({ slug: author.slug })),
 		content: mapCourseContentToFormContent(content, lessonsById)
 	};
 

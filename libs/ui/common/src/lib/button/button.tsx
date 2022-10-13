@@ -27,11 +27,11 @@ export function IconButton(
 	return (
 		<button
 			type="button"
-			className="flex shrink-0 items-center gap-1 rounded-full border border-light-border  bg-white p-1 px-3 text-gray-400 transition-colors hover:bg-secondary hover:text-white"
+			className="flex place-content-center items-center gap-4 rounded-lg bg-indigo-500 py-2 pl-4 pr-6 font-semibold text-white transition-colors hover:bg-indigo-600 disabled:bg-opacity-25"
 			{...props}
 		>
 			{props.icon}
-			<span className="text-xs">{props.text}</span>
+			<span className="text-sm">{props.text}</span>
 		</button>
 	);
 }

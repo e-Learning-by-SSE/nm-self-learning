@@ -1,22 +1,22 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 
-type UpsertLesson = {
-	command: "upsertLesson";
-	payload: Prisma.LessonCreateInput;
-};
-
-// Required to make the type union work (need two members)
-type Placeholder = {
-	command: "placeholder";
-	payload: void;
-};
-
-export type TestingCommand = UpsertLesson | Placeholder;
+export type TestingCommand =
+	| {
+			command: "upsertLesson";
+			payload: Prisma.LessonCreateInput;
+	  }
+	| {
+			command: "upsertCourse";
+			payload: {
+				create: Prisma.CourseCreateInput;
+				update: Prisma.CourseUpdateInput;
+			};
+	  };
 
 export const testingActionHandler: {
 	[Action in TestingCommand["command"]]: (
-		payload: InferAction<Action>["payload"]
+		payload: InferCommand<Action>["payload"]
 	) => Promise<unknown>;
 } = {
 	upsertLesson: async payload => {
@@ -28,12 +28,18 @@ export const testingActionHandler: {
 
 		return lesson;
 	},
-	placeholder: async () => {
-		/**  */
+	upsertCourse: async payload => {
+		const course = await database.course.upsert({
+			where: { courseId: payload.create.courseId },
+			create: payload.create,
+			update: payload.update
+		});
+
+		return course;
 	}
 };
 
-type InferAction<
+type InferCommand<
 	Command extends TestingCommand["command"],
 	Union = TestingCommand
 > = Union extends {

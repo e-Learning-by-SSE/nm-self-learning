@@ -126,7 +126,7 @@ export function CourseContentForm() {
 						rootId={"root"}
 						sort={false} // order is determined by treeData
 						initialOpen={true}
-						dropTargetOffset={16}
+						dropTargetOffset={8}
 						canDrop={(_tree, { dragSource, dropTargetId }) => {
 							if (dragSource?.parent === dropTargetId) {
 								return true;
@@ -135,7 +135,11 @@ export function CourseContentForm() {
 						}}
 						onDrop={handleDrop}
 						placeholderRender={props => (
-							<div className="absolute h-[1px] w-full bg-secondary"></div>
+							<div
+								className={`w-full bg-secondary opacity-50 ${
+									props.data?.type === "lesson" ? "h-4" : "h-12"
+								}`}
+							></div>
 						)}
 						dragPreviewRender={props => (
 							<div className="w-fit rounded-lg border border-secondary bg-white py-1 px-3">
