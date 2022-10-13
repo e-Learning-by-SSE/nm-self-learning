@@ -16,7 +16,7 @@ export function EditorField({
 			onMount={editor => {
 				setTimeout(() => {
 					editor?.getAction("editor.action.formatDocument")?.run();
-				}, 500);
+				}, 250);
 			}}
 			className="h-full border border-light-border"
 			options={{
