@@ -1,7 +1,6 @@
 import { SectionHeader } from "@self-learning/ui/common";
-import { Form, LabeledField, MarkdownEditorDialog, Upload } from "@self-learning/ui/forms";
+import { Form, LabeledField, Upload } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
 
@@ -26,11 +25,8 @@ export function CourseInfoForm() {
 	const {
 		register,
 		control,
-		setValue,
 		formState: { errors }
 	} = useFormContext<CourseFormModel & { content: unknown[] }>(); // widen content type to prevent circular path error
-
-	const [openDescriptionEditor, setOpenDescriptionEditor] = useState(false);
 
 	return (
 		<CenteredContainer>
@@ -60,67 +56,29 @@ export function CourseInfoForm() {
 					/>
 				</LabeledField>
 
-				<div className="grid gap-8 md:grid-cols-[1fr_auto]">
-					<LabeledField label="Beschreibung" optional={true}>
-						<textarea
-							{...register("description")}
-							className="h-full"
-							rows={5}
-							placeholder="Beschreibung dieser Lernheit. Unterstützt Markdown."
-						/>
-
-						<button
-							type="button"
-							className="btn-stroked text-sm"
-							onClick={() => setOpenDescriptionEditor(true)}
-						>
-							Markdown Editor öffnen
-						</button>
-
-						{openDescriptionEditor && (
-							<Controller
-								control={control}
-								name="description"
-								render={({ field }) => (
-									<MarkdownEditorDialog
-										title="Beschreibung"
-										onClose={v => {
-											if (v) {
-												setValue("description", v);
-											}
-											setOpenDescriptionEditor(false);
-										}}
-										initialValue={field.value ?? ""}
-									/>
-								)}
+				<LabeledField label="Bild" error={errors.imgUrl?.message}>
+					<Controller
+						control={control}
+						name="imgUrl"
+						render={({ field }) => (
+							<Upload
+								mediaType="image"
+								onUploadCompleted={field.onChange}
+								preview={
+									<div className="aspect-video h-64 rounded-lg">
+										{field.value && (
+											<img
+												className="aspect-video h-64 rounded-lg object-cover"
+												src={field.value}
+												alt="Thumbnail"
+											/>
+										)}
+									</div>
+								}
 							/>
 						)}
-					</LabeledField>
-
-					<LabeledField label="Bild" error={errors.imgUrl?.message}>
-						<Controller
-							control={control}
-							name="imgUrl"
-							render={({ field }) => (
-								<Upload
-									mediaType="image"
-									onUploadCompleted={field.onChange}
-									preview={
-										<div className="aspect-video rounded-lg">
-											{field.value && (
-												<img
-													className="aspect-video h-64 rounded-lg object-cover"
-													src={field.value}
-													alt="Thumbnail"
-												/>
-											)}
-										</div>
-									}
-								/>
-							)}
-						/>
-					</LabeledField>
-				</div>
+					/>
+				</LabeledField>
 			</Form.SectionCard>
 		</CenteredContainer>
 	);

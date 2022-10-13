@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@self-learning/ui/forms";
+import { SectionHeader } from "@self-learning/ui/common";
+import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { JsonEditorDialog } from "../json-editor-dialog";
 import { AuthorsForm } from "./authors-form";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
@@ -102,6 +103,7 @@ export function CourseEditor({
 					<Form.Container>
 						<AuthorsForm />
 						<CourseInfoForm />
+						<CourseDescriptionForm />
 						<CourseContentForm />
 					</Form.Container>
 
@@ -113,5 +115,29 @@ export function CourseEditor({
 				</form>
 			</FormProvider>
 		</div>
+	);
+}
+
+function CourseDescriptionForm() {
+	const { control } = useFormContext<{ description: CourseFormModel["description"] }>();
+
+	return (
+		<section>
+			<CenteredContainer>
+				<SectionHeader
+					title="Beschreibung"
+					subtitle="Ausführliche Beschreibung dieses Kurses. Unterstützt Markdown."
+				/>
+			</CenteredContainer>
+			<Form.MarkdownWithPreviewContainer>
+				<Controller
+					control={control}
+					name="description"
+					render={({ field }) => (
+						<MarkdownField content={field.value as string} setValue={field.onChange} />
+					)}
+				></Controller>
+			</Form.MarkdownWithPreviewContainer>
+		</section>
 	);
 }
