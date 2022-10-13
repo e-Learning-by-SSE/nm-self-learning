@@ -33,6 +33,7 @@ export default function CreateCoursePage() {
 					subtitle: "",
 					imgUrl: "",
 					subjectId: null,
+					authors: [],
 					content: []
 				}}
 			/>
