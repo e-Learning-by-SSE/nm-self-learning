@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
+import Link from "next/link";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { JsonEditorDialog } from "../json-editor-dialog";
@@ -67,7 +68,16 @@ export function CourseEditor({
 								</>
 							) : (
 								<>
-									<span className="text-indigo-600">{course.title}</span>{" "}
+									<Link href={`/courses/${course.slug}`} passHref>
+										<a
+											target="_blank"
+											className="text-indigo-600 hover:underline"
+											rel="noopener noreferrer"
+										>
+											{course.title}
+										</a>
+									</Link>{" "}
+									{/* <span className="text-indigo-600">{course.title}</span>{" "} */}
 									editieren
 								</>
 							)
