@@ -103,7 +103,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const preferredMediaType = usePreferredMediaType(lesson);
 
 	return (
-		<section className="w-full max-w-[1440px] px-4 pt-4 pb-24">
+		<article className="w-full max-w-[1440px] px-4 pb-24">
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full rounded-lg bg-black xl:max-h-[75vh]">
 					{url ? (
@@ -113,13 +113,9 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					)}
 				</div>
 			)}
-			<LessonHeader
-				lesson={lesson}
-				authors={lesson.authors}
-				course={course}
-				mdDescription={markdown.description}
-			/>
-			{/* <LessonControls course={course} lesson={lesson} currentMediaType={preferredMediaType} /> */}
+
+			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
+
 			{preferredMediaType === "article" && markdown.article && (
 				<div className="px-4 pb-32">
 					<div className="prose mx-auto max-w-prose">
@@ -127,7 +123,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					</div>
 				</div>
 			)}
-		</section>
+		</article>
 	);
 }
 
@@ -136,21 +132,15 @@ Lesson.getLayout = LessonLayout;
 function LessonHeader({
 	course,
 	lesson,
-	authors,
 	mdDescription
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
-	authors: {
-		slug: string;
-		displayName: string;
-		imgUrl: string | null;
-	}[];
 	mdDescription?: CompiledMarkdown | null;
 }) {
 	return (
 		<div className="flex flex-col gap-8 pt-4">
-			<div className="flex justify-between">
+			<div className="flex flex-wrap justify-between gap-4">
 				<div className="flex flex-col gap-4">
 					<div className="flex justify-between gap-4">
 						<div className="flex flex-col gap-2">
@@ -164,7 +154,7 @@ function LessonHeader({
 					<Authors authors={lesson.authors} />
 				</div>
 
-				<LessonControllss course={course} lesson={lesson} />
+				<LessonControls course={course} lesson={lesson} />
 			</div>
 
 			<div className="prose mx-auto max-w-[75ch]">
@@ -172,54 +162,10 @@ function LessonHeader({
 				{mdDescription && <MDXRemote {...mdDescription} />}
 			</div>
 		</div>
-		// <div className="flex flex-grow flex-col items-center gap-12 px-4 pt-8 pb-12">
-		// 	<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
-		// 	<Link href={`/courses/${course.slug}`}>
-		// 		<a className="text-xl font-semibold text-secondary">{course.title}</a>
-		// 	</Link>
-		// 	{authors.length > 0 && (
-		// 		<div className="flex flex-wrap gap-4">
-		// 			{authors.map(author => (
-		// 				<Link href={`/authors/${author.slug}`} key={author.slug}>
-		// 					<a>
-		// 						<div
-		// 							className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
-		// 							key={author.slug}
-		// 						>
-		// 							<div className="relative h-12 w-12">
-		// 								{author.imgUrl && (
-		// 									<Image
-		// 										src={author.imgUrl}
-		// 										alt=""
-		// 										layout="fill"
-		// 										objectFit="cover"
-		// 									></Image>
-		// 								)}
-		// 							</div>
-		// 							<span className="p-4 text-sm font-medium">
-		// 								{author.displayName}
-		// 							</span>
-		// 						</div>
-		// 					</a>
-		// 				</Link>
-		// 			))}
-		// 		</div>
-		// 	)}
-		// 	{lesson.subtitle && (
-		// 		<div className="max-w-3xl text-center text-xl tracking-tight text-light">
-		// 			{lesson.subtitle}
-		// 		</div>
-		// 	)}
-
-		// 	<div className="prose w-full max-w-prose">
-		// 		<Math />
-		// 		{mdDescription && <MDXRemote {...mdDescription} />}
-		// 	</div>
-		// </div>
 	);
 }
 
-function LessonControllss({
+function LessonControls({
 	course,
 	lesson
 }: {
@@ -231,9 +177,9 @@ function LessonControllss({
 	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 
 	return (
-		<div className="flex flex-col gap-2">
+		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-				<a className="btn-primary flex h-fit flex-wrap-reverse">
+				<a className="btn-primary flex h-fit w-full flex-wrap-reverse xl:w-fit">
 					<span>Zur Lernkontrolle</span>
 					<PlayIcon className="h-6 shrink-0" />
 				</a>
@@ -241,7 +187,7 @@ function LessonControllss({
 
 			{!isCompletedLesson ? (
 				<button
-					className="btn-stroked flex h-fit w-full flex-wrap-reverse"
+					className="btn-stroked flex h-fit w-full flex-wrap-reverse xl:w-fit"
 					onClick={markAsCompleted}
 				>
 					<span>Als abgeschlossen markieren</span>
@@ -249,7 +195,7 @@ function LessonControllss({
 				</button>
 			) : (
 				<button
-					className="btn-stroked flex h-fit w-full flex-wrap-reverse"
+					className="btn-stroked flex h-fit w-full flex-wrap-reverse xl:w-fit"
 					onClick={markAsCompleted}
 				>
 					<span>Als wiederholt markieren</span>
@@ -292,24 +238,6 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 				</div>
 			)}
 		</>
-	);
-}
-
-function LessonControls({
-	lesson,
-	course
-}: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
-}) {
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
-	const completion = useCourseCompletion(course.slug);
-	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
-
-	return (
-		<div className="flex flex-wrap gap-4 p-4">
-			<div className="flex grow flex-wrap justify-end gap-8"></div>
-		</div>
 	);
 }
 

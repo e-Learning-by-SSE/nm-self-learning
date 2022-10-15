@@ -48,44 +48,40 @@ export function Question({
 			evaluation={evaluation}
 			setEvaluation={setEvaluation}
 		>
-			<CenteredContainer className="flex gap-4">
-				<button className="btn-stroked h-fit" onClick={() => setEvaluation(null)}>
-					Reset
-				</button>
-				<CheckResult setEvaluation={setEvaluation} />
-			</CenteredContainer>
+			<article className="flex flex-col gap-8 p-4">
+				<div className="flex gap-4">
+					<button className="btn-stroked h-fit" onClick={() => setEvaluation(null)}>
+						Reset
+					</button>
+					<CheckResult setEvaluation={setEvaluation} />
+				</div>
 
-			<CenteredContainer>
-				<div className="mb-1 font-semibold text-secondary">{question.type}</div>
+				<div>
+					<div className="mb-1 font-semibold text-secondary">{question.type}</div>
 
-				{markdown.questionsMd[question.questionId] ? (
-					<div className="prose max-w-3xl">
-						<MDXRemote {...markdown.questionsMd[question.questionId]} />
-					</div>
-				) : (
-					<span className="text-red-500">Error: No markdown content found.</span>
-				)}
-			</CenteredContainer>
+					{markdown.questionsMd[question.questionId] ? (
+						<div className="prose max-w-3xl">
+							<MDXRemote {...markdown.questionsMd[question.questionId]} />
+						</div>
+					) : (
+						<span className="text-red-500">Error: No markdown content found.</span>
+					)}
+				</div>
 
-			<div className="flex max-w-full flex-col gap-8">
-				<Answer question={question} />
-			</div>
+				<div className="flex max-w-full flex-col gap-8">
+					<Answer question={question} />
+				</div>
 
-			{question.withCertainty && (
-				<CenteredContainer>
-					<Certainty />
-				</CenteredContainer>
-			)}
+				{question.withCertainty && <Certainty />}
 
-			{hintsAvailable && (
-				<CenteredContainer>
+				{hintsAvailable && (
 					<Hints
 						totalHintsCount={allHints.length}
 						usedHints={usedHints}
 						useHint={useHint}
 					/>
-				</CenteredContainer>
-			)}
+				)}
+			</article>
 		</AnswerContextProvider>
 	);
 }

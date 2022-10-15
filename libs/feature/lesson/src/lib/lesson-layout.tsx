@@ -1,4 +1,11 @@
-import { CheckCircleIcon, ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/solid";
+import {
+	CheckCircleIcon,
+	ChevronDoubleLeftIcon,
+	ChevronDoubleRightIcon,
+	ChevronDownIcon,
+	ChevronLeftIcon,
+	PlayIcon
+} from "@heroicons/react/solid";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import {
@@ -7,11 +14,13 @@ import {
 	LessonMeta,
 	traverseCourseContent
 } from "@self-learning/types";
-import { NestablePlaylist, PlaylistContent } from "@self-learning/ui/lesson";
+import { Divider } from "@self-learning/ui/common";
+import { PlaylistContent } from "@self-learning/ui/lesson";
 import { getRandomId } from "@self-learning/util/common";
 import { AnimatePresence, motion } from "framer-motion";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import type { ParsedUrlQuery } from "querystring";
 import { useEffect, useState } from "react";
 
@@ -158,7 +167,7 @@ export function LessonLayout(
 				<title>{pageProps.lesson.title}</title>
 			</Head>
 
-			<div className="flex justify-center gap-4">
+			<div className="flex flex-col justify-center py-8 xl:flex-row xl:gap-1">
 				<Component {...pageProps} />
 				<PlaylistArea {...pageProps} />
 			</div>
@@ -227,59 +236,103 @@ function PlaylistArea({ content, course, lesson }: LessonLayoutProps) {
 		// 		/>
 		// 	</div>
 		// </div>
-		<section className="w-[500px] pt-4 pr-4 ">
-			<div className="flex flex-col gap-4 rounded-lg bg-gray-100 px-4 py-4">
-				<div className="flex flex-col gap-2">
-					<span className="heading text-2xl">{course.title}</span>
-					<span className="text-sm text-light">
-						{courseCompletion?.completedLessonCount} / {courseCompletion?.lessonCount}{" "}
-						Lerneinheiten abgeschlossen
-					</span>
-				</div>
-				<span className="relative h-5 w-full rounded-lg bg-indigo-100">
-					<span
-						className="absolute left-0 h-5 rounded-lg bg-secondary"
-						style={{ width: `${courseCompletion?.completionPercentage ?? 0}%` }}
-					></span>
-					<span className="absolute top-0 w-full px-2 text-start text-sm font-semibold text-white ">
-						{courseCompletion?.completionPercentage ?? 0}%
-					</span>
-				</span>
-			</div>
-
-			<div className="mt-4 flex flex-col gap-4">
+		<aside className="w-full px-4 xl:max-w-[500px]">
+			<PlaylistHeader content={content} course={course} lesson={lesson} />
+			<div className="playlist-scroll mt-4 flex flex-col gap-4">
 				{chapters.map((chapter, index) => (
 					<Chapter
 						key={chapter.chapterId}
 						chapterNr={index + 1}
-						hasActiveLesson={!!chapter.content.find(x => x.lessonId === activeLessonId)}
 						chapter={chapter}
+						activeLessonId={activeLessonId}
+						course={course}
 					/>
 				))}
 			</div>
-		</section>
+		</aside>
+	);
+}
+
+function PlaylistHeader({ content, course, lesson }: LessonLayoutProps) {
+	const completion = useCourseCompletion(course.slug);
+	const [contentWithCompletion, setContentWithCompletion] = useState(content);
+	const courseCompletion = completion?.completion["course"];
+
+	return (
+		<div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
+			<div className="flex flex-col gap-2">
+				<span className="heading text-2xl">{course.title}</span>
+				<span className="text-sm text-light">
+					{courseCompletion?.completedLessonCount} / {courseCompletion?.lessonCount}{" "}
+					Lerneinheiten abgeschlossen
+				</span>
+			</div>
+			<span className="relative h-5 w-full rounded-lg bg-indigo-100">
+				<span
+					className="absolute left-0 h-5 rounded-lg bg-secondary"
+					style={{ width: `${courseCompletion?.completionPercentage ?? 0}%` }}
+				></span>
+				<span className="absolute top-0 w-full px-2 text-start text-sm font-semibold text-white ">
+					{courseCompletion?.completionPercentage ?? 0}%
+				</span>
+			</span>
+			<Divider />
+
+			<div className="flex flex-col gap-4">
+				<span className="flex gap-2">
+					<PlayIcon className="h-5" />
+					<span className="text-sm font-medium">{lesson.title}</span>
+				</span>
+				<span className="flex justify-between">
+					<button className="btn-primary text-sm">Lernkontrolle</button>
+					<span className="flex gap-2">
+						<button
+							className="rounded-lg border border-light-border p-2"
+							title="Vorherige Lerneinheit"
+						>
+							<ChevronDoubleLeftIcon className="h-5" />
+						</button>
+						<button
+							className="rounded-lg border border-light-border p-2"
+							title="Nächste Lerneinheit"
+						>
+							<ChevronDoubleRightIcon className="h-5" />
+						</button>
+					</span>
+				</span>
+			</div>
+		</div>
 	);
 }
 
 function Chapter({
 	chapter,
 	chapterNr,
-	hasActiveLesson
+	course,
+	activeLessonId
 }: {
 	chapter: ChapterType;
+	course: { slug: string };
 	chapterNr: number;
-	hasActiveLesson: boolean;
+	activeLessonId: string;
 }) {
+	const hasActiveLesson = chapter.content.some(x => x.lessonId === activeLessonId);
 	const [open, setOpen] = useState(hasActiveLesson);
 
 	return (
-		<section className="flex  flex-col rounded-lg bg-gray-100 p-4">
+		<section className="flex flex-col rounded-lg bg-gray-100 px-4 py-2">
 			<div className="flex items-center justify-between gap-4">
 				<span className="flex items-center gap-4">
-					<span className=" h-8 w-8 rounded-full bg-secondary pt-[6px] text-center text-sm font-semibold text-white">
+					<span
+						className={`h-8 w-8 rounded-full pt-[6px] text-center text-sm font-semibold ${
+							hasActiveLesson
+								? "bg-secondary text-white"
+								: "bg-indigo-200 text-indigo-600"
+						}`}
+					>
 						{chapterNr}
 					</span>
-					<div className="flex flex-col gap-1">
+					<div className="flex flex-col">
 						<span className="font-semibold">{chapter.title}</span>
 						<span className="text-sm text-light">5 / 10</span>
 					</div>
@@ -335,7 +388,8 @@ function Chapter({
 							<Lesson
 								key={lesson.lessonId}
 								lesson={lesson}
-								isActive={lesson.lessonNr === 2}
+								href={`/courses/${course.slug}/${lesson.lessonId}`}
+								isActive={activeLessonId === lesson.lessonId}
 							/>
 						))}
 					</motion.ul>
@@ -345,14 +399,36 @@ function Chapter({
 	);
 }
 
-function Lesson({ lesson, isActive }: { lesson: LessonType; isActive: boolean }) {
+function Lesson({
+	lesson,
+	isActive,
+	href
+}: {
+	lesson: LessonType;
+	isActive: boolean;
+	href: string;
+}) {
 	return (
-		<li className="rounded-lg bg-gray-200 py-2 px-4">
-			<span className="flex">
-				<span className="w-6 text-sm text-secondary">{lesson.lessonNr}</span>
-				<span className="w-full text-sm">{lesson.title}</span>
-				{lesson.lessonNr % 2 === 0 && <CheckCircleIcon className="h-5 text-emerald-500" />}
-			</span>
-		</li>
+		<Link href={href}>
+			<a
+				className={`rounded-lg py-2 px-4 focus:outline-2 focus:outline-secondary ${
+					isActive
+						? "bg-secondary text-white focus:bg-indigo-300"
+						: "bg-gray-200 hover:bg-indigo-200"
+				}`}
+			>
+				<span className="flex">
+					{isActive ? (
+						<PlayIcon className="-ml-1 mr-2 h-5" />
+					) : (
+						<span className="w-6 text-sm text-secondary">{lesson.lessonNr}</span>
+					)}
+					<span className="w-full text-sm">{lesson.title}</span>
+					{lesson.lessonNr % 2 === 0 && (
+						<CheckCircleIcon className="h-5 text-emerald-500" />
+					)}
+				</span>
+			</a>
+		</Link>
 	);
 }
