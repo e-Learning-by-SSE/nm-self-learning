@@ -20,6 +20,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
+import Math from "../../../components/math";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -368,6 +369,7 @@ function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; upda
 function Description({ content }: { content: CompiledMarkdown }) {
 	return (
 		<div className="prose max-w-full">
+			<Math />
 			<MDXRemote {...content}></MDXRemote>
 		</div>
 	);

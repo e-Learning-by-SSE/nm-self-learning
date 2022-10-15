@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export type AuthorProps = { displayName: string; slug: string; imgUrl?: string | null };
@@ -7,22 +6,16 @@ export function AuthorChip({ displayName, slug, imgUrl }: AuthorProps) {
 	return (
 		<Link href={`/authors/${slug}`}>
 			<a
-				href={`/authors/${slug}`}
-				className="glass glass-hover flex w-full items-center gap-2 rounded-full py-[2px] pl-[2px] pr-3 md:w-fit"
+				className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-4 text-sm"
+				data-testid="author"
 			>
-				{imgUrl ? (
-					<Image
-						priority={true}
-						className="relative flex-shrink-0 rounded-full"
-						height="36"
-						width="36"
-						src={imgUrl}
-						alt={`Picture of ${displayName}`}
-					/>
-				) : (
-					<div className="h-9 w-9 flex-shrink-0 rounded-full bg-blue-500"></div>
-				)}
-				<span className="text-sm">{displayName}</span>
+				<div className="h-12 w-12 rounded-l-lg bg-gray-100">
+					{imgUrl && (
+						<img src={imgUrl} alt={displayName} className="h-12 w-12 rounded-l-lg" />
+					)}
+				</div>
+
+				<span className="font-medium">{displayName}</span>
 			</a>
 		</Link>
 	);

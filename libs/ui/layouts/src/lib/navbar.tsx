@@ -9,8 +9,8 @@ export function Navbar() {
 	const { data: session } = useSession();
 
 	return (
-		<nav className="fixed z-20 h-14 w-full border-b border-b-gray-200 bg-white sm:h-20">
-			<div className="mx-auto flex h-full max-w-screen-xl items-center justify-between gap-4 px-4">
+		<nav className="absolute z-20 h-14 w-full border-b-gray-200 bg-white sm:h-20">
+			<div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between gap-4 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/">
 						<a className="flex items-center gap-4">

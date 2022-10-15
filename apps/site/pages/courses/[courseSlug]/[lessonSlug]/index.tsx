@@ -103,9 +103,9 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const preferredMediaType = usePreferredMediaType(lesson);
 
 	return (
-		<div className="grow">
+		<section className="w-full max-w-[1440px] px-4 pt-4 pb-24">
 			{preferredMediaType === "video" && (
-				<div className="h-[500px] w-full bg-black xl:h-full xl:max-h-[75vh]">
+				<div className="aspect-video w-full rounded-lg bg-black xl:max-h-[75vh]">
 					{url ? (
 						<VideoPlayer url={url} />
 					) : (
@@ -113,13 +113,13 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					)}
 				</div>
 			)}
-			<LessonControls course={course} lesson={lesson} currentMediaType={preferredMediaType} />
 			<LessonHeader
 				lesson={lesson}
 				authors={lesson.authors}
 				course={course}
 				mdDescription={markdown.description}
 			/>
+			{/* <LessonControls course={course} lesson={lesson} currentMediaType={preferredMediaType} /> */}
 			{preferredMediaType === "article" && markdown.article && (
 				<div className="px-4 pb-32">
 					<div className="prose mx-auto max-w-prose">
@@ -127,7 +127,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					</div>
 				</div>
 			)}
-		</div>
+		</section>
 	);
 }
 
@@ -149,11 +149,120 @@ function LessonHeader({
 	mdDescription?: CompiledMarkdown | null;
 }) {
 	return (
-		<div className="flex flex-grow flex-col items-center gap-12 px-4 pt-8 pb-12">
-			<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
-			<Link href={`/courses/${course.slug}`}>
-				<a className="text-xl font-semibold text-secondary">{course.title}</a>
+		<div className="flex flex-col gap-8 pt-4">
+			<div className="flex justify-between">
+				<div className="flex flex-col gap-4">
+					<div className="flex justify-between gap-4">
+						<div className="flex flex-col gap-2">
+							<h1 className="text-4xl">{lesson.title}</h1>
+							{lesson.subtitle && lesson.subtitle.length > 0 && (
+								<span className="text-light">{lesson.subtitle}</span>
+							)}
+						</div>
+					</div>
+
+					<Authors authors={lesson.authors} />
+				</div>
+
+				<LessonControllss course={course} lesson={lesson} />
+			</div>
+
+			<div className="prose mx-auto max-w-[75ch]">
+				<Math />
+				{mdDescription && <MDXRemote {...mdDescription} />}
+			</div>
+		</div>
+		// <div className="flex flex-grow flex-col items-center gap-12 px-4 pt-8 pb-12">
+		// 	<h1 className="text-center text-4xl xl:text-6xl">{lesson.title}</h1>
+		// 	<Link href={`/courses/${course.slug}`}>
+		// 		<a className="text-xl font-semibold text-secondary">{course.title}</a>
+		// 	</Link>
+		// 	{authors.length > 0 && (
+		// 		<div className="flex flex-wrap gap-4">
+		// 			{authors.map(author => (
+		// 				<Link href={`/authors/${author.slug}`} key={author.slug}>
+		// 					<a>
+		// 						<div
+		// 							className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
+		// 							key={author.slug}
+		// 						>
+		// 							<div className="relative h-12 w-12">
+		// 								{author.imgUrl && (
+		// 									<Image
+		// 										src={author.imgUrl}
+		// 										alt=""
+		// 										layout="fill"
+		// 										objectFit="cover"
+		// 									></Image>
+		// 								)}
+		// 							</div>
+		// 							<span className="p-4 text-sm font-medium">
+		// 								{author.displayName}
+		// 							</span>
+		// 						</div>
+		// 					</a>
+		// 				</Link>
+		// 			))}
+		// 		</div>
+		// 	)}
+		// 	{lesson.subtitle && (
+		// 		<div className="max-w-3xl text-center text-xl tracking-tight text-light">
+		// 			{lesson.subtitle}
+		// 		</div>
+		// 	)}
+
+		// 	<div className="prose w-full max-w-prose">
+		// 		<Math />
+		// 		{mdDescription && <MDXRemote {...mdDescription} />}
+		// 	</div>
+		// </div>
+	);
+}
+
+function LessonControllss({
+	course,
+	lesson
+}: {
+	course: LessonProps["course"];
+	lesson: LessonProps["lesson"];
+}) {
+	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
+	const completion = useCourseCompletion(course.slug);
+	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
+
+	return (
+		<div className="flex flex-col gap-2">
+			<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
+				<a className="btn-primary flex h-fit flex-wrap-reverse">
+					<span>Zur Lernkontrolle</span>
+					<PlayIcon className="h-6 shrink-0" />
+				</a>
 			</Link>
+
+			{!isCompletedLesson ? (
+				<button
+					className="btn-stroked flex h-fit w-full flex-wrap-reverse"
+					onClick={markAsCompleted}
+				>
+					<span>Als abgeschlossen markieren</span>
+					<CheckCircleIcon className="h-6 shrink-0" />
+				</button>
+			) : (
+				<button
+					className="btn-stroked flex h-fit w-full flex-wrap-reverse"
+					onClick={markAsCompleted}
+				>
+					<span>Als wiederholt markieren</span>
+					<CheckCircleIcon className="h-6 shrink-0" />
+				</button>
+			)}
+		</div>
+	);
+}
+
+function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
+	return (
+		<>
 			{authors.length > 0 && (
 				<div className="flex flex-wrap gap-4">
 					{authors.map(author => (
@@ -182,28 +291,16 @@ function LessonHeader({
 					))}
 				</div>
 			)}
-			{lesson.subtitle && (
-				<div className="max-w-3xl text-center text-xl tracking-tight text-light">
-					{lesson.subtitle}
-				</div>
-			)}
-
-			<div className="prose w-full max-w-prose">
-				<Math />
-				{mdDescription && <MDXRemote {...mdDescription} />}
-			</div>
-		</div>
+		</>
 	);
 }
 
 function LessonControls({
 	lesson,
-	course,
-	currentMediaType
+	course
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
-	currentMediaType: LessonContentType["type"];
 }) {
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
 	const completion = useCourseCompletion(course.slug);
@@ -211,34 +308,7 @@ function LessonControls({
 
 	return (
 		<div className="flex flex-wrap gap-4 p-4">
-			<MediaTypeSelector course={course} lesson={lesson} current={currentMediaType} />
-
-			<div className="flex grow flex-wrap justify-end gap-8">
-				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-					<a className="btn-primary flex w-full flex-wrap-reverse md:w-fit">
-						<span>Zur Lernkontrolle</span>
-						<PlayIcon className="h-6 shrink-0" />
-					</a>
-				</Link>
-
-				{!isCompletedLesson ? (
-					<button
-						className="btn-stroked flex w-full flex-wrap-reverse self-end md:w-fit"
-						onClick={markAsCompleted}
-					>
-						<span>Als abgeschlossen markieren</span>
-						<CheckCircleIcon className="h-6 shrink-0" />
-					</button>
-				) : (
-					<button
-						className="btn-stroked flex w-full flex-wrap-reverse self-end md:w-fit"
-						onClick={markAsCompleted}
-					>
-						<span>Als wiederholt markieren</span>
-						<CheckCircleIcon className="h-6 shrink-0" />
-					</button>
-				)}
-			</div>
+			<div className="flex grow flex-wrap justify-end gap-8"></div>
 		</div>
 	);
 }

@@ -54,12 +54,18 @@ html {
 }
 
 #__next {
-	@apply flex h-full min-h-screen flex-col bg-white;
+	@apply flex h-full min-h-screen bg-white;
 }
 
 h1,
 h2,
 h3 {
+	font-weight: 700;
+	letter-spacing: -0.05em;
+	color: theme("colors.slate.800");
+}
+
+.heading {
 	font-weight: 700;
 	letter-spacing: -0.05em;
 	color: theme("colors.slate.800");
