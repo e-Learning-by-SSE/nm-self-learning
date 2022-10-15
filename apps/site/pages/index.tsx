@@ -8,10 +8,10 @@ export function LandingPage() {
 				<Link href="/subjects">
 					<a className="underline">Fachgebiete</a>
 				</Link>
-				<Link href="/lessons/a-beginners-guide-to-react-introduction">
+				<Link href="/courses/the-beginners-guide-to-react/a-beginners-guide-to-react-introduction">
 					<a className="underline">Example Lesson</a>
 				</Link>
-				<Link href="/courses/the-example-course">
+				<Link href="/courses/the-beginners-guide-to-react">
 					<a className="underline">Example Course</a>
 				</Link>
 				<Link href="/teaching">
