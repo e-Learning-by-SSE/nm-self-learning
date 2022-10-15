@@ -64,7 +64,6 @@
 		"sharp": "^0.30.6",
 		"superjson": "^1.9.1",
 		"tslib": "^2.0.0",
-		"yup": "^0.32.11",
 		"zod": "^3.19.1"
 	},
 	"devDependencies": {

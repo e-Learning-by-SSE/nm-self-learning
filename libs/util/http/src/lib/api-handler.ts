@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ValidationError } from "yup";
 import { ZodError } from "zod";
 import {
 	AlreadyExists,
@@ -27,10 +26,6 @@ export async function apiHandler(
 
 		return await handler();
 	} catch (error) {
-		if (error instanceof ValidationError) {
-			return withApiError(res, ValidationFailed(error.errors));
-		}
-
 		if (error instanceof ZodError) {
 			return withApiError(res, ValidationFailed(error.errors as any));
 		}

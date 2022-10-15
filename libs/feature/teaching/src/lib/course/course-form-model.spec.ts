@@ -1,4 +1,4 @@
-import { ValidationError } from "yup";
+import { ZodError } from "zod";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 
 function getErrors(value: unknown) {
@@ -6,7 +6,7 @@ function getErrors(value: unknown) {
 		courseFormSchema.parse(value);
 		throw Error("Expected validation error.");
 	} catch (error) {
-		return (error as ValidationError).errors;
+		return (error as ZodError).errors;
 	}
 }
 

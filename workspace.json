@@ -24,7 +24,6 @@
 		"util-http": "libs/util/http",
 		"util-markdown": "libs/util/markdown",
 		"util-testing": "libs/util/testing",
-		"util-types": "libs/util/types",
-		"util-validation": "libs/util/validation"
+		"util-types": "libs/util/types"
 	}
 }
