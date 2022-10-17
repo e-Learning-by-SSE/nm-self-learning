@@ -141,20 +141,18 @@ function LessonHeader({
 	return (
 		<div className="flex flex-col gap-8 pt-4">
 			<div className="flex flex-wrap justify-between gap-4">
-				<div className="flex flex-col gap-4">
-					<div className="flex justify-between gap-4">
-						<div className="flex flex-col gap-2">
-							<h1 className="text-4xl">{lesson.title}</h1>
-							{lesson.subtitle && lesson.subtitle.length > 0 && (
-								<span className="text-light">{lesson.subtitle}</span>
-							)}
-						</div>
-					</div>
+				<div className="flex w-full flex-col">
+					<span className="flex flex-wrap-reverse justify-between gap-4">
+						<h1 className="text-4xl">{lesson.title}</h1>
+						<LessonControls course={course} lesson={lesson} />
+					</span>
+
+					{lesson.subtitle && lesson.subtitle.length > 0 && (
+						<span className="mt-2 text-light">{lesson.subtitle}</span>
+					)}
 
 					<Authors authors={lesson.authors} />
 				</div>
-
-				<LessonControls course={course} lesson={lesson} />
 			</div>
 
 			<div className="prose mx-auto max-w-[75ch]">
@@ -210,7 +208,7 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 	return (
 		<>
 			{authors.length > 0 && (
-				<div className="flex flex-wrap gap-4">
+				<div className="mt-4 flex flex-wrap gap-4">
 					{authors.map(author => (
 						<Link href={`/authors/${author.slug}`} key={author.slug}>
 							<a>
