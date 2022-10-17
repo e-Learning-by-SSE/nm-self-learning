@@ -3,12 +3,7 @@ import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import {
-	CourseContent,
-	extractLessonIds,
-	LessonMeta,
-	traverseCourseContent
-} from "@self-learning/types";
+import { CourseContent, extractLessonIds, LessonInfo } from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
@@ -24,46 +19,35 @@ import Math from "../../../components/math";
 
 type Course = ResolvedValue<typeof getCourse>;
 
-type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
-
 function mapToTocContent(
 	content: CourseContent,
 	lessonIdMap: Map<string, LessonInfo>
-): ToC.ToCContent {
-	const mappedContent: ToC.ToCContent = content.map((item): ToC.ToCContent[0] => {
-		if (item.type === "chapter") {
-			return {
-				...item,
-				content: mapToTocContent(item.content, lessonIdMap)
-			};
-		} else if (item.type === "lesson") {
-			const lesson = lessonIdMap.get(item.lessonId) ?? {
-				lessonNr: 0,
-				title: "Removed",
-				lessonId: "removed",
-				slug: "removed",
-				type: "lesson",
-				meta: {
-					hasQuiz: false,
-					mediaTypes: {}
-				}
-			};
+): ToC.Content {
+	let lessonNr = 1;
 
-			return {
-				...lesson,
-				type: "lesson",
-				lessonNr: item.lessonNr,
-				isCompleted: false // TODO
-			};
-		}
+	return content.map(chapter => ({
+		title: chapter.title,
+		description: chapter.description,
+		content: chapter.content.map(({ lessonId }) => {
+			const lesson: ToC.Content[0]["content"][0] = lessonIdMap.has(lessonId)
+				? {
+						...(lessonIdMap.get(lessonId) as LessonInfo),
+						lessonNr: lessonNr++
+				  }
+				: {
+						lessonId: "removed",
+						slug: "removed",
+						meta: { hasQuiz: false, mediaTypes: {} },
+						title: "Removed",
+						lessonNr: -1
+				  };
 
-		return item;
-	});
-
-	return mappedContent;
+			return lesson;
+		})
+	}));
 }
 
-async function mapCourseContent(content: CourseContent): Promise<ToC.ToCContent> {
+async function mapCourseContent(content: CourseContent): Promise<ToC.Content> {
 	const lessonIds = extractLessonIds(content);
 
 	const lessons = await database.lesson.findMany({
@@ -94,22 +78,20 @@ type Summary = {
 	duration: number;
 };
 
-function createCourseSummary(content: ToC.ToCContent): Summary {
+function createCourseSummary(content: ToC.Content): Summary {
+	const chapters = content.length;
 	let lessons = 0;
-	let chapters = 0;
 	let duration = 0;
 
-	traverseCourseContent(content, chapterOrLesson => {
-		if (chapterOrLesson.type === "chapter") {
-			chapters++;
-		} else {
+	for (const chapter of content) {
+		for (const lesson of chapter.content) {
 			lessons++;
-
-			if (chapterOrLesson.meta.mediaTypes.video?.duration) {
-				duration += chapterOrLesson.meta.mediaTypes.video.duration;
-			}
+			duration +=
+				lesson.meta.mediaTypes.video?.duration ??
+				lesson.meta.mediaTypes.article?.estimatedDuration ??
+				0;
 		}
-	});
+	}
 
 	return { lessons, chapters, duration };
 }
@@ -117,7 +99,7 @@ function createCourseSummary(content: ToC.ToCContent): Summary {
 type CourseProps = {
 	course: Course;
 	summary: Summary;
-	content: ToC.ToCContent;
+	content: ToC.Content;
 	markdownDescription: CompiledMarkdown | null;
 };
 
@@ -227,21 +209,18 @@ function CourseHeader({
 		return !!enrollments.find(e => e.course.slug === course.slug);
 	}, [enrollments, course]);
 
-	const nextLessonSlug = useMemo(() => {
+	const nextLessonSlug: string | null = useMemo(() => {
 		if (!completion) return null;
-		let firstNonCompletedLesson: string | null = null;
 
-		traverseCourseContent(content, chapterOrLesson => {
-			if (
-				firstNonCompletedLesson === null &&
-				chapterOrLesson.type === "lesson" &&
-				!completion.completedLessons[chapterOrLesson.lessonId]
-			) {
-				firstNonCompletedLesson = chapterOrLesson.slug;
+		for (const chapter of content) {
+			for (const lesson of chapter.content) {
+				if (!completion.completedLessons[lesson.lessonId]) {
+					return lesson.slug;
+				}
 			}
-		});
+		}
 
-		return firstNonCompletedLesson;
+		return null;
 	}, [completion, content]);
 
 	return (
@@ -299,7 +278,7 @@ function CourseHeader({
 						<Link href={`/courses/${course.slug}/${nextLessonSlug}`}>
 							<a className="btn-primary">
 								<span>
-									{completion?.completion["course"].completionPercentage === 0
+									{completion?.courseCompletion.completedLessonCount === 0
 										? "Starten"
 										: "Fortfahren"}
 								</span>
@@ -323,33 +302,61 @@ function CourseHeader({
 	);
 }
 
-function TableOfContents({ content, course }: { content: ToC.ToCContent; course: Course }) {
-	//const courseCompletion = useCourseCompletion(course.slug);
+function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
+	const completion = useCourseCompletion(course.slug);
 
 	return (
 		<section className="flex flex-col gap-8">
 			<h2 className="mb-4 text-4xl">Inhalt</h2>
-			<div className="flex flex-col gap-8">
-				{content.map((chapterOrLesson, index) => (
-					<TocElement chapterOrLesson={chapterOrLesson} course={course} key={index} />
+			<ul className="flex flex-col gap-16">
+				{content.map((chapter, index) => (
+					<li key={index} className="flex flex-col rounded-lg bg-gray-100 p-8">
+						<h3 className="heading flex gap-4 text-2xl">
+							<span>{index + 1}.</span>
+							<span className="text-secondary">{chapter.title}</span>
+						</h3>
+						<span className="mt-4 text-light">{chapter.description}</span>
+
+						<ul className="mt-8 flex flex-col gap-1">
+							{chapter.content.map(lesson => (
+								<Lesson
+									key={lesson.lessonId}
+									href={`/courses/${course.slug}/${lesson.slug}`}
+									lesson={lesson}
+									isCompleted={!!completion?.completedLessons[lesson.lessonId]}
+								/>
+							))}
+						</ul>
+					</li>
 				))}
-			</div>
+			</ul>
 		</section>
 	);
 }
 
-export function TocElement({
-	chapterOrLesson,
-	course
+function Lesson({
+	lesson,
+	href,
+	isCompleted
 }: {
-	chapterOrLesson: ToC.ToCContent[0];
-	course: Course;
+	lesson: ToC.Content[0]["content"][0];
+	href: string;
+	isCompleted: boolean;
 }) {
-	if (chapterOrLesson.type === "chapter") {
-		return <ToC.Chapter courseSlug={course.slug} chapter={chapterOrLesson} depth={0} />;
-	}
-
-	return <ToC.SingleLesson courseSlug={course.slug} lesson={chapterOrLesson} />;
+	return (
+		<Link href={href}>
+			<a
+				className={`flex gap-2 rounded-r-lg border-l-4 bg-gray-200 px-4 py-2 text-sm ${
+					isCompleted ? "border-emerald-500" : "border-gray-300"
+				}`}
+			>
+				<span className="flex">
+					<span className="w-8 font-medium text-secondary">{lesson.lessonNr}</span>
+					<span>{lesson.title}</span>
+				</span>
+			</a>
+		</Link>
+	);
 }
 
 function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; updatedAt: string }) {

@@ -300,11 +300,15 @@ function Lesson({
 					{isActive ? (
 						<PlayIcon className="-ml-1 mr-2 h-5 shrink-0" />
 					) : (
-						<span className="w-6 shrink-0 text-sm text-secondary">
+						<span className="w-6 shrink-0 text-sm font-medium text-secondary">
 							{lesson.lessonNr}
 						</span>
 					)}
-					<span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+					<span
+						className={`overflow-hidden text-ellipsis whitespace-nowrap text-sm ${
+							isActive || lesson.isCompleted ? "" : "opacity-50"
+						}`}
+					>
 						{lesson.title}
 					</span>
 				</span>

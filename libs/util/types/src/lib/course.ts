@@ -1,4 +1,5 @@
 import type { EnrollmentStatus } from "@prisma/client";
+import { z } from "zod";
 
 export type Completion = {
 	/** Number of lessons in this chapter (includes nested chapters). */
@@ -27,17 +28,21 @@ export type CourseEnrollment = {
 	};
 };
 
-export type CourseChapter = {
-	title: string;
-	description?: string | null;
-	content: CourseLesson[];
-};
+const lessonSchema = z.object({
+	lessonId: z.string()
+});
 
-export type CourseLesson = {
-	lessonId: string;
-};
+export const chapterSchema = z.object({
+	title: z.string(),
+	description: z.string().optional().nullish(),
+	content: z.array(lessonSchema)
+});
 
-export type CourseContent = CourseChapter[];
+export const courseContentSchema = z.array(chapterSchema);
+
+export type CourseChapter = z.infer<typeof chapterSchema>;
+export type CourseLesson = z.infer<typeof lessonSchema>;
+export type CourseContent = z.infer<typeof courseContentSchema>;
 
 export function extractLessonIds(content: CourseContent): string[] {
 	return content.flatMap(chapter => chapter.content.map(lesson => lesson.lessonId));
