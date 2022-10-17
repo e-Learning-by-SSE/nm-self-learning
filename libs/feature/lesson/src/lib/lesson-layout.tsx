@@ -226,16 +226,6 @@ function PlaylistArea({ content, course, lesson }: LessonLayoutProps) {
 	}, [completion, content]);
 
 	return (
-		// <div className="flex h-[500px] w-full shrink-0 border-l border-light-border bg-white xl:h-full xl:w-[500px] xl:border-t-0">
-		// 	<div className="right-0 flex w-full xl:fixed xl:h-[calc(100vh-80px)] xl:w-[500px]">
-		// 		<NestablePlaylist
-		// 			course={course}
-		// 			currentLesson={lesson}
-		// 			content={contentWithCompletion}
-		// 			courseCompletion={courseCompletion}
-		// 		/>
-		// 	</div>
-		// </div>
 		<aside className="w-full px-4 xl:max-w-[500px]">
 			<PlaylistHeader content={content} course={course} lesson={lesson} />
 			<div className="playlist-scroll mt-4 flex flex-col gap-4">
@@ -261,7 +251,11 @@ function PlaylistHeader({ content, course, lesson }: LessonLayoutProps) {
 	return (
 		<div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
 			<div className="flex flex-col gap-2">
-				<span className="heading text-2xl">{course.title}</span>
+				<Link href={`/courses/${course.slug}`}>
+					<a className="heading text-2xl" title={course.title}>
+						{course.title}
+					</a>
+				</Link>
 				<span className="text-sm text-light">
 					{courseCompletion?.completedLessonCount} / {courseCompletion?.lessonCount}{" "}
 					Lerneinheiten abgeschlossen
@@ -276,31 +270,38 @@ function PlaylistHeader({ content, course, lesson }: LessonLayoutProps) {
 					{courseCompletion?.completionPercentage ?? 0}%
 				</span>
 			</span>
+
 			<Divider />
 
-			<div className="flex flex-col gap-4">
+			<CurrentlyPlaying content={content} course={course} lesson={lesson} />
+		</div>
+	);
+}
+
+function CurrentlyPlaying({ lesson }: LessonLayoutProps) {
+	return (
+		<div className="flex flex-col gap-4">
+			<span className="flex gap-2">
+				<PlayIcon className="h-5" />
+				<span className="text-sm font-medium">{lesson.title}</span>
+			</span>
+			<span className="flex justify-between">
+				<button className="btn-primary text-sm">Lernkontrolle</button>
 				<span className="flex gap-2">
-					<PlayIcon className="h-5" />
-					<span className="text-sm font-medium">{lesson.title}</span>
+					<button
+						className="rounded-lg border border-light-border p-2"
+						title="Vorherige Lerneinheit"
+					>
+						<ChevronDoubleLeftIcon className="h-5" />
+					</button>
+					<button
+						className="rounded-lg border border-light-border p-2"
+						title="Nächste Lerneinheit"
+					>
+						<ChevronDoubleRightIcon className="h-5" />
+					</button>
 				</span>
-				<span className="flex justify-between">
-					<button className="btn-primary text-sm">Lernkontrolle</button>
-					<span className="flex gap-2">
-						<button
-							className="rounded-lg border border-light-border p-2"
-							title="Vorherige Lerneinheit"
-						>
-							<ChevronDoubleLeftIcon className="h-5" />
-						</button>
-						<button
-							className="rounded-lg border border-light-border p-2"
-							title="Nächste Lerneinheit"
-						>
-							<ChevronDoubleRightIcon className="h-5" />
-						</button>
-					</span>
-				</span>
-			</div>
+			</span>
 		</div>
 	);
 }
@@ -327,7 +328,7 @@ function Chapter({
 						className={`h-8 w-8 rounded-full pt-[6px] text-center text-sm font-semibold ${
 							hasActiveLesson
 								? "bg-secondary text-white"
-								: "bg-indigo-200 text-indigo-600"
+								: "bg-indigo-100 text-indigo-600"
 						}`}
 					>
 						{chapterNr}
@@ -382,16 +383,23 @@ function Chapter({
 								}
 							}
 						}}
-						className="mt-4 flex flex-col gap-1"
+						className="flex flex-col gap-1"
 					>
-						{chapter.content.map(lesson => (
-							<Lesson
-								key={lesson.lessonId}
-								lesson={lesson}
-								href={`/courses/${course.slug}/${lesson.lessonId}`}
-								isActive={activeLessonId === lesson.lessonId}
-							/>
-						))}
+						{chapter.content.length > 0 ? (
+							chapter.content.map(lesson => (
+								<Lesson
+									key={lesson.lessonId}
+									lesson={lesson}
+									href={`/courses/${course.slug}/${lesson.lessonId}`}
+									isActive={activeLessonId === lesson.lessonId}
+									isCompleted={lesson.lessonNr % 2 !== 0}
+								/>
+							))
+						) : (
+							<p className="pt-4 pb-2 text-sm text-light">
+								Dieses Kapitel enthält keine Lerneinheiten.
+							</p>
+						)}
 					</motion.ul>
 				)}
 			</AnimatePresence>
@@ -402,31 +410,37 @@ function Chapter({
 function Lesson({
 	lesson,
 	isActive,
+	isCompleted,
 	href
 }: {
 	lesson: LessonType;
 	isActive: boolean;
+	isCompleted: boolean;
 	href: string;
 }) {
 	return (
 		<Link href={href}>
 			<a
-				className={`rounded-lg py-2 px-4 focus:outline-2 focus:outline-secondary ${
+				title={lesson.title}
+				className={`rounded-r-lg border-l-4 py-2 px-4 first:mt-2 last:mb-2 focus:outline-2 focus:outline-secondary ${
+					isCompleted ? "border-emerald-500" : "border-gray-300"
+				} ${
 					isActive
 						? "bg-secondary text-white focus:bg-indigo-300"
-						: "bg-gray-200 hover:bg-indigo-200"
+						: "bg-gray-200 hover:bg-indigo-100"
 				}`}
 			>
 				<span className="flex">
 					{isActive ? (
-						<PlayIcon className="-ml-1 mr-2 h-5" />
+						<PlayIcon className="-ml-1 mr-2 h-5 shrink-0" />
 					) : (
-						<span className="w-6 text-sm text-secondary">{lesson.lessonNr}</span>
+						<span className="w-6 shrink-0 text-sm text-secondary">
+							{lesson.lessonNr}
+						</span>
 					)}
-					<span className="w-full text-sm">{lesson.title}</span>
-					{lesson.lessonNr % 2 === 0 && (
-						<CheckCircleIcon className="h-5 text-emerald-500" />
-					)}
+					<span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+						{lesson.title}
+					</span>
 				</span>
 			</a>
 		</Link>
