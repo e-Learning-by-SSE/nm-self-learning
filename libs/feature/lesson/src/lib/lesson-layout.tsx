@@ -120,7 +120,7 @@ export function LessonLayout(
 				<title>{pageProps.lesson.title}</title>
 			</Head>
 
-			<div className="flex flex-col justify-center py-8 xl:flex-row xl:gap-1">
+			<div className="flex flex-col justify-center pt-4 pb-8 xl:flex-row xl:gap-1">
 				<Component {...pageProps} />
 				<PlaylistArea {...pageProps} />
 			</div>

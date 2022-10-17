@@ -125,6 +125,19 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 
 function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 	const router = useRouter();
+
+	const currentChapter = useMemo(() => {
+		for (const chapter of content) {
+			for (const les of chapter.content) {
+				if (les.lessonId === lesson.lessonId) {
+					return chapter;
+				}
+			}
+		}
+
+		return null;
+	}, [content, lesson]);
+
 	const { previous, next } = useMemo(() => {
 		const flatLessons = content.flatMap(chapter => chapter.content);
 		const lessonIndex = flatLessons.findIndex(l => l.lessonId === lesson.lessonId);
@@ -141,9 +154,11 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<span className="flex gap-2">
-				<PlayIcon className="h-5" />
-				<span className="text-sm font-medium">{lesson.title}</span>
+			<span className="flex items-center gap-2 text-sm">
+				<PlayIcon className="h-7  text-secondary" />
+				<span className="font-medium">{currentChapter?.title}</span>
+				<span className="text-light">-</span>
+				<span className="font-medium text-secondary">{lesson.title}</span>
 			</span>
 			<span className="flex justify-between">
 				<button className="btn-primary text-sm">Lernkontrolle</button>
@@ -212,6 +227,7 @@ function Chapter({
 					</div>
 				</span>
 				<button
+					disabled={hasActiveLesson}
 					className="rounded-full p-2 hover:bg-gray-200"
 					title="Öffnen/Schließen"
 					onClick={() => setOpen(v => !v)}
