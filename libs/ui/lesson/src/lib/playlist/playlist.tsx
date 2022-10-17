@@ -186,6 +186,10 @@ function Chapter({
 	const hasActiveLesson = chapter.content.some(x => x.lessonId === activeLessonId);
 	const [open, setOpen] = useState(hasActiveLesson);
 
+	if (hasActiveLesson && !open) {
+		setOpen(true);
+	}
+
 	return (
 		<section className="flex flex-col rounded-lg bg-gray-100 px-4 py-2">
 			<div className="flex items-center justify-between gap-4">
