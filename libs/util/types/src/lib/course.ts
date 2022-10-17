@@ -8,18 +8,14 @@ export type Completion = {
 	completionPercentage: number;
 };
 
+export type CompletedLessonsMap = {
+	[lessonId: string]: { slug: string; title: string; dateIso: string };
+};
+
 export type CourseCompletion = {
-	completion: Completion;
-	content: (LessonWithCompletion | ChapterWithCompletion)[];
-};
-
-type ChapterWithCompletion = CourseChapter & {
-	completion: Completion;
-	content: (LessonWithCompletion | ChapterWithCompletion)[];
-};
-
-type LessonWithCompletion = CourseLesson & {
-	isCompleted: boolean;
+	courseCompletion: Completion;
+	chapterCompletion: Completion[];
+	completedLessons: CompletedLessonsMap;
 };
 
 export type CourseEnrollment = {
@@ -32,57 +28,38 @@ export type CourseEnrollment = {
 };
 
 export type CourseChapter = {
-	type: "chapter";
-	/** Dot-separated chapter number, i.e. `1` or `1.1` or `1.1.1` */
-	chapterNr: string;
 	title: string;
-	description: string | null;
-	content: CourseContent;
+	description?: string | null;
+	content: CourseLesson[];
 };
 
 export type CourseLesson = {
-	type: "lesson";
-	lessonNr: number;
 	lessonId: string;
 };
 
-export type CourseContent = (CourseChapter | CourseLesson)[];
+export type CourseContent = CourseChapter[];
 
 export function extractLessonIds(content: CourseContent): string[] {
-	const lessonIds: string[] = [];
-
-	for (const chapterOrLesson of content) {
-		if (chapterOrLesson.type === "chapter") {
-			lessonIds.push(...extractLessonIds(chapterOrLesson.content));
-		} else {
-			lessonIds.push(chapterOrLesson.lessonId);
-		}
-	}
-
-	return lessonIds;
+	return content.flatMap(chapter => chapter.content.map(lesson => lesson.lessonId));
 }
 
 /** Creates an object with the shape of a {@link CourseChapter}.*/
 export function createChapter(
 	title: string,
-	content: CourseContent,
+	content: CourseLesson[],
 	description?: string
 ): CourseChapter {
 	return {
-		type: "chapter",
 		title,
-		description: description ?? null,
-		content,
-		chapterNr: title
+		description,
+		content
 	};
 }
 
 /** Creates an object with the shape of a {@link CourseLesson}. */
 export function createLesson(lessonId: string): CourseLesson {
 	return {
-		type: "lesson",
-		lessonId,
-		lessonNr: 0
+		lessonId
 	};
 }
 
@@ -111,27 +88,6 @@ export function traverseCourseContent<
 }
 
 /** Sets `chapterNr` and `lessonNr` for each chapter/lesson. */
-export function createCourseContent(
-	content: CourseContent,
-	lessonNrRef = { value: 1 },
-	parentChapterNr = ""
-): CourseContent {
-	let chapterNr = 1;
-
-	for (const chapterOrLesson of content) {
-		if (chapterOrLesson.type === "chapter") {
-			chapterOrLesson.chapterNr =
-				parentChapterNr === "" ? `${chapterNr}` : `${parentChapterNr}.${chapterNr}`;
-			chapterOrLesson.content = createCourseContent(
-				chapterOrLesson.content,
-				lessonNrRef,
-				chapterOrLesson.chapterNr
-			);
-			chapterNr++;
-		} else {
-			chapterOrLesson.lessonNr = lessonNrRef.value++;
-		}
-	}
-
+export function createCourseContent(content: CourseContent): CourseContent {
 	return content;
 }

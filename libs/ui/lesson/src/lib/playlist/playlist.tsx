@@ -1,252 +1,309 @@
 import {
-	CheckCircleIcon,
-	ChevronDoubleDownIcon,
-	ChevronDoubleUpIcon,
+	ChevronDoubleLeftIcon,
+	ChevronDoubleRightIcon,
 	ChevronDownIcon,
-	ChevronUpIcon
+	ChevronLeftIcon,
+	PlayIcon
 } from "@heroicons/react/solid";
-import { CourseCompletionX } from "@self-learning/completion";
-import {
-	CourseChapter,
-	CourseLesson,
-	LessonMeta,
-	traverseCourseContent
-} from "@self-learning/types";
-import { formatSeconds } from "@self-learning/util/common";
-import { motion } from "framer-motion";
+import { Completion, CourseCompletion, LessonMeta } from "@self-learning/types";
+import { Divider } from "@self-learning/ui/common";
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { ReactElement } from "react";
-import { useCollapseToggle } from "./use-collapse-toggle";
+import { useRouter } from "next/router";
+import { useEffect, useMemo, useState } from "react";
 
-type PlaylistLesson = CourseLesson & {
+export type PlaylistChapter = {
 	title: string;
+	content: PlaylistLesson[];
+};
+
+export type PlaylistLesson = {
+	lessonNr: number;
+	lessonId: string;
 	slug: string;
+	title: string;
 	meta: LessonMeta;
-	isCompleted?: boolean;
+	isCompleted: boolean;
 };
 
-type PlaylistChapter = CourseChapter & {
+export type PlaylistContent = PlaylistChapter[];
+
+type PlaylistProps = {
+	lesson: {
+		lessonId: string;
+		slug: string;
+		title: string;
+	};
 	content: PlaylistContent;
+	course: {
+		title: string;
+		slug: string;
+	};
+	completion?: CourseCompletion;
 };
 
-export type PlaylistContent = (PlaylistLesson | PlaylistChapter)[];
+export function Playlist({ content, course, lesson, completion }: PlaylistProps) {
+	const [contentWithCompletion, setContentWithCompletion] = useState(content);
 
-export function NestablePlaylist({
-	course,
-	currentLesson,
-	content,
-	courseCompletion
-}: {
-	course: { title: string; slug: string };
-	currentLesson: { slug: string; lessonId: string };
-	content: PlaylistContent;
-	courseCompletion?: CourseCompletionX;
-}) {
-	const { globalCollapsed, collapsedSections, globalCollapseToggle, toggleCollapse } =
-		useCollapseToggle(content);
+	useEffect(() => {
+		if (!completion) {
+			return;
+		}
+
+		for (const chapter of content) {
+			for (const lesson of chapter.content) {
+				lesson.isCompleted = !!completion.completedLessons[lesson.lessonId];
+			}
+		}
+
+		setContentWithCompletion([...content]);
+	}, [completion, content]);
 
 	return (
-		<div className="flex h-full w-full flex-col overflow-hidden border-l border-t border-l-light-border border-t-light-border bg-white xl:border-t-0">
-			<div className="grid grid-cols-[1fr_auto] border-b border-light-border p-4">
-				<div className="flex flex-col gap-2">
-					<span className="text-base font-semibold">{course.title}</span>
-					<span className="text-sm text-light">
-						Fortschritt:{" "}
-						{courseCompletion?.completion["course"].completionPercentage ?? 0}%
-					</span>
-				</div>
+		<aside className="w-full px-4 xl:max-w-[500px]">
+			<PlaylistHeader
+				content={content}
+				course={course}
+				lesson={lesson}
+				completion={completion}
+			/>
+			<div className="playlist-scroll mt-4 flex flex-col gap-4">
+				{contentWithCompletion.map((chapter, index) => (
+					<Chapter
+						key={index}
+						chapterNr={index + 1}
+						chapter={chapter}
+						activeLessonId={lesson.lessonId}
+						course={course}
+						completion={completion?.chapterCompletion[index]}
+					/>
+				))}
+			</div>
+		</aside>
+	);
+}
 
-				<button
-					onClick={() => globalCollapseToggle(prev => !prev)}
-					title="Open/Close All Sections"
-					className="self-center rounded-full p-2 text-light hover:bg-gray-50"
+function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) {
+	const courseCompletion = completion?.courseCompletion;
+	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
+
+	return (
+		<div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
+			<div className="flex flex-col gap-2">
+				<Link href={`/courses/${course.slug}`}>
+					<a className="heading text-2xl" title={course.title}>
+						{course.title}
+					</a>
+				</Link>
+				<span className="text-sm text-light">
+					{courseCompletion?.completedLessonCount} / {courseCompletion?.lessonCount}{" "}
+					Lerneinheiten abgeschlossen
+				</span>
+			</div>
+			<span className="relative h-5 w-full rounded-lg bg-indigo-100">
+				<motion.span
+					className="absolute left-0 h-5 rounded-lg bg-secondary"
+					initial={{ width: 0 }}
+					animate={{ width: `${completionPercentage}%` }}
+					transition={{ type: "tween" }}
+				></motion.span>
+				<span
+					className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
+						completionPercentage === 0 ? "text-secondary" : "text-white"
+					}`}
 				>
-					{globalCollapsed ? (
-						<ChevronDoubleDownIcon className="h-6" />
-					) : (
-						<ChevronDoubleUpIcon className="h-6" />
-					)}
-				</button>
-			</div>
+					{completionPercentage}%
+				</span>
+			</span>
 
-			<div className="playlist-scroll overflow-auto">
-				{content.map(chapterOrLesson =>
-					chapterOrLesson.type === "chapter" ? (
-						<Playlist
-							key={chapterOrLesson.chapterNr}
-							chapter={chapterOrLesson}
-							subtitleElement={<PlaylistSubtitle chapter={chapterOrLesson} />}
-							collapsedSections={collapsedSections}
-							collapsed={collapsedSections[chapterOrLesson.chapterNr] === true}
-							toggleCollapse={toggleCollapse}
-							isActive={false}
-							course={course}
-							currentLesson={currentLesson}
-						/>
-					) : (
-						<PlaylistLesson
-							key={chapterOrLesson.lessonId}
-							href={`/courses/${course.slug}/${chapterOrLesson.slug}`}
-							lesson={chapterOrLesson}
-							isActive={currentLesson.lessonId === chapterOrLesson.lessonId}
-						/>
-					)
-				)}
-			</div>
+			<Divider />
+
+			<CurrentlyPlaying lesson={lesson} content={content} course={course} />
 		</div>
 	);
 }
 
-export function PlaylistSubtitle({ chapter }: { chapter: PlaylistChapter }) {
-	let lessonCount = 0;
+function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
+	const router = useRouter();
+	const { previous, next } = useMemo(() => {
+		const flatLessons = content.flatMap(chapter => chapter.content);
+		const lessonIndex = flatLessons.findIndex(l => l.lessonId === lesson.lessonId);
 
-	traverseCourseContent(chapter.content, chapterOrLesson => {
-		if (chapterOrLesson.type === "lesson") {
-			lessonCount++;
-		}
-	});
+		return {
+			previous: lessonIndex > 0 ? flatLessons[lessonIndex - 1] : null,
+			next: lessonIndex < flatLessons.length - 1 ? flatLessons[lessonIndex + 1] : null
+		};
+	}, [content, lesson]);
+
+	function navigateToLesson(lesson: PlaylistLesson) {
+		router.push(`/courses/${course.slug}/${lesson.slug}`);
+	}
 
 	return (
-		<span className="text-sm text-light">
-			{lessonCount === 1 ? "1 Lerneinheit" : `${lessonCount} Lerneinheiten`}
-		</span>
+		<div className="flex flex-col gap-4">
+			<span className="flex gap-2">
+				<PlayIcon className="h-5" />
+				<span className="text-sm font-medium">{lesson.title}</span>
+			</span>
+			<span className="flex justify-between">
+				<button className="btn-primary text-sm">Lernkontrolle</button>
+				<span className="flex gap-2">
+					<button
+						onClick={() => previous && navigateToLesson(previous)}
+						disabled={!previous}
+						className="rounded-lg border border-light-border p-2 disabled:text-light"
+						title="Vorherige Lerneinheit"
+					>
+						<ChevronDoubleLeftIcon className="h-5" />
+					</button>
+					<button
+						onClick={() => next && navigateToLesson(next)}
+						disabled={!next}
+						className="rounded-lg border border-light-border p-2 disabled:text-light"
+						title="Nächste Lerneinheit"
+					>
+						<ChevronDoubleRightIcon className="h-5" />
+					</button>
+				</span>
+			</span>
+		</div>
 	);
 }
 
-export function Playlist({
-	course,
-	currentLesson,
+function Chapter({
 	chapter,
-	subtitleElement,
-	isActive,
-	collapsed,
-	toggleCollapse,
-	collapsedSections
+	chapterNr,
+	course,
+	activeLessonId,
+	completion
 }: {
 	chapter: PlaylistChapter;
-	currentLesson: { slug: string; lessonId: string };
-	course: { title: string; slug: string };
-	subtitleElement: ReactElement;
-	isActive: boolean;
-	collapsed: boolean;
-	toggleCollapse: (chapterNr: string) => void;
-	collapsedSections: { [chapterNr: string]: boolean };
+	course: { slug: string };
+	chapterNr: number;
+	activeLessonId: string;
+	completion?: Completion;
 }) {
+	const hasActiveLesson = chapter.content.some(x => x.lessonId === activeLessonId);
+	const [open, setOpen] = useState(hasActiveLesson);
+
 	return (
-		<div className="flex h-fit w-full flex-col bg-white">
-			<div className="grid grid-cols-[auto_1fr_auto] items-start gap-2 border-b border-light-border bg-gray-100 p-4">
-				<span className="min-w-[32px]">{chapter.chapterNr}</span>
-				<div className="flex flex-col gap-2">
-					<span className="flex items-center gap-2 text-base font-semibold">
-						<span className="text-secondary">{chapter.title}</span>
-						{isActive && <div className="h-2 w-2 rounded-full bg-secondary" />}
+		<section className="flex flex-col rounded-lg bg-gray-100 px-4 py-2">
+			<div className="flex items-center justify-between gap-4">
+				<span className="flex items-center gap-4">
+					<span
+						className={`h-8 w-8 rounded-full pt-[6px] text-center text-sm font-semibold ${
+							hasActiveLesson
+								? "bg-secondary text-white"
+								: "bg-indigo-100 text-indigo-600"
+						}`}
+					>
+						{chapterNr}
 					</span>
-					{subtitleElement}
-				</div>
+					<div className="flex flex-col">
+						<span className="font-semibold">{chapter.title}</span>
+						<span className="text-sm text-light">
+							{completion?.completedLessonCount ?? 0} /{" "}
+							{completion?.lessonCount ?? "?"}
+						</span>
+					</div>
+				</span>
 				<button
-					className="self-center rounded-full p-2 text-light hover:bg-gray-50"
-					title="Show/Hide Section"
-					onClick={() => toggleCollapse(chapter.chapterNr)}
+					className="rounded-full p-2 hover:bg-gray-200"
+					title="Öffnen/Schließen"
+					onClick={() => setOpen(v => !v)}
 				>
-					{collapsed ? (
-						<ChevronDownIcon className="h-6" />
+					{open ? (
+						<ChevronDownIcon className="h-6 text-light" />
 					) : (
-						<ChevronUpIcon className="h-6" />
+						<ChevronLeftIcon className="h-6 text-light" />
 					)}
 				</button>
 			</div>
-			{!collapsed && (
-				<div className="playlist-scroll overflow-auto">
-					<div className="flex flex-col">
-						{chapter.content.map(chapterOrLesson =>
-							chapterOrLesson.type === "chapter" ? (
-								<Playlist
-									key={chapterOrLesson.chapterNr}
-									course={course}
-									isActive={false}
-									collapsedSections={collapsedSections}
-									toggleCollapse={toggleCollapse}
-									chapter={chapterOrLesson as PlaylistChapter}
-									subtitleElement={
-										<PlaylistSubtitle
-											chapter={chapterOrLesson as PlaylistChapter}
-										/>
-									}
-									collapsed={
-										collapsedSections[chapterOrLesson.chapterNr] === true
-									}
-									currentLesson={currentLesson}
+
+			<AnimatePresence initial={false}>
+				{open && (
+					<motion.ul
+						initial={{
+							height: 0,
+							opacity: 0
+						}}
+						animate={{
+							height: "auto",
+							opacity: 1,
+							transition: {
+								height: {
+									duration: 0.2
+								},
+								opacity: {
+									duration: 0.25,
+									delay: 0
+								}
+							}
+						}}
+						exit={{
+							height: 0,
+							opacity: 0,
+							transition: {
+								height: {
+									duration: 0.2
+								},
+								opacity: {
+									duration: 0.25
+								}
+							}
+						}}
+						className="flex flex-col gap-1"
+					>
+						{chapter.content.length > 0 ? (
+							chapter.content.map(lesson => (
+								<Lesson
+									key={lesson.lessonId}
+									lesson={lesson}
+									href={`/courses/${course.slug}/${lesson.slug}`}
+									isActive={activeLessonId === lesson.lessonId}
 								/>
-							) : (
-								<PlaylistLesson
-									key={chapterOrLesson.lessonId}
-									href={`/courses/${course.slug}/${
-										(chapterOrLesson as PlaylistLesson).slug
-									}`}
-									lesson={chapterOrLesson as PlaylistLesson}
-									isActive={currentLesson.lessonId === chapterOrLesson.lessonId}
-								/>
-							)
+							))
+						) : (
+							<p className="pt-4 pb-2 text-sm text-light">
+								Dieses Kapitel enthält keine Lerneinheiten.
+							</p>
 						)}
-					</div>
-				</div>
-			)}
-		</div>
+					</motion.ul>
+				)}
+			</AnimatePresence>
+		</section>
 	);
 }
 
-export function PlaylistLesson({
+function Lesson({
 	lesson,
 	isActive,
 	href
 }: {
 	lesson: PlaylistLesson;
+	isActive: boolean;
 	href: string;
-	isActive?: boolean;
 }) {
-	const duration =
-		lesson.meta.mediaTypes.video?.duration ?? lesson.meta.mediaTypes.article?.estimatedDuration;
-
 	return (
 		<Link href={href}>
 			<a
 				title={lesson.title}
-				className={`relative flex w-full border-b border-light-border bg-white hover:bg-indigo-50 focus:outline-0 focus:ring-0  focus-visible:bg-indigo-100 ${
-					isActive ? "bg-indigo-50" : ""
-				}`}
+				className={`rounded-r-lg border-l-4 py-2 px-4 first:mt-2 last:mb-2 focus:outline-2 focus:outline-secondary ${
+					lesson.isCompleted ? "border-emerald-500" : "border-gray-300"
+				} ${isActive ? "bg-secondary text-white" : "bg-gray-200 hover:bg-indigo-100"}`}
 			>
-				{isActive && (
-					<motion.span
-						layoutId="activeLesson"
-						className="absolute h-full w-1 bg-secondary"
-					></motion.span>
-				)}
-				<div className="relative flex w-full overflow-hidden py-2 pr-4">
-					<div className="flex flex-col items-start px-4 text-center">
-						<span
-							className={`mx-auto my-auto w-6 text-xs ${
-								isActive ? "text-light" : "text-light"
-							}`}
-						>
+				<span className="flex">
+					{isActive ? (
+						<PlayIcon className="-ml-1 mr-2 h-5 shrink-0" />
+					) : (
+						<span className="w-6 shrink-0 text-sm text-secondary">
 							{lesson.lessonNr}
 						</span>
-					</div>
-					<div className="flex flex-col gap-1">
-						<span
-							className={`truncate text-sm font-medium ${
-								isActive ? "text-secondary" : ""
-							}`}
-						>
-							{lesson.title}
-						</span>
-						<span className="flex  gap-2 text-xs text-light">
-							{lesson.isCompleted && (
-								<CheckCircleIcon className="h-4 shrink-0 rounded-full text-secondary" />
-							)}
-							{duration ? formatSeconds(duration) : "??:??"}
-						</span>
-					</div>
-				</div>
+					)}
+					<span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+						{lesson.title}
+					</span>
+				</span>
 			</a>
 		</Link>
 	);

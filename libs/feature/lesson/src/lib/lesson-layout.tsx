@@ -1,32 +1,15 @@
-import {
-	CheckCircleIcon,
-	ChevronDoubleLeftIcon,
-	ChevronDoubleRightIcon,
-	ChevronDownIcon,
-	ChevronLeftIcon,
-	PlayIcon
-} from "@heroicons/react/solid";
+import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import {
-	CourseContent,
-	extractLessonIds,
-	LessonMeta,
-	traverseCourseContent
-} from "@self-learning/types";
-import { Divider } from "@self-learning/ui/common";
-import { PlaylistContent } from "@self-learning/ui/lesson";
-import { getRandomId } from "@self-learning/util/common";
-import { AnimatePresence, motion } from "framer-motion";
+import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
+import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
-import Link from "next/link";
 import type { ParsedUrlQuery } from "querystring";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 export type LessonLayoutProps = {
 	lesson: ResolvedValue<typeof getLesson>;
-	content: PlaylistContent;
 	course: {
 		title: string;
 		slug: string;
@@ -78,7 +61,6 @@ export async function getStaticPropsForLayout(
 		database.course.findUnique({
 			where: { slug: courseSlug },
 			select: {
-				content: true,
 				title: true,
 				slug: true
 			}
@@ -89,33 +71,8 @@ export async function getStaticPropsForLayout(
 		return { notFound: true };
 	}
 
-	const lessonIds = extractLessonIds(course.content as CourseContent);
-
-	const lessons = await database.lesson.findMany({
-		select: {
-			lessonId: true,
-			slug: true,
-			title: true,
-			meta: true
-		},
-		where: {
-			lessonId: {
-				in: lessonIds
-			}
-		}
-	});
-
-	const lessonsById = new Map<string, LessonInfo>();
-
-	for (const lesson of lessons) {
-		lessonsById.set(lesson.lessonId, lesson as LessonInfo);
-	}
-
-	const content = mapToPlaylistContent(course.content as CourseContent, lessonsById);
-
 	return {
 		lesson: lesson as Defined<typeof lesson>,
-		content,
 		course: {
 			slug: course.slug,
 			title: course.title
@@ -125,34 +82,30 @@ export async function getStaticPropsForLayout(
 
 function mapToPlaylistContent(
 	content: CourseContent,
-	lessons: Map<string, LessonInfo>
+	lessons: { [lessonId: string]: LessonInfo }
 ): PlaylistContent {
-	const playlistContent: PlaylistContent = [];
+	let lessonNr = 1;
 
-	for (const chapterOrLesson of content) {
-		if (chapterOrLesson.type === "chapter") {
-			playlistContent.push({
-				...chapterOrLesson,
-				type: "chapter",
-				content: mapToPlaylistContent(chapterOrLesson.content, lessons)
-			});
-		} else {
-			const lesson = lessons.get(chapterOrLesson.lessonId) ?? {
+	const playlistContent: PlaylistContent = content.map(chapter => ({
+		title: chapter.title,
+		description: chapter.description,
+		content: chapter.content.map(lesson => {
+			const lessonInfo = lessons[lesson.lessonId] ?? {
 				lessonId: "removed",
+				meta: { hasQuiz: false, mediaTypes: {} },
 				slug: "removed",
-				title: "Removed",
-				meta: {
-					hasQuiz: false,
-					mediaTypes: {}
-				}
+				title: "Removed"
 			};
 
-			playlistContent.push({
-				...chapterOrLesson,
-				...lesson
-			});
-		}
-	}
+			const playlistLesson: PlaylistLesson = {
+				...lessonInfo,
+				isCompleted: false,
+				lessonNr: lessonNr++
+			};
+
+			return playlistLesson;
+		})
+	}));
 
 	return playlistContent;
 }
@@ -175,274 +128,26 @@ export function LessonLayout(
 	);
 }
 
-type ChapterType = {
-	chapterId: string;
-	title: string;
-	content: Array<LessonType>;
-};
-
-type LessonType = {
-	lessonNr: number;
-	lessonId: string;
-	title: string;
-};
-
-function PlaylistArea({ content, course, lesson }: LessonLayoutProps) {
+function PlaylistArea({ course, lesson }: LessonLayoutProps) {
+	const { data: content } = trpc.course.getContent.useQuery({ slug: course.slug });
 	const completion = useCourseCompletion(course.slug);
-	const [contentWithCompletion, setContentWithCompletion] = useState(content);
-	const courseCompletion = completion?.completion["course"];
-	const activeLessonId = "2";
-
-	const chapters: ChapterType[] = [
-		{ chapterId: getRandomId(), title: "Introduction to React", content: [] },
-		{ chapterId: getRandomId(), title: "Thinking in React", content: [] },
-		{
-			chapterId: getRandomId(),
-			title: "Describing the UI",
-			content: [
-				{ lessonNr: 1, lessonId: "1", title: "Creating reusable component" },
-				{ lessonNr: 2, lessonId: "2", title: "Passing Props to components" },
-				{ lessonNr: 3, lessonId: "3", title: "Conditional rendering" },
-				{ lessonNr: 4, lessonId: "4", title: "Rendering lists of elements" }
-			]
-		},
-		{ chapterId: getRandomId(), title: "Adding Interactivity", content: [] },
-		{ chapterId: getRandomId(), title: "Managing State", content: [] }
-	];
-
-	useEffect(() => {
-		if (!completion) {
-			return;
-		}
-
-		traverseCourseContent(content, chapterOrLesson => {
-			if (chapterOrLesson.type === "lesson") {
-				chapterOrLesson.isCompleted =
-					!!completion.completedLessons[chapterOrLesson.lessonId];
-			}
-		});
-
-		setContentWithCompletion([...content]);
-	}, [completion, content]);
-
-	return (
-		<aside className="w-full px-4 xl:max-w-[500px]">
-			<PlaylistHeader content={content} course={course} lesson={lesson} />
-			<div className="playlist-scroll mt-4 flex flex-col gap-4">
-				{chapters.map((chapter, index) => (
-					<Chapter
-						key={chapter.chapterId}
-						chapterNr={index + 1}
-						chapter={chapter}
-						activeLessonId={activeLessonId}
-						course={course}
-					/>
-				))}
-			</div>
-		</aside>
+	const playlistContent = useMemo(
+		() => (!content ? [] : mapToPlaylistContent(content.content, content.lessonMap)),
+		[content]
 	);
-}
 
-function PlaylistHeader({ content, course, lesson }: LessonLayoutProps) {
-	const completion = useCourseCompletion(course.slug);
-	const [contentWithCompletion, setContentWithCompletion] = useState(content);
-	const courseCompletion = completion?.completion["course"];
-
-	return (
-		<div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
-			<div className="flex flex-col gap-2">
-				<Link href={`/courses/${course.slug}`}>
-					<a className="heading text-2xl" title={course.title}>
-						{course.title}
-					</a>
-				</Link>
-				<span className="text-sm text-light">
-					{courseCompletion?.completedLessonCount} / {courseCompletion?.lessonCount}{" "}
-					Lerneinheiten abgeschlossen
-				</span>
-			</div>
-			<span className="relative h-5 w-full rounded-lg bg-indigo-100">
-				<span
-					className="absolute left-0 h-5 rounded-lg bg-secondary"
-					style={{ width: `${courseCompletion?.completionPercentage ?? 0}%` }}
-				></span>
-				<span className="absolute top-0 w-full px-2 text-start text-sm font-semibold text-white ">
-					{courseCompletion?.completionPercentage ?? 0}%
-				</span>
-			</span>
-
-			<Divider />
-
-			<CurrentlyPlaying content={content} course={course} lesson={lesson} />
-		</div>
-	);
-}
-
-function CurrentlyPlaying({ lesson }: LessonLayoutProps) {
-	return (
-		<div className="flex flex-col gap-4">
-			<span className="flex gap-2">
-				<PlayIcon className="h-5" />
-				<span className="text-sm font-medium">{lesson.title}</span>
-			</span>
-			<span className="flex justify-between">
-				<button className="btn-primary text-sm">Lernkontrolle</button>
-				<span className="flex gap-2">
-					<button
-						className="rounded-lg border border-light-border p-2"
-						title="Vorherige Lerneinheit"
-					>
-						<ChevronDoubleLeftIcon className="h-5" />
-					</button>
-					<button
-						className="rounded-lg border border-light-border p-2"
-						title="Nächste Lerneinheit"
-					>
-						<ChevronDoubleRightIcon className="h-5" />
-					</button>
-				</span>
-			</span>
-		</div>
-	);
-}
-
-function Chapter({
-	chapter,
-	chapterNr,
-	course,
-	activeLessonId
-}: {
-	chapter: ChapterType;
-	course: { slug: string };
-	chapterNr: number;
-	activeLessonId: string;
-}) {
-	const hasActiveLesson = chapter.content.some(x => x.lessonId === activeLessonId);
-	const [open, setOpen] = useState(hasActiveLesson);
+	if (!content) {
+		return (
+			<aside className="h-3/4 w-full animate-pulse rounded-lg bg-gray-200 px-4 xl:max-w-[500px]"></aside>
+		);
+	}
 
 	return (
-		<section className="flex flex-col rounded-lg bg-gray-100 px-4 py-2">
-			<div className="flex items-center justify-between gap-4">
-				<span className="flex items-center gap-4">
-					<span
-						className={`h-8 w-8 rounded-full pt-[6px] text-center text-sm font-semibold ${
-							hasActiveLesson
-								? "bg-secondary text-white"
-								: "bg-indigo-100 text-indigo-600"
-						}`}
-					>
-						{chapterNr}
-					</span>
-					<div className="flex flex-col">
-						<span className="font-semibold">{chapter.title}</span>
-						<span className="text-sm text-light">5 / 10</span>
-					</div>
-				</span>
-				<button
-					className="rounded-full p-2 hover:bg-gray-200"
-					title="Öffnen/Schließen"
-					onClick={() => setOpen(v => !v)}
-				>
-					{open ? (
-						<ChevronDownIcon className="h-6 text-light" />
-					) : (
-						<ChevronLeftIcon className="h-6 text-light" />
-					)}
-				</button>
-			</div>
-
-			<AnimatePresence initial={false}>
-				{open && (
-					<motion.ul
-						initial={{
-							height: 0,
-							opacity: 0
-						}}
-						animate={{
-							height: "auto",
-							opacity: 1,
-							transition: {
-								height: {
-									duration: 0.2
-								},
-								opacity: {
-									duration: 0.25,
-									delay: 0
-								}
-							}
-						}}
-						exit={{
-							height: 0,
-							opacity: 0,
-							transition: {
-								height: {
-									duration: 0.2
-								},
-								opacity: {
-									duration: 0.25
-								}
-							}
-						}}
-						className="flex flex-col gap-1"
-					>
-						{chapter.content.length > 0 ? (
-							chapter.content.map(lesson => (
-								<Lesson
-									key={lesson.lessonId}
-									lesson={lesson}
-									href={`/courses/${course.slug}/${lesson.lessonId}`}
-									isActive={activeLessonId === lesson.lessonId}
-									isCompleted={lesson.lessonNr % 2 !== 0}
-								/>
-							))
-						) : (
-							<p className="pt-4 pb-2 text-sm text-light">
-								Dieses Kapitel enthält keine Lerneinheiten.
-							</p>
-						)}
-					</motion.ul>
-				)}
-			</AnimatePresence>
-		</section>
-	);
-}
-
-function Lesson({
-	lesson,
-	isActive,
-	isCompleted,
-	href
-}: {
-	lesson: LessonType;
-	isActive: boolean;
-	isCompleted: boolean;
-	href: string;
-}) {
-	return (
-		<Link href={href}>
-			<a
-				title={lesson.title}
-				className={`rounded-r-lg border-l-4 py-2 px-4 first:mt-2 last:mb-2 focus:outline-2 focus:outline-secondary ${
-					isCompleted ? "border-emerald-500" : "border-gray-300"
-				} ${
-					isActive
-						? "bg-secondary text-white focus:bg-indigo-300"
-						: "bg-gray-200 hover:bg-indigo-100"
-				}`}
-			>
-				<span className="flex">
-					{isActive ? (
-						<PlayIcon className="-ml-1 mr-2 h-5 shrink-0" />
-					) : (
-						<span className="w-6 shrink-0 text-sm text-secondary">
-							{lesson.lessonNr}
-						</span>
-					)}
-					<span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-						{lesson.title}
-					</span>
-				</span>
-			</a>
-		</Link>
+		<Playlist
+			content={playlistContent}
+			course={course}
+			lesson={lesson}
+			completion={completion}
+		/>
 	);
 }
