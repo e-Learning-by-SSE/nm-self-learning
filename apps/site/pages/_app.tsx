@@ -48,7 +48,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<title>Self-Learning</title>
 			</Head>
 			<Navbar />
-			<main className="mt-14 grid grow sm:mt-20">
+			<main className="grid grow">
 				{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 			</main>
 			<Toaster containerStyle={{ top: 96 }} position="top-right" />

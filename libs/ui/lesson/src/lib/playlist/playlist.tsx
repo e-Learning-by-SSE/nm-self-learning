@@ -60,26 +60,93 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 	}, [completion, content]);
 
 	return (
-		<aside className="w-full px-4 xl:max-w-[500px]">
+		<aside className="playlist-scroll w-full divide-y divide-gray-200 overflow-auto border-r border-r-gray-200 px-8 py-8 xl:max-h-[calc(100vh-62px)] xl:max-w-[400px]">
 			<PlaylistHeader
 				content={content}
 				course={course}
 				lesson={lesson}
 				completion={completion}
 			/>
-			<div className="playlist-scroll mt-4 flex flex-col gap-4">
+			<div className="mt-4 flex flex-col gap-12 py-4">
 				{contentWithCompletion.map((chapter, index) => (
-					<Chapter
+					<ChapterX
 						key={index}
-						chapterNr={index + 1}
 						chapter={chapter}
-						activeLessonId={lesson.lessonId}
 						course={course}
-						completion={completion?.chapterCompletion[index]}
+						activeLessonId={lesson.lessonId}
 					/>
 				))}
 			</div>
 		</aside>
+	);
+}
+
+function ChapterX({
+	chapter,
+	activeLessonId,
+	course
+}: {
+	chapter: PlaylistChapter;
+	activeLessonId: string;
+	course: PlaylistProps["course"];
+}) {
+	const [collapsed, setCollapsed] = useState(false);
+
+	return (
+		<li className="flex flex-col gap-2">
+			<span className="flex justify-between">
+				<span className="pl-4 font-semibold tracking-tight">{chapter.title}</span>
+				<button onClick={() => setCollapsed(v => !v)}>
+					{collapsed ? (
+						<ChevronLeftIcon className="h-5 text-gray-400" />
+					) : (
+						<ChevronDownIcon className="h-5 text-gray-400" />
+					)}
+				</button>
+			</span>
+			{!collapsed && (
+				<ul className="flex flex-col">
+					{chapter.content.map(x => (
+						<LessonX
+							key={x.lessonId}
+							lesson={x}
+							href={`/courses/${course.slug}/${x.slug}`}
+							isActive={activeLessonId === x.lessonId}
+						/>
+					))}
+				</ul>
+			)}
+		</li>
+	);
+}
+
+function LessonX({
+	lesson,
+	href,
+	isActive
+}: {
+	lesson: PlaylistLesson;
+	href: string;
+	isActive: boolean;
+}) {
+	return (
+		<Link href={href}>
+			<a
+				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
+					isActive ? "bg-gray-200 font-medium text-black" : "text-light"
+				}`}
+			>
+				<span
+					style={{ width: lesson.isCompleted ? "2px" : "1px" }}
+					className={`absolute h-full ${
+						lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
+					}`}
+				></span>
+				<span className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm">
+					{lesson.title}
+				</span>
+			</a>
+		</Link>
 	);
 }
 
@@ -88,7 +155,7 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
 
 	return (
-		<div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
+		<div className="flex flex-col gap-4 rounded-lg">
 			<div className="flex flex-col gap-2">
 				<Link href={`/courses/${course.slug}`}>
 					<a className="heading text-2xl" title={course.title}>
@@ -100,7 +167,7 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 					Lerneinheiten abgeschlossen
 				</span>
 			</div>
-			<span className="relative h-5 w-full rounded-lg bg-indigo-100">
+			<span className="relative h-5 w-full rounded-lg bg-gray-200">
 				<motion.span
 					className="absolute left-0 h-5 rounded-lg bg-secondary"
 					initial={{ width: 0 }}

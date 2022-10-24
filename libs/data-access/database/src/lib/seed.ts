@@ -8,6 +8,9 @@ import {
 	LessonContent
 } from "@self-learning/types";
 import { subHours } from "date-fns";
+import { readFileSync } from "fs";
+import * as path from "path";
+import { join } from "path";
 import slugify from "slugify";
 
 faker.seed(1);
@@ -340,6 +343,8 @@ private static int sumExpected(int[] numbers) {
 	}
 ];
 
+const mdContent = readFileSync(join(__dirname, "markdown-example.mdx"), "utf-8");
+
 function createLesson(title: string) {
 	const lesson: Prisma.LessonCreateInput = {
 		title,
@@ -356,6 +361,15 @@ function createLesson(title: string) {
 				},
 				meta: {
 					duration: 300
+				}
+			},
+			{
+				type: "article",
+				value: {
+					content: mdContent
+				},
+				meta: {
+					estimatedDuration: 300
 				}
 			}
 		] as LessonContent,

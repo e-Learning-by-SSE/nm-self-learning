@@ -9,16 +9,16 @@ export function Navbar() {
 	const { data: session } = useSession();
 
 	return (
-		<nav className="absolute z-20 h-14 w-full border-b-gray-200 bg-white sm:h-20">
-			<div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between gap-4 px-4">
+		<nav className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white">
+			<div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between gap-4 py-2 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/">
 						<a className="flex items-center gap-4">
 							<div className="rounded-full bg-secondary p-1">
-								<AcademicCapIcon className="h-7 shrink-0 text-white sm:h-10" />
+								<AcademicCapIcon className="h-8 shrink-0 text-white" />
 							</div>
 							<div className="invisible flex w-0 flex-col sm:visible sm:w-fit">
-								<span className="text-light">Universität Hildesheim</span>
+								<span className="text-sm text-light">Universität Hildesheim</span>
 								<span className="font-bold text-secondary">SELF-le@rning</span>
 							</div>
 						</a>
@@ -67,8 +67,8 @@ export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
 					className="rounded-full object-top"
 					src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=48&q=80"
 					objectFit="cover"
-					width={48}
-					height={48}
+					width={42}
+					height={42}
 				></Image>
 				<ChevronDownIcon className="h-6 text-gray-400" />
 			</Menu.Button>

@@ -9,6 +9,7 @@ import {
 	LessonContentMediaType,
 	LessonContentType
 } from "@self-learning/types";
+import { Tab, Tabs } from "@self-learning/ui/common";
 import { VideoPlayer } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
@@ -103,9 +104,9 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const preferredMediaType = usePreferredMediaType(lesson);
 
 	return (
-		<article className="w-full max-w-[1440px] px-4 pb-24">
+		<article className="flex w-full max-w-[1440px] flex-col gap-4 px-8 pt-8 pb-16">
 			{preferredMediaType === "video" && (
-				<div className="aspect-video w-full rounded-lg bg-black xl:max-h-[75vh]">
+				<div className="aspect-video w-full xl:max-h-[75vh]">
 					{url ? (
 						<VideoPlayer url={url} />
 					) : (
@@ -139,7 +140,7 @@ function LessonHeader({
 	mdDescription?: CompiledMarkdown | null;
 }) {
 	return (
-		<div className="flex flex-col gap-8 pt-4">
+		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap justify-between gap-4">
 				<div className="flex w-full flex-col">
 					<span className="flex flex-wrap-reverse justify-between gap-4">
@@ -152,6 +153,10 @@ function LessonHeader({
 					)}
 
 					<Authors authors={lesson.authors} />
+
+					<div className="mx-auto w-full border-b border-gray-200">
+						<MediaTypeSelector current="video" lesson={lesson} course={course} />
+					</div>
 				</div>
 			</div>
 
@@ -183,7 +188,7 @@ function LessonControls({
 				</a>
 			</Link>
 
-			{!isCompletedLesson ? (
+			{/* {!isCompletedLesson ? (
 				<button
 					className="btn-stroked flex h-fit w-full flex-wrap-reverse xl:w-fit"
 					onClick={markAsCompleted}
@@ -199,7 +204,7 @@ function LessonControls({
 					<span>Als wiederholt markieren</span>
 					<CheckCircleIcon className="h-6 shrink-0" />
 				</button>
-			)}
+			)} */}
 		</div>
 	);
 }
@@ -258,25 +263,34 @@ function MediaTypeSelector({
 		});
 	}
 
+	function fromIndex(index: number) {
+		return (lesson.content as LessonContent)[index].type;
+	}
+
 	return (
-		<>
-			{(lesson.content as LessonContent).length > 1 && (
-				<div className="flex flex-wrap gap-4">
-					{(lesson.content as LessonContent).map(({ type }) => (
-						<button
-							key={type}
-							className={`border-b-2 px-2 py-1 text-sm ${
-								current === type
-									? "border-b-secondary font-semibold text-secondary"
-									: "border-b-transparent"
-							}`}
-							onClick={() => changeMediaType(type)}
-						>
-							{type}
-						</button>
-					))}
-				</div>
-			)}
-		</>
+		<Tabs selectedIndex={0} onChange={i => changeMediaType(fromIndex(i))}>
+			{(lesson.content as LessonContent).map((content, idx) => (
+				<Tab key={idx}>{content.type}</Tab>
+			))}
+		</Tabs>
+		// <>
+		// 	{/* {(lesson.content as LessonContent).length > 1 && (
+		// 		<div className="flex flex-wrap gap-4">
+		// 			{(lesson.content as LessonContent).map(({ type }) => (
+		// 				<button
+		// 					key={type}
+		// 					className={`border-b-2 px-4 py-1 text-sm ${
+		// 						current === type
+		// 							? "border-b-secondary font-semibold text-secondary"
+		// 							: "border-b-transparent"
+		// 					}`}
+		// 					onClick={() => changeMediaType(type)}
+		// 				>
+		// 					{type}
+		// 				</button>
+		// 			))}
+		// 		</div>
+		// 	)} */}
+		// </>
 	);
 }

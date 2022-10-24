@@ -1,7 +1,7 @@
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
+import { CourseContent, LessonMeta } from "@self-learning/types";
 import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
@@ -120,9 +120,9 @@ export function LessonLayout(
 				<title>{pageProps.lesson.title}</title>
 			</Head>
 
-			<div className="flex flex-col justify-center pt-4 pb-8 xl:flex-row xl:gap-1">
-				<Component {...pageProps} />
+			<div className="flex flex-col-reverse justify-center bg-gray-100 xl:flex-row xl:gap-1">
 				<PlaylistArea {...pageProps} />
+				<Component {...pageProps} />
 			</div>
 		</>
 	);
@@ -138,7 +138,7 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 
 	if (!content) {
 		return (
-			<aside className="h-3/4 w-full animate-pulse rounded-lg bg-gray-200 px-4 xl:max-w-[500px]"></aside>
+			<aside className="h-3/4 w-full animate-pulse rounded-lg bg-gray-200 px-4 xl:max-w-[400px]"></aside>
 		);
 	}
 

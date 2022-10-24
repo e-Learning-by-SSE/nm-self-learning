@@ -17,59 +17,15 @@ import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { EditLessonDialog } from "./dialogs/edit-lesson-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
 import { NewChapterDialog } from "./dialogs/new-chapter-dialog";
-import { ChapterWithNr, Competence, LessonWithNr, MappedContent, Summary } from "./types";
+import {
+	ChapterWithNr,
+	Competence,
+	LessonWithNr,
+	MappedContent,
+	Summary,
+	TeachingChapter
+} from "./types";
 import { useCourseContentForm } from "./use-content-form";
-
-type TreeNode = NodeModel<MappedContent[0]>;
-
-function mapToTree(content: MappedContent, parent = "root"): TreeNode[] {
-	const tree: TreeNode[] = [];
-
-	for (const chapterOrLesson of content) {
-		if (chapterOrLesson.type === "lesson") {
-			tree.push({
-				parent,
-				id: chapterOrLesson.lessonId,
-				text: chapterOrLesson.lessonId,
-				droppable: false,
-				data: chapterOrLesson
-			});
-		} else {
-			tree.push({
-				parent,
-				id: chapterOrLesson.chapterId,
-				text: chapterOrLesson.title,
-				droppable: true,
-				data: chapterOrLesson
-			});
-
-			tree.push(...mapToTree(chapterOrLesson.content, chapterOrLesson.chapterId));
-		}
-	}
-
-	return tree;
-}
-
-function fromTreeToContent(tree: TreeNode[], chapterId = "root"): MappedContent {
-	const content: MappedContent = [];
-
-	for (const node of tree) {
-		const data = node.data as MappedContent[0];
-
-		if (node.parent === chapterId) {
-			if (data.type === "lesson") {
-				content.push(data);
-			} else {
-				content.push({
-					...data,
-					content: fromTreeToContent(tree, data.chapterId)
-				});
-			}
-		}
-	}
-
-	return content;
-}
 
 /**
  * Allows the user to edit the course content.
@@ -293,7 +249,7 @@ function ChapterNode({
 	onAddChapter,
 	onAddLesson
 }: {
-	chapter: ChapterWithNr;
+	chapter: TeachingChapter;
 	parentChapter: string;
 	onAddChapter(chapterId: string): void;
 	onAddLesson(chapterId: string, lesson: any): void;
