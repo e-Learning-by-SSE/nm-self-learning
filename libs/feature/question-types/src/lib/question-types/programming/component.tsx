@@ -192,18 +192,14 @@ export function ProgrammingAnswer() {
 	}
 
 	return (
-		<CenteredContainer>
+		<div>
 			<div className="flex items-center justify-between rounded-t-lg bg-gray-200 p-4">
 				<span className="text-xs text-light">
 					{question.language} ({version ?? "not installed"}) (mode: {question.custom.mode}
 					)
 				</span>
 
-				<button
-					className="btn w-fit rounded-lg bg-green-600 py-1 px-3 text-sm font-semibold text-white hover:bg-green-500"
-					onClick={runCode}
-					disabled={isExecuting}
-				>
+				<button className="btn-primary" onClick={runCode} disabled={isExecuting}>
 					Ausführen
 				</button>
 			</div>
@@ -240,7 +236,7 @@ export function ProgrammingAnswer() {
 					</LabeledField>
 				)}
 			</div>
-		</CenteredContainer>
+		</div>
 	);
 }
 

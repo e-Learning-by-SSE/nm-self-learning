@@ -109,7 +109,7 @@ function CheckResult({
 	}
 
 	return (
-		<button className="btn-primary w-full" onClick={checkResult}>
+		<button className="btn-primary" onClick={checkResult}>
 			Überprüfen
 		</button>
 	);
