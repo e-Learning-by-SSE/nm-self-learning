@@ -16,7 +16,7 @@ module.exports = {
 				DEFAULT: {
 					css: {
 						code: {
-							color: theme("colors.indigo.500")
+							color: theme("colors.emerald.500")
 						},
 						img: {
 							borderRadius: theme("borderRadius.lg")

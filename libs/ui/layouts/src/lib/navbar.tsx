@@ -17,7 +17,7 @@ export function Navbar() {
 							<div className="rounded-full bg-secondary p-1">
 								<AcademicCapIcon className="h-8 shrink-0 text-white" />
 							</div>
-							<div className="invisible flex w-0 flex-col sm:visible sm:w-fit">
+							<div className="hidden w-0 flex-col sm:flex sm:w-fit">
 								<span className="text-sm text-light">Universität Hildesheim</span>
 								<span className="font-bold text-secondary">SELF-le@rning</span>
 							</div>
@@ -62,7 +62,7 @@ export function Navbar() {
 export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
 	return (
 		<Menu as="div" className="relative flex">
-			<Menu.Button className="flex items-center gap-1">
+			<Menu.Button className="flex shrink-0 items-center gap-1 ">
 				<Image
 					className="rounded-full object-top"
 					src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=48&q=80"

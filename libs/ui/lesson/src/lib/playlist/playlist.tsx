@@ -60,7 +60,7 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 	}, [completion, content]);
 
 	return (
-		<aside className="playlist-scroll w-full divide-y divide-gray-200 overflow-auto border-r border-r-gray-200 px-8 py-8 xl:max-h-[calc(100vh-62px)] xl:max-w-[400px]">
+		<aside className="playlist-scroll left-[max(0px,calc(50%-50rem))] right-auto w-full divide-y divide-gray-200 overflow-auto border-r border-r-gray-200 px-8 py-8 xl:fixed xl:max-h-[calc(100vh-62px)] xl:max-w-[24rem]">
 			<PlaylistHeader
 				content={content}
 				course={course}
@@ -228,7 +228,9 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 				<span className="font-medium text-secondary">{lesson.title}</span>
 			</span>
 			<span className="flex justify-between">
-				<button className="btn-primary text-sm">Lernkontrolle</button>
+				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
+					<a className="btn-primary text-sm">Lernkontrolle</a>
+				</Link>
 				<span className="flex gap-2">
 					<button
 						onClick={() => previous && navigateToLesson(previous)}

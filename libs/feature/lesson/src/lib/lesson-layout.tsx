@@ -120,9 +120,13 @@ export function LessonLayout(
 				<title>{pageProps.lesson.title}</title>
 			</Head>
 
-			<div className="flex flex-col-reverse justify-center bg-gray-100 xl:flex-row xl:gap-1">
-				<PlaylistArea {...pageProps} />
-				<Component {...pageProps} />
+			<div className="flex flex-col bg-gray-100">
+				<div className="max-w-8xl mx-auto flex flex-col-reverse xl:flex-row">
+					<PlaylistArea {...pageProps} />
+					<div className="xl:pl-[24rem]">
+						<Component {...pageProps} />
+					</div>
+				</div>
 			</div>
 		</>
 	);

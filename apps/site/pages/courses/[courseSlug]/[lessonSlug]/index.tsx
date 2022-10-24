@@ -1,23 +1,18 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
+import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import {
-	findContentType,
-	includesMediaType,
-	LessonContent,
-	LessonContentMediaType,
-	LessonContentType
-} from "@self-learning/types";
+import { findContentType, includesMediaType, LessonContent } from "@self-learning/types";
 import { Tab, Tabs } from "@self-learning/ui/common";
+import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { VideoPlayer } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import Math from "../../../../components/math";
+import { useEffect, useMemo, useState } from "react";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -103,8 +98,24 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
+	const { data: content } = trpc.course.getContent.useQuery({ slug: course.slug });
+
+	const chapterName = useMemo(() => {
+		if (!content) return "";
+
+		for (const chapter of content.content) {
+			for (const _lesson of chapter.content) {
+				if (_lesson.lessonId === lesson.lessonId) {
+					return chapter.title;
+				}
+			}
+		}
+
+		return "";
+	}, [content, lesson.lessonId]);
+
 	return (
-		<article className="flex w-full max-w-[1440px] flex-col gap-4 px-8 pt-8 pb-16">
+		<article className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
 					{url ? (
@@ -115,14 +126,17 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 				</div>
 			)}
 
-			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
+			<LessonHeader
+				lesson={lesson}
+				chapterName={chapterName}
+				course={course}
+				mdDescription={markdown.description}
+			/>
 
 			{preferredMediaType === "article" && markdown.article && (
-				<div className="px-4 pb-32">
-					<div className="prose mx-auto max-w-prose">
-						<MDXRemote {...markdown.article} />
-					</div>
-				</div>
+				<MarkdownContainer className="mx-auto pt-8">
+					<MDXRemote {...markdown.article} />
+				</MarkdownContainer>
 			)}
 		</article>
 	);
@@ -133,10 +147,12 @@ Lesson.getLayout = LessonLayout;
 function LessonHeader({
 	course,
 	lesson,
+	chapterName,
 	mdDescription
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
+	chapterName: string;
 	mdDescription?: CompiledMarkdown | null;
 }) {
 	return (
@@ -144,7 +160,10 @@ function LessonHeader({
 			<div className="flex flex-wrap justify-between gap-4">
 				<div className="flex w-full flex-col">
 					<span className="flex flex-wrap-reverse justify-between gap-4">
-						<h1 className="text-4xl">{lesson.title}</h1>
+						<span className="flex flex-col gap-2">
+							<span className="font-semibold text-secondary">{chapterName}</span>
+							<h1 className="text-4xl">{lesson.title}</h1>
+						</span>
 						<LessonControls course={course} lesson={lesson} />
 					</span>
 
@@ -154,16 +173,17 @@ function LessonHeader({
 
 					<Authors authors={lesson.authors} />
 
-					<div className="mx-auto w-full border-b border-gray-200">
-						<MediaTypeSelector current="video" lesson={lesson} course={course} />
+					<div className="pt-4">
+						<MediaTypeSelector lesson={lesson} course={course} />
 					</div>
 				</div>
 			</div>
 
-			<div className="prose mx-auto max-w-[75ch]">
-				<Math />
-				{mdDescription && <MDXRemote {...mdDescription} />}
-			</div>
+			{mdDescription && (
+				<MarkdownContainer className="mx-auto">
+					<MDXRemote {...mdDescription} />
+				</MarkdownContainer>
+			)}
 		</div>
 	);
 }
@@ -182,15 +202,15 @@ function LessonControls({
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-				<a className="btn-primary flex h-fit w-full flex-wrap-reverse xl:w-fit">
+				<a className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit">
 					<span>Zur Lernkontrolle</span>
 					<PlayIcon className="h-6 shrink-0" />
 				</a>
 			</Link>
 
-			{/* {!isCompletedLesson ? (
+			{!isCompletedLesson ? (
 				<button
-					className="btn-stroked flex h-fit w-full flex-wrap-reverse xl:w-fit"
+					className="btn-stroked flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					onClick={markAsCompleted}
 				>
 					<span>Als abgeschlossen markieren</span>
@@ -198,13 +218,13 @@ function LessonControls({
 				</button>
 			) : (
 				<button
-					className="btn-stroked flex h-fit w-full flex-wrap-reverse xl:w-fit"
+					className="btn-stroked flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					onClick={markAsCompleted}
 				>
 					<span>Als wiederholt markieren</span>
 					<CheckCircleIcon className="h-6 shrink-0" />
 				</button>
-			)} */}
+			)}
 		</div>
 	);
 }
@@ -245,52 +265,39 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 }
 
 function MediaTypeSelector({
-	current,
 	lesson,
 	course
 }: {
-	current: LessonContentMediaType;
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 }) {
+	const lessonContent = lesson.content as LessonContent;
+	const preferredMediaType = usePreferredMediaType(lesson);
+	const { index } = findContentType(preferredMediaType, lessonContent);
+	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();
 
-	function changeMediaType(type: LessonContentType["type"]) {
+	function changeMediaType(index: number) {
+		const type = lessonContent[index].type;
+
 		window.localStorage.setItem("preferredMediaType", type);
 
 		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
 			shallow: true
 		});
-	}
 
-	function fromIndex(index: number) {
-		return (lesson.content as LessonContent)[index].type;
+		setSelectedIndex(index);
 	}
 
 	return (
-		<Tabs selectedIndex={0} onChange={i => changeMediaType(fromIndex(i))}>
-			{(lesson.content as LessonContent).map((content, idx) => (
-				<Tab key={idx}>{content.type}</Tab>
-			))}
-		</Tabs>
-		// <>
-		// 	{/* {(lesson.content as LessonContent).length > 1 && (
-		// 		<div className="flex flex-wrap gap-4">
-		// 			{(lesson.content as LessonContent).map(({ type }) => (
-		// 				<button
-		// 					key={type}
-		// 					className={`border-b-2 px-4 py-1 text-sm ${
-		// 						current === type
-		// 							? "border-b-secondary font-semibold text-secondary"
-		// 							: "border-b-transparent"
-		// 					}`}
-		// 					onClick={() => changeMediaType(type)}
-		// 				>
-		// 					{type}
-		// 				</button>
-		// 			))}
-		// 		</div>
-		// 	)} */}
-		// </>
+		<>
+			{lessonContent.length > 1 && (
+				<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
+					{lessonContent.map((content, idx) => (
+						<Tab key={idx}>{content.type}</Tab>
+					))}
+				</Tabs>
+			)}
+		</>
 	);
 }
