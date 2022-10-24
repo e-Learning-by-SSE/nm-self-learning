@@ -10,7 +10,7 @@ import {
 	useQuestion,
 	VorwissenAnswer
 } from "@self-learning/question-types";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { CenteredContainer, MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Certainty } from "./certainty";
@@ -48,7 +48,7 @@ export function Question({
 			evaluation={evaluation}
 			setEvaluation={setEvaluation}
 		>
-			<article className="flex flex-col gap-8 p-4">
+			<article className="flex flex-col gap-8">
 				<div className="flex gap-4">
 					<button className="btn-stroked h-fit" onClick={() => setEvaluation(null)}>
 						Reset
@@ -60,9 +60,9 @@ export function Question({
 					<div className="mb-1 font-semibold text-secondary">{question.type}</div>
 
 					{markdown.questionsMd[question.questionId] ? (
-						<div className="prose max-w-3xl">
+						<MarkdownContainer>
 							<MDXRemote {...markdown.questionsMd[question.questionId]} />
-						</div>
+						</MarkdownContainer>
 					) : (
 						<span className="text-red-500">Error: No markdown content found.</span>
 					)}

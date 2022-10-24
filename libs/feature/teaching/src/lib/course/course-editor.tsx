@@ -65,20 +65,20 @@ export function CourseEditor({
 						title={
 							isNew ? (
 								<>
-									Neuen <span className="text-indigo-600">Kurs</span> hinzufügen
+									Neuen <span className="text-emerald-600">Kurs</span> hinzufügen
 								</>
 							) : (
 								<>
 									<Link href={`/courses/${course.slug}`} passHref>
 										<a
 											target="_blank"
-											className="text-indigo-600 hover:underline"
+											className="text-emerald-600 hover:underline"
 											rel="noopener noreferrer"
 										>
 											{course.title}
 										</a>
 									</Link>{" "}
-									{/* <span className="text-indigo-600">{course.title}</span>{" "} */}
+									{/* <span className="text-emerald-600">{course.title}</span>{" "} */}
 									editieren
 								</>
 							)

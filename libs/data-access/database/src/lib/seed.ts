@@ -100,11 +100,8 @@ const questions: QuizContent = [
 	{
 		type: "multiple-choice",
 		questionId: "923d78a5-af38-4599-980a-2b4cb62e4014",
-		statement: `
-		# How was your day?
-
-		Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure! Fugiat, optio!
-		`.trim(),
+		statement: `# How was your day?
+Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure! Fugiat, optio!`.trim(),
 		withCertainty: true,
 		answers: [
 			{
@@ -357,7 +354,7 @@ function createLesson(title: string) {
 			{
 				type: "video",
 				value: {
-					url: "https://www.youtube.com/watch?v=WV0UUcSPk-0"
+					url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 				},
 				meta: {
 					duration: 300

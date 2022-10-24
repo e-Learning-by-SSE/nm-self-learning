@@ -1,5 +1,11 @@
 import { ChevronLeftIcon, ChevronRightIcon, CogIcon } from "@heroicons/react/solid";
-import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
+import { trpc } from "@self-learning/api-client";
+import {
+	getStaticPropsForLayout,
+	LessonLayout,
+	LessonLayoutProps,
+	useLessonContext
+} from "@self-learning/lesson";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import { Question } from "@self-learning/quiz";
@@ -101,7 +107,7 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 	}, [index, questions]);
 
 	return (
-		<div className="grid w-full max-w-[1440px] grow items-start gap-16 bg-white px-4 pb-24">
+		<div className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
 			<div className="mx-auto flex w-full flex-col gap-8">
 				<QuestionNavigation
 					lesson={lesson}
@@ -147,23 +153,25 @@ function QuestionNavigation({
 	// const { submitAnswers } = useQuizAttempt();
 	// const { data: session } = useSession({ required: true });
 
+	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
+
 	return (
-		<div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
+		<div className="flex flex-col gap-4">
 			<div className="flex flex-col gap-2">
 				<span className="flex justify-between">
 					<Link href={`/courses/${course.slug}/${lesson.slug}`}>
 						<a>
-							<h1 className="text-lg text-secondary">{lesson.title}</h1>
+							<h2 className="text-lg font-semibold text-secondary">{chapterName}</h2>
 						</a>
 					</Link>
 
 					<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>
 						<a className="" title="Editieren">
-							<CogIcon className="h-5 text-light" />
+							<CogIcon className="h-5 text-gray-400" />
 						</a>
 					</Link>
 				</span>
-				<h2 className="text-4xl">Lernkontrolle</h2>
+				<h1 className="text-4xl">Lernkontrolle - {lesson.title}</h1>
 			</div>
 			<div className="flex flex-wrap items-center justify-between gap-6">
 				<span>

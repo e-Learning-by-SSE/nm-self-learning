@@ -39,7 +39,7 @@ export function MarkdownWithPreviewContainer({ children }: { children: React.Rea
  *
  * @example
  * <Form.Title
- * 	title={<span>Neuen <span className="text-indigo-600">Kurs</span> hinzufügen</span>}
+ * 	title={<span>Neuen <span className="text-emerald-600">Kurs</span> hinzufügen</span>}
  * 	button={
  * 		<button className="btn-primary h-fit w-fit" type="submit">
  * 			Speichern

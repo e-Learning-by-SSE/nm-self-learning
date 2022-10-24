@@ -76,19 +76,19 @@ video {
 }
 
 .btn {
-	@apply flex place-content-center items-center gap-2 rounded-lg px-8 py-2 font-semibold text-white transition-colors disabled:bg-opacity-25;
+	@apply flex place-content-center items-center gap-2 rounded-lg px-8 py-2 text-sm font-semibold text-white transition-colors disabled:bg-opacity-25;
 }
 
 .btn-primary {
-	@apply flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25;
+	@apply flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25;
 }
 
 .btn-secondary {
-	@apply glass flex place-content-center items-center gap-2 rounded-lg py-2 px-8 font-semibold transition-colors hover:bg-opacity-90;
+	@apply glass flex place-content-center items-center gap-2 rounded-lg py-2 px-8 text-sm font-semibold transition-colors hover:bg-opacity-90;
 }
 
 .btn-stroked {
-	@apply flex place-content-center items-center gap-2 rounded-lg border border-indigo-100 px-8 py-2 font-semibold disabled:opacity-25;
+	@apply flex place-content-center items-center gap-2 rounded-lg border border-indigo-100 px-8 py-2 text-sm font-semibold disabled:opacity-25;
 }
 
 .btn-small {

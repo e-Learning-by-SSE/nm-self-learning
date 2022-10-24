@@ -1,7 +1,12 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
+import {
+	getStaticPropsForLayout,
+	LessonLayout,
+	LessonLayoutProps,
+	useLessonContext
+} from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { findContentType, includesMediaType, LessonContent } from "@self-learning/types";
 import { Tab, Tabs } from "@self-learning/ui/common";
@@ -95,24 +100,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const url = video?.value.url;
-
 	const preferredMediaType = usePreferredMediaType(lesson);
-
-	const { data: content } = trpc.course.getContent.useQuery({ slug: course.slug });
-
-	const chapterName = useMemo(() => {
-		if (!content) return "";
-
-		for (const chapter of content.content) {
-			for (const _lesson of chapter.content) {
-				if (_lesson.lessonId === lesson.lessonId) {
-					return chapter.title;
-				}
-			}
-		}
-
-		return "";
-	}, [content, lesson.lessonId]);
 
 	return (
 		<article className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
@@ -126,12 +114,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 				</div>
 			)}
 
-			<LessonHeader
-				lesson={lesson}
-				chapterName={chapterName}
-				course={course}
-				mdDescription={markdown.description}
-			/>
+			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
 
 			{preferredMediaType === "article" && markdown.article && (
 				<MarkdownContainer className="mx-auto pt-8">
@@ -147,14 +130,14 @@ Lesson.getLayout = LessonLayout;
 function LessonHeader({
 	course,
 	lesson,
-	chapterName,
 	mdDescription
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
-	chapterName: string;
 	mdDescription?: CompiledMarkdown | null;
 }) {
+	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
+
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap justify-between gap-4">

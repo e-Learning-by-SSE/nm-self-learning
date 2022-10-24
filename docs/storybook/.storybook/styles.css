@@ -52,7 +52,7 @@ h3 {
 }
 
 .btn-primary {
-	@apply flex place-content-center items-center gap-2 rounded-lg bg-indigo-500 px-8 py-2 font-semibold text-white transition-colors hover:bg-indigo-600 disabled:bg-opacity-25;
+	@apply flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25;
 }
 
 .btn-secondary {
