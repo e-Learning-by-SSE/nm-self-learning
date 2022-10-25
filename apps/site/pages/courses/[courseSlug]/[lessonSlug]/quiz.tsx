@@ -7,18 +7,11 @@ import {
 } from "@self-learning/lesson";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
-import {
-	Question,
-	QuestionState,
-	QuizContext,
-	QuizContextValue,
-	QuizProvider
-} from "@self-learning/quiz";
+import { Question, QuizProvider } from "@self-learning/quiz";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
 	questions: QuestionType[];
