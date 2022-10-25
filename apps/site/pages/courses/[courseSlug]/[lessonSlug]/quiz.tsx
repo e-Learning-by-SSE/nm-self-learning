@@ -108,7 +108,7 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 
 	return (
 		<div className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
-			<div className="mx-auto flex w-full flex-col gap-8">
+			<div className="flex w-full flex-col gap-4">
 				<QuestionNavigation
 					lesson={lesson}
 					course={course}

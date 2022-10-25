@@ -49,16 +49,19 @@ export function Question({
 			setEvaluation={setEvaluation}
 		>
 			<article className="flex flex-col gap-8">
-				<div className="flex gap-4">
-					<button className="btn-stroked h-fit" onClick={() => setEvaluation(null)}>
-						Reset
-					</button>
-					<CheckResult setEvaluation={setEvaluation} />
-				</div>
-
 				<div>
-					<div className="mb-1 font-semibold text-secondary">{question.type}</div>
-
+					<div className="flex items-center justify-between">
+						<span className="font-semibold text-secondary">{question.type}</span>
+						<div className="flex gap-4">
+							<button
+								className="btn-stroked h-fit"
+								onClick={() => setEvaluation(null)}
+							>
+								Reset
+							</button>
+							<CheckResult setEvaluation={setEvaluation} />
+						</div>
+					</div>
 					{markdown.questionsMd[question.questionId] ? (
 						<MarkdownContainer>
 							<MDXRemote {...markdown.questionsMd[question.questionId]} />
