@@ -18,7 +18,7 @@ export function SectionCard({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * A container that uses `90vw` (90% of viewport width) and horizontally centers it's children.
+ * A container with restricted width that horizontally centers it's children.
  *
  * @example
  * <Form.MarkdownWithPreviewContainer>
@@ -30,7 +30,7 @@ export function SectionCard({ children }: { children: React.ReactNode }) {
  * </Form.MarkdownWithPreviewContainer>
  */
 export function MarkdownWithPreviewContainer({ children }: { children: React.ReactNode }) {
-	return <div className="mx-auto w-[90vw]">{children}</div>;
+	return <div className="mx-auto max-w-7xl">{children}</div>;
 }
 
 /**
