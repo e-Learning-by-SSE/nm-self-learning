@@ -156,25 +156,23 @@ function QuestionNavigation({
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex flex-col gap-2">
-				<span className="flex justify-between">
-					<Link href={`/courses/${course.slug}/${lesson.slug}`}>
-						<a>
-							<h2 className="text-lg font-semibold text-secondary">{chapterName}</h2>
-						</a>
-					</Link>
-
-					<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>
-						<a className="" title="Editieren">
-							<CogIcon className="h-5 text-gray-400" />
-						</a>
-					</Link>
-				</span>
-				<h1 className="text-4xl">Lernkontrolle - {lesson.title}</h1>
+		<div className="flex flex-col gap-4 border-b border-light-border pb-4">
+			<div className="relative flex flex-col gap-2">
+				<span className="font-semibold text-secondary">{chapterName}</span>
+				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
+					<a>
+						<h1 className="text-4xl">{lesson.title}</h1>
+					</a>
+				</Link>
+				<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>
+					<a className="absolute right-0 top-1">
+						<CogIcon className="h-5 text-gray-400" />
+					</a>
+				</Link>
 			</div>
+
 			<div className="flex flex-wrap items-center justify-between gap-6">
-				<span>
+				<span className="">
 					Frage {current} von {amount}
 				</span>
 				<div className="flex flex-wrap place-content-end gap-4">
