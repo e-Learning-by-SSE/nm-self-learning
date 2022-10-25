@@ -165,37 +165,37 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 	// 	textArray: textArray,
 	// 	hints: []
 	// },
-	{
-		type: "vorwissen",
-		questionId: "c9de042a-6962-4f21-bc57-bf58841be5f2",
-		statement: `lorem ipsum dolor sit amet consectetur adipisicing elit. **Quasi** molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure ?
-		![image](https://images.unsplash.com/photo-1523875194681-bedd468c58bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1742&q=80)`,
-		answers: [
-			{
-				answerId: "f797e6fc-8d03-41a2-9c93-9fcb3da0c147",
-				content: "Statement 1",
-				isCorrect: false
-			},
-			{
-				answerId: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
-				content: "Statement 2",
-				isCorrect: false
-			},
-			{
-				answerId: "d0a1af94-92ea-4415-b1e3-cca7218b132a",
-				content: "Statement 3",
-				isCorrect: false
-			},
-			{
-				answerId: "1220605d-e1b2-4933-bc7f-31b73c7a17bf",
-				content: "Statement 4",
-				isCorrect: false
-			}
-		],
-		requireExplanationForAnswerIds: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
-		withCertainty: false,
-		hints: []
-	},
+	// {
+	// 	type: "vorwissen",
+	// 	questionId: "c9de042a-6962-4f21-bc57-bf58841be5f2",
+	// 	statement: `lorem ipsum dolor sit amet consectetur adipisicing elit. **Quasi** molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure ?
+	// 	![image](https://images.unsplash.com/photo-1523875194681-bedd468c58bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1742&q=80)`,
+	// 	answers: [
+	// 		{
+	// 			answerId: "f797e6fc-8d03-41a2-9c93-9fcb3da0c147",
+	// 			content: "Statement 1",
+	// 			isCorrect: false
+	// 		},
+	// 		{
+	// 			answerId: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
+	// 			content: "Statement 2",
+	// 			isCorrect: false
+	// 		},
+	// 		{
+	// 			answerId: "d0a1af94-92ea-4415-b1e3-cca7218b132a",
+	// 			content: "Statement 3",
+	// 			isCorrect: false
+	// 		},
+	// 		{
+	// 			answerId: "1220605d-e1b2-4933-bc7f-31b73c7a17bf",
+	// 			content: "Statement 4",
+	// 			isCorrect: false
+	// 		}
+	// 	],
+	// 	requireExplanationForAnswerIds: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
+	// 	withCertainty: false,
+	// 	hints: []
+	// },
 	{
 		type: "programming",
 		language: "java",
