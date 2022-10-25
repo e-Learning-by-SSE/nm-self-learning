@@ -1,5 +1,4 @@
 import { ChevronLeftIcon, ChevronRightIcon, CogIcon } from "@heroicons/react/solid";
-import { trpc } from "@self-learning/api-client";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -8,12 +7,18 @@ import {
 } from "@self-learning/lesson";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
-import { Question } from "@self-learning/quiz";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import {
+	Question,
+	QuestionState,
+	QuizContext,
+	QuizContextValue,
+	QuizProvider
+} from "@self-learning/quiz";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 
 type QuestionProps = LessonLayoutProps & {
 	questions: QuestionType[];
@@ -71,27 +76,27 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 export default function QuestionsPage({ course, lesson, questions, markdown }: QuestionProps) {
-	const { slug } = lesson;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
-
-	// const { quizAttemptsInfo } = useQuizAttemptsInfo(
-	// 	lesson.lessonId,
-	// 	session?.user?.name as string
-	// );
+	const hasPrevious = nextIndex > 1;
+	const hasNext = nextIndex < questions.length;
 
 	function goToNextQuestion() {
-		router.push(`/courses/${course.slug}/${slug}/quiz?index=${nextIndex}`, undefined, {
+		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true
 		});
 	}
 
 	function goToPreviousQuestion() {
-		router.push(`/courses/${course.slug}/${slug}/quiz?index=${nextIndex - 2}`, undefined, {
-			shallow: true
-		});
+		router.push(
+			`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
+			undefined,
+			{
+				shallow: true
+			}
+		);
 	}
 
 	useEffect(() => {
@@ -107,25 +112,27 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 	}, [index, questions]);
 
 	return (
-		<div className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
-			<div className="flex w-full flex-col gap-4">
-				<QuestionNavigation
-					lesson={lesson}
-					course={course}
-					amount={questions.length}
-					current={nextIndex}
-					hasPrevious={nextIndex > 1}
-					hasNext={nextIndex < questions.length}
-					goToNext={goToNextQuestion}
-					goToPrevious={goToPreviousQuestion}
-				/>
-				<Question
-					key={currentQuestion.questionId}
-					question={currentQuestion}
-					markdown={markdown}
-				/>
+		<QuizProvider questions={questions}>
+			<div className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
+				<div className="flex w-full flex-col gap-4">
+					<QuestionNavigation
+						lesson={lesson}
+						course={course}
+						amount={questions.length}
+						current={nextIndex}
+						hasPrevious={hasPrevious}
+						hasNext={hasNext}
+						goToNext={goToNextQuestion}
+						goToPrevious={goToPreviousQuestion}
+					/>
+					<Question
+						key={currentQuestion.questionId}
+						question={currentQuestion}
+						markdown={markdown}
+					/>
+				</div>
 			</div>
-		</div>
+		</QuizProvider>
 	);
 }
 
@@ -150,9 +157,6 @@ function QuestionNavigation({
 	goToNext: () => void;
 	goToPrevious: () => void;
 }) {
-	// const { submitAnswers } = useQuizAttempt();
-	// const { data: session } = useSession({ required: true });
-
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
 
 	return (
@@ -193,19 +197,6 @@ function QuestionNavigation({
 						<ChevronRightIcon className="h-5" />
 					</button>
 				</div>
-				{/* <button
-				className="btn-primary mt-8"
-				onClick={() =>
-					submitAnswers({
-						username: session?.user?.name as string,
-						lessonId: lesson.lessonId,
-						answers: [],
-						state: "COMPLETED"
-					})
-				}
-			>
-				Submit Answers
-			</button> */}
 			</div>
 		</div>
 	);

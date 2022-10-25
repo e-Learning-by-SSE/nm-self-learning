@@ -1,49 +1,30 @@
 import { MdLookup } from "@self-learning/markdown";
-import {
-	createContext,
-	Dispatch,
-	PropsWithChildren,
-	SetStateAction,
-	useContext,
-	useState
-} from "react";
+import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext } from "react";
 import { InferQuestionType, QuestionType, QuestionTypeUnion } from "./quiz-schema";
 
-export const AnswerContext = createContext(
-	null as unknown as {
-		question: QuestionType;
-		markdown: {
-			questionsMd: MdLookup;
-			answersMd: MdLookup;
-		};
-		answer: Record<string, unknown>;
-		setAnswer: Dispatch<SetStateAction<Record<string, unknown>>>;
-		evaluation: unknown | null;
-		setEvaluation: Dispatch<SetStateAction<unknown | null>>;
-	}
-);
-
-export function AnswerContextProvider({
-	children,
-	question,
-	markdown,
-	evaluation,
-	setEvaluation
-}: PropsWithChildren<{
+type AnswerContextValue = {
 	question: QuestionType;
-	evaluation: unknown | null;
-	setEvaluation: Dispatch<SetStateAction<unknown | null>>;
 	markdown: {
 		questionsMd: MdLookup;
 		answersMd: MdLookup;
 	};
-}>) {
-	const [answer, setAnswer] = useState<Record<string, unknown>>({
-		type: question.type,
-		questionId: question.questionId,
-		value: null
-	});
+	answer: Record<string, unknown> | null;
+	setAnswer: Dispatch<SetStateAction<Record<string, unknown>>>;
+	evaluation: unknown | null;
+	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
+};
 
+export const AnswerContext = createContext(null as unknown as AnswerContextValue);
+
+export function AnswerContextProvider({
+	children,
+	question,
+	answer,
+	setAnswer,
+	evaluation,
+	setEvaluation,
+	markdown
+}: PropsWithChildren<AnswerContextValue>) {
 	const value = {
 		question,
 		markdown,

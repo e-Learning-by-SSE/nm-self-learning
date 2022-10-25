@@ -1,20 +1,10 @@
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
-import { PropsWithChildren, useEffect } from "react";
+import { PropsWithChildren } from "react";
 import { useQuestion } from "../../use-question-hook";
 
 export function MultipleChoiceAnswer() {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
-
-	useEffect(() => {
-		if (!answer.value) {
-			setAnswer(a => ({ ...a, value: {} }));
-		}
-	}, [setAnswer, answer.value]);
-
-	if (!answer.value) {
-		return <div></div>;
-	}
 
 	return (
 		<div className="flex flex-col gap-4">
