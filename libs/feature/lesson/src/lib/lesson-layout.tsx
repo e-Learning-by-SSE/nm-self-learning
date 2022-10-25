@@ -142,7 +142,7 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 
 	if (!content) {
 		return (
-			<aside className="h-3/4 w-full animate-pulse rounded-lg bg-gray-200 px-4 xl:max-w-[400px]"></aside>
+			<aside className="playlist-scroll left-[max(0px,calc(50%-50rem))] right-auto h-full w-full animate-pulse divide-y divide-gray-200 overflow-auto border-r border-r-gray-200 bg-gray-200 px-8 py-8 xl:fixed xl:max-h-[calc(100vh-62px)] xl:max-w-[24rem]"></aside>
 		);
 	}
 

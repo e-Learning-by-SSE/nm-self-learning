@@ -5,9 +5,9 @@ import {
 	ChevronLeftIcon,
 	PlayIcon
 } from "@heroicons/react/solid";
-import { Completion, CourseCompletion, LessonMeta } from "@self-learning/types";
+import { CourseCompletion, LessonMeta } from "@self-learning/types";
 import { Divider } from "@self-learning/ui/common";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -60,14 +60,14 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 	}, [completion, content]);
 
 	return (
-		<aside className="playlist-scroll left-[max(0px,calc(50%-50rem))] right-auto w-full divide-y divide-gray-200 overflow-auto border-r border-r-gray-200 px-8 py-8 xl:fixed xl:max-h-[calc(100vh-62px)] xl:max-w-[24rem]">
+		<aside className="playlist-scroll left-[max(0px,calc(50%-50rem))] right-auto w-full overflow-auto border-r border-r-gray-200 px-8 pb-8 xl:fixed xl:max-h-[calc(100vh-62px)] xl:max-w-[24rem]">
 			<PlaylistHeader
 				content={content}
 				course={course}
 				lesson={lesson}
 				completion={completion}
 			/>
-			<div className="mt-4 flex flex-col gap-12 py-4">
+			<div className="flex flex-col gap-12 py-4">
 				{contentWithCompletion.map((chapter, index) => (
 					<Chapter
 						key={index}
@@ -155,7 +155,7 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
 
 	return (
-		<div className="flex flex-col gap-4 rounded-lg">
+		<div className="sticky top-0 z-20 flex flex-col gap-4 rounded-lg bg-gray-100 pt-8">
 			<div className="flex flex-col gap-2">
 				<Link href={`/courses/${course.slug}`}>
 					<a className="heading text-2xl" title={course.title}>
@@ -186,6 +186,8 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 			<Divider />
 
 			<CurrentlyPlaying lesson={lesson} content={content} course={course} />
+
+			<Divider />
 		</div>
 	);
 }
@@ -239,7 +241,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 					<button
 						onClick={() => previous && navigateToLesson(previous)}
 						disabled={!previous}
-						className="rounded-lg border border-light-border p-2 disabled:text-light"
+						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
 						title="Vorherige Lerneinheit"
 					>
 						<ChevronDoubleLeftIcon className="h-5" />
@@ -247,7 +249,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 					<button
 						onClick={() => next && navigateToLesson(next)}
 						disabled={!next}
-						className="rounded-lg border border-light-border p-2 disabled:text-light"
+						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
 						title="Nächste Lerneinheit"
 					>
 						<ChevronDoubleRightIcon className="h-5" />
