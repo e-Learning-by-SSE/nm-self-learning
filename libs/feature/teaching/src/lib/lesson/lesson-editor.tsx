@@ -75,13 +75,12 @@ export function LessonEditor({
 						title={
 							isNew ? (
 								<>
-									Neue <span className="text-emerald-600">Lerneinheit</span>{" "}
+									Neue <span className="text-secondary">Lerneinheit</span>{" "}
 									hinzufügen
 								</>
 							) : (
 								<>
-									<span className="text-emerald-600">{lesson.title}</span>{" "}
-									editieren
+									<span className="text-secondary">{lesson.title}</span> editieren
 								</>
 							)
 						}
