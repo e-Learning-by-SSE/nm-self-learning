@@ -1,6 +1,4 @@
-import { CheckCircleIcon } from "@heroicons/react/solid";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
-import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren, useEffect } from "react";
 import { useQuestion } from "../../use-question-hook";
@@ -27,7 +25,8 @@ export function MultipleChoiceAnswer() {
 					isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
 					isCorrect={option.isCorrect}
 					isSelected={answer.value[option.answerId] === true}
-					onToggle={() =>
+					onToggle={() => {
+						console.log("onToggle");
 						setAnswer(old => ({
 							...old,
 							value: {
@@ -35,8 +34,8 @@ export function MultipleChoiceAnswer() {
 								[option.answerId]:
 									old.value[option.answerId] === true ? false : true
 							}
-						}))
-					}
+						}));
+					}}
 				>
 					{markdown.answersMd[option.answerId] ? (
 						<MarkdownContainer>
@@ -56,7 +55,6 @@ export function MultipleChoiceOption({
 	showResult,
 	isSelected,
 	isUserAnswerCorrect,
-	isCorrect,
 	onToggle
 }: PropsWithChildren<{
 	showResult: boolean;
@@ -75,13 +73,16 @@ export function MultipleChoiceOption({
 
 	return (
 		<button
-			className={`flex gap-8 rounded-lg border border-light-border bg-white px-8 py-2 text-start ${className}`}
+			className={`flex gap-8 rounded-lg border border-light-border bg-white px-8 py-2 text-start focus:outline-secondary ${className}`}
 			onClick={onToggle}
 			disabled={showResult}
 		>
 			<input
 				type={"checkbox"}
 				checked={isSelected}
+				onChange={() => {
+					/** Bubbles up to button click. */
+				}}
 				disabled={showResult}
 				className="self-center rounded text-secondary accent-secondary focus:ring-secondary"
 			/>
