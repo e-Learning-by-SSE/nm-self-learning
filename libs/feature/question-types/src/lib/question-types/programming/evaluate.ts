@@ -64,8 +64,6 @@ export function parseTestCases(stdout: string): TestCase[] {
 	}
 
 	for (const testCase of testCases) {
-		console.log(testCase);
-
 		let verdict = true;
 
 		if (testCase.expected.length !== testCase.actual.length) {

@@ -68,31 +68,6 @@ export function createLesson(lessonId: string): CourseLesson {
 	};
 }
 
-/**
- * Traverses a {@link CourseContent} array and executes the given callback `fn` for every chapter or lesson.
- *
- * @example
- * let lessonCount = 0;
- * let chapterCount = 0;
- * traverseCourseContent(content, lessonOrChapter => {
- * 	if (lessonOrChapter.type === "chapter") chapterCount++;
- * 	else if (lessonOrChapter.type === "lesson") lessonCount++;
- * });
- */
-export function traverseCourseContent<
-	T extends ({ type: "chapter"; content: Array<unknown> } | { type: "lesson" })[] // T only extends necessary types; allows custom attributes
->(content: T, fn: (chapterOrLesson: T[0]) => void) {
-	content.forEach(item => {
-		if (item.type === "chapter") {
-			fn(item);
-			traverseCourseContent(item.content as T, fn);
-		} else {
-			fn(item);
-		}
-	});
-}
-
-/** Sets `chapterNr` and `lessonNr` for each chapter/lesson. */
 export function createCourseContent(content: CourseContent): CourseContent {
 	return content;
 }
