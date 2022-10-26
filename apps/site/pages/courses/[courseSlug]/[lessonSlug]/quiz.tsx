@@ -1,6 +1,6 @@
 import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
-import { CheckCircleIcon } from "@heroicons/react/solid";
-import { ChevronLeftIcon, ChevronRightIcon, CogIcon } from "@heroicons/react/solid";
+import { CheckCircleIcon, CogIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import { useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -10,18 +10,11 @@ import {
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import { Question, QuizProvider, useQuiz } from "@self-learning/quiz";
-import {
-	Dialog,
-	DialogActions,
-	Tab,
-	Tabs,
-	VerticalTab,
-	VerticalTabs
-} from "@self-learning/ui/common";
+import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
 	questions: QuestionType[];
@@ -121,7 +114,11 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 	}, [index, questions]);
 
 	return (
-		<QuizProvider questions={questions} goToNextQuestion={goToNextQuestion}>
+		<QuizProvider
+			questions={questions}
+			goToNextQuestion={goToNextQuestion}
+			reload={router.reload}
+		>
 			<div className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
 				<div className="flex w-full flex-col gap-4">
 					<QuizHeader
@@ -136,10 +133,28 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 						question={currentQuestion}
 						markdown={markdown}
 					/>
+					<QuizCompletionSubscriber lesson={lesson} />
 				</div>
 			</div>
 		</QuizProvider>
 	);
+}
+
+/** Component that listens to the `completionState` and marks lesson as completed, when quiz is `completed`. */
+function QuizCompletionSubscriber({ lesson }: { lesson: QuestionProps["lesson"] }) {
+	const { completionState } = useQuiz();
+	const unsubscribeRef = useRef(false);
+	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
+
+	useEffect(() => {
+		if (!unsubscribeRef.current && completionState === "completed") {
+			unsubscribeRef.current = true;
+			console.log("QuizCompletionSubscriber: Marking as completed");
+			markAsCompleted();
+		}
+	}, [completionState, markAsCompleted]);
+
+	return <></>;
 }
 
 QuestionsPage.getLayout = LessonLayout;
@@ -159,6 +174,20 @@ function QuizHeader({
 }) {
 	const { chapterName, nextLesson } = useLessonContext(lesson.lessonId, course.slug);
 	const { evaluations, completionState } = useQuiz();
+	const successDialogOpenedRef = useRef(false);
+	const failureDialogOpenedRef = useRef(false);
+	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+	const [showFailureDialog, setShowFailureDialog] = useState(false);
+
+	if (!successDialogOpenedRef.current && completionState === "completed") {
+		successDialogOpenedRef.current = true;
+		setShowSuccessDialog(true);
+	}
+
+	if (!failureDialogOpenedRef.current && completionState === "failed") {
+		failureDialogOpenedRef.current = true;
+		setShowFailureDialog(true);
+	}
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -183,6 +212,26 @@ function QuizHeader({
 					</Tab>
 				))}
 			</Tabs>
+
+			{showSuccessDialog && (
+				<QuizCompletionDialog
+					course={course}
+					lesson={lesson}
+					nextLesson={nextLesson}
+					onClose={() => {
+						setShowSuccessDialog(false);
+					}}
+				/>
+			)}
+
+			{showFailureDialog && (
+				<QuizFailedDialog
+					lesson={lesson}
+					onClose={() => {
+						setShowFailureDialog(false);
+					}}
+				/>
+			)}
 		</div>
 	);
 }
@@ -205,10 +254,81 @@ function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; index: 
 	);
 }
 
-// function QuizCompletionDialog() {
-// 	return (
-// 		<Dialog onClose={} title="Lernkontrolle">
-// 			<DialogActions onClose={}></DialogActions>
-// 		</Dialog>
-// 	);
-// }
+function QuizCompletionDialog({
+	course,
+	lesson,
+	nextLesson,
+	onClose
+}: {
+	course: QuestionProps["course"];
+	lesson: QuestionProps["lesson"];
+	nextLesson: { title: string; slug: string } | null;
+	onClose: OnDialogCloseFn<void>;
+}) {
+	return (
+		<Dialog onClose={onClose} title="Geschafft!" style={{ maxWidth: "600px" }}>
+			<div className="flex flex-col text-sm text-light">
+				<p>
+					Du hast die Lerneinheit{" "}
+					<span className="font-semibold text-secondary">{lesson.title}</span> erfolgreich
+					abgeschlossen.
+				</p>
+
+				{nextLesson ? (
+					<div className="flex flex-col">
+						<p>Die nächste Lerneinheit ist ...</p>
+						<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
+							{nextLesson.title}
+						</span>
+					</div>
+				) : (
+					<p>
+						Der Kurs{" "}
+						<span className="font-semibold text-secondary">{course.title}</span> enthält
+						keine weiteren Lerneinheiten für dich.
+					</p>
+				)}
+			</div>
+
+			<DialogActions onClose={onClose}>
+				{nextLesson && (
+					<Link href={`/courses/${course.slug}/${nextLesson.slug}`}>
+						<a className="btn-primary">
+							<span>Zur nächsten Lerneinheit</span>
+							<PlayIcon className="h-5 shrink-0" />
+						</a>
+					</Link>
+				)}
+			</DialogActions>
+		</Dialog>
+	);
+}
+
+function QuizFailedDialog({
+	lesson,
+	onClose
+}: {
+	lesson: QuestionProps["lesson"];
+	onClose: OnDialogCloseFn<void>;
+}) {
+	const { reload } = useQuiz();
+
+	return (
+		<Dialog onClose={onClose} title="Nicht Bestanden" style={{ maxWidth: "600px" }}>
+			<div className="flex flex-col text-sm text-light">
+				<p>
+					Du hast leider zu viele Fragen falsch beantwortet, um die Lerneinheit{" "}
+					<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
+					abzuschließen.
+				</p>
+			</div>
+
+			<DialogActions onClose={onClose}>
+				<button className="btn-primary" onClick={reload}>
+					<span>Erneut probieren</span>
+					<RefreshIcon className="h-5 shrink-0" />
+				</button>
+			</DialogActions>
+		</Dialog>
+	);
+}

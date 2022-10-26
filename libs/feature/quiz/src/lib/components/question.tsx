@@ -1,3 +1,4 @@
+import { RefreshIcon } from "@heroicons/react/solid";
 import type { CompiledMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
@@ -41,6 +42,7 @@ export type QuizContextValue = {
 		}>
 	>;
 	goToNextQuestion: () => void;
+	reload: () => void;
 	completionState: QuizCompletionState;
 };
 
@@ -53,10 +55,12 @@ export function useQuiz() {
 export function QuizProvider({
 	children,
 	questions,
-	goToNextQuestion
+	goToNextQuestion,
+	reload
 }: {
 	questions: QuestionType[];
 	goToNextQuestion: () => void;
+	reload: () => void;
 	children: React.ReactNode;
 }) {
 	const [answers, setAnswers] = useState(() => {
@@ -104,7 +108,8 @@ export function QuizProvider({
 				evaluations,
 				setEvaluations,
 				goToNextQuestion,
-				completionState
+				completionState,
+				reload
 			}}
 		>
 			{children}
@@ -214,7 +219,7 @@ function CheckResult({
 }) {
 	// We only use "multiple-choice" to get better types ... works for all question types
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
-	const { goToNextQuestion } = useQuiz();
+	const { goToNextQuestion, completionState, reload } = useQuiz();
 
 	function checkResult() {
 		console.log("checking...");
@@ -230,12 +235,25 @@ function CheckResult({
 	}
 
 	return (
-		<button
-			className="btn-primary"
-			onClick={currentEvaluation ? goToNextQuestion : checkResult}
-		>
-			{currentEvaluation ? "Nächste Frage" : "Überprüfen"}
-		</button>
+		<>
+			{completionState === "in-progress" ? (
+				<button
+					className="btn-primary"
+					onClick={currentEvaluation ? goToNextQuestion : checkResult}
+				>
+					{currentEvaluation ? "Nächste Frage" : "Überprüfen"}
+				</button>
+			) : completionState === "failed" ? (
+				<button className="btn bg-red-500" onClick={reload}>
+					<span>Erneut probieren</span>
+					<RefreshIcon className="h-5" />
+				</button>
+			) : (
+				// eslint-disable-next-line react/jsx-no-useless-fragment
+				<></>
+			)}
+			{/* {eslint-disable-next-line react/jsx-no-useless-fragment} */}
+		</>
 	);
 }
 

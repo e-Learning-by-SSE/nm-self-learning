@@ -57,7 +57,7 @@ export function MultipleChoiceOption({
 
 	if (showResult) {
 		className = isUserAnswerCorrect
-			? "bg-green-50 border-emerald-500"
+			? "bg-emerald-50 border-emerald-500"
 			: "bg-red-50 border-red-500";
 	}
 
