@@ -29,6 +29,7 @@ async function getLesson(slug: string) {
 			description: true,
 			content: true,
 			quiz: true,
+			meta: true,
 			competences: {
 				select: {
 					competenceId: true,

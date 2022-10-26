@@ -1,5 +1,4 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
-import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -8,7 +7,12 @@ import {
 	useLessonContext
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { findContentType, includesMediaType, LessonContent } from "@self-learning/types";
+import {
+	findContentType,
+	includesMediaType,
+	LessonContent,
+	LessonMeta
+} from "@self-learning/types";
 import { Tab, Tabs } from "@self-learning/ui/common";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { VideoPlayer } from "@self-learning/ui/lesson";
@@ -17,7 +21,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -181,30 +185,25 @@ function LessonControls({
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
 	const completion = useCourseCompletion(course.slug);
 	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
+	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
-			<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-				<a className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit">
-					<span>Zur Lernkontrolle</span>
-					<PlayIcon className="h-6 shrink-0" />
-				</a>
-			</Link>
+			{hasQuiz && (
+				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
+					<a className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit">
+						<span>Zur Lernkontrolle</span>
+						<PlayIcon className="h-6 shrink-0" />
+					</a>
+				</Link>
+			)}
 
-			{!isCompletedLesson ? (
+			{!hasQuiz && !isCompletedLesson && (
 				<button
-					className="btn-stroked flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
+					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					onClick={markAsCompleted}
 				>
 					<span>Als abgeschlossen markieren</span>
-					<CheckCircleIcon className="h-6 shrink-0" />
-				</button>
-			) : (
-				<button
-					className="btn-stroked flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
-					onClick={markAsCompleted}
-				>
-					<span>Als wiederholt markieren</span>
 					<CheckCircleIcon className="h-6 shrink-0" />
 				</button>
 			)}
