@@ -1,4 +1,5 @@
 import { trpc } from "@self-learning/api-client";
+import { extractLessonIds } from "@self-learning/types";
 import { useMemo } from "react";
 
 export function useLessonContext(lessonId: string, courseSlug: string) {
@@ -18,5 +19,21 @@ export function useLessonContext(lessonId: string, courseSlug: string) {
 		return "";
 	}, [content, lessonId]);
 
-	return { chapterName };
+	const nextLesson = useMemo(() => {
+		if (!content) return null;
+
+		const lessonIds = extractLessonIds(content.content);
+		const index = lessonIds.indexOf(lessonId);
+		if (index === -1) return null;
+
+		const nextLessonId = lessonIds[index + 1] ?? null;
+
+		if (nextLessonId) {
+			return content.lessonMap[nextLessonId];
+		}
+
+		return null;
+	}, [content, lessonId]);
+
+	return { chapterName, nextLesson };
 }

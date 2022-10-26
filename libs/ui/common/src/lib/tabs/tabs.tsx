@@ -13,7 +13,7 @@ export function Tabs({
 }) {
 	return (
 		<HeadlessTab.Group selectedIndex={selectedIndex} onChange={onChange}>
-			<HeadlessTab.List className="flex w-full gap-4 border-b border-light-border">
+			<HeadlessTab.List className="flex w-full flex-wrap gap-4 border-b border-light-border">
 				{children}
 			</HeadlessTab.List>
 		</HeadlessTab.Group>

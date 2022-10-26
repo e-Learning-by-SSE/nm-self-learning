@@ -10,7 +10,7 @@ type AnswerContextValue = {
 	};
 	answer: Record<string, unknown> | null;
 	setAnswer: Dispatch<SetStateAction<Record<string, unknown>>>;
-	evaluation: unknown | null;
+	evaluation: { isCorrect: boolean } | null;
 	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
 };
 

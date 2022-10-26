@@ -1,3 +1,5 @@
+import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
+import { CheckCircleIcon } from "@heroicons/react/solid";
 import { ChevronLeftIcon, ChevronRightIcon, CogIcon } from "@heroicons/react/solid";
 import {
 	getStaticPropsForLayout,
@@ -7,11 +9,19 @@ import {
 } from "@self-learning/lesson";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
-import { Question, QuizProvider } from "@self-learning/quiz";
+import { Question, QuizProvider, useQuiz } from "@self-learning/quiz";
+import {
+	Dialog,
+	DialogActions,
+	Tab,
+	Tabs,
+	VerticalTab,
+	VerticalTabs
+} from "@self-learning/ui/common";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
 	questions: QuestionType[];
@@ -73,23 +83,29 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
-	const hasPrevious = nextIndex > 1;
-	const hasNext = nextIndex < questions.length;
+	// const hasPrevious = nextIndex > 1;
+	// const hasNext = nextIndex < questions.length;
 
-	function goToNextQuestion() {
+	const goToNextQuestion = useCallback(() => {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true
 		});
-	}
+	}, [nextIndex, course.slug, lesson.slug, router]);
 
-	function goToPreviousQuestion() {
-		router.push(
-			`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
-			undefined,
-			{
-				shallow: true
-			}
-		);
+	// function goToPreviousQuestion() {
+	// 	router.push(
+	// 		`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
+	// 		undefined,
+	// 		{
+	// 			shallow: true
+	// 		}
+	// 	);
+	// }
+
+	function goToQuestion(index: number) {
+		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${index}`, undefined, {
+			shallow: true
+		});
 	}
 
 	useEffect(() => {
@@ -105,18 +121,15 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 	}, [index, questions]);
 
 	return (
-		<QuizProvider questions={questions}>
+		<QuizProvider questions={questions} goToNextQuestion={goToNextQuestion}>
 			<div className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
 				<div className="flex w-full flex-col gap-4">
-					<QuestionNavigation
+					<QuizHeader
 						lesson={lesson}
 						course={course}
-						amount={questions.length}
-						current={nextIndex}
-						hasPrevious={hasPrevious}
-						hasNext={hasNext}
-						goToNext={goToNextQuestion}
-						goToPrevious={goToPreviousQuestion}
+						currentIndex={nextIndex - 1}
+						goToQuestion={goToQuestion}
+						questions={questions}
 					/>
 					<Question
 						key={currentQuestion.questionId}
@@ -131,29 +144,24 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 
 QuestionsPage.getLayout = LessonLayout;
 
-function QuestionNavigation({
+function QuizHeader({
 	lesson,
 	course,
-	current,
-	amount,
-	hasPrevious,
-	hasNext,
-	goToNext,
-	goToPrevious
+	questions,
+	currentIndex,
+	goToQuestion
 }: {
 	lesson: QuestionProps["lesson"];
 	course: QuestionProps["course"];
-	current: number;
-	amount: number;
-	hasPrevious: boolean;
-	hasNext: boolean;
-	goToNext: () => void;
-	goToPrevious: () => void;
+	currentIndex: number;
+	questions: QuizContent;
+	goToQuestion: (index: number) => void;
 }) {
-	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
+	const { chapterName, nextLesson } = useLessonContext(lesson.lessonId, course.slug);
+	const { evaluations, completionState } = useQuiz();
 
 	return (
-		<div className="flex flex-col gap-4 border-b border-light-border pb-4">
+		<div className="flex flex-col gap-4">
 			<div className="relative flex flex-col gap-2">
 				<span className="font-semibold text-secondary">{chapterName}</span>
 				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
@@ -168,29 +176,39 @@ function QuestionNavigation({
 				</Link>
 			</div>
 
-			<div className="flex flex-wrap items-center justify-between gap-6">
-				<span className="">
-					Frage {current} von {amount}
-				</span>
-				<div className="flex flex-wrap place-content-end gap-4">
-					<button
-						disabled={!hasPrevious}
-						className="btn-stroked w-full sm:w-fit"
-						onClick={goToPrevious}
-					>
-						<ChevronLeftIcon className="h-5" />
-						<span>Vorherige Frage</span>
-					</button>
-					<button
-						disabled={!hasNext}
-						className="btn-primary w-full sm:w-fit"
-						onClick={goToNext}
-					>
-						<span>Nächste Frage</span>
-						<ChevronRightIcon className="h-5" />
-					</button>
-				</div>
-			</div>
+			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
+				{questions.map((question, index) => (
+					<Tab key={question.questionId}>
+						<QuestionTab index={index} evaluation={evaluations[question.questionId]} />
+					</Tab>
+				))}
+			</Tabs>
 		</div>
 	);
 }
+
+function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; index: number }) {
+	const isCorrect = props.evaluation?.isCorrect === true;
+	const isIncorrect = props.evaluation?.isCorrect === false;
+
+	return (
+		<span className="flex items-center gap-4">
+			{isCorrect ? (
+				<CheckCircleIcon className="h-5 text-secondary" />
+			) : isIncorrect ? (
+				<XCircleIcon className="h-5 text-red-500" />
+			) : (
+				<CheckCircleIconOutline className="h-5 text-gray-400" />
+			)}
+			<span className="">Frage {props.index + 1}</span>
+		</span>
+	);
+}
+
+// function QuizCompletionDialog() {
+// 	return (
+// 		<Dialog onClose={} title="Lernkontrolle">
+// 			<DialogActions onClose={}></DialogActions>
+// 		</Dialog>
+// 	);
+// }

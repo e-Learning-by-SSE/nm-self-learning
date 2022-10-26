@@ -13,9 +13,11 @@ import {
 } from "@self-learning/question-types";
 import { CenteredContainer, MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
-import { createContext, Dispatch, SetStateAction, useContext, useState } from "react";
+import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
 import { Certainty } from "./certainty";
 import { Hints } from "./hints";
+
+type QuizCompletionState = "in-progress" | "completed" | "failed";
 
 export type QuizContextValue = {
 	answers: {
@@ -32,21 +34,29 @@ export type QuizContextValue = {
 			} | null;
 		}>
 	>;
-	evaluations: { [questionId: string]: unknown | null };
+	evaluations: { [questionId: string]: { isCorrect: boolean } | null };
 	setEvaluations: Dispatch<
 		SetStateAction<{
-			[questionId: string]: unknown;
+			[questionId: string]: { isCorrect: boolean } | null;
 		}>
 	>;
+	goToNextQuestion: () => void;
+	completionState: QuizCompletionState;
 };
 
 const QuizContext = createContext<QuizContextValue>(null as unknown as QuizContextValue);
 
+export function useQuiz() {
+	return useContext(QuizContext);
+}
+
 export function QuizProvider({
 	children,
-	questions
+	questions,
+	goToNextQuestion
 }: {
 	questions: QuestionType[];
+	goToNextQuestion: () => void;
 	children: React.ReactNode;
 }) {
 	const [answers, setAnswers] = useState(() => {
@@ -72,8 +82,31 @@ export function QuizProvider({
 		return evals;
 	});
 
+	const completionState: QuizCompletionState = useMemo(() => {
+		const allEvaluations = Object.values(evaluations);
+
+		if (allEvaluations.some(e => !e)) {
+			return "in-progress";
+		}
+
+		if (allEvaluations.every(e => e && e.isCorrect === true)) {
+			return "completed";
+		}
+
+		return "failed";
+	}, [evaluations]);
+
 	return (
-		<QuizContext.Provider value={{ answers, setAnswers, evaluations, setEvaluations }}>
+		<QuizContext.Provider
+			value={{
+				answers,
+				setAnswers,
+				evaluations,
+				setEvaluations,
+				goToNextQuestion,
+				completionState
+			}}
+		>
 			{children}
 		</QuizContext.Provider>
 	);
@@ -98,11 +131,6 @@ export function Question({
 
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
-
-	console.log("answers", answers);
-	console.log("evaluations", evaluations);
-	console.log("answer", answer);
-	console.log("evaluation", evaluation);
 
 	function setAnswer(v: any) {
 		const value = typeof v === "function" ? v(answer) : v;
@@ -184,22 +212,17 @@ function CheckResult({
 }: {
 	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
 }) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const { question, answer, evaluation: currentEvaluation } = useQuestion(null as any);
+	// We only use "multiple-choice" to get better types ... works for all question types
+	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
+	const { goToNextQuestion } = useQuiz();
 
 	function checkResult() {
 		console.log("checking...");
-		const evaluation = EVALUATION_FUNCTIONS[question.type](
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			question as any,
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			answer as any
-		);
+		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
 		console.log("question", question);
 		console.log("answer", answer);
 		console.log("evaluation", evaluation);
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		setEvaluation(evaluation as any);
+		setEvaluation(evaluation);
 	}
 
 	if (!currentEvaluation) {
@@ -207,8 +230,11 @@ function CheckResult({
 	}
 
 	return (
-		<button className="btn-primary" onClick={checkResult} disabled={!!currentEvaluation}>
-			Überprüfen
+		<button
+			className="btn-primary"
+			onClick={currentEvaluation ? goToNextQuestion : checkResult}
+		>
+			{currentEvaluation ? "Nächste Frage" : "Überprüfen"}
 		</button>
 	);
 }
