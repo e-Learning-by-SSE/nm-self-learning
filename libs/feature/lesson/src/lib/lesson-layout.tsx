@@ -122,9 +122,9 @@ export function LessonLayout(
 			</Head>
 
 			<div className="flex flex-col bg-gray-100">
-				<div className="max-w-8xl mx-auto flex flex-col-reverse xl:flex-row">
+				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
 					<PlaylistArea {...pageProps} />
-					<div className="xl:pl-[24rem]">
+					<div className="w-full pt-8 pb-16">
 						<Component {...pageProps} />
 					</div>
 				</div>

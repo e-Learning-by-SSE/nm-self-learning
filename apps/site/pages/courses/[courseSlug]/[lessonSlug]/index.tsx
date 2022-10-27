@@ -107,7 +107,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const preferredMediaType = usePreferredMediaType(lesson);
 
 	return (
-		<article className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
+		<article className="flex flex-col gap-4">
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
 					{url ? (

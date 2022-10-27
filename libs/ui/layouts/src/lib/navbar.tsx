@@ -10,7 +10,7 @@ export function Navbar() {
 
 	return (
 		<nav className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white">
-			<div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between gap-4 py-2 px-4">
+			<div className="mx-auto flex h-full max-w-[1920px] items-center justify-between gap-4 py-2 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/">
 						<a className="flex items-center gap-4">

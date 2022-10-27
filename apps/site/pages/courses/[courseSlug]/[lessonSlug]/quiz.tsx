@@ -119,7 +119,7 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 			goToNextQuestion={goToNextQuestion}
 			reload={router.reload}
 		>
-			<div className="flex w-full flex-col gap-4 px-4 pt-8 pb-16 xl:w-[1212px] xl:px-8">
+			<div className="flex w-full flex-col gap-4">
 				<div className="flex w-full flex-col gap-4">
 					<QuizHeader
 						lesson={lesson}
