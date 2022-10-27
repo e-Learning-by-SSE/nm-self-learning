@@ -12,8 +12,8 @@ export default defineConfig({
 		chromeWebSecurity: false,
 		baseUrl: "http://localhost:4200",
 		defaultCommandTimeout: 2000,
-		viewportHeight: 1050,
-		viewportWidth: 1400,
+		viewportHeight: 1080,
+		viewportWidth: 1600,
 		specPattern: "src/e2e/**/*.cy.{js,jsx,ts,tsx}",
 		supportFile: "src/support/e2e.ts",
 		scrollBehavior: "center", // does not fix screenshots :(

@@ -95,7 +95,9 @@ function Chapter({
 	return (
 		<li className="flex flex-col gap-2">
 			<span className="flex justify-between">
-				<span className="pl-4 font-semibold tracking-tight">{chapter.title}</span>
+				<span className="pl-4 font-semibold tracking-tight" data-testid="chapterTitle">
+					{chapter.title}
+				</span>
 				<button onClick={() => setCollapsed(v => !v)}>
 					{collapsed ? (
 						<ChevronLeftIcon className="h-5 text-gray-400" />
@@ -142,7 +144,10 @@ function Lesson({
 						lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
 					}`}
 				></span>
-				<span className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm">
+				<span
+					className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm"
+					data-testid="lessonTitle"
+				>
 					{lesson.title}
 				</span>
 			</a>
@@ -222,7 +227,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col gap-4" data-testid="CurrentlyPlaying">
 			<span className="flex items-center gap-2 text-sm">
 				<PlayIcon className="h-7  text-secondary" />
 				<span className="overflow-hidden text-ellipsis whitespace-nowrap font-medium">
@@ -235,7 +240,9 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 			</span>
 			<span className="flex justify-between">
 				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-					<a className="btn-primary text-sm">Lernkontrolle</a>
+					<a className="btn-primary text-sm" data-testid="quizLink">
+						Lernkontrolle
+					</a>
 				</Link>
 				<span className="flex gap-2">
 					<button
@@ -243,6 +250,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 						disabled={!previous}
 						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
 						title="Vorherige Lerneinheit"
+						data-testid="previousLessonButton"
 					>
 						<ChevronDoubleLeftIcon className="h-5" />
 					</button>
@@ -251,6 +259,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 						disabled={!next}
 						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
 						title="Nächste Lerneinheit"
+						data-testid="nextLessonButton"
 					>
 						<ChevronDoubleRightIcon className="h-5" />
 					</button>

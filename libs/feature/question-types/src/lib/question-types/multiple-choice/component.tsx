@@ -66,6 +66,7 @@ export function MultipleChoiceOption({
 			className={`flex gap-8 rounded-lg border border-light-border bg-white px-8 py-2 text-start focus:outline-secondary ${className}`}
 			onClick={onToggle}
 			disabled={showResult}
+			data-testid="MultipleChoiceOption"
 		>
 			<input
 				type={"checkbox"}

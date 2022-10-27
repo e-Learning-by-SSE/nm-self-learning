@@ -174,7 +174,9 @@ export function Question({
 			<article className="flex flex-col gap-8">
 				<div>
 					<div className="flex items-center justify-between">
-						<span className="font-semibold text-secondary">{question.type}</span>
+						<span className="font-semibold text-secondary" data-testid="questionType">
+							{question.type}
+						</span>
 						<div className="flex gap-4">
 							<button
 								className="btn-stroked h-fit"

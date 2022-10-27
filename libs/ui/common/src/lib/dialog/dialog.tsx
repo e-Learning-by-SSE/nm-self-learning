@@ -26,6 +26,7 @@ export function Dialog<TResult>({
 					<HeadlessDialog.Panel
 						className="relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8"
 						style={style ?? { minWidth: 624, maxHeight: "80vh" }}
+						data-testid="Dialog"
 					>
 						<HeadlessDialog.Title className="mb-8 text-2xl">
 							{title}

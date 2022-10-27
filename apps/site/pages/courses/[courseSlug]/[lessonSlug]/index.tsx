@@ -121,7 +121,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
 
 			{preferredMediaType === "article" && markdown.article && (
-				<MarkdownContainer className="mx-auto pt-8">
+				<MarkdownContainer className="pt-4">
 					<MDXRemote {...markdown.article} />
 				</MarkdownContainer>
 			)}
@@ -191,7 +191,10 @@ function LessonControls({
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			{hasQuiz && (
 				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-					<a className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit">
+					<a
+						className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
+						data-testid="quizLink"
+					>
 						<span>Zur Lernkontrolle</span>
 						<PlayIcon className="h-6 shrink-0" />
 					</a>
@@ -276,7 +279,9 @@ function MediaTypeSelector({
 			{lessonContent.length > 1 && (
 				<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
 					{lessonContent.map((content, idx) => (
-						<Tab key={idx}>{content.type}</Tab>
+						<Tab key={idx}>
+							<span data-testid="mediaTypeTab">{content.type}</span>
+						</Tab>
 					))}
 				</Tabs>
 			)}
