@@ -1,5 +1,4 @@
 import { LabeledField } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import { motion } from "framer-motion";
 import { useQuestion } from "../../use-question-hook";
 
@@ -7,7 +6,7 @@ export function ShortTextAnswer() {
 	const { question, answer, setAnswer, evaluation } = useQuestion("short-text");
 
 	return (
-		<CenteredContainer className="flex flex-col gap-8">
+		<div className="flex flex-col gap-8">
 			<LabeledField label="Antwort">
 				<input
 					value={answer.value ?? ""}
@@ -29,7 +28,7 @@ export function ShortTextAnswer() {
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ type: "tween", duration: 0.5 }}
-					className={`rounded-lg border p-8 text-white ${
+					className={`rounded-lg border p-4 text-white ${
 						evaluation.isCorrect
 							? "border-green-500 bg-green-100 text-green-500"
 							: " border-red-500 bg-red-100 text-red-500"
@@ -51,6 +50,6 @@ export function ShortTextAnswer() {
 					)}
 				</motion.div>
 			)}
-		</CenteredContainer>
+		</div>
 	);
 }

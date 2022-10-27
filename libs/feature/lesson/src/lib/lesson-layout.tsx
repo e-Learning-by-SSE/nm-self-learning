@@ -1,20 +1,15 @@
+import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import {
-	CourseContent,
-	extractLessonIds,
-	LessonMeta,
-	traverseCourseContent
-} from "@self-learning/types";
-import { NestablePlaylist, PlaylistContent } from "@self-learning/ui/lesson";
+import { CourseContent, LessonMeta } from "@self-learning/types";
+import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 export type LessonLayoutProps = {
 	lesson: ResolvedValue<typeof getLesson>;
-	content: PlaylistContent;
 	course: {
 		title: string;
 		slug: string;
@@ -34,6 +29,7 @@ async function getLesson(slug: string) {
 			description: true,
 			content: true,
 			quiz: true,
+			meta: true,
 			competences: {
 				select: {
 					competenceId: true,
@@ -66,7 +62,6 @@ export async function getStaticPropsForLayout(
 		database.course.findUnique({
 			where: { slug: courseSlug },
 			select: {
-				content: true,
 				title: true,
 				slug: true
 			}
@@ -77,33 +72,8 @@ export async function getStaticPropsForLayout(
 		return { notFound: true };
 	}
 
-	const lessonIds = extractLessonIds(course.content as CourseContent);
-
-	const lessons = await database.lesson.findMany({
-		select: {
-			lessonId: true,
-			slug: true,
-			title: true,
-			meta: true
-		},
-		where: {
-			lessonId: {
-				in: lessonIds
-			}
-		}
-	});
-
-	const lessonsById = new Map<string, LessonInfo>();
-
-	for (const lesson of lessons) {
-		lessonsById.set(lesson.lessonId, lesson as LessonInfo);
-	}
-
-	const content = mapToPlaylistContent(course.content as CourseContent, lessonsById);
-
 	return {
 		lesson: lesson as Defined<typeof lesson>,
-		content,
 		course: {
 			slug: course.slug,
 			title: course.title
@@ -113,34 +83,30 @@ export async function getStaticPropsForLayout(
 
 function mapToPlaylistContent(
 	content: CourseContent,
-	lessons: Map<string, LessonInfo>
+	lessons: { [lessonId: string]: LessonInfo }
 ): PlaylistContent {
-	const playlistContent: PlaylistContent = [];
+	let lessonNr = 1;
 
-	for (const chapterOrLesson of content) {
-		if (chapterOrLesson.type === "chapter") {
-			playlistContent.push({
-				...chapterOrLesson,
-				type: "chapter",
-				content: mapToPlaylistContent(chapterOrLesson.content, lessons)
-			});
-		} else {
-			const lesson = lessons.get(chapterOrLesson.lessonId) ?? {
+	const playlistContent: PlaylistContent = content.map(chapter => ({
+		title: chapter.title,
+		description: chapter.description,
+		content: chapter.content.map(lesson => {
+			const lessonInfo = lessons[lesson.lessonId] ?? {
 				lessonId: "removed",
+				meta: { hasQuiz: false, mediaTypes: {} },
 				slug: "removed",
-				title: "Removed",
-				meta: {
-					hasQuiz: false,
-					mediaTypes: {}
-				}
+				title: "Removed"
 			};
 
-			playlistContent.push({
-				...chapterOrLesson,
-				...lesson
-			});
-		}
-	}
+			const playlistLesson: PlaylistLesson = {
+				...lessonInfo,
+				isCompleted: false,
+				lessonNr: lessonNr++
+			};
+
+			return playlistLesson;
+		})
+	}));
 
 	return playlistContent;
 }
@@ -155,43 +121,38 @@ export function LessonLayout(
 				<title>{pageProps.lesson.title}</title>
 			</Head>
 
-			<div className="flex w-full flex-col xl:flex-row">
-				<Component {...pageProps} />
-				<PlaylistArea {...pageProps} />
+			<div className="flex flex-col bg-gray-100">
+				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+					<PlaylistArea {...pageProps} />
+					<div className="w-full pt-8 pb-16">
+						<Component {...pageProps} />
+					</div>
+				</div>
 			</div>
 		</>
 	);
 }
 
-function PlaylistArea({ content, course, lesson }: LessonLayoutProps) {
-	const courseCompletion = useCourseCompletion(course.slug);
-	const [contentWithCompletion, setContentWithCompletion] = useState(content);
+function PlaylistArea({ course, lesson }: LessonLayoutProps) {
+	const { data: content } = trpc.course.getContent.useQuery({ slug: course.slug });
+	const completion = useCourseCompletion(course.slug);
+	const playlistContent = useMemo(
+		() => (!content ? [] : mapToPlaylistContent(content.content, content.lessonMap)),
+		[content]
+	);
 
-	useEffect(() => {
-		if (!courseCompletion) {
-			return;
-		}
-
-		traverseCourseContent(content, chapterOrLesson => {
-			if (chapterOrLesson.type === "lesson") {
-				chapterOrLesson.isCompleted =
-					!!courseCompletion.completedLessons[chapterOrLesson.lessonId];
-			}
-		});
-
-		setContentWithCompletion([...content]);
-	}, [courseCompletion, content]);
+	if (!content) {
+		return (
+			<aside className="playlist-scroll left-[max(0px,calc(50%-50rem))] right-auto h-full w-full animate-pulse divide-y divide-gray-200 overflow-auto border-r border-r-gray-200 bg-gray-200 px-8 py-8 xl:fixed xl:max-h-[calc(100vh-62px)] xl:max-w-[24rem]"></aside>
+		);
+	}
 
 	return (
-		<div className="flex h-[500px] w-full shrink-0 border-l border-light-border bg-white xl:h-full xl:w-[500px] xl:border-t-0">
-			<div className="right-0 flex w-full xl:fixed xl:h-[calc(100vh-80px)] xl:w-[500px]">
-				<NestablePlaylist
-					course={course}
-					currentLesson={lesson}
-					content={contentWithCompletion}
-					courseCompletion={courseCompletion}
-				/>
-			</div>
-		</div>
+		<Playlist
+			content={playlistContent}
+			course={course}
+			lesson={lesson}
+			completion={completion}
+		/>
 	);
 }

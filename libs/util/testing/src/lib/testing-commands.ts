@@ -11,6 +11,7 @@ export type TestingCommand =
 			payload: {
 				create: Prisma.CourseCreateInput;
 				update: Prisma.CourseUpdateInput;
+				lessons?: Prisma.LessonCreateManyArgs;
 			};
 	  };
 
@@ -34,6 +35,10 @@ export const testingActionHandler: {
 			create: payload.create,
 			update: payload.update
 		});
+
+		if (payload.lessons) {
+			await database.lesson.createMany(payload.lessons);
+		}
 
 		return course;
 	}

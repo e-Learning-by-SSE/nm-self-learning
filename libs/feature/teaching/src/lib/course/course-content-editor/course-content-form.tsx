@@ -1,8 +1,7 @@
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/solid";
-import { NodeModel, getBackendOptions, MultiBackend, Tree } from "@minoru/react-dnd-treeview";
 import { trpc } from "@self-learning/api-client";
 import { QuizContent } from "@self-learning/question-types";
-import { createCourseContent, LessonContent } from "@self-learning/types";
+import { LessonContent } from "@self-learning/types";
 import {
 	OnDialogCloseFn,
 	SectionCardHeader,
@@ -11,65 +10,13 @@ import {
 } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
-import { DndProvider } from "react-dnd";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { EditLessonDialog } from "./dialogs/edit-lesson-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
 import { NewChapterDialog } from "./dialogs/new-chapter-dialog";
-import { ChapterWithNr, Competence, LessonWithNr, MappedContent, Summary } from "./types";
+import { Summary, TeachingChapter } from "./types";
 import { useCourseContentForm } from "./use-content-form";
-
-type TreeNode = NodeModel<MappedContent[0]>;
-
-function mapToTree(content: MappedContent, parent = "root"): TreeNode[] {
-	const tree: TreeNode[] = [];
-
-	for (const chapterOrLesson of content) {
-		if (chapterOrLesson.type === "lesson") {
-			tree.push({
-				parent,
-				id: chapterOrLesson.lessonId,
-				text: chapterOrLesson.lessonId,
-				droppable: false,
-				data: chapterOrLesson
-			});
-		} else {
-			tree.push({
-				parent,
-				id: chapterOrLesson.chapterId,
-				text: chapterOrLesson.title,
-				droppable: true,
-				data: chapterOrLesson
-			});
-
-			tree.push(...mapToTree(chapterOrLesson.content, chapterOrLesson.chapterId));
-		}
-	}
-
-	return tree;
-}
-
-function fromTreeToContent(tree: TreeNode[], chapterId = "root"): MappedContent {
-	const content: MappedContent = [];
-
-	for (const node of tree) {
-		const data = node.data as MappedContent[0];
-
-		if (node.parent === chapterId) {
-			if (data.type === "lesson") {
-				content.push(data);
-			} else {
-				content.push({
-					...data,
-					content: fromTreeToContent(tree, data.chapterId)
-				});
-			}
-		}
-	}
-
-	return content;
-}
 
 /**
  * Allows the user to edit the course content.
@@ -97,142 +44,20 @@ export function CourseContentForm() {
 		onAddLesson
 	} = useCourseContentForm();
 
-	const [backendOptions] = useState(getBackendOptions());
-	const [treeData, setTreeData] = useState(mapToTree(content));
-
 	const { setValue } = useFormContext<{ content: unknown[] }>(); // widen content type to prevent circular path error
-
-	function handleDrop(newTreeData: TreeNode[]) {
-		// Map to content and compute new tree to update lesson and chapter numbers
-		const content = fromTreeToContent(newTreeData);
-		const updatedContent = createCourseContent(content);
-		const updatedContentTree = mapToTree(updatedContent as MappedContent);
-		setValue("content", updatedContent); // Update form value
-		setTreeData(updatedContentTree); // Update tree
-	}
 
 	return (
 		<CenteredContainer>
 			<SectionHeader title="Inhalt" subtitle="Der Inhalt des Kurses." />
 
-			<div className="rounded-lg border border-light-border bg-white p-4">
-				<DndProvider backend={MultiBackend} options={backendOptions}>
-					<Tree
-						classes={{
-							root: "relative", // required for placeholder line
-							dropTarget: "bg-indigo-50"
-						}}
-						tree={treeData}
-						rootId={"root"}
-						sort={false} // order is determined by treeData
-						initialOpen={true}
-						dropTargetOffset={8}
-						canDrop={(_tree, { dragSource, dropTargetId }) => {
-							if (dragSource?.parent === dropTargetId) {
-								return true;
-							}
-							return undefined;
-						}}
-						onDrop={handleDrop}
-						placeholderRender={props => (
-							<div
-								className={`w-full bg-secondary opacity-50 ${
-									props.data?.type === "lesson" ? "h-4" : "h-12"
-								}`}
-							></div>
-						)}
-						dragPreviewRender={props => (
-							<div className="w-fit rounded-lg border border-secondary bg-white py-1 px-3">
-								{props.item.data?.type === "lesson" && (
-									<LessonNode lesson={props.item.data} />
-								)}
-								{props.item.data?.type === "chapter" && (
-									<div className="flex">
-										<span className="pr-4 text-light">
-											{props.item.data.chapterNr}
-										</span>
-										<span className="font-medium">{props.item.data.title}</span>
-									</div>
-								)}
-							</div>
-						)}
-						render={(node, { depth, isOpen, onToggle }) => (
-							<div
-								style={{
-									paddingLeft: depth * 32
-								}}
-							>
-								{node.data?.type === "lesson" ? (
-									<LessonNode lesson={node.data} key={node.id} />
-								) : (
-									<div className="flex flex-col py-2">
-										<div className="flex items-center gap-4 rounded-lg py-2">
-											<button
-												type="button"
-												onClick={onToggle}
-												className="rounded-full p-2 hover:bg-slate-50"
-											>
-												{isOpen ? (
-													<ChevronDownIcon className="h-5 text-light" />
-												) : (
-													<ChevronRightIcon className="h-5 text-light" />
-												)}
-											</button>
-											{node.data && (
-												<div className="flex items-center gap-4">
-													<span className="text-light">
-														{node.data.chapterNr}
-													</span>
-													<span className="font-medium">
-														{node.data.title}
-													</span>
-													<div className="flex gap-2 text-xs text-light">
-														<button
-															type="button"
-															className="text rounded-lg border border-light-border px-2 py-1 hover:border-secondary hover:text-secondary"
-														>
-															Editieren
-														</button>
-														<button
-															type="button"
-															className="text rounded-lg border border-light-border px-2 py-1 hover:border-secondary hover:text-secondary"
-															onClick={() =>
-																onAddChapter(
-																	(node.data as ChapterWithNr)
-																		.chapterNr
-																)
-															}
-														>
-															Kapitel hinzufügen
-														</button>
-														<button
-															type="button"
-															className="text rounded-lg border border-light-border px-2 py-1 hover:border-secondary hover:text-secondary"
-														>
-															Entfernen
-														</button>
-													</div>
-												</div>
-											)}
-										</div>
-
-										<p className="pl-10 text-xs text-light">
-											{node.data?.description}
-										</p>
-									</div>
-								)}
-							</div>
-						)}
-					/>
-				</DndProvider>
-			</div>
+			<div className="rounded-lg border border-light-border bg-white p-4">TODO</div>
 
 			{openNewChapterDialog && <NewChapterDialog onClose={addChapterDialogClosed} />}
 		</CenteredContainer>
 	);
 }
 
-function LessonNode({ lesson }: { lesson: LessonWithNr }) {
+function LessonNode({ lesson }: { lesson: any }) {
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
@@ -288,13 +113,11 @@ function LessonNode({ lesson }: { lesson: LessonWithNr }) {
 }
 
 function ChapterNode({
-	parentChapter,
 	chapter,
 	onAddChapter,
 	onAddLesson
 }: {
-	chapter: ChapterWithNr;
-	parentChapter: string;
+	chapter: TeachingChapter;
 	onAddChapter(chapterId: string): void;
 	onAddLesson(chapterId: string, lesson: any): void;
 }) {
@@ -307,7 +130,7 @@ function ChapterNode({
 		setLessonSelectorOpen(false);
 
 		if (lesson) {
-			onAddLesson(chapter.chapterId, lesson);
+			// onAddLesson(chapter.chapterId, lesson);
 		}
 	}
 
@@ -320,7 +143,7 @@ function ChapterNode({
 			console.log("Creating lesson...", lesson);
 			const result = await createLessonAsync(lesson);
 			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
-			onAddLesson(chapter.chapterId, result);
+			// onAddLesson(chapter.chapterId, result);
 			setCreateLessonDialogOpen(false);
 		} catch (error) {
 			console.error(error);
@@ -348,33 +171,22 @@ function ChapterNode({
 				</button>
 				<span className="-ml-2 grid grid-cols-[auto_1fr] gap-4 whitespace-nowrap py-1 pl-[32px] text-sm">
 					<span className="w-fit min-w-[16px] text-center text-light">
-						{chapter.chapterNr}
+						{/* {chapter.chapterNr} */}
 					</span>
 					<span className="font-semibold">{chapter.title}</span>
 				</span>
 			</span>
 
-			{expanded && (
+			{/* {expanded && (
 				<ul className="flex flex-col border-l border-light-border pl-4">
 					{chapter.content.map((chapterOrLesson, elementIndex) =>
 						chapterOrLesson.type === "lesson" ? (
 							<LessonNode key={chapterOrLesson.lessonId} lesson={chapterOrLesson} />
 						) : (
-							<ChapterNode
-								key={elementIndex}
-								chapter={chapterOrLesson}
-								onAddLesson={onAddLesson}
-								onAddChapter={onAddChapter}
-								parentChapter={
-									parentChapter.length > 0
-										? `${parentChapter}.${chapter.chapterNr}`
-										: `${chapter.chapterNr}`
-								}
-							/>
 						)
 					)}
 				</ul>
-			)}
+			)} */}
 
 			{lessonSelectorOpen && (
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
@@ -384,11 +196,7 @@ function ChapterNode({
 	);
 }
 
-function SummaryPanel({
-	summary
-}: {
-	summary: { count: Summary["count"]; competences: Competence[] };
-}) {
+function SummaryPanel({ summary }: { summary: { count: Summary["count"]; competences: any[] } }) {
 	return (
 		<div className="flex flex-col rounded-lg border border-light-border bg-white p-8 xl:max-w-[400px]">
 			<SectionCardHeader title="Zusammenfassung" />

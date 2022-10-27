@@ -43,18 +43,16 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		: null;
 
 	return (
-		<>
-			<SessionProvider session={(pageProps as any).session}>
-				<Head>
-					<title>Self-Learning</title>
-				</Head>
-				<Navbar />
-				<main className="mt-14 grid grow sm:mt-20">
-					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-				</main>
-				<Toaster containerStyle={{ top: 96 }} position="top-right" />
-				{/* <ReactQueryDevtools position="bottom-right" /> */}
-			</SessionProvider>
-		</>
+		<SessionProvider session={(pageProps as any).session}>
+			<Head>
+				<title>Self-Learning</title>
+			</Head>
+			<Navbar />
+			<main className="grid grow">
+				{Layout ? <>{Layout}</> : <Component {...pageProps} />}
+			</main>
+			<Toaster containerStyle={{ top: 96 }} position="top-right" />
+			{/* <ReactQueryDevtools position="bottom-right" /> */}
+		</SessionProvider>
 	);
 }

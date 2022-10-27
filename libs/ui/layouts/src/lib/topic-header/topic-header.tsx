@@ -34,7 +34,7 @@ export function TopicHeader({
 			<div className="glass flex w-full flex-col rounded-b-lg px-8 py-4">
 				<Link href={parentLink}>
 					<a>
-						<h2 className="text-2xl text-indigo-500">{parentTitle}</h2>
+						<h2 className="text-2xl text-emerald-500">{parentTitle}</h2>
 					</a>
 				</Link>
 				<h1 className="mt-2 text-3xl sm:text-6xl">{title}</h1>

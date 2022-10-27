@@ -68,6 +68,17 @@ export const QUESTION_ANSWER_COMPONENTS: { [QType in QuestionType["type"]]: () =
 	cloze: ClozeAnswer as any
 };
 
+export const INITIAL_ANSWER_VALUE: {
+	[QType in QuestionType["type"]]: InferQuestionType<QType>["answer"]["value"];
+} = {
+	"multiple-choice": {},
+	"short-text": "",
+	programming: { code: "", stdout: "" },
+	text: "",
+	vorwissen: {} as any,
+	cloze: ClozeAnswer as any
+};
+
 export type QuestionType = z.infer<typeof quizContentSchema>;
 export type QuizAnswers = z.infer<typeof quizAnswerSchema>;
 export type QuizContent = QuestionType[];

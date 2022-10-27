@@ -1,11 +1,10 @@
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useQuestion } from "../../use-question-hook";
 
 export function ClozeAnswer() {
 	const { question } = useQuestion("cloze");
 
 	return (
-		<CenteredContainer className="flex flex-col gap-8">
+		<div className="flex flex-col gap-8">
 			<span className="text-slate-400">Vervollständige den nachfolgenden Text:</span>
 
 			<div className="text-justify leading-10">
@@ -18,6 +17,6 @@ export function ClozeAnswer() {
 					</span>
 				))}
 			</div>
-		</CenteredContainer>
+		</div>
 	);
 }

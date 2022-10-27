@@ -4,6 +4,7 @@ import {
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
+import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
@@ -26,6 +27,37 @@ export const courseRouter = t.router({
 				}
 			});
 		}),
+	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+		const course = await database.course.findUniqueOrThrow({
+			where: { slug: input.slug },
+			select: {
+				content: true
+			}
+		});
+
+		const content = (course.content ?? []) as CourseContent;
+		const lessonIds = extractLessonIds(content);
+
+		const lessons = await database.lesson.findMany({
+			where: { lessonId: { in: lessonIds } },
+			select: {
+				lessonId: true,
+				slug: true,
+				title: true,
+				meta: true
+			}
+		});
+
+		const lessonMap: {
+			[lessonId: string]: { title: string; lessonId: string; slug: string; meta: LessonMeta };
+		} = {};
+
+		for (const lesson of lessons) {
+			lessonMap[lesson.lessonId] = lesson as typeof lessons[0] & { meta: LessonMeta };
+		}
+
+		return { content, lessonMap };
+	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input }) => {
 		const courseForDb = mapCourseFormToInsert(input, getRandomId());
 

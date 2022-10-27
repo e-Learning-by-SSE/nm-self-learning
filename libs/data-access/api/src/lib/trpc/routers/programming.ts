@@ -25,7 +25,6 @@ type ExecuteResponse = {
 
 export const programmingRouter = t.router({
 	runtimes: t.procedure.query(async () => {
-		console.log("RUNNING QUERY");
 		const res = await fetch(`${process.env.PISTON_URL}/api/v2/runtimes`);
 
 		if (!res.ok) {

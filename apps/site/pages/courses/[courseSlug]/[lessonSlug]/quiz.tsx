@@ -1,13 +1,20 @@
-import { ChevronLeftIcon, ChevronRightIcon, CogIcon } from "@heroicons/react/solid";
-import { getStaticPropsForLayout, LessonLayout, LessonLayoutProps } from "@self-learning/lesson";
+import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
+import { CheckCircleIcon, CogIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import { useMarkAsCompleted } from "@self-learning/completion";
+import {
+	getStaticPropsForLayout,
+	LessonLayout,
+	LessonLayoutProps,
+	useLessonContext
+} from "@self-learning/lesson";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
-import { Question } from "@self-learning/quiz";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { Question, QuizProvider, useQuiz } from "@self-learning/quiz";
+import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
 	questions: QuestionType[];
@@ -65,25 +72,31 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 export default function QuestionsPage({ course, lesson, questions, markdown }: QuestionProps) {
-	const { slug } = lesson;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
+	// const hasPrevious = nextIndex > 1;
+	// const hasNext = nextIndex < questions.length;
 
-	// const { quizAttemptsInfo } = useQuizAttemptsInfo(
-	// 	lesson.lessonId,
-	// 	session?.user?.name as string
-	// );
-
-	function goToNextQuestion() {
-		router.push(`/courses/${course.slug}/${slug}/quiz?index=${nextIndex}`, undefined, {
+	const goToNextQuestion = useCallback(() => {
+		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true
 		});
-	}
+	}, [nextIndex, course.slug, lesson.slug, router]);
 
-	function goToPreviousQuestion() {
-		router.push(`/courses/${course.slug}/${slug}/quiz?index=${nextIndex - 2}`, undefined, {
+	// function goToPreviousQuestion() {
+	// 	router.push(
+	// 		`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
+	// 		undefined,
+	// 		{
+	// 			shallow: true
+	// 		}
+	// 	);
+	// }
+
+	function goToQuestion(index: number) {
+		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${index}`, undefined, {
 			shallow: true
 		});
 	}
@@ -101,108 +114,221 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 	}, [index, questions]);
 
 	return (
-		<div className="grid grow items-start gap-16 bg-gray-50 px-2 pb-16">
-			<div className="mx-auto flex w-full flex-col gap-8">
-				<QuestionNavigation
-					lesson={lesson}
-					course={course}
-					amount={questions.length}
-					current={nextIndex}
-					hasPrevious={nextIndex > 1}
-					hasNext={nextIndex < questions.length}
-					goToNext={goToNextQuestion}
-					goToPrevious={goToPreviousQuestion}
-				/>
-				<Question
-					key={currentQuestion.questionId}
-					question={currentQuestion}
-					markdown={markdown}
-				/>
+		<QuizProvider
+			questions={questions}
+			goToNextQuestion={goToNextQuestion}
+			reload={router.reload}
+		>
+			<div className="flex w-full flex-col gap-4">
+				<div className="flex w-full flex-col gap-4">
+					<QuizHeader
+						lesson={lesson}
+						course={course}
+						currentIndex={nextIndex - 1}
+						goToQuestion={goToQuestion}
+						questions={questions}
+					/>
+					<Question
+						key={currentQuestion.questionId}
+						question={currentQuestion}
+						markdown={markdown}
+					/>
+					<QuizCompletionSubscriber lesson={lesson} />
+				</div>
 			</div>
-		</div>
+		</QuizProvider>
 	);
+}
+
+/** Component that listens to the `completionState` and marks lesson as completed, when quiz is `completed`. */
+function QuizCompletionSubscriber({ lesson }: { lesson: QuestionProps["lesson"] }) {
+	const { completionState } = useQuiz();
+	const unsubscribeRef = useRef(false);
+	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
+
+	useEffect(() => {
+		if (!unsubscribeRef.current && completionState === "completed") {
+			unsubscribeRef.current = true;
+			console.log("QuizCompletionSubscriber: Marking as completed");
+			markAsCompleted();
+		}
+	}, [completionState, markAsCompleted]);
+
+	return <></>;
 }
 
 QuestionsPage.getLayout = LessonLayout;
 
-function QuestionNavigation({
+function QuizHeader({
 	lesson,
 	course,
-	current,
-	amount,
-	hasPrevious,
-	hasNext,
-	goToNext,
-	goToPrevious
+	questions,
+	currentIndex,
+	goToQuestion
 }: {
 	lesson: QuestionProps["lesson"];
 	course: QuestionProps["course"];
-	current: number;
-	amount: number;
-	hasPrevious: boolean;
-	hasNext: boolean;
-	goToNext: () => void;
-	goToPrevious: () => void;
+	currentIndex: number;
+	questions: QuizContent;
+	goToQuestion: (index: number) => void;
 }) {
-	// const { submitAnswers } = useQuizAttempt();
-	// const { data: session } = useSession({ required: true });
+	const { chapterName, nextLesson } = useLessonContext(lesson.lessonId, course.slug);
+	const { evaluations, completionState } = useQuiz();
+	const successDialogOpenedRef = useRef(false);
+	const failureDialogOpenedRef = useRef(false);
+	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+	const [showFailureDialog, setShowFailureDialog] = useState(false);
+
+	if (!successDialogOpenedRef.current && completionState === "completed") {
+		successDialogOpenedRef.current = true;
+		setShowSuccessDialog(true);
+	}
+
+	if (!failureDialogOpenedRef.current && completionState === "failed") {
+		failureDialogOpenedRef.current = true;
+		setShowFailureDialog(true);
+	}
 
 	return (
-		<CenteredContainer>
-			<div className="flex flex-col gap-4 rounded-b-lg border-x border-b border-light-border bg-white p-4">
-				<div className="flex flex-col gap-2">
-					<span className="flex justify-between">
-						<Link href={`/courses/${course.slug}/${lesson.slug}`}>
-							<a>
-								<h1 className="text-lg text-secondary">{lesson.title}</h1>
-							</a>
-						</Link>
-
-						<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>
-							<a className="" title="Editieren">
-								<CogIcon className="h-5 text-light" />
-							</a>
-						</Link>
-					</span>
-					<h2 className="text-4xl">Lernkontrolle</h2>
-				</div>
-				<div className="flex flex-wrap items-center justify-between gap-6">
-					<span>
-						Frage {current} von {amount}
-					</span>
-					<div className="flex flex-wrap place-content-end gap-4">
-						<button
-							disabled={!hasPrevious}
-							className="btn-stroked w-full sm:w-fit"
-							onClick={goToPrevious}
-						>
-							<ChevronLeftIcon className="h-5" />
-							<span>Vorherige Frage</span>
-						</button>
-						<button
-							disabled={!hasNext}
-							className="btn-primary w-full sm:w-fit"
-							onClick={goToNext}
-						>
-							<span>Nächste Frage</span>
-							<ChevronRightIcon className="h-5" />
-						</button>
-					</div>
-					{/* <button
-				className="btn-primary mt-8"
-				onClick={() =>
-					submitAnswers({
-						username: session?.user?.name as string,
-						lessonId: lesson.lessonId,
-						answers: [],
-						state: "COMPLETED"
-					})
-				}
-			>
-				Submit Answers
-			</button> */}
-				</div>
+		<div className="flex flex-col gap-4">
+			<div className="relative flex flex-col gap-2">
+				<span className="font-semibold text-secondary">{chapterName}</span>
+				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
+					<a>
+						<h1 className="text-4xl">{lesson.title}</h1>
+					</a>
+				</Link>
+				<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>
+					<a className="absolute right-0 top-1">
+						<CogIcon className="h-5 text-gray-400" />
+					</a>
+				</Link>
 			</div>
-		</CenteredContainer>
+
+			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
+				{questions.map((question, index) => (
+					<Tab key={question.questionId}>
+						<QuestionTab index={index} evaluation={evaluations[question.questionId]} />
+					</Tab>
+				))}
+			</Tabs>
+
+			{showSuccessDialog && (
+				<QuizCompletionDialog
+					course={course}
+					lesson={lesson}
+					nextLesson={nextLesson}
+					onClose={() => {
+						setShowSuccessDialog(false);
+					}}
+				/>
+			)}
+
+			{showFailureDialog && (
+				<QuizFailedDialog
+					lesson={lesson}
+					onClose={() => {
+						setShowFailureDialog(false);
+					}}
+				/>
+			)}
+		</div>
+	);
+}
+
+function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; index: number }) {
+	const isCorrect = props.evaluation?.isCorrect === true;
+	const isIncorrect = props.evaluation?.isCorrect === false;
+
+	return (
+		<span className="flex items-center gap-4">
+			{isCorrect ? (
+				<CheckCircleIcon className="h-5 text-secondary" />
+			) : isIncorrect ? (
+				<XCircleIcon className="h-5 text-red-500" />
+			) : (
+				<CheckCircleIconOutline className="h-5 text-gray-400" />
+			)}
+			<span data-testid="questionTab">Frage {props.index + 1}</span>
+		</span>
+	);
+}
+
+function QuizCompletionDialog({
+	course,
+	lesson,
+	nextLesson,
+	onClose
+}: {
+	course: QuestionProps["course"];
+	lesson: QuestionProps["lesson"];
+	nextLesson: { title: string; slug: string } | null;
+	onClose: OnDialogCloseFn<void>;
+}) {
+	return (
+		<Dialog onClose={onClose} title="Geschafft!" style={{ maxWidth: "600px" }}>
+			<div className="flex flex-col text-sm text-light">
+				<p>
+					Du hast die Lerneinheit{" "}
+					<span className="font-semibold text-secondary">{lesson.title}</span> erfolgreich
+					abgeschlossen.
+				</p>
+
+				{nextLesson ? (
+					<div className="flex flex-col">
+						<p>Die nächste Lerneinheit ist ...</p>
+						<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
+							{nextLesson.title}
+						</span>
+					</div>
+				) : (
+					<p>
+						Der Kurs{" "}
+						<span className="font-semibold text-secondary">{course.title}</span> enthält
+						keine weiteren Lerneinheiten für dich.
+					</p>
+				)}
+			</div>
+
+			<DialogActions onClose={onClose}>
+				{nextLesson && (
+					<Link href={`/courses/${course.slug}/${nextLesson.slug}`}>
+						<a className="btn-primary">
+							<span>Zur nächsten Lerneinheit</span>
+							<PlayIcon className="h-5 shrink-0" />
+						</a>
+					</Link>
+				)}
+			</DialogActions>
+		</Dialog>
+	);
+}
+
+function QuizFailedDialog({
+	lesson,
+	onClose
+}: {
+	lesson: QuestionProps["lesson"];
+	onClose: OnDialogCloseFn<void>;
+}) {
+	const { reload } = useQuiz();
+
+	return (
+		<Dialog onClose={onClose} title="Nicht Bestanden" style={{ maxWidth: "600px" }}>
+			<div className="flex flex-col text-sm text-light">
+				<p>
+					Du hast leider zu viele Fragen falsch beantwortet, um die Lerneinheit{" "}
+					<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
+					abzuschließen.
+				</p>
+			</div>
+
+			<DialogActions onClose={onClose}>
+				<button className="btn-primary" onClick={reload}>
+					<span>Erneut probieren</span>
+					<RefreshIcon className="h-5 shrink-0" />
+				</button>
+			</DialogActions>
+		</Dialog>
 	);
 }

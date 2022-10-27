@@ -1,10 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import {
-	CourseEditor,
-	CourseFormModel,
-	mapCourseContentToFormContent
-} from "@self-learning/teaching";
+import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
@@ -70,7 +66,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		slug: course.slug,
 		subjectId: course.subject?.subjectId ?? null,
 		authors: course.authors.map(author => ({ slug: author.slug })),
-		content: mapCourseContentToFormContent(content, lessonsById)
+		content: content
 	};
 
 	return {
