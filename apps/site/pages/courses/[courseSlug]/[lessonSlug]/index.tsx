@@ -121,7 +121,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
 
 			{preferredMediaType === "article" && markdown.article && (
-				<MarkdownContainer className="pt-4">
+				<MarkdownContainer className="mx-auto w-full pt-8">
 					<MDXRemote {...markdown.article} />
 				</MarkdownContainer>
 			)}
