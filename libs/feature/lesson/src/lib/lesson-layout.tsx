@@ -141,18 +141,20 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 		[content]
 	);
 
-	if (!content) {
-		return (
-			<aside className="playlist-scroll left-[max(0px,calc(50%-50rem))] right-auto h-full w-full animate-pulse divide-y divide-gray-200 overflow-auto border-r border-r-gray-200 bg-gray-200 px-8 py-8 xl:fixed xl:max-h-[calc(100vh-62px)] xl:max-w-[24rem]"></aside>
-		);
-	}
-
 	return (
-		<Playlist
-			content={playlistContent}
-			course={course}
-			lesson={lesson}
-			completion={completion}
-		/>
+		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:max-w-[24rem] xl:border-t-0 xl:border-r xl:pr-4">
+			{content ? (
+				<Playlist
+					content={playlistContent}
+					course={course}
+					lesson={lesson}
+					completion={completion}
+				/>
+			) : (
+				<div className="h-full pt-8">
+					<div className="h-full animate-pulse rounded-lg bg-gray-200"></div>
+				</div>
+			)}
+		</aside>
 	);
 }

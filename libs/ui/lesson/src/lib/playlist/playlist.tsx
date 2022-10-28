@@ -60,7 +60,7 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 	}, [completion, content]);
 
 	return (
-		<aside className="playlist-scroll sticky top-[60px] w-full overflow-auto border-t border-r-gray-200 pr-8 pb-8 xl:h-[calc(100vh-62px)] xl:max-w-[24rem] xl:border-t-0 xl:border-r">
+		<>
 			<PlaylistHeader
 				content={content}
 				course={course}
@@ -77,7 +77,7 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 					/>
 				))}
 			</div>
-		</aside>
+		</>
 	);
 }
 
