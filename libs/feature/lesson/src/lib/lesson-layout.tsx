@@ -142,7 +142,7 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 	);
 
 	return (
-		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:max-w-[24rem] xl:border-t-0 xl:border-r xl:pr-4">
+		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
 			{content ? (
 				<Playlist
 					content={playlistContent}

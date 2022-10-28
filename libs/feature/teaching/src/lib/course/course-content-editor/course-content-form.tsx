@@ -8,7 +8,6 @@ import {
 	SectionHeader,
 	showToast
 } from "@self-learning/ui/common";
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
@@ -47,13 +46,13 @@ export function CourseContentForm() {
 	const { setValue } = useFormContext<{ content: unknown[] }>(); // widen content type to prevent circular path error
 
 	return (
-		<CenteredContainer>
+		<section>
 			<SectionHeader title="Inhalt" subtitle="Der Inhalt des Kurses." />
 
 			<div className="rounded-lg border border-light-border bg-white p-4">TODO</div>
 
 			{openNewChapterDialog && <NewChapterDialog onClose={addChapterDialogClosed} />}
-		</CenteredContainer>
+		</section>
 	);
 }
 

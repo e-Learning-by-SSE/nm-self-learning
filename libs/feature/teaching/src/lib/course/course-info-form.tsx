@@ -1,6 +1,4 @@
-import { SectionHeader } from "@self-learning/ui/common";
 import { Form, LabeledField, Upload } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
 
@@ -29,10 +27,10 @@ export function CourseInfoForm() {
 	} = useFormContext<CourseFormModel & { content: unknown[] }>(); // widen content type to prevent circular path error
 
 	return (
-		<CenteredContainer>
-			<SectionHeader title="Daten" subtitle="Informationen über diesen Kurs." />
+		<Form.SidebarSection>
+			<Form.SidebarSectionTitle title="Daten" subtitle="Informationen über diesen Kurs." />
 
-			<Form.SectionCard>
+			<div className="flex flex-col gap-4">
 				<LabeledField label="Titel" error={errors.title?.message}>
 					<input {...register("title")} placeholder="Der Neue Kurs" />
 				</LabeledField>
@@ -65,10 +63,10 @@ export function CourseInfoForm() {
 								mediaType="image"
 								onUploadCompleted={field.onChange}
 								preview={
-									<div className="aspect-video h-64 rounded-lg">
+									<div className="aspect-video w-full rounded-lg">
 										{field.value && (
 											<img
-												className="aspect-video h-64 rounded-lg object-cover"
+												className="aspect-video w-full rounded-lg object-cover"
 												src={field.value}
 												alt="Thumbnail"
 											/>
@@ -79,7 +77,7 @@ export function CourseInfoForm() {
 						)}
 					/>
 				</LabeledField>
-			</Form.SectionCard>
-		</CenteredContainer>
+			</div>
+		</Form.SidebarSection>
 	);
 }

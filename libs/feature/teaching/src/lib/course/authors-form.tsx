@@ -1,8 +1,8 @@
 import { Combobox, Dialog as HeadlessDialog } from "@headlessui/react";
 import { PlusIcon, SearchIcon, XIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
-import { IconButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { IconButton, OnDialogCloseFn } from "@self-learning/ui/common";
+import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
@@ -37,8 +37,8 @@ export function AuthorsForm() {
 	}
 
 	return (
-		<CenteredContainer>
-			<SectionHeader title="Autoren" subtitle="Die Autoren dieses Kurses." />
+		<Form.SidebarSection>
+			<Form.SidebarSectionTitle title="Autoren" subtitle="Die Autoren dieses Kurses." />
 
 			<IconButton
 				type="button"
@@ -50,11 +50,11 @@ export function AuthorsForm() {
 			/>
 
 			{authors.length === 0 ? (
-				<p className="mt-8 text-sm text-light">
+				<p className="text-sm text-light">
 					Für diesen Kurs sind noch keine Autoren hinterlegt.
 				</p>
 			) : (
-				<ul className="mt-8 flex flex-wrap gap-4">
+				<ul className="grid gap-4">
 					{authors.map(({ slug }, index) => (
 						<Author key={slug} slug={slug} onRemove={() => handleRemove(index)} />
 					))}
@@ -62,7 +62,7 @@ export function AuthorsForm() {
 			)}
 
 			{openAddDialog && <AddAuthorDialog open={openAddDialog} onClose={handleAdd} />}
-		</CenteredContainer>
+		</Form.SidebarSection>
 	);
 }
 
@@ -70,33 +70,35 @@ function Author({ slug, onRemove }: { slug: string; onRemove: () => void }) {
 	const { data: author } = trpc.author.getBySlug.useQuery({ slug });
 
 	if (!author) {
-		return <li className="rounded-lg border border-light-border p-2">Loading...</li>;
+		return <li className="rounded-lg border border-light-border bg-white p-2">Loading...</li>;
 	}
 
 	return (
 		<li
-			className="flex items-center gap-2 rounded-lg border border-light-border bg-white pr-2 text-sm"
+			className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-2 text-sm"
 			data-testid="author"
 		>
-			<div className="h-12 w-12 rounded-l-lg bg-gray-100">
+			<div className="h-12 w-12 shrink-0 rounded-l-lg bg-gray-200">
 				{author.imgUrl && (
 					<img
 						src={author.imgUrl}
 						alt={author.displayName}
-						className="h-12 w-12 rounded-l-lg"
+						className="h-12 w-12 shrink-0 rounded-l-lg"
 					/>
 				)}
 			</div>
 
-			<Link href={`/authors/${author.slug}`}>
-				<a
-					target="_blank"
-					className="font-medium hover:text-secondary"
-					rel="noopener noreferrer"
-				>
-					{author.displayName}
-				</a>
-			</Link>
+			<span className="w-full">
+				<Link href={`/authors/${author.slug}`}>
+					<a
+						target="_blank"
+						className="font-medium hover:text-secondary"
+						rel="noopener noreferrer"
+					>
+						{author.displayName}
+					</a>
+				</Link>
+			</span>
 
 			<button
 				type="button"

@@ -30,7 +30,7 @@ export function SectionCard({ children }: { children: React.ReactNode }) {
  * </Form.MarkdownWithPreviewContainer>
  */
 export function MarkdownWithPreviewContainer({ children }: { children: React.ReactNode }) {
-	return <div className="mx-auto max-w-7xl">{children}</div>;
+	return <div className="mx-auto">{children}</div>;
 }
 
 /**
@@ -71,5 +71,22 @@ export function Title({
 			{button}
 			{specialButtons}
 		</CenteredContainer>
+	);
+}
+
+export function SidebarSection({ children }: { children: React.ReactNode }) {
+	return (
+		<section className="flex flex-col gap-4 border-b border-light-border py-4 last:border-b-0">
+			{children}
+		</section>
+	);
+}
+
+export function SidebarSectionTitle({ title, subtitle }: { title: string; subtitle: string }) {
+	return (
+		<div>
+			<h2 className="text-xl">{title}</h2>
+			<span className="text-sm text-light">{subtitle}</span>
+		</div>
 	);
 }
