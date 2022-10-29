@@ -56,17 +56,55 @@ export function useCourseContentForm() {
 					if (lesson.lessonId === lessonId) {
 						const newChapter = { ...chapter, content: [...chapter.content] };
 
-						if (direction === "up" && lessonIndex > 0) {
-							const previousLesson = newChapter.content[lessonIndex - 1];
-							newChapter.content[lessonIndex - 1] = lesson;
-							newChapter.content[lessonIndex] = previousLesson;
-						} else if (
-							direction === "down" &&
-							lessonIndex < chapter.content.length - 1
-						) {
-							const nextLesson = { ...chapter.content[lessonIndex + 1] };
-							newChapter.content[lessonIndex] = nextLesson;
-							newChapter.content[lessonIndex + 1] = lesson;
+						if (direction === "up") {
+							if (lessonIndex === 0 && chapterIndex === 0) {
+								return;
+							}
+
+							if (lessonIndex === 0 && chapterIndex > 0) {
+								// Move to previous chapter
+								// Remove from current chapter
+								newChapter.content = newChapter.content.filter(
+									x => x.lessonId !== lessonId
+								);
+								// Add to end of previous chapter
+								newContent[chapterIndex - 1].content = [
+									...newContent[chapterIndex - 1].content,
+									lesson
+								];
+							} else {
+								const previousLesson = newChapter.content[lessonIndex - 1];
+								newChapter.content[lessonIndex - 1] = lesson;
+								newChapter.content[lessonIndex] = previousLesson;
+							}
+						}
+
+						if (direction === "down") {
+							if (
+								lessonIndex === chapter.content.length - 1 &&
+								chapterIndex === newContent.length - 1
+							) {
+								return;
+							}
+
+							if (
+								lessonIndex === chapter.content.length - 1 &&
+								chapterIndex < newContent.length - 1
+							) {
+								// Last lesson -> Move to next chapter
+								// Remove from current chapter
+								newChapter.content.pop();
+								// Add to start of next chapter
+								newContent[chapterIndex + 1].content = [
+									lesson,
+									...newContent[chapterIndex + 1].content
+								];
+							} else {
+								// Not last lesson -> Move down
+								const nextLesson = { ...chapter.content[lessonIndex + 1] };
+								newChapter.content[lessonIndex] = nextLesson;
+								newChapter.content[lessonIndex + 1] = lesson;
+							}
 						}
 
 						newContent[chapterIndex] = newChapter;
