@@ -14,7 +14,7 @@ export const lessonRouter = t.router({
 	findOne: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
 		return database.lesson.findUniqueOrThrow({
 			where: { lessonId: input.lessonId },
-			select: { lessonId: true, title: true, slug: true }
+			select: { lessonId: true, title: true, slug: true, meta: true }
 		});
 	}),
 	findMany: authProcedure.input(z.object({ title: z.string().optional() })).query(({ input }) => {

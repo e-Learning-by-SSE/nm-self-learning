@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
@@ -9,7 +10,7 @@ import { useRef } from "react";
 
 type EditCourseProps = {
 	course: CourseFormModel;
-	lessons: { title: string; lessonId: string; slug: string }[];
+	lessons: { title: string; lessonId: string; slug: string; meta: Prisma.JsonValue }[];
 };
 
 export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ params }) => {
@@ -47,7 +48,8 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		select: {
 			title: true,
 			slug: true,
-			lessonId: true
+			lessonId: true,
+			meta: true
 		}
 	});
 
