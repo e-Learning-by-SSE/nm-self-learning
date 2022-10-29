@@ -35,6 +35,7 @@ import { useCourseContentForm } from "./use-content-form";
 export function CourseContentForm() {
 	const {
 		content,
+		moveChapter,
 		moveLesson,
 		openNewChapterDialog,
 		addChapterDialogClosed,
@@ -51,8 +52,9 @@ export function CourseContentForm() {
 					<ChapterNode
 						key={chapter.title}
 						chapter={chapter}
-						chapterNr={index + 1}
+						index={index}
 						onAddLesson={onAddLesson}
+						moveChapter={moveChapter}
 						moveLesson={moveLesson}
 					/>
 				))}
@@ -68,7 +70,13 @@ export function CourseContentForm() {
 	);
 }
 
-function LessonNode({ lesson, moveLesson }: { lesson: { lessonId: string }; moveLesson: any }) {
+function LessonNode({
+	lesson,
+	moveLesson
+}: {
+	lesson: { lessonId: string };
+	moveLesson: (lessonId: string, direction: "up" | "down") => void;
+}) {
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
@@ -108,6 +116,7 @@ function LessonNode({ lesson, moveLesson }: { lesson: { lessonId: string }; move
 				<div className="flex gap-4">
 					<button
 						type="button"
+						title="Nach oben"
 						className="rounded p-1 hover:bg-gray-300"
 						onClick={() => moveLesson(lesson.lessonId, "up")}
 					>
@@ -115,6 +124,7 @@ function LessonNode({ lesson, moveLesson }: { lesson: { lessonId: string }; move
 					</button>
 					<button
 						type="button"
+						title="Nach unten"
 						className="rounded p-1 hover:bg-gray-300"
 						onClick={() => moveLesson(lesson.lessonId, "down")}
 					>
@@ -149,14 +159,16 @@ function LessonNode({ lesson, moveLesson }: { lesson: { lessonId: string }; move
 
 function ChapterNode({
 	chapter,
-	chapterNr,
+	index,
 	onAddLesson,
+	moveChapter,
 	moveLesson
 }: {
 	chapter: CourseChapter;
-	chapterNr: number;
+	index: number;
 	onAddLesson(chapterId: string, lesson: any): void;
-	moveLesson: any;
+	moveChapter: (index: number, direction: "up" | "down") => void;
+	moveLesson: (lessonId: string, direction: "up" | "down") => void;
 }) {
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
@@ -197,7 +209,7 @@ function ChapterNode({
 			<span className="flex items-center justify-between gap-4">
 				<span className="flex items-center gap-4 whitespace-nowrap text-xl font-semibold ">
 					<span className="w-fit min-w-[24px] text-center text-gray-400">
-						{chapterNr}.
+						{index + 1}.
 					</span>
 					<span className="tracking-tight text-secondary">{chapter.title}</span>
 				</span>
@@ -222,21 +234,43 @@ function ChapterNode({
 					)}
 
 					<ul className="flex flex-col gap-1">
-						{chapter.content.map((lesson, index) => (
+						{chapter.content.map(lesson => (
 							<LessonNode
 								key={lesson.lessonId}
 								lesson={lesson}
 								moveLesson={moveLesson}
 							/>
 						))}
+					</ul>
+
+					<div className="flex items-center justify-between gap-4 pt-2">
 						<button
 							type="button"
-							className="mx-auto mt-2 flex w-fit items-center rounded-full bg-secondary p-2 transition-transform hover:scale-110"
+							className="mx-auto flex w-fit items-center rounded-full bg-secondary p-2 transition-transform hover:scale-110"
 							title="Hinzufügen"
 						>
 							<PlusIcon className="h-5 text-white" />
 						</button>
-					</ul>
+
+						<div className="flex gap-4">
+							<button
+								type="button"
+								title="Nach oben"
+								className="rounded p-1 hover:bg-gray-300"
+								onClick={() => moveChapter(index, "up")}
+							>
+								<ArrowUpIcon className="h-3" />
+							</button>
+							<button
+								type="button"
+								title="Nach unten"
+								className="rounded p-1 hover:bg-gray-300"
+								onClick={() => moveChapter(index, "down")}
+							>
+								<ArrowDownIcon className="h-3" />
+							</button>
+						</div>
+					</div>
 				</>
 			)}
 

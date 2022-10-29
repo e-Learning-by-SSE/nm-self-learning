@@ -43,6 +43,26 @@ export function useCourseContentForm() {
 		[setContent]
 	);
 
+	const moveChapter = useCallback(
+		(index: number, direction: "up" | "down") => {
+			setContent(prev => {
+				if (
+					(direction === "up" && index === 0) ||
+					(direction === "down" && index === prev.length - 1)
+				) {
+					return prev;
+				}
+
+				const chapters = [...prev];
+				const chapter = chapters[index];
+				chapters.splice(index, 1);
+				chapters.splice(index + (direction === "up" ? -1 : 1), 0, chapter);
+				return chapters;
+			});
+		},
+		[setContent]
+	);
+
 	const moveLesson = useCallback(
 		(lessonId: string, direction: "up" | "down") => {
 			const newContent = [...content];
@@ -119,6 +139,7 @@ export function useCourseContentForm() {
 
 	return {
 		content,
+		moveChapter,
 		moveLesson,
 		// summary,
 		openNewChapterDialog,
