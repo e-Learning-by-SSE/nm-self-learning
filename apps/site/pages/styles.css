@@ -88,7 +88,7 @@ video {
 }
 
 .btn-stroked {
-	@apply flex place-content-center items-center gap-2 rounded-lg border border-indigo-100 px-8 py-2 text-sm font-semibold disabled:opacity-25;
+	@apply flex place-content-center items-center gap-2 rounded-lg border border-gray-200 px-8 py-2 text-sm font-medium disabled:opacity-25;
 }
 
 .btn-small {
@@ -98,7 +98,7 @@ video {
 input,
 textarea,
 .textfield {
-	@apply rounded-lg border border-light-border p-2 text-sm placeholder:text-slate-400 focus:border-secondary disabled:bg-gray-100;
+	@apply rounded-lg border border-light-border p-2 text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
 }
 
 .glass {

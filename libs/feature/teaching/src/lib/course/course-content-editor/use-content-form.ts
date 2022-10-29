@@ -1,9 +1,6 @@
-import { CourseContent } from "@self-learning/types";
+import { CourseChapter, CourseContent, CourseLesson } from "@self-learning/types";
 import { useCallback, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { Summary } from "./types";
-
-export type NewChapterDialogResult = { title: string; description?: string };
 
 export function useCourseContentForm() {
 	const { setValue, getValues } = useFormContext<{ content: CourseContent }>();
@@ -19,25 +16,28 @@ export function useCourseContentForm() {
 	// 	return { count: sum.count, competences: [...sum.competences.values()] };
 	// }, [content]);
 
-	const [openNewChapterDialog, setOpenNewChapterDialog] = useState(false);
+	const addChapter = useCallback((chapter: CourseChapter) => {
+		setContent(prev => [...prev, chapter]);
+	}, []);
 
-	const onAddChapter = useCallback(() => {
-		setOpenNewChapterDialog(true);
-	}, [setOpenNewChapterDialog]);
-
-	function addChapterDialogClosed(result?: NewChapterDialogResult) {
-		console.log(result);
-		setOpenNewChapterDialog(false);
-
-		if (result) {
-			//
-		}
-	}
-
-	const onAddLesson = useCallback(
-		(chapterId: string, lesson: { lessonId: string }) => {
+	const updateChapter = useCallback(
+		(index: number, chapter: CourseChapter) => {
 			setContent(prev => {
-				return prev;
+				const newContent = [...prev];
+				newContent[index] = chapter;
+				return newContent;
+			});
+		},
+		[setContent]
+	);
+
+	const addLesson = useCallback(
+		(chapterIndex: number, lesson: CourseLesson) => {
+			setContent(prev => {
+				const newContent = [...prev];
+				const chapter = newContent[chapterIndex];
+				chapter.content = [...chapter.content, { lessonId: lesson.lessonId }];
+				return newContent;
 			});
 		},
 		[setContent]
@@ -137,26 +137,42 @@ export function useCourseContentForm() {
 		[content]
 	);
 
+	const removeChapter = useCallback(
+		(index: number) => {
+			setContent(prev => {
+				const newContent = [...prev];
+				newContent.splice(index, 1);
+				return newContent;
+			});
+		},
+		[setContent]
+	);
+
+	const removeLesson = useCallback(
+		(chapterIndex: number, lessonId: string) => {
+			setContent(prev => {
+				const newContent = [...prev];
+
+				const chapter = newContent[chapterIndex];
+				newContent[chapterIndex] = {
+					...chapter,
+					content: chapter.content.filter(x => x.lessonId !== lessonId)
+				};
+
+				return newContent;
+			});
+		},
+		[setContent]
+	);
+
 	return {
 		content,
+		updateChapter,
+		removeChapter,
+		removeLesson,
 		moveChapter,
 		moveLesson,
-		// summary,
-		openNewChapterDialog,
-		addChapterDialogClosed,
-		onAddChapter,
-		onAddLesson
+		addChapter,
+		addLesson
 	};
-}
-
-function createSummary(content: any) {
-	const summary: Summary = {
-		count: {
-			chapters: 0,
-			lessons: 0,
-			quizzes: 0
-		}
-	};
-
-	return summary;
 }

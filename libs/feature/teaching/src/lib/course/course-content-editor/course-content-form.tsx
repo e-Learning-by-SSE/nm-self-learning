@@ -3,18 +3,22 @@ import {
 	ArrowUpIcon,
 	ChevronDownIcon,
 	ChevronLeftIcon,
-	PlusIcon
+	PlusIcon,
+	TrashIcon,
+	XIcon
 } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { QuizContent } from "@self-learning/question-types";
-import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
+import { CourseChapter, CourseLesson, LessonContent, LessonMeta } from "@self-learning/types";
 import { OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
 import { useState } from "react";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { EditLessonDialog } from "./dialogs/edit-lesson-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
-import { NewChapterDialog } from "./dialogs/new-chapter-dialog";
+import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { useCourseContentForm } from "./use-content-form";
+
+type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
 
 /**
  * Allows the user to edit the course content.
@@ -35,13 +39,46 @@ import { useCourseContentForm } from "./use-content-form";
 export function CourseContentForm() {
 	const {
 		content,
+		updateChapter,
 		moveChapter,
 		moveLesson,
-		openNewChapterDialog,
-		addChapterDialogClosed,
-		onAddChapter,
-		onAddLesson
+		addChapter,
+		addLesson,
+		removeChapter,
+		removeLesson
 	} = useCourseContentForm();
+
+	const [openNewChapterDialog, setOpenNewChapterDialog] = useState(false);
+
+	function handleAddChapterDialogClose(result?: CourseChapter) {
+		if (result) {
+			addChapter(result);
+		}
+		setOpenNewChapterDialog(false);
+	}
+
+	function onRemoveChapter(index: number) {
+		const confirmed = window.confirm(
+			`Kapitel "${content[index].title}" wirklich entfernen? Hinweis: Enthaltene Lerneinheiten werden nicht gelöscht.`
+		);
+
+		if (confirmed) {
+			removeChapter(index);
+		}
+	}
+
+	const onRemoveLesson: UseCourseContentForm["removeLesson"] = (
+		chapterIndex,
+		lessonId: string
+	) => {
+		const confirmed = window.confirm(
+			"Lerneinheit wirklich entfernen? Hinweis: Die Lerneinheit wird nur aus dem Kapitel entfernt und nicht gelöscht."
+		);
+
+		if (confirmed) {
+			removeLesson(chapterIndex, lessonId);
+		}
+	};
 
 	return (
 		<section>
@@ -53,29 +90,38 @@ export function CourseContentForm() {
 						key={chapter.title}
 						chapter={chapter}
 						index={index}
-						onAddLesson={onAddLesson}
+						onChapterUpdated={updateChapter}
+						onLessonAdded={addLesson}
 						moveChapter={moveChapter}
+						onRemove={() => onRemoveChapter(index)}
 						moveLesson={moveLesson}
+						removeLesson={onRemoveLesson}
 					/>
 				))}
 			</ul>
 
-			<button className="btn-primary mt-4" onClick={onAddChapter}>
+			<button
+				type="button"
+				className="btn-primary mt-4"
+				onClick={() => setOpenNewChapterDialog(true)}
+			>
 				<PlusIcon className="mr-2 h-5" />
 				<span>Kapitel hinzufügen</span>
 			</button>
 
-			{openNewChapterDialog && <NewChapterDialog onClose={addChapterDialogClosed} />}
+			{openNewChapterDialog && <ChapterDialog onClose={handleAddChapterDialogClose} />}
 		</section>
 	);
 }
 
 function LessonNode({
 	lesson,
-	moveLesson
+	moveLesson,
+	onRemove
 }: {
 	lesson: { lessonId: string };
-	moveLesson: (lessonId: string, direction: "up" | "down") => void;
+	moveLesson: UseCourseContentForm["moveLesson"];
+	onRemove: () => void;
 }) {
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
@@ -148,11 +194,22 @@ function LessonNode({
 				</button>
 			</div>
 
-			{(data?.meta as LessonMeta)?.hasQuiz && (
-				<span className="rounded-full bg-secondary px-3 py-[2px] text-xs font-medium text-white">
-					Lernkontrolle
-				</span>
-			)}
+			<div className="flex gap-4">
+				{(data?.meta as LessonMeta)?.hasQuiz && (
+					<span className="rounded-full bg-secondary px-3 py-[2px] text-xs font-medium text-white">
+						Lernkontrolle
+					</span>
+				)}
+
+				<button
+					type="button"
+					className="text-gray-400 hover:text-red-500"
+					title="Entfernen"
+					onClick={onRemove}
+				>
+					<XIcon className="h-4 " />
+				</button>
+			</div>
 		</span>
 	);
 }
@@ -160,18 +217,25 @@ function LessonNode({
 function ChapterNode({
 	chapter,
 	index,
-	onAddLesson,
+	onLessonAdded,
 	moveChapter,
-	moveLesson
+	moveLesson,
+	onChapterUpdated,
+	onRemove,
+	removeLesson
 }: {
 	chapter: CourseChapter;
 	index: number;
-	onAddLesson(chapterId: string, lesson: any): void;
-	moveChapter: (index: number, direction: "up" | "down") => void;
-	moveLesson: (lessonId: string, direction: "up" | "down") => void;
+	onLessonAdded: UseCourseContentForm["addLesson"];
+	moveChapter: UseCourseContentForm["moveChapter"];
+	moveLesson: UseCourseContentForm["moveLesson"];
+	onChapterUpdated: UseCourseContentForm["updateChapter"];
+	onRemove: () => void;
+	removeLesson: UseCourseContentForm["removeLesson"];
 }) {
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
+	const [editChapterDialogOpen, setEditChapterDialogOpen] = useState(false);
 	const [expanded, setExpanded] = useState(true);
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
@@ -179,7 +243,7 @@ function ChapterNode({
 		setLessonSelectorOpen(false);
 
 		if (lesson) {
-			// onAddLesson(chapter.chapterId, lesson);
+			onLessonAdded(index, lesson);
 		}
 	}
 
@@ -192,7 +256,7 @@ function ChapterNode({
 			console.log("Creating lesson...", lesson);
 			const result = await createLessonAsync(lesson);
 			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
-			// onAddLesson(chapter.chapterId, result);
+			onLessonAdded(index, { lessonId: result.lessonId });
 			setCreateLessonDialogOpen(false);
 		} catch (error) {
 			console.error(error);
@@ -204,8 +268,16 @@ function ChapterNode({
 		}
 	}
 
+	function handleEditChapterDialogClosed(updatedChapter?: CourseChapter) {
+		if (updatedChapter) {
+			onChapterUpdated(index, updatedChapter);
+		}
+
+		setEditChapterDialogOpen(false);
+	}
+
 	return (
-		<li className="flex flex-col rounded-lg bg-gray-100 p-4">
+		<li className="flex flex-col gap-2 rounded-lg bg-gray-100 p-4">
 			<span className="flex items-center justify-between gap-4">
 				<span className="flex items-center gap-4 whitespace-nowrap text-xl font-semibold ">
 					<span className="w-fit min-w-[24px] text-center text-gray-400">
@@ -230,7 +302,7 @@ function ChapterNode({
 			{expanded && (
 				<>
 					{chapter.description && chapter.description.length > 0 && (
-						<p className="pt-2 pb-4 text-sm text-light">{chapter.description}</p>
+						<p className="pb-4 text-sm text-light">{chapter.description}</p>
 					)}
 
 					<ul className="flex flex-col gap-1">
@@ -239,19 +311,12 @@ function ChapterNode({
 								key={lesson.lessonId}
 								lesson={lesson}
 								moveLesson={moveLesson}
+								onRemove={() => removeLesson(index, lesson.lessonId)}
 							/>
 						))}
 					</ul>
 
-					<div className="flex items-center justify-between gap-4 pt-2">
-						<button
-							type="button"
-							className="mx-auto flex w-fit items-center rounded-full bg-secondary p-2 transition-transform hover:scale-110"
-							title="Hinzufügen"
-						>
-							<PlusIcon className="h-5 text-white" />
-						</button>
-
+					<div className="flex items-center gap-4 px-4 pt-4">
 						<div className="flex gap-4">
 							<button
 								type="button"
@@ -270,6 +335,33 @@ function ChapterNode({
 								<ArrowDownIcon className="h-3" />
 							</button>
 						</div>
+						<button
+							type="button"
+							className="btn-stroked"
+							onClick={() => setEditChapterDialogOpen(true)}
+						>
+							Editieren
+						</button>
+
+						<button
+							type="button"
+							className="btn-stroked"
+							onClick={() => setCreateLessonDialogOpen(true)}
+						>
+							Neue Lerneinheit erstellen
+						</button>
+
+						<button
+							type="button"
+							className="btn-stroked"
+							onClick={() => setLessonSelectorOpen(true)}
+						>
+							Lerneinheit verknüpfen
+						</button>
+
+						<button type="button" className="btn-stroked" onClick={onRemove}>
+							Entfernen
+						</button>
 					</div>
 				</>
 			)}
@@ -278,6 +370,9 @@ function ChapterNode({
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 			)}
 			{createLessonDialogOpen && <EditLessonDialog onClose={handleLessonEditorClosed} />}
+			{editChapterDialogOpen && (
+				<ChapterDialog chapter={chapter} onClose={handleEditChapterDialogClosed} />
+			)}
 		</li>
 	);
 }
