@@ -80,7 +80,6 @@ describe("markAsCompleted", () => {
 
 	describe("Without course", () => {
 		it("Creates completedLesson", async () => {
-			const username = "potter";
 			const lessonId = "mark-as-completed-no-course-lesson";
 
 			await database.completedLesson.deleteMany({ where: { lessonId } });
