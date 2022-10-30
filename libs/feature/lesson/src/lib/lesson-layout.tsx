@@ -10,13 +10,21 @@ import { useMemo } from "react";
 
 export type LessonLayoutProps = {
 	lesson: ResolvedValue<typeof getLesson>;
-	course: {
-		title: string;
-		slug: string;
-	};
+	course: ResolvedValue<typeof getCourse>;
 };
 
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
+
+function getCourse(slug: string) {
+	return database.course.findUnique({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+}
 
 async function getLesson(slug: string) {
 	return database.lesson.findUnique({
@@ -30,12 +38,6 @@ async function getLesson(slug: string) {
 			content: true,
 			quiz: true,
 			meta: true,
-			competences: {
-				select: {
-					competenceId: true,
-					title: true
-				}
-			},
 			authors: {
 				select: {
 					displayName: true,
@@ -57,28 +59,13 @@ export async function getStaticPropsForLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const [lesson, course] = await Promise.all([
-		getLesson(lessonSlug),
-		database.course.findUnique({
-			where: { slug: courseSlug },
-			select: {
-				title: true,
-				slug: true
-			}
-		})
-	]);
+	const [lesson, course] = await Promise.all([getLesson(lessonSlug), getCourse(courseSlug)]);
 
 	if (!course || !lesson) {
 		return { notFound: true };
 	}
 
-	return {
-		lesson: lesson as Defined<typeof lesson>,
-		course: {
-			slug: course.slug,
-			title: course.title
-		}
-	};
+	return { lesson, course };
 }
 
 function mapToPlaylistContent(

@@ -1,21 +1,31 @@
 import { Lesson, Prisma } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";
-import { CourseContent, createLessonMeta, LessonContent } from "@self-learning/types";
+import {
+	CourseContent,
+	createCourseMeta,
+	createLessonMeta,
+	LessonContent
+} from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
 
 export function createExampleCourse(
 	courseId: string,
 	content: CourseContent
 ): Prisma.CourseCreateInput {
-	return {
+	const course: Prisma.CourseCreateInput = {
 		courseId,
 		slug: courseId,
 		title: `The ${courseId} Course`,
 		subtitle: `This is a subtitle for ${courseId}.`,
 		description: `This is a description for ${courseId}.`,
 		imgUrl: null,
-		content
+		content,
+		meta: {}
 	};
+
+	course.meta = createCourseMeta(course as any);
+
+	return course;
 }
 
 export function createExampleLessonsFromContent(

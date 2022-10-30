@@ -13,6 +13,7 @@ describe("/teaching/lessons/edit - Lesson Editor", () => {
 					subtitle: "Test Course Subtitle",
 					description: "Test Course Description",
 					content: [],
+					meta: {},
 					authors: {
 						connect: [{ slug: "albus-dumbledore" }]
 					}
@@ -24,6 +25,7 @@ describe("/teaching/lessons/edit - Lesson Editor", () => {
 					subtitle: "Test Course Subtitle",
 					description: "Test Course Description",
 					content: [],
+					meta: {},
 					authors: {
 						set: [{ slug: "albus-dumbledore" }]
 					}

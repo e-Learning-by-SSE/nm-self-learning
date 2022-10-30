@@ -182,7 +182,7 @@ function LessonControls({
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 }) {
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
+	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
 	const completion = useCourseCompletion(course.slug);
 	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;

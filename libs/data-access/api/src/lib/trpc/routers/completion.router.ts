@@ -15,12 +15,14 @@ export const completionRouter = t.router({
 	markAsCompleted: authProcedure
 		.input(
 			z.object({
-				lessonId: z.string()
+				lessonId: z.string(),
+				courseSlug: z.string().nullable()
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
 			return markAsCompleted({
 				lessonId: input.lessonId,
+				courseSlug: input.courseSlug,
 				username: ctx.username
 			});
 		})

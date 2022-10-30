@@ -133,7 +133,7 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 						question={currentQuestion}
 						markdown={markdown}
 					/>
-					<QuizCompletionSubscriber lesson={lesson} />
+					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
 			</div>
 		</QuizProvider>
@@ -141,10 +141,16 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 }
 
 /** Component that listens to the `completionState` and marks lesson as completed, when quiz is `completed`. */
-function QuizCompletionSubscriber({ lesson }: { lesson: QuestionProps["lesson"] }) {
+function QuizCompletionSubscriber({
+	lesson,
+	course
+}: {
+	lesson: QuestionProps["lesson"];
+	course: QuestionProps["course"];
+}) {
 	const { completionState } = useQuiz();
 	const unsubscribeRef = useRef(false);
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId);
+	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
 
 	useEffect(() => {
 		if (!unsubscribeRef.current && completionState === "completed") {

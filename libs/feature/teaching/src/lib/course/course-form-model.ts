@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { courseContentSchema } from "@self-learning/types";
+import { courseContentSchema, createCourseMeta } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
@@ -36,6 +36,7 @@ export function mapCourseFormToInsert(
 		content: content,
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
+		meta: createCourseMeta(course),
 		authors: {
 			connect: authors.map(author => ({ slug: author.slug }))
 		},
@@ -59,6 +60,7 @@ export function mapCourseFormToUpdate(
 		content,
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
+		meta: createCourseMeta(course),
 		authors: {
 			set: authors.map(author => ({ slug: author.slug }))
 		},

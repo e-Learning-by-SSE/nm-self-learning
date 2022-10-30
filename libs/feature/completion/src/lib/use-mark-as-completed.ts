@@ -2,7 +2,11 @@ import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import { useCallback } from "react";
 
-export function useMarkAsCompleted(lessonId: string, onSettled?: () => void) {
+export function useMarkAsCompleted(
+	lessonId: string,
+	courseSlug: string | null,
+	onSettled?: () => void
+) {
 	const session = useSession();
 	const ctx = trpc.useContext();
 
@@ -25,7 +29,7 @@ export function useMarkAsCompleted(lessonId: string, onSettled?: () => void) {
 		}
 
 		return mutate(
-			{ lessonId },
+			{ lessonId, courseSlug },
 			{
 				onSettled: (data, error) => {
 					if (!error) {
@@ -41,7 +45,7 @@ export function useMarkAsCompleted(lessonId: string, onSettled?: () => void) {
 				}
 			}
 		);
-	}, [lessonId, session.data?.user?.name, mutate, onSettled]);
+	}, [lessonId, courseSlug, session.data?.user?.name, mutate, onSettled]);
 
 	return markAsCompleted;
 }

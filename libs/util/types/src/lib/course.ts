@@ -1,4 +1,4 @@
-import type { EnrollmentStatus } from "@prisma/client";
+import type { EnrollmentStatus, Prisma } from "@prisma/client";
 import { z } from "zod";
 
 export type Completion = {
@@ -28,6 +28,10 @@ export type CourseEnrollment = {
 	};
 };
 
+export type CourseMeta = {
+	lessonCount: number;
+};
+
 const lessonSchema = z.object({
 	lessonId: z.string()
 });
@@ -46,6 +50,13 @@ export type CourseContent = z.infer<typeof courseContentSchema>;
 
 export function extractLessonIds(content: CourseContent): string[] {
 	return content.flatMap(chapter => chapter.content.map(lesson => lesson.lessonId));
+}
+
+export function createCourseMeta({ content }: { content: CourseContent }): CourseMeta {
+	const lessons = extractLessonIds(content as CourseContent);
+	return {
+		lessonCount: lessons.length
+	};
 }
 
 /** Creates an object with the shape of a {@link CourseChapter}.*/

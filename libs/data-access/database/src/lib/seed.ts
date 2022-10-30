@@ -3,6 +3,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
+	createCourseMeta,
 	createLessonMeta,
 	extractLessonIds,
 	LessonContent
@@ -464,9 +465,13 @@ const courses: Prisma.CourseCreateManyInput[] = [
 				description: chapter.description,
 				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
 			}))
-		)
+		),
+		meta: {}
 	}
-];
+].map(course => ({
+	...course,
+	meta: createCourseMeta(course)
+}));
 
 const authors: Prisma.UserCreateInput[] = [
 	{
@@ -537,12 +542,6 @@ const authors: Prisma.UserCreateInput[] = [
 	}
 ];
 
-const competences: Prisma.CompetenceCreateInput[] = [
-	{ competenceId: "competence-1", title: "Competence #1" },
-	{ competenceId: "competence-2", title: "Competence #2" },
-	{ competenceId: "competence-3", title: "Competence #3" }
-];
-
 const enrollments: Prisma.EnrollmentCreateManyInput[] = [
 	{
 		status: "ACTIVE",
@@ -556,6 +555,7 @@ const completedLessons: Prisma.CompletedLessonCreateManyInput[] = extractLessonI
 	.slice(0, 7)
 	.map((lessonId, index) => ({
 		lessonId: lessonId,
+		courseId: courses[0].courseId,
 		username: students[0].username,
 		createdAt: subHours(Date.now(), index * 4)
 	}));
@@ -570,7 +570,6 @@ async function seed(): Promise<void> {
 	await prisma.specialization.deleteMany();
 	await prisma.subject.deleteMany();
 	await prisma.enrollment.deleteMany();
-	await prisma.competence.deleteMany();
 	await prisma.lesson.deleteMany();
 
 	console.log("😅 Seeding...");
@@ -590,10 +589,6 @@ async function seed(): Promise<void> {
 	console.log("✅ Enrollments");
 	await prisma.completedLesson.createMany({ data: completedLessons });
 	console.log("✅ Completed Lessons");
-	await prisma.competence.createMany({ data: competences });
-	console.log("✅ Competences");
-	await createAchievedCompetences();
-	console.log("✅ AchievedCompetences");
 	await prisma.learningDiary.createMany({ data: learningDiaries });
 	console.log("✅ LearningDiaries");
 
@@ -631,30 +626,4 @@ async function createUsers(): Promise<void> {
 			data: user
 		});
 	}
-}
-
-async function createAchievedCompetences(): Promise<void> {
-	const achievedCompetences = [
-		{
-			username: users[0].student?.create?.username as string,
-			competenceId: competences[0].competenceId
-		},
-		{
-			username: students[0].username,
-			competenceId: competences[1].competenceId
-		}
-	];
-
-	const promises = achievedCompetences.map(({ competenceId, username }) =>
-		prisma.achievedCompetence.create({
-			data: {
-				competenceId,
-				username,
-				lessonSlug: "a-beginners-guide-to-react-introduction",
-				achievedAt: new Date(2022, 5, 20)
-			}
-		})
-	);
-
-	await Promise.all(promises);
 }

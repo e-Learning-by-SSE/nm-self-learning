@@ -26,9 +26,9 @@ export function Navbar() {
 					<div className="invisible flex w-0 items-center gap-16 text-sm font-medium lg:visible lg:w-fit">
 						{session?.user && (
 							<>
-								<Link href="/learning-diary">
+								{/* <Link href="/learning-diary">
 									<a>Lerntagebuch</a>
-								</Link>
+								</Link> */}
 								<Link href="/profile">
 									<a>Profil</a>
 								</Link>
