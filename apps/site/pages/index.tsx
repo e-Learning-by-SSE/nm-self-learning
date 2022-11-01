@@ -20,7 +20,7 @@ export function LandingPage() {
 			</div>
 
 			<div className="container mx-auto grid items-center py-24 lg:grid-cols-2 lg:py-48">
-				<div className="z-20 flex max-w-2xl shrink-0 flex-col">
+				<div className="flex max-w-2xl shrink-0 flex-col">
 					<h1 className="text-5xl lg:text-8xl">SELF-le@rning</h1>
 					<h2 className="mt-4 text-2xl font-light text-slate-400 lg:text-3xl">
 						Universität Hildesheim
