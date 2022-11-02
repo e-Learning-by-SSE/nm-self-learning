@@ -1,6 +1,4 @@
-import { SectionHeader } from "@self-learning/ui/common";
 import { Form, LabeledField, Upload } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import slugify from "slugify";
 import { LessonFormModel } from "../lesson-form-model";
@@ -21,10 +19,13 @@ export function LessonInfoEditor() {
 	}
 
 	return (
-		<CenteredContainer>
-			<SectionHeader title="Daten" subtitle="Informationen über diese Lerneinheit" />
+		<Form.SidebarSection>
+			<Form.SidebarSectionTitle
+				title="Daten"
+				subtitle="Informationen über diese Lerneinheit"
+			/>
 
-			<Form.SectionCard>
+			<div className="flex flex-col gap-4">
 				<LabeledField label="Titel" error={errors.title?.message}>
 					<input
 						{...register("title")}
@@ -54,41 +55,39 @@ export function LessonInfoEditor() {
 					</button>
 				</div>
 
-				<div className="grid gap-8 md:grid-cols-[1fr_auto]">
-					<LabeledField label="Untertitel" error={errors.subtitle?.message}>
-						<textarea
-							{...register("subtitle")}
-							placeholder="1-2 Sätze über diese Lerneinheit."
-							className="h-full"
-						/>
-					</LabeledField>
+				<LabeledField label="Untertitel" error={errors.subtitle?.message}>
+					<textarea
+						{...register("subtitle")}
+						placeholder="1-2 Sätze über diese Lerneinheit."
+						className="h-full"
+					/>
+				</LabeledField>
 
-					<LabeledField label="Bild" error={errors.imgUrl?.message}>
-						<Controller
-							control={control}
-							name="imgUrl"
-							render={({ field }) => (
-								<Upload
-									key={"image"}
-									mediaType="image"
-									onUploadCompleted={field.onChange}
-									preview={
-										<div className="aspect-video h-64 rounded-lg">
-											{field.value && (
-												<img
-													className="h-64 w-full rounded-lg object-cover"
-													src={field.value}
-													alt="Thumbnail"
-												/>
-											)}
-										</div>
-									}
-								/>
-							)}
-						/>
-					</LabeledField>
-				</div>
-			</Form.SectionCard>
-		</CenteredContainer>
+				<LabeledField label="Bild" error={errors.imgUrl?.message}>
+					<Controller
+						control={control}
+						name="imgUrl"
+						render={({ field }) => (
+							<Upload
+								key={"image"}
+								mediaType="image"
+								onUploadCompleted={field.onChange}
+								preview={
+									<div className="aspect-video w-full rounded-lg">
+										{field.value && (
+											<img
+												className="aspect-video w-full rounded-lg object-cover"
+												src={field.value}
+												alt="Thumbnail"
+											/>
+										)}
+									</div>
+								}
+							/>
+						)}
+					/>
+				</LabeledField>
+			</div>
+		</Form.SidebarSection>
 	);
 }

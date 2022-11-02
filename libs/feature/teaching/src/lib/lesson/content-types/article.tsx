@@ -4,23 +4,21 @@ import { Controller } from "react-hook-form";
 
 export function ArticleInput({ index }: { index: number }) {
 	return (
-		<div className="mx-auto w-[90vw]">
-			<SectionCard>
-				<SectionCardHeader
-					title="Artikel"
-					subtitle="Schreibe einen Artikel. Unterstützt Markdown."
-				/>
+		<SectionCard>
+			<SectionCardHeader
+				title="Artikel"
+				subtitle="Schreibe einen Artikel. Unterstützt Markdown."
+			/>
 
-				<Controller
-					name={`content.${index}.value.content`}
-					render={({ field }) => (
-						<MarkdownField
-							content={field.value}
-							setValue={value => field.onChange(value)}
-						/>
-					)}
-				></Controller>
-			</SectionCard>
-		</div>
+			<Controller
+				name={`content.${index}.value.content`}
+				render={({ field }) => (
+					<MarkdownField
+						content={field.value}
+						setValue={value => field.onChange(value)}
+					/>
+				)}
+			></Controller>
+		</SectionCard>
 	);
 }

@@ -75,7 +75,7 @@ export function MultipleChoiceOption({
 					/** Bubbles up to button click. */
 				}}
 				disabled={showResult}
-				className="self-center rounded text-secondary accent-secondary focus:ring-secondary"
+				className="checkbox self-center"
 			/>
 			{children}
 		</button>

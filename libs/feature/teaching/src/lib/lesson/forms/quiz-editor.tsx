@@ -117,73 +117,63 @@ export function QuizEditor() {
 
 	return (
 		<section>
-			<CenteredContainer className="flex flex-col">
-				<SectionHeader
-					title="Lernkontrolle"
-					subtitle="Fragen, die Studierenden nach Bearbeitung der Lernheit angezeigt werden sollen.
+			<SectionHeader
+				title="Lernkontrolle"
+				subtitle="Fragen, die Studierenden nach Bearbeitung der Lernheit angezeigt werden sollen.
 					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lernheit
 					erfolgreich abzuschließen."
-				/>
+			/>
 
-				<div className="flex flex-wrap gap-4 text-sm">
-					<button
-						type="button"
-						className="btn-primary mb-8 w-fit"
-						onClick={() => appendQuestion("multiple-choice")}
-					>
-						<PlusIcon className="h-5" />
-						<span>Multiple-Choice</span>
-					</button>
+			<div className="flex flex-wrap gap-4 text-sm">
+				<button
+					type="button"
+					className="btn-primary mb-8 w-fit"
+					onClick={() => appendQuestion("multiple-choice")}
+				>
+					<PlusIcon className="h-5" />
+					<span>Multiple-Choice</span>
+				</button>
 
-					<button
-						type="button"
-						className="btn-primary mb-8 w-fit"
-						onClick={() => appendQuestion("short-text")}
-					>
-						<PlusIcon className="h-5" />
-						<span>Kurze Antwort</span>
-					</button>
+				<button
+					type="button"
+					className="btn-primary mb-8 w-fit"
+					onClick={() => appendQuestion("short-text")}
+				>
+					<PlusIcon className="h-5" />
+					<span>Kurze Antwort</span>
+				</button>
 
-					<button
-						type="button"
-						className="btn-primary mb-8 w-fit"
-						onClick={() => appendQuestion("programming")}
-					>
-						<PlusIcon className="h-5" />
-						<span>Programmieren</span>
-					</button>
-				</div>
+				<button
+					type="button"
+					className="btn-primary mb-8 w-fit"
+					onClick={() => appendQuestion("programming")}
+				>
+					<PlusIcon className="h-5" />
+					<span>Programmieren</span>
+				</button>
+			</div>
 
-				{questionIndex >= 0 && (
-					<Reorder.Group values={quiz} onReorder={setQuiz} axis="x" className="w-full">
-						<Tabs
-							selectedIndex={questionIndex}
-							onChange={index => setQuestionIndex(index)}
-						>
-							{quiz.map((value, index) => (
-								<Reorder.Item
-									as="div"
-									value={value}
-									key={value.id}
-									className="bg-gray-50"
-								>
-									<RemovableTab
-										key={value.id}
-										onRemove={() => removeQuestion(index)}
-									>
-										<div className="flex flex-col">
-											<span className="text-xs font-normal">
-												{value.type}
-											</span>
-											<span>Frage {index + 1}</span>
-										</div>
-									</RemovableTab>
-								</Reorder.Item>
-							))}
-						</Tabs>
-					</Reorder.Group>
-				)}
-			</CenteredContainer>
+			{questionIndex >= 0 && (
+				<Reorder.Group values={quiz} onReorder={setQuiz} axis="x" className="w-full">
+					<Tabs selectedIndex={questionIndex} onChange={index => setQuestionIndex(index)}>
+						{quiz.map((value, index) => (
+							<Reorder.Item
+								as="div"
+								value={value}
+								key={value.id}
+								className="bg-gray-50"
+							>
+								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
+									<div className="flex flex-col">
+										<span className="text-xs font-normal">{value.type}</span>
+										<span>Frage {index + 1}</span>
+									</div>
+								</RemovableTab>
+							</Reorder.Item>
+						))}
+					</Tabs>
+				</Reorder.Group>
+			)}
 
 			{currentQuestion && (
 				<BaseQuestionForm
@@ -226,37 +216,31 @@ function BaseQuestionForm({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="px-4">
-			<div className="mx-auto mt-8 flex w-full flex-col rounded-lg border border-light-border bg-white p-8">
-				<h4 className="font-semibold text-secondary">{currentQuestion.type}</h4>
-				<div className="flex flex-col gap-8">
-					<section>
-						<h5 className="mb-4 mt-8 text-2xl font-semibold tracking-tight">Frage</h5>
+		<div className="pt-8">
+			<span className="font-semibold text-secondary">{currentQuestion.type}</span>
+			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">Frage {index + 1}</h5>
 
-						<div className="rounded-lg bg-indigo-50 p-4">
-							<Controller
-								key={currentQuestion.questionId}
-								control={control}
-								name={`quiz.${index}.statement`}
-								render={({ field }) => (
-									<MarkdownField
-										minHeight="128px"
-										content={field.value}
-										setValue={field.onChange}
-									/>
-								)}
-							/>
-						</div>
-					</section>
+			<div className="flex flex-col gap-12">
+				<Controller
+					key={currentQuestion.questionId}
+					control={control}
+					name={`quiz.${index}.statement`}
+					render={({ field }) => (
+						<MarkdownField
+							minHeight="256px"
+							content={field.value}
+							setValue={field.onChange}
+						/>
+					)}
+				/>
 
-					<Divider />
+				<Divider />
 
-					{children}
+				{children}
 
-					<Divider />
+				<Divider />
 
-					<HintForm questionIndex={index} />
-				</div>
+				<HintForm questionIndex={index} />
 			</div>
 		</div>
 	);
@@ -289,16 +273,16 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 	}
 
 	return (
-		<section className="flex flex-col gap-8">
+		<section className="flex flex-col gap-4">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
-				<button type="button" className="btn-stroked w-fit items-center" onClick={addHint}>
+				<button type="button" className="btn-primary w-fit items-center" onClick={addHint}>
 					<PlusIcon className="h-5" />
 					<span>Hinweis hinzufügen</span>
 				</button>
 			</div>
 
-			<p className="text-light">
+			<p className="text-sm text-light">
 				Studierende können die angegebenen Hinweise nutzen, wenn sie Probleme beim
 				Beantworten einer Frage haben.
 			</p>
@@ -306,11 +290,11 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			{hints.map((hint, hintIndex) => (
 				<div
 					key={hint.hintId}
-					className="relative flex flex-col gap-4 rounded-lg border border-light-border bg-yellow-100 p-4"
+					className="flex flex-col gap-4 rounded-lg border border-yellow-500 bg-yellow-100  p-4"
 				>
 					<button
 						type="button"
-						className="absolute top-4 right-4 text-xs text-red-500"
+						className="self-end text-xs text-red-500"
 						onClick={() => removeHint(hintIndex)}
 					>
 						Entfernen

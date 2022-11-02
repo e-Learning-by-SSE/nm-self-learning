@@ -88,11 +88,15 @@ video {
 }
 
 .btn-stroked {
-	@apply flex place-content-center items-center gap-2 rounded-lg border border-gray-200 px-8 py-2 text-sm font-medium disabled:opacity-25;
+	@apply flex place-content-center items-center gap-2 rounded-lg border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
 }
 
 .btn-small {
 	@apply rounded border border-light-border p-1 disabled:text-slate-200;
+}
+
+.checkbox {
+	@apply rounded text-secondary accent-secondary focus:ring-secondary;
 }
 
 input,

@@ -33,7 +33,7 @@ export function Hints({
 								animate={{ opacity: 1 }}
 								transition={{ duration: 1 }}
 								key={index}
-								className="relative flex max-w-full flex-col gap-4 rounded-lg border border-light-border bg-yellow-100 p-4"
+								className="relative flex max-w-full flex-col gap-4 rounded-lg border border-yellow-400 bg-yellow-100 p-4"
 							>
 								<LightBulbIcon className="absolute right-2 top-2 h-6 text-yellow-500" />
 								<MarkdownContainer>

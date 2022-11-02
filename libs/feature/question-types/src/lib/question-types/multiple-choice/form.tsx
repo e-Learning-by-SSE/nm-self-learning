@@ -11,12 +11,12 @@ export function MultipleChoiceForm({
 	index: number;
 }) {
 	const { control, register } = useFormContext<{ quiz: MultipleChoiceQuestion[] }>();
-	const { append, remove } = useFieldArray({
+	const { append, replace } = useFieldArray({
 		control,
 		name: `quiz.${index}.answers`
 	});
 
-	/** Unlike `answers` (see above), this will always be rendered with latest data. */
+	/** Unlike `fields` (from useFieldArray), this will always be rendered with latest data. */
 	const answers = useWatch({
 		name: `quiz.${index}.answers`,
 		control
@@ -31,7 +31,9 @@ export function MultipleChoiceForm({
 	}
 
 	function removeAnswer(answerIndex: number) {
-		remove(answerIndex);
+		if (window.confirm("Antwort entfernen?")) {
+			replace(answers.filter((_, i) => i !== answerIndex));
+		}
 	}
 
 	return (
@@ -41,7 +43,7 @@ export function MultipleChoiceForm({
 
 				<button
 					type="button"
-					className="btn-stroked h-fit w-fit items-center"
+					className="btn-primary h-fit w-fit items-center"
 					onClick={addAnswer}
 				>
 					<PlusIcon className="h-5" />
@@ -52,25 +54,29 @@ export function MultipleChoiceForm({
 			{answers.map((answer, answerIndex) => (
 				<div
 					key={answer.answerId}
-					className={`relative flex flex-col gap-4 rounded-lg border border-light-border p-4 ${
-						answers?.[answerIndex]?.isCorrect ? "bg-indigo-300" : "bg-indigo-50"
+					className={`flex flex-col gap-2 rounded-lg border border-light-border p-4 ${
+						answers?.[answerIndex]?.isCorrect
+							? "border-secondary bg-emerald-50"
+							: "border-red-500 bg-red-50"
 					}`}
 				>
-					<button
-						type="button"
-						className="absolute top-4 right-4 text-xs text-red-500"
-						onClick={() => removeAnswer(answerIndex)}
-					>
-						Entfernen
-					</button>
-					<label className="flex w-fit items-center gap-2">
-						<input
-							type="checkbox"
-							className="rounded text-secondary"
-							{...register(`quiz.${index}.answers.${answerIndex}.isCorrect`)}
-						/>
-						Diese Antwort ist korrekt.
-					</label>
+					<div className="flex justify-between">
+						<label className="flex w-fit select-none items-center gap-2">
+							<input
+								type="checkbox"
+								className="checkbox"
+								{...register(`quiz.${index}.answers.${answerIndex}.isCorrect`)}
+							/>
+							Diese Antwort ist korrekt.
+						</label>
+						<button
+							type="button"
+							className="text-xs text-red-500"
+							onClick={() => removeAnswer(answerIndex)}
+						>
+							Entfernen
+						</button>
+					</div>
 
 					<Controller
 						control={control}
@@ -79,7 +85,7 @@ export function MultipleChoiceForm({
 							<MarkdownField
 								content={field.value}
 								setValue={field.onChange}
-								minHeight="128px"
+								minHeight="96px"
 							/>
 						)}
 					></Controller>

@@ -3,6 +3,7 @@ import { lessonSchema } from "@self-learning/types";
 import { SectionHeader, showToast } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { JsonEditorDialog } from "../json-editor-dialog";
@@ -50,7 +51,7 @@ export function LessonEditor({
 	}, [lesson]);
 
 	return (
-		<div className="bg-gray-50 pb-32">
+		<div className="bg-gray-50">
 			<FormProvider {...methods}>
 				<form
 					onSubmit={methods.handleSubmit(
@@ -71,52 +72,47 @@ export function LessonEditor({
 					)}
 					className="flex flex-col"
 				>
-					<Form.Title
-						title={
-							isNew ? (
-								<>
-									Neue <span className="text-secondary">Lerneinheit</span>{" "}
-									hinzufügen
-								</>
-							) : (
-								<>
-									<span className="text-secondary">{lesson.title}</span> editieren
-								</>
-							)
-						}
-						button={
-							<button className="btn-primary h-fit w-fit" type="submit">
-								{isNew ? "Erstellen" : "Speichern"}
-							</button>
-						}
-						specialButtons={
-							<button
-								type="button"
-								className="absolute bottom-16 text-sm font-semibold text-secondary"
-								onClick={() => setIsJsonDialogOpen(true)}
-							>
-								Als JSON bearbeiten
-								{isJsonDialogOpen && (
-									<JsonEditorDialog
-										onClose={setFromJsonDialog}
-										validationSchema={lessonSchema}
-									/>
-								)}
-							</button>
-						}
-					/>
+					<div className="mx-auto grid max-w-[1920px] gap-8 xl:grid-cols-[500px_1fr]">
+						<aside className="playlist-scroll top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:sticky xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r">
+							<div className="flex flex-col px-4 pb-8">
+								<div className="sticky top-0 z-10 flex flex-col gap-2 border-b border-light-border bg-gray-50 pt-8 pb-4">
+									<div>
+										<span className="font-semibold text-secondary">
+											Lerneinheit editieren
+										</span>
 
-					<Form.Container>
-						<LessonInfoEditor />
-						<LessonDescriptionForm />
-						<LessonContentEditor />
-						<QuizEditor />
-						<CenteredContainer>
-							<button className="btn-primary ml-auto mr-0 self-end" type="submit">
-								{isNew ? "Erstellen" : "Speichern"}
-							</button>
-						</CenteredContainer>
-					</Form.Container>
+										<h1 className="text-2xl">{lesson.title}</h1>
+									</div>
+
+									<button
+										type="button"
+										className="btn-stroked"
+										onClick={() => setIsJsonDialogOpen(true)}
+									>
+										<span>Als JSON bearbeiten</span>
+										{isJsonDialogOpen && (
+											<JsonEditorDialog
+												onClose={setFromJsonDialog}
+												validationSchema={lessonSchema}
+											/>
+										)}
+									</button>
+
+									<button className="btn-primary w-full" type="submit">
+										{isNew ? "Erstellen" : "Speichern"}
+									</button>
+								</div>
+
+								<LessonInfoEditor />
+							</div>
+						</aside>
+
+						<div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-16 px-4 pt-8 pb-16">
+							<LessonDescriptionForm />
+							<LessonContentEditor />
+							<QuizEditor />
+						</div>
+					</div>
 				</form>
 			</FormProvider>
 		</div>
@@ -128,22 +124,16 @@ function LessonDescriptionForm() {
 
 	return (
 		<section>
-			<CenteredContainer>
-				<SectionHeader
-					title="Beschreibung"
-					subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
-				/>
-			</CenteredContainer>
+			<SectionHeader
+				title="Beschreibung"
+				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
+			/>
 			<Form.MarkdownWithPreviewContainer>
 				<Controller
 					control={control}
 					name="description"
 					render={({ field }) => (
-						<MarkdownField
-							content={field.value as string}
-							setValue={field.onChange}
-							minHeight="300px"
-						/>
+						<MarkdownField content={field.value as string} setValue={field.onChange} />
 					)}
 				></Controller>
 			</Form.MarkdownWithPreviewContainer>

@@ -106,57 +106,55 @@ export function LessonContentEditor() {
 
 	return (
 		<section>
-			<CenteredContainer className="mb-4 flex flex-col">
-				<SectionHeader
-					title="Inhalt"
-					subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
+			<SectionHeader
+				title="Inhalt"
+				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
 					angelegt werden, kann der Student selber entscheiden, welches Medium angezeigt
 					werden soll."
-				/>
+			/>
 
-				<div className="flex gap-4 text-sm">
-					<button
-						type="button"
-						className="btn-primary w-fit"
-						onClick={() => addContent("video")}
-						disabled={typesWithUsage["video"]}
+			<div className="flex gap-4 text-sm">
+				<button
+					type="button"
+					className="btn-primary w-fit"
+					onClick={() => addContent("video")}
+					disabled={typesWithUsage["video"]}
+				>
+					<VideoCameraIcon className="h-5" />
+					<span>Video hinzufügen</span>
+				</button>
+
+				<button
+					type="button"
+					className="btn-primary w-fit"
+					onClick={() => addContent("article")}
+					disabled={typesWithUsage["article"]}
+				>
+					<DocumentTextIcon className="h-5" />
+					<span>Artikel hinzufügen</span>
+				</button>
+			</div>
+
+			<div className="mb-8 mt-4 flex gap-4">
+				{content.length > 0 && (
+					<Reorder.Group
+						className="w-full"
+						axis="x"
+						values={content}
+						onReorder={setContent}
 					>
-						<VideoCameraIcon className="h-5" />
-						<span>Video hinzufügen</span>
-					</button>
-
-					<button
-						type="button"
-						className="btn-primary w-fit"
-						onClick={() => addContent("article")}
-						disabled={typesWithUsage["article"]}
-					>
-						<DocumentTextIcon className="h-5" />
-						<span>Artikel hinzufügen</span>
-					</button>
-				</div>
-
-				<div className="mt-8 flex gap-4">
-					{content.length > 0 && (
-						<Reorder.Group
-							className="w-full"
-							axis="x"
-							values={content}
-							onReorder={setContent}
-						>
-							<Tabs selectedIndex={contentTabIndex} onChange={setContentTabIndex}>
-								{content.map((value, index) => (
-									<Reorder.Item as="div" key={value.id} value={value}>
-										<RemovableTab onRemove={() => removeContent(index)}>
-											{value.type}
-										</RemovableTab>
-									</Reorder.Item>
-								))}
-							</Tabs>
-						</Reorder.Group>
-					)}
-				</div>
-			</CenteredContainer>
+						<Tabs selectedIndex={contentTabIndex} onChange={setContentTabIndex}>
+							{content.map((value, index) => (
+								<Reorder.Item as="div" key={value.id} value={value}>
+									<RemovableTab onRemove={() => removeContent(index)}>
+										{value.type}
+									</RemovableTab>
+								</Reorder.Item>
+							))}
+						</Tabs>
+					</Reorder.Group>
+				)}
+			</div>
 
 			{contentTabIndex !== undefined && content[contentTabIndex] ? (
 				<RenderContentType
@@ -165,11 +163,9 @@ export function LessonContentEditor() {
 					onRemove={removeContent}
 				/>
 			) : (
-				<CenteredContainer>
-					<div className="rounded-lg border border-light-border bg-white py-80 text-center text-light">
-						Diese Lerneinheit hat noch keinen Inhalt.
-					</div>
-				</CenteredContainer>
+				<div className="rounded-lg border border-light-border bg-white py-80 text-center text-light">
+					Diese Lerneinheit hat noch keinen Inhalt.
+				</div>
 			)}
 		</section>
 	);
