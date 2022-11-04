@@ -274,15 +274,16 @@ function CourseHeader({
 					</div>
 
 					{isEnrolled && (
-						<Link href={`/courses/${course.slug}/${nextLessonSlug}`}>
-							<a className="btn-primary">
-								<span>
-									{completion?.courseCompletion.completedLessonCount === 0
-										? "Starten"
-										: "Fortfahren"}
-								</span>
-								<PlayIcon className="h-6" />
-							</a>
+						<Link
+							href={`/courses/${course.slug}/${nextLessonSlug}`}
+							className="btn-primary"
+						>
+							<span>
+								{completion?.courseCompletion.completedLessonCount === 0
+									? "Starten"
+									: "Fortfahren"}
+							</span>
+							<PlayIcon className="h-6" />
 						</Link>
 					)}
 
@@ -343,17 +344,16 @@ function Lesson({
 	isCompleted: boolean;
 }) {
 	return (
-		<Link href={href}>
-			<a
-				className={`flex gap-2 rounded-r-lg border-l-4 bg-gray-200 px-4 py-2 text-sm ${
-					isCompleted ? "border-emerald-500" : "border-gray-300"
-				}`}
-			>
-				<span className="flex">
-					<span className="w-8 font-medium text-secondary">{lesson.lessonNr}</span>
-					<span>{lesson.title}</span>
-				</span>
-			</a>
+		<Link
+			href={href}
+			className={`flex gap-2 rounded-r-lg border-l-4 bg-gray-200 px-4 py-2 text-sm ${
+				isCompleted ? "border-emerald-500" : "border-gray-300"
+			}`}
+		>
+			<span className="flex">
+				<span className="w-8 font-medium text-secondary">{lesson.lessonNr}</span>
+				<span>{lesson.title}</span>
+			</span>
 		</Link>
 	);
 }

@@ -23,7 +23,7 @@ export const getStaticProps: GetStaticProps<AuthorPageProps> = async ({ params }
 
 	const author = await getAuthor(slug);
 
-	let aboutMeMarkdown = null;
+	const aboutMeMarkdown = null;
 
 	// if (author.aboutMe && author.aboutMe?.length > 0) {
 	// 	aboutMeMarkdown = await compileMarkdown(author.aboutMe);
@@ -79,7 +79,7 @@ function getAuthor(slug: string | undefined) {
 export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps) {
 	return (
 		<div className="min-h-screen">
-			<CenteredSection className="gradient">
+			<CenteredSection className="bg-gray-50">
 				<AuthorHeader author={author} />
 			</CenteredSection>
 
@@ -91,25 +91,26 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 				</CenteredSection>
 			)}
 
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection className="bg-white">
 				<div className="flex flex-col gap-8">
 					<span>
 						<h2 className="text-3xl">Kurse</h2>
-						<Link href={`/authors/${author.slug}/courses`}>
-							<a className="text-sm text-secondary hover:underline">Alle anzeigen</a>
+						<Link
+							href={`/authors/${author.slug}/courses`}
+							className="text-sm text-secondary hover:underline"
+						>
+							Alle anzeigen
 						</Link>
 					</span>
 					<ItemCardGrid>
 						{author.courses.map(course => (
 							<Link href={`/courses/${course.slug}`} key={course.slug}>
-								<a>
-									<ImageCard
-										slug={course.slug}
-										title={course.title}
-										subtitle={course.subtitle}
-										imgUrl={course.imgUrl}
-									/>
-								</a>
+								<ImageCard
+									slug={course.slug}
+									title={course.title}
+									subtitle={course.subtitle}
+									imgUrl={course.imgUrl}
+								/>
 							</Link>
 						))}
 					</ItemCardGrid>
@@ -174,10 +175,11 @@ export function AuthorHeader({ author }: { author: Author }) {
 
 export function TeamChip({ slug, name }: { slug: string; name: string }) {
 	return (
-		<Link href={`/teams/${slug}`}>
-			<a className="rounded-full bg-secondary py-2 px-4 text-sm font-semibold text-white">
-				{name}
-			</a>
+		<Link
+			href={`/teams/${slug}`}
+			className="rounded-full bg-secondary py-2 px-4 text-sm font-semibold text-white"
+		>
+			{name}
 		</Link>
 	);
 }

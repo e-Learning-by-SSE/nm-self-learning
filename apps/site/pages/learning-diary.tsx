@@ -209,8 +209,8 @@ function CompletedLesson({
 	return (
 		<li className="border-card flex flex-wrap items-center justify-between gap-2 bg-white p-3">
 			<div className="flex flex-col gap-1">
-				<Link href={href}>
-					<a className="font-medium">{title}</a>
+				<Link href={href} className="font-medium">
+					{title}
 				</Link>
 				<span className="text-xs text-light">
 					in <span className="text-secondary">{topic}</span>

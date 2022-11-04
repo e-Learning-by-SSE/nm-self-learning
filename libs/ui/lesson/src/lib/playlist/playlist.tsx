@@ -132,25 +132,24 @@ function Lesson({
 	isActive: boolean;
 }) {
 	return (
-		<Link href={href}>
-			<a
-				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
-					isActive ? "bg-gray-200 font-medium text-black" : "text-light"
+		<Link
+			href={href}
+			className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
+				isActive ? "bg-gray-200 font-medium text-black" : "text-light"
+			}`}
+		>
+			<span
+				style={{ width: lesson.isCompleted ? "2px" : "1px" }}
+				className={`absolute h-full ${
+					lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
 				}`}
+			></span>
+			<span
+				className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm"
+				data-testid="lessonTitle"
 			>
-				<span
-					style={{ width: lesson.isCompleted ? "2px" : "1px" }}
-					className={`absolute h-full ${
-						lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
-					}`}
-				></span>
-				<span
-					className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm"
-					data-testid="lessonTitle"
-				>
-					{lesson.title}
-				</span>
-			</a>
+				{lesson.title}
+			</span>
 		</Link>
 	);
 }
@@ -162,10 +161,12 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 	return (
 		<div className="sticky top-0 z-20 flex flex-col gap-4 rounded-lg bg-gray-100 pt-8">
 			<div className="flex flex-col gap-2">
-				<Link href={`/courses/${course.slug}`}>
-					<a className="heading text-2xl" title={course.title}>
-						{course.title}
-					</a>
+				<Link
+					href={`/courses/${course.slug}`}
+					className="heading text-2xl"
+					title={course.title}
+				>
+					{course.title}
 				</Link>
 				<span className="text-sm text-light">
 					{courseCompletion?.completedLessonCount} / {courseCompletion?.lessonCount}{" "}
@@ -239,10 +240,12 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 				</span>
 			</span>
 			<span className="flex justify-between">
-				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-					<a className="btn-primary text-sm" data-testid="quizLink">
-						Lernkontrolle
-					</a>
+				<Link
+					href={`/courses/${course.slug}/${lesson.slug}/quiz`}
+					className="btn-primary text-sm"
+					data-testid="quizLink"
+				>
+					Lernkontrolle
 				</Link>
 				<span className="flex gap-2">
 					<button

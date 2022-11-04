@@ -54,26 +54,24 @@ function SubjectCard({
 }) {
 	return (
 		<Link href={`/subjects/${slug}`}>
-			<a>
-				<ImageCard
-					slug={slug}
-					title={title}
-					subtitle={subtitle}
-					imgUrl={imgUrl}
-					footer={
-						<>
-							<span className="flex items-center gap-3">
-								<CollectionIcon className="h-5" />
-								<span>12 Spezialisierungen</span>
-							</span>
-							<span className="flex items-center gap-3">
-								<VideoCameraIcon className="h-5" />
-								<span>420 Nanomodule</span>
-							</span>
-						</>
-					}
-				/>
-			</a>
+			<ImageCard
+				slug={slug}
+				title={title}
+				subtitle={subtitle}
+				imgUrl={imgUrl}
+				footer={
+					<>
+						<span className="flex items-center gap-3">
+							<CollectionIcon className="h-5" />
+							<span>12 Spezialisierungen</span>
+						</span>
+						<span className="flex items-center gap-3">
+							<VideoCameraIcon className="h-5" />
+							<span>420 Nanomodule</span>
+						</span>
+					</>
+				}
+			/>
 		</Link>
 	);
 }

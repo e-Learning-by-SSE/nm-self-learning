@@ -4,19 +4,17 @@ export type AuthorProps = { displayName: string; slug: string; imgUrl?: string |
 
 export function AuthorChip({ displayName, slug, imgUrl }: AuthorProps) {
 	return (
-		<Link href={`/authors/${slug}`}>
-			<a
-				className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-4 text-sm"
-				data-testid="author"
-			>
-				<div className="h-12 w-12 rounded-l-lg bg-gray-100">
-					{imgUrl && (
-						<img src={imgUrl} alt={displayName} className="h-12 w-12 rounded-l-lg" />
-					)}
-				</div>
-
-				<span className="font-medium">{displayName}</span>
-			</a>
+		<Link
+			href={`/authors/${slug}`}
+			className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-4 text-sm"
+			data-testid="author"
+		>
+			<div className="h-12 w-12 rounded-l-lg bg-gray-100">
+				{imgUrl && (
+					<img src={imgUrl} alt={displayName} className="h-12 w-12 rounded-l-lg" />
+				)}
+			</div>
+			<span className="font-medium">{displayName}</span>
 		</Link>
 	);
 }

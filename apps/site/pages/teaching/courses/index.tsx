@@ -21,11 +21,9 @@ export default function CoursesPage() {
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Kurse</h1>
 
-				<Link href="/teaching/courses/create">
-					<a className="btn-primary flex w-fit">
-						<PlusIcon className="h-5" />
-						<span>Kurs hinzufügen</span>
-					</a>
+				<Link href="/teaching/courses/create" className="btn-primary flex w-fit">
+					<PlusIcon className="h-5" />
+					<span>Kurs hinzufügen</span>
 				</Link>
 			</div>
 
@@ -57,12 +55,10 @@ export default function CoursesPage() {
 
 								<td className="py-4 px-8 text-sm font-medium">
 									<Link
-										legacyBehavior
+										className="text-sm font-medium hover:text-secondary"
 										href={`/teaching/courses/edit/${course.courseId}`}
 									>
-										<a className="text-sm font-medium hover:text-secondary">
-											{course.title}
-										</a>
+										{course.title}
 									</Link>
 								</td>
 

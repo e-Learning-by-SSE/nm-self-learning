@@ -45,16 +45,14 @@ function SidebarLink({
 	isActive: boolean;
 }) {
 	return (
-		<Link href={href}>
-			<a
-				href={href}
-				className={`flex items-center gap-4 rounded py-2 px-2 ${
-					isActive ? "bg-secondary text-white" : "text-light hover:bg-indigo-50"
-				}`}
-			>
-				{icon}
-				<span className={`text-sm ${isActive && "font-semibold"}`}>{text}</span>
-			</a>
+		<Link
+			href={href}
+			className={`flex items-center gap-4 rounded py-2 px-2 ${
+				isActive ? "bg-secondary text-white" : "text-light hover:bg-indigo-50"
+			}`}
+		>
+			{icon}
+			<span className={`text-sm ${isActive && "font-semibold"}`}>{text}</span>
 		</Link>
 	);
 }
@@ -62,11 +60,9 @@ function SidebarLink({
 function SidebarHeader({ setOpen }: { setOpen: (open: boolean) => void }) {
 	return (
 		<div className="to flex justify-between border-b border-light-border p-4">
-			<Link href="/">
-				<a href="/" className="flex items-center gap-4">
-					<AcademicCapIcon height="48" className="text-secondary" />
-					<span className="text-lg font-semibold">SELF LEARNING</span>
-				</a>
+			<Link href="/" className="flex items-center gap-4">
+				<AcademicCapIcon height="48" className="text-secondary" />
+				<span className="text-lg font-semibold">SELF LEARNING</span>
 			</Link>
 			<button
 				className="absolute right-0 top-0 text-slate-900 hover:text-white"

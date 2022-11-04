@@ -70,9 +70,7 @@ export function CourseEditor({
 										</span>
 
 										<Link href={`/courses/${course.slug}`}>
-											<a>
-												<h1 className="text-2xl">{course.title}</h1>
-											</a>
+											<h1 className="text-2xl">{course.title}</h1>
 										</Link>
 									</div>
 

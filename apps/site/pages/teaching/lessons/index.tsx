@@ -20,11 +20,9 @@ export default function LessonManagementPage() {
 			<div className="mb-16 flex items-center justify-between gap-4 ">
 				<h1 className="text-5xl">Lerneinheiten</h1>
 
-				<Link href="/teaching/lessons/create">
-					<a className="btn-primary flex w-fit">
-						<PlusIcon className="h-5" />
-						<span>Lerneinheit hinzufügen</span>
-					</a>
+				<Link href="/teaching/lessons/create" className="btn-primary flex w-fit">
+					<PlusIcon className="h-5" />
+					<span>Lerneinheit hinzufügen</span>
 				</Link>
 			</div>
 
@@ -43,12 +41,10 @@ export default function LessonManagementPage() {
 							<tr key={lesson.lessonId}>
 								<td className="py-4 px-8 text-sm font-medium">
 									<Link
-										legacyBehavior
+										className="text-sm font-medium hover:text-secondary"
 										href={`/teaching/lessons/edit/${lesson.lessonId}`}
 									>
-										<a className="text-sm font-medium hover:text-secondary">
-											{lesson.title}
-										</a>
+										{lesson.title}
 									</Link>
 								</td>
 

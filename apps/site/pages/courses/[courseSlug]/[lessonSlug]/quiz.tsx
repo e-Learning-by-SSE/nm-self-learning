@@ -200,14 +200,13 @@ function QuizHeader({
 			<div className="relative flex flex-col gap-2">
 				<span className="font-semibold text-secondary">{chapterName}</span>
 				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
-					<a>
-						<h1 className="text-4xl">{lesson.title}</h1>
-					</a>
+					<h1 className="text-4xl">{lesson.title}</h1>
 				</Link>
-				<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>
-					<a className="absolute right-0 top-1">
-						<CogIcon className="h-5 text-gray-400" />
-					</a>
+				<Link
+					href={`/teaching/lessons/edit/${lesson.lessonId}`}
+					className="absolute right-0 top-1"
+				>
+					<CogIcon className="h-5 text-gray-400" />
 				</Link>
 			</div>
 
@@ -298,11 +297,12 @@ function QuizCompletionDialog({
 
 			<DialogActions onClose={onClose}>
 				{nextLesson && (
-					<Link href={`/courses/${course.slug}/${nextLesson.slug}`}>
-						<a className="btn-primary">
-							<span>Zur nächsten Lerneinheit</span>
-							<PlayIcon className="h-5 shrink-0" />
-						</a>
+					<Link
+						href={`/courses/${course.slug}/${nextLesson.slug}`}
+						className="btn-primary"
+					>
+						<span>Zur nächsten Lerneinheit</span>
+						<PlayIcon className="h-5 shrink-0" />
 					</Link>
 				)}
 			</DialogActions>

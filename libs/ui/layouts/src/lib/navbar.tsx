@@ -12,16 +12,14 @@ export function Navbar() {
 		<nav className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white">
 			<div className="mx-auto flex h-full max-w-[1920px] items-center justify-between gap-4 py-2 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
-					<Link href="/">
-						<a className="flex items-center gap-4">
-							<div className="rounded-full bg-secondary p-1">
-								<AcademicCapIcon className="h-8 shrink-0 text-white" />
-							</div>
-							<div className="hidden w-0 flex-col sm:flex sm:w-fit">
-								<span className="text-sm text-light">Universität Hildesheim</span>
-								<span className="font-bold text-secondary">SELF-le@rning</span>
-							</div>
-						</a>
+					<Link href="/" className="flex items-center gap-4">
+						<div className="rounded-full bg-secondary p-1">
+							<AcademicCapIcon className="h-8 shrink-0 text-white" />
+						</div>
+						<div className="hidden w-0 flex-col sm:flex sm:w-fit">
+							<span className="text-sm text-light">Universität Hildesheim</span>
+							<span className="font-bold text-secondary">SELF-le@rning</span>
+						</div>
 					</Link>
 					<div className="invisible flex w-0 items-center gap-16 text-sm font-medium lg:visible lg:w-fit">
 						{session?.user && (
@@ -29,14 +27,10 @@ export function Navbar() {
 								{/* <Link href="/learning-diary">
 									<a>Lerntagebuch</a>
 								</Link> */}
-								<Link href="/profile">
-									<a>Profil</a>
-								</Link>
+								<Link href="/profile">Profil</Link>
 							</>
 						)}
-						<Link href="/subjects">
-							<a>Fachgebiete</a>
-						</Link>
+						<Link href="/subjects">Fachgebiete</Link>
 					</div>
 				</div>
 				{!session?.user ? (
@@ -75,15 +69,14 @@ export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
 			<Menu.Items className="absolute right-0 top-14 z-10 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
 				<Menu.Item as="div" className="p-1">
 					{({ active }) => (
-						<Link href="/profile">
-							<a
-								className={`${
-									active ? "bg-emerald-500 text-white" : ""
-								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
-							>
-								<UserIcon className="h-5" />
-								<span>Mein Profil</span>
-							</a>
+						<Link
+							href="/profile"
+							className={`${
+								active ? "bg-emerald-500 text-white" : ""
+							} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+						>
+							<UserIcon className="h-5" />
+							<span>Mein Profil</span>
 						</Link>
 					)}
 				</Menu.Item>

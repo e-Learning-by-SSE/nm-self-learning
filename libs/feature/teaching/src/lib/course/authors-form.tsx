@@ -89,14 +89,13 @@ function Author({ slug, onRemove }: { slug: string; onRemove: () => void }) {
 			</div>
 
 			<span className="w-full">
-				<Link href={`/authors/${author.slug}`}>
-					<a
-						target="_blank"
-						className="font-medium hover:text-secondary"
-						rel="noopener noreferrer"
-					>
-						{author.displayName}
-					</a>
+				<Link
+					href={`/authors/${author.slug}`}
+					target="_blank"
+					className="font-medium hover:text-secondary"
+					rel="noopener noreferrer"
+				>
+					{author.displayName}
 				</Link>
 			</span>
 

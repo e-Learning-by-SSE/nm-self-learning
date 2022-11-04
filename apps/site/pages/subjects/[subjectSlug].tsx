@@ -110,26 +110,24 @@ function SpecializationCard({
 }) {
 	return (
 		<Link href={`/subjects/${subjectSlug}/specialization/${slug}`}>
-			<a>
-				<ImageCard
-					slug={slug}
-					title={title}
-					subtitle={subtitle}
-					imgUrl={imgUrl}
-					footer={
-						<>
-							<span className="flex items-center gap-3">
-								<CollectionIcon className="h-5" />
-								<span>12 Courses</span>
-							</span>
-							<span className="flex items-center gap-3">
-								<VideoCameraIcon className="h-5" />
-								<span>123 Nanomodule</span>
-							</span>
-						</>
-					}
-				/>
-			</a>
+			<ImageCard
+				slug={slug}
+				title={title}
+				subtitle={subtitle}
+				imgUrl={imgUrl}
+				footer={
+					<>
+						<span className="flex items-center gap-3">
+							<CollectionIcon className="h-5" />
+							<span>12 Courses</span>
+						</span>
+						<span className="flex items-center gap-3">
+							<VideoCameraIcon className="h-5" />
+							<span>123 Nanomodule</span>
+						</span>
+					</>
+				}
+			/>
 		</Link>
 	);
 }

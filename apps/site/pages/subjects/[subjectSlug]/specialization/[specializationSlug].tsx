@@ -102,21 +102,19 @@ function CourseCard({
 	imgUrl?: string | null;
 }) {
 	return (
-		<Link href={`/courses/${slug}`}>
-			<a className="flex">
-				<ImageCard
-					slug={slug}
-					imgUrl={imgUrl}
-					title={title}
-					subtitle={subtitle}
-					footer={
-						<span className="flex items-center gap-3 font-semibold text-emerald-500">
-							<UserGroupIcon className="h-5" />
-							<span>1.234 Absolventen</span>
-						</span>
-					}
-				/>
-			</a>
+		<Link href={`/courses/${slug}`} className="flex">
+			<ImageCard
+				slug={slug}
+				imgUrl={imgUrl}
+				title={title}
+				subtitle={subtitle}
+				footer={
+					<span className="flex items-center gap-3 font-semibold text-emerald-500">
+						<UserGroupIcon className="h-5" />
+						<span>1.234 Absolventen</span>
+					</span>
+				}
+			/>
 		</Link>
 	);
 }

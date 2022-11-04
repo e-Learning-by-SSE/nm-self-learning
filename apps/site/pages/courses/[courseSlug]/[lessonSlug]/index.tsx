@@ -190,14 +190,13 @@ function LessonControls({
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			{hasQuiz && (
-				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
-					<a
-						className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
-						data-testid="quizLink"
-					>
-						<span>Zur Lernkontrolle</span>
-						<PlayIcon className="h-6 shrink-0" />
-					</a>
+				<Link
+					href={`/courses/${course.slug}/${lesson.slug}/quiz`}
+					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
+					data-testid="quizLink"
+				>
+					<span>Zur Lernkontrolle</span>
+					<PlayIcon className="h-6 shrink-0" />
 				</Link>
 			)}
 
@@ -221,24 +220,22 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 				<div className="mt-4 flex flex-wrap gap-4">
 					{authors.map(author => (
 						<Link href={`/authors/${author.slug}`} key={author.slug}>
-							<a>
-								<div
-									className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
-									key={author.slug}
-								>
-									{author.imgUrl && (
-										<Image
-											src={author.imgUrl}
-											alt={author.displayName}
-											width={48}
-											height={48}
-										></Image>
-									)}
-									<span className="p-4 text-sm font-medium">
-										{author.displayName}
-									</span>
-								</div>
-							</a>
+							<div
+								className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
+								key={author.slug}
+							>
+								{author.imgUrl && (
+									<Image
+										src={author.imgUrl}
+										alt={author.displayName}
+										width={48}
+										height={48}
+									></Image>
+								)}
+								<span className="p-4 text-sm font-medium">
+									{author.displayName}
+								</span>
+							</div>
 						</Link>
 					))}
 				</div>

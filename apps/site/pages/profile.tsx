@@ -126,29 +126,26 @@ export default function Profile({ user, completedLessons }: ProfileProps) {
 					<ItemCardGrid>
 						{user.enrollments.map(enrollment => (
 							<Link
-								legacyBehavior
 								key={enrollment.course.courseId}
 								href={`/courses/${enrollment.course.slug}`}
 							>
-								<a>
-									<ImageCard
-										slug={enrollment.course.slug}
-										title={enrollment.course.title}
-										subtitle={enrollment.course.subtitle}
-										imgUrl={enrollment.course.imgUrl}
-										badge={
-											enrollment.status === "COMPLETED" ? (
-												<ImageCardBadge
-													className="bg-emerald-500 text-white"
-													text="Abgeschlossen"
-												/>
-											) : (
-												<></>
-											)
-										}
-										footer={<ProgressFooter progress={enrollment.progress} />}
-									/>
-								</a>
+								<ImageCard
+									slug={enrollment.course.slug}
+									title={enrollment.course.title}
+									subtitle={enrollment.course.subtitle}
+									imgUrl={enrollment.course.imgUrl}
+									badge={
+										enrollment.status === "COMPLETED" ? (
+											<ImageCardBadge
+												className="bg-emerald-500 text-white"
+												text="Abgeschlossen"
+											/>
+										) : (
+											<></>
+										)
+									}
+									footer={<ProgressFooter progress={enrollment.progress} />}
+								/>
 							</Link>
 						))}
 					</ItemCardGrid>
@@ -205,21 +202,19 @@ function Activity({
 						>
 							<div className="flex flex-col gap-1">
 								<Link
-									legacyBehavior
+									className="text-sm font-medium hover:text-secondary"
 									href={`/courses/${lesson.course?.slug}/${lesson.lesson.slug}`}
 								>
-									<a className="text-sm font-medium hover:text-secondary">
-										{lesson.lesson.title}
-									</a>
+									{lesson.lesson.title}
 								</Link>
 								{lesson.course && (
 									<span className="text-xs text-light">
 										in{" "}
 										<Link
-											legacyBehavior
+											className="text-secondary"
 											href={`/courses/${lesson.course.slug}`}
 										>
-											<a className="text-secondary">{lesson.course.title}</a>
+											{lesson.course.title}
 										</Link>
 									</span>
 								)}
