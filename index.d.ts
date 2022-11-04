@@ -16,6 +16,8 @@ declare var process: {
 		AUTH0_CLIENT_SECRET: string;
 		GITHUB_CLIENT_ID: string;
 		GITHUB_CLIENT_SECRET: string;
+		KEYCLOAK_ISSUER_URL: string;
+		KEYCLOAK_CLIENT_ID: string;
 		NEXTAUTH_URL: string;
 		NEXTAUTH_SECRET: string;
 		ALGOLIA_APPLICATION_ID: string;

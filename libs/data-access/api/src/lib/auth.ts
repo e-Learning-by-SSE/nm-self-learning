@@ -3,13 +3,58 @@ import { database } from "@self-learning/database";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import { NextAuthOptions } from "next-auth";
+import { Adapter } from "next-auth/adapters";
 import Auth0Provider from "next-auth/providers/auth0";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
+import KeycloakProvider from "next-auth/providers/keycloak";
+
+const customPrismaAdapter: Adapter = {
+	...PrismaAdapter(database),
+	// We overwrite the linkAccount method, because some auth providers may send additional properties
+	// that do not exist in the Account model.
+	async linkAccount(account): Promise<void> {
+		const user = await database.user.findUniqueOrThrow({
+			where: { id: account.userId }
+		});
+
+		console.log("[Auth]: Creating new account", {
+			userId: user.id,
+			name: user.name,
+			provider: account.provider
+		});
+
+		await database.$transaction([
+			database.account.create({
+				data: {
+					type: account.type,
+					provider: account.provider,
+					providerAccountId: account.providerAccountId,
+					userId: account.userId,
+					refresh_token: account.refresh_token,
+					access_token: account.access_token,
+					expires_at: account.expires_at,
+					token_type: account.token_type,
+					scope: account.scope,
+					id_token: account.id_token,
+					session_state: account.session_state
+				}
+			}),
+			// Create Student account by default
+			database.student.create({
+				data: {
+					userId: account.userId,
+					username: user.name ?? user.id,
+					displayName: user.name ?? "Unknown"
+				}
+			})
+		]);
+	}
+};
 
 export const authOptions: NextAuthOptions = {
 	theme: { colorScheme: "light" },
-	adapter: PrismaAdapter(database),
+	adapter: customPrismaAdapter,
 	session: {
 		strategy: "jwt"
 	},
@@ -22,6 +67,11 @@ export const authOptions: NextAuthOptions = {
 		GitHubProvider({
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string
+		}),
+		KeycloakProvider({
+			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
+			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
+			clientSecret: "dummySecret"
 		}),
 		CredentialsProvider({
 			name: "Demo-Account",
