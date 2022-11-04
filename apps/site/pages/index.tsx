@@ -5,16 +5,19 @@ export function LandingPage() {
 	return (
 		<div className="relative flex h-full flex-col gap-16 px-4">
 			<div className="absolute left-4 top-4 flex flex-col text-sm text-slate-400">
-				<Link href="/subjects">
+				<Link legacyBehavior href="/subjects">
 					<a className="underline">Fachgebiete</a>
 				</Link>
-				<Link href="/courses/the-beginners-guide-to-react/start-a-new-react-project">
+				<Link
+					legacyBehavior
+					href="/courses/the-beginners-guide-to-react/start-a-new-react-project"
+				>
 					<a className="underline">Example Lesson</a>
 				</Link>
-				<Link href="/courses/the-beginners-guide-to-react">
+				<Link legacyBehavior href="/courses/the-beginners-guide-to-react">
 					<a className="underline">Example Course</a>
 				</Link>
-				<Link href="/teaching">
+				<Link legacyBehavior href="/teaching">
 					<a className="underline">Teaching</a>
 				</Link>
 			</div>

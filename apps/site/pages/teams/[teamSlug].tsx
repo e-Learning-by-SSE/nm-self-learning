@@ -74,15 +74,7 @@ export default function TeamPage({ team, markdownDescription }: TeamPageProps) {
 			<CenteredSection className="gradient">
 				<div className="flex flex-col gap-16">
 					<div className="relative m-auto h-[256px] w-[256px] shrink-0 rounded-lg bg-white">
-						{team.imgUrl && (
-							<Image
-								className="rounded-lg"
-								objectFit="contain"
-								layout="fill"
-								src={team.imgUrl}
-								alt=""
-							/>
-						)}
+						{team.imgUrl && <Image className="rounded-lg" src={team.imgUrl} alt="" />}
 					</div>
 
 					<div className="flex flex-col place-items-center gap-16">

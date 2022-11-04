@@ -190,7 +190,7 @@ function LessonControls({
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			{hasQuiz && (
-				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
+				<Link legacyBehavior href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
 					<a
 						className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 						data-testid="quizLink"
@@ -220,22 +220,20 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 			{authors.length > 0 && (
 				<div className="mt-4 flex flex-wrap gap-4">
 					{authors.map(author => (
-						<Link href={`/authors/${author.slug}`} key={author.slug}>
+						<Link legacyBehavior href={`/authors/${author.slug}`} key={author.slug}>
 							<a>
 								<div
 									className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
 									key={author.slug}
 								>
-									<div className="relative h-12 w-12">
-										{author.imgUrl && (
-											<Image
-												src={author.imgUrl}
-												alt=""
-												layout="fill"
-												objectFit="cover"
-											></Image>
-										)}
-									</div>
+									{author.imgUrl && (
+										<Image
+											src={author.imgUrl}
+											alt={author.displayName}
+											width={48}
+											height={48}
+										></Image>
+									)}
 									<span className="p-4 text-sm font-medium">
 										{author.displayName}
 									</span>

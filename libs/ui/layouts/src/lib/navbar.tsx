@@ -12,7 +12,7 @@ export function Navbar() {
 		<nav className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white">
 			<div className="mx-auto flex h-full max-w-[1920px] items-center justify-between gap-4 py-2 px-4">
 				<div className="flex items-center gap-8 md:gap-32">
-					<Link href="/">
+					<Link legacyBehavior href="/">
 						<a className="flex items-center gap-4">
 							<div className="rounded-full bg-secondary p-1">
 								<AcademicCapIcon className="h-8 shrink-0 text-white" />
@@ -26,15 +26,15 @@ export function Navbar() {
 					<div className="invisible flex w-0 items-center gap-16 text-sm font-medium lg:visible lg:w-fit">
 						{session?.user && (
 							<>
-								{/* <Link href="/learning-diary">
+								{/* <Link legacyBehavior href="/learning-diary">
 									<a>Lerntagebuch</a>
 								</Link> */}
-								<Link href="/profile">
+								<Link legacyBehavior href="/profile">
 									<a>Profil</a>
 								</Link>
 							</>
 						)}
-						<Link href="/subjects">
+						<Link legacyBehavior href="/subjects">
 							<a>Fachgebiete</a>
 						</Link>
 					</div>
@@ -62,11 +62,11 @@ export function Navbar() {
 export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
 	return (
 		<Menu as="div" className="relative flex">
-			<Menu.Button className="flex shrink-0 items-center gap-1 ">
+			<Menu.Button className="flex shrink-0 items-center gap-1">
 				<Image
-					className="rounded-full object-top"
+					className="h-[42px] w-[42px] rounded-full object-cover object-top"
+					alt="Avatar"
 					src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=48&q=80"
-					objectFit="cover"
 					width={42}
 					height={42}
 				></Image>
@@ -75,7 +75,7 @@ export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
 			<Menu.Items className="absolute right-0 top-14 z-10 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
 				<Menu.Item as="div" className="p-1">
 					{({ active }) => (
-						<Link href="/profile">
+						<Link legacyBehavior href="/profile">
 							<a
 								className={`${
 									active ? "bg-emerald-500 text-white" : ""

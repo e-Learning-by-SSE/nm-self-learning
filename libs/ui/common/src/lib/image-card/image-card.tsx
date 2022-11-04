@@ -22,11 +22,10 @@ export function ImageCard({
 			) : (
 				<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-white">
 					<Image
-						className="rounded-t-lg"
+						className="rounded-t-lg object-cover"
 						src={imgUrl}
+						fill={true}
 						alt=""
-						layout="fill"
-						objectFit="cover"
 					></Image>
 				</div>
 			)}

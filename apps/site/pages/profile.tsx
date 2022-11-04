@@ -126,6 +126,7 @@ export default function Profile({ user, completedLessons }: ProfileProps) {
 					<ItemCardGrid>
 						{user.enrollments.map(enrollment => (
 							<Link
+								legacyBehavior
 								key={enrollment.course.courseId}
 								href={`/courses/${enrollment.course.slug}`}
 							>
@@ -204,6 +205,7 @@ function Activity({
 						>
 							<div className="flex flex-col gap-1">
 								<Link
+									legacyBehavior
 									href={`/courses/${lesson.course?.slug}/${lesson.lesson.slug}`}
 								>
 									<a className="text-sm font-medium hover:text-secondary">
@@ -213,7 +215,10 @@ function Activity({
 								{lesson.course && (
 									<span className="text-xs text-light">
 										in{" "}
-										<Link href={`/courses/${lesson.course.slug}`}>
+										<Link
+											legacyBehavior
+											href={`/courses/${lesson.course.slug}`}
+										>
 											<a className="text-secondary">{lesson.course.title}</a>
 										</Link>
 									</span>

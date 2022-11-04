@@ -53,7 +53,7 @@ function SubjectCard({
 	imgUrl?: string | null;
 }) {
 	return (
-		<Link href={`/subjects/${slug}`}>
+		<Link legacyBehavior href={`/subjects/${slug}`}>
 			<a>
 				<ImageCard
 					slug={slug}

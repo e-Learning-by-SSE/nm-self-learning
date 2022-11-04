@@ -109,7 +109,7 @@ function SpecializationCard({
 	imgUrl: string | null;
 }) {
 	return (
-		<Link href={`/subjects/${subjectSlug}/specialization/${slug}`}>
+		<Link legacyBehavior href={`/subjects/${subjectSlug}/specialization/${slug}`}>
 			<a>
 				<ImageCard
 					slug={slug}

@@ -132,7 +132,7 @@ function Lesson({
 	isActive: boolean;
 }) {
 	return (
-		<Link href={href}>
+		<Link legacyBehavior href={href}>
 			<a
 				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
 					isActive ? "bg-gray-200 font-medium text-black" : "text-light"
@@ -162,7 +162,7 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 	return (
 		<div className="sticky top-0 z-20 flex flex-col gap-4 rounded-lg bg-gray-100 pt-8">
 			<div className="flex flex-col gap-2">
-				<Link href={`/courses/${course.slug}`}>
+				<Link legacyBehavior href={`/courses/${course.slug}`}>
 					<a className="heading text-2xl" title={course.title}>
 						{course.title}
 					</a>
@@ -239,7 +239,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 				</span>
 			</span>
 			<span className="flex justify-between">
-				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
+				<Link legacyBehavior href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
 					<a className="btn-primary text-sm" data-testid="quizLink">
 						Lernkontrolle
 					</a>

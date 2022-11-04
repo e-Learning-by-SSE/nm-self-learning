@@ -22,17 +22,16 @@ export function TopicHeader({
 				<div className="relative h-48 w-full bg-white">
 					<Image
 						priority
-						className=""
+						className="object-cover"
 						src={imgUrlBanner}
-						layout="fill"
-						alt=""
-						objectFit="cover"
+						fill={true}
+						alt="Banner"
 					/>
 				</div>
 			)}
 
 			<div className="glass flex w-full flex-col rounded-b-lg px-8 py-4">
-				<Link href={parentLink}>
+				<Link legacyBehavior href={parentLink}>
 					<a>
 						<h2 className="text-2xl text-emerald-500">{parentTitle}</h2>
 					</a>

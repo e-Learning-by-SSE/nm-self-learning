@@ -89,7 +89,7 @@ function Author({ slug, onRemove }: { slug: string; onRemove: () => void }) {
 			</div>
 
 			<span className="w-full">
-				<Link href={`/authors/${author.slug}`}>
+				<Link legacyBehavior href={`/authors/${author.slug}`}>
 					<a
 						target="_blank"
 						className="font-medium hover:text-secondary"
