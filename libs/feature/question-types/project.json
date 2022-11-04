@@ -13,7 +13,7 @@
 		},
 		"test": {
 			"executor": "@nrwl/jest:jest",
-			"outputs": ["coverage/libs/feature/question-types"],
+			"outputs": ["{workspaceRoot}/coverage/libs/feature/question-types"],
 			"options": {
 				"jestConfig": "libs/feature/question-types/jest.config.ts",
 				"passWithNoTests": true
