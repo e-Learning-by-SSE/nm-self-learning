@@ -190,7 +190,7 @@ function LessonControls({
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			{hasQuiz && (
-				<Link legacyBehavior href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
+				<Link href={`/courses/${course.slug}/${lesson.slug}/quiz`}>
 					<a
 						className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 						data-testid="quizLink"
@@ -220,7 +220,7 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 			{authors.length > 0 && (
 				<div className="mt-4 flex flex-wrap gap-4">
 					{authors.map(author => (
-						<Link legacyBehavior href={`/authors/${author.slug}`} key={author.slug}>
+						<Link href={`/authors/${author.slug}`} key={author.slug}>
 							<a>
 								<div
 									className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"

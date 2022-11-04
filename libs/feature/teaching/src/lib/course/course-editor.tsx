@@ -69,7 +69,7 @@ export function CourseEditor({
 											Kurs editieren
 										</span>
 
-										<Link legacyBehavior href={`/courses/${course.slug}`}>
+										<Link href={`/courses/${course.slug}`}>
 											<a>
 												<h1 className="text-2xl">{course.title}</h1>
 											</a>
@@ -139,7 +139,7 @@ function CourseDescriptionForm() {
 // 		</>
 // 	) : (
 // 		<>
-// 			<Link legacyBehavior href={`/courses/${course.slug}`} passHref>
+// 			<Link href={`/courses/${course.slug}`} passHref>
 // 				<a
 // 					target="_blank"
 // 					className="text-secondary hover:underline"

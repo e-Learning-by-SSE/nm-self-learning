@@ -95,13 +95,13 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 				<div className="flex flex-col gap-8">
 					<span>
 						<h2 className="text-3xl">Kurse</h2>
-						<Link legacyBehavior href={`/authors/${author.slug}/courses`}>
+						<Link href={`/authors/${author.slug}/courses`}>
 							<a className="text-sm text-secondary hover:underline">Alle anzeigen</a>
 						</Link>
 					</span>
 					<ItemCardGrid>
 						{author.courses.map(course => (
-							<Link legacyBehavior href={`/courses/${course.slug}`} key={course.slug}>
+							<Link href={`/courses/${course.slug}`} key={course.slug}>
 								<a>
 									<ImageCard
 										slug={course.slug}
@@ -120,13 +120,13 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 				<div className="flex flex-col gap-8">
 					<span className="">
 						<h2 className="text-3xl">Nanomodule</h2>
-						<Link legacyBehavior href={`/authors/${author.slug}/lessons`}>
+						<Link href={`/authors/${author.slug}/lessons`}>
 							<a className="text-sm text-secondary hover:underline">Alle anzeigen</a>
 						</Link>
 					</span>
 					<ItemCardGrid>
 						{author.lessons?.data.map(({ attributes }) => (
-							<Link legacyBehavior href={`/courses/${attributes!.slug}`} key={attributes?.slug}>
+							<Link href={`/courses/${attributes!.slug}`} key={attributes?.slug}>
 								<a>
 									<ImageCard
 										slug={attributes!.slug}
@@ -174,7 +174,7 @@ export function AuthorHeader({ author }: { author: Author }) {
 
 export function TeamChip({ slug, name }: { slug: string; name: string }) {
 	return (
-		<Link legacyBehavior href={`/teams/${slug}`}>
+		<Link href={`/teams/${slug}`}>
 			<a className="rounded-full bg-secondary py-2 px-4 text-sm font-semibold text-white">
 				{name}
 			</a>

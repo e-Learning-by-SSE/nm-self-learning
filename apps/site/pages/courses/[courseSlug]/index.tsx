@@ -274,7 +274,7 @@ function CourseHeader({
 					</div>
 
 					{isEnrolled && (
-						<Link legacyBehavior href={`/courses/${course.slug}/${nextLessonSlug}`}>
+						<Link href={`/courses/${course.slug}/${nextLessonSlug}`}>
 							<a className="btn-primary">
 								<span>
 									{completion?.courseCompletion.completedLessonCount === 0
@@ -343,7 +343,7 @@ function Lesson({
 	isCompleted: boolean;
 }) {
 	return (
-		<Link legacyBehavior href={href}>
+		<Link href={href}>
 			<a
 				className={`flex gap-2 rounded-r-lg border-l-4 bg-gray-200 px-4 py-2 text-sm ${
 					isCompleted ? "border-emerald-500" : "border-gray-300"

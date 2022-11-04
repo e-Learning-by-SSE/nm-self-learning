@@ -31,7 +31,7 @@ export function TopicHeader({
 			)}
 
 			<div className="glass flex w-full flex-col rounded-b-lg px-8 py-4">
-				<Link legacyBehavior href={parentLink}>
+				<Link href={parentLink}>
 					<a>
 						<h2 className="text-2xl text-emerald-500">{parentTitle}</h2>
 					</a>

@@ -45,7 +45,7 @@ function SidebarLink({
 	isActive: boolean;
 }) {
 	return (
-		<Link legacyBehavior href={href}>
+		<Link href={href}>
 			<a
 				href={href}
 				className={`flex items-center gap-4 rounded py-2 px-2 ${
@@ -62,7 +62,7 @@ function SidebarLink({
 function SidebarHeader({ setOpen }: { setOpen: (open: boolean) => void }) {
 	return (
 		<div className="to flex justify-between border-b border-light-border p-4">
-			<Link legacyBehavior href="/">
+			<Link href="/">
 				<a href="/" className="flex items-center gap-4">
 					<AcademicCapIcon height="48" className="text-secondary" />
 					<span className="text-lg font-semibold">SELF LEARNING</span>

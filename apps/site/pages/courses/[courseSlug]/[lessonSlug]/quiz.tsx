@@ -199,12 +199,12 @@ function QuizHeader({
 		<div className="flex flex-col gap-4">
 			<div className="relative flex flex-col gap-2">
 				<span className="font-semibold text-secondary">{chapterName}</span>
-				<Link legacyBehavior href={`/courses/${course.slug}/${lesson.slug}`}>
+				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
 					<a>
 						<h1 className="text-4xl">{lesson.title}</h1>
 					</a>
 				</Link>
-				<Link legacyBehavior href={`/teaching/lessons/edit/${lesson.lessonId}`}>
+				<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>
 					<a className="absolute right-0 top-1">
 						<CogIcon className="h-5 text-gray-400" />
 					</a>
@@ -298,7 +298,7 @@ function QuizCompletionDialog({
 
 			<DialogActions onClose={onClose}>
 				{nextLesson && (
-					<Link legacyBehavior href={`/courses/${course.slug}/${nextLesson.slug}`}>
+					<Link href={`/courses/${course.slug}/${nextLesson.slug}`}>
 						<a className="btn-primary">
 							<span>Zur nächsten Lerneinheit</span>
 							<PlayIcon className="h-5 shrink-0" />

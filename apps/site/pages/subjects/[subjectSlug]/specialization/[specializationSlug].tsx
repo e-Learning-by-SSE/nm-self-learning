@@ -102,7 +102,7 @@ function CourseCard({
 	imgUrl?: string | null;
 }) {
 	return (
-		<Link legacyBehavior href={`/courses/${slug}`}>
+		<Link href={`/courses/${slug}`}>
 			<a className="flex">
 				<ImageCard
 					slug={slug}

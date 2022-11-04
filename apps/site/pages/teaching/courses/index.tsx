@@ -21,7 +21,7 @@ export default function CoursesPage() {
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Kurse</h1>
 
-				<Link legacyBehavior href="/teaching/courses/create">
+				<Link href="/teaching/courses/create">
 					<a className="btn-primary flex w-fit">
 						<PlusIcon className="h-5" />
 						<span>Kurs hinzufügen</span>

@@ -49,7 +49,7 @@ function Card({
 	href: string;
 }) {
 	return (
-		<Link legacyBehavior href={href}>
+		<Link href={href}>
 			<a className="flex flex-col place-items-center gap-4 rounded-lg border border-light-border bg-white pt-4">
 				<div className="flex aspect-square w-64">{imageElement}</div>
 				<span className="w-full rounded-b-lg bg-secondary p-4 text-center font-semibold text-white">

@@ -20,7 +20,7 @@ export default function LessonManagementPage() {
 			<div className="mb-16 flex items-center justify-between gap-4 ">
 				<h1 className="text-5xl">Lerneinheiten</h1>
 
-				<Link legacyBehavior href="/teaching/lessons/create">
+				<Link href="/teaching/lessons/create">
 					<a className="btn-primary flex w-fit">
 						<PlusIcon className="h-5" />
 						<span>Lerneinheit hinzufügen</span>
