@@ -56,15 +56,12 @@ const lessonNoQuiz = createExampleLesson(courseContent[0].content[2].lessonId, {
 });
 
 before(() => {
-	runCommand({
-		command: "upsertCourse",
-		payload: {
-			create: course,
-			update: {}, // Can be empty, since we do not modify the course here
-			lessons: {
-				data: [lessonSingle, lessonMultiple, lessonNoQuiz],
-				skipDuplicates: true
-			}
+	runCommand("upsertCourse", {
+		create: course,
+		update: {}, // Can be empty, since we do not modify the course here
+		lessons: {
+			data: [lessonSingle, lessonMultiple, lessonNoQuiz],
+			skipDuplicates: true
 		}
 	});
 });

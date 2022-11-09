@@ -25,15 +25,12 @@ const courseContent = createCourseContent([
 const TEST_COURSE = createExampleCourse(`${testId}-course`, courseContent);
 
 before(() => {
-	runCommand({
-		command: "upsertCourse",
-		payload: {
-			create: TEST_COURSE,
-			update: {}, // Can be empty, since we do not modify the course here
-			lessons: {
-				data: createExampleLessonsFromContent(TEST_COURSE.content as CourseContent),
-				skipDuplicates: true
-			}
+	runCommand("upsertCourse", {
+		create: TEST_COURSE,
+		update: {}, // Can be empty, since we do not modify the course here
+		lessons: {
+			data: createExampleLessonsFromContent(TEST_COURSE.content as CourseContent),
+			skipDuplicates: true
 		}
 	});
 });

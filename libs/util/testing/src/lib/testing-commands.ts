@@ -1,26 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 
-export type TestingCommand =
-	| {
-			command: "upsertLesson";
-			payload: Prisma.LessonCreateInput;
-	  }
-	| {
-			command: "upsertCourse";
-			payload: {
-				create: Prisma.CourseCreateInput;
-				update: Prisma.CourseUpdateInput;
-				lessons?: Prisma.LessonCreateManyArgs;
-			};
-	  };
-
-export const testingActionHandler: {
-	[Action in TestingCommand["command"]]: (
-		payload: InferCommand<Action>["payload"]
-	) => Promise<unknown>;
-} = {
-	upsertLesson: async payload => {
+export const testingActionHandler = {
+	upsertLesson: async (payload: Prisma.LessonCreateInput) => {
 		const lesson = await database.lesson.upsert({
 			where: { lessonId: payload.lessonId },
 			create: payload,
@@ -29,7 +11,11 @@ export const testingActionHandler: {
 
 		return lesson;
 	},
-	upsertCourse: async payload => {
+	upsertCourse: async (payload: {
+		create: Prisma.CourseCreateInput;
+		update: Prisma.CourseUpdateInput;
+		lessons?: Prisma.LessonCreateManyArgs;
+	}) => {
 		const course = await database.course.upsert({
 			where: { courseId: payload.create.courseId },
 			create: payload.create,
@@ -44,11 +30,8 @@ export const testingActionHandler: {
 	}
 };
 
-type InferCommand<
-	Command extends TestingCommand["command"],
-	Union = TestingCommand
-> = Union extends {
-	command: Command;
-}
-	? Union
-	: never;
+type Handler = typeof testingActionHandler;
+
+export type TestingCommand = {
+	[C in keyof Handler]: Parameters<Handler[C]>[0];
+};

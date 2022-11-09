@@ -3,32 +3,29 @@ import { runCommand } from "../support/util";
 describe("/teaching/lessons/edit - Lesson Editor", () => {
 	beforeEach(() => {
 		cy.login();
-		runCommand({
-			command: "upsertCourse",
-			payload: {
-				create: {
-					courseId: "test-course",
-					slug: "test-course",
-					title: "Test Course",
-					subtitle: "Test Course Subtitle",
-					description: "Test Course Description",
-					content: [],
-					meta: {},
-					authors: {
-						connect: [{ slug: "albus-dumbledore" }]
-					}
-				},
-				update: {
-					courseId: "test-course",
-					slug: "test-course",
-					title: "Test Course",
-					subtitle: "Test Course Subtitle",
-					description: "Test Course Description",
-					content: [],
-					meta: {},
-					authors: {
-						set: [{ slug: "albus-dumbledore" }]
-					}
+		runCommand("upsertCourse", {
+			create: {
+				courseId: "test-course",
+				slug: "test-course",
+				title: "Test Course",
+				subtitle: "Test Course Subtitle",
+				description: "Test Course Description",
+				content: [],
+				meta: {},
+				authors: {
+					connect: [{ slug: "albus-dumbledore" }]
+				}
+			},
+			update: {
+				courseId: "test-course",
+				slug: "test-course",
+				title: "Test Course",
+				subtitle: "Test Course Subtitle",
+				description: "Test Course Description",
+				content: [],
+				meta: {},
+				authors: {
+					set: [{ slug: "albus-dumbledore" }]
 				}
 			}
 		});

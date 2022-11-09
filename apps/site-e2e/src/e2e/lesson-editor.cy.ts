@@ -5,15 +5,12 @@ describe("/teaching/lessons/edit - Lesson Editor", () => {
 	beforeEach(() => {
 		cy.login();
 
-		runCommand({
-			command: "upsertLesson",
-			payload: {
-				title: "Test Lesson",
-				content: [],
-				lessonId: "test-lesson",
-				slug: "test-lesson",
-				meta: Prisma.JsonNull
-			}
+		runCommand("upsertLesson", {
+			title: "Test Lesson",
+			content: [],
+			lessonId: "test-lesson",
+			slug: "test-lesson",
+			meta: Prisma.JsonNull
 		});
 		cy.visit("/teaching/lessons/edit/test-lesson");
 	});
