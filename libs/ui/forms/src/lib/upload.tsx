@@ -55,6 +55,7 @@ export function Upload({
 			<input
 				type="file"
 				id={id}
+				accept={mediaType === "video" ? "video/*" : "image/*"}
 				onChange={handleUpload}
 				style={{
 					visibility: "hidden",

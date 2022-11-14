@@ -4,9 +4,10 @@ declare var process: {
 		DATABASE_URL: string;
 		MINIO_ENDPOINT: string;
 		MINIO_PORT: string;
+		MINIO_USE_SSL: string;
 		MINIO_ACCESS_KEY: string;
 		MINIO_SECRET_KEY: string;
-		MINIO_PUBLIC_URL: string;
+		MINIO_PUBLIC_URL?: string;
 		MINIO_BUCKET_NAME: string;
 		PISTON_URL: string;
 		AUTH0_SECRET: string;

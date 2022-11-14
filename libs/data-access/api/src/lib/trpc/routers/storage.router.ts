@@ -1,27 +1,37 @@
 import { getRandomId } from "@self-learning/util/common";
-import { Client } from "minio";
+import { Client, ClientOptions } from "minio";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 
-export const minioConfig = z
+export const minioConfig: ClientOptions & { bucketName: string; publicUrl?: string } = z
 	.object({
+		publicUrl: z.string().optional(), // If not specified, we fallback to <protocol>://<host>:<port>
 		endPoint: z.string(),
 		port: z.number(),
+		useSSL: z.boolean().optional(),
 		accessKey: z.string(),
 		secretKey: z.string(),
-		publicUrl: z.string(),
 		bucketName: z.string()
 	})
 	.parse({
+		publicUrl: process.env.MINIO_PUBLIC_URL,
 		endPoint: process.env.MINIO_ENDPOINT,
 		port: parseInt(process.env.MINIO_PORT as string),
+		useSSL: process.env.MINIO_USE_SSL === "true",
 		accessKey: process.env.MINIO_ACCESS_KEY,
 		secretKey: process.env.MINIO_SECRET_KEY,
-		publicUrl: process.env.MINIO_PUBLIC_URL,
 		bucketName: process.env.MINIO_BUCKET_NAME
 	});
 
-export const minioClient = new Client({ ...minioConfig, useSSL: false });
+export const minioClient = new Client(minioConfig);
+
+const publicUrlWithBucket = minioConfig.publicUrl
+	? `${minioConfig.publicUrl}/${minioConfig.bucketName}`
+	: `${minioConfig.useSSL ? "https" : "http"}://${minioConfig.endPoint}:${minioConfig.port}/${
+			minioConfig.bucketName
+	  }`;
+
+console.log("[Storage]: Files will be uploaded to:", publicUrlWithBucket);
 
 export const storageRouter = t.router({
 	getPresignedUrl: authProcedure
@@ -33,11 +43,10 @@ export const storageRouter = t.router({
 		.mutation(async ({ input }) => {
 			const randomizedFilename = `${getRandomId()}-${input.filename}`;
 			const presignedUrl = await getPresignedUrl(randomizedFilename);
-			const publicUrl = `${minioConfig.publicUrl}/${minioConfig.bucketName}/${randomizedFilename}`;
 
 			return {
 				presignedUrl,
-				publicUrl
+				publicUrl: `${publicUrlWithBucket}/${randomizedFilename}`
 			};
 		}),
 	removeFile: authProcedure
@@ -56,6 +65,7 @@ function getPresignedUrl(filename: string): Promise<string> {
 	return new Promise((res, rej) => {
 		minioClient.presignedPutObject(minioConfig.bucketName, filename, (err, result) => {
 			if (err) {
+				console.error("Error getting presigned URL", err);
 				rej(err);
 			}
 			res(result);
