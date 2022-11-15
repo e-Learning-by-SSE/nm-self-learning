@@ -1,18 +1,20 @@
-import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { QuizContent } from "@self-learning/question-types";
+import { subHours } from 'date-fns';
+import { readFileSync } from 'fs';
+import * as path from 'path';
+import slugify from 'slugify';
+
+import { faker } from '@faker-js/faker';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { QuizContent } from '@self-learning/question-types';
 import {
-	createCourseContent,
-	createCourseMeta,
-	createLessonMeta,
-	extractLessonIds,
-	LessonContent
-} from "@self-learning/types";
-import { subHours } from "date-fns";
-import { readFileSync } from "fs";
-import * as path from "path";
-import { join } from "path";
-import slugify from "slugify";
+    createCourseContent,
+    createCourseMeta,
+    createLessonMeta,
+    extractLessonIds,
+    LessonContent,
+} from '@self-learning/types';
+
+import { courseSeed } from './java_seed';
 
 faker.seed(1);
 
@@ -203,7 +205,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		withCertainty: false,
 		questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
 		statement: `# Hello World
-		
+
 Erstelle ein Programm, welches \`Hello World\` auf der Konsole ausgibt.`,
 		custom: {
 			mode: "standalone",
@@ -227,12 +229,12 @@ Erstelle ein Programm, welches \`Hello World\` auf der Konsole ausgibt.`,
 		withCertainty: false,
 		questionId: "dee8dfd5-ee07-4071-bf7b-33b4cb1fe623",
 		statement: `# Schleifen
-		
+
 Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
 
 **Beispiel:**
 
-**Eingabe**: \`[1, 2, 3, 4, 5]\`  
+**Eingabe**: \`[1, 2, 3, 4, 5]\`
 **Ausgabe**: \`15\`
 `,
 		custom: {
@@ -277,12 +279,12 @@ console.log(sumExpected(testCase));
 		withCertainty: false,
 		questionId: "b5884b38-bed2-4f00-8c21-8a7b0737af2e",
 		statement: `# Schleifen
-		
+
 Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
 
 **Beispiel:**
 
-**Eingabe**: \`[1, 2, 3, 4, 5]\`  
+**Eingabe**: \`[1, 2, 3, 4, 5]\`
 **Ausgabe**: \`15\`
 `,
 		custom: {
@@ -607,6 +609,8 @@ async function seed(): Promise<void> {
 		await prisma.user.create({ data: author });
 	}
 	console.log("✅ Authors");
+
+	courseSeed();
 
 	console.log(`\nSeed command took ${Date.now() - start}ms`);
 }
