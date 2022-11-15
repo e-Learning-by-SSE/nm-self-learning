@@ -119,6 +119,8 @@ const authors: Prisma.UserCreateInput[] = [
 export async function courseSeed(): Promise<void> {
 	console.log("\x1b[34m%s\x1b[0m", "Java Example");
 
+	await prisma.course.createMany({ data: courses });
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 	await prisma.lesson.createMany({
 		data: javaLessons.flatMap(chapter => chapter.content.map(lesson => lesson))
 	});
