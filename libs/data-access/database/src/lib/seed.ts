@@ -1,6 +1,6 @@
 import { subHours } from 'date-fns';
 import { readFileSync } from 'fs';
-import * as path from 'path';
+import { join } from 'path';
 import slugify from 'slugify';
 
 import { faker } from '@faker-js/faker';
@@ -242,6 +242,7 @@ Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält u
 			solutionTemplate:
 				"export function sum(numbers: number[]): number {\n\t// DEINE LÖSUNG\n\treturn 0;\t\n}",
 			mainFile: `import { sum } from "./Solution";
+import { join } from 'path';
 
 const testCases = [
 [1, 1],
