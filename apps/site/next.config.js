@@ -13,6 +13,8 @@ const nextConfig = {
 			"loremflickr.com",
 			"cloudflare-ipfs.com",
 			"c.pxhere.com",
+			"www.pngall.com",
+			"cdn.iconscout.com",
 			"raw.githubusercontent.com"
 		]
 	},

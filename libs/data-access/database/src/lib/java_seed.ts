@@ -65,7 +65,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 		subtitle: "Einführung in die Welt von Java",
 		description:
 			"## Lernziele\r\n* Einrichtung der Arbeitsumgebung\r\n* Imperative Programmierung\r\n* Objektorientierte Programmierung\r\n\r\nEs werden keine Informatik- / Programierkentnisse vorausgesetzt",
-		imgUrl: "https://images.unsplash.com/photo-1579403124614-197f69d8187b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1064&q=80",
+		imgUrl: "https://cdn.iconscout.com/icon/free/png-512/java-43-569305.png",
 		subjectId: 1,
 		createdAt: new Date(2022, 4, 20),
 		updatedAt: new Date(2022, 5, 1),
