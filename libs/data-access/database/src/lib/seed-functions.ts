@@ -173,5 +173,5 @@ export function createArticle(
 }
 
 export function read(file: string) {
-	readFileSync(join(__dirname, file), "utf-8");
+	return readFileSync(join(__dirname, file), "utf-8");
 }
