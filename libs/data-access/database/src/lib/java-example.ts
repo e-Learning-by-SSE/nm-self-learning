@@ -1,23 +1,13 @@
-import slugify from 'slugify';
-
 import { faker } from '@faker-js/faker';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { QuizContent } from '@self-learning/question-types';
-import {
-    createCourseContent,
-    createCourseMeta,
-    createLessonMeta,
-    extractLessonIds,
-    LessonContent,
-} from '@self-learning/types';
+import { PrismaClient } from '@prisma/client';
 
-import { createAuthor, createLesson } from './seed-functions';
+import { createArticle, createAuthor, createCourse, createLesson, createMultipleChoice } from './seed-functions';
 
 faker.seed(2);
 
 const prisma = new PrismaClient();
 
-const lessons = [
+const chapters = [
 	{
 		title: "Installation",
 		description: "Eirichtung einer Arbeitsumgebung zur Entwicklung von Java-Anwendungen",
@@ -27,44 +17,56 @@ const lessons = [
 				null,
 				"Download und Installation des JDKs",
 				"https://cdn.iconscout.com/icon/free/png-512/java-43-569305.png",
-				[],
-				[]
+				[
+					createArticle(
+						"# Installation des JDKs\r\n1. Gehen Sie auf <https://adoptopenjdk.net/>\r\n1. Wählen Sie sich dort das JDK aus, wir verwenden __OpenJDK 16 (Latest)__ in Verbindung mit __HotSpot__\r\n1. Installieren sie diese und aktivieren Sie den Haken, dass die __Java_HOME__ Variable angepasst werden soll",
+						20
+					)
+				],
+				[
+					createMultipleChoice(
+						"Auf welchen Seitn wird ein JDK angeboten?",
+						[
+							{
+								content: "adoptopenjdk.net",
+								isCorrect: true
+							},
+							{
+								content: "java.oracle.com",
+								isCorrect: true
+							},
+							{
+								content: "uni-hildesheim.de",
+								isCorrect: false
+							}
+						],
+						[
+							"Die Uni Hi bietet selber kein JDK an.",
+							"Die ersten beiden Antworten sind korrekt."
+						]
+					)
+				]
 			)
 		]
 	}
 ];
 
-const courses: Prisma.CourseCreateManyInput[] = [
-	{
-		courseId: faker.random.alphaNumeric(8),
-		title: "Objectorientierte Programmierung mit Java",
-		slug: "java-oo",
-		subtitle: "Einführung in die Welt von Java",
-		description:
-			"## Lernziele\r\n* Einrichtung der Arbeitsumgebung\r\n* Imperative Programmierung\r\n* Objektorientierte Programmierung\r\n\r\nEs werden keine Informatik- / Programierkentnisse vorausgesetzt",
-		imgUrl: "https://cdn.iconscout.com/icon/free/png-512/java-43-569305.png",
-		subjectId: 1,
-		createdAt: new Date(2022, 4, 20),
-		updatedAt: new Date(2022, 5, 1),
-		content: createCourseContent(
-			lessons.map(chapter => ({
-				title: chapter.title,
-				description: chapter.description,
-				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
-			}))
-		),
-		meta: {}
-	}
-].map(course => ({
-	...course,
-	meta: createCourseMeta(course)
-}));
+const courses = [
+	createCourse(
+		1,
+		"Objectorientierte Programmierung mit Java",
+		"Einführung in die Welt von Java",
+		"## Lernziele\r\n* Einrichtung der Arbeitsumgebung\r\n* Imperative Programmierung\r\n* Objektorientierte Programmierung\r\n\r\nEs werden keine Informatik- / Programierkentnisse vorausgesetzt",
+		"https://cdn.iconscout.com/icon/free/png-512/java-43-569305.png",
+		chapters
+	)
+];
 
 const authors = [
 	createAuthor(
 		"J. Gosling",
 		"https://www.pngall.com/wp-content/uploads/7/Ryan-Gosling-PNG-Picture.png",
-		lessons,
+		chapters,
 		courses
 	)
 ];
@@ -75,7 +77,7 @@ export async function courseSeed(): Promise<void> {
 	await prisma.course.createMany({ data: courses });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 	await prisma.lesson.createMany({
-		data: lessons.flatMap(chapter => chapter.content.map(lesson => lesson))
+		data: chapters.flatMap(chapter => chapter.content.map(lesson => lesson))
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 

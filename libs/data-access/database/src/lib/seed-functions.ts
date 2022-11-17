@@ -2,23 +2,22 @@ import slugify from 'slugify';
 
 import { faker } from '@faker-js/faker';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { QuizContent } from '@self-learning/question-types';
+import { QuestionType, QuizContent } from '@self-learning/question-types';
 import {
     createCourseContent,
     createCourseMeta,
     createLessonMeta,
     extractLessonIds,
     LessonContent,
+    LessonContentType,
 } from '@self-learning/types';
-
-import { courseFormSchema } from '../../../../feature/teaching/src/lib/course/course-form-model';
 
 export function createLesson(
 	title: string,
 	subtitle: string | null,
 	description: string,
 	imgUrl: string,
-	content: LessonContent[],
+	content: LessonContent,
 	questions: QuizContent
 ) {
 	const lesson: Prisma.LessonCreateInput = {
@@ -77,6 +76,98 @@ export function createAuthor(
 					create: []
 				}
 			}
+		}
+	};
+}
+
+type Chapters = {
+	title: string;
+	description: string;
+	content: Prisma.LessonCreateInput[];
+}[];
+
+export function createCourse(
+	subjectId: number,
+	title: string,
+	subtitle: string,
+	description: string | null,
+	imgUrl: string | null,
+	chapters: Chapters
+): Prisma.CourseCreateManyInput {
+	const course = {
+		courseId: faker.random.alphaNumeric(8),
+		title: title,
+		slug: slugify(title, { lower: true, strict: true }),
+		subtitle: subtitle,
+		description: description,
+		imgUrl: imgUrl,
+		subjectId: subjectId,
+		createdAt: new Date(2022, 4, 20),
+		updatedAt: new Date(2022, 5, 1),
+		content: createCourseContent(
+			chapters.map(chapter => ({
+				title: chapter.title,
+				description: chapter.description,
+				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
+			}))
+		),
+		meta: {}
+	};
+
+	course.meta = createCourseMeta(course);
+
+	return course;
+}
+
+type answer = {
+	content: string;
+	isCorrect: boolean;
+};
+
+export function createMultipleChoice(
+	question: string,
+	answers: answer[],
+	hints: string[]
+): QuestionType {
+	return {
+		type: "multiple-choice",
+		questionId: faker.random.alphaNumeric(8),
+		statement: question,
+		withCertainty: false,
+		answers: answers.map(answer => ({
+			answerId: faker.random.alphaNumeric(8),
+			...answer
+		})),
+		hints: hints.map(h => ({
+			hintId: faker.random.alphaNumeric(8),
+			content: h
+		}))
+	};
+}
+
+export function createVideo(url: string, duration: number) {
+	return {
+		type: "video",
+		value: {
+			url: url
+		},
+		meta: {
+			duration: duration
+		}
+	};
+}
+
+export function createArticle(
+	mdContent: string,
+	estimatedDuration: number = 300
+): LessonContentType {
+	return {
+		type: "article",
+		value: {
+			content: mdContent
+		},
+		meta: {
+			estimatedDuration: estimatedDuration
 		}
 	};
 }
