@@ -8,6 +8,7 @@ import {
     createLesson,
     createMultipleChoice,
     createVideo,
+    read,
 } from './seed-functions';
 
 faker.seed(2);
