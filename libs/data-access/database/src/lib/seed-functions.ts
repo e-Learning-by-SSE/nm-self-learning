@@ -145,7 +145,7 @@ export function createMultipleChoice(
 	};
 }
 
-export function createVideo(url: string, duration: number) {
+export function createVideo(url: string, duration: number): LessonContentType {
 	return {
 		type: "video",
 		value: {

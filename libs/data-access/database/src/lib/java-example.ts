@@ -1,7 +1,14 @@
 import { faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
 
-import { createArticle, createAuthor, createCourse, createLesson, createMultipleChoice } from './seed-functions';
+import {
+    createArticle,
+    createAuthor,
+    createCourse,
+    createLesson,
+    createMultipleChoice,
+    createVideo,
+} from './seed-functions';
 
 faker.seed(2);
 
@@ -9,9 +16,42 @@ const prisma = new PrismaClient();
 
 const chapters = [
 	{
-		title: "Installation",
-		description: "Eirichtung einer Arbeitsumgebung zur Entwicklung von Java-Anwendungen",
+		title: "Einführung",
+		description:
+			"* Einführung und Motivation für den Einsatz von Java\r\n* Eirichtung einer Arbeitsumgebung zur Entwicklung von Java-Anwendungen",
 		content: [
+			createLesson(
+				"Einleitung & Motivation",
+				"Einstieg in die Welt von Java",
+				"Download und Installation des JDKs",
+				"https://staging.sse.uni-hildesheim.de:9006/upload/Duke-Guitar.png",
+				[
+					createVideo(
+						"https://staging.sse.uni-hildesheim.de:9006/upload/ung7m79i-Java%20010%20-%20Motivation.mp4",
+						15
+					)
+				],
+				[
+					createMultipleChoice(
+						"Weshalb sollten IT-Studierende programmieren lernen?",
+						[
+							{
+								content: "Zum Zeichnen von Programmen",
+								isCorrect: false
+							},
+							{
+								content: "Es handelt es um eine Grundfertigkeit im IT-Bereich",
+								isCorrect: true
+							},
+							{
+								content: "Zum Erstellen von Programmen",
+								isCorrect: false
+							}
+						],
+						[]
+					)
+				]
+			),
 			createLesson(
 				"Installation des JDKs",
 				null,
@@ -25,7 +65,7 @@ const chapters = [
 				],
 				[
 					createMultipleChoice(
-						"Auf welchen Seitn wird ein JDK angeboten?",
+						"Auf welchen Seiten wird ein JDK angeboten?",
 						[
 							{
 								content: "adoptopenjdk.net",
