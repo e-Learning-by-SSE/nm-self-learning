@@ -11,36 +11,13 @@ import {
     LessonContent,
 } from '@self-learning/types';
 
+import { createAuthor, createLesson } from './seed-functions';
+
 faker.seed(2);
 
 const prisma = new PrismaClient();
 
-function createLesson(
-	title: string,
-	subtitle: string | null,
-	description: string,
-	imgUrl: string,
-	content: LessonContent[],
-	questions: QuizContent
-) {
-	const lesson: Prisma.LessonCreateInput = {
-		title,
-		lessonId: faker.random.alphaNumeric(8),
-		slug: slugify(title, { lower: true, strict: true }),
-		subtitle: subtitle,
-		description: description,
-		imgUrl: imgUrl,
-		content: content,
-		quiz: questions,
-		meta: {}
-	};
-
-	lesson.meta = createLessonMeta(lesson as any) as unknown as Prisma.JsonObject;
-
-	return lesson;
-}
-
-const javaLessons = [
+const lessons = [
 	{
 		title: "Installation",
 		description: "Eirichtung einer Arbeitsumgebung zur Entwicklung von Java-Anwendungen",
@@ -70,7 +47,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 		createdAt: new Date(2022, 4, 20),
 		updatedAt: new Date(2022, 5, 1),
 		content: createCourseContent(
-			javaLessons.map(chapter => ({
+			lessons.map(chapter => ({
 				title: chapter.title,
 				description: chapter.description,
 				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
@@ -83,37 +60,13 @@ const courses: Prisma.CourseCreateManyInput[] = [
 	meta: createCourseMeta(course)
 }));
 
-const authors: Prisma.UserCreateInput[] = [
-	{
-		name: "J. Gosling",
-		accounts: {
-			create: [
-				{
-					provider: "demo",
-					providerAccountId: "j-gosling",
-					type: "gosling-account"
-				}
-			]
-		},
-		author: {
-			create: {
-				displayName: "J. Gosling",
-				slug: "j-gosling",
-				imgUrl: "https://www.pngall.com/wp-content/uploads/7/Ryan-Gosling-PNG-Picture.png",
-				courses: {
-					connect: {
-						courseId: courses[0].courseId
-					}
-				},
-				lessons: {
-					connect: extractLessonIds(javaLessons).map(lessonId => ({ lessonId }))
-				},
-				teams: {
-					create: []
-				}
-			}
-		}
-	}
+const authors = [
+	createAuthor(
+		"J. Gosling",
+		"https://www.pngall.com/wp-content/uploads/7/Ryan-Gosling-PNG-Picture.png",
+		lessons,
+		courses
+	)
 ];
 
 export async function courseSeed(): Promise<void> {
@@ -122,7 +75,7 @@ export async function courseSeed(): Promise<void> {
 	await prisma.course.createMany({ data: courses });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 	await prisma.lesson.createMany({
-		data: javaLessons.flatMap(chapter => chapter.content.map(lesson => lesson))
+		data: lessons.flatMap(chapter => chapter.content.map(lesson => lesson))
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 

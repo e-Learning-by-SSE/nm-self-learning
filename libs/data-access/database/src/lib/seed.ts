@@ -14,7 +14,7 @@ import {
     LessonContent,
 } from '@self-learning/types';
 
-import { courseSeed } from './java_seed';
+import { courseSeed } from './java-example';
 
 faker.seed(1);
 
