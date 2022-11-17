@@ -24,7 +24,6 @@ const chapters = [
 				"Einleitung & Motivation",
 				"Einstieg in die Welt von Java",
 				"Download und Installation des JDKs",
-				"https://staging.sse.uni-hildesheim.de:9006/upload/Duke-Guitar.png",
 				[
 					createVideo(
 						"https://staging.sse.uni-hildesheim.de:9006/upload/ung7m79i-Java%20010%20-%20Motivation.mp4",
@@ -36,7 +35,7 @@ const chapters = [
 						"Weshalb sollten IT-Studierende programmieren lernen?",
 						[
 							{
-								content: "Zum Zeichnen von Programmen",
+								content: "Zum Erstellen technischer Zeichnungen",
 								isCorrect: false
 							},
 							{
@@ -45,7 +44,7 @@ const chapters = [
 							},
 							{
 								content: "Zum Erstellen von Programmen",
-								isCorrect: false
+								isCorrect: true
 							}
 						],
 						[]
@@ -56,7 +55,6 @@ const chapters = [
 				"Installation des JDKs",
 				null,
 				"Download und Installation des JDKs",
-				"https://cdn.iconscout.com/icon/free/png-512/java-43-569305.png",
 				[
 					createArticle(
 						"# Installation des JDKs\r\n1. Gehen Sie auf <https://adoptopenjdk.net/>\r\n1. Wählen Sie sich dort das JDK aus, wir verwenden __OpenJDK 16 (Latest)__ in Verbindung mit __HotSpot__\r\n1. Installieren sie diese und aktivieren Sie den Haken, dass die __Java_HOME__ Variable angepasst werden soll",
@@ -84,6 +82,77 @@ const chapters = [
 							"Die Uni Hi bietet selber kein JDK an.",
 							"Die ersten beiden Antworten sind korrekt."
 						]
+					)
+				]
+			),
+			createLesson(
+				"Hello World",
+				"Das erste Programm",
+				read("java-hello-world-description.mdx"),
+				[
+					createVideo(
+						"https://staging.sse.uni-hildesheim.de:9006/upload/9b2dnsoa8-Java 011 - Hello World.mp4",
+						10
+					)
+				],
+				[
+					createMultipleChoice(
+						"Was ist die Aufgabe des Interpreters",
+						[
+							{
+								content: "Ausführen eines Programms",
+								isCorrect: true
+							},
+							{
+								content:
+									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
+								isCorrect: false
+							}
+						],
+						[]
+					)
+				]
+			),
+			createLesson(
+				"Compiler & Intepreter",
+				"Vom Quellcode zur Ausführung eines Programms",
+				"* Nutzung des Compilers um einen Quelltext in Maschinensprache zu übersetzen\r\n* Nutzung des Interpreters um ein übersetztes Programm auszuführen",
+				[
+					createVideo(
+						"https://staging.sse.uni-hildesheim.de:9006/upload/ugo3vrlv-Java%20012%20-%20Compiler,%20Interpreter.mp4",
+						40
+					)
+				],
+				[
+					createMultipleChoice(
+						"Was ist die Aufgabe des Compilers",
+						[
+							{
+								content: "Ausführen eines Programms",
+								isCorrect: false
+							},
+							{
+								content:
+									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
+								isCorrect: true
+							}
+						],
+						[]
+					),
+					createMultipleChoice(
+						"Was ist die Aufgabe des Interpreters",
+						[
+							{
+								content: "Ausführen eines Programms",
+								isCorrect: true
+							},
+							{
+								content:
+									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
+								isCorrect: false
+							}
+						],
+						[]
 					)
 				]
 			)

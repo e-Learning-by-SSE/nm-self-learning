@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import slugify from 'slugify';
 
 import { faker } from '@faker-js/faker';
@@ -15,8 +17,7 @@ import {
 export function createLesson(
 	title: string,
 	subtitle: string | null,
-	description: string,
-	imgUrl: string,
+	description: string | null,
 	content: LessonContent,
 	questions: QuizContent
 ) {
@@ -26,7 +27,6 @@ export function createLesson(
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle,
 		description: description,
-		imgUrl: imgUrl,
 		content: content,
 		quiz: questions,
 		meta: {}
@@ -170,4 +170,8 @@ export function createArticle(
 			estimatedDuration: estimatedDuration
 		}
 	};
+}
+
+export function read(file: string) {
+	readFileSync(join(__dirname, file), "utf-8");
 }
