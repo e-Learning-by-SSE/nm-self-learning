@@ -93,7 +93,7 @@ const chapters = [
 				],
 				[
 					createTextQuestion(
-						'Was genau gibt das Programm aus dem gezeigten Beispiel aus"?',
+						"Was genau gibt das Programm aus dem gezeigten Beispiel aus?",
 						["Hello World"],
 						[
 							'Der Text der zwischen den Gänsefüßchen innerhalb von System.out.println("") steht.'
