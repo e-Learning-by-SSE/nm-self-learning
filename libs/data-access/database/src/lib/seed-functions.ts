@@ -92,7 +92,7 @@ type Chapters = {
 export function createCourse(
 	subjectId: number,
 	title: string,
-	subtitle: string,
+	subtitle: string | null,
 	description: string | null,
 	imgUrl: string | null,
 	chapters: Chapters
@@ -101,7 +101,7 @@ export function createCourse(
 		courseId: faker.random.alphaNumeric(8),
 		title: title,
 		slug: slugify(title, { lower: true, strict: true }),
-		subtitle: subtitle,
+		subtitle: subtitle ?? "",
 		description: description,
 		imgUrl: imgUrl,
 		subjectId: subjectId,
