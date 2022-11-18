@@ -130,8 +130,14 @@ type answer = {
 export function createMultipleChoice(
 	question: string,
 	answers: answer[],
-	hints: string[]
+	hints?: string[]
 ): QuestionType {
+	const hintsData =
+		hints?.map(h => ({
+			hintId: faker.random.alphaNumeric(8),
+			content: h
+		})) ?? [];
+
 	return {
 		type: "multiple-choice",
 		questionId: faker.random.alphaNumeric(8),
@@ -141,10 +147,31 @@ export function createMultipleChoice(
 			answerId: faker.random.alphaNumeric(8),
 			...answer
 		})),
-		hints: hints.map(h => ({
+		hints: hintsData
+	};
+}
+
+export function createTextQuestion(
+	question: string,
+	answers: string[],
+	hints?: string[]
+): QuestionType {
+	const hintsData =
+		hints?.map(h => ({
 			hintId: faker.random.alphaNumeric(8),
 			content: h
-		}))
+		})) ?? [];
+
+	return {
+		type: "short-text",
+		questionId: faker.random.alphaNumeric(8),
+		statement: question,
+		withCertainty: false,
+		acceptedAnswers: answers.map(answer => ({
+			acceptedAnswerId: faker.random.alphaNumeric(8),
+			value: answer
+		})),
+		hints: hintsData
 	};
 }
 

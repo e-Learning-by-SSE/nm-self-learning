@@ -4,6 +4,7 @@ import {
     createCourse,
     createLesson,
     createMultipleChoice,
+    createTextQuestion,
     createVideo,
     read,
     seedCaseStudy,
@@ -26,24 +27,20 @@ const chapters = [
 					)
 				],
 				[
-					createMultipleChoice(
-						"Weshalb sollten IT-Studierende programmieren lernen?",
-						[
-							{
-								content: "Zum Erstellen technischer Zeichnungen",
-								isCorrect: false
-							},
-							{
-								content: "Es handelt es um eine Grundfertigkeit im IT-Bereich",
-								isCorrect: true
-							},
-							{
-								content: "Zum Erstellen von Programmen",
-								isCorrect: true
-							}
-						],
-						[]
-					)
+					createMultipleChoice("Weshalb sollten IT-Studierende programmieren lernen?", [
+						{
+							content: "Zum Erstellen technischer Zeichnungen",
+							isCorrect: false
+						},
+						{
+							content: "Es handelt es um eine Grundfertigkeit im IT-Bereich",
+							isCorrect: true
+						},
+						{
+							content: "Zum Erstellen von Programmen",
+							isCorrect: true
+						}
+					])
 				]
 			),
 			createLesson(
@@ -57,6 +54,10 @@ const chapters = [
 					)
 				],
 				[
+					createTextQuestion('Wofür steht "JDK"?', [
+						"Java Development Kit",
+						"java development kit"
+					]),
 					createMultipleChoice(
 						"Auf welchen Seiten wird ein JDK angeboten?",
 						[
@@ -91,21 +92,17 @@ const chapters = [
 					)
 				],
 				[
-					createMultipleChoice(
-						"Was ist die Aufgabe des Interpreters",
-						[
-							{
-								content: "Ausführen eines Programms",
-								isCorrect: true
-							},
-							{
-								content:
-									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
-								isCorrect: false
-							}
-						],
-						[]
-					)
+					createMultipleChoice("Was ist die Aufgabe des Interpreters", [
+						{
+							content: "Ausführen eines Programms",
+							isCorrect: true
+						},
+						{
+							content:
+								"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
+							isCorrect: false
+						}
+					])
 				]
 			),
 			createLesson(
@@ -119,36 +116,28 @@ const chapters = [
 					)
 				],
 				[
-					createMultipleChoice(
-						"Was ist die Aufgabe des Compilers",
-						[
-							{
-								content: "Ausführen eines Programms",
-								isCorrect: false
-							},
-							{
-								content:
-									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
-								isCorrect: true
-							}
-						],
-						[]
-					),
-					createMultipleChoice(
-						"Was ist die Aufgabe des Interpreters",
-						[
-							{
-								content: "Ausführen eines Programms",
-								isCorrect: true
-							},
-							{
-								content:
-									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
-								isCorrect: false
-							}
-						],
-						[]
-					)
+					createMultipleChoice("Was ist die Aufgabe des Compilers", [
+						{
+							content: "Ausführen eines Programms",
+							isCorrect: false
+						},
+						{
+							content:
+								"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
+							isCorrect: true
+						}
+					]),
+					createMultipleChoice("Was ist die Aufgabe des Interpreters", [
+						{
+							content: "Ausführen eines Programms",
+							isCorrect: true
+						},
+						{
+							content:
+								"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
+							isCorrect: false
+						}
+					])
 				]
 			)
 		]
