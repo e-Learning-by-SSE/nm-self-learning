@@ -92,17 +92,13 @@ const chapters = [
 					)
 				],
 				[
-					createMultipleChoice("Was ist die Aufgabe des Interpreters", [
-						{
-							content: "Ausführen eines Programms",
-							isCorrect: true
-						},
-						{
-							content:
-								"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
-							isCorrect: false
-						}
-					])
+					createTextQuestion(
+						'Was genau gibt das Programm aus dem gezeigten Beispiel aus"?',
+						["Hello World"],
+						[
+							'Der Text der zwischen den Gänsefüßchen innerhalb von System.out.println("") steht.'
+						]
+					)
 				]
 			),
 			createLesson(
