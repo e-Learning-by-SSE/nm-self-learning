@@ -208,7 +208,6 @@ export function read(file: string) {
 
 export async function seedCaseStudy(
 	name: string,
-	specializationId: number,
 	courses: Prisma.CourseCreateManyInput[],
 	chapters: Chapters,
 	authors: Prisma.UserCreateInput[] | null
@@ -222,15 +221,20 @@ export async function seedCaseStudy(
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
-	await prisma.specialization.update({
-		where: { specializationId: specializationId },
-		data: {
-			courses: {
-				connect: courses.map(course => ({ courseId: course.courseId }))
-			}
+	for (const course of courses) {
+		const subjectId = course.subjectId;
+		if (subjectId) {
+			await prisma.specialization.update({
+				where: { specializationId: subjectId },
+				data: {
+					courses: {
+						connect: courses.map(course => ({ courseId: course.courseId }))
+					}
+				}
+			});
 		}
-	});
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
+	}
 
 	if (authors) {
 		for (const author of authors) {

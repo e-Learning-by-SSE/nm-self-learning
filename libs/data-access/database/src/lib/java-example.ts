@@ -161,5 +161,5 @@ const authors = [
 ];
 
 export async function javaExample(): Promise<void> {
-	seedCaseStudy("Java", 1, courses, chapters, authors);
+	seedCaseStudy("Java", courses, chapters, authors);
 }
