@@ -14,7 +14,7 @@ import {
     LessonContent,
 } from '@self-learning/types';
 
-import { courseSeed } from './java-example';
+import { javaExample } from './java-example';
 
 faker.seed(1);
 
@@ -611,7 +611,7 @@ async function seed(): Promise<void> {
 	}
 	console.log("✅ Authors");
 
-	courseSeed();
+	javaExample();
 
 	console.log(`\nSeed command took ${Date.now() - start}ms`);
 }

@@ -1,6 +1,3 @@
-import { faker } from '@faker-js/faker';
-import { PrismaClient } from '@prisma/client';
-
 import {
     createArticle,
     createAuthor,
@@ -9,11 +6,8 @@ import {
     createMultipleChoice,
     createVideo,
     read,
+    seedCaseStudy,
 } from './seed-functions';
-
-faker.seed(2);
-
-const prisma = new PrismaClient();
 
 const chapters = [
 	{
@@ -181,30 +175,6 @@ const authors = [
 	)
 ];
 
-export async function courseSeed(): Promise<void> {
-	console.log("\x1b[34m%s\x1b[0m", "Java Example");
-
-	await prisma.course.createMany({ data: courses });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
-	await prisma.lesson.createMany({
-		data: chapters.flatMap(chapter => chapter.content.map(lesson => lesson))
-	});
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
-
-	await prisma.specialization.update({
-		where: { specializationId: 1 },
-		data: {
-			courses: {
-				connect: courses.map(course => ({ courseId: course.courseId }))
-			}
-		}
-	});
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
-
-	for (const author of authors) {
-		await prisma.user.create({ data: author });
-	}
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
-
-	console.log("\x1b[34m%s\x1b[32m ✔\x1b[0m", "Java Example");
+export async function javaExample(): Promise<void> {
+	seedCaseStudy("Java", 1, courses, chapters, authors);
 }

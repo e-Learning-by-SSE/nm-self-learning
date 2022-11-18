@@ -14,6 +14,9 @@ import {
     LessonContentType,
 } from '@self-learning/types';
 
+faker.seed(2);
+const prisma = new PrismaClient();
+
 export function createLesson(
 	title: string,
 	subtitle: string | null,
@@ -174,4 +177,40 @@ export function createArticle(
 
 export function read(file: string) {
 	return readFileSync(join(__dirname, file), "utf-8");
+}
+
+export async function seedCaseStudy(
+	name: string,
+	specializationId: number,
+	courses: Prisma.CourseCreateManyInput[],
+	chapters: Chapters,
+	authors: Prisma.UserCreateInput[] | null
+): Promise<void> {
+	console.log("\x1b[94m%s\x1b[0m", name + " Example");
+
+	await prisma.course.createMany({ data: courses });
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
+	await prisma.lesson.createMany({
+		data: chapters.flatMap(chapter => chapter.content.map(lesson => lesson))
+	});
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
+
+	await prisma.specialization.update({
+		where: { specializationId: specializationId },
+		data: {
+			courses: {
+				connect: courses.map(course => ({ courseId: course.courseId }))
+			}
+		}
+	});
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
+
+	if (authors) {
+		for (const author of authors) {
+			await prisma.user.create({ data: author });
+		}
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
+	}
+
+	console.log("\x1b[94m%s\x1b[32m ✔\x1b[0m", name + " Example");
 }
