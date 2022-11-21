@@ -15,6 +15,7 @@ import {
 } from '@self-learning/types';
 
 import { javaExample } from './java-example';
+import { createSpecialization } from './seed-functions';
 
 faker.seed(1);
 
@@ -96,7 +97,15 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 			"https://images.unsplash.com/photo-1580920461931-fcb03a940df5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80",
 		imgUrlBanner:
 			"https://images.unsplash.com/photo-1580920461931-fcb03a940df5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"
-	}
+	},
+	createSpecialization(
+		1,
+		2,
+		"Grundlagen der Wahrnehmung",
+		"Zu den Grundlagen der Wahrnehmung gehört bspw. der Konstruktionsprozess der Wahrnehmung - vom Reiz bis zur neuronalen Verarbeitung - und mit welchen theoretischen Ansätzen und Gesetzen diese erklärt werden können. Zu den Wahrnehmungssystemen gehören die Systeme rund um das Sehen, das Hören, das Schmecken, das Riechen und das Fühlen.",
+		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
+		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg"
+	)
 ];
 
 const questions: QuizContent = [

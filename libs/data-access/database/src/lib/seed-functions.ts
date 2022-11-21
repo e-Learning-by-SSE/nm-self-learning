@@ -202,6 +202,28 @@ export function createArticle(
 	};
 }
 
+export function createSpecialization(
+	subjectId: number,
+	specializationId: number,
+	title: string,
+	subtitle: string,
+	imgUrlBanner: string | null,
+	cardImgUrl: string | null
+): Prisma.SpecializationCreateManyInput {
+	return {
+		specializationId: specializationId,
+		subjectId: subjectId,
+		slug: slugify(subjectId + "-" + title, {
+			lower: true,
+			strict: true
+		}),
+		title: title,
+		subtitle: subtitle,
+		cardImgUrl: cardImgUrl,
+		imgUrlBanner: imgUrlBanner
+	};
+}
+
 export function read(file: string) {
 	return readFileSync(join(__dirname, file), "utf-8");
 }
