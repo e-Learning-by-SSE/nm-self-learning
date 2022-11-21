@@ -15,7 +15,8 @@ const nextConfig = {
 			"c.pxhere.com",
 			"www.pngall.com",
 			"cdn.iconscout.com",
-			"raw.githubusercontent.com"
+			"raw.githubusercontent.com",
+			"www.publicdomainpictures.net"
 		]
 	},
 	nx: {
