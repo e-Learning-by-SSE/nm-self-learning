@@ -112,16 +112,16 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		3,
 		"Aufmerksamkeit",
 		"Bei der Aufmerksamkeit geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Aufmerksamkeit erläutert werden und mit Hilfe welcher Experimente die Aufmerksamkeitsphänomene erforscht werden können.",
-		"https://pixnio.com/de/media/verkehrssteuerung-stau-verkehr-sicherheit-vorsicht",
-		"https://pixnio.com/de/media/verkehrssteuerung-stau-verkehr-sicherheit-vorsicht"
+		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg",
+		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg"
 	),
 	createSpecialization(
 		3,
 		4,
 		"Bewusstsein",
 		"Beim Bewusstsein geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Bewusstsein erläutert werden und mit Hilfe welcher Experimente die Bewusstseinsphänomene erforscht werden können.",
-		"https://pxhere.com/de/photo/1192085",
-		"https://pxhere.com/de/photo/1192085"
+		"https://c.pxhere.com/photos/f5/82/head_psychology_thoughts_think_perception_face_woman_psyche-1192085.jpg!d",
+		"https://c.pxhere.com/photos/f5/82/head_psychology_thoughts_think_perception_face_woman_psyche-1192085.jpg!d"
 	),
 	createSpecialization(
 		3,
