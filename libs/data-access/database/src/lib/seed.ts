@@ -105,6 +105,14 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		"Zu den Grundlagen der Wahrnehmung gehört bspw. der Konstruktionsprozess der Wahrnehmung - vom Reiz bis zur neuronalen Verarbeitung - und mit welchen theoretischen Ansätzen und Gesetzen diese erklärt werden können. Zu den Wahrnehmungssystemen gehören die Systeme rund um das Sehen, das Hören, das Schmecken, das Riechen und das Fühlen.",
 		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
 		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg"
+	),
+	createSpecialization(
+		3,
+		3,
+		"Wahrnehmung",
+		"Bei der Wahrnehmung geht es um die biologischen, die neurophysiologischen/-anatomischen Eigenschaften der visuellen, auditiven, gustatorischen, olfaktorischen und somatosensorischen Wahrnehmung. Es werden die Spezifika und Prinzipien der Signalverarbeitung erläutert, sowie spezifische Beispiele genannt.",
+		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
+		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg"
 	)
 ];
 

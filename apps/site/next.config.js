@@ -7,6 +7,7 @@ const withNx = require("@nrwl/next/plugins/with-nx");
 const nextConfig = {
 	images: {
 		domains: [
+			"lsf.uni-hildesheim.de",
 			"localhost",
 			"source.unsplash.com",
 			"images.unsplash.com",
@@ -16,7 +17,8 @@ const nextConfig = {
 			"www.pngall.com",
 			"cdn.iconscout.com",
 			"raw.githubusercontent.com",
-			"www.publicdomainpictures.net"
+			"www.publicdomainpictures.net",
+			"upload.wikimedia.org"
 		]
 	},
 	nx: {
