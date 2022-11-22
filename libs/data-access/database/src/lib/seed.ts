@@ -15,6 +15,7 @@ import {
 } from '@self-learning/types';
 
 import { javaExample } from './java-example';
+import { psychologyExample } from './psychology-example';
 import { createSpecialization } from './seed-functions';
 
 faker.seed(1);
@@ -629,6 +630,7 @@ async function seed(): Promise<void> {
 	console.log("✅ Authors");
 
 	javaExample();
+	psychologyExample();
 
 	console.log(`\nSeed command took ${Date.now() - start}ms`);
 }
