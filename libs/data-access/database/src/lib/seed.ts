@@ -102,18 +102,50 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 	createSpecialization(
 		3,
 		2,
-		"Grundlagen der Wahrnehmung",
-		"Zu den Grundlagen der Wahrnehmung gehört bspw. der Konstruktionsprozess der Wahrnehmung - vom Reiz bis zur neuronalen Verarbeitung - und mit welchen theoretischen Ansätzen und Gesetzen diese erklärt werden können. Zu den Wahrnehmungssystemen gehören die Systeme rund um das Sehen, das Hören, das Schmecken, das Riechen und das Fühlen.",
+		"Wahrnehmung",
+		"Bei der Wahrnehmung geht es um die biologischen, die neurophysiologischen/-anatomischen Eigenschaften der visuellen, auditiven, gustatorischen, olfaktorischen und somatosensorischen Wahrnehmung. Es werden die Spezifika und Prinzipien der Signalverarbeitung erläutert, sowie spezifische Beispiele genannt.",
 		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
 		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg"
 	),
 	createSpecialization(
 		3,
 		3,
-		"Wahrnehmung",
-		"Bei der Wahrnehmung geht es um die biologischen, die neurophysiologischen/-anatomischen Eigenschaften der visuellen, auditiven, gustatorischen, olfaktorischen und somatosensorischen Wahrnehmung. Es werden die Spezifika und Prinzipien der Signalverarbeitung erläutert, sowie spezifische Beispiele genannt.",
-		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
-		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg"
+		"Aufmerksamkeit",
+		"Bei der Aufmerksamkeit geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Aufmerksamkeit erläutert werden und mit Hilfe welcher Experimente die Aufmerksamkeitsphänomene erforscht werden können.",
+		"https://pixnio.com/de/media/verkehrssteuerung-stau-verkehr-sicherheit-vorsicht",
+		"https://pixnio.com/de/media/verkehrssteuerung-stau-verkehr-sicherheit-vorsicht"
+	),
+	createSpecialization(
+		3,
+		4,
+		"Bewusstsein",
+		"Beim Bewusstsein geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Bewusstsein erläutert werden und mit Hilfe welcher Experimente die Bewusstseinsphänomene erforscht werden können.",
+		"https://pxhere.com/de/photo/1192085",
+		"https://pxhere.com/de/photo/1192085"
+	),
+	createSpecialization(
+		3,
+		5,
+		"Lernen",
+		"Beim Lernen geht es um die verschiedenene Definitionen zu Lernen und den dazugehörigen Theorien, sowie prominenten experimentellen Belegen dazu. Im Detail geht es um die klassische und operate Konditionierung. Des Weiteren wird auf grundlegende physiologische Merkmale des Lernens eingegangen.",
+		"https://www.kikisweb.de/geschichten/maerchen/nuernb1.gif",
+		"https://www.kikisweb.de/geschichten/maerchen/nuernb1.gif"
+	),
+	createSpecialization(
+		3,
+		6,
+		"Gedächtnis und Wissen",
+		"Beim Thema Gedächtnis und Wissen geht es um die verschiedenene Möglichkeiten sich dem Thema Gedächtnis zu nähern, hierbei geht es um eine Einteilung nach Strukturen/Systemen oder um eine Prozesssicht. Es geht um die dazugehörigen Theorien, sowie Methoden der Gedächtnisforschung und die zentralen Ergebnisse, sowie deren Replikationsmöglichkeiten. Des Weiteren wird auf grundlegende physiologische/neurobiologische Grundlagen des Gedächtnisses eingegangen.",
+		"https://static.spektrum.de/fm/912/f2000x857/Memory_pixabay48118_Nemo-CC0.png",
+		"https://static.spektrum.de/fm/912/f2000x857/Memory_pixabay48118_Nemo-CC0.png"
+	),
+	createSpecialization(
+		3,
+		7,
+		"Sprache",
+		"Beim Thema Sprache geht es um die Grundeinheiten von Sprache und die zentralen Herausforderungen des Sprachverstehens.  Im Detail geht es um die verschiedenen Prozesse, die bei der Produktion und dem Verstehen von Sprache beteiligt sind. Des Weiteren wird auf ausgewählte Methoden und neurobiologische Grundlagen der Sprache eingegangen.",
+		"https://c.pxhere.com/images/5e/d6/a2ff24ae9521a8904c5fbab3fd89-1437965.jpg!d",
+		"https://c.pxhere.com/images/5e/d6/a2ff24ae9521a8904c5fbab3fd89-1437965.jpg!d"
 	)
 ];
 

@@ -18,7 +18,12 @@ const nextConfig = {
 			"cdn.iconscout.com",
 			"raw.githubusercontent.com",
 			"www.publicdomainpictures.net",
-			"upload.wikimedia.org"
+			"upload.wikimedia.org",
+			"static.spektrum.de",
+			"c.pxhere.com",
+			"pixnio.com",
+			"www.kikisweb.de",
+			"pxhere.com"
 		]
 	},
 	nx: {
