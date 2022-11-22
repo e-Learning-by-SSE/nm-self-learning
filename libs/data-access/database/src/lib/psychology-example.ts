@@ -32,7 +32,7 @@ const courses = [
 		"Grundlagen der Wahrnehmung",
 		null,
 		"Zu den Grundlagen der Wahrnehmung gehört bspw. der Konstruktionsprozess der Wahrnehmung - vom Reiz bis zur neuronalen Verarbeitung - und mit welchen theoretischen Ansätzen und Gesetzen diese erklärt werden können. Zu den Wahrnehmungssystemen gehören die Systeme rund um das Sehen, das Hören, das Schmecken, das Riechen und das Fühlen.",
-		"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/%C3%84u%C3%9Feres_Ohr_-_Mittelohr_-_Innenohr.jpg/769px-%C3%84u%C3%9Feres_Ohr_-_Mittelohr_-_Innenohr.jpg?20211029082610",
+		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
 		chaptersOfHearing
 	),
 	createCourse(
