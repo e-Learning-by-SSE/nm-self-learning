@@ -14,7 +14,7 @@ const chapters = [
 	{
 		title: "Einführung",
 		description:
-			"Einführung und Motivation für den Einsatz von Java. Eirichtung einer Arbeitsumgebung zur Entwicklung von Java-Anwendungen.",
+			"Einführung und Motivation für den Einsatz von Java. Einrichtung einer Arbeitsumgebung zur Entwicklung von Java-Anwendungen.",
 		content: [
 			createLesson(
 				"Einleitung & Motivation",

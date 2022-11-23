@@ -23,7 +23,8 @@ const nextConfig = {
 			"c.pxhere.com",
 			"pixnio.com",
 			"www.kikisweb.de",
-			"pxhere.com"
+			"pxhere.com",
+			"www.spielundlern.de"
 		]
 	},
 	nx: {

@@ -103,7 +103,7 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		3,
 		2,
 		"Wahrnehmung",
-		"Bei der Wahrnehmung geht es um die biologischen, die neurophysiologischen/-anatomischen Eigenschaften der visuellen, auditiven, gustatorischen, olfaktorischen und somatosensorischen Wahrnehmung. Es werden die Spezifika und Prinzipien der Signalverarbeitung erläutert, sowie spezifische Beispiele genannt.",
+		"Man spricht von Wahrnehmung (*perception*), wenn man sich mit der Integration und Interpretation von Reizen aus der Umwelt und dem Körperinnern beschäftigt. ",
 		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
 		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg"
 	),
@@ -111,23 +111,23 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		3,
 		3,
 		"Aufmerksamkeit",
-		"Bei der Aufmerksamkeit geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Aufmerksamkeit erläutert werden und mit Hilfe welcher Experimente die Aufmerksamkeitsphänomene erforscht werden können.",
-		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg",
-		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg"
+		"Man spricht von Aufmerksamkeit (*attention*), wenn man sich mit der Fähigkeit, bestimmte Informationen für eine genauere Analyse auszuwählen und andere zu ignorieren, beschäftigt.",
+		"https://pixnio.com/de/media/verkehrssteuerung-stau-verkehr-sicherheit-vorsicht",
+		"https://pixnio.com/de/media/verkehrssteuerung-stau-verkehr-sicherheit-vorsicht"
 	),
 	createSpecialization(
 		3,
 		4,
 		"Bewusstsein",
-		"Beim Bewusstsein geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Bewusstsein erläutert werden und mit Hilfe welcher Experimente die Bewusstseinsphänomene erforscht werden können.",
-		"https://c.pxhere.com/photos/f5/82/head_psychology_thoughts_think_perception_face_woman_psyche-1192085.jpg!d",
-		"https://c.pxhere.com/photos/f5/82/head_psychology_thoughts_think_perception_face_woman_psyche-1192085.jpg!d"
+		"Man spricht einerseits von Bewusstsein (*consciousness*), wenn das wache Wissen um das Erleben sowie das Aufmerken auf einzelne Erlebnisse und andererseits das wache Wissen um das kontrollierte und initiierte Handeln gemeint ist. Auch die Gesamtheit der unmittelbaren Erfahrung, die sich aus der Wahrnehmung von sich selbst und der Umgebung, den eigenen Kognitionen, Vorstellungen und Gefühlen zusammensetzt wird als Bewusstsein bezeichnet. ",
+		"https://pxhere.com/de/photo/1192085",
+		"https://pxhere.com/de/photo/1192085"
 	),
 	createSpecialization(
 		3,
 		5,
 		"Lernen",
-		"Beim Lernen geht es um die verschiedenene Definitionen zu Lernen und den dazugehörigen Theorien, sowie prominenten experimentellen Belegen dazu. Im Detail geht es um die klassische und operate Konditionierung. Des Weiteren wird auf grundlegende physiologische Merkmale des Lernens eingegangen.",
+		"Man spricht von Lernen (*learning*), wenn es sich um eine relativ permanente Veränderung des Verhaltens als Folge von vorausgehender Erfahrung handelt.",
 		"https://www.kikisweb.de/geschichten/maerchen/nuernb1.gif",
 		"https://www.kikisweb.de/geschichten/maerchen/nuernb1.gif"
 	),
@@ -135,7 +135,7 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		3,
 		6,
 		"Gedächtnis und Wissen",
-		"Beim Thema Gedächtnis und Wissen geht es um die verschiedenene Möglichkeiten sich dem Thema Gedächtnis zu nähern, hierbei geht es um eine Einteilung nach Strukturen/Systemen oder um eine Prozesssicht. Es geht um die dazugehörigen Theorien, sowie Methoden der Gedächtnisforschung und die zentralen Ergebnisse, sowie deren Replikationsmöglichkeiten. Des Weiteren wird auf grundlegende physiologische/neurobiologische Grundlagen des Gedächtnisses eingegangen.",
+		"Man spricht von Gedächtnis (*memory*), wenn man sich über das dauerhafte Fortbestehen von aufgenommenen Informationen über die Zeit, die dann wieder abrufbar sind, Gedanken macht.",
 		"https://static.spektrum.de/fm/912/f2000x857/Memory_pixabay48118_Nemo-CC0.png",
 		"https://static.spektrum.de/fm/912/f2000x857/Memory_pixabay48118_Nemo-CC0.png"
 	),
@@ -143,9 +143,41 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		3,
 		7,
 		"Sprache",
-		"Beim Thema Sprache geht es um die Grundeinheiten von Sprache und die zentralen Herausforderungen des Sprachverstehens.  Im Detail geht es um die verschiedenen Prozesse, die bei der Produktion und dem Verstehen von Sprache beteiligt sind. Des Weiteren wird auf ausgewählte Methoden und neurobiologische Grundlagen der Sprache eingegangen.",
+		"Mit Sprache (*speech*) ist die Fähigkeit des Menschen gemeint, durch ein komplexes System von Symbolen und Regeln, miteinander zu kommunizieren.",
 		"https://c.pxhere.com/images/5e/d6/a2ff24ae9521a8904c5fbab3fd89-1437965.jpg!d",
 		"https://c.pxhere.com/images/5e/d6/a2ff24ae9521a8904c5fbab3fd89-1437965.jpg!d"
+	),
+	createSpecialization(
+		3,
+		8,
+		"Motivation und Volition",
+		"Man spricht von Motivation (*motivation*), wenn man die Gesamtheit der Beweggründe (Motive), die zur Handlungsbereitschaft führen, meint. Die Umsetzung von Motiven in Handlungen nennt man Volition (*volition*).",
+		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png",
+		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png"
+	),
+	createSpecialization(
+		3,
+		9,
+		"Denken, Problemlösen, Entscheiden und Urteilen",
+		"Man spricht von Denken (*thinking*), wenn die interpretierende und ordnungsstiftende Verarbeitung von Informationen gemeint ist. Beim Problemlösen (*problem solving*) geht es um das Auffinden eines vorher nicht bekannten Weges von einem gegebenen Anfangszustand zu einem gewünschten und mehr oder weniger genau bekannten Endzustand. Das Entscheiden (*decision making*) betrifft die menschlichen Prozesse beim Wählen zwischen Alternativen und beim Urteilen (*judgment*) geht es um das Schlussfolgern aufgrund von Erfahrung.",
+		"https://images.pexels.com/photos/814133/pexels-photo-814133.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+		"https://images.pexels.com/photos/814133/pexels-photo-814133.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+	),
+	createSpecialization(
+		3,
+		10,
+		"Emotion",
+		"Man spricht von Emotionen (*emotions*), wenn es sich um ein komplexes Muster von Veränderungen handelt. Dabei umfassen dieese physiologische Erregung, Gefühle, kognitive Prozesse (Bewertungen) und Verhaltensreaktionen auf eine Situation, die als persönlich bedeutsam wahrgenommen wurde.",
+		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png",
+		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png"
+	),
+	createSpecialization(
+		3,
+		11,
+		"Handlung, Bewegung und Psychomotorik",
+		"Man spricht von Handlungen (*action*), wenn es um motorische Aktivitäten geht, um einen angestrebten Zielzustand zu verwirklichen.",
+		"https://www.spielundlern.de/wissen/wp-content/uploads/2017/04/kinder-bewegung-psychomotorik-768x235.png",
+		"https://www.spielundlern.de/wissen/wp-content/uploads/2017/04/kinder-bewegung-psychomotorik-768x235.png"
 	)
 ];
 
