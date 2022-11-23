@@ -14,7 +14,6 @@ import {
     LessonContentType,
 } from '@self-learning/types';
 
-faker.seed(2);
 const prisma = new PrismaClient();
 
 export function createLesson(
@@ -237,11 +236,11 @@ export async function seedCaseStudy(
 	console.log("\x1b[94m%s\x1b[0m", name + " Example");
 
 	await prisma.course.createMany({ data: courses });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", name + "Courses");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", name + " Courses");
 	await prisma.lesson.createMany({
 		data: chapters.flatMap(chapter => chapter.content.map(lesson => lesson))
 	});
-	console.log(" - %s\x1b[32m ✔\x1b[0m", name + "Lessons");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", name + " Lessons");
 
 	for (const course of courses) {
 		const subjectId = course.subjectId;
