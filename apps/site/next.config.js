@@ -8,6 +8,7 @@ const nextConfig = {
 	images: {
 		domains: [
 			"lsf.uni-hildesheim.de",
+			"staging.sse.uni-hildesheim.de",
 			"localhost",
 			"source.unsplash.com",
 			"images.unsplash.com",

@@ -26,7 +26,7 @@ export function createLesson(
 ) {
 	const lesson: Prisma.LessonCreateInput = {
 		title,
-		lessonId: faker.random.alphaNumeric(8),
+		lessonId: faker.datatype.uuid(),
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle,
 		description: description,
@@ -237,11 +237,11 @@ export async function seedCaseStudy(
 	console.log("\x1b[94m%s\x1b[0m", name + " Example");
 
 	await prisma.course.createMany({ data: courses });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", name + "Courses");
 	await prisma.lesson.createMany({
 		data: chapters.flatMap(chapter => chapter.content.map(lesson => lesson))
 	});
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", name + "Lessons");
 
 	for (const course of courses) {
 		const subjectId = course.subjectId;
@@ -255,7 +255,7 @@ export async function seedCaseStudy(
 				}
 			});
 		}
-		console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course of " + name);
 	}
 
 	if (authors) {
