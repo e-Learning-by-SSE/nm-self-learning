@@ -112,16 +112,16 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		3,
 		"Aufmerksamkeit",
 		"Man spricht von Aufmerksamkeit (*attention*), wenn man sich mit der Fähigkeit, bestimmte Informationen für eine genauere Analyse auszuwählen und andere zu ignorieren, beschäftigt.",
-		"https://pixnio.com/de/media/verkehrssteuerung-stau-verkehr-sicherheit-vorsicht",
-		"https://pixnio.com/de/media/verkehrssteuerung-stau-verkehr-sicherheit-vorsicht"
+		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg",
+		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg"
 	),
 	createSpecialization(
 		3,
 		4,
 		"Bewusstsein",
 		"Man spricht einerseits von Bewusstsein (*consciousness*), wenn das wache Wissen um das Erleben sowie das Aufmerken auf einzelne Erlebnisse und andererseits das wache Wissen um das kontrollierte und initiierte Handeln gemeint ist. Auch die Gesamtheit der unmittelbaren Erfahrung, die sich aus der Wahrnehmung von sich selbst und der Umgebung, den eigenen Kognitionen, Vorstellungen und Gefühlen zusammensetzt wird als Bewusstsein bezeichnet. ",
-		"https://pxhere.com/de/photo/1192085",
-		"https://pxhere.com/de/photo/1192085"
+		"https://c.pxhere.com/photos/f5/82/head_psychology_thoughts_think_perception_face_woman_psyche-1192085.jpg!d",
+		"https://c.pxhere.com/photos/f5/82/head_psychology_thoughts_think_perception_face_woman_psyche-1192085.jpg!d"
 	),
 	createSpecialization(
 		3,

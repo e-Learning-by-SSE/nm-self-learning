@@ -24,6 +24,7 @@ const nextConfig = {
 			"pixnio.com",
 			"www.kikisweb.de",
 			"pxhere.com",
+			"images.pexels.com",
 			"www.spielundlern.de"
 		]
 	},
