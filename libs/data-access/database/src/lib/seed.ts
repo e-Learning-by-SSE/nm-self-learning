@@ -15,6 +15,7 @@ import {
 } from '@self-learning/types';
 
 import { javaExample } from './java-example';
+import { mathExample } from './math-example';
 import { psychologyExample } from './psychology-example';
 import { createSpecialization } from './seed-functions';
 
@@ -178,7 +179,9 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		"Man spricht von Handlungen (*action*), wenn es um motorische Aktivitäten geht, um einen angestrebten Zielzustand zu verwirklichen.",
 		"https://www.spielundlern.de/wissen/wp-content/uploads/2017/04/kinder-bewegung-psychomotorik-768x235.png",
 		"https://www.spielundlern.de/wissen/wp-content/uploads/2017/04/kinder-bewegung-psychomotorik-768x235.png"
-	)
+	),
+	createSpecialization(2, 12, "Didaktik der Mathematik", "", null, null),
+	createSpecialization(2, 13, "Fachmathematik", "", null, null)
 ];
 
 const questions: QuizContent = [
@@ -695,6 +698,7 @@ async function seed(): Promise<void> {
 
 	javaExample();
 	psychologyExample();
+	mathExample();
 
 	console.log(`\nSeed command took ${Date.now() - start}ms`);
 }
