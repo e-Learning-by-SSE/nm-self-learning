@@ -696,9 +696,9 @@ async function seed(): Promise<void> {
 	}
 	console.log("✅ Authors");
 
-	javaExample();
-	psychologyExample();
-	mathExample();
+	await javaExample();
+	await psychologyExample();
+	await mathExample();
 
 	console.log(`\nSeed command took ${Date.now() - start}ms`);
 }
