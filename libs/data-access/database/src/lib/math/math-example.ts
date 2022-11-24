@@ -1,14 +1,14 @@
 import {
-    createArticle,
-    createAuthor,
-    createCourse,
-    createLesson,
-    createMultipleChoice,
-    createTextQuestion,
-    createVideo,
-    read,
-    seedCaseStudy,
-} from './seed-functions';
+	createArticle,
+	createAuthor,
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo,
+	read,
+	seedCaseStudy
+} from "../seed-functions";
 
 const chapters = [
 	{
@@ -27,7 +27,7 @@ const chapters = [
 				],
 				[
 					createMultipleChoice(
-						"Welche zentralen Lerninhalte hat diese Aufgabe? Kreuzen Sie alle richtigen Antworten an.",
+						"![Ein Schrank mit 9 Fächern und Spielzeug](https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Begriffslernen-GS-01.JPG)\r\nWelche zentralen Lerninhalte hat diese Aufgabe? Kreuzen Sie alle richtigen Antworten an.",
 						[
 							{
 								content: "Förderung der räumliche Orientierung ",
