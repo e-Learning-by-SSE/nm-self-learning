@@ -105,5 +105,5 @@ const authors = [
 ];
 
 export async function mathExample(): Promise<void> {
-	seedCaseStudy("Didactics of Mathematics", courses, chapters, authors);
+	await seedCaseStudy("Didactics of Mathematics", courses, chapters, authors);
 }

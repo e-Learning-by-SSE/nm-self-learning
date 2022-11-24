@@ -239,18 +239,22 @@ export async function seedCaseStudy(
 	chapters: Chapters,
 	authors: Prisma.UserCreateInput[] | null
 ): Promise<void> {
-	console.log("\x1b[94m%s\x1b[0m", name + " Example");
+	console.log("\x1b[94m%s\x1b[0m", name + " Example:");
 
-	const courseData: Prisma.CourseCreateManyInput[] = courses.filter(function (course) {
-		delete course.specializationID;
-		return true;
+	// const courseData: Prisma.CourseCreateManyInput[] = courses.filter(function (course) {
+	// 	delete course.specializationID;
+	// 	return true;
+	// });
+	const courseData: Prisma.CourseCreateManyInput[] = courses.map(c => {
+		delete c.specializationID;
+		return c;
 	});
 	await prisma.course.createMany({ data: courseData });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", name + " Courses");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 	await prisma.lesson.createMany({
 		data: chapters.flatMap(chapter => chapter.content.map(lesson => lesson))
 	});
-	console.log(" - %s\x1b[32m ✔\x1b[0m", name + " Lessons");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
 	for (const course of courses) {
 		const specializationID = course.specializationID;
@@ -264,8 +268,8 @@ export async function seedCaseStudy(
 				}
 			});
 		}
-		console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course of " + name);
 	}
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Courses");
 
 	if (authors) {
 		for (const author of authors) {

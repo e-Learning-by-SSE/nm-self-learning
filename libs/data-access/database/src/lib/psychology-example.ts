@@ -66,5 +66,5 @@ const authors = [
 ];
 
 export async function psychologyExample(): Promise<void> {
-	seedCaseStudy("Psychology", courses, chaptersOfHearing, authors);
+	await seedCaseStudy("Psychology", courses, chaptersOfHearing, authors);
 }
