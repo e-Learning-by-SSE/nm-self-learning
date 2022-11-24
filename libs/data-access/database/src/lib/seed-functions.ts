@@ -1,18 +1,18 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import slugify from 'slugify';
+import { readFileSync } from "fs";
+import { join } from "path";
+import slugify from "slugify";
 
-import { faker } from '@faker-js/faker';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { QuestionType, QuizContent } from '@self-learning/question-types';
+import { faker } from "@faker-js/faker";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
-    createCourseContent,
-    createCourseMeta,
-    createLessonMeta,
-    extractLessonIds,
-    LessonContent,
-    LessonContentType,
-} from '@self-learning/types';
+	createCourseContent,
+	createCourseMeta,
+	createLessonMeta,
+	extractLessonIds,
+	LessonContent,
+	LessonContentType
+} from "@self-learning/types";
 
 const prisma = new PrismaClient();
 
@@ -26,7 +26,7 @@ export function createLesson(
 	const lesson: Prisma.LessonCreateInput = {
 		title,
 		lessonId: faker.datatype.uuid(),
-		slug: slugify(title, { lower: true, strict: true }),
+		slug: slugify(faker.random.alphaNumeric(8) + title, { lower: true, strict: true }),
 		subtitle: subtitle,
 		description: description,
 		content: content,
@@ -105,8 +105,8 @@ export function createCourse(
 		description: description,
 		imgUrl: imgUrl,
 		subjectId: subjectId,
-		createdAt: new Date(2022, 4, 20),
-		updatedAt: new Date(2022, 5, 1),
+		createdAt: faker.date.past(),
+		updatedAt: new Date(),
 		content: createCourseContent(
 			chapters.map(chapter => ({
 				title: chapter.title,
@@ -121,8 +121,8 @@ export function createCourse(
 
 	const result = {
 		data: course as Prisma.CourseCreateManyInput,
-		specializationId: specializationId,
-	}
+		specializationId: specializationId
+	};
 
 	return result;
 }
@@ -234,7 +234,7 @@ export function read(file: string) {
 }
 
 class Course {
-	data! :Prisma.CourseCreateManyInput;
+	data!: Prisma.CourseCreateManyInput;
 	specializationId!: number;
 }
 
@@ -246,7 +246,7 @@ export async function seedCaseStudy(
 ): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", name + " Example:");
 
-	const courseData : Prisma.CourseCreateManyInput[] = courses.map(c => c.data);
+	const courseData: Prisma.CourseCreateManyInput[] = courses.map(c => c.data);
 	await prisma.course.createMany({ data: courseData });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 	await prisma.lesson.createMany({
@@ -255,10 +255,7 @@ export async function seedCaseStudy(
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
 	for (const course of courses) {
-		console.log(course.data.title)
-		console.log(course.specializationId)
 		if (course.specializationId) {
-			console.log(" -> " + course.specializationId)
 			await prisma.specialization.update({
 				where: { specializationId: course.specializationId },
 				data: {

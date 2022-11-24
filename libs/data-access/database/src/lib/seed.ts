@@ -16,7 +16,7 @@ import {
 
 import { javaExample } from './java-example';
 import { mathExample } from './math-example';
-import { psychologyExample } from './psychology-example';
+import { psychologyExample } from './psychology/psychology-example';
 import { createSpecialization } from './seed-functions';
 
 faker.seed(1);
