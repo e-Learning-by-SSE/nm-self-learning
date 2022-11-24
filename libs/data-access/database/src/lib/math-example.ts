@@ -79,6 +79,7 @@ const chapters = [
 
 const courses = [
 	createCourse(
+		2,
 		12,
 		"Didaktik der Geometrie",
 		null,

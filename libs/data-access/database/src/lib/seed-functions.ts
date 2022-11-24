@@ -90,14 +90,16 @@ type Chapters = {
 
 export function createCourse(
 	subjectId: number,
+	specializationID: number | null,
 	title: string,
 	subtitle: string | null,
 	description: string | null,
 	imgUrl: string | null,
 	chapters: Chapters
-): Prisma.CourseCreateManyInput {
+): Course {
 	const course = {
 		courseId: faker.random.alphaNumeric(8),
+		specializationID: specializationID,
 		title: title,
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle ?? "",
@@ -227,9 +229,13 @@ export function read(file: string) {
 	return readFileSync(join(__dirname, file), "utf-8");
 }
 
+interface Course extends Prisma.CourseCreateManyInput {
+	specializationID: number | null;
+}
+
 export async function seedCaseStudy(
 	name: string,
-	courses: Prisma.CourseCreateManyInput[],
+	courses: Course[],
 	chapters: Chapters,
 	authors: Prisma.UserCreateInput[] | null
 ): Promise<void> {
@@ -243,10 +249,10 @@ export async function seedCaseStudy(
 	console.log(" - %s\x1b[32m ✔\x1b[0m", name + " Lessons");
 
 	for (const course of courses) {
-		const subjectId = course.subjectId;
-		if (subjectId) {
+		const specializationID = course.specializationID;
+		if (specializationID) {
 			await prisma.specialization.update({
-				where: { specializationId: subjectId },
+				where: { specializationId: specializationID },
 				data: {
 					courses: {
 						connect: courses.map(course => ({ courseId: course.courseId }))

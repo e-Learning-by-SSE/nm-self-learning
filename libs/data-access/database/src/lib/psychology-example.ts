@@ -28,6 +28,7 @@ const chaptersOfVision = [
 
 const courses = [
 	createCourse(
+		3,
 		2,
 		"Grundlagen der Wahrnehmung",
 		null,
@@ -36,6 +37,7 @@ const courses = [
 		chaptersOfHearing
 	),
 	createCourse(
+		3,
 		2,
 		"Das Wahrnehmungssystem zum Hören",
 		null,
@@ -44,6 +46,7 @@ const courses = [
 		chaptersOfHearing
 	),
 	createCourse(
+		3,
 		2,
 		"Das Wahrnehmungssystem zum Sehen",
 		null,
