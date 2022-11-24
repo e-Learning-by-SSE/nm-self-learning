@@ -49,7 +49,7 @@ export function createAuthor(
 	name: string,
 	imgUrl: string,
 	lessons: Lessons,
-	courses: Prisma.CourseCreateManyInput[]
+	courses: Course[]
 ): Prisma.UserCreateInput {
 	const slug = slugify(name, { lower: true, strict: true });
 	return {
@@ -69,7 +69,7 @@ export function createAuthor(
 				slug: slug,
 				imgUrl: imgUrl,
 				courses: {
-					connect: courses.map(course => ({ courseId: course.courseId }))
+					connect: courses.map(course => ({ courseId: course.data.courseId }))
 				},
 				lessons: {
 					connect: extractLessonIds(lessons).map(lessonId => ({ lessonId }))
@@ -90,7 +90,7 @@ type Chapters = {
 
 export function createCourse(
 	subjectId: number,
-	specializationID: number | null,
+	specializationId: number,
 	title: string,
 	subtitle: string | null,
 	description: string | null,
@@ -99,7 +99,6 @@ export function createCourse(
 ): Course {
 	const course = {
 		courseId: faker.random.alphaNumeric(8),
-		specializationID: specializationID,
 		title: title,
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle ?? "",
@@ -120,7 +119,12 @@ export function createCourse(
 
 	course.meta = createCourseMeta(course);
 
-	return course;
+	const result = {
+		data: course as Prisma.CourseCreateManyInput,
+		specializationId: specializationId,
+	}
+
+	return result;
 }
 
 type answer = {
@@ -229,8 +233,9 @@ export function read(file: string) {
 	return readFileSync(join(__dirname, file), "utf-8");
 }
 
-interface Course extends Prisma.CourseCreateManyInput {
-	specializationID?: number | null;
+class Course {
+	data! :Prisma.CourseCreateManyInput;
+	specializationId!: number;
 }
 
 export async function seedCaseStudy(
@@ -241,14 +246,7 @@ export async function seedCaseStudy(
 ): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", name + " Example:");
 
-	// const courseData: Prisma.CourseCreateManyInput[] = courses.filter(function (course) {
-	// 	delete course.specializationID;
-	// 	return true;
-	// });
-	const courseData: Prisma.CourseCreateManyInput[] = courses.map(c => {
-		delete c.specializationID;
-		return c;
-	});
+	const courseData : Prisma.CourseCreateManyInput[] = courses.map(c => c.data);
 	await prisma.course.createMany({ data: courseData });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 	await prisma.lesson.createMany({
@@ -257,13 +255,15 @@ export async function seedCaseStudy(
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
 	for (const course of courses) {
-		const specializationID = course.specializationID;
-		if (specializationID) {
+		console.log(course.data.title)
+		console.log(course.specializationId)
+		if (course.specializationId) {
+			console.log(" -> " + course.specializationId)
 			await prisma.specialization.update({
-				where: { specializationId: specializationID },
+				where: { specializationId: course.specializationId },
 				data: {
 					courses: {
-						connect: courses.map(course => ({ courseId: course.courseId }))
+						connect: courses.map(course => ({ courseId: course.data.courseId }))
 					}
 				}
 			});
