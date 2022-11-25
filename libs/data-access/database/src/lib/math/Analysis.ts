@@ -1,16 +1,17 @@
 import {
-    createArticle,
-    createCourse,
-    createLesson,
-    createMultipleChoice,
-    createTextQuestion,
-    createVideo,
-} from '../seed-functions';
+	createArticle,
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo
+} from "../seed-functions";
 
 export const chapters = [
 	{
 		title: "Folgen und Reihen",
-		description: "",
+		description:
+			"In diesem Kapitel werden Folgen und Reihen behandelt. Es werden verschiedene Eigenschaften untersucht, wie etwa Monotonie, Beschränktheit und Konvergenz. Dabei stellt sich heraus, dass konvergente Folgen von besonderer Bedeutung sind - sie werden die Grundlage für die gesamte nachfolgende Theorie der Analysis bilden.",
 		content: [
 			createLesson(
 				"Folgen",
@@ -32,7 +33,7 @@ export const chapters = [
 						],
 						[
 							"Denken Sie an die Rechenregeln für Grenzwerte",
-							"Aus den Rechenregeln für Grenzwerte folgt sofort die Konvergenz der Folge $(b_n)_{ninmathbb N}$, und zwar ebenfalls gegen $a$."
+							"Aus den Rechenregeln für Grenzwerte folgt sofort die Konvergenz der Folge $(b_n)_{n\\in\\mathbb N}$, und zwar ebenfalls gegen $a$."
 						]
 					),
 					createTextQuestion(
@@ -55,6 +56,6 @@ export const course = createCourse(
 	"Analysis",
 	null,
 	null,
-	"https://upload.wikimedia.org/wikipedia/commons/9/95/Attracteur_%C3%A9trange_de_Lorenz.png",
+	"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Mittelwertsatz.png",
 	chapters
 );

@@ -1,4 +1,10 @@
-import { createCourse, createLesson, createMultipleChoice, createTextQuestion, createVideo } from '../seed-functions';
+import {
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo
+} from "../seed-functions";
 
 export const chapters = [
 	{
@@ -73,6 +79,6 @@ export const course = createCourse(
 	"Didaktik der Geometrie",
 	null,
 	null,
-	"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Begriffslernen-GS-01.png",
+	"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_der_Geometrie.png",
 	chapters
 );
