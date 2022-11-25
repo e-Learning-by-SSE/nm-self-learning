@@ -17,7 +17,7 @@ export const chapters = [
 				],
 				[
 					createMultipleChoice(
-						"![Ein Schrank mit 9 Fächern und Spielzeug](https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Begriffslernen-GS-01.JPG)\r\nWelche zentralen Lerninhalte hat diese Aufgabe? Kreuzen Sie alle richtigen Antworten an.",
+						"![Ein Schrank mit 9 Fächern und Spielzeug](https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Begriffslernen-GS-01.png)\r\nWelche zentralen Lerninhalte hat diese Aufgabe? Kreuzen Sie alle richtigen Antworten an.",
 						[
 							{
 								content: "Förderung der räumliche Orientierung ",
@@ -73,6 +73,6 @@ export const course = createCourse(
 	"Didaktik der Geometrie",
 	null,
 	null,
-	"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Begriffslernen-GS-01.JPG",
+	"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Begriffslernen-GS-01.png",
 	chapters
 );
