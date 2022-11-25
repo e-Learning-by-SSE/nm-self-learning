@@ -1,18 +1,18 @@
-import { readFileSync } from "fs";
-import { join } from "path";
-import slugify from "slugify";
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import slugify from 'slugify';
 
-import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { QuestionType, QuizContent } from "@self-learning/question-types";
+import { faker } from '@faker-js/faker';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { QuestionType, QuizContent } from '@self-learning/question-types';
 import {
-	createCourseContent,
-	createCourseMeta,
-	createLessonMeta,
-	extractLessonIds,
-	LessonContent,
-	LessonContentType
-} from "@self-learning/types";
+    createCourseContent,
+    createCourseMeta,
+    createLessonMeta,
+    extractLessonIds,
+    LessonContent,
+    LessonContentType,
+} from '@self-learning/types';
 
 const prisma = new PrismaClient();
 
@@ -254,17 +254,21 @@ export async function seedCaseStudy(
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
-	for (const course of courses) {
-		if (course.specializationId) {
-			await prisma.specialization.update({
-				where: { specializationId: course.specializationId },
-				data: {
-					courses: {
-						connect: courses.map(course => ({ courseId: course.data.courseId }))
-					}
+	const specializations = new Set<number>();
+	courses.forEach(c => specializations.add(c.specializationId));
+	for (const id of specializations) {
+		await prisma.specialization.update({
+			where: { specializationId: id },
+			data: {
+				courses: {
+					connect: courses
+						.filter(c => {
+							return c.specializationId == id;
+						})
+						.map(c => ({ courseId: c.data.courseId }))
 				}
-			});
-		}
+			}
+		});
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Courses");
 

@@ -1,23 +1,23 @@
-import { subHours } from "date-fns";
-import { readFileSync } from "fs";
-import { join } from "path";
-import slugify from "slugify";
+import { subHours } from 'date-fns';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import slugify from 'slugify';
 
-import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { QuizContent } from "@self-learning/question-types";
+import { faker } from '@faker-js/faker';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { QuizContent } from '@self-learning/question-types';
 import {
-	createCourseContent,
-	createCourseMeta,
-	createLessonMeta,
-	extractLessonIds,
-	LessonContent
-} from "@self-learning/types";
+    createCourseContent,
+    createCourseMeta,
+    createLessonMeta,
+    extractLessonIds,
+    LessonContent,
+} from '@self-learning/types';
 
-import { javaExample } from "./java-example";
-import { mathExample } from "./math/math-example";
-import { psychologyExample } from "./psychology/psychology-example";
-import { createSpecialization } from "./seed-functions";
+import { javaExample } from './java-example';
+import { mathExample } from './math/math-example';
+import { psychologyExample } from './psychology/psychology-example';
+import { createSpecialization } from './seed-functions';
 
 faker.seed(1);
 
@@ -184,13 +184,20 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		2,
 		12,
 		"Didaktik der Geometrie",
-		"",
 		"Didaktik der Geometrie: geometrische Begriffsbildung, Figuren und Körper, Maße und Größen, Beweisen und Argumentieren im Geometrieunterricht, geometrisches Problemlösen, Konstruieren, dynamische Geometriesysteme im Mathematikunterricht, Anwendungen der Geometrie samt ihren didaktischen Theorien kennen und schulbezogen anwenden können; Lern-, Lehr- und Übungsumgebungen sowie Prüfungsanlässe mit geometrischen Bezügen beurteilen, gestalten und variieren",
+		null,
 		null
 	),
 	createSpecialization(2, 13, "Didaktik der Algebra", "", null, null),
 	createSpecialization(2, 14, "Didaktik des funktionalen Denkens", "", null, null),
-	createSpecialization(2, 15, "Analysis", "", null, null),
+	createSpecialization(
+		2,
+		15,
+		"Analysis",
+		"",
+		"https://upload.wikimedia.org/wikipedia/commons/9/95/Attracteur_%C3%A9trange_de_Lorenz.png",
+		"https://upload.wikimedia.org/wikipedia/commons/9/95/Attracteur_%C3%A9trange_de_Lorenz.png"
+	),
 	createSpecialization(2, 16, "Geometrie", "", null, null),
 	createSpecialization(2, 17, "Algebra", "", null, null)
 ];
