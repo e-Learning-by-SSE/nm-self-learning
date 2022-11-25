@@ -9,13 +9,13 @@ import {
 
 export const chapters = [
 	{
-		title: "Begriffslernen in der Grundschule",
-		description: "Begriffslernen in der Grundschule.",
+		title: "Folgen und Reihen",
+		description: "",
 		content: [
 			createLesson(
-				"Analysis",
 				"Folgen",
 				"Konvergenz",
+				"",
 				[createArticle("Kursmaterial als Webseite", 20), createVideo("link zum Video", 15)],
 				[
 					createMultipleChoice(
