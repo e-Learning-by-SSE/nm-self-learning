@@ -9,6 +9,7 @@ import Head from "next/head";
 import { Toaster } from "react-hot-toast";
 // import { ReactQueryDevtools } from "react-query/devtools";
 import "./styles.css";
+import "katex/dist/katex.css";
 
 export default withTRPC<AppRouter>({
 	config() {

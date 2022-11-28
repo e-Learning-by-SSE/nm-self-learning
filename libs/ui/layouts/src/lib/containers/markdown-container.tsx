@@ -1,5 +1,3 @@
-import "katex/dist/katex.css";
-
 export function MarkdownContainer({
 	children,
 	className
