@@ -1,11 +1,11 @@
 import {
-	createArticle,
-	createCourse,
-	createLesson,
-	createMultipleChoice,
-	createTextQuestion,
-	createVideo
-} from "../seed-functions";
+    createArticle,
+    createCourse,
+    createLesson,
+    createMultipleChoice,
+    createTextQuestion,
+    createVideo,
+} from '../seed-functions';
 
 export const chapters = [
 	{
@@ -111,10 +111,10 @@ export const chapters = [
 					createTextQuestion(
 						"Welches Schülerproblematische Thema kann mithilfe von Einheitsquadraten und Würfeln visualisiert werden?",
 						[
-							"Akzeptierte Herleitung Umrechnungsfaktor",
-							"Akzeptierte Umrechnungsfaktor",
-							"Akzeptiere Umrechung",
-							"Akzeptiere Herleitung Umrechnung"
+							"Herleitung Umrechnungsfaktor",
+							"Umrechnungsfaktor",
+							"Umrechung",
+							"Herleitung Umrechnung"
 						]
 					)
 				]
