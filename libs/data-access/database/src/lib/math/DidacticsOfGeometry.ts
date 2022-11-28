@@ -113,7 +113,7 @@ export const chapters = [
 						[
 							"Herleitung Umrechnungsfaktor",
 							"Umrechnungsfaktor",
-							"Umrechung",
+							"Umrechnung",
 							"Herleitung Umrechnung"
 						]
 					)
