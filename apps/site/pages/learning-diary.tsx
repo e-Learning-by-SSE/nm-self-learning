@@ -1,11 +1,10 @@
 import { ArrowCircleRightIcon } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { getCompletedLessonsThisWeek } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { format, isToday, isYesterday } from "date-fns";
+import { endOfWeek, format, isToday, isYesterday, parseISO, startOfWeek } from "date-fns";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
 import Link from "next/link";
@@ -37,34 +36,47 @@ export const getServerSideProps: GetServerSideProps<LearningDiaryProps> = async 
 		})
 	]);
 
-	const { today, yesterday, week } = groupCompletedLessons(completedLessons);
-
 	return {
 		props: {
 			goals: learningDiary?.goals ?? "",
-			completedLessons: {
-				today: [
-					{
-						lesson: { title: "Lesson 1", lessonId: "lesson-1" },
-						createdAt: new Date(2022, 4, 20, 14, 0, 0)
-					},
-					{
-						lesson: { title: "Lesson 2", lessonId: "lesson-2" },
-						createdAt: new Date(2022, 4, 20, 12, 0, 0)
-					},
-					{
-						lesson: { title: "Lesson 3", lessonId: "lesson-3" },
-						createdAt: new Date(2022, 4, 20, 9, 0, 0)
-					}
-				],
-				yesterday: [],
-				week: []
-			}
+			completedLessons: groupCompletedLessons(completedLessons)
 		}
 	};
 };
 
-function groupCompletedLessons(completedLessons: CompletedLesson[]) {
+async function getCompletedLessonsThisWeek(username: string, dateNow: number) {
+	return database.completedLesson.findMany({
+		select: {
+			createdAt: true,
+			course: {
+				select: {
+					title: true,
+					slug: true
+				}
+			},
+			lesson: {
+				select: {
+					lessonId: true,
+					title: true,
+					slug: true
+				}
+			}
+		},
+		where: {
+			AND: {
+				username,
+				createdAt: {
+					gte: startOfWeek(dateNow, { weekStartsOn: 1 }),
+					lte: endOfWeek(dateNow, { weekStartsOn: 1 })
+				}
+			}
+		}
+	});
+}
+
+function groupCompletedLessons(
+	completedLessons: CompletedLesson[]
+): LearningDiaryProps["completedLessons"] {
 	const today = [];
 	const yesterday = [];
 	const week = [];
@@ -147,11 +159,7 @@ function Goals({ initialValue }: { initialValue: string }) {
 					<button
 						className="btn-primary text-sm"
 						disabled={isSaving}
-						onClick={() => {
-							mutate({
-								goals: inputRef.current?.value ?? ""
-							});
-						}}
+						onClick={() => mutate({ goals: inputRef.current?.value ?? "" })}
 					>
 						Speichern
 					</button>
@@ -181,12 +189,16 @@ function CompletedSection({
 				</span>
 			</div>
 			<ul className="flex flex-col gap-2 text-sm">
-				{completedLessons.map(({ lesson, createdAt }) => (
+				{completedLessons.map(({ lesson, createdAt, course }) => (
 					<CompletedLesson
 						key={lesson.lessonId}
 						title={lesson.title}
-						topic={"TODO"}
-						href={"TODO"}
+						topic={course ? course.title : lesson.title}
+						href={
+							course
+								? `/courses/${course.slug}/${lesson.slug}`
+								: `/lessons/${lesson.slug}`
+						}
 						date={createdAt}
 					/>
 				))}
@@ -216,7 +228,9 @@ function CompletedLesson({
 					in <span className="text-secondary">{topic}</span>
 				</span>
 			</div>
-			<div className="text-xs text-light">{format(date, "HH:mm")}</div>
+			<div className="text-xs text-light">
+				{format(parseISO(date as unknown as string), "HH:mm")}
+			</div>
 		</li>
 	);
 }

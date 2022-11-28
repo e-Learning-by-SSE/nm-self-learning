@@ -9,7 +9,7 @@ export const learningDiaryRouter = t.router({
 				goals: z.string()
 			})
 		)
-		.mutation(async ({ ctx, input }) => {
+				.mutation(async ({ ctx, input }) => {
 			return database.learningDiary.update({
 				where: { username: ctx.username },
 				data: { goals: input.goals },
