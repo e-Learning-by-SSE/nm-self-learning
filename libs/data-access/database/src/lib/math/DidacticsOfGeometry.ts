@@ -1,4 +1,5 @@
 import {
+	createArticle,
 	createCourse,
 	createLesson,
 	createMultipleChoice,
@@ -79,10 +80,15 @@ export const chapters = [
 				"Einheitsquadrate und Einheitswürfel",
 				null,
 				"Einheitsquadrate und Einheitswürfel",
-				[],
+				[
+					createVideo(
+						"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/12_02_Geometrie_Groessen_und_Messen_Einheitsquadrate_und_Wuerfel.mp4",
+						248
+					)
+				],
 				[
 					createMultipleChoice(
-						"![Verschiedene mathematische zweidimensionale Formen auf einem kariertem Papier](https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Groessen_und_Masse__Sek_I.jpg)\r\nWelcher Aspekt des Messen wird mithilfe von Einheitsquadraten und Einheitswürfeln verdeutlicht?",
+						"Welcher Aspekt des Messen wird mithilfe von Einheitsquadraten und Einheitswürfeln verdeutlicht?",
 						[
 							{
 								content: "Auslegungsaspekt",
@@ -117,10 +123,15 @@ export const chapters = [
 				"Flächenformel",
 				null,
 				"Herleitung Flächenformel",
-				[],
+				[
+					createArticle(
+						"#Geplante Lerneinheit\r\nHier ist ein Video zur Herleitung der Flächenformel geplant",
+						10
+					)
+				],
 				[
 					createMultipleChoice(
-						"Welche Axiome werden bei dieser Aufgabe genutzt? Kreuzen Sie alle richtigen Antworten an.",
+						"![Verschiedene mathematische zweidimensionale Formen auf einem kariertem Papier](https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Groessen_und_Masse__Sek_I.jpg)\r\nWelche Axiome werden bei dieser Aufgabe genutzt? Kreuzen Sie alle richtigen Antworten an.",
 						[
 							{
 								content: "Kongruenzaxiom",
