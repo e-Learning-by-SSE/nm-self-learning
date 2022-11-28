@@ -7,7 +7,7 @@
 		"build": "nx build",
 		"jest": "env TZ='Europe/Berlin' jest --runInBand",
 		"test": "env TZ='Europe/Berlin' nx run-many --target=test --all --runInBand",
-		"test:ci": "env TZ='Europe/Berlin' nx run-many --target=test --all --cache=false --skip-nx-cache --runInBand",
+		"test:ci": "env TZ='Europe/Berlin' jest --runInBand",
 		"cypress": "cypress open --project=apps/site-e2e",
 		"storybook": "env TAILWIND_MODE=watch nx run docs-storybook:storybook --watch",
 		"prettier:check": "prettier --check **/*",
