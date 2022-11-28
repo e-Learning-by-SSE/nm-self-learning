@@ -9,13 +9,14 @@ import {
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	findContentType,
+	getContentTypeDisplayName,
 	includesMediaType,
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
 import { Tab, Tabs } from "@self-learning/ui/common";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
-import { VideoPlayer } from "@self-learning/ui/lesson";
+import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
@@ -103,15 +104,16 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
-	const url = video?.value.url;
+	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
+
 	const preferredMediaType = usePreferredMediaType(lesson);
 
 	return (
 		<article className="flex flex-col gap-4">
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
-					{url ? (
-						<VideoPlayer url={url} />
+					{video?.value.url ? (
+						<VideoPlayer url={video.value.url} />
 					) : (
 						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
 					)}
@@ -121,9 +123,15 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
 
 			{preferredMediaType === "article" && markdown.article && (
-				<MarkdownContainer className="mx-auto w-full pt-8">
+				<MarkdownContainer className="mx-auto w-full pt-4">
 					<MDXRemote {...markdown.article} />
 				</MarkdownContainer>
+			)}
+
+			{preferredMediaType === "pdf" && pdf?.value.url && (
+				<div className="h-[90vh] xl:h-[80vh]">
+					<PdfViewer url={pdf.value.url} />
+				</div>
 			)}
 		</article>
 	);
@@ -167,7 +175,7 @@ function LessonHeader({
 			</div>
 
 			{mdDescription && (
-				<MarkdownContainer className="mx-auto">
+				<MarkdownContainer className="mx-auto pb-4">
 					<MDXRemote {...mdDescription} />
 				</MarkdownContainer>
 			)}
@@ -275,7 +283,9 @@ function MediaTypeSelector({
 				<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
 					{lessonContent.map((content, idx) => (
 						<Tab key={idx}>
-							<span data-testid="mediaTypeTab">{content.type}</span>
+							<span data-testid="mediaTypeTab">
+								{getContentTypeDisplayName(content.type)}
+							</span>
 						</Tab>
 					))}
 				</Tabs>

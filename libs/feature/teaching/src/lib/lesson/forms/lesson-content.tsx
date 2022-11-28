@@ -1,11 +1,11 @@
 import { DocumentTextIcon, VideoCameraIcon } from "@heroicons/react/solid";
 import { LessonContent, LessonContentType, ValueByContentType } from "@self-learning/types";
 import { RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import { Reorder } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { ArticleInput } from "../content-types/article";
+import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
@@ -18,7 +18,8 @@ function useContentTypeUsage(content: LessonContent) {
 	const typesWithUsage = useMemo(() => {
 		const allTypes: { [contentType in LessonContentType["type"]]: boolean } = {
 			video: false,
-			article: false
+			article: false,
+			pdf: false
 		};
 
 		for (const c of content) {
@@ -59,15 +60,29 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 	const typesWithUsage = useContentTypeUsage(content);
 
 	function addContent(type: LessonContentType["type"]) {
-		if (type === "article") {
-			append({ type: "article", value: { content: "" }, meta: { estimatedDuration: 0 } });
+		const addActions: { [contentType in LessonContentType["type"]]: () => void } = {
+			video: () => append({ type: "video", value: { url: "" }, meta: { duration: 0 } }),
+			article: () =>
+				append({ type: "article", value: { content: "" }, meta: { estimatedDuration: 0 } }),
+			pdf: () =>
+				append({
+					type: "pdf",
+					value: { url: "" },
+					meta: { estimatedDuration: 0 }
+				})
+		};
+
+		const fn = addActions[type];
+
+		if (!fn) {
+			throw new Error(
+				`Unknown content type: ${type} - There is no action defined to add this type.`
+			);
 		}
 
-		if (type === "video") {
-			append({ type: "video", value: { url: "" }, meta: { duration: 0 } });
-		}
+		fn();
 
-		setContentTabIndex(content.length);
+		setContentTabIndex(content.length); // Select the newly created tab
 	}
 
 	const removeContent = useCallback(
@@ -133,6 +148,16 @@ export function LessonContentEditor() {
 					<DocumentTextIcon className="h-5" />
 					<span>Artikel hinzufügen</span>
 				</button>
+
+				<button
+					type="button"
+					className="btn-primary w-fit"
+					onClick={() => addContent("pdf")}
+					disabled={typesWithUsage["pdf"]}
+				>
+					<DocumentTextIcon className="h-5" />
+					<span>PDF hinzufügen</span>
+				</button>
 			</div>
 
 			<div className="mb-8 mt-4 flex gap-4">
@@ -157,11 +182,7 @@ export function LessonContentEditor() {
 			</div>
 
 			{contentTabIndex !== undefined && content[contentTabIndex] ? (
-				<RenderContentType
-					index={contentTabIndex}
-					content={content[contentTabIndex]}
-					onRemove={removeContent}
-				/>
+				<RenderContentType index={contentTabIndex} content={content[contentTabIndex]} />
 			) : (
 				<div className="rounded-lg border border-light-border bg-white py-80 text-center text-light">
 					Diese Lerneinheit hat noch keinen Inhalt.
@@ -171,21 +192,17 @@ export function LessonContentEditor() {
 	);
 }
 
-function RenderContentType({
-	index,
-	content,
-	onRemove
-}: {
-	index: number;
-	content: LessonContentType;
-	onRemove: (index: number) => void;
-}) {
+function RenderContentType({ index, content }: { index: number; content: LessonContentType }) {
 	if (content.type === "video") {
 		return <VideoInput index={index} />;
 	}
 
 	if (content.type === "article") {
 		return <ArticleInput index={index} />;
+	}
+
+	if (content.type === "pdf") {
+		return <PdfInput index={index} />;
 	}
 
 	return (

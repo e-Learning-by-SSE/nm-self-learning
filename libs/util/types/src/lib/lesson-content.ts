@@ -20,10 +20,35 @@ export const articleSchema = z.object({
 	})
 });
 
-export const lessonContentSchema = z.discriminatedUnion("type", [videoSchema, articleSchema]);
+export const pdfSchema = z.object({
+	type: z.literal("pdf"),
+	value: z.object({
+		url: z.string()
+	}),
+	meta: z.object({
+		estimatedDuration: z.number()
+	})
+});
+
+export const lessonContentSchema = z.discriminatedUnion("type", [
+	videoSchema,
+	articleSchema,
+	pdfSchema
+]);
+
+export function getContentTypeDisplayName(contentType: LessonContentMediaType): string {
+	const names: { [contentType in LessonContentMediaType]: string } = {
+		video: "Video",
+		article: "Artikel",
+		pdf: "PDF"
+	};
+
+	return names[contentType] ?? "Unknown Type";
+}
 
 export type Video = z.infer<typeof videoSchema>;
 export type Article = z.infer<typeof articleSchema>;
+export type PDF = z.infer<typeof pdfSchema>;
 
 export type LessonContentType = z.infer<typeof lessonContentSchema>;
 export type LessonContentMediaType = LessonContentType["type"];
