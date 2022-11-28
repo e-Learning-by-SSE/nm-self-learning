@@ -10,7 +10,7 @@ import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatSeconds } from "@self-learning/util/common";
 import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
@@ -102,7 +102,7 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ params }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
 
 	if (!courseSlug) {
@@ -136,13 +136,6 @@ export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) =>
 			markdownDescription
 		},
 		notFound: !course
-	};
-};
-
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		paths: [],
-		fallback: "blocking"
 	};
 };
 

@@ -2,7 +2,7 @@ import { CollectionIcon } from "@heroicons/react/solid";
 import { database } from "@self-learning/database";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { ReactComponent as VoidSvg } from "../../svg/void.svg";
 
@@ -10,7 +10,7 @@ type SubjectPageProps = {
 	subject: ResolvedValue<typeof getSubject>;
 };
 
-export const getStaticProps: GetStaticProps<SubjectPageProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<SubjectPageProps> = async ({ params }) => {
 	const subjectSlug = params?.subjectSlug;
 
 	if (typeof subjectSlug !== "string") {
@@ -24,13 +24,6 @@ export const getStaticProps: GetStaticProps<SubjectPageProps> = async ({ params 
 			subject: subject as ResolvedValue<typeof getSubject>
 		},
 		notFound: !subject
-	};
-};
-
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		paths: [],
-		fallback: "blocking"
 	};
 };
 

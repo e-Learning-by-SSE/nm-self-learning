@@ -3,14 +3,16 @@ import { database } from "@self-learning/database";
 import { CourseMeta } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import Link from "next/link";
 
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
 };
 
-export const getStaticProps: GetStaticProps<SpecializationPageProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<SpecializationPageProps> = async ({
+	params
+}) => {
 	const specializationSlug = params?.specializationSlug;
 
 	if (typeof specializationSlug !== "string") {
@@ -24,13 +26,6 @@ export const getStaticProps: GetStaticProps<SpecializationPageProps> = async ({ 
 			specialization: specialization as Defined<typeof specialization>
 		},
 		notFound: !specialization
-	};
-};
-
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		paths: [],
-		fallback: "blocking"
 	};
 };
 

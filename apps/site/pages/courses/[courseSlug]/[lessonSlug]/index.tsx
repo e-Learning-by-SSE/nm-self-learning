@@ -17,7 +17,7 @@ import {
 import { AuthorsList, Tab, Tabs } from "@self-learning/ui/common";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -30,7 +30,7 @@ export type LessonProps = LessonLayoutProps & {
 	};
 };
 
-export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
 	const props = await getStaticPropsForLayout(params);
 
 	if ("notFound" in props) return { notFound: true };
@@ -62,13 +62,6 @@ export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) =>
 				description: mdDescription
 			}
 		}
-	};
-};
-
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		fallback: "blocking",
-		paths: []
 	};
 };
 
