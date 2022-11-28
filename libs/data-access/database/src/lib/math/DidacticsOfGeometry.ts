@@ -70,6 +70,79 @@ export const chapters = [
 				]
 			)
 		]
+	},
+	{
+		title: "Größen und Maße in der Sekundarstufe",
+		description: "Größen und Maße in der Sekundarstufe",
+		content: [
+			createLesson(
+				"Einheitsquadrate und Einheitswürfel",
+				null,
+				"Einheitsquadrate und Einheitswürfel",
+				[],
+				[
+					createMultipleChoice(
+						"![Verschiedene mathematische zweidimensionale Formen auf einem kariertem Papier](https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Groessen_und_Masse__Sek_I.jpg)\r\nWelcher Aspekt des Messen wird mithilfe von Einheitsquadraten und Einheitswürfeln verdeutlicht?",
+						[
+							{
+								content: "Auslegungsaspekt",
+								isCorrect: true
+							},
+							{
+								content: "Vergleichsaspekt",
+								isCorrect: false
+							},
+							{
+								content: "Messgerät-Aspekt",
+								isCorrect: false
+							},
+							{
+								content: "Messen als Berechnungsaspekt",
+								isCorrect: false
+							}
+						]
+					),
+					createTextQuestion(
+						"Welches Schülerproblematische Thema kann mithilfe von Einheitsquadraten und Würfeln visualisiert werden?",
+						[
+							"Akzeptierte Herleitung Umrechnungsfaktor",
+							"Akzeptierte Umrechnungsfaktor",
+							"Akzeptiere Umrechung",
+							"Akzeptiere Herleitung Umrechnung"
+						]
+					)
+				]
+			),
+			createLesson(
+				"Flächenformel",
+				null,
+				"Herleitung Flächenformel",
+				[],
+				[
+					createMultipleChoice(
+						"Welche Axiome werden bei dieser Aufgabe genutzt? Kreuzen Sie alle richtigen Antworten an.",
+						[
+							{
+								content: "Kongruenzaxiom",
+								isCorrect: true
+							},
+							{
+								content: "Additivität",
+								isCorrect: true
+							},
+							{
+								content: "Nichtnegativität",
+								isCorrect: false
+							},
+							{
+								content: "Normierungsaxiom",
+								isCorrect: false
+							}
+						]
+					)
+				]
+			)
+		]
 	}
 ];
 
