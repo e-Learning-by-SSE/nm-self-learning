@@ -14,12 +14,11 @@ import {
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, Tab, Tabs } from "@self-learning/ui/common";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -225,27 +224,8 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 	return (
 		<>
 			{authors.length > 0 && (
-				<div className="mt-4 flex flex-wrap gap-4">
-					{authors.map(author => (
-						<Link href={`/authors/${author.slug}`} key={author.slug}>
-							<div
-								className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
-								key={author.slug}
-							>
-								{author.imgUrl && (
-									<Image
-										src={author.imgUrl}
-										alt={author.displayName}
-										width={48}
-										height={48}
-									></Image>
-								)}
-								<span className="p-4 text-sm font-medium">
-									{author.displayName}
-								</span>
-							</div>
-						</Link>
-					))}
+				<div className="mt-4">
+					<AuthorsList authors={authors} />
 				</div>
 			)}
 		</>

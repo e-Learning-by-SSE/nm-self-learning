@@ -15,7 +15,6 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
-import Math from "../../../components/math";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -251,6 +250,7 @@ function CourseHeader({
 								className="shrink-0 rounded-lg bg-white object-cover"
 								src={course.imgUrl}
 								fill={true}
+								sizes="600px"
 								alt=""
 							></Image>
 						)}
@@ -283,17 +283,17 @@ function CourseHeader({
 									? "Starten"
 									: "Fortfahren"}
 							</span>
-							<PlayIcon className="h-6" />
+							<PlayIcon className="h-5" />
 						</Link>
 					)}
 
 					{!isEnrolled && (
 						<button
-							className="btn-secondary disabled:opacity-50"
+							className="btn-primary disabled:opacity-50"
 							onClick={() => enroll({ courseId: course.courseId })}
 						>
 							<span>Zum Lernplan hinzfügen</span>
-							<PlusCircleIcon className="h-6" />
+							<PlusCircleIcon className="h-5" />
 						</button>
 					)}
 				</div>
@@ -346,7 +346,7 @@ function Lesson({
 	return (
 		<Link
 			href={href}
-			className={`flex gap-2 rounded-r-lg border-l-4 bg-gray-200 px-4 py-2 text-sm ${
+			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
 				isCompleted ? "border-emerald-500" : "border-gray-300"
 			}`}
 		>
@@ -374,8 +374,7 @@ function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; upda
 
 function Description({ content }: { content: CompiledMarkdown }) {
 	return (
-		<div className="prose max-w-full">
-			<Math />
+		<div className="prose prose-emerald max-w-full">
 			<MDXRemote {...content}></MDXRemote>
 		</div>
 	);

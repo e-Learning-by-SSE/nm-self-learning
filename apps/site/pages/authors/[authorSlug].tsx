@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
+import { CompiledMarkdown } from "@self-learning/markdown";
 import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -93,15 +93,7 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 
 			<CenteredSection className="bg-white">
 				<div className="flex flex-col gap-8">
-					<span>
-						<h2 className="text-3xl">Kurse</h2>
-						<Link
-							href={`/authors/${author.slug}/courses`}
-							className="text-sm text-secondary hover:underline"
-						>
-							Alle anzeigen
-						</Link>
-					</span>
+					<h2 className="text-3xl">Kurse</h2>
 					<ItemCardGrid>
 						{author.courses.map(course => (
 							<Link href={`/courses/${course.slug}`} key={course.slug}>
@@ -116,31 +108,6 @@ export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps)
 					</ItemCardGrid>
 				</div>
 			</CenteredSection>
-
-			{/* <CenteredSection className="bg-white">
-				<div className="flex flex-col gap-8">
-					<span className="">
-						<h2 className="text-3xl">Nanomodule</h2>
-						<Link href={`/authors/${author.slug}/lessons`}>
-							<a className="text-sm text-secondary hover:underline">Alle anzeigen</a>
-						</Link>
-					</span>
-					<ItemCardGrid>
-						{author.lessons?.data.map(({ attributes }) => (
-							<Link href={`/courses/${attributes!.slug}`} key={attributes?.slug}>
-								<a>
-									<ImageCard
-										slug={attributes!.slug}
-										title={attributes!.title}
-										subtitle={attributes!.subtitle ?? ""}
-										imgUrl={attributes!.image?.data?.attributes?.url}
-									/>
-								</a>
-							</Link>
-						))}
-					</ItemCardGrid>
-				</div>
-			</CenteredSection> */}
 		</div>
 	);
 }

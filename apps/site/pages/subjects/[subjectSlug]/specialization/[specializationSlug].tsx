@@ -1,6 +1,7 @@
-import { UserGroupIcon } from "@heroicons/react/solid";
+import { PuzzleIcon } from "@heroicons/react/solid";
 import { database } from "@self-learning/database";
-import { ImageCard } from "@self-learning/ui/common";
+import { CourseMeta } from "@self-learning/types";
+import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
@@ -46,7 +47,8 @@ async function getSpecialization(specializationSlug: string) {
 					slug: true,
 					imgUrl: true,
 					title: true,
-					subtitle: true
+					subtitle: true,
+					meta: true
 				}
 			},
 			subject: {
@@ -72,16 +74,10 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 					title={title}
 					subtitle={subtitle}
 				/>
-				<div className="px-4 pt-12 lg:max-w-screen-lg lg:px-0">
+				<div className="px-4 pt-12 xl:px-0">
 					<ItemCardGrid>
 						{courses.map(course => (
-							<CourseCard
-								key={course.slug}
-								slug={course.slug}
-								title={course.title}
-								subtitle={course.subtitle}
-								imgUrl={course.imgUrl}
-							/>
+							<CourseCard key={course.slug} course={course} />
 						))}
 					</ItemCardGrid>
 				</div>
@@ -91,27 +87,27 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 }
 
 function CourseCard({
-	slug,
-	title,
-	subtitle,
-	imgUrl
+	course
 }: {
-	title: string;
-	slug: string;
-	subtitle: string;
-	imgUrl?: string | null;
+	course: SpecializationPageProps["specialization"]["courses"][0];
 }) {
+	const meta = course.meta as CourseMeta;
+
 	return (
-		<Link href={`/courses/${slug}`} className="flex">
+		<Link href={`/courses/${course.slug}`} className="flex">
 			<ImageCard
-				slug={slug}
-				imgUrl={imgUrl}
-				title={title}
-				subtitle={subtitle}
+				slug={course.slug}
+				imgUrl={course.imgUrl}
+				title={course.title}
+				subtitle={course.subtitle}
+				badge={<ImageCardBadge text="Lernkurs" className="bg-emerald-500" />}
 				footer={
-					<span className="flex items-center gap-3 font-semibold text-emerald-500">
-						<UserGroupIcon className="h-5" />
-						<span>1.234 Absolventen</span>
+					<span className="flex items-center gap-3 text-sm font-semibold text-emerald-500">
+						<PuzzleIcon className="h-5" />
+						<span>
+							{meta.lessonCount}{" "}
+							{meta.lessonCount === 1 ? "Lerneinheit" : "Lerneinheiten"}
+						</span>
 					</span>
 				}
 			/>

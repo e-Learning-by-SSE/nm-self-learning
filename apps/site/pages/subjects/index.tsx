@@ -1,17 +1,32 @@
-import { CollectionIcon, VideoCameraIcon } from "@heroicons/react/outline";
-import { Subject } from "@prisma/client";
+import { SparklesIcon } from "@heroicons/react/solid";
 import { database } from "@self-learning/database";
 import { ImageCard } from "@self-learning/ui/common";
 import { ItemCardGrid } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 
+async function getSubjects() {
+	return await database.subject.findMany({
+		select: {
+			slug: true,
+			title: true,
+			subtitle: true,
+			cardImgUrl: true,
+			_count: {
+				select: {
+					specializations: true
+				}
+			}
+		}
+	});
+}
+
 type SubjectsProps = {
-	subjects: Subject[];
+	subjects: ResolvedValue<typeof getSubjects>;
 };
 
 export const getServerSideProps: GetServerSideProps<SubjectsProps> = async () => {
-	const subjects = await database.subject.findMany();
+	const subjects = await getSubjects();
 
 	return {
 		props: {
@@ -23,17 +38,11 @@ export const getServerSideProps: GetServerSideProps<SubjectsProps> = async () =>
 export default function Subjects({ subjects }: SubjectsProps) {
 	return (
 		<div className="bg-gray-50 py-16">
-			<div className="mx-auto px-4 lg:max-w-screen-lg lg:px-0">
+			<div className="mx-auto max-w-screen-xl px-4 xl:px-0">
 				<h1 className="mb-16 text-4xl sm:text-6xl">Fachgebiete</h1>
 				<ItemCardGrid>
 					{subjects.map(subject => (
-						<SubjectCard
-							key={subject.subjectId}
-							title={subject.title}
-							subtitle={subject.subtitle}
-							slug={subject.slug}
-							imgUrl={subject.imgUrlBanner}
-						/>
+						<SubjectCard key={subject.slug} subject={subject} />
 					))}
 				</ItemCardGrid>
 			</div>
@@ -41,35 +50,24 @@ export default function Subjects({ subjects }: SubjectsProps) {
 	);
 }
 
-function SubjectCard({
-	title,
-	slug,
-	imgUrl,
-	subtitle
-}: {
-	title: string;
-	subtitle: string | null;
-	slug: string;
-	imgUrl?: string | null;
-}) {
+function SubjectCard({ subject }: { subject: SubjectsProps["subjects"][0] }) {
 	return (
-		<Link href={`/subjects/${slug}`}>
+		<Link href={`/subjects/${subject.slug}`}>
 			<ImageCard
-				slug={slug}
-				title={title}
-				subtitle={subtitle}
-				imgUrl={imgUrl}
+				slug={subject.slug}
+				title={subject.title}
+				subtitle={subject.subtitle}
+				imgUrl={subject.cardImgUrl}
 				footer={
-					<>
-						<span className="flex items-center gap-3">
-							<CollectionIcon className="h-5" />
-							<span>12 Spezialisierungen</span>
+					<span className="flex items-center gap-3 text-sm font-semibold text-purple-500">
+						<SparklesIcon className="h-5" />
+						<span>
+							{subject._count.specializations}{" "}
+							{subject._count.specializations === 1
+								? "Spezialisierung"
+								: "Spezialisierungen"}
 						</span>
-						<span className="flex items-center gap-3">
-							<VideoCameraIcon className="h-5" />
-							<span>420 Nanomodule</span>
-						</span>
-					</>
+					</span>
 				}
 			/>
 		</Link>

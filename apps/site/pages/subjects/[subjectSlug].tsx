@@ -1,7 +1,7 @@
-import { CollectionIcon, VideoCameraIcon } from "@heroicons/react/outline";
+import { CollectionIcon } from "@heroicons/react/solid";
 import { database } from "@self-learning/database";
-import { ImageCard } from "@self-learning/ui/common";
-import { TopicHeader } from "@self-learning/ui/layouts";
+import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
+import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { ReactComponent as VoidSvg } from "../../svg/void.svg";
@@ -43,7 +43,12 @@ async function getSubject(subjectSlug: string) {
 					slug: true,
 					title: true,
 					subtitle: true,
-					cardImgUrl: true
+					cardImgUrl: true,
+					_count: {
+						select: {
+							courses: true
+						}
+					}
 				}
 			}
 		}
@@ -64,21 +69,16 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 					subtitle={subtitle}
 				/>
 				{specializations.length > 0 ? (
-					<div className="px-4 pt-16 lg:max-w-screen-lg lg:px-0">
-						<h2 className="text-3xl">Spezialisierungen</h2>
-
-						<div className="mt-8 grid gap-16 md:grid-cols-2 lg:grid-cols-3">
+					<div className="px-4 pt-12 xl:px-0">
+						<ItemCardGrid>
 							{specializations.map(specialization => (
 								<SpecializationCard
 									key={specialization.slug}
-									slug={specialization.slug}
 									subjectSlug={subject.slug}
-									title={specialization.title}
-									subtitle={specialization.subtitle}
-									imgUrl={specialization.cardImgUrl}
+									specialization={specialization}
 								/>
 							))}
-						</div>
+						</ItemCardGrid>
 					</div>
 				) : (
 					<div className="grid gap-16 pt-16 lg:gap-24 lg:pt-24">
@@ -96,36 +96,28 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 }
 
 function SpecializationCard({
-	title,
-	slug,
 	subjectSlug,
-	imgUrl,
-	subtitle
+	specialization
 }: {
-	title: string;
-	subtitle: string | null;
 	subjectSlug: string;
-	slug: string;
-	imgUrl: string | null;
+	specialization: SubjectPageProps["subject"]["specializations"][0];
 }) {
 	return (
-		<Link href={`/subjects/${subjectSlug}/specialization/${slug}`}>
+		<Link href={`/subjects/${subjectSlug}/specialization/${specialization.slug}`}>
 			<ImageCard
-				slug={slug}
-				title={title}
-				subtitle={subtitle}
-				imgUrl={imgUrl}
+				slug={specialization.slug}
+				title={specialization.title}
+				subtitle={specialization.subtitle}
+				imgUrl={specialization.cardImgUrl}
+				badge={<ImageCardBadge text="Spezialisierung" className="bg-purple-500" />}
 				footer={
-					<>
-						<span className="flex items-center gap-3">
-							<CollectionIcon className="h-5" />
-							<span>12 Courses</span>
+					<span className="flex items-center gap-3 text-sm font-semibold text-emerald-500">
+						<CollectionIcon className="h-5" />
+						<span>
+							{specialization._count.courses}{" "}
+							{specialization._count.courses === 1 ? "Kurs" : "Kurse"}
 						</span>
-						<span className="flex items-center gap-3">
-							<VideoCameraIcon className="h-5" />
-							<span>123 Nanomodule</span>
-						</span>
-					</>
+					</span>
 				}
 			/>
 		</Link>
