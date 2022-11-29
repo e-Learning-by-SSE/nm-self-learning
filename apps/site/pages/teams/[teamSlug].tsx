@@ -1,5 +1,6 @@
 import { database } from "@self-learning/database";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
+import { ResolvedValue } from "@self-learning/types";
 import { AuthorChip } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
