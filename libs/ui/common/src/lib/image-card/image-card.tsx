@@ -16,7 +16,7 @@ export function ImageCard({
 	badge?: ReactElement;
 }) {
 	return (
-		<div className="glass relative flex h-full flex-col rounded-lg transition-transform hover:scale-105 hover:shadow-lg">
+		<div className="glass relative flex h-full w-full flex-col rounded-lg transition-transform hover:scale-105 hover:shadow-lg">
 			{!imgUrl || imgUrl.length === 0 ? (
 				<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-gradient-to-br from-purple-500 to-blue-400"></div>
 			) : (
