@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { database } from "@self-learning/database";
+import { Defined, ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
 import { formatDistance } from "date-fns";
@@ -9,7 +10,8 @@ import { getToken } from "next-auth/jwt";
 import Link from "next/link";
 
 type ProfileProps = {
-	user: ResolvedValue<typeof getUser>;
+	imgUrl: string | null;
+	student: Defined<ResolvedValue<typeof getUser>["student"]>;
 	completedLessons: {
 		count: number;
 		data: ResolvedValue<typeof getCompletedLessons>["completedLessons"];
@@ -17,26 +19,31 @@ type ProfileProps = {
 };
 
 function getUser(username: string) {
-	return database.student.findUniqueOrThrow({
-		where: { username },
+	return database.user.findUniqueOrThrow({
+		where: { name: username },
 		select: {
-			username: true,
-			displayName: true,
-			enrollments: {
-				orderBy: { progress: "asc" },
+			image: true,
+			student: {
 				select: {
-					status: true,
-					createdAt: true,
-					completedAt: true,
-					progress: true,
-					course: {
+					username: true,
+					displayName: true,
+					enrollments: {
+						orderBy: { progress: "asc" },
 						select: {
-							courseId: true,
-							title: true,
-							slug: true,
-							subtitle: true,
-							imgUrl: true,
-							meta: true
+							status: true,
+							createdAt: true,
+							completedAt: true,
+							progress: true,
+							course: {
+								select: {
+									courseId: true,
+									title: true,
+									slug: true,
+									subtitle: true,
+									imgUrl: true,
+									meta: true
+								}
+							}
 						}
 					}
 				}
@@ -97,7 +104,8 @@ export const getServerSideProps: GetServerSideProps<ProfileProps> = async ({ req
 	]);
 
 	const props = {
-		user: user as Exclude<typeof user, null>,
+		imgUrl: user.image,
+		student: user.student as Defined<typeof user.student>,
 		completedLessons: {
 			count: completedLessons?._count.completedLessons ?? 0,
 			data: completedLessons?.completedLessons ?? []
@@ -109,13 +117,13 @@ export const getServerSideProps: GetServerSideProps<ProfileProps> = async ({ req
 	} as GetServerSidePropsResult<typeof props>;
 };
 
-export default function Profile({ user, completedLessons }: ProfileProps) {
+export default function Profile({ student, completedLessons, imgUrl }: ProfileProps) {
 	return (
 		<div className="flex flex-col bg-gray-50">
 			<CenteredSection>
 				<div className="flex flex-col-reverse gap-16 md:flex-row">
 					<Activity completedLessons={completedLessons.data} />
-					<StudentInfo user={user} />
+					<StudentInfo student={student} imgUrl={imgUrl} />
 				</div>
 			</CenteredSection>
 
@@ -123,32 +131,38 @@ export default function Profile({ user, completedLessons }: ProfileProps) {
 				<div className="flex flex-col gap-12">
 					<h2 className="text-3xl">Meine Kurse</h2>
 
-					<ItemCardGrid>
-						{user.enrollments.map(enrollment => (
-							<Link
-								key={enrollment.course.courseId}
-								href={`/courses/${enrollment.course.slug}`}
-							>
-								<ImageCard
-									slug={enrollment.course.slug}
-									title={enrollment.course.title}
-									subtitle={enrollment.course.subtitle}
-									imgUrl={enrollment.course.imgUrl}
-									badge={
-										enrollment.status === "COMPLETED" ? (
-											<ImageCardBadge
-												className="bg-emerald-500 text-white"
-												text="Abgeschlossen"
-											/>
-										) : (
-											<></>
-										)
-									}
-									footer={<ProgressFooter progress={enrollment.progress} />}
-								/>
-							</Link>
-						))}
-					</ItemCardGrid>
+					{student.enrollments.length === 0 ? (
+						<span className="text-sm text-light">
+							Du bist momentan in keinem Kurs eingeschrieben.
+						</span>
+					) : (
+						<ItemCardGrid>
+							{student.enrollments.map(enrollment => (
+								<Link
+									key={enrollment.course.courseId}
+									href={`/courses/${enrollment.course.slug}`}
+								>
+									<ImageCard
+										slug={enrollment.course.slug}
+										title={enrollment.course.title}
+										subtitle={enrollment.course.subtitle}
+										imgUrl={enrollment.course.imgUrl}
+										badge={
+											enrollment.status === "COMPLETED" ? (
+												<ImageCardBadge
+													className="bg-emerald-500 text-white"
+													text="Abgeschlossen"
+												/>
+											) : (
+												<></>
+											)
+										}
+										footer={<ProgressFooter progress={enrollment.progress} />}
+									/>
+								</Link>
+							))}
+						</ItemCardGrid>
+					)}
 				</div>
 			</CenteredSection>
 		</div>
@@ -162,19 +176,25 @@ function toDateAgo(date: Date | string | number) {
 	});
 }
 
-function StudentInfo({ user }: { user: ProfileProps["user"] }) {
+function StudentInfo({
+	student,
+	imgUrl
+}: {
+	imgUrl: ProfileProps["imgUrl"];
+	student: ProfileProps["student"];
+}) {
 	return (
 		<div className="flex flex-col place-items-center lg:place-items-start">
 			<div className="relative h-[256px] w-[256px] rounded-lg bg-black">
 				<img
-					src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80"
+					src={imgUrl ?? undefined}
 					height={256}
 					width={256}
 					alt=""
-					className="h-[256px] w-[256px] rounded-lg object-cover object-top"
+					className="h-[256px] w-[256px] rounded-lg object-cover"
 				></img>
 			</div>
-			<h1 className="mt-8 text-4xl">{user.displayName}</h1>
+			<h1 className="mt-8 text-4xl">{student.displayName}</h1>
 
 			<div className="mt-8 grid gap-1">
 				<span className="text-light">Studiengang:</span>

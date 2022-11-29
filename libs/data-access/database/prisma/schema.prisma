@@ -44,7 +44,7 @@ enum UserRole {
 
 model User {
     id            String    @id @default(cuid())
-    name          String?
+    name          String    @unique
     email         String?   @unique
     emailVerified DateTime?
     image         String?
@@ -76,8 +76,8 @@ model Student {
 
 model Author {
     id                  Int                   @id @default(autoincrement())
-    userId              String                @unique
-    user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    username            String                @unique
+    user                User                  @relation(fields: [username], references: [name], onDelete: Cascade)
     displayName         String
     slug                String                @unique
     imgUrl              String?
@@ -91,19 +91,19 @@ model Author {
 model SubjectAdmin {
     subject   Subject @relation(fields: [subjectId], references: [subjectId])
     subjectId String
-    user      Author  @relation(fields: [userId], references: [userId])
-    userId    String
+    author    Author  @relation(fields: [username], references: [username])
+    username  String
 
-    @@id([subjectId, userId])
+    @@id([subjectId, username])
 }
 
 model SpecializationAdmin {
     specialization   Specialization @relation(fields: [specializationId], references: [specializationId])
     specializationId String
-    user             Author         @relation(fields: [userId], references: [userId])
-    userId           String
+    author           Author         @relation(fields: [username], references: [username])
+    username         String
 
-    @@id([specializationId, userId])
+    @@id([specializationId, username])
 }
 
 model Team {

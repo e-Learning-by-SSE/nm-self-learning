@@ -1,7 +1,7 @@
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseContent, LessonMeta } from "@self-learning/types";
+import { CourseContent, LessonMeta, ResolvedValue } from "@self-learning/types";
 import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";

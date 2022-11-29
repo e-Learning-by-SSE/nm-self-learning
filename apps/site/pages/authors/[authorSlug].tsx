@@ -1,5 +1,6 @@
 import { database } from "@self-learning/database";
 import { CompiledMarkdown } from "@self-learning/markdown";
+import { ResolvedValue } from "@self-learning/types";
 import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";

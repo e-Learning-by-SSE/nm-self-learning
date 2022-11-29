@@ -609,7 +609,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 
 const authors: Prisma.UserCreateInput[] = [
 	{
-		name: "Kent-C-Dodds",
+		name: "kent-c-dodds",
 		accounts: {
 			create: [
 				{
@@ -618,6 +618,12 @@ const authors: Prisma.UserCreateInput[] = [
 					type: "demo-account"
 				}
 			]
+		},
+		student: {
+			create: {
+				displayName: "Kent C. Dodds",
+				username: "kent-c-dodds"
+			}
 		},
 		author: {
 			create: {
@@ -639,15 +645,23 @@ const authors: Prisma.UserCreateInput[] = [
 		}
 	},
 	{
-		name: "Albus-Dumbledore",
+		name: "dumbledore",
+		role: "ADMIN",
+		image: "https://i.imgur.com/UWMVO8m.jpeg",
 		accounts: {
 			create: [
 				{
 					provider: "demo",
-					providerAccountId: "albus-dumbledore",
+					providerAccountId: "dumbledore",
 					type: "demo-account"
 				}
 			]
+		},
+		student: {
+			create: {
+				displayName: "Albus Dumbledore",
+				username: "dumbledore"
+			}
 		},
 		author: {
 			create: {
@@ -657,7 +671,7 @@ const authors: Prisma.UserCreateInput[] = [
 		}
 	},
 	{
-		name: "Minerva-McGonagall",
+		name: "minerva-mcgonagall",
 		accounts: {
 			create: [
 				{
@@ -666,6 +680,12 @@ const authors: Prisma.UserCreateInput[] = [
 					type: "demo-account"
 				}
 			]
+		},
+		student: {
+			create: {
+				displayName: "Minerva McGonagall",
+				username: "minerva-mcgonagall"
+			}
 		},
 		author: {
 			create: {

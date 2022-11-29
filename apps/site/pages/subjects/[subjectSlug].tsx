@@ -1,5 +1,6 @@
 import { CollectionIcon } from "@heroicons/react/solid";
 import { database } from "@self-learning/database";
+import { ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";

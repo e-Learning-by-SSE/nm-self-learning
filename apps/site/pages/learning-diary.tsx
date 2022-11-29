@@ -2,6 +2,7 @@ import { ArrowCircleRightIcon } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
+import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { endOfWeek, format, isToday, isYesterday, parseISO, startOfWeek } from "date-fns";

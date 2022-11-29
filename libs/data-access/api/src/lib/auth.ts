@@ -55,6 +55,31 @@ const customPrismaAdapter: Adapter = {
 export const authOptions: NextAuthOptions = {
 	theme: { colorScheme: "light" },
 	adapter: customPrismaAdapter,
+	callbacks: {
+		async session({ session, user }) {
+			const username = session.user?.name ?? user.name;
+
+			if (!username) throw new Error("Username is not defined.");
+
+			const userFromDb = await database.user.findUniqueOrThrow({
+				where: { name: username },
+				select: {
+					role: true,
+					image: true,
+					author: { select: { slug: true } }
+				}
+			});
+
+			session.user = {
+				name: username,
+				role: userFromDb.role,
+				author: userFromDb.author,
+				avatarUrl: userFromDb.image
+			};
+
+			return session;
+		}
+	},
 	session: {
 		strategy: "jwt"
 	},
