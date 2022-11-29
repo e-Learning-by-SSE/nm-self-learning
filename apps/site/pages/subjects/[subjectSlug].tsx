@@ -53,28 +53,26 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 
 	return (
 		<div className="bg-gray-50 pb-32">
-			<div className="mx-auto flex max-w-screen-xl flex-col">
-				<TopicHeader
-					imgUrlBanner={imgUrlBanner}
-					parentLink="/subjects"
-					parentTitle="Fachgebiet"
-					title={title}
-					subtitle={subtitle}
-				/>
+			<TopicHeader
+				imgUrlBanner={imgUrlBanner}
+				parentLink="/subjects"
+				parentTitle="Fachgebiet"
+				title={title}
+				subtitle={subtitle}
+			/>
+			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
 				{specializations.length > 0 ? (
-					<div className="px-4 pt-12 xl:px-0">
-						<ItemCardGrid>
-							{specializations.map(specialization => (
-								<SpecializationCard
-									key={specialization.slug}
-									subjectSlug={subject.slug}
-									specialization={specialization}
-								/>
-							))}
-						</ItemCardGrid>
-					</div>
+					<ItemCardGrid>
+						{specializations.map(specialization => (
+							<SpecializationCard
+								key={specialization.slug}
+								subjectSlug={subject.slug}
+								specialization={specialization}
+							/>
+						))}
+					</ItemCardGrid>
 				) : (
-					<div className="grid gap-16 pt-16 lg:gap-24 lg:pt-24">
+					<div className="grid gap-16 pt-16">
 						<span className="mx-auto font-semibold">
 							Leider gibt es hier noch keine Inhalte.
 						</span>

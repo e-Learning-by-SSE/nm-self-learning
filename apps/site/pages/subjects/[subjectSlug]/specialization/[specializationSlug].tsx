@@ -5,6 +5,7 @@ import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
+import { ReactComponent as VoidSvg } from "../../../../svg/void.svg";
 
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
@@ -61,21 +62,30 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 
 	return (
 		<div className="bg-gray-50 pb-32">
-			<div className="mx-auto flex max-w-screen-xl flex-col">
-				<TopicHeader
-					imgUrlBanner={imgUrlBanner}
-					parentLink={`/subjects/${subject.slug}`}
-					parentTitle={subject.title}
-					title={title}
-					subtitle={subtitle}
-				/>
-				<div className="px-4 pt-12 xl:px-0">
+			<TopicHeader
+				imgUrlBanner={imgUrlBanner}
+				parentLink={`/subjects/${subject.slug}`}
+				parentTitle={subject.title}
+				title={title}
+				subtitle={subtitle}
+			/>
+			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
+				{courses.length > 0 ? (
 					<ItemCardGrid>
 						{courses.map(course => (
 							<CourseCard key={course.slug} course={course} />
 						))}
 					</ItemCardGrid>
-				</div>
+				) : (
+					<div className="grid gap-16 pt-16">
+						<span className="mx-auto font-semibold">
+							Leider gibt es hier noch keine Inhalte.
+						</span>
+						<div className="mx-auto w-full max-w-md ">
+							<VoidSvg />
+						</div>
+					</div>
+				)}
 			</div>
 		</div>
 	);
