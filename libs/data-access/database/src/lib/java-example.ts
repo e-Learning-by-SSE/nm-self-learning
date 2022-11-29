@@ -1,14 +1,14 @@
 import {
-    createArticle,
-    createAuthor,
-    createCourse,
-    createLesson,
-    createMultipleChoice,
-    createTextQuestion,
-    createVideo,
-    read,
-    seedCaseStudy,
-} from './seed-functions';
+	createArticle,
+	createAuthor,
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo,
+	read,
+	seedCaseStudy
+} from "./seed-functions";
 
 const chapters = [
 	{
@@ -142,8 +142,8 @@ const chapters = [
 
 const courses = [
 	createCourse(
-		1,
-		1,
+		"informatik",
+		"softwareentwicklung",
 		"Objectorientierte Programmierung mit Java",
 		"Einführung in die Welt von Java",
 		"## Lernziele\r\n* Einrichtung der Arbeitsumgebung\r\n* Imperative Programmierung\r\n* Objektorientierte Programmierung\r\n\r\nEs werden keine Informatik- / Programierkentnisse vorausgesetzt",

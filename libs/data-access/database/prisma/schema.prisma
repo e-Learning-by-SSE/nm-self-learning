@@ -37,12 +37,18 @@ model Session {
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum UserRole {
+    USER
+    ADMIN
+}
+
 model User {
     id            String    @id @default(cuid())
     name          String?
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    role          UserRole  @default(USER)
     accounts      Account[]
     sessions      Session[]
     student       Student?
@@ -69,15 +75,35 @@ model Student {
 }
 
 model Author {
-    id          Int      @id @default(autoincrement())
-    userId      String   @unique
-    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    displayName String
-    slug        String   @unique
-    imgUrl      String?
-    lessons     Lesson[]
-    courses     Course[]
-    teams       Team[]
+    id                  Int                   @id @default(autoincrement())
+    userId              String                @unique
+    user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    displayName         String
+    slug                String                @unique
+    imgUrl              String?
+    lessons             Lesson[]
+    courses             Course[]
+    teams               Team[]
+    SubjectAdmin        SubjectAdmin[]
+    SpecializationAdmin SpecializationAdmin[]
+}
+
+model SubjectAdmin {
+    subject   Subject @relation(fields: [subjectId], references: [subjectId])
+    subjectId String
+    user      Author  @relation(fields: [userId], references: [userId])
+    userId    String
+
+    @@id([subjectId, userId])
+}
+
+model SpecializationAdmin {
+    specialization   Specialization @relation(fields: [specializationId], references: [specializationId])
+    specializationId String
+    user             Author         @relation(fields: [userId], references: [userId])
+    userId           String
+
+    @@id([specializationId, userId])
 }
 
 model Team {
@@ -90,7 +116,7 @@ model Team {
 }
 
 model Subject {
-    subjectId       Int              @id @default(autoincrement())
+    subjectId       String           @id
     slug            String           @unique
     title           String
     subtitle        String
@@ -98,18 +124,20 @@ model Subject {
     cardImgUrl      String?
     courses         Course[]
     specializations Specialization[]
+    SubjectAdmin    SubjectAdmin[]
 }
 
 model Specialization {
-    specializationId Int      @id @default(autoincrement())
-    slug             String   @unique
-    title            String
-    subtitle         String
-    imgUrlBanner     String?
-    cardImgUrl       String?
-    subject          Subject  @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
-    courses          Course[]
-    subjectId        Int
+    specializationId    String                @id
+    slug                String                @unique
+    title               String
+    subtitle            String
+    imgUrlBanner        String?
+    cardImgUrl          String?
+    subject             Subject               @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
+    courses             Course[]
+    subjectId           String
+    SpecializationAdmin SpecializationAdmin[]
 }
 
 model Course {
@@ -126,7 +154,7 @@ model Course {
     enrollments     Enrollment[]
     completions     CompletedLesson[]
     subject         Subject?          @relation(fields: [subjectId], references: [subjectId])
-    subjectId       Int?
+    subjectId       String?
     specializations Specialization[]
     authors         Author[]
 }

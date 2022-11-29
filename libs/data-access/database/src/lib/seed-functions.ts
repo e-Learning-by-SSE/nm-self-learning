@@ -1,18 +1,18 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import slugify from 'slugify';
+import { readFileSync } from "fs";
+import { join } from "path";
+import slugify from "slugify";
 
-import { faker } from '@faker-js/faker';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { QuestionType, QuizContent } from '@self-learning/question-types';
+import { faker } from "@faker-js/faker";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
-    createCourseContent,
-    createCourseMeta,
-    createLessonMeta,
-    extractLessonIds,
-    LessonContent,
-    LessonContentType,
-} from '@self-learning/types';
+	createCourseContent,
+	createCourseMeta,
+	createLessonMeta,
+	extractLessonIds,
+	LessonContent,
+	LessonContentType
+} from "@self-learning/types";
 
 const prisma = new PrismaClient();
 
@@ -89,8 +89,8 @@ type Chapters = {
 }[];
 
 export function createCourse(
-	subjectId: number,
-	specializationId: number,
+	subjectId: string,
+	specializationId: string,
 	title: string,
 	subtitle: string | null,
 	description: string | null,
@@ -208,8 +208,8 @@ export function createArticle(
 }
 
 export function createSpecialization(
-	subjectId: number,
-	specializationId: number,
+	subjectId: string,
+	specializationId: string,
 	title: string,
 	subtitle: string,
 	imgUrlBanner: string | null,
@@ -218,7 +218,7 @@ export function createSpecialization(
 	return {
 		specializationId: specializationId,
 		subjectId: subjectId,
-		slug: slugify(subjectId + "-" + title, {
+		slug: slugify(title, {
 			lower: true,
 			strict: true
 		}),
@@ -233,10 +233,10 @@ export function read(file: string) {
 	return readFileSync(join(__dirname, file), "utf-8");
 }
 
-class Course {
-	data!: Prisma.CourseCreateManyInput;
-	specializationId!: number;
-}
+type Course = {
+	data: Prisma.CourseCreateManyInput;
+	specializationId: string;
+};
 
 export async function seedCaseStudy(
 	name: string,
@@ -254,18 +254,22 @@ export async function seedCaseStudy(
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
-	const specializations = new Set<number>();
-	courses.forEach(c => specializations.add(c.specializationId));
+	const specializations = new Set(courses.map(c => c.specializationId));
+
 	for (const id of specializations) {
+		const coursesOfSpec = courses.filter(c => c.specializationId === id);
+
+		console.log(
+			`\u001B[35m - Connect specialization "${id}": [${courses
+				.map(c => c.data.title)
+				.join(", ")}]\x1b[0m`
+		);
+
 		await prisma.specialization.update({
 			where: { specializationId: id },
 			data: {
 				courses: {
-					connect: courses
-						.filter(c => {
-							return c.specializationId == id;
-						})
-						.map(c => ({ courseId: c.data.courseId }))
+					connect: coursesOfSpec.map(c => ({ courseId: c.data.courseId }))
 				}
 			}
 		});

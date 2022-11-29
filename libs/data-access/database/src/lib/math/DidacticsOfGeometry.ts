@@ -1,11 +1,11 @@
 import {
-    createArticle,
-    createCourse,
-    createLesson,
-    createMultipleChoice,
-    createTextQuestion,
-    createVideo,
-} from '../seed-functions';
+	createArticle,
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo
+} from "../seed-functions";
 
 export const chapters = [
 	{
@@ -158,8 +158,8 @@ export const chapters = [
 ];
 
 export const course = createCourse(
-	2,
-	12,
+	"mathematik",
+	"didaktik-der-geometrie",
 	"Didaktik der Geometrie",
 	null,
 	null,
