@@ -1,11 +1,11 @@
 import {
-	createArticle,
-	createCourse,
-	createLesson,
-	createMultipleChoice,
-	createTextQuestion,
-	createVideo
-} from "../seed-functions";
+    createArticle,
+    createCourse,
+    createLesson,
+    createMultipleChoice,
+    createTextQuestion,
+    createVideo,
+} from '../seed-functions';
 
 const ch_Begriffslernen = {
 	title: "Begriffslernen in der Grundschule",
@@ -306,7 +306,7 @@ const ch_Symmetrien = {
 					]
 				),
 				createMultipleChoice(
-					"![Marienkäfer](https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Symmetrie_Aufgabenstellung.pngg)\r\nWelche Aspekte der Spiegelung werden bei dieser Aufgabe angesprochen?",
+					"![Marienkäfer](https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Symmetrie_Aufgabenstellung.png)\r\nWelche Aspekte der Spiegelung werden bei dieser Aufgabe angesprochen?",
 					[
 						{
 							content:
