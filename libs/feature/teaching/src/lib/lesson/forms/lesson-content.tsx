@@ -1,10 +1,17 @@
-import { DocumentTextIcon, VideoCameraIcon } from "@heroicons/react/solid";
-import { LessonContent, LessonContentType, ValueByContentType } from "@self-learning/types";
+import { PlusIcon } from "@heroicons/react/solid";
+import {
+	getContentTypeDisplayName,
+	LessonContent,
+	LessonContentMediaType,
+	LessonContentType,
+	ValueByContentType
+} from "@self-learning/types";
 import { RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
 import { Reorder } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { ArticleInput } from "../content-types/article";
+import { IFrameInput } from "../content-types/iframe";
 import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
 
@@ -16,17 +23,13 @@ export type SetValueFn = <CType extends LessonContentType["type"]>(
 
 function useContentTypeUsage(content: LessonContent) {
 	const typesWithUsage = useMemo(() => {
-		const allTypes: { [contentType in LessonContentType["type"]]: boolean } = {
-			video: false,
-			article: false,
-			pdf: false
-		};
+		const possibleTypes: { [contentType in LessonContentType["type"]]?: boolean } = {};
 
 		for (const c of content) {
-			allTypes[c.type] = true;
+			possibleTypes[c.type] = true;
 		}
 
-		return allTypes;
+		return possibleTypes;
 	}, [content]);
 
 	return typesWithUsage;
@@ -69,6 +72,12 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 					type: "pdf",
 					value: { url: "" },
 					meta: { estimatedDuration: 0 }
+				}),
+			iframe: () =>
+				append({
+					type: "iframe",
+					value: { url: "" },
+					meta: { estimatedDuration: 0 }
 				})
 		};
 
@@ -107,6 +116,8 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 	};
 }
 
+const contentTypes: LessonContentMediaType[] = ["video", "article", "pdf", "iframe"];
+
 export function LessonContentEditor() {
 	const { control } = useFormContext<{ content: LessonContent }>();
 	const {
@@ -129,35 +140,13 @@ export function LessonContentEditor() {
 			/>
 
 			<div className="flex gap-4 text-sm">
-				<button
-					type="button"
-					className="btn-primary w-fit"
-					onClick={() => addContent("video")}
-					disabled={typesWithUsage["video"]}
-				>
-					<VideoCameraIcon className="h-5" />
-					<span>Video hinzufügen</span>
-				</button>
-
-				<button
-					type="button"
-					className="btn-primary w-fit"
-					onClick={() => addContent("article")}
-					disabled={typesWithUsage["article"]}
-				>
-					<DocumentTextIcon className="h-5" />
-					<span>Artikel hinzufügen</span>
-				</button>
-
-				<button
-					type="button"
-					className="btn-primary w-fit"
-					onClick={() => addContent("pdf")}
-					disabled={typesWithUsage["pdf"]}
-				>
-					<DocumentTextIcon className="h-5" />
-					<span>PDF hinzufügen</span>
-				</button>
+				{contentTypes.map(contentType => (
+					<AddButton
+						contentType={contentType}
+						disabled={typesWithUsage[contentType] === true}
+						addContent={addContent}
+					/>
+				))}
 			</div>
 
 			<div className="mb-8 mt-4 flex gap-4">
@@ -172,7 +161,7 @@ export function LessonContentEditor() {
 							{content.map((value, index) => (
 								<Reorder.Item as="div" key={value.id} value={value}>
 									<RemovableTab onRemove={() => removeContent(index)}>
-										{value.type}
+										{getContentTypeDisplayName(value.type)}
 									</RemovableTab>
 								</Reorder.Item>
 							))}
@@ -192,6 +181,28 @@ export function LessonContentEditor() {
 	);
 }
 
+function AddButton({
+	contentType,
+	addContent,
+	disabled
+}: {
+	contentType: LessonContentMediaType;
+	addContent: (t: LessonContentMediaType) => void;
+	disabled: boolean;
+}) {
+	return (
+		<button
+			type="button"
+			className="btn-primary w-fit"
+			onClick={() => addContent(contentType)}
+			disabled={disabled}
+		>
+			<PlusIcon className="h-5" />
+			<span>{getContentTypeDisplayName(contentType)} hinzufügen</span>
+		</button>
+	);
+}
+
 function RenderContentType({ index, content }: { index: number; content: LessonContentType }) {
 	if (content.type === "video") {
 		return <VideoInput index={index} />;
@@ -203,6 +214,10 @@ function RenderContentType({ index, content }: { index: number; content: LessonC
 
 	if (content.type === "pdf") {
 		return <PdfInput index={index} />;
+	}
+
+	if (content.type === "iframe") {
+		return <IFrameInput index={index} />;
 	}
 
 	return (

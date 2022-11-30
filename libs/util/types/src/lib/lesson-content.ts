@@ -30,17 +30,29 @@ export const pdfSchema = z.object({
 	})
 });
 
+export const iframeSchema = z.object({
+	type: z.literal("iframe"),
+	value: z.object({
+		url: z.string()
+	}),
+	meta: z.object({
+		estimatedDuration: z.number()
+	})
+});
+
 export const lessonContentSchema = z.discriminatedUnion("type", [
 	videoSchema,
 	articleSchema,
-	pdfSchema
+	pdfSchema,
+	iframeSchema
 ]);
 
 export function getContentTypeDisplayName(contentType: LessonContentMediaType): string {
 	const names: { [contentType in LessonContentMediaType]: string } = {
 		video: "Video",
 		article: "Artikel",
-		pdf: "PDF"
+		pdf: "PDF",
+		iframe: "Externe Webseite"
 	};
 
 	return names[contentType] ?? "Unknown Type";
