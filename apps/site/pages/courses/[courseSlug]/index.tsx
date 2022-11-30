@@ -3,19 +3,18 @@ import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { CourseContent, extractLessonIds, LessonInfo } from "@self-learning/types";
+import { CourseContent, Defined, extractLessonIds, LessonInfo, ResolvedValue } from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatSeconds } from "@self-learning/util/common";
 import { formatDistance } from "date-fns";
 import { de } from "date-fns/locale";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
-import Math from "../../../components/math";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -103,7 +102,7 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ params }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
 
 	if (!courseSlug) {
@@ -137,13 +136,6 @@ export const getStaticProps: GetStaticProps<CourseProps> = async ({ params }) =>
 			markdownDescription
 		},
 		notFound: !course
-	};
-};
-
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		paths: [],
-		fallback: "blocking"
 	};
 };
 
@@ -251,6 +243,7 @@ function CourseHeader({
 								className="shrink-0 rounded-lg bg-white object-cover"
 								src={course.imgUrl}
 								fill={true}
+								sizes="600px"
 								alt=""
 							></Image>
 						)}
@@ -283,17 +276,17 @@ function CourseHeader({
 									? "Starten"
 									: "Fortfahren"}
 							</span>
-							<PlayIcon className="h-6" />
+							<PlayIcon className="h-5" />
 						</Link>
 					)}
 
 					{!isEnrolled && (
 						<button
-							className="btn-secondary disabled:opacity-50"
+							className="btn-primary disabled:opacity-50"
 							onClick={() => enroll({ courseId: course.courseId })}
 						>
 							<span>Zum Lernplan hinzfügen</span>
-							<PlusCircleIcon className="h-6" />
+							<PlusCircleIcon className="h-5" />
 						</button>
 					)}
 				</div>
@@ -346,7 +339,7 @@ function Lesson({
 	return (
 		<Link
 			href={href}
-			className={`flex gap-2 rounded-r-lg border-l-4 bg-gray-200 px-4 py-2 text-sm ${
+			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
 				isCompleted ? "border-emerald-500" : "border-gray-300"
 			}`}
 		>
@@ -374,8 +367,7 @@ function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; upda
 
 function Description({ content }: { content: CompiledMarkdown }) {
 	return (
-		<div className="prose max-w-full">
-			<Math />
+		<div className="prose prose-emerald max-w-full">
 			<MDXRemote {...content}></MDXRemote>
 		</div>
 	);

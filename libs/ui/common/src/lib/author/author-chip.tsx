@@ -11,7 +11,11 @@ export function AuthorChip({ displayName, slug, imgUrl }: AuthorProps) {
 		>
 			<div className="h-12 w-12 rounded-l-lg bg-gray-100">
 				{imgUrl && (
-					<img src={imgUrl} alt={displayName} className="h-12 w-12 rounded-l-lg" />
+					<img
+						src={imgUrl}
+						alt={displayName}
+						className="h-12 w-12 rounded-l-lg object-cover"
+					/>
 				)}
 			</div>
 			<span className="font-medium">{displayName}</span>
@@ -21,7 +25,7 @@ export function AuthorChip({ displayName, slug, imgUrl }: AuthorProps) {
 
 export function AuthorsList({ authors }: { authors: AuthorProps[] }) {
 	return (
-		<div className="flex flex-wrap gap-2 md:gap-8">
+		<div className="flex flex-wrap gap-2 md:gap-4">
 			{authors?.map(author => (
 				<AuthorChip
 					key={author.slug}

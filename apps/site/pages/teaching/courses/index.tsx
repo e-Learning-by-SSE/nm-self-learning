@@ -45,9 +45,9 @@ export default function CoursesPage() {
 									{course.imgUrl && (
 										<Image
 											src={course.imgUrl}
-											height={96}
+											height={48}
 											width={128}
-											className="rounded-lg object-cover"
+											className="h-12 w-32 rounded-lg object-cover"
 											alt="Course Image"
 										/>
 									)}

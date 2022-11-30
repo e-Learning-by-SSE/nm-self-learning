@@ -1,12 +1,12 @@
 import { Menu } from "@headlessui/react";
 import { AcademicCapIcon, LogoutIcon, UserIcon } from "@heroicons/react/outline";
-import { ChevronDownIcon } from "@heroicons/react/solid";
+import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
 import { signIn, signOut, useSession } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 
 export function Navbar() {
-	const { data: session } = useSession();
+	const session = useSession();
+	const user = session.data?.user;
 
 	return (
 		<nav className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white">
@@ -22,18 +22,22 @@ export function Navbar() {
 						</div>
 					</Link>
 					<div className="invisible flex w-0 items-center gap-16 text-sm font-medium lg:visible lg:w-fit">
-						{session?.user && (
+						{user && (
 							<>
 								{/* <Link href="/learning-diary">
 									<a>Lerntagebuch</a>
 								</Link> */}
 								<Link href="/profile">Profil</Link>
+								{user.role === "ADMIN" && <Link href="/admin">Adminbereich</Link>}
+								{(user.role === "ADMIN" || !!user.author) && (
+									<Link href="/teaching">Content-Management</Link>
+								)}
 							</>
 						)}
 						<Link href="/subjects">Fachgebiete</Link>
 					</div>
 				</div>
-				{!session?.user ? (
+				{!user ? (
 					<button
 						className="text-w rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white"
 						onClick={() => signIn()}
@@ -42,10 +46,18 @@ export function Navbar() {
 					</button>
 				) : (
 					<div className="flex items-center gap-4">
+						{user.role === "ADMIN" && (
+							<span title="Admin">
+								<StarIcon className="h-5 text-secondary" />
+							</span>
+						)}
 						<span className="invisible w-0 text-sm sm:visible sm:w-fit">
-							{session.user.name}
+							{user.name}
 						</span>
-						<NavbarDropdownMenu signOut={() => signOut({ callbackUrl: "/" })} />
+						<NavbarDropdownMenu
+							avatarUrl={user.avatarUrl}
+							signOut={() => signOut({ callbackUrl: "/" })}
+						/>
 					</div>
 				)}
 			</div>
@@ -53,17 +65,27 @@ export function Navbar() {
 	);
 }
 
-export function NavbarDropdownMenu({ signOut }: { signOut: () => void }) {
+export function NavbarDropdownMenu({
+	signOut,
+	avatarUrl
+}: {
+	avatarUrl?: string | null;
+	signOut: () => void;
+}) {
 	return (
 		<Menu as="div" className="relative flex">
 			<Menu.Button className="flex shrink-0 items-center gap-1">
-				<Image
-					className="h-[42px] w-[42px] rounded-full object-cover object-top"
-					alt="Avatar"
-					src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=48&q=80"
-					width={42}
-					height={42}
-				></Image>
+				{avatarUrl ? (
+					<img
+						className="h-[42px] w-[42px] rounded-full object-cover object-top"
+						alt="Avatar"
+						src={avatarUrl}
+						width={42}
+						height={42}
+					></img>
+				) : (
+					<div className="h-[42px] w-[42px] rounded-full bg-gray-200"></div>
+				)}
 				<ChevronDownIcon className="h-6 text-gray-400" />
 			</Menu.Button>
 			<Menu.Items className="absolute right-0 top-14 z-10 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">

@@ -46,10 +46,17 @@ export async function getCompletedLessonsThisWeek(username: string, dateNow: num
 	return database.completedLesson.findMany({
 		select: {
 			createdAt: true,
+			course: {
+				select: {
+					title: true,
+					slug: true
+				}
+			},
 			lesson: {
 				select: {
 					lessonId: true,
-					title: true
+					title: true,
+					slug: true
 				}
 			}
 		},

@@ -47,8 +47,8 @@ export const chapters = [
 ];
 
 export const course = createCourse(
-	3,
-	2,
+	"psychologie",
+	"wahrnehmung",
 	"Das Wahrnehmungssystem zum Hören",
 	null,
 	"Hierbei geht es um die biologischen und die neurophysiologischen/-anatomischen Grundlagen der Signalverarbeitung, den Spezifika und Prinzipien des Hörens sowie um Beispiele für die auditive Wahrnehmung.",

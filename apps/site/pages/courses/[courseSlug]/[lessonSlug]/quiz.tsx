@@ -11,7 +11,7 @@ import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdow
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import { Question, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -25,7 +25,7 @@ type QuestionProps = LessonLayoutProps & {
 	};
 };
 
-export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params }) => {
 	const parentProps = await getStaticPropsForLayout(params);
 
 	if ("notFound" in parentProps) return { notFound: true };
@@ -65,10 +65,6 @@ export const getStaticProps: GetStaticProps<QuestionProps> = async ({ params }) 
 			}
 		}
 	};
-};
-
-export const getStaticPaths: GetStaticPaths = () => {
-	return { paths: [], fallback: "blocking" };
 };
 
 export default function QuestionsPage({ course, lesson, questions, markdown }: QuestionProps) {

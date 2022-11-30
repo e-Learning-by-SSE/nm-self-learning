@@ -133,16 +133,20 @@ describe("getCompletedLessonsThisWeek", () => {
 		expect(result).toMatchInlineSnapshot(`
 		Array [
 		  Object {
+		    "course": null,
 		    "createdAt": 2022-05-19T22:00:00.000Z,
 		    "lesson": Object {
 		      "lessonId": "completed-lesson",
+		      "slug": "completed-lesson-slug",
 		      "title": "Completed Lesson",
 		    },
 		  },
 		  Object {
+		    "course": null,
 		    "createdAt": 2022-05-20T22:00:00.000Z,
 		    "lesson": Object {
 		      "lessonId": "completed-lesson",
+		      "slug": "completed-lesson-slug",
 		      "title": "Completed Lesson",
 		    },
 		  },

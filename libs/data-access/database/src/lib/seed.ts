@@ -57,7 +57,7 @@ const learningDiaries: Prisma.LearningDiaryCreateManyInput[] = students.map(stud
 
 const subjects: Prisma.SubjectCreateManyInput[] = [
 	{
-		subjectId: 1,
+		subjectId: "informatik",
 		slug: "informatik",
 		title: "Informatik",
 		subtitle: faker.lorem.sentences(2),
@@ -67,7 +67,7 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 			"https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
 	},
 	{
-		subjectId: 2,
+		subjectId: "mathematik",
 		slug: "mathematik",
 		title: "Mathematik",
 		subtitle: faker.lorem.sentences(2),
@@ -77,7 +77,7 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 			"https://images.unsplash.com/photo-1635372722656-389f87a941b7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2062&q=80"
 	},
 	{
-		subjectId: 3,
+		subjectId: "psychologie",
 		slug: "psychologie",
 		title: "Psychologie",
 		subtitle: faker.lorem.sentences(2),
@@ -90,8 +90,8 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 
 const specializations: Prisma.SpecializationCreateManyInput[] = [
 	{
-		specializationId: 1,
-		subjectId: 1,
+		specializationId: "softwareentwicklung",
+		subjectId: "informatik",
 		slug: "softwareentwicklung",
 		title: "Softwareentwicklung",
 		subtitle: faker.lorem.sentences(2),
@@ -101,128 +101,128 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 			"https://images.unsplash.com/photo-1580920461931-fcb03a940df5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"
 	},
 	createSpecialization(
-		3,
-		2,
+		"psychologie",
+		"wahrnehmung",
 		"Wahrnehmung",
-		"Man spricht von Wahrnehmung (*perception*), wenn man sich mit der Integration und Interpretation von Reizen aus der Umwelt und dem Körperinnern beschäftigt. ",
+		"Man spricht von Wahrnehmung (*perception*), wenn man sich mit der Integration und Interpretation von Reizen aus der Umwelt und dem Körperinnern beschäftigt.",
 		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
 		"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg"
 	),
 	createSpecialization(
-		3,
-		3,
+		"psychologie",
+		"aufmerksamkeit",
 		"Aufmerksamkeit",
 		"Man spricht von Aufmerksamkeit (*attention*), wenn man sich mit der Fähigkeit, bestimmte Informationen für eine genauere Analyse auszuwählen und andere zu ignorieren, beschäftigt.",
 		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg",
 		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg"
 	),
 	createSpecialization(
-		3,
-		4,
+		"psychologie",
+		"bewusstsein",
 		"Bewusstsein",
 		"Man spricht einerseits von Bewusstsein (*consciousness*), wenn das wache Wissen um das Erleben sowie das Aufmerken auf einzelne Erlebnisse und andererseits das wache Wissen um das kontrollierte und initiierte Handeln gemeint ist. Auch die Gesamtheit der unmittelbaren Erfahrung, die sich aus der Wahrnehmung von sich selbst und der Umgebung, den eigenen Kognitionen, Vorstellungen und Gefühlen zusammensetzt wird als Bewusstsein bezeichnet. ",
 		"https://c.pxhere.com/photos/f5/82/head_psychology_thoughts_think_perception_face_woman_psyche-1192085.jpg!d",
 		"https://c.pxhere.com/photos/f5/82/head_psychology_thoughts_think_perception_face_woman_psyche-1192085.jpg!d"
 	),
 	createSpecialization(
-		3,
-		5,
+		"psychologie",
+		"lernen",
 		"Lernen",
 		"Man spricht von Lernen (*learning*), wenn es sich um eine relativ permanente Veränderung des Verhaltens als Folge von vorausgehender Erfahrung handelt.",
 		"https://www.kikisweb.de/geschichten/maerchen/nuernb1.gif",
 		"https://www.kikisweb.de/geschichten/maerchen/nuernb1.gif"
 	),
 	createSpecialization(
-		3,
-		6,
+		"psychologie",
+		"gedächtnis-und-wissen",
 		"Gedächtnis und Wissen",
 		"Man spricht von Gedächtnis (*memory*), wenn man sich über das dauerhafte Fortbestehen von aufgenommenen Informationen über die Zeit, die dann wieder abrufbar sind, Gedanken macht.",
 		"https://static.spektrum.de/fm/912/f2000x857/Memory_pixabay48118_Nemo-CC0.png",
 		"https://static.spektrum.de/fm/912/f2000x857/Memory_pixabay48118_Nemo-CC0.png"
 	),
 	createSpecialization(
-		3,
-		7,
+		"psychologie",
+		"sprache",
 		"Sprache",
 		"Mit Sprache (*speech*) ist die Fähigkeit des Menschen gemeint, durch ein komplexes System von Symbolen und Regeln, miteinander zu kommunizieren.",
 		"https://c.pxhere.com/images/5e/d6/a2ff24ae9521a8904c5fbab3fd89-1437965.jpg!d",
 		"https://c.pxhere.com/images/5e/d6/a2ff24ae9521a8904c5fbab3fd89-1437965.jpg!d"
 	),
 	createSpecialization(
-		3,
-		8,
+		"psychologie",
+		"motivation-und-volition",
 		"Motivation und Volition",
 		"Man spricht von Motivation (*motivation*), wenn man die Gesamtheit der Beweggründe (Motive), die zur Handlungsbereitschaft führen, meint. Die Umsetzung von Motiven in Handlungen nennt man Volition (*volition*).",
 		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png",
 		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png"
 	),
 	createSpecialization(
-		3,
-		9,
+		"psychologie",
+		"denken-problemloesen-entscheiden-urteilen",
 		"Denken, Problemlösen, Entscheiden und Urteilen",
 		"Man spricht von Denken (*thinking*), wenn die interpretierende und ordnungsstiftende Verarbeitung von Informationen gemeint ist. Beim Problemlösen (*problem solving*) geht es um das Auffinden eines vorher nicht bekannten Weges von einem gegebenen Anfangszustand zu einem gewünschten und mehr oder weniger genau bekannten Endzustand. Das Entscheiden (*decision making*) betrifft die menschlichen Prozesse beim Wählen zwischen Alternativen und beim Urteilen (*judgment*) geht es um das Schlussfolgern aufgrund von Erfahrung.",
 		"https://images.pexels.com/photos/814133/pexels-photo-814133.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
 		"https://images.pexels.com/photos/814133/pexels-photo-814133.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
 	),
 	createSpecialization(
-		3,
-		10,
+		"psychologie",
+		"emotion",
 		"Emotion",
 		"Man spricht von Emotionen (*emotions*), wenn es sich um ein komplexes Muster von Veränderungen handelt. Dabei umfassen dieese physiologische Erregung, Gefühle, kognitive Prozesse (Bewertungen) und Verhaltensreaktionen auf eine Situation, die als persönlich bedeutsam wahrgenommen wurde.",
 		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png",
 		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png"
 	),
 	createSpecialization(
-		3,
-		11,
+		"psychologie",
+		"handlung-bewegung-psychomotorik",
 		"Handlung, Bewegung und Psychomotorik",
 		"Man spricht von Handlungen (*action*), wenn es um motorische Aktivitäten geht, um einen angestrebten Zielzustand zu verwirklichen.",
 		"https://www.spielundlern.de/wissen/wp-content/uploads/2017/04/kinder-bewegung-psychomotorik-768x235.png",
 		"https://www.spielundlern.de/wissen/wp-content/uploads/2017/04/kinder-bewegung-psychomotorik-768x235.png"
 	),
 	createSpecialization(
-		2,
-		12,
+		"mathematik",
+		"didaktik-der-geometrie",
 		"Didaktik der Geometrie",
 		"Didaktik der Geometrie: geometrische Begriffsbildung, Figuren und Körper, Maße und Größen, Beweisen und Argumentieren im Geometrieunterricht, geometrisches Problemlösen, Konstruieren, dynamische Geometriesysteme im Mathematikunterricht, Anwendungen der Geometrie samt ihren didaktischen Theorien kennen und schulbezogen anwenden können; Lern-, Lehr- und Übungsumgebungen sowie Prüfungsanlässe mit geometrischen Bezügen beurteilen, gestalten und variieren",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_der_Geometrie.png",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_der_Geometrie.png"
 	),
 	createSpecialization(
-		2,
-		13,
+		"mathematik",
+		"didaktik-der-dlgebra",
 		"Didaktik der Algebra",
 		"",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_der_Algebra.png",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_der_Algebra.png"
 	),
 	createSpecialization(
-		2,
-		14,
+		"mathematik",
+		"didaktik-des-funktionalen-denkens",
 		"Didaktik des funktionalen Denkens",
 		"",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_des_funktionalen_Denkens.png",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_des_funktionalen_Denkens.png"
 	),
 	createSpecialization(
-		2,
-		15,
+		"mathematik",
+		"analysis",
 		"Analysis",
 		"",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/R-n.png",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/R-n.png"
 	),
 	createSpecialization(
-		2,
-		16,
+		"mathematik",
+		"geometrie",
 		"Geometrie",
 		"",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Geometrie.jpg",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Geometrie.jpg"
 	),
 	createSpecialization(
-		2,
-		17,
+		"mathematik",
+		"algebra",
 		"Algebra",
 		"",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Algebra.png",
@@ -590,7 +590,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 		subtitle: faker.lorem.paragraph(2),
 		description: faker.lorem.paragraphs(3),
 		imgUrl: "https://images.unsplash.com/photo-1579403124614-197f69d8187b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1064&q=80",
-		subjectId: 1,
+		subjectId: "informatik",
 		createdAt: new Date(2022, 4, 20),
 		updatedAt: new Date(2022, 5, 1),
 		content: createCourseContent(
@@ -609,7 +609,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 
 const authors: Prisma.UserCreateInput[] = [
 	{
-		name: "Kent-C-Dodds",
+		name: "kent-c-dodds",
 		accounts: {
 			create: [
 				{
@@ -618,6 +618,12 @@ const authors: Prisma.UserCreateInput[] = [
 					type: "demo-account"
 				}
 			]
+		},
+		student: {
+			create: {
+				displayName: "Kent C. Dodds",
+				username: "kent-c-dodds"
+			}
 		},
 		author: {
 			create: {
@@ -639,15 +645,23 @@ const authors: Prisma.UserCreateInput[] = [
 		}
 	},
 	{
-		name: "Albus-Dumbledore",
+		name: "dumbledore",
+		role: "ADMIN",
+		image: "https://i.imgur.com/UWMVO8m.jpeg",
 		accounts: {
 			create: [
 				{
 					provider: "demo",
-					providerAccountId: "albus-dumbledore",
+					providerAccountId: "dumbledore",
 					type: "demo-account"
 				}
 			]
+		},
+		student: {
+			create: {
+				displayName: "Albus Dumbledore",
+				username: "dumbledore"
+			}
 		},
 		author: {
 			create: {
@@ -657,7 +671,7 @@ const authors: Prisma.UserCreateInput[] = [
 		}
 	},
 	{
-		name: "Minerva-McGonagall",
+		name: "minerva-mcgonagall",
 		accounts: {
 			create: [
 				{
@@ -666,6 +680,12 @@ const authors: Prisma.UserCreateInput[] = [
 					type: "demo-account"
 				}
 			]
+		},
+		student: {
+			create: {
+				displayName: "Minerva McGonagall",
+				username: "minerva-mcgonagall"
+			}
 		},
 		author: {
 			create: {
@@ -727,7 +747,7 @@ async function seed(): Promise<void> {
 	console.log("✅ LearningDiaries");
 
 	await prisma.specialization.update({
-		where: { specializationId: 1 },
+		where: { specializationId: "softwareentwicklung" },
 		data: {
 			courses: {
 				connect: courses.map(course => ({ courseId: course.courseId }))

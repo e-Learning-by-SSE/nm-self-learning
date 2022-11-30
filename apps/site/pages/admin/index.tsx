@@ -1,24 +1,29 @@
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ReactComponent as SoftwareEngineerSvg } from "../../svg/software-engineer.svg";
-import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
+import { ReactComponent as PersonalInformationSvg } from "../../svg/personal-information.svg";
 
-export default function TeachingPage() {
+export default function AdminPage() {
+	const session = useSession({ required: true });
+
+	if (session.data?.user.role !== "ADMIN") {
+		return (
+			<CenteredSection className="bg-gray-50">
+				<h1 className="mb-8 text-5xl">Halt Stop!</h1>
+				<p className="text-light">Dieser Bereich ist nur für Admins verfügbar.</p>
+			</CenteredSection>
+		);
+	}
+
 	return (
 		<CenteredSection className="bg-gray-50">
-			<h1 className="mb-16 text-5xl">Content-Management</h1>
+			<h1 className="mb-16 text-5xl">Verwaltung</h1>
 
 			<div className="grid gap-16 md:grid-cols-2">
 				<Card
-					href="/teaching/lessons"
-					imageElement={<TutorialSvg />}
-					title="Lerneinheiten verwalten"
-				/>
-
-				<Card
-					href="/teaching/courses"
-					imageElement={<SoftwareEngineerSvg />}
-					title="Kurse verwalten"
+					href="/admin/authors"
+					imageElement={<PersonalInformationSvg />}
+					title="Autoren verwalten"
 				/>
 			</div>
 		</CenteredSection>

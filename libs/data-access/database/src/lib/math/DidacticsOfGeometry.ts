@@ -1,11 +1,11 @@
 import {
-    createArticle,
-    createCourse,
-    createLesson,
-    createMultipleChoice,
-    createTextQuestion,
-    createVideo,
-} from '../seed-functions';
+	createArticle,
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo
+} from "../seed-functions";
 
 const ch_Begriffslernen = {
 	title: "Begriffslernen in der Grundschule",
@@ -342,8 +342,8 @@ const ch_Symmetrien = {
 export const chapters = [ch_Begriffslernen, ch_Figuren, ch_Symmetrien, ch_Groessen];
 
 export const course = createCourse(
-	2,
-	12,
+	"mathematik",
+	"didaktik-der-geometrie",
 	"Didaktik der Geometrie",
 	null,
 	null,

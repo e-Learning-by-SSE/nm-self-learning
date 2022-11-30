@@ -52,7 +52,7 @@ describe("courseFormSchema", () => {
 			  },
 			  Object {
 			    "code": "invalid_type",
-			    "expected": "number",
+			    "expected": "string",
 			    "message": "Required",
 			    "path": Array [
 			      "subjectId",

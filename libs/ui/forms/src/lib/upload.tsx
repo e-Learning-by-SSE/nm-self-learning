@@ -6,12 +6,18 @@ export function Upload({
 	onUploadCompleted,
 	preview
 }: {
-	mediaType: "image" | "video";
+	mediaType: "image" | "video" | "pdf";
 	onUploadCompleted: (publicUrl: string, meta?: { duration: number }) => void;
 	preview: ReactElement;
 }) {
 	const id = useId(); // Each file input requires a unique id ... otherwise browser will always pick the first one
 	const { mutateAsync: getPresignedUrl } = trpc.storage.getPresignedUrl.useMutation();
+
+	const accept = {
+		image: "image/*",
+		video: "video/*",
+		pdf: "application/pdf"
+	}[mediaType];
 
 	function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
 		const file = event.target.files?.[0];
@@ -49,13 +55,16 @@ export function Upload({
 	return (
 		<div className="relative flex flex-col gap-4">
 			<label className="btn-primary" htmlFor={id}>
-				{mediaType === "video" && "Video hochladen"}
-				{mediaType === "image" && "Bild hochladen"}
+				{mediaType === "video"
+					? "Video hochladen"
+					: mediaType === "image"
+					? "Bild hochladen"
+					: "Datei hochladen"}
 			</label>
 			<input
 				type="file"
 				id={id}
-				accept={mediaType === "video" ? "video/*" : "image/*"}
+				accept={accept}
 				onChange={handleUpload}
 				style={{
 					visibility: "hidden",

@@ -89,7 +89,7 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 		// Populate query cache with existing lessons
 		// This way, we only need to fetch newly added lessons
 		for (const lesson of lessons) {
-			trpcContext.lesson.findOne.setData(lesson, { lessonId: lesson.lessonId });
+			trpcContext.lesson.findOne.setData({ lessonId: lesson.lessonId }, lesson as any);
 		}
 	}
 

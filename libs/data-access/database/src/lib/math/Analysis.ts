@@ -51,8 +51,8 @@ export const chapters = [
 ];
 
 export const course = createCourse(
-	2,
-	15,
+	"mathematik",
+	"analysis",
 	"Analysis",
 	null,
 	null,

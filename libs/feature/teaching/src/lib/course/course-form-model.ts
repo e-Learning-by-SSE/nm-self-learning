@@ -5,7 +5,7 @@ import { z } from "zod";
 
 export const courseFormSchema = z.object({
 	courseId: z.string().nullable(),
-	subjectId: z.number().nullable(),
+	subjectId: z.string().nullable(),
 	slug: z.string().min(3),
 	title: z.string().min(3),
 	subtitle: z.string().min(3),

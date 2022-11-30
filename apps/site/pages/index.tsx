@@ -20,6 +20,9 @@ export function LandingPage() {
 				<Link href="/teaching" className="underline">
 					Teaching
 				</Link>
+				<Link href="/admin" className="underline">
+					Admin
+				</Link>
 			</div>
 
 			<div className="container mx-auto grid items-center py-24 lg:grid-cols-2 lg:py-48">

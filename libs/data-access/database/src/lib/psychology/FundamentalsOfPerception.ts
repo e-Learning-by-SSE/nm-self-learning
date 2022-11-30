@@ -47,8 +47,8 @@ export const chapters = [
 ];
 
 export const course = createCourse(
-	3,
-	2,
+	"psychologie",
+	"wahrnehmung",
 	"Grundlagen der Wahrnehmung",
 	null,
 	"Zu den Grundlagen der Wahrnehmung gehört bspw. der Konstruktionsprozess der Wahrnehmung - vom Reiz bis zur neuronalen Verarbeitung - und mit welchen theoretischen Ansätzen und Gesetzen diese erklärt werden können. Zu den Wahrnehmungssystemen gehören die Systeme rund um das Sehen, das Hören, das Schmecken, das Riechen und das Fühlen.",

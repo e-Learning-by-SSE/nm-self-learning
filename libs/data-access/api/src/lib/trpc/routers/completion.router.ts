@@ -10,7 +10,7 @@ export const completionRouter = t.router({
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			return getCourseCompletionOfStudent(input.courseSlug, ctx.username);
+			return getCourseCompletionOfStudent(input.courseSlug, ctx.user.name);
 		}),
 	markAsCompleted: authProcedure
 		.input(
@@ -23,7 +23,7 @@ export const completionRouter = t.router({
 			return markAsCompleted({
 				lessonId: input.lessonId,
 				courseSlug: input.courseSlug,
-				username: ctx.username
+				username: ctx.user.name
 			});
 		})
 });

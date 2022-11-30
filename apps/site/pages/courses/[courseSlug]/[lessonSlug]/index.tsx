@@ -9,16 +9,16 @@ import {
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	findContentType,
+	getContentTypeDisplayName,
 	includesMediaType,
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, Tab, Tabs } from "@self-learning/ui/common";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
-import { VideoPlayer } from "@self-learning/ui/lesson";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
+import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -30,7 +30,7 @@ export type LessonProps = LessonLayoutProps & {
 	};
 };
 
-export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
 	const props = await getStaticPropsForLayout(params);
 
 	if ("notFound" in props) return { notFound: true };
@@ -65,13 +65,6 @@ export const getStaticProps: GetStaticProps<LessonProps> = async ({ params }) =>
 	};
 };
 
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		fallback: "blocking",
-		paths: []
-	};
-};
-
 function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	const router = useRouter();
 	const [preferredMediaType, setPreferredMediaType] = useState(
@@ -103,15 +96,16 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
-	const url = video?.value.url;
+	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
+
 	const preferredMediaType = usePreferredMediaType(lesson);
 
 	return (
 		<article className="flex flex-col gap-4">
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
-					{url ? (
-						<VideoPlayer url={url} />
+					{video?.value.url ? (
+						<VideoPlayer url={video.value.url} />
 					) : (
 						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
 					)}
@@ -121,9 +115,15 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
 
 			{preferredMediaType === "article" && markdown.article && (
-				<MarkdownContainer className="mx-auto w-full pt-8">
+				<MarkdownContainer className="mx-auto w-full pt-4">
 					<MDXRemote {...markdown.article} />
 				</MarkdownContainer>
+			)}
+
+			{preferredMediaType === "pdf" && pdf?.value.url && (
+				<div className="h-[90vh] xl:h-[80vh]">
+					<PdfViewer url={pdf.value.url} />
+				</div>
 			)}
 		</article>
 	);
@@ -167,7 +167,7 @@ function LessonHeader({
 			</div>
 
 			{mdDescription && (
-				<MarkdownContainer className="mx-auto">
+				<MarkdownContainer className="mx-auto pb-4">
 					<MDXRemote {...mdDescription} />
 				</MarkdownContainer>
 			)}
@@ -217,27 +217,8 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 	return (
 		<>
 			{authors.length > 0 && (
-				<div className="mt-4 flex flex-wrap gap-4">
-					{authors.map(author => (
-						<Link href={`/authors/${author.slug}`} key={author.slug}>
-							<div
-								className="flex w-full items-center rounded-lg border border-light-border sm:w-fit"
-								key={author.slug}
-							>
-								{author.imgUrl && (
-									<Image
-										src={author.imgUrl}
-										alt={author.displayName}
-										width={48}
-										height={48}
-									></Image>
-								)}
-								<span className="p-4 text-sm font-medium">
-									{author.displayName}
-								</span>
-							</div>
-						</Link>
-					))}
+				<div className="mt-4">
+					<AuthorsList authors={authors} />
 				</div>
 			)}
 		</>
@@ -275,7 +256,9 @@ function MediaTypeSelector({
 				<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
 					{lessonContent.map((content, idx) => (
 						<Tab key={idx}>
-							<span data-testid="mediaTypeTab">{content.type}</span>
+							<span data-testid="mediaTypeTab">
+								{getContentTypeDisplayName(content.type)}
+							</span>
 						</Tab>
 					))}
 				</Tabs>

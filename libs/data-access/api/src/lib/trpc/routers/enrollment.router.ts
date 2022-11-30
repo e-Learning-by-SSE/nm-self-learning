@@ -6,7 +6,7 @@ import { authProcedure, t } from "../trpc";
 
 export const enrollmentRouter = t.router({
 	getEnrollments: authProcedure.query(async ({ ctx }) => {
-		return getEnrollmentsOfUser(ctx.username);
+		return getEnrollmentsOfUser(ctx.user.name);
 	}),
 	enroll: authProcedure
 		.input(
@@ -17,7 +17,7 @@ export const enrollmentRouter = t.router({
 		.mutation(({ ctx, input }) => {
 			return enrollUser({
 				courseId: input.courseId,
-				username: ctx.username
+				username: ctx.user.name
 			});
 		}),
 	disenroll: authProcedure
@@ -29,7 +29,7 @@ export const enrollmentRouter = t.router({
 		.mutation(({ ctx, input }) => {
 			return disenrollUser({
 				courseId: input.courseId,
-				username: ctx.username
+				username: ctx.user.name
 			});
 		})
 });
