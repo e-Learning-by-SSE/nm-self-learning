@@ -59,7 +59,7 @@ export function LessonInfoEditor() {
 					<textarea
 						{...register("subtitle")}
 						placeholder="1-2 Sätze über diese Lerneinheit."
-						className="h-full"
+						rows={4}
 					/>
 				</LabeledField>
 
