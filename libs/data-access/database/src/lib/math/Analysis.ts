@@ -1,11 +1,4 @@
-import {
-	createArticle,
-	createCourse,
-	createLesson,
-	createMultipleChoice,
-	createTextQuestion,
-	createVideo
-} from "../seed-functions";
+import { createCourse, createLesson, createMultipleChoice, createPdf, createTextQuestion } from '../seed-functions';
 
 export const chapters = [
 	{
@@ -17,7 +10,12 @@ export const chapters = [
 				"Folgen",
 				"Konvergenz",
 				"",
-				[createArticle("Kursmaterial als Webseite", 20), createVideo("link zum Video", 15)],
+				[
+					createPdf(
+						"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Folgen_Kapitel.pdf",
+						1260
+					)
+				],
 				[
 					createMultipleChoice(
 						"Wahr oder falsch? Für die reelle Folge  $(a_n)_{n\\in\\mathbb N}$ sei die durch $$b_n:=\\frac{1}{2}(a_n+a_{n+1})$$ definierte Folge gegeben.\r\n\r\nWenn $(a_n)_{n\\in\\mathbb N}$ konvergiert, dann auch $(b_n)_{n\\in\\mathbb N}$.",
