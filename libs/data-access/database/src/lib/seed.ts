@@ -169,8 +169,8 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		"emotion",
 		"Emotion",
 		"Man spricht von Emotionen (*emotions*), wenn es sich um ein komplexes Muster von Veränderungen handelt. Dabei umfassen dieese physiologische Erregung, Gefühle, kognitive Prozesse (Bewertungen) und Verhaltensreaktionen auf eine Situation, die als persönlich bedeutsam wahrgenommen wurde.",
-		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png",
-		"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Carrot_and_stick_motivation.svg/220px-Carrot_and_stick_motivation.svg.png"
+		"https://www.kikidan.com/wp-content/uploads/2021/02/smiley-parade-gefuehle-emotionen-300x300.png",
+		"https://www.kikidan.com/wp-content/uploads/2021/02/smiley-parade-gefuehle-emotionen-300x300.png"
 	),
 	createSpecialization(
 		"psychologie",
