@@ -3,6 +3,7 @@ export * from "./lib/button/button";
 export * from "./lib/divider/divider";
 export * from "./lib/dialog/dialog";
 export * from "./lib/image-card/image-card";
+export * from "./lib/loading/loading";
 export * from "./lib/menu/menu";
 export * from "./lib/section-card/section-card";
 export * from "./lib/tabs/tabs";
