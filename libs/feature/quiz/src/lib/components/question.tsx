@@ -3,10 +3,11 @@ import type { CompiledMarkdown, MdLookup, MdLookupArray } from "@self-learning/m
 import {
 	AnswerContextProvider,
 	EVALUATION_FUNCTIONS,
-	INITIAL_ANSWER_VALUE,
+	INITIAL_ANSWER_VALUE_FUNCTIONS,
 	MultipleChoiceAnswer,
 	ProgrammingAnswer,
 	QuestionType,
+	QuestionTypeUnion,
 	ShortTextAnswer,
 	TextAnswer,
 	useQuestion,
@@ -69,7 +70,7 @@ export function QuizProvider({
 		for (const q of questions) {
 			ans[q.questionId] = {
 				type: q.type,
-				value: INITIAL_ANSWER_VALUE[q.type]
+				value: INITIAL_ANSWER_VALUE_FUNCTIONS[q.type](q as any)
 			};
 		}
 

@@ -61,8 +61,6 @@ type Output = {
 	signal: string;
 };
 
-type Runtime = { language: string; version: string };
-
 const EXTENSION: Record<string, string> = {
 	java: "java",
 	typescript: "ts",
@@ -72,7 +70,6 @@ const EXTENSION: Record<string, string> = {
 
 export function ProgrammingAnswer() {
 	const { setAnswer, answer, question, evaluation, setEvaluation } = useQuestion("programming");
-	const program = useRef(question.custom.solutionTemplate);
 	const [isExecuting, setIsExecuting] = useState(false);
 	const [output, setOutput] = useState({
 		isError: false,
@@ -88,23 +85,6 @@ export function ProgrammingAnswer() {
 		console.log("Available runtimes:", runtimes);
 		setVersion(runtimes?.find(r => r.language === question.language)?.version);
 	}, [question.language, runtimes]);
-
-	useEffect(() => {
-		if (!answer.value) {
-			setAnswer({
-				type: "programming",
-				value: {
-					code: program.current,
-					stdout: ""
-				}
-			});
-		}
-	}, [answer, setAnswer]);
-
-	if (!answer.value) {
-		// eslint-disable-next-line react/jsx-no-useless-fragment
-		return <></>;
-	}
 
 	async function runCode() {
 		const language = question.language;
@@ -144,7 +124,7 @@ export function ProgrammingAnswer() {
 			}
 		}
 
-		files.push({ name: `Solution.${EXTENSION[language]}`, content: program.current });
+		files.push({ name: `Solution.${EXTENSION[language]}`, content: answer.value.code });
 
 		const executeRequest: ExecuteRequest = { language, version, files };
 
@@ -164,7 +144,7 @@ export function ProgrammingAnswer() {
 			const newAnswer: Programming["answer"] = {
 				type: "programming",
 				value: {
-					code: program.current,
+					code: answer.value.code,
 					stdout: data.run.output
 				}
 			};
@@ -206,9 +186,15 @@ export function ProgrammingAnswer() {
 			<div className="flex flex-wrap gap-2">
 				<div className="w-full">
 					<EditorField
-						value={program.current}
+						value={answer.value.code}
 						onChange={v => {
-							program.current = v ?? "";
+							setAnswer({
+								type: "programming",
+								value: {
+									stdout: answer.value.stdout,
+									code: v ?? ""
+								}
+							});
 						}}
 						language={question.language}
 					/>

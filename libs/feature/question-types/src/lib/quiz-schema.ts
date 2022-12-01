@@ -45,6 +45,10 @@ export type EvaluationFn<QType extends QuestionType["type"]> = (
 	answer: InferQuestionType<QType>["answer"]
 ) => InferQuestionType<QType>["evaluation"];
 
+export type InitialAnswerFn<QType extends QuestionType["type"]> = (
+	question: InferQuestionType<QType>["question"]
+) => InferQuestionType<QType>["answer"]["value"];
+
 export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: EvaluationFn<QType> } = {
 	"multiple-choice": evaluateMultipleChoice,
 	cloze: (q, a) => {
@@ -72,15 +76,18 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 // 	cloze: ClozeAnswer as any
 // };
 
-export const INITIAL_ANSWER_VALUE: {
-	[QType in QuestionType["type"]]: InferQuestionType<QType>["answer"]["value"];
+export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
+	[QType in QuestionType["type"]]: InitialAnswerFn<QType>;
 } = {
-	"multiple-choice": {},
-	"short-text": "",
-	programming: { code: "", stdout: "" },
-	text: "",
-	vorwissen: {} as any,
-	cloze: null
+	"multiple-choice": () => ({}),
+	"short-text": () => "",
+	programming: question => ({
+		code: question.custom.solutionTemplate,
+		stdout: ""
+	}),
+	text: () => "",
+	vorwissen: () => ({} as any),
+	cloze: () => ({} as any)
 };
 
 export type QuestionType = z.infer<typeof quizContentSchema>;
