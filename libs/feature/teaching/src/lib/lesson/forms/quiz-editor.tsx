@@ -177,6 +177,7 @@ export function QuizEditor() {
 
 			{currentQuestion && (
 				<BaseQuestionForm
+					key={currentQuestion.id}
 					currentQuestion={currentQuestion}
 					control={control}
 					index={questionIndex}
