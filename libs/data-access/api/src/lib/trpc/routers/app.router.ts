@@ -9,6 +9,7 @@ import { learningDiaryRouter } from "./learning-diary.router";
 import { lessonRouter } from "./lesson.router";
 import { programmingRouter } from "./programming";
 import { storageRouter } from "./storage.router";
+import { subjectRouter } from "./subject.router";
 
 export const appRouter = t.router({
 	author: authorRouter,
@@ -18,6 +19,7 @@ export const appRouter = t.router({
 	learningDiary: learningDiaryRouter,
 	lesson: lessonRouter,
 	storage: storageRouter,
+	subject: subjectRouter,
 	programming: programmingRouter,
 	mdx: t.procedure.input(z.object({ text: z.string().default("") })).mutation(({ input }) => {
 		return compileMarkdown(input.text);

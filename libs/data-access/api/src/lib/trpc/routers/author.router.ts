@@ -1,6 +1,8 @@
 import { database } from "@self-learning/database";
+import { authorSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
+import { updateAuthorAsAdmin } from "@self-learning/admin";
 
 export const authorRouter = t.router({
 	getBySlug: authProcedure.input(z.object({ slug: z.string() })).query(({ input }) => {
@@ -90,5 +92,23 @@ export const authorRouter = t.router({
 					}
 				}
 			});
+		}),
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	updateAsAdmin: adminProcedure
+		.input(
+			z.object({
+				username: z.string(),
+				author: authorSchema
+			})
+		)
+		.mutation(async ({ input }) => {
+			const updated = await updateAuthorAsAdmin(input);
+
+			console.log("Author updated: ", {
+				username: input.username,
+				displayName: updated.displayName
+			});
+
+			return updated;
 		})
 });

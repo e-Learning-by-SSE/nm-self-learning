@@ -11,7 +11,7 @@ const specializationSchema = z.object({
 export const authorSchema = z.object({
 	displayName: z.string().min(3),
 	slug: z.string().min(3),
-	imgUrl: z.string().nullable(),
+	imgUrl: z.string().url().nullable(),
 	subjectAdmin: z.array(subjectAdminSchema),
 	specializationAdmin: z.array(specializationSchema)
 });

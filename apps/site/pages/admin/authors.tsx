@@ -1,16 +1,20 @@
-import { XIcon } from "@heroicons/react/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { Author, authorSchema } from "@self-learning/types";
-import { Dialog, LoadingBox, OnDialogCloseFn } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	LoadingBox,
+	OnDialogCloseFn,
+	showToast
+} from "@self-learning/ui/common";
 import { LabeledField, SearchField, Upload } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { inferRouterOutputs } from "@trpc/server";
+import { JsonEditorDialog } from "libs/feature/teaching/src/lib/json-editor-dialog";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
 export default function AuthorsPage() {
 	useSession({ required: true });
@@ -19,7 +23,6 @@ export default function AuthorsPage() {
 	const { data: users, isLoading } = trpc.author.getAllWithSubject.useQuery();
 	const [editTarget, setEditTarget] = useState<string | null>(null);
 	const [openEditDialog, setOpenEditDialog] = useState(false);
-	const trpcContext = trpc.useContext();
 
 	const filteredAuthors = useMemo(() => {
 		if (!users) return [];
@@ -37,7 +40,6 @@ export default function AuthorsPage() {
 	}
 
 	function onEditDialogClose() {
-		trpcContext.author.invalidate();
 		setEditTarget(null);
 		setOpenEditDialog(false);
 	}
@@ -137,14 +139,15 @@ function EditAuthorDialog({
 	const { data: user, isLoading } = trpc.author.getAuthorForForm.useQuery({ username });
 
 	return (
-		<Dialog onClose={() => onClose(undefined)} title={username}>
+		<Dialog onClose={() => onClose(undefined)} title={user?.author?.displayName ?? username}>
 			{isLoading ? (
 				<LoadingBox />
 			) : (
 				<>
 					{user && user.author && (
 						<AuthorForm
-							user={user}
+							username={username}
+							onClose={onClose}
 							initialAuthor={{
 								displayName: user.author.displayName,
 								imgUrl: user.author.imgUrl,
@@ -166,60 +169,124 @@ function EditAuthorDialog({
 
 function AuthorForm({
 	initialAuthor,
-	user
+	username,
+	// user,
+	onClose
 }: {
 	/** Initial data to populate the form.  */
 	initialAuthor: Author;
-	/** Information about the author. */
-	user: inferRouterOutputs<AppRouter>["author"]["getAuthorForForm"];
+	username: string;
+	onClose: OnDialogCloseFn<Author>;
 }) {
+	const trpcContext = trpc.useContext();
+	const [showJsonEditor, setShowJsonEditor] = useState(false);
+	const { mutateAsync: updateAuthor } = trpc.author.updateAsAdmin.useMutation();
 	const methods = useForm({
 		resolver: zodResolver(authorSchema),
 		defaultValues: initialAuthor
 	});
 
-	function onSubmit(data: Author) {
-		console.log(data);
+	function onSubmit(author: Author) {
+		console.log("Saving author...", author);
+
+		updateAuthor({ author, username })
+			.then(res => {
+				showToast({
+					type: "success",
+					title: "Autor gespeichert!",
+					subtitle: res.displayName
+				});
+				onClose(undefined);
+			})
+			.catch(err => {
+				console.error(err);
+				showToast({
+					type: "error",
+					title: "Fehler",
+					subtitle: "Autor konnte nicht gespeichert werden."
+				});
+			})
+			.finally(() => {
+				trpcContext.author.invalidate();
+			});
 	}
 
-	const imgUrl = useWatch({ control: methods.control, name: "imgUrl" });
-	const subjects = useWatch({ control: methods.control, name: "subjectAdmin" });
+	return (
+		<FormProvider {...methods}>
+			<form
+				className="flex flex-col justify-between"
+				onSubmit={methods.handleSubmit(onSubmit)}
+			>
+				{showJsonEditor && (
+					<JsonEditorDialog
+						validationSchema={authorSchema}
+						onClose={value => {
+							setShowJsonEditor(false);
+							// setRerender(r => r + 1);
+							if (value) {
+								methods.reset(value);
+							}
+						}}
+					/>
+				)}
+
+				<button
+					type="button"
+					className="btn-stroked absolute top-8 right-8"
+					onClick={() => setShowJsonEditor(true)}
+				>
+					Als JSON bearbeiten
+				</button>
+
+				<div className="grid gap-8 xl:grid-cols-[400px_600px]">
+					<AuthorData />
+					<Permissions />
+				</div>
+
+				<DialogActions onClose={onClose}>
+					<button className="btn-primary" type="submit">
+						Speichern
+					</button>
+				</DialogActions>
+			</form>
+		</FormProvider>
+	);
+}
+
+function AuthorData() {
+	const { register, control, setValue, formState } = useFormContext<Author>();
+	const imgUrl = useWatch({ control: control, name: "imgUrl" });
+	const errors = formState.errors;
 
 	return (
-		<form
-			className="grid gap-8 xl:grid-cols-[400px_600px]"
-			onSubmit={methods.handleSubmit(onSubmit)}
-		>
-			<section className="flex flex-col gap-8 rounded-lg border border-light-border p-4">
-				<LabeledField label="Name">
-					<input
-						className="textfield"
-						type={"text"}
-						{...methods.register("displayName")}
-					/>
+		<section className="flex flex-col rounded-lg border border-light-border p-4">
+			<h2 className="mb-4 text-2xl">Daten</h2>
+			<div className="flex flex-col gap-4">
+				<LabeledField label="Name" error={errors.displayName?.message}>
+					<input className="textfield" type={"text"} {...register("displayName")} />
 				</LabeledField>
-				<LabeledField label="Slug">
-					<input className="textfield" type={"text"} {...methods.register("slug")} />
+				<LabeledField label="Slug" error={errors.slug?.message}>
+					<input className="textfield" type={"text"} {...register("slug")} />
 				</LabeledField>
-				<LabeledField label="Bild">
+				<LabeledField label="Bild" error={errors.imgUrl?.message}>
 					<div className="flex w-full gap-4">
 						<div className="flex w-full flex-col gap-2">
 							<input
 								className="textfield w-full"
 								type={"text"}
 								placeholder={"https://example.com/image.png"}
-								{...methods.register("imgUrl")}
+								{...register("imgUrl")}
 							/>
 							<Upload
 								mediaType="image"
-								onUploadCompleted={url => methods.setValue("imgUrl", url)}
+								onUploadCompleted={url => setValue("imgUrl", url)}
 								preview={
 									<>
 										{imgUrl && imgUrl.length > 0 ? (
 											// eslint-disable-next-line @next/next/no-img-element
 											<img
 												src={imgUrl}
-												alt={`Image of ${initialAuthor.displayName}`}
+												alt="Avatar"
 												className="mx-auto h-32 w-32 shrink-0 rounded-lg object-cover"
 											></img>
 										) : (
@@ -231,26 +298,127 @@ function AuthorForm({
 						</div>
 					</div>
 				</LabeledField>
-			</section>
+			</div>
+		</section>
+	);
+}
 
-			<section className="flex flex-col gap-8">
-				<section className="flex flex-col gap-4 rounded-lg border border-light-border p-4">
-					<h2 className="text-2xl">Fachbereich-Admin</h2>
-					<div className="flex gap-4">
-						{subjects.map(subject => (
-							<span
-								key={subject.subjectId}
-								className="flex items-center gap-4 rounded-lg border border-light-border px-3 py-1 text-sm"
-							>
-								<span>{subject.subjectId}</span>
-								<button className="p-1">
-									<XIcon className="h-4 text-light" />
-								</button>
-							</span>
-						))}
-					</div>
-				</section>
+function Permissions() {
+	const { data: subjects } = trpc.subject.getAllWithSpecializations.useQuery();
+	const { control, setValue } = useFormContext<Author>();
+	const subjectAdmin = useWatch({ control: control, name: "subjectAdmin" });
+	const specializationAdmin = useWatch({ control: control, name: "specializationAdmin" });
+
+	return (
+		<section className="flex flex-col gap-8">
+			<section className="flex h-full flex-col gap-4 rounded-lg border border-light-border p-4">
+				<h2 className="text-2xl">Rechte</h2>
+				<p className="text-sm text-light">TODO: Beschreibung der Rechte</p>
+				<div className="flex gap-4">
+					{!subjects ? (
+						<LoadingBox />
+					) : (
+						<ul className="flex flex-col gap-2">
+							{subjects.map(subject => (
+								<li key={subject.subjectId}>
+									<div className="flex flex-col">
+										<span className="flex items-center gap-2">
+											<input
+												id={subject.subjectId}
+												type={"checkbox"}
+												className="checkbox"
+												checked={
+													!!subjectAdmin.find(
+														s => s.subjectId === subject.subjectId
+													)
+												}
+												onChange={e => {
+													if (e.target.checked) {
+														setValue(
+															"subjectAdmin",
+															[...subjectAdmin, subject].sort(
+																(a, b) =>
+																	a.subjectId.localeCompare(
+																		b.subjectId
+																	)
+															)
+														);
+													} else {
+														setValue(
+															"subjectAdmin",
+															subjectAdmin.filter(
+																s =>
+																	s.subjectId !==
+																	subject.subjectId
+															)
+														);
+													}
+												}}
+											/>
+											<label
+												htmlFor={subject.subjectId}
+												className="text-sm font-semibold"
+											>
+												{subject.title}
+											</label>
+										</span>
+										<ul className="py-2 pl-8 text-sm">
+											{subject.specializations.map(specialization => (
+												<li
+													key={specialization.specializationId}
+													className="flex items-center gap-2"
+												>
+													<input
+														type="checkbox"
+														id={specialization.specializationId}
+														className="checkbox"
+														checked={
+															!!specializationAdmin.find(
+																s =>
+																	s.specializationId ===
+																	specialization.specializationId
+															)
+														}
+														onChange={e => {
+															if (e.target.checked) {
+																setValue(
+																	"specializationAdmin",
+																	[
+																		...specializationAdmin,
+																		specialization
+																	].sort((a, b) =>
+																		a.specializationId.localeCompare(
+																			b.specializationId
+																		)
+																	)
+																);
+															} else {
+																setValue(
+																	"specializationAdmin",
+																	specializationAdmin.filter(
+																		s =>
+																			s.specializationId !==
+																			specialization.specializationId
+																	)
+																);
+															}
+														}}
+													/>
+													<label
+														htmlFor={specialization.specializationId}
+													>
+														{specialization.title}
+													</label>
+												</li>
+											))}
+										</ul>
+									</div>
+								</li>
+							))}
+						</ul>
+					)}
+				</div>
 			</section>
-		</form>
+		</section>
 	);
 }
