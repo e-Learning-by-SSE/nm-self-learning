@@ -12,7 +12,7 @@ const ch_Signaluebertragung = {
 		"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 	content: [
 		createLesson(
-			"1. Struktur und Funktion des Nervensystems",
+			"Struktur und Funktion des Nervensystems",
 			"Aktivierungsfrage: In welche zwei unterschiedlichen Systeme wird das periphere Nervensystem aufgeteilt?",
 			"Becker-Carus & Wendt, 2017: Allgemeine Psychologie, Seite 33 - 34",
 			[createVideo("https://www.youtube.com/watch?v=18JPgHnUvLQ", 354)],
@@ -50,7 +50,7 @@ const ch_Signaluebertragung = {
 			]
 		),
 		createLesson(
-			"2. Die Nervenzelle",
+			"Die Nervenzelle",
 			"Aktivierungsfrage: Welche Klassen von Neuronen gibt es?",
 			"Becker-Carus & Wendt, 2017: Allgemeine Psychologie, Seite 34 - 35",
 			[createVideo("https://youtu.be/prK8Hw0GCDg", 354)],
@@ -91,7 +91,7 @@ const ch_Organisation = {
 		"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 	content: [
 		createLesson(
-			"10. Zentralnervensystem",
+			"Zentralnervensystem",
 			"Aktivierungsfrage: In welche zwei unterschiedlichen Systeme wird das periphere Nervensystem aufgeteilt?",
 			"Becker-Carus & Wendt, 2017: Allgemeine Psychologie, Seite 42 - 43",
 			[createVideo("https://www.youtube.com/watch?v=18JPgHnUvLQ", 354)],
@@ -129,7 +129,7 @@ const ch_Organisation = {
 			]
 		),
 		createLesson(
-			"11. Peripheres Nervensystem",
+			"Peripheres Nervensystem",
 			"Aktivierungsfrage: Welche Klassen von Neuronen gibt es?",
 			"Becker-Carus & Wendt, 2017: Allgemeine Psychologie, Seite 43 - 44",
 			[createVideo("https://youtu.be/prK8Hw0GCDg", 354)],

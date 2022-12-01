@@ -1,11 +1,11 @@
 import {
-    createArticle,
-    createCourse,
-    createLesson,
-    createMultipleChoice,
-    createTextQuestion,
-    createVideo,
-} from '../seed-functions';
+	createArticle,
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo
+} from "../seed-functions";
 
 const ch_Begriffslernen = {
 	title: "Begriffslernen in der Grundschule",
@@ -339,7 +339,82 @@ const ch_Symmetrien = {
 	]
 };
 
-export const chapters = [ch_Begriffslernen, ch_Figuren, ch_Symmetrien, ch_Groessen];
+const ch_Muster = {
+	title: "Muster, Ornamente, Parkettierungen in der Grundschule",
+	description: "Muster, Ornamente, Parkettierungen in der Grundschule",
+	content: [
+		createLesson(
+			"Grundlagen",
+			null,
+			"Grundlagen",
+			[
+				createVideo(
+					"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/08_01_01_geo_muster_angewandte_Symmetrie_grundlagen.mp4",
+					79
+				)
+			],
+			[
+				createMultipleChoice(
+					"Welche Themen sollten Muster, Ornamenten und Parkettierungen im Lehrplan vorangestellt werden? Kreuzen Sie alle richtigen Antworten an.",
+					[
+						{
+							content: "Kavalierperspektive",
+							isCorrect: false
+						},
+						{
+							content: "Kongruenzabbildungen",
+							isCorrect: true
+						},
+						{
+							content: "Konstruktionen",
+							isCorrect: false
+						},
+						{
+							content: "Symmetrien",
+							isCorrect: true
+						}
+					]
+				)
+			]
+		),
+		createLesson(
+			"Ornamente",
+			null,
+			"Ornamente",
+			[
+				createVideo(
+					"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/08_01_02_geo_muster_angewandte_Symmetrie_Ornamente.mp4",
+					207
+				)
+			],
+			[
+				createMultipleChoice(
+					"Welche Art von Symmetrie kommt bei Ornamenten meistens vor?",
+					[
+						{
+							content: "Achsensymmetrie",
+							isCorrect: false
+						},
+						{
+							content: "Punktsymmetrie",
+							isCorrect: false
+						},
+						{
+							content: "Schubsymmetrie",
+							isCorrect: true
+						},
+						{
+							content: "Drehsymmetrie",
+							isCorrect: false
+						}
+					]
+				)
+			]
+		)
+	]
+};
+
+export const chapters = [ch_Begriffslernen, ch_Figuren, ch_Symmetrien, ch_Muster, ch_Groessen];
 
 export const course = createCourse(
 	"mathematik",
