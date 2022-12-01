@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseAnswerSchema, baseQuestionSchema } from "../../base-question";
+import { baseAnswerSchema, BaseEvaluation, baseQuestionSchema } from "../../base-question";
 
 export const shortTextQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("short-text"),
@@ -25,8 +25,7 @@ export type ShortText = {
 	type: "short-text";
 	question: ShortTextQuestion;
 	answer: ShortTextAnswer;
-	evaluation: {
-		isCorrect: boolean;
+	evaluation: BaseEvaluation & {
 		acceptedAnswerId: string | null;
 	};
 };

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseQuestionSchema } from "../../base-question";
+import { BaseEvaluation, baseQuestionSchema } from "../../base-question";
 
 export const textQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("text")
@@ -14,5 +14,5 @@ export type Text = {
 		type: "text";
 		value: string;
 	};
-	evaluation: unknown;
+	evaluation: BaseEvaluation;
 };

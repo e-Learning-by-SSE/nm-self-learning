@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BaseEvaluation } from "./base-question";
 import { ClozeAnswer } from "./question-types/cloze/component";
 import { Cloze, clozeQuestionSchema } from "./question-types/cloze/schema";
 import { MultipleChoiceAnswer } from "./question-types/multiple-choice/component";
@@ -47,26 +48,29 @@ export type EvaluationFn<QType extends QuestionType["type"]> = (
 export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: EvaluationFn<QType> } = {
 	"multiple-choice": evaluateMultipleChoice,
 	cloze: (q, a) => {
-		return "Not implemented.";
+		console.error(`Evaluation function for ${q.type} is not implemented.}`);
+		return { isCorrect: true };
 	},
 	text: (q, a) => {
-		return "Not implemented.";
+		console.error(`Evaluation function for ${q.type} is not implemented.}`);
+		return { isCorrect: true };
 	},
 	"short-text": evaluateShortText,
 	vorwissen: (q, a) => {
-		return "Not implemented.";
+		console.error(`Evaluation function for ${q.type} is not implemented.}`);
+		return { isCorrect: true };
 	},
 	programming: evaluateProgramming
 };
 
-export const QUESTION_ANSWER_COMPONENTS: { [QType in QuestionType["type"]]: () => JSX.Element } = {
-	"multiple-choice": MultipleChoiceAnswer,
-	"short-text": ShortTextAnswer,
-	programming: ProgrammingAnswer,
-	text: TextAnswer,
-	vorwissen: VorwissenAnswer,
-	cloze: ClozeAnswer as any
-};
+// export const QUESTION_ANSWER_COMPONENTS: { [QType in QuestionType["type"]]: () => JSX.Element } = {
+// 	"multiple-choice": MultipleChoiceAnswer,
+// 	"short-text": ShortTextAnswer,
+// 	programming: ProgrammingAnswer,
+// 	text: TextAnswer,
+// 	vorwissen: VorwissenAnswer,
+// 	cloze: ClozeAnswer as any
+// };
 
 export const INITIAL_ANSWER_VALUE: {
 	[QType in QuestionType["type"]]: InferQuestionType<QType>["answer"]["value"];
@@ -76,7 +80,7 @@ export const INITIAL_ANSWER_VALUE: {
 	programming: { code: "", stdout: "" },
 	text: "",
 	vorwissen: {} as any,
-	cloze: ClozeAnswer as any
+	cloze: null
 };
 
 export type QuestionType = z.infer<typeof quizContentSchema>;

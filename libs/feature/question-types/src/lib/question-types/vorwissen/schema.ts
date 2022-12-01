@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseQuestionSchema } from "../../base-question";
+import { BaseEvaluation, baseQuestionSchema } from "../../base-question";
 
 export const vorwissenQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("vorwissen"),
@@ -29,5 +29,5 @@ export type Vorwissen = {
 			selectedAnswers: { [answerId: string]: boolean };
 		};
 	};
-	evaluation: unknown;
+	evaluation: BaseEvaluation;
 };

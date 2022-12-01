@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseQuestionSchema } from "../../base-question";
+import { BaseEvaluation, baseQuestionSchema } from "../../base-question";
 
 export const programmingQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("programming"),
@@ -30,8 +30,7 @@ export type Programming = {
 			stdout: string;
 		};
 	};
-	evaluation: {
-		isCorrect: boolean;
+	evaluation: BaseEvaluation & {
 		testCases: TestCase[];
 	};
 };

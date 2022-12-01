@@ -20,3 +20,8 @@ export const baseAnswerSchema = z.object({
 	type: z.string(),
 	value: z.any()
 });
+
+/** Every evaluation function should return an object that satisfies this type. */
+export type BaseEvaluation = {
+	isCorrect: boolean;
+};

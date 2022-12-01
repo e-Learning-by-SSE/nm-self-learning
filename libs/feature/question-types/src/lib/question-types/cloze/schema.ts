@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseQuestionSchema } from "../../base-question";
+import { BaseEvaluation, baseQuestionSchema } from "../../base-question";
 
 export const clozeQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("cloze"),
@@ -15,5 +15,5 @@ export type Cloze = {
 		type: "cloze";
 		value: unknown;
 	};
-	evaluation: unknown;
+	evaluation: BaseEvaluation;
 };

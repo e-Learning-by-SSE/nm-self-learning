@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseAnswerSchema, baseQuestionSchema } from "../../base-question";
+import { baseAnswerSchema, BaseEvaluation, baseQuestionSchema } from "../../base-question";
 
 export const multipleChoiceQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("multiple-choice"),
@@ -21,8 +21,7 @@ export const multipleChoiceAnswerSchema = baseAnswerSchema.extend({
 
 export type MultipleChoiceAnswer = z.infer<typeof multipleChoiceAnswerSchema>;
 
-export type MultipleChoiceEvaluation = {
-	isCorrect: boolean;
+export type MultipleChoiceEvaluation = BaseEvaluation & {
 	answers: { [answerId: string]: boolean };
 	errorCount: number;
 };
