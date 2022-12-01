@@ -13,6 +13,9 @@
 				"quotes": ["error", "double"],
 				"indent": ["off", "tab", { "SwitchCase": 1 }],
 				"semi": "off",
+				"no-empty": "off",
+				"no-empty-function": "off",
+				"@typescript-eslint/no-empty-function": "off",
 				"jsx-a11y/anchor-is-valid": ["off"]
 			}
 		},
