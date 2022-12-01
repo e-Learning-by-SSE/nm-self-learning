@@ -21,9 +21,11 @@ export const evaluateProgramming: EvaluationFn<"programming"> = (question, answe
 	}
 
 	if (question.custom.mode === "callable") {
+		const testCases = parseTestCases(answer.value.stdout.trim());
+
 		return {
-			isCorrect: false,
-			testCases: parseTestCases(answer.value.stdout.trim())
+			isCorrect: testCases.every(c => c.verdict === true),
+			testCases: testCases
 		};
 	}
 
