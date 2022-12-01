@@ -84,23 +84,23 @@ model Author {
     lessons             Lesson[]
     courses             Course[]
     teams               Team[]
-    SubjectAdmin        SubjectAdmin[]
-    SpecializationAdmin SpecializationAdmin[]
+    subjectAdmin        SubjectAdmin[]
+    specializationAdmin SpecializationAdmin[]
 }
 
 model SubjectAdmin {
-    subject   Subject @relation(fields: [subjectId], references: [subjectId])
+    subject   Subject @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
     subjectId String
-    author    Author  @relation(fields: [username], references: [username])
+    author    Author  @relation(fields: [username], references: [username], onDelete: Cascade)
     username  String
 
     @@id([subjectId, username])
 }
 
 model SpecializationAdmin {
-    specialization   Specialization @relation(fields: [specializationId], references: [specializationId])
+    specialization   Specialization @relation(fields: [specializationId], references: [specializationId], onDelete: Cascade)
     specializationId String
-    author           Author         @relation(fields: [username], references: [username])
+    author           Author         @relation(fields: [username], references: [username], onDelete: Cascade)
     username         String
 
     @@id([specializationId, username])

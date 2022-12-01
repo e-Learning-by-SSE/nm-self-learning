@@ -1,18 +1,18 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import slugify from 'slugify';
+import { readFileSync } from "fs";
+import { join } from "path";
+import slugify from "slugify";
 
-import { faker } from '@faker-js/faker';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { QuestionType, QuizContent } from '@self-learning/question-types';
+import { faker } from "@faker-js/faker";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
-    createCourseContent,
-    createCourseMeta,
-    createLessonMeta,
-    extractLessonIds,
-    LessonContent,
-    LessonContentType,
-} from '@self-learning/types';
+	createCourseContent,
+	createCourseMeta,
+	createLessonMeta,
+	extractLessonIds,
+	LessonContent,
+	LessonContentType
+} from "@self-learning/types";
 
 const prisma = new PrismaClient();
 

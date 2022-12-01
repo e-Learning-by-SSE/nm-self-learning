@@ -638,8 +638,10 @@ const authors: Prisma.UserCreateInput[] = [
 				lessons: {
 					connect: extractLessonIds(reactLessons).map(lessonId => ({ lessonId }))
 				},
-				teams: {
-					create: []
+				specializationAdmin: {
+					create: {
+						specializationId: "softwareentwicklung"
+					}
 				}
 			}
 		}
@@ -666,7 +668,12 @@ const authors: Prisma.UserCreateInput[] = [
 		author: {
 			create: {
 				displayName: "Albus Dumbledore",
-				slug: "albus-dumbledore"
+				slug: "albus-dumbledore",
+				subjectAdmin: {
+					create: {
+						subjectId: "informatik"
+					}
+				}
 			}
 		}
 	},

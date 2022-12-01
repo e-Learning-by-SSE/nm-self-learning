@@ -3,8 +3,3 @@
 /node_modules
 /dist
 /coverage
-/apps/cms/.cache
-/apps/cms/.tmp
-/apps/cms/build
-/apps/cms/node_modules
-/apps/cms/public

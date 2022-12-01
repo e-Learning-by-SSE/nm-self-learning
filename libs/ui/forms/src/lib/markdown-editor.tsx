@@ -116,18 +116,16 @@ export function MarkdownEditorDialog({
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			title={title}
 		>
-			<div className="grid h-full items-start overflow-hidden">
-				<div className="grid h-full grid-cols-2 items-start gap-8">
+			<div className="flex h-full flex-col justify-between overflow-hidden">
+				<div className="grid max-h-[60vh] grid-cols-2 gap-8 overflow-hidden">
 					<div className="flex h-full w-full flex-col gap-1">
 						<label className="text-sm font-semibold">Inhalt</label>
-						<div className="h-full overflow-hidden">
-							<EditorField
-								language="markdown"
-								onChange={setValue}
-								value={value}
-								height="100%"
-							/>
-						</div>
+						<EditorField
+							language="markdown"
+							onChange={setValue}
+							value={value}
+							height="100%"
+						/>
 					</div>
 
 					<div className="flex h-full w-full flex-col gap-1 overflow-hidden">
@@ -143,9 +141,11 @@ export function MarkdownEditorDialog({
 									ERROR
 								</span>
 							)}
-							<div className="prose w-full">
-								{preview && <MDXRemote {...preview} />}
-							</div>
+							{preview && (
+								<MarkdownContainer>
+									<MDXRemote {...preview} />
+								</MarkdownContainer>
+							)}
 						</div>
 					</div>
 				</div>

@@ -157,13 +157,13 @@ function LessonNode({
 	};
 
 	return (
-		<span className="flex justify-between gap-4 rounded-lg bg-gray-200 px-4 py-2">
+		<span className="flex justify-between gap-4 rounded-lg bg-white px-4 py-2">
 			<div className="flex gap-8">
 				<div className="flex gap-4">
 					<button
 						type="button"
 						title="Nach oben"
-						className="rounded p-1 hover:bg-gray-300"
+						className="rounded p-1 hover:bg-gray-200"
 						onClick={() => moveLesson(lesson.lessonId, "up")}
 					>
 						<ArrowUpIcon className="h-3" />
@@ -171,7 +171,7 @@ function LessonNode({
 					<button
 						type="button"
 						title="Nach unten"
-						className="rounded p-1 hover:bg-gray-300"
+						className="rounded p-1 hover:bg-gray-200"
 						onClick={() => moveLesson(lesson.lessonId, "down")}
 					>
 						<ArrowDownIcon className="h-3" />
