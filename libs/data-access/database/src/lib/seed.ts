@@ -60,7 +60,8 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 		subjectId: "informatik",
 		slug: "informatik",
 		title: "Informatik",
-		subtitle: faker.lorem.sentences(2),
+		subtitle:
+			"IT-Grundlagen für die Studiengänge Angewandte Informatik (B.Sc./M.Sc.), Informationsmanagement und Informationstechnologie (IMIT, B.Sc./M.Sc.), Wirtschaftsinformatik (B.Sc./M.Sc.), Data Analytics (M.Sc.) und IT-Nebenfachstudierende",
 		cardImgUrl:
 			"https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80",
 		imgUrlBanner:
