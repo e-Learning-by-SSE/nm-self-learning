@@ -5,7 +5,7 @@ import {
 	ChevronLeftIcon,
 	PlayIcon
 } from "@heroicons/react/solid";
-import { CourseCompletion, LessonMeta } from "@self-learning/types";
+import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { Divider } from "@self-learning/ui/common";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -169,8 +169,8 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 					{course.title}
 				</Link>
 				<span className="text-sm text-light">
-					{courseCompletion?.completedLessonCount} / {courseCompletion?.lessonCount}{" "}
-					Lerneinheiten abgeschlossen
+					{courseCompletion?.completedLessonCount ?? 0} /{" "}
+					{extractLessonIds(content).length} Lerneinheiten abgeschlossen
 				</span>
 			</div>
 			<span className="relative h-5 w-full rounded-lg bg-gray-200">
