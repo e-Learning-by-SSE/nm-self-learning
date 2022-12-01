@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 import { subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -18,6 +19,7 @@ import { javaExample } from "./java-example";
 import { mathExample } from "./math/math-example";
 import { psychologyExample } from "./psychology/psychology-example";
 import { createSpecialization } from "./seed-functions";
+import { getRandomId } from "@self-learning/util/common";
 
 faker.seed(1);
 
@@ -333,146 +335,100 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 	// },
 	{
 		type: "programming",
-		language: "java",
-		withCertainty: false,
-		questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
-		statement: `# Hello World
-
-Erstelle ein Programm, welches \`Hello World\` auf der Konsole ausgibt.`,
-		custom: {
-			mode: "standalone",
-			solutionTemplate: `public class HelloWorld {
-	public static void main(String[] args) {
-		System.out.println("Hello World");
-	}
-}`,
-			expectedOutput: "Hello World"
-		},
 		hints: [
 			{
 				hintId: "asdrfewq",
 				content: "```java\nSystem.out.println();```"
+			},
+			{
+				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
+				hintId: getRandomId()
 			}
-		]
-	},
-	{
-		type: "programming",
-		language: "typescript",
-		withCertainty: false,
-		questionId: "dee8dfd5-ee07-4071-bf7b-33b4cb1fe623",
-		statement: `# Schleifen
-
-Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
-
-**Beispiel:**
-
-**Eingabe**: \`[1, 2, 3, 4, 5]\`
-**Ausgabe**: \`15\`
-`,
+		],
 		custom: {
-			mode: "callable",
+			mode: "standalone",
+			expectedOutput: "Hello World",
 			solutionTemplate:
-				"export function sum(numbers: number[]): number {\n\t// DEINE LÖSUNG\n\treturn 0;\t\n}",
-			mainFile: `import { sum } from "./Solution";
-import { join } from 'path';
-
-const testCases = [
-[1, 1],
-[1, 2, 3, 4, 5],
-[7],
-[],
-];
-
-function sumExpected(numbers: number[]): number {
-return numbers.reduce((a, b) => a + b, 0);
-}
-
-for (const testCase of testCases) {
-console.log(sum(testCase));
-}
-
-console.log("### EXPECTED ###")
-
-for (const testCase of testCases) {
-console.log(sumExpected(testCase));
-}
-`
+				'public class Solution {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println("Hello World");\n\t}\n}'
 		},
-		hints: [
-			{
-				hintId: "dskfjsdk",
-				content:
-					"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
-			}
-		]
+		language: "java",
+		statement:
+			"# Hello World\n\nErstelle ein Programm, welches `Hello World` auf der Konsole ausgibt.",
+		questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
+		withCertainty: false
 	},
 	{
 		type: "programming",
-		language: "java",
-		withCertainty: false,
-		questionId: "b5884b38-bed2-4f00-8c21-8a7b0737af2e",
-		statement: `# Schleifen
-
-Implementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.
-
-**Beispiel:**
-
-**Eingabe**: \`[1, 2, 3, 4, 5]\`
-**Ausgabe**: \`15\`
-`,
-		custom: {
-			mode: "callable",
-			solutionTemplate: `public class Solution {
-public int sum(int[] numbers) {
-	if (numbers.length == 0) {
-		return -1; // Produce failing test case
-	}
-
-	int sum = 0;
-	for (int number : numbers) {
-		sum += number;
-	}
-	return sum;
-}
-}`,
-			mainFile: `import java.util.Arrays;
-
-public class Main {
-public static void main(String[] args) {
-	int[][] testCases = new int[][] {
-		new int[] { 1, 1 },
-		new int[] { 1, 2, 3, 4, 5 },
-		new int[] { 7 },
-		new int[] { }
-	};
-
-	for (int[] testCase : testCases) {
-		System.out.println("### TEST");
-		System.out.println(Arrays.toString(testCase));
-		System.out.println("### EXPECTED");
-		System.out.println(sumExpected(testCase));
-		System.out.println("### ACTUAL");
-		System.out.println(new Solution().sum(testCase));
-	}
-}
-
-private static int sumExpected(int[] numbers) {
-	int sum = 0;
-	for (int number : numbers) {
-		sum += number;
-	}
-	return sum;
-}
-}
-`
-		},
 		hints: [
 			{
 				hintId: "dskfjsdk",
 				content:
 					"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
+			},
+			{
+				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
+				hintId: getRandomId()
 			}
-		]
+		],
+		custom: {
+			mode: "callable",
+			mainFile:
+				'import java.util.Arrays;\n\npublic class Main {\n\tpublic static void main(String[] args) {\n\t\tint[][] testCases = new int[][] {\n\t\t\tnew int[] { 1, 1 },\n\t\t\tnew int[] { 1, 2, 3, 4, 5 },\n\t\t\tnew int[] { 7 },\n\t\t\tnew int[] { }\n\t\t};\n\n\t\tfor (int[] testCase : testCases) {\n\t\t\tSystem.out.println("### TEST");\n\t\t\tSystem.out.println(Arrays.toString(testCase));\n\t\t\tSystem.out.println("### EXPECTED");\n\t\t\tSystem.out.println(sumExpected(testCase));\n\t\t\tSystem.out.println("### ACTUAL");\n\t\t\tSystem.out.println(new Solution().sum(testCase));\n\t\t}\n\t}\n\n\tprivate static int sumExpected(int[] numbers) {\n\tint sum = 0;\n\t\tfor (int number : numbers) {\n\t\t\tsum += number;\n\t\t}\n\t\treturn sum;\n\t}\n}\n',
+			solutionTemplate:
+				"public class Solution {\n\tpublic int sum(int[] numbers) {\n\t\tif (numbers.length == 0) {\n\t\t\treturn -1; // Produce failing test case\n\t\t}\n\n\tint sum = 0;\n\t\tfor (int number : numbers) {\n\t\t\tsum += number;\n\t\t}\n\t\treturn sum;\n\t}\n}"
+		},
+		language: "java",
+		statement:
+			"# Schleifen\n\nImplementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.\n\n**Beispiel:**\n\n**Eingabe**: `[1, 2, 3, 4, 5]`  \n**Ausgabe**: `15`\n",
+		questionId: "dee8dfd5-ee07-4071-bf7b-33b4cb1fe623",
+		withCertainty: false
+	},
+	{
+		type: "programming",
+		hints: [
+			{
+				content: "```java\nSystem.out.println();```",
+				hintId: getRandomId()
+			},
+			{
+				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
+				hintId: getRandomId()
+			}
+		],
+		custom: {
+			mode: "standalone",
+			expectedOutput: "Hello World",
+			solutionTemplate: 'console.log("Hello world");'
+		},
+		language: "typescript",
+		statement: "# Hello World in TypeScript\r\n\r\nKappa",
+		questionId: "oo8macg7",
+		withCertainty: false
+	},
+	{
+		type: "programming",
+		hints: [
+			{
+				content: "```java\nSystem.out.println();```",
+				hintId: getRandomId()
+			},
+			{
+				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
+				hintId: getRandomId()
+			}
+		],
+		custom: {
+			mode: "callable",
+			mainFile:
+				'import { sum } from "./Solution";\r\n\r\nconst testCases = [\r\n\t[1, 1],\r\n\t[1, 2, 3, 4, 5],\r\n\t[7],\r\n\t[],\r\n];\r\n\r\nfunction sumExpected(numbers: number[]): number {\r\n\treturn numbers.reduce((a, b) => a + b, 0);\r\n}\r\n\r\nfor (const testCase of testCases) {\r\n\tconsole.log("### TEST ###");\r\n\tconsole.log(testCase);\r\n\r\n\tconsole.log("### EXPECTED ###");\r\n\tconsole.log(sumExpected(testCase));\r\n\r\n\tconsole.log("### ACTUAL ###")\r\n\tconsole.log(sum(testCase));\r\n}\r\n',
+			solutionTemplate:
+				"export function sum(numbers: number[]): number {\r\n\t// DEINE LÖSUNG\r\n\treturn 0;\r\n}"
+		},
+		language: "typescript",
+		statement:
+			"# Schleifen in TypeScript\r\n\r\nImplementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.\r\n\r\n**Beispiel:**\r\n\r\n**Eingabe**: `[1, 2, 3, 4, 5]`  \r\n**Ausgabe**: `15`",
+		questionId: "v0qpvil4o",
+		withCertainty: false
 	}
 ];
 
