@@ -28,6 +28,7 @@ export type Programming = {
 		value: {
 			code: string;
 			stdout: string;
+			signal: string | null;
 		};
 	};
 	evaluation: BaseEvaluation & {

@@ -73,7 +73,8 @@ export function ProgrammingAnswer() {
 	const [isExecuting, setIsExecuting] = useState(false);
 	const [output, setOutput] = useState({
 		isError: false,
-		text: ""
+		text: "",
+		signal: null as string | null
 	});
 
 	const { data: runtimes } = trpc.programming.runtimes.useQuery();
@@ -96,6 +97,7 @@ export function ProgrammingAnswer() {
 
 			setOutput({
 				isError: true,
+				signal: null,
 				text: `Language "${language}" is not available.\` Code execution server might be offline or language is not installed.`
 			});
 
@@ -129,7 +131,7 @@ export function ProgrammingAnswer() {
 		const executeRequest: ExecuteRequest = { language, version, files };
 
 		console.log("Executing code: ", executeRequest);
-		setOutput({ isError: false, text: "Executing..." });
+		setOutput({ isError: false, signal: null, text: "Executing..." });
 		setIsExecuting(true);
 
 		try {
@@ -138,14 +140,16 @@ export function ProgrammingAnswer() {
 
 			setOutput({
 				isError: data.run.code !== 0, // 0 indicates success that program ran without errors
-				text: data.run.output
+				text: data.run.output,
+				signal: data.run.signal
 			});
 
 			const newAnswer: Programming["answer"] = {
 				type: "programming",
 				value: {
 					code: answer.value.code,
-					stdout: data.run.output
+					stdout: data.run.output,
+					signal: data.run.signal
 				}
 			};
 
@@ -158,11 +162,13 @@ export function ProgrammingAnswer() {
 			if (error instanceof TRPCClientError) {
 				setOutput({
 					isError: true,
+					signal: null,
 					text: error.message
 				});
 			} else {
 				setOutput({
 					isError: true,
+					signal: null,
 					text: "UNEXPECTED SERVER ERROR"
 				});
 			}
@@ -191,8 +197,9 @@ export function ProgrammingAnswer() {
 							setAnswer({
 								type: "programming",
 								value: {
+									code: v ?? "",
 									stdout: answer.value.stdout,
-									code: v ?? ""
+									signal: answer.value.signal
 								}
 							});
 						}}
@@ -202,7 +209,7 @@ export function ProgrammingAnswer() {
 
 				{<TestCaseResult evaluation={evaluation} isExecuting={isExecuting} />}
 
-				{output.isError && (
+				{!output.isError && (
 					<LabeledField label="Ausgabe">
 						<div className="flex h-fit max-h-[400px] w-full shrink-0 flex-col gap-4 rounded-lg border border-light-border bg-white">
 							<div className="playlist-scroll h-full overflow-auto p-4">
@@ -215,7 +222,14 @@ export function ProgrammingAnswer() {
 										{output.text}
 									</pre>
 								) : (
-									<span className="text-light">Keine Ausgabe.</span>
+									<span className="flex flex-col gap-2 text-light">
+										<span>Keine Ausgabe.</span>
+										{output.signal && (
+											<span className="text-xs text-light text-red-500">
+												Prozess wurde mit "{output.signal}" beendet.
+											</span>
+										)}
+									</span>
 								)}
 							</div>
 						</div>

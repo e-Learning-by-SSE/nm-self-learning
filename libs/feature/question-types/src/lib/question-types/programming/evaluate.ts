@@ -2,6 +2,14 @@ import { EvaluationFn } from "../../quiz-schema";
 import { TestCase } from "./schema";
 
 export const evaluateProgramming: EvaluationFn<"programming"> = (question, answer) => {
+	// Program was terminated (i.e., timeout)
+	if (answer.value.signal !== null) {
+		return {
+			isCorrect: false,
+			testCases: []
+		};
+	}
+
 	if (question.custom.mode === "standalone") {
 		const actual = answer.value.stdout.trim();
 		const expected = question.custom.expectedOutput.trim();

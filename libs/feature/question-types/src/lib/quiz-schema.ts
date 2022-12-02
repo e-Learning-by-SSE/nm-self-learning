@@ -83,7 +83,8 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 	"short-text": () => "",
 	programming: question => ({
 		code: question.custom.solutionTemplate,
-		stdout: ""
+		stdout: "",
+		signal: null
 	}),
 	text: () => "",
 	vorwissen: () => ({} as any),
