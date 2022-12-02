@@ -117,7 +117,7 @@ export function AuthorHeader({ author }: { author: Author }) {
 	return (
 		<div className="flex flex-col place-items-center gap-16">
 			<div className="relative mx-auto shrink-0 lg:mx-0">
-				{author.imgUrl && (
+				{author.imgUrl ? (
 					<Image
 						className="rounded-lg"
 						height="256"
@@ -125,6 +125,8 @@ export function AuthorHeader({ author }: { author: Author }) {
 						src={author.imgUrl}
 						alt=""
 					></Image>
+				) : (
+					<div className="h-64 w-64 rounded-lg bg-gray-200"></div>
 				)}
 			</div>
 			<div className="flex flex-col place-items-center gap-16">
