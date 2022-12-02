@@ -1,7 +1,7 @@
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ReactComponent as PersonalInformationSvg } from "../../svg/personal-information.svg";
+import { ReactComponent as PersonalInformationSvg } from "../../svg/teams.svg";
 
 export default function AdminPage() {
 	const session = useSession({ required: true });
@@ -44,7 +44,7 @@ function Card({
 			href={href}
 			className="flex flex-col place-items-center gap-4 rounded-lg border border-light-border bg-white pt-4"
 		>
-			<div className="flex aspect-square w-64">{imageElement}</div>
+			<div className="flex aspect-square h-64 w-64">{imageElement}</div>
 			<span className="w-full rounded-b-lg bg-secondary p-4 text-center font-semibold text-white">
 				{title}
 			</span>
