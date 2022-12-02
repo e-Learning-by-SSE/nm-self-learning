@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, ReactElement, ReactNode } from "react";
 
 export function LabeledField({
 	children,
@@ -25,4 +25,8 @@ export function FieldError({ error }: { error?: string | null }) {
 	}
 
 	return null;
+}
+
+export function FieldHint({ children }: { children?: ReactNode }) {
+	return <p className="px-2 text-xs text-light">{children}</p>;
 }

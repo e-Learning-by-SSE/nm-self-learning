@@ -2,6 +2,7 @@ import { CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { ReactComponent as SoftwareEngineerSvg } from "../../svg/software-engineer.svg";
 import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
+import { ReactComponent as EnvStudySvg } from "../../svg/environmental-study.svg";
 
 export default function TeachingPage() {
 	return (
@@ -19,6 +20,12 @@ export default function TeachingPage() {
 					href="/teaching/courses"
 					imageElement={<SoftwareEngineerSvg />}
 					title="Kurse verwalten"
+				/>
+
+				<Card
+					href="/teaching/subjects"
+					imageElement={<EnvStudySvg />}
+					title="Fachgebiete verwalten"
 				/>
 			</div>
 		</CenteredSection>

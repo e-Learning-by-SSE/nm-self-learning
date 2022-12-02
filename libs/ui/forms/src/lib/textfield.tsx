@@ -1,3 +1,6 @@
+import { useCallback, useMemo } from "react";
+import { UseFormReturn } from "react-hook-form";
+import slugify from "slugify";
 import { LabeledField } from "./labeled-field";
 
 export function Textfield(props: JSX.IntrinsicElements["input"] & { label: string }) {
@@ -14,4 +17,32 @@ export function TextArea(props: JSX.IntrinsicElements["textarea"] & { label: str
 			<textarea className="textfield" {...props}></textarea>
 		</LabeledField>
 	);
+}
+
+/**
+ * Returns a function that generates a slug from the value of a field.
+ *
+ * @example
+ */
+export function useSlugify<T extends Record<string, unknown>>(
+	form: UseFormReturn<T, unknown>,
+	field: keyof T,
+	slugField: keyof T
+) {
+	return useMemo(() => {
+		const slugifyField = () => {
+			const title = form.getValues(field as any);
+			const slug = slugify(title as any, { lower: true });
+			form.setValue(slugField as any, slug as any);
+		};
+
+		return {
+			slugifyField,
+			slugifyIfEmpty: () => {
+				if (form.getValues(slugField as any) === "") {
+					slugifyField();
+				}
+			}
+		};
+	}, [form, field, slugField]);
 }

@@ -1,7 +1,7 @@
 import { Dialog } from "@headlessui/react";
 import { EditorField } from "@self-learning/ui/forms";
-import { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { useMemo, useState } from "react";
+import { useFormContext, UseFormReturn } from "react-hook-form";
 import { ZodSchema } from "zod";
 
 export function JsonEditorDialog<T>({
@@ -87,5 +87,48 @@ export function JsonEditorDialog<T>({
 				</div>
 			</div>
 		</Dialog>
+	);
+}
+
+function useJsonEditor() {
+	const [isJsonEditorOpen, setIsJsonEditorOpen] = useState(false);
+	const form = useFormContext();
+
+	return useMemo(() => {
+		return {
+			isJsonEditorOpen,
+			openJsonEditor: () => setIsJsonEditorOpen(true),
+			onCloseJsonEditor: (value?: unknown) => {
+				if (value) {
+					form.reset(value);
+				}
+
+				setIsJsonEditorOpen(false);
+			}
+		};
+	}, [form, isJsonEditorOpen, setIsJsonEditorOpen]);
+}
+
+/**
+ * Provides a `button` that opens the surrounding form in {@link JsonEditorDialog}.
+ * Must be nested inside a `FormProvider` (react-hook-form).
+ *
+ * @example
+ * const form = useForm();
+ *
+ * <FormProvider {...form}>
+ *  	<JsonEditorButton />
+ * </FormProvider>
+ */
+export function OpenAsJsonButton({ validationSchema }: { validationSchema?: ZodSchema }) {
+	const { isJsonEditorOpen, openJsonEditor, onCloseJsonEditor } = useJsonEditor();
+
+	return (
+		<button type="button" className="btn-stroked" onClick={openJsonEditor}>
+			<span>Als JSON bearbeiten</span>
+			{isJsonEditorOpen && (
+				<JsonEditorDialog onClose={onCloseJsonEditor} validationSchema={validationSchema} />
+			)}
+		</button>
 	);
 }
