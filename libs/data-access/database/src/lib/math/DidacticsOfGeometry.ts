@@ -1,11 +1,11 @@
 import {
-	createArticle,
-	createCourse,
-	createLesson,
-	createMultipleChoice,
-	createTextQuestion,
-	createVideo
-} from "../seed-functions";
+    createArticle,
+    createCourse,
+    createLesson,
+    createMultipleChoice,
+    createTextQuestion,
+    createVideo,
+} from '../seed-functions';
 
 const ch_Begriffslernen = {
 	title: "Begriffslernen in der Grundschule",
@@ -414,7 +414,195 @@ const ch_Muster = {
 	]
 };
 
-export const chapters = [ch_Begriffslernen, ch_Figuren, ch_Symmetrien, ch_Muster, ch_Groessen];
+const ch_Konstruieren = {
+	title: "Konstruieren",
+	description: "Begriffslernen in der Grundschule.",
+	content: [
+		createLesson(
+			"Konstruktionswerkzeuge - Allgemein",
+			null,
+			"Konstruktionswerkzeuge - Allgemein",
+			[
+				createVideo(
+					"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/01_01%20Konstruktionswerkzeuge%20allgemein.mp4",
+					203
+				)
+			],
+			[
+				createMultipleChoice("Kreuzen Sie die richtigen Aussagen an.", [
+					{
+						content:
+							"Alle Möglichkeiten der Faltung sind auch mit Lineal und Zirkel vernehmbar.",
+						isCorrect: false
+					},
+					{
+						content:
+							"Das Geodreieck fasst einzelne Konstruktionsschritte von Zirkel und Lineal zusammen.",
+						isCorrect: true
+					},
+					{
+						content:
+							"In der Antike wurde für eine Konstruktion häufig auf Sand gemalt.",
+						isCorrect: true
+					},
+					{
+						content:
+							"Die Bedeutung von Konstruktion im Geometrieunterricht hat in den letzten Jahren zugenommen.",
+						isCorrect: false
+					}
+				]),
+				createMultipleChoice("Welche Werkzeuge sind Grundwerkzeuge nach Euklid?", [
+					{
+						content: "Zirkel",
+						isCorrect: true
+					},
+					{
+						content: "Lineal ",
+						isCorrect: true
+					},
+					{
+						content: "Geodreieck",
+						isCorrect: false
+					},
+					{
+						content: "Ellipsenzirkel",
+						isCorrect: false
+					},
+					{
+						content: "Parallelzeichner",
+						isCorrect: false
+					}
+				]),
+				createMultipleChoice(
+					"Welche der folgenden Aussagen gehört nicht zu Euklids Postulaten? ",
+					[
+						{
+							content: "zwischen zwei Punkten kann man eine Strecke ziehen",
+							isCorrect: false
+						},
+						{
+							content: "ein Rechteck hat vier rechte Winkel ",
+							isCorrect: true
+						},
+						{
+							content:
+								"in Kreis kann durch ein beliebigen Radius um einen Punkt beschrieben werden",
+							isCorrect: false
+						},
+						{
+							content: "gerade Strecken sind beliebig verlängerbar",
+							isCorrect: false
+						}
+					]
+				)
+			]
+		),
+
+		createLesson(
+			"Historischer Hintergrund von Konstruktionswerkzeugen",
+			null,
+			"Historischer Hintergrund von Konstruktionswerkzeugen",
+			[
+				createVideo(
+					"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/01_02%20historischer%20Hintergrund.mp4",
+					129
+				)
+			],
+			[
+				createMultipleChoice("Kreuzen Sie die richtigen Aussagen an.", [
+					{
+						content:
+							"In der griechischen Antike wurde damit begonnen mathematisches Wissen zu systematisieren und zu beweisen. ",
+						isCorrect: false
+					},
+					{
+						content:
+							"Schon vor Euklid haben die Menschen geometrische Beweise herangeführt.",
+						isCorrect: true
+					},
+
+					{
+						content:
+							"Im alten Ägypten wurde Geometrie für alltägliche Erfahrungen wie beim Bauen oder bei der Landwirtschaft genutzt.",
+						isCorrect: true
+					}
+				])
+			]
+		),
+		createLesson(
+			"Doppelfunktion von Konstruktion",
+			null,
+			"Doppelfunktion von Konstruktion",
+			[
+				createVideo(
+					"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/01_03%20Doppelfunktion%20von%20Konstruktion.mp4",
+					129
+				)
+			],
+			[
+				createMultipleChoice(
+					"Welche Aussage über die Doppelfunktion von Konstruktionen ist falsch?",
+					[
+						{
+							content:
+								"Die euklidischen Postulate beschreiben, wie man ein Objekt mechanisch und durch geeignete Maßnahmen herstellen kann. ",
+							isCorrect: false
+						},
+						{
+							content:
+								"Durch die Postulate können theoretische Aspekte überlegt werden, welche Objekte konstruierbar sind und welche nicht. ",
+							isCorrect: false
+						},
+						{
+							content:
+								"Wenn Objekte nach den euklidischen Postulaten konstruiert werden können, existieren diese in der euklidischen Geometrie. ",
+							isCorrect: false
+						},
+						{
+							content:
+								"Euklid warf verschiedene Fragen auf, die durch seine Schüler mit Hilfe der Postulate gelöst werden konnten. ",
+							isCorrect: true
+						}
+					]
+				),
+				createMultipleChoice(
+					"Durch die Postulate und die Doppelfunktion von Konstruktionen können in der Schule verschiedene Fragen aufgeworfen werden. Welche gehört nicht dazu?",
+					[
+						{
+							content:
+								"Welche Angaben müssen gemacht werden, damit eine Konstruktion gelingt? ",
+							isCorrect: false
+						},
+						{
+							content:
+								"Welche Angaben müssen für ein Dreieck gemacht werden, damit die Konstruktion eindeutig ist?",
+							isCorrect: false
+						},
+						{
+							content:
+								"Welche Angaben müssen gemacht werden, damit man einen Winkel in drei Teile teilen kann? ",
+							isCorrect: true
+						},
+						{
+							content:
+								"Welche Angaben müssen gemacht werden, damit Mitschülerinnen die Konstruktion genauso durchführen kann, wie man selbst? ",
+							isCorrect: false
+						}
+					]
+				)
+			]
+		)
+	]
+};
+
+export const chapters = [
+	ch_Begriffslernen,
+	ch_Figuren,
+	ch_Konstruieren,
+	ch_Symmetrien,
+	ch_Muster,
+	ch_Groessen
+];
 
 export const course = createCourse(
 	"mathematik",
