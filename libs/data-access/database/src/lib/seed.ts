@@ -1,25 +1,25 @@
 /* eslint-disable quotes */
-import { subHours } from "date-fns";
-import { readFileSync } from "fs";
-import { join } from "path";
-import slugify from "slugify";
+import { subHours } from 'date-fns';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import slugify from 'slugify';
 
-import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { QuizContent } from "@self-learning/question-types";
+import { faker } from '@faker-js/faker';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { QuizContent } from '@self-learning/question-types';
 import {
-	createCourseContent,
-	createCourseMeta,
-	createLessonMeta,
-	extractLessonIds,
-	LessonContent
-} from "@self-learning/types";
+    createCourseContent,
+    createCourseMeta,
+    createLessonMeta,
+    extractLessonIds,
+    LessonContent,
+} from '@self-learning/types';
+import { getRandomId } from '@self-learning/util/common';
 
-import { javaExample } from "./java-example";
-import { mathExample } from "./math/math-example";
-import { psychologyExample } from "./psychology/psychology-example";
-import { createSpecialization } from "./seed-functions";
-import { getRandomId } from "@self-learning/util/common";
+import { javaExample } from './java-example';
+import { mathExample } from './math/math-example';
+import { psychologyExample } from './psychology/psychology-example';
+import { createSpecialization } from './seed-functions';
 
 faker.seed(1);
 
@@ -73,7 +73,8 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 		subjectId: "mathematik",
 		slug: "mathematik",
 		title: "Mathematik",
-		subtitle: faker.lorem.sentences(2),
+		subtitle:
+			'Weiterbildungsangebote im Bereich der "Didaktik der Mathematik" sowie der "Fachmathematik"',
 		cardImgUrl:
 			"https://images.unsplash.com/photo-1509869175650-a1d97972541a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80",
 		imgUrlBanner:
@@ -83,7 +84,7 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 		subjectId: "psychologie",
 		slug: "psychologie",
 		title: "Psychologie",
-		subtitle: faker.lorem.sentences(2),
+		subtitle: 'Grundladen der "Allgemeinen Psychologie"',
 		cardImgUrl:
 			"https://c.pxhere.com/photos/90/ed/brain_mind_psychology_idea_hearts_love_drawing_split_personality-1370218.jpg!d",
 		imgUrlBanner:
