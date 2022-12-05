@@ -48,3 +48,5 @@ export async function createTrpcContext({
 type Context = {
 	user?: Session["user"];
 };
+
+export type UserFromSession = Session["user"];

@@ -1,8 +1,7 @@
-import { PlusIcon } from "@heroicons/react/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AppRouter } from "@self-learning/api";
-import { Subject, subjectSchema } from "@self-learning/types";
-import { ImageOrPlaceholder, SectionHeader } from "@self-learning/ui/common";
+import { trpc } from "@self-learning/api-client";
+import { Specialization, specializationSchema } from "@self-learning/types";
+import { SectionHeader, ImageOrPlaceholder, showToast } from "@self-learning/ui/common";
 import {
 	FieldHint,
 	Form,
@@ -12,22 +11,68 @@ import {
 	useSlugify
 } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { inferRouterOutputs } from "@trpc/server";
+import { TRPCClientError } from "@trpc/client";
 import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 
-export function SubjectEditor({
-	initialSubject,
-	onSubmit,
-	specializations
+export default function SpecializationPage() {
+	useSession({ required: true });
+	const router = useRouter();
+
+	const { subjectId } = router.query;
+
+	const { mutateAsync: createSpecialization } = trpc.specialization.create.useMutation();
+
+	const onSubmit: Parameters<typeof SpecializationEditor>[0]["onSubmit"] = async specFromForm => {
+		try {
+			console.log("Creating specialization", specFromForm);
+			const spec = await createSpecialization({
+				subjectId: subjectId as string,
+				data: specFromForm
+			});
+
+			showToast({ type: "success", title: "Spezialisierung erstellt", subtitle: spec.title });
+			router.push(
+				`/teaching/subjects/${subjectId}/specializations/edit/${spec.specializationId}`
+			);
+		} catch (error) {
+			console.error(error);
+
+			if (error instanceof TRPCClientError) {
+				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+			}
+		}
+	};
+
+	return (
+		<div className="bg-gray-50">
+			<SpecializationEditor
+				onSubmit={onSubmit}
+				initialSpecialization={{
+					specializationId: "",
+					title: "",
+					slug: "",
+					subtitle: "",
+					cardImgUrl: null,
+					imgUrlBanner: null
+				}}
+			/>
+		</div>
+	);
+}
+
+export function SpecializationEditor({
+	initialSpecialization,
+	onSubmit
 }: {
-	initialSubject: Subject;
-	onSubmit: (s: Subject) => unknown;
-	specializations: inferRouterOutputs<AppRouter>["subject"]["getForEdit"]["specializations"];
+	initialSpecialization: Specialization;
+	onSubmit: (specialization: Specialization) => void;
 }) {
-	const form = useForm<Subject>({
-		resolver: zodResolver(subjectSchema),
-		defaultValues: initialSubject
+	const form = useForm<Specialization>({
+		resolver: zodResolver(specializationSchema),
+		defaultValues: initialSpecialization
 	});
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
@@ -47,27 +92,31 @@ export function SubjectEditor({
 						<>
 							<div>
 								<span className="font-semibold text-secondary">
-									Fachgebiet{" "}
-									{initialSubject.subjectId === "" ? "erstellen" : "speichern"}
+									Spezialisierung{" "}
+									{initialSpecialization.specializationId === ""
+										? "erstellen"
+										: "speichern"}
 								</span>
 
 								<h1 className="text-2xl">
-									{initialSubject.subjectId === ""
-										? "Neues Fachgebiet"
-										: initialSubject.title}
+									{initialSpecialization.specializationId === ""
+										? "Neue Spezialisierung"
+										: initialSpecialization.title}
 								</h1>
 							</div>
 
-							<OpenAsJsonButton validationSchema={subjectSchema} />
+							<OpenAsJsonButton validationSchema={specializationSchema} />
 
 							<button className="btn-primary w-full" type="submit">
-								{initialSubject.subjectId === "" ? "Erstellen" : "Speichern"}
+								{initialSpecialization.specializationId === ""
+									? "Erstellen"
+									: "Speichern"}
 							</button>
 
 							<Form.SidebarSection>
 								<Form.SidebarSectionTitle
 									title="Informationen"
-									subtitle="Informationen über dieses Fachgebiet."
+									subtitle="Informationen über diese Spezialisierung."
 								></Form.SidebarSectionTitle>
 								<div className="flex flex-col gap-4">
 									<LabeledField label="Titel" error={errors.title?.message}>
@@ -114,7 +163,7 @@ export function SubjectEditor({
 											rows={16}
 										/>
 										<FieldHint>
-											Beschreibung dieses Fachgebiets in 2-3 Sätzen.
+											Beschreibung dieser Spezialisierung in 2-3 Sätzen.
 										</FieldHint>
 									</LabeledField>
 								</div>
@@ -156,67 +205,6 @@ export function SubjectEditor({
 								/>
 							}
 						/>
-					</section>
-
-					<section>
-						<SectionHeader
-							title="Spezialisierungen"
-							subtitle="Spezialisierungen dieses Fachgebiets."
-						/>
-
-						{initialSubject.subjectId === "" ? (
-							<p className="text-sm text-light">
-								Spezialisierungen können erst hinzugefügt werden, nachdem das
-								Fachgebiet erstellt wurde.
-							</p>
-						) : (
-							<>
-								<a
-									rel="noopener noreferrer"
-									target="_blank"
-									className="btn-primary with-icon mb-8 w-fit"
-									href={`/teaching/subjects/${initialSubject.subjectId}/specializations/create`}
-								>
-									<PlusIcon className="h-5" />
-									<span>Hinzufügen</span>
-								</a>
-
-								<ul className="flex flex-col gap-4">
-									{specializations.map(spec => (
-										<li
-											key={spec.specializationId}
-											className="flex rounded-lg border border-light-border bg-white"
-										>
-											<ImageOrPlaceholder
-												src={spec.cardImgUrl ?? undefined}
-												className="w-32 rounded-l-lg object-cover"
-											/>
-											<div className="flex flex-col justify-between gap-4 p-4">
-												<div className="flex flex-col gap-2">
-													<span className="text-lg font-semibold">
-														{spec.title}
-													</span>
-													<p className="text-sm text-light">
-														{spec.subtitle}
-													</p>
-												</div>
-
-												<div className="flex">
-													<a
-														className="btn-stroked"
-														rel="noopener noreferrer"
-														target="_blank"
-														href={`/teaching/subjects/${initialSubject.subjectId}/specializations/edit/${spec.specializationId}`}
-													>
-														Editieren
-													</a>
-												</div>
-											</div>
-										</li>
-									))}
-								</ul>
-							</>
-						)}
 					</section>
 				</SidebarEditorLayout>
 			</form>

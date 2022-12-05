@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 
 export default function SubjectEditPage() {
 	const { subjectId } = useRouter().query;
-	const { data: subject } = trpc.subject.getSubjectForEdit.useQuery(
+	const { data: subject } = trpc.subject.getForEdit.useQuery(
 		{
 			subjectId: subjectId as string
 		},
@@ -14,7 +14,7 @@ export default function SubjectEditPage() {
 			enabled: !!subjectId // router query is undefined on first render
 		}
 	);
-	const { mutateAsync: updateSubject } = trpc.subject.updateSubject.useMutation();
+	const { mutateAsync: updateSubject } = trpc.subject.update.useMutation();
 	const trpcContext = trpc.useContext();
 
 	async function onSubmit(subjectFromForm: Subject) {

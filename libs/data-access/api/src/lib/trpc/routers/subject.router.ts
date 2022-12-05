@@ -48,39 +48,37 @@ export const subjectRouter = t.router({
 			}
 		});
 	}),
-	getSubjectForEdit: authProcedure
-		.input(z.object({ subjectId: z.string() }))
-		.query(({ input }) => {
-			return database.subject.findUniqueOrThrow({
-				where: { subjectId: input.subjectId },
-				select: {
-					subjectId: true,
-					slug: true,
-					title: true,
-					subtitle: true,
-					cardImgUrl: true,
-					imgUrlBanner: true,
-					specializations: {
-						orderBy: { title: "asc" },
-						include: {
-							specializationAdmin: {
-								orderBy: { author: { displayName: "asc" } },
-								select: {
-									author: {
-										select: {
-											username: true,
-											slug: true,
-											displayName: true
-										}
+	getForEdit: authProcedure.input(z.object({ subjectId: z.string() })).query(({ input }) => {
+		return database.subject.findUniqueOrThrow({
+			where: { subjectId: input.subjectId },
+			select: {
+				subjectId: true,
+				slug: true,
+				title: true,
+				subtitle: true,
+				cardImgUrl: true,
+				imgUrlBanner: true,
+				specializations: {
+					orderBy: { title: "asc" },
+					include: {
+						specializationAdmin: {
+							orderBy: { author: { displayName: "asc" } },
+							select: {
+								author: {
+									select: {
+										username: true,
+										slug: true,
+										displayName: true
 									}
 								}
 							}
 						}
 					}
 				}
-			});
-		}),
-	createSubject: adminProcedure.input(subjectSchema).mutation(async ({ input }) => {
+			}
+		});
+	}),
+	create: adminProcedure.input(subjectSchema).mutation(async ({ input }) => {
 		const subject = await database.subject.create({
 			data: {
 				subjectId: input.slug,
@@ -92,7 +90,7 @@ export const subjectRouter = t.router({
 			}
 		});
 
-		console.log("[subjectRouter.createSubject]: Subject created", {
+		console.log("[subjectRouter.create]: Subject created", {
 			subjectId: subject.subjectId,
 			slug: subject.slug,
 			title: subject.title
@@ -100,7 +98,7 @@ export const subjectRouter = t.router({
 
 		return subject;
 	}),
-	updateSubject: authProcedure.input(subjectSchema).mutation(({ input, ctx }) => {
+	update: authProcedure.input(subjectSchema).mutation(({ input, ctx }) => {
 		if (ctx.user.role !== "ADMIN") {
 			const subjectAdmin = database.subjectAdmin.findUnique({
 				where: {

@@ -7,7 +7,9 @@ import { courseRouter } from "./course.router";
 import { enrollmentRouter } from "./enrollment.router";
 import { learningDiaryRouter } from "./learning-diary.router";
 import { lessonRouter } from "./lesson.router";
+import { meRouter } from "./me.router";
 import { programmingRouter } from "./programming";
+import { specializationRouter } from "./specialization.router";
 import { storageRouter } from "./storage.router";
 import { subjectRouter } from "./subject.router";
 
@@ -18,7 +20,9 @@ export const appRouter = t.router({
 	enrollment: enrollmentRouter,
 	learningDiary: learningDiaryRouter,
 	lesson: lessonRouter,
+	me: meRouter,
 	storage: storageRouter,
+	specialization: specializationRouter,
 	subject: subjectRouter,
 	programming: programmingRouter,
 	mdx: t.procedure.input(z.object({ text: z.string().default("") })).mutation(({ input }) => {
