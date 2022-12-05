@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 import slugify from "slugify";
 import { LabeledField } from "./labeled-field";
@@ -16,6 +16,20 @@ export function TextArea(props: JSX.IntrinsicElements["textarea"] & { label: str
 		<LabeledField label={props.label}>
 			<textarea className="textfield" {...props}></textarea>
 		</LabeledField>
+	);
+}
+
+export function InputWithButton(
+	props: JSX.IntrinsicElements["input"] & {
+		button: React.ReactElement;
+		input: React.ReactElement;
+	}
+) {
+	return (
+		<div className="grid items-start gap-2 sm:grid-cols-[1fr_auto]">
+			{props.input}
+			{props.button}
+		</div>
 	);
 }
 

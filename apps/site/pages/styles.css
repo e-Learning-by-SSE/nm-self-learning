@@ -95,6 +95,10 @@ video {
 	@apply rounded border border-light-border p-1 disabled:text-slate-200;
 }
 
+.icon {
+	@apply mr-2 -ml-4 h-5;
+}
+
 .checkbox {
 	@apply rounded text-secondary accent-secondary focus:ring-secondary;
 }
@@ -102,7 +106,7 @@ video {
 input,
 textarea,
 .textfield {
-	@apply rounded-lg border border-light-border p-2 text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+	@apply h-fit rounded-lg border border-light-border p-2 text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
 }
 
 .glass {

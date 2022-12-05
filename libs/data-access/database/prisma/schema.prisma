@@ -124,7 +124,7 @@ model Subject {
     cardImgUrl      String?
     courses         Course[]
     specializations Specialization[]
-    SubjectAdmin    SubjectAdmin[]
+    subjectAdmin    SubjectAdmin[]
 }
 
 model Specialization {
@@ -135,9 +135,9 @@ model Specialization {
     imgUrlBanner        String?
     cardImgUrl          String?
     subject             Subject               @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
-    courses             Course[]
     subjectId           String
-    SpecializationAdmin SpecializationAdmin[]
+    courses             Course[]
+    specializationAdmin SpecializationAdmin[]
 }
 
 model Course {

@@ -1,7 +1,8 @@
 import { database } from "@self-learning/database";
 import { subjectSchema } from "@self-learning/types";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 
 export const subjectRouter = t.router({
 	getAllWithSpecializations: t.procedure.query(() => {
@@ -27,7 +28,7 @@ export const subjectRouter = t.router({
 				subjectId: true,
 				title: true,
 				cardImgUrl: true,
-				SubjectAdmin: {
+				subjectAdmin: {
 					select: {
 						username: true,
 						author: {
@@ -58,11 +59,66 @@ export const subjectRouter = t.router({
 					title: true,
 					subtitle: true,
 					cardImgUrl: true,
-					imgUrlBanner: true
+					imgUrlBanner: true,
+					specializations: {
+						orderBy: { title: "asc" },
+						include: {
+							specializationAdmin: {
+								orderBy: { author: { displayName: "asc" } },
+								select: {
+									author: {
+										select: {
+											username: true,
+											slug: true,
+											displayName: true
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			});
 		}),
-	updateSubject: authProcedure.input(subjectSchema).mutation(({ input }) => {
+	createSubject: adminProcedure.input(subjectSchema).mutation(async ({ input }) => {
+		const subject = await database.subject.create({
+			data: {
+				subjectId: input.slug,
+				title: input.title,
+				slug: input.slug,
+				subtitle: input.subtitle,
+				cardImgUrl: input.cardImgUrl,
+				imgUrlBanner: input.imgUrlBanner
+			}
+		});
+
+		console.log("[subjectRouter.createSubject]: Subject created", {
+			subjectId: subject.subjectId,
+			slug: subject.slug,
+			title: subject.title
+		});
+
+		return subject;
+	}),
+	updateSubject: authProcedure.input(subjectSchema).mutation(({ input, ctx }) => {
+		if (ctx.user.role !== "ADMIN") {
+			const subjectAdmin = database.subjectAdmin.findUnique({
+				where: {
+					subjectId_username: {
+						subjectId: input.subjectId,
+						username: ctx.user.name
+					}
+				}
+			});
+
+			if (!subjectAdmin) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Requires ADMIN role or subjectAdmin."
+				});
+			}
+		}
+
 		return database.subject.update({
 			where: { subjectId: input.subjectId },
 			data: {
