@@ -198,12 +198,6 @@ function QuizHeader({
 				<Link href={`/courses/${course.slug}/${lesson.slug}`}>
 					<h1 className="text-4xl">{lesson.title}</h1>
 				</Link>
-				<Link
-					href={`/teaching/lessons/edit/${lesson.lessonId}`}
-					className="absolute right-0 top-1"
-				>
-					<CogIcon className="h-5 text-gray-400" />
-				</Link>
 			</div>
 
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
