@@ -9,7 +9,7 @@ export default function TeachingPage() {
 		<CenteredSection className="bg-gray-50">
 			<h1 className="mb-16 text-5xl">Content-Management</h1>
 
-			<div className="grid gap-16 md:grid-cols-2">
+			<div className="grid gap-8 md:grid-cols-3">
 				<Card
 					href="/teaching/lessons"
 					imageElement={<TutorialSvg />}
@@ -46,7 +46,7 @@ function Card({
 			href={href}
 			className="flex flex-col place-items-center gap-4 rounded-lg border border-light-border bg-white pt-4"
 		>
-			<div className="flex aspect-square w-64">{imageElement}</div>
+			<div className="flex aspect-square h-32">{imageElement}</div>
 			<span className="w-full rounded-b-lg bg-secondary p-4 text-center font-semibold text-white">
 				{title}
 			</span>

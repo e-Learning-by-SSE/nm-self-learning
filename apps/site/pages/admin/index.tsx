@@ -19,7 +19,7 @@ export default function AdminPage() {
 		<CenteredSection className="bg-gray-50">
 			<h1 className="mb-16 text-5xl">Verwaltung</h1>
 
-			<div className="grid gap-16 md:grid-cols-2">
+			<div className="grid gap-8 md:grid-cols-3">
 				<Card
 					href="/admin/authors"
 					imageElement={<PersonalInformationSvg />}

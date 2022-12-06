@@ -19,6 +19,7 @@ export const authorRouter = t.router({
 		return database.author.findMany({
 			select: {
 				slug: true,
+				username: true,
 				displayName: true,
 				imgUrl: true
 			}
