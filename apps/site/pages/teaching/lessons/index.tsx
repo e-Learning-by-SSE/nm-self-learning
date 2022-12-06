@@ -1,5 +1,6 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
+import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
@@ -28,34 +29,33 @@ export default function LessonManagementPage() {
 
 			<SearchField placeholder="Suche nach Titel" onChange={e => setTitle(e.target.value)} />
 
-			<div className="light-border rounded-lg border-x border-b bg-white">
-				<table className="w-full table-auto">
-					<thead className="rounded-lg border-b border-b-light-border bg-gray-100">
-						<tr className="border-t">
-							<th className="py-4 px-8 text-start text-sm font-semibold">Titel</th>
-							<th className="py-4 px-8 text-start text-sm font-semibold">Von</th>
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-light-border">
-						{data?.lessons?.map(lesson => (
-							<tr key={lesson.lessonId}>
-								<td className="py-4 px-8 text-sm font-medium">
-									<Link
-										className="text-sm font-medium hover:text-secondary"
-										href={`/teaching/lessons/edit/${lesson.lessonId}`}
-									>
-										{lesson.title}
-									</Link>
-								</td>
+			<Table
+				head={
+					<>
+						<TableHeaderColumn>Titel</TableHeaderColumn>
+						<TableHeaderColumn>Von</TableHeaderColumn>
+					</>
+				}
+			>
+				{data?.lessons?.map(lesson => (
+					<tr key={lesson.lessonId}>
+						<TableDataColumn>
+							<Link
+								className="text-sm font-medium hover:text-secondary"
+								href={`/teaching/lessons/edit/${lesson.lessonId}`}
+							>
+								{lesson.title}
+							</Link>
+						</TableDataColumn>
 
-								<td className="py-4 px-8 text-sm text-light">
-									{lesson.authors.map(a => a.displayName).join(", ")}
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+						<TableDataColumn>
+							<span className="text-light">
+								{lesson.authors.map(a => a.displayName).join(", ")}
+							</span>
+						</TableDataColumn>
+					</tr>
+				))}
+			</Table>
 		</CenteredSection>
 	);
 }

@@ -1,8 +1,13 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
+import {
+	ImageOrPlaceholder,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn
+} from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -29,47 +34,41 @@ export default function CoursesPage() {
 
 			<SearchField placeholder="Suche nach Titel" onChange={e => setTitle(e.target.value)} />
 
-			<div className="light-border rounded-lg border-x border-b bg-white">
-				<table className="w-full table-auto">
-					<thead className="rounded-lg border-b border-b-light-border bg-gray-100">
-						<tr className="border-t">
-							<th className="py-4 px-8 text-start text-sm font-semibold"></th>
-							<th className="py-4 px-8 text-start text-sm font-semibold">Titel</th>
-							<th className="py-4 px-8 text-start text-sm font-semibold">Von</th>
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-light-border">
-						{courses?.map(course => (
-							<tr key={course.courseId}>
-								<td className="w-[128px] py-4 px-8 text-sm text-light">
-									{course.imgUrl && (
-										<Image
-											src={course.imgUrl}
-											height={48}
-											width={128}
-											className="h-12 w-32 rounded-lg object-cover"
-											alt="Course Image"
-										/>
-									)}
-								</td>
+			<Table
+				head={
+					<>
+						<TableHeaderColumn></TableHeaderColumn>
+						<TableHeaderColumn>Titel</TableHeaderColumn>
+						<TableHeaderColumn>Von</TableHeaderColumn>
+					</>
+				}
+			>
+				{courses?.map(course => (
+					<tr key={course.courseId}>
+						<TableDataColumn>
+							<ImageOrPlaceholder
+								src={course.imgUrl ?? undefined}
+								className="h-16 w-24 rounded-lg object-cover"
+							/>
+						</TableDataColumn>
 
-								<td className="py-4 px-8 text-sm font-medium">
-									<Link
-										className="text-sm font-medium hover:text-secondary"
-										href={`/teaching/courses/edit/${course.courseId}`}
-									>
-										{course.title}
-									</Link>
-								</td>
+						<TableDataColumn>
+							<Link
+								className="text-sm font-medium hover:text-secondary"
+								href={`/teaching/courses/edit/${course.courseId}`}
+							>
+								{course.title}
+							</Link>
+						</TableDataColumn>
 
-								<td className="py-4 px-8 text-sm text-light">
-									{course.authors.map(a => a.displayName).join(", ")}
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+						<TableDataColumn>
+							<span className="text-light">
+								{course.authors.map(a => a.displayName).join(", ")}
+							</span>
+						</TableDataColumn>
+					</tr>
+				))}
+			</Table>
 		</CenteredSection>
 	);
 }

@@ -4,9 +4,13 @@ import { Author, authorSchema } from "@self-learning/types";
 import {
 	Dialog,
 	DialogActions,
+	ImageOrPlaceholder,
 	LoadingBox,
 	OnDialogCloseFn,
-	showToast
+	showToast,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { LabeledField, SearchField, Upload } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -55,72 +59,60 @@ export default function AuthorsPage() {
 			{isLoading ? (
 				<LoadingBox />
 			) : (
-				<div className="light-border rounded-lg border-x border-b bg-white">
-					<table className="w-full table-auto">
-						<thead className="rounded-lg border-b border-b-light-border bg-gray-100">
-							<tr className="border-t">
-								<th className="py-4 text-start text-sm font-semibold"></th>
-								<th className="py-4 px-8 text-start text-sm font-semibold">Name</th>
-								<th className="py-4 text-start text-sm font-semibold"></th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-light-border">
-							{filteredAuthors.map(({ author, name }) => (
-								<Fragment key={name}>
-									{author && (
-										<tr key={author.slug}>
-											<td className="w-0 py-4 px-4 text-sm text-light">
-												{author.imgUrl ? (
-													// eslint-disable-next-line @next/next/no-img-element
-													<img
-														src={author.imgUrl ?? undefined}
-														height={42}
-														width={42}
-														className="h-[42px] w-[42px] rounded-lg object-cover"
-														alt={`Image of ${author.displayName}`}
-													/>
-												) : (
-													<div className="h-[42px] w-[42px] rounded-lg bg-gray-200"></div>
-												)}
-											</td>
-											<td className="py-4 px-8 text-sm font-medium">
-												<div className="flex flex-wrap gap-4">
-													<Link
-														className="text-sm font-medium hover:text-secondary"
-														href={`/authors/${author.slug}`}
+				<Table
+					head={
+						<>
+							<TableHeaderColumn></TableHeaderColumn>
+							<TableHeaderColumn>Name</TableHeaderColumn>
+							<TableHeaderColumn></TableHeaderColumn>
+						</>
+					}
+				>
+					{filteredAuthors.map(({ author, name }) => (
+						<Fragment key={name}>
+							{author && (
+								<tr key={name}>
+									<TableDataColumn>
+										<ImageOrPlaceholder
+											src={author?.imgUrl ?? undefined}
+											className="m-0 h-10 w-10 rounded-lg object-cover"
+										/>
+									</TableDataColumn>
+									<TableDataColumn>
+										<div className="flex flex-wrap gap-4">
+											<Link
+												className="text-sm font-medium hover:text-secondary"
+												href={`/authors/${author.slug}`}
+											>
+												{author.displayName}
+											</Link>
+											<span className="flex gap-2 text-xs">
+												{author.subjectAdmin.map(({ subject }) => (
+													<span
+														key={subject.title}
+														className="rounded-full bg-secondary px-3 py-[2px] text-white"
 													>
-														{author.displayName}
-													</Link>
-
-													<span className="flex gap-2 text-xs">
-														{author.subjectAdmin.map(({ subject }) => (
-															<span
-																key={subject.title}
-																className="rounded-full bg-secondary px-3 py-[2px] text-white"
-															>
-																Admin: {subject.title}
-															</span>
-														))}
+														Admin: {subject.title}
 													</span>
-												</div>
-											</td>
-											<td className="px-8">
-												<div className="flex flex-wrap justify-end gap-4">
-													<button
-														className="btn-stroked"
-														onClick={() => onEdit(name)}
-													>
-														Editieren
-													</button>
-												</div>
-											</td>
-										</tr>
-									)}
-								</Fragment>
-							))}
-						</tbody>
-					</table>
-				</div>
+												))}
+											</span>
+										</div>
+									</TableDataColumn>
+									<TableDataColumn>
+										<div className="flex flex-wrap justify-end gap-4">
+											<button
+												className="btn-stroked"
+												onClick={() => onEdit(name)}
+											>
+												Editieren
+											</button>
+										</div>
+									</TableDataColumn>
+								</tr>
+							)}
+						</Fragment>
+					))}
+				</Table>
 			)}
 		</CenteredSection>
 	);

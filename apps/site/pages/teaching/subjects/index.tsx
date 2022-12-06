@@ -1,6 +1,12 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
-import { LoadingBox, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import {
+	ImageOrPlaceholder,
+	LoadingBox,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn
+} from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
 
@@ -33,16 +39,10 @@ export default function SubjectsPage() {
 						{subjects.map(subject => (
 							<tr key={subject.subjectId}>
 								<TableDataColumn>
-									{subject.cardImgUrl ? (
-										// eslint-disable-next-line @next/next/no-img-element
-										<img
-											src={subject.cardImgUrl}
-											alt=""
-											className="h-16 w-24 shrink-0 rounded-lg object-cover"
-										/>
-									) : (
-										<div className="h-16 w-24 shrink-0 rounded-lg"></div>
-									)}
+									<ImageOrPlaceholder
+										src={subject.cardImgUrl ?? undefined}
+										className="h-16 w-24 shrink-0 rounded-lg object-cover"
+									/>
 								</TableDataColumn>
 								<TableDataColumn>
 									<Link
