@@ -7,7 +7,7 @@ import {
 } from "../seed-functions";
 
 const ch_Signaluebertragung = {
-	title: "1. Signalübertragung im Nervensystem",
+	title: "Signalübertragung im Nervensystem",
 	description:
 		"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 	content: [
