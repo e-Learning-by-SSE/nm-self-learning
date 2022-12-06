@@ -26,9 +26,12 @@ export type Programming = {
 	answer: {
 		type: "programming";
 		value: {
-			code: string;
+			/** The program written by a student. */
+			solution: string;
 			stdout: string;
 			signal: string | null;
+			/** Exit code of the program. `0` = success, `1` = error */
+			code: number | null;
 		};
 	};
 	evaluation: BaseEvaluation & {

@@ -82,9 +82,10 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 	"multiple-choice": () => ({}),
 	"short-text": () => "",
 	programming: question => ({
-		code: question.custom.solutionTemplate,
+		solution: question.custom.solutionTemplate,
 		stdout: "",
-		signal: null
+		signal: null,
+		code: null
 	}),
 	text: () => "",
 	vorwissen: () => ({} as any),

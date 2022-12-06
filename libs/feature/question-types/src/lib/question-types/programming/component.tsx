@@ -1,9 +1,8 @@
 import { CheckCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 import { evaluateProgramming } from "./evaluate";
 import { Programming } from "./schema";
@@ -70,8 +69,8 @@ const EXTENSION: Record<string, string> = {
 
 export function ProgrammingAnswer() {
 	const { setAnswer, answer, question, evaluation, setEvaluation } = useQuestion("programming");
-	const [isExecuting, setIsExecuting] = useState(false);
 	const [output, setOutput] = useState({
+		isLoading: false,
 		isError: false,
 		text: "",
 		signal: null as string | null
@@ -98,7 +97,8 @@ export function ProgrammingAnswer() {
 			setOutput({
 				isError: true,
 				signal: null,
-				text: `Language "${language}" is not available.\` Code execution server might be offline or language is not installed.`
+				text: `Language "${language}" is not available.\` Code execution server might be offline or language is not installed.`,
+				isLoading: false
 			});
 
 			return;
@@ -126,30 +126,35 @@ export function ProgrammingAnswer() {
 			}
 		}
 
-		files.push({ name: `Solution.${EXTENSION[language]}`, content: answer.value.code });
+		files.push({ name: `Solution.${EXTENSION[language]}`, content: answer.value.solution });
 
 		const executeRequest: ExecuteRequest = { language, version, files };
 
 		console.log("Executing code: ", executeRequest);
-		setOutput({ isError: false, signal: null, text: "Executing..." });
-		setIsExecuting(true);
+		setOutput({ isError: false, signal: null, text: "Executing...", isLoading: true });
 
 		try {
 			const data = await execute(executeRequest);
-			setIsExecuting(false);
+
+			console.log("Execution finished with", {
+				signal: data.run.signal,
+				code: data.run.code
+			});
 
 			setOutput({
-				isError: data.run.code !== 0, // 0 indicates success that program ran without errors
+				isError: data.run.code === 1, // 0 indicates success that program ran without errors
 				text: data.run.output,
-				signal: data.run.signal
+				signal: data.run.signal,
+				isLoading: false
 			});
 
 			const newAnswer: Programming["answer"] = {
 				type: "programming",
 				value: {
-					code: answer.value.code,
+					solution: answer.value.solution,
 					stdout: data.run.output,
-					signal: data.run.signal
+					signal: data.run.signal,
+					code: data.run.code
 				}
 			};
 
@@ -157,19 +162,19 @@ export function ProgrammingAnswer() {
 
 			setEvaluation(evaluateProgramming(question, newAnswer));
 		} catch (error) {
-			setIsExecuting(false);
-
 			if (error instanceof TRPCClientError) {
 				setOutput({
 					isError: true,
 					signal: null,
-					text: error.message
+					text: error.message,
+					isLoading: false
 				});
 			} else {
 				setOutput({
 					isError: true,
 					signal: null,
-					text: "UNEXPECTED SERVER ERROR"
+					text: "UNEXPECTED SERVER ERROR",
+					isLoading: false
 				});
 			}
 
@@ -185,21 +190,22 @@ export function ProgrammingAnswer() {
 					)
 				</span>
 
-				<button className="btn-primary" onClick={runCode} disabled={isExecuting}>
+				<button className="btn-primary" onClick={runCode} disabled={output.isLoading}>
 					Ausführen
 				</button>
 			</div>
 			<div className="flex flex-wrap gap-2">
 				<div className="w-full">
 					<EditorField
-						value={answer.value.code}
+						value={answer.value.solution}
 						onChange={v => {
 							setAnswer({
 								type: "programming",
 								value: {
-									code: v ?? "",
+									solution: v ?? "",
 									stdout: answer.value.stdout,
-									signal: answer.value.signal
+									signal: answer.value.signal,
+									code: answer.value.code
 								}
 							});
 						}}
@@ -207,9 +213,9 @@ export function ProgrammingAnswer() {
 					/>
 				</div>
 
-				{<TestCaseResult evaluation={evaluation} isExecuting={isExecuting} />}
+				{<TestCaseResult evaluation={evaluation} isExecuting={output.isLoading} />}
 
-				{!output.isError && (
+				{output.isError && (
 					<LabeledField label="Ausgabe">
 						<div className="flex h-fit max-h-[400px] w-full shrink-0 flex-col gap-4 rounded-lg border border-light-border bg-white">
 							<div className="playlist-scroll h-full overflow-auto p-4">

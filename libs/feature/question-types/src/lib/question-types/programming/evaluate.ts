@@ -2,8 +2,10 @@ import { EvaluationFn } from "../../quiz-schema";
 import { TestCase } from "./schema";
 
 export const evaluateProgramming: EvaluationFn<"programming"> = (question, answer) => {
-	// Program was terminated (i.e., timeout)
-	if (answer.value.signal !== null) {
+	// Signal = null means that the program was executed successfully
+	// Code = null means that the program was not executed
+	// Code = 1 means that the program was executed but it failed
+	if (answer.value.signal !== null || answer.value.code === null || answer.value.code === 1) {
 		return {
 			isCorrect: false,
 			testCases: []
