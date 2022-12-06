@@ -2,11 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { lessonSchema } from "@self-learning/types";
 import { SectionHeader, showToast } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import { JsonEditorDialog } from "../json-editor-dialog";
+import { OpenAsJsonButton } from "../json-editor-dialog";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
@@ -20,20 +18,10 @@ export function LessonEditor({
 	onConfirm: (lesson: LessonFormModel) => void;
 }) {
 	const isNew = lesson.lessonId === "";
-	const [isJsonDialogOpen, setIsJsonDialogOpen] = useState(false);
-
 	const methods = useForm<LessonFormModel>({
 		resolver: zodResolver(lessonSchema),
 		defaultValues: lesson
 	});
-
-	function setFromJsonDialog(value: LessonFormModel | undefined) {
-		if (value) {
-			methods.reset(value);
-		}
-
-		setIsJsonDialogOpen(false);
-	}
 
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
@@ -84,19 +72,7 @@ export function LessonEditor({
 										<h1 className="text-2xl">{lesson.title}</h1>
 									</div>
 
-									<button
-										type="button"
-										className="btn-stroked"
-										onClick={() => setIsJsonDialogOpen(true)}
-									>
-										<span>Als JSON bearbeiten</span>
-										{isJsonDialogOpen && (
-											<JsonEditorDialog
-												onClose={setFromJsonDialog}
-												validationSchema={lessonSchema}
-											/>
-										)}
-									</button>
+									<OpenAsJsonButton validationSchema={lessonSchema} />
 
 									<button className="btn-primary w-full" type="submit">
 										{isNew ? "Erstellen" : "Speichern"}

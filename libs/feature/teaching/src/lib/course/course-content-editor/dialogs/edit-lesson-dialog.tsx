@@ -5,7 +5,7 @@ import { LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import slugify from "slugify";
-import { JsonEditorDialog } from "../../../json-editor-dialog";
+import { OpenAsJsonButton } from "../../../json-editor-dialog";
 import { LessonContentEditor } from "../../../lesson/forms/lesson-content";
 import { QuizEditor } from "../../../lesson/forms/quiz-editor";
 import { LessonFormModel } from "../../../lesson/lesson-form-model";
@@ -17,7 +17,6 @@ export function EditLessonDialog({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
-	const [openJsonEditor, setOpenJsonEditor] = useState(false);
 	const [selectedTab, setSelectedTab] = useState(0);
 	const isNew = !initialLesson;
 
@@ -34,13 +33,7 @@ export function EditLessonDialog({
 			style={{ height: "80vh", width: "80vw" }}
 		>
 			<div className="absolute right-8 top-8 flex gap-4">
-				<button
-					type="button"
-					onClick={() => setOpenJsonEditor(true)}
-					className="btn-stroked"
-				>
-					Als JSON bearbeiten
-				</button>
+				<OpenAsJsonButton validationSchema={lessonSchema} />
 				{initialLesson?.lessonId && (
 					<a
 						className="btn-stroked"
@@ -59,16 +52,6 @@ export function EditLessonDialog({
 					onSubmit={methods.handleSubmit(onClose, console.log)}
 					className="flex h-full flex-col overflow-hidden"
 				>
-					{openJsonEditor && (
-						<JsonEditorDialog
-							validationSchema={lessonSchema}
-							onClose={value => {
-								console.log(value);
-								setOpenJsonEditor(false);
-							}}
-						/>
-					)}
-
 					<div className="flex h-full flex-col gap-4 overflow-hidden">
 						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
 							<Tab>Übersicht</Tab>

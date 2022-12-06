@@ -10,7 +10,7 @@ import {
 } from "@self-learning/ui/common";
 import { LabeledField, SearchField, Upload } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { JsonEditorDialog } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
@@ -22,7 +22,6 @@ export default function AuthorsPage() {
 	const [displayName, setDisplayName] = useState("");
 	const { data: users, isLoading } = trpc.author.getAllWithSubject.useQuery();
 	const [editTarget, setEditTarget] = useState<string | null>(null);
-	const [openEditDialog, setOpenEditDialog] = useState(false);
 
 	const filteredAuthors = useMemo(() => {
 		if (!users) return [];
@@ -36,12 +35,10 @@ export default function AuthorsPage() {
 
 	function onEdit(username: string) {
 		setEditTarget(username);
-		setOpenEditDialog(true);
 	}
 
 	function onEditDialogClose() {
 		setEditTarget(null);
-		setOpenEditDialog(false);
 	}
 
 	return (
@@ -179,7 +176,6 @@ function AuthorForm({
 	onClose: OnDialogCloseFn<Author>;
 }) {
 	const trpcContext = trpc.useContext();
-	const [showJsonEditor, setShowJsonEditor] = useState(false);
 	const { mutateAsync: updateAuthor } = trpc.author.updateAsAdmin.useMutation();
 	const methods = useForm({
 		resolver: zodResolver(authorSchema),
@@ -217,26 +213,9 @@ function AuthorForm({
 				className="flex flex-col justify-between"
 				onSubmit={methods.handleSubmit(onSubmit)}
 			>
-				{showJsonEditor && (
-					<JsonEditorDialog
-						validationSchema={authorSchema}
-						onClose={value => {
-							setShowJsonEditor(false);
-							// setRerender(r => r + 1);
-							if (value) {
-								methods.reset(value);
-							}
-						}}
-					/>
-				)}
-
-				<button
-					type="button"
-					className="btn-stroked absolute top-8 right-8"
-					onClick={() => setShowJsonEditor(true)}
-				>
-					Als JSON bearbeiten
-				</button>
+				<div className="absolute top-8 right-8">
+					<OpenAsJsonButton validationSchema={authorSchema} />
+				</div>
 
 				<div className="grid gap-8 xl:grid-cols-[400px_600px]">
 					<AuthorData />

@@ -2,9 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SectionHeader } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
 import Link from "next/link";
-import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import { JsonEditorDialog } from "../json-editor-dialog";
+import { OpenAsJsonButton } from "../json-editor-dialog";
 import { AuthorsForm } from "./authors-form";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
@@ -17,9 +16,6 @@ export function CourseEditor({
 	course: CourseFormModel;
 	onConfirm: (course: CourseFormModel) => void;
 }) {
-	// triggerRerender is used to force the form to re-render when course is updated from JSON dialog
-	const [triggerRerender, setTriggerRerender] = useState(0);
-	const [openAsJson, setOpenAsJson] = useState(false);
 	const isNew = course.courseId === "";
 
 	const methods = useForm<CourseFormModel>({
@@ -27,17 +23,8 @@ export function CourseEditor({
 		resolver: zodResolver(courseFormSchema)
 	});
 
-	function onJsonDialogClose(value: CourseFormModel | undefined) {
-		if (value) {
-			methods.reset(value);
-		}
-
-		setOpenAsJson(false);
-		setTriggerRerender(r => r + 1);
-	}
-
 	return (
-		<div className="bg-gray-50" key={triggerRerender}>
+		<div className="bg-gray-50">
 			<FormProvider {...methods}>
 				<form
 					id="courseform"
@@ -74,16 +61,7 @@ export function CourseEditor({
 										</Link>
 									</div>
 
-									<button
-										type="button"
-										className="btn-stroked"
-										onClick={() => setOpenAsJson(true)}
-									>
-										<span>Als JSON bearbeiten</span>
-										{openAsJson && (
-											<JsonEditorDialog onClose={onJsonDialogClose} />
-										)}
-									</button>
+									<OpenAsJsonButton validationSchema={courseFormSchema} />
 
 									<button className="btn-primary w-full" type="submit">
 										{isNew ? "Erstellen" : "Speichern"}
