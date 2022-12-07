@@ -356,6 +356,7 @@ function SpecializationPermissionsDialog({
 		try {
 			await updateSpecAdmins({ subjectId, specMap });
 			showToast({ type: "success", title: "Berechtigte Autoren aktualisiert", subtitle: "" });
+			onClose();
 		} catch (error) {
 			console.error(error);
 
@@ -367,15 +368,13 @@ function SpecializationPermissionsDialog({
 		}
 	}
 
-	console.log(specMap);
-
 	return (
 		<Dialog
 			onClose={onClose}
 			title="Berechtigte Autoren"
 			style={{ maxWidth: "80vw", maxHeight: "80vh" }}
 		>
-			<div className="flex min-h-[600px] flex-col gap-4 divide-x divide-light-border overflow-hidden">
+			<div className="flex flex-col gap-4 divide-x divide-light-border overflow-auto">
 				<div className="text-sm text-light">
 					<p>
 						In diesem Dialog können Autoren <strong>Spezialisierungen</strong>{" "}
@@ -405,56 +404,60 @@ function SpecializationPermissionsDialog({
 					<AddAuthorDialog open={openAddAuthorDialog} onClose={onAddAuthorDialogClosed} />
 				)}
 
-				<div className="overflow-hidden">
-					<Table
-						head={
-							<>
-								<TableHeaderColumn>Autor</TableHeaderColumn>
-								{specializations.map(spec => (
-									<TableHeaderColumn key={spec.specializationId}>
-										{spec.title}
-									</TableHeaderColumn>
-								))}
-							</>
-						}
-					>
-						{authors.map(author => (
-							<tr key={author.username}>
-								<TableDataColumn>
-									<span className="flex gap-4">
-										<ImageOrPlaceholder
-											src={author.imgUrl ?? undefined}
-											className="h-10 w-10 shrink-0 rounded-lg object-cover"
-										/>
+				<Table
+					head={
+						<>
+							<TableHeaderColumn>Autor</TableHeaderColumn>
+							{specializations.map(spec => (
+								<TableHeaderColumn key={spec.specializationId}>
+									{spec.title}
+								</TableHeaderColumn>
+							))}
+						</>
+					}
+				>
+					{authors.map(author => (
+						<tr key={author.username}>
+							<TableDataColumn>
+								<span className="flex items-center gap-4">
+									<ImageOrPlaceholder
+										src={author.imgUrl ?? undefined}
+										className="h-10 w-10 shrink-0 rounded-lg object-cover"
+									/>
+									<a
+										target="_blank"
+										rel="noreferrer"
+										href={`/authors/${author.slug}`}
+										className="whitespace-nowrap hover:text-secondary"
+									>
 										{author.displayName}
+									</a>
+								</span>
+							</TableDataColumn>
+							{specializations.map(spec => (
+								<TableDataColumn key={spec.specializationId}>
+									<span className="flex justify-center">
+										<input
+											type={"checkbox"}
+											className="checkbox"
+											checked={
+												specMap[spec.specializationId][author.username] ===
+												true
+											}
+											onChange={e => {
+												onChecked(
+													spec.specializationId,
+													author.username,
+													e.target.checked
+												);
+											}}
+										/>
 									</span>
 								</TableDataColumn>
-								{specializations.map(spec => (
-									<TableDataColumn key={spec.specializationId}>
-										<span className="flex justify-center">
-											<input
-												type={"checkbox"}
-												className="checkbox"
-												checked={
-													specMap[spec.specializationId][
-														author.username
-													] === true
-												}
-												onChange={e => {
-													onChecked(
-														spec.specializationId,
-														author.username,
-														e.target.checked
-													);
-												}}
-											/>
-										</span>
-									</TableDataColumn>
-								))}
-							</tr>
-						))}
-					</Table>
-				</div>
+							))}
+						</tr>
+					))}
+				</Table>
 			</div>
 
 			<DialogActions onClose={onClose}>
