@@ -35,7 +35,7 @@ export function LandingPage() {
 					</h2>
 
 					<span className="mt-16 text-lg text-slate-600 md:text-xl">
-						Die Selbstlern-Plattform der{" "}
+						Willkommen auf der Selbstlernplattform der{" "}
 						<Link
 							href={"https://www.uni-hildesheim.de/"}
 							target="_blank"
@@ -43,7 +43,13 @@ export function LandingPage() {
 						>
 							Universität Hildesheim
 						</Link>
-						.
+						. Auf der Plattform werden dir studiengangbezogene Lerninhalte in
+						individualisierten und flexiblen Lernpfaden, bestehend aus kleinen
+						Lerneinheiten, präsentiert. Diese kannst du in deinem eigenen Tempo lernen
+						und wiederholen. Während du einen Lernpfad durchläufst, erhältst du Feedback
+						zu deinem Lernfortschritt und Hinweise, wie du Lernstrategien anwenden
+						kannst, um dein Lernen zu verbessern. Unsere Mission ist, dass du durch die
+						Plattform lernst, selbstgesteuert und nachhaltig zu lernen.
 					</span>
 
 					<button className="mt-16 w-fit rounded-lg bg-secondary px-12 py-3 text-xl font-semibold text-white">
