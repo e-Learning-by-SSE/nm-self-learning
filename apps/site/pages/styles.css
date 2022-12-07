@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+	.animation-delay-3000 {
+		animation-delay: 3s;
+	}
+	.animation-delay-5000 {
+		animation-delay: 5s;
+	}
+}
+
 :root {
 	--color-secondary: theme("colors.emerald.500");
 	--color-light: theme("colors.slate.500");
