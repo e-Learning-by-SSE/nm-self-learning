@@ -1,25 +1,25 @@
 /* eslint-disable quotes */
-import { subHours } from 'date-fns';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import slugify from 'slugify';
+import { subHours } from "date-fns";
+import { readFileSync } from "fs";
+import { join } from "path";
+import slugify from "slugify";
 
-import { faker } from '@faker-js/faker';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { QuizContent } from '@self-learning/question-types';
+import { faker } from "@faker-js/faker";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { QuizContent } from "@self-learning/question-types";
 import {
     createCourseContent,
     createCourseMeta,
     createLessonMeta,
     extractLessonIds,
     LessonContent,
-} from '@self-learning/types';
-import { getRandomId } from '@self-learning/util/common';
+} from "@self-learning/types";
+import { getRandomId } from "@self-learning/util/common";
 
-import { javaExample } from './java-example';
-import { mathExample } from './math/math-example';
-import { psychologyExample } from './psychology/psychology-example';
-import { createSpecialization } from './seed-functions';
+import { javaExample } from "./java-example";
+import { mathExample } from "./math/math-example";
+import { psychologyExample } from "./psychology/psychology-example";
+import { createSpecialization } from "./seed-functions";
 
 faker.seed(1);
 
@@ -84,7 +84,7 @@ const subjects: Prisma.SubjectCreateManyInput[] = [
 		subjectId: "psychologie",
 		slug: "psychologie",
 		title: "Psychologie",
-		subtitle: 'Grundladen der "Allgemeinen Psychologie"',
+		subtitle: 'Grundlagen der "Allgemeinen Psychologie"',
 		cardImgUrl:
 			"https://c.pxhere.com/photos/90/ed/brain_mind_psychology_idea_hearts_love_drawing_split_personality-1370218.jpg!d",
 		imgUrlBanner:

@@ -1,3 +1,11 @@
+import { formatDistance } from "date-fns";
+import { de } from "date-fns/locale";
+import { GetServerSideProps } from "next";
+import { MDXRemote } from "next-mdx-remote";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo } from "react";
+
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/solid";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
@@ -8,13 +16,6 @@ import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatSeconds } from "@self-learning/util/common";
-import { formatDistance } from "date-fns";
-import { de } from "date-fns/locale";
-import { GetServerSideProps } from "next";
-import { MDXRemote } from "next-mdx-remote";
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -285,7 +286,7 @@ function CourseHeader({
 							className="btn-primary disabled:opacity-50"
 							onClick={() => enroll({ courseId: course.courseId })}
 						>
-							<span>Zum Lernplan hinzfügen</span>
+							<span>Zum Lernplan hinzufügen</span>
 							<PlusCircleIcon className="h-5" />
 						</button>
 					)}
