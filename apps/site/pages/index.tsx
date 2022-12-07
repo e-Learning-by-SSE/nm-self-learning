@@ -1,5 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ReactComponent as StudyingSvg } from "../svg/studying.svg";
+
+// import { ReactComponent as StudyingSvg } from "../svg/studying.svg";
 
 export function LandingPage() {
 	return (
@@ -33,9 +35,15 @@ export function LandingPage() {
 					</h2>
 
 					<span className="mt-16 text-lg text-slate-600 md:text-xl">
-						Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quos, nisi. Vitae
-						magnam perferendis officia, fugiat a, odit velit deleniti consequatur
-						dignissimos sit esse itaque soluta ex corrupti accusantium illo numquam.
+						Die Selbstlern-Plattform der{" "}
+						<Link
+							href={"https://www.uni-hildesheim.de/"}
+							target="_blank"
+							className="font-medium hover:text-secondary"
+						>
+							Universität Hildesheim
+						</Link>
+						.
 					</span>
 
 					<button className="mt-16 w-fit rounded-lg bg-secondary px-12 py-3 text-xl font-semibold text-white">
@@ -44,7 +52,15 @@ export function LandingPage() {
 				</div>
 
 				<div className="pt-16 md:pt-0">
-					<StudyingSvg />
+					{/* <StudyingSvg /> */}
+					<Image
+						priority
+						className="shrink-0 rounded-lg bg-white object-cover"
+						src="/logo-selflearning.png"
+						width="293"
+						height="3200"
+						alt=""
+					></Image>
 				</div>
 			</div>
 		</div>

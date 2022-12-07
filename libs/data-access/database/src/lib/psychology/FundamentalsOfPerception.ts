@@ -1,10 +1,4 @@
-import {
-	createCourse,
-	createLesson,
-	createVideo,
-	createMultipleChoice,
-	createTextQuestion
-} from "../seed-functions";
+import { createCourse, createLesson, createMultipleChoice, createTextQuestion, createVideo } from "../seed-functions";
 
 const ch_Signaluebertragung = {
 	title: "Signalübertragung im Nervensystem",
