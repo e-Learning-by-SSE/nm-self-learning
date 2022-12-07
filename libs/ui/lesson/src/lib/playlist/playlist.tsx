@@ -230,7 +230,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 	return (
 		<div className="flex flex-col gap-4" data-testid="CurrentlyPlaying">
 			<span className="flex items-center gap-2 text-sm">
-				<PlayIcon className="h-7  text-secondary" />
+				<PlayIcon className="h-5 shrink-0 text-secondary" />
 				<span className="overflow-hidden text-ellipsis whitespace-nowrap font-medium">
 					{currentChapter?.title}
 				</span>

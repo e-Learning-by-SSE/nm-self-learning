@@ -1,10 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SectionHeader } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
+import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import Link from "next/link";
-import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import { JsonEditorDialog } from "../json-editor-dialog";
+import { OpenAsJsonButton } from "../json-editor-dialog";
 import { AuthorsForm } from "./authors-form";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
@@ -17,9 +17,6 @@ export function CourseEditor({
 	course: CourseFormModel;
 	onConfirm: (course: CourseFormModel) => void;
 }) {
-	// triggerRerender is used to force the form to re-render when course is updated from JSON dialog
-	const [triggerRerender, setTriggerRerender] = useState(0);
-	const [openAsJson, setOpenAsJson] = useState(false);
 	const isNew = course.courseId === "";
 
 	const methods = useForm<CourseFormModel>({
@@ -27,17 +24,8 @@ export function CourseEditor({
 		resolver: zodResolver(courseFormSchema)
 	});
 
-	function onJsonDialogClose(value: CourseFormModel | undefined) {
-		if (value) {
-			methods.reset(value);
-		}
-
-		setOpenAsJson(false);
-		setTriggerRerender(r => r + 1);
-	}
-
 	return (
-		<div className="bg-gray-50" key={triggerRerender}>
+		<div className="bg-gray-50">
 			<FormProvider {...methods}>
 				<form
 					id="courseform"
@@ -60,46 +48,33 @@ export function CourseEditor({
 						}
 					}}
 				>
-					<div className="mx-auto grid max-w-[1920px] gap-8 xl:grid-cols-[500px_1fr]">
-						<aside className="playlist-scroll top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:sticky xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r">
-							<div className="flex flex-col px-4 pb-8">
-								<div className="sticky top-0 z-10 flex flex-col gap-2 border-b border-light-border bg-gray-50 pt-8 pb-4">
-									<div>
-										<span className="font-semibold text-secondary">
-											Kurs editieren
-										</span>
+					<SidebarEditorLayout
+						sidebar={
+							<>
+								<div>
+									<span className="font-semibold text-secondary">
+										Kurs editieren
+									</span>
 
-										<Link href={`/courses/${course.slug}`}>
-											<h1 className="text-2xl">{course.title}</h1>
-										</Link>
-									</div>
-
-									<button
-										type="button"
-										className="btn-stroked"
-										onClick={() => setOpenAsJson(true)}
-									>
-										<span>Als JSON bearbeiten</span>
-										{openAsJson && (
-											<JsonEditorDialog onClose={onJsonDialogClose} />
-										)}
-									</button>
-
-									<button className="btn-primary w-full" type="submit">
-										{isNew ? "Erstellen" : "Speichern"}
-									</button>
+									<Link href={`/courses/${course.slug}`} target="_blank">
+										<h1 className="text-2xl">{course.title}</h1>
+									</Link>
 								</div>
+
+								<OpenAsJsonButton validationSchema={courseFormSchema} />
+
+								<button className="btn-primary w-full" type="submit">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
 
 								<CourseInfoForm />
 								<AuthorsForm />
-							</div>
-						</aside>
-
-						<div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-16 px-4 pt-8 pb-16">
-							<CourseDescriptionForm />
-							<CourseContentForm />
-						</div>
-					</div>
+							</>
+						}
+					>
+						<CourseDescriptionForm />
+						<CourseContentForm />
+					</SidebarEditorLayout>
 				</form>
 			</FormProvider>
 		</div>

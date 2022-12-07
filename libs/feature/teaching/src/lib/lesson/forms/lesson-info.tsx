@@ -1,4 +1,5 @@
-import { Form, LabeledField, Upload } from "@self-learning/ui/forms";
+import { ImageOrPlaceholder } from "@self-learning/ui/common";
+import { FieldHint, Form, LabeledField, Upload } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import slugify from "slugify";
 import { LessonFormModel } from "../lesson-form-model";
@@ -63,7 +64,7 @@ export function LessonInfoEditor() {
 					/>
 				</LabeledField>
 
-				<LabeledField label="Bild" error={errors.imgUrl?.message}>
+				<LabeledField label="Thumbnail" error={errors.imgUrl?.message}>
 					<Controller
 						control={control}
 						name="imgUrl"
@@ -73,19 +74,15 @@ export function LessonInfoEditor() {
 								mediaType="image"
 								onUploadCompleted={field.onChange}
 								preview={
-									<div className="aspect-video w-full rounded-lg">
-										{field.value && (
-											<img
-												className="aspect-video w-full rounded-lg object-cover"
-												src={field.value}
-												alt="Thumbnail"
-											/>
-										)}
-									</div>
+									<ImageOrPlaceholder
+										src={field.value ?? undefined}
+										className="aspect-video w-full rounded-lg object-cover"
+									/>
 								}
 							/>
 						)}
 					/>
+					<FieldHint>Thumbnails werden momentan nicht in der UI angezeigt.</FieldHint>
 				</LabeledField>
 			</div>
 		</Form.SidebarSection>

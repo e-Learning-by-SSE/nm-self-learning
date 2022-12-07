@@ -2,11 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { lessonSchema } from "@self-learning/types";
 import { SectionHeader, showToast } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { useEffect } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import { JsonEditorDialog } from "../json-editor-dialog";
+import { OpenAsJsonButton } from "../json-editor-dialog";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
@@ -20,20 +19,10 @@ export function LessonEditor({
 	onConfirm: (lesson: LessonFormModel) => void;
 }) {
 	const isNew = lesson.lessonId === "";
-	const [isJsonDialogOpen, setIsJsonDialogOpen] = useState(false);
-
 	const methods = useForm<LessonFormModel>({
 		resolver: zodResolver(lessonSchema),
 		defaultValues: lesson
 	});
-
-	function setFromJsonDialog(value: LessonFormModel | undefined) {
-		if (value) {
-			methods.reset(value);
-		}
-
-		setIsJsonDialogOpen(false);
-	}
 
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
@@ -72,47 +61,31 @@ export function LessonEditor({
 					)}
 					className="flex flex-col"
 				>
-					<div className="mx-auto grid max-w-[1920px] gap-8 xl:grid-cols-[500px_1fr]">
-						<aside className="playlist-scroll top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:sticky xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r">
-							<div className="flex flex-col px-4 pb-8">
-								<div className="sticky top-0 z-10 flex flex-col gap-2 border-b border-light-border bg-gray-50 pt-8 pb-4">
-									<div>
-										<span className="font-semibold text-secondary">
-											Lerneinheit editieren
-										</span>
+					<SidebarEditorLayout
+						sidebar={
+							<>
+								<div>
+									<span className="font-semibold text-secondary">
+										Lerneinheit editieren
+									</span>
 
-										<h1 className="text-2xl">{lesson.title}</h1>
-									</div>
-
-									<button
-										type="button"
-										className="btn-stroked"
-										onClick={() => setIsJsonDialogOpen(true)}
-									>
-										<span>Als JSON bearbeiten</span>
-										{isJsonDialogOpen && (
-											<JsonEditorDialog
-												onClose={setFromJsonDialog}
-												validationSchema={lessonSchema}
-											/>
-										)}
-									</button>
-
-									<button className="btn-primary w-full" type="submit">
-										{isNew ? "Erstellen" : "Speichern"}
-									</button>
+									<h1 className="text-2xl">{lesson.title}</h1>
 								</div>
 
-								<LessonInfoEditor />
-							</div>
-						</aside>
+								<OpenAsJsonButton validationSchema={lessonSchema} />
 
-						<div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-16 px-4 pt-8 pb-16">
-							<LessonDescriptionForm />
-							<LessonContentEditor />
-							<QuizEditor />
-						</div>
-					</div>
+								<button className="btn-primary w-full" type="submit">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+
+								<LessonInfoEditor />
+							</>
+						}
+					>
+						<LessonDescriptionForm />
+						<LessonContentEditor />
+						<QuizEditor />
+					</SidebarEditorLayout>
 				</form>
 			</FormProvider>
 		</div>

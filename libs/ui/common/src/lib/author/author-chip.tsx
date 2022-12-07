@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ImageOrPlaceholder } from "../image/image-placeholder";
 
 export type AuthorProps = { displayName: string; slug: string; imgUrl?: string | null };
 
@@ -9,15 +10,10 @@ export function AuthorChip({ displayName, slug, imgUrl }: AuthorProps) {
 			className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-4 text-sm"
 			data-testid="author"
 		>
-			<div className="h-12 w-12 rounded-l-lg bg-gray-100">
-				{imgUrl && (
-					<img
-						src={imgUrl}
-						alt={displayName}
-						className="h-12 w-12 rounded-l-lg object-cover"
-					/>
-				)}
-			</div>
+			<ImageOrPlaceholder
+				src={imgUrl ?? undefined}
+				className="h-10 w-10 rounded-l-lg object-cover"
+			/>
 			<span className="font-medium">{displayName}</span>
 		</Link>
 	);
