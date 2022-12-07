@@ -51,10 +51,6 @@ export function LandingPage() {
 						kannst, um dein Lernen zu verbessern. Unsere Mission ist, dass du durch die
 						Plattform lernst, selbstgesteuert und nachhaltig zu lernen.
 					</span>
-
-					<button className="mt-16 w-fit rounded-lg bg-secondary px-12 py-3 text-xl font-semibold text-white">
-						Call to Action
-					</button>
 				</div>
 
 				<div className="pt-16 md:pt-0">
