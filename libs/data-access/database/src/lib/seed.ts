@@ -8,11 +8,11 @@ import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";
 import {
-    createCourseContent,
-    createCourseMeta,
-    createLessonMeta,
-    extractLessonIds,
-    LessonContent,
+	createCourseContent,
+	createCourseMeta,
+	createLessonMeta,
+	extractLessonIds,
+	LessonContent
 } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
 
@@ -28,16 +28,19 @@ const prisma = new PrismaClient();
 const students = [
 	{
 		displayName: "Harry Potter",
-		username: "potter"
+		username: "potter",
+		image: "https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/b0b9da81cf357c8884a06de8ef72bea0/32/256x256.png"
 	},
 	{
 		displayName: "Ronald Weasley",
-		username: "weasley"
+		username: "weasley",
+		image: "https://i.pinimg.com/474x/d7/80/52/d7805247faaf18ef746e6d2e7d7c646a.jpg"
 	}
 ];
 
 const users: Prisma.UserCreateInput[] = students.map(student => ({
 	name: student.username,
+	image: student.image,
 	accounts: {
 		create: [
 			{
@@ -48,7 +51,10 @@ const users: Prisma.UserCreateInput[] = students.map(student => ({
 		]
 	},
 	student: {
-		create: student
+		create: {
+			displayName: student.displayName,
+			username: student.username
+		}
 	}
 }));
 
@@ -627,6 +633,7 @@ const authors: Prisma.UserCreateInput[] = [
 			create: {
 				displayName: "Albus Dumbledore",
 				slug: "albus-dumbledore",
+				imgUrl: "https://i.imgur.com/UWMVO8m.jpeg",
 				subjectAdmin: {
 					create: {
 						subjectId: "informatik"
@@ -636,12 +643,13 @@ const authors: Prisma.UserCreateInput[] = [
 		}
 	},
 	{
-		name: "minerva-mcgonagall",
+		name: "mcgonagall",
+		image: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg",
 		accounts: {
 			create: [
 				{
 					provider: "demo",
-					providerAccountId: "minerva-mcgonagall",
+					providerAccountId: "mcgonagall",
 					type: "demo-account"
 				}
 			]
@@ -649,13 +657,14 @@ const authors: Prisma.UserCreateInput[] = [
 		student: {
 			create: {
 				displayName: "Minerva McGonagall",
-				username: "minerva-mcgonagall"
+				username: "mcgonagall"
 			}
 		},
 		author: {
 			create: {
 				displayName: "Minerva McGonagall",
-				slug: "minerva-mcgonagall"
+				slug: "mcgonagall",
+				imgUrl: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg"
 			}
 		}
 	}
