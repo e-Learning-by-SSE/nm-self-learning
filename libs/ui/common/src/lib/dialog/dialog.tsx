@@ -7,12 +7,14 @@ export function Dialog<TResult>({
 	onClose,
 	children,
 	title,
-	style
+	style,
+	className
 }: {
 	title: string;
 	onClose: OnDialogCloseFn<TResult>;
 	children: React.ReactNode;
 	style?: CSSProperties;
+	className?: string;
 }) {
 	return (
 		<HeadlessDialog open={true} onClose={() => onClose(undefined)} className="relative z-50">
@@ -24,7 +26,9 @@ export function Dialog<TResult>({
 				<div className="absolute flex min-h-full items-center place-self-center">
 					{/* The actual dialog panel  */}
 					<HeadlessDialog.Panel
-						className="relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8"
+						className={`relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8 ${
+							className ?? ""
+						}`}
 						style={style ?? { minWidth: 624, maxHeight: "80vh" }}
 						data-testid="Dialog"
 					>
@@ -46,7 +50,7 @@ export function DialogActions({
 	/** Function that will be called with `undefined` when the `Cancel` button is clicked. */ // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onClose: OnDialogCloseFn<any>;
 	/** Should include the call to action button.  */
-	children: React.ReactNode;
+	children?: React.ReactNode;
 }) {
 	return (
 		<div className="mt-8 flex justify-end gap-2">
