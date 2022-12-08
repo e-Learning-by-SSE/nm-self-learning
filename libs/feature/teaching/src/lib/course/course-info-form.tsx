@@ -1,3 +1,4 @@
+import { ImageOrPlaceholder } from "@self-learning/ui/common";
 import { Form, LabeledField, Upload } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
@@ -63,15 +64,10 @@ export function CourseInfoForm() {
 								mediaType="image"
 								onUploadCompleted={field.onChange}
 								preview={
-									<div className="aspect-video w-full rounded-lg">
-										{field.value && (
-											<img
-												className="aspect-video w-full rounded-lg object-cover"
-												src={field.value}
-												alt="Thumbnail"
-											/>
-										)}
-									</div>
+									<ImageOrPlaceholder
+										src={field.value ?? undefined}
+										className="aspect-video w-full rounded-lg object-cover"
+									/>
 								}
 							/>
 						)}
