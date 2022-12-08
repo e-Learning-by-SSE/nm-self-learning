@@ -3,7 +3,6 @@ import { subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
 import slugify from "slugify";
-
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";

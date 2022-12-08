@@ -167,7 +167,7 @@ export function createTextQuestion(
 		})) ?? [];
 
 	return {
-		type: "",
+		type: "exact",
 		questionId: faker.random.alphaNumeric(8),
 		statement: question,
 		withCertainty: false,
