@@ -27,7 +27,6 @@
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
 			"@self-learning/question-types": ["libs/feature/question-types/src/index.ts"],
 			"@self-learning/quiz": ["libs/feature/quiz/src/index.ts"],
-			"@self-learning/search": ["libs/feature/search/src/index.ts"],
 			"@self-learning/teaching": ["libs/feature/teaching/src/index.ts"],
 			"@self-learning/types": ["libs/util/types/src/index.ts"],
 			"@self-learning/ui/common": ["libs/ui/common/src/index.ts"],
