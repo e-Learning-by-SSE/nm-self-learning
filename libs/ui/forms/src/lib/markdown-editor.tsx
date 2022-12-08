@@ -4,6 +4,7 @@ import { MDXRemote } from "next-mdx-remote";
 import { useEffect, useState } from "react";
 import { EditorField } from "./editor";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
+import { AssetPickerButton } from "./upload";
 
 export function MarkdownField({
 	content,
@@ -42,15 +43,25 @@ export function MarkdownField({
 				<div className="flex h-full w-full flex-col gap-2">
 					<span className="flex justify-between">
 						<label className="text-sm font-semibold">Preview</label>
-						<button
-							type="button"
-							onClick={() =>
-								setHeight(prev => (prev === _minHeight ? "75vh" : _minHeight))
-							}
-							className="text-xs text-secondary"
-						>
-							{height === _minHeight ? "Ansicht vergrößern" : "Ansicht verkleinern"}
-						</button>
+						<div className="flex gap-4">
+							<button
+								type="button"
+								onClick={() =>
+									setHeight(prev => (prev === _minHeight ? "75vh" : _minHeight))
+								}
+								className="text-xs text-secondary"
+							>
+								{height === _minHeight
+									? "Ansicht vergrößern"
+									: "Ansicht verkleinern"}
+							</button>
+							<AssetPickerButton
+								copyToClipboard={true}
+								onClose={() => {
+									/** NOOP */
+								}}
+							/>
+						</div>
 					</span>
 					<div
 						className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4"

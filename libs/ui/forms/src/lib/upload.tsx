@@ -5,6 +5,7 @@ import {
 	DialogActions,
 	LoadingBox,
 	OnDialogCloseFn,
+	showToast,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn
@@ -123,19 +124,17 @@ async function uploadFile(file: File, url: string): Promise<void> {
 	}
 }
 
-function AssetPickerButton({
+export function AssetPickerButton({
 	onClose,
-	mediaType
-}: {
-	onClose: OnDialogCloseFn<string>;
-	mediaType: MediaType;
-}) {
+	mediaType,
+	copyToClipboard
+}: Parameters<typeof AssetPickerDialog>[0]) {
 	const [showAssetPicker, setShowAssetPicker] = useState(false);
 
 	return (
 		<button
 			type="button"
-			className="h-fit rounded-lg border border-light-border px-2 py-2"
+			className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
 			title="Aus hochgeladenen Dateien auswählen"
 			onClick={() => setShowAssetPicker(true)}
 		>
@@ -143,6 +142,7 @@ function AssetPickerButton({
 
 			{showAssetPicker && (
 				<AssetPickerDialog
+					copyToClipboard={copyToClipboard}
 					mediaType={mediaType}
 					onClose={url => {
 						setShowAssetPicker(false);
@@ -156,10 +156,14 @@ function AssetPickerButton({
 
 function AssetPickerDialog({
 	mediaType,
-	onClose
+	onClose,
+	copyToClipboard
 }: {
 	mediaType?: MediaType;
+	/** Returns the URL of the selected asset.  */
 	onClose: OnDialogCloseFn<string>;
+	/** If `true`, choosing an assets will copy its URL to the clipboard. */
+	copyToClipboard?: boolean;
 }) {
 	const { data: assets, isLoading } = trpc.storage.getMyAssets.useQuery();
 	const [filter, setFilter] = useState("");
@@ -187,84 +191,107 @@ function AssetPickerDialog({
 		<Dialog
 			title="Hochgeladene Dateien"
 			onClose={onClose}
-			className="max-h-[80vh] w-[80vw] xl:min-h-[50vh] 2xl:w-[50vw]"
+			className="max-h-[80vh] w-[80vw] 2xl:w-[60vw]"
 		>
 			<span className="absolute bottom-8 left-8 text-xs text-light">
 				type: {mediaType ? mediaType : "all"}
 			</span>
 
-			<div className="flex flex-col overflow-auto">
-				<SearchField
-					placeholder="Suche nach Datei..."
-					value={filter}
-					onChange={e => setFilter(e.target.value)}
-				/>
+			<div className="flex h-full flex-col justify-between">
+				<div className="flex flex-col overflow-auto xl:min-h-[50vh]">
+					<SearchField
+						placeholder="Suche nach Datei..."
+						value={filter}
+						onChange={e => setFilter(e.target.value)}
+					/>
 
-				<ul className="flex flex-col">
-					{isLoading ? (
-						<LoadingBox height={256} />
-					) : filteredAssets.length === 0 ? (
-						<span className="text-sm text-light">Keine Dateien gefunden.</span>
-					) : (
-						<Table
-							head={
-								<>
-									<TableHeaderColumn>Preview</TableHeaderColumn>
-									<TableHeaderColumn>Datei</TableHeaderColumn>
-									<TableHeaderColumn>Typ</TableHeaderColumn>
-									<TableHeaderColumn>Datum</TableHeaderColumn>
-									<TableHeaderColumn></TableHeaderColumn>
-								</>
-							}
-						>
-							{filteredAssets.map(asset => (
-								<tr key={asset.publicUrl}>
-									<TableDataColumn>
-										{asset.filetype === "image" ? (
-											<img
-												className="h-16 w-24 rounded-lg object-cover "
-												src={asset.publicUrl}
-												alt="Preview"
-											/>
-										) : (
-											<div className="h-16 w-24 rounded-lg bg-gray-200"></div>
-										)}
-									</TableDataColumn>
-									<TableDataColumn>
-										<div className="flex flex-col gap-1">
-											<span className="font-medium">{asset.filename}</span>
-											<a
-												className="text-xs text-light hover:underline"
-												target="blank"
-												rel="noreferrer"
-												href={asset.publicUrl}
+					<ul className="flex flex-col">
+						{isLoading ? (
+							<LoadingBox height={256} />
+						) : filteredAssets.length === 0 ? (
+							<span className="text-sm text-light">Keine Dateien gefunden.</span>
+						) : (
+							<Table
+								head={
+									<>
+										<TableHeaderColumn>Preview</TableHeaderColumn>
+										<TableHeaderColumn>Datei</TableHeaderColumn>
+										<TableHeaderColumn>Typ</TableHeaderColumn>
+										<TableHeaderColumn>Datum</TableHeaderColumn>
+										<TableHeaderColumn></TableHeaderColumn>
+									</>
+								}
+							>
+								{filteredAssets.map(asset => (
+									<tr key={asset.publicUrl}>
+										<TableDataColumn>
+											{asset.filetype === "image" ? (
+												<img
+													className="h-16 w-24 rounded-lg object-cover "
+													src={asset.publicUrl}
+													alt="Preview"
+												/>
+											) : (
+												<div className="h-16 w-24 rounded-lg bg-gray-200"></div>
+											)}
+										</TableDataColumn>
+										<TableDataColumn>
+											<div className="flex flex-col gap-1">
+												<span className="font-medium">
+													{asset.filename}
+												</span>
+												<a
+													className="text-xs text-light hover:underline"
+													target="blank"
+													rel="noreferrer"
+													href={asset.publicUrl}
+												>
+													{asset.publicUrl}
+												</a>
+											</div>
+										</TableDataColumn>
+										<TableDataColumn>{asset.filetype}</TableDataColumn>
+										<TableDataColumn>
+											<span
+												title={parseISO(asset.createdAt).toLocaleString()}
 											>
-												{asset.publicUrl}
-											</a>
-										</div>
-									</TableDataColumn>
-									<TableDataColumn>{asset.filetype}</TableDataColumn>
-									<TableDataColumn>
-										<span title={parseISO(asset.createdAt).toLocaleString()}>
-											{formatDateAgo(asset.createdAt)}
-										</span>
-									</TableDataColumn>
-									<TableDataColumn>
-										<button
-											className="btn-primary"
-											onClick={() => onClose(asset.publicUrl)}
-										>
-											Auswählen
-										</button>
-									</TableDataColumn>
-								</tr>
-							))}
-						</Table>
-					)}
-				</ul>
-			</div>
+												{formatDateAgo(asset.createdAt)}
+											</span>
+										</TableDataColumn>
+										<TableDataColumn>
+											<div className="flex justify-end">
+												<button
+													className="btn-primary"
+													onClick={() => {
+														if (copyToClipboard) {
+															navigator.clipboard.writeText(
+																asset.publicUrl
+															);
+															showToast({
+																type: "info",
+																title: "In Zwischenablage kopiert",
+																subtitle: asset.publicUrl
+															});
+														}
 
-			<DialogActions onClose={onClose}></DialogActions>
+														onClose(asset.publicUrl);
+													}}
+												>
+													{copyToClipboard
+														? "URL in Zwischenablage kopieren"
+														: "Auswählen"}
+												</button>
+											</div>
+										</TableDataColumn>
+									</tr>
+								))}
+							</Table>
+						)}
+					</ul>
+				</div>
+
+				<DialogActions onClose={onClose}></DialogActions>
+			</div>
 		</Dialog>
 	);
 }
