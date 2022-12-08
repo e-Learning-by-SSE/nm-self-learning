@@ -3,8 +3,7 @@ import { database } from "@self-learning/database";
 import { Defined, ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
-import { formatDistance } from "date-fns";
-import { de } from "date-fns/locale";
+import { formatDateAgo } from "@self-learning/util/common";
 import { GetServerSideProps, GetServerSidePropsResult } from "next";
 import { getToken } from "next-auth/jwt";
 import Link from "next/link";
@@ -169,13 +168,6 @@ export default function Profile({ student, completedLessons, imgUrl }: ProfilePr
 	);
 }
 
-function toDateAgo(date: Date | string | number) {
-	return formatDistance(new Date(date), Date.now(), {
-		addSuffix: true,
-		locale: de
-	});
-}
-
 function StudentInfo({
 	student,
 	imgUrl
@@ -240,7 +232,7 @@ function Activity({
 								)}
 							</div>
 							<span className="text-sm text-light">
-								{toDateAgo(lesson.createdAt)}
+								{formatDateAgo(lesson.createdAt)}
 							</span>
 						</li>
 					))}
