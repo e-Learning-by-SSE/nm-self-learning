@@ -1,6 +1,6 @@
 import { useQuestion } from "../../use-question-hook";
 
-export function ClozeAnswer() {
+export default function ClozeAnswer() {
 	const { question } = useQuestion("cloze");
 
 	return (

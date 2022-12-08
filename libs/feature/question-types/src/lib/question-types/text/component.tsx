@@ -2,7 +2,7 @@ import { TextArea } from "@self-learning/ui/forms";
 import { useQuestion } from "../../use-question-hook";
 import { motion } from "framer-motion";
 
-export function TextAnswer() {
+export default function TextAnswer() {
 	const { setAnswer, answer, evaluation } = useQuestion("text");
 
 	return (

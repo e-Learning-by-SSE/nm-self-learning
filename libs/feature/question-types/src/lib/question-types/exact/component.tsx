@@ -2,8 +2,8 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { motion } from "framer-motion";
 import { useQuestion } from "../../use-question-hook";
 
-export function ShortTextAnswer() {
-	const { question, answer, setAnswer, evaluation } = useQuestion("short-text");
+export default function ExactAnswer() {
+	const { question, answer, setAnswer, evaluation } = useQuestion("exact");
 
 	return (
 		<div className="flex flex-col gap-8">

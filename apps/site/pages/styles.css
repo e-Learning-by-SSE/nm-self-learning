@@ -105,7 +105,7 @@ video {
 }
 
 .icon {
-	@apply mr-2 -ml-2 h-5;
+	@apply mr-2 -ml-2 h-5 shrink-0;
 }
 
 .checkbox {

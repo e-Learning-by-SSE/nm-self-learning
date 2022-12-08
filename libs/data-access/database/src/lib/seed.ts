@@ -282,7 +282,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		]
 	},
 	{
-		type: "short-text",
+		type: "exact",
 		questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
 		statement: "# Was ist 1 + 1 ?",
 		withCertainty: true,

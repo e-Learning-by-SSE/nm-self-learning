@@ -4,7 +4,7 @@ import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { MultipleChoiceQuestion } from "./schema";
 
-export function MultipleChoiceForm({
+export default function MultipleChoiceForm({
 	index
 }: {
 	question: { type: MultipleChoiceQuestion["type"] };

@@ -67,7 +67,7 @@ const EXTENSION: Record<string, string> = {
 	python: "py"
 };
 
-export function ProgrammingAnswer() {
+export default function ProgrammingAnswer() {
 	const { setAnswer, answer, question, evaluation, setEvaluation } = useQuestion("programming");
 	const [output, setOutput] = useState({
 		isLoading: false,

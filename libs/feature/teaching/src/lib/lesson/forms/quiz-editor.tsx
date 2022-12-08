@@ -1,15 +1,13 @@
 import { PlusIcon } from "@heroicons/react/outline";
 import {
-	BaseQuestion,
-	MultipleChoiceForm,
-	ProgrammingForm,
+	INITIAL_QUESTION_CONFIGURATION_FUNCTIONS,
+	QuestionFormRenderer,
 	QuestionType,
-	QuizContent,
-	ShortTextForm
+	QUESTION_TYPE_DISPLAY_NAMES,
+	QuizContent
 } from "@self-learning/question-types";
 import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
 import { MarkdownField } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
 import { useState } from "react";
@@ -21,8 +19,7 @@ export function useQuizEditorForm() {
 		append,
 		remove,
 		fields: quiz,
-		replace: setQuiz,
-		swap
+		replace: setQuiz
 	} = useFieldArray({
 		control,
 		name: "quiz"
@@ -32,49 +29,16 @@ export function useQuizEditorForm() {
 	const currentQuestion = quiz[questionIndex];
 
 	function appendQuestion(type: QuestionType["type"]) {
-		const baseQuestion: BaseQuestion = {
-			type: "",
-			questionId: getRandomId(),
-			statement: "",
-			withCertainty: false,
-			hints: []
-		};
-
 		setQuestionIndex(old => old + 1);
 
-		if (type === "multiple-choice") {
-			return append({
-				...baseQuestion,
-				type: "multiple-choice",
-				answers: []
-			});
+		const initialConfigFn = INITIAL_QUESTION_CONFIGURATION_FUNCTIONS[type];
+
+		if (!initialConfigFn) {
+			console.error("No initial configuration function found for question type", type);
+			return;
 		}
 
-		if (type === "short-text") {
-			return append({
-				...baseQuestion,
-				type: "short-text",
-				acceptedAnswers: []
-			});
-		}
-
-		if (type === "programming") {
-			return append({
-				...baseQuestion,
-				type: "programming",
-				language: "java",
-				custom: {
-					mode: "standalone",
-					expectedOutput: "",
-					solutionTemplate: ""
-				}
-			});
-		}
-	}
-
-	function swapQuestions(fromIndex: number, toIndex: number) {
-		swap(fromIndex, toIndex);
-		setQuestionIndex(toIndex);
+		append(initialConfigFn());
 	}
 
 	function removeQuestion(index: number) {
@@ -97,7 +61,6 @@ export function useQuizEditorForm() {
 		setQuestionIndex,
 		currentQuestion,
 		appendQuestion,
-		swapQuestions,
 		removeQuestion
 	};
 }
@@ -111,7 +74,6 @@ export function QuizEditor() {
 		setQuestionIndex,
 		currentQuestion,
 		appendQuestion,
-		swapQuestions,
 		removeQuestion
 	} = useQuizEditorForm();
 
@@ -125,32 +87,16 @@ export function QuizEditor() {
 			/>
 
 			<div className="flex flex-wrap gap-4 text-sm">
-				<button
-					type="button"
-					className="btn-primary mb-8 w-fit"
-					onClick={() => appendQuestion("multiple-choice")}
-				>
-					<PlusIcon className="h-5" />
-					<span>Multiple-Choice</span>
-				</button>
-
-				<button
-					type="button"
-					className="btn-primary mb-8 w-fit"
-					onClick={() => appendQuestion("short-text")}
-				>
-					<PlusIcon className="h-5" />
-					<span>Kurze Antwort</span>
-				</button>
-
-				<button
-					type="button"
-					className="btn-primary mb-8 w-fit"
-					onClick={() => appendQuestion("programming")}
-				>
-					<PlusIcon className="h-5" />
-					<span>Programmieren</span>
-				</button>
+				{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+					<button
+						type="button"
+						className="btn-primary mb-8 w-fit"
+						onClick={() => appendQuestion(type as QuestionType["type"])}
+					>
+						<PlusIcon className="icon h-5" />
+						<span>{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}</span>
+					</button>
+				))}
 			</div>
 
 			{questionIndex >= 0 && (
@@ -165,7 +111,9 @@ export function QuizEditor() {
 							>
 								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
 									<div className="flex flex-col">
-										<span className="text-xs font-normal">{value.type}</span>
+										<span className="text-xs font-normal">
+											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
+										</span>
 										<span>Frage {index + 1}</span>
 									</div>
 								</RemovableTab>
@@ -182,27 +130,11 @@ export function QuizEditor() {
 					control={control}
 					index={questionIndex}
 				>
-					<RenderQuestionTypeForm question={currentQuestion} index={questionIndex} />
+					<QuestionFormRenderer question={currentQuestion} index={questionIndex} />
 				</BaseQuestionForm>
 			)}
 		</section>
 	);
-}
-
-function RenderQuestionTypeForm({ question, index }: { question: QuestionType; index: number }) {
-	if (question.type === "multiple-choice") {
-		return <MultipleChoiceForm question={question} index={index} />;
-	}
-
-	if (question.type === "short-text") {
-		return <ShortTextForm question={question} index={index} />;
-	}
-
-	if (question.type === "programming") {
-		return <ProgrammingForm question={question} index={index} />;
-	}
-
-	return <span className="text-red-500">Unknown question type: {question.type}</span>;
 }
 
 function BaseQuestionForm({
@@ -218,7 +150,9 @@ function BaseQuestionForm({
 }) {
 	return (
 		<div className="pt-8">
-			<span className="font-semibold text-secondary">{currentQuestion.type}</span>
+			<span className="font-semibold text-secondary">
+				{QUESTION_TYPE_DISPLAY_NAMES[currentQuestion.type]}
+			</span>
 			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">Frage {index + 1}</h5>
 
 			<div className="flex flex-col gap-12">

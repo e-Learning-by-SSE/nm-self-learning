@@ -4,16 +4,11 @@ import {
 	AnswerContextProvider,
 	EVALUATION_FUNCTIONS,
 	INITIAL_ANSWER_VALUE_FUNCTIONS,
-	MultipleChoiceAnswer,
-	ProgrammingAnswer,
+	QuestionAnswerRenderer,
 	QuestionType,
-	QuestionTypeUnion,
-	ShortTextAnswer,
-	TextAnswer,
-	useQuestion,
-	VorwissenAnswer
+	useQuestion
 } from "@self-learning/question-types";
-import { CenteredContainer, MarkdownContainer } from "@self-learning/ui/layouts";
+import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
 import { Certainty } from "./certainty";
@@ -198,7 +193,7 @@ export function Question({
 				</div>
 
 				<div className="flex max-w-full flex-col gap-8">
-					<Answer question={question} />
+					<QuestionAnswerRenderer question={question} />
 				</div>
 
 				{question.withCertainty && <Certainty />}
@@ -257,40 +252,5 @@ function CheckResult({
 			)}
 			{/* {eslint-disable-next-line react/jsx-no-useless-fragment} */}
 		</>
-	);
-}
-
-function Answer({ question }: { question: QuestionType }) {
-	// Works, but prevents HMR :(
-	// const component = QUESTION_ANSWER_COMPONENTS[question.type];
-
-	// if (component) {
-	// 	return component();
-	// }
-
-	if (question.type === "programming") {
-		return <ProgrammingAnswer />;
-	}
-
-	if (question.type === "multiple-choice") {
-		return <MultipleChoiceAnswer />;
-	}
-
-	if (question.type === "short-text") {
-		return <ShortTextAnswer />;
-	}
-
-	if (question.type === "text") {
-		return <TextAnswer />;
-	}
-
-	if (question.type === "vorwissen") {
-		return <VorwissenAnswer />;
-	}
-
-	return (
-		<CenteredContainer className="text-red-500">
-			Error: No implementation found for "{(question as { type: string }).type}".
-		</CenteredContainer>
 	);
 }
