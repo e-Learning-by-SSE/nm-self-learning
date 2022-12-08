@@ -1,5 +1,5 @@
 import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
-import { CheckCircleIcon, CogIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import { CheckCircleIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -47,7 +47,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 			}
 		}
 
-		if (question.type === "multiple-choice" || question.type === "vorwissen") {
+		if (question.type === "multiple-choice") {
 			for (const answer of question.answers) {
 				answersMd[answer.answerId] = await compileMarkdown(answer.content);
 			}

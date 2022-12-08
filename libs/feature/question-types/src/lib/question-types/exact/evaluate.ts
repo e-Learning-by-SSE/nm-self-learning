@@ -1,6 +1,6 @@
-import { EvaluationFn } from "../../quiz-schema";
+import { EvaluationFn } from "../../question-type-registry";
 
-export const evaluateShortText: EvaluationFn<"short-text"> = (question, answer) => {
+export const evaluateExactAnswer: EvaluationFn<"exact"> = (question, answer) => {
 	const correctAnswer = question.acceptedAnswers.find(a => a.value === answer.value);
 
 	return {

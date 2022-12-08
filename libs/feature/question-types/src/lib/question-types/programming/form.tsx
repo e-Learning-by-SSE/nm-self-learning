@@ -2,7 +2,7 @@ import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { ProgrammingQuestion } from "./schema";
 
-export function ProgrammingForm({
+export default function ProgrammingForm({
 	question,
 	index
 }: {

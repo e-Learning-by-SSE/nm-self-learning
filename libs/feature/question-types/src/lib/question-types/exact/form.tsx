@@ -1,15 +1,15 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { ShortTextQuestion } from "./schema";
+import { ExactQuestion } from "./schema";
 
-export function ShortTextForm({
+export default function ExactForm({
 	index
 }: {
-	question: { type: ShortTextQuestion["type"] };
+	question: { type: ExactQuestion["type"] };
 	index: number;
 }) {
-	const { control, register } = useFormContext<{ quiz: ShortTextQuestion[] }>();
+	const { control, register } = useFormContext<{ quiz: ExactQuestion[] }>();
 	const {
 		fields: acceptedAnswers,
 		append,

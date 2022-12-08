@@ -1,4 +1,4 @@
-import { EvaluationFn } from "../../quiz-schema";
+import { EvaluationFn } from "../../question-type-registry";
 import { TestCase } from "./schema";
 
 export const evaluateProgramming: EvaluationFn<"programming"> = (question, answer) => {

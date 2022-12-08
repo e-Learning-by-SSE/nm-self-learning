@@ -3,7 +3,7 @@ import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren } from "react";
 import { useQuestion } from "../../use-question-hook";
 
-export function MultipleChoiceAnswer() {
+export default function MultipleChoiceAnswer() {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
 
 	return (
