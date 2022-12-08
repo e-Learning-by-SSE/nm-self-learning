@@ -114,8 +114,12 @@ Object {
 		return testApiHandler({
 			handler: (req, res) =>
 				apiHandler(req, res, "GET", async () => {
-					throw new PrismaClientKnownRequestError("Error from Prisma", "P2002", "3.15", {
-						hello: "world"
+					throw new PrismaClientKnownRequestError("Error from Prisma", {
+						code: "P2002",
+						clientVersion: "4.7.1",
+						meta: {
+							hello: "world"
+						}
 					});
 				}),
 			test: async ({ fetch }) => {
