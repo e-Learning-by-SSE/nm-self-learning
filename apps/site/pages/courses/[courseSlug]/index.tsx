@@ -1,5 +1,3 @@
-import { formatDistance } from "date-fns";
-import { de } from "date-fns/locale";
 import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
@@ -11,11 +9,17 @@ import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { CourseContent, Defined, extractLessonIds, LessonInfo, ResolvedValue } from "@self-learning/types";
+import {
+	CourseContent,
+	Defined,
+	extractLessonIds,
+	LessonInfo,
+	ResolvedValue
+} from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
-import { formatSeconds } from "@self-learning/util/common";
+import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -177,13 +181,6 @@ export default function Course({ course, summary, content, markdownDescription }
 	);
 }
 
-function toDateAgo(date: Date | string | number) {
-	return formatDistance(new Date(date), Date.now(), {
-		addSuffix: true,
-		locale: de
-	});
-}
-
 function CourseHeader({
 	course,
 	summary,
@@ -231,8 +228,8 @@ function CourseHeader({
 					</div>
 
 					<CreatedUpdatedDates
-						createdAt={toDateAgo(course.createdAt)}
-						updatedAt={toDateAgo(course.updatedAt)}
+						createdAt={formatDateAgo(course.createdAt)}
+						updatedAt={formatDateAgo(course.updatedAt)}
 					/>
 				</div>
 
