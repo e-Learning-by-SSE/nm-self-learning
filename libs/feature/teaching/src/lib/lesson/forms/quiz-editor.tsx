@@ -89,6 +89,7 @@ export function QuizEditor() {
 			<div className="flex flex-wrap gap-4 text-sm">
 				{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 					<button
+						key={type}
 						type="button"
 						className="btn-primary mb-8 w-fit"
 						onClick={() => appendQuestion(type as QuestionType["type"])}

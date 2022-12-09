@@ -142,6 +142,7 @@ export function LessonContentEditor() {
 			<div className="flex gap-4 text-sm">
 				{contentTypes.map(contentType => (
 					<AddButton
+						key={contentType}
 						contentType={contentType}
 						disabled={typesWithUsage[contentType] === true}
 						addContent={addContent}
