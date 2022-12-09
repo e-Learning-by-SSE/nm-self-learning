@@ -118,7 +118,8 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	exact: () => ({
 		...createBaseQuestion(),
 		type: "exact",
-		acceptedAnswers: []
+		acceptedAnswers: [],
+		caseSensitive: false
 	}),
 	text: () => ({
 		...createBaseQuestion(),

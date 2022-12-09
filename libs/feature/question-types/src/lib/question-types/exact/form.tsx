@@ -32,17 +32,31 @@ export default function ExactForm({
 
 	return (
 		<section className="flex flex-col gap-8">
-			<div className="flex items-center gap-4">
-				<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
+			<div className="flex flex-col gap-2">
+				<div className="flex items-center gap-4">
+					<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
 
-				<button
-					type="button"
-					className="btn-stroked h-fit w-fit items-center"
-					onClick={addAnswer}
-				>
-					<PlusIcon className="h-5" />
-					<span>Antwort hinzufügen</span>
-				</button>
+					<button
+						type="button"
+						className="btn-stroked h-fit w-fit items-center"
+						onClick={addAnswer}
+					>
+						<PlusIcon className="h-5" />
+						<span>Antwort hinzufügen</span>
+					</button>
+				</div>
+
+				<span className="flex items-center gap-4">
+					<input
+						type="checkbox"
+						className="checkbox"
+						id="caseSensitive"
+						{...register(`quiz.${index}.caseSensitive`)}
+					/>
+					<label className="select-none text-sm" htmlFor="caseSensitive">
+						Groß-/Kleinschreibung berücksichtigen
+					</label>
+				</span>
 			</div>
 
 			{acceptedAnswers.length > 0 && (
@@ -50,6 +64,8 @@ export default function ExactForm({
 					{acceptedAnswers.map((acceptedAnswer, acceptedAnswerIndex) => (
 						<div className="flex gap-4" key={acceptedAnswer.acceptedAnswerId}>
 							<input
+								type="text"
+								className="textfield w-64"
 								{...register(
 									`quiz.${index}.acceptedAnswers.${acceptedAnswerIndex}.value`
 								)}
