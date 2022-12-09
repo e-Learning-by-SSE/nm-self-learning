@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
+import { uploadedAssetSchema } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
+import { TRPCError } from "@trpc/server";
 import { Client, ClientOptions } from "minio";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
@@ -33,8 +35,6 @@ const publicUrlWithBucket = minioConfig.publicUrl
 			minioConfig.bucketName
 	  }`;
 
-console.log("[Storage]: Files will be uploaded to:", publicUrlWithBucket);
-
 export const storageRouter = t.router({
 	getPresignedUrl: authProcedure
 		.input(
@@ -51,44 +51,54 @@ export const storageRouter = t.router({
 				publicUrl: `${publicUrlWithBucket}/${randomizedFilename}`
 			};
 		}),
-	removeFile: adminProcedure
+	removeFileAsAdmin: adminProcedure
 		.input(
 			z.object({
-				filename: z.string()
+				objectName: z.string()
 			})
 		)
-		.mutation(({ input }) => {
-			return removeFile(input.filename);
+		.mutation(async ({ input }) => {
+			const deleted = await removeFile(input.objectName);
+			console.log("[storageRouter.removeFileAsAdmin] File removed:", deleted);
+			return deleted;
 		}),
-	registerAsset: authProcedure
-		.input(
-			z.object({
-				filename: z.string(),
-				publicUrl: z.string(),
-				filetype: z.string()
-			})
-		)
-		.mutation(({ ctx, input }) => {
-			const data: Prisma.UploadedAssetsCreateManyInput = {
-				username: ctx.user.name,
-				filename: input.filename,
-				publicUrl: input.publicUrl,
-				filetype: input.filetype,
-				createdAt: new Date().toISOString()
-			};
-
-			return database.uploadedAssets.upsert({
-				where: { publicUrl: input.publicUrl },
-				update: data,
-				create: data
-			});
-		}),
+	registerAsset: authProcedure.input(uploadedAssetSchema).mutation(({ ctx, input }) => {
+		return database.uploadedAssets.create({
+			data: {
+				...input,
+				username: ctx.user.name
+			}
+		});
+	}),
 	getMyAssets: authProcedure.query(({ ctx }) => {
 		return database.uploadedAssets.findMany({
 			where: { username: ctx.user.name },
 			orderBy: { createdAt: "desc" }
 		});
-	})
+	}),
+	removeMyAsset: authProcedure
+		.input(z.object({ objectName: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const { objectName } = input;
+
+			const { username } = await database.uploadedAssets.findUniqueOrThrow({
+				where: { objectName },
+				select: { username: true }
+			});
+
+			if (username !== ctx.user.name) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Removing assets of another user requires 'ADMIN' role."
+				});
+			}
+
+			const deleted = await removeFile(objectName);
+
+			console.log("[storageRouter.removeMyAsset] File removed:", deleted);
+
+			return deleted;
+		})
 });
 
 /** Uses the `minio` SDK to request a presigned URL that users can upload files to. */
@@ -104,8 +114,30 @@ function getPresignedUrl(filename: string): Promise<string> {
 	});
 }
 
+async function removeFile(objectName: string) {
+	try {
+		await _removeFileFromStorageServer(objectName);
+	} catch (err) {
+		console.error("Error removing file", err);
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Error removing file from storage server."
+		});
+	}
+
+	return database.uploadedAssets.delete({
+		where: { objectName },
+		select: {
+			objectName: true,
+			fileName: true,
+			publicUrl: true,
+			username: true
+		}
+	});
+}
+
 /** Uses the `minio` SDK to remove a file. */
-function removeFile(filename: string): Promise<void> {
+function _removeFileFromStorageServer(filename: string): Promise<void> {
 	return new Promise((res, rej) => {
 		minioClient.removeObject(minioConfig.bucketName, filename, err => {
 			if (err) {

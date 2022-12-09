@@ -1,4 +1,7 @@
+import { Menu } from "@headlessui/react";
 import { CloudDownloadIcon } from "@heroicons/react/outline";
+import { DotsVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
+import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
 	Dialog,
@@ -11,6 +14,8 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { formatDateAgo } from "@self-learning/util/common";
+import { TRPCClientError } from "@trpc/client";
+import { inferProcedureOutput, inferRouterOutputs } from "@trpc/server";
 import { parseISO } from "date-fns";
 import { ReactElement, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
@@ -20,24 +25,39 @@ type MediaType = "image" | "video" | "pdf";
 export function Upload({
 	mediaType,
 	onUploadCompleted,
-	preview
+	preview,
+	hideAssetPicker
 }: {
-	mediaType: MediaType;
+	mediaType?: MediaType;
 	onUploadCompleted: (publicUrl: string, meta?: { duration: number }) => void;
-	preview: ReactElement;
+	preview?: ReactElement;
+	/** If `true`, button to open asset picker is not rendered. */
+	hideAssetPicker?: boolean;
 }) {
 	const id = useId(); // Each file input requires a unique id ... otherwise browser will always pick the first one
 	const { mutateAsync: getPresignedUrl } = trpc.storage.getPresignedUrl.useMutation();
 	const { mutateAsync: registerAsset } = trpc.storage.registerAsset.useMutation();
 	const trpcContext = trpc.useContext();
 
-	const accept = {
-		image: "image/*",
-		video: "video/*",
-		pdf: "application/pdf"
-	}[mediaType];
+	const accept = useMemo(() => {
+		const mediaTypes = {
+			image: "image/*",
+			video: "video/*",
+			pdf: "application/pdf"
+		};
 
-	function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
+		let accept: string | undefined = undefined;
+
+		if (mediaType) {
+			accept = mediaTypes[mediaType];
+		} else if (!accept) {
+			accept = Object.values(mediaTypes).join(",");
+		}
+
+		return accept;
+	}, [mediaType]);
+
+	async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
 		const file = event.target.files?.[0];
 
 		if (!file) {
@@ -46,6 +66,10 @@ export function Upload({
 		}
 
 		console.log(file);
+
+		const objectName = window.crypto.randomUUID();
+		const fileName = file.name;
+		const fileType = tryGetMediaType(file) ?? "unknown";
 
 		const meta = {
 			duration: 0
@@ -60,24 +84,21 @@ export function Upload({
 			};
 		}
 
-		getPresignedUrl({ filename: file.name }).then(({ presignedUrl, publicUrl }) => {
-			console.log("Presigned URL:", presignedUrl);
+		const { presignedUrl, publicUrl } = await getPresignedUrl({ filename: objectName });
+		console.log("Presigned URL:", presignedUrl);
 
-			uploadFile(file, presignedUrl).then(() => {
-				console.log("File uploaded to:", publicUrl);
-				onUploadCompleted(publicUrl, meta);
+		await uploadFile(file, presignedUrl);
+		console.log("File uploaded to:", publicUrl);
+		onUploadCompleted(publicUrl, meta);
 
-				registerAsset({ filename: file.name, publicUrl, filetype: mediaType })
-					.then(() => {
-						console.log("Asset registered.");
-						trpcContext.storage.invalidate();
-					})
-					.catch(err => {
-						console.log("Failed to register asset.");
-						console.error(err);
-					});
-			});
-		});
+		try {
+			await registerAsset({ objectName, publicUrl, fileType, fileName });
+			console.log("Asset registered.");
+			trpcContext.storage.invalidate();
+		} catch (error) {
+			console.log("Failed to register asset.");
+			console.error(error);
+		}
 	}
 
 	return (
@@ -91,10 +112,12 @@ export function Upload({
 						: "Datei hochladen"}
 				</label>
 
-				<AssetPickerButton
-					mediaType={mediaType}
-					onClose={url => url && onUploadCompleted(url)}
-				/>
+				{!hideAssetPicker && (
+					<AssetPickerButton
+						mediaType={mediaType}
+						onClose={url => url && onUploadCompleted(url)}
+					/>
+				)}
 			</div>
 			<input
 				type="file"
@@ -109,6 +132,18 @@ export function Upload({
 			{preview}
 		</div>
 	);
+}
+
+function tryGetMediaType(file: File): string | null {
+	const [type, extension] = file.type.split("/");
+
+	if (type === "image" || type === "video") {
+		return type;
+	} else if (extension === "pdf") {
+		return "pdf";
+	}
+
+	return null;
 }
 
 async function uploadFile(file: File, url: string): Promise<void> {
@@ -154,6 +189,8 @@ export function AssetPickerButton({
 	);
 }
 
+type Asset = inferRouterOutputs<AppRouter>["storage"]["getMyAssets"][0];
+
 function AssetPickerDialog({
 	mediaType,
 	onClose,
@@ -166,8 +203,8 @@ function AssetPickerDialog({
 	copyToClipboard?: boolean;
 }) {
 	const { data: assets, isLoading } = trpc.storage.getMyAssets.useQuery();
+
 	const [filter, setFilter] = useState("");
-	const [typeFilter, setTypeFilter] = useState<MediaType | undefined>(mediaType);
 
 	const filteredAssets = useMemo(() => {
 		if (!assets) {
@@ -176,36 +213,46 @@ function AssetPickerDialog({
 
 		const trimmedFilter = filter.trim();
 
-		if (trimmedFilter.length === 0 && !typeFilter) {
+		if (trimmedFilter.length === 0) {
 			return assets;
 		}
 
 		return assets.filter(
-			asset =>
-				(mediaType ? asset.filetype === mediaType : true) && // Filter by media type
-				asset.filename.toLowerCase().includes(trimmedFilter.toLowerCase()) // Filter by filename
+			asset => asset.fileName.toLowerCase().includes(trimmedFilter.toLowerCase()) // Filter by filename
 		);
-	}, [assets, filter, typeFilter, mediaType]);
+	}, [assets, filter]);
 
 	return (
 		<Dialog
 			title="Hochgeladene Dateien"
 			onClose={onClose}
-			className="max-h-[80vh] w-[80vw] 2xl:w-[60vw]"
+			className="max-h-[80vh] w-[80vw] overflow-auto 2xl:w-[60vw]"
 		>
 			<span className="absolute bottom-8 left-8 text-xs text-light">
 				type: {mediaType ? mediaType : "all"}
 			</span>
 
 			<div className="flex h-full flex-col justify-between">
-				<div className="flex flex-col overflow-auto xl:min-h-[50vh]">
+				<div className="flex flex-col xl:min-h-[50vh]">
+					<div className="absolute top-8 right-8">
+						{" "}
+						<Upload
+							onUploadCompleted={() => {
+								// Reset filter so user sees uploaded file on top
+								setFilter("");
+							}}
+							hideAssetPicker={true}
+						/>
+					</div>
+
 					<SearchField
 						placeholder="Suche nach Datei..."
 						value={filter}
 						onChange={e => setFilter(e.target.value)}
 					/>
+					<span className="flex flex-wrap gap-4"></span>
 
-					<ul className="flex flex-col">
+					<ul className="flex max-h-[50vh] flex-col">
 						{isLoading ? (
 							<LoadingBox height={256} />
 						) : filteredAssets.length === 0 ? (
@@ -214,6 +261,7 @@ function AssetPickerDialog({
 							<Table
 								head={
 									<>
+										<TableHeaderColumn></TableHeaderColumn>
 										<TableHeaderColumn>Preview</TableHeaderColumn>
 										<TableHeaderColumn>Datei</TableHeaderColumn>
 										<TableHeaderColumn>Typ</TableHeaderColumn>
@@ -224,33 +272,31 @@ function AssetPickerDialog({
 							>
 								{filteredAssets.map(asset => (
 									<tr key={asset.publicUrl}>
+										<TableDataColumn className="pl-4">
+											<AssetOptionsMenu asset={asset} />
+										</TableDataColumn>
 										<TableDataColumn>
-											{asset.filetype === "image" ? (
+											{asset.fileType === "image" ? (
 												<img
-													className="h-16 w-24 rounded-lg object-cover "
+													className="h-16 w-24 shrink-0 rounded-lg object-cover"
 													src={asset.publicUrl}
 													alt="Preview"
 												/>
 											) : (
-												<div className="h-16 w-24 rounded-lg bg-gray-200"></div>
+												<div className="h-16 w-24 shrink-0 rounded-lg bg-gray-200"></div>
 											)}
 										</TableDataColumn>
 										<TableDataColumn>
-											<div className="flex flex-col gap-1">
-												<span className="font-medium">
-													{asset.filename}
-												</span>
-												<a
-													className="text-xs text-light hover:underline"
-													target="blank"
-													rel="noreferrer"
-													href={asset.publicUrl}
-												>
-													{asset.publicUrl}
-												</a>
-											</div>
+											<a
+												className="font-medium hover:text-secondary"
+												target="blank"
+												rel="noreferrer"
+												href={asset.publicUrl}
+											>
+												{asset.fileName}
+											</a>
 										</TableDataColumn>
-										<TableDataColumn>{asset.filetype}</TableDataColumn>
+										<TableDataColumn>{asset.fileType}</TableDataColumn>
 										<TableDataColumn>
 											<span
 												title={parseISO(asset.createdAt).toLocaleString()}
@@ -293,5 +339,72 @@ function AssetPickerDialog({
 				<DialogActions onClose={onClose}></DialogActions>
 			</div>
 		</Dialog>
+	);
+}
+
+function AssetOptionsMenu({ asset }: { asset: Asset }) {
+	const trpcContext = trpc.useContext();
+	const { mutateAsync: removeFromStorageServer } = trpc.storage.removeMyAsset.useMutation();
+
+	async function onDelete() {
+		const confirmed = window.confirm(`Datei "${asset.fileName}" wirklich löschen?`);
+		if (!confirmed) return;
+
+		try {
+			await removeFromStorageServer(asset);
+
+			showToast({
+				type: "success",
+				title: "Datei erfolgreich gelöscht",
+				subtitle: asset.fileName
+			});
+		} catch (error) {
+			console.error(error);
+
+			if (error instanceof TRPCClientError) {
+				showToast({
+					type: "error",
+					title: "Datei konnte nicht gelöscht werden",
+					subtitle: error.message
+				});
+			}
+		} finally {
+			trpcContext.storage.invalidate();
+		}
+	}
+
+	return (
+		<Menu as="div" className="relative flex">
+			<Menu.Button className="rounded-full p-2 hover:bg-gray-50">
+				<DotsVerticalIcon className="h-5 text-gray-400" />
+			</Menu.Button>
+			<Menu.Items className="absolute left-4 top-4 divide-y divide-gray-100 rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
+				<Menu.Item as="div" className="p-1">
+					{({ active }) => (
+						<button
+							className={`${
+								active ? "bg-secondary text-white" : ""
+							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2 opacity-25`}
+						>
+							<PencilIcon className="h-5" />
+							<span>Umbenennen (Nicht verfügbar)</span>
+						</button>
+					)}
+				</Menu.Item>
+				<Menu.Item as="div" className="p-1">
+					{({ active }) => (
+						<button
+							onClick={onDelete}
+							className={`${
+								active ? "bg-secondary text-white" : "text-red-500"
+							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2`}
+						>
+							<TrashIcon className="h-5" />
+							<span>Löschen</span>
+						</button>
+					)}
+				</Menu.Item>
+			</Menu.Items>
+		</Menu>
 	);
 }
