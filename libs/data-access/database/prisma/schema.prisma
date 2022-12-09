@@ -245,10 +245,13 @@ model LearningDiary {
 }
 
 model UploadedAssets {
-    publicUrl String   @id
-    filename  String
-    filetype  String
-    createdAt DateTime @default(now())
-    user      User?    @relation(fields: [username], references: [name], onDelete: SetNull)
-    username  String?
+    objectName String   @id
+    fileName   String
+    fileType   String
+    publicUrl  String
+    createdAt  DateTime @default(now())
+    user       User?    @relation(fields: [username], references: [name], onDelete: SetNull)
+    username   String?
+
+    @@index([fileName])
 }
