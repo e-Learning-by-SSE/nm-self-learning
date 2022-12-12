@@ -24,6 +24,9 @@ export const lessonRouter = t.router({
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
+				authors: {
+					connect: input.authors.map(a => ({ slug: a.slug }))
+				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
@@ -51,6 +54,9 @@ export const lessonRouter = t.router({
 				data: {
 					...input.lesson,
 					lessonId: input.lessonId,
+					authors: {
+						set: input.lesson.authors.map(a => ({ slug: a.slug }))
+					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},
 				select: {

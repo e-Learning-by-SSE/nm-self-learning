@@ -5,7 +5,7 @@ import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { OpenAsJsonButton } from "../json-editor-dialog";
-import { AuthorsForm } from "./authors-form";
+import { AuthorsForm } from "../author/authors-form";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
@@ -68,7 +68,10 @@ export function CourseEditor({
 								</button>
 
 								<CourseInfoForm />
-								<AuthorsForm />
+								<AuthorsForm
+									subtitle="Die Autoren dieses Kurses."
+									emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."
+								/>
 							</>
 						}
 					>

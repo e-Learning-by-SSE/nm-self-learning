@@ -1,23 +1,25 @@
 import { ImageOrPlaceholder } from "@self-learning/ui/common";
-import { FieldHint, Form, LabeledField, Upload } from "@self-learning/ui/forms";
+import {
+	FieldHint,
+	Form,
+	InputWithButton,
+	LabeledField,
+	Upload,
+	useSlugify
+} from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
-import slugify from "slugify";
+import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 
 export function LessonInfoEditor() {
+	const form = useFormContext<LessonFormModel>();
 	const {
-		getValues,
-		setValue,
 		register,
 		control,
 		formState: { errors }
-	} = useFormContext<LessonFormModel>();
+	} = form;
 
-	function slugifyTitle() {
-		const title = getValues("title");
-		const slug = slugify(title, { lower: true });
-		setValue("slug", slug);
-	}
+	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 
 	return (
 		<Form.SidebarSection>
@@ -30,31 +32,33 @@ export function LessonInfoEditor() {
 				<LabeledField label="Titel" error={errors.title?.message}>
 					<input
 						{...register("title")}
+						type="text"
+						className="textfield"
 						placeholder="Die Neue Lerneinheit"
-						onBlur={() => {
-							if (getValues("slug") === "") {
-								slugifyTitle();
-							}
-						}}
+						onBlur={slugifyIfEmpty}
 					/>
 				</LabeledField>
 
-				<div className="grid items-start gap-2 sm:flex">
-					<LabeledField label="Slug" error={errors.slug?.message}>
-						<input
-							{...register("slug")}
-							placeholder='Wird in der URL angezeigt, z. B.: "die-neue-lerneinheit"'
-						/>
-					</LabeledField>
-
-					<button
-						type="button"
-						className="btn-stroked h-fit self-end"
-						onClick={slugifyTitle}
-					>
-						Generieren
-					</button>
-				</div>
+				<LabeledField label="Slug" error={errors.slug?.message}>
+					<InputWithButton
+						input={
+							<input
+								className="textfield"
+								placeholder="die-neue-lerneinheit"
+								type={"text"}
+								{...register("slug")}
+							/>
+						}
+						button={
+							<button type="button" className="btn-stroked" onClick={slugifyField}>
+								Generieren
+							</button>
+						}
+					/>
+					<FieldHint>
+						Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig sein.
+					</FieldHint>
+				</LabeledField>
 
 				<LabeledField label="Untertitel" error={errors.subtitle?.message}>
 					<textarea
@@ -84,6 +88,11 @@ export function LessonInfoEditor() {
 					/>
 					<FieldHint>Thumbnails werden momentan nicht in der UI angezeigt.</FieldHint>
 				</LabeledField>
+
+				<AuthorsForm
+					subtitle="Autoren dieser Lerneinheit."
+					emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
+				/>
 			</div>
 		</Form.SidebarSection>
 	);

@@ -1,4 +1,4 @@
-import type { EnrollmentStatus, Prisma } from "@prisma/client";
+import type { EnrollmentStatus } from "@prisma/client";
 import { z } from "zod";
 
 export type Completion = {

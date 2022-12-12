@@ -6,4 +6,4 @@ export * from "./lib/navbar";
 export * from "./lib/sidebar-editor-layout";
 export * from "./lib/sidebar-layout";
 export * from "./lib/topic-header/topic-header";
-export * from "./lib/admin-guard";
+export * from "./lib/guards";
