@@ -4,6 +4,7 @@
 		"esbenp.prettier-vscode",
 		"firsttris.vscode-jest-runner",
 		"dbaeumer.vscode-eslint",
-		"prisma.prisma"
+		"prisma.prisma",
+		"bradlc.vscode-tailwindcss"
 	]
 }
