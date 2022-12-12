@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { courseContentSchema, createCourseMeta } from "@self-learning/types";
+import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
@@ -11,12 +11,7 @@ export const courseFormSchema = z.object({
 	subtitle: z.string().min(3),
 	description: z.string().nullable(),
 	imgUrl: z.string().nullable(),
-	authors: z.array(
-		z.object({
-			slug: z.string()
-			// permissions: z.any() // currently not used, but could be added here
-		})
-	),
+	authors: authorsRelationSchema,
 	content: courseContentSchema
 });
 

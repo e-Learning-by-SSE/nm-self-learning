@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 
@@ -12,6 +13,7 @@ export const lessonSchema = z.object({
 	description: z.string().nullable().optional(),
 	imgUrl: z.string().nullable().optional(),
 	content: z.array(lessonContentSchema),
+	authors: authorsRelationSchema,
 	quiz: z.array(z.any()) //TODO: quizContentSchema causes "Jest failed to parse a file"
 });
 
@@ -27,6 +29,7 @@ export function createEmptyLesson(): Lesson {
 		description: null,
 		imgUrl: null,
 		content: [],
-		quiz: []
+		quiz: [],
+		authors: []
 	};
 }

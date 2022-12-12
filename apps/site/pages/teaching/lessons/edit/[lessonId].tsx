@@ -19,7 +19,18 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 	}
 
 	const lesson = await database.lesson.findUnique({
-		where: { lessonId }
+		where: { lessonId },
+		select: {
+			lessonId: true,
+			slug: true,
+			title: true,
+			subtitle: true,
+			description: true,
+			content: true,
+			quiz: true,
+			imgUrl: true,
+			authors: true
+		}
 	});
 
 	if (!lesson) {
@@ -27,9 +38,15 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 	}
 
 	const lessonForm: LessonFormModel = {
-		...lesson,
+		lessonId: lesson.lessonId,
+		slug: lesson.slug,
+		title: lesson.title,
+		subtitle: lesson.subtitle,
+		description: lesson.description,
+		imgUrl: lesson.imgUrl,
+		authors: lesson.authors.map(a => ({ slug: a.slug })),
 		// Need type casting because JsonArray from prisma causes error
-		content: lesson.content as LessonContent,
+		content: (lesson.content ?? []) as LessonContent,
 		quiz: (lesson.quiz ?? []) as QuizContent
 	};
 
@@ -66,5 +83,5 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		}
 	}
 
-	return <LessonEditor lesson={lesson as LessonFormModel} onConfirm={onConfirm} />;
+	return <LessonEditor lesson={lesson} onConfirm={onConfirm} />;
 }

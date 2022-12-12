@@ -16,4 +16,21 @@ export const authorSchema = z.object({
 	specializationAdmin: z.array(specializationSchema)
 });
 
+/**
+ * This schema can be used to validate the author relations in another schema
+ *
+ * @example
+ * export const courseFormSchema = z.object({
+ *		slug: z.string().min(3),
+ *		title: z.string().min(3),
+ *		description: z.string().nullable(),
+ *		authors: authorsRelationSchema,
+ * });
+ */
+export const authorsRelationSchema = z.array(
+	z.object({
+		slug: z.string()
+	})
+);
+
 export type Author = z.infer<typeof authorSchema>;

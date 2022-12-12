@@ -5,10 +5,10 @@ import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { AddAuthorDialog } from "../author/add-author-dialog";
-import { CourseFormModel } from "./course-form-model";
+import { AddAuthorDialog } from "./add-author-dialog";
+import { CourseFormModel } from "../course/course-form-model";
 
-export function AuthorsForm() {
+export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; emptyString: string }) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 	const { control } = useFormContext<{ authors: CourseFormModel["authors"] }>();
 	const {
@@ -27,7 +27,7 @@ export function AuthorsForm() {
 				return;
 			}
 
-			append(result);
+			append({ slug: result.slug });
 		}
 		setOpenAddDialog(false);
 	};
@@ -38,7 +38,7 @@ export function AuthorsForm() {
 
 	return (
 		<Form.SidebarSection>
-			<Form.SidebarSectionTitle title="Autoren" subtitle="Die Autoren dieses Kurses." />
+			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle} />
 
 			<IconButton
 				type="button"
@@ -50,9 +50,7 @@ export function AuthorsForm() {
 			/>
 
 			{authors.length === 0 ? (
-				<p className="text-sm text-light">
-					Für diesen Kurs sind noch keine Autoren hinterlegt.
-				</p>
+				<p className="text-sm text-light">{emptyString}</p>
 			) : (
 				<ul className="grid gap-4">
 					{authors.map(({ slug }, index) => (
