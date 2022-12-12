@@ -6,6 +6,7 @@ export function SearchField(props: JSX.IntrinsicElements["input"]) {
 			<SearchIcon className="h-6 text-light" />
 			<input
 				className="w-full border-none focus-within:outline-none focus:ring-0"
+				value={props.value ?? undefined}
 				placeholder={props.placeholder}
 				onChange={props.onChange}
 			/>

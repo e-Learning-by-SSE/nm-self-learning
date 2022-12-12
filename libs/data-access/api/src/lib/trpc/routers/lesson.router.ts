@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { createLessonMeta, lessonSchema } from "@self-learning/types";
-import { getRandomId } from "@self-learning/util/common";
+import { getRandomId, paginate, Paginated } from "@self-learning/util/common";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 
@@ -17,9 +17,21 @@ export const lessonRouter = t.router({
 			select: { lessonId: true, title: true, slug: true, meta: true }
 		});
 	}),
-	findMany: authProcedure.input(z.object({ title: z.string().optional() })).query(({ input }) => {
-		return findLessons({ title: input.title, take: 15 });
-	}),
+	findMany: authProcedure
+		.input(z.object({ title: z.string().optional(), page: z.number().optional() }))
+		.query(async ({ input }) => {
+			const pageSize = 15;
+			const { lessons, count } = await findLessons({
+				title: input.title,
+				...paginate(pageSize, input.page)
+			});
+			return {
+				result: lessons,
+				page: input.page ?? 1,
+				totalCount: count,
+				pageSize
+			} satisfies Paginated<unknown>;
+		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input }) => {
 		const createdLesson = await database.lesson.create({
 			data: {
@@ -87,25 +99,27 @@ export async function findLessons({
 				: undefined
 	};
 
-	const [lessons, count] = await Promise.all([
+	const [lessons, count] = await database.$transaction([
 		database.lesson.findMany({
 			select: {
 				lessonId: true,
 				title: true,
 				slug: true,
+				updatedAt: true,
 				authors: {
 					select: {
-						displayName: true
+						displayName: true,
+						slug: true,
+						imgUrl: true
 					}
 				}
 			},
+			orderBy: { updatedAt: "desc" },
 			where,
 			take,
 			skip
 		}),
-		database.lesson.count({
-			where
-		})
+		database.lesson.count({ where })
 	]);
 
 	return { lessons, count };

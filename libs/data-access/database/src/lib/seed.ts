@@ -285,6 +285,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
 		statement: "# Was ist 1 + 1 ?",
 		withCertainty: true,
+		caseSensitive: true,
 		acceptedAnswers: [
 			{
 				acceptedAnswerId: "724f781e-56b2-4057-831e-b1d6962c48b1",
