@@ -193,6 +193,8 @@ model Lesson {
     content      Json
     quiz         Json?
     meta         Json
+    createdAt    DateTime          @default(now())
+    updatedAt    DateTime          @updatedAt
     completions  CompletedLesson[]
     quizAttempts QuizAttempt[]
     authors      Author[]

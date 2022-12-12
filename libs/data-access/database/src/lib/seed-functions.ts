@@ -171,6 +171,7 @@ export function createTextQuestion(
 		questionId: faker.random.alphaNumeric(8),
 		statement: question,
 		withCertainty: false,
+		caseSensitive: false,
 		acceptedAnswers: answers.map(answer => ({
 			acceptedAnswerId: faker.random.alphaNumeric(8),
 			value: answer
