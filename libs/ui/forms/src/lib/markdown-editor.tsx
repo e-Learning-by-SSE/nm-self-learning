@@ -41,9 +41,9 @@ export function MarkdownField({
 				</div>
 
 				<div className="flex h-full w-full flex-col gap-2">
-					<span className="flex justify-between">
+					<span className="relative flex justify-between">
 						<label className="text-sm font-semibold">Preview</label>
-						<div className="flex gap-4">
+						<div className="absolute right-0 -top-4 flex gap-4">
 							<button
 								type="button"
 								onClick={() =>
