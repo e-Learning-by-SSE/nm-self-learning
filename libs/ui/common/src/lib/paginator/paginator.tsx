@@ -1,4 +1,5 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
+import { Paginated } from "@self-learning/util/common";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -9,19 +10,11 @@ type PaginatedLinks = {
 	maxPage: number;
 };
 
-export function Paginator({
-	page,
-	url,
-	totalCount,
-	pageSize
-}: {
-	page: number;
-	url: string;
-	totalCount: number;
-	pageSize: number;
-}) {
+export function Paginator({ pagination, url }: { url: string; pagination: Paginated<unknown> }) {
 	const pageLinks = useMemo(() => {
-		const arr = new Array(Math.ceil(totalCount / pageSize)).fill(0).map((_, i) => i + 1);
+		const arr = new Array(Math.ceil(pagination.totalCount / pagination.pageSize))
+			.fill(0)
+			.map((_, i) => i + 1);
 
 		// TODO: Implement some logic to split the array into front, middle and back when there are too many pages
 
@@ -31,7 +24,9 @@ export function Paginator({
 			back: [],
 			maxPage: arr.length
 		} satisfies PaginatedLinks;
-	}, [totalCount, pageSize]);
+	}, [pagination]);
+
+	const { page, pageSize, totalCount, result } = pagination;
 
 	return (
 		<div className="flex items-center justify-between border-t border-gray-200  py-4 pl-4">
@@ -52,9 +47,11 @@ export function Paginator({
 			<div className="hidden items-center sm:flex sm:flex-1 sm:justify-between">
 				<div>
 					<p className="text-sm text-light">
-						Zeige <span className="font-medium text-black">{pageSize ?? 0}</span> von{" "}
-						<span className="font-medium text-black">{totalCount ?? 0}</span>{" "}
-						Ergebnissen
+						Zeige{" "}
+						<span className="font-medium text-black">
+							{Math.min(result.length, pageSize)}
+						</span>{" "}
+						von <span className="font-medium text-black">{totalCount}</span> Ergebnissen
 					</p>
 				</div>
 				<div>
