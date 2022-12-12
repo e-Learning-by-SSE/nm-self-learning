@@ -1,6 +1,6 @@
 import { PlusIcon, XIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
-import { IconButton, OnDialogCloseFn } from "@self-learning/ui/common";
+import { IconButton, ImageOrPlaceholder, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
@@ -78,15 +78,10 @@ function Author({ slug, onRemove }: { slug: string; onRemove: () => void }) {
 			className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-2 text-sm"
 			data-testid="author"
 		>
-			<div className="h-12 w-12 shrink-0 rounded-l-lg bg-gray-200">
-				{author.imgUrl && (
-					<img
-						src={author.imgUrl}
-						alt={author.displayName}
-						className="h-12 w-12 shrink-0 rounded-l-lg"
-					/>
-				)}
-			</div>
+			<ImageOrPlaceholder
+				src={author.imgUrl ?? undefined}
+				className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
+			/>
 
 			<span className="w-full">
 				<Link
