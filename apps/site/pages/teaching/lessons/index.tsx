@@ -86,12 +86,7 @@ export default function LessonManagementPage() {
 			</Table>
 
 			{data?.result && (
-				<Paginator
-					totalCount={data.totalCount}
-					pageSize={data.pageSize}
-					page={Number(page)}
-					url={`/teaching/lessons?title=${titleFilter}`}
-				/>
+				<Paginator pagination={data} url={`/teaching/lessons?title=${titleFilter}`} />
 			)}
 		</CenteredSection>
 	);
