@@ -10,7 +10,16 @@ type PaginatedLinks = {
 	maxPage: number;
 };
 
-export function Paginator({ pagination, url }: { url: string; pagination: Paginated<unknown> }) {
+export function Paginator({
+	pagination,
+	url,
+	onPageChange
+}: {
+	pagination: Paginated<unknown>;
+	url: string;
+	/** If defined, selecting a page will no longer cause a navigation! Callers are responsible for changing data.  */
+	onPageChange?: (page: number) => void;
+}) {
 	const pageLinks = useMemo(() => {
 		const arr = new Array(Math.ceil(pagination.totalCount / pagination.pageSize))
 			.fill(0)
@@ -29,114 +38,151 @@ export function Paginator({ pagination, url }: { url: string; pagination: Pagina
 	const { page, pageSize, totalCount, result } = pagination;
 
 	return (
-		<div className="flex items-center justify-between border-t border-gray-200  py-4 pl-4">
-			<div className="flex flex-1 justify-between sm:hidden">
-				<Link
+		<div className="flex flex-wrap items-center justify-between gap-4 border-t py-4 pl-4">
+			<p className="text-sm text-light">
+				Zeige{" "}
+				<span className="font-medium text-black">{Math.min(result.length, pageSize)}</span>{" "}
+				von <span className="font-medium text-black">{totalCount}</span> Ergebnissen
+			</p>
+			<nav
+				className="isolate inline-flex -space-x-px rounded-lg shadow-sm"
+				aria-label="Pagination"
+			>
+				<ForwardBackwardLink
+					disabled={page === 1}
 					href={`${url}&page=${page - 1}`}
-					className="relative inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-				>
-					Previous
-				</Link>
-				<a
-					href={`${url}&page=${page + 1}`}
-					className="relative ml-3 inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-				>
-					Next
-				</a>
-			</div>
-			<div className="hidden items-center sm:flex sm:flex-1 sm:justify-between">
-				<div>
-					<p className="text-sm text-light">
-						Zeige{" "}
-						<span className="font-medium text-black">
-							{Math.min(result.length, pageSize)}
-						</span>{" "}
-						von <span className="font-medium text-black">{totalCount}</span> Ergebnissen
-					</p>
-				</div>
-				<div>
-					<nav
-						className="isolate inline-flex -space-x-px rounded-lg shadow-sm"
-						aria-label="Pagination"
-					>
-						{page > 1 ? (
-							<Link
-								href={`${url}&page=${page - 1}`}
-								className="relative inline-flex items-center rounded-l-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20"
-							>
-								<span className="sr-only">Previous</span>
-								<ChevronLeftIcon className="h-5" />
-							</Link>
-						) : (
-							<span className="relative inline-flex items-center rounded-l-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-300">
-								<span className="sr-only">Previous</span>
-								<ChevronLeftIcon className="h-5" />
-							</span>
-						)}
+					isForward={false}
+					onPageChange={onPageChange ? () => onPageChange(page - 1) : undefined}
+				/>
 
-						{pageLinks.front.map(p => (
+				{pageLinks.front.map(p => (
+					<PageLink
+						key={p}
+						isActive={p === page}
+						page={p}
+						url={`${url}&page=${p}`}
+						onPageChange={onPageChange}
+					/>
+				))}
+
+				{pageLinks.back.length > 0 && (
+					<span className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
+						...
+					</span>
+				)}
+
+				{pageLinks.middle.length > 0 && (
+					<>
+						{pageLinks.middle.map(p => (
 							<PageLink
 								key={p}
 								isActive={p === page}
 								page={p}
 								url={`${url}&page=${p}`}
+								onPageChange={onPageChange}
 							/>
 						))}
+						<span className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
+							...
+						</span>
+					</>
+				)}
 
-						{pageLinks.back.length > 0 && (
-							<span className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
-								...
-							</span>
-						)}
+				{pageLinks.back.length > 0 &&
+					pageLinks.back.map(p => (
+						<PageLink
+							key={p}
+							isActive={p === page}
+							page={p}
+							url={`${url}&page=${p}`}
+							onPageChange={onPageChange}
+						/>
+					))}
 
-						{pageLinks.middle.length > 0 && (
-							<>
-								{pageLinks.middle.map(p => (
-									<PageLink
-										key={p}
-										isActive={p === page}
-										page={p}
-										url={`${url}&page=${p}`}
-									/>
-								))}
-								<span className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
-									...
-								</span>
-							</>
-						)}
-
-						{pageLinks.back.length > 0 &&
-							pageLinks.back.map(p => (
-								<PageLink
-									key={p}
-									isActive={p === page}
-									page={p}
-									url={`${url}&page=${p}`}
-								/>
-							))}
-
-						{page < pageLinks.maxPage ? (
-							<Link
-								href={`${url}&page=${page + 1}`}
-								className="relative inline-flex items-center rounded-r-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20"
-							>
-								<span className="sr-only">Previous</span>
-								<ChevronRightIcon className="h-5" />
-							</Link>
-						) : (
-							<span className="relative inline-flex items-center rounded-r-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-50 focus:z-20">
-								<span className="sr-only">Next</span>
-								<ChevronRightIcon className="h-5" />
-							</span>
-						)}
-					</nav>
-				</div>
-			</div>
+				<ForwardBackwardLink
+					disabled={page === pageLinks.maxPage}
+					href={`${url}&page=${page + 1}`}
+					isForward={true}
+					onPageChange={onPageChange ? () => onPageChange(page + 1) : undefined}
+				/>
+			</nav>
 		</div>
 	);
 }
 
-function PageLink({ page, isActive, url }: { url: string; page: number; isActive: boolean }) {
+function ForwardBackwardLink({
+	onPageChange,
+	href,
+	disabled,
+	isForward
+}: {
+	onPageChange?: () => void;
+	href: string;
+	isForward: boolean;
+	disabled: boolean;
+}) {
+	const className = `relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-medium ${
+		isForward ? "rounded-r-lg" : "rounded-l-lg"
+	} ${disabled ? "text-gray-300" : "text-gray-500"}`;
+
+	const icon = isForward ? (
+		<ChevronRightIcon className="h-5" />
+	) : (
+		<ChevronLeftIcon className="h-5" />
+	);
+
+	if (disabled) {
+		return (
+			<span className={className}>
+				<span className="sr-only">Previous</span>
+				{icon}
+			</span>
+		);
+	}
+
+	if (typeof onPageChange === "function") {
+		return (
+			<button className={className} onClick={onPageChange}>
+				<span className="sr-only">Previous</span>
+				{icon}
+			</button>
+		);
+	}
+
+	return (
+		<Link href={href} className={className}>
+			<span className="sr-only">Previous</span>
+			{icon}
+		</Link>
+	);
+}
+
+function PageLink({
+	page,
+	isActive,
+	url,
+	onPageChange
+}: {
+	url: string;
+	page: number;
+	isActive: boolean;
+	onPageChange?: (page: number) => void;
+}) {
+	if (typeof onPageChange === "function") {
+		return (
+			<button
+				className={`relative inline-flex items-center border  px-4 py-2 text-sm font-medium text-secondary focus:z-20 ${
+					isActive
+						? "z-10 border-secondary bg-emerald-50 hover:bg-emerald-100"
+						: "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+				}`}
+				onClick={() => onPageChange(page)}
+			>
+				{page}
+			</button>
+		);
+	}
+
 	return (
 		<Link
 			href={url}

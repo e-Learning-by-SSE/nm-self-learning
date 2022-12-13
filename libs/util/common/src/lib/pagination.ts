@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type Paginated<T> = {
 	result: T[];
 	/** Current page number. */
@@ -19,9 +21,13 @@ export type Paginated<T> = {
  * 	...paginate(15, 1) // Get the first 15 elements
  * }
  */
-export function paginate(take: number, page = 1): { skip: number; take: number } {
+export function paginate(take: number, page: number): { skip: number; take: number } {
 	return {
 		take,
 		skip: (page - 1) * take
 	};
 }
+
+export const paginationSchema = z.object({
+	page: z.number().positive()
+});
