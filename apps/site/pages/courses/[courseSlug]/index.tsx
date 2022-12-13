@@ -342,7 +342,9 @@ function Lesson({
 			}`}
 		>
 			<span className="flex">
-				<span className="w-8 font-medium text-secondary">{lesson.lessonNr}</span>
+				<span className="w-8 shrink-0 self-center font-medium text-secondary">
+					{lesson.lessonNr}
+				</span>
 				<span>{lesson.title}</span>
 			</span>
 		</Link>
