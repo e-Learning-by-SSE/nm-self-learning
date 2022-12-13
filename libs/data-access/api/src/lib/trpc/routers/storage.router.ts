@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { uploadedAssetSchema } from "@self-learning/types";
-import { getRandomId } from "@self-learning/util/common";
+import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { Client, ClientOptions } from "minio";
 import { z } from "zod";
@@ -70,12 +70,30 @@ export const storageRouter = t.router({
 			}
 		});
 	}),
-	getMyAssets: authProcedure.query(({ ctx }) => {
-		return database.uploadedAssets.findMany({
-			where: { username: ctx.user.name },
-			orderBy: { createdAt: "desc" }
-		});
-	}),
+	getMyAssets: authProcedure
+		.input(paginationSchema.extend({ fileName: z.string().optional() }))
+		.query(async ({ ctx, input: { fileName, page } }) => {
+			const pageSize = 5;
+
+			const where: Prisma.UploadedAssetsWhereInput = {
+				username: ctx.user.name,
+				fileName:
+					fileName && fileName.length > 0
+						? { contains: fileName, mode: "insensitive" }
+						: undefined
+			};
+
+			const [result, totalCount] = await database.$transaction([
+				database.uploadedAssets.findMany({
+					where,
+					orderBy: { createdAt: "desc" },
+					...paginate(pageSize, page)
+				}),
+				database.uploadedAssets.count({ where })
+			]);
+
+			return { result, totalCount, page, pageSize } satisfies Paginated<unknown>;
+		}),
 	removeMyAsset: authProcedure
 		.input(z.object({ objectName: z.string() }))
 		.mutation(async ({ ctx, input }) => {
