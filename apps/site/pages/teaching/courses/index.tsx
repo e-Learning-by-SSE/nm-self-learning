@@ -15,10 +15,10 @@ import { useEffect, useState } from "react";
 
 export default function CoursesPage() {
 	const router = useRouter();
-	const { title = "" } = router.query;
+	const { page = 1, title = "" } = router.query;
 	const [titleFilter, setTitle] = useState(title);
 	const { data } = trpc.course.findMany.useQuery(
-		{ title: titleFilter as string },
+		{ title: titleFilter as string, page: Number(page) },
 		{
 			staleTime: 10_000,
 			keepPreviousData: true

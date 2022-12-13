@@ -6,18 +6,13 @@ import {
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
 import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
-import { getRandomId, paginate, Paginated } from "@self-learning/util/common";
+import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 
 export const courseRouter = t.router({
 	findMany: t.procedure
-		.input(
-			z.object({
-				title: z.string().optional(),
-				page: z.number().optional()
-			})
-		)
+		.input(paginationSchema.extend({ title: z.string().optional() }))
 		.query(async ({ input }) => {
 			const pageSize = 15;
 
@@ -43,7 +38,7 @@ export const courseRouter = t.router({
 			return {
 				result,
 				pageSize: pageSize,
-				page: input.page ?? 1,
+				page: input.page,
 				totalCount: count
 			} satisfies Paginated<unknown>;
 		}),

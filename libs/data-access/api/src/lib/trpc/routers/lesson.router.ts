@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { createLessonMeta, lessonSchema } from "@self-learning/types";
-import { getRandomId, paginate, Paginated } from "@self-learning/util/common";
+import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 
@@ -18,17 +18,17 @@ export const lessonRouter = t.router({
 		});
 	}),
 	findMany: authProcedure
-		.input(z.object({ title: z.string().optional(), page: z.number().optional() }))
-		.query(async ({ input }) => {
+		.input(paginationSchema.extend({ title: z.string().optional() }))
+		.query(async ({ input: { title, page } }) => {
 			const pageSize = 15;
 			const { lessons, count } = await findLessons({
-				title: input.title,
-				...paginate(pageSize, input.page)
+				title,
+				...paginate(pageSize, page)
 			});
 			return {
 				result: lessons,
-				page: input.page ?? 1,
 				totalCount: count,
+				page,
 				pageSize
 			} satisfies Paginated<unknown>;
 		}),
