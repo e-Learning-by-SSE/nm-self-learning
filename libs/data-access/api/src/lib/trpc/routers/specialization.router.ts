@@ -5,6 +5,24 @@ import { z } from "zod";
 import { authProcedure, t, UserFromSession } from "../trpc";
 
 export const specializationRouter = t.router({
+	getById: authProcedure.input(z.object({ specializationId: z.string() })).query(({ input }) => {
+		return database.specialization.findUniqueOrThrow({
+			where: { specializationId: input.specializationId },
+			select: {
+				specializationId: true,
+				slug: true,
+				cardImgUrl: true,
+				title: true,
+				subject: {
+					select: {
+						subjectId: true,
+						slug: true,
+						title: true
+					}
+				}
+			}
+		});
+	}),
 	getForEdit: authProcedure
 		.input(z.object({ specializationId: z.string() }))
 		.query(({ input }) => {

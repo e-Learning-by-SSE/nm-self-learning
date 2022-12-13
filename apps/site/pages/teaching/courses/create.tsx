@@ -42,6 +42,7 @@ export default function CreateCoursePage() {
 				imgUrl: "",
 				subjectId: null,
 				content: [],
+				specializations: [],
 				authors: [{ slug: author.slug }]
 			}}
 		/>

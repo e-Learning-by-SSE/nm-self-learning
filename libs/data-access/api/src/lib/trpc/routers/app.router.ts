@@ -25,9 +25,11 @@ export const appRouter = t.router({
 	specialization: specializationRouter,
 	subject: subjectRouter,
 	programming: programmingRouter,
-	mdx: t.procedure.input(z.object({ text: z.string().default("") })).mutation(({ input }) => {
-		return compileMarkdown(input.text);
-	})
+	mdx: t.procedure
+		.input(z.object({ text: z.string().nullable().optional() }))
+		.mutation(({ input }) => {
+			return compileMarkdown(input.text ?? "");
+		})
 });
 
 // export type definition of API

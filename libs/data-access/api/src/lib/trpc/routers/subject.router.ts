@@ -15,6 +15,7 @@ export const subjectRouter = t.router({
 					orderBy: { title: "asc" },
 					select: {
 						title: true,
+						cardImgUrl: true,
 						specializationId: true
 					}
 				}

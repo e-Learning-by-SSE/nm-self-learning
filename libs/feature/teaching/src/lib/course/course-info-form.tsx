@@ -1,5 +1,5 @@
 import { ImageOrPlaceholder } from "@self-learning/ui/common";
-import { Form, LabeledField, Upload } from "@self-learning/ui/forms";
+import { Form, InputWithButton, LabeledField, Upload, useSlugify } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
 
@@ -21,11 +21,13 @@ import { CourseFormModel } from "./course-form-model";
  * )
  */
 export function CourseInfoForm() {
+	const form = useFormContext<CourseFormModel & { content: unknown[] }>(); // widen content type to prevent circular path error
 	const {
 		register,
 		control,
 		formState: { errors }
-	} = useFormContext<CourseFormModel & { content: unknown[] }>(); // widen content type to prevent circular path error
+	} = form;
+	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 
 	return (
 		<Form.SidebarSection>
@@ -33,19 +35,31 @@ export function CourseInfoForm() {
 
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Titel" error={errors.title?.message}>
-					<input {...register("title")} placeholder="Der Neue Kurs" />
+					<input
+						{...register("title")}
+						type="text"
+						className="textfield"
+						placeholder="Die Neue Lerneinheit"
+						onBlur={slugifyIfEmpty}
+					/>
 				</LabeledField>
-
-				<div className="grid items-start gap-2 sm:flex">
-					<LabeledField label="Slug" error={errors.slug?.message}>
-						<input
-							{...register("slug")}
-							placeholder='Wird in der URL angezeigt, z. B.: "der-neue-kurs"'
-						/>
-					</LabeledField>
-
-					<button className="btn-stroked h-fit self-end">Generieren</button>
-				</div>
+				<LabeledField label="Slug" error={errors.slug?.message}>
+					<InputWithButton
+						input={
+							<input
+								className="textfield"
+								placeholder="die-neue-lerneinheit"
+								type={"text"}
+								{...register("slug")}
+							/>
+						}
+						button={
+							<button type="button" className="btn-stroked" onClick={slugifyField}>
+								Generieren
+							</button>
+						}
+					/>
+				</LabeledField>
 
 				<LabeledField label="Untertitel" error={errors.subtitle?.message}>
 					<textarea
@@ -55,7 +69,7 @@ export function CourseInfoForm() {
 					/>
 				</LabeledField>
 
-				<LabeledField label="Bild" error={errors.imgUrl?.message}>
+				<LabeledField label="Bild" error={errors.imgUrl?.message} optional={true}>
 					<Controller
 						control={control}
 						name="imgUrl"

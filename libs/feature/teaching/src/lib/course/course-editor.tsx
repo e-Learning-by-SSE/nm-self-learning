@@ -4,8 +4,9 @@ import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import { OpenAsJsonButton } from "../json-editor-dialog";
 import { AuthorsForm } from "../author/authors-form";
+import { OpenAsJsonButton } from "../json-editor-dialog";
+import { SpecializationForm } from "../subject/subject-form";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
@@ -68,6 +69,7 @@ export function CourseEditor({
 								</button>
 
 								<CourseInfoForm />
+								<SpecializationForm subtitle="Die Spezialisierungen, in denen dieser Kurs angezeigt werden soll." />
 								<AuthorsForm
 									subtitle="Die Autoren dieses Kurses."
 									emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."

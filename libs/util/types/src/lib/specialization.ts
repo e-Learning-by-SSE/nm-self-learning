@@ -10,3 +10,11 @@ export const specializationSchema = z.object({
 });
 
 export type Specialization = z.infer<typeof specializationSchema>;
+
+export const specializationRelationSchema = z.array(
+	z.object({
+		specializationId: z.string()
+	})
+);
+
+export type SpecializationRelation = z.infer<typeof specializationRelationSchema>;
