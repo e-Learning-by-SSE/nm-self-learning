@@ -17,11 +17,15 @@ export function Navbar() {
 							<AcademicCapIcon className="h-8 shrink-0 text-white" />
 						</div>
 						<div className="hidden w-0 flex-col sm:flex sm:w-fit">
-							<span className="text-sm text-light">Universität Hildesheim</span>
-							<span className="font-bold text-secondary">SELF-le@rning</span>
+							<span className="whitespace-nowrap text-sm text-light">
+								Universität Hildesheim
+							</span>
+							<span className="whitespace-nowrap font-bold text-secondary">
+								SELF-le@rning
+							</span>
 						</div>
 					</Link>
-					<div className="invisible flex w-0 items-center gap-16 text-sm font-medium lg:visible lg:w-fit">
+					<div className="hidden items-center gap-16 text-sm font-medium xl:flex">
 						{user && (
 							<>
 								{/* <Link href="/learning-diary">
