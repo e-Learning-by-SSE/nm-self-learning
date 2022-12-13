@@ -2,10 +2,11 @@ import { Lesson, lessonSchema } from "./lesson";
 
 const minValidLesson: Lesson = {
 	lessonId: "id-1",
+	slug: "slug-1",
+	title: "The Title",
 	content: [],
 	quiz: [],
-	slug: "slug-1",
-	title: "The Title"
+	authors: []
 };
 
 describe("lessonSchema", () => {
@@ -74,6 +75,7 @@ describe("lessonSchema", () => {
 			expect(result.success).toEqual(true);
 			expect(result["data"]).toMatchInlineSnapshot(`
 			Object {
+			  "authors": Array [],
 			  "content": Array [],
 			  "lessonId": "id-1",
 			  "quiz": Array [],
