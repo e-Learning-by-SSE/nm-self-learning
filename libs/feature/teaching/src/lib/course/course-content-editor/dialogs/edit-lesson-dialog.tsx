@@ -25,7 +25,7 @@ export function EditLessonDialog({
 	const [selectedTab, setSelectedTab] = useState(0);
 	const isNew = !initialLesson;
 
-	const methods = useForm<LessonFormModel>({
+	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
 			...createEmptyLesson(),
@@ -41,24 +41,24 @@ export function EditLessonDialog({
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			style={{ height: "80vh", width: "80vw" }}
 		>
-			<div className="absolute right-8 top-8 flex gap-4">
-				<OpenAsJsonButton validationSchema={lessonSchema} />
-				{initialLesson?.lessonId && (
-					<a
-						className="btn-stroked"
-						target="_blank"
-						rel="noreferrer"
-						href={`/teaching/lessons/edit/${initialLesson?.lessonId}`}
-						title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
-					>
-						Im separaten Editor öffnen
-					</a>
-				)}
-			</div>
-			<FormProvider {...methods}>
+			<FormProvider {...form}>
+				<div className="absolute right-8 top-8 flex gap-4">
+					<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+					{initialLesson?.lessonId && (
+						<a
+							className="btn-stroked"
+							target="_blank"
+							rel="noreferrer"
+							href={`/teaching/lessons/edit/${initialLesson?.lessonId}`}
+							title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
+						>
+							Im separaten Editor öffnen
+						</a>
+					)}
+				</div>
 				<form
 					id="lessonform"
-					onSubmit={methods.handleSubmit(onClose, console.log)}
+					onSubmit={form.handleSubmit(onClose, console.log)}
 					className="flex h-full flex-col overflow-hidden"
 				>
 					<div className="flex h-full flex-col gap-4 overflow-hidden">

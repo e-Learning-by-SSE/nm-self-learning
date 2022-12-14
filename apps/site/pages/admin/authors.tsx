@@ -168,7 +168,7 @@ function AuthorForm({
 	onClose: OnDialogCloseFn<Author>;
 }) {
 	const { mutateAsync: updateAuthor } = trpc.author.updateAsAdmin.useMutation();
-	const methods = useForm({
+	const form = useForm({
 		resolver: zodResolver(authorSchema),
 		defaultValues: initialAuthor
 	});
@@ -196,13 +196,10 @@ function AuthorForm({
 	}
 
 	return (
-		<FormProvider {...methods}>
-			<form
-				className="flex flex-col justify-between"
-				onSubmit={methods.handleSubmit(onSubmit)}
-			>
+		<FormProvider {...form}>
+			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
 				<div className="absolute top-8 right-8">
-					<OpenAsJsonButton validationSchema={authorSchema} />
+					<OpenAsJsonButton form={form} validationSchema={authorSchema} />
 				</div>
 
 				<div className="grid gap-8 xl:grid-cols-[400px_600px]">

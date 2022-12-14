@@ -79,7 +79,7 @@ export function SubjectEditor({
 								</h1>
 							</div>
 
-							<OpenAsJsonButton validationSchema={subjectSchema} />
+							<OpenAsJsonButton form={form} validationSchema={subjectSchema} />
 
 							<button className="btn-primary w-full" type="submit">
 								{initialSubject.subjectId === "" ? "Erstellen" : "Speichern"}

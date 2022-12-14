@@ -20,19 +20,19 @@ export function CourseEditor({
 }) {
 	const isNew = course.courseId === "";
 
-	const methods = useForm<CourseFormModel>({
+	const form = useForm<CourseFormModel>({
 		defaultValues: { ...course },
 		resolver: zodResolver(courseFormSchema)
 	});
 
 	return (
 		<div className="bg-gray-50">
-			<FormProvider {...methods}>
+			<FormProvider {...form}>
 				<form
 					id="courseform"
 					onSubmit={e => {
 						if ((e.target as unknown as { id: string }).id === "courseform") {
-							methods.handleSubmit(
+							form.handleSubmit(
 								data => {
 									console.log("data", data);
 									try {
@@ -62,7 +62,7 @@ export function CourseEditor({
 									</Link>
 								</div>
 
-								<OpenAsJsonButton validationSchema={courseFormSchema} />
+								<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
 
 								<button className="btn-primary w-full" type="submit">
 									{isNew ? "Erstellen" : "Speichern"}

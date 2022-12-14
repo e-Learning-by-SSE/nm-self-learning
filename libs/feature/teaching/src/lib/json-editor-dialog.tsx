@@ -1,6 +1,6 @@
 import { Dialog } from "@headlessui/react";
 import { EditorField } from "@self-learning/ui/forms";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useFormContext, UseFormReturn } from "react-hook-form";
 import { ZodSchema } from "zod";
 
@@ -90,9 +90,8 @@ export function JsonEditorDialog<T>({
 	);
 }
 
-function useJsonEditor() {
+function useJsonEditor(form: UseFormReturn) {
 	const [isJsonEditorOpen, setIsJsonEditorOpen] = useState(false);
-	const form = useFormContext();
 
 	return useMemo(() => {
 		return {
@@ -120,11 +119,19 @@ function useJsonEditor() {
  *  	<JsonEditorButton />
  * </FormProvider>
  */
-export function OpenAsJsonButton({ validationSchema }: { validationSchema?: ZodSchema }) {
-	const { isJsonEditorOpen, openJsonEditor, onCloseJsonEditor } = useJsonEditor();
+export function OpenAsJsonButton({
+	validationSchema,
+	form
+}: {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	form: UseFormReturn<any>;
+	validationSchema?: ZodSchema;
+}) {
+	const id = useId();
+	const { isJsonEditorOpen, openJsonEditor, onCloseJsonEditor } = useJsonEditor(form);
 
 	return (
-		<button type="button" className="btn-stroked" onClick={openJsonEditor}>
+		<button key={id} type="button" className="btn-stroked" onClick={openJsonEditor}>
 			<span>Als JSON bearbeiten</span>
 			{isJsonEditorOpen && (
 				<JsonEditorDialog onClose={onCloseJsonEditor} validationSchema={validationSchema} />

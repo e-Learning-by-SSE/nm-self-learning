@@ -19,7 +19,7 @@ export function LessonEditor({
 	onConfirm: (lesson: LessonFormModel) => void;
 }) {
 	const isNew = lesson.lessonId === "";
-	const methods = useForm<LessonFormModel>({
+	const form = useForm<LessonFormModel>({
 		resolver: zodResolver(lessonSchema),
 		defaultValues: lesson
 	});
@@ -41,9 +41,9 @@ export function LessonEditor({
 
 	return (
 		<div className="bg-gray-50">
-			<FormProvider {...methods}>
+			<FormProvider {...form}>
 				<form
-					onSubmit={methods.handleSubmit(
+					onSubmit={form.handleSubmit(
 						data => {
 							onConfirm(data);
 						},
@@ -72,7 +72,7 @@ export function LessonEditor({
 									<h1 className="text-2xl">{lesson.title}</h1>
 								</div>
 
-								<OpenAsJsonButton validationSchema={lessonSchema} />
+								<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
 
 								<button className="btn-primary w-full" type="submit">
 									{isNew ? "Erstellen" : "Speichern"}
