@@ -43,6 +43,7 @@ export const lessonRouter = t.router({
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
+				quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : Prisma.JsonNull,
 				authors: {
 					connect: input.authors.map(a => ({ slug: a.slug }))
 				},
@@ -72,6 +73,9 @@ export const lessonRouter = t.router({
 				where: { lessonId: input.lessonId },
 				data: {
 					...input.lesson,
+					quiz: input.lesson.quiz
+						? (input.lesson.quiz as Prisma.JsonObject)
+						: Prisma.JsonNull,
 					lessonId: input.lessonId,
 					authors: {
 						set: input.lesson.authors.map(a => ({ slug: a.slug }))

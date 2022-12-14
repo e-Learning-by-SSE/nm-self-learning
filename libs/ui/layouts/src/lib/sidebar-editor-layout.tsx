@@ -15,7 +15,7 @@ export function SidebarEditorLayout({
 				</div>
 			</aside>
 
-			<div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-16 px-4 pt-8 pb-16">
+			<div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-16 px-4 pt-8 pb-64">
 				{children}
 			</div>
 		</div>

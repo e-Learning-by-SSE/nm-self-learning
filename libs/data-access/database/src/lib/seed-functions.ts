@@ -32,11 +32,7 @@ export function createLesson(
 		content: content,
 		quiz: {
 			questions,
-			config: {
-				hints: { enabled: true, maxHints: 100 },
-				maxErrors: 0,
-				showSolution: true
-			}
+			config: null
 		} satisfies Quiz,
 		meta: {}
 	};

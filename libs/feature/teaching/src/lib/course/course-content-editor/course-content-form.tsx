@@ -7,7 +7,7 @@ import {
 	XIcon
 } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
-import { QuizContent } from "@self-learning/question-types";
+import { Quiz } from "@self-learning/quiz";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
 import { OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
 import { useState } from "react";
@@ -388,7 +388,7 @@ function EditExistingLessonDialog({
 				...data,
 				authors: data.authors.map(a => ({ slug: a.slug })),
 				content: (data.content ?? []) as LessonContent,
-				quiz: (data.quiz ?? []) as QuizContent
+				quiz: data.quiz as Quiz
 			}}
 		/>
 	) : null;

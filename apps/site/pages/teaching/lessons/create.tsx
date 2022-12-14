@@ -47,7 +47,7 @@ export default function CreateLessonPage() {
 				subtitle: "",
 				description: "",
 				imgUrl: "",
-				quiz: [],
+				quiz: { questions: [], config: null },
 				content: [],
 				authors: [{ slug: author.slug }]
 			}}

@@ -11,12 +11,12 @@ import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
 import { useState } from "react";
-import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
 type QuizForm = { quiz: Quiz };
 
 export function useQuizEditorForm() {
-	const { control, register } = useFormContext<QuizForm>();
+	const { control, register, setValue } = useFormContext<QuizForm>();
 	const {
 		append,
 		remove,
@@ -59,6 +59,7 @@ export function useQuizEditorForm() {
 		control,
 		quiz,
 		register,
+		setValue,
 		setQuiz,
 		questionIndex,
 		setQuestionIndex,
@@ -144,51 +145,97 @@ export function QuizEditor() {
 }
 
 function QuizConfigForm() {
-	const { register } = useQuizEditorForm();
+	const { control, register, setValue } = useQuizEditorForm();
+
+	const config = useWatch({
+		control,
+		name: "quiz.config"
+	});
+
+	function resetToDefault() {
+		setValue("quiz.config", null);
+	}
+
+	function initCustomConfig() {
+		setValue(
+			"quiz.config",
+			config
+				? config
+				: {
+						hints: {
+							enabled: false,
+							maxHints: 0
+						},
+						maxErrors: 0,
+						showSolution: false
+				  }
+		);
+	}
 
 	return (
-		<div className="-mt-8 flex flex-col gap-4 rounded-lg bg-gray-200 p-4 text-sm">
+		<div className="-mt-8 flex flex-col gap-4 rounded-lg bg-gray-200 p-4">
 			<div className="flex flex-col gap-4">
-				<span className="text-xl font-semibold">Konfiguration</span>
 				<span className="flex items-center gap-4">
 					<input
-						{...register("quiz.config.showSolution")}
 						type="checkbox"
-						id="showSolutions"
 						className="checkbox"
-					></input>
-					<label htmlFor="showSolutions" className="select-none">
-						Lösungen anzeigen
-					</label>
-				</span>
-				<span className="flex items-center gap-4">
-					<input
-						{...register("quiz.config.hints.enabled")}
-						type="checkbox"
-						id="hintsEnabled"
-						className="checkbox"
-					></input>
-					<label htmlFor="hintsEnabled" className="select-none">
-						Hinweise aktivieren
-					</label>
-				</span>
-				<LabeledField label="Max. erlaubte Hinweise">
-					<input
-						{...register("quiz.config.hints.maxHints")}
-						type={"number"}
-						className="textfield w-fit"
-						placeholder="z. B. 2"
+						id="customConfig"
+						checked={!config}
+						onChange={e => (e.target.checked ? resetToDefault() : initCustomConfig())}
 					/>
-				</LabeledField>
-			</div>
+					<label htmlFor="customConfig" className="select-none text-sm">
+						Standard-Konfiguration verwenden
+					</label>
+				</span>
 
-			<LabeledField label="Max. erlaubte falsche Antworten">
-				<input
-					{...register("quiz.config.maxErrors")}
-					type={"number"}
-					className="textfield w-fit"
-				/>
-			</LabeledField>
+				<p className="text-sm text-light">TODO: Beschreibung der Standard-Konfiguration.</p>
+
+				{config && (
+					<div className="flex flex-col gap-4 text-sm">
+						<span className="flex items-center gap-4">
+							<input
+								{...register("quiz.config.showSolution")}
+								type="checkbox"
+								id="showSolutions"
+								className="checkbox"
+							></input>
+							<label htmlFor="showSolutions" className="select-none">
+								Lösungen anzeigen
+							</label>
+						</span>
+
+						<span className="flex items-center gap-4">
+							<input
+								{...register("quiz.config.hints.enabled")}
+								type="checkbox"
+								id="hintsEnabled"
+								className="checkbox"
+							></input>
+							<label htmlFor="hintsEnabled" className="select-none">
+								Hinweise aktivieren
+							</label>
+						</span>
+
+						<LabeledField label="Max. erlaubte Hinweise">
+							<input
+								{...register("quiz.config.hints.maxHints")}
+								type={"number"}
+								className="textfield w-fit"
+								placeholder="z. B. 2"
+							/>
+						</LabeledField>
+
+						<LabeledField label="Max. erlaubte falsche Antworten">
+							<input
+								{...register("quiz.config.maxErrors")}
+								type={"number"}
+								className="textfield w-fit"
+								defaultValue={0}
+							/>
+						</LabeledField>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

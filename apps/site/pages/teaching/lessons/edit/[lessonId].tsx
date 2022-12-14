@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { QuizContent } from "@self-learning/question-types";
+import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
@@ -47,7 +47,7 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 		authors: lesson.authors.map(a => ({ slug: a.slug })),
 		// Need type casting because JsonArray from prisma causes error
 		content: (lesson.content ?? []) as LessonContent,
-		quiz: (lesson.quiz ?? []) as QuizContent
+		quiz: lesson.quiz as Quiz
 	};
 
 	return {

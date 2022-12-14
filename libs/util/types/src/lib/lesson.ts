@@ -17,7 +17,7 @@ export const lessonSchema = z.object({
 	quiz: z
 		.object({
 			questions: z.array(z.any()),
-			config: z.object({})
+			config: z.object({}).nullable()
 		})
 		.nullable()
 	// TODO: quizContentSchema causes "Jest failed to parse a file"
