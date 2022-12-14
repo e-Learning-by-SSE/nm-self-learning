@@ -4,18 +4,17 @@ import {
 	ChevronDownIcon,
 	ChevronLeftIcon,
 	PlusIcon,
-	TrashIcon,
 	XIcon
 } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { QuizContent } from "@self-learning/question-types";
-import { CourseChapter, CourseLesson, LessonContent, LessonMeta } from "@self-learning/types";
+import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
 import { OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
 import { useState } from "react";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
+import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { EditLessonDialog } from "./dialogs/edit-lesson-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
-import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { useCourseContentForm } from "./use-content-form";
 
 type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
@@ -391,6 +390,7 @@ function EditExistingLessonDialog({
 			onClose={onClose}
 			initialLesson={{
 				...data,
+				authors: data.authors.map(a => ({ slug: a.slug })),
 				content: (data.content ?? []) as LessonContent,
 				quiz: (data.quiz ?? []) as QuizContent
 			}}

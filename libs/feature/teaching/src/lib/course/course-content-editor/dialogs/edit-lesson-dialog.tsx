@@ -2,9 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
+import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import slugify from "slugify";
+import { AuthorsForm } from "../../../author/authors-form";
 import { OpenAsJsonButton } from "../../../json-editor-dialog";
 import { LessonContentEditor } from "../../../lesson/forms/lesson-content";
 import { QuizEditor } from "../../../lesson/forms/quiz-editor";
@@ -17,12 +20,18 @@ export function EditLessonDialog({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
+	const session = useSession();
+
 	const [selectedTab, setSelectedTab] = useState(0);
 	const isNew = !initialLesson;
 
 	const methods = useForm<LessonFormModel>({
 		context: undefined,
-		defaultValues: initialLesson ?? createEmptyLesson(),
+		defaultValues: initialLesson ?? {
+			...createEmptyLesson(),
+			// Add current user as author
+			authors: session.data?.user.author ? [{ slug: session.data.user.author.slug }] : []
+		},
 		resolver: zodResolver(lessonSchema)
 	});
 
@@ -100,7 +109,10 @@ function Overview() {
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex h-full w-full flex-col gap-4 rounded-lg border border-light-border p-4">
-				<h3 className="text-xl">Grunddaten</h3>
+				<SidebarSectionTitle
+					title="Grunddaten"
+					subtitle="Grunddaten dieser Lerneinheit."
+				></SidebarSectionTitle>
 
 				<LabeledField label="Titel" error={errors.title?.message}>
 					<input
@@ -175,6 +187,10 @@ function Overview() {
 						/>
 					)}
 				</LabeledField>
+				<AuthorsForm
+					subtitle="Autoren dieser Lerneinheit."
+					emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
+				/>
 			</div>
 		</div>
 	);

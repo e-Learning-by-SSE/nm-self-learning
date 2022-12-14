@@ -8,7 +8,14 @@ import { authProcedure, t } from "../trpc";
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
 		return database.lesson.findUniqueOrThrow({
-			where: { lessonId: input.lessonId }
+			where: { lessonId: input.lessonId },
+			include: {
+				authors: {
+					select: {
+						slug: true
+					}
+				}
+			}
 		});
 	}),
 	findOne: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
