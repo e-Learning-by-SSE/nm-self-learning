@@ -1,5 +1,6 @@
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { QuestionTypeForm } from "../../base-question";
 import { ProgrammingQuestion } from "./schema";
 
 export default function ProgrammingForm({
@@ -9,11 +10,11 @@ export default function ProgrammingForm({
 	question: ProgrammingQuestion;
 	index: number;
 }) {
-	const { control, watch, getValues } = useFormContext<{ quiz: ProgrammingQuestion[] }>();
-	const { update } = useFieldArray({ control, name: "quiz" });
+	const { control, watch, getValues } = useFormContext<QuestionTypeForm<ProgrammingQuestion>>();
+	const { update } = useFieldArray({ control, name: "quiz.questions" });
 
-	const selectedMode = watch(`quiz.${index}.custom.mode`);
-	const selectedLanguage = watch(`quiz.${index}.language`);
+	const selectedMode = watch(`quiz.questions.${index}.custom.mode`);
+	const selectedLanguage = watch(`quiz.questions.${index}.language`);
 
 	function switchMode(mode: "standalone" | "callable") {
 		const confirmed = window.confirm(
@@ -24,7 +25,7 @@ export default function ProgrammingForm({
 			return;
 		}
 
-		const currentValue = getValues(`quiz.${index}`);
+		const currentValue = getValues(`quiz.questions.${index}`);
 		console.log(currentValue);
 
 		if (mode === "standalone") {
@@ -73,7 +74,7 @@ export default function ProgrammingForm({
 					<LabeledField label="Programmiersprache">
 						<Controller
 							control={control}
-							name={`quiz.${index}.language`}
+							name={`quiz.questions.${index}.language`}
 							render={({ field }) => (
 								<select
 									value={field.value}
@@ -96,7 +97,7 @@ export default function ProgrammingForm({
 						<LabeledField label="Template">
 							<Controller
 								control={control}
-								name={`quiz.${index}.custom.solutionTemplate`}
+								name={`quiz.questions.${index}.custom.solutionTemplate`}
 								render={({ field }) => (
 									<EditorField
 										key={selectedLanguage} // re-create editor when language changes to apply correct syntax highlighting
@@ -111,7 +112,7 @@ export default function ProgrammingForm({
 						<LabeledField label="Benötigte Ausgabe">
 							<Controller
 								control={control}
-								name={`quiz.${index}.custom.expectedOutput`}
+								name={`quiz.questions.${index}.custom.expectedOutput`}
 								render={({ field }) => (
 									<EditorField value={field.value} onChange={field.onChange} />
 								)}
@@ -125,7 +126,7 @@ export default function ProgrammingForm({
 						<LabeledField label="Template (Solution.<extension>)">
 							<Controller
 								control={control}
-								name={`quiz.${index}.custom.solutionTemplate`}
+								name={`quiz.questions.${index}.custom.solutionTemplate`}
 								render={({ field }) => (
 									<EditorField
 										key={selectedLanguage} // re-create editor when language changes to apply correct syntax highlighting
@@ -140,7 +141,7 @@ export default function ProgrammingForm({
 						<LabeledField label="Aufrufendes Programm">
 							<Controller
 								control={control}
-								name={`quiz.${index}.custom.mainFile`}
+								name={`quiz.questions.${index}.custom.mainFile`}
 								render={({ field }) => (
 									<EditorField
 										key={selectedLanguage} // re-create editor when language changes to apply correct syntax highlighting

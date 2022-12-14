@@ -46,3 +46,5 @@ export function createBaseQuestion(): BaseQuestion {
 		hints: []
 	};
 }
+
+export type QuestionTypeForm<T> = { quiz: { questions: T[] } };

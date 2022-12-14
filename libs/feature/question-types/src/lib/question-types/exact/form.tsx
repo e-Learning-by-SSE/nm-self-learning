@@ -1,6 +1,7 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
+import { QuestionTypeForm } from "../../base-question";
 import { ExactQuestion } from "./schema";
 
 export default function ExactForm({
@@ -9,14 +10,14 @@ export default function ExactForm({
 	question: { type: ExactQuestion["type"] };
 	index: number;
 }) {
-	const { control, register } = useFormContext<{ quiz: ExactQuestion[] }>();
+	const { control, register } = useFormContext<QuestionTypeForm<ExactQuestion>>();
 	const {
 		fields: acceptedAnswers,
 		append,
 		remove
 	} = useFieldArray({
 		control,
-		name: `quiz.${index}.acceptedAnswers`
+		name: `quiz.questions.${index}.acceptedAnswers`
 	});
 
 	function addAnswer() {
@@ -51,7 +52,7 @@ export default function ExactForm({
 						type="checkbox"
 						className="checkbox"
 						id="caseSensitive"
-						{...register(`quiz.${index}.caseSensitive`)}
+						{...register(`quiz.questions.${index}.caseSensitive`)}
 					/>
 					<label className="select-none text-sm" htmlFor="caseSensitive">
 						Groß-/Kleinschreibung berücksichtigen
@@ -67,7 +68,7 @@ export default function ExactForm({
 								type="text"
 								className="textfield w-64"
 								{...register(
-									`quiz.${index}.acceptedAnswers.${acceptedAnswerIndex}.value`
+									`quiz.questions.${index}.acceptedAnswers.${acceptedAnswerIndex}.value`
 								)}
 								placeholder="Antwort"
 								autoComplete="off"

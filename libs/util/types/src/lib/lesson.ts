@@ -14,7 +14,13 @@ export const lessonSchema = z.object({
 	imgUrl: z.string().nullable().optional(),
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
-	quiz: z.array(z.any()) //TODO: quizContentSchema causes "Jest failed to parse a file"
+	quiz: z
+		.object({
+			questions: z.array(z.any()),
+			config: z.object({})
+		})
+		.nullable()
+	// TODO: quizContentSchema causes "Jest failed to parse a file"
 });
 
 export type Lesson = z.infer<typeof lessonSchema>;
@@ -28,8 +34,8 @@ export function createEmptyLesson(): Lesson {
 		subtitle: null,
 		description: null,
 		imgUrl: null,
+		quiz: null,
 		content: [],
-		quiz: [],
 		authors: []
 	};
 }

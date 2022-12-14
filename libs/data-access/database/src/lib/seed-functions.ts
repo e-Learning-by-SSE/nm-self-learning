@@ -1,9 +1,7 @@
-import { readFileSync } from "fs";
-import { join } from "path";
-import slugify from "slugify";
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
+import { Quiz } from "@self-learning/quiz";
 import {
 	createCourseContent,
 	createCourseMeta,
@@ -12,6 +10,9 @@ import {
 	LessonContent,
 	LessonContentType
 } from "@self-learning/types";
+import { readFileSync } from "fs";
+import { join } from "path";
+import slugify from "slugify";
 
 const prisma = new PrismaClient();
 
@@ -29,7 +30,14 @@ export function createLesson(
 		subtitle: subtitle,
 		description: description,
 		content: content,
-		quiz: questions,
+		quiz: {
+			questions,
+			config: {
+				hints: { enabled: true, maxHints: 100 },
+				maxErrors: 0,
+				showSolution: true
+			}
+		} satisfies Quiz,
 		meta: {}
 	};
 

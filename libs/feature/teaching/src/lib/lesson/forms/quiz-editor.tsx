@@ -3,9 +3,9 @@ import {
 	INITIAL_QUESTION_CONFIGURATION_FUNCTIONS,
 	QuestionFormRenderer,
 	QuestionType,
-	QUESTION_TYPE_DISPLAY_NAMES,
-	QuizContent
+	QUESTION_TYPE_DISPLAY_NAMES
 } from "@self-learning/question-types";
+import { Quiz } from "@self-learning/quiz";
 import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
@@ -13,8 +13,10 @@ import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
 
+type QuizForm = { quiz: Quiz };
+
 export function useQuizEditorForm() {
-	const { control } = useFormContext<{ quiz: QuizContent }>();
+	const { control } = useFormContext<QuizForm>();
 	const {
 		append,
 		remove,
@@ -22,7 +24,7 @@ export function useQuizEditorForm() {
 		replace: setQuiz
 	} = useFieldArray({
 		control,
-		name: "quiz"
+		name: "quiz.questions"
 	});
 
 	const [questionIndex, setQuestionIndex] = useState<number>(quiz.length > 0 ? 0 : -1);
@@ -146,7 +148,7 @@ function BaseQuestionForm({
 }: {
 	currentQuestion: QuestionType;
 	index: number;
-	control: Control<{ quiz: QuizContent }, unknown>;
+	control: Control<QuizForm, unknown>;
 	children: React.ReactNode;
 }) {
 	return (
@@ -160,7 +162,7 @@ function BaseQuestionForm({
 				<Controller
 					key={currentQuestion.questionId}
 					control={control}
-					name={`quiz.${index}.statement`}
+					name={`quiz.questions.${index}.statement`}
 					render={({ field }) => (
 						<MarkdownField
 							minHeight="256px"
@@ -183,7 +185,7 @@ function BaseQuestionForm({
 }
 
 function HintForm({ questionIndex }: { questionIndex: number }) {
-	const { control } = useFormContext<{ quiz: QuestionType[] }>();
+	const { control } = useFormContext<QuizForm>();
 
 	const {
 		append,
@@ -191,7 +193,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 		fields: hints
 	} = useFieldArray({
 		control,
-		name: `quiz.${questionIndex}.hints`
+		name: `quiz.questions.${questionIndex}.hints`
 	});
 
 	function addHint() {
@@ -238,7 +240,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 
 					<Controller
 						control={control}
-						name={`quiz.${questionIndex}.hints.${hintIndex}.content`}
+						name={`quiz.questions.${questionIndex}.hints.${hintIndex}.content`}
 						render={({ field }) => (
 							<MarkdownField
 								content={field.value}
