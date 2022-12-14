@@ -125,7 +125,6 @@ function LessonNode({
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
-	const trpcContext = trpc.useContext();
 
 	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
 		if (!updatedLesson) {
@@ -149,9 +148,6 @@ function LessonNode({
 				title: "Fehler",
 				subtitle: "Die Lernheit konnte nicht gespeichert werden."
 			});
-		} finally {
-			trpcContext.lesson.findOneAllProps.invalidate({ lessonId: lesson.lessonId });
-			trpcContext.lesson.findOne.invalidate({ lessonId: lesson.lessonId });
 		}
 	};
 

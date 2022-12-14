@@ -15,20 +15,9 @@ export function useEnrollments() {
 /**
  * Provides hooks for signing up to courses and out of courses.
  */
-export function useEnrollmentMutations(courseSlug: string) {
-	const ctx = trpc.useContext();
-
-	const { mutate: enroll } = trpc.enrollment.enroll.useMutation({
-		onSettled() {
-			ctx.enrollment.getEnrollments.invalidate();
-		}
-	});
-
-	const { mutate: disenroll } = trpc.enrollment.disenroll.useMutation({
-		onSettled() {
-			ctx.enrollment.getEnrollments.invalidate();
-		}
-	});
+export function useEnrollmentMutations() {
+	const { mutate: enroll } = trpc.enrollment.enroll.useMutation();
+	const { mutate: disenroll } = trpc.enrollment.disenroll.useMutation();
 
 	return { enroll, disenroll };
 }

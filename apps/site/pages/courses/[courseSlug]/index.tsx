@@ -191,7 +191,7 @@ function CourseHeader({
 	content: CourseProps["content"];
 }) {
 	const enrollments = useEnrollments();
-	const { enroll } = useEnrollmentMutations(course.slug);
+	const { enroll } = useEnrollmentMutations();
 	const completion = useCourseCompletion(course.slug);
 
 	const isEnrolled = useMemo(() => {

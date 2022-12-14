@@ -167,7 +167,6 @@ function AuthorForm({
 	username: string;
 	onClose: OnDialogCloseFn<Author>;
 }) {
-	const trpcContext = trpc.useContext();
 	const { mutateAsync: updateAuthor } = trpc.author.updateAsAdmin.useMutation();
 	const methods = useForm({
 		resolver: zodResolver(authorSchema),
@@ -193,9 +192,6 @@ function AuthorForm({
 					title: "Fehler",
 					subtitle: "Autor konnte nicht gespeichert werden."
 				});
-			})
-			.finally(() => {
-				trpcContext.author.invalidate();
 			});
 	}
 

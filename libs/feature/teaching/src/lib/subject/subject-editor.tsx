@@ -322,7 +322,6 @@ function SpecializationPermissionsDialog({
 
 	const { mutateAsync: updateSpecAdmins } =
 		trpc.subject.setSpecializationPermissions.useMutation();
-	const trpcContext = trpc.useContext();
 
 	const onAddAuthorDialogClosed: OnDialogCloseFn<AuthorFromGetAllQuery> = author => {
 		setOpenAddAuthorDialog(false);
@@ -363,8 +362,6 @@ function SpecializationPermissionsDialog({
 			if (error instanceof TRPCClientError) {
 				showToast({ type: "error", title: "Fehler", subtitle: error.message });
 			}
-		} finally {
-			trpcContext.invalidate();
 		}
 	}
 

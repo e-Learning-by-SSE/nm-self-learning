@@ -8,13 +8,11 @@ export function useMarkAsCompleted(
 	onSettled?: () => void
 ) {
 	const session = useSession();
-	const ctx = trpc.useContext();
 
 	const { mutate } = trpc.completion.markAsCompleted.useMutation({
 		onSettled(data, error) {
 			console.log(data);
 			console.log(error);
-			ctx.completion.getCourseCompletion.invalidate();
 		}
 	});
 

@@ -9,7 +9,6 @@ import { useRouter } from "next/router";
 export default function SubjectCreatePage() {
 	const { mutateAsync: createSubject } = trpc.subject.create.useMutation();
 	const router = useRouter();
-	const trpcContext = trpc.useContext();
 
 	async function onSubmit(subjectFromForm: Subject) {
 		try {
@@ -31,8 +30,6 @@ export default function SubjectCreatePage() {
 					subtitle: error.message
 				});
 			}
-		} finally {
-			trpcContext.invalidate();
 		}
 	}
 

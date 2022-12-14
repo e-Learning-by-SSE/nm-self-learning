@@ -95,7 +95,6 @@ export function Upload({
 		try {
 			await registerAsset({ objectName, publicUrl, fileType, fileName });
 			console.log("Asset registered.");
-			trpcContext.storage.invalidate();
 		} catch (error) {
 			console.log("Failed to register asset.");
 			console.error(error);
@@ -358,7 +357,6 @@ function AssetPickerDialog({
 }
 
 function AssetOptionsMenu({ asset }: { asset: Asset }) {
-	const trpcContext = trpc.useContext();
 	const { mutateAsync: removeFromStorageServer } = trpc.storage.removeMyAsset.useMutation();
 
 	async function onDelete() {
@@ -383,8 +381,6 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 					subtitle: error.message
 				});
 			}
-		} finally {
-			trpcContext.storage.invalidate();
 		}
 	}
 
