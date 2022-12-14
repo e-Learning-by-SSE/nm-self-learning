@@ -176,7 +176,7 @@ function Overview() {
 								<MarkdownEditorDialog
 									title="Beschreibung"
 									onClose={v => {
-										if (v) {
+										if (v !== undefined) {
 											setValue("description", v);
 										}
 										setOpenDescriptionEditor(false);

@@ -1,5 +1,3 @@
-import { compileMarkdown } from "@self-learning/markdown";
-import { z } from "zod";
 import { t } from "../trpc";
 import { authorRouter } from "./author.router";
 import { completionRouter } from "./completion.router";
@@ -24,12 +22,7 @@ export const appRouter = t.router({
 	storage: storageRouter,
 	specialization: specializationRouter,
 	subject: subjectRouter,
-	programming: programmingRouter,
-	mdx: t.procedure
-		.input(z.object({ text: z.string().nullable().optional() }))
-		.mutation(({ input }) => {
-			return compileMarkdown(input.text ?? "");
-		})
+	programming: programmingRouter
 });
 
 // export type definition of API
