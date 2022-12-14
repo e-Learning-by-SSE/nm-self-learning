@@ -1,6 +1,7 @@
 import { Combobox, Dialog as HeadlessDialog } from "@headlessui/react";
 import { SearchIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
+import { Paginator } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
 
 export function LessonSelector({
@@ -11,12 +12,12 @@ export function LessonSelector({
 	onClose: (lesson?: LessonSummary) => void;
 }) {
 	const [title, setTitle] = useState("");
+	const [page, setPage] = useState(1);
 	const { data } = trpc.lesson.findMany.useQuery(
-		{ title },
+		{ title, page },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true,
-			enabled: title.length > 0
+			keepPreviousData: true
 		}
 	);
 
@@ -41,11 +42,20 @@ export function LessonSelector({
 									className="w-full border-none focus:ring-0"
 									placeholder="Suche nach Titel"
 									onChange={e => setTitle(e.target.value)}
+									autoComplete="off"
 								/>
 							</span>
-							<div className="divide-border-light playlist-scroll mt-8 flex flex-col divide-y overflow-auto">
-								<Combobox.Options className="flex flex-col divide-y divide-light-border">
-									{data?.lessons.map(lesson => (
+							<span className="px-4">
+								{data && (
+									<Paginator pagination={data} url="#" onPageChange={setPage} />
+								)}
+							</span>
+							<div className="divide-border-light playlist-scroll flex flex-col divide-y overflow-auto">
+								<Combobox.Options
+									static={true}
+									className="flex flex-col divide-y divide-light-border"
+								>
+									{data?.result.map(lesson => (
 										<Combobox.Option
 											value={lesson}
 											key={lesson.lessonId}

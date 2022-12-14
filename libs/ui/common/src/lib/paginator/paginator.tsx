@@ -38,7 +38,7 @@ export function Paginator({
 	const { page, pageSize, totalCount, result } = pagination;
 
 	return (
-		<div className="flex flex-wrap items-center justify-between gap-4 border-t py-4 pl-4">
+		<div className="flex flex-wrap items-center justify-between gap-4 py-4">
 			<p className="text-sm text-light">
 				Zeige{" "}
 				<span className="font-medium text-black">{Math.min(result.length, pageSize)}</span>{" "}
@@ -100,7 +100,7 @@ export function Paginator({
 					))}
 
 				<ForwardBackwardLink
-					disabled={page === pageLinks.maxPage}
+					disabled={page === pageLinks.maxPage || result.length === 0}
 					href={`${url}&page=${page + 1}`}
 					isForward={true}
 					onPageChange={onPageChange ? () => onPageChange(page + 1) : undefined}
