@@ -7,7 +7,7 @@ import {
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
-import { MarkdownField } from "@self-learning/ui/forms";
+import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
 import { useState } from "react";
@@ -16,7 +16,7 @@ import { Control, Controller, useFieldArray, useFormContext } from "react-hook-f
 type QuizForm = { quiz: Quiz };
 
 export function useQuizEditorForm() {
-	const { control } = useFormContext<QuizForm>();
+	const { control, register } = useFormContext<QuizForm>();
 	const {
 		append,
 		remove,
@@ -58,6 +58,7 @@ export function useQuizEditorForm() {
 	return {
 		control,
 		quiz,
+		register,
 		setQuiz,
 		questionIndex,
 		setQuestionIndex,
@@ -80,7 +81,7 @@ export function QuizEditor() {
 	} = useQuizEditorForm();
 
 	return (
-		<section>
+		<section className="flex flex-col gap-8">
 			<SectionHeader
 				title="Lernkontrolle"
 				subtitle="Fragen, die Studierenden nach Bearbeitung der Lernheit angezeigt werden sollen.
@@ -88,12 +89,14 @@ export function QuizEditor() {
 					erfolgreich abzuschließen."
 			/>
 
+			<QuizConfigForm />
+
 			<div className="flex flex-wrap gap-4 text-sm">
 				{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 					<button
 						key={type}
 						type="button"
-						className="btn-primary mb-8 w-fit"
+						className="btn-primary w-fit"
 						onClick={() => appendQuestion(type as QuestionType["type"])}
 					>
 						<PlusIcon className="icon h-5" />
@@ -140,6 +143,56 @@ export function QuizEditor() {
 	);
 }
 
+function QuizConfigForm() {
+	const { register } = useQuizEditorForm();
+
+	return (
+		<div className="-mt-8 flex flex-col gap-4 rounded-lg bg-gray-200 p-4 text-sm">
+			<div className="flex flex-col gap-4">
+				<span className="text-xl font-semibold">Konfiguration</span>
+				<span className="flex items-center gap-4">
+					<input
+						{...register("quiz.config.showSolution")}
+						type="checkbox"
+						id="showSolutions"
+						className="checkbox"
+					></input>
+					<label htmlFor="showSolutions" className="select-none">
+						Lösungen anzeigen
+					</label>
+				</span>
+				<span className="flex items-center gap-4">
+					<input
+						{...register("quiz.config.hints.enabled")}
+						type="checkbox"
+						id="hintsEnabled"
+						className="checkbox"
+					></input>
+					<label htmlFor="hintsEnabled" className="select-none">
+						Hinweise aktivieren
+					</label>
+				</span>
+				<LabeledField label="Max. erlaubte Hinweise">
+					<input
+						{...register("quiz.config.hints.maxHints")}
+						type={"number"}
+						className="textfield w-fit"
+						placeholder="z. B. 2"
+					/>
+				</LabeledField>
+			</div>
+
+			<LabeledField label="Max. erlaubte falsche Antworten">
+				<input
+					{...register("quiz.config.maxErrors")}
+					type={"number"}
+					className="textfield w-fit"
+				/>
+			</LabeledField>
+		</div>
+	);
+}
+
 function BaseQuestionForm({
 	currentQuestion,
 	index,
@@ -152,7 +205,7 @@ function BaseQuestionForm({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="pt-8">
+		<div className="">
 			<span className="font-semibold text-secondary">
 				{QUESTION_TYPE_DISPLAY_NAMES[currentQuestion.type]}
 			</span>
