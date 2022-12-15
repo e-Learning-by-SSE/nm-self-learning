@@ -188,9 +188,13 @@ function QuizConfigForm() {
 					</label>
 				</span>
 
-				<p className="text-sm text-light">TODO: Beschreibung der Standard-Konfiguration.</p>
-
-				{config && (
+				{!config ? (
+					<ul className="list-inside list-disc text-sm text-light">
+						<li>Alle Fragen müssen korrekt beantwortet werden</li>
+						<li>Lösungen werden nach falscher Beantwortung nicht angezeigt</li>
+						<li>Unbegrenzte Verwendung von Hinweisen</li>
+					</ul>
+				) : (
 					<div className="flex flex-col gap-4 text-sm">
 						<span className="flex items-center gap-4">
 							<input
