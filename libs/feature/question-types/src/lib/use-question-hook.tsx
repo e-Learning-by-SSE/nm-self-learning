@@ -1,4 +1,4 @@
-import { MdLookup } from "@self-learning/markdown";
+import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext } from "react";
 import { InferQuestionType, QuestionType, QuestionTypeUnion } from "./question-type-registry";
 
@@ -61,6 +61,7 @@ export function useQuestion<
 		markdown: {
 			questionsMd: MdLookup;
 			answersMd: MdLookup;
+			hintsMd: MdLookupArray;
 		};
 	};
 }

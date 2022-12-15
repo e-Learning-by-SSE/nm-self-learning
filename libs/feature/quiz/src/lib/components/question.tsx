@@ -1,17 +1,18 @@
 import { RefreshIcon } from "@heroicons/react/solid";
-import type { CompiledMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
+import type { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
 	EVALUATION_FUNCTIONS,
 	INITIAL_ANSWER_VALUE_FUNCTIONS,
 	QuestionAnswerRenderer,
 	QuestionType,
+	QUESTION_TYPE_DISPLAY_NAMES,
 	useQuestion
 } from "@self-learning/question-types";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
-import { Certainty } from "./certainty";
+import { QuizConfig } from "../quiz";
 import { Hints } from "./hints";
 
 type QuizCompletionState = "in-progress" | "completed" | "failed";
@@ -37,9 +38,12 @@ export type QuizContextValue = {
 			[questionId: string]: { isCorrect: boolean } | null;
 		}>
 	>;
+	config: QuizConfig;
+	completionState: QuizCompletionState;
+	usedHints: MdLookupArray;
+	setUsedHints: Dispatch<SetStateAction<MdLookupArray>>;
 	goToNextQuestion: () => void;
 	reload: () => void;
-	completionState: QuizCompletionState;
 };
 
 const QuizContext = createContext<QuizContextValue>(null as unknown as QuizContextValue);
@@ -51,10 +55,12 @@ export function useQuiz() {
 export function QuizProvider({
 	children,
 	questions,
+	config,
 	goToNextQuestion,
 	reload
 }: {
 	questions: QuestionType[];
+	config: QuizConfig;
 	goToNextQuestion: () => void;
 	reload: () => void;
 	children: React.ReactNode;
@@ -96,13 +102,18 @@ export function QuizProvider({
 		return "failed";
 	}, [evaluations]);
 
+	const [usedHints, setUsedHints] = useState<MdLookupArray>({});
+
 	return (
 		<QuizContext.Provider
 			value={{
+				config,
 				answers,
 				setAnswers,
 				evaluations,
 				setEvaluations,
+				usedHints,
+				setUsedHints,
 				goToNextQuestion,
 				completionState,
 				reload
@@ -124,12 +135,7 @@ export function Question({
 		hintsMd: MdLookupArray;
 	};
 }) {
-	const { answers, setAnswers, evaluations, setEvaluations } = useContext(QuizContext);
-
-	const [usedHints, setUsedHints] = useState<CompiledMarkdown[]>([]);
-	const hintsAvailable = question.hints && question.hints.length > 0;
-	const allHints = markdown.hintsMd[question.questionId] ?? [];
-
+	const { answers, setAnswers, evaluations, setEvaluations, config } = useQuiz();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
 
@@ -149,15 +155,6 @@ export function Question({
 		}));
 	}
 
-	function useHint() {
-		const nextHintIndex = usedHints.length;
-
-		if (nextHintIndex < allHints.length) {
-			const nextHint = markdown.hintsMd[question.questionId][nextHintIndex];
-			setUsedHints(prev => [...prev, nextHint]);
-		}
-	}
-
 	return (
 		<AnswerContextProvider
 			question={question}
@@ -171,7 +168,7 @@ export function Question({
 				<div>
 					<div className="flex items-center justify-between">
 						<span className="font-semibold text-secondary" data-testid="questionType">
-							{question.type}
+							{QUESTION_TYPE_DISPLAY_NAMES[question.type]}
 						</span>
 						<div className="flex gap-4">
 							<button
@@ -196,15 +193,9 @@ export function Question({
 					<QuestionAnswerRenderer question={question} />
 				</div>
 
-				{question.withCertainty && <Certainty />}
+				{/* {question.withCertainty && <Certainty />} */}
 
-				{hintsAvailable && (
-					<Hints
-						totalHintsCount={allHints.length}
-						usedHints={usedHints}
-						useHint={useHint}
-					/>
-				)}
+				{config.hints.enabled && <Hints />}
 			</article>
 		</AnswerContextProvider>
 	);
