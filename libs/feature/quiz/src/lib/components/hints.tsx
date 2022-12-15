@@ -4,7 +4,7 @@ import { Divider } from "@self-learning/ui/common";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
-import { useQuiz } from "./question";
+import { useQuiz } from "./quiz-context";
 
 export function Hints() {
 	const { config, usedHints, setUsedHints } = useQuiz();

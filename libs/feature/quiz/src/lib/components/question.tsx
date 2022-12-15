@@ -3,7 +3,6 @@ import type { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
 	EVALUATION_FUNCTIONS,
-	INITIAL_ANSWER_VALUE_FUNCTIONS,
 	QuestionAnswerRenderer,
 	QuestionType,
 	QUESTION_TYPE_DISPLAY_NAMES,
@@ -11,118 +10,8 @@ import {
 } from "@self-learning/question-types";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
-import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
-import { QuizConfig } from "../quiz";
 import { Hints } from "./hints";
-
-type QuizCompletionState = "in-progress" | "completed" | "failed";
-
-export type QuizContextValue = {
-	answers: {
-		[questionId: string]: {
-			type: QuestionType["type"];
-			value: unknown;
-		} | null;
-	};
-	setAnswers: Dispatch<
-		SetStateAction<{
-			[questionId: string]: {
-				type: QuestionType["type"];
-				value: unknown;
-			} | null;
-		}>
-	>;
-	evaluations: { [questionId: string]: { isCorrect: boolean } | null };
-	setEvaluations: Dispatch<
-		SetStateAction<{
-			[questionId: string]: { isCorrect: boolean } | null;
-		}>
-	>;
-	config: QuizConfig;
-	completionState: QuizCompletionState;
-	usedHints: MdLookupArray;
-	setUsedHints: Dispatch<SetStateAction<MdLookupArray>>;
-	goToNextQuestion: () => void;
-	reload: () => void;
-};
-
-const QuizContext = createContext<QuizContextValue>(null as unknown as QuizContextValue);
-
-export function useQuiz() {
-	return useContext(QuizContext);
-}
-
-export function QuizProvider({
-	children,
-	questions,
-	config,
-	goToNextQuestion,
-	reload
-}: {
-	questions: QuestionType[];
-	config: QuizConfig;
-	goToNextQuestion: () => void;
-	reload: () => void;
-	children: React.ReactNode;
-}) {
-	const [answers, setAnswers] = useState(() => {
-		const ans: QuizContextValue["answers"] = {};
-
-		for (const q of questions) {
-			ans[q.questionId] = {
-				type: q.type,
-				value: INITIAL_ANSWER_VALUE_FUNCTIONS[q.type](q as any)
-			};
-		}
-
-		return ans;
-	});
-
-	const [evaluations, setEvaluations] = useState(() => {
-		const evals: QuizContextValue["evaluations"] = {};
-
-		for (const q of questions) {
-			evals[q.questionId] = null;
-		}
-
-		return evals;
-	});
-
-	const completionState: QuizCompletionState = useMemo(() => {
-		const allEvaluations = Object.values(evaluations);
-
-		if (allEvaluations.some(e => !e)) {
-			return "in-progress";
-		}
-
-		if (allEvaluations.every(e => e && e.isCorrect === true)) {
-			return "completed";
-		}
-
-		return "failed";
-	}, [evaluations]);
-
-	const [usedHints, setUsedHints] = useState<MdLookupArray>({});
-
-	return (
-		<QuizContext.Provider
-			value={{
-				config,
-				answers,
-				setAnswers,
-				evaluations,
-				setEvaluations,
-				usedHints,
-				setUsedHints,
-				goToNextQuestion,
-				completionState,
-				reload
-			}}
-		>
-			{children}
-		</QuizContext.Provider>
-	);
-}
+import { useQuiz } from "./quiz-context";
 
 export function Question({
 	question,
