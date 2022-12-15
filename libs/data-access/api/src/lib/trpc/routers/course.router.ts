@@ -30,6 +30,7 @@ export const courseRouter = t.router({
 						subject: true
 					},
 					...paginate(pageSize, input.page),
+					orderBy: { title: "asc" },
 					where
 				}),
 				database.course.count({ where })
