@@ -27,6 +27,7 @@
 import dynamic from "next/dynamic";
 import { z } from "zod";
 import { createBaseQuestion } from "./base-question";
+import { Cloze, clozeQuestionSchema } from "./question-types/cloze/schema";
 import { evaluateExactAnswer } from "./question-types/exact/evaluate";
 import { Exact, exactAnswerSchema, exactQuestionSchema } from "./question-types/exact/schema";
 import { evaluateMultipleChoice } from "./question-types/multiple-choice/evaluate";
@@ -59,14 +60,17 @@ const ExactForm = dynamic(() => import("./question-types/exact/form"), {
 });
 const TextAnswer = dynamic(() => import("./question-types/text/component"), { ssr: false });
 const TextForm = dynamic(() => import("./question-types/text/form"), { ssr: false });
+const ClozeAnswer = dynamic(() => import("./question-types/cloze/component"), { ssr: false });
+const ClozeForm = dynamic(() => import("./question-types/cloze/form"), { ssr: false });
 
-export type QuestionTypeUnion = MultipleChoice | Exact | Text | Programming;
+export type QuestionTypeUnion = MultipleChoice | Exact | Text | Programming | Cloze;
 
 export const quizContentSchema = z.discriminatedUnion("type", [
 	multipleChoiceQuestionSchema,
 	exactQuestionSchema,
 	textQuestionSchema,
-	programmingQuestionSchema
+	programmingQuestionSchema,
+	clozeQuestionSchema
 ]);
 
 export const quizAnswerSchema = z.discriminatedUnion("type", [
@@ -84,7 +88,11 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 		return { isCorrect: true };
 	},
 	exact: evaluateExactAnswer,
-	programming: evaluateProgramming
+	programming: evaluateProgramming,
+	cloze: (q, _a) => {
+		console.error(`Evaluation function for ${q.type} is not implemented.}`);
+		return { isCorrect: true };
+	}
 };
 
 /**
@@ -101,7 +109,8 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 		signal: null,
 		code: null
 	}),
-	text: () => ""
+	text: () => "",
+	cloze: () => ({})
 };
 
 /**
@@ -134,6 +143,11 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 			expectedOutput: "",
 			solutionTemplate: ""
 		}
+	}),
+	cloze: () => ({
+		...createBaseQuestion(),
+		type: "cloze",
+		clozeText: ""
 	})
 };
 
@@ -147,7 +161,8 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
 	"multiple-choice": "Multiple-Choice",
 	exact: "Exakte Antwort",
 	text: "Freitext",
-	programming: "Programmierung"
+	programming: "Programmierung",
+	cloze: "Lückentext"
 };
 
 /**
@@ -168,6 +183,10 @@ export function QuestionAnswerRenderer({ question }: { question: QuestionType })
 
 	if (question.type === "text") {
 		return <TextAnswer />;
+	}
+
+	if (question.type === "cloze") {
+		return <ClozeAnswer />;
 	}
 
 	return (
@@ -201,6 +220,10 @@ export function QuestionFormRenderer({
 
 	if (question.type === "text") {
 		return <TextForm question={question} index={index} />;
+	}
+
+	if (question.type === "cloze") {
+		return <ClozeForm question={question} index={index} />;
 	}
 
 	return (

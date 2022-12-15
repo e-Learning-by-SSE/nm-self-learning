@@ -3,7 +3,7 @@ import { BaseEvaluation, baseQuestionSchema } from "../../base-question";
 
 export const clozeQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("cloze"),
-	textArray: z.array(z.string())
+	clozeText: z.string()
 });
 
 export type ClozeQuestion = z.infer<typeof clozeQuestionSchema>;
