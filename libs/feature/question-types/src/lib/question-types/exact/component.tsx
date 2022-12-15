@@ -1,12 +1,14 @@
+import { useQuiz } from "@self-learning/quiz";
 import { LabeledField } from "@self-learning/ui/forms";
-import { motion } from "framer-motion";
+import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 
 export default function ExactAnswer() {
+	const { config } = useQuiz();
 	const { question, answer, setAnswer, evaluation } = useQuestion("exact");
 
 	return (
-		<div className="flex flex-col gap-8">
+		<>
 			<LabeledField label="Antwort">
 				<input
 					value={answer.value ?? ""}
@@ -24,23 +26,11 @@ export default function ExactAnswer() {
 			</LabeledField>
 
 			{evaluation && (
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ type: "tween", duration: 0.5 }}
-					className={`rounded-lg border p-4 text-white ${
-						evaluation.isCorrect
-							? "border-green-500 bg-green-100 text-green-500"
-							: " border-red-500 bg-red-100 text-red-500"
-					}`}
-				>
-					{evaluation.isCorrect ? (
-						<span className="font-medium">Deine Antwort ist richtig!</span>
-					) : (
+				<Feedback isCorrect={evaluation.isCorrect}>
+					{config.showSolution && !evaluation.isCorrect && (
 						<div className="flex flex-col gap-2">
-							<span className="font-medium">
-								Deine Antwort ist leider nicht korrekt. Akzeptierte Antworten:
-							</span>
+							<span>Akzeptierte Antworten:</span>
+
 							<ul className="list-inside list-disc">
 								{question.acceptedAnswers.map(ans => (
 									<li key={ans.acceptedAnswerId}>{ans.value}</li>
@@ -48,8 +38,8 @@ export default function ExactAnswer() {
 							</ul>
 						</div>
 					)}
-				</motion.div>
+				</Feedback>
 			)}
-		</div>
+		</>
 	);
 }
