@@ -27,6 +27,7 @@
 import dynamic from "next/dynamic";
 import { z } from "zod";
 import { createBaseQuestion } from "./base-question";
+import { evaluateCloze } from "./question-types/cloze/evaluate";
 import { Cloze, clozeQuestionSchema } from "./question-types/cloze/schema";
 import { evaluateExactAnswer } from "./question-types/exact/evaluate";
 import { Exact, exactAnswerSchema, exactQuestionSchema } from "./question-types/exact/schema";
@@ -89,10 +90,7 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 	},
 	exact: evaluateExactAnswer,
 	programming: evaluateProgramming,
-	cloze: (q, _a) => {
-		console.error(`Evaluation function for ${q.type} is not implemented.}`);
-		return { isCorrect: true };
-	}
+	cloze: evaluateCloze
 };
 
 /**
@@ -110,7 +108,7 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 		code: null
 	}),
 	text: () => "",
-	cloze: () => ({})
+	cloze: () => []
 };
 
 /**

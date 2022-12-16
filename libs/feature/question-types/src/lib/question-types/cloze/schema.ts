@@ -13,7 +13,9 @@ export type Cloze = {
 	question: ClozeQuestion;
 	answer: {
 		type: "cloze";
-		value: unknown;
+		value: string[];
 	};
-	evaluation: BaseEvaluation;
+	evaluation: BaseEvaluation & {
+		incorrectAnswers: { index: number; studentAnswer: string; intendedAnswers: string[] }[];
+	};
 };

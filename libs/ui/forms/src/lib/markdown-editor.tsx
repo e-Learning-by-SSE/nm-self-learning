@@ -19,7 +19,7 @@ export function MarkdownField({
 
 	return (
 		<div className="flex flex-col">
-			<div className="grid grid-cols-2 items-start gap-8">
+			<div className="grid items-start gap-8 xl:grid-cols-2">
 				<div className="flex h-full w-full flex-col gap-2">
 					<label className="text-sm font-semibold">Markdown</label>
 					<EditorField
