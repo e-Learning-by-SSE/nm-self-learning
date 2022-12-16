@@ -10,7 +10,6 @@
 			"files": ["*.ts", "*.tsx"],
 			"extends": ["plugin:@nrwl/nx/typescript"],
 			"rules": {
-				"quotes": ["error", "double"],
 				"indent": ["off", "tab", { "SwitchCase": 1 }],
 				"semi": "off",
 				"no-empty": "off",
