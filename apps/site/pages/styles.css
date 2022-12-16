@@ -112,6 +112,10 @@ video {
 	@apply rounded text-secondary accent-secondary focus:ring-secondary;
 }
 
+.select {
+	@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+}
+
 input,
 textarea,
 .textfield {
