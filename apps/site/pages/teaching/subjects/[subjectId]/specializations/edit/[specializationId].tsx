@@ -10,7 +10,6 @@ export default function SpecializationEditPage() {
 	const router = useRouter();
 	const { subjectId, specializationId } = router.query;
 	const { mutateAsync: updateSpecialization } = trpc.specialization.update.useMutation();
-	const trpcContext = trpc.useContext();
 
 	const { data: specialization } = trpc.specialization.getForEdit.useQuery(
 		{ specializationId: specializationId as string },
@@ -35,8 +34,6 @@ export default function SpecializationEditPage() {
 			if (error instanceof TRPCClientError) {
 				showToast({ type: "error", title: "Fehler", subtitle: error.message });
 			}
-		} finally {
-			trpcContext.invalidate();
 		}
 	};
 

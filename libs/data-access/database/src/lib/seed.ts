@@ -3,7 +3,6 @@ import { subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
 import slugify from "slugify";
-
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";
@@ -20,6 +19,7 @@ import { javaExample } from "./java-example";
 import { mathExample } from "./math/math-example";
 import { psychologyExample } from "./psychology/psychology-example";
 import { createSpecialization } from "./seed-functions";
+import { Quiz } from "@self-learning/quiz";
 
 faker.seed(1);
 
@@ -282,10 +282,11 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		]
 	},
 	{
-		type: "short-text",
+		type: "exact",
 		questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
 		statement: "# Was ist 1 + 1 ?",
 		withCertainty: true,
+		caseSensitive: true,
 		acceptedAnswers: [
 			{
 				acceptedAnswerId: "724f781e-56b2-4057-831e-b1d6962c48b1",
@@ -301,45 +302,6 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		withCertainty: true,
 		hints: []
 	},
-	// {
-	// 	type: "cloze",
-	// 	questionId: "49497f71-8ed2-44a6-b36c-a44a4b0617d1",
-	// 	statement: "# Lückentext",
-	// 	withCertainty: false,
-	// 	textArray: textArray,
-	// 	hints: []
-	// },
-	// {
-	// 	type: "vorwissen",
-	// 	questionId: "c9de042a-6962-4f21-bc57-bf58841be5f2",
-	// 	statement: `lorem ipsum dolor sit amet consectetur adipisicing elit. **Quasi** molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure ?
-	// 	![image](https://images.unsplash.com/photo-1523875194681-bedd468c58bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1742&q=80)`,
-	// 	answers: [
-	// 		{
-	// 			answerId: "f797e6fc-8d03-41a2-9c93-9fcb3da0c147",
-	// 			content: "Statement 1",
-	// 			isCorrect: false
-	// 		},
-	// 		{
-	// 			answerId: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
-	// 			content: "Statement 2",
-	// 			isCorrect: false
-	// 		},
-	// 		{
-	// 			answerId: "d0a1af94-92ea-4415-b1e3-cca7218b132a",
-	// 			content: "Statement 3",
-	// 			isCorrect: false
-	// 		},
-	// 		{
-	// 			answerId: "1220605d-e1b2-4933-bc7f-31b73c7a17bf",
-	// 			content: "Statement 4",
-	// 			isCorrect: false
-	// 		}
-	// 	],
-	// 	requireExplanationForAnswerIds: "ef88d034-a0ea-4e85-bfc0-4381021f2449",
-	// 	withCertainty: false,
-	// 	hints: []
-	// },
 	{
 		type: "programming",
 		hints: [
@@ -469,7 +431,10 @@ function createLesson(title: string) {
 				}
 			}
 		] as LessonContent,
-		quiz: questions,
+		quiz: {
+			questions,
+			config: null
+		} satisfies Quiz,
 		meta: {}
 	};
 

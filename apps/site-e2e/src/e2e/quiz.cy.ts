@@ -43,7 +43,7 @@ const lessonMultiple = createExampleLesson(courseContent[0].content[1].lessonId,
 			]
 		},
 		{
-			type: "short-text",
+			type: "exact",
 			questionId: "b",
 			statement: "# What is 1+1?",
 			acceptedAnswers: [{ acceptedAnswerId: "a", value: "2" }]
@@ -162,7 +162,7 @@ describe("Multiple Questions", () => {
 		cy.byTestId("questionType").should("contain.text", "multiple-choice");
 
 		cy.byTestId("questionTab").last().click();
-		cy.byTestId("questionType").should("contain.text", "short-text");
+		cy.byTestId("questionType").should("contain.text", "exact");
 
 		cy.byTestId("questionTab").first().click();
 		cy.byTestId("questionType").should("contain.text", "multiple-choice");
@@ -174,6 +174,6 @@ describe("Multiple Questions", () => {
 		cy.get("button").contains("Überprüfen").click();
 
 		cy.get("button").contains("Nächste Frage").click();
-		cy.byTestId("questionType").should("contain.text", "short-text");
+		cy.byTestId("questionType").should("contain.text", "exact");
 	});
 });

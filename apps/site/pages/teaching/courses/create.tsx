@@ -1,42 +1,50 @@
 import { trpc } from "@self-learning/api-client";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
+import { Unauthorized } from "@self-learning/ui/layouts";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
+	const router = useRouter();
+	const session = useSession({ required: true });
+	const author = session.data?.user.author;
 
-	function onConfirm(course: CourseFormModel) {
-		async function create() {
-			try {
-				const { title } = await createCourse(course);
-				showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
-			} catch (error) {
-				showToast({
-					type: "error",
-					title: "Fehler",
-					subtitle: JSON.stringify(error, null, 2)
-				});
-			}
+	async function onConfirm(course: CourseFormModel) {
+		try {
+			const { title, slug } = await createCourse(course);
+			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
+			router.push(`/courses/${slug}`);
+		} catch (error) {
+			console.error(error);
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: JSON.stringify(error, null, 2)
+			});
 		}
-		create();
+	}
+
+	if (!author) {
+		return <Unauthorized>Um einen Kurs zu erstellen, musst du ein Autor sein.</Unauthorized>;
 	}
 
 	return (
-		<div className="grow bg-gray-50">
-			<CourseEditor
-				onConfirm={onConfirm}
-				course={{
-					courseId: "",
-					title: "",
-					slug: "",
-					description: "",
-					subtitle: "",
-					imgUrl: "",
-					subjectId: null,
-					authors: [],
-					content: []
-				}}
-			/>
-		</div>
+		<CourseEditor
+			onConfirm={onConfirm}
+			course={{
+				courseId: "",
+				title: "",
+				slug: "",
+				description: "",
+				subtitle: "",
+				imgUrl: "",
+				subjectId: null,
+				content: [],
+				specializations: [],
+				authors: [{ slug: author.slug }]
+			}}
+		/>
 	);
 }

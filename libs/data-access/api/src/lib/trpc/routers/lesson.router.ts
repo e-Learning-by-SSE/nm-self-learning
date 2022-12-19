@@ -1,14 +1,21 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { createLessonMeta, lessonSchema } from "@self-learning/types";
-import { getRandomId } from "@self-learning/util/common";
+import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
 		return database.lesson.findUniqueOrThrow({
-			where: { lessonId: input.lessonId }
+			where: { lessonId: input.lessonId },
+			include: {
+				authors: {
+					select: {
+						slug: true
+					}
+				}
+			}
 		});
 	}),
 	findOne: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -17,13 +24,29 @@ export const lessonRouter = t.router({
 			select: { lessonId: true, title: true, slug: true, meta: true }
 		});
 	}),
-	findMany: authProcedure.input(z.object({ title: z.string().optional() })).query(({ input }) => {
-		return findLessons({ title: input.title, take: 15 });
-	}),
+	findMany: authProcedure
+		.input(paginationSchema.extend({ title: z.string().optional() }))
+		.query(async ({ input: { title, page } }) => {
+			const pageSize = 15;
+			const { lessons, count } = await findLessons({
+				title,
+				...paginate(pageSize, page)
+			});
+			return {
+				result: lessons,
+				totalCount: count,
+				page,
+				pageSize
+			} satisfies Paginated<unknown>;
+		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input }) => {
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
+				quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : Prisma.JsonNull,
+				authors: {
+					connect: input.authors.map(a => ({ slug: a.slug }))
+				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
@@ -50,7 +73,13 @@ export const lessonRouter = t.router({
 				where: { lessonId: input.lessonId },
 				data: {
 					...input.lesson,
+					quiz: input.lesson.quiz
+						? (input.lesson.quiz as Prisma.JsonObject)
+						: Prisma.JsonNull,
 					lessonId: input.lessonId,
+					authors: {
+						set: input.lesson.authors.map(a => ({ slug: a.slug }))
+					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},
 				select: {
@@ -81,25 +110,27 @@ export async function findLessons({
 				: undefined
 	};
 
-	const [lessons, count] = await Promise.all([
+	const [lessons, count] = await database.$transaction([
 		database.lesson.findMany({
 			select: {
 				lessonId: true,
 				title: true,
 				slug: true,
+				updatedAt: true,
 				authors: {
 					select: {
-						displayName: true
+						displayName: true,
+						slug: true,
+						imgUrl: true
 					}
 				}
 			},
+			orderBy: { updatedAt: "desc" },
 			where,
 			take,
 			skip
 		}),
-		database.lesson.count({
-			where
-		})
+		database.lesson.count({ where })
 	]);
 
 	return { lessons, count };

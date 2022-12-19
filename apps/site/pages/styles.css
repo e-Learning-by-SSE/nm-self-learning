@@ -105,11 +105,15 @@ video {
 }
 
 .icon {
-	@apply mr-2 -ml-2 h-5;
+	@apply mr-2 -ml-2 h-5 shrink-0;
 }
 
 .checkbox {
 	@apply rounded text-secondary accent-secondary focus:ring-secondary;
+}
+
+.select {
+	@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
 }
 
 input,

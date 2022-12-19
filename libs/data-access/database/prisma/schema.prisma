@@ -43,16 +43,17 @@ enum UserRole {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String    @unique
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    role          UserRole  @default(USER)
-    accounts      Account[]
-    sessions      Session[]
-    student       Student?
-    author        Author?
+    id             String           @id @default(cuid())
+    name           String           @unique
+    email          String?          @unique
+    emailVerified  DateTime?
+    image          String?
+    role           UserRole         @default(USER)
+    accounts       Account[]
+    sessions       Session[]
+    student        Student?
+    author         Author?
+    uploadedAssets UploadedAssets[]
 }
 
 model VerificationToken {
@@ -192,6 +193,8 @@ model Lesson {
     content      Json
     quiz         Json?
     meta         Json
+    createdAt    DateTime          @default(now())
+    updatedAt    DateTime          @updatedAt
     completions  CompletedLesson[]
     quizAttempts QuizAttempt[]
     authors      Author[]
@@ -241,4 +244,16 @@ model LearningDiary {
     student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
     username String  @id
     goals    String?
+}
+
+model UploadedAssets {
+    objectName String   @id
+    fileName   String
+    fileType   String
+    publicUrl  String
+    createdAt  DateTime @default(now())
+    user       User?    @relation(fields: [username], references: [name], onDelete: SetNull)
+    username   String?
+
+    @@index([fileName])
 }

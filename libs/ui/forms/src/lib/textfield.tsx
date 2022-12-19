@@ -37,6 +37,35 @@ export function InputWithButton(
  * Returns a function that generates a slug from the value of a field.
  *
  * @example
+ * const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
+ * return (<>
+ *  	<LabeledField label="Titel" error={errors.title?.message}>
+ *			<input
+ *				{...register("title")}
+ *				type="text"
+ *				className="textfield"
+ *				placeholder="Die Neue Lerneinheit"
+ *				onBlur={slugifyIfEmpty}
+ *			/>
+ *		</LabeledField>
+ *		<LabeledField label="Slug" error={errors.slug?.message}>
+ *			<InputWithButton
+ *				input={
+ *					<input
+ *						className="textfield"
+ *						placeholder="die-neue-lerneinheit"
+ *						type={"text"}
+ *						{...register("slug")}
+ *					/>
+ *				}
+ *				button={
+ *					<button type="button" className="btn-stroked" onClick={slugifyField}>
+ *						Generieren
+ *					</button>
+ *				}
+ *			/>
+ *		</LabeledField>
+ * </>);
  */
 export function useSlugify<T extends Record<string, unknown>>(
 	form: UseFormReturn<T, unknown>,

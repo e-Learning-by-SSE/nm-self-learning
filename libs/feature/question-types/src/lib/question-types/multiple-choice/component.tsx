@@ -1,42 +1,50 @@
+import { useQuiz } from "@self-learning/quiz";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren } from "react";
+import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 
-export function MultipleChoiceAnswer() {
+export default function MultipleChoiceAnswer() {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
+	const { config } = useQuiz();
 
 	return (
-		<div className="flex flex-col gap-4">
-			{question.answers?.map(option => (
-				<MultipleChoiceOption
-					key={option.answerId}
-					showResult={!!evaluation}
-					isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
-					isCorrect={option.isCorrect}
-					isSelected={answer.value[option.answerId] === true}
-					onToggle={() => {
-						console.log("onToggle");
-						setAnswer(old => ({
-							...old,
-							value: {
-								...old.value,
-								[option.answerId]:
-									old.value[option.answerId] === true ? false : true
-							}
-						}));
-					}}
-				>
-					{markdown.answersMd[option.answerId] ? (
-						<MarkdownContainer>
-							<MDXRemote {...markdown.answersMd[option.answerId]} />
-						</MarkdownContainer>
-					) : (
-						<span className="text-red-500">Error: No markdown content found.</span>
-					)}
-				</MultipleChoiceOption>
-			))}
-		</div>
+		<>
+			<section className="flex flex-col gap-4">
+				{question.answers?.map(option => (
+					<MultipleChoiceOption
+						key={option.answerId}
+						disabled={!!evaluation}
+						showResult={!!evaluation && config.showSolution}
+						isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
+						isCorrect={option.isCorrect}
+						isSelected={answer.value[option.answerId] === true}
+						onToggle={() => {
+							console.log("onToggle");
+							setAnswer(old => ({
+								...old,
+								value: {
+									...old.value,
+									[option.answerId]:
+										old.value[option.answerId] === true ? false : true
+								}
+							}));
+						}}
+					>
+						{markdown.answersMd[option.answerId] ? (
+							<MarkdownContainer>
+								<MDXRemote {...markdown.answersMd[option.answerId]} />
+							</MarkdownContainer>
+						) : (
+							<span className="text-red-500">Error: No markdown content found.</span>
+						)}
+					</MultipleChoiceOption>
+				))}
+			</section>
+
+			{evaluation && <Feedback isCorrect={evaluation.isCorrect} />}
+		</>
 	);
 }
 
@@ -45,12 +53,14 @@ export function MultipleChoiceOption({
 	showResult,
 	isSelected,
 	isUserAnswerCorrect,
-	onToggle
+	onToggle,
+	disabled
 }: PropsWithChildren<{
 	showResult: boolean;
 	isSelected: boolean;
 	isCorrect: boolean;
 	isUserAnswerCorrect: boolean;
+	disabled: boolean;
 	onToggle: () => void;
 }>) {
 	let className = "bg-white";
@@ -65,7 +75,7 @@ export function MultipleChoiceOption({
 		<button
 			className={`flex gap-8 rounded-lg border border-light-border bg-white px-8 py-2 text-start focus:outline-secondary ${className}`}
 			onClick={onToggle}
-			disabled={showResult}
+			disabled={disabled}
 			data-testid="MultipleChoiceOption"
 		>
 			<input
@@ -74,7 +84,7 @@ export function MultipleChoiceOption({
 				onChange={() => {
 					/** Bubbles up to button click. */
 				}}
-				disabled={showResult}
+				disabled={disabled}
 				className="checkbox self-center"
 			/>
 			{children}

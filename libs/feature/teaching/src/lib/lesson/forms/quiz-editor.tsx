@@ -1,80 +1,46 @@
 import { PlusIcon } from "@heroicons/react/outline";
 import {
-	BaseQuestion,
-	MultipleChoiceForm,
-	ProgrammingForm,
+	INITIAL_QUESTION_CONFIGURATION_FUNCTIONS,
+	QuestionFormRenderer,
 	QuestionType,
-	QuizContent,
-	ShortTextForm
+	QUESTION_TYPE_DISPLAY_NAMES
 } from "@self-learning/question-types";
+import { Quiz } from "@self-learning/quiz";
 import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
-import { MarkdownField } from "@self-learning/ui/forms";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
 import { useState } from "react";
-import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
+
+type QuizForm = { quiz: Quiz };
 
 export function useQuizEditorForm() {
-	const { control } = useFormContext<{ quiz: QuizContent }>();
+	const { control, register, setValue } = useFormContext<QuizForm>();
 	const {
 		append,
 		remove,
 		fields: quiz,
-		replace: setQuiz,
-		swap
+		replace: setQuiz
 	} = useFieldArray({
 		control,
-		name: "quiz"
+		name: "quiz.questions"
 	});
 
 	const [questionIndex, setQuestionIndex] = useState<number>(quiz.length > 0 ? 0 : -1);
 	const currentQuestion = quiz[questionIndex];
 
 	function appendQuestion(type: QuestionType["type"]) {
-		const baseQuestion: BaseQuestion = {
-			type: "",
-			questionId: getRandomId(),
-			statement: "",
-			withCertainty: false,
-			hints: []
-		};
-
 		setQuestionIndex(old => old + 1);
 
-		if (type === "multiple-choice") {
-			return append({
-				...baseQuestion,
-				type: "multiple-choice",
-				answers: []
-			});
+		const initialConfigFn = INITIAL_QUESTION_CONFIGURATION_FUNCTIONS[type];
+
+		if (!initialConfigFn) {
+			console.error("No initial configuration function found for question type", type);
+			return;
 		}
 
-		if (type === "short-text") {
-			return append({
-				...baseQuestion,
-				type: "short-text",
-				acceptedAnswers: []
-			});
-		}
-
-		if (type === "programming") {
-			return append({
-				...baseQuestion,
-				type: "programming",
-				language: "java",
-				custom: {
-					mode: "standalone",
-					expectedOutput: "",
-					solutionTemplate: ""
-				}
-			});
-		}
-	}
-
-	function swapQuestions(fromIndex: number, toIndex: number) {
-		swap(fromIndex, toIndex);
-		setQuestionIndex(toIndex);
+		append(initialConfigFn());
 	}
 
 	function removeQuestion(index: number) {
@@ -92,12 +58,13 @@ export function useQuizEditorForm() {
 	return {
 		control,
 		quiz,
+		register,
+		setValue,
 		setQuiz,
 		questionIndex,
 		setQuestionIndex,
 		currentQuestion,
 		appendQuestion,
-		swapQuestions,
 		removeQuestion
 	};
 }
@@ -111,12 +78,11 @@ export function QuizEditor() {
 		setQuestionIndex,
 		currentQuestion,
 		appendQuestion,
-		swapQuestions,
 		removeQuestion
 	} = useQuizEditorForm();
 
 	return (
-		<section>
+		<section className="flex flex-col gap-8">
 			<SectionHeader
 				title="Lernkontrolle"
 				subtitle="Fragen, die Studierenden nach Bearbeitung der Lernheit angezeigt werden sollen.
@@ -124,33 +90,20 @@ export function QuizEditor() {
 					erfolgreich abzuschließen."
 			/>
 
+			<QuizConfigForm />
+
 			<div className="flex flex-wrap gap-4 text-sm">
-				<button
-					type="button"
-					className="btn-primary mb-8 w-fit"
-					onClick={() => appendQuestion("multiple-choice")}
-				>
-					<PlusIcon className="h-5" />
-					<span>Multiple-Choice</span>
-				</button>
-
-				<button
-					type="button"
-					className="btn-primary mb-8 w-fit"
-					onClick={() => appendQuestion("short-text")}
-				>
-					<PlusIcon className="h-5" />
-					<span>Kurze Antwort</span>
-				</button>
-
-				<button
-					type="button"
-					className="btn-primary mb-8 w-fit"
-					onClick={() => appendQuestion("programming")}
-				>
-					<PlusIcon className="h-5" />
-					<span>Programmieren</span>
-				</button>
+				{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+					<button
+						key={type}
+						type="button"
+						className="btn-primary w-fit"
+						onClick={() => appendQuestion(type as QuestionType["type"])}
+					>
+						<PlusIcon className="icon h-5" />
+						<span>{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}</span>
+					</button>
+				))}
 			</div>
 
 			{questionIndex >= 0 && (
@@ -165,7 +118,9 @@ export function QuizEditor() {
 							>
 								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
 									<div className="flex flex-col">
-										<span className="text-xs font-normal">{value.type}</span>
+										<span className="text-xs font-normal">
+											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
+										</span>
 										<span>Frage {index + 1}</span>
 									</div>
 								</RemovableTab>
@@ -182,27 +137,111 @@ export function QuizEditor() {
 					control={control}
 					index={questionIndex}
 				>
-					<RenderQuestionTypeForm question={currentQuestion} index={questionIndex} />
+					<QuestionFormRenderer question={currentQuestion} index={questionIndex} />
 				</BaseQuestionForm>
 			)}
 		</section>
 	);
 }
 
-function RenderQuestionTypeForm({ question, index }: { question: QuestionType; index: number }) {
-	if (question.type === "multiple-choice") {
-		return <MultipleChoiceForm question={question} index={index} />;
+function QuizConfigForm() {
+	const { control, register, setValue } = useQuizEditorForm();
+
+	const config = useWatch({
+		control,
+		name: "quiz.config"
+	});
+
+	function resetToDefault() {
+		setValue("quiz.config", null);
 	}
 
-	if (question.type === "short-text") {
-		return <ShortTextForm question={question} index={index} />;
+	function initCustomConfig() {
+		setValue(
+			"quiz.config",
+			config
+				? config
+				: {
+						hints: {
+							enabled: false,
+							maxHints: 0
+						},
+						maxErrors: 0,
+						showSolution: false
+				  }
+		);
 	}
 
-	if (question.type === "programming") {
-		return <ProgrammingForm question={question} index={index} />;
-	}
+	return (
+		<div className="-mt-8 flex flex-col gap-4 rounded-lg bg-gray-200 p-4">
+			<div className="flex flex-col gap-4">
+				<span className="flex items-center gap-4">
+					<input
+						type="checkbox"
+						className="checkbox"
+						id="customConfig"
+						checked={!config}
+						onChange={e => (e.target.checked ? resetToDefault() : initCustomConfig())}
+					/>
+					<label htmlFor="customConfig" className="select-none text-sm">
+						Standard-Konfiguration verwenden
+					</label>
+				</span>
 
-	return <span className="text-red-500">Unknown question type: {question.type}</span>;
+				{!config ? (
+					<ul className="list-inside list-disc text-sm text-light">
+						<li>Alle Fragen müssen korrekt beantwortet werden</li>
+						<li>Lösungen werden nach falscher Beantwortung nicht angezeigt</li>
+						<li>Unbegrenzte Verwendung von Hinweisen</li>
+					</ul>
+				) : (
+					<div className="flex flex-col gap-4 text-sm">
+						<span className="flex items-center gap-4">
+							<input
+								{...register("quiz.config.showSolution")}
+								type="checkbox"
+								id="showSolutions"
+								className="checkbox"
+							></input>
+							<label htmlFor="showSolutions" className="select-none">
+								Lösungen anzeigen
+							</label>
+						</span>
+
+						<span className="flex items-center gap-4">
+							<input
+								{...register("quiz.config.hints.enabled")}
+								type="checkbox"
+								id="hintsEnabled"
+								className="checkbox"
+							></input>
+							<label htmlFor="hintsEnabled" className="select-none">
+								Hinweise aktivieren
+							</label>
+						</span>
+
+						<LabeledField label="Max. erlaubte Hinweise">
+							<input
+								{...register("quiz.config.hints.maxHints")}
+								type={"number"}
+								className="textfield w-fit"
+								placeholder="z. B. 2"
+							/>
+						</LabeledField>
+
+						<LabeledField label="Max. erlaubte falsche Antworten">
+							<input
+								{...register("quiz.config.maxErrors")}
+								type={"number"}
+								className="textfield w-fit"
+								defaultValue={0}
+							/>
+						</LabeledField>
+					</div>
+				)}
+			</div>
+		</div>
+	);
 }
 
 function BaseQuestionForm({
@@ -213,19 +252,21 @@ function BaseQuestionForm({
 }: {
 	currentQuestion: QuestionType;
 	index: number;
-	control: Control<{ quiz: QuizContent }, unknown>;
+	control: Control<QuizForm, unknown>;
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="pt-8">
-			<span className="font-semibold text-secondary">{currentQuestion.type}</span>
+		<div className="">
+			<span className="font-semibold text-secondary">
+				{QUESTION_TYPE_DISPLAY_NAMES[currentQuestion.type]}
+			</span>
 			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">Frage {index + 1}</h5>
 
 			<div className="flex flex-col gap-12">
 				<Controller
 					key={currentQuestion.questionId}
 					control={control}
-					name={`quiz.${index}.statement`}
+					name={`quiz.questions.${index}.statement`}
 					render={({ field }) => (
 						<MarkdownField
 							minHeight="256px"
@@ -248,7 +289,7 @@ function BaseQuestionForm({
 }
 
 function HintForm({ questionIndex }: { questionIndex: number }) {
-	const { control } = useFormContext<{ quiz: QuestionType[] }>();
+	const { control } = useFormContext<QuizForm>();
 
 	const {
 		append,
@@ -256,7 +297,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 		fields: hints
 	} = useFieldArray({
 		control,
-		name: `quiz.${questionIndex}.hints`
+		name: `quiz.questions.${questionIndex}.hints`
 	});
 
 	function addHint() {
@@ -303,7 +344,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 
 					<Controller
 						control={control}
-						name={`quiz.${questionIndex}.hints.${hintIndex}.content`}
+						name={`quiz.questions.${questionIndex}.hints.${hintIndex}.content`}
 						render={({ field }) => (
 							<MarkdownField
 								content={field.value}

@@ -167,9 +167,8 @@ function AuthorForm({
 	username: string;
 	onClose: OnDialogCloseFn<Author>;
 }) {
-	const trpcContext = trpc.useContext();
 	const { mutateAsync: updateAuthor } = trpc.author.updateAsAdmin.useMutation();
-	const methods = useForm({
+	const form = useForm({
 		resolver: zodResolver(authorSchema),
 		defaultValues: initialAuthor
 	});
@@ -193,20 +192,14 @@ function AuthorForm({
 					title: "Fehler",
 					subtitle: "Autor konnte nicht gespeichert werden."
 				});
-			})
-			.finally(() => {
-				trpcContext.author.invalidate();
 			});
 	}
 
 	return (
-		<FormProvider {...methods}>
-			<form
-				className="flex flex-col justify-between"
-				onSubmit={methods.handleSubmit(onSubmit)}
-			>
+		<FormProvider {...form}>
+			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
 				<div className="absolute top-8 right-8">
-					<OpenAsJsonButton validationSchema={authorSchema} />
+					<OpenAsJsonButton form={form} validationSchema={authorSchema} />
 				</div>
 
 				<div className="grid gap-8 xl:grid-cols-[400px_600px]">

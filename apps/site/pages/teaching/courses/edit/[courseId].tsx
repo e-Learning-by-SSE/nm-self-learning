@@ -24,6 +24,11 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 					slug: true
 				}
 			},
+			specializations: {
+				select: {
+					specializationId: true
+				}
+			},
 			subject: {
 				select: {
 					subjectId: true,
@@ -67,6 +72,9 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		imgUrl: course.imgUrl,
 		slug: course.slug,
 		subjectId: course.subject?.subjectId ?? null,
+		specializations: course.specializations.map(s => ({
+			specializationId: s.specializationId
+		})),
 		authors: course.authors.map(author => ({ slug: author.slug })),
 		content: content
 	};

@@ -2,22 +2,23 @@ import { Lesson, lessonSchema } from "./lesson";
 
 const minValidLesson: Lesson = {
 	lessonId: "id-1",
-	content: [],
-	quiz: [],
 	slug: "slug-1",
-	title: "The Title"
+	title: "The Title",
+	content: [],
+	quiz: null,
+	authors: []
 };
 
 describe("lessonSchema", () => {
 	describe("Invalid", () => {
 		it("null", () => {
 			const result = lessonSchema.safeParse(null);
-			expect(result["error"]).toBeDefined();
+			expect(result.success).toBeDefined();
 		});
 
 		it("{}", () => {
 			const result = lessonSchema.safeParse({});
-			expect(result["error"]).toBeDefined();
+			expect(result.success).toBeFalsy();
 		});
 
 		it("Missing title", () => {
@@ -27,8 +28,7 @@ describe("lessonSchema", () => {
 			};
 
 			const result = lessonSchema.safeParse(lesson);
-
-			expect(result["error"]).toBeDefined();
+			expect(result.success).toBeFalsy();
 		});
 
 		it("Title with empty string", () => {
@@ -38,8 +38,7 @@ describe("lessonSchema", () => {
 			};
 
 			const result = lessonSchema.safeParse(lesson);
-
-			expect(result["error"]).toBeDefined();
+			expect(result.success).toBeFalsy();
 		});
 
 		it("Invalid content", () => {
@@ -51,8 +50,9 @@ describe("lessonSchema", () => {
 
 			const result = lessonSchema.safeParse(lesson);
 
-			expect(result["error"]).toMatchInlineSnapshot(`
-			[ZodError: [
+			expect(result).toMatchInlineSnapshot(`
+			Object {
+			  "error": [ZodError: [
 			  {
 			    "code": "invalid_type",
 			    "expected": "array",
@@ -62,7 +62,9 @@ describe("lessonSchema", () => {
 			    ],
 			    "message": "Expected array, received null"
 			  }
-			]]
+			]],
+			  "success": false,
+			}
 		`);
 		});
 	});
@@ -70,15 +72,18 @@ describe("lessonSchema", () => {
 	describe("Valid", () => {
 		it("Minimal valid lesson", () => {
 			const result = lessonSchema.safeParse(minValidLesson);
-			expect(result["error"]).toBeUndefined();
 			expect(result.success).toEqual(true);
-			expect(result["data"]).toMatchInlineSnapshot(`
+			expect(result).toMatchInlineSnapshot(`
 			Object {
-			  "content": Array [],
-			  "lessonId": "id-1",
-			  "quiz": Array [],
-			  "slug": "slug-1",
-			  "title": "The Title",
+			  "data": Object {
+			    "authors": Array [],
+			    "content": Array [],
+			    "lessonId": "id-1",
+			    "quiz": null,
+			    "slug": "slug-1",
+			    "title": "The Title",
+			  },
+			  "success": true,
 			}
 		`);
 		});
@@ -109,8 +114,47 @@ describe("lessonSchema", () => {
 			};
 
 			const result = lessonSchema.safeParse(lesson);
+			expect(result.success).toEqual(true);
+		});
 
-			expect(result["error"]).toBeUndefined();
+		it("With quiz", () => {
+			const lesson: Partial<Lesson> = {
+				...minValidLesson,
+				quiz: {
+					questions: [
+						{
+							type: "multiple-choice",
+							questionId: "q1",
+							statement: "What is the answer to life, the universe and everything?",
+							answers: [
+								{
+									answerId: "a",
+									content: "42",
+									isCorrect: true
+								},
+								{
+									answerId: "b",
+									content: "43",
+									isCorrect: false
+								}
+							],
+							hints: [],
+							withCertainty: false
+						}
+					],
+					config: {
+						hints: {
+							enabled: true,
+							maxHints: 1
+						},
+						maxErrors: 0,
+						showSolution: false
+					}
+				}
+			};
+
+			const result = lessonSchema.safeParse(lesson);
+			expect(result.success).toEqual(true);
 		});
 	});
 });

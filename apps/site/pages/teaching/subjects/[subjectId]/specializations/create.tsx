@@ -105,7 +105,7 @@ export function SpecializationEditor({
 								</h1>
 							</div>
 
-							<OpenAsJsonButton validationSchema={specializationSchema} />
+							<OpenAsJsonButton form={form} validationSchema={specializationSchema} />
 
 							<button className="btn-primary w-full" type="submit">
 								{initialSpecialization.specializationId === ""

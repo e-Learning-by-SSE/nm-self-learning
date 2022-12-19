@@ -1,6 +1,6 @@
-import { MdLookup } from "@self-learning/markdown";
+import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext } from "react";
-import { InferQuestionType, QuestionType, QuestionTypeUnion } from "./quiz-schema";
+import { InferQuestionType, QuestionType, QuestionTypeUnion } from "./question-type-registry";
 
 type AnswerContextValue = {
 	question: QuestionType;
@@ -43,13 +43,12 @@ export function AnswerContextProvider({
  *
  * @param _questionType The question type, i.e., "multiple-choice". Enables type inference of concrete question type object.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useQuestion<
 	QType extends QuestionTypeUnion["type"],
 	Q = InferQuestionType<QType>["question"],
 	A = InferQuestionType<QType>["answer"],
 	E = InferQuestionType<QType>["evaluation"]
->(qtype: QType) {
+>(_type: QType) {
 	const value = useContext(AnswerContext);
 
 	// Attention: Might break when type is changed
@@ -62,6 +61,7 @@ export function useQuestion<
 		markdown: {
 			questionsMd: MdLookup;
 			answersMd: MdLookup;
+			hintsMd: MdLookupArray;
 		};
 	};
 }

@@ -1,4 +1,4 @@
-import { EvaluationFn } from "../../quiz-schema";
+import { EvaluationFn } from "../../question-type-registry";
 
 export const evaluateMultipleChoice: EvaluationFn<"multiple-choice"> = (question, answer) => {
 	const evaluatedAnswers: { [answerId: string]: boolean } = {};

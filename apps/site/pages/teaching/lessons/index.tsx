@@ -1,20 +1,29 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
-import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import { Paginator, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 export default function LessonManagementPage() {
-	const [title, setTitle] = useState("");
+	const router = useRouter();
+	const { page = 1, title = "" } = router.query;
+	const [titleFilter, setTitle] = useState(title);
 	const { data } = trpc.lesson.findMany.useQuery(
-		{ title },
+		{ title: titleFilter as string, page: Number(page) },
 		{
 			staleTime: 10_000,
 			keepPreviousData: true
 		}
 	);
+
+	useEffect(() => {
+		// We need this effect, because router.query is empty on first render
+		setTitle(title as string);
+	}, [title]);
 
 	return (
 		<CenteredSection className="bg-gray-50">
@@ -22,22 +31,32 @@ export default function LessonManagementPage() {
 				<h1 className="text-5xl">Lerneinheiten</h1>
 
 				<Link href="/teaching/lessons/create" className="btn-primary flex w-fit">
-					<PlusIcon className="h-5" />
+					<PlusIcon className="icon h-5" />
 					<span>Lerneinheit hinzufügen</span>
 				</Link>
 			</div>
 
-			<SearchField placeholder="Suche nach Titel" onChange={e => setTitle(e.target.value)} />
+			<SearchField
+				placeholder="Suche nach Titel"
+				value={titleFilter}
+				onChange={e => {
+					setTitle(e.target.value);
+					router.push(`/teaching/lessons?page=1&title=${e.target.value}`, undefined, {
+						shallow: true
+					});
+				}}
+			/>
 
 			<Table
 				head={
 					<>
 						<TableHeaderColumn>Titel</TableHeaderColumn>
 						<TableHeaderColumn>Von</TableHeaderColumn>
+						<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
 					</>
 				}
 			>
-				{data?.lessons?.map(lesson => (
+				{data?.result.map(lesson => (
 					<tr key={lesson.lessonId}>
 						<TableDataColumn>
 							<Link
@@ -53,9 +72,22 @@ export default function LessonManagementPage() {
 								{lesson.authors.map(a => a.displayName).join(", ")}
 							</span>
 						</TableDataColumn>
+
+						<TableDataColumn>
+							<span
+								className="text-light"
+								title={new Date(lesson.updatedAt).toLocaleString()}
+							>
+								{formatDateAgo(lesson.updatedAt)}
+							</span>
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
+
+			{data?.result && (
+				<Paginator pagination={data} url={`/teaching/lessons?title=${titleFilter}`} />
+			)}
 		</CenteredSection>
 	);
 }

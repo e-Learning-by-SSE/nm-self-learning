@@ -2,6 +2,7 @@ import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import {
 	ImageOrPlaceholder,
+	Paginator,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn
@@ -9,17 +10,25 @@ import {
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 export default function CoursesPage() {
-	const [title, setTitle] = useState("");
-	const { data: courses } = trpc.course.findMany.useQuery(
-		{ title },
+	const router = useRouter();
+	const { page = 1, title = "" } = router.query;
+	const [titleFilter, setTitle] = useState(title);
+	const { data } = trpc.course.findMany.useQuery(
+		{ title: titleFilter as string, page: Number(page) },
 		{
 			staleTime: 10_000,
 			keepPreviousData: true
 		}
 	);
+
+	useEffect(() => {
+		// We need this effect, because router.query is empty on first render
+		setTitle(title as string);
+	}, [title]);
 
 	return (
 		<CenteredSection className="bg-gray-50">
@@ -43,7 +52,7 @@ export default function CoursesPage() {
 					</>
 				}
 			>
-				{courses?.map(course => (
+				{data?.result.map(course => (
 					<tr key={course.courseId}>
 						<TableDataColumn>
 							<ImageOrPlaceholder
@@ -69,6 +78,10 @@ export default function CoursesPage() {
 					</tr>
 				))}
 			</Table>
+
+			{data?.result && (
+				<Paginator pagination={data} url={`/teaching/courses?title=${titleFilter}`} />
+			)}
 		</CenteredSection>
 	);
 }

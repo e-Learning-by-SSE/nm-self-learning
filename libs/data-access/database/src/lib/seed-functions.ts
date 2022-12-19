@@ -1,10 +1,7 @@
-import { readFileSync } from "fs";
-import { join } from "path";
-import slugify from "slugify";
-
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
+import { Quiz } from "@self-learning/quiz";
 import {
 	createCourseContent,
 	createCourseMeta,
@@ -13,6 +10,9 @@ import {
 	LessonContent,
 	LessonContentType
 } from "@self-learning/types";
+import { readFileSync } from "fs";
+import { join } from "path";
+import slugify from "slugify";
 
 const prisma = new PrismaClient();
 
@@ -30,7 +30,10 @@ export function createLesson(
 		subtitle: subtitle,
 		description: description,
 		content: content,
-		quiz: questions,
+		quiz: {
+			questions,
+			config: null
+		} satisfies Quiz,
 		meta: {}
 	};
 
@@ -168,10 +171,11 @@ export function createTextQuestion(
 		})) ?? [];
 
 	return {
-		type: "short-text",
+		type: "exact",
 		questionId: faker.random.alphaNumeric(8),
 		statement: question,
 		withCertainty: false,
+		caseSensitive: false,
 		acceptedAnswers: answers.map(answer => ({
 			acceptedAnswerId: faker.random.alphaNumeric(8),
 			value: answer
@@ -192,10 +196,7 @@ export function createVideo(url: string, duration: number): LessonContentType {
 	};
 }
 
-export function createArticle(
-	mdContent: string,
-	estimatedDuration: number = 300
-): LessonContentType {
+export function createArticle(mdContent: string, estimatedDuration = 300): LessonContentType {
 	return {
 		type: "article",
 		value: {

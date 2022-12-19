@@ -4,7 +4,14 @@ import { createLessonMeta } from "./lesson-meta";
 describe("createLessonMeta", () => {
 	it("No Quiz -> hasQuiz: false", () => {
 		const lesson = createEmptyLesson();
-		lesson.quiz = [];
+		lesson.quiz = null;
+		const meta = createLessonMeta(lesson);
+		expect(meta.hasQuiz).toEqual(false);
+	});
+
+	it("Empty Quiz -> hasQuiz: false", () => {
+		const lesson = createEmptyLesson();
+		lesson.quiz = { questions: [], config: null as any };
 		const meta = createLessonMeta(lesson);
 		expect(meta.hasQuiz).toEqual(false);
 	});

@@ -15,7 +15,6 @@ export default function SubjectEditPage() {
 		}
 	);
 	const { mutateAsync: updateSubject } = trpc.subject.update.useMutation();
-	const trpcContext = trpc.useContext();
 
 	async function onSubmit(subjectFromForm: Subject) {
 		try {
@@ -28,8 +27,6 @@ export default function SubjectEditPage() {
 			});
 		} catch (error) {
 			console.error("Error updating subject", error);
-		} finally {
-			trpcContext.invalidate();
 		}
 	}
 

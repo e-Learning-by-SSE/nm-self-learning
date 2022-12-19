@@ -1,5 +1,5 @@
 import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
-import { CheckCircleIcon, CogIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import { CheckCircleIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -8,8 +8,8 @@ import {
 	useLessonContext
 } from "@self-learning/lesson";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
-import { QuestionType, QuizContent } from "@self-learning/question-types";
-import { Question, QuizProvider, useQuiz } from "@self-learning/quiz";
+import { QuizContent } from "@self-learning/question-types";
+import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
@@ -17,7 +17,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
-	questions: QuestionType[];
+	quiz: Quiz;
 	markdown: {
 		questionsMd: MdLookup;
 		answersMd: MdLookup;
@@ -30,13 +30,15 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 
 	if ("notFound" in parentProps) return { notFound: true };
 
-	const questions = (parentProps.lesson.quiz ?? []) as QuizContent;
+	const quiz = parentProps.lesson.quiz as Quiz | null;
+
+	if (!quiz) return { notFound: true };
 
 	const questionsMd: MdLookup = {};
 	const answersMd: MdLookup = {};
 	const hintsMd: MdLookupArray = {};
 
-	for (const question of questions) {
+	for (const question of quiz.questions) {
 		questionsMd[question.questionId] = await compileMarkdown(question.statement);
 
 		if (question.hints?.length > 0) {
@@ -47,7 +49,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 			}
 		}
 
-		if (question.type === "multiple-choice" || question.type === "vorwissen") {
+		if (question.type === "multiple-choice") {
 			for (const answer of question.answers) {
 				answersMd[answer.answerId] = await compileMarkdown(answer.content);
 			}
@@ -57,7 +59,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	return {
 		props: {
 			...parentProps,
-			questions: questions,
+			quiz,
 			markdown: {
 				questionsMd,
 				answersMd,
@@ -67,7 +69,8 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	};
 };
 
-export default function QuestionsPage({ course, lesson, questions, markdown }: QuestionProps) {
+export default function QuestionsPage({ course, lesson, quiz, markdown }: QuestionProps) {
+	const { questions, config } = quiz;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
 	const { index } = router.query;
@@ -112,6 +115,7 @@ export default function QuestionsPage({ course, lesson, questions, markdown }: Q
 	return (
 		<QuizProvider
 			questions={questions}
+			config={config ?? defaultQuizConfig}
 			goToNextQuestion={goToNextQuestion}
 			reload={router.reload}
 		>

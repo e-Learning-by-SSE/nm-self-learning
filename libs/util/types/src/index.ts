@@ -1,3 +1,4 @@
+export * from "./lib/asset";
 export * from "./lib/author";
 export * from "./lib/common";
 export * from "./lib/course";

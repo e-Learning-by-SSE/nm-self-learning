@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
@@ -5,27 +6,42 @@ import {
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
 import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
-import { getRandomId } from "@self-learning/util/common";
+import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 
 export const courseRouter = t.router({
 	findMany: t.procedure
-		.input(
-			z.object({
-				title: z.string().optional()
-			})
-		)
+		.input(paginationSchema.extend({ title: z.string().optional() }))
 		.query(async ({ input }) => {
-			return database.course.findMany({
-				include: {
-					authors: true,
-					subject: true
-				},
-				where: {
-					title: input.title ? { contains: input.title, mode: "insensitive" } : undefined
-				}
-			});
+			const pageSize = 15;
+
+			const where: Prisma.CourseWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined
+			};
+
+			const [result, count] = await database.$transaction([
+				database.course.findMany({
+					include: {
+						authors: true,
+						subject: true
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { title: "asc" },
+					where
+				}),
+				database.course.count({ where })
+			]);
+
+			return {
+				result,
+				pageSize: pageSize,
+				page: input.page,
+				totalCount: count
+			} satisfies Paginated<unknown>;
 		}),
 	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
 		const course = await database.course.findUniqueOrThrow({

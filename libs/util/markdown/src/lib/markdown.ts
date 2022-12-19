@@ -5,9 +5,10 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 // Rehype packages
 import rehypeKatex from "rehype-katex";
-import rehypeCitation from "rehype-citation";
 import rehypePrismPlus from "rehype-prism-plus";
-import rehypePresetMinify from "rehype-preset-minify";
+
+export const remarkPlugins = [remarkGfm, remarkMath];
+export const rehypePlugins = [rehypeKatex, rehypePrismPlus];
 
 /**
  * Converts a markdown document to an object that can be rendered in a {@link MDXRemote} component.
@@ -30,8 +31,8 @@ export function compileMarkdown(markdown: string) {
 		parseFrontmatter: true,
 		mdxOptions: {
 			format: "md",
-			remarkPlugins: [remarkGfm, remarkMath],
-			rehypePlugins: [rehypeKatex, rehypeCitation, rehypePrismPlus, rehypePresetMinify]
+			remarkPlugins,
+			rehypePlugins
 		}
 	});
 }

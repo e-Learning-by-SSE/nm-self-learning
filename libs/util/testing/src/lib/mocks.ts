@@ -1,12 +1,11 @@
 import { Lesson, Prisma } from "@prisma/client";
-import { QuizContent } from "@self-learning/question-types";
+import { Quiz } from "@self-learning/quiz";
 import {
 	CourseContent,
 	createCourseMeta,
 	createLessonMeta,
 	LessonContent
 } from "@self-learning/types";
-import { getRandomId } from "@self-learning/util/common";
 
 export function createExampleCourse(
 	courseId: string,
@@ -72,18 +71,10 @@ lorem ipsum dolor sit amet.`
 			] as LessonContent),
 		quiz:
 			overwrites?.quiz ??
-			([
-				{
-					type: "multiple-choice",
-					questionId: "question-1",
-					statement: "# What is 1 + 1?",
-					answers: [
-						{ answerId: getRandomId(), isCorrect: true, content: "1" },
-						{ answerId: getRandomId(), isCorrect: true, content: "2" },
-						{ answerId: getRandomId(), isCorrect: true, content: "3" }
-					]
-				}
-			] as QuizContent),
+			({
+				questions: [],
+				config: null
+			} satisfies Quiz),
 		meta: Prisma.JsonNull
 	};
 

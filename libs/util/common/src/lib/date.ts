@@ -1,3 +1,6 @@
+import { formatDistance } from "date-fns";
+import { de } from "date-fns/locale";
+
 /**
  * Formats seconds to "hh:mm:ss" (hh will be removed if less than an hour).
  *
@@ -13,4 +16,11 @@ export function formatSeconds(seconds: number): string {
 	return `${hours > 0 ? `${hours}:` : ""}${
 		hours > 0 ? minutes.toString().padStart(2, "0") : minutes
 	}:${secondsLeft.toString().padStart(2, "0")}`;
+}
+
+export function formatDateAgo(date: Date | string | number) {
+	return formatDistance(new Date(date), Date.now(), {
+		addSuffix: true,
+		locale: de
+	});
 }

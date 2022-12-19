@@ -4,8 +4,9 @@ import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
+import { AuthorsForm } from "../author/authors-form";
 import { OpenAsJsonButton } from "../json-editor-dialog";
-import { AuthorsForm } from "./authors-form";
+import { SpecializationForm } from "../subject/subject-form";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
@@ -19,19 +20,19 @@ export function CourseEditor({
 }) {
 	const isNew = course.courseId === "";
 
-	const methods = useForm<CourseFormModel>({
+	const form = useForm<CourseFormModel>({
 		defaultValues: { ...course },
 		resolver: zodResolver(courseFormSchema)
 	});
 
 	return (
 		<div className="bg-gray-50">
-			<FormProvider {...methods}>
+			<FormProvider {...form}>
 				<form
 					id="courseform"
 					onSubmit={e => {
 						if ((e.target as unknown as { id: string }).id === "courseform") {
-							methods.handleSubmit(
+							form.handleSubmit(
 								data => {
 									console.log("data", data);
 									try {
@@ -61,14 +62,18 @@ export function CourseEditor({
 									</Link>
 								</div>
 
-								<OpenAsJsonButton validationSchema={courseFormSchema} />
+								<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
 
 								<button className="btn-primary w-full" type="submit">
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
 
 								<CourseInfoForm />
-								<AuthorsForm />
+								<SpecializationForm subtitle="Die Spezialisierungen, in denen dieser Kurs angezeigt werden soll." />
+								<AuthorsForm
+									subtitle="Die Autoren dieses Kurses."
+									emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."
+								/>
 							</>
 						}
 					>

@@ -2,23 +2,24 @@ import { PlusIcon } from "@heroicons/react/solid";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { QuestionTypeForm } from "../../base-question";
 import { MultipleChoiceQuestion } from "./schema";
 
-export function MultipleChoiceForm({
+export default function MultipleChoiceForm({
 	index
 }: {
 	question: { type: MultipleChoiceQuestion["type"] };
 	index: number;
 }) {
-	const { control, register } = useFormContext<{ quiz: MultipleChoiceQuestion[] }>();
+	const { control, register } = useFormContext<QuestionTypeForm<MultipleChoiceQuestion>>();
 	const { append, replace } = useFieldArray({
 		control,
-		name: `quiz.${index}.answers`
+		name: `quiz.questions.${index}.answers`
 	});
 
 	/** Unlike `fields` (from useFieldArray), this will always be rendered with latest data. */
 	const answers = useWatch({
-		name: `quiz.${index}.answers`,
+		name: `quiz.questions.${index}.answers`,
 		control
 	}) as MultipleChoiceQuestion["answers"];
 
@@ -65,7 +66,9 @@ export function MultipleChoiceForm({
 							<input
 								type="checkbox"
 								className="checkbox"
-								{...register(`quiz.${index}.answers.${answerIndex}.isCorrect`)}
+								{...register(
+									`quiz.questions.${index}.answers.${answerIndex}.isCorrect`
+								)}
 							/>
 							Diese Antwort ist korrekt.
 						</label>
@@ -80,7 +83,7 @@ export function MultipleChoiceForm({
 
 					<Controller
 						control={control}
-						name={`quiz.${index}.answers.${answerIndex}.content`}
+						name={`quiz.questions.${index}.answers.${answerIndex}.content`}
 						render={({ field }) => (
 							<MarkdownField
 								content={field.value}

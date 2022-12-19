@@ -19,6 +19,7 @@ const minValidCourse: CourseFormModel = {
 	description: null,
 	imgUrl: null,
 	subjectId: null,
+	specializations: [],
 	authors: []
 };
 
@@ -118,6 +119,15 @@ describe("courseFormSchema", () => {
 			    "expected": "array",
 			    "message": "Required",
 			    "path": Array [
+			      "specializations",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "array",
+			    "message": "Required",
+			    "path": Array [
 			      "content",
 			    ],
 			    "received": "undefined",
@@ -202,21 +212,21 @@ describe("courseFormSchema", () => {
 				subtitle: "A Subtitle",
 				content: [
 					{
-						type: "chapter",
-						chapterId: "chapter-1",
-						chapterNr: "1",
 						title: "Chapter 1",
 						description: "lorem ipsum",
-						content: [
-							{ type: "lesson", lessonId: "lesson-1", lessonNr: 1 },
-							{ type: "lesson", lessonId: "lesson-2", lessonNr: 2 }
-						]
+						content: [{ lessonId: "lesson-1" }, { lessonId: "lesson-2" }]
 					}
 				],
 				courseId: "abc",
 				description: "A description",
 				imgUrl: "http://example.com/image.png",
-				subjectId: 1,
+				subjectId: "subject-1",
+				specializations: [
+					{
+						specializationId: "specialization-1"
+					},
+					{ specializationId: "specialization-2" }
+				],
 				authors: [{ slug: "author-a" }, { slug: "author-b" }]
 			};
 

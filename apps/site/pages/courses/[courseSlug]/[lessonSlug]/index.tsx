@@ -250,6 +250,12 @@ function MediaTypeSelector({
 		setSelectedIndex(index);
 	}
 
+	useEffect(() => {
+		if (selectedIndex !== index) {
+			setSelectedIndex(index);
+		}
+	}, [index, selectedIndex, setSelectedIndex]);
+
 	return (
 		<>
 			{lessonContent.length > 1 && (

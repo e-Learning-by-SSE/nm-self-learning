@@ -39,6 +39,7 @@ async function getSpecialization(specializationSlug: string) {
 			title: true,
 			subtitle: true,
 			courses: {
+				orderBy: { title: "asc" },
 				select: {
 					slug: true,
 					imgUrl: true,

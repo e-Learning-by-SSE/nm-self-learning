@@ -1,3 +1,4 @@
+import { getRandomId } from "@self-learning/util/common";
 import { z } from "zod";
 
 export const baseQuestionSchema = z.object({
@@ -25,3 +26,25 @@ export const baseAnswerSchema = z.object({
 export type BaseEvaluation = {
 	isCorrect: boolean;
 };
+
+/**
+ * Returns an empty {@link BaseQuestion} object.
+ *
+ * @example
+ * const multipleChoiceQuestion: MultipleChoiceQuestion = {
+ * 	...createBaseQuestion(),
+ * 	type: "multiple-choice", // Important: Set the concrete question type
+ * 	answers: [],
+ * };
+ */
+export function createBaseQuestion(): BaseQuestion {
+	return {
+		type: "",
+		questionId: getRandomId(),
+		statement: "",
+		withCertainty: false,
+		hints: []
+	};
+}
+
+export type QuestionTypeForm<T> = { quiz: { questions: T[] } };
