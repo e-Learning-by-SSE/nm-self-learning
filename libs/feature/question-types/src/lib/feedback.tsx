@@ -1,4 +1,6 @@
+import { useQuiz } from "@self-learning/quiz";
 import { motion } from "framer-motion";
+import { useQuestion } from "./use-question-hook";
 
 /**
  * Component that displays feedback to a user after answering a question.
@@ -28,6 +30,9 @@ export function Feedback({
 	isCorrect: boolean;
 	children?: React.ReactNode;
 }) {
+	const { config } = useQuiz();
+	const { evaluation } = useQuestion("text"); // question type is irrelevant here
+
 	return (
 		<motion.div
 			initial={{ opacity: 0 }}
@@ -46,7 +51,7 @@ export function Feedback({
 					<span className="font-medium">Deine Antwort ist leider nicht korrekt.</span>
 				</div>
 			)}
-			{children}
+			{evaluation && !evaluation.isCorrect && config.showSolution && children}
 		</motion.div>
 	);
 }

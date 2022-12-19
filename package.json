@@ -20,6 +20,7 @@
 	},
 	"dependencies": {
 		"@headlessui/react": "^1.7.4",
+		"@hello-pangea/dnd": "^16.2.0",
 		"@heroicons/react": "^1.0.6",
 		"@hookform/resolvers": "^2.9.10",
 		"@monaco-editor/react": "^4.4.5",

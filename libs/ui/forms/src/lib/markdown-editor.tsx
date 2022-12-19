@@ -133,3 +133,16 @@ export function MarkdownEditorDialog({
 		</Dialog>
 	);
 }
+
+/**
+ * Client-side Markdown renderer.
+ *
+ * If possible, prefer server-side rendering instead of using this component.
+ */
+export function MarkdownViewer({ content }: { content: string }) {
+	return (
+		<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+			{content ?? ""}
+		</ReactMarkdown>
+	);
+}

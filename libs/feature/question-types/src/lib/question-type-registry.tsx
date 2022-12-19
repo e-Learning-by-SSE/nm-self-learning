@@ -27,14 +27,15 @@
 import dynamic from "next/dynamic";
 import { z } from "zod";
 import { createBaseQuestion } from "./base-question";
+import { evaluateArrange } from "./question-types/arrange/evaluate";
+import { Arrange, arrangeQuestionSchema } from "./question-types/arrange/schema";
 import { evaluateCloze } from "./question-types/cloze/evaluate";
 import { Cloze, clozeQuestionSchema } from "./question-types/cloze/schema";
 import { evaluateExactAnswer } from "./question-types/exact/evaluate";
-import { Exact, exactAnswerSchema, exactQuestionSchema } from "./question-types/exact/schema";
+import { Exact, exactQuestionSchema } from "./question-types/exact/schema";
 import { evaluateMultipleChoice } from "./question-types/multiple-choice/evaluate";
 import {
 	MultipleChoice,
-	multipleChoiceAnswerSchema,
 	multipleChoiceQuestionSchema
 } from "./question-types/multiple-choice/schema";
 import { evaluateProgramming } from "./question-types/programming/evaluate";
@@ -63,21 +64,24 @@ const TextAnswer = dynamic(() => import("./question-types/text/component"), { ss
 const TextForm = dynamic(() => import("./question-types/text/form"), { ssr: false });
 const ClozeAnswer = dynamic(() => import("./question-types/cloze/component"), { ssr: false });
 const ClozeForm = dynamic(() => import("./question-types/cloze/form"), { ssr: false });
+const ArrangeAnswer = dynamic(() => import("./question-types/arrange/component"), { ssr: false });
+const ArrangeForm = dynamic(() => import("./question-types/arrange/form"), { ssr: false });
 
-export type QuestionTypeUnion = MultipleChoice | Exact | Text | Programming | Cloze;
+export type QuestionTypeUnion = MultipleChoice | Exact | Text | Programming | Cloze | Arrange;
 
 export const quizContentSchema = z.discriminatedUnion("type", [
 	multipleChoiceQuestionSchema,
 	exactQuestionSchema,
 	textQuestionSchema,
 	programmingQuestionSchema,
-	clozeQuestionSchema
+	clozeQuestionSchema,
+	arrangeQuestionSchema
 ]);
 
-export const quizAnswerSchema = z.discriminatedUnion("type", [
-	multipleChoiceAnswerSchema,
-	exactAnswerSchema
-]);
+// export const quizAnswerSchema = z.discriminatedUnion("type", [
+// 	multipleChoiceAnswerSchema,
+// 	exactAnswerSchema,
+// ]);
 
 /**
  * Object that contains the evaluation function of each question type.
@@ -90,7 +94,8 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 	},
 	exact: evaluateExactAnswer,
 	programming: evaluateProgramming,
-	cloze: evaluateCloze
+	cloze: evaluateCloze,
+	arrange: evaluateArrange
 };
 
 /**
@@ -108,7 +113,22 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 		code: null
 	}),
 	text: () => "",
-	cloze: () => []
+	cloze: () => [],
+	arrange: question => {
+		const answer: Arrange["answer"]["value"] = {
+			_init: [] // Contains all items at the beginning
+		};
+
+		for (const [containerId, items] of Object.entries(question.items)) {
+			answer[containerId] = [];
+			answer._init.push(...items);
+		}
+
+		// randomize order
+		answer._init.sort(() => Math.random() - 0.5);
+
+		return answer;
+	}
 };
 
 /**
@@ -146,6 +166,13 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		...createBaseQuestion(),
 		type: "cloze",
 		clozeText: ""
+	}),
+	arrange: () => ({
+		...createBaseQuestion(),
+		type: "arrange",
+		items: {
+			container1: []
+		}
 	})
 };
 
@@ -160,7 +187,8 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
 	exact: "Exakte Antwort",
 	text: "Freitext",
 	programming: "Programmierung",
-	cloze: "Lückentext"
+	cloze: "Lückentext",
+	arrange: "Ordnen"
 };
 
 /**
@@ -185,6 +213,10 @@ export function QuestionAnswerRenderer({ question }: { question: QuestionType })
 
 	if (question.type === "cloze") {
 		return <ClozeAnswer />;
+	}
+
+	if (question.type === "arrange") {
+		return <ArrangeAnswer />;
 	}
 
 	return (
@@ -224,6 +256,10 @@ export function QuestionFormRenderer({
 		return <ClozeForm question={question} index={index} />;
 	}
 
+	if (question.type === "arrange") {
+		return <ArrangeForm question={question} index={index} />;
+	}
+
 	return (
 		<span className="text-red-500">
 			Error: No implementation found for "{(question as { type: string }).type}".
@@ -232,7 +268,7 @@ export function QuestionFormRenderer({
 }
 
 export type QuestionType = z.infer<typeof quizContentSchema>;
-export type QuizAnswers = z.infer<typeof quizAnswerSchema>;
+// export type QuizAnswers = z.infer<typeof quizAnswerSchema>;
 export type QuizContent = QuestionType[];
 
 export type EvaluationFn<QType extends QuestionType["type"]> = (
