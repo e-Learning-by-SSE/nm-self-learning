@@ -1,4 +1,3 @@
-import { useQuiz } from "@self-learning/quiz";
 import { Fragment, useCallback, useRef } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
@@ -6,7 +5,6 @@ import { createCloze, Gap } from "./cloze-parser";
 type SetAnswerFn = (index: number, answer: string) => void;
 
 export default function ClozeAnswer() {
-	const { config } = useQuiz();
 	const { question, answer, setAnswer, evaluation } = useQuestion("cloze");
 
 	const cloze = useRef(createCloze(question.clozeText)).current;
@@ -41,19 +39,17 @@ export default function ClozeAnswer() {
 
 			{evaluation && (
 				<Feedback isCorrect={evaluation.isCorrect}>
-					{!evaluation.isCorrect && config.showSolution && (
-						<ul className="flex flex-col gap-2">
-							{evaluation.incorrectAnswers.map(ans => (
-								<li key={ans.index} className="flex flex-col">
-									<span className="font-medium">Lücke {ans.index + 1}:</span>
-									<span className="pl-4">Antwort: {ans.studentAnswer}</span>
-									<span className="pl-4">
-										Erwartet: {ans.intendedAnswers.join(" | ")}
-									</span>
-								</li>
-							))}
-						</ul>
-					)}
+					<ul className="flex flex-col gap-2">
+						{evaluation.incorrectAnswers.map(ans => (
+							<li key={ans.index} className="flex flex-col">
+								<span className="font-medium">Lücke {ans.index + 1}:</span>
+								<span className="pl-4">Antwort: {ans.studentAnswer}</span>
+								<span className="pl-4">
+									Erwartet: {ans.intendedAnswers.join(" | ")}
+								</span>
+							</li>
+						))}
+					</ul>
 				</Feedback>
 			)}
 		</>

@@ -28,6 +28,7 @@ export function Feedback({
 	children
 }: {
 	isCorrect: boolean;
+	/** The `children` can render additional feedback. They are only displayed if the answer was wrong and quiz has `showSolutions` enabled. */
 	children?: React.ReactNode;
 }) {
 	const { config } = useQuiz();
