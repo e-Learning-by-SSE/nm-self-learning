@@ -55,7 +55,7 @@ export default function MultipleChoiceForm({
 			{answers.map((answer, answerIndex) => (
 				<div
 					key={answer.answerId}
-					className={`flex flex-col gap-2 rounded-lg border border-light-border p-4 ${
+					className={`relative flex flex-col gap-2 rounded-lg border border-light-border p-4 ${
 						answers?.[answerIndex]?.isCorrect
 							? "border-secondary bg-emerald-50"
 							: "border-red-500 bg-red-50"
@@ -74,7 +74,7 @@ export default function MultipleChoiceForm({
 						</label>
 						<button
 							type="button"
-							className="text-xs text-red-500"
+							className="absolute top-2 right-2 text-xs text-red-500"
 							onClick={() => removeAnswer(answerIndex)}
 						>
 							Entfernen
