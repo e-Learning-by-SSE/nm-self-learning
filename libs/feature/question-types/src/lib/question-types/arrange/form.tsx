@@ -120,7 +120,7 @@ export default function ArrangeForm({
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
 
 			<DragDropContext onDragEnd={onDragEnd}>
-				<ul className="grid grid-flow-col gap-4">
+				<ul className="grid auto-cols-fr grid-flow-col gap-4">
 					{Object.entries(items).map(([containerId, items]) => (
 						// eslint-disable-next-line react/jsx-no-useless-fragment
 						<Fragment key={containerId}>

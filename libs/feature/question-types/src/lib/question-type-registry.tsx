@@ -170,9 +170,7 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	arrange: () => ({
 		...createBaseQuestion(),
 		type: "arrange",
-		items: {
-			container1: []
-		}
+		items: {}
 	})
 };
 

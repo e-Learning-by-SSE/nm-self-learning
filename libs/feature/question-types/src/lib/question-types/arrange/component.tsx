@@ -88,7 +88,7 @@ export default function ArrangeQuestion() {
 							<ul
 								ref={provided.innerRef}
 								{...provided.droppableProps}
-								className="flex min-h-[128px] gap-4 rounded-lg border-white bg-gray-100 p-4"
+								className="flex min-h-[128px] flex-wrap gap-4 rounded-lg border-white bg-gray-100 p-4"
 							>
 								{answer.value["_init"].map((item, index) => (
 									<Draggable
