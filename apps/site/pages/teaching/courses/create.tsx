@@ -1,14 +1,13 @@
 import { trpc } from "@self-learning/api-client";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
-import { Unauthorized } from "@self-learning/ui/layouts";
-import { useSession } from "next-auth/react";
+import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
 
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
 	const router = useRouter();
-	const session = useSession({ required: true });
+	const session = useRequiredSession();
 	const author = session.data?.user.author;
 
 	async function onConfirm(course: CourseFormModel) {

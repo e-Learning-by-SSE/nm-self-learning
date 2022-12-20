@@ -1,12 +1,12 @@
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { SpecializationEditor } from "../create";
 
 export default function SpecializationEditPage() {
-	useSession({ required: true });
+	useRequiredSession();
 	const router = useRouter();
 	const { subjectId, specializationId } = router.query;
 	const { mutateAsync: updateSpecialization } = trpc.specialization.update.useMutation();

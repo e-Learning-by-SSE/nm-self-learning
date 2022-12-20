@@ -2,6 +2,19 @@ import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { CenteredSection } from "./containers/centered-section";
+import { redirectToLogin } from "./redirect-to-login";
+
+/**
+ * Wrapper for `useSession` from `next-auth` that redirects the user to the login page if they are not authenticated.
+ * If this is running in a demo instance, users will be redirected to the demo login page, otherwise to the Keycloak login page.
+ */
+export function useRequiredSession() {
+	const session = useSession({
+		required: true,
+		onUnauthenticated: redirectToLogin
+	});
+	return session;
+}
 
 /**
  * Wraps the given `children` and only displays them, if the user has the `ADMIN` role.
@@ -24,7 +37,7 @@ export function AdminGuard({
 	/** The content to render if the user is an admin. */
 	children?: React.ReactNode;
 }) {
-	const session = useSession({ required: true });
+	const session = useRequiredSession();
 
 	if (session.data?.user.role !== "ADMIN") {
 		return <Unauthorized>{error}</Unauthorized>;

@@ -1,10 +1,9 @@
-import { CenteredSection } from "@self-learning/ui/layouts";
-import { useSession } from "next-auth/react";
+import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { ReactComponent as PersonalInformationSvg } from "../../svg/teams.svg";
 
 export default function AdminPage() {
-	const session = useSession({ required: true });
+	const session = useRequiredSession();
 
 	if (session.data?.user.role !== "ADMIN") {
 		return (

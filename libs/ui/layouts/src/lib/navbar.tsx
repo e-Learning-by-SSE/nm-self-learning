@@ -1,8 +1,9 @@
 import { Menu } from "@headlessui/react";
 import { AcademicCapIcon, LogoutIcon, UserIcon } from "@heroicons/react/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { redirectToLogin } from "./redirect-to-login";
 
 export function Navbar() {
 	const session = useSession();
@@ -28,9 +29,6 @@ export function Navbar() {
 					<div className="hidden items-center gap-16 text-sm font-medium xl:flex">
 						{user && (
 							<>
-								{/* <Link href="/learning-diary">
-									<a>Lerntagebuch</a>
-								</Link> */}
 								<Link href="/profile">Profil</Link>
 								{user.role === "ADMIN" && <Link href="/admin">Adminbereich</Link>}
 								{(user.role === "ADMIN" || !!user.author) && (
@@ -44,7 +42,7 @@ export function Navbar() {
 				{!user ? (
 					<button
 						className="text-w rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white"
-						onClick={() => signIn()}
+						onClick={redirectToLogin}
 					>
 						Login
 					</button>

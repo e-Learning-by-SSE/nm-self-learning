@@ -13,15 +13,14 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { LabeledField, SearchField, Upload } from "@self-learning/ui/forms";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
 export default function AuthorsPage() {
-	useSession({ required: true });
+	useRequiredSession();
 
 	const [displayName, setDisplayName] = useState("");
 	const { data: users, isLoading } = trpc.author.getAllWithSubject.useQuery();

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
 import { Specialization, specializationSchema } from "@self-learning/types";
-import { SectionHeader, ImageOrPlaceholder, showToast } from "@self-learning/ui/common";
+import { ImageOrPlaceholder, SectionHeader, showToast } from "@self-learning/ui/common";
 import {
 	FieldHint,
 	Form,
@@ -10,15 +10,14 @@ import {
 	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 
 export default function SpecializationPage() {
-	useSession({ required: true });
+	useRequiredSession();
 	const router = useRouter();
 
 	const { subjectId } = router.query;

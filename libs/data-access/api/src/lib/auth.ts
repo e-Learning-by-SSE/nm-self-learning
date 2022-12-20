@@ -4,9 +4,8 @@ import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import { NextAuthOptions } from "next-auth";
 import { Adapter } from "next-auth/adapters";
-import Auth0Provider from "next-auth/providers/auth0";
+import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GitHubProvider from "next-auth/providers/github";
 import KeycloakProvider from "next-auth/providers/keycloak";
 
 const customPrismaAdapter: Adapter = {
@@ -52,6 +51,87 @@ const customPrismaAdapter: Adapter = {
 	}
 };
 
+function getProviders(): Provider[] {
+	const providers = [
+		KeycloakProvider({
+			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
+			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
+			clientSecret: "dummySecret"
+		})
+	];
+
+	// Allow login with pre-configured demo accounts in demo mode (see seed.ts)
+	if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {
+		providers.push(
+			CredentialsProvider({
+				name: "Demo-Account",
+				credentials: {
+					username: { label: "Username", type: "text" }
+				},
+				async authorize(credentials) {
+					const username = credentials?.username;
+
+					if (typeof username !== "string" || username.length == 0) {
+						return null;
+					}
+
+					const account = await database.account.findUniqueOrThrow({
+						where: {
+							provider_providerAccountId: {
+								providerAccountId: username,
+								provider: "demo"
+							}
+						},
+						select: {
+							user: true
+						}
+					});
+
+					if (account) {
+						return account.user;
+					}
+
+					const user = await database.user.create({
+						data: {
+							name: username,
+							sessions: {
+								create: [
+									{
+										sessionToken: randomBytes(12).toString("hex"),
+										expires: addDays(Date.now(), 30)
+									}
+								]
+							},
+							accounts: {
+								create: [
+									{
+										provider: "demo",
+										providerAccountId: username,
+										type: "demo-account",
+										access_token: randomBytes(12).toString("hex")
+									}
+								]
+							},
+							student: {
+								create: {
+									displayName: username,
+									username: username
+								}
+							}
+						}
+					});
+
+					console.log(`[auth]: Created new user: ${username}`);
+
+					return user;
+				}
+			}) as any
+		);
+	}
+
+	return providers;
+}
+
 export const authOptions: NextAuthOptions = {
 	theme: { colorScheme: "light" },
 	adapter: customPrismaAdapter,
@@ -83,83 +163,5 @@ export const authOptions: NextAuthOptions = {
 	session: {
 		strategy: "jwt"
 	},
-	providers: [
-		Auth0Provider({
-			clientId: process.env.AUTH0_CLIENT_ID as string,
-			clientSecret: process.env.AUTH0_CLIENT_SECRET as string,
-			issuer: process.env.AUTH0_ISSUER_BASE_URL as string
-		}),
-		GitHubProvider({
-			clientId: process.env.GITHUB_CLIENT_ID as string,
-			clientSecret: process.env.GITHUB_CLIENT_SECRET as string
-		}),
-		KeycloakProvider({
-			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
-			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
-			clientSecret: "dummySecret"
-		}),
-		CredentialsProvider({
-			name: "Demo-Account",
-			credentials: {
-				username: { label: "Username", type: "text" }
-			},
-			async authorize(credentials) {
-				const username = credentials?.username;
-
-				if (typeof username !== "string" || username.length == 0) {
-					return null;
-				}
-
-				const account = await database.account.findUniqueOrThrow({
-					where: {
-						provider_providerAccountId: {
-							providerAccountId: username,
-							provider: "demo"
-						}
-					},
-					select: {
-						user: true
-					}
-				});
-
-				if (account) {
-					return account.user;
-				}
-
-				const user = await database.user.create({
-					data: {
-						name: username,
-						sessions: {
-							create: [
-								{
-									sessionToken: randomBytes(12).toString("hex"),
-									expires: addDays(Date.now(), 30)
-								}
-							]
-						},
-						accounts: {
-							create: [
-								{
-									provider: "demo",
-									providerAccountId: username,
-									type: "demo-account",
-									access_token: randomBytes(12).toString("hex")
-								}
-							]
-						},
-						student: {
-							create: {
-								displayName: username,
-								username: username
-							}
-						}
-					}
-				});
-
-				console.log(`[auth]: Created new user: ${username}`);
-
-				return user;
-			}
-		})
-	]
+	providers: getProviders()
 };
