@@ -45,7 +45,6 @@ export default function SubjectCreatePage() {
 						cardImgUrl: null,
 						imgUrlBanner: null
 					}}
-					specializations={[]}
 					onSubmit={onSubmit}
 				/>
 			</div>

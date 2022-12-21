@@ -66,7 +66,7 @@ export default function SubjectManagementPage() {
 	return (
 		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
 			<TopicHeader
-				imgUrlBanner={specialization?.imgUrlBanner}
+				imgUrlBanner={specialization.imgUrlBanner}
 				parentLink="/subjects"
 				parentTitle="Fachgebiet"
 				title={specialization.title}

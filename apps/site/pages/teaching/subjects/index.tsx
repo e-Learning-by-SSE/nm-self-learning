@@ -63,7 +63,7 @@ export default function SubjectsPage() {
 									<div className="flex justify-end">
 										<Link
 											className="btn-stroked"
-											href={`/teaching/subjects/edit/${subject.subjectId}`}
+											href={`/teaching/subjects/${subject.subjectId}/edit`}
 										>
 											Editieren
 										</Link>

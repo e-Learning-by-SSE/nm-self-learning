@@ -5,7 +5,7 @@ import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
-import { ReactComponent as VoidSvg } from "../../../../svg/void.svg";
+import { ReactComponent as VoidSvg } from "../../../svg/void.svg";
 
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;

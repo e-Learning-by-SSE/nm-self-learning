@@ -99,7 +99,7 @@ function Specialization({
 			<span className="flex w-full flex-col">
 				<span className="text-xs text-light">{specialization.subject.title}</span>
 				<Link
-					href={`/subjects/${specialization.subject.slug}/specialization/${specialization.slug}`}
+					href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
 					target="_blank"
 					className="font-medium hover:text-secondary"
 					rel="noopener noreferrer"

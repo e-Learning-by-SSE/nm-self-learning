@@ -33,9 +33,7 @@ export default function SpecializationPage() {
 			});
 
 			showToast({ type: "success", title: "Spezialisierung erstellt", subtitle: spec.title });
-			router.push(
-				`/teaching/subjects/${subjectId}/specializations/edit/${spec.specializationId}`
-			);
+			router.push(`/teaching/subjects/${subjectId}/${spec.specializationId}/edit`);
 		} catch (error) {
 			console.error(error);
 

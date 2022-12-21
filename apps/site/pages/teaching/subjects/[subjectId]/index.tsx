@@ -48,7 +48,7 @@ export default function SubjectManagementPage() {
 				subtitle={subject.subtitle}
 			>
 				<Link
-					href={`/teaching/subjects/edit/${subject.subjectId}`}
+					href={`/teaching/subjects/${subject.subjectId}/edit`}
 					className="btn-primary absolute top-8 w-fit self-end"
 				>
 					<PencilIcon className="icon h-5" />

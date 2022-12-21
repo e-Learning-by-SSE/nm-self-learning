@@ -5,7 +5,7 @@ import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
-import { ReactComponent as VoidSvg } from "../../svg/void.svg";
+import { ReactComponent as VoidSvg } from "../../../svg/void.svg";
 
 type SubjectPageProps = {
 	subject: ResolvedValue<typeof getSubject>;
@@ -95,7 +95,7 @@ function SpecializationCard({
 	specialization: SubjectPageProps["subject"]["specializations"][0];
 }) {
 	return (
-		<Link href={`/subjects/${subjectSlug}/specialization/${specialization.slug}`}>
+		<Link href={`/subjects/${subjectSlug}/${specialization.slug}`}>
 			<ImageCard
 				slug={specialization.slug}
 				title={specialization.title}

@@ -35,11 +35,7 @@ export default function SubjectEditPage() {
 			{!subject ? (
 				<LoadingBox />
 			) : (
-				<SubjectEditor
-					initialSubject={subjectSchema.parse(subject)}
-					specializations={subject.specializations}
-					onSubmit={onSubmit}
-				/>
+				<SubjectEditor initialSubject={subjectSchema.parse(subject)} onSubmit={onSubmit} />
 			)}
 		</div>
 	);
