@@ -28,6 +28,7 @@ export const subjectRouter = t.router({
 			select: {
 				subjectId: true,
 				title: true,
+				subtitle: true,
 				cardImgUrl: true,
 				subjectAdmin: {
 					select: {
@@ -35,7 +36,8 @@ export const subjectRouter = t.router({
 						author: {
 							select: {
 								slug: true,
-								displayName: true
+								displayName: true,
+								imgUrl: true
 							}
 						}
 					}

@@ -1,12 +1,6 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
-import {
-	ImageOrPlaceholder,
-	LoadingBox,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn
-} from "@self-learning/ui/common";
+import { AuthorChip, ImageOrPlaceholder, LoadingBox } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
 
@@ -15,64 +9,53 @@ export default function SubjectsPage() {
 
 	return (
 		<CenteredSection className="bg-gray-50">
-			<h1 className="text-5xl">Fachgebiete</h1>
+			<div className="mb-16 flex items-center justify-between gap-4">
+				<h1 className="text-5xl">Fachgebiete</h1>
+
+				<Link href="/teaching/subjects/create" className="btn-primary w-fit">
+					<PlusIcon className="icon" />
+					<span>Hinzufügen</span>
+				</Link>
+			</div>
 
 			{!subjects ? (
 				<LoadingBox />
 			) : (
-				<div className="flex flex-col gap-8">
-					<Link href="/teaching/subjects/create" className="btn-primary w-fit self-end">
-						<PlusIcon className="icon" />
-						<span>Hinzufügen</span>
-					</Link>
-
-					<Table
-						head={
-							<>
-								<TableHeaderColumn></TableHeaderColumn>
-								<TableHeaderColumn>Titel</TableHeaderColumn>
-								<TableHeaderColumn>Admins</TableHeaderColumn>
-								<TableHeaderColumn></TableHeaderColumn>
-							</>
-						}
-					>
-						{subjects.map(subject => (
-							<tr key={subject.subjectId}>
-								<TableDataColumn>
-									<ImageOrPlaceholder
-										src={subject.cardImgUrl ?? undefined}
-										className="h-16 w-24 shrink-0 rounded-lg object-cover"
-									/>
-								</TableDataColumn>
-								<TableDataColumn>
+				<ul className="flex flex-col gap-4">
+					{subjects.map(subject => (
+						<li
+							key={subject.subjectId}
+							className="flex rounded-lg border border-light-border bg-white"
+						>
+							<ImageOrPlaceholder
+								src={subject.cardImgUrl ?? undefined}
+								className="w-32 rounded-l-lg object-cover"
+							/>
+							<div className="flex w-full flex-col justify-between gap-4 p-4">
+								<div className="flex flex-col gap-2">
 									<Link
-										className="w-full font-medium hover:text-secondary"
 										href={`/teaching/subjects/${subject.subjectId}`}
+										className="text-lg font-semibold hover:text-secondary"
 									>
 										{subject.title}
 									</Link>
-								</TableDataColumn>
-								<TableDataColumn>
-									<span className="text-light">
-										{subject.subjectAdmin
-											.map(a => a.author.displayName)
-											.join(", ")}
-									</span>
-								</TableDataColumn>
-								<TableDataColumn>
-									<div className="flex justify-end">
-										<Link
-											className="btn-stroked"
-											href={`/teaching/subjects/${subject.subjectId}/edit`}
-										>
-											Editieren
-										</Link>
-									</div>
-								</TableDataColumn>
-							</tr>
-						))}
-					</Table>
-				</div>
+									<p className="text-sm text-light">{subject.subtitle}</p>
+								</div>
+
+								<ul className="flex flex-wrap gap-4">
+									{subject.subjectAdmin.map(admin => (
+										<AuthorChip
+											key={admin.author.slug}
+											imgUrl={admin.author.imgUrl}
+											displayName={admin.author.displayName}
+											slug={admin.author.slug}
+										/>
+									))}
+								</ul>
+							</div>
+						</li>
+					))}
+				</ul>
 			)}
 		</CenteredSection>
 	);
