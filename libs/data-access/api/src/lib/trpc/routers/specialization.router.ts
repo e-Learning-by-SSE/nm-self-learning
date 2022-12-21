@@ -30,6 +30,7 @@ export const specializationRouter = t.router({
 				where: { specializationId: input.specializationId },
 				select: {
 					specializationId: true,
+					subjectId: true,
 					slug: true,
 					title: true,
 					subtitle: true,

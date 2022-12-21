@@ -47,7 +47,7 @@ export default function SubjectsPage() {
 								<TableDataColumn>
 									<Link
 										className="w-full font-medium hover:text-secondary"
-										href={`/subjects/${subject.subjectId}`}
+										href={`/teaching/subjects/${subject.subjectId}`}
 									>
 										{subject.title}
 									</Link>
