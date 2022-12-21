@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
 	const router = useRouter();
+	const specializationId = router.query.specializationId as string;
 	const session = useRequiredSession();
 	const author = session.data?.user.author;
 
@@ -30,20 +31,24 @@ export default function CreateCoursePage() {
 	}
 
 	return (
-		<CourseEditor
-			onConfirm={onConfirm}
-			course={{
-				courseId: "",
-				title: "",
-				slug: "",
-				description: "",
-				subtitle: "",
-				imgUrl: "",
-				subjectId: null,
-				content: [],
-				specializations: [],
-				authors: [{ slug: author.slug }]
-			}}
-		/>
+		<>
+			{router.isReady && ( // Query params are not available on first render -> Wait for router to be ready
+				<CourseEditor
+					onConfirm={onConfirm}
+					course={{
+						courseId: "",
+						title: "",
+						slug: "",
+						description: "",
+						subtitle: "",
+						imgUrl: "",
+						subjectId: null,
+						content: [],
+						specializations: specializationId ? [{ specializationId }] : [],
+						authors: [{ slug: author.slug }]
+					}}
+				/>
+			)}
+		</>
 	);
 }

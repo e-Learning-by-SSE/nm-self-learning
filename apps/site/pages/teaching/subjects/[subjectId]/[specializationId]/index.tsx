@@ -88,7 +88,10 @@ export default function SubjectManagementPage() {
 				/>
 
 				<div className="mb-8 flex flex-wrap gap-4">
-					<Link className="btn-primary w-fit" href={`${router.asPath}/create-course`}>
+					<Link
+						className="btn-primary w-fit"
+						href={`/teaching/courses/create?specializationId=${specialization.specializationId}`}
+					>
 						<PlusIcon className="icon h-5" />
 						<span>Neuen Kurs erstellen</span>
 					</Link>
