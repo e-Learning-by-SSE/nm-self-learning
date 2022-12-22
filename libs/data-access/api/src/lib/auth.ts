@@ -56,7 +56,7 @@ function getProviders(): Provider[] {
 		KeycloakProvider({
 			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
 			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
-			clientSecret: "dummySecret"
+			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string
 		})
 	];
 
