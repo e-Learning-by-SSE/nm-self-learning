@@ -1,7 +1,7 @@
 import { Author } from "@self-learning/types";
 import { database } from "@self-learning/database";
-import { updateAuthorAsAdmin } from "./update-admin";
-describe("update-admin", () => {
+import { updateAuthorAsAdmin } from "./update-author";
+describe("update-author", () => {
 	beforeAll(async () => {
 		await database.subject.createMany({
 			skipDuplicates: true,
