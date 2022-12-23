@@ -1,6 +1,6 @@
-import { LinkIcon, PencilIcon, PlusIcon } from "@heroicons/react/solid";
+import { LinkIcon, PencilIcon, PlusIcon, XIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
-import { LoadingBox, SectionHeader } from "@self-learning/ui/common";
+import { LoadingBox, OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
 import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -14,8 +14,10 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
+import { SearchCourseDialog } from "@self-learning/admin";
+import { TRPCClientError } from "@trpc/client";
 
-export default function SubjectManagementPage() {
+export default function SpecializationManagementPage() {
 	const router = useRouter();
 	const { page = 1, title = "" } = router.query;
 	const [titleFilter, setTitle] = useState(title);
@@ -41,6 +43,59 @@ export default function SubjectManagementPage() {
 			keepPreviousData: true
 		}
 	);
+
+	const [addCourseDialog, setAddCourseDialog] = useState(false);
+	const { mutateAsync: addCourse } = trpc.specialization.addCourse.useMutation();
+	const { mutateAsync: removeCourse } = trpc.specialization.removeCourse.useMutation();
+
+	const handleAddCourse: OnDialogCloseFn<{ courseId: string; title: string }> = async course => {
+		setAddCourseDialog(false);
+		if (!course || !specialization) return;
+
+		try {
+			await addCourse({
+				specializationId: specialization.specializationId,
+				courseId: course.courseId
+			});
+			showToast({
+				type: "success",
+				title: "Kurs hinzugefügt",
+				subtitle: `Kurs "${course.title}" wurde erfolgreich hinzugefügt.`
+			});
+		} catch (error) {
+			console.error(error);
+
+			if (error instanceof TRPCClientError) {
+				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+			}
+		}
+	};
+
+	async function handleRemoveCourse(course: { title: string; courseId: string }): Promise<void> {
+		const confirmed = window.confirm(
+			`Kurs "${course.title}" wirklich aus dieser Spezialisierung entfernen?}"`
+		);
+
+		if (!specialization || !confirmed) return;
+
+		try {
+			await removeCourse({
+				specializationId: specialization?.specializationId,
+				courseId: course.courseId
+			});
+			showToast({
+				type: "success",
+				title: "Kurs entfernt",
+				subtitle: `Kurs "${course.title}" wurde entfernt.`
+			});
+		} catch (error) {
+			console.error(error);
+
+			if (error instanceof TRPCClientError) {
+				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+			}
+		}
+	}
 
 	const canView =
 		specialization &&
@@ -96,10 +151,14 @@ export default function SubjectManagementPage() {
 						<span>Neuen Kurs erstellen</span>
 					</Link>
 
-					<button className="btn-stroked w-fit" disabled={true}>
+					<button className="btn-stroked w-fit" onClick={() => setAddCourseDialog(true)}>
 						<LinkIcon className="icon h-5" />
 						<span>Existierenden Kurs hinzufügen</span>
 					</button>
+
+					{addCourseDialog && (
+						<SearchCourseDialog open={addCourseDialog} onClose={handleAddCourse} />
+					)}
 				</div>
 
 				<SearchField
@@ -117,6 +176,7 @@ export default function SubjectManagementPage() {
 									<TableHeaderColumn></TableHeaderColumn>
 									<TableHeaderColumn>Titel</TableHeaderColumn>
 									<TableHeaderColumn>Von</TableHeaderColumn>
+									<TableHeaderColumn></TableHeaderColumn>
 								</>
 							}
 						>
@@ -142,6 +202,17 @@ export default function SubjectManagementPage() {
 										<span className="text-light">
 											{course.authors.map(a => a.displayName).join(", ")}
 										</span>
+									</TableDataColumn>
+									<TableDataColumn>
+										<div className="flex justify-end">
+											<button
+												className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500"
+												title="Aus Spezialisierung entfernen"
+												onClick={() => handleRemoveCourse(course)}
+											>
+												<XIcon className="h-5" />
+											</button>
+										</div>
 									</TableDataColumn>
 								</tr>
 							))}

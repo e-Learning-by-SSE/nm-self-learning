@@ -39,9 +39,21 @@ export const courseRouter = t.router({
 
 			const [result, count] = await database.$transaction([
 				database.course.findMany({
-					include: {
-						authors: true,
-						subject: true
+					select: {
+						courseId: true,
+						imgUrl: true,
+						title: true,
+						authors: {
+							select: {
+								displayName: true
+							}
+						},
+						subject: {
+							select: {
+								subjectId: true,
+								title: true
+							}
+						}
 					},
 					...paginate(pageSize, input.page),
 					orderBy: { title: "asc" },

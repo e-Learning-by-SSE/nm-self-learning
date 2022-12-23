@@ -117,6 +117,53 @@ export const specializationRouter = t.router({
 			});
 
 			return specialization;
+		}),
+	addCourse: authProcedure
+		.input(z.object({ specializationId: z.string(), courseId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const added = await database.specialization.update({
+				where: { specializationId: input.specializationId },
+				data: {
+					courses: {
+						connect: { courseId: input.courseId }
+					}
+				},
+				select: {
+					specializationId: true
+				}
+			});
+
+			console.log("[specializationRouter.addCourse]: Course added to specialization:", {
+				specializationId: input.specializationId,
+				courseId: input.courseId,
+				by: ctx.user.name
+			});
+			return added;
+		}),
+	removeCourse: authProcedure
+		.input(z.object({ specializationId: z.string(), courseId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const added = await database.specialization.update({
+				where: { specializationId: input.specializationId },
+				data: {
+					courses: {
+						disconnect: { courseId: input.courseId }
+					}
+				},
+				select: {
+					specializationId: true
+				}
+			});
+
+			console.log(
+				"[specializationRouter.removeCourse]: Course removed from specialization:",
+				{
+					specializationId: input.specializationId,
+					courseId: input.courseId,
+					by: ctx.user.name
+				}
+			);
+			return added;
 		})
 });
 
