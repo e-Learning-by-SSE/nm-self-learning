@@ -3,6 +3,8 @@ import {
 	ArrowUpIcon,
 	ChevronDownIcon,
 	ChevronLeftIcon,
+	LinkIcon,
+	PencilIcon,
 	PlusIcon,
 	XIcon
 } from "@heroicons/react/solid";
@@ -311,7 +313,7 @@ function ChapterNode({
 						))}
 					</ul>
 
-					<div className="flex items-center gap-4 px-4 pt-4">
+					<div className="flex flex-wrap items-center justify-between gap-4 pl-4 pt-4">
 						<div className="flex gap-4">
 							<button
 								type="button"
@@ -329,33 +331,38 @@ function ChapterNode({
 							>
 								<ArrowDownIcon className="h-3" />
 							</button>
+							<button
+								type="button"
+								className="btn-stroked"
+								onClick={() => setEditChapterDialogOpen(true)}
+							>
+								<PencilIcon className="icon" />
+								<span>Editieren</span>
+							</button>
 						</div>
-						<button
-							type="button"
-							className="btn-stroked"
-							onClick={() => setEditChapterDialogOpen(true)}
-						>
-							Editieren
-						</button>
 
-						<button
-							type="button"
-							className="btn-stroked"
-							onClick={() => setCreateLessonDialogOpen(true)}
-						>
-							Neue Lerneinheit erstellen
-						</button>
+						<div className="flex gap-4">
+							<button
+								type="button"
+								className="btn-stroked"
+								onClick={() => setCreateLessonDialogOpen(true)}
+							>
+								<PlusIcon className="icon" />
+								<span>Neue Lerneinheit erstellen</span>
+							</button>
 
-						<button
-							type="button"
-							className="btn-stroked"
-							onClick={() => setLessonSelectorOpen(true)}
-						>
-							Lerneinheit verknüpfen
-						</button>
+							<button
+								type="button"
+								className="btn-stroked"
+								onClick={() => setLessonSelectorOpen(true)}
+							>
+								<LinkIcon className="icon" />
+								<span>Lerneinheit verknüpfen</span>
+							</button>
+						</div>
 
 						<button type="button" className="btn-stroked" onClick={onRemove}>
-							Entfernen
+							<span>Entfernen</span>
 						</button>
 					</div>
 				</>
