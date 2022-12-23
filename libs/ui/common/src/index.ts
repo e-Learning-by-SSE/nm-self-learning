@@ -1,3 +1,9 @@
+import * as _DropdownDialog from "./lib/dialog/dropdown-dialog";
+
+export const DropdownDialog = {
+	..._DropdownDialog
+};
+
 export * from "./lib/author/author-chip";
 export * from "./lib/button/button";
 export * from "./lib/divider/divider";

@@ -1,7 +1,6 @@
-import { Combobox, Dialog as HeadlessDialog } from "@headlessui/react";
-import { SearchIcon } from "@heroicons/react/solid";
+import { Combobox } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
-import { ImageOrPlaceholder, OnDialogCloseFn } from "@self-learning/ui/common";
+import { DropdownDialog, ImageOrPlaceholder, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Fragment, useMemo, useState } from "react";
 
 /**
@@ -35,72 +34,50 @@ export function SpecializationSelector({
 	}, [filter, subjects]);
 
 	return (
-		<HeadlessDialog open={open} onClose={() => onClose(undefined)} className="relative z-50">
-			{/* The backdrop, rendered as a fixed sibling to the panel container */}
-			<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-			{/* Full-screen scrollable container */}
-			<div className="fixed inset-0 flex items-center justify-center p-4">
-				{/* Container to center the panel */}
-				<div className="absolute flex min-h-full translate-y-1/4 justify-center">
-					{/* The actual dialog panel  */}
-					<HeadlessDialog.Panel
-						className="ov mx-auto flex h-fit w-[90vw] flex-col overflow-hidden rounded-lg bg-white lg:w-[800px]"
-						style={{ maxHeight: "624px" }}
-					>
-						<Combobox value={null} onChange={onClose}>
-							<span className="flex items-center gap-2 border-b border-b-light-border py-1 px-6">
-								<SearchIcon className="h-6 text-light" />
-								<Combobox.Input
-									className="w-full border-none focus:ring-0"
-									placeholder="Suche nach Spezialisierung..."
-									onChange={e => setFilter(e.target.value)}
-								/>
+		<DropdownDialog.Dialog open={open} onClose={onClose}>
+			<Combobox value={null} onChange={onClose}>
+				<DropdownDialog.SearchInput
+					filter={filter}
+					setFilter={setFilter}
+					placeholder="Suche nach Spezialisierung"
+				/>
+
+				<DropdownDialog.Options>
+					{filtered?.map(subject => (
+						<div key={subject.subjectId} className="flex flex-col">
+							<span className="bg-gray-100 px-4 py-2 text-sm font-semibold">
+								{subject.title}
 							</span>
-							<div className="playlist-scroll flex flex-col overflow-auto">
-								<Combobox.Options className="flex flex-col" static={true}>
-									{filtered?.map(subject => (
-										<div key={subject.subjectId} className="flex flex-col">
-											<span className="bg-gray-100 px-4 py-2 text-sm font-semibold">
-												{subject.title}
-											</span>
-											<ul className="flex flex-col divide-y divide-light-border">
-												{subject.specializations.map(spec => (
-													<Combobox.Option
-														value={spec}
-														key={spec.specializationId}
-														as={Fragment}
-													>
-														{({ active }) => (
-															<button
-																type="button"
-																className={`flex items-center gap-4 rounded pr-4 ${
-																	active
-																		? "bg-secondary text-white"
-																		: ""
-																}`}
-															>
-																<ImageOrPlaceholder
-																	src={
-																		spec.cardImgUrl ?? undefined
-																	}
-																	className="h-10 w-10 bg-white object-cover"
-																/>
-																<span className="text-sm font-medium">
-																	{spec.title}
-																</span>
-															</button>
-														)}
-													</Combobox.Option>
-												))}
-											</ul>
-										</div>
-									))}
-								</Combobox.Options>
-							</div>
-						</Combobox>
-					</HeadlessDialog.Panel>
-				</div>
-			</div>
-		</HeadlessDialog>
+							<ul className="flex flex-col divide-y divide-light-border">
+								{subject.specializations.map(spec => (
+									<Combobox.Option
+										value={spec}
+										key={spec.specializationId}
+										as={Fragment}
+									>
+										{({ active }) => (
+											<button
+												type="button"
+												className={`flex items-center gap-4 rounded pr-4 ${
+													active ? "bg-secondary text-white" : ""
+												}`}
+											>
+												<ImageOrPlaceholder
+													src={spec.cardImgUrl ?? undefined}
+													className="h-10 w-10 bg-white object-cover"
+												/>
+												<span className="text-sm font-medium">
+													{spec.title}
+												</span>
+											</button>
+										)}
+									</Combobox.Option>
+								))}
+							</ul>
+						</div>
+					))}
+				</DropdownDialog.Options>
+			</Combobox>
+		</DropdownDialog.Dialog>
 	);
 }
