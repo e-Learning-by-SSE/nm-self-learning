@@ -1,18 +1,13 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { paginate, Paginated } from "@self-learning/util/common";
+import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, t } from "../trpc";
 
 export const adminRouter = t.router({
 	findUsers: adminProcedure
-		.input(
-			z.object({
-				name: z.string().optional(),
-				page: z.number()
-			})
-		)
+		.input(paginationSchema.extend({ name: z.string().optional() }))
 		.query(async ({ input }) => {
 			const page = input.page;
 			const pageSize = 15;
