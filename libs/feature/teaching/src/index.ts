@@ -1,3 +1,4 @@
+export * from "./lib/author/edit-author-dialog";
 export * from "./lib/course/course-editor";
 export * from "./lib/lesson/lesson-editor";
 export * from "./lib/lesson/lesson-form-model";

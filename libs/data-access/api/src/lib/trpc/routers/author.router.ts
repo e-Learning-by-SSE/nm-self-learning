@@ -3,6 +3,7 @@ import { authorSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import { updateAuthorAsAdmin } from "@self-learning/admin";
+import { editAuthorSchema } from "@self-learning/teaching";
 
 export const authorRouter = t.router({
 	getBySlug: authProcedure.input(z.object({ slug: z.string() })).query(({ input }) => {
@@ -111,5 +112,24 @@ export const authorRouter = t.router({
 			});
 
 			return updated;
-		})
+		}),
+	updateSelf: authProcedure.input(editAuthorSchema).mutation(async ({ ctx, input }) => {
+		const updated = await database.author.update({
+			where: { username: ctx.user.name },
+			data: {
+				...input
+			},
+			select: {
+				displayName: true,
+				imgUrl: true,
+				slug: true
+			}
+		});
+
+		console.log("[authorRouter.updateSelf]: Author updated", {
+			username: ctx.user.name,
+			...updated
+		});
+		return updated;
+	})
 });

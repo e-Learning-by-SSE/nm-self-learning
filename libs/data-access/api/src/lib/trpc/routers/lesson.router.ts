@@ -25,11 +25,17 @@ export const lessonRouter = t.router({
 		});
 	}),
 	findMany: authProcedure
-		.input(paginationSchema.extend({ title: z.string().optional() }))
-		.query(async ({ input: { title, page } }) => {
+		.input(
+			paginationSchema.extend({
+				title: z.string().optional(),
+				authorSlug: z.string().optional()
+			})
+		)
+		.query(async ({ input: { title, page, authorSlug } }) => {
 			const pageSize = 15;
 			const { lessons, count } = await findLessons({
 				title,
+				authorSlug,
 				...paginate(pageSize, page)
 			});
 			return {
@@ -96,10 +102,12 @@ export const lessonRouter = t.router({
 
 export async function findLessons({
 	title,
+	authorSlug,
 	skip,
 	take
 }: {
 	title?: string;
+	authorSlug?: string;
 	skip?: number;
 	take?: number;
 }) {
@@ -107,7 +115,14 @@ export async function findLessons({
 		title:
 			typeof title === "string" && title.length > 0
 				? { contains: title, mode: "insensitive" }
-				: undefined
+				: undefined,
+		authors: authorSlug
+			? {
+					some: {
+						slug: authorSlug
+					}
+			  }
+			: undefined
 	};
 
 	const [lessons, count] = await database.$transaction([
