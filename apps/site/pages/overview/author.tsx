@@ -88,7 +88,7 @@ type Props = {
 	author: Author;
 };
 
-export default function AuthorStart({ author }: Props) {
+export default function AuthorOverview({ author }: Props) {
 	const session = useRequiredSession();
 	const authorSlug = session.data?.user.author?.slug;
 	const [openEditDialog, setOpenEditDialog] = useState(false);

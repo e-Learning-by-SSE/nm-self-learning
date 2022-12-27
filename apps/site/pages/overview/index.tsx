@@ -1,8 +1,8 @@
 import { authOptions } from "@self-learning/api";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
-import AuthorStart, { getAuthor } from "./author";
-import StudentStart, { getStudent } from "./student";
+import AuthorOverview, { getAuthor } from "./author";
+import StudentOverview, { getStudent } from "./student";
 
 // Ideally, this should be implemented using a middleware with a rewrite
 // - /start -> /start/author (if user is author)
@@ -44,8 +44,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 
 export default function Start(props: Props) {
 	if (props.type === "author") {
-		return <AuthorStart author={props.author} />;
+		return <AuthorOverview author={props.author} />;
 	}
 
-	return <StudentStart student={props.student} />;
+	return <StudentOverview student={props.student} />;
 }

@@ -65,7 +65,7 @@ export function getStudent(username: string) {
 	});
 }
 
-export default function StudentStart({ student }: Props) {
+export default function StudentOverview({ student }: Props) {
 	return (
 		<CenteredSection className="bg-gray-50 pb-32">
 			<div className="flex flex-col gap-10">
