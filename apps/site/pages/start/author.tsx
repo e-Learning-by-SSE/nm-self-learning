@@ -1,5 +1,4 @@
 import { CogIcon, PencilIcon, PlusIcon } from "@heroicons/react/solid";
-import { authOptions } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import {
@@ -17,8 +16,6 @@ import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { formatDateAgo } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
-import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -30,8 +27,8 @@ const EditAuthorDialog = dynamic(
 	{ ssr: false }
 );
 
-async function getAuthor(username: string) {
-	return await database.author.findUniqueOrThrow({
+export function getAuthor(username: string) {
+	return database.author.findUniqueOrThrow({
 		where: { username },
 		select: {
 			slug: true,
@@ -89,25 +86,6 @@ type Author = Awaited<ReturnType<typeof getAuthor>>;
 
 type Props = {
 	author: Author;
-};
-
-export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
-	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
-
-	if (!session) {
-		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
-			}
-		};
-	}
-
-	const author = await getAuthor(session.user.name);
-
-	return {
-		props: { author }
-	};
 };
 
 export default function AuthorStart({ author }: Props) {

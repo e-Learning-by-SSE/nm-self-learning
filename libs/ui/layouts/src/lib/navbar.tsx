@@ -29,7 +29,7 @@ export function Navbar() {
 					<div className="hidden items-center gap-16 text-sm font-medium xl:flex">
 						{user && (
 							<>
-								<Link href="/profile">Profil</Link>
+								<Link href="/start">Start</Link>
 								{user.role === "ADMIN" && <Link href="/admin">Adminbereich</Link>}
 								{(user.role === "ADMIN" || !!user.author) && (
 									<Link href="/teaching">Content-Management</Link>
@@ -94,13 +94,13 @@ export function NavbarDropdownMenu({
 				<Menu.Item as="div" className="p-1">
 					{({ active }) => (
 						<Link
-							href="/profile"
+							href="/start"
 							className={`${
 								active ? "bg-emerald-500 text-white" : ""
 							} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 						>
 							<UserIcon className="h-5" />
-							<span>Mein Profil</span>
+							<span>Start</span>
 						</Link>
 					)}
 				</Menu.Item>
