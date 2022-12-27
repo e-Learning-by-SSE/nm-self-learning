@@ -1,9 +1,26 @@
 import { database } from "@self-learning/database";
-import { Divider, ImageOrPlaceholder, SectionHeader } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	Divider,
+	ImageOrPlaceholder,
+	OnDialogCloseFn,
+	SectionHeader,
+	showToast
+} from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
+import { LabeledField } from "@self-learning/ui/forms";
+import { useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { CogIcon } from "@heroicons/react/solid";
+import { trpc } from "@self-learning/api-client";
+import { TRPCClientError } from "@trpc/client";
+import { useRouter } from "next/router";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -15,6 +32,7 @@ export function getStudent(username: string) {
 	return database.student.findUniqueOrThrow({
 		where: { username },
 		select: {
+			displayName: true,
 			_count: {
 				select: {
 					completedLessons: true
@@ -66,6 +84,34 @@ export function getStudent(username: string) {
 }
 
 export default function StudentOverview({ student }: Props) {
+	const [editStudentDialog, setEditStudentDialog] = useState(false);
+	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
+	const router = useRouter();
+
+	const onEditStudentClose: Parameters<
+		typeof EditStudentDialog
+	>[0]["onClose"] = async updated => {
+		setEditStudentDialog(false);
+
+		if (updated) {
+			try {
+				await updateStudent(updated);
+				showToast({
+					type: "success",
+					title: "Informationen aktualisiert",
+					subtitle: updated.displayName
+				});
+				router.replace(router.asPath);
+			} catch (error) {
+				console.error(error);
+
+				if (error instanceof TRPCClientError) {
+					showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				}
+			}
+		}
+	};
+
 	return (
 		<CenteredSection className="bg-gray-50 pb-32">
 			<div className="flex flex-col gap-10">
@@ -75,7 +121,7 @@ export default function StudentOverview({ student }: Props) {
 						className="h-24 w-24 rounded-lg object-cover"
 					/>
 					<div className="flex flex-col gap-4 pl-8 pr-4">
-						<h1 className="text-6xl">{student.user.name}</h1>
+						<h1 className="text-6xl">{student.displayName}</h1>
 						<span>
 							Du hast bereits{" "}
 							<span className="mx-1 font-semibold text-secondary">
@@ -87,6 +133,21 @@ export default function StudentOverview({ student }: Props) {
 							abgeschlossen.
 						</span>
 					</div>
+
+					<button
+						className="self-start rounded-full p-2 hover:bg-gray-100"
+						title="Bearbeiten"
+						onClick={() => setEditStudentDialog(true)}
+					>
+						<CogIcon className="h-5 text-gray-400" />
+					</button>
+
+					{editStudentDialog && (
+						<EditStudentDialog
+							student={{ displayName: student.displayName }}
+							onClose={onEditStudentClose}
+						/>
+					)}
 				</section>
 
 				<Divider />
@@ -212,5 +273,40 @@ function ProgressFooter({ progress }: { progress: number }) {
 				{progress}%
 			</span>
 		</span>
+	);
+}
+
+const editStudentSchema = z.object({
+	displayName: z.string().min(3).max(50)
+});
+
+type EditStudent = z.infer<typeof editStudentSchema>;
+
+function EditStudentDialog({
+	student,
+	onClose
+}: {
+	student: EditStudent;
+	onClose: OnDialogCloseFn<EditStudent>;
+}) {
+	const form = useForm({
+		defaultValues: student,
+		resolver: zodResolver(editStudentSchema)
+	});
+
+	return (
+		<Dialog title={student.displayName} onClose={onClose}>
+			<form onSubmit={form.handleSubmit(onClose)}>
+				<LabeledField label="Name" error={form.formState.errors.displayName?.message}>
+					<input {...form.register("displayName")} type="text" className="textfield" />
+				</LabeledField>
+
+				<DialogActions onClose={onClose}>
+					<button className="btn-primary" disabled={!form.formState.isValid}>
+						Speichern
+					</button>
+				</DialogActions>
+			</form>
+		</Dialog>
 	);
 }

@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Dialog,
 	DialogActions,
@@ -23,8 +24,9 @@ export function EditAuthorDialog({
 	author: Author;
 	onClose: OnDialogCloseFn<Author>;
 }) {
-	const form = useForm<Author>({
-		defaultValues: author
+	const form = useForm({
+		defaultValues: author,
+		resolver: zodResolver(editAuthorSchema)
 	});
 
 	const {
