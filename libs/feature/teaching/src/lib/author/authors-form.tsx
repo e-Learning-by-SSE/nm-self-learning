@@ -22,12 +22,12 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 
 	const handleAdd: OnDialogCloseFn<CourseFormModel["authors"][0]> = result => {
 		if (result) {
-			if (authors.find(a => a.slug === result.slug)) {
-				console.log(`Author ${result.slug} is already added.`);
+			if (authors.find(a => a.username === result.username)) {
+				console.log(`Author ${result.username} is already added.`);
 				return;
 			}
 
-			append({ slug: result.slug });
+			append({ username: result.username });
 		}
 		setOpenAddDialog(false);
 	};
@@ -53,8 +53,12 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 				<p className="text-sm text-light">{emptyString}</p>
 			) : (
 				<ul className="grid gap-4">
-					{authors.map(({ slug }, index) => (
-						<Author key={slug} slug={slug} onRemove={() => handleRemove(index)} />
+					{authors.map(({ username }, index) => (
+						<Author
+							key={username}
+							username={username}
+							onRemove={() => handleRemove(index)}
+						/>
 					))}
 				</ul>
 			)}
@@ -64,8 +68,8 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 	);
 }
 
-function Author({ slug, onRemove }: { slug: string; onRemove: () => void }) {
-	const { data: author } = trpc.author.getBySlug.useQuery({ slug });
+function Author({ username, onRemove }: { username: string; onRemove: () => void }) {
+	const { data: author } = trpc.author.getByUsername.useQuery({ username });
 
 	if (!author) {
 		return <li className="rounded-lg border border-light-border bg-white p-2">Loading...</li>;

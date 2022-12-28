@@ -23,7 +23,7 @@ export function ImageChip({
 				<button
 					type="button"
 					data-testid="remove"
-					className="rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
+					className="mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
 					onClick={onRemove}
 				>
 					<XIcon className="h-3" />

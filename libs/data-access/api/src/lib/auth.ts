@@ -146,14 +146,14 @@ export const authOptions: NextAuthOptions = {
 				select: {
 					role: true,
 					image: true,
-					author: { select: { slug: true } }
+					author: { select: { username: true } }
 				}
 			});
 
 			session.user = {
 				name: username,
 				role: userFromDb.role,
-				author: userFromDb.author,
+				isAuthor: !!userFromDb.author,
 				avatarUrl: userFromDb.image
 			};
 

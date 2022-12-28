@@ -28,8 +28,8 @@ declare module "next-auth" {
 		user: {
 			name: string;
 			role: "USER" | "ADMIN";
+			isAuthor: boolean;
 			avatarUrl?: string | null;
-			author?: { slug: string } | null;
 		};
 	}
 }

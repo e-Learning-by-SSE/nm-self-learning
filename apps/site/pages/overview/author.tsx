@@ -91,7 +91,7 @@ type Props = {
 
 export default function AuthorOverview({ author }: Props) {
 	const session = useRequiredSession();
-	const authorSlug = session.data?.user.author?.slug;
+	const authorName = session.data?.user.name;
 	const [openEditDialog, setOpenEditDialog] = useState(false);
 	const { mutateAsync: updateAuthor } = trpc.author.updateSelf.useMutation();
 	const router = useRouter();
@@ -277,14 +277,14 @@ export default function AuthorOverview({ author }: Props) {
 						subtitle="Autor der folgenden Lerneinheiten:"
 					/>
 
-					{authorSlug && <Lessons authorSlug={authorSlug} />}
+					{authorName && <Lessons authorName={authorName} />}
 				</section>
 			</div>
 		</CenteredSection>
 	);
 }
 
-function Lessons({ authorSlug }: { authorSlug: string }) {
+function Lessons({ authorName }: { authorName: string }) {
 	const router = useRouter();
 	const { title = "", page = 1 } = router.query;
 
@@ -292,7 +292,7 @@ function Lessons({ authorSlug }: { authorSlug: string }) {
 		{
 			page: Number(page),
 			title: title as string,
-			authorSlug
+			authorName
 		},
 		{
 			keepPreviousData: true,

@@ -119,15 +119,6 @@ describe("courseFormSchema", () => {
 			    "expected": "array",
 			    "message": "Required",
 			    "path": Array [
-			      "specializations",
-			    ],
-			    "received": "undefined",
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "array",
-			    "message": "Required",
-			    "path": Array [
 			      "content",
 			    ],
 			    "received": "undefined",

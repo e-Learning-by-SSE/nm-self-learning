@@ -29,7 +29,7 @@ export const authorSchema = z.object({
  */
 export const authorsRelationSchema = z.array(
 	z.object({
-		slug: z.string()
+		username: z.string()
 	})
 );
 

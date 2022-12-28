@@ -8,7 +8,7 @@ export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
 	const router = useRouter();
 	const session = useRequiredSession();
-	const author = session.data?.user.author;
+	const author = session.data?.user.name;
 
 	async function onConfirm(course: CourseFormModel) {
 		try {
@@ -43,7 +43,7 @@ export default function CreateCoursePage() {
 						imgUrl: "",
 						subjectId: null,
 						content: [],
-						authors: [{ slug: author.slug }]
+						authors: [{ username: author }]
 					}}
 				/>
 			)}

@@ -50,11 +50,9 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 		};
 	}
 
-	const userAuthorSlug = session.user.author?.slug;
-
 	if (
 		session.user.role !== "ADMIN" &&
-		(!userAuthorSlug || !lesson.authors.some(author => author.slug === userAuthorSlug))
+		(!session.user.isAuthor || !lesson.authors.some(a => a.username === session.user.name))
 	) {
 		return {
 			redirect: {
@@ -71,7 +69,7 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 		subtitle: lesson.subtitle,
 		description: lesson.description,
 		imgUrl: lesson.imgUrl,
-		authors: lesson.authors.map(a => ({ slug: a.slug })),
+		authors: lesson.authors.map(a => ({ username: a.username })),
 		// Need type casting because JsonArray from prisma causes error
 		content: (lesson.content ?? []) as LessonContent,
 		quiz: lesson.quiz as Quiz

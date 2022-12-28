@@ -2,9 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
-import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
-import Link from "next/link";
 import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import slugify from "slugify";
@@ -22,10 +21,9 @@ export function EditLessonDialog({
 	initialLesson?: LessonFormModel;
 }) {
 	const session = useRequiredSession();
-	const userAuthorSlug = session.data?.user.author?.slug;
 	const canEdit =
 		session.data?.user.role === "ADMIN" ||
-		userAuthorSlug === initialLesson?.authors.some(a => a.slug === userAuthorSlug);
+		initialLesson?.authors.some(a => a.username === session.data?.user.name);
 
 	const [selectedTab, setSelectedTab] = useState(0);
 	const isNew = !initialLesson;
@@ -35,7 +33,7 @@ export function EditLessonDialog({
 		defaultValues: initialLesson ?? {
 			...createEmptyLesson(),
 			// Add current user as author
-			authors: session.data?.user.author ? [{ slug: session.data.user.author.slug }] : []
+			authors: session.data?.user.isAuthor ? [{ username: session.data.user.name }] : []
 		},
 		resolver: zodResolver(lessonSchema)
 	});
@@ -50,7 +48,7 @@ export function EditLessonDialog({
 
 					<div className="flex flex-col">
 						<span className="font-semibold">Titel:</span>
-						<span>{initialLesson.title}</span>
+						<span className="font-semibold text-secondary">{initialLesson.title}</span>
 					</div>
 
 					<div>
@@ -58,14 +56,7 @@ export function EditLessonDialog({
 
 						<ul className="flex flex-col">
 							{initialLesson.authors.map(a => (
-								<Link
-									target="_blank"
-									rel="noreferrer"
-									href={`/authors/${a.slug}`}
-									className="font-semibold text-secondary hover:underline"
-								>
-									{a.slug}
-								</Link>
+								<span className="font-semibold text-secondary">{a.username}</span>
 							))}
 						</ul>
 					</div>

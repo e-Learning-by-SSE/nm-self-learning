@@ -23,7 +23,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ctx
 		include: {
 			authors: {
 				select: {
-					slug: true
+					username: true
 				}
 			},
 			specializations: {
@@ -57,11 +57,10 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ctx
 		};
 	}
 
-	const userAuthorSlug = session.user.author?.slug;
-
 	if (
 		session.user.role !== "ADMIN" &&
-		(!userAuthorSlug || !course.authors.some(author => author.slug === userAuthorSlug))
+		(!session.user.isAuthor ||
+			!course.authors.some(author => author.username === session.user.name))
 	) {
 		return {
 			redirect: {
@@ -99,7 +98,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ctx
 		imgUrl: course.imgUrl,
 		slug: course.slug,
 		subjectId: course.subject?.subjectId ?? null,
-		authors: course.authors.map(author => ({ slug: author.slug })),
+		authors: course.authors.map(author => ({ username: author.username })),
 		content: content
 	};
 

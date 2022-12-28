@@ -33,7 +33,7 @@ export function mapCourseFormToInsert(
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
 		authors: {
-			connect: authors.map(author => ({ slug: author.slug }))
+			connect: authors.map(author => ({ username: author.username }))
 		},
 		subject: subjectId ? { connect: { subjectId } } : undefined
 	};
@@ -57,7 +57,7 @@ export function mapCourseFormToUpdate(
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
 		authors: {
-			set: authors.map(author => ({ slug: author.slug }))
+			set: authors.map(author => ({ username: author.username }))
 		},
 		subject: subjectId ? { connect: { subjectId } } : undefined
 	};

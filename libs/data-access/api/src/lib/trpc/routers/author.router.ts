@@ -6,10 +6,11 @@ import { updateAuthorAsAdmin } from "@self-learning/admin";
 import { editAuthorSchema } from "@self-learning/teaching";
 
 export const authorRouter = t.router({
-	getBySlug: authProcedure.input(z.object({ slug: z.string() })).query(({ input }) => {
+	getByUsername: authProcedure.input(z.object({ username: z.string() })).query(({ input }) => {
 		return database.author.findUniqueOrThrow({
-			where: { slug: input.slug },
+			where: { username: input.username },
 			select: {
+				username: true,
 				slug: true,
 				displayName: true,
 				imgUrl: true

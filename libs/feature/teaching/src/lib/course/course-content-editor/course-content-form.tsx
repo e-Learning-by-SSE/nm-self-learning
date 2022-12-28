@@ -393,7 +393,7 @@ function EditExistingLessonDialog({
 			onClose={onClose}
 			initialLesson={{
 				...data,
-				authors: data.authors.map(a => ({ slug: a.slug })),
+				authors: data.authors.map(a => ({ username: a.username })),
 				content: (data.content ?? []) as LessonContent,
 				quiz: data.quiz as Quiz
 			}}

@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 export default function CreateLessonPage() {
 	const { mutateAsync: createLesson } = trpc.lesson.create.useMutation();
 	const session = useRequiredSession();
-	const author = session.data?.user.author;
+	const authorUsername = session.data?.user.name;
 	const router = useRouter();
 
 	async function onConfirm(lesson: LessonFormModel) {
@@ -30,7 +30,7 @@ export default function CreateLessonPage() {
 		}
 	}
 
-	if (!author) {
+	if (!authorUsername) {
 		return (
 			<Unauthorized>Um eine Lerneinheit zu erstellen, musst du ein Autor sein.</Unauthorized>
 		);
@@ -48,7 +48,7 @@ export default function CreateLessonPage() {
 				imgUrl: "",
 				quiz: { questions: [], config: null },
 				content: [],
-				authors: [{ slug: author.slug }]
+				authors: [{ username: authorUsername }]
 			}}
 		/>
 	);

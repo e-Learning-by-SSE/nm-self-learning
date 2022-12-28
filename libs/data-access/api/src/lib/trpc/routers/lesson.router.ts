@@ -12,7 +12,7 @@ export const lessonRouter = t.router({
 			include: {
 				authors: {
 					select: {
-						slug: true
+						username: true
 					}
 				}
 			}
@@ -28,14 +28,14 @@ export const lessonRouter = t.router({
 		.input(
 			paginationSchema.extend({
 				title: z.string().optional(),
-				authorSlug: z.string().optional()
+				authorName: z.string().optional()
 			})
 		)
-		.query(async ({ input: { title, page, authorSlug } }) => {
+		.query(async ({ input: { title, page, authorName } }) => {
 			const pageSize = 15;
 			const { lessons, count } = await findLessons({
 				title,
-				authorSlug,
+				authorName,
 				...paginate(pageSize, page)
 			});
 			return {
@@ -45,13 +45,13 @@ export const lessonRouter = t.router({
 				pageSize
 			} satisfies Paginated<unknown>;
 		}),
-	create: authProcedure.input(lessonSchema).mutation(async ({ input }) => {
+	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
 				quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : Prisma.JsonNull,
 				authors: {
-					connect: input.authors.map(a => ({ slug: a.slug }))
+					connect: input.authors.map(a => ({ username: a.username }))
 				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
@@ -64,7 +64,7 @@ export const lessonRouter = t.router({
 			}
 		});
 
-		console.log("[lessonRouter]: Created lesson", createdLesson);
+		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		return createdLesson;
 	}),
 	edit: authProcedure
@@ -74,7 +74,7 @@ export const lessonRouter = t.router({
 				lesson: lessonSchema
 			})
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			const updatedLesson = await database.lesson.update({
 				where: { lessonId: input.lessonId },
 				data: {
@@ -84,7 +84,7 @@ export const lessonRouter = t.router({
 						: Prisma.JsonNull,
 					lessonId: input.lessonId,
 					authors: {
-						set: input.lesson.authors.map(a => ({ slug: a.slug }))
+						set: input.lesson.authors.map(a => ({ username: a.username }))
 					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},
@@ -95,19 +95,19 @@ export const lessonRouter = t.router({
 				}
 			});
 
-			console.log("[lessonRouter]: Updated lesson", updatedLesson);
+			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;
 		})
 });
 
 export async function findLessons({
 	title,
-	authorSlug,
+	authorName,
 	skip,
 	take
 }: {
 	title?: string;
-	authorSlug?: string;
+	authorName?: string;
 	skip?: number;
 	take?: number;
 }) {
@@ -116,10 +116,10 @@ export async function findLessons({
 			typeof title === "string" && title.length > 0
 				? { contains: title, mode: "insensitive" }
 				: undefined,
-		authors: authorSlug
+		authors: authorName
 			? {
 					some: {
-						slug: authorSlug
+						username: authorName
 					}
 			  }
 			: undefined

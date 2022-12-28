@@ -25,7 +25,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 		};
 	}
 
-	if (session.user.author?.slug) {
+	if (session.user.isAuthor) {
 		return {
 			props: {
 				type: "author",
