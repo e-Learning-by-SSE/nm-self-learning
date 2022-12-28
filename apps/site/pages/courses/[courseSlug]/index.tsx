@@ -215,22 +215,26 @@ function CourseHeader({
 
 	return (
 		<section className="flex flex-col gap-16">
-			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
-				<div className="flex flex-col justify-between gap-8">
+			<div className="flex flex-wrap-reverse gap-12 lg:grid lg:grid-cols-2">
+				<div className="flex flex-col justify-between gap-12">
 					<div className="flex flex-col-reverse gap-12 md:flex-col">
 						<div>
 							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
 							{course.subtitle && (
-								<div className="text-lg tracking-tight">{course.subtitle}</div>
+								<div className="text-lg tracking-tight text-light">
+									{course.subtitle}
+								</div>
 							)}
 						</div>
-						<AuthorsList authors={course.authors} />
 					</div>
 
-					<CreatedUpdatedDates
-						createdAt={formatDateAgo(course.createdAt)}
-						updatedAt={formatDateAgo(course.updatedAt)}
-					/>
+					<div className="flex flex-col gap-4">
+						<AuthorsList authors={course.authors} />
+						<CreatedUpdatedDates
+							createdAt={formatDateAgo(course.createdAt)}
+							updatedAt={formatDateAgo(course.updatedAt)}
+						/>
+					</div>
 				</div>
 
 				<div className="flex w-full flex-col gap-4 rounded-lg">
@@ -246,7 +250,7 @@ function CourseHeader({
 							></Image>
 						)}
 
-						<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white p-2 text-center">
+						<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center">
 							<li className="flex flex-col">
 								<span className="font-semibold text-secondary">Lerneinheiten</span>
 								<span className="text-light">{summary.lessons}</span>
@@ -353,7 +357,7 @@ function Lesson({
 
 function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; updatedAt: string }) {
 	return (
-		<div className="flex flex-wrap gap-2 text-xs">
+		<div className="flex flex-wrap gap-2 text-xs text-light">
 			<span>
 				Erstellt: <span>{createdAt}</span>
 			</span>
