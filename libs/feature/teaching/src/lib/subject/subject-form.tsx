@@ -1,12 +1,7 @@
-import { PlusIcon, XIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { SpecializationRelation } from "@self-learning/types";
-import {
-	IconButton,
-	ImageOrPlaceholder,
-	OnDialogCloseFn,
-	showToast
-} from "@self-learning/ui/common";
+import { IconButton, ImageChip, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
@@ -42,7 +37,7 @@ export function SpecializationForm({ subtitle }: { subtitle: string }) {
 	};
 
 	function handleRemove(index: number) {
-		window.confirm("Autor entfernen?") && remove(index);
+		window.confirm("Spezialisierung entfernen?") && remove(index);
 	}
 
 	return (
@@ -87,35 +82,16 @@ function Specialization({
 	}
 
 	return (
-		<li
-			className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-2 text-sm"
-			data-testid="specialization"
-		>
-			<ImageOrPlaceholder
-				src={specialization.cardImgUrl ?? undefined}
-				className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
-			/>
-
-			<span className="flex w-full flex-col">
-				<span className="text-xs text-light">{specialization.subject.title}</span>
-				<Link
-					href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
-					target="_blank"
-					className="font-medium hover:text-secondary"
-					rel="noopener noreferrer"
-				>
-					{specialization.title}
-				</Link>
-			</span>
-
-			<button
-				type="button"
-				data-testid="author-remove"
-				className="rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
-				onClick={onRemove}
+		<ImageChip imgUrl={specialization.cardImgUrl} onRemove={onRemove}>
+			<span className="text-xs text-light">{specialization.subject.title}</span>
+			<Link
+				href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
+				target="_blank"
+				className="font-medium hover:text-secondary"
+				rel="noopener noreferrer"
 			>
-				<XIcon className="h-3" />
-			</button>
-		</li>
+				{specialization.title}
+			</Link>
+		</ImageChip>
 	);
 }

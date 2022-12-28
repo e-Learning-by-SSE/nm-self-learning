@@ -3,6 +3,7 @@ import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import {
 	Divider,
+	ImageChip,
 	ImageOrPlaceholder,
 	LoadingBox,
 	Paginator,
@@ -163,12 +164,14 @@ export default function AuthorOverview({ author }: Props) {
 
 							<ul className="flex flex-wrap gap-4">
 								{author.subjectAdmin.map(({ subject }) => (
-									<Chip
-										key={subject.subjectId}
-										href={`/teaching/subjects/${subject.subjectId}`}
-										title={subject.title}
-										imgUrl={subject.cardImgUrl}
-									/>
+									<ImageChip key={subject.subjectId} imgUrl={subject.cardImgUrl}>
+										<Link
+											href={`/teaching/subjects/${subject.subjectId}`}
+											className="font-medium hover:text-secondary"
+										>
+											{subject.title}
+										</Link>
+									</ImageChip>
 								))}
 							</ul>
 						</section>
@@ -186,12 +189,17 @@ export default function AuthorOverview({ author }: Props) {
 
 							<ul className="flex flex-wrap gap-4">
 								{author.specializationAdmin.map(({ specialization }) => (
-									<Chip
+									<ImageChip
 										key={specialization.specializationId}
-										href={`/teaching/subjects/${specialization.subject.subjectId}/${specialization.specializationId}`}
-										title={specialization.title}
 										imgUrl={specialization.cardImgUrl}
-									/>
+									>
+										<Link
+											href={`/teaching/subjects/${specialization.subject.subjectId}/${specialization.specializationId}`}
+											className="font-medium hover:text-secondary"
+										>
+											{specialization.title}
+										</Link>
+									</ImageChip>
 								))}
 							</ul>
 						</section>
@@ -346,17 +354,5 @@ function Lessons({ authorSlug }: { authorSlug: string }) {
 				</>
 			)}
 		</div>
-	);
-}
-
-function Chip({ title, href, imgUrl }: { href: string; title: string; imgUrl?: string | null }) {
-	return (
-		<Link href={href} className="flex w-fit rounded-lg border border-light-border bg-white">
-			<ImageOrPlaceholder
-				src={imgUrl ?? undefined}
-				className="h-10 w-10 rounded-l-lg object-cover"
-			/>
-			<span className="my-auto px-4 text-sm font-medium">{title}</span>
-		</Link>
 	);
 }

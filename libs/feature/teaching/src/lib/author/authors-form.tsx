@@ -1,12 +1,12 @@
-import { PlusIcon, XIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
-import { IconButton, ImageOrPlaceholder, OnDialogCloseFn } from "@self-learning/ui/common";
+import { IconButton, ImageChip, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { AddAuthorDialog } from "./add-author-dialog";
 import { CourseFormModel } from "../course/course-form-model";
+import { AddAuthorDialog } from "./add-author-dialog";
 
 export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; emptyString: string }) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -72,34 +72,15 @@ function Author({ slug, onRemove }: { slug: string; onRemove: () => void }) {
 	}
 
 	return (
-		<li
-			className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-2 text-sm"
-			data-testid="author"
-		>
-			<ImageOrPlaceholder
-				src={author.imgUrl ?? undefined}
-				className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
-			/>
-
-			<span className="w-full">
-				<Link
-					href={`/authors/${author.slug}`}
-					target="_blank"
-					className="font-medium hover:text-secondary"
-					rel="noopener noreferrer"
-				>
-					{author.displayName}
-				</Link>
-			</span>
-
-			<button
-				type="button"
-				data-testid="author-remove"
-				className="rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
-				onClick={onRemove}
+		<ImageChip imgUrl={author.imgUrl} onRemove={onRemove}>
+			<Link
+				href={`/authors/${author.slug}`}
+				target="_blank"
+				className="font-medium hover:text-secondary"
+				rel="noopener noreferrer"
 			>
-				<XIcon className="h-3" />
-			</button>
-		</li>
+				{author.displayName}
+			</Link>
+		</ImageChip>
 	);
 }
