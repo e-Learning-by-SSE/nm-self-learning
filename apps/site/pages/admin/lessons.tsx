@@ -2,7 +2,7 @@ import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { Paginator, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -24,6 +24,11 @@ export default function LessonManagementPage() {
 		// We need this effect, because router.query is empty on first render
 		setTitle(title as string);
 	}, [title]);
+
+	const session = useRequiredSession();
+	if (session.data?.user.role !== "ADMIN") {
+		return <AdminGuard></AdminGuard>;
+	}
 
 	return (
 		<CenteredSection className="bg-gray-50">

@@ -1,11 +1,16 @@
 import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { AuthorChip, ImageOrPlaceholder, LoadingBox } from "@self-learning/ui/common";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import Link from "next/link";
 
 export default function SubjectsPage() {
 	const { data: subjects } = trpc.subject.getAllForAdminPage.useQuery();
+
+	const session = useRequiredSession();
+	if (session.data?.user.role !== "ADMIN") {
+		return <AdminGuard></AdminGuard>;
+	}
 
 	return (
 		<CenteredSection className="bg-gray-50">

@@ -8,7 +8,7 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -29,6 +29,11 @@ export default function CoursesPage() {
 		// We need this effect, because router.query is empty on first render
 		setTitle(title as string);
 	}, [title]);
+
+	const session = useRequiredSession();
+	if (session.data?.user.role !== "ADMIN") {
+		return <AdminGuard></AdminGuard>;
+	}
 
 	return (
 		<CenteredSection className="bg-gray-50">
