@@ -1,8 +1,10 @@
 import { authOptions } from "@self-learning/api";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
-import AuthorOverview, { getAuthor } from "./author";
-import StudentOverview, { getStudent } from "./student";
+
+// Moved into /components folder, because there is no suitable library for this yet
+import AuthorOverview, { getAuthor } from "../../components/overview/author";
+import StudentOverview, { getStudent } from "../../components/overview/student";
 
 // Ideally, this should be implemented using a middleware with a rewrite
 // - /start -> /start/author (if user is author)
