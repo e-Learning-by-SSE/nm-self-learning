@@ -1,21 +1,23 @@
 import { LinkIcon, PencilIcon, PlusIcon, XIcon } from "@heroicons/react/solid";
+import { SearchCourseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
-import { LoadingBox, OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
-import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useState } from "react";
-
 import {
 	ImageOrPlaceholder,
+	LoadingBox,
+	OnDialogCloseFn,
 	Paginator,
+	SectionHeader,
+	showToast,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { SearchCourseDialog } from "@self-learning/admin";
+import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 export default function SpecializationManagementPage() {
 	const router = useRouter();
@@ -54,6 +56,7 @@ export default function SpecializationManagementPage() {
 
 		try {
 			await addCourse({
+				subjectId: specialization.subjectId,
 				specializationId: specialization.specializationId,
 				courseId: course.courseId
 			});
@@ -80,6 +83,7 @@ export default function SpecializationManagementPage() {
 
 		try {
 			await removeCourse({
+				subjectId: specialization.subjectId,
 				specializationId: specialization?.specializationId,
 				courseId: course.courseId
 			});

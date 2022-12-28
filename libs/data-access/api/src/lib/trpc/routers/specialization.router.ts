@@ -68,7 +68,7 @@ export const specializationRouter = t.router({
 				}
 			});
 
-			console.log("[specializationRouter.create]: Specialization created", {
+			console.log("[specializationRouter.create]: Specialization created by", ctx.user.name, {
 				specializationId: specialization.specializationId,
 				subjectId: specialization.subjectId,
 				slug: specialization.slug,
@@ -109,7 +109,7 @@ export const specializationRouter = t.router({
 				}
 			});
 
-			console.log("[specializationRouter.update]: Specialization updated", {
+			console.log("[specializationRouter.update]: Specialization updated by", ctx.user.name, {
 				specializationId: specialization.specializationId,
 				subjectId: specialization.subjectId,
 				slug: specialization.slug,
@@ -119,35 +119,22 @@ export const specializationRouter = t.router({
 			return specialization;
 		}),
 	addCourse: authProcedure
-		.input(z.object({ specializationId: z.string(), courseId: z.string() }))
-		.mutation(async ({ input, ctx }) => {
-			const added = await database.specialization.update({
-				where: { specializationId: input.specializationId },
-				data: {
-					courses: {
-						connect: { courseId: input.courseId }
-					}
-				},
-				select: {
-					specializationId: true
-				}
-			});
+		.input(
+			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
+		)
+		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
+			if (!canEditSpecializationInSubject(subjectId, specializationId, ctx.user)) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: `Requires ADMIN role or subjectAdmin in ${subjectId} or specializationAdmin in ${specializationId}.`
+				});
+			}
 
-			console.log("[specializationRouter.addCourse]: Course added to specialization:", {
-				specializationId: input.specializationId,
-				courseId: input.courseId,
-				by: ctx.user.name
-			});
-			return added;
-		}),
-	removeCourse: authProcedure
-		.input(z.object({ specializationId: z.string(), courseId: z.string() }))
-		.mutation(async ({ input, ctx }) => {
 			const added = await database.specialization.update({
-				where: { specializationId: input.specializationId },
+				where: { specializationId },
 				data: {
 					courses: {
-						disconnect: { courseId: input.courseId }
+						connect: { courseId }
 					}
 				},
 				select: {
@@ -156,12 +143,40 @@ export const specializationRouter = t.router({
 			});
 
 			console.log(
-				"[specializationRouter.removeCourse]: Course removed from specialization:",
-				{
-					specializationId: input.specializationId,
-					courseId: input.courseId,
-					by: ctx.user.name
+				"[specializationRouter.addCourse]: Course added to specialization by",
+				ctx.user.name,
+				{ specializationId, courseId }
+			);
+			return added;
+		}),
+	removeCourse: authProcedure
+		.input(
+			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
+		)
+		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
+			if (!canEditSpecializationInSubject(subjectId, specializationId, ctx.user)) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: `Requires ADMIN role or subjectAdmin in ${subjectId} or specializationAdmin in ${specializationId}.`
+				});
+			}
+
+			const added = await database.specialization.update({
+				where: { specializationId },
+				data: {
+					courses: {
+						disconnect: { courseId }
+					}
+				},
+				select: {
+					specializationId: true
 				}
+			});
+
+			console.log(
+				"[specializationRouter.removeCourse]: Course removed from specialization by",
+				ctx.user.name,
+				{ specializationId, courseId }
 			);
 			return added;
 		})
