@@ -215,9 +215,9 @@ function CourseHeader({
 
 	return (
 		<section className="flex flex-col gap-16">
-			<div className="flex flex-wrap-reverse gap-12 lg:grid lg:grid-cols-2">
+			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 				<div className="flex flex-col justify-between gap-12">
-					<div className="flex flex-col-reverse gap-12 md:flex-col">
+					<div className="flex min-w-[50%] flex-col-reverse gap-12 md:flex-col">
 						<div>
 							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
 							{course.subtitle && (
