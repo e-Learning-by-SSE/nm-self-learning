@@ -249,7 +249,7 @@ export default function AuthorOverview({ author }: Props) {
 											</span>
 											<Link
 												href={`/courses/${course.slug}`}
-												className="text-sm font-medium"
+												className="text-sm font-medium hover:text-secondary"
 											>
 												{course.title}
 											</Link>

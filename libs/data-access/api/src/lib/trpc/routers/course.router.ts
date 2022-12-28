@@ -41,6 +41,7 @@ export const courseRouter = t.router({
 				database.course.findMany({
 					select: {
 						courseId: true,
+						slug: true,
 						imgUrl: true,
 						title: true,
 						authors: {

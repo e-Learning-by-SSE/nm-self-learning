@@ -7,7 +7,6 @@ import { useRouter } from "next/router";
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
 	const router = useRouter();
-	const specializationId = router.query.specializationId as string;
 	const session = useRequiredSession();
 	const author = session.data?.user.author;
 
@@ -44,7 +43,6 @@ export default function CreateCoursePage() {
 						imgUrl: "",
 						subjectId: null,
 						content: [],
-						specializations: specializationId ? [{ specializationId }] : [],
 						authors: [{ slug: author.slug }]
 					}}
 				/>

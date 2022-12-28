@@ -192,7 +192,7 @@ export default function SpecializationManagementPage() {
 									<TableDataColumn>
 										<Link
 											className="text-sm font-medium hover:text-secondary"
-											href={`/teaching/courses/edit/${course.courseId}`}
+											href={`/courses/${course.slug}`}
 										>
 											{course.title}
 										</Link>

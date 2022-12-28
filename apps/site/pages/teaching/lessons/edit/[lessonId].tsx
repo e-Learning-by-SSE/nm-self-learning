@@ -1,3 +1,4 @@
+import { authOptions } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
@@ -5,17 +6,18 @@ import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
+import { unstable_getServerSession } from "next-auth";
 import { useRouter } from "next/router";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
 };
 
-export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ params }) => {
-	const lessonId = params?.lessonId;
+export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx => {
+	const lessonId = ctx.params?.lessonId;
 
 	if (typeof lessonId !== "string") {
-		throw new Error("No [lessolessonIdnSlug] provided.");
+		throw new Error("No [lessonId] provided.");
 	}
 
 	const lesson = await database.lesson.findUnique({
@@ -35,6 +37,31 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ({ 
 
 	if (!lesson) {
 		return { notFound: true };
+	}
+
+	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+
+	if (!session) {
+		return {
+			redirect: {
+				destination: "/login",
+				permanent: false
+			}
+		};
+	}
+
+	const userAuthorSlug = session.user.author?.slug;
+
+	if (
+		session.user.role !== "ADMIN" &&
+		(!userAuthorSlug || !lesson.authors.some(author => author.slug === userAuthorSlug))
+	) {
+		return {
+			redirect: {
+				destination: "/403",
+				permanent: false
+			}
+		};
 	}
 
 	const lessonForm: LessonFormModel = {

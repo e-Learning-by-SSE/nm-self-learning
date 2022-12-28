@@ -1,10 +1,12 @@
 import { Prisma } from "@prisma/client";
+import { authOptions } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
+import { unstable_getServerSession } from "next-auth";
 import { useRouter } from "next/router";
 import { useRef } from "react";
 
@@ -13,8 +15,8 @@ type EditCourseProps = {
 	lessons: { title: string; lessonId: string; slug: string; meta: Prisma.JsonValue }[];
 };
 
-export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ params }) => {
-	const courseId = params?.courseId as string;
+export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ctx => {
+	const courseId = ctx.params?.courseId as string;
 
 	const course = await database.course.findUnique({
 		where: { courseId },
@@ -41,6 +43,31 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 	if (!course) {
 		return {
 			notFound: true
+		};
+	}
+
+	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+
+	if (!session) {
+		return {
+			redirect: {
+				destination: "/login",
+				permanent: false
+			}
+		};
+	}
+
+	const userAuthorSlug = session.user.author?.slug;
+
+	if (
+		session.user.role !== "ADMIN" &&
+		(!userAuthorSlug || !course.authors.some(author => author.slug === userAuthorSlug))
+	) {
+		return {
+			redirect: {
+				destination: "/403",
+				permanent: false
+			}
 		};
 	}
 
@@ -72,9 +99,6 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ({ 
 		imgUrl: course.imgUrl,
 		slug: course.slug,
 		subjectId: course.subject?.subjectId ?? null,
-		specializations: course.specializations.map(s => ({
-			specializationId: s.specializationId
-		})),
 		authors: course.authors.map(author => ({ slug: author.slug })),
 		content: content
 	};
@@ -110,7 +134,6 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 				});
 				showToast({ type: "success", title: "Änderung gespeichert!", subtitle: title });
 				router.replace(router.asPath, undefined, { scroll: false });
-				// next.js quit page reload
 			} catch (error) {
 				showToast({
 					type: "error",

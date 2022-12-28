@@ -2,8 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
+import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
-import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import slugify from "slugify";
@@ -20,7 +21,11 @@ export function EditLessonDialog({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
-	const session = useSession();
+	const session = useRequiredSession();
+	const userAuthorSlug = session.data?.user.author?.slug;
+	const canEdit =
+		session.data?.user.role === "ADMIN" ||
+		userAuthorSlug === initialLesson?.authors.some(a => a.slug === userAuthorSlug);
 
 	const [selectedTab, setSelectedTab] = useState(0);
 	const isNew = !initialLesson;
@@ -34,6 +39,42 @@ export function EditLessonDialog({
 		},
 		resolver: zodResolver(lessonSchema)
 	});
+
+	if (initialLesson?.lessonId && !canEdit) {
+		return (
+			<Dialog title="Nicht erlaubt" onClose={onClose}>
+				<div className="flex flex-col gap-8">
+					<p className="text-light">
+						Du hast keine Berechtigung, diese Lerneinheit zu bearbeiten:
+					</p>
+
+					<div className="flex flex-col">
+						<span className="font-semibold">Titel:</span>
+						<span>{initialLesson.title}</span>
+					</div>
+
+					<div>
+						<span className="font-semibold">Autoren:</span>
+
+						<ul className="flex flex-col">
+							{initialLesson.authors.map(a => (
+								<Link
+									target="_blank"
+									rel="noreferrer"
+									href={`/authors/${a.slug}`}
+									className="font-semibold text-secondary hover:underline"
+								>
+									{a.slug}
+								</Link>
+							))}
+						</ul>
+					</div>
+				</div>
+
+				<DialogActions onClose={onClose} />
+			</Dialog>
+		);
+	}
 
 	return (
 		<Dialog

@@ -1,10 +1,5 @@
 import { Prisma } from "@prisma/client";
-import {
-	authorsRelationSchema,
-	courseContentSchema,
-	createCourseMeta,
-	specializationRelationSchema
-} from "@self-learning/types";
+import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
@@ -17,7 +12,6 @@ export const courseFormSchema = z.object({
 	description: z.string().nullable(),
 	imgUrl: z.string().nullable(),
 	authors: authorsRelationSchema,
-	specializations: specializationRelationSchema,
 	content: courseContentSchema
 });
 
@@ -27,17 +21,7 @@ export function mapCourseFormToInsert(
 	course: CourseFormModel,
 	courseId: string
 ): Prisma.CourseCreateInput {
-	const {
-		title,
-		slug,
-		subtitle,
-		description,
-		imgUrl,
-		content,
-		subjectId,
-		authors,
-		specializations
-	} = course;
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
 		courseId,
@@ -51,10 +35,7 @@ export function mapCourseFormToInsert(
 		authors: {
 			connect: authors.map(author => ({ slug: author.slug }))
 		},
-		subject: subjectId ? { connect: { subjectId } } : undefined,
-		specializations: {
-			connect: specializations
-		}
+		subject: subjectId ? { connect: { subjectId } } : undefined
 	};
 
 	return courseForDb;
@@ -64,17 +45,7 @@ export function mapCourseFormToUpdate(
 	course: CourseFormModel,
 	courseId: string
 ): Prisma.CourseUpdateInput {
-	const {
-		title,
-		slug,
-		subtitle,
-		description,
-		imgUrl,
-		content,
-		subjectId,
-		authors,
-		specializations
-	} = course;
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
 	const courseForDb: Prisma.CourseUpdateInput = {
 		courseId,
@@ -88,10 +59,7 @@ export function mapCourseFormToUpdate(
 		authors: {
 			set: authors.map(author => ({ slug: author.slug }))
 		},
-		subject: subjectId ? { connect: { subjectId } } : undefined,
-		specializations: {
-			connect: specializations
-		}
+		subject: subjectId ? { connect: { subjectId } } : undefined
 	};
 
 	return courseForDb;
