@@ -1,3 +1,4 @@
+import { PencilIcon } from "@heroicons/react/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useState } from "react";
@@ -8,66 +9,50 @@ import { AssetPickerButton } from "./upload";
 export function MarkdownField({
 	content,
 	setValue,
-	minHeight
+	label
 }: {
+	label?: string;
 	content: string | undefined;
 	setValue: (v: string | undefined) => void;
-	minHeight?: string;
 }) {
-	const _minHeight = minHeight ?? "500px";
-	const [height, setHeight] = useState(_minHeight);
+	const [openEditor, setOpenEditor] = useState(false);
 
 	return (
-		<div className="flex flex-col">
-			<div className="grid items-start gap-8 xl:grid-cols-2">
-				<div className="flex h-full w-full flex-col gap-2">
-					<label className="text-sm font-semibold">Markdown</label>
-					<EditorField
-						language="markdown"
-						onChange={setValue}
-						value={content}
-						height={height}
-					/>
-				</div>
-
-				<div className="flex h-full w-full flex-col gap-2">
-					<span className="relative flex justify-between">
-						<label className="text-sm font-semibold">Preview</label>
-						<div className="absolute right-0 -top-4 flex gap-4">
-							<button
-								type="button"
-								onClick={() =>
-									setHeight(prev => (prev === _minHeight ? "75vh" : _minHeight))
-								}
-								className="text-xs text-secondary"
-							>
-								{height === _minHeight
-									? "Ansicht vergrößern"
-									: "Ansicht verkleinern"}
-							</button>
-							<AssetPickerButton
-								copyToClipboard={true}
-								onClose={() => {
-									/** NOOP */
-								}}
-							/>
-						</div>
-					</span>
-					<div
-						className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4"
-						style={{ maxHeight: height }}
-					>
-						<div className="prose prose-emerald w-full">
-							<ReactMarkdown
-								remarkPlugins={remarkPlugins}
-								rehypePlugins={rehypePlugins}
-							>
-								{content ?? ""}
-							</ReactMarkdown>
-						</div>
-					</div>
+		<div className="flex flex-col gap-1">
+			<div className="flex items-end justify-between">
+				<span className="text-sm font-semibold">{label ?? "Markdown"}</span>
+				<button
+					type="button"
+					className="btn-stroked w-fit self-end"
+					onClick={() => setOpenEditor(true)}
+				>
+					<PencilIcon className="icon" />
+					<span>Bearbeiten</span>
+				</button>
+			</div>
+			<div
+				className="flex rounded-lg border border-light-border bg-white p-4"
+				style={{ minHeight: 32 }}
+			>
+				<div className="prose prose-emerald max-w-full">
+					<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+						{content ?? ""}
+					</ReactMarkdown>
 				</div>
 			</div>
+
+			{openEditor && (
+				<MarkdownEditorDialog
+					initialValue={content ?? ""}
+					title="Bearbeiten"
+					onClose={changes => {
+						setOpenEditor(false);
+						if (changes !== undefined) {
+							setValue(changes);
+						}
+					}}
+				/>
+			)}
 		</div>
 	);
 }

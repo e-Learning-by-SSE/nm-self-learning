@@ -268,11 +268,7 @@ function BaseQuestionForm({
 					control={control}
 					name={`quiz.questions.${index}.statement`}
 					render={({ field }) => (
-						<MarkdownField
-							minHeight="256px"
-							content={field.value}
-							setValue={field.onChange}
-						/>
+						<MarkdownField content={field.value} setValue={field.onChange} />
 					)}
 				/>
 
@@ -346,11 +342,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 						control={control}
 						name={`quiz.questions.${questionIndex}.hints.${hintIndex}.content`}
 						render={({ field }) => (
-							<MarkdownField
-								content={field.value}
-								setValue={field.onChange}
-								minHeight="128px"
-							/>
+							<MarkdownField content={field.value} setValue={field.onChange} />
 						)}
 					></Controller>
 				</div>

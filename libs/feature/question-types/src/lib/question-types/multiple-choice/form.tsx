@@ -85,11 +85,7 @@ export default function MultipleChoiceForm({
 						control={control}
 						name={`quiz.questions.${index}.answers.${answerIndex}.content`}
 						render={({ field }) => (
-							<MarkdownField
-								content={field.value}
-								setValue={field.onChange}
-								minHeight="96px"
-							/>
+							<MarkdownField content={field.value} setValue={field.onChange} />
 						)}
 					></Controller>
 				</div>
