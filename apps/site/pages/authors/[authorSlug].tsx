@@ -3,7 +3,7 @@ import { CompiledMarkdown } from "@self-learning/markdown";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,7 +15,7 @@ type AuthorPageProps = {
 	aboutMeMarkdown: CompiledMarkdown | null;
 };
 
-export const getStaticProps: GetStaticProps<AuthorPageProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<AuthorPageProps> = async ({ params }) => {
 	const slug = params?.authorSlug as string | undefined;
 
 	if (!slug) {
@@ -42,13 +42,6 @@ export const getStaticProps: GetStaticProps<AuthorPageProps> = async ({ params }
 			author,
 			aboutMeMarkdown
 		}
-	};
-};
-
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		paths: [],
-		fallback: "blocking"
 	};
 };
 
