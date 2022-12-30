@@ -178,7 +178,7 @@ export default function AuthorOverview({ author }: Props) {
 					</>
 				)}
 
-				{author.subjectAdmin.length > 0 && (
+				{author.specializationAdmin.length > 0 && (
 					<>
 						<Divider />
 						<section>
