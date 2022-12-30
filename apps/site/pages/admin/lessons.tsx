@@ -91,7 +91,7 @@ export default function LessonManagementPage() {
 			</Table>
 
 			{data?.result && (
-				<Paginator pagination={data} url={`/teaching/lessons?title=${titleFilter}`} />
+				<Paginator pagination={data} url={`/admin/lessons?title=${titleFilter}`} />
 			)}
 		</CenteredSection>
 	);

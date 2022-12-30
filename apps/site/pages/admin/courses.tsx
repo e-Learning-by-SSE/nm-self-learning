@@ -85,7 +85,7 @@ export default function CoursesPage() {
 			</Table>
 
 			{data?.result && (
-				<Paginator pagination={data} url={`/teaching/courses?title=${titleFilter}`} />
+				<Paginator pagination={data} url={`/admin/courses?title=${titleFilter}`} />
 			)}
 		</CenteredSection>
 	);
