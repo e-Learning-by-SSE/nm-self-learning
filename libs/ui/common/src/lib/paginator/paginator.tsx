@@ -25,14 +25,41 @@ export function Paginator({
 			.fill(0)
 			.map((_, i) => i + 1);
 
-		// TODO: Implement some logic to split the array into front, middle and back when there are too many pages
+		if (arr.length <= 8) {
+			return {
+				front: arr,
+				middle: [],
+				back: [],
+				maxPage: arr.length
+			} satisfies PaginatedLinks;
+		}
+
+		const page = pagination.page;
+
+		if (page > 3 && page < arr.length - 2) {
+			return {
+				front: [1],
+				middle: [page - 1, page, page + 1],
+				back: [arr.length],
+				maxPage: arr.length
+			} satisfies PaginatedLinks;
+		}
+
+		if (page <= 3) {
+			return {
+				front: arr.slice(0, page + 1),
+				middle: [],
+				back: [arr.length],
+				maxPage: arr.length
+			} satisfies PaginatedLinks;
+		}
 
 		return {
-			front: arr,
+			front: [1],
 			middle: [],
-			back: [],
+			back: arr.slice(page - 2, arr.length),
 			maxPage: arr.length
-		} satisfies PaginatedLinks;
+		};
 	}, [pagination]);
 
 	const { page, pageSize, totalCount, result } = pagination;
