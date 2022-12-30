@@ -272,10 +272,17 @@ export default function AuthorOverview({ author }: Props) {
 				<Divider />
 
 				<section>
-					<SectionHeader
-						title="Meine Lerneinheiten"
-						subtitle="Autor der folgenden Lerneinheiten:"
-					/>
+					<div className="flex justify-between gap-4">
+						<SectionHeader
+							title="Meine Lerneinheiten"
+							subtitle="Autor der folgenden Lerneinheiten:"
+						/>
+
+						<Link href="/teaching/lessons/create" className="btn-primary h-fit w-fit">
+							<PlusIcon className="icon" />
+							<span>Neuen Lerneinheit erstellen</span>
+						</Link>
+					</div>
 
 					{authorName && <Lessons authorName={authorName} />}
 				</section>
