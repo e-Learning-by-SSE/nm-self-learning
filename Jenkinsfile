@@ -7,7 +7,7 @@ pipeline {
     }
 
     stages {
-        stage("NodeJS Builds") {
+        stage("Prepare NodeJS Environment") {
             agent {
                 docker {
                     image 'node:18-bullseye'
@@ -31,7 +31,7 @@ pipeline {
                 }
             }
         }
-        stage("Docker-Based Builds") {
+        stage("Prepare Docker-Based Agent") {
             agent {
                 label 'docker && jq' //jq build dependency
             }
@@ -65,15 +65,15 @@ pipeline {
                     steps {
                         sh 'mv docker/Dockerfile Dockerfile'
                         script {
-                            API_VERSION = sh(
+                            env.API_VERSION = sh(
                                 script: "cat package.json | jq -r '.version'",
                                 returnStdout: true
-                            )
-                            echo "API: ${API_VERSION}"
+                            ).trim()
+                            echo "API: ${env.API_VERSION}"
                             dockerImage = docker.build 'e-learning-by-sse/nm-self-learning'
                             docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
-                                dockerImage.push("${API_VERSION}")
-                                dockerImage.push('latest')
+                                dockerImage.push("${env.API_VERSION}")
+                                dockerImage.push("latest")
                             }
                         }
                     }
