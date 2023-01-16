@@ -8,4 +8,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: SelfLearningDb
+  dev-auth:
+    image: ghcr.io/e-learning-by-sse/infrastructure-fake-oidc
+    ports:
+      - 8090:8090
 
