@@ -1,13 +1,8 @@
+def dockerImage
 pipeline {
     agent none
-
-    environment {
-        DEMO_SERVER = '147.172.178.30'
-        DEMO_SERVER_PORT = '8080'
-    }
-
     stages {
-        stage("Prepare NodeJS Environment") {
+        stage("NodeJS Builds") {
             agent {
                 docker {
                     image 'node:18-bullseye'
@@ -31,7 +26,7 @@ pipeline {
                 }
             }
         }
-        stage("Prepare Docker-Based Agent") {
+        stage("Docker-Based Builds") {
             agent {
                 label 'docker && jq' //jq build dependency
             }
@@ -62,24 +57,45 @@ pipeline {
                 }
 
                 stage('Docker Build') {
+                    environment {
+                        DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
+                    }
                     steps {
                         sh 'mv docker/Dockerfile Dockerfile'
                         script {
+                            dockerImage = docker.build "${DOCKER_TARGET}"
+                        }
+                    }
+                }
+                
+                stage('Docker Publish') {
+                    steps {
+                        script {
                             env.API_VERSION = sh(
-                                script: "cat package.json | jq -r '.version'",
-                                returnStdout: true
-                            ).trim()
+                               script: "cat package.json | jq -r '.version'",
+                               returnStdout: true).trim()
                             echo "API: ${env.API_VERSION}"
-                            dockerImage = docker.build 'e-learning-by-sse/nm-self-learning'
                             docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
-                                dockerImage.push("${env.API_VERSION}")
-                                dockerImage.push("latest")
+                                if (env.GIT_BRANCH == "master") {
+                                   dockerImage.push("${env.API_VERSION}")
+                                   dockerImage.push('latest')
+                                }
+                                if (env.GIT_BRANCH == "dev") {
+                                   dockerImage.push('unstable')
+                                }
                             }
                         }
                     }
                 }
 
                 stage('Deploy') {
+                    environment {
+                        DEMO_SERVER = '147.172.178.30'
+                        DEMO_SERVER_PORT = '8080'
+                    }
+                    when {
+                        branch 'dev'
+                    }
                     steps {
                         sshagent(['STM-SSH-DEMO']) {
                             sh "ssh -o StrictHostKeyChecking=no -l elscha ${env.DEMO_SERVER} bash /staging/update-compose-project.sh nm-self-learning"
