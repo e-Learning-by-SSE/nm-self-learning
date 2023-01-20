@@ -1,4 +1,3 @@
-def dockerImage
 pipeline {
     agent none
     stages {
@@ -55,8 +54,14 @@ pipeline {
                         }
                     }
                 }
-
-                stage('Docker Build') {
+                
+                stage('Docker Publish') {
+                    when {
+                        anyOf {
+                            branch 'master'
+                            branch 'dev'
+                        }
+                    }
                     environment {
                         DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
                     }
@@ -64,13 +69,6 @@ pipeline {
                         sh 'mv docker/Dockerfile Dockerfile'
                         script {
                             dockerImage = docker.build "${DOCKER_TARGET}"
-                        }
-                    }
-                }
-                
-                stage('Docker Publish') {
-                    steps {
-                        script {
                             env.API_VERSION = sh(
                                script: "cat package.json | jq -r '.version'",
                                returnStdout: true).trim()
