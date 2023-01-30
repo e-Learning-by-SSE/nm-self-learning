@@ -35,7 +35,8 @@ const nextConfig = {
 		// See: https://github.com/gregberge/svgr
 		svgr: true
 	},
-	basePath: process.env.BASE_PATH || ''
+	basePath: process.env.BASE_PATH || '',
+	assetPrefix: process.env.ASSET_PREFIX || '/'
 };
 
 module.exports = withNx(nextConfig);
