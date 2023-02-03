@@ -35,7 +35,7 @@ export function MarkdownField({
 				style={{ minHeight: 32 }}
 			>
 				<div className="prose prose-emerald max-w-full">
-					<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+					<ReactMarkdown linkTarget='_blank' remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
 						{content ?? ""}
 					</ReactMarkdown>
 				</div>
@@ -100,6 +100,7 @@ export function MarkdownEditorDialog({
 					<div className="relative flex h-full w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
 							<ReactMarkdown
+                                linkTarget='_blank'
 								remarkPlugins={remarkPlugins}
 								rehypePlugins={rehypePlugins}
 							>
@@ -126,7 +127,7 @@ export function MarkdownEditorDialog({
  */
 export function MarkdownViewer({ content }: { content: string }) {
 	return (
-		<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+		<ReactMarkdown linkTarget='_blank' remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
 			{content ?? ""}
 		</ReactMarkdown>
 	);
