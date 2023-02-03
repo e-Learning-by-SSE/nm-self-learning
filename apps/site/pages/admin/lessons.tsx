@@ -46,7 +46,11 @@ export default function LessonManagementPage() {
 				value={titleFilter}
 				onChange={e => {
 					setTitle(e.target.value);
-					router.push(`/teaching/lessons?page=1&title=${e.target.value}`, undefined, {
+
+                    router.query.title = e.target.value;
+                    router.query.page = '1';
+
+					router.push(router, undefined, {
 						shallow: true
 					});
 				}}
