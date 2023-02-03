@@ -6,9 +6,10 @@ import remarkMath from "remark-math";
 // Rehype packages
 import rehypeKatex from "rehype-katex";
 import rehypePrismPlus from "rehype-prism-plus";
+import rehypeExternalLinks from "rehype-external-links";
 
 export const remarkPlugins = [remarkGfm, remarkMath];
-export const rehypePlugins = [rehypeKatex, rehypePrismPlus];
+export const rehypePlugins = [rehypeKatex, rehypePrismPlus, [rehypeExternalLinks, {target: "_blank"}]];
 
 /**
  * Converts a markdown document to an object that can be rendered in a {@link MDXRemote} component.
