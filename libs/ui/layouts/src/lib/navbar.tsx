@@ -4,10 +4,12 @@ import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin } from "./redirect-to-login";
+import { useRouter } from "next/router";
 
 export function Navbar() {
 	const session = useSession();
 	const user = session.data?.user;
+    const signOutCallbackUrl = useRouter().basePath;
 
 	return (
 		<nav className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white">
@@ -55,7 +57,7 @@ export function Navbar() {
 						</span>
 						<NavbarDropdownMenu
 							avatarUrl={user.avatarUrl}
-							signOut={() => signOut({ callbackUrl: "/" })}
+							signOut={() => signOut({ callbackUrl: signOutCallbackUrl })}
 						/>
 					</div>
 				)}

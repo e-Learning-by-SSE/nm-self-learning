@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { AppProps } from "next/app";
 import Head from "next/head";
 import { Toaster } from "react-hot-toast";
+import { useRouter } from "next/router";
 // import { ReactQueryDevtools } from "react-query/devtools";
 import "./styles.css";
 import "katex/dist/katex.css";
@@ -44,7 +45,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		: null;
 
 	return (
-		<SessionProvider session={(pageProps as any).session}>
+		<SessionProvider session={(pageProps as any).session} basePath={ useRouter().basePath + "/api/auth" }>
 			<Head>
 				<title>Self-Learning</title>
 			</Head>
