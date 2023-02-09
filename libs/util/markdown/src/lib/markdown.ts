@@ -1,15 +1,19 @@
 import { serialize } from "next-mdx-remote/serialize";
-
-// Remark packages
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
+import rehypeExternalLinks from "rehype-external-links";
 // Rehype packages
 import rehypeKatex from "rehype-katex";
 import rehypePrismPlus from "rehype-prism-plus";
-import rehypeExternalLinks from "rehype-external-links";
+// Remark packages
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import { Pluggable } from "unified";
 
 export const remarkPlugins = [remarkGfm, remarkMath];
-export const rehypePlugins = [rehypeKatex, rehypePrismPlus, [rehypeExternalLinks, {target: "_blank"}]];
+export const rehypePlugins = [
+	rehypeKatex,
+	rehypePrismPlus,
+	[rehypeExternalLinks, { target: "_blank" }] as Pluggable
+];
 
 /**
  * Converts a markdown document to an object that can be rendered in a {@link MDXRemote} component.
