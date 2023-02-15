@@ -6,7 +6,7 @@ import {
 	createTextQuestion
 } from "../seed-functions";
 
-const chapters = [
+export const chapters = [
 	{
 		title: "Gehör - das auditive System",
 		description:
