@@ -5,6 +5,8 @@
 		"firsttris.vscode-jest-runner",
 		"dbaeumer.vscode-eslint",
 		"prisma.prisma",
-		"bradlc.vscode-tailwindcss"
+		"bradlc.vscode-tailwindcss",
+		"usernamehw.errorlens",
+		"streetsidesoftware.code-spell-checker"
 	]
 }
