@@ -4,19 +4,22 @@ import * as FundamentalsOfPerception from "./FundamentalsOfPerception";
 import * as PerceptionOfHearing from "./PerceptionOfHearing";
 import * as PerceptionOfVision from "./PerceptionOfVision";
 import * as PerceptionOfSmelling from "./PerceptionOfSmelling";
+import * as PerceptionOfTasting from "./PerceptionOfTasting";
 
 const chapters = [
 	FundamentalsOfPerception.chapters,
 	PerceptionOfHearing.chapters,
 	PerceptionOfVision.chapters,
-	PerceptionOfSmelling.chapters
+	PerceptionOfSmelling.chapters,
+	PerceptionOfTasting.chapters
 ].flat();
 
 const courses = [
 	FundamentalsOfPerception.course,
 	PerceptionOfHearing.course,
 	PerceptionOfVision.course,
-	PerceptionOfSmelling.course
+	PerceptionOfSmelling.course,
+	PerceptionOfTasting.course
 ];
 
 const authors = [
