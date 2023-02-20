@@ -57,10 +57,7 @@ pipeline {
                 
                 stage('Docker Publish') {
                     when {
-                        anyOf {
-                            branch 'master'
-                            branch 'dev'
-                        }
+                        expression { env.BRANCH_NAME ==~ /^(master|dev)|publish_.*/  }
                     }
                     environment {
                         DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
@@ -80,6 +77,10 @@ pipeline {
                                 }
                                 if (env.GIT_BRANCH == "dev") {
                                    dockerImage.push('unstable')
+                                }
+                                if (env.GIT_BRANCH.startsWith("publish_")) {
+                                   def publishTag = "${env.API_VERSION}" + "." + env.GIT_BRANCH.split('_')[1] 
+                                   dockerImage.push(publishTag);
                                 }
                             }
                         }
