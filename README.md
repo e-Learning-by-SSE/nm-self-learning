@@ -99,5 +99,5 @@ npm run prisma generate
 Fill database with demo data, which is defined in [seed.ts](libs/data-access/database/src/lib/seed.ts):
 
 ```
-npm run prisma seed
+npm run prisma db seed
 ```
