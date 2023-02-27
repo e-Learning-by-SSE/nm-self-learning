@@ -1,9 +1,9 @@
 import { Menu } from "@headlessui/react";
 import { AcademicCapIcon, LogoutIcon, UserIcon } from "@heroicons/react/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { redirectToLogin } from "./redirect-to-login";
+import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 
 export function Navbar() {
 	const session = useSession();
@@ -55,7 +55,7 @@ export function Navbar() {
 						</span>
 						<NavbarDropdownMenu
 							avatarUrl={user.avatarUrl}
-							signOut={() => signOut({ callbackUrl: "/" })}
+							signOut={redirectToLogout}
 						/>
 					</div>
 				)}
