@@ -37,7 +37,7 @@ const nextConfig = {
 	},
 	basePath: process.env.NEXT_BASE_PATH || process.env.NEXT_PUBLIC_BASE_PATH || '',
 	assetPrefix: process.env.NEXT_ASSET_PREFIX || '/',
-	trailingSlash: Boolean(process.env.NEXT_TRAILING_SLASH) || false,
+	trailingSlash: process.env.NEXT_TRAILING_SLASH || false,
 };
 
 module.exports = withNx(nextConfig);
