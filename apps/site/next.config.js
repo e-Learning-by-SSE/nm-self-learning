@@ -35,7 +35,7 @@ const nextConfig = {
 		// See: https://github.com/gregberge/svgr
 		svgr: true
 	},
-	basePath: process.env.NEXT_BASE_PATH || process.env.NEXT_PUBLIC_BASE_PATH || '',
+	basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 	assetPrefix: process.env.NEXT_ASSET_PREFIX || '/',
 	trailingSlash: process.env.NEXT_TRAILING_SLASH || false,
 };

@@ -4,8 +4,8 @@ declare var process: {
 	env: {
 		NODE_ENV: "development" | "production";
 		NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
-		NEXT_PUBLIC_BASE_PATH: string,
-		NEXT_TRAILING_SLASH: Boolean,
+		NEXT_PUBLIC_BASE_PATH: string | undefined,
+		NEXT_TRAILING_SLASH: Boolean | undefined,
 		DATABASE_URL: string;
 		MINIO_ENDPOINT: string;
 		MINIO_PORT: string;
