@@ -5,11 +5,15 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: SelfLearningDb
+    volumes:
+      - dev_db_data:/var/lib/postgresql/data
   dev-auth:
     image: ghcr.io/e-learning-by-sse/infrastructure-fake-oidc
     ports:
       - 8090:8090
 
+volumes:
+  dev_db_data:
