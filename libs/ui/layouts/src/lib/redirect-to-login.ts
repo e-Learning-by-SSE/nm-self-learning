@@ -9,7 +9,7 @@ import { signIn, signOut } from "next-auth/react";
 export function redirectToLogin(): void {
 	const callbackUrl = `${window.location.origin}/${process.env.NEXT_PUBLIC_BASE_PATH}`;
 	if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {
-		signIn();
+		signIn(undefined, { callbackUrl: callbackUrl });
 	} else {
 		signIn("keycloak", { callbackUrl: callbackUrl });
 	}
