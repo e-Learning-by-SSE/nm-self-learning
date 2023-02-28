@@ -9,7 +9,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
  * Otherwise, they will redirected directly to the Keycloak login page.
  */
 export function redirectToLogin(): void {
-	const callbackUrl = `${window.location.origin}/${basePath}`;
+	const callbackUrl = `${window.location.origin}/${basePath}/overview`;
 	if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {
 		signIn(undefined, { callbackUrl: callbackUrl });
 	} else {
