@@ -45,7 +45,7 @@ compileOnChange() {
 }
 
 createOrMigrateDB() {
-    if [ ! -f persitend_state/.db_initialized ]; then
+    if [ ! -f state/.db_initialized ]; then
         echo "Initialize Database"
 
 		# Create database and apply sample data on first boot
@@ -53,7 +53,7 @@ createOrMigrateDB() {
         npx prisma db seed
 
         # Create init file to avoid multiple initializations
-        touch persitend_state/.db_initialized
+        touch state/.db_initialized
     else
         echo "Database initialized, apply migrations"
 
@@ -72,7 +72,7 @@ if [ ! -z "${DB_HOST}" ]; then
 fi
 
 mkdir -p dist
-mkdir -p persitend_state
+mkdir -p state
 
 # Re-compiles the application whenever the environment variables have been changed
 # This is required for React/NextJS applications

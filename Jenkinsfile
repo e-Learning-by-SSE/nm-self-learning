@@ -63,7 +63,6 @@ pipeline {
                         DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
                     }
                     steps {
-                        sh 'mv docker/Dockerfile Dockerfile'
                         script {
                             dockerImage = docker.build "${DOCKER_TARGET}"
                             env.API_VERSION = sh(
