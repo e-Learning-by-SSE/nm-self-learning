@@ -8,7 +8,7 @@ import {
 	createVideo,
 	read,
 	seedCaseStudy
-} from "./seed-functions";
+} from "../seed-functions";
 
 const chapters = [
 	{
@@ -84,7 +84,7 @@ const chapters = [
 			createLesson(
 				"Hello World",
 				"Das erste Programm",
-				read("java-hello-world-description.mdx"),
+				read("demo/java-hello-world-description.mdx"),
 				[
 					createVideo(
 						"https://staging.sse.uni-hildesheim.de:9006/upload/9b2dnsoa8-Java 011 - Hello World.mp4",
