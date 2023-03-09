@@ -1482,7 +1482,7 @@ export const course = (
 		"aufmerksamkeit",
 		"Aufmerksamkeit",
 		null,
-		'Bei der **Aufmerksamkeit** geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Aufmerksamkeit erläutert werden und mit Hilfe welcher Experimente die Aufmerksamkeitsphänomene erforscht werden können. \n##Die Studierenden sind in der Lage ... \r\n*die verschiedenen Funktionen von Aufmerksamkeit zu verstehen; \r\n*Experimente zur Erforschung von Aufmerksamkeitsphänomenen zu kennen und nachzuvollziehen und Replikationen mit Hilfestellung selbst durchzuführen; \r\n*Theorien zu Aufmerksamkeit zu verstehen und zu vergleichen.\r\n\r\nEs werden keine Grundkenntnisse vorausgesetzt',
+		'Bei der **Aufmerksamkeit** geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Aufmerksamkeit erläutert werden und mit Hilfe welcher Experimente die Aufmerksamkeitsphänomene erforscht werden können. \n## Die Studierenden sind in der Lage ... \r\n* die verschiedenen Funktionen von Aufmerksamkeit zu verstehen; \r\n* Experimente zur Erforschung von Aufmerksamkeitsphänomenen zu kennen und nachzuvollziehen und Replikationen mit Hilfestellung selbst durchzuführen; \r\n* Theorien zu Aufmerksamkeit zu verstehen und zu vergleichen.\r\n\r\n Es werden keine Grundkenntnisse vorausgesetzt',
 		"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg",
 	chapters
 	)
