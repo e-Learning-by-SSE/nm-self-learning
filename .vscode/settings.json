@@ -1,8 +1,4 @@
 {
 	"typescript.tsdk": "node_modules/typescript/lib",
-	"cSpell.words": [
-		"Katex",
-		"Pluggable",
-		"rehype"
-	]
+	"cSpell.words": ["Katex", "Keycloak", "KEYCLOAK", "Pluggable", "rehype"]
 }
