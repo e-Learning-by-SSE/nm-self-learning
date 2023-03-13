@@ -1,28 +1,11 @@
 /* eslint-disable quotes */
-import { subHours } from "date-fns";
-import { readFileSync } from "fs";
-import { join } from "path";
-import slugify from "slugify";
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { QuizContent } from "@self-learning/question-types";
-import {
-	createCourseContent,
-	createCourseMeta,
-	createLessonMeta,
-	extractLessonIds,
-	LessonContent
-} from "@self-learning/types";
-import { getRandomId } from "@self-learning/util/common";
 
-import { javaExample } from "./demo/java-example";
 import { mathExample } from "./math/math-example";
 import { psychologyExample } from "./psychology/psychology-example";
 import { createSpecialization } from "./seed-functions";
-import { Quiz } from "@self-learning/quiz";
 import { seedDemos } from "./demo/demo";
-
-faker.seed(1);
 
 const prisma = new PrismaClient();
 
@@ -196,6 +179,7 @@ async function seed(): Promise<void> {
 	console.log("😅 Seeding...");
 
 	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
+		faker.seed(1);
 		await seedDemos();
 	}
 
