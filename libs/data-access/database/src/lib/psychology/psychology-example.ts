@@ -5,7 +5,8 @@ import * as PerceptionOfHearing from "./PerceptionOfHearing";
 import * as PerceptionOfVision from "./PerceptionOfVision";
 import * as PerceptionOfSmelling from "./PerceptionOfSmelling";
 import * as PerceptionOfTasting from "./PerceptionOfTasting";
-import * as FundermentalOfAttention from "./FundamentalsOfAttention";
+import * as FundamentalsOfAttention from "./FundamentalsOfAttention";
+import * as FundamentalsOfConsciousness from "./FundamentalsOfConsciousness";
 
 const chapters = [
 	FundamentalsOfPerception.chapters,
@@ -13,7 +14,8 @@ const chapters = [
 	PerceptionOfVision.chapters,
 	PerceptionOfSmelling.chapters,
 	PerceptionOfTasting.chapters,
-	FundermentalOfAttention.chapters
+	FundamentalsOfAttention.chapters,
+	FundamentalsOfConsciousness.chapters
 ].flat();
 
 const courses = [
@@ -22,7 +24,8 @@ const courses = [
 	PerceptionOfVision.course,
 	PerceptionOfSmelling.course,
 	PerceptionOfTasting.course,
-	FundermentalOfAttention.course
+	FundamentalsOfAttention.course,
+	FundamentalsOfConsciousness.course
 ];
 
 const authors = [
