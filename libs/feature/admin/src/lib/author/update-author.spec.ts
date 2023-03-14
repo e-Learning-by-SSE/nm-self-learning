@@ -35,6 +35,7 @@ describe("update-author", () => {
 		await database.user.create({
 			data: {
 				name: username,
+				displayName: username,
 				author: {
 					create: {
 						displayName: username,
@@ -92,6 +93,7 @@ describe("update-author", () => {
 		await database.user.create({
 			data: {
 				name: username,
+				displayName: username,
 				author: {
 					create: {
 						displayName: username,
