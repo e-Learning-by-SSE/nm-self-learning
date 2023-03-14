@@ -5,6 +5,7 @@ export async function createTestUser(username: string) {
 	const user: Prisma.UserCreateInput = {
 		name: username,
 		id: username,
+		displayName: username,
 		accounts: {
 			create: [
 				{
@@ -17,7 +18,6 @@ export async function createTestUser(username: string) {
 		},
 		student: {
 			create: {
-				displayName: username,
 				username
 			}
 		}

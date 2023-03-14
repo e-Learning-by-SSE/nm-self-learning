@@ -30,6 +30,7 @@ const courses = [
 
 const authors = [
 	createAuthor(
+		"zaepernickrothe@uni-hildesheim.de",
 		"Ute Zaepernick-Rothe",
 		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=15528",
 		chapters,

@@ -178,10 +178,10 @@ async function seed(): Promise<void> {
 
 	console.log("😅 Seeding...");
 
-	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
-		faker.seed(1);
-		await seedDemos();
-	}
+	// if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
+	faker.seed(1);
+	await seedDemos();
+	// }
 
 	await prisma.subject.createMany({ data: subjects });
 	console.log("✅ Subjects");

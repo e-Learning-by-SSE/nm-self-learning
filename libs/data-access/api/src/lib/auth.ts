@@ -18,8 +18,6 @@ const customPrismaAdapter: Adapter = {
 			where: { id: account.userId }
 		});
 
-		console.log("[Auth]: Data 2", JSON.stringify(account));
-
 		console.log("[Auth]: Creating new account", {
 			userId: user.id,
 			name: user.name,
@@ -46,8 +44,7 @@ const customPrismaAdapter: Adapter = {
 			database.student.create({
 				data: {
 					userId: account.userId,
-					username: user.name ?? user.id,
-					displayName: user.displayName ?? user.name
+					username: user.name ?? user.id
 				}
 			})
 		]);
@@ -87,7 +84,7 @@ function getProviders(): Provider[] {
 						return null;
 					}
 
-					const account = await database.account.findUniqueOrThrow({
+					const account = await database.account.findUnique({
 						where: {
 							provider_providerAccountId: {
 								providerAccountId: username,
@@ -106,6 +103,7 @@ function getProviders(): Provider[] {
 					const user = await database.user.create({
 						data: {
 							name: username,
+							displayName: username,
 							sessions: {
 								create: [
 									{
@@ -126,14 +124,11 @@ function getProviders(): Provider[] {
 							},
 							student: {
 								create: {
-									displayName: username,
 									username: username
 								}
 							}
 						}
 					});
-
-					console.log(`[auth]: Created new user: ${username}`);
 
 					return user;
 				}

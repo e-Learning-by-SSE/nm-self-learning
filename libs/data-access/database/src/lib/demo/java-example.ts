@@ -154,6 +154,7 @@ const courses = [
 
 const authors = [
 	createAuthor(
+		"gosling@example.com",
 		"J. Gosling",
 		"https://www.pngall.com/wp-content/uploads/7/Ryan-Gosling-PNG-Picture.png",
 		chapters,

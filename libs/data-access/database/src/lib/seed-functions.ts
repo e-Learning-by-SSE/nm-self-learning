@@ -49,6 +49,7 @@ type Lessons = {
 }[];
 
 export function createAuthor(
+	userName: string,
 	name: string,
 	imgUrl: string,
 	lessons: Lessons,
@@ -56,7 +57,8 @@ export function createAuthor(
 ): Prisma.UserCreateInput {
 	const slug = slugify(name, { lower: true, strict: true });
 	return {
-		name: name,
+		name: userName,
+		displayName: name,
 		accounts: {
 			create: [
 				{
