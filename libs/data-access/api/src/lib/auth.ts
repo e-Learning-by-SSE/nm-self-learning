@@ -10,12 +10,15 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 
 const customPrismaAdapter: Adapter = {
 	...PrismaAdapter(database),
+
 	// We overwrite the linkAccount method, because some auth providers may send additional properties
 	// that do not exist in the Account model.
 	async linkAccount(account): Promise<void> {
 		const user = await database.user.findUniqueOrThrow({
 			where: { id: account.userId }
 		});
+
+		console.log("[Auth]: Data 2", JSON.stringify(account));
 
 		console.log("[Auth]: Creating new account", {
 			userId: user.id,
@@ -44,7 +47,7 @@ const customPrismaAdapter: Adapter = {
 				data: {
 					userId: account.userId,
 					username: user.name ?? user.id,
-					displayName: user.name ?? "Unknown"
+					displayName: user.displayName ?? user.name
 				}
 			})
 		]);
@@ -56,7 +59,16 @@ function getProviders(): Provider[] {
 		KeycloakProvider({
 			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
 			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
-			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string
+			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
+			profile(profile) {
+				return {
+					id: profile.sub,
+					name: profile.preferred_username ?? profile.email, // Must be an unique identifier
+					email: profile.email,
+					image: profile.picture,
+					displayName: profile.name
+				};
+			}
 		})
 	];
 
