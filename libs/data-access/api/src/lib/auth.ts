@@ -15,6 +15,33 @@ type KeyCloakClaims = {
 	};
 };
 
+enum Role {
+	USER,
+	ADMIN,
+	UNDEFINED
+}
+
+function hasAdminRole(access_token: string | undefined): Role {
+	// realm_access.roles is optional claim -> Check if claim exists
+	if (access_token) {
+		const claims = jwt_decode(access_token) as KeyCloakClaims;
+		const access_roles = claims["realm_access"];
+
+		if (access_roles) {
+			const roles = access_roles["roles"] as string[];
+
+			// Admin role of Self-Learning is defined as selflearn_admin in KeyCloak
+			if (roles?.includes("selflearn_admin")) {
+				return Role.ADMIN;
+			} else {
+				return Role.USER;
+			}
+		}
+	}
+
+	return Role.UNDEFINED;
+}
+
 const customPrismaAdapter: Adapter = {
 	...PrismaAdapter(database),
 
@@ -31,25 +58,16 @@ const customPrismaAdapter: Adapter = {
 			provider: account.provider
 		});
 
-		// Promote User to admin if (optionally) specified by KeyCloak
-		if (account.access_token) {
-			const claims = jwt_decode(account.access_token) as KeyCloakClaims;
-			const access_roles = claims["realm_access"];
-
-			if (access_roles) {
-				const roles = access_roles["roles"] as string[];
-
-				if (roles?.includes("selflearn_admin")) {
-					await database.user.update({
-						where: {
-							id: user.id
-						},
-						data: {
-							role: "ADMIN"
-						}
-					});
+		// Promote User to admin if specified by KeyCloak
+		if (hasAdminRole(account.access_token)) {
+			await database.user.update({
+				where: {
+					id: user.id
+				},
+				data: {
+					role: "ADMIN"
 				}
-			}
+			});
 		}
 
 		await database.$transaction([
@@ -176,12 +194,23 @@ export const authOptions: NextAuthOptions = {
 	theme: { colorScheme: "light" },
 	adapter: customPrismaAdapter,
 	callbacks: {
-		async session({ session, user }) {
+		jwt({ token, account }) {
+			// Store OIDC role inside JWT token
+			const role = hasAdminRole(account?.access_token);
+			if (role == Role.ADMIN) {
+				token.isAdmin = true;
+			} else if (role == Role.USER) {
+				token.isAdmin = false;
+			}
+
+			return token;
+		},
+		async session({ session, user, token }) {
 			const username = session.user?.name ?? user.name;
 
 			if (!username) throw new Error("Username is not defined.");
 
-			const userFromDb = await database.user.findUniqueOrThrow({
+			let userFromDb = await database.user.findUniqueOrThrow({
 				where: { name: username },
 				select: {
 					role: true,
@@ -189,6 +218,30 @@ export const authOptions: NextAuthOptions = {
 					author: { select: { username: true } }
 				}
 			});
+
+			if (userFromDb.role === "ADMIN" && token["isAdmin"] === false) {
+				// DB: User is Admin, Auth-Server (Uni): User is no (longer) Admin -> Demote
+				userFromDb = await database.user.update({
+					where: { name: username },
+					data: { role: "USER" },
+					select: {
+						role: true,
+						image: true,
+						author: { select: { username: true } }
+					}
+				});
+			} else if (userFromDb.role !== "ADMIN" && token["isAdmin"] === true) {
+				// DB: User is no Admin, Auth-Server (Uni): User is Admin -> Promote
+				userFromDb = await database.user.update({
+					where: { name: username },
+					data: { role: "ADMIN" },
+					select: {
+						role: true,
+						image: true,
+						author: { select: { username: true } }
+					}
+				});
+			}
 
 			session.user = {
 				name: username,
