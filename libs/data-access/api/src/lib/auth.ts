@@ -7,6 +7,13 @@ import { Adapter } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
+import jwt_decode from "jwt-decode";
+
+type KeyCloakClaims = {
+	realm_access?: {
+		roles?: string[];
+	};
+};
 
 const customPrismaAdapter: Adapter = {
 	...PrismaAdapter(database),
@@ -23,6 +30,27 @@ const customPrismaAdapter: Adapter = {
 			name: user.name,
 			provider: account.provider
 		});
+
+		// Promote User to admin if (optionally) specified by KeyCloak
+		if (account.access_token) {
+			const claims = jwt_decode(account.access_token) as KeyCloakClaims;
+			const access_roles = claims["realm_access"];
+
+			if (access_roles) {
+				const roles = access_roles["roles"] as string[];
+
+				if (roles?.includes("selflearn_admin")) {
+					await database.user.update({
+						where: {
+							id: user.id
+						},
+						data: {
+							role: "ADMIN"
+						}
+					});
+				}
+			}
+		}
 
 		await database.$transaction([
 			database.account.create({
