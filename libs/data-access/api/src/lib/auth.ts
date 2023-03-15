@@ -58,9 +58,14 @@ function getProviders(): Provider[] {
 			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
 			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
 			profile(profile) {
+				let username = profile.preferred_username ?? profile.email;
+				if (username.toLowerCase().includes("@uni-hildesheim.de")) {
+					username = username.toLowerCase().replace("@uni-hildesheim.de", "");
+				}
+
 				return {
 					id: profile.sub,
-					name: profile.preferred_username ?? profile.email, // Must be an unique identifier
+					name: username, // Must be an unique identifier
 					email: profile.email,
 					image: profile.picture,
 					displayName: profile.name
