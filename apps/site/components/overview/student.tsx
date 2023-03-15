@@ -32,7 +32,6 @@ export function getStudent(username: string) {
 	return database.student.findUniqueOrThrow({
 		where: { username },
 		select: {
-			displayName: true,
 			_count: {
 				select: {
 					completedLessons: true
@@ -40,6 +39,7 @@ export function getStudent(username: string) {
 			},
 			user: {
 				select: {
+					displayName: true,
 					name: true,
 					image: true
 				}
@@ -99,7 +99,7 @@ export default function StudentOverview({ student }: Props) {
 				showToast({
 					type: "success",
 					title: "Informationen aktualisiert",
-					subtitle: updated.displayName
+					subtitle: updated.user.displayName
 				});
 				router.replace(router.asPath);
 			} catch (error) {
@@ -121,7 +121,7 @@ export default function StudentOverview({ student }: Props) {
 						className="h-24 w-24 rounded-lg object-cover"
 					/>
 					<div className="flex flex-col gap-4 pl-8 pr-4">
-						<h1 className="text-6xl">{student.displayName}</h1>
+						<h1 className="text-6xl">{student.user.displayName}</h1>
 						<span>
 							Du hast bereits{" "}
 							<span className="mx-1 font-semibold text-secondary">
@@ -144,7 +144,7 @@ export default function StudentOverview({ student }: Props) {
 
 					{editStudentDialog && (
 						<EditStudentDialog
-							student={{ displayName: student.displayName }}
+							student={{ user: { displayName: student.user.displayName } }}
 							onClose={onEditStudentClose}
 						/>
 					)}
@@ -277,7 +277,7 @@ function ProgressFooter({ progress }: { progress: number }) {
 }
 
 const editStudentSchema = z.object({
-	displayName: z.string().min(3).max(50)
+	user: z.object({ displayName: z.string().min(3).max(50) })
 });
 
 type EditStudent = z.infer<typeof editStudentSchema>;
@@ -295,10 +295,14 @@ function EditStudentDialog({
 	});
 
 	return (
-		<Dialog title={student.displayName} onClose={onClose}>
+		<Dialog title={student.user.displayName} onClose={onClose}>
 			<form onSubmit={form.handleSubmit(onClose)}>
-				<LabeledField label="Name" error={form.formState.errors.displayName?.message}>
-					<input {...form.register("displayName")} type="text" className="textfield" />
+				<LabeledField label="Name" error={form.formState.errors.user?.displayName?.message}>
+					<input
+						{...form.register("user.displayName")}
+						type="text"
+						className="textfield"
+					/>
 				</LabeledField>
 
 				<DialogActions onClose={onClose}>

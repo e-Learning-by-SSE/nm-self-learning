@@ -28,17 +28,19 @@ export const meRouter = t.router({
 	updateStudent: authProcedure
 		.input(
 			z.object({
-				displayName: z.string().min(3).max(50)
+				user: z.object({
+					displayName: z.string().min(3).max(50)
+				})
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
-			const updated = await database.student.update({
-				where: { username: ctx.user.name },
+			const updated = await database.user.update({
+				where: { name: ctx.user.name },
 				data: {
-					displayName: input.displayName
+					displayName: input.user.displayName
 				},
 				select: {
-					username: true,
+					name: true,
 					displayName: true
 				}
 			});

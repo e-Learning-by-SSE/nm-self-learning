@@ -41,6 +41,7 @@ const students = [
 const users: Prisma.UserCreateInput[] = students.map(student => ({
 	name: student.username,
 	image: student.image,
+	displayName: student.displayName,
 	accounts: {
 		create: [
 			{
@@ -52,7 +53,6 @@ const users: Prisma.UserCreateInput[] = students.map(student => ({
 	},
 	student: {
 		create: {
-			displayName: student.displayName,
 			username: student.username
 		}
 	}
@@ -390,6 +390,7 @@ const courses: Prisma.CourseCreateManyInput[] = [
 const authors: Prisma.UserCreateInput[] = [
 	{
 		name: "kent-c-dodds",
+		displayName: "Kent C. Dodds",
 		accounts: {
 			create: [
 				{
@@ -401,7 +402,6 @@ const authors: Prisma.UserCreateInput[] = [
 		},
 		student: {
 			create: {
-				displayName: "Kent C. Dodds",
 				username: "kent-c-dodds"
 			}
 		},
@@ -428,6 +428,7 @@ const authors: Prisma.UserCreateInput[] = [
 	},
 	{
 		name: "dumbledore",
+		displayName: "Albus Dumbledore",
 		role: "ADMIN",
 		image: "https://i.imgur.com/UWMVO8m.jpeg",
 		accounts: {
@@ -441,7 +442,6 @@ const authors: Prisma.UserCreateInput[] = [
 		},
 		student: {
 			create: {
-				displayName: "Albus Dumbledore",
 				username: "dumbledore"
 			}
 		},
@@ -461,6 +461,7 @@ const authors: Prisma.UserCreateInput[] = [
 	{
 		name: "mcgonagall",
 		image: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg",
+		displayName: "Minerva McGonagall",
 		accounts: {
 			create: [
 				{
@@ -472,7 +473,6 @@ const authors: Prisma.UserCreateInput[] = [
 		},
 		student: {
 			create: {
-				displayName: "Minerva McGonagall",
 				username: "mcgonagall"
 			}
 		},

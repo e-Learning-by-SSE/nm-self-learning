@@ -10,6 +10,7 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 
 const customPrismaAdapter: Adapter = {
 	...PrismaAdapter(database),
+
 	// We overwrite the linkAccount method, because some auth providers may send additional properties
 	// that do not exist in the Account model.
 	async linkAccount(account): Promise<void> {
@@ -43,8 +44,7 @@ const customPrismaAdapter: Adapter = {
 			database.student.create({
 				data: {
 					userId: account.userId,
-					username: user.name ?? user.id,
-					displayName: user.name ?? "Unknown"
+					username: user.name ?? user.id
 				}
 			})
 		]);
@@ -56,7 +56,21 @@ function getProviders(): Provider[] {
 		KeycloakProvider({
 			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
 			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
-			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string
+			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
+			profile(profile) {
+				let username = profile.preferred_username ?? profile.email;
+				if (username.toLowerCase().includes("@uni-hildesheim.de")) {
+					username = username.toLowerCase().replace("@uni-hildesheim.de", "");
+				}
+
+				return {
+					id: profile.sub,
+					name: username, // Must be an unique identifier
+					email: profile.email,
+					image: profile.picture,
+					displayName: profile.name
+				};
+			}
 		})
 	];
 
@@ -75,7 +89,7 @@ function getProviders(): Provider[] {
 						return null;
 					}
 
-					const account = await database.account.findUniqueOrThrow({
+					const account = await database.account.findUnique({
 						where: {
 							provider_providerAccountId: {
 								providerAccountId: username,
@@ -94,6 +108,7 @@ function getProviders(): Provider[] {
 					const user = await database.user.create({
 						data: {
 							name: username,
+							displayName: username,
 							sessions: {
 								create: [
 									{
@@ -114,14 +129,11 @@ function getProviders(): Provider[] {
 							},
 							student: {
 								create: {
-									displayName: username,
 									username: username
 								}
 							}
 						}
 					});
-
-					console.log(`[auth]: Created new user: ${username}`);
 
 					return user;
 				}

@@ -1,6 +1,6 @@
-import { createAuthor, seedCaseStudy } from '../seed-functions';
-import * as Analysis from './Analysis';
-import * as DidacticsOfGeometry from './DidacticsOfGeometry';
+import { createAuthor, seedCaseStudy } from "../seed-functions";
+import * as Analysis from "./Analysis";
+import * as DidacticsOfGeometry from "./DidacticsOfGeometry";
 
 const didacticChapters = [DidacticsOfGeometry.chapters].flat();
 const mathChapters = [Analysis.chapters].flat();
@@ -10,18 +10,21 @@ const mathCourses = [Analysis.course];
 
 const authors = [
 	createAuthor(
+		"beste",
 		"Meeri-Liisa Beste",
 		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=14397",
 		didacticChapters,
 		didacticCourses
 	),
 	createAuthor(
+		"wolffb",
 		"Bianca Wolff",
 		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=14411",
 		didacticChapters,
 		didacticCourses
 	),
 	createAuthor(
+		"veith",
 		"Joaquin Veith",
 		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=15414",
 		mathChapters,
