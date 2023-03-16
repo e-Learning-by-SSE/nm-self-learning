@@ -1,6 +1,6 @@
 import type { AppRouter } from "@self-learning/api";
 import { Navbar } from "@self-learning/ui/layouts";
-import { httpLink } from "@trpc/client/links/httpLink";
+import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
 import { SessionProvider } from "next-auth/react";
@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import "./styles.css";
 import "katex/dist/katex.css";
 
+
 export default withTRPC<AppRouter>({
 	config() {
 		return {
@@ -21,8 +22,8 @@ export default withTRPC<AppRouter>({
 						process.env.NODE_ENV === "development" ||
 						(opts.direction === "down" && opts.result instanceof Error)
 				}),
-				httpLink({
-					url: "/api/trpc"
+				httpBatchLink({
+					url: `${process.env.NEXT_PUBLIC_BASE_PATH}/api/trpc`
 				})
 			],
 			queryClientConfig: {
