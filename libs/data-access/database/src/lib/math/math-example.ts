@@ -10,21 +10,21 @@ const mathCourses = [Analysis.course];
 
 const authors = [
 	createAuthor(
-		"beste",
+		"beste-demo",
 		"Meeri-Liisa Beste",
 		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=14397",
 		didacticChapters,
 		didacticCourses
 	),
 	createAuthor(
-		"wolffb",
+		"wolffb-demo",
 		"Bianca Wolff",
 		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=14411",
 		didacticChapters,
 		didacticCourses
 	),
 	createAuthor(
-		"veith",
+		"veith-demo",
 		"Joaquin Veith",
 		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=15414",
 		mathChapters,
