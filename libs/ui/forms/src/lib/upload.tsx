@@ -86,9 +86,9 @@ export function Upload({
 		}
 
 		const { presignedUrl, publicUrl } = await getPresignedUrl({ filename: objectName });
-		console.log("Presigned URL:", presignedUrl);
+		console.log("Presigned URL:", publicUrl);
 
-		await uploadFile(file, presignedUrl);
+		await uploadFile(file, publicUrl);
 		console.log("File uploaded to:", publicUrl);
 		onUploadCompleted(publicUrl, meta);
 
