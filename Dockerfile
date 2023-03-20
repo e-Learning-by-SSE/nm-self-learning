@@ -2,16 +2,12 @@
 FROM node:18-alpine
 
 # Missing packages
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
-# Required for Prisma Client to work in container
-RUN apk add --no-cache openssl1.1-compat
-# Required for entry-script
-RUN apk add --no-cache bash
-# pg_isready to test if DB is up, bevor application starts
-RUN apk add --no-cache postgresql-libs postgresql-client
-# Add Diffutils (provides cmp)
-RUN apk add --no-cache diffutils
+# * Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+# * openssl1.1-compat is needed by Prisma Client to work in container
+# * bash is needed for entry-script
+# * postgresql-libs and postgresql-client are needed for pg_isready
+# * diffutils is needed for cmp (needed for entry-script)
+RUN apk add --no-cache libc6-compat openssl1.1-compat bash postgresql-libs postgresql-client diffutils
 
 # Create app directory
 WORKDIR /app

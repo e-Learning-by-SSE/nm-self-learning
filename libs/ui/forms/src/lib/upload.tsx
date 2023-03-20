@@ -85,15 +85,15 @@ export function Upload({
 			};
 		}
 
-		const { presignedUrl, publicUrl } = await getPresignedUrl({ filename: objectName });
-		console.log("Presigned URL:", publicUrl);
+		const presignedUrl = await getPresignedUrl({ filename: objectName });
+		console.log("Presigned URL:", presignedUrl);
 
-		await uploadFile(file, publicUrl);
-		console.log("File uploaded to:", publicUrl);
-		onUploadCompleted(publicUrl, meta);
+		await uploadFile(file, presignedUrl);
+		console.log("File uploaded to:", presignedUrl);
+		onUploadCompleted(presignedUrl, meta);
 
 		try {
-			await registerAsset({ objectName, publicUrl, fileType, fileName });
+			await registerAsset({ objectName, publicUrl: presignedUrl, fileType, fileName });
 			console.log("Asset registered.");
 		} catch (error) {
 			console.log("Failed to register asset.");

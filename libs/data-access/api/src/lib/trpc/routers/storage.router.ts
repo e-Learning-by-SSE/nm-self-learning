@@ -9,7 +9,6 @@ import { adminProcedure, authProcedure, t } from "../trpc";
 
 export const minioConfig: ClientOptions & { bucketName: string; publicUrl?: string } = z
 	.object({
-		publicUrl: z.string().optional(), // If not specified, we fallback to <protocol>://<host>:<port>
 		endPoint: z.string(),
 		port: z.number(),
 		useSSL: z.boolean().optional(),
@@ -18,7 +17,6 @@ export const minioConfig: ClientOptions & { bucketName: string; publicUrl?: stri
 		bucketName: z.string()
 	})
 	.parse({
-		publicUrl: process.env.MINIO_PUBLIC_URL,
 		endPoint: process.env.MINIO_ENDPOINT,
 		port: parseInt(process.env.MINIO_PORT as string),
 		useSSL: process.env.MINIO_USE_SSL === "true",
@@ -28,12 +26,6 @@ export const minioConfig: ClientOptions & { bucketName: string; publicUrl?: stri
 	});
 
 export const minioClient = new Client(minioConfig);
-
-const publicUrlWithBucket = minioConfig.publicUrl
-	? `${minioConfig.publicUrl}/${minioConfig.bucketName}`
-	: `${minioConfig.useSSL ? "https" : "http"}://${minioConfig.endPoint}:${minioConfig.port}/${
-			minioConfig.bucketName
-	  }`;
 
 export const storageRouter = t.router({
 	getPresignedUrl: authProcedure
@@ -46,10 +38,7 @@ export const storageRouter = t.router({
 			const randomizedFilename = `${getRandomId()}-${input.filename}`;
 			const presignedUrl = await getPresignedUrl(randomizedFilename);
 
-			return {
-				presignedUrl,
-				publicUrl: `${publicUrlWithBucket}/${randomizedFilename}`
-			};
+			return presignedUrl;
 		}),
 	removeFileAsAdmin: adminProcedure
 		.input(
