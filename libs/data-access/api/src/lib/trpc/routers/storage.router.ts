@@ -38,7 +38,14 @@ export const storageRouter = t.router({
 			const randomizedFilename = `${getRandomId()}-${input.filename}`;
 			const presignedUrl = await getPresignedUrl(randomizedFilename);
 
-			return presignedUrl;
+			// Presigned URL contains a temporary signature that allows the user to upload a file to the storage server.
+			// The URL is only valid for a short period of time.
+			// We need further the download URL
+			// Delete after character "&" because these are the parameters for the upload
+			// TODO: Requires public download option -> Implement download via presignedUrl
+			const downloadUrl = presignedUrl.slice(0, presignedUrl.indexOf("&"));
+
+			return { presignedUrl, downloadUrl };
 		}),
 	removeFileAsAdmin: adminProcedure
 		.input(
