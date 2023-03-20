@@ -57,11 +57,6 @@ export function LandingPage() {
 								deinem Lernfortschritt und Hinweise, wie du Lernstrategien anwenden
 								kannst, um dein Lernen zu verbessern.
 							</li>
-
-							<li>
-								Unsere Mission ist, dass du durch die Plattform lernst,
-								selbstgesteuert und nachhaltig zu lernen.
-							</li>
 						</ul>
 					</span>
 				</div>
