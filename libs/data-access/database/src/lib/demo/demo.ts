@@ -255,12 +255,13 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 const mdContent = readFileSync(join(__dirname, "markdown-example.mdx"), "utf-8");
 
 function createLesson(title: string) {
-	const lesson: Prisma.LessonCreateInput = {
+	const lesson: Prisma.LessonCreateManyInput = {
 		title,
 		lessonId: faker.random.alphaNumeric(8),
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: faker.lorem.paragraph(1),
 		description: faker.lorem.paragraphs(3),
+		licenseId: 1,
 		imgUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=256",
 		content: [
 			{
@@ -515,7 +516,12 @@ export async function seedDemos(): Promise<void> {
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
 	await prisma.lesson.createMany({
-		data: reactLessons.flatMap(chapter => chapter.content.map(lesson => lesson))
+		data: reactLessons.flatMap(chapter =>
+			chapter.content.map(lesson => ({
+				...lesson,
+				licenseId: lesson.licenseId ?? 1
+			}))
+		)
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 

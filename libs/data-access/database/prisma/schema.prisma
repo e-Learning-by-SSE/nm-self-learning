@@ -198,6 +198,8 @@ model Lesson {
     completions  CompletedLesson[]
     quizAttempts QuizAttempt[]
     authors      Author[]
+    license      License @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
+    licenseId    Int
 }
 
 model CompletedLesson {
@@ -256,4 +258,17 @@ model UploadedAssets {
     username   String?
 
     @@index([fileName])
+}
+
+model License {
+    licenseId     Int     @id @default(autoincrement())
+    name          String
+    url           String?
+    licenseText   String?
+    logoUrl       String?
+    oerCompatible Boolean @default(false)
+    // Specifies whether the license can be chosen by normal users or by admins only
+    selectable    Boolean @default(true)
+    // Back reference required by Prisma -> PRovides overview about usage
+    lessons       Lesson[]
 }

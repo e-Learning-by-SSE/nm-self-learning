@@ -164,6 +164,44 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 	)
 ];
 
+const license: Prisma.LicenseCreateManyInput[] = [
+	// Default License -> Should come first
+	{
+		licenseId: 1,
+		name: "CC BY 4.0",
+		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
+		logoUrl: "https://licensebuttons.net/l/by/3.0/88x31.png",
+		oerCompatible: false,
+		selectable: true
+	},
+	{
+		licenseId: 2,
+		name: "CC BY SA 4.0",
+		url: "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
+		logoUrl: "https://licensebuttons.net/l/by-sa/3.0/88x31.png",
+		oerCompatible: false,
+		selectable: true
+	},
+	{
+		licenseId: 3,
+		name: "CC 4.0",
+		url: "https://creativecommons.org/publicdomain/zero/1.0/deed.de",
+		logoUrl: "https://mirrors.creativecommons.org/presskit/icons/cc.png",
+		oerCompatible: false,
+		selectable: true
+	},
+
+	// Should come last
+	{
+		licenseId: 100,
+		name: "Uni Hi Intern",
+		licenseText:
+			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
+		oerCompatible: false,
+		selectable: true
+	}
+];
+
 async function seed(): Promise<void> {
 	const start = Date.now();
 
@@ -175,8 +213,12 @@ async function seed(): Promise<void> {
 	await prisma.subject.deleteMany();
 	await prisma.enrollment.deleteMany();
 	await prisma.lesson.deleteMany();
+	await prisma.license.deleteMany();
 
 	console.log("😅 Seeding...");
+
+	await prisma.license.createMany({ data: license });
+	console.log("✅ Licenses");
 
 	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
 		faker.seed(1);
