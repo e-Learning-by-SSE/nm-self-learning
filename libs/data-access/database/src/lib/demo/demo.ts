@@ -16,9 +16,6 @@ import {
 import { getRandomId } from "@self-learning/util/common";
 
 import { javaExample } from "./java-example";
-import { mathExample } from "../math/math-example";
-import { psychologyExample } from "../psychology/psychology-example";
-import { createSpecialization } from "../seed-functions";
 import { Quiz } from "@self-learning/quiz";
 
 faker.seed(1);

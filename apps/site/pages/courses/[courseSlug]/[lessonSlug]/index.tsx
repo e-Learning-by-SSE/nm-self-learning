@@ -19,6 +19,7 @@ import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -158,7 +159,12 @@ function LessonHeader({
 						<span className="mt-2 text-light">{lesson.subtitle}</span>
 					)}
 
-					<Authors authors={lesson.authors} />
+					<span className="flex flex-wrap-reverse justify-between gap-4">
+						<span className="flex flex-col gap-3">
+							<Authors authors={lesson.authors} />
+						</span>
+						<LicenseLabel license={lesson.license} />
+					</span>
 
 					<div className="pt-4">
 						<MediaTypeSelector lesson={lesson} course={course} />
@@ -223,6 +229,43 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 			)}
 		</>
 	);
+}
+
+export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
+	const className = "h-20 w-30 rounded-l-lg object-cover mt-4";
+	if (license.logoUrl) {
+		const img = (
+			<Image
+				src={license.logoUrl}
+				alt={license.name}
+				title={license.name}
+				width={100}
+				height={100}
+			/>
+		);
+
+		if (license.url) {
+			return (
+				<a href={license.url} className={className} target="_blank" rel="noreferrer">
+					{img}
+				</a>
+			);
+		} else {
+			return <div className={className}>{img}</div>;
+		}
+	}
+
+	if (license.url) {
+		return (
+			<div className={className}>
+				<a href={license.url} target="_blank" rel="noreferrer">
+					{license.name}
+				</a>
+			</div>
+		);
+	} else {
+		return <div className={className}>{license.name}</div>;
+	}
 }
 
 function MediaTypeSelector({
