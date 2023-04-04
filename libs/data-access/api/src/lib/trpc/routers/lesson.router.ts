@@ -53,6 +53,12 @@ export const lessonRouter = t.router({
 				authors: {
 					connect: input.authors.map(a => ({ username: a.username }))
 				},
+				license: {
+					connect: {
+						licenseId:
+							input.license?.licenseId ?? (await suggestDefaultLicense()).licenseId
+					}
+				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
@@ -86,6 +92,15 @@ export const lessonRouter = t.router({
 					authors: {
 						set: input.lesson.authors.map(a => ({ username: a.username }))
 					},
+					license: {
+						connect: {
+							licenseId:
+								input.lesson.license?.licenseId ??
+								(
+									await suggestDefaultLicense()
+								).licenseId
+						}
+					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},
 				select: {
@@ -99,6 +114,14 @@ export const lessonRouter = t.router({
 			return updatedLesson;
 		})
 });
+
+async function suggestDefaultLicense() {
+	return await database.license.findFirstOrThrow({
+		orderBy: {
+			licenseId: "asc"
+		}
+	});
+}
 
 export async function findLessons({
 	title,

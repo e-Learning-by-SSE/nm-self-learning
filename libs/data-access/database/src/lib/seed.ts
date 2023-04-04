@@ -171,7 +171,7 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		name: "CC BY 4.0",
 		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
 		logoUrl: "https://licensebuttons.net/l/by/3.0/88x31.png",
-		oerCompatible: false,
+		oerCompatible: true,
 		selectable: true
 	},
 	{
@@ -179,7 +179,7 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		name: "CC BY SA 4.0",
 		url: "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
 		logoUrl: "https://licensebuttons.net/l/by-sa/3.0/88x31.png",
-		oerCompatible: false,
+		oerCompatible: true,
 		selectable: true
 	},
 	{
@@ -187,7 +187,7 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		name: "CC 4.0",
 		url: "https://creativecommons.org/publicdomain/zero/1.0/deed.de",
 		logoUrl: "https://mirrors.creativecommons.org/presskit/icons/cc.png",
-		oerCompatible: false,
+		oerCompatible: true,
 		selectable: true
 	},
 
