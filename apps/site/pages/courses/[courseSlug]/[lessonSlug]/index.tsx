@@ -234,14 +234,13 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
 	const className = "h-20 w-30 rounded-l-lg object-cover mt-4";
 	if (license.logoUrl) {
+		// Check if logo should be loaded relative to the current page or if an absolute path is provided
+		const logoUrl = license.logoUrl.startsWith("/")
+			? `${process.env.NEXT_ASSET_PREFIX}${license.logoUrl}`
+			: license.logoUrl;
+
 		const img = (
-			<Image
-				src={license.logoUrl}
-				alt={license.name}
-				title={license.name}
-				width={100}
-				height={100}
-			/>
+			<Image src={logoUrl} alt={license.name} title={license.name} width={100} height={100} />
 		);
 
 		if (license.url) {

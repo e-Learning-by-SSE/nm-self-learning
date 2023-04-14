@@ -2,10 +2,10 @@ import { trpc } from "@self-learning/api-client";
 import { License } from "@self-learning/types";
 import { LoadingBox } from "@self-learning/ui/common";
 import { useFormContext } from "react-hook-form";
-import { LessonFormModel } from "./lesson-form-model";
+import { LessonFormModel } from "../lesson-form-model";
 
 // Handles loading of licenses and makes them selectable afterwards
-export function LicenseEditor() {
+export function LicenseForm() {
 	const { data: licenses, isLoading } = trpc.licenseRouter.getAll.useQuery();
 
 	if (isLoading) {

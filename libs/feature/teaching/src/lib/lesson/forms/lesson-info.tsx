@@ -1,4 +1,4 @@
-import { LicenseEditor } from "@self-learning/teaching";
+import { LicenseForm } from "@self-learning/teaching";
 import { ImageOrPlaceholder } from "@self-learning/ui/common";
 import {
 	FieldHint,
@@ -95,7 +95,7 @@ export function LessonInfoEditor() {
 					emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
 				/>
 
-				<LicenseEditor />
+				<LicenseForm />
 			</div>
 		</Form.SidebarSection>
 	);
