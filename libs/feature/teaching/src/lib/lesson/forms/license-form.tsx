@@ -26,12 +26,13 @@ function OptionalLicenseSelector({ licenses }: { licenses?: License[] }) {
 
 // Makes licenses selectable after checking if there are any
 function LicenseSelector({ licenses }: { licenses: License[] }) {
-	const { setValue, getValues } = useFormContext<LessonFormModel>();
+	const { setValue, watch } = useFormContext<LessonFormModel>();
+	const currentValue = watch("licenseId");
 
 	return (
 		<select
 			className="textfield w-64 rounded-lg px-8"
-			value={getValues("licenseId")}
+			value={currentValue}
 			// target.value is a number as string
 			// + operator converts the number: https://www.techiediaries.com/javascript/convert-string-number-array-react-hooks-vuejs/
 			onChange={e => setValue("licenseId", +e.target.value)}
