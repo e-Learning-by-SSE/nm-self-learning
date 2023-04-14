@@ -11,6 +11,7 @@ describe("checkLessonCompletion", () => {
 		lessonId: `lesson-${index}`,
 		slug: `lesson-${index}-slug`,
 		title: `Lesson ${index}`,
+		licenseId: 1,
 		content: [],
 		meta: {}
 	});
