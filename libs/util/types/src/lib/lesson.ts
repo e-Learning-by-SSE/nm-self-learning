@@ -2,7 +2,6 @@ import { z } from "zod";
 import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
-import { licenseSchema } from "./license";
 
 export type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 
@@ -15,7 +14,7 @@ export const lessonSchema = z.object({
 	imgUrl: z.string().nullable().optional(),
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
-	license: licenseSchema.nullable().optional(),
+	licenseId: z.number(),
 	quiz: z
 		.object({
 			questions: z.array(z.any()),
@@ -37,6 +36,7 @@ export function createEmptyLesson(): Lesson {
 		description: null,
 		imgUrl: null,
 		quiz: null,
+		licenseId: 1,
 		content: [],
 		authors: []
 	};

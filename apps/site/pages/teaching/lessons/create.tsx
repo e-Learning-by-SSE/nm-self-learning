@@ -46,6 +46,7 @@ export default function CreateLessonPage() {
 				subtitle: "",
 				description: "",
 				imgUrl: "",
+				licenseId: 1,
 				quiz: { questions: [], config: null },
 				content: [],
 				authors: [{ username: authorUsername }]
