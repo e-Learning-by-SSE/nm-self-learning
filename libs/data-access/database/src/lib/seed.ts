@@ -172,7 +172,8 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
 		logoUrl: "/licenses/cc-by.svg",
 		oerCompatible: true,
-		selectable: true
+		selectable: true,
+		defaultSuggestion: true
 	},
 	{
 		licenseId: 2,
