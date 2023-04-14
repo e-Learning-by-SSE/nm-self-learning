@@ -3,6 +3,7 @@ import { License } from "@self-learning/types";
 import { LoadingBox } from "@self-learning/ui/common";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
+import { Form } from "@self-learning/ui/forms";
 
 // Handles loading of licenses and makes them selectable afterwards
 export function LicenseForm() {
@@ -11,7 +12,15 @@ export function LicenseForm() {
 	if (isLoading) {
 		return <LoadingBox />;
 	} else {
-		return <OptionalLicenseSelector licenses={licenses} />;
+		return (
+			<Form.SidebarSection>
+				<Form.SidebarSectionTitle
+					title="Lizenz"
+					subtitle="Die Lizenz unter der diese Lerneinheit vertrieben wird"
+				/>
+				<OptionalLicenseSelector licenses={licenses} />
+			</Form.SidebarSection>
+		);
 	}
 }
 
