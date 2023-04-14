@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { createLesson } from "@self-learning/types";
 import { createTestUser } from "@self-learning/util/testing";
 import { checkLessonCompletion, getCompletedLessonsThisWeek } from "./lesson-completion";
 
@@ -94,6 +93,7 @@ describe("getCompletedLessonsThisWeek", () => {
 				lessonId: "completed-lesson",
 				slug: "completed-lesson-slug",
 				title: "Completed Lesson",
+				licenseId: 1,
 				content: [],
 				meta: {}
 			}
