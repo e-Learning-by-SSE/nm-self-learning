@@ -4,7 +4,8 @@ import {
 	getStaticPropsForLayout,
 	LessonLayout,
 	LessonLayoutProps,
-	useLessonContext
+	useLessonContext,
+	LicenseViewModal
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -232,6 +233,8 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 }
 
 export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
+	const [openModal, setOpenModal] = useState(false);
+
 	const className = "h-20 w-30 rounded-l-lg object-cover mt-4";
 	if (license.logoUrl) {
 		// Check if logo should be loaded relative to the current page or if an absolute path is provided
@@ -240,7 +243,7 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 			: license.logoUrl;
 
 		const img = (
-			<Image src={logoUrl} alt={license.name} title={license.name} width={100} height={100} />
+			<Image src={logoUrl} alt={license.name} title={license.name} width={30} height={30} />
 		);
 
 		if (license.url) {
@@ -250,7 +253,13 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 				</a>
 			);
 		} else {
-			return <div className={className}>{img}</div>;
+			return (
+				<div>
+					{ openModal &&
+				<LicenseViewModal onClose={() => {setOpenModal(false)}} description={license.licenseText !== null ? license.licenseText : "No description provided"}/> }
+					<div style={{cursor: "pointer"}}  onClick={() => {setOpenModal(true)}} className={className}>{img}</div>
+				</div>
+			);
 		}
 	}
 
@@ -263,7 +272,13 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 			</div>
 		);
 	} else {
-		return <div className={className}>{license.name}</div>;
+		return (
+			<div>
+				{ openModal &&
+				<LicenseViewModal onClose={() => {setOpenModal(false)}} description={license.licenseText !== null ? license.licenseText : "No description provided"}/> }
+				<div style={{cursor: "pointer"}} className={className} onClick={() => {setOpenModal(true)}}>{license.name}</div>
+			</div>
+		);
 	}
 }
 
