@@ -29,3 +29,16 @@ export async function createTestUser(username: string) {
 		update: {}
 	});
 }
+
+export async function createLicense(licenseId: number) {
+	const license: Prisma.LicenseUncheckedCreateInput = {
+		licenseId: licenseId,
+		name: `License ${licenseId}`
+	};
+
+	await database.license.upsert({
+		where: { licenseId: licenseId },
+		create: license,
+		update: {}
+	});
+}
