@@ -42,7 +42,8 @@ async function getLesson(slug: string) {
 				select: {
 					name: true,
 					url: true,
-					logoUrl: true
+					logoUrl: true,
+					licenseText: true
 				}
 			},
 			authors: {
