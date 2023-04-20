@@ -7,6 +7,7 @@
 		"build": "nx build",
 		"test": "env TZ='Europe/Berlin' jest --runInBand",
 		"test:ci": "env TZ='Europe/Berlin' jest --runInBand",
+		"test:updateSnapshots": "env TZ='Europe/Berlin' jest --runInBand --updateSnapshot",
 		"cypress": "cypress open --project=apps/site-e2e",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write **/*",
