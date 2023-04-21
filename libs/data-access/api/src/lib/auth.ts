@@ -103,6 +103,7 @@ function getProviders(): Provider[] {
 			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
 			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
 			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
+			authorization: { params: { scope: "openid email profile profile_studium" } },
 			profile(profile) {
 				let username = profile.preferred_username ?? profile.email;
 				if (username.toLowerCase().includes("@uni-hildesheim.de")) {
