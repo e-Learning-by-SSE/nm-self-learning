@@ -21,6 +21,10 @@ enum Role {
 	UNDEFINED
 }
 
+export const MAIL_DOMAIN = "@uni-hildesheim.de";
+export const OIDC_SCOPES = "openid profile email roles profile_studium";
+export const ADMIN_ROLE = "selflearn_admin";
+
 function hasAdminRole(access_token: string | undefined): Role {
 	// realm_access.roles is optional claim -> Check if claim exists
 	if (access_token) {
@@ -31,7 +35,7 @@ function hasAdminRole(access_token: string | undefined): Role {
 			const roles = access_roles["roles"] as string[];
 
 			// Admin role of Self-Learning is defined as selflearn_admin in KeyCloak
-			if (roles?.includes("selflearn_admin")) {
+			if (roles?.includes(ADMIN_ROLE)) {
 				return Role.ADMIN;
 			} else {
 				return Role.USER;
@@ -41,6 +45,14 @@ function hasAdminRole(access_token: string | undefined): Role {
 
 	return Role.UNDEFINED;
 }
+
+function mailToUsername(mail: string): string {
+	if (mail.toLowerCase().includes(MAIL_DOMAIN)) {
+		mail = mail.toLowerCase().replace(MAIL_DOMAIN, "");
+	}
+	return mail;
+}
+export const testingExportMailToUsername = mailToUsername;
 
 const customPrismaAdapter: Adapter = {
 	...PrismaAdapter(database),
@@ -103,16 +115,11 @@ function getProviders(): Provider[] {
 			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
 			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
 			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
-			authorization: { params: { scope: "openid email profile profile_studium" } },
+			authorization: { params: { scope: OIDC_SCOPES } },
 			profile(profile) {
-				let username = profile.preferred_username ?? profile.email;
-				if (username.toLowerCase().includes("@uni-hildesheim.de")) {
-					username = username.toLowerCase().replace("@uni-hildesheim.de", "");
-				}
-
 				return {
 					id: profile.sub,
-					name: username, // Must be an unique identifier
+					name:  profile.preferred_username ?? mailToUsername(profile.email),
 					email: profile.email,
 					image: profile.picture,
 					displayName: profile.name
