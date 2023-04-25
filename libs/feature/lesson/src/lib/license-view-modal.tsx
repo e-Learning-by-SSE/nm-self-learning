@@ -1,5 +1,5 @@
-import { Dialog, DialogActions } from "@self-learning/ui/common";
-import { LabeledField, Textfield } from "@self-learning/ui/forms";
+import { Dialog} from "@self-learning/ui/common";
+import { LabeledField} from "@self-learning/ui/forms";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { useState } from "react";
 
