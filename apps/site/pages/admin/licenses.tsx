@@ -158,14 +158,10 @@ export function LicenseDetail({ license }: { license: License }) {
 	return(
 		<div className="grid grid-cols-2 gap-4">
 			<div className="col-span-1">
-					
-					<div className="text-sm font-medium">Url der Lizenzwebseite:</div>
-					
-					
-					<div className="text-sm font-medium">Lizenzbeschreibung:</div>
-					
-					<div className="text-sm font-medium">Auswählbar</div>
-					<div className="text-sm font-medium">OER - Kompatible:</div>
+				<div className="text-sm font-medium">Url der Lizenzwebseite:</div>
+				<div className="text-sm font-medium">Lizenzbeschreibung:</div>
+				<div className="text-sm font-medium">Auswählbar</div>
+				<div className="text-sm font-medium">OER - Kompatible:</div>
 			</div>
 			<div className="col-span-1">
 				{license.licenseUrl ? (
