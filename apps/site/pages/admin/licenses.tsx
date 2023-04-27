@@ -11,6 +11,9 @@ import {
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useMemo, useState } from "react";
+import { License} from "@self-learning/types";
+import Link from "next/link";
+import { LicenseViewModal } from "@self-learning/lesson";
 
 export default function LicensesPage() {
 	useRequiredSession();
@@ -19,6 +22,8 @@ export default function LicensesPage() {
 	const { data: licenses, isLoading } = trpc.licenseRouter.getAll.useQuery();
 	const [editTarget, setEditTarget] = useState<number | null>(null);
 	const [createLicenseDialog, setCreateLicenseDialog] = useState(false);
+
+	const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
 
     const filteredLicenses = useMemo(() => {
 		if (!licenses) return [];
@@ -40,6 +45,10 @@ export default function LicensesPage() {
         setEditTarget(licenseId);
     }
 
+	const toggleAccordion = (index: number) => {
+		setActiveRowIndex(activeRowIndex === index ? null : index);
+	  };
+
 
 	return (
 		<AdminGuard>
@@ -57,7 +66,7 @@ export default function LicensesPage() {
 
 				<SearchField
 					placeholder="Suche nach Lizenz"
-					onChange={e => setDisplayName(e.target.value)}
+					onChange={e => {setDisplayName(e.target.value); setActiveRowIndex(null)}}
 				/>
 
 				{editTarget && (
@@ -76,7 +85,7 @@ export default function LicensesPage() {
 							</>
 						}
 					>
-						{filteredLicenses.map(({licenseId, name, logoUrl }) => (
+						{filteredLicenses.map(({licenseId, name, logoUrl}, index, value) => (
 							<Fragment key={name}>
 								{name && (
 									<tr key={name}>
@@ -88,7 +97,9 @@ export default function LicensesPage() {
 										</TableDataColumn>
 										<TableDataColumn>
 											<div className="flex flex-wrap gap-4">
+												<div className="text-sm font-medium hover:text-secondary" style={{cursor: "pointer"}} onClick={() => toggleAccordion(index)}>
 													{name}
+												</div>
 											</div>
 										</TableDataColumn>
 										<TableDataColumn>
@@ -103,11 +114,84 @@ export default function LicensesPage() {
 										</TableDataColumn>
 									</tr>
 								)}
+								{activeRowIndex === index && (
+									<tr className="border-b border-gray-300">
+										<TableDataColumn/>
+										<td colSpan={5} className="py-2 px-3">
+											<div
+												className={`px-6 pt-0 overflow-hidden transition-[max-height] duration-500 ease-in ${
+												activeRowIndex === index ? 'max-h-36' : 'max-h-0'
+												}`}>
+												<LicenseDetail license={{
+													licenseId: licenseId,
+													name: name,
+													imgUrl: logoUrl,
+													licenseText: value[index].licenseText,
+													licenseUrl: value[index].url,
+													oerCompatible: value[index].oerCompatible,
+													selectable: value[index].selectable,
+												}} />
+											</div>
+										</td>
+									</tr>)}
 							</Fragment>
 						))}
 					</Table>
 				)}
 			</CenteredSection>
 		</AdminGuard>
+	);
+}
+
+export function LicenseDetail({ license }: { license: License }) {
+
+	const [viewLicenseDialog, setViewLicenseDialog] = useState(false);
+	
+
+	function shortenLongUrl(url: string): string {
+		if (url.length > 20) {
+			return url.slice(0, 20) + "...";
+		}
+		return url;
+	}
+
+	return(
+		<div className="grid grid-cols-2 gap-4">
+			<div className="col-span-1">
+					
+					<div className="text-sm font-medium">Url der Lizenzwebseite:</div>
+					
+					
+					<div className="text-sm font-medium">Lizenzbeschreibung:</div>
+					
+					<div className="text-sm font-medium">Auswählbar</div>
+					<div className="text-sm font-medium">OER - Kompatible:</div>
+			</div>
+			<div className="col-span-1">
+				{license.licenseUrl ? (
+					<Link
+						className="text-sm font-medium hover:text-secondary"
+						href={license.licenseUrl}
+					>
+						{shortenLongUrl(license.licenseUrl)}
+					</Link>
+				):
+					<div className="text-sm font-medium">Nicht definiert</div>
+				}
+				{license.licenseText ? (
+					<div className="text-sm font-medium hover:text-secondary" style={{cursor: "pointer"}} onClick={() => setViewLicenseDialog(true)}>
+						VIEW
+					</div>
+				):
+					<div className="text-sm font-medium">Nicht definiert</div>
+				}
+				<div className="text-sm font-medium">{ license.selectable ? "Ja" : "Nein" }</div>
+				<div className="text-sm font-medium">{ license.oerCompatible ? "Ja" : "Nein" }</div>
+			</div>
+			{viewLicenseDialog && (
+				<LicenseViewModal description={license.licenseText ?? ""} onClose={() => setViewLicenseDialog(false)} ></LicenseViewModal>
+				)}
+		</div>
+
 	);
 }
