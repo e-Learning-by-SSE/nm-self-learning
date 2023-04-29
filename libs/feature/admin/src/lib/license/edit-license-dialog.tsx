@@ -238,6 +238,7 @@ function getLicenseOrDefault(licenseId: number | null) {
                 name: data.data?.name ?? "",
                 licenseUrl: data.data?.url ?? "",
                 imgUrl: data.data?.logoUrl ?? "",
+                licenseText: data.data?.licenseText ?? "",
                 selectable: data.data?.selectable ?? true,
                 oerCompatible: data.data?.oerCompatible ?? false,
             }
