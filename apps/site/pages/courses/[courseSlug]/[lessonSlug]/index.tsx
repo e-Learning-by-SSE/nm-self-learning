@@ -256,7 +256,12 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 			return (
 				<div>
 					{ openModal &&
-				<LicenseViewModal onClose={() => {setOpenModal(false)}} description={license.licenseText !== null ? license.licenseText : "No description provided"}/> }
+						<LicenseViewModal 
+						onClose={() => {setOpenModal(false)}} 
+						description={license.licenseText !== null ? license.licenseText : "No description provided"}
+						name={license.name}
+						logoUrl={license.logoUrl ?? ""}
+					/> }
 					<div style={{cursor: "pointer"}}  onClick={() => {setOpenModal(true)}} className={className}>{img}</div>
 				</div>
 			);
@@ -275,7 +280,12 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 		return (
 			<div>
 				{ openModal &&
-				<LicenseViewModal onClose={() => {setOpenModal(false)}} description={license.licenseText !== null ? license.licenseText : "No description provided"}/> }
+				<LicenseViewModal 
+					onClose={() => {setOpenModal(false)}} 
+					description={license.licenseText !== null ? license.licenseText : "No description provided"}
+					name={license.name}
+					logoUrl={license.logoUrl ?? ""}
+				/> }
 				<div style={{cursor: "pointer"}} className={className} onClick={() => {setOpenModal(true)}}>{license.name}</div>
 			</div>
 		);
