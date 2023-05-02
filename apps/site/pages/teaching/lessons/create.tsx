@@ -12,6 +12,16 @@ export default function CreateLessonPage() {
 	const defaultLicense = trpc.licenseRouter.getDefault.useQuery();
 
 	async function onConfirm(lesson: LessonFormModel) {
+		//don't save lesson without content
+		if(lesson.content.length === 0) {
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle:
+					"Die Lernheit konnte nicht erstellt werden. Es muss mindestens ein Inhaltselement vorhanden sein."
+			});
+			return;
+		}
 		try {
 			const result = await createLesson(lesson);
 			console.log(result);

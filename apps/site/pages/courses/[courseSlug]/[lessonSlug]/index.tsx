@@ -68,35 +68,44 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 };
 
 function usePreferredMediaType(lesson: LessonProps["lesson"]) {
-	const router = useRouter();
-	const [preferredMediaType, setPreferredMediaType] = useState(
-		(lesson.content as LessonContent)[0].type
-	);
-
-	useEffect(() => {
-		const availableMediaTypes = (lesson.content as LessonContent).map(c => c.type);
-
-		const { type: typeFromRoute } = router.query;
-		let typeFromStorage: string | null = null;
-
-		if (typeof window !== "undefined") {
-			typeFromStorage = window.localStorage.getItem("preferredMediaType");
-		}
-
-		const { isIncluded, type } = includesMediaType(
-			availableMediaTypes,
-			(typeFromRoute as string) ?? typeFromStorage
+	// Handle situations that content creator may created an empty lesson (to add content later)
+	const content = lesson.content as LessonContent;
+	if (content.length > 0) {
+		const router = useRouter();
+		const [preferredMediaType, setPreferredMediaType] = useState(
+			(lesson.content as LessonContent)[0].type
 		);
 
-		if (isIncluded) {
-			setPreferredMediaType(type);
-		}
-	}, [router, lesson]);
+		useEffect(() => {
+			const availableMediaTypes = (lesson.content as LessonContent).map(c => c.type);
 
-	return preferredMediaType;
+			const { type: typeFromRoute } = router.query;
+			let typeFromStorage: string | null = null;
+
+			if (typeof window !== "undefined") {
+				typeFromStorage = window.localStorage.getItem("preferredMediaType");
+			}
+
+			const { isIncluded, type } = includesMediaType(
+				availableMediaTypes,
+				(typeFromRoute as string) ?? typeFromStorage
+			);
+
+			if (isIncluded) {
+				setPreferredMediaType(type);
+			}
+		}, [router, lesson]);
+
+		return preferredMediaType;
+	} else {
+		return null;
+	}
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
+	console.log("Lesson", lesson);
+	console.log("Course", course);
+
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
 
@@ -300,7 +309,8 @@ function MediaTypeSelector({
 	lesson: LessonProps["lesson"];
 }) {
 	const lessonContent = lesson.content as LessonContent;
-	const preferredMediaType = usePreferredMediaType(lesson);
+	// If no content is specified at this time, use video as default (and don't s´display anything)
+	const preferredMediaType = usePreferredMediaType(lesson) ?? "video";
 	const { index } = findContentType(preferredMediaType, lessonContent);
 	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();

@@ -23,7 +23,7 @@ export default withTRPC<AppRouter>({
 						(opts.direction === "down" && opts.result instanceof Error)
 				}),
 				httpBatchLink({
-					url: `${process.env.NEXT_PUBLIC_BASE_PATH}/api/trpc`
+					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`
 				})
 			],
 			queryClientConfig: {
