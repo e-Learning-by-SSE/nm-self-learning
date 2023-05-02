@@ -4,8 +4,7 @@ import {
 	getStaticPropsForLayout,
 	LessonLayout,
 	LessonLayoutProps,
-	useLessonContext,
-	LicenseViewModal
+	useLessonContext
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -15,12 +14,12 @@ import {
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { AuthorsList, Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
+import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -162,9 +161,8 @@ function LessonHeader({
 							<span className="font-semibold text-secondary">{chapterName}</span>
 							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
-						<LessonControls course={course} lesson={lesson} />
+						<LessonControls course={course} lesson={lesson} />					
 					</span>
-
 					{lesson.subtitle && lesson.subtitle.length > 0 && (
 						<span className="mt-2 text-light">{lesson.subtitle}</span>
 					)}
@@ -242,60 +240,32 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 }
 
 export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
-	const [openModal, setOpenModal] = useState(false);
 
-	const className = "h-20 w-30 rounded-l-lg object-cover mt-4";
-	if (license.logoUrl) {
+	let url = license.url;
+	if (url) {
 		// Check if logo should be loaded relative to the current page or if an absolute path is provided
-		const logoUrl = license.logoUrl.startsWith("/")
-			? `${process.env.NEXT_ASSET_PREFIX}${license.logoUrl}`
-			: license.logoUrl;
+		 url = url.startsWith("/")
+			? `${process.env.NEXT_ASSET_PREFIX}${url}`
+			: url;
 
-		const img = (
-			<Image src={logoUrl} alt={license.name} title={license.name} width={30} height={30} />
-		);
-
-		if (license.url) {
-			return (
-				<a href={license.url} className={className} target="_blank" rel="noreferrer">
-					{img}
-				</a>
-			);
-		} else {
-			return (
-				<div>
-					{ openModal &&
-						<LicenseViewModal 
-						onClose={() => {setOpenModal(false)}} 
-						description={license.licenseText !== null ? license.licenseText : "No description provided"}
-						name={license.name}
-						logoUrl={license.logoUrl ?? ""}
-					/> }
-					<div style={{cursor: "pointer"}}  onClick={() => {setOpenModal(true)}} className={className}>{img}</div>
-				</div>
-			);
 		}
-	}
 
-	if (license.url) {
+	if (url) {
 		return (
-			<div className={className}>
-				<a href={license.url} target="_blank" rel="noreferrer">
-					{license.name}
-				</a>
+			<div className="-mt-3">
+				<LabeledField label="Lizenz">
+					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={url} />
+				</LabeledField>
 			</div>
 		);
 	} else {
 		return (
-			<div>
-				{ openModal &&
-				<LicenseViewModal 
-					onClose={() => {setOpenModal(false)}} 
-					description={license.licenseText !== null ? license.licenseText : "No description provided"}
-					name={license.name}
-					logoUrl={license.logoUrl ?? ""}
-				/> }
-				<div style={{cursor: "pointer"}} className={className} onClick={() => {setOpenModal(true)}}>{license.name}</div>
+			<div className="-mt-3">
+				<LabeledField label="Lizenz">
+					<LicenseChip name={license.name} 
+						imgUrl={license.logoUrl} 
+						description={license.licenseText !== null ? license.licenseText : undefined} />
+				</LabeledField>
 			</div>
 		);
 	}
