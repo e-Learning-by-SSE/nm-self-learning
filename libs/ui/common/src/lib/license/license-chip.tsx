@@ -47,23 +47,3 @@ export function LicenseChip({ name, description, imgUrl, url }: {name: string, i
         </div>     
 	);
 }
-
-/*
-<ImageOrPlaceholder
-            src={logoUrl ?? undefined}
-            className="m-0 h-10 w-10 rounded-lg object-cover"
-
-
-
-
-
-            neues
-
-             <ImageOrPlaceholder
-                        src={imgUrl ?? undefined}
-                        className="h-10 w-10 rounded-l-lg object-cover"
-                    />
-
-                    
-                */
-
