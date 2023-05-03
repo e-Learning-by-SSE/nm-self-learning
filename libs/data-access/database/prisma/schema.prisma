@@ -180,6 +180,8 @@ model Lesson {
   completions  CompletedLesson[]
   quizAttempts QuizAttempt[]
   authors      Author[]          @relation("AuthorToLesson")
+  license      License @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
+  licenseId    Int
 }
 
 model CompletedLesson {
@@ -246,4 +248,19 @@ enum EnrollmentStatus {
   ACTIVE
   INACTIVE
   COMPLETED
+}
+
+model License {
+    licenseId         Int     @id @default(autoincrement())
+    name              String
+    url               String?
+    licenseText       String?
+    logoUrl           String?
+    oerCompatible     Boolean @default(false)
+    // Specifies whether the license is default suggestion (only one should be true, otherwise the first one is used)
+    defaultSuggestion Boolean @default(false)
+    // Specifies whether the license can be chosen by normal users or by admins only
+    selectable        Boolean @default(true)
+    // Back reference required by Prisma -> Provides overview about usage
+    lessons           Lesson[]
 }

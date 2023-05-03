@@ -53,6 +53,7 @@ export const lessonRouter = t.router({
 				authors: {
 					connect: input.authors.map(a => ({ username: a.username }))
 				},
+				licenseId: input.licenseId,
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
@@ -86,6 +87,7 @@ export const lessonRouter = t.router({
 					authors: {
 						set: input.lesson.authors.map(a => ({ username: a.username }))
 					},
+					licenseId: input.lesson.licenseId,
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},
 				select: {

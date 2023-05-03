@@ -14,6 +14,7 @@ export const lessonSchema = z.object({
 	imgUrl: z.string().nullable().optional(),
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
+	licenseId: z.number(),
 	quiz: z
 		.object({
 			questions: z.array(z.any()),
@@ -35,6 +36,7 @@ export function createEmptyLesson(): Lesson {
 		description: null,
 		imgUrl: null,
 		quiz: null,
+		licenseId: 1,
 		content: [],
 		authors: []
 	};

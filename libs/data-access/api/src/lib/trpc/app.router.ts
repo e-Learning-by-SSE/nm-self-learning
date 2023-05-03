@@ -6,6 +6,7 @@ import { courseRouter } from "./routers/course.router";
 import { enrollmentRouter } from "./routers/enrollment.router";
 import { learningDiaryRouter } from "./routers/learning-diary.router";
 import { lessonRouter } from "./routers/lesson.router";
+import { licenseRouter } from "./routers/license.router";
 import { meRouter } from "./routers/me.router";
 import { programmingRouter } from "./routers/programming";
 import { specializationRouter } from "./routers/specialization.router";
@@ -20,6 +21,7 @@ export const appRouter = t.router({
 	enrollment: enrollmentRouter,
 	learningDiary: learningDiaryRouter,
 	lesson: lessonRouter,
+	licenseRouter: licenseRouter,
 	me: meRouter,
 	storage: storageRouter,
 	specialization: specializationRouter,

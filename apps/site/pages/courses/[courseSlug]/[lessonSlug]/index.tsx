@@ -14,7 +14,8 @@ import {
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { AuthorsList, Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
+import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
@@ -160,14 +161,18 @@ function LessonHeader({
 							<span className="font-semibold text-secondary">{chapterName}</span>
 							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
-						<LessonControls course={course} lesson={lesson} />
+						<LessonControls course={course} lesson={lesson} />					
 					</span>
-
 					{lesson.subtitle && lesson.subtitle.length > 0 && (
 						<span className="mt-2 text-light">{lesson.subtitle}</span>
 					)}
 
-					<Authors authors={lesson.authors} />
+					<span className="flex flex-wrap-reverse justify-between gap-4">
+						<span className="flex flex-col gap-3">
+							<Authors authors={lesson.authors} />
+						</span>
+						<LicenseLabel license={lesson.license} />
+					</span>
 
 					<div className="pt-4">
 						<MediaTypeSelector lesson={lesson} course={course} />
@@ -232,6 +237,38 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 			)}
 		</>
 	);
+}
+
+export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
+
+	let url = license.url;
+	if (url) {
+		// Check if logo should be loaded relative to the current page or if an absolute path is provided
+		 url = url.startsWith("/")
+			? `${process.env.NEXT_ASSET_PREFIX}${url}`
+			: url;
+
+		}
+
+	if (url) {
+		return (
+			<div className="-mt-3">
+				<LabeledField label="Lizenz">
+					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={url} />
+				</LabeledField>
+			</div>
+		);
+	} else {
+		return (
+			<div className="-mt-3">
+				<LabeledField label="Lizenz">
+					<LicenseChip name={license.name} 
+						imgUrl={license.logoUrl} 
+						description={license.licenseText !== null ? license.licenseText : undefined} />
+				</LabeledField>
+			</div>
+		);
+	}
 }
 
 function MediaTypeSelector({

@@ -4,6 +4,7 @@ const minValidLesson: Lesson = {
 	lessonId: "id-1",
 	slug: "slug-1",
 	title: "The Title",
+	licenseId: 1,
 	content: [],
 	quiz: null,
 	authors: []
@@ -79,6 +80,7 @@ describe("lessonSchema", () => {
 			    "authors": Array [],
 			    "content": Array [],
 			    "lessonId": "id-1",
+			    "licenseId": 1,
 			    "quiz": null,
 			    "slug": "slug-1",
 			    "title": "The Title",

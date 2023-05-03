@@ -9,6 +9,7 @@ export default function CreateLessonPage() {
 	const session = useRequiredSession();
 	const authorUsername = session.data?.user.name;
 	const router = useRouter();
+	const defaultLicense = trpc.licenseRouter.getDefault.useQuery();
 
 	async function onConfirm(lesson: LessonFormModel) {
 		//don't save lesson without content
@@ -56,6 +57,7 @@ export default function CreateLessonPage() {
 				subtitle: "",
 				description: "",
 				imgUrl: "",
+				licenseId: defaultLicense.data?.licenseId ?? 1,
 				quiz: { questions: [], config: null },
 				content: [],
 				authors: [{ username: authorUsername }]
