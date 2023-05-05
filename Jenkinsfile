@@ -1,3 +1,5 @@
+@Library('web-service-helper-lib') _
+
 pipeline {
     agent none
     stages {
@@ -40,16 +42,9 @@ pipeline {
                     }
                     steps {
                         script {
-                            // Sidecar Pattern: https://www.jenkins.io/doc/book/pipeline/docker/#running-sidecar-containers
-                            docker.image('postgres:14.3-alpine').withRun("-e POSTGRES_USER=${env.POSTGRES_USER} -e POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD} -e POSTGRES_DB=${env.POSTGRES_DB}") { c ->
-                                docker.image('postgres:14.3-alpine').inside("--link ${c.id}:db") {
-                                    //sh 'until pg_isready; do sleep 5; done' // currently not working
-                                    sh "sleep 20"
-                                }
-                                docker.image('node:18-bullseye').inside("--link ${c.id}:db") {
-                                    sh 'npm run prisma db push'
-                                    sh 'npm run test:ci'
-                                }
+                            withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ]).insideSidecar('node:18-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                                sh 'npm run prisma db push'
+                                sh 'npm run test:ci'
                             }
                         }
                     }
@@ -64,24 +59,24 @@ pipeline {
                     }
                     steps {
                         script {
-                            dockerImage = docker.build "${DOCKER_TARGET}"
-                            env.API_VERSION = sh(
+                            API_VERSION = sh(
                                script: "cat package.json | jq -r '.version'",
                                returnStdout: true).trim()
-                            echo "API: ${env.API_VERSION}"
-                            docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
-                                if (env.GIT_BRANCH == "master") {
-                                   dockerImage.push("${env.API_VERSION}")
-                                   dockerImage.push('latest')
-                                }
-                                if (env.GIT_BRANCH == "dev") {
-                                   dockerImage.push('unstable')
-                                }
-                                if (env.GIT_BRANCH.startsWith("pb_")) {
-                                   def publishTag = "${env.API_VERSION}" + "." + env.GIT_BRANCH.split('_')[-1] 
-                                   dockerImage.push(publishTag);
-                                }
+                            echo "API: ${API_VERSION}"
+
+                            def versions = []
+                            if (env.GIT_BRANCH == "master") {
+                                versions << 'latest'
+                                versions << API_VERSION
                             }
+                            if (env.GIT_BRANCH == "dev") {
+                                versions << 'unstable'
+                            }
+                            if (env.GIT_BRANCH.startsWith("pb_")) {
+                                versions << "${API_VERSION}" + "." + env.GIT_BRANCH.split('_')[-1]
+                            }
+                            
+                            publishDockerImages(env.DOCKER_TARGET, versions)
                         }
                     }
                 }
@@ -95,9 +90,7 @@ pipeline {
                         branch 'dev'
                     }
                     steps {
-                        sshagent(['STM-SSH-DEMO']) {
-                            sh "ssh -o StrictHostKeyChecking=no -l elscha ${env.DEMO_SERVER} bash /staging/update-compose-project.sh nm-self-learning"
-                        }
+                        stagingDeploy("bash /staging/update-compose-project.sh nm-self-learning")
                     }
                 }
             }
