@@ -58,7 +58,7 @@ pipeline {
 
                 stage('Docker Publish Master') {
                     when {
-                        allOff {
+                        allOf {
                             branch 'master'
                             expression { packageJson.isNewVersion() }
                         }
