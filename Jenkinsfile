@@ -1,6 +1,11 @@
 @Library('web-service-helper-lib') _
 
 pipeline {
+    environment {
+        DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
+        API_VERSION = sh(script: "packageJson.getVersion()", returnStdout: true).trim()
+    }
+    
     agent none
     stages {
         stage("NodeJS Builds") {
@@ -28,6 +33,7 @@ pipeline {
             }
         }
         stage("Docker-Based Builds") {
+            
             agent {
                 label 'docker && jq' //jq build dependency
             }
@@ -49,48 +55,42 @@ pipeline {
                         }
                     }
                 }
-                
-                stage('Docker Publish') {
+
+                stage('Docker Publish Master') {
                     when {
-                        expression { env.BRANCH_NAME ==~ /^(master|dev)|pb_.*/  }
-                    }
-                    environment {
-                        DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
+                        allOff {
+                            branch 'master'
+                            expression { packageJson.isNewVersion() }
+                        }
                     }
                     steps {
-                        script {
-                            API_VERSION = sh(
-                               script: "cat package.json | jq -r '.version'",
-                               returnStdout: true).trim()
-                            echo "API: ${API_VERSION}"
-
-                            def versions = []
-                            if (env.GIT_BRANCH == "master") {
-                                versions << 'latest'
-                                versions << API_VERSION
-                            }
-                            if (env.GIT_BRANCH == "dev") {
-                                versions << 'unstable'
-                            }
-                            if (env.GIT_BRANCH.startsWith("pb_")) {
-                                versions << "${API_VERSION}" + "." + env.GIT_BRANCH.split('_')[-1]
-                            }
-                            
-                            publishDockerImages(env.DOCKER_TARGET, versions)
-                        }
+                        dockerGithubPublish(env.DOCKER_TARGET, ['latest', env.API_VERSION])
                     }
                 }
 
-                stage('Deploy') {
-                    environment {
-                        DEMO_SERVER = '147.172.178.30'
-                        DEMO_SERVER_PORT = '8080'
-                    }
+                stage('Docker Publish Dev') {
                     when {
                         branch 'dev'
                     }
                     steps {
-                        stagingDeploy("bash /staging/update-compose-project.sh nm-self-learning")
+                        dockerGithubPublish(env.DOCKER_TARGET, ['unstable'])
+                    }
+                    post {
+                        success {
+                            stagingDeploy "bash /staging/update-compose-project.sh nm-self-learning"
+                        }
+                    }
+                }
+
+                stage('Docker Publish PB') {
+                    when {
+                        expression { env.BRANCH_NAME.startsWith("pb_") }
+                    }
+                    steps {
+                        script {
+                            def versions = ["${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"]
+                            dockerGithubPublish(env.DOCKER_TARGET, versions)
+                        }
                     }
                 }
             }
