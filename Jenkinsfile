@@ -3,7 +3,7 @@
 pipeline {
     environment {
         DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
-        API_VERSION = sh(script: "packageJson.getVersion()", returnStdout: true).trim()
+		API_VERSION = packageJson.getVersion()
     }
     
     agent none
