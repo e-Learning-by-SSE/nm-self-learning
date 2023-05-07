@@ -1,14 +1,9 @@
 @Library('web-service-helper-lib') _
 
 pipeline {
-    environment {
-        DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
-		API_VERSION = packageJson.getVersion()
-    }
-    
     agent none
     stages {
-        stage("NodeJS Builds") {
+        stage("NodeJS Build") {
             agent {
                 docker {
                     image 'node:18-bullseye'
@@ -17,27 +12,20 @@ pipeline {
                     args '--tmpfs /.cache -v $HOME/.npm:/.npm'
                 }
             }
-            stages {
-                stage('Install Dependencies') {
-                    steps {
-                        sh 'npm ci --force'
-                    }
-                }
-
-                stage('Compilation Test') {
-                    steps {
-                        sh 'cp -f .env.example .env'
-                        sh 'npm run build'
-                    }
-                }
+            steps {
+                sh 'npm ci --force'
+                sh 'cp -f .env.example .env'
+                sh 'npm run build'
             }
         }
-        stage("Docker-Based Builds") {
-            
+        stage("Starting Docker Agent") {
             agent {
-                label 'docker && jq' //jq build dependency
+                label 'docker'
             }
-
+            environment {
+                DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
+                API_VERSION = packageJson.getVersion()
+            }
             stages {
                 stage('Test') {
                     environment {
@@ -64,7 +52,7 @@ pipeline {
                         }
                     }
                     steps {
-                        dockerGithubPublish(env.DOCKER_TARGET, ['latest', env.API_VERSION])
+                        dockerGithubPublish env.DOCKER_TARGET ['latest', env.API_VERSION]
                     }
                 }
 
@@ -73,7 +61,7 @@ pipeline {
                         branch 'dev'
                     }
                     steps {
-                        dockerGithubPublish(env.DOCKER_TARGET, ['unstable'])
+                        dockerGithubPublish env.DOCKER_TARGET ['unstable']
                     }
                     post {
                         success {
