@@ -1,3 +1,5 @@
+@Library('web-service-helper-lib') _
+
 pipeline {
     agent none
     stages {
@@ -57,24 +59,24 @@ pipeline {
                     }
                     steps {
                         script {
-                            dockerImage = docker.build "${DOCKER_TARGET}"
-                            env.API_VERSION = sh(
+                            API_VERSION = sh(
                                script: "cat package.json | jq -r '.version'",
                                returnStdout: true).trim()
-                            echo "API: ${env.API_VERSION}"
-                            docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
-                                if (env.GIT_BRANCH == "master") {
-                                   dockerImage.push("${env.API_VERSION}")
-                                   dockerImage.push('latest')
-                                }
-                                if (env.GIT_BRANCH == "dev") {
-                                   dockerImage.push('unstable')
-                                }
-                                if (env.GIT_BRANCH.startsWith("pb_")) {
-                                   def publishTag = "${env.API_VERSION}" + "." + env.GIT_BRANCH.split('_')[-1] 
-                                   dockerImage.push(publishTag);
-                                }
+                            echo "API: ${API_VERSION}"
+
+                            def versions = []
+                            if (env.GIT_BRANCH == "master") {
+                                versions << 'latest'
+                                versions << API_VERSION
                             }
+                            if (env.GIT_BRANCH == "dev") {
+                                versions << 'unstable'
+                            }
+                            if (env.GIT_BRANCH.startsWith("pb_")) {
+                                versions << "${API_VERSION}" + "." + env.GIT_BRANCH.split('_')[-1]
+                            }
+                            
+                            publishDockerImages(env.DOCKER_TARGET, versions)
                         }
                     }
                 }
@@ -88,9 +90,7 @@ pipeline {
                         branch 'dev'
                     }
                     steps {
-                        sshagent(['STM-SSH-DEMO']) {
-                            sh "ssh -o StrictHostKeyChecking=no -l elscha ${env.DEMO_SERVER} bash /staging/update-compose-project.sh nm-self-learning"
-                        }
+                        stagingDeploy("bash /staging/update-compose-project.sh nm-self-learning")
                     }
                 }
             }
