@@ -1,5 +1,5 @@
 import type { AppRouter } from "@self-learning/api";
-import { Navbar } from "@self-learning/ui/layouts";
+import { Navbar, Footer } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
@@ -55,6 +55,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 			</main>
 			<Toaster containerStyle={{ top: 96 }} position="top-right" />
+			<Footer />
 			{/* <ReactQueryDevtools position="bottom-right" /> */}
 		</SessionProvider>
 	);
