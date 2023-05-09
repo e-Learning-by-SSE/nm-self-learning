@@ -48,7 +48,7 @@ pipeline {
                 }
             }
             steps {
-                dockerGithubPublish env.DOCKER_TARGET ['latest', env.API_VERSION]
+                dockerGithubPublish(env.DOCKER_TARGET, ['latest', env.API_VERSION])
             }
         }
 
@@ -57,7 +57,7 @@ pipeline {
                 branch 'dev'
             }
             steps {
-                dockerGithubPublish env.DOCKER_TARGET ['unstable']
+                dockerGithubPublish(env.DOCKER_TARGET, ['unstable'])
             }
             post {
                 success {
