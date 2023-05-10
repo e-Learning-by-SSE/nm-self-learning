@@ -48,8 +48,10 @@ pipeline {
                 }
             }
             steps {
-                docker.build "${DOCKER_TARGET}"
-                dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: ['latest', env.API_VERSION])
+                script {
+                    docker.build "${DOCKER_TARGET}"
+                    dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: ['latest', env.API_VERSION])
+                }
             }
         }
 
@@ -58,8 +60,10 @@ pipeline {
                 branch 'dev'
             }
             steps {
-                docker.build "${DOCKER_TARGET}"
-                dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: ['unstable'])
+                script {
+                    docker.build "${DOCKER_TARGET}"
+                    dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: ['unstable'])
+                }
             }
             post {
                 success {
