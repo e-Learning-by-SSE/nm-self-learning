@@ -250,7 +250,7 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 		return (
 			<div className="-mt-3">
 				<LabeledField label="Lizenz">
-					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={license.url} />
+					<LicenseChip name={license.name} imgUrl={logoUrl} url={license.url} />
 				</LabeledField>
 			</div>
 		);
