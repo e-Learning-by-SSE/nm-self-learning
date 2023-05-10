@@ -48,6 +48,7 @@ pipeline {
                 }
             }
             steps {
+                docker.build "${DOCKER_TARGET}"
                 dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: ['latest', env.API_VERSION])
             }
         }
@@ -57,6 +58,7 @@ pipeline {
                 branch 'dev'
             }
             steps {
+                docker.build "${DOCKER_TARGET}"
                 dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: ['unstable'])
             }
             post {
@@ -73,6 +75,7 @@ pipeline {
             steps {
                 script {
                     def versions = ["${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"]
+                    docker.build "${DOCKER_TARGET}"
                     dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: versions)
                 }
             }
