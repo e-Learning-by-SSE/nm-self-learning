@@ -260,7 +260,7 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 				<LabeledField label="Lizenz">
 					<LicenseChip
 						name={license.name}
-						imgUrl={license.logoUrl}
+						imgUrl={logoUrl}
 						description={license.licenseText !== null ? license.licenseText : undefined}
 					/>
 				</LabeledField>
