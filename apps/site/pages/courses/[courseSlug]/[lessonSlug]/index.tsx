@@ -161,7 +161,7 @@ function LessonHeader({
 							<span className="font-semibold text-secondary">{chapterName}</span>
 							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
-						<LessonControls course={course} lesson={lesson} />					
+						<LessonControls course={course} lesson={lesson} />
 					</span>
 					{lesson.subtitle && lesson.subtitle.length > 0 && (
 						<span className="mt-2 text-light">{lesson.subtitle}</span>
@@ -240,21 +240,17 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 }
 
 export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
-
-	let url = license.url;
-	if (url) {
+	let logoUrl = license.logoUrl;
+	if (logoUrl) {
 		// Check if logo should be loaded relative to the current page or if an absolute path is provided
-		 url = url.startsWith("/")
-			? `${process.env.NEXT_ASSET_PREFIX}${url}`
-			: url;
+		logoUrl = logoUrl.startsWith("/") ? `${process.env.NEXT_ASSET_PREFIX}${logoUrl}` : logoUrl;
+	}
 
-		}
-
-	if (url) {
+	if (license.url) {
 		return (
 			<div className="-mt-3">
 				<LabeledField label="Lizenz">
-					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={url} />
+					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={license.url} />
 				</LabeledField>
 			</div>
 		);
@@ -262,9 +258,11 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 		return (
 			<div className="-mt-3">
 				<LabeledField label="Lizenz">
-					<LicenseChip name={license.name} 
-						imgUrl={license.logoUrl} 
-						description={license.licenseText !== null ? license.licenseText : undefined} />
+					<LicenseChip
+						name={license.name}
+						imgUrl={license.logoUrl}
+						description={license.licenseText !== null ? license.licenseText : undefined}
+					/>
 				</LabeledField>
 			</div>
 		);
