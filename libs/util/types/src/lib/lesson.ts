@@ -17,7 +17,7 @@ export const lessonSchema = z.object({
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
 	licenseId: z.number(),
-	lessonType: z.string().default(LessonType.TRADITIONAL),
+	lessonType: z.nativeEnum(LessonType),
 	selfRegulatedQuestion: z.string().nullable(),
 	quiz: z
 		.object({

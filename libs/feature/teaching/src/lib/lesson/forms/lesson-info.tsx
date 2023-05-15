@@ -11,6 +11,7 @@ import {
 import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
+import { LessonType } from "@prisma/client";
 
 export function LessonInfoEditor() {
 	const form = useFormContext<LessonFormModel>();
@@ -69,10 +70,11 @@ export function LessonInfoEditor() {
 					/>
 				</LabeledField>
 
-				<LabeledField label="Lernmodell" error={errors.subtitle?.message}>
-					<select className="rounded border-gray-700">
-						<option>Selbstreguliertes Lernen</option>
-						<option>Traditionelles Lenen</option>
+				<LabeledField label="Lernmodell" error={errors.lessonType?.message}>
+					<select {...register("lessonType")}>
+						<option value={''} hidden>Bitte wählen...</option>
+						<option value={LessonType.TRADITIONAL}>Traditionelles Lenen</option>
+						<option value={LessonType.SELF_REGULATED}>Selbstreguliertes Lernen</option>
 					</select>
 				</LabeledField>
 
