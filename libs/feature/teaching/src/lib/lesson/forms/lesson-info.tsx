@@ -12,8 +12,9 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LessonType } from "@prisma/client";
+import { Dispatch } from "react";
 
-export function LessonInfoEditor() {
+export function LessonInfoEditor({setLessonType}: {setLessonType: Dispatch<LessonType>}) {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -71,7 +72,7 @@ export function LessonInfoEditor() {
 				</LabeledField>
 
 				<LabeledField label="Lernmodell" error={errors.lessonType?.message}>
-					<select {...register("lessonType")}>
+					<select {...register("lessonType")} onChange={(e) => {setLessonType(e.target.value as LessonType)}}>
 						<option value={''} hidden>Bitte wählen...</option>
 						<option value={LessonType.TRADITIONAL}>Traditionelles Lenen</option>
 						<option value={LessonType.SELF_REGULATED}>Selbstreguliertes Lernen</option>

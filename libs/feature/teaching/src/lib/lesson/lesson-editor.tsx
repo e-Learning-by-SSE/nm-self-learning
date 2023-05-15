@@ -3,7 +3,7 @@ import { lessonSchema } from "@self-learning/types";
 import { SectionHeader, showToast } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { OpenAsJsonButton } from "../json-editor-dialog";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -24,6 +24,8 @@ export function LessonEditor({
 		resolver: zodResolver(lessonSchema),
 		defaultValues: lesson
 	});
+
+	const [selectedLessonType, setLessonType] = useState(lesson.lessonType);
 
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
@@ -79,12 +81,12 @@ export function LessonEditor({
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
 
-								<LessonInfoEditor />
+								<LessonInfoEditor setLessonType={ setLessonType }/>
 							</>
 						}
 					>
 						<LessonDescriptionForm />
-						{ lesson.lessonType === LessonType.SELF_REGULATED &&
+						{ selectedLessonType === LessonType.SELF_REGULATED &&
 							<LessonPreQuestionEditor />
 						}
 						<LessonContentEditor />
