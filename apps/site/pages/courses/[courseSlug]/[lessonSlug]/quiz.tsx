@@ -132,6 +132,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						key={currentQuestion.questionId}
 						question={currentQuestion}
 						markdown={markdown}
+						lesson={lesson}
 					/>
 					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
