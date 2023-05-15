@@ -342,7 +342,7 @@ function SelfRegulatedPreQuestion({ lesson, question }: { lesson: LessonProps["l
 						<h2>
 							Deine Antwort:
 						</h2>
-						<textarea className="w-full" onChange={e => setUserAwnser(e.target.value)} />
+						<textarea className="w-full" placeholder="..." onChange={e => setUserAwnser(e.target.value)} />
 					</div>
 					<div className="mt-2 flex justify-end gap-2">
 						<button
