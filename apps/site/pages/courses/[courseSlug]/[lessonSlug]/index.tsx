@@ -14,7 +14,7 @@ import {
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, LicenseChip, Tab, Tabs, Dialog } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -28,6 +28,7 @@ export type LessonProps = LessonLayoutProps & {
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
+		preQuestion: CompiledMarkdown | null;
 	};
 };
 
@@ -41,6 +42,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	lesson.quiz = null; // Not needed on this page, but on /quiz
 	let mdDescription = null;
 	let mdArticle = null;
+	let mdQuestion = null;
 
 	if (lesson.description) {
 		mdDescription = await compileMarkdown(lesson.description);
@@ -55,12 +57,17 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		article.value.content = "(replaced)";
 	}
 
+	if (lesson.isSelfRegulated) {
+		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? 'Kein Inhalt.');
+	}
+
 	return {
 		props: {
 			...props,
 			markdown: {
 				article: mdArticle,
-				description: mdDescription
+				description: mdDescription,
+				preQuestion: mdQuestion
 			}
 		}
 	};
@@ -112,6 +119,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	return (
 		<article className="flex flex-col gap-4">
+			<SelfRegulatedPreQuestion lesson={lesson} question={markdown.preQuestion} />
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
 					{video?.value.url ? (
@@ -313,6 +321,40 @@ function MediaTypeSelector({
 						</Tab>
 					))}
 				</Tabs>
+			)}
+		</>
+	);
+}
+
+function SelfRegulatedPreQuestion({ lesson, question }: { lesson: LessonProps["lesson"], question: CompiledMarkdown|null }) {
+	const [userAwnser, setUserAwnser]  = useState('');
+	const [showDialog, setShowDialog]  = useState(lesson.isSelfRegulated);
+
+	return (
+		<>
+			{(showDialog && question) && (
+				<Dialog title="Aktivierungsfrage" onClose={() => {}}>
+					<MarkdownContainer className="mx-auto w-full pt-4">
+						<MDXRemote {...question} />
+					</MarkdownContainer>
+
+					<div className="mt-8">
+						<h2>
+							Deine Antwort:
+						</h2>
+						<textarea className="w-full" onChange={e => setUserAwnser(e.target.value)} />
+					</div>
+					<div className="mt-2 flex justify-end gap-2">
+						<button
+							type="button"
+							className="btn-primary"
+							onClick={() => {setShowDialog(false)}}
+							disabled={userAwnser.length == 0}
+						>
+							Antwort Speichern
+						</button>
+					</div>
+				</Dialog>
 			)}
 		</>
 	);
