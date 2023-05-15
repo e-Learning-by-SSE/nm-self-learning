@@ -49,11 +49,11 @@ pipeline {
             }
             steps {
 				ssedocker {
-					buildImage {
+					create {
 						target "${env.TARGET_PREFIX}:latest"
 					}
 					publish {
-						additionalTag "${env.API_VERSION}"
+						tag "${env.API_VERSION}"
 					}
 				}
             }
@@ -65,7 +65,7 @@ pipeline {
             }
             steps {
 				ssedocker {
-					buildImage { target "${env.TARGET_PREFIX}:unstable" }
+					create { target "${env.TARGET_PREFIX}:unstable" }
 					publish {}
                 }
             }
@@ -84,7 +84,7 @@ pipeline {
                 script {
 					def version = ["${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"]
 					ssedocker {
-						buildImage { target "${env.TARGET_PREFIX}:${version}" }
+						create { target "${env.TARGET_PREFIX}:${version}" }
 						publish {}
 					}
                 }
