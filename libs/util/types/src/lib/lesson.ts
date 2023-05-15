@@ -3,7 +3,7 @@ import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 
-export type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
+export type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta; isSelfRegulated: boolean };
 
 export const lessonSchema = z.object({
 	lessonId: z.string().nullable(),
@@ -15,6 +15,8 @@ export const lessonSchema = z.object({
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
 	licenseId: z.number(),
+	isSelfRegulated: z.boolean(),
+	selfRegulatedQuestion: z.string().nullable(),
 	quiz: z
 		.object({
 			questions: z.array(z.any()),
@@ -38,6 +40,8 @@ export function createEmptyLesson(): Lesson {
 		quiz: null,
 		licenseId: 1,
 		content: [],
-		authors: []
+		authors: [],
+		isSelfRegulated: false,
+		selfRegulatedQuestion: null
 	};
 }

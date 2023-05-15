@@ -182,6 +182,8 @@ model Lesson {
   authors      Author[]          @relation("AuthorToLesson")
   license      License @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
   licenseId    Int
+  isSelfRegulated         Boolean           @default(false)
+  selfRegulatedQuestion   String? // Question to ask the student before the lesson starts
 }
 
 model CompletedLesson {
