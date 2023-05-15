@@ -4,7 +4,7 @@ pipeline {
     agent { label 'docker' }
 
     environment {
-        DOCKER_TARGET = 'e-learning-by-sse/nm-self-learning'
+        TARGET_PREFIX = 'e-learning-by-sse/nm-self-learning'
         API_VERSION = packageJson.getVersion() // package.json must be in root level in order for this to work
     }
 
@@ -48,10 +48,14 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    docker.build "${DOCKER_TARGET}"
-                    dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: ['latest', env.API_VERSION])
-                }
+				ssedocker {
+					buildImage {
+						target "${env.TARGET_PREFIX}:latest"
+					}
+					publish {
+						additionalTag "${env.API_VERSION}"
+					}
+				}
             }
         }
 
@@ -60,9 +64,9 @@ pipeline {
                 branch 'dev'
             }
             steps {
-                script {
-                    docker.build "${DOCKER_TARGET}"
-                    dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: ['unstable'])
+				ssedocker {
+					buildImage { target "${env.TARGET_PREFIX}:unstable" }
+					publish {}
                 }
             }
             post {
@@ -78,9 +82,11 @@ pipeline {
             }
             steps {
                 script {
-                    def versions = ["${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"]
-                    docker.build "${DOCKER_TARGET}"
-                    dockerGithubPublish(target: env.DOCKER_TARGET, additionalTags: versions)
+					def version = ["${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"]
+					ssedocker {
+						buildImage { target "${env.TARGET_PREFIX}:${version}" }
+						publish {}
+					}
                 }
             }
         }
