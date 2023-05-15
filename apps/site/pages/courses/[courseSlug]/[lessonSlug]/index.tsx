@@ -23,7 +23,7 @@ import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -111,17 +111,21 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
-	console.log("Lesson", lesson);
-	console.log("Course", course);
+	const [showDialog, setShowDialog]  = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
+	if (showDialog && markdown.preQuestion) {
+		return <article className="flex flex-col gap-4">
+			<SelfRegulatedPreQuestion setShowDialog={setShowDialog} question={markdown.preQuestion} />
+		</article>
+	}
+
 	return (
 		<article className="flex flex-col gap-4">
-			<SelfRegulatedPreQuestion lesson={lesson} question={markdown.preQuestion} />
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
 					{video?.value.url ? (
@@ -328,36 +332,35 @@ function MediaTypeSelector({
 	);
 }
 
-function SelfRegulatedPreQuestion({ lesson, question }: { lesson: LessonProps["lesson"], question: CompiledMarkdown|null }) {
+function SelfRegulatedPreQuestion({ question, setShowDialog }: { question: CompiledMarkdown, setShowDialog: Dispatch<SetStateAction<boolean>> }) {
 	const [userAwnser, setUserAwnser]  = useState('');
-	const [showDialog, setShowDialog]  = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	return (
 		<>
-			{(showDialog && question) && (
-				<Dialog title="Aktivierungsfrage" onClose={() => {}}>
-					<MarkdownContainer className="mx-auto w-full pt-4">
-						<MDXRemote {...question} />
-					</MarkdownContainer>
-
-					<div className="mt-8">
-						<h2>
-							Deine Antwort:
-						</h2>
-						<textarea className="w-full" placeholder="..." onChange={e => setUserAwnser(e.target.value)} />
-					</div>
-					<div className="mt-2 flex justify-end gap-2">
-						<button
-							type="button"
-							className="btn-primary"
-							onClick={() => {setShowDialog(false)}}
-							disabled={userAwnser.length == 0}
-						>
-							Antwort Speichern
-						</button>
-					</div>
-				</Dialog>
-			)}
+			<div>
+				<h1>
+					Aktivierungsfrage
+				</h1>
+				<MarkdownContainer className="w-full py-4">
+					<MDXRemote {...question} />
+				</MarkdownContainer>
+				<div className="mt-8">
+					<h2>
+						Deine Antwort:
+					</h2>
+					<textarea className="w-full" placeholder="..." onChange={e => setUserAwnser(e.target.value)} />
+				</div>
+				<div className="mt-2 flex justify-end gap-2">
+					<button
+						type="button"
+						className="btn-primary"
+						onClick={() => {setShowDialog(false)}}
+						disabled={userAwnser.length == 0}
+					>
+						Antwort Speichern
+					</button>
+				</div>
+			</div>
 		</>
 	);
 }
