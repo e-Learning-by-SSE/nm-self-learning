@@ -10,6 +10,7 @@ import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
+import { LessonType } from "@prisma/client";
 
 export function LessonEditor({
 	lesson,
@@ -83,7 +84,7 @@ export function LessonEditor({
 						}
 					>
 						<LessonDescriptionForm />
-						{ lesson.isSelfRegulated &&
+						{ lesson.lessonType === LessonType.SELF_REGULATED &&
 							<LessonPreQuestionEditor />
 						}
 						<LessonContentEditor />

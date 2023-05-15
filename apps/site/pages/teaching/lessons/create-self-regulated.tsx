@@ -3,6 +3,7 @@ import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
+import { LessonType } from "@prisma/client";
 
 export default function CreateLessonPage() {
 	const { mutateAsync: createLesson } = trpc.lesson.create.useMutation();
@@ -49,7 +50,7 @@ export default function CreateLessonPage() {
 				quiz: { questions: [], config: null },
 				content: [],
 				authors: [{ username: authorUsername }],
-				isSelfRegulated: true,
+				lessonType: LessonType.SELF_REGULATED,
 				selfRegulatedQuestion: null,
 			}}
 		/>

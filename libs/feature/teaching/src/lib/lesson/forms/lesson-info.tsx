@@ -69,6 +69,13 @@ export function LessonInfoEditor() {
 					/>
 				</LabeledField>
 
+				<LabeledField label="Lernmodell" error={errors.subtitle?.message}>
+					<select className="rounded border-gray-700">
+						<option>Selbstreguliertes Lernen</option>
+						<option>Traditionelles Lenen</option>
+					</select>
+				</LabeledField>
+
 				<LabeledField label="Thumbnail" error={errors.imgUrl?.message}>
 					<Controller
 						control={control}

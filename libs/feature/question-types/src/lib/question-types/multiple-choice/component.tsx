@@ -33,7 +33,8 @@ export default function MultipleChoiceAnswer({lesson}: {lesson: LessonLayoutProp
 								}
 							}));
 						}}
-						justifyChoice={lesson.isSelfRegulated}
+						// TODO check if the lesson is self regulated
+						justifyChoice={true}
 					>
 						{markdown.answersMd[option.answerId] ? (
 							<MarkdownContainer>

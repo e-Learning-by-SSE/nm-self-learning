@@ -1,4 +1,5 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
+import { LessonType } from "@prisma/client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -57,7 +58,8 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		article.value.content = "(replaced)";
 	}
 
-	if (lesson.isSelfRegulated) {
+	// TODO change to check if the lesson is self requlated
+	if (lesson.lessonType === LessonType.SELF_REGULATED) {
 		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? 'Kein Inhalt.');
 	}
 
@@ -328,7 +330,7 @@ function MediaTypeSelector({
 
 function SelfRegulatedPreQuestion({ lesson, question }: { lesson: LessonProps["lesson"], question: CompiledMarkdown|null }) {
 	const [userAwnser, setUserAwnser]  = useState('');
-	const [showDialog, setShowDialog]  = useState(lesson.isSelfRegulated);
+	const [showDialog, setShowDialog]  = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	return (
 		<>

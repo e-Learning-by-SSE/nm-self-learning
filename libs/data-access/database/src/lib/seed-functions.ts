@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, LessonType } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
@@ -23,7 +23,7 @@ export function createLesson(
 	content: LessonContent,
 	questions: QuizContent,
 	licenseId?: number,
-	isSelfRegulated = false,
+	lessonType: LessonType | null = null,
 	selfRegulatedQuestion: string | null = ""
 ) {
 	const lesson: Prisma.LessonCreateManyInput = {
@@ -33,7 +33,7 @@ export function createLesson(
 		subtitle: subtitle,
 		description: description,
 		content: content,
-		isSelfRegulated: isSelfRegulated ?? false,
+		lessonType: lessonType ?? LessonType.TRADITIONAL,
 		selfRegulatedQuestion: selfRegulatedQuestion, 
 		quiz: {
 			questions,

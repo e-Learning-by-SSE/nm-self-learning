@@ -1,3 +1,4 @@
+import { LessonType } from "@prisma/client";
 import {
 	createCourse,
 	createLesson,
@@ -1208,7 +1209,7 @@ export const chapters = [
 						["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
 					)
 				],
-				true,
+				LessonType.SELF_REGULATED,
 				"Frage zu: Reale Bewegung?"
 			)
 		]
