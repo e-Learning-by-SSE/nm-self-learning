@@ -199,7 +199,7 @@ export function QuestionAnswerRenderer({ question, lesson }: { question: Questio
 	}
 
 	if (question.type === "multiple-choice") {
-		return <MultipleChoiceAnswer lesson={lesson}/>;
+		return <MultipleChoiceAnswer />;
 	}
 
 	if (question.type === "exact") {

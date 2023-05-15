@@ -37,6 +37,8 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	const questionsMd: MdLookup = {};
 	const answersMd: MdLookup = {};
 	const hintsMd: MdLookupArray = {};
+	type QuestionList = typeof quiz.questions
+	const processedQuestions: QuestionList = [];
 
 	for (const question of quiz.questions) {
 		questionsMd[question.questionId] = await compileMarkdown(question.statement);
@@ -53,8 +55,16 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 			for (const answer of question.answers) {
 				answersMd[answer.answerId] = await compileMarkdown(answer.content);
 			}
+
+			question.justify = false;
+			const justifiedQuestion = JSON.parse(JSON.stringify(question)) as typeof question;
+			justifiedQuestion.justify = true;
+			processedQuestions.push(justifiedQuestion);
 		}
+		processedQuestions.push(question);
 	}
+
+	quiz.questions = processedQuestions;
 
 	return {
 		props: {

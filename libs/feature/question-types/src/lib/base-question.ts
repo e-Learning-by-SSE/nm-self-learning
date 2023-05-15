@@ -6,6 +6,7 @@ export const baseQuestionSchema = z.object({
 	type: z.string(),
 	statement: z.string(),
 	withCertainty: z.boolean(),
+	justify: z.boolean().nullable(),
 	hints: z.array(
 		z.object({
 			hintId: z.string(),
@@ -43,6 +44,7 @@ export function createBaseQuestion(): BaseQuestion {
 		questionId: getRandomId(),
 		statement: "",
 		withCertainty: false,
+		justify: null,
 		hints: []
 	};
 }

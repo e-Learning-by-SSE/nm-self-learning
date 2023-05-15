@@ -4,10 +4,9 @@ import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
-import { LessonLayoutProps } from "@self-learning/lesson";
 
 
-export default function MultipleChoiceAnswer({lesson}: {lesson: LessonLayoutProps['lesson']}) {
+export default function MultipleChoiceAnswer() {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
 	const { config } = useQuiz();
 
@@ -33,8 +32,7 @@ export default function MultipleChoiceAnswer({lesson}: {lesson: LessonLayoutProp
 								}
 							}));
 						}}
-						// TODO check if the lesson is self regulated
-						justifyChoice={true}
+						justifyChoice={question.justify ?? false}
 					>
 						{markdown.answersMd[option.answerId] ? (
 							<MarkdownContainer>
