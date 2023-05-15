@@ -23,7 +23,8 @@ export function createLesson(
 	content: LessonContent,
 	questions: QuizContent,
 	licenseId?: number,
-	isSelfRegulated = false
+	isSelfRegulated = false,
+	selfRegulatedQuestion: string | null = ""
 ) {
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
@@ -33,6 +34,7 @@ export function createLesson(
 		description: description,
 		content: content,
 		isSelfRegulated: isSelfRegulated ?? false,
+		selfRegulatedQuestion: selfRegulatedQuestion, 
 		quiz: {
 			questions,
 			config: null
