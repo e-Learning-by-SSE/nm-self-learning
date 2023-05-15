@@ -60,7 +60,9 @@ export default function CreateLessonPage() {
 				licenseId: defaultLicense.data?.licenseId ?? 1,
 				quiz: { questions: [], config: null },
 				content: [],
-				authors: [{ username: authorUsername }]
+				authors: [{ username: authorUsername }],
+				isSelfRegulated: false,
+				selfRegulatedQuestion: null,
 			}}
 		/>
 	);

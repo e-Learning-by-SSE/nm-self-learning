@@ -15,7 +15,7 @@ export const lessonSchema = z.object({
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
 	licenseId: z.number(),
-	isSelfRegulated: z.boolean(),
+	isSelfRegulated: z.boolean().default(false),
 	selfRegulatedQuestion: z.string().nullable(),
 	quiz: z
 		.object({

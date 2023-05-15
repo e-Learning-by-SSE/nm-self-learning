@@ -32,7 +32,9 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 			quiz: true,
 			imgUrl: true,
 			licenseId: true,
-			authors: true
+			authors: true,
+			isSelfRegulated: true,
+			selfRegulatedQuestion: true
 		}
 	});
 
@@ -74,7 +76,9 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 		licenseId: lesson.licenseId,
 		// Need type casting because JsonArray from prisma causes error
 		content: (lesson.content ?? []) as LessonContent,
-		quiz: lesson.quiz as Quiz
+		quiz: lesson.quiz as Quiz,
+		isSelfRegulated: lesson.isSelfRegulated,
+		selfRegulatedQuestion: lesson.selfRegulatedQuestion,
 	};
 
 	return {

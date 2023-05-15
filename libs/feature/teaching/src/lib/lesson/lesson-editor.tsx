@@ -83,6 +83,9 @@ export function LessonEditor({
 						}
 					>
 						<LessonDescriptionForm />
+						{ lesson.isSelfRegulated &&
+							<LessonPreQuestionEditor />
+						}
 						<LessonContentEditor />
 						<QuizEditor />
 					</SidebarEditorLayout>
@@ -112,4 +115,27 @@ function LessonDescriptionForm() {
 			</Form.MarkdownWithPreviewContainer>
 		</section>
 	);
+}
+
+
+function LessonPreQuestionEditor() {
+	const { control } = useFormContext<LessonFormModel>();
+
+    return (
+        <section>
+			<SectionHeader
+				title="Aktivierungsfrage"
+				subtitle="Die Aktivierungsfrage welche dem Lehrninden bei der Akvitierung seiner Wissensbestände helfen soll."
+			/>
+			<Form.MarkdownWithPreviewContainer>
+				<Controller
+					control={control}
+					name="selfRegulatedQuestion"
+					render={({ field }) => (
+						<MarkdownField content={field.value as string} setValue={field.onChange} />
+					)}
+				></Controller>
+			</Form.MarkdownWithPreviewContainer>
+        </section>
+    )
 }
