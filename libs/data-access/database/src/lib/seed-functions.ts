@@ -23,8 +23,8 @@ export function createLesson(
 	content: LessonContent,
 	questions: QuizContent,
 	licenseId?: number,
-	lessonType: LessonType | null = null,
-	selfRegulatedQuestion: string | null = ""
+	lessonType?: LessonType,
+	selfRegulatedQuestion?: string
 ) {
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
@@ -164,7 +164,8 @@ export function createMultipleChoice(
 			answerId: faker.random.alphaNumeric(8),
 			...answer
 		})),
-		hints: hintsData
+		hints: hintsData,
+		justify: false,
 	};
 }
 
@@ -189,7 +190,8 @@ export function createTextQuestion(
 			acceptedAnswerId: faker.random.alphaNumeric(8),
 			value: answer
 		})),
-		hints: hintsData
+		hints: hintsData,
+		justify: false,
 	};
 }
 

@@ -1209,6 +1209,7 @@ export const chapters = [
 						["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
 					)
 				],
+				100,
 				LessonType.SELF_REGULATED,
 				"Frage zu: Reale Bewegung?"
 			)
