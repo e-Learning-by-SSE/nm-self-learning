@@ -1,3 +1,4 @@
+import { LessonType } from "@prisma/client";
 import { Lesson, lessonSchema } from "./lesson";
 
 const minValidLesson: Lesson = {
@@ -7,7 +8,9 @@ const minValidLesson: Lesson = {
 	licenseId: 1,
 	content: [],
 	quiz: null,
-	authors: []
+	authors: [],
+	lessonType: LessonType.TRADITIONAL,
+	selfRegulatedQuestion: null,
 };
 
 describe("lessonSchema", () => {
@@ -26,6 +29,16 @@ describe("lessonSchema", () => {
 			const lesson: Partial<Lesson> = {
 				...minValidLesson,
 				title: undefined
+			};
+
+			const result = lessonSchema.safeParse(lesson);
+			expect(result.success).toBeFalsy();
+		});
+
+		it("Missing lesson type", () => {
+			const lesson: Partial<Lesson> = {
+				...minValidLesson,
+				lessonType: undefined
 			};
 
 			const result = lessonSchema.safeParse(lesson);
@@ -80,8 +93,10 @@ describe("lessonSchema", () => {
 			    "authors": Array [],
 			    "content": Array [],
 			    "lessonId": "id-1",
+			    "lessonType": "TRADITIONAL",
 			    "licenseId": 1,
 			    "quiz": null,
+			    "selfRegulatedQuestion": null,
 			    "slug": "slug-1",
 			    "title": "The Title",
 			  },
