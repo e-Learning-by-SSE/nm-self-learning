@@ -12,10 +12,12 @@ import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { Hints } from "./hints";
 import { useQuiz } from "./quiz-context";
+import { LessonLayoutProps } from "@self-learning/lesson";
 
 export function Question({
 	question,
-	markdown
+	markdown,
+	lesson
 }: {
 	question: QuestionType;
 	markdown: {
@@ -23,6 +25,7 @@ export function Question({
 		answersMd: MdLookup;
 		hintsMd: MdLookupArray;
 	};
+	lesson: LessonLayoutProps["lesson"];
 }) {
 	const { answers, setAnswers, evaluations, setEvaluations, config } = useQuiz();
 	const answer = answers[question.questionId];
@@ -79,7 +82,7 @@ export function Question({
 				</div>
 
 				<div className="flex max-w-full flex-col gap-8">
-					<QuestionAnswerRenderer question={question} />
+					<QuestionAnswerRenderer question={question} lesson={lesson} />
 				</div>
 
 				{/* {question.withCertainty && <Certainty />} */}

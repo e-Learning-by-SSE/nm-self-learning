@@ -1,3 +1,4 @@
+import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
@@ -60,7 +61,9 @@ export default function CreateLessonPage() {
 				licenseId: defaultLicense.data?.licenseId ?? 1,
 				quiz: { questions: [], config: null },
 				content: [],
-				authors: [{ username: authorUsername }]
+				authors: [{ username: authorUsername }],
+				lessonType: LessonType.TRADITIONAL,
+				selfRegulatedQuestion: null,
 			}}
 		/>
 	);

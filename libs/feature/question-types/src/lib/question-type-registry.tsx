@@ -41,6 +41,7 @@ import {
 import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
+import { LessonLayoutProps } from "@self-learning/lesson";
 
 const ProgrammingAnswer = dynamic(() => import("./question-types/programming/component"), {
 	ssr: false
@@ -192,7 +193,7 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
 /**
  * Component that renders the appropriate answer component for a given question type.
  */
-export function QuestionAnswerRenderer({ question }: { question: QuestionType }) {
+export function QuestionAnswerRenderer({ question, lesson }: { question: QuestionType, lesson: LessonLayoutProps["lesson"] }) {
 	if (question.type === "programming") {
 		return <ProgrammingAnswer />;
 	}

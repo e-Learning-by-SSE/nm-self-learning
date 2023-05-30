@@ -118,6 +118,7 @@ video {
 
 input,
 textarea,
+select,
 .textfield {
 	@apply h-fit rounded-lg border border-light-border p-2 text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
 }

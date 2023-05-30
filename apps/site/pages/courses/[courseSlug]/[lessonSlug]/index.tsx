@@ -1,4 +1,5 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
+import { LessonType } from "@prisma/client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -22,12 +23,13 @@ import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
+		preQuestion: CompiledMarkdown | null;
 	};
 };
 
@@ -41,6 +43,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	lesson.quiz = null; // Not needed on this page, but on /quiz
 	let mdDescription = null;
 	let mdArticle = null;
+	let mdQuestion = null;
 
 	if (lesson.description) {
 		mdDescription = await compileMarkdown(lesson.description);
@@ -55,12 +58,18 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		article.value.content = "(replaced)";
 	}
 
+	// TODO change to check if the lesson is self requlated
+	if (lesson.lessonType === LessonType.SELF_REGULATED) {
+		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? 'Kein Inhalt.');
+	}
+
 	return {
 		props: {
 			...props,
 			markdown: {
 				article: mdArticle,
-				description: mdDescription
+				description: mdDescription,
+				preQuestion: mdQuestion
 			}
 		}
 	};
@@ -102,13 +111,18 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
-	console.log("Lesson", lesson);
-	console.log("Course", course);
+	const [showDialog, setShowDialog]  = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
+
+	if (showDialog && markdown.preQuestion) {
+		return <article className="flex flex-col gap-4">
+			<SelfRegulatedPreQuestion setShowDialog={setShowDialog} question={markdown.preQuestion} />
+		</article>
+	}
 
 	return (
 		<article className="flex flex-col gap-4">
@@ -314,6 +328,39 @@ function MediaTypeSelector({
 					))}
 				</Tabs>
 			)}
+		</>
+	);
+}
+
+function SelfRegulatedPreQuestion({ question, setShowDialog }: { question: CompiledMarkdown, setShowDialog: Dispatch<SetStateAction<boolean>> }) {
+	const [userAwnser, setUserAwnser]  = useState('');
+
+	return (
+		<>
+			<div>
+				<h1>
+					Aktivierungsfrage
+				</h1>
+				<MarkdownContainer className="w-full py-4">
+					<MDXRemote {...question} />
+				</MarkdownContainer>
+				<div className="mt-8">
+					<h2>
+						Deine Antwort:
+					</h2>
+					<textarea className="w-full" placeholder="..." onChange={e => setUserAwnser(e.target.value)} />
+				</div>
+				<div className="mt-2 flex justify-end gap-2">
+					<button
+						type="button"
+						className="btn-primary"
+						onClick={() => {setShowDialog(false)}}
+						disabled={userAwnser.length == 0}
+					>
+						Antwort Speichern
+					</button>
+				</div>
+			</div>
 		</>
 	);
 }
