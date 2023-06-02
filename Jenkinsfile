@@ -71,7 +71,7 @@ pipeline {
             }
             post {
                 success {
-                    stagingDeploy "bash /staging/update-compose-project.sh nm-self-learning"
+                    staging02ssh "bash /opt/update-compose-project.sh selflearn-staging"
                 }
             }
         }
