@@ -31,8 +31,9 @@ export function MarkdownField({
 				</button>
 			</div>
 			<div
-				className="flex rounded-lg border border-light-border bg-white p-4"
+				className="flex rounded-lg border border-light-border bg-white p-4 cursor-pointer"
 				style={{ minHeight: 32 }}
+				onClick={() => setOpenEditor(true)}
 			>
 				<div className="prose prose-emerald max-w-full">
 					<ReactMarkdown linkTarget='_blank' remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
