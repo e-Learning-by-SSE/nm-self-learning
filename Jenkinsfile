@@ -8,6 +8,10 @@ pipeline {
         API_VERSION = packageJson.getVersion() // package.json must be in root level in order for this to work
     }
 
+    options {
+        ansiColor('xterm')
+    }
+
     stages { 
         stage("NodeJS Build") {
             agent {
