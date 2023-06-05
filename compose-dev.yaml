@@ -4,7 +4,7 @@ services:
     - sleep
     - infinity
     build:
-      context: .docker
+      context: docker
       dockerfile: Dockerfile-Dev-Env
     init: true
     volumes:
