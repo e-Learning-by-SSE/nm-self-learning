@@ -78,14 +78,14 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	// Handle situations that content creator may created an empty lesson (to add content later)
 	const content = lesson.content as LessonContent;
-	if (content.length > 0) {
-		const router = useRouter();
-		const [preferredMediaType, setPreferredMediaType] = useState(
-			(lesson.content as LessonContent)[0].type
-		);
+	const router = useRouter();
+	const [preferredMediaType, setPreferredMediaType] = useState(
+		content.length > 0 ? content[0].type : null
+	);
 
-		useEffect(() => {
-			const availableMediaTypes = (lesson.content as LessonContent).map(c => c.type);
+	useEffect(() => {
+		if (content.length > 0) {
+			const availableMediaTypes = content.map(c => c.type);
 
 			const { type: typeFromRoute } = router.query;
 			let typeFromStorage: string | null = null;
@@ -102,12 +102,9 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 			if (isIncluded) {
 				setPreferredMediaType(type);
 			}
-		}, [router, lesson]);
-
-		return preferredMediaType;
-	} else {
-		return null;
-	}
+		}
+	}, [router, content]);
+	return preferredMediaType;
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
@@ -333,7 +330,7 @@ function MediaTypeSelector({
 }
 
 function SelfRegulatedPreQuestion({ question, setShowDialog }: { question: CompiledMarkdown, setShowDialog: Dispatch<SetStateAction<boolean>> }) {
-	const [userAwnser, setUserAwnser]  = useState('');
+	const [userAnswer, setUserAnswer]  = useState('');
 
 	return (
 		<>
@@ -348,14 +345,14 @@ function SelfRegulatedPreQuestion({ question, setShowDialog }: { question: Compi
 					<h2>
 						Deine Antwort:
 					</h2>
-					<textarea className="w-full" placeholder="..." onChange={e => setUserAwnser(e.target.value)} />
+					<textarea className="w-full" placeholder="..." onChange={e => setUserAnswer(e.target.value)} />
 				</div>
 				<div className="mt-2 flex justify-end gap-2">
 					<button
 						type="button"
 						className="btn-primary"
 						onClick={() => {setShowDialog(false)}}
-						disabled={userAwnser.length == 0}
+						disabled={userAnswer.length == 0}
 					>
 						Antwort Speichern
 					</button>
