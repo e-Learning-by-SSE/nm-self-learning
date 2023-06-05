@@ -30,6 +30,7 @@ export type LessonProps = LessonLayoutProps & {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
 		preQuestion: CompiledMarkdown | null;
+		subtitle: CompiledMarkdown | null;
 	};
 };
 
@@ -44,9 +45,14 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	let mdDescription = null;
 	let mdArticle = null;
 	let mdQuestion = null;
+	let mdSubtitle = null
 
 	if (lesson.description) {
 		mdDescription = await compileMarkdown(lesson.description);
+	}
+
+	if (lesson.subtitle && lesson.subtitle.length > 0) {
+		mdSubtitle = await compileMarkdown(lesson.subtitle);
 	}
 
 	const { content: article } = findContentType("article", lesson.content as LessonContent);
@@ -69,7 +75,8 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 			markdown: {
 				article: mdArticle,
 				description: mdDescription,
-				preQuestion: mdQuestion
+				preQuestion: mdQuestion,
+				subtitle: mdSubtitle,
 			}
 		}
 	};
@@ -133,7 +140,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 				</div>
 			)}
 
-			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
+			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} mdSubtitle={markdown.subtitle} />
 
 			{preferredMediaType === "article" && markdown.article && (
 				<MarkdownContainer className="mx-auto w-full pt-4">
@@ -155,11 +162,13 @@ Lesson.getLayout = LessonLayout;
 function LessonHeader({
 	course,
 	lesson,
-	mdDescription
+	mdDescription,
+	mdSubtitle,
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 	mdDescription?: CompiledMarkdown | null;
+	mdSubtitle?: CompiledMarkdown | null;
 }) {
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
 
@@ -174,8 +183,10 @@ function LessonHeader({
 						</span>
 						<LessonControls course={course} lesson={lesson} />
 					</span>
-					{lesson.subtitle && lesson.subtitle.length > 0 && (
-						<span className="mt-2 text-light">{lesson.subtitle}</span>
+					{mdSubtitle && (
+						<MarkdownContainer className="mt-2 text-light">
+							<MDXRemote {...mdSubtitle} />
+						</MarkdownContainer>
 					)}
 
 					<span className="flex flex-wrap-reverse justify-between gap-4">

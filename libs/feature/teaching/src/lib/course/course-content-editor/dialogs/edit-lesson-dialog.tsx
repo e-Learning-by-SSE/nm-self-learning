@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
-import { LabeledField, MarkdownEditorDialog } from "@self-learning/ui/forms";
+import { LabeledField, MarkdownEditorDialog, MarkdownField } from "@self-learning/ui/forms";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
 import { useState } from "react";
@@ -177,13 +177,16 @@ function Overview() {
 					</button>
 				</div>
 
-				<LabeledField label="Untertitel" optional={true}>
-					<textarea
-						{...register("subtitle")}
-						placeholder="1-2 Sätze über diese Lerneinheit."
-						rows={3}
-					/>
+				<LabeledField label="Untertitel" error={errors.subtitle?.message} optional={true}>
+					<Controller
+						control={control}
+						name="subtitle"
+						render={({ field }) => (
+							<MarkdownField content={field.value as string} setValue={field.onChange} inline={true} placeholder="1-2 Sätze über diese Lerneinheit."/>
+						)}
+					></Controller>
 				</LabeledField>
+
 
 				<LabeledField label="Beschreibung" optional={true}>
 					<textarea

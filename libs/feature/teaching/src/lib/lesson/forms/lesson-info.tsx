@@ -5,6 +5,7 @@ import {
 	Form,
 	InputWithButton,
 	LabeledField,
+	MarkdownField,
 	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
@@ -63,12 +64,14 @@ export function LessonInfoEditor({setLessonType}: {setLessonType: Dispatch<Lesso
 					</FieldHint>
 				</LabeledField>
 
-				<LabeledField label="Untertitel" error={errors.subtitle?.message}>
-					<textarea
-						{...register("subtitle")}
-						placeholder="1-2 Sätze über diese Lerneinheit."
-						rows={4}
-					/>
+				<LabeledField label="Untertitel" error={errors.subtitle?.message} optional={true}>
+					<Controller
+						control={control}
+						name="subtitle"
+						render={({ field }) => (
+							<MarkdownField content={field.value as string} setValue={field.onChange} inline={true} placeholder="1-2 Sätze über diese Lerneinheit."/>
+						)}
+					></Controller>
 				</LabeledField>
 
 				<LabeledField label="Lernmodell" error={errors.lessonType?.message}>
