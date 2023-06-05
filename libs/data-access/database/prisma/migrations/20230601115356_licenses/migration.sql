@@ -1,15 +1,9 @@
-/*
-  Warnings:
-
-  - Added the required column `licenseId` to the `Lesson` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "LessonType" AS ENUM ('TRADITIONAL', 'SELF_REGULATED');
 
 -- AlterTable
 ALTER TABLE "Lesson" ADD COLUMN     "lessonType" "LessonType" NOT NULL DEFAULT 'TRADITIONAL',
-ADD COLUMN     "licenseId" INTEGER NOT NULL,
+ADD COLUMN     "licenseId" INTEGER,
 ADD COLUMN     "selfRegulatedQuestion" TEXT;
 
 -- CreateTable

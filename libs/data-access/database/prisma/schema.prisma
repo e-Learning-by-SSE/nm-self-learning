@@ -185,8 +185,8 @@ model Lesson {
   completions  CompletedLesson[]
   quizAttempts QuizAttempt[]
   authors      Author[]          @relation("AuthorToLesson")
-  license      License @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
-  licenseId    Int
+  license      License? @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
+  licenseId    Int?
   lessonType              LessonType        @default(TRADITIONAL)
   selfRegulatedQuestion   String? // Question to ask the student before the lesson starts
 }
