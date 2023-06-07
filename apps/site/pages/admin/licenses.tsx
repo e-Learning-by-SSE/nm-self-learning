@@ -20,7 +20,7 @@ export default function LicensesPage() {
 
     const [displayName, setDisplayName] = useState("");
 	const { data: licenses, isLoading } = trpc.licenseRouter.getAll.useQuery();
-	const [editTarget, setEditTarget] = useState<number | null>(null);
+	const [editTarget, setEditTarget] = useState<number>(0);
 	const [createLicenseDialog, setCreateLicenseDialog] = useState(false);
 
 	const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
@@ -37,7 +37,6 @@ export default function LicensesPage() {
 
 
 	function onEditDialogClose(): void {
-		setEditTarget(null);
         setCreateLicenseDialog(false);
 	}
 
@@ -118,11 +117,12 @@ export default function LicensesPage() {
 									<AccordionElement license={{
 											licenseId: licenseId,
 											name: name,
-											imgUrl: logoUrl,
+											logoUrl: logoUrl,
 											licenseText: value[index].licenseText,
-											licenseUrl: value[index].url,
+											url: value[index].url,
 											oerCompatible: value[index].oerCompatible,
 											selectable: value[index].selectable,
+											defaultSuggestion: value[index].defaultSuggestion
 										}} 
 										index={index}
 										activeRowIndex={activeRowIndex}
@@ -158,7 +158,7 @@ export function AccordionElement({ license ,index , activeRowIndex }: { license:
 						<LicenseViewModal 
 							description={license.licenseText ?? ""}
 							name={license.name}
-							logoUrl={license.imgUrl ?? ""}
+							logoUrl={license.logoUrl ?? ""}
 							onClose={() => setViewLicenseDialog(false)} 
 						></LicenseViewModal>
 					)}
@@ -190,12 +190,12 @@ export function LicenseDetail({ license }: { license: License }) {
 				<div className="text-sm font-medium">OER - Kompatible:</div>
 			</div>
 			<div className="col-span-1">
-				{license.licenseUrl ? (
+				{license.url ? (
 					<Link
 						className="text-sm font-medium hover:text-secondary"
-						href={license.licenseUrl}
+						href={license.url}
 					>
-						{shortenLongText(license.licenseUrl)}
+						{shortenLongText(license.url)}
 					</Link>
 				):
 					<div className="text-sm font-medium">Nicht definiert</div>
@@ -214,7 +214,7 @@ export function LicenseDetail({ license }: { license: License }) {
 				<LicenseViewModal 
 					description={license.licenseText ?? ""}
 					name={license.name}
-					logoUrl={license.imgUrl ?? ""}
+					logoUrl={license.logoUrl ?? ""}
 				 	onClose={() => setViewLicenseDialog(false)} 
 					></LicenseViewModal>
 				)}

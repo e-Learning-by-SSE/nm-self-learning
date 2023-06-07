@@ -1,5 +1,6 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
 import { LessonType } from "@prisma/client";
+import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -13,9 +14,9 @@ import {
 	getContentTypeDisplayName,
 	includesMediaType,
 	LessonContent,
-	LessonMeta
+	LessonMeta,
 } from "@self-learning/types";
-import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, LicenseChip, LoadingBox, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -171,6 +172,11 @@ function LessonHeader({
 	mdSubtitle?: CompiledMarkdown | null;
 }) {
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
+	
+	let license = lesson.license;
+	if (license === null) {
+		license = trpc.licenseRouter.getDefault.useQuery().data ?? null;
+	}
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -193,7 +199,7 @@ function LessonHeader({
 						<span className="flex flex-col gap-3">
 							<Authors authors={lesson.authors} />
 						</span>
-						<LicenseLabel license={lesson.license} />
+						<LicenseLabel license={license} />
 					</span>
 
 					<div className="pt-4">
@@ -262,17 +268,14 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 }
 
 export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
-	let logoUrl = license.logoUrl;
-	if (logoUrl) {
-		// Check if logo should be loaded relative to the current page or if an absolute path is provided
-		logoUrl = logoUrl.startsWith("/") ? `${process.env.NEXT_ASSET_PREFIX}${logoUrl}` : logoUrl;
+	if (license === null) {
+		return <LoadingBox />;
 	}
-
 	if (license.url) {
 		return (
 			<div className="-mt-3">
 				<LabeledField label="Lizenz">
-					<LicenseChip name={license.name} imgUrl={logoUrl} url={license.url} />
+					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={license.url} />
 				</LabeledField>
 			</div>
 		);
@@ -282,7 +285,7 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 				<LabeledField label="Lizenz">
 					<LicenseChip
 						name={license.name}
-						imgUrl={logoUrl}
+						imgUrl={license.logoUrl}
 						description={license.licenseText !== null ? license.licenseText : undefined}
 					/>
 				</LabeledField>

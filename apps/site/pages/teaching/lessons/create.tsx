@@ -10,7 +10,6 @@ export default function CreateLessonPage() {
 	const session = useRequiredSession();
 	const authorUsername = session.data?.user.name;
 	const router = useRouter();
-	const defaultLicense = trpc.licenseRouter.getDefault.useQuery();
 
 	async function onConfirm(lesson: LessonFormModel) {
 		//don't save lesson without content
@@ -47,24 +46,23 @@ export default function CreateLessonPage() {
 			<Unauthorized>Um eine Lerneinheit zu erstellen, musst du ein Autor sein.</Unauthorized>
 		);
 	}
-
 	return (
-		<LessonEditor
+		  <LessonEditor
 			onConfirm={onConfirm}
 			lesson={{
-				lessonId: "",
-				slug: "",
-				title: "",
-				subtitle: "",
-				description: "",
-				imgUrl: "",
-				licenseId: defaultLicense.data?.licenseId ?? 1,
-				quiz: { questions: [], config: null },
-				content: [],
-				authors: [{ username: authorUsername }],
-				lessonType: LessonType.TRADITIONAL,
-				selfRegulatedQuestion: null,
+			  lessonId: "",
+			  slug: "",
+			  title: "",
+			  subtitle: "",
+			  description: "",
+			  imgUrl: "",
+			  licenseId: null,
+			  quiz: { questions: [], config: null },
+			  content: [],
+			  authors: [{ username: authorUsername ?? "" }],
+			  lessonType: LessonType.TRADITIONAL,
+			  selfRegulatedQuestion: null,
 			}}
-		/>
+		  />
 	);
 }

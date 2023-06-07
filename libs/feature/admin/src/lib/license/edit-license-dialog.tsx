@@ -18,7 +18,7 @@ export function CreateLicenseDialog({
     licenseId,
     onClose
 }: {
-    licenseId: number | null,
+    licenseId: number,
     onClose: OnDialogCloseFn<License>;
 }) {
     const { mutateAsync: createLicense } =  trpc.licenseRouter.createAsAdmin.useMutation();
@@ -69,7 +69,7 @@ export function EditLicenseDialog({
         } catch (err) {
             showToast({
                 type: "error",
-                title: "Lizenz konnte nicht gespeichdert werden!",
+                title: "Lizenz konnte nicht gespeichert werden!",
                 subtitle: "Das Speichern der Lizenz ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
             });
         }
@@ -90,11 +90,11 @@ function LicenseModal({
     onSubmit,
     onClose
 }: {
-    licenseId: number | null,
+    licenseId: number,
     onSubmit: (license: License) => void,
     onClose: OnDialogCloseFn<License>;
 }) {
-    const { data: license, isLoading } = getLicenseOrDefault(licenseId);
+    const { data: license, isLoading } = trpc.licenseRouter.getOne.useQuery({licenseId: licenseId});
 
     return (
 		<Dialog onClose={() => onClose(undefined)} title={licenseId === null ? "Neue Lizenz" : license?.name ?? "Neue Lizenz"}>
@@ -167,11 +167,11 @@ function LicenseData() {
 				<LabeledField label="Name" error={errors.name?.message}>
 					<input className="textfield" type={"text"} {...register("name")} />
 				</LabeledField>
-				<LabeledField label="Lizenz Url" error={errors.licenseUrl?.message}>
-					<input className="textfield" type={"text"} {...register("licenseUrl")} />
+				<LabeledField label="Lizenz Url" error={errors.url?.message}>
+					<input className="textfield" type={"text"} {...register("url")} />
 				</LabeledField>
-                <LabeledField label="Lizenz ImageUrl" error={errors.imgUrl?.message}>
-					<input className="textfield" type={"text"} {...register("imgUrl")} />
+                <LabeledField label="Lizenz ImageUrl" error={errors.logoUrl?.message}>
+					<input className="textfield" type={"text"} {...register("logoUrl")} />
 				</LabeledField>
                 <LabeledField label="Lizenz Text" error={errors.licenseText?.message}>
 					<textarea className="textfield" {...register("licenseText")} />
@@ -214,36 +214,3 @@ function LicenseData() {
 		</section>
 	);
 }
-
-function getLicenseOrDefault(licenseId: number | null) {
-    if(licenseId === null) {
-        return ({
-            isLoading: false,
-            data: {
-                licenseId: 0,
-                name: "",
-                licenseUrl: "",
-                imgUrl: "",
-                licenseText: "",
-                selectable: true,
-                oerCompatible: false,
-            } as License
-        });
-    } else {
-        const data = trpc.licenseRouter.getOne.useQuery({licenseId: licenseId})
-        return {
-            isLoading: data.isLoading,
-            data: {
-                licenseId: data.data?.licenseId ?? 0,
-                name: data.data?.name ?? "",
-                licenseUrl: data.data?.url ?? "",
-                imgUrl: data.data?.logoUrl ?? "",
-                licenseText: data.data?.licenseText ?? "",
-                selectable: data.data?.selectable ?? true,
-                oerCompatible: data.data?.oerCompatible ?? false,
-            }
-        }
-    }
-}
-
-

@@ -16,7 +16,7 @@ export const lessonSchema = z.object({
 	imgUrl: z.string().nullable().optional(),
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
-	licenseId: z.number(),
+	licenseId: z.number().nullable(),
 	lessonType: z.nativeEnum(LessonType),
 	selfRegulatedQuestion: z.string().nullable(),
 	quiz: z
@@ -40,7 +40,7 @@ export function createEmptyLesson(): Lesson {
 		description: null,
 		imgUrl: null,
 		quiz: null,
-		licenseId: 1,
+		licenseId: null,
 		content: [],
 		authors: [],
 		lessonType: LessonType.TRADITIONAL,

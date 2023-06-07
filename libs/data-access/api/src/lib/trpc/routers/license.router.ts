@@ -28,9 +28,9 @@ export const licenseRouter = t.router({
 				where: { licenseId: input.licenseId },
 				data: {
 					name: input.license.name,
-					url: input.license.licenseUrl,
+					url: input.license.url,
 					licenseText: input.license.licenseText,
-					logoUrl: input.license.imgUrl,
+					logoUrl: input.license.logoUrl,
 					oerCompatible: input.license.oerCompatible,
 					selectable: input.license.selectable
 				}
@@ -53,9 +53,9 @@ export const licenseRouter = t.router({
 			const created = await database.license.create({
 				data: {
 					name: input.license.name,
-					url: input.license.licenseUrl,
+					url: input.license.url,
 					licenseText: input.license.licenseText,
-					logoUrl: input.license.imgUrl,
+					logoUrl: input.license.logoUrl,
 					oerCompatible: input.license.oerCompatible,
 					selectable: input.license.selectable
 				}
@@ -66,25 +66,37 @@ export const licenseRouter = t.router({
 			return created;
 		}),
 	getDefault: t.procedure.query(async () => {
-		// Default: Find first license with defaultSuggestion = true
-		let data = await database.license.findFirst({
+		return await findLicenseWithDefault();
+	}),
+	getOneOrDefault: t.procedure.input(z.object({ licenseId: z.number() })).query(async ({ input }) => {
+		const data = await database.license.findUnique({
 			where: {
-				defaultSuggestion: true
-			},
-			orderBy: {
-				name: "asc"
+				licenseId: input.licenseId
 			}
-		});
-
-		// Fallback: Find first license
-		if (!data) {
-			data = await database.license.findFirst({
-				orderBy: {
-					name: "asc"
-				}
-			});
-		}
-
-		return data;
+		})
+		return data || await findLicenseWithDefault();
 	})
 });
+
+
+async function findLicenseWithDefault() {
+	const license = await database.license.findFirst({
+	  where: {
+		defaultSuggestion: true
+	  },
+	  orderBy: {
+		name: "asc"
+	  }
+	});
+  
+	return license || {
+	  name: "Dummy License",
+	  licenseId: 0,
+	  url: "",
+	  licenseText: "",
+	  logoUrl: "",
+	  oerCompatible: false,
+	  selectable: false,
+	  defaultSuggestion: true
+	};
+  }
