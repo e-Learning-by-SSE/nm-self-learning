@@ -93,6 +93,11 @@ pipeline {
 					}
                 }
             }
+            post {
+                success {
+                    staging02ssh "python3 /opt/selflearn-branches/setup.py ${env.BRANCH_NAME}"
+                }
+            }
         }
     }
 }
