@@ -31,6 +31,7 @@ export function Navbar() {
 							<>
 								<Link href="/overview">Übersicht</Link>
 								{user.role === "ADMIN" && <Link href="/admin">Adminbereich</Link>}
+								{user.role === "ADMIN" && <Link href="/skills">SkillTree-Bereich</Link> }
 							</>
 						)}
 						<Link href="/subjects">Fachgebiete</Link>

@@ -2,8 +2,9 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "../auth";
+import { OpenApiMeta} from 'trpc-openapi';
 
-export const t = initTRPC.context<Context>().create();
+export const t = initTRPC.context<Context>().meta<OpenApiMeta>().create();
 
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
 	if (!ctx?.user) {
