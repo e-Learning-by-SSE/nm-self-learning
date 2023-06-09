@@ -220,7 +220,7 @@ function QuizHeader({
 
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
 				{questions.map((question, index) => (
-					<Tab key={question.questionId}>
+					<Tab key={question.questionId} subTabs={lesson.lessonType === LessonType.SELF_REGULATED ? 2 : 1}>
 						<QuestionTab index={index} evaluation={evaluations[question.questionId]} />
 					</Tab>
 				))}

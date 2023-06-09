@@ -20,7 +20,7 @@ export function Tabs({
 	);
 }
 
-export function Tab({ children }: { children: ReactNode }) {
+export function Tab({ children, subTabs = 1 }: { children: ReactNode, subTabs?: number }) {
 	return (
 		<HeadlessTab as={Fragment}>
 			{({ selected }) => (
@@ -33,7 +33,11 @@ export function Tab({ children }: { children: ReactNode }) {
 						{children}
 					</span>
 
-					{selected && <span className="h-[2px] w-full bg-secondary"></span>}
+					<div className="flex flex-row w-full gap-2">
+						{[...Array(subTabs)].map((x, i) =>
+							<span className={(selected && i === 0) ? 'h-[2px] flex-1 bg-secondary' : 'h-[2px] flex-1 bg-gray-400'}></span>
+						)}
+					</div>
 				</li>
 			)}
 		</HeadlessTab>
