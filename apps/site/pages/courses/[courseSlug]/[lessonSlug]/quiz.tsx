@@ -1,5 +1,6 @@
 import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
 import { CheckCircleIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -57,9 +58,11 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 			}
 
 			question.justify = false;
-			const justifiedQuestion = JSON.parse(JSON.stringify(question)) as typeof question;
-			justifiedQuestion.justify = true;
-			processedQuestions.push(justifiedQuestion);
+			if (parentProps.lesson.lessonType === LessonType.SELF_REGULATED) {
+				const justifiedQuestion = JSON.parse(JSON.stringify(question)) as typeof question;
+				justifiedQuestion.justify = true;
+				processedQuestions.push(justifiedQuestion);
+			}
 		}
 		processedQuestions.push(question);
 	}
