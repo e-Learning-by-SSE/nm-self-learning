@@ -55,14 +55,7 @@ export function Navbar() {
 					</Link>
 					</div>
 					<div className="hidden sm:ml-6 sm:block">
-					{!user ? (
-						<button
-							className="text-w rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white"
-							onClick={redirectToLogin}
-						>
-							Login
-						</button>
-					) : (
+					{user && (
 						<div className="flex space-x-4 items-center px-1 text-sm font-medium h-full">
 							{navigation.map((item) => (
 								<Link
