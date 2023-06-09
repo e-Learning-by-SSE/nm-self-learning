@@ -81,21 +81,21 @@ pipeline {
         }
 
         stage('Docker Publish PB') {
+            environment {
+                VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"
+            }
             when {
                 expression { env.BRANCH_NAME.startsWith("pb_") }
             }
             steps {
-                script {
-					def version = ["${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"]
-					ssedocker {
-						create { target "${env.TARGET_PREFIX}:${version}" }
-						publish {}
-					}
+                ssedocker {
+                    create { target "${env.TARGET_PREFIX}:${env.VERSION}" }
+                    publish {}
                 }
             }
             post {
                 success {
-                    staging02ssh "python3 /opt/selflearn-branches/setup.py ${env.BRANCH_NAME}"
+                    staging02ssh "python3 /opt/selflearn-branches/setup.py ${env.VERSION}"
                 }
             }
         }
