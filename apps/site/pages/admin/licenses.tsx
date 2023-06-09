@@ -20,7 +20,7 @@ export default function LicensesPage() {
 
     const [displayName, setDisplayName] = useState("");
 	const { data: licenses, isLoading } = trpc.licenseRouter.getAll.useQuery();
-	const [editTarget, setEditTarget] = useState<number>(0);
+	const [editTarget, setEditTarget] = useState<number | null>(null);
 	const [createLicenseDialog, setCreateLicenseDialog] = useState(false);
 
 	const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
@@ -37,7 +37,7 @@ export default function LicensesPage() {
 
 
 	function onEditDialogClose(): void {
-        setEditTarget(-1);
+        setEditTarget(null);
 	}
 
 	function onCreateDialogClose(): void {
@@ -63,7 +63,7 @@ export default function LicensesPage() {
 						<span>Lizenz hinzufügen</span>
 					</button>
 					{createLicenseDialog && (
-                       <CreateLicenseDialog onClose={onCreateDialogClose} licenseId={editTarget} />
+                       <CreateLicenseDialog onClose={onCreateDialogClose} licenseId={0} />
 					)}
 				</div>
 
@@ -72,7 +72,7 @@ export default function LicensesPage() {
 					onChange={e => {setDisplayName(e.target.value); setActiveRowIndex(null)}}
 				/>
 
-				{editTarget && editTarget > -1 && (
+				{editTarget && (
 					<EditLicenseDialog onClose={onEditDialogClose} licenseId={editTarget} />
 				)}
 
