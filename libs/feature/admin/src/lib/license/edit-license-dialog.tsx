@@ -94,8 +94,9 @@ function LicenseModal({
     onSubmit: (license: License) => void,
     onClose: OnDialogCloseFn<License>;
 }) {
-    const { data: license, isLoading } = trpc.licenseRouter.getOne.useQuery({licenseId: licenseId});
-
+   
+    const { data: license, isLoading } = getLicenseOrDefault(licenseId);
+    
     return (
 		<Dialog onClose={() => onClose(undefined)} title={licenseId === null ? "Neue Lizenz" : license?.name ?? "Neue Lizenz"}>
 			{isLoading ? (
@@ -116,6 +117,29 @@ function LicenseModal({
 
 
 }
+
+function getLicenseOrDefault(licenseId: number) {
+    if(licenseId === 0) {
+        return ({
+            isLoading: false,
+            data: {
+                licenseId: 0,
+                name: "",
+                url: "",
+                logoUrl: "",
+                licenseText: "",
+                selectable: true,
+                oerCompatible: false,
+                defaultSuggestion: false
+            } as License
+        });
+    } else {
+        const data = trpc.licenseRouter.getOne.useQuery({licenseId: licenseId})
+        return data;
+    }
+}
+
+
 
 function LicenseForm({
 	initialLicense,
@@ -157,6 +181,7 @@ function LicenseData() {
 	const { register, control, formState, setValue } = useFormContext<License>();
     const selectable = useWatch({ control: control, name: "selectable" });
     const oercompatible = useWatch({ control: control, name: "oerCompatible" });
+    const defaultSuggestion = useWatch({ control: control, name: "defaultSuggestion" });
 
 	const errors = formState.errors;
 
@@ -206,6 +231,21 @@ function LicenseData() {
                                 className="text-sm font-semibold"
                             >
                                 OER-kompatibel
+                            </label>
+                        </span>
+                        <span className="flex items-center gap-2">
+                            <input
+                                id={"defaultsuggestion"}
+                                type={"checkbox"}
+                                className="checkbox"
+                                checked={defaultSuggestion}
+                                onChange={() => {setValue("defaultSuggestion", !defaultSuggestion)}}
+                            />
+                            <label
+                                htmlFor={"defaultsuggestion"}
+                                className="text-sm font-semibold"
+                            >
+                                Default - Suggestion
                             </label>
                         </span>
                     </div>

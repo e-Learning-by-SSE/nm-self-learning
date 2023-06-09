@@ -37,7 +37,11 @@ export default function LicensesPage() {
 
 
 	function onEditDialogClose(): void {
-        setCreateLicenseDialog(false);
+        setEditTarget(-1);
+	}
+
+	function onCreateDialogClose(): void {
+		setCreateLicenseDialog(false);
 	}
 
     function onEdit(licenseId: number): void {
@@ -59,7 +63,7 @@ export default function LicensesPage() {
 						<span>Lizenz hinzufügen</span>
 					</button>
 					{createLicenseDialog && (
-                       <CreateLicenseDialog onClose={onEditDialogClose} licenseId={editTarget} />
+                       <CreateLicenseDialog onClose={onCreateDialogClose} licenseId={editTarget} />
 					)}
 				</div>
 
@@ -68,7 +72,7 @@ export default function LicensesPage() {
 					onChange={e => {setDisplayName(e.target.value); setActiveRowIndex(null)}}
 				/>
 
-				{editTarget && (
+				{editTarget && editTarget > -1 && (
 					<EditLicenseDialog onClose={onEditDialogClose} licenseId={editTarget} />
 				)}
 
