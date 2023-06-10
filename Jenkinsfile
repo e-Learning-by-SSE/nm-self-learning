@@ -95,7 +95,7 @@ pipeline {
             }
             post {
                 success {
-                    staging02ssh "python3 /opt/selflearn-branches/setup.py ${env.VERSION}"
+                    staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
                 }
             }
         }
