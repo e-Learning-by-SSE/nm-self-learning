@@ -165,12 +165,19 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 ];
 
 const license: Prisma.LicenseCreateManyInput[] = [
-	// Default License -> Should come first
+	{
+		licenseId: 0,
+		name: "Uni Hi Intern",
+		licenseText:
+			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
+		oerCompatible: false,
+		selectable: true,
+	},
 	{
 		licenseId: 1,
 		name: "CC BY 4.0",
 		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
-		logoUrl: "/licenses/cc-by.svg",
+		logoUrl: "http://i.creativecommons.org/l/by/3.0/88x31.png",
 		oerCompatible: true,
 		selectable: true,
 		defaultSuggestion: true
@@ -179,28 +186,18 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		licenseId: 2,
 		name: "CC BY SA 4.0",
 		url: "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
-		logoUrl: "/licenses/cc-by-sa.svg",
+		logoUrl: "http://i.creativecommons.org/l/by-sa/3.0/88x31.png",
 		oerCompatible: true,
 		selectable: true
 	},
 	{
 		licenseId: 3,
-		name: "CC 4.0",
+		name: "CC0 1.0",
 		url: "https://creativecommons.org/publicdomain/zero/1.0/deed.de",
-		logoUrl: "/licenses/cc.svg",
+		logoUrl: "http://i.creativecommons.org/p/zero/1.0/88x31.png",
 		oerCompatible: true,
 		selectable: true
 	},
-
-	// Should come last
-	{
-		licenseId: 100,
-		name: "Uni Hi Intern",
-		licenseText:
-			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
-		oerCompatible: false,
-		selectable: true
-	}
 ];
 
 async function seed(): Promise<void> {
