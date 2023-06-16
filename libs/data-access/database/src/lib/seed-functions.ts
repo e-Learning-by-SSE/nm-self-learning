@@ -22,7 +22,7 @@ export function createLesson(
 	description: string | null,
 	content: LessonContent,
 	questions: QuizContent,
-	licenseId?: number,
+	licenseId?: number | null,
 	lessonType?: LessonType,
 	selfRegulatedQuestion?: string
 ) {
@@ -40,7 +40,7 @@ export function createLesson(
 			config: null
 		} satisfies Quiz,
 		meta: {},
-		licenseId: licenseId ?? 100
+		licenseId: licenseId ?? 0
 	};
 
 	lesson.meta = createLessonMeta(lesson as any) as unknown as Prisma.JsonObject;
@@ -278,7 +278,7 @@ export async function seedCaseStudy(
 		data: chapters.flatMap(chapter =>
 			chapter.content.map(lesson => ({
 				...lesson,
-				licenseId: lesson.licenseId ?? 1
+				licenseId: lesson.licenseId ?? 0
 			}))
 		)
 	});

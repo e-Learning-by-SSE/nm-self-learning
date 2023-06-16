@@ -35,6 +35,43 @@ const students = [
 	}
 ];
 
+
+const license: Prisma.LicenseCreateManyInput[] = [
+	{
+		licenseId: 0,
+		name: "Uni Hi Intern",
+		licenseText:
+			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
+		oerCompatible: false,
+		selectable: true,
+	},
+	{
+		licenseId: 1,
+		name: "CC BY 4.0",
+		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
+		logoUrl: "http://i.creativecommons.org/l/by/3.0/88x31.png",
+		oerCompatible: true,
+		selectable: true,
+		defaultSuggestion: true
+	},
+	{
+		licenseId: 2,
+		name: "CC BY SA 4.0",
+		url: "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
+		logoUrl: "http://i.creativecommons.org/l/by-sa/3.0/88x31.png",
+		oerCompatible: true,
+		selectable: true
+	},
+	{
+		licenseId: 3,
+		name: "CC0 1.0",
+		url: "https://creativecommons.org/publicdomain/zero/1.0/deed.de",
+		logoUrl: "http://i.creativecommons.org/p/zero/1.0/88x31.png",
+		oerCompatible: true,
+		selectable: true
+	}
+];
+
 const users: Prisma.UserCreateInput[] = students.map(student => ({
 	name: student.username,
 	image: student.image,
@@ -265,7 +302,7 @@ function createLesson(title: string) {
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: faker.lorem.paragraph(1),
 		description: faker.lorem.paragraphs(3),
-		licenseId: 1,
+		licenseId: license[1].licenseId,
 		imgUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=256",
 		content: [
 			{
@@ -512,6 +549,9 @@ const completedLessons: Prisma.CompletedLessonCreateManyInput[] = extractLessonI
 export async function seedDemos(): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", "Seeding Demo Data:");
 
+	await prisma.license.createMany({ data: license });
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Licenses");
+
 	await prisma.subject.createMany({ data: subjects });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 	await prisma.specialization.createMany({ data: specializations });
@@ -523,7 +563,7 @@ export async function seedDemos(): Promise<void> {
 		data: reactLessons.flatMap(chapter =>
 			chapter.content.map(lesson => ({
 				...lesson,
-				licenseId: lesson.licenseId ?? 1
+				licenseId: lesson.licenseId ?? license[0].licenseId,
 			}))
 		)
 	});

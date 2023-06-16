@@ -6,6 +6,7 @@
 		"KEYCLOAK",
 		"MATOMO",
 		"Pluggable",
+		"prisma",
 		"rehype",
 		"trpc"
 	],
