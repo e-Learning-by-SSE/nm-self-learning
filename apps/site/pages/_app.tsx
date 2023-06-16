@@ -11,7 +11,8 @@ import { useRouter } from "next/router";
 // import { ReactQueryDevtools } from "react-query/devtools";
 import "./styles.css";
 import "katex/dist/katex.css";
-
+import { useEffect } from "react";
+import { init } from "@socialgouv/matomo-next";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -44,8 +45,16 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		  (Component as any).getLayout(Component, pageProps)
 		: null;
-
-	return (
+		
+		useEffect(() => {
+			const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
+			const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
+			if (MATOMO_URL && MATOMO_SITE_ID) {
+				init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
+			}
+		}, []);
+		
+		return (
 		<SessionProvider session={(pageProps as any).session} basePath={ useRouter().basePath + "/api/auth" }>
 			<Head>
 				<title>Self-Learning</title>
