@@ -165,7 +165,6 @@ export function createMultipleChoice(
 			...answer
 		})),
 		hints: hintsData,
-		justify: false,
 	};
 }
 
@@ -191,7 +190,6 @@ export function createTextQuestion(
 			value: answer
 		})),
 		hints: hintsData,
-		justify: false,
 	};
 }
 

@@ -56,13 +56,6 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 			for (const answer of question.answers) {
 				answersMd[answer.answerId] = await compileMarkdown(answer.content);
 			}
-
-			question.justify = false;
-			if (parentProps.lesson.lessonType === LessonType.SELF_REGULATED) {
-				const justifiedQuestion = JSON.parse(JSON.stringify(question)) as typeof question;
-				justifiedQuestion.justify = true;
-				processedQuestions.push(justifiedQuestion);
-			}
 		}
 		processedQuestions.push(question);
 	}
@@ -146,6 +139,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						question={currentQuestion}
 						markdown={markdown}
 						lesson={lesson}
+						isLastQuestion={quiz.questions.length === Number(index) + 1}
 					/>
 					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
@@ -221,7 +215,10 @@ function QuizHeader({
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
 				{questions.map((question, index) => (
 					<Tab key={question.questionId}>
-						<QuestionTab index={index} evaluation={evaluations[question.questionId]} isMultiStep={true} />
+						<QuestionTab
+							index={index}
+							evaluation={evaluations[question.questionId]}
+							isMultiStep={lesson.lessonType === LessonType.SELF_REGULATED && question.type === "multiple-choice"} />
 					</Tab>
 				))}
 			</Tabs>

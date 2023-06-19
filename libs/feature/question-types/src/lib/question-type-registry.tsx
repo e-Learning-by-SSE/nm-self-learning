@@ -141,7 +141,8 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	"multiple-choice": () => ({
 		...createBaseQuestion(),
 		type: "multiple-choice",
-		answers: []
+		answers: [],
+		questionStep: 1,
 	}),
 	exact: () => ({
 		...createBaseQuestion(),
@@ -193,13 +194,13 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
 /**
  * Component that renders the appropriate answer component for a given question type.
  */
-export function QuestionAnswerRenderer({ question, lesson }: { question: QuestionType, lesson: LessonLayoutProps["lesson"] }) {
+export function QuestionAnswerRenderer({ question, lesson, questionStep }: { question: QuestionType, lesson: LessonLayoutProps["lesson"], questionStep: number }) {
 	if (question.type === "programming") {
 		return <ProgrammingAnswer />;
 	}
 
 	if (question.type === "multiple-choice") {
-		return <MultipleChoiceAnswer />;
+		return <MultipleChoiceAnswer questionStep={questionStep} lesson={lesson} />;
 	}
 
 	if (question.type === "exact") {

@@ -1,14 +1,19 @@
 import { useQuiz } from "@self-learning/quiz";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
+import { LessonLayoutProps } from "@self-learning/lesson";
+import { LessonType } from "@prisma/client";
 
 
-export default function MultipleChoiceAnswer() {
+export default function MultipleChoiceAnswer({questionStep, lesson}: {questionStep: number, lesson: LessonLayoutProps['lesson']}) {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
+	const [ justifiedAnswer, setJustifiedAnswer ] = useState(JSON.parse(JSON.stringify(answer)));
 	const { config } = useQuiz();
+
+	const isJustified = questionStep === 1 && lesson.lessonType === LessonType.SELF_REGULATED;
 
 	return (
 		<>
@@ -20,10 +25,10 @@ export default function MultipleChoiceAnswer() {
 						showResult={!!evaluation && config.showSolution}
 						isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
 						isCorrect={option.isCorrect}
-						isSelected={answer.value[option.answerId] === true}
+						isSelected={((isJustified ? justifiedAnswer : answer).value[option.answerId] === true)}
 						onToggle={() => {
-							console.log("onToggle");
-							setAnswer(old => ({
+							const answerSetter = isJustified ? setJustifiedAnswer : setAnswer;
+							answerSetter(old => ({
 								...old,
 								value: {
 									...old.value,
@@ -32,7 +37,7 @@ export default function MultipleChoiceAnswer() {
 								}
 							}));
 						}}
-						justifyChoice={question.justify ?? false}
+						justifyChoice={isJustified}
 					>
 						{markdown.answersMd[option.answerId] ? (
 							<MarkdownContainer>
