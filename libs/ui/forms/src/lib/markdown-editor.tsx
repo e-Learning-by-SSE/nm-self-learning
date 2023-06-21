@@ -9,35 +9,49 @@ import { AssetPickerButton } from "./upload";
 export function MarkdownField({
 	content,
 	setValue,
-	label
+	label,
+	inline,
+	placeholder
 }: {
 	label?: string;
 	content: string | undefined;
 	setValue: (v: string | undefined) => void;
+	inline?: boolean;
+	placeholder?: string
 }) {
 	const [openEditor, setOpenEditor] = useState(false);
 
 	return (
-		<div className="flex flex-col gap-1">
-			<div className="flex items-end justify-between">
-				<span className="text-sm font-semibold">{label ?? "Markdown"}</span>
-				<button
-					type="button"
-					className="btn-stroked w-fit self-end"
-					onClick={() => setOpenEditor(true)}
-				>
-					<PencilIcon className="icon" />
-					<span>Bearbeiten</span>
-				</button>
-			</div>
+		<div className={inline ? 'flex flex-col gap-1' : ''}>
+			{!inline && 
+				<div className="flex items-end justify-between">
+					<span className="text-sm font-semibold">{label ?? "Markdown"}</span>
+					<button
+						type="button"
+						className="btn-stroked w-fit self-end"
+						onClick={() => setOpenEditor(true)}
+					>
+						<PencilIcon className="icon" />
+						<span>Bearbeiten</span>
+					</button>
+				</div>
+			}
+
 			<div
-				className="flex rounded-lg border border-light-border bg-white p-4"
+				className={"rounded-lg border border-light-border bg-white cursor-pointer " + (inline ? "p-2" : "flex p-4")}
 				style={{ minHeight: 32 }}
+				onClick={() => setOpenEditor(true)}
 			>
-				<div className="prose prose-emerald max-w-full">
-					<ReactMarkdown linkTarget='_blank' remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
-						{content ?? ""}
-					</ReactMarkdown>
+				<div className={"prose prose-emerald max-w-full" + (inline && ' text-sm')}>
+					{ content !== '' ? 
+						<ReactMarkdown linkTarget='_blank' remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+							{ content ?? '' }
+						</ReactMarkdown> 
+						:
+						<div className="text-gray-400">
+							{ placeholder }
+						</div>
+					}
 				</div>
 			</div>
 

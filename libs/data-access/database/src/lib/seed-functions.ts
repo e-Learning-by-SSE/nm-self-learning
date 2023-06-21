@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, LessonType } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
@@ -21,20 +21,26 @@ export function createLesson(
 	subtitle: string | null,
 	description: string | null,
 	content: LessonContent,
-	questions: QuizContent
+	questions: QuizContent,
+	licenseId?: number | null,
+	lessonType?: LessonType,
+	selfRegulatedQuestion?: string
 ) {
-	const lesson: Prisma.LessonCreateInput = {
+	const lesson: Prisma.LessonCreateManyInput = {
 		title,
 		lessonId: faker.datatype.uuid(),
 		slug: slugify(faker.random.alphaNumeric(8) + title, { lower: true, strict: true }),
 		subtitle: subtitle,
 		description: description,
 		content: content,
+		lessonType: lessonType ?? LessonType.TRADITIONAL,
+		selfRegulatedQuestion: selfRegulatedQuestion, 
 		quiz: {
 			questions,
 			config: null
 		} satisfies Quiz,
-		meta: {}
+		meta: {},
+		licenseId: licenseId ?? 0
 	};
 
 	lesson.meta = createLessonMeta(lesson as any) as unknown as Prisma.JsonObject;
@@ -45,7 +51,7 @@ export function createLesson(
 type Lessons = {
 	title: string;
 	description: string;
-	content: Prisma.LessonCreateInput[];
+	content: Prisma.LessonCreateManyInput[];
 }[];
 
 export function createAuthor(
@@ -90,7 +96,8 @@ export function createAuthor(
 type Chapters = {
 	title: string;
 	description: string;
-	content: Prisma.LessonCreateInput[];
+	content: Prisma.LessonCreateManyInput[];
+	licenseId?: number;
 }[];
 
 export function createCourse(
@@ -157,7 +164,8 @@ export function createMultipleChoice(
 			answerId: faker.random.alphaNumeric(8),
 			...answer
 		})),
-		hints: hintsData
+		questionStep: 1,
+		hints: hintsData,
 	};
 }
 
@@ -182,7 +190,7 @@ export function createTextQuestion(
 			acceptedAnswerId: faker.random.alphaNumeric(8),
 			value: answer
 		})),
-		hints: hintsData
+		hints: hintsData,
 	};
 }
 
@@ -264,8 +272,14 @@ export async function seedCaseStudy(
 	const courseData: Prisma.CourseCreateManyInput[] = courses.map(c => c.data);
 	await prisma.course.createMany({ data: courseData });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
+
 	await prisma.lesson.createMany({
-		data: chapters.flatMap(chapter => chapter.content.map(lesson => lesson))
+		data: chapters.flatMap(chapter =>
+			chapter.content.map(lesson => ({
+				...lesson,
+				licenseId: lesson.licenseId ?? 0
+			}))
+		)
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 

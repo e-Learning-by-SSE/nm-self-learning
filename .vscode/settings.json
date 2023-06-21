@@ -1,4 +1,14 @@
 {
 	"typescript.tsdk": "node_modules/typescript/lib",
-	"cSpell.words": ["Katex", "Keycloak", "KEYCLOAK", "Pluggable", "rehype", "trpc"]
+	"cSpell.words": [
+		"Katex",
+		"Keycloak",
+		"KEYCLOAK",
+		"MATOMO",
+		"Pluggable",
+		"prisma",
+		"rehype",
+		"trpc"
+	],
+	"cSpell.language": "en,de-de",
 }

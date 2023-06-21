@@ -59,8 +59,8 @@ export function LandingPage() {
 							</li>
 
 							<li>
-								Unsere Mission ist, dass du durch die Plattform lernst,
-								selbstgesteuert und nachhaltig zu lernen.
+								Unsere Mission ist, dass du durch die Plattform lernst, strategisch
+								und nachhaltig zu lernen.
 							</li>
 						</ul>
 					</span>

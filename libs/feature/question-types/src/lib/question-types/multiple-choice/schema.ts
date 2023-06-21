@@ -9,7 +9,8 @@ export const multipleChoiceQuestionSchema = baseQuestionSchema.extend({
 			content: z.string(),
 			isCorrect: z.boolean()
 		})
-	)
+	),
+	questionStep: z.number(),
 });
 
 export type MultipleChoiceQuestion = z.infer<typeof multipleChoiceQuestionSchema>;

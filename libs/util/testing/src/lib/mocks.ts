@@ -46,6 +46,7 @@ export function createExampleLesson(
 		subtitle: overwrites?.subtitle ?? `This is a subtitle for ${lessonId}.`,
 		description: overwrites?.description ?? `This is a description for ${lessonId}.`,
 		imgUrl: overwrites?.imgUrl ?? null,
+		licenseId: 1,
 		content:
 			overwrites?.content ??
 			([

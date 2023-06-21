@@ -1,3 +1,4 @@
+import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
@@ -45,21 +46,23 @@ export default function CreateLessonPage() {
 			<Unauthorized>Um eine Lerneinheit zu erstellen, musst du ein Autor sein.</Unauthorized>
 		);
 	}
-
 	return (
-		<LessonEditor
+		  <LessonEditor
 			onConfirm={onConfirm}
 			lesson={{
-				lessonId: "",
-				slug: "",
-				title: "",
-				subtitle: "",
-				description: "",
-				imgUrl: "",
-				quiz: { questions: [], config: null },
-				content: [],
-				authors: [{ username: authorUsername }]
+			  lessonId: "",
+			  slug: "",
+			  title: "",
+			  subtitle: "",
+			  description: "",
+			  imgUrl: "",
+			  licenseId: null,
+			  quiz: { questions: [], config: null },
+			  content: [],
+			  authors: [{ username: authorUsername ?? "" }],
+			  lessonType: LessonType.TRADITIONAL,
+			  selfRegulatedQuestion: null,
 			}}
-		/>
+		  />
 	);
 }

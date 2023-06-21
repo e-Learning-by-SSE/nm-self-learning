@@ -175,6 +175,7 @@ async function seed(): Promise<void> {
 	await prisma.subject.deleteMany();
 	await prisma.enrollment.deleteMany();
 	await prisma.lesson.deleteMany();
+	await prisma.license.deleteMany();
 
 	console.log("😅 Seeding...");
 
@@ -184,9 +185,9 @@ async function seed(): Promise<void> {
 	}
 
 	await prisma.subject.createMany({ data: subjects });
-	console.log("✅ Subjects");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 	await prisma.specialization.createMany({ data: specializations });
-	console.log("✅ Specialties");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Specialities");
 
 	await psychologyExample();
 	await mathExample();

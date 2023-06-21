@@ -1,5 +1,6 @@
 import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
 import { CheckCircleIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -37,6 +38,8 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	const questionsMd: MdLookup = {};
 	const answersMd: MdLookup = {};
 	const hintsMd: MdLookupArray = {};
+	type QuestionList = typeof quiz.questions
+	const processedQuestions: QuestionList = [];
 
 	for (const question of quiz.questions) {
 		questionsMd[question.questionId] = await compileMarkdown(question.statement);
@@ -54,7 +57,10 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 				answersMd[answer.answerId] = await compileMarkdown(answer.content);
 			}
 		}
+		processedQuestions.push(question);
 	}
+
+	quiz.questions = processedQuestions;
 
 	return {
 		props: {
@@ -132,6 +138,8 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						key={currentQuestion.questionId}
 						question={currentQuestion}
 						markdown={markdown}
+						lesson={lesson}
+						isLastQuestion={quiz.questions.length === Number(index) + 1}
 					/>
 					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
@@ -207,7 +215,10 @@ function QuizHeader({
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
 				{questions.map((question, index) => (
 					<Tab key={question.questionId}>
-						<QuestionTab index={index} evaluation={evaluations[question.questionId]} />
+						<QuestionTab
+							index={index}
+							evaluation={evaluations[question.questionId]}
+							isMultiStep={lesson.lessonType === LessonType.SELF_REGULATED && question.type === "multiple-choice"} />
 					</Tab>
 				))}
 			</Tabs>
@@ -235,22 +246,53 @@ function QuizHeader({
 	);
 }
 
-function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; index: number }) {
+function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; index: number; isMultiStep: boolean }) {
 	const isCorrect = props.evaluation?.isCorrect === true;
 	const isIncorrect = props.evaluation?.isCorrect === false;
 
+
+	{props.isMultiStep && (
+		<CheckCircleIcon className="h-5 text-secondary" />
+	)}
+
 	return (
 		<span className="flex items-center gap-4">
-			{isCorrect ? (
-				<CheckCircleIcon className="h-5 text-secondary" />
-			) : isIncorrect ? (
-				<XCircleIcon className="h-5 text-red-500" />
-			) : (
-				<CheckCircleIconOutline className="h-5 text-gray-400" />
-			)}
+				{isCorrect ? (
+					<QuestionTabIcon isMultiStep={props.isMultiStep}>
+						<CheckCircleIcon className="h-5 text-secondary" />
+					</QuestionTabIcon>
+				) : isIncorrect ? (
+					<QuestionTabIcon isMultiStep={props.isMultiStep}>
+						<XCircleIcon className="h-5 text-red-500" />
+					</QuestionTabIcon>
+				) : (
+					<QuestionTabIcon isMultiStep={props.isMultiStep}>
+						<CheckCircleIconOutline className="h-5 text-gray-400" />
+					</QuestionTabIcon>
+				)}
 			<span data-testid="questionTab">Frage {props.index + 1}</span>
 		</span>
 	);
+}
+
+function QuestionTabIcon({
+	children,
+	isMultiStep
+} : {
+		children: React.ReactNode;
+		isMultiStep: boolean;
+}) {
+	return isMultiStep ? (
+		<div className="flex overflow-hidden">
+			{children}
+			{children}
+		</div>
+	) : (
+		<div>
+			{children}
+		</div>
+
+	)
 }
 
 function QuizCompletionDialog({

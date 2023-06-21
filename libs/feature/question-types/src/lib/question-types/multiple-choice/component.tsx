@@ -1,13 +1,19 @@
 import { useQuiz } from "@self-learning/quiz";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
+import { LessonLayoutProps } from "@self-learning/lesson";
+import { LessonType } from "@prisma/client";
 
-export default function MultipleChoiceAnswer() {
+
+export default function MultipleChoiceAnswer({questionStep, lesson}: {questionStep: number, lesson: LessonLayoutProps['lesson']}) {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
+	const [ justifiedAnswer, setJustifiedAnswer ] = useState(JSON.parse(JSON.stringify(answer)));
 	const { config } = useQuiz();
+
+	const isJustified = questionStep === 1 && lesson.lessonType === LessonType.SELF_REGULATED;
 
 	return (
 		<>
@@ -19,10 +25,10 @@ export default function MultipleChoiceAnswer() {
 						showResult={!!evaluation && config.showSolution}
 						isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
 						isCorrect={option.isCorrect}
-						isSelected={answer.value[option.answerId] === true}
+						isSelected={((isJustified ? justifiedAnswer : answer).value[option.answerId] === true)}
 						onToggle={() => {
-							console.log("onToggle");
-							setAnswer(old => ({
+							const answerSetter = isJustified ? setJustifiedAnswer : setAnswer;
+							answerSetter(old => ({
 								...old,
 								value: {
 									...old.value,
@@ -31,6 +37,7 @@ export default function MultipleChoiceAnswer() {
 								}
 							}));
 						}}
+						justifyChoice={isJustified}
 					>
 						{markdown.answersMd[option.answerId] ? (
 							<MarkdownContainer>
@@ -54,13 +61,15 @@ export function MultipleChoiceOption({
 	isSelected,
 	isUserAnswerCorrect,
 	onToggle,
-	disabled
+	disabled,
+	justifyChoice,
 }: PropsWithChildren<{
 	showResult: boolean;
 	isSelected: boolean;
 	isCorrect: boolean;
 	isUserAnswerCorrect: boolean;
 	disabled: boolean;
+	justifyChoice: boolean;
 	onToggle: () => void;
 }>) {
 	let className = "bg-white";
@@ -69,6 +78,36 @@ export function MultipleChoiceOption({
 		className = isUserAnswerCorrect
 			? "bg-emerald-50 border-emerald-500"
 			: "bg-red-50 border-red-500";
+	}
+
+	if (justifyChoice) {
+		return (
+			<div className="bg-white rounded-lg border border-light-border">
+				<button
+					className={`flex w-full gap-8 rounded-t-lg border-b border-light-border py-2 px-8 text-start focus:outline-secondary ${className}`}
+					onClick={onToggle}
+					disabled={disabled}
+					data-testid="MultipleChoiceOption"
+				>
+					<input
+						type={"checkbox"}
+						checked={isSelected}
+						onChange={() => {
+							/** Bubbles up to button click. */
+						}}
+						disabled={disabled}
+						className="checkbox self-center"
+					/>
+					{children}
+				</button>
+				<div className="py-2 px-8 rounded-b-lg">
+					<div className="py-1">
+						Bitte Begründe deine Antwort:
+					</div>
+					<textarea className="w-full" placeholder="Begründung..."></textarea>
+				</div>
+			</div>
+		);
 	}
 
 	return (

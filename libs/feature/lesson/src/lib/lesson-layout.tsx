@@ -38,6 +38,16 @@ async function getLesson(slug: string) {
 			content: true,
 			quiz: true,
 			meta: true,
+			license: {
+				select: {
+					name: true,
+					url: true,
+					logoUrl: true,
+					licenseText: true
+				}
+			},
+			lessonType: true,
+			selfRegulatedQuestion: true,
 			authors: {
 				select: {
 					displayName: true,

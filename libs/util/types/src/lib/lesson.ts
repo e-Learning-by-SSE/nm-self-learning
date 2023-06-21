@@ -2,8 +2,10 @@ import { z } from "zod";
 import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
+import { LessonType } from "@prisma/client";
 
-export type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
+
+export type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta; lessonType: string };
 
 export const lessonSchema = z.object({
 	lessonId: z.string().nullable(),
@@ -14,6 +16,9 @@ export const lessonSchema = z.object({
 	imgUrl: z.string().nullable().optional(),
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
+	licenseId: z.number().nullable(),
+	lessonType: z.nativeEnum(LessonType),
+	selfRegulatedQuestion: z.string().nullable(),
 	quiz: z
 		.object({
 			questions: z.array(z.any()),
@@ -35,7 +40,10 @@ export function createEmptyLesson(): Lesson {
 		description: null,
 		imgUrl: null,
 		quiz: null,
+		licenseId: null,
 		content: [],
-		authors: []
+		authors: [],
+		lessonType: LessonType.TRADITIONAL,
+		selfRegulatedQuestion: null
 	};
 }

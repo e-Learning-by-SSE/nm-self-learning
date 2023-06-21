@@ -20,8 +20,8 @@ services:
             - "9000:9000" # public port
             - "9001:9001" # admin port
         environment:
-             MINIO_ROOT_USER: minioadmin
-             MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+            MINIO_ROOT_USER: minioadmin
+            MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
         networks:
             - nm-self-learn
         volumes:
@@ -60,7 +60,6 @@ services:
             - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@nm-self-learn-db:5432/SelfLearningDb
             - NEXT_ASSET_PREFIX=${ASSET_PREFIX}
             - NEXT_PUBLIC_BASE_PATH=${ASSET_PREFIX}
-            - MINIO_PUBLIC_URL=${MINIO_PUBLIC_URL}
             - MINIO_BUCKET_NAME=upload
             - MINIO_ENDPOINT=minio
             - MINIO_PORT=9010

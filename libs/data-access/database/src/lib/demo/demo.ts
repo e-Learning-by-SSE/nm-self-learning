@@ -16,9 +16,6 @@ import {
 import { getRandomId } from "@self-learning/util/common";
 
 import { javaExample } from "./java-example";
-import { mathExample } from "../math/math-example";
-import { psychologyExample } from "../psychology/psychology-example";
-import { createSpecialization } from "../seed-functions";
 import { Quiz } from "@self-learning/quiz";
 
 faker.seed(1);
@@ -35,6 +32,43 @@ const students = [
 		displayName: "Ronald Weasley",
 		username: "weasley",
 		image: "https://i.pinimg.com/474x/d7/80/52/d7805247faaf18ef746e6d2e7d7c646a.jpg"
+	}
+];
+
+
+const license: Prisma.LicenseCreateManyInput[] = [
+	{
+		licenseId: 0,
+		name: "Uni Hi Intern",
+		licenseText:
+			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
+		oerCompatible: false,
+		selectable: true,
+	},
+	{
+		licenseId: 1,
+		name: "CC BY 4.0",
+		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
+		logoUrl: "http://i.creativecommons.org/l/by/3.0/88x31.png",
+		oerCompatible: true,
+		selectable: true,
+		defaultSuggestion: true
+	},
+	{
+		licenseId: 2,
+		name: "CC BY SA 4.0",
+		url: "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
+		logoUrl: "http://i.creativecommons.org/l/by-sa/3.0/88x31.png",
+		oerCompatible: true,
+		selectable: true
+	},
+	{
+		licenseId: 3,
+		name: "CC0 1.0",
+		url: "https://creativecommons.org/publicdomain/zero/1.0/deed.de",
+		logoUrl: "http://i.creativecommons.org/p/zero/1.0/88x31.png",
+		oerCompatible: true,
+		selectable: true
 	}
 ];
 
@@ -130,7 +164,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				hintId: "def",
 				content: "# Lorem ipsum dolor \n- Eins\n- Zwei"
 			}
-		]
+		],
+		questionStep: 1
 	},
 	{
 		type: "exact",
@@ -175,7 +210,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement:
 			"# Hello World\n\nErstelle ein Programm, welches `Hello World` auf der Konsole ausgibt.",
 		questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
-		withCertainty: false
+		withCertainty: false,
 	},
 	{
 		type: "programming",
@@ -201,7 +236,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement:
 			"# Schleifen\n\nImplementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.\n\n**Beispiel:**\n\n**Eingabe**: `[1, 2, 3, 4, 5]`  \n**Ausgabe**: `15`\n",
 		questionId: "dee8dfd5-ee07-4071-bf7b-33b4cb1fe623",
-		withCertainty: false
+		withCertainty: false,
 	},
 	{
 		type: "programming",
@@ -223,7 +258,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		language: "typescript",
 		statement: "# Hello World in TypeScript\r\n\r\nKappa",
 		questionId: "oo8macg7",
-		withCertainty: false
+		withCertainty: false,
 	},
 	{
 		type: "programming",
@@ -248,19 +283,20 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement:
 			"# Schleifen in TypeScript\r\n\r\nImplementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.\r\n\r\n**Beispiel:**\r\n\r\n**Eingabe**: `[1, 2, 3, 4, 5]`  \r\n**Ausgabe**: `15`",
 		questionId: "v0qpvil4o",
-		withCertainty: false
+		withCertainty: false,
 	}
 ];
 
 const mdContent = readFileSync(join(__dirname, "markdown-example.mdx"), "utf-8");
 
 function createLesson(title: string) {
-	const lesson: Prisma.LessonCreateInput = {
+	const lesson: Prisma.LessonCreateManyInput = {
 		title,
 		lessonId: faker.random.alphaNumeric(8),
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: faker.lorem.paragraph(1),
 		description: faker.lorem.paragraphs(3),
+		licenseId: license[1].licenseId,
 		imgUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=256",
 		content: [
 			{
@@ -507,6 +543,9 @@ const completedLessons: Prisma.CompletedLessonCreateManyInput[] = extractLessonI
 export async function seedDemos(): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", "Seeding Demo Data:");
 
+	await prisma.license.createMany({ data: license });
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Licenses");
+
 	await prisma.subject.createMany({ data: subjects });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 	await prisma.specialization.createMany({ data: specializations });
@@ -515,7 +554,12 @@ export async function seedDemos(): Promise<void> {
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
 	await prisma.lesson.createMany({
-		data: reactLessons.flatMap(chapter => chapter.content.map(lesson => lesson))
+		data: reactLessons.flatMap(chapter =>
+			chapter.content.map(lesson => ({
+				...lesson,
+				licenseId: lesson.licenseId ?? license[0].licenseId,
+			}))
+		)
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 

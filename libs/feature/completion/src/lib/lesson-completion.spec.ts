@@ -1,7 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { createLesson } from "@self-learning/types";
-import { createTestUser } from "@self-learning/util/testing";
+import { createTestUser, createLicense } from "@self-learning/util/testing";
 import { checkLessonCompletion, getCompletedLessonsThisWeek } from "./lesson-completion";
 
 const username = "mustermann";
@@ -11,6 +10,7 @@ describe("checkLessonCompletion", () => {
 		lessonId: `lesson-${index}`,
 		slug: `lesson-${index}-slug`,
 		title: `Lesson ${index}`,
+		licenseId: 1,
 		content: [],
 		meta: {}
 	});
@@ -18,6 +18,7 @@ describe("checkLessonCompletion", () => {
 	beforeAll(async () => {
 		const lessons = new Array(4).fill(0).map((_, i) => createLesson(i));
 		await createTestUser(username);
+		await createLicense(1);
 		await database.lesson.deleteMany();
 		await database.lesson.createMany({ data: lessons });
 	});
@@ -93,6 +94,7 @@ describe("getCompletedLessonsThisWeek", () => {
 				lessonId: "completed-lesson",
 				slug: "completed-lesson-slug",
 				title: "Completed Lesson",
+				licenseId: 1,
 				content: [],
 				meta: {}
 			}

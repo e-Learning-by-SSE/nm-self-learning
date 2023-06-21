@@ -3,7 +3,8 @@ import { createChapter, createCourseContent, createLesson } from "@self-learning
 import {
 	createExampleLesson,
 	createExampleLessonsFromContent,
-	createTestUser
+	createTestUser,
+	createLicense
 } from "@self-learning/util/testing";
 import { markAsCompleted } from "./mark-as-completed";
 
@@ -12,6 +13,7 @@ const username = "markAsCompletedUser";
 describe("markAsCompleted", () => {
 	beforeAll(async () => {
 		await createTestUser(username);
+		await createLicense(1);
 	});
 
 	describe("With course", () => {
