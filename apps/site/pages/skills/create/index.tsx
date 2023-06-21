@@ -1,4 +1,4 @@
-import { SkillEditor } from "@self-learning/teaching";
+import { SkillEditor, AlternateSkillEditor } from "@self-learning/teaching";
 import { Skills, convertNestedSkillsToArray } from '@self-learning/types';
 import 'reactflow/dist/style.css';
 
@@ -33,11 +33,17 @@ export default function CreateSkillTree({
     level: 0,
     description: "test",
     };
-
+    
     return(
        <div>
          <SkillEditor skilltree={defaultTree} onConfirm={onFinished} />
         </div>
-    );
+    ); 
+    /*
+    return(
+        <div>
+            <AlternateSkillEditor skilltree={defaultTree} onConfirm={onFinished} />
+        </div>
+    );*/
 
 }

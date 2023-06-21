@@ -5,7 +5,7 @@ import { Skills, skillsSchema, convertNestedSkillsToArray } from '@self-learning
 import { CourseFormModel } from '@self-learning/teaching';
 import { courseFormSchema } from '@self-learning/teaching';
 import { OpenAsJsonButton } from "../json-editor-dialog";
-import FlowLayoutEditor from './flow-layout-editor';
+import FlowLayoutEditor from './layout-editor/flow-layout-editor';
 import { log } from 'console';
 import { SkillInfoForm } from './skill-info-form';
 
