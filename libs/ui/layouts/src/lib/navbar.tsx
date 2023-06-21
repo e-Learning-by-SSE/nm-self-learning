@@ -1,45 +1,18 @@
-import { AcademicCapIcon, LogoutIcon, UserIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
+import { Menu } from "@headlessui/react";
+import { AcademicCapIcon, LogoutIcon, UserIcon } from "@heroicons/react/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
-import { Fragment } from 'react';
-import { Disclosure, Menu, Transition } from '@headlessui/react';
 
-  
 export function Navbar() {
 	const session = useSession();
 	const user = session.data?.user;
 
-	// List with all routes accessible by the User
-	const navigation = [
-		{ name: 'Übersicht', href: '/overview' },
-		{ name: 'Fachgebiete', href: '/subjects' },
-	];
-
-	if (user?.role === "ADMIN") {
-		navigation.push({ name: 'Adminbereich', href: '/admin' });
-	}
-
 	return (
-		<Disclosure as="nav" className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white">
-		{({ open }) => (
-			<>
-			<div className="mx-auto px-2 sm:px-6 lg:px-8">
-				<div className="relative flex h-16 items-center justify-between">
-				<div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-					{/* Mobile menu button*/}
-					<Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 py-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-					<span className="sr-only">Menü Öffnen</span>
-					{open ? (
-						<XIcon className="block h-6 w-6" aria-hidden="true" />
-					) : (
-						<MenuIcon className="block h-6 w-6" aria-hidden="true" />
-					)}
-					</Disclosure.Button>
-				</div>
-				<div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-					<div className="flex flex-shrink-0 items-center">
+		<nav className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white">
+			<div className="mx-auto flex h-full max-w-[1920px] items-center justify-between gap-4 py-2 px-4">
+				<div className="flex items-center gap-8 md:gap-32">
 					<Link href="/" className="flex items-center gap-4">
 						<div className="rounded-full bg-secondary p-1">
 							<AcademicCapIcon className="h-8 shrink-0 text-white" />
@@ -53,69 +26,43 @@ export function Navbar() {
 							</span>
 						</div>
 					</Link>
-					</div>
-					<div className="hidden sm:ml-6 sm:block">
-					{user && (
-						<div className="flex space-x-4 items-center px-1 text-sm font-medium h-full">
-							{navigation.map((item) => (
-								<Link
-									className="hover:text-gray-500"
-									key={item.name}
-									href={item.href}>{item.name}</Link>
-							))}
-						</div>
-					)}
+					<div className="hidden items-center gap-16 text-sm font-medium xl:flex">
+						{user && (
+							<>
+								<Link href="/overview">Übersicht</Link>
+								{user.role === "ADMIN" && <Link href="/admin">Adminbereich</Link>}
+							</>
+						)}
+						<Link href="/subjects">Fachgebiete</Link>
 					</div>
 				</div>
-				<div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-					{/* Profile dropdown */}
-					{!user ? (
-						<button
-							className="text-w rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white"
-							onClick={redirectToLogin}
-						>
-							Login
-						</button>
-					) : (
-						<div className="flex items-center gap-1 xl:gap-4">
-							{user.role === "ADMIN" && (
-								<span title="Admin">
-									<StarIcon className="h-5 text-secondary" />
-								</span>
-							)}
-							<span className="invisible w-0 text-sm sm:visible sm:w-fit">
-								{user.name}
-							</span>
-							<NavbarDropdownMenu
-								avatarUrl={user.avatarUrl}
-								signOut={redirectToLogout}
-							/>
-						</div>
-					)}
-				</div>
-				</div>
-			</div>
-
-			<Disclosure.Panel className="sm:hidden">
-				<div className="space-y-1 px-2 pb-3 pt-2">
-				{navigation.map((item) => (
-					<Disclosure.Button
-					key={item.name}
-					as="a"
-					href={item.href}
-					className='block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500'
+				{!user ? (
+					<button
+						className="text-w rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white"
+						onClick={redirectToLogin}
 					>
-					{item.name}
-					</Disclosure.Button>
-				))}
-				</div>
-			</Disclosure.Panel>
-			</>
-		)}
-		</Disclosure>
-	)
+						Login
+					</button>
+				) : (
+					<div className="flex items-center gap-4">
+						{user.role === "ADMIN" && (
+							<span title="Admin">
+								<StarIcon className="h-5 text-secondary" />
+							</span>
+						)}
+						<span className="invisible w-0 text-sm sm:visible sm:w-fit">
+							{user.name}
+						</span>
+						<NavbarDropdownMenu
+							avatarUrl={user.avatarUrl}
+							signOut={redirectToLogout}
+						/>
+					</div>
+				)}
+			</div>
+		</nav>
+	);
 }
-
 
 export function NavbarDropdownMenu({
 	signOut,
@@ -125,35 +72,23 @@ export function NavbarDropdownMenu({
 	signOut: () => void;
 }) {
 	return (
-		<Menu as="div" className="relative ml-1 xl:ml-3">
-		<div>
-			<Menu.Button className="flex rounded-full text-sm items-center gap-1">
-			<span className="sr-only">Nutzermenü Öffnen</span>
-			{avatarUrl ? (
-				<img
-					className="h-[42px] w-[42px] rounded-full object-cover object-top"
-					alt="Avatar"
-					src={avatarUrl}
-					width={42}
-					height={42}
-				></img>
-			) : (
-				<div className="h-[42px] w-[42px] rounded-full bg-gray-200"></div>
-			)}
-			<ChevronDownIcon className="h-6 text-gray-400" />
+		<Menu as="div" className="relative flex">
+			<Menu.Button className="flex shrink-0 items-center gap-1">
+				{avatarUrl ? (
+					<img
+						className="h-[42px] w-[42px] rounded-full object-cover object-top"
+						alt="Avatar"
+						src={avatarUrl}
+						width={42}
+						height={42}
+					></img>
+				) : (
+					<div className="h-[42px] w-[42px] rounded-full bg-gray-200"></div>
+				)}
+				<ChevronDownIcon className="h-6 text-gray-400" />
 			</Menu.Button>
-		</div>
-		<Transition
-			as={Fragment}
-			enter="transition ease-out duration-100"
-			enterFrom="transform opacity-0 scale-95"
-			enterTo="transform opacity-100 scale-100"
-			leave="transition ease-in duration-75"
-			leaveFrom="transform opacity-100 scale-100"
-			leaveTo="transform opacity-0 scale-95"
-		>
-			<Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-			<Menu.Item as="div" className="p-1">
+			<Menu.Items className="absolute right-0 top-14 z-10 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
+				<Menu.Item as="div" className="p-1">
 					{({ active }) => (
 						<Link
 							href="/overview"
@@ -180,7 +115,6 @@ export function NavbarDropdownMenu({
 					)}
 				</Menu.Item>
 			</Menu.Items>
-		</Transition>
 		</Menu>
 	);
 }

@@ -1207,6 +1207,28 @@ export const chapters = [
 							}
 						],
 						["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+					),
+					createMultipleChoice(
+						"Zweite Frage zu: Reale Bewegung?",
+						[
+							{
+								content: "Antwort A",
+								isCorrect: false
+							},
+							{
+								content: "Antwort B",
+								isCorrect: false
+							},
+							{
+								content: "Antwort C",
+								isCorrect: false
+							},
+							{
+								content: "Antwort D",
+								isCorrect: true
+							}
+						],
+						["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
 					)
 				],
 				null, // licenseID  

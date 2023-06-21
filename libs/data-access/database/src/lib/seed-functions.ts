@@ -164,8 +164,8 @@ export function createMultipleChoice(
 			answerId: faker.random.alphaNumeric(8),
 			...answer
 		})),
+		questionStep: 1,
 		hints: hintsData,
-		justify: false,
 	};
 }
 
@@ -191,7 +191,6 @@ export function createTextQuestion(
 			value: answer
 		})),
 		hints: hintsData,
-		justify: false,
 	};
 }
 

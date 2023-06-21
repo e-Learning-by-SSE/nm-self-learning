@@ -132,7 +132,6 @@ const questions: QuizContent = [
 		statement: `# How was your day?
 Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure! Fugiat, optio!`.trim(),
 		withCertainty: true,
-		justify: false,
 		answers: [
 			{
 				answerId: "1fc74b31-7772-4ea8-b570-60b5c104f804",
@@ -165,14 +164,14 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				hintId: "def",
 				content: "# Lorem ipsum dolor \n- Eins\n- Zwei"
 			}
-		]
+		],
+		questionStep: 1
 	},
 	{
 		type: "exact",
 		questionId: "edbcf6a7-f9e9-4efe-b7ed-2bd0096c4e1d",
 		statement: "# Was ist 1 + 1 ?",
 		withCertainty: true,
-		justify: false,
 		caseSensitive: true,
 		acceptedAnswers: [
 			{
@@ -187,7 +186,6 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		questionId: "34fca2c2-c547-4f66-9a4e-927770a55090",
 		statement: "# Was ist 1 + 1 ?",
 		withCertainty: true,
-		justify: false,
 		hints: []
 	},
 	{
@@ -213,7 +211,6 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 			"# Hello World\n\nErstelle ein Programm, welches `Hello World` auf der Konsole ausgibt.",
 		questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
 		withCertainty: false,
-		justify: false,
 	},
 	{
 		type: "programming",
@@ -240,7 +237,6 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 			"# Schleifen\n\nImplementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.\n\n**Beispiel:**\n\n**Eingabe**: `[1, 2, 3, 4, 5]`  \n**Ausgabe**: `15`\n",
 		questionId: "dee8dfd5-ee07-4071-bf7b-33b4cb1fe623",
 		withCertainty: false,
-		justify: false,
 	},
 	{
 		type: "programming",
@@ -263,7 +259,6 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement: "# Hello World in TypeScript\r\n\r\nKappa",
 		questionId: "oo8macg7",
 		withCertainty: false,
-		justify: false,
 	},
 	{
 		type: "programming",
@@ -289,7 +284,6 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 			"# Schleifen in TypeScript\r\n\r\nImplementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.\r\n\r\n**Beispiel:**\r\n\r\n**Eingabe**: `[1, 2, 3, 4, 5]`  \r\n**Ausgabe**: `15`",
 		questionId: "v0qpvil4o",
 		withCertainty: false,
-		justify: false,
 	}
 ];
 
