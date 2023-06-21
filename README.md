@@ -1,8 +1,5 @@
 # Self Learning
 
-Demo:
-https://self-learning-demo.vercel.app
-
 ## Development
 
 ```
@@ -18,7 +15,7 @@ nx serve
 -   Environment variables (see [.env.example](.env.example)):
     -   `DATABASE_URL="postgresql://username:password@localhost:5432/SelfLearningDb"`
         -   see https://www.prisma.io/docs/concepts/database-connectors/postgresql#connection-url
-    -   `NEXTAUTH_URL="http://localhost:3000"`
+    -   `NEXTAUTH_URL="http://localhost:4200"`
         -   see https://next-auth.js.org/configuration/options
     -   `NEXTAUTH_SECRET="YOUR_SECRET"`
         -   You can generate a secret via this command: `openssl rand -base64 32`
@@ -36,7 +33,7 @@ npm run prisma db seed
 # Build application
 npm run build --prod
 
-# Start server (at http://localhost:3000)
+# Start server (at http://localhost:4200)
 npm run start:prod
 ```
 
