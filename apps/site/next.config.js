@@ -23,4 +23,13 @@ const nextConfig = {
 	trailingSlash: process.env.NEXT_TRAILING_SLASH ?? false
 };
 
-module.exports = withNx(nextConfig);
+const plugins = [
+	(config) => withNx(nextConfig),
+	// enable when necessary: see "Proxy the Analytics Script" on https://www.npmjs.com/package/next-plausible/v/3.4.0
+	// withPlausibleProxy({ 
+	// 	subdirectory: process.env.NEXT_PUBLIC_BASE_PATH ?? '',
+	// 	scriptName: 'script',
+	// 	customDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_DOMAIN ?? '',
+	// }),
+];
+module.exports = plugins.reduce((config, plugin) => plugin(config), nextConfig);
