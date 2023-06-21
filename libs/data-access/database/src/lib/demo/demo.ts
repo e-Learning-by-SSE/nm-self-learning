@@ -164,7 +164,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				hintId: "def",
 				content: "# Lorem ipsum dolor \n- Eins\n- Zwei"
 			}
-		]
+		],
+		questionStep: 1
 	},
 	{
 		type: "exact",

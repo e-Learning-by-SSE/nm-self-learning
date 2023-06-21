@@ -164,6 +164,7 @@ export function createMultipleChoice(
 			answerId: faker.random.alphaNumeric(8),
 			...answer
 		})),
+		questionStep: 1,
 		hints: hintsData,
 	};
 }
