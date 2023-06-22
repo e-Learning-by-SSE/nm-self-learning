@@ -93,7 +93,7 @@ async function findLicenseWithDefault() {
 
 	return (
 		license || {
-			name: "Dummy License",
+			name: "Keine Lizenz",
 			licenseId: 0,
 			url: "",
 			licenseText: "",
