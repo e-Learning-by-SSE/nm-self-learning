@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { t, adminProcedure} from "../trpc";
+import { t, adminProcedure } from "../trpc";
 import * as z from "zod";
 import { licenseSchema } from "@self-learning/types";
 
@@ -32,7 +32,8 @@ export const licenseRouter = t.router({
 					licenseText: input.license.licenseText,
 					logoUrl: input.license.logoUrl,
 					oerCompatible: input.license.oerCompatible,
-					selectable: input.license.selectable
+					selectable: input.license.selectable,
+					defaultSuggestion: input.license.defaultSuggestion
 				}
 			});
 
@@ -68,35 +69,38 @@ export const licenseRouter = t.router({
 	getDefault: t.procedure.query(async () => {
 		return await findLicenseWithDefault();
 	}),
-	getOneOrDefault: t.procedure.input(z.object({ licenseId: z.number() })).query(async ({ input }) => {
-		const data = await database.license.findUnique({
-			where: {
-				licenseId: input.licenseId
-			}
+	getOneOrDefault: t.procedure
+		.input(z.object({ licenseId: z.number() }))
+		.query(async ({ input }) => {
+			const data = await database.license.findUnique({
+				where: {
+					licenseId: input.licenseId
+				}
+			});
+			return data || (await findLicenseWithDefault());
 		})
-		return data || await findLicenseWithDefault();
-	})
 });
-
 
 async function findLicenseWithDefault() {
 	const license = await database.license.findFirst({
-	  where: {
-		defaultSuggestion: true
-	  },
-	  orderBy: {
-		name: "asc"
-	  }
+		where: {
+			defaultSuggestion: true
+		},
+		orderBy: {
+			name: "asc"
+		}
 	});
-  
-	return license || {
-	  name: "Dummy License",
-	  licenseId: 0,
-	  url: "",
-	  licenseText: "",
-	  logoUrl: "",
-	  oerCompatible: false,
-	  selectable: false,
-	  defaultSuggestion: true
-	};
-  }
+
+	return (
+		license || {
+			name: "Dummy License",
+			licenseId: 0,
+			url: "",
+			licenseText: "",
+			logoUrl: "",
+			oerCompatible: false,
+			selectable: false,
+			defaultSuggestion: true
+		}
+	);
+}
