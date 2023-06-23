@@ -1,14 +1,18 @@
 {
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"cSpell.words": [
+		"basiertes",
 		"Katex",
 		"Keycloak",
 		"KEYCLOAK",
+		"Lernen",
 		"MATOMO",
+		"Nanomodul",
 		"Pluggable",
 		"prisma",
 		"rehype",
+		"Selbstreguliertes",
 		"trpc"
 	],
-	"cSpell.language": "en,de-de",
+	"cSpell.language": "en,de-de"
 }

@@ -15,7 +15,7 @@ import { LessonFormModel } from "../lesson-form-model";
 import { LessonType } from "@prisma/client";
 import { Dispatch } from "react";
 
-export function LessonInfoEditor({setLessonType}: {setLessonType: Dispatch<LessonType>}) {
+export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<LessonType> }) {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -69,15 +69,29 @@ export function LessonInfoEditor({setLessonType}: {setLessonType: Dispatch<Lesso
 						control={control}
 						name="subtitle"
 						render={({ field }) => (
-							<MarkdownField content={field.value as string} setValue={field.onChange} inline={true} placeholder="1-2 Sätze über diese Lerneinheit."/>
+							<MarkdownField
+								content={field.value as string}
+								setValue={field.onChange}
+								inline={true}
+								placeholder="1-2 Sätze über diese Lerneinheit."
+							/>
 						)}
 					></Controller>
 				</LabeledField>
 
 				<LabeledField label="Lernmodell" error={errors.lessonType?.message}>
-					<select {...register("lessonType")} onChange={(e) => {setLessonType(e.target.value as LessonType)}}>
-						<option value={''} hidden>Bitte wählen...</option>
-						<option value={LessonType.TRADITIONAL}>Traditionelles Lenen</option>
+					<select
+						{...register("lessonType")}
+						onChange={e => {
+							setLessonType(e.target.value as LessonType);
+						}}
+					>
+						<option value={""} hidden>
+							Bitte wählen...
+						</option>
+						<option value={LessonType.TRADITIONAL}>
+							Nanomodul-basiertes Lernen (Standard)
+						</option>
 						<option value={LessonType.SELF_REGULATED}>Selbstreguliertes Lernen</option>
 					</select>
 				</LabeledField>
