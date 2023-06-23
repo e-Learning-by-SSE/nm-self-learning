@@ -53,10 +53,7 @@ export function Navbar() {
 						<span className="invisible w-0 text-sm sm:visible sm:w-fit">
 							{user.name}
 						</span>
-						<NavbarDropdownMenu
-							avatarUrl={user.avatarUrl}
-							signOut={redirectToLogout}
-						/>
+						<NavbarDropdownMenu avatarUrl={user.avatarUrl} signOut={redirectToLogout} />
 					</div>
 				)}
 			</div>

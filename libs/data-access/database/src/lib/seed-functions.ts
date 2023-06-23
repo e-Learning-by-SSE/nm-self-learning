@@ -34,7 +34,7 @@ export function createLesson(
 		description: description,
 		content: content,
 		lessonType: lessonType ?? LessonType.TRADITIONAL,
-		selfRegulatedQuestion: selfRegulatedQuestion, 
+		selfRegulatedQuestion: selfRegulatedQuestion,
 		quiz: {
 			questions,
 			config: null
@@ -165,7 +165,7 @@ export function createMultipleChoice(
 			...answer
 		})),
 		questionStep: 1,
-		hints: hintsData,
+		hints: hintsData
 	};
 }
 
@@ -190,7 +190,7 @@ export function createTextQuestion(
 			acceptedAnswerId: faker.random.alphaNumeric(8),
 			value: answer
 		})),
-		hints: hintsData,
+		hints: hintsData
 	};
 }
 

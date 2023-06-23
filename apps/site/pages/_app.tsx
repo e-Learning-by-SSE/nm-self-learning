@@ -18,26 +18,26 @@ import PlausibleProvider from "next-plausible";
 export default withTRPC<AppRouter>({
 	config() {
 		return {
-		  links: [
-			loggerLink({
-			  enabled: opts =>
-				process.env.NODE_ENV === "development" ||
-				(opts.direction === "down" && opts.result instanceof Error)
-			}),
-			httpBatchLink({
-			  url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`
-			})
-		  ],
-		  queryClientConfig: {
-			defaultOptions: {
-			  queries: {
-				retry: false,
-				staleTime: Infinity
-			  }
+			links: [
+				loggerLink({
+					enabled: opts =>
+						process.env.NODE_ENV === "development" ||
+						(opts.direction === "down" && opts.result instanceof Error)
+				}),
+				httpBatchLink({
+					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`
+				})
+			],
+			queryClientConfig: {
+				defaultOptions: {
+					queries: {
+						retry: false,
+						staleTime: Infinity
+					}
+				}
 			}
-		  }
 		};
-	  }
+	}
 })(CustomApp);
 
 function CustomApp({ Component, pageProps }: AppProps) {
@@ -46,31 +46,38 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		  (Component as any).getLayout(Component, pageProps)
 		: null;
-		
-		useEffect(() => {
-			const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
-			const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
-			if (MATOMO_URL && MATOMO_SITE_ID) {
-			  init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
-			}
-		  }, []);
-		  
-		  const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? "";
-		  const plausibleCustomDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE ?? "";
-		  return (
-			<PlausibleProvider domain={plausibleDomain} customDomain={plausibleCustomDomain} selfHosted={plausibleCustomDomain ? true : false}>
-			  <SessionProvider session={(pageProps as any).session} basePath={ useRouter().basePath + "/api/auth" }>
+
+	useEffect(() => {
+		const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
+		const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
+		if (MATOMO_URL && MATOMO_SITE_ID) {
+			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
+		}
+	}, []);
+
+	const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? "";
+	const plausibleCustomDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE ?? "";
+	return (
+		<PlausibleProvider
+			domain={plausibleDomain}
+			customDomain={plausibleCustomDomain}
+			selfHosted={plausibleCustomDomain ? true : false}
+		>
+			<SessionProvider
+				session={(pageProps as any).session}
+				basePath={useRouter().basePath + "/api/auth"}
+			>
 				<Head>
-				  <title>Self-Learning</title>
+					<title>Self-Learning</title>
 				</Head>
 				<Navbar />
 				<main className="grid grow">
-				  {Layout ? <>{Layout}</> : <Component {...pageProps} />}
+					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 				</main>
 				<Toaster containerStyle={{ top: 96 }} position="top-right" />
 				<Footer />
 				{/* <ReactQueryDevtools position="bottom-right" /> */}
-			  </SessionProvider>
-			</PlausibleProvider>
-		  );
+			</SessionProvider>
+		</PlausibleProvider>
+	);
 }

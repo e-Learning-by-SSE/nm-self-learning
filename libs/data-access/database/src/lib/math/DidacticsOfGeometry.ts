@@ -1,11 +1,11 @@
 import {
-    createArticle,
-    createCourse,
-    createLesson,
-    createMultipleChoice,
-    createTextQuestion,
-    createVideo,
-} from '../seed-functions';
+	createArticle,
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo
+} from "../seed-functions";
 
 const ch_Begriffslernen = {
 	title: "Begriffslernen in der Grundschule",

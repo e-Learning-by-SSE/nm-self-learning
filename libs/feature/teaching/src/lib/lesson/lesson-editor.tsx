@@ -81,14 +81,14 @@ export function LessonEditor({
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
 
-								<LessonInfoEditor setLessonType={ setLessonType }/>
+								<LessonInfoEditor setLessonType={setLessonType} />
 							</>
 						}
 					>
 						<LessonDescriptionForm />
-						{ selectedLessonType === LessonType.SELF_REGULATED &&
+						{selectedLessonType === LessonType.SELF_REGULATED && (
 							<LessonPreQuestionEditor />
-						}
+						)}
 						<LessonContentEditor />
 						<QuizEditor />
 					</SidebarEditorLayout>
@@ -120,12 +120,11 @@ function LessonDescriptionForm() {
 	);
 }
 
-
 function LessonPreQuestionEditor() {
 	const { control } = useFormContext<LessonFormModel>();
 
-    return (
-        <section>
+	return (
+		<section>
 			<SectionHeader
 				title="Aktivierungsfrage"
 				subtitle="Die Aktivierungsfrage welche dem Lehrninden bei der Akvitierung seiner Wissensbestände helfen soll."
@@ -139,6 +138,6 @@ function LessonPreQuestionEditor() {
 					)}
 				></Controller>
 			</Form.MarkdownWithPreviewContainer>
-        </section>
-    )
+		</section>
+	);
 }

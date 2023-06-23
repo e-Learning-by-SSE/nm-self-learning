@@ -14,5 +14,8 @@
 		"Selbstreguliertes",
 		"trpc"
 	],
-	"cSpell.language": "en,de-de"
+	"cSpell.language": "en,de-de",
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.formatOnPaste": false
 }

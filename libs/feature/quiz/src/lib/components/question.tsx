@@ -20,7 +20,7 @@ export function Question({
 	question,
 	markdown,
 	lesson,
-	isLastQuestion,
+	isLastQuestion
 }: {
 	question: QuestionType;
 	markdown: {
@@ -31,11 +31,21 @@ export function Question({
 	lesson: LessonLayoutProps["lesson"];
 	isLastQuestion: boolean;
 }) {
-	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } = useQuiz();
+	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } =
+		useQuiz();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
-	const [currentStep, setCurrentStep] = useState(evaluation?.isCorrect === true && question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED ? 2 : 1);
-	const totalSteps = question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED ? 2 : 1;
+	const [currentStep, setCurrentStep] = useState(
+		evaluation?.isCorrect === true &&
+			question.type === "multiple-choice" &&
+			lesson.lessonType === LessonType.SELF_REGULATED
+			? 2
+			: 1
+	);
+	const totalSteps =
+		question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED
+			? 2
+			: 1;
 
 	function setAnswer(v: any) {
 		const value = typeof v === "function" ? v(answer) : v;
@@ -47,7 +57,11 @@ export function Question({
 	}
 
 	function setEvaluation(e: any) {
-		setCurrentStep(question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED ? 2 : 1);
+		setCurrentStep(
+			question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED
+				? 2
+				: 1
+		);
 		setEvaluations(prev => ({
 			...prev,
 			[question.questionId]: e
@@ -88,7 +102,8 @@ export function Question({
 								setEvaluation={setEvaluation}
 								nextQuestionStep={nextQuestionStep}
 								isLastQuestionStep={currentStep === totalSteps}
-								isLastQuestion={isLastQuestion}/>
+								isLastQuestion={isLastQuestion}
+							/>
 						</div>
 					</div>
 					{markdown.questionsMd[question.questionId] ? (
@@ -101,7 +116,11 @@ export function Question({
 				</div>
 
 				<div className="flex max-w-full flex-col gap-8">
-					<QuestionAnswerRenderer question={question} lesson={lesson} questionStep={currentStep} />
+					<QuestionAnswerRenderer
+						question={question}
+						lesson={lesson}
+						questionStep={currentStep}
+					/>
 				</div>
 
 				{/* {question.withCertainty && <Certainty />} */}
@@ -116,7 +135,7 @@ function CheckResult({
 	setEvaluation,
 	nextQuestionStep,
 	isLastQuestionStep,
-	isLastQuestion,
+	isLastQuestion
 }: {
 	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
 	nextQuestionStep: () => void;

@@ -17,13 +17,13 @@ export function MarkdownField({
 	content: string | undefined;
 	setValue: (v: string | undefined) => void;
 	inline?: boolean;
-	placeholder?: string
+	placeholder?: string;
 }) {
 	const [openEditor, setOpenEditor] = useState(false);
 
 	return (
-		<div className={inline ? 'flex flex-col gap-1' : ''}>
-			{!inline && 
+		<div className={inline ? "flex flex-col gap-1" : ""}>
+			{!inline && (
 				<div className="flex items-end justify-between">
 					<span className="text-sm font-semibold">{label ?? "Markdown"}</span>
 					<button
@@ -35,23 +35,28 @@ export function MarkdownField({
 						<span>Bearbeiten</span>
 					</button>
 				</div>
-			}
+			)}
 
 			<div
-				className={"rounded-lg border border-light-border bg-white cursor-pointer " + (inline ? "p-2" : "flex p-4")}
+				className={
+					"cursor-pointer rounded-lg border border-light-border bg-white " +
+					(inline ? "p-2" : "flex p-4")
+				}
 				style={{ minHeight: 32 }}
 				onClick={() => setOpenEditor(true)}
 			>
-				<div className={"prose prose-emerald max-w-full" + (inline && ' text-sm')}>
-					{ content !== '' ? 
-						<ReactMarkdown linkTarget='_blank' remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
-							{ content ?? '' }
-						</ReactMarkdown> 
-						:
-						<div className="text-gray-400">
-							{ placeholder }
-						</div>
-					}
+				<div className={"prose prose-emerald max-w-full" + (inline && " text-sm")}>
+					{content !== "" ? (
+						<ReactMarkdown
+							linkTarget="_blank"
+							remarkPlugins={remarkPlugins}
+							rehypePlugins={rehypePlugins}
+						>
+							{content ?? ""}
+						</ReactMarkdown>
+					) : (
+						<div className="text-gray-400">{placeholder}</div>
+					)}
 				</div>
 			</div>
 
@@ -114,7 +119,7 @@ export function MarkdownEditorDialog({
 					<div className="relative flex h-full w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
 							<ReactMarkdown
-                                linkTarget='_blank'
+								linkTarget="_blank"
 								remarkPlugins={remarkPlugins}
 								rehypePlugins={rehypePlugins}
 							>
@@ -141,7 +146,11 @@ export function MarkdownEditorDialog({
  */
 export function MarkdownViewer({ content }: { content: string }) {
 	return (
-		<ReactMarkdown linkTarget='_blank' remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+		<ReactMarkdown
+			linkTarget="_blank"
+			remarkPlugins={remarkPlugins}
+			rehypePlugins={rehypePlugins}
+		>
 			{content ?? ""}
 		</ReactMarkdown>
 	);

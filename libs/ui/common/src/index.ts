@@ -18,5 +18,4 @@ export * from "./lib/paginator/paginator";
 export * from "./lib/section-card/section-card";
 export * from "./lib/tabs/tabs";
 export * from "./lib/toast/toast";
-export * from "./lib/license/license-chip"
-
+export * from "./lib/license/license-chip";

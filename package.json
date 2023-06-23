@@ -9,7 +9,7 @@
 		"test:ci": "env TZ='Europe/Berlin' jest --runInBand",
 		"cypress": "cypress open --project=apps/site-e2e",
 		"prettier:check": "prettier --check **/*",
-		"prettier:write": "prettier --write **/*",
+		"prettier:write": "prettier --write '{apps,libs}/**/*.{ts,tsx}'",
 		"prisma": "prisma",
 		"start:prod": "cd dist/apps/site && npm run start"
 	},

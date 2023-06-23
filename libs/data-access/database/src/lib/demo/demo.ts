@@ -35,7 +35,6 @@ const students = [
 	}
 ];
 
-
 const license: Prisma.LicenseCreateManyInput[] = [
 	{
 		licenseId: 0,
@@ -43,7 +42,7 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		licenseText:
 			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
 		oerCompatible: false,
-		selectable: true,
+		selectable: true
 	},
 	{
 		licenseId: 1,
@@ -210,7 +209,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement:
 			"# Hello World\n\nErstelle ein Programm, welches `Hello World` auf der Konsole ausgibt.",
 		questionId: "b6169fcf-3380-4062-9ad5-0af8826f2dfe",
-		withCertainty: false,
+		withCertainty: false
 	},
 	{
 		type: "programming",
@@ -236,7 +235,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement:
 			"# Schleifen\n\nImplementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.\n\n**Beispiel:**\n\n**Eingabe**: `[1, 2, 3, 4, 5]`  \n**Ausgabe**: `15`\n",
 		questionId: "dee8dfd5-ee07-4071-bf7b-33b4cb1fe623",
-		withCertainty: false,
+		withCertainty: false
 	},
 	{
 		type: "programming",
@@ -258,7 +257,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		language: "typescript",
 		statement: "# Hello World in TypeScript\r\n\r\nKappa",
 		questionId: "oo8macg7",
-		withCertainty: false,
+		withCertainty: false
 	},
 	{
 		type: "programming",
@@ -283,7 +282,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement:
 			"# Schleifen in TypeScript\r\n\r\nImplementiere einen Algorithmus, der als Eingabe eine Liste von Zahlen erhält und die Summe aller Zahlen in der Liste zurückgibt.\r\n\r\n**Beispiel:**\r\n\r\n**Eingabe**: `[1, 2, 3, 4, 5]`  \r\n**Ausgabe**: `15`",
 		questionId: "v0qpvil4o",
-		withCertainty: false,
+		withCertainty: false
 	}
 ];
 
@@ -557,7 +556,7 @@ export async function seedDemos(): Promise<void> {
 		data: reactLessons.flatMap(chapter =>
 			chapter.content.map(lesson => ({
 				...lesson,
-				licenseId: lesson.licenseId ?? license[0].licenseId,
+				licenseId: lesson.licenseId ?? license[0].licenseId
 			}))
 		)
 	});

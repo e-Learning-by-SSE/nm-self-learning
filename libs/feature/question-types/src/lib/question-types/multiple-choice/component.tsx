@@ -7,10 +7,15 @@ import { useQuestion } from "../../use-question-hook";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 
-
-export default function MultipleChoiceAnswer({questionStep, lesson}: {questionStep: number, lesson: LessonLayoutProps['lesson']}) {
+export default function MultipleChoiceAnswer({
+	questionStep,
+	lesson
+}: {
+	questionStep: number;
+	lesson: LessonLayoutProps["lesson"];
+}) {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
-	const [ justifiedAnswer, setJustifiedAnswer ] = useState(JSON.parse(JSON.stringify(answer)));
+	const [justifiedAnswer, setJustifiedAnswer] = useState(JSON.parse(JSON.stringify(answer)));
 	const { config } = useQuiz();
 
 	const isJustified = questionStep === 1 && lesson.lessonType === LessonType.SELF_REGULATED;
@@ -25,7 +30,9 @@ export default function MultipleChoiceAnswer({questionStep, lesson}: {questionSt
 						showResult={!!evaluation && config.showSolution}
 						isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
 						isCorrect={option.isCorrect}
-						isSelected={((isJustified ? justifiedAnswer : answer).value[option.answerId] === true)}
+						isSelected={
+							(isJustified ? justifiedAnswer : answer).value[option.answerId] === true
+						}
 						onToggle={() => {
 							const answerSetter = isJustified ? setJustifiedAnswer : setAnswer;
 							answerSetter(old => ({
@@ -62,7 +69,7 @@ export function MultipleChoiceOption({
 	isUserAnswerCorrect,
 	onToggle,
 	disabled,
-	justifyChoice,
+	justifyChoice
 }: PropsWithChildren<{
 	showResult: boolean;
 	isSelected: boolean;
@@ -82,7 +89,7 @@ export function MultipleChoiceOption({
 
 	if (justifyChoice) {
 		return (
-			<div className="bg-white rounded-lg border border-light-border">
+			<div className="rounded-lg border border-light-border bg-white">
 				<button
 					className={`flex w-full gap-8 rounded-t-lg border-b border-light-border py-2 px-8 text-start focus:outline-secondary ${className}`}
 					onClick={onToggle}
@@ -100,10 +107,8 @@ export function MultipleChoiceOption({
 					/>
 					{children}
 				</button>
-				<div className="py-2 px-8 rounded-b-lg">
-					<div className="py-1">
-						Bitte Begründe deine Antwort:
-					</div>
+				<div className="rounded-b-lg py-2 px-8">
+					<div className="py-1">Bitte Begründe deine Antwort:</div>
 					<textarea className="w-full" placeholder="Begründung..."></textarea>
 				</div>
 			</div>

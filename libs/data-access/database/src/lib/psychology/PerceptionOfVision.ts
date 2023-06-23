@@ -1231,7 +1231,7 @@ export const chapters = [
 						["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
 					)
 				],
-				null, // licenseID  
+				null, // licenseID
 				LessonType.SELF_REGULATED,
 				"Frage zu: Reale Bewegung?"
 			)

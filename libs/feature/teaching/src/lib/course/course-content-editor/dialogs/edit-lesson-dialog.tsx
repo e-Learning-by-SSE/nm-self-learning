@@ -182,11 +182,15 @@ function Overview() {
 						control={control}
 						name="subtitle"
 						render={({ field }) => (
-							<MarkdownField content={field.value as string} setValue={field.onChange} inline={true} placeholder="1-2 Sätze über diese Lerneinheit."/>
+							<MarkdownField
+								content={field.value as string}
+								setValue={field.onChange}
+								inline={true}
+								placeholder="1-2 Sätze über diese Lerneinheit."
+							/>
 						)}
 					></Controller>
 				</LabeledField>
-
 
 				<LabeledField label="Beschreibung" optional={true}>
 					<textarea

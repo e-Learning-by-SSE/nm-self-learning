@@ -13,7 +13,7 @@ export default function CreateLessonPage() {
 
 	async function onConfirm(lesson: LessonFormModel) {
 		//don't save lesson without content
-		if(lesson.content.length === 0) {
+		if (lesson.content.length === 0) {
 			showToast({
 				type: "error",
 				title: "Fehler",
@@ -47,22 +47,22 @@ export default function CreateLessonPage() {
 		);
 	}
 	return (
-		  <LessonEditor
+		<LessonEditor
 			onConfirm={onConfirm}
 			lesson={{
-			  lessonId: "",
-			  slug: "",
-			  title: "",
-			  subtitle: "",
-			  description: "",
-			  imgUrl: "",
-			  licenseId: null,
-			  quiz: { questions: [], config: null },
-			  content: [],
-			  authors: [{ username: authorUsername ?? "" }],
-			  lessonType: LessonType.TRADITIONAL,
-			  selfRegulatedQuestion: null,
+				lessonId: "",
+				slug: "",
+				title: "",
+				subtitle: "",
+				description: "",
+				imgUrl: "",
+				licenseId: null,
+				quiz: { questions: [], config: null },
+				content: [],
+				authors: [{ username: authorUsername ?? "" }],
+				lessonType: LessonType.TRADITIONAL,
+				selfRegulatedQuestion: null
 			}}
-		  />
+		/>
 	);
 }

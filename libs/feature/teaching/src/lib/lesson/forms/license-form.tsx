@@ -36,7 +36,8 @@ function OptionalLicenseSelector({ licenses }: { licenses?: License[] }) {
 // Makes licenses selectable after checking if there are any
 function LicenseSelector({ licenses }: { licenses: License[] }) {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
-	const getDefaultLicense = () => licenses.find(license => license.defaultSuggestion)?.licenseId ?? licenses[0].licenseId;
+	const getDefaultLicense = () =>
+		licenses.find(license => license.defaultSuggestion)?.licenseId ?? licenses[0].licenseId;
 	const currentValue = watch("licenseId");
 
 	return (

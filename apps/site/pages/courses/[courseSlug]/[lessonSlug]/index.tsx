@@ -14,7 +14,7 @@ import {
 	getContentTypeDisplayName,
 	includesMediaType,
 	LessonContent,
-	LessonMeta,
+	LessonMeta
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, LoadingBox, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
@@ -46,7 +46,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	let mdDescription = null;
 	let mdArticle = null;
 	let mdQuestion = null;
-	let mdSubtitle = null
+	let mdSubtitle = null;
 
 	if (lesson.description) {
 		mdDescription = await compileMarkdown(lesson.description);
@@ -67,7 +67,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 
 	// TODO change to check if the lesson is self requlated
 	if (lesson.lessonType === LessonType.SELF_REGULATED) {
-		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? 'Kein Inhalt.');
+		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
 	}
 
 	return {
@@ -77,7 +77,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 				article: mdArticle,
 				description: mdDescription,
 				preQuestion: mdQuestion,
-				subtitle: mdSubtitle,
+				subtitle: mdSubtitle
 			}
 		}
 	};
@@ -116,7 +116,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
-	const [showDialog, setShowDialog]  = useState(lesson.lessonType === LessonType.SELF_REGULATED);
+	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
@@ -124,9 +124,14 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const preferredMediaType = usePreferredMediaType(lesson);
 
 	if (showDialog && markdown.preQuestion) {
-		return <article className="flex flex-col gap-4">
-			<SelfRegulatedPreQuestion setShowDialog={setShowDialog} question={markdown.preQuestion} />
-		</article>
+		return (
+			<article className="flex flex-col gap-4">
+				<SelfRegulatedPreQuestion
+					setShowDialog={setShowDialog}
+					question={markdown.preQuestion}
+				/>
+			</article>
+		);
 	}
 
 	return (
@@ -141,7 +146,12 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 				</div>
 			)}
 
-			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} mdSubtitle={markdown.subtitle} />
+			<LessonHeader
+				lesson={lesson}
+				course={course}
+				mdDescription={markdown.description}
+				mdSubtitle={markdown.subtitle}
+			/>
 
 			{preferredMediaType === "article" && markdown.article && (
 				<MarkdownContainer className="mx-auto w-full pt-4">
@@ -164,7 +174,7 @@ function LessonHeader({
 	course,
 	lesson,
 	mdDescription,
-	mdSubtitle,
+	mdSubtitle
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
@@ -172,7 +182,7 @@ function LessonHeader({
 	mdSubtitle?: CompiledMarkdown | null;
 }) {
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
-	
+
 	let license = lesson.license;
 	if (license === null) {
 		license = trpc.licenseRouter.getDefault.useQuery().data ?? null;
@@ -343,29 +353,37 @@ function MediaTypeSelector({
 	);
 }
 
-function SelfRegulatedPreQuestion({ question, setShowDialog }: { question: CompiledMarkdown, setShowDialog: Dispatch<SetStateAction<boolean>> }) {
-	const [userAnswer, setUserAnswer]  = useState('');
+function SelfRegulatedPreQuestion({
+	question,
+	setShowDialog
+}: {
+	question: CompiledMarkdown;
+	setShowDialog: Dispatch<SetStateAction<boolean>>;
+}) {
+	const [userAnswer, setUserAnswer] = useState("");
 
 	return (
 		<>
 			<div>
-				<h1>
-					Aktivierungsfrage
-				</h1>
+				<h1>Aktivierungsfrage</h1>
 				<MarkdownContainer className="w-full py-4">
 					<MDXRemote {...question} />
 				</MarkdownContainer>
 				<div className="mt-8">
-					<h2>
-						Deine Antwort:
-					</h2>
-					<textarea className="w-full" placeholder="..." onChange={e => setUserAnswer(e.target.value)} />
+					<h2>Deine Antwort:</h2>
+					<textarea
+						className="w-full"
+						placeholder="..."
+						onChange={e => setUserAnswer(e.target.value)}
+					/>
 				</div>
 				<div className="mt-2 flex justify-end gap-2">
 					<button
 						type="button"
 						className="btn-primary"
-						onClick={() => {setShowDialog(false)}}
+						onClick={() => {
+							setShowDialog(false);
+						}}
 						disabled={userAnswer.length == 0}
 					>
 						Antwort Speichern

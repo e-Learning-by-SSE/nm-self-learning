@@ -3,15 +3,15 @@ import { testExportGetRelativeBasePath } from "./lib/redirect-to-login";
 describe("basePathTests", () => {
 	const OLD_ENV = process.env;
 	let originalLocation: Location;
-    const expectedOrigin = "https://example.com";
+	const expectedOrigin = "https://example.com";
 
 	beforeAll(() => {
 		originalLocation = window.location;
 		Object.defineProperty(window, "location", {
 			value: {
 				...originalLocation,
-				origin: expectedOrigin,
-			},
+				origin: expectedOrigin
+			}
 		});
 		jest.resetModules(); // it clears the cache
 		process.env = { ...OLD_ENV }; // Make a copy
@@ -20,7 +20,7 @@ describe("basePathTests", () => {
 	afterAll(() => {
 		process.env = OLD_ENV; // Restore old environment
 		Object.defineProperty(window, "location", {
-			value: originalLocation,
+			value: originalLocation
 		});
 	});
 
@@ -32,6 +32,6 @@ describe("basePathTests", () => {
 	test("Base path undefined -> empty string", () => {
 		process.env.NEXT_PUBLIC_BASE_PATH = undefined;
 		expect(testExportGetRelativeBasePath()).toBe(expectedOrigin + "/");
-        // maybe the trailing slash should be removed?
+		// maybe the trailing slash should be removed?
 	});
 });

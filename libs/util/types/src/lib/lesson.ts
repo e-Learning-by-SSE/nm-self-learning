@@ -4,8 +4,13 @@ import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 import { LessonType } from "@prisma/client";
 
-
-export type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta; lessonType: string };
+export type LessonInfo = {
+	lessonId: string;
+	slug: string;
+	title: string;
+	meta: LessonMeta;
+	lessonType: string;
+};
 
 export const lessonSchema = z.object({
 	lessonId: z.string().nullable(),

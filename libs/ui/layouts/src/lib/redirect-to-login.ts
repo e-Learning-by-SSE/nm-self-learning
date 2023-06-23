@@ -1,7 +1,7 @@
 import { signIn, signOut } from "next-auth/react";
 
-function getRelativeBasePath() : string {
-	return `${window.location.origin}/${process.env.NEXT_PUBLIC_BASE_PATH || ''}`;
+function getRelativeBasePath(): string {
+	return `${window.location.origin}/${process.env.NEXT_PUBLIC_BASE_PATH || ""}`;
 }
 export const testExportGetRelativeBasePath = getRelativeBasePath;
 
@@ -23,6 +23,6 @@ export function redirectToLogin(): void {
 /**
  * Redirect the user to the main app after logout.
  */
-export function redirectToLogout() : void {
-	signOut({callbackUrl: getRelativeBasePath() });
+export function redirectToLogout(): void {
+	signOut({ callbackUrl: getRelativeBasePath() });
 }

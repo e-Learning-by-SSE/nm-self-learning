@@ -78,7 +78,7 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 		content: (lesson.content ?? []) as LessonContent,
 		quiz: lesson.quiz as Quiz,
 		lessonType: lesson.lessonType,
-		selfRegulatedQuestion: lesson.selfRegulatedQuestion,
+		selfRegulatedQuestion: lesson.selfRegulatedQuestion
 	};
 
 	return {
