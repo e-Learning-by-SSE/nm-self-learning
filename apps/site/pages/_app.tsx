@@ -55,16 +55,14 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		}
 	}, []);
 
-	const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? "";
-	const plausibleCustomDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE ?? "";
 	return (
 		<PlausibleProvider
-			domain={plausibleDomain}
-			customDomain={plausibleCustomDomain}
-			selfHosted={plausibleCustomDomain ? true : false}
+			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? "dev.testing.com"}
+			customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
+			trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
 		>
 			<SessionProvider
-				session={(pageProps as any).session}
+				session={pageProps.session}
 				basePath={useRouter().basePath + "/api/auth"}
 			>
 				<Head>

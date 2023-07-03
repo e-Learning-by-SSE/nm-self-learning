@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const withNx = require("@nrwl/next/plugins/with-nx");
+const { withPlausibleProxy } = require("next-plausible");
 
 /**
  * @type {import('@nrwl/next/plugins/with-nx').WithNxOptions}
@@ -24,12 +25,10 @@ const nextConfig = {
 };
 
 const plugins = [
-	config => withNx(nextConfig)
-	// enable when necessary: see "Proxy the Analytics Script" on https://www.npmjs.com/package/next-plausible/v/3.4.0
-	// withPlausibleProxy({
-	// 	subdirectory: process.env.NEXT_PUBLIC_BASE_PATH ?? '',
-	// 	scriptName: 'script',
-	// 	customDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_DOMAIN ?? '',
-	// }),
+	config => withNx(config),
+	withPlausibleProxy({
+		subdirectory: process.env.NEXT_PUBLIC_BASE_PATH,
+		customDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE
+	})
 ];
 module.exports = plugins.reduce((config, plugin) => plugin(config), nextConfig);
