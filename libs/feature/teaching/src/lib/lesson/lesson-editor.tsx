@@ -127,7 +127,7 @@ function LessonPreQuestionEditor() {
 		<section>
 			<SectionHeader
 				title="Aktivierungsfrage"
-				subtitle="Die Aktivierungsfrage welche dem Lehrninden bei der Akvitierung seiner Wissensbestände helfen soll."
+				subtitle="Die Aktivierungsfrage, die den Lernenden helfen soll, ihre Wissensbasis zu aktivieren."
 			/>
 			<Form.MarkdownWithPreviewContainer>
 				<Controller
