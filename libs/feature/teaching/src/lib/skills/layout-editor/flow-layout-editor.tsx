@@ -60,8 +60,6 @@ import dagre from '@dagrejs/dagre';
       skills : Skills[];
     }) {
 
-      
-      
       // this ref stores the current dragged node
       
       // target is the node that the node is dragged over
@@ -73,11 +71,11 @@ import dagre from '@dagrejs/dagre';
         convertSkillArrayToNodes(skills),
         convertSkillArrayToEdges(skills)
         );
-        
+
         const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
         const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
         
-          const onLayout = useCallback(
+      const onLayout = useCallback(
             (direction: string | undefined) => {
         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
           nodes,
@@ -93,6 +91,7 @@ import dagre from '@dagrejs/dagre';
         
         useEffect(() => {
           onLayout('TB'); // set the layout direction to top-to-bottom
+          console.log("layouted")
         }, [nodes, onLayout]);
         
         const onDrop = useCallback(
@@ -218,7 +217,7 @@ import dagre from '@dagrejs/dagre';
       return {
         id: skill.id,
         type: 'custom',
-        data: { label: skill.name },
+        data: { label: skill.name , markedForDelete: false},
         position: { x: 0, y: 0 }
       }
     });
