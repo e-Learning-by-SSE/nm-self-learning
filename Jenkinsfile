@@ -48,7 +48,7 @@ pipeline {
             when {
                 allOf {
                     branch 'master'
-                    expression { packageJson.isNewVersion() }
+                    expression { packageJson.isNewVersion(since: 'LAST_SUCCESSFUL_BUILD') }
                 }
             }
             steps {
