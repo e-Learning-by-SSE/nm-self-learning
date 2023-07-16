@@ -27,7 +27,6 @@ const nextConfig = {
 const plugins = [
 	config => withNx(config),
 	withPlausibleProxy({
-		subdirectory: process.env.NEXT_PUBLIC_BASE_PATH,
 		customDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE
 	})
 ];

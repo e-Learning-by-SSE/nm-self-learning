@@ -57,7 +57,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 
 	return (
 		<PlausibleProvider
-			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? "dev.testing.com"}
+			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
 			customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
 			trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
 		>
