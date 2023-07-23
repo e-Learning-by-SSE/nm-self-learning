@@ -4,6 +4,7 @@
 	"projects": {
 		"data-access-api": "libs/data-access/api",
 		"data-access-api-client": "libs/data-access/api-client",
+		"data-access-openapi-client": "libs/data-access/openapi-client",
 		"database": "libs/data-access/database",
 		"docs-storybook": "docs/storybook",
 		"feature-admin": "libs/feature/admin",

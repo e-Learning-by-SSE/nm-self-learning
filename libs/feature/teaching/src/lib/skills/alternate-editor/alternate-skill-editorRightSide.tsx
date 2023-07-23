@@ -3,35 +3,38 @@ import {
 	LoadingBox,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	showToast
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { Fragment, useState, useMemo, useId, memo, useEffect} from "react";
-import Link  from "next/link";
-import React from "react";
-import { Skills, convertNestedSkillsToArray } from "@self-learning/types";
-import { FolderIcon, FolderRemoveIcon, PlusIcon } from "@heroicons/react/solid";
-import { fil } from "date-fns/locale";
+import { CenteredSection } from "@self-learning/ui/layouts";
+import { Fragment, useState, useMemo, memo} from "react";
+
+import { Skills} from "@self-learning/types";
+import { FolderIcon, FolderRemoveIcon, PlusIcon, DocumentIcon, DocumentTextIcon, FolderDownloadIcon, TrashIcon } from "@heroicons/react/solid";
+import { SkillCreationDto, SkillDto, UnresolvedSkillRepositoryDto } from "@self-learning/LIBRARY_NAME";
+import { trpc } from "@self-learning/api-client";
+
 
 export default memo(AlternateSkillEditorRightSide);
 
 function AlternateSkillEditorRightSide({
-    skilltree,
+    unresolvedRep,
 	changeSelectedItem,
     onConfirm
 } : {
-    skilltree: Skills,
-	changeSelectedItem: (skilltree: Skills) => void;
+    unresolvedRep: UnresolvedSkillRepositoryDto,
+	changeSelectedItem: (skilltree: SkillDto) => void;
     onConfirm: (skilltree: Skills) => void;
 }) {
+
+	
 
 
 	const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
     const [displayName, setDisplayName] = useState("");
 
-	const skillArray = convertNestedSkillsToArray(skilltree);
-
+	const skillArray = unresolvedRep.skills;
 
 	const filteredSkillTrees = useMemo(() => {
 		if (!skillArray) return [];
@@ -39,10 +42,9 @@ function AlternateSkillEditorRightSide({
 
 		const lowerCaseDisplayName = displayName.toLowerCase().trim();
 		return skillArray.filter(skill =>
-			skill.name.toLowerCase().includes(lowerCaseDisplayName)
+			skill.toLowerCase().includes(lowerCaseDisplayName)
 		);
 	}, [skillArray, displayName]);
-
 
 
 
@@ -58,19 +60,22 @@ function AlternateSkillEditorRightSide({
 					onChange={e => {setDisplayName(e.target.value); setActiveRowIndex(null)}}
 				/>
 
-					<Table
-						head={
-							<>
-								<TableHeaderColumn>Name</TableHeaderColumn>
-								<TableHeaderColumn></TableHeaderColumn>
-							</>
-						}
-					>
-							<ListElement skill={skilltree} 
-								color={0 * 100} 
-								changeSelectedItem={changeSelectedItem} />
-						
-					</Table>
+				<Table
+					head={
+						<>
+							<TableHeaderColumn>Name</TableHeaderColumn>
+							<TableHeaderColumn></TableHeaderColumn>
+						</>
+					}
+				>
+					{filteredSkillTrees.map((element) => (
+						<ListElement skillInfo={{skillId: element, repoId: unresolvedRep.id}} 
+							color={0 * 100} 
+							level={1}
+							changeSelectedItem={changeSelectedItem} />
+					))}
+					
+				</Table>
 				
 			</CenteredSection>
         </div>
@@ -80,64 +85,158 @@ function AlternateSkillEditorRightSide({
 
 
 export function ListElement({
-	skill,
+	skillInfo,
+	level,
 	changeSelectedItem,
 	color
 } : {
-	skill: Skills,
-	changeSelectedItem: (skilltree: Skills) => void,
+	skillInfo: {skillId: string, repoId: string},
+	level: number,
+	changeSelectedItem: (skilltree: SkillDto) => void,
 	color: number
 }) {
 
 	const [open, setOpen] = useState<boolean>(false);
-	const [skillState, setSkillState] = useState<Skills>(skill);
+	const [openTaskbar, setOpenTaskbar] = useState<boolean>(false);
+	const [refreshData, setRefreshData] = useState<boolean>(false);
+	
+	//get skills from id
+	const { data: skill, isLoading } =  trpc.skill.getSkillFromId.useQuery({id: skillInfo.skillId});
+	const {useQuery: getSkillsFromIdArray} = trpc.skill.getSkillsFromIdArray;
 
-	const addSkill = (name : string) => {
-		const newSkill = {
-			id: Math.random().toString(36).substring(7),
-			name: name,
-			description:"test",
-			level: skillState.level + 1,
+	//create delete and update skills
+	const { mutateAsync: createSkill } =  trpc.skill.createSkill.useMutation();
+	const { mutateAsync: deleteSkill } =  trpc.skill.deleteSkill.useMutation();
+	
+
+	const addSkill = async (name : string) => {
+		if(isLoading) return;
+		if(!skill) return;
+
+		//const nestedSkills = getSkillsFromIdArray({ids: skill.nestedSkills});
+
+		const parentSkill =  {
+			owner: "1", //make owner dynamic
+			name: skill.name,
+			level: skill.level,
+			description: skill.description ?? "",
+			parentSkills: [],
 			nestedSkills: []
+		} as SkillCreationDto
+
+		const newSkill = {
+			owner: "1", //make owner dynamic
+			name: skill.name,
+			level: skill.level,
+			description: skill.description ?? "",
+			parentSkills: [parentSkill],
+			nestedSkills: []
+		} as SkillCreationDto
+
+		try {
+
+			await createSkill({id: skillInfo.skillId, skill: newSkill});
+
+			showToast({
+				type: "success",
+				title: "Skill gespeichert!",
+				subtitle: ""
+			});
+
+		} catch (error) {
+			if(error instanceof Error) {
+				showToast({
+					type: "error",
+					title: "Skill konnte nicht gespeichert werden!",
+					subtitle: error.message ?? ""
+				});
+			}
 		}
-		const newSkillState = {
-			...skillState,
-			nestedSkills: [...skillState.nestedSkills, newSkill], 
-		  };
-		setSkillState(newSkillState);
+		
 	}
 
+
+	const deleteThisSkill = async () => {
+		if(isLoading) return;
+		if(!skill) return;
+
+		try {
+			
+			await deleteSkill({id: skillInfo.skillId});
+			
+			showToast({
+				type: "success",
+				title: "Skill gelöscht!",
+				subtitle: ""
+			});
+			setRefreshData(!refreshData);
+		} catch(error) {
+			if(error instanceof Error) {
+				showToast({
+					type: "error",
+					title: "Skill konnte nicht gelöscht werden!",
+					subtitle: error.message ?? ""
+				});
+			}
+
+		}
+
+	}
+
+	
 	return (
-		<Fragment key={skillState.id + skillState.level}>
-			<tr key={skillState.id + skillState.level} className={`bg-gray-${color}`}>
-				<TableDataColumn>
-				<div className="flex items-center gap-4">
-            		{skillState.nestedSkills.length > 0 ?
-					<FolderIcon className="icon h-5 text-lg hover:text-secondary" /> :
-					<FolderRemoveIcon className="icon h-5 text-lg hover:text-secondary" />}
-						<div className="text-sm font-medium hover:text-secondary" style={{cursor: "pointer"}} 
-						onClick={() => {setOpen(!open); changeSelectedItem(skillState)}} >
-							{skillState.level + 1 }. {skillState.name}
-						</div>
-					</div>
-				</TableDataColumn>
-			<TableDataColumn>
-				<div className="flex flex-wrap justify-end gap-4">
-					<PlusIcon className="icon h-5 text-lg hover:text-secondary" 
-					style={{cursor: "pointer"}}
-					onClick={() => {addSkill(Date.now().toString())}}/>
-				</div>
-			</TableDataColumn>
-			</tr>
-			{open && skillState.nestedSkills.length > 0 && (
-				skillState.nestedSkills.map((element) =>
-				<ListElement skill={element} 
-					changeSelectedItem={changeSelectedItem}
-					color={element.level * 100} 
-					/>
-				)
-			)}
-		</Fragment>
+		// eslint-disable-next-line react/jsx-no-useless-fragment
+		<>
+			{isLoading ? (
+				<LoadingBox />
+			) : (
+				// eslint-disable-next-line react/jsx-no-useless-fragment
+				<>
+					{skill && (
+						<>
+							<tr key={skill.id + skill.level} 
+							className={`bg-gray-${color}`}
+							onMouseEnter={() => {setOpenTaskbar(true)}}
+							onMouseLeave={() => {setOpenTaskbar(false)}}>
+								<TableDataColumn>
+								<div className="flex items-center gap-4">
+									{skill.nestedSkills.length > 0 ?
+										<> {open ?  <FolderDownloadIcon className="icon h-5 text-lg hover:text-secondary" /> :
+										<FolderIcon className="icon h-5 text-lg hover:text-secondary" />} </>:
+									<DocumentTextIcon className="icon h-5 text-lg hover:text-secondary" />}
+										<div className="text-sm font-medium hover:text-secondary" style={{cursor: "pointer"}} 
+										onClick={() => {setOpen(!open); changeSelectedItem(skill)}} >
+											{skill.level}. {skill.name}
+										</div>
+									</div>
+								</TableDataColumn>
+							<TableDataColumn>
+								<div className="flex flex-wrap justify-end gap-4">
+									{openTaskbar && (
+										<><PlusIcon className="icon h-5 text-lg hover:text-secondary"
+													style={{ cursor: "pointer" }}
+													onClick={() => { addSkill(Date.now().toString()); } } />
+										<TrashIcon className="icon h-5 text-lg hover:text-red-500" 
+										style={{ cursor: "pointer" }}
+										onClick={() => {deleteThisSkill()}}/></>
+									)}
+								</div>
+							</TableDataColumn>
+							</tr>
+							{open && skill.nestedSkills.length > 0 && (
+								skill.nestedSkills.map((element) =>
+								<ListElement skillInfo={{skillId: element, repoId: skillInfo.repoId}}
+									changeSelectedItem={changeSelectedItem}
+									color={(skill.level) * 100}
+									level={skill.level + 1} 
+									/>
+								)
+							)}
+							</>
+						)}
+					</>	
+			)}	
+		</>
 	);
 }
 

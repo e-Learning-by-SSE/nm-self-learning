@@ -1,5 +1,7 @@
 import { SkillEditor, AlternateSkillEditor } from "@self-learning/teaching";
 import { Skills, convertNestedSkillsToArray } from '@self-learning/types';
+import { useRouter } from "next/router";
+import { useCallback, useMemo } from "react";
 import 'reactflow/dist/style.css';
 
 
@@ -8,6 +10,16 @@ export default function CreateSkillTree({
 }: {
     onFinished: (skilltree: {name : string}) => void;
 }) {
+
+    const router = useRouter();
+    
+    const slug = useMemo(() => {
+        if (router.query.slug && typeof router.query.slug === "string") {
+            return router.query.slug;
+        } else {
+            return "3";
+        }
+    }, [router.query.slug]);
 
    // this ref stores the current dragged node
    const defaultTree: Skills = {
@@ -71,7 +83,7 @@ export default function CreateSkillTree({
     
     return(
         <div>
-            <AlternateSkillEditor skilltree={defaultTree} onConfirm={onFinished} />
+            <AlternateSkillEditor repositoryID={slug} onConfirm={onFinished} />
         </div>
     ); 
 

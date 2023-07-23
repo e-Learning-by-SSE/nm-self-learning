@@ -3,6 +3,7 @@ import * as trpcNext from "@trpc/server/adapters/next";
 import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "../auth";
 
+
 export const t = initTRPC.context<Context>().create();
 
 const authMiddleware = t.middleware(async ({ ctx, next }) => {

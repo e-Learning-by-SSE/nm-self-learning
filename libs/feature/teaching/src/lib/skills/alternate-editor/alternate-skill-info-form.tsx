@@ -1,19 +1,17 @@
 import React, {  useState, useEffect, useMemo } from 'react';
-import { Skills } from '@self-learning/types';
 import { Form,  LabeledField} from "@self-learning/ui/forms";
-import { useFormContext } from 'react-hook-form';
+import { SkillDto } from '@self-learning/LIBRARY_NAME';
 
 export function SkillInfoForm(
-    { skill }: { skill: Skills|null }
+    { skill }: { skill: SkillDto|null }
 ) {
-    
-    const { register } = useFormContext<Skills>();
 
     const getSkillOrDefault = useMemo(() => {
       if (skill === null) {
         return {
           id: '1',
           nestedSkills: [],
+          repositoryId: '1',
           name: 'test',
           level: 1,
           description: 'test',
@@ -23,7 +21,7 @@ export function SkillInfoForm(
       }
     }, [skill]);
 
-    const [currentSkill, setCurrentSkill] = useState<Skills>(getSkillOrDefault);
+    const [currentSkill, setCurrentSkill] = useState<SkillDto>(getSkillOrDefault);
 
     useEffect(() => {
       setCurrentSkill(getSkillOrDefault);
@@ -40,21 +38,21 @@ export function SkillInfoForm(
             type="text"
             className='textfield'
             value={currentSkill.name}
-            {...register('name')}
+            onChange={() => {}}
           />
         </LabeledField>
         <LabeledField label="Nested Skills">
           <input
             type="text"
             className='textfield'
-            value={currentSkill.nestedSkills.map((element) => element.name).join(', ')}
-            {...register('nestedSkills')}
+            value={currentSkill.nestedSkills.map((element) => element).join(', ')}
+            onChange={() => {}}
           />
         </LabeledField>
         <LabeledField label="Beschreibung">
           <textarea
             value={currentSkill.description}
-            {...register('description')}
+            onChange={() => {}}
           />
         </LabeledField>
       </div>

@@ -9,6 +9,7 @@ import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useState, useMemo} from "react";
 import Link  from "next/link";
+import { trpc } from "@self-learning/api-client";
 
 
 
@@ -17,21 +18,15 @@ import Link  from "next/link";
 export default function SkillPage() {
     useRequiredSession();
 
-    const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
     const [displayName, setDisplayName] = useState("");
 
-    const skillTrees = [{
-        name : "Skilltree 1"
-    } ,
-    {
-        name : "Skilltree 2"
-    }]
-    const isLoading = false;
+    
+    const { data: skillTrees, isLoading } =  trpc.skill.getRepsFromUser.useQuery();
+
 
     const filteredSkillTrees = useMemo(() => {
 		if (!skillTrees) return [];
 		if (!displayName || displayName.length === 0) return skillTrees;
-
 		const lowerCaseDisplayName = displayName.toLowerCase().trim();
 		return skillTrees.filter(skillTree =>
 			skillTree.name.toLowerCase().includes(lowerCaseDisplayName)
@@ -54,7 +49,7 @@ export default function SkillPage() {
 
 				<SearchField
 					placeholder="Suche nach Skill-Trees"
-					onChange={e => {setDisplayName(e.target.value); setActiveRowIndex(null)}}
+					onChange={e => {setDisplayName(e.target.value)}}
 				/>
 
 
@@ -69,15 +64,18 @@ export default function SkillPage() {
 							</>
 						}
 					>
-						{filteredSkillTrees.map(({name}) => (
+						{filteredSkillTrees.map(({name, id}) => (
 							<Fragment key={name}>
 								{name && (
 									<tr key={name}>
 										<TableDataColumn>
 											<div className="flex flex-wrap gap-4">
-												<div className="text-sm font-medium hover:text-secondary" style={{cursor: "pointer"}} onClick={() => {/* new function*/}}>
+												<Link
+													className="text-sm font-medium hover:text-secondary"
+													href={`/skills/create/${id}`}
+												>
 													{name}
-												</div>
+												</Link>
 											</div>
 										</TableDataColumn>
 										<TableDataColumn>

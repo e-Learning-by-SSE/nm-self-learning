@@ -9,58 +9,34 @@ import { OpenAsJsonButton } from "../../json-editor-dialog";
 import { log } from 'console';
 import { SkillInfoForm } from './alternate-skill-info-form';
 import { useState } from 'react';
+import { trpc } from '@self-learning/api-client';
+import { LoadingBox } from '@self-learning/ui/common';
+import { SkillDto } from '@self-learning/competence-rep';
 
 
 export function AlternateSkillEditor({
-    skilltree,
+    repositoryID,
     onConfirm
 }: {
-    skilltree: Skills
+    repositoryID: string
     onConfirm: (skilltree: Skills) => void;
 }) {
 
-    const form = useForm<Skills>({
-		defaultValues: { ...skilltree },
-		resolver: zodResolver(skillsSchema)
-	});
+    
+    const { data: skillTrees, isLoading } =  trpc.skill.getUnresolvedSkillsFromRepo.useQuery({ id: repositoryID });
 
     const isNew = true; 
 
-    const [selectedItem, setSelectedItem] = useState<Skills|null>(null);
-
-    const skillArray = convertNestedSkillsToArray(skilltree);
+    const [selectedItem, setSelectedItem] = useState<SkillDto|null>(null);
 
 
-    const changeSelectedItem = (item: Skills) => {
+    const changeSelectedItem = (item: SkillDto) => {
         setSelectedItem(item);
-        console.log("selectedItem", selectedItem)
     }
 
 
     return(
         <div className="bg-gray-50">
-            <FormProvider {...form}>
-                <form
-                    id="skilltreeform"
-                    onSubmit={e => {
-                        if ((e.target as unknown as { id: string }).id === "skilltreeform") {
-                            form.handleSubmit(
-                                data => {
-                                    console.log("data", data);
-                                    try {
-                                        const validated = skillsSchema.parse(data);
-                                        onConfirm(validated);
-                                    } catch (error) {
-                                        console.error(error);
-                                    }
-                                },
-                                invalid => {
-                                    console.log("invalid", invalid);
-                                }
-                            )(e);
-                        }
-                    }}
-                >
                     <SidebarEditorLayout
                         sidebar={
                             <>
@@ -72,21 +48,24 @@ export function AlternateSkillEditor({
                                     <h1 className="text-2xl">Test Titel</h1>
                                 </div>
 
-                                <OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
 
-                                <button className="btn-primary w-full" type="submit">
+                                <button className="btn-primary w-full" onClick={() => {/* change default skill */}}>
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
                                 <SkillInfoForm skill={selectedItem}/>
                              
                             </>
                         } >
-                            <AlternateSkillEditorRightSide skilltree={skilltree} changeSelectedItem={changeSelectedItem} onConfirm={onConfirm} />
+                            {isLoading ? (
+                                <LoadingBox />
+                            ) : (
+                                <div>
+                                    {skillTrees && (
+                                        <AlternateSkillEditorRightSide unresolvedRep={skillTrees} changeSelectedItem={changeSelectedItem} onConfirm={onConfirm} />
+                                    )}
+                                </div>
+                            )}
                     </SidebarEditorLayout>
-                </form>
-                    
-
-            </FormProvider>
 
         </div>
             
