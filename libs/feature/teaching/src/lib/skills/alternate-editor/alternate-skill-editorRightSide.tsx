@@ -12,7 +12,7 @@ import { Fragment, useState, useMemo, memo} from "react";
 
 import { Skills} from "@self-learning/types";
 import { FolderIcon, FolderRemoveIcon, PlusIcon, DocumentIcon, DocumentTextIcon, FolderDownloadIcon, TrashIcon } from "@heroicons/react/solid";
-import { SkillCreationDto, SkillDto, UnresolvedSkillRepositoryDto } from "@self-learning/LIBRARY_NAME";
+import { SkillCreationDto, SkillDto, UnresolvedSkillRepositoryDto } from "@self-learning/competence-rep";
 import { trpc } from "@self-learning/api-client";
 
 
@@ -206,7 +206,7 @@ export function ListElement({
 									<DocumentTextIcon className="icon h-5 text-lg hover:text-secondary" />}
 										<div className="text-sm font-medium hover:text-secondary" style={{cursor: "pointer"}} 
 										onClick={() => {setOpen(!open); changeSelectedItem(skill)}} >
-											{skill.level}. {skill.name}
+											{level}. {skill.name}
 										</div>
 									</div>
 								</TableDataColumn>
@@ -228,7 +228,7 @@ export function ListElement({
 								<ListElement skillInfo={{skillId: element, repoId: skillInfo.repoId}}
 									changeSelectedItem={changeSelectedItem}
 									color={(skill.level) * 100}
-									level={skill.level + 1} 
+									level={level + 1} 
 									/>
 								)
 							)}

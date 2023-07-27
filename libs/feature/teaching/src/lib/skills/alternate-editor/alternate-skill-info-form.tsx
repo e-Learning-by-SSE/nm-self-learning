@@ -1,6 +1,6 @@
 import React, {  useState, useEffect, useMemo } from 'react';
 import { Form,  LabeledField} from "@self-learning/ui/forms";
-import { SkillDto } from '@self-learning/LIBRARY_NAME';
+import { SkillDto } from '@self-learning/competence-rep';
 
 export function SkillInfoForm(
     { skill }: { skill: SkillDto|null }
@@ -15,7 +15,7 @@ export function SkillInfoForm(
           name: 'test',
           level: 1,
           description: 'test',
-        };
+        } as SkillDto;
       } else {
         return skill;
       }
@@ -41,11 +41,19 @@ export function SkillInfoForm(
             onChange={() => {}}
           />
         </LabeledField>
-        <LabeledField label="Nested Skills">
+        <LabeledField label="Untergeordnete Skills">
           <input
             type="text"
             className='textfield'
-            value={currentSkill.nestedSkills.map((element) => element).join(', ')}
+            value={currentSkill.nestedSkills.map((element: string) => element).join(', ')}
+            onChange={() => {}}
+          />
+        </LabeledField>
+        <LabeledField label="Level">
+          <input
+            type="text"
+            className='textfield'
+            value={currentSkill.level}
             onChange={() => {}}
           />
         </LabeledField>

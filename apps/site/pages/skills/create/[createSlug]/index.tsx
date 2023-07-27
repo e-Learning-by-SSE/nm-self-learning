@@ -1,8 +1,9 @@
 import { SkillEditor, AlternateSkillEditor } from "@self-learning/teaching";
-import { Skills, convertNestedSkillsToArray } from '@self-learning/types';
 import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
+import { useEffect, useState } from "react";
+import { trpc } from "@self-learning/api-client";
 import 'reactflow/dist/style.css';
+import { SkillRepositoryCreationDto } from "@self-learning/competence-rep";
 
 
 export default function CreateSkillTree({
@@ -12,68 +13,43 @@ export default function CreateSkillTree({
 }) {
 
     const router = useRouter();
-    
-    const slug = useMemo(() => {
-        if (router.query.slug && typeof router.query.slug === "string") {
-            return router.query.slug;
-        } else {
-            return "3";
-        }
-    }, [router.query.slug]);
 
-   // this ref stores the current dragged node
-   const defaultTree: Skills = {
-    id: "1",
-    nestedSkills: [
-        {
-            id: "2",
-            nestedSkills: [
-                {
-                    id: "3",
-                    nestedSkills: [],
-                    name: "test3",
-                    level: 2,
-                    description: "test3",
-                },
-                {
-                    id: "4",
-                    nestedSkills: [],
-                    name: "test4",
-                    level: 2,
-                    description: "test4",
+    //for creating a new rep
+	const { mutateAsync: createRep } = trpc.skill.addRepo.useMutation();
+
+    
+    const [isLoading, setIsLoading] = useState(false);
+    const [repositoryID, setRepositoryID] = useState<string>("1");
+
+    useEffect(() => {
+        const createNewRep = async () => {
+            if (router.query.createSlug && typeof router.query.createSlug === "string") {
+                if (router.query.createSlug === "new") {
+                    setIsLoading(true);
+                    //TODO make owner dynamic
+                    const newRep = {
+                        owner: "5",
+                        name: "New Skilltree: " + Date.now(),
+                        description: "New Skilltree Description",
+                    } as SkillRepositoryCreationDto;
+
+                    const result = await createRep({ rep: newRep });
+                    setRepositoryID(result.id);
+                    setIsLoading(false);
+                } else {
+                    setRepositoryID(router.query.createSlug);
                 }
-            ],
-            name: "test2",
-            level: 1,
-            description: "test2",
-        },
-        {
-            id: "5",
-            nestedSkills: [
-                {
-                    id: "6",
-                    nestedSkills: [],
-                    name: "test6",
-                    level: 2,
-                    description: "test6",
-                },
-                {
-                    id: "7",
-                    nestedSkills: [],
-                    name: "test7",
-                    level: 2,
-                    description: "test7",
-                }
-            ],
-            name: "test5",
-            level: 1,
-            description: "test5",
-        }
-    ],
-    name: "test",
-    level: 0,
-    description: "test",
-    };
+            }
+        };
+
+        createNewRep();
+    }, [router.query.createSlug, createRep]);
+
+   
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
     
     /*return(
        <div>
@@ -83,7 +59,7 @@ export default function CreateSkillTree({
     
     return(
         <div>
-            <AlternateSkillEditor repositoryID={slug} onConfirm={onFinished} />
+            <AlternateSkillEditor repositoryID={repositoryID} onConfirm={onFinished} />
         </div>
     ); 
 

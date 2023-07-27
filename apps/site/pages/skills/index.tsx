@@ -24,6 +24,7 @@ export default function SkillPage() {
     const { data: skillTrees, isLoading } =  trpc.skill.getRepsFromUser.useQuery();
 
 
+
     const filteredSkillTrees = useMemo(() => {
 		if (!skillTrees) return [];
 		if (!displayName || displayName.length === 0) return skillTrees;
@@ -36,12 +37,13 @@ export default function SkillPage() {
 
 
 
+
     return (
         <AdminGuard>
 			<CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">SkillTrees</h1>
-					<Link href="skills/create" className="btn-primary">
+					<Link href="skills/create/new" className="btn-primary">
 						<PlusIcon className="icon h-5" />
 						<span>Skilltree anlegen</span>
 					</Link>
