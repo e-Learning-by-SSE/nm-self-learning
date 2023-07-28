@@ -1,8 +1,7 @@
-import { SkillEditor, AlternateSkillEditor } from "@self-learning/teaching";
+import {  AlternateSkillEditor } from "@self-learning/teaching";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { trpc } from "@self-learning/api-client";
-import 'reactflow/dist/style.css';
 import { SkillRepositoryCreationDto } from "@self-learning/competence-rep";
 
 
@@ -50,12 +49,6 @@ export default function CreateSkillTree({
         return <div>Loading...</div>;
     }
 
-    
-    /*return(
-       <div>
-         <SkillEditor skilltree={defaultTree} onConfirm={onFinished} />
-        </div>
-    ); */
     
     return(
         <div>
