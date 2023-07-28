@@ -18,9 +18,9 @@ export type OpenAPIConfig = {
     HEADERS?: Headers | Resolver<Headers> | undefined;
     ENCODE_PATH?: ((path: string) => string) | undefined;
 };
-
+//TODO make dynamic
 export const OpenAPI: OpenAPIConfig = {
-    BASE: 'https://staging.sse.uni-hildesheim.de:9010',
+    BASE: 'https://staging.sse.uni-hildesheim.de:9010/',
     VERSION: '1.0.0',
     WITH_CREDENTIALS: false,
     CREDENTIALS: 'include',

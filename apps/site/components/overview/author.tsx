@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { ComponentProps, useState } from "react";
 import { ReactComponent as VoidSvg } from "../../svg/void.svg";
+import {SkillRepoPage} from "@self-learning/teaching";
 
 const EditAuthorDialog = dynamic(
 	() => import("@self-learning/teaching").then(m => m.EditAuthorDialog),
@@ -286,6 +287,21 @@ export default function AuthorOverview({ author }: Props) {
 
 					{authorName && <Lessons authorName={authorName} />}
 				</section>
+				
+				<Divider />
+				<section>
+					<div className="flex justify-between gap-4">
+						<SectionHeader
+							title="Skill Repositorie"
+							subtitle="Besitzer der folgenden Repositories"
+						/>
+						<Link href="skills/create/new" className="btn-primary h-fit w-fit">
+							<PlusIcon className="icon h-5" />
+							<span>Skilltree anlegen</span>
+						</Link>
+					</div>
+						<SkillRepoPage />
+				</section>
 			</div>
 		</CenteredSection>
 	);
@@ -308,7 +324,7 @@ function Lessons({ authorName }: { authorName: string }) {
 	);
 
 	return (
-		<div className="flex min-h-[500px] flex-col">
+		<div className="flex min-h-[200px] flex-col">
 			{!lessons ? (
 				<LoadingBox />
 			) : (

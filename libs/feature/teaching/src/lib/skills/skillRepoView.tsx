@@ -1,4 +1,3 @@
-import { PlusIcon } from "@heroicons/react/solid";
 import {
 	LoadingBox,
 	Table,
@@ -6,7 +5,7 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
+import { AuthorGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useState, useMemo} from "react";
 import Link  from "next/link";
 import { trpc } from "@self-learning/api-client";
@@ -15,7 +14,7 @@ import { trpc } from "@self-learning/api-client";
 
 
 
-export default function SkillPage() {
+export function SkillRepoPage() {
     useRequiredSession();
 
     const [displayName, setDisplayName] = useState("");
@@ -39,16 +38,8 @@ export default function SkillPage() {
 
 
     return (
-        <AdminGuard>
-			<CenteredSection>
-				<div className="mb-16 flex items-center justify-between gap-4">
-					<h1 className="text-5xl">SkillTrees</h1>
-					<Link href="skills/create/new" className="btn-primary">
-						<PlusIcon className="icon h-5" />
-						<span>Skilltree anlegen</span>
-					</Link>
-				</div>
-
+        <AuthorGuard>
+			<div className="flex min-h-[300px] flex-col">
 				<SearchField
 					placeholder="Suche nach Skill-Trees"
 					onChange={e => {setDisplayName(e.target.value)}}
@@ -94,9 +85,26 @@ export default function SkillPage() {
 								)}
 							</Fragment>
 						))}
+						{filteredSkillTrees.length === 0 && (
+							<Fragment key={"no_data_there:default"}>
+								<tr key={"default:table"}>
+									<TableDataColumn>
+										<div className="flex flex-wrap gap-4">
+											<span className="text-sm font-medium hover:text-secondary">
+												Keine Skill Repositories vorhanden
+											</span>
+										</div>
+									</TableDataColumn>
+									<TableDataColumn>
+										<div className="flex flex-wrap justify-end gap-4" />
+									</TableDataColumn>
+								</tr>
+							</Fragment>
+						)}
 					</Table>
 				)}
-			</CenteredSection>
-		</AdminGuard>);
+			</div>
+		</AuthorGuard>);
 
 }
+

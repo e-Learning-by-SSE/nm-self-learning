@@ -7,3 +7,4 @@ export * from "./lib/subject/subject-editor";
 export * from "./lib/subject/permissions-dialog";
 export * from "./lib/lesson/forms/license-form";
 export * from "./lib/skills/alternate-editor/alternate-skill-editor";
+export * from "./lib/skills/skillRepoView";

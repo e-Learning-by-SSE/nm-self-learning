@@ -8,12 +8,13 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { Fragment, useState, useMemo, memo} from "react";
+import { useState, useMemo, memo} from "react";
 
 import { Skills} from "@self-learning/types";
-import { FolderIcon, FolderRemoveIcon, PlusIcon, DocumentIcon, DocumentTextIcon, FolderDownloadIcon, TrashIcon } from "@heroicons/react/solid";
+import { FolderIcon, PlusIcon, DocumentTextIcon, FolderDownloadIcon, TrashIcon } from "@heroicons/react/solid";
 import { SkillCreationDto, SkillDto, UnresolvedSkillRepositoryDto } from "@self-learning/competence-rep";
 import { trpc } from "@self-learning/api-client";
+import { set } from "date-fns";
 
 
 export default memo(AlternateSkillEditorRightSide);
@@ -102,47 +103,60 @@ export function ListElement({
 	
 	//get skills from id
 	const { data: skill, isLoading } =  trpc.skill.getSkillFromId.useQuery({id: skillInfo.skillId});
-	const {useQuery: getSkillsFromIdArray} = trpc.skill.getSkillsFromIdArray;
 
 	//create delete and update skills
 	const { mutateAsync: createSkill } =  trpc.skill.createSkill.useMutation();
+	const { mutateAsync: updateSkill } =  trpc.skill.changeSkillById.useMutation();
 	const { mutateAsync: deleteSkill } =  trpc.skill.deleteSkill.useMutation();
 	
 
-	const addSkill = async (name : string) => {
+	const addSkill = async () => {
 		if(isLoading) return;
 		if(!skill) return;
 
-		//const nestedSkills = getSkillsFromIdArray({ids: skill.nestedSkills});
+		//TODO: make owner dynamic
+		const owner = "5"
 
-		const parentSkill =  {
-			owner: "1", //make owner dynamic
+		const newSkill = {
+			owner: owner,
 			name: skill.name,
 			level: skill.level,
 			description: skill.description ?? "",
-			parentSkills: [],
 			nestedSkills: []
 		} as SkillCreationDto
 
-		const newSkill = {
-			owner: "1", //make owner dynamic
+		const adaptedCurrentSkill = {
+			owner: owner,
 			name: skill.name,
 			level: skill.level,
 			description: skill.description ?? "",
-			parentSkills: [parentSkill],
-			nestedSkills: []
+			nestedSkills: [...skill.nestedSkills, newSkill]
 		} as SkillCreationDto
 
 		try {
 
-			await createSkill({id: skillInfo.skillId, skill: newSkill});
+			const createdSkill = await createSkill({repId: skillInfo.repoId, skill: newSkill});
 
-			showToast({
-				type: "success",
-				title: "Skill gespeichert!",
-				subtitle: ""
-			});
+			try {
 
+				await updateSkill({repoId: skillInfo.repoId, skill: adaptedCurrentSkill});
+				setRefreshData(!refreshData);
+				showToast({
+					type: "success",
+					title: "Skill gespeichert!",
+					subtitle: ""
+				});
+
+			} catch (error) {
+				if(error instanceof Error) {
+					showToast({
+						type: "error",
+						title: "Skill konnte nicht gespeichert werden!",
+						subtitle: error.message ?? ""
+					});
+				}
+				await deleteSkill({id: createdSkill.id});
+			}
 		} catch (error) {
 			if(error instanceof Error) {
 				showToast({
@@ -154,7 +168,6 @@ export function ListElement({
 		}
 		
 	}
-
 
 	const deleteThisSkill = async () => {
 		if(isLoading) return;
@@ -215,7 +228,7 @@ export function ListElement({
 									{openTaskbar && (
 										<><PlusIcon className="icon h-5 text-lg hover:text-secondary"
 													style={{ cursor: "pointer" }}
-													onClick={() => { addSkill(Date.now().toString()); } } />
+													onClick={() => { addSkill() } } />
 										<TrashIcon className="icon h-5 text-lg hover:text-red-500" 
 										style={{ cursor: "pointer" }}
 										onClick={() => {deleteThisSkill()}}/></>

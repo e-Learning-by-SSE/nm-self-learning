@@ -49,7 +49,6 @@ export default function CreateSkillTree({
         return <div>Loading...</div>;
     }
 
-    
     return(
         <div>
             <AlternateSkillEditor repositoryID={repositoryID} onConfirm={onFinished} />

@@ -1,34 +1,33 @@
-import { database } from "@self-learning/database";
-import { t, adminProcedure} from "../trpc";
+import { t ,authorProcedure } from "../trpc";
 import * as z from "zod";
-import { licenseSchema } from "@self-learning/types";
-import { OpenAPI, SkillService, SkillCreationDto } from "@self-learning/competence-rep";
+import { SkillService } from "@self-learning/competence-rep";
 import { skillCreationDtoSchema } from "libs/data-access/openapi-client/src/models/SkillCreationDto";
 import { skillRepositoryCreationDtoSchema } from "libs/data-access/openapi-client/src/models/SkillRepositoryCreationDto";
 
 //TODO: SECURITY: Check if user is allowed to do this
 
 export const skillRouter = t.router({
-	getRepsFromUser: t.procedure.query(async () => {
+	getRepsFromUser: authorProcedure.query(async ({ ctx }) => {
 		//make owner dynamic
-		return (await SkillService.skillMgmtControllerListRepositories("5")).repositories;
+		console.log(ctx.user.id)
+		return (await SkillService.skillMgmtControllerListRepositories("1")).repositories;
 	}),
-	getUnresolvedSkillsFromRepo: t.procedure.input(
+	getUnresolvedSkillsFromRepo: authorProcedure.input(
 		z.object({ id: z.string() }))
 		.query( async({ input }) => {
 		return await SkillService.skillMgmtControllerLoadRepository(input.id);
 	}),
-	addRepo: t.procedure.input(
+	addRepo: authorProcedure.input(
 		z.object({ rep: skillRepositoryCreationDtoSchema }))
 		.mutation( async({ input }) => {
 		return await SkillService.skillMgmtControllerCreateRepository(input.rep);
 	}),
-	getSkillFromId: t.procedure.input(
+	getSkillFromId: authorProcedure.input(
 		z.object({ id: z.string() }))
 		.query( async({ input }) => {
 		return await SkillService.skillMgmtControllerGetSkill(input.id);
 	}),
-	getSkillsFromIdArray: t.procedure.input(
+	getSkillsFromIdArray: authorProcedure.input(
 		z.object({ ids: z.array(z.string()) }))
 		.query( async({ input }) => {
 		const skills = [];
@@ -37,19 +36,19 @@ export const skillRouter = t.router({
 		}
 		return skills;
 	}),
-	changeSkillById: t.procedure.input(z.object({ 
-		id: z.string(), 
+	changeSkillById: authorProcedure.input(z.object({ 
+		repoId: z.string(), 
 		skill: skillCreationDtoSchema }))
 		.mutation( async({ input }) => {
-		return await SkillService.skillMgmtControllerAdaptSkill(input.id, input.skill);
+		return await SkillService.skillMgmtControllerAdaptSkill(input.repoId, input.skill);
 	}),
-	createSkill: t.procedure.input(z.object({ 
-		id: z.string(), 
+	createSkill: authorProcedure.input(z.object({ 
+		repId: z.string(), 
 		skill: skillCreationDtoSchema }))
 		.mutation( async({ input }) => {
-		return await SkillService.skillMgmtControllerAddSkill(input.id, input.skill);
+		return await SkillService.skillMgmtControllerAddSkill(input.repId, input.skill);
 	}),
-	deleteSkill: t.procedure.input(z.object({ 
+	deleteSkill: authorProcedure.input(z.object({ 
 		id: z.string() })).mutation( async({ input }) => {
 		return await SkillService.skillMgmtControllerDeleteSkill(input.id);
 	})

@@ -203,7 +203,7 @@ export class SkillService {
     }
 
     /**
-     * Adapts an existing skill and returns the adapted skill.
+     * Adapts a skill at the specified repository and returns the adapted skill.
      * @param repositoryId
      * @param requestBody
      * @returns SkillDto
@@ -225,21 +225,19 @@ export class SkillService {
     }
 
     /**
-     * Deletes the specified skill.
      * @param skillId
-     * @returns SkillDto
+     * @returns any
      * @throws ApiError
      */
     public static skillMgmtControllerDeleteSkill(
-        skillId: string
-    ): CancelablePromise<SkillDto> {
+        skillId: string,
+    ): CancelablePromise<Record<string, any>> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/skill-repositories/{repositoryId}/skill/del/{skillId}',
+            url: '/skill-repositories/skill/delete/{skillId}',
             path: {
                 'skillId': skillId,
             },
-            mediaType: 'application/json',
         });
     }
 

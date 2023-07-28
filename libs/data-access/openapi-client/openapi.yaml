@@ -212,6 +212,50 @@ paths:
                 $ref: '#/components/schemas/ResolvedSkillDto'
       tags:
         - Skill
+  /skill-repositories/{repositoryId}/skill/adapt_skill:
+    post:
+      operationId: SkillMgmtController_adaptSkill
+      summary: ''
+      description: Adapts a skill at the specified repository and returns the adapted skill.
+      parameters:
+        - name: repositoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillCreationDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillDto'
+      tags:
+        - Skill
+  /skill-repositories/skill/delete/{skillId}:
+    delete:
+      operationId: SkillMgmtController_delteSkill
+      parameters:
+        - name: skillId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+      tags:
+        - Skill
   /learningpaths/showAllLearningPaths:
     get:
       operationId: LearningPathMgmtController_listLearningPaths
@@ -629,10 +673,6 @@ components:
           type: number
         description:
           type: string
-        parentSkills:
-          type: array
-          items:
-            $ref: '#/components/schemas/SkillCreationDto'
         nestedSkills:
           type: array
           items:
@@ -641,7 +681,6 @@ components:
         - owner
         - name
         - level
-        - parentSkills
         - nestedSkills
     PathGoalDto:
       type: object
