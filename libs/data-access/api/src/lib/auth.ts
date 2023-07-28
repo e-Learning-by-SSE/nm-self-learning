@@ -221,6 +221,7 @@ export const authOptions: NextAuthOptions = {
 			let userFromDb = await database.user.findUniqueOrThrow({
 				where: { name: username },
 				select: {
+					id: true,
 					role: true,
 					image: true,
 					author: { select: { username: true } }
@@ -233,6 +234,7 @@ export const authOptions: NextAuthOptions = {
 					where: { name: username },
 					data: { role: "USER" },
 					select: {
+						id: true,
 						role: true,
 						image: true,
 						author: { select: { username: true } }
@@ -244,6 +246,7 @@ export const authOptions: NextAuthOptions = {
 					where: { name: username },
 					data: { role: "ADMIN" },
 					select: {
+						id: true,
 						role: true,
 						image: true,
 						author: { select: { username: true } }
@@ -252,6 +255,7 @@ export const authOptions: NextAuthOptions = {
 			}
 
 			session.user = {
+				id : userFromDb.id,
 				name: username,
 				role: userFromDb.role,
 				isAuthor: !!userFromDb.author,

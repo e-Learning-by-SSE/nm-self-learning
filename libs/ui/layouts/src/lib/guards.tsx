@@ -16,6 +16,25 @@ export function useRequiredSession() {
 	return session;
 }
 
+export function AuthorGuard({
+	children,
+	error
+}: {
+	/** Custom error message to provide additional information, i.e., `<>Only authors can access this site.</>` */
+	error?: React.ReactNode;
+	/** The content to render if the user is an author. */
+	children?: React.ReactNode;
+}) {
+	const session = useRequiredSession();
+
+	if (!session.data?.user.isAuthor) {
+		return <Unauthorized>{error}</Unauthorized>;
+	}
+
+	// eslint-disable-next-line react/jsx-no-useless-fragment
+	return <>{children}</>;
+}
+
 /**
  * Wraps the given `children` and only displays them, if the user has the `ADMIN` role.
  *
