@@ -10,29 +10,21 @@ import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { useState, useMemo, memo} from "react";
 
-import { Skills} from "@self-learning/types";
 import { FolderIcon, PlusIcon, DocumentTextIcon, FolderDownloadIcon, TrashIcon } from "@heroicons/react/solid";
 import { SkillCreationDto, SkillDto, UnresolvedSkillRepositoryDto } from "@self-learning/competence-rep";
 import { trpc } from "@self-learning/api-client";
-import { set } from "date-fns";
-
 
 export default memo(AlternateSkillEditorRightSide);
 
 function AlternateSkillEditorRightSide({
     unresolvedRep,
-	changeSelectedItem,
-    onConfirm
+	changeSelectedItem
 } : {
     unresolvedRep: UnresolvedSkillRepositoryDto,
 	changeSelectedItem: (skilltree: SkillDto) => void;
-    onConfirm: (skilltree: Skills) => void;
 }) {
 
-	
 
-
-	const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
     const [displayName, setDisplayName] = useState("");
 
 	const skillArray = unresolvedRep.skills;
@@ -58,7 +50,7 @@ function AlternateSkillEditorRightSide({
 
 				<SearchField
 					placeholder="Suche nach Skill-Trees"
-					onChange={e => {setDisplayName(e.target.value); setActiveRowIndex(null)}}
+					onChange={e => {setDisplayName(e.target.value)}}
 				/>
 
 				<Table
@@ -70,7 +62,7 @@ function AlternateSkillEditorRightSide({
 					}
 				>
 					{filteredSkillTrees.map((element) => (
-						<ListElement skillInfo={{skillId: element, repoId: unresolvedRep.id}} 
+						<ListElement key={ "baseDir child:" + element} skillInfo={{skillId: element, repoId: unresolvedRep.id}} 
 							color={0 * 100} 
 							level={1}
 							changeSelectedItem={changeSelectedItem} />
@@ -238,7 +230,7 @@ export function ListElement({
 							</tr>
 							{open && skill.nestedSkills.length > 0 && (
 								skill.nestedSkills.map((element) =>
-								<ListElement skillInfo={{skillId: element, repoId: skillInfo.repoId}}
+								<ListElement key={skill.id + skill.level + "child:" + element} skillInfo={{skillId: element, repoId: skillInfo.repoId}}
 									changeSelectedItem={changeSelectedItem}
 									color={(skill.level) * 100}
 									level={level + 1} 

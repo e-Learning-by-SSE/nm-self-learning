@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, memo } from 'react';
+import { useEffect, useMemo, memo } from 'react';
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { SkillCreationDto, SkillDto, SkillRepositoryCreationDto } from '@self-learning/competence-rep';
+import { SkillDto, SkillRepositoryCreationDto } from '@self-learning/competence-rep';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { skillRepositoryCreationDtoSchema } from 'libs/data-access/openapi-client/src/models/SkillRepositoryCreationDto';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -35,23 +35,27 @@ export function SkillInfoForm(
       }
     }, [session.data?.user.id, skill]);
 
-    const [currentSkill, setCurrentSkill] = useState<SkillCreationFormModel>(getSkillOrDefault);
-
-    useEffect(() => {
-      setCurrentSkill(getSkillOrDefault);
-    }, [getSkillOrDefault, skill]);
-
     const form = useForm ({ 
-      defaultValues: currentSkill,
+      defaultValues: getSkillOrDefault,
       resolver: zodResolver(skillCreationFormSchema),
     });
 
     const errors = form.formState.errors;
+
+
+    useEffect(() => {
+      const skill = getSkillOrDefault
+      form.setValue("owner", skill.owner);
+      form.setValue("name", skill.name);
+      form.setValue("level", skill.level);
+      form.setValue("description", skill.description);
+      form.setValue("nestedSkills", skill.nestedSkills);
+    }, [form, getSkillOrDefault]);
+
   
     const onSubmit = (data: SkillCreationFormModel) => {
       console.log(data);
     }
-    console.log("render")
 
     return (
       <FormProvider {...form}>
@@ -63,7 +67,6 @@ export function SkillInfoForm(
                 <input
                   type="text"
                   className='textfield'
-                  value={currentSkill.name}
                   {...form.register('name')}
                 />
               </LabeledField>
@@ -71,13 +74,11 @@ export function SkillInfoForm(
                 <input
                   type="text"
                   className='textfield'
-                  value={currentSkill.level}
                   {...form.register('level')}
                 />
               </LabeledField>
               <LabeledField label="Beschreibung" error={errors.description?.message}>
                 <textarea
-                  value={currentSkill.description}
                   {...form.register('description')}
                 />
               </LabeledField>
@@ -86,7 +87,7 @@ export function SkillInfoForm(
                   type="text"
                   className='textfield'
                   readOnly
-                  value={currentSkill.nestedSkills.map((element: string) => element).join(', ')}
+                  value={form.getValues("nestedSkills")}
                 />
               </LabeledField>
               <div className="flex justify-between">

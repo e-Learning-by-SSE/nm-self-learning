@@ -1,5 +1,4 @@
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { Skills } from '@self-learning/types';
 import AlternateSkillEditorRightSide from './alternate-skill-editorRightSide';
 import { RepInfoFormMemorized, SkillInfoForm } from './alternate-skill-info-form';
 import { useState } from 'react';
@@ -19,11 +18,9 @@ const getRepositoryCreationDto = (unresolvedRep: UnresolvedSkillRepositoryDto) =
 
 
 export function AlternateSkillEditor({
-    repositoryID,
-    onConfirm
+    repositoryID
 }: {
     repositoryID: string
-    onConfirm: (skilltree: Skills) => void;
 }) {
 
     
@@ -72,7 +69,7 @@ export function AlternateSkillEditor({
                             ) : (
                                 <div>
                                     {skillTrees && (
-                                        <AlternateSkillEditorRightSide unresolvedRep={skillTrees} changeSelectedItem={changeSelectedItem} onConfirm={onConfirm} />
+                                        <AlternateSkillEditorRightSide unresolvedRep={skillTrees} changeSelectedItem={changeSelectedItem} />
                                     )}
                                 </div>
                             )}
