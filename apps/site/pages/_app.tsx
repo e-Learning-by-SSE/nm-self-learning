@@ -65,19 +65,17 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				session={pageProps.session}
 				basePath={useRouter().basePath + "/api/auth"}
 			>
-				<StrictMode>
-					<Head>
-						<title>Self-Learning</title>
-					</Head>
-					<MessagePortal />
-					<Navbar />
-					<main className="grid grow">
-						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-					</main>
-					<Toaster containerStyle={{ top: 96 }} position="top-right" />
-					<Footer />
-					{/* <ReactQueryDevtools position="bottom-right" /> */}
-				</StrictMode>
+				<Head>
+					<title>Self-Learning</title>
+				</Head>
+				<MessagePortal />
+				<Navbar />
+				<main className="grid grow">
+					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
+				</main>
+				<Toaster containerStyle={{ top: 96 }} position="top-right" />
+				<Footer />
+				{/* <ReactQueryDevtools position="bottom-right" /> */}
 			</SessionProvider>
 		</PlausibleProvider>
 	);
