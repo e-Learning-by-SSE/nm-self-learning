@@ -1,0 +1,11 @@
+.slideIn {
+	/* height: 50px; */
+	top: -50px;
+	animation: slideIn 1.5s forwards;
+}
+
+@keyframes slideIn {
+	to {
+		top: 0;
+	}
+}
