@@ -1,3 +1,3 @@
 npm run prisma generate
-npx prisma db push --accept-data-loss
-npx prisma db seed
+npm run prisma db push --accept-data-loss
+npm run prisma db seed
