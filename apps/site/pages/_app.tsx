@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 // import { ReactQueryDevtools } from "react-query/devtools";
 import "./styles.css";
 import "katex/dist/katex.css";
-import { StrictMode, useEffect } from "react";
+import { useEffect } from "react";
 import { init } from "@socialgouv/matomo-next";
 import PlausibleProvider from "next-plausible";
 
