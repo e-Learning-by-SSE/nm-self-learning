@@ -1,11 +1,13 @@
 import { useEffect, useMemo, memo } from 'react';
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { SkillDto, SkillRepositoryCreationDto } from '@self-learning/competence-rep';
+import { SkillDto, SkillRepositoryDto } from '@self-learning/competence-rep';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { skillRepositoryCreationDtoSchema } from 'libs/data-access/openapi-client/src/models/SkillRepositoryCreationDto';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SkillCreationFormModel, skillCreationFormSchema } from '@self-learning/types';
 import { useSession } from 'next-auth/react';
+import { trpc } from '@self-learning/api-client';
+import { skillRepositoryDtoSchema } from 'libs/data-access/openapi-client/src/models/SkillRepositoryDto';
+import { showToast } from '@self-learning/ui/common';
 
 
 
@@ -107,19 +109,37 @@ export function SkillInfoForm(
 export const RepInfoFormMemorized = memo(RepInfoForm);
 
 function RepInfoForm(
-    { repository }: { repository: SkillRepositoryCreationDto}
+    { repository }: { repository: SkillRepositoryDto}
 ) {
 
 
   const form = useForm ({
     defaultValues: repository,
-    resolver: zodResolver(skillRepositoryCreationDtoSchema),
+    resolver: zodResolver(skillRepositoryDtoSchema),
   });
   const errors = form.formState.errors;
 
-  const onSubmit = (data: SkillRepositoryCreationDto) => {
-    console.log(data);
-    //TODO: send data to backend
+  const { mutateAsync: changeRep } = trpc.skill.changeRepo.useMutation();
+
+  const onSubmit = (data: SkillRepositoryDto) => {
+    console.log(data)
+    try {
+      changeRep({rep: data,repoId: data.id});
+      showToast({
+        type: "success",
+        title: "Repositorie gespeichert!",
+        subtitle: ""
+      });
+
+    } catch (error) {
+      if(error instanceof Error) {
+        showToast({
+          type: "error",
+          title: "Repositorie konnte nicht gespeichert werden!",
+          subtitle: error.message ?? ""
+        });
+      }
+    }
   }
 
 

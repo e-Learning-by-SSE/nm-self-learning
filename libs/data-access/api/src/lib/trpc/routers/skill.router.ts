@@ -3,14 +3,13 @@ import * as z from "zod";
 import { SkillService } from "@self-learning/competence-rep";
 import { skillCreationDtoSchema } from "libs/data-access/openapi-client/src/models/SkillCreationDto";
 import { skillRepositoryCreationDtoSchema } from "libs/data-access/openapi-client/src/models/SkillRepositoryCreationDto";
+import { skillRepositoryDtoSchema } from "libs/data-access/openapi-client/src/models/SkillRepositoryDto";
 
 //TODO: SECURITY: Check if user is allowed to do this
 
 export const skillRouter = t.router({
 	getRepsFromUser: authorProcedure.query(async ({ ctx }) => {
-		//make owner dynamic
-		console.log(ctx.user.id)
-		return (await SkillService.skillMgmtControllerListRepositories("1")).repositories;
+		return (await SkillService.skillMgmtControllerListRepositories(ctx.user.id)).repositories;
 	}),
 	getUnresolvedSkillsFromRepo: authorProcedure.input(
 		z.object({ id: z.string() }))
@@ -21,6 +20,13 @@ export const skillRouter = t.router({
 		z.object({ rep: skillRepositoryCreationDtoSchema }))
 		.mutation( async({ input }) => {
 		return await SkillService.skillMgmtControllerCreateRepository(input.rep);
+	}),
+	changeRepo: authorProcedure.input(
+		z.object({ 
+			repoId : z.string(),
+			rep: skillRepositoryDtoSchema }))
+		.mutation( async({ input }) => {
+		return await SkillService.skillMgmtControllerAdaptRepo(input.repoId, input.rep);
 	}),
 	getSkillFromId: authorProcedure.input(
 		z.object({ id: z.string() }))

@@ -8,6 +8,7 @@ export type UnresolvedSkillRepositoryDto = {
     id: string;
     taxonomy?: string;
     description?: string;
+    access_rights?: Record<string, any>;
     name: string;
     version?: string;
     skills: Array<string>;

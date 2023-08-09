@@ -167,6 +167,45 @@ export class SkillService {
     }
 
     /**
+     * Adapts a repository and returns the adapted it.
+     * @param repositoryId
+     * @param requestBody
+     * @returns any
+     * @throws ApiError
+     */
+    public static skillMgmtControllerAdaptRepo(
+        repositoryId: string,
+        requestBody: SkillRepositoryDto,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/skill-repositories/{repositoryId}/adapt',
+            path: {
+                'repositoryId': repositoryId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+
+    /**
+     * @param repositoryId
+     * @returns any
+     * @throws ApiError
+     */
+    public static skillMgmtControllerDeleteRepo(
+        repositoryId: string,
+    ): CancelablePromise<Record<string, any>> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/skill-repositories/{repositoryId}',
+            path: {
+                'repositoryId': repositoryId,
+            },
+        });
+    }
+
+    /**
      * Returns the specified skill.
      * @param skillId
      * @returns SkillDto

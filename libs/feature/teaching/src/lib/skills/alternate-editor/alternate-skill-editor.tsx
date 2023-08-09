@@ -4,16 +4,20 @@ import { RepInfoFormMemorized, SkillInfoForm } from './alternate-skill-info-form
 import { useState } from 'react';
 import { trpc } from '@self-learning/api-client';
 import { Divider, LoadingBox } from '@self-learning/ui/common';
-import { SkillDto, SkillRepositoryCreationDto, UnresolvedSkillRepositoryDto } from '@self-learning/competence-rep';
+import { SkillDto, SkillRepositoryDto, UnresolvedSkillRepositoryDto } from '@self-learning/competence-rep';
 
 
 
-const getRepositoryCreationDto = (unresolvedRep: UnresolvedSkillRepositoryDto) => {
+const getRepositoryDto = (unresolvedRep: UnresolvedSkillRepositoryDto) => {
     return ({
         owner: unresolvedRep.owner,
-        name: unresolvedRep.name,
+        id: unresolvedRep.id,
+        taxonomy: unresolvedRep.taxonomy,
         description: unresolvedRep.description,
-        } as SkillRepositoryCreationDto )
+        access_rights: unresolvedRep.access_rights,
+        name: unresolvedRep.name,
+        version: unresolvedRep.version,
+        } as SkillRepositoryDto )
 }
 
 
@@ -54,7 +58,7 @@ export function AlternateSkillEditor({
                                             <>
                                                 {skillTrees && (
                                                     <>
-                                                        <RepInfoFormMemorized repository={getRepositoryCreationDto(skillTrees)} />
+                                                        <RepInfoFormMemorized repository={getRepositoryDto(skillTrees)} />
                                                         <Divider /> 
                                                     </>
                                                 )}

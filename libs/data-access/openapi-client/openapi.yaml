@@ -172,6 +172,46 @@ paths:
                 $ref: '#/components/schemas/SkillDto'
       tags:
         - Skill
+  /skill-repositories/{repositoryId}/adapt:
+    post:
+      operationId: SkillMgmtController_adaptRepo
+      summary: ''
+      description: Adapts a repository and returns the adapted it.
+      parameters:
+        - name: repositoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillRepositoryDto'
+      responses:
+        '201':
+          description: ''
+      tags:
+        - Skill
+  /skill-repositories/{repositoryId}:
+    delete:
+      operationId: SkillMgmtController_deleteRepo
+      parameters:
+        - name: repositoryId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+      tags:
+        - Skill
   /skill-repositories/skill/{skillId}:
     get:
       operationId: SkillMgmtController_getSkill
@@ -511,6 +551,8 @@ components:
           type: string
         description:
           type: string
+        access_rights:
+          type: object
         name:
           type: string
         version:
@@ -539,6 +581,8 @@ components:
           type: string
         description:
           type: string
+        access_rights:
+          type: object
         name:
           type: string
         version:
@@ -658,6 +702,8 @@ components:
           type: string
         version:
           type: string
+        access_rights:
+          type: object
       required:
         - owner
         - name

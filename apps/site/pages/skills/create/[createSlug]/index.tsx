@@ -3,15 +3,13 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { trpc } from "@self-learning/api-client";
 import { SkillRepositoryCreationDto } from "@self-learning/competence-rep";
+import { useSession } from "next-auth/react";
 
 
-export default function CreateSkillTree({
-    onFinished
-}: {
-    onFinished: (skilltree: {name : string}) => void;
-}) {
+export default function CreateSkillTree() {
 
     const router = useRouter();
+    const session = useSession();
 
     //for creating a new rep
 	const { mutateAsync: createRep } = trpc.skill.addRepo.useMutation();
@@ -25,9 +23,8 @@ export default function CreateSkillTree({
             if (router.query.createSlug && typeof router.query.createSlug === "string") {
                 if (router.query.createSlug === "new") {
                     setIsLoading(true);
-                    //TODO make owner dynamic
                     const newRep = {
-                        owner: "5",
+                        owner: session.data?.user.id,
                         name: "New Skilltree: " + Date.now(),
                         description: "New Skilltree Description",
                     } as SkillRepositoryCreationDto;
@@ -42,7 +39,7 @@ export default function CreateSkillTree({
         };
 
         createNewRep();
-    }, [router.query.createSlug, createRep]);
+    }, [router.query.createSlug, createRep, session.data?.user.id]);
 
    
     if (isLoading) {
@@ -51,7 +48,7 @@ export default function CreateSkillTree({
 
     return(
         <div>
-            <AlternateSkillEditor repositoryID={repositoryID} onConfirm={onFinished} />
+            <AlternateSkillEditor repositoryID={repositoryID} />
         </div>
     ); 
 

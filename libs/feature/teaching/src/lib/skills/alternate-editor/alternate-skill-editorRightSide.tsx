@@ -24,10 +24,11 @@ function AlternateSkillEditorRightSide({
 	changeSelectedItem: (skilltree: SkillDto) => void;
 }) {
 
+	
 
     const [displayName, setDisplayName] = useState("");
 
-	const skillArray = unresolvedRep.skills;
+	const [skillArray, setSkillArray] = useState<string[]>(unresolvedRep.skills);
 
 	const filteredSkillTrees = useMemo(() => {
 		if (!skillArray) return [];
@@ -41,11 +42,50 @@ function AlternateSkillEditorRightSide({
 
 
 
+	//create skills
+	const { mutateAsync: createSkill } =  trpc.skill.createSkill.useMutation();
+
+	const createSkillAndSubmit = async () => {
+		console.log(unresolvedRep)
+		const newSkill = {
+			owner: unresolvedRep.owner,
+			name: "New Skill: " + Date.now(),
+			level: 0,
+			description: "",
+			nestedSkills: []
+		} as SkillCreationDto
+
+		try {
+			const createdSkill = await createSkill({repId: unresolvedRep.id, skill: newSkill});
+			showToast({
+				type: "success",
+				title: "Skill gespeichert!",
+				subtitle: ""
+			});
+			changeSelectedItem(createdSkill);
+			setSkillArray([...skillArray, createdSkill.id]);
+		} catch (error) {
+			if(error instanceof Error) {
+				showToast({
+					type: "error",
+					title: "Skill konnte nicht gespeichert werden!",
+					subtitle: error.message ?? ""
+				});
+			}
+		}
+	}
+
+
+
     return (
         <div>
             <CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">SkillTrees</h1>
+					<button className="btn-primary" onClick={() => createSkillAndSubmit()}>
+						<PlusIcon className="icon h-5" />
+						<span>Skill hinzufügen</span>
+					</button>
 				</div>
 
 				<SearchField
@@ -62,8 +102,9 @@ function AlternateSkillEditorRightSide({
 					}
 				>
 					{filteredSkillTrees.map((element) => (
-						<ListElement key={ "baseDir child:" + element} skillInfo={{skillId: element, repoId: unresolvedRep.id}} 
+						<ListElementMemorized key={ "baseDir child:" + element} skillInfo={{skillId: element, repoId: unresolvedRep.id}} 
 							color={0 * 100} 
+							owner={unresolvedRep.owner}
 							level={1}
 							changeSelectedItem={changeSelectedItem} />
 					))}
@@ -75,16 +116,19 @@ function AlternateSkillEditorRightSide({
     );
 }
 
-
+//used memo to prevent rerendering of the form
+export const ListElementMemorized = memo(ListElement);
 
 export function ListElement({
 	skillInfo,
 	level,
 	changeSelectedItem,
+	owner,
 	color
 } : {
 	skillInfo: {skillId: string, repoId: string},
 	level: number,
+	owner: string
 	changeSelectedItem: (skilltree: SkillDto) => void,
 	color: number
 }) {
@@ -105,9 +149,6 @@ export function ListElement({
 	const addSkill = async () => {
 		if(isLoading) return;
 		if(!skill) return;
-
-		//TODO: make owner dynamic
-		const owner = "5"
 
 		const newSkill = {
 			owner: owner,
@@ -230,9 +271,10 @@ export function ListElement({
 							</tr>
 							{open && skill.nestedSkills.length > 0 && (
 								skill.nestedSkills.map((element) =>
-								<ListElement key={skill.id + skill.level + "child:" + element} skillInfo={{skillId: element, repoId: skillInfo.repoId}}
+								<ListElementMemorized key={skill.id + skill.level + "child:" + element} skillInfo={{skillId: element, repoId: skillInfo.repoId}}
 									changeSelectedItem={changeSelectedItem}
 									color={(skill.level) * 100}
+									owner={owner}
 									level={level + 1} 
 									/>
 								)
