@@ -2,7 +2,6 @@ import {  AlternateSkillEditor } from "@self-learning/teaching";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { trpc } from "@self-learning/api-client";
-import { SkillRepositoryCreationDto } from "@self-learning/competence-rep";
 import { useSession } from "next-auth/react";
 
 
@@ -22,12 +21,12 @@ export default function CreateSkillTree() {
         const createNewRep = async () => {
             if (router.query.createSlug && typeof router.query.createSlug === "string") {
                 if (router.query.createSlug === "new") {
-                    setIsLoading(true);
-                    const newRep = {
-                        owner: session.data?.user.id,
+                    setIsLoading(true);                 
+                    const newRep: SkillRepositoryCreationDto = {
+                        ownerId: "5",
                         name: "New Skilltree: " + Date.now(),
                         description: "New Skilltree Description",
-                    } as SkillRepositoryCreationDto;
+                    };
 
                     const result = await createRep({ rep: newRep });
                     setRepositoryID(result.id);

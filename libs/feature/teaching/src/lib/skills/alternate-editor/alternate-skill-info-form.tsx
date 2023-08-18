@@ -1,6 +1,6 @@
 import { useEffect, useMemo, memo } from 'react';
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { SkillDto, SkillRepositoryDto } from '@self-learning/competence-rep';
+import { SkillDto, SkillRepositoryCreationDto, SkillServiceZodSchemas } from '@self-learning/competence-rep';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SkillCreationFormModel, skillCreationFormSchema } from '@self-learning/types';
@@ -8,7 +8,6 @@ import { useSession } from 'next-auth/react';
 import { trpc } from '@self-learning/api-client';
 import { skillRepositoryDtoSchema } from 'libs/data-access/openapi-client/src/models/SkillRepositoryDto';
 import { showToast } from '@self-learning/ui/common';
-
 
 
 export function SkillInfoForm(
@@ -115,7 +114,11 @@ function RepInfoForm(
 
   const form = useForm ({
     defaultValues: repository,
+<<<<<<< Updated upstream
     resolver: zodResolver(skillRepositoryDtoSchema),
+=======
+    resolver: zodResolver(SkillServiceZodSchemas.SkillRepositoryCreationDto),
+>>>>>>> Stashed changes
   });
   const errors = form.formState.errors;
 

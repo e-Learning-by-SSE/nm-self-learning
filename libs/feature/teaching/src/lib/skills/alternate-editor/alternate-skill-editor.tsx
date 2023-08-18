@@ -29,15 +29,12 @@ export function AlternateSkillEditor({
 
     
     const { data: skillTrees, isLoading } =  trpc.skill.getUnresolvedSkillsFromRepo.useQuery({ id: repositoryID });
-
-
     const [selectedItem, setSelectedItem] = useState<SkillDto|null>(null);
 
 
     const changeSelectedItem = (item: SkillDto) => {
         setSelectedItem(item);
     }
-
 
     return(
         <div className="bg-gray-50">
