@@ -1,17 +1,15 @@
 import { useEffect, useMemo, memo } from 'react';
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { SkillDto, SkillRepositoryCreationDto, SkillServiceZodSchemas } from '@self-learning/competence-rep';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SkillCreationFormModel, skillCreationFormSchema } from '@self-learning/types';
+import { SkillCreationFormModel, SkillRepositoryCreation, skillCreationFormSchema, skillRepositoryCreationSchema } from '@self-learning/types';
 import { useSession } from 'next-auth/react';
 import { trpc } from '@self-learning/api-client';
-import { skillRepositoryDtoSchema } from 'libs/data-access/openapi-client/src/models/SkillRepositoryDto';
 import { showToast } from '@self-learning/ui/common';
 
 
 export function SkillInfoForm(
-    { skill }: { skill: SkillDto | null }
+    { skill }: { skill: SkillCreationFormModel | null }
 ) {
 
     const session = useSession();
@@ -29,7 +27,6 @@ export function SkillInfoForm(
         return {
           owner: session.data?.user.id,
           name: skill.name,
-          level: skill.level,
           description: skill.description,
           nestedSkills: skill.nestedSkills,
           } as SkillCreationFormModel;
@@ -108,26 +105,20 @@ export function SkillInfoForm(
 export const RepInfoFormMemorized = memo(RepInfoForm);
 
 function RepInfoForm(
-    { repository }: { repository: SkillRepositoryDto}
+    { repository }: { repository: SkillRepositoryCreation}
 ) {
-
-
   const form = useForm ({
     defaultValues: repository,
-<<<<<<< Updated upstream
-    resolver: zodResolver(skillRepositoryDtoSchema),
-=======
-    resolver: zodResolver(SkillServiceZodSchemas.SkillRepositoryCreationDto),
->>>>>>> Stashed changes
+    resolver: zodResolver(skillRepositoryCreationSchema)
   });
   const errors = form.formState.errors;
 
   const { mutateAsync: changeRep } = trpc.skill.changeRepo.useMutation();
 
-  const onSubmit = (data: SkillRepositoryDto) => {
+  const onSubmit = (data: SkillRepositoryCreation) => {
     console.log(data)
     try {
-      changeRep({rep: data,repoId: data.id});
+      changeRep({rep: data, repoId: data.id ?? "0"});
       showToast({
         type: "success",
         title: "Repositorie gespeichert!",
