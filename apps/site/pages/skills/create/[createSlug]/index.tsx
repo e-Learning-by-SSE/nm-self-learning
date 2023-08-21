@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
+import { SkillRepositoryCreation } from "@self-learning/types";
 
 
 export default function CreateSkillTree() {
@@ -22,8 +23,8 @@ export default function CreateSkillTree() {
             if (router.query.createSlug && typeof router.query.createSlug === "string") {
                 if (router.query.createSlug === "new") {
                     setIsLoading(true);                 
-                    const newRep: SkillRepositoryCreationDto = {
-                        ownerId: "5",
+                    const newRep: SkillRepositoryCreation = {
+                        ownerId: session.data?.user.id ?? "-1",
                         name: "New Skilltree: " + Date.now(),
                         description: "New Skilltree Description",
                     };
