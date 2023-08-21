@@ -182,6 +182,8 @@ model Lesson {
   authors      Author[]          @relation("AuthorToLesson")
   license      License @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
   licenseId    Int
+  requirements Skill[] @relation("requirements")
+  teachingGoals Skill[] @relation("teachingGoals")
 }
 
 model CompletedLesson {
@@ -264,3 +266,45 @@ model License {
     // Back reference required by Prisma -> Provides overview about usage
     lessons           Lesson[]
 }
+
+
+model SkillRepository {
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  skills        Skill[]
+  ownerId       String
+
+  @@unique([ownerId, name])
+  @@map("skill-repositories")
+}
+
+model Skill {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  repositoryId      String
+  repository        SkillRepository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  // parentSkills      Skill[]    @relation("parentSkills")
+  // nestedSkills      Skill[]    @relation("parentSkills")
+  
+  // pathTeachingGoals PathGoal[] @relation("pathTeachingGoal")
+  // requirements      PathGoal[] @relation("requirements")
+
+  // Use in Learning Objects
+  goalsOf             Lesson[]      @relation("teachingGoals")
+  requirementsOf      Lesson[]      @relation("requirements")
+
+  @@unique([repositoryId, name])
+  @@map("skills")
+}
+
+// MS to @Sascha: is this relation really needed?
+// model PathGoal {
+//   id                String         @id @default(cuid())
+//   pathTeachingGoals Skill[]        @relation("pathTeachingGoal")
+//   requirements      Skill[]        @relation("requirements")
+
+//   @@map("path_goals")
+// }
