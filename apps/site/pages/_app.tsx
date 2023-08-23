@@ -1,5 +1,5 @@
 import type { AppRouter } from "@self-learning/api";
-import { Navbar, Footer } from "@self-learning/ui/layouts";
+import { Navbar, Footer, MessagePortal } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
@@ -11,7 +11,9 @@ import { useRouter } from "next/router";
 // import { ReactQueryDevtools } from "react-query/devtools";
 import "./styles.css";
 import "katex/dist/katex.css";
-
+import { useEffect } from "react";
+import { init } from "@socialgouv/matomo-next";
+import PlausibleProvider from "next-plausible";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -45,18 +47,36 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		  (Component as any).getLayout(Component, pageProps)
 		: null;
 
+	useEffect(() => {
+		const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
+		const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
+		if (MATOMO_URL && MATOMO_SITE_ID) {
+			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
+		}
+	}, []);
+
 	return (
-		<SessionProvider session={(pageProps as any).session} basePath={ useRouter().basePath + "/api/auth" }>
-			<Head>
-				<title>Self-Learning</title>
-			</Head>
-			<Navbar />
-			<main className="grid grow">
-				{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-			</main>
-			<Toaster containerStyle={{ top: 96 }} position="top-right" />
-			<Footer />
-			{/* <ReactQueryDevtools position="bottom-right" /> */}
-		</SessionProvider>
+		<PlausibleProvider
+			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
+			customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
+			trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
+		>
+			<SessionProvider
+				session={pageProps.session}
+				basePath={useRouter().basePath + "/api/auth"}
+			>
+				<Head>
+					<title>Self-Learning</title>
+				</Head>
+				<MessagePortal />
+				<Navbar />
+				<main className="grid grow">
+					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
+				</main>
+				<Toaster containerStyle={{ top: 96 }} position="top-right" />
+				<Footer />
+				{/* <ReactQueryDevtools position="bottom-right" /> */}
+			</SessionProvider>
+		</PlausibleProvider>
 	);
 }

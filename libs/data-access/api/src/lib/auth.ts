@@ -119,7 +119,7 @@ function getProviders(): Provider[] {
 			profile(profile) {
 				return {
 					id: profile.sub,
-					name:  profile.preferred_username ?? mailToUsername(profile.email),
+					name: profile.preferred_username ?? mailToUsername(profile.email),
 					email: profile.email,
 					image: profile.picture,
 					displayName: profile.name

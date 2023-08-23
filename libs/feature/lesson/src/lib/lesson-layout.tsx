@@ -46,6 +46,8 @@ async function getLesson(slug: string) {
 					licenseText: true
 				}
 			},
+			lessonType: true,
+			selfRegulatedQuestion: true,
 			authors: {
 				select: {
 					displayName: true,

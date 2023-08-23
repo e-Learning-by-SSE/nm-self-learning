@@ -33,7 +33,15 @@ export function Tab({ children }: { children: ReactNode }) {
 						{children}
 					</span>
 
-					{selected && <span className="h-[2px] w-full bg-secondary"></span>}
+					<div className="flex w-full flex-row gap-2">
+						<span
+							className={
+								selected
+									? "h-[2px] flex-1 bg-secondary"
+									: "h-[2px] flex-1 bg-gray-400"
+							}
+						></span>
+					</div>
 				</li>
 			)}
 		</HeadlessTab>

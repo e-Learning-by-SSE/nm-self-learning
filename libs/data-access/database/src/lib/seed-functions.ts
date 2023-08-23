@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, LessonType } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
@@ -22,7 +22,9 @@ export function createLesson(
 	description: string | null,
 	content: LessonContent,
 	questions: QuizContent,
-	licenseId?: number
+	licenseId?: number | null,
+	lessonType?: LessonType,
+	selfRegulatedQuestion?: string
 ) {
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
@@ -31,12 +33,14 @@ export function createLesson(
 		subtitle: subtitle,
 		description: description,
 		content: content,
+		lessonType: lessonType ?? LessonType.TRADITIONAL,
+		selfRegulatedQuestion: selfRegulatedQuestion,
 		quiz: {
 			questions,
 			config: null
 		} satisfies Quiz,
 		meta: {},
-		licenseId: licenseId ?? 100
+		licenseId: licenseId ?? 0
 	};
 
 	lesson.meta = createLessonMeta(lesson as any) as unknown as Prisma.JsonObject;
@@ -160,6 +164,7 @@ export function createMultipleChoice(
 			answerId: faker.random.alphaNumeric(8),
 			...answer
 		})),
+		questionStep: 1,
 		hints: hintsData
 	};
 }
@@ -272,7 +277,7 @@ export async function seedCaseStudy(
 		data: chapters.flatMap(chapter =>
 			chapter.content.map(lesson => ({
 				...lesson,
-				licenseId: lesson.licenseId ?? 1
+				licenseId: lesson.licenseId ?? 0
 			}))
 		)
 	});

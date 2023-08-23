@@ -1,3 +1,4 @@
+import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
@@ -9,11 +10,10 @@ export default function CreateLessonPage() {
 	const session = useRequiredSession();
 	const authorUsername = session.data?.user.name;
 	const router = useRouter();
-	const defaultLicense = trpc.licenseRouter.getDefault.useQuery();
 
 	async function onConfirm(lesson: LessonFormModel) {
 		//don't save lesson without content
-		if(lesson.content.length === 0) {
+		if (lesson.content.length === 0) {
 			showToast({
 				type: "error",
 				title: "Fehler",
@@ -46,7 +46,6 @@ export default function CreateLessonPage() {
 			<Unauthorized>Um eine Lerneinheit zu erstellen, musst du ein Autor sein.</Unauthorized>
 		);
 	}
-
 	return (
 		<LessonEditor
 			onConfirm={onConfirm}
@@ -57,10 +56,12 @@ export default function CreateLessonPage() {
 				subtitle: "",
 				description: "",
 				imgUrl: "",
-				licenseId: defaultLicense.data?.licenseId ?? 1,
+				licenseId: null,
 				quiz: { questions: [], config: null },
 				content: [],
-				authors: [{ username: authorUsername }]
+				authors: [{ username: authorUsername ?? "" }],
+				lessonType: LessonType.TRADITIONAL,
+				selfRegulatedQuestion: null
 			}}
 		/>
 	);

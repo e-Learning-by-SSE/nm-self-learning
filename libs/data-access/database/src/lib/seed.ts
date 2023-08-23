@@ -164,45 +164,6 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 	)
 ];
 
-const license: Prisma.LicenseCreateManyInput[] = [
-	// Default License -> Should come first
-	{
-		licenseId: 1,
-		name: "CC BY 4.0",
-		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
-		logoUrl: "/licenses/cc-by.svg",
-		oerCompatible: true,
-		selectable: true,
-		defaultSuggestion: true
-	},
-	{
-		licenseId: 2,
-		name: "CC BY SA 4.0",
-		url: "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
-		logoUrl: "/licenses/cc-by-sa.svg",
-		oerCompatible: true,
-		selectable: true
-	},
-	{
-		licenseId: 3,
-		name: "CC 4.0",
-		url: "https://creativecommons.org/publicdomain/zero/1.0/deed.de",
-		logoUrl: "/licenses/cc.svg",
-		oerCompatible: true,
-		selectable: true
-	},
-
-	// Should come last
-	{
-		licenseId: 100,
-		name: "Uni Hi Intern",
-		licenseText:
-			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
-		oerCompatible: false,
-		selectable: true
-	}
-];
-
 async function seed(): Promise<void> {
 	const start = Date.now();
 
@@ -218,18 +179,15 @@ async function seed(): Promise<void> {
 
 	console.log("😅 Seeding...");
 
-	await prisma.license.createMany({ data: license });
-	console.log("✅ Licenses");
-
 	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
 		faker.seed(1);
 		await seedDemos();
 	}
 
 	await prisma.subject.createMany({ data: subjects });
-	console.log("✅ Subjects");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 	await prisma.specialization.createMany({ data: specializations });
-	console.log("✅ Specialties");
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Specialities");
 
 	await psychologyExample();
 	await mathExample();

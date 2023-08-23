@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
-import {  License, licenseSchema } from "@self-learning/types";
+import { License, licenseSchema } from "@self-learning/types";
 import {
 	Dialog,
 	DialogActions,
@@ -8,96 +8,88 @@ import {
 	OnDialogCloseFn,
 	showToast
 } from "@self-learning/ui/common";
-import { LabeledField} from "@self-learning/ui/forms";
+import { LabeledField } from "@self-learning/ui/forms";
 import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
-
-
 export function CreateLicenseDialog({
-    licenseId,
-    onClose
+	licenseId,
+	onClose
 }: {
-    licenseId: number | null,
-    onClose: OnDialogCloseFn<License>;
+	licenseId: number;
+	onClose: OnDialogCloseFn<License>;
 }) {
-    const { mutateAsync: createLicense } =  trpc.licenseRouter.createAsAdmin.useMutation();
+	const { mutateAsync: createLicense } = trpc.licenseRouter.createAsAdmin.useMutation();
 
-    async function onSubmit(license: License) {
-        try {
-            const result = await createLicense({license: license});
-            showToast({
-                type: "success",
-                title: "Lizenz erstellt!",
-                subtitle: result.name
-            });
-            onClose(result);
-        } catch (err) {
-            showToast({
-                type: "error",
-                title: "Lizenz konnte nicht erstellt werden!",
-                subtitle: "Das Erstellen der Lizenz ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
-            });
-        }
-    }
+	async function onSubmit(license: License) {
+		try {
+			const result = await createLicense({ license: license });
+			showToast({
+				type: "success",
+				title: "Lizenz erstellt!",
+				subtitle: result.name
+			});
+			onClose(result);
+		} catch (err) {
+			showToast({
+				type: "error",
+				title: "Lizenz konnte nicht erstellt werden!",
+				subtitle:
+					"Das Erstellen der Lizenz ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
+			});
+		}
+	}
 
-    return (
-        <LicenseModal licenseId={licenseId} onSubmit={onSubmit} onClose={onClose} />
-    );
-
-
+	return <LicenseModal licenseId={licenseId} onSubmit={onSubmit} onClose={onClose} />;
 }
 
 export function EditLicenseDialog({
-    licenseId,
-    onClose
+	licenseId,
+	onClose
 }: {
-    licenseId: number,
-    onClose: OnDialogCloseFn<License>;
+	licenseId: number;
+	onClose: OnDialogCloseFn<License>;
 }) {
-    const { mutateAsync: updateLicense } =  trpc.licenseRouter.updateAsAdmin.useMutation();
+	const { mutateAsync: updateLicense } = trpc.licenseRouter.updateAsAdmin.useMutation();
 
-    async function onSubmit(license: License) {
-        try {
-            const result = await updateLicense({license: license, licenseId: licenseId});
-            showToast({
-                type: "success",
-                title: "Lizenz gespeichert!",
-                subtitle: result.name
-            });
-            onClose(result);
-        } catch (err) {
-            showToast({
-                type: "error",
-                title: "Lizenz konnte nicht gespeichdert werden!",
-                subtitle: "Das Speichern der Lizenz ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
-            });
-        }
-       
+	async function onSubmit(license: License) {
+		try {
+			const result = await updateLicense({ license: license, licenseId: licenseId });
+			showToast({
+				type: "success",
+				title: "Lizenz gespeichert!",
+				subtitle: result.name
+			});
+			onClose(result);
+		} catch (err) {
+			showToast({
+				type: "error",
+				title: "Lizenz konnte nicht gespeichert werden!",
+				subtitle:
+					"Das Speichern der Lizenz ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
+			});
+		}
+	}
 
-    }
-
-    return (
-        <LicenseModal licenseId={licenseId} onSubmit={onSubmit} onClose={onClose} />
-    );
-
+	return <LicenseModal licenseId={licenseId} onSubmit={onSubmit} onClose={onClose} />;
 }
 
-
-
 function LicenseModal({
-    licenseId,
-    onSubmit,
-    onClose
+	licenseId,
+	onSubmit,
+	onClose
 }: {
-    licenseId: number | null,
-    onSubmit: (license: License) => void,
-    onClose: OnDialogCloseFn<License>;
+	licenseId: number;
+	onSubmit: (license: License) => void;
+	onClose: OnDialogCloseFn<License>;
 }) {
-    const { data: license, isLoading } = getLicenseOrDefault(licenseId);
+	const { data: license, isLoading } = getLicenseOrDefault(licenseId);
 
-    return (
-		<Dialog onClose={() => onClose(undefined)} title={licenseId === null ? "Neue Lizenz" : license?.name ?? "Neue Lizenz"}>
+	return (
+		<Dialog
+			onClose={() => onClose(undefined)}
+			title={licenseId === null ? "Neue Lizenz" : license?.name ?? "Neue Lizenz"}
+		>
 			{isLoading ? (
 				<LoadingBox />
 			) : (
@@ -105,33 +97,50 @@ function LicenseModal({
 					{license && (
 						<LicenseForm
 							onClose={onClose}
-                            initialLicense={license}
-                            onSubmit={onSubmit}
+							initialLicense={license}
+							onSubmit={onSubmit}
 						/>
 					)}
 				</>
 			)}
 		</Dialog>
 	);
+}
 
-
+function getLicenseOrDefault(licenseId: number) {
+	if (licenseId === 0) {
+		return {
+			isLoading: false,
+			data: {
+				licenseId: 0,
+				name: "",
+				url: "",
+				logoUrl: "",
+				licenseText: "",
+				selectable: true,
+				oerCompatible: false,
+				defaultSuggestion: false
+			} as License
+		};
+	} else {
+		const data = trpc.licenseRouter.getOne.useQuery({ licenseId: licenseId });
+		return data;
+	}
 }
 
 function LicenseForm({
 	initialLicense,
-    onSubmit,
+	onSubmit,
 	onClose
 }: {
-	initialLicense: License,
-    onSubmit: (license: License) => void,
-	onClose: OnDialogCloseFn<License>,
+	initialLicense: License;
+	onSubmit: (license: License) => void;
+	onClose: OnDialogCloseFn<License>;
 }) {
-	
 	const form = useForm({
 		resolver: zodResolver(licenseSchema),
 		defaultValues: initialLicense
 	});
-
 
 	return (
 		<FormProvider {...form}>
@@ -141,7 +150,7 @@ function LicenseForm({
 				</div>
 
 				<LicenseData />
-			 
+
 				<DialogActions onClose={onClose}>
 					<button className="btn-primary" type="submit">
 						Speichern
@@ -152,11 +161,11 @@ function LicenseForm({
 	);
 }
 
-
 function LicenseData() {
 	const { register, control, formState, setValue } = useFormContext<License>();
-    const selectable = useWatch({ control: control, name: "selectable" });
-    const oercompatible = useWatch({ control: control, name: "oerCompatible" });
+	const selectable = useWatch({ control: control, name: "selectable" });
+	const oercompatible = useWatch({ control: control, name: "oerCompatible" });
+	const defaultSuggestion = useWatch({ control: control, name: "defaultSuggestion" });
 
 	const errors = formState.errors;
 
@@ -167,83 +176,62 @@ function LicenseData() {
 				<LabeledField label="Name" error={errors.name?.message}>
 					<input className="textfield" type={"text"} {...register("name")} />
 				</LabeledField>
-				<LabeledField label="Lizenz Url" error={errors.licenseUrl?.message}>
-					<input className="textfield" type={"text"} {...register("licenseUrl")} />
+				<LabeledField label="Lizenz Url" error={errors.url?.message}>
+					<input className="textfield" type={"text"} {...register("url")} />
 				</LabeledField>
-                <LabeledField label="Lizenz ImageUrl" error={errors.imgUrl?.message}>
-					<input className="textfield" type={"text"} {...register("imgUrl")} />
+				<LabeledField label="Lizenz ImageUrl" error={errors.logoUrl?.message}>
+					<input className="textfield" type={"text"} {...register("logoUrl")} />
 				</LabeledField>
-                <LabeledField label="Lizenz Text" error={errors.licenseText?.message}>
+				<LabeledField label="Lizenz Text" error={errors.licenseText?.message}>
 					<textarea className="textfield" {...register("licenseText")} />
 				</LabeledField>
-                <LabeledField label="Optionen" error={errors.licenseText?.message}>
-                    <div className="flex flex-col">
-                        <span className="flex items-center gap-2">
-                            <input
-                                id={"selectable"}
-                                type={"checkbox"}
-                                className="checkbox"
-                                checked={selectable}
-                                onChange={() => {setValue("selectable", !selectable)}}
-                            />
-                            <label
-                                htmlFor={"selectable"}
-                                className="text-sm font-semibold"
-                            >
-                                Auswählbar
-                            </label>
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <input
-                                id={"oercompatible"}
-                                type={"checkbox"}
-                                className="checkbox"
-                                checked={oercompatible}
-                                onChange={() => {setValue("oerCompatible", !oercompatible)}}
-                            />
-                            <label
-                                htmlFor={"oercompatible"}
-                                className="text-sm font-semibold"
-                            >
-                                OER-kompatibel
-                            </label>
-                        </span>
-                    </div>
+				<LabeledField label="Optionen" error={errors.licenseText?.message}>
+					<div className="flex flex-col">
+						<span className="flex items-center gap-2">
+							<input
+								id={"selectable"}
+								type={"checkbox"}
+								className="checkbox"
+								checked={selectable}
+								onChange={() => {
+									setValue("selectable", !selectable);
+								}}
+							/>
+							<label htmlFor={"selectable"} className="text-sm font-semibold">
+								Auswählbar
+							</label>
+						</span>
+						<span className="flex items-center gap-2">
+							<input
+								id={"oercompatible"}
+								type={"checkbox"}
+								className="checkbox"
+								checked={oercompatible}
+								onChange={() => {
+									setValue("oerCompatible", !oercompatible);
+								}}
+							/>
+							<label htmlFor={"oercompatible"} className="text-sm font-semibold">
+								OER-kompatibel
+							</label>
+						</span>
+						<span className="flex items-center gap-2">
+							<input
+								id={"defaultsuggestion"}
+								type={"checkbox"}
+								className="checkbox"
+								checked={defaultSuggestion}
+								onChange={() => {
+									setValue("defaultSuggestion", !defaultSuggestion);
+								}}
+							/>
+							<label htmlFor={"defaultsuggestion"} className="text-sm font-semibold">
+								Default - Suggestion
+							</label>
+						</span>
+					</div>
 				</LabeledField>
 			</div>
 		</section>
 	);
 }
-
-function getLicenseOrDefault(licenseId: number | null) {
-    if(licenseId === null) {
-        return ({
-            isLoading: false,
-            data: {
-                licenseId: 0,
-                name: "",
-                licenseUrl: "",
-                imgUrl: "",
-                licenseText: "",
-                selectable: true,
-                oerCompatible: false,
-            } as License
-        });
-    } else {
-        const data = trpc.licenseRouter.getOne.useQuery({licenseId: licenseId})
-        return {
-            isLoading: data.isLoading,
-            data: {
-                licenseId: data.data?.licenseId ?? 0,
-                name: data.data?.name ?? "",
-                licenseUrl: data.data?.url ?? "",
-                imgUrl: data.data?.logoUrl ?? "",
-                licenseText: data.data?.licenseText ?? "",
-                selectable: data.data?.selectable ?? true,
-                oerCompatible: data.data?.oerCompatible ?? false,
-            }
-        }
-    }
-}
-
-

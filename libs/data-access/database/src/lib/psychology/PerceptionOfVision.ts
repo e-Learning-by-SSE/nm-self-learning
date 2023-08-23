@@ -1,3 +1,4 @@
+import { LessonType } from "@prisma/client";
 import {
 	createCourse,
 	createLesson,
@@ -1181,7 +1182,7 @@ export const chapters = [
 
 			createLesson(
 				"Reale Bewegung",
-				"Aktivierungsfrage zu: Reale Bewegung?",
+				"Selbstregulierter Kurs zum Thema 'Reale Bewegung'",
 				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 139ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
 				[createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 418)],
 				[
@@ -1206,8 +1207,33 @@ export const chapters = [
 							}
 						],
 						["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+					),
+					createMultipleChoice(
+						"Zweite Frage zu: Reale Bewegung?",
+						[
+							{
+								content: "Antwort A",
+								isCorrect: false
+							},
+							{
+								content: "Antwort B",
+								isCorrect: false
+							},
+							{
+								content: "Antwort C",
+								isCorrect: false
+							},
+							{
+								content: "Antwort D",
+								isCorrect: true
+							}
+						],
+						["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
 					)
-				]
+				],
+				null, // licenseID
+				LessonType.SELF_REGULATED,
+				"Frage zu: Reale Bewegung?"
 			)
 		]
 	},

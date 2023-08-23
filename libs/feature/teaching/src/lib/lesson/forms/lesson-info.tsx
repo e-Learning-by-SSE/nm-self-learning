@@ -5,14 +5,17 @@ import {
 	Form,
 	InputWithButton,
 	LabeledField,
+	MarkdownField,
 	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
+import { LessonType } from "@prisma/client";
+import { Dispatch } from "react";
 
-export function LessonInfoEditor() {
+export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<LessonType> }) {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -61,12 +64,36 @@ export function LessonInfoEditor() {
 					</FieldHint>
 				</LabeledField>
 
-				<LabeledField label="Untertitel" error={errors.subtitle?.message}>
-					<textarea
-						{...register("subtitle")}
-						placeholder="1-2 Sätze über diese Lerneinheit."
-						rows={4}
-					/>
+				<LabeledField label="Untertitel" error={errors.subtitle?.message} optional={true}>
+					<Controller
+						control={control}
+						name="subtitle"
+						render={({ field }) => (
+							<MarkdownField
+								content={field.value as string}
+								setValue={field.onChange}
+								inline={true}
+								placeholder="1-2 Sätze über diese Lerneinheit."
+							/>
+						)}
+					></Controller>
+				</LabeledField>
+
+				<LabeledField label="Lernmodell" error={errors.lessonType?.message}>
+					<select
+						{...register("lessonType")}
+						onChange={e => {
+							setLessonType(e.target.value as LessonType);
+						}}
+					>
+						<option value={""} hidden>
+							Bitte wählen...
+						</option>
+						<option value={LessonType.TRADITIONAL}>
+							Nanomodul-basiertes Lernen (Standard)
+						</option>
+						<option value={LessonType.SELF_REGULATED}>Selbstreguliertes Lernen</option>
+					</select>
 				</LabeledField>
 
 				<LabeledField label="Thumbnail" error={errors.imgUrl?.message}>

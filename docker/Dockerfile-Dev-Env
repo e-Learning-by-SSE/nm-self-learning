@@ -4,6 +4,10 @@ FROM docker/dev-environments-javascript:stable-1
 # Install the nx build tool
 RUN npm install -g nx
 
+# debian backports to install newer git version for ssh signing
+RUN echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list
+RUN apt-get update; apt-get install -y git -t bullseye-backports
+
 # Expose port 4200 for the application to listen on
 EXPOSE 4200
 

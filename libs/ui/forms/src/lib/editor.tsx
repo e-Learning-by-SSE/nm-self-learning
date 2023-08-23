@@ -14,6 +14,7 @@ export function EditorField({
 	return (
 		<Editor
 			onMount={editor => {
+				editor.focus();
 				setTimeout(() => {
 					editor?.getAction("editor.action.formatDocument")?.run();
 				}, 250);

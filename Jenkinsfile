@@ -8,6 +8,10 @@ pipeline {
         API_VERSION = packageJson.getVersion() // package.json must be in root level in order for this to work
     }
 
+    options {
+        ansiColor('xterm')
+    }
+
     stages { 
         stage("NodeJS Build") {
             agent {
@@ -44,7 +48,7 @@ pipeline {
             when {
                 allOf {
                     branch 'master'
-                    expression { packageJson.isNewVersion() }
+                    expression { packageJson.isNewVersion(since: 'LAST_SUCCESSFUL_BUILD') }
                 }
             }
             steps {
@@ -71,22 +75,27 @@ pipeline {
             }
             post {
                 success {
-                    stagingDeploy "bash /staging/update-compose-project.sh nm-self-learning"
+                    staging02ssh "bash /opt/update-compose-project.sh selflearn-staging"
                 }
             }
         }
 
         stage('Docker Publish PB') {
+            environment {
+                VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"
+            }
             when {
                 expression { env.BRANCH_NAME.startsWith("pb_") }
             }
             steps {
-                script {
-					def version = ["${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"]
-					ssedocker {
-						create { target "${env.TARGET_PREFIX}:${version}" }
-						publish {}
-					}
+                ssedocker {
+                    create { target "${env.TARGET_PREFIX}:${env.VERSION}" }
+                    publish {}
+                }
+            }
+            post {
+                success {
+                    staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
                 }
             }
         }

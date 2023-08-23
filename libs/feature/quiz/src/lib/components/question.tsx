@@ -12,10 +12,15 @@ import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { Hints } from "./hints";
 import { useQuiz } from "./quiz-context";
+import { LessonLayoutProps } from "@self-learning/lesson";
+import { LessonType } from "@prisma/client";
+import { useState } from "react";
 
 export function Question({
 	question,
-	markdown
+	markdown,
+	lesson,
+	isLastQuestion
 }: {
 	question: QuestionType;
 	markdown: {
@@ -23,10 +28,24 @@ export function Question({
 		answersMd: MdLookup;
 		hintsMd: MdLookupArray;
 	};
+	lesson: LessonLayoutProps["lesson"];
+	isLastQuestion: boolean;
 }) {
-	const { answers, setAnswers, evaluations, setEvaluations, config } = useQuiz();
+	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } =
+		useQuiz();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
+	const [currentStep, setCurrentStep] = useState(
+		evaluation?.isCorrect === true &&
+			question.type === "multiple-choice" &&
+			lesson.lessonType === LessonType.SELF_REGULATED
+			? 2
+			: 1
+	);
+	const totalSteps =
+		question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED
+			? 2
+			: 1;
 
 	function setAnswer(v: any) {
 		const value = typeof v === "function" ? v(answer) : v;
@@ -38,10 +57,23 @@ export function Question({
 	}
 
 	function setEvaluation(e: any) {
+		setCurrentStep(
+			question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED
+				? 2
+				: 1
+		);
 		setEvaluations(prev => ({
 			...prev,
 			[question.questionId]: e
 		}));
+	}
+
+	function nextQuestionStep() {
+		if (currentStep < totalSteps) {
+			setCurrentStep(currentStep + 1);
+		} else {
+			goToNextQuestion();
+		}
 	}
 
 	return (
@@ -66,7 +98,12 @@ export function Question({
 							>
 								Reset
 							</button>
-							<CheckResult setEvaluation={setEvaluation} />
+							<CheckResult
+								setEvaluation={setEvaluation}
+								nextQuestionStep={nextQuestionStep}
+								isLastQuestionStep={currentStep === totalSteps}
+								isLastQuestion={isLastQuestion}
+							/>
 						</div>
 					</div>
 					{markdown.questionsMd[question.questionId] ? (
@@ -79,7 +116,11 @@ export function Question({
 				</div>
 
 				<div className="flex max-w-full flex-col gap-8">
-					<QuestionAnswerRenderer question={question} />
+					<QuestionAnswerRenderer
+						question={question}
+						lesson={lesson}
+						questionStep={currentStep}
+					/>
 				</div>
 
 				{/* {question.withCertainty && <Certainty />} */}
@@ -91,13 +132,19 @@ export function Question({
 }
 
 function CheckResult({
-	setEvaluation
+	setEvaluation,
+	nextQuestionStep,
+	isLastQuestionStep,
+	isLastQuestion
 }: {
 	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
+	nextQuestionStep: () => void;
+	isLastQuestionStep: boolean;
+	isLastQuestion: boolean;
 }) {
 	// We only use "multiple-choice" to get better types ... works for all question types
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
-	const { goToNextQuestion, completionState, reload } = useQuiz();
+	const { completionState, reload } = useQuiz();
 
 	function checkResult() {
 		console.log("checking...");
@@ -112,14 +159,16 @@ function CheckResult({
 		<span className="text-red-500">No question state found for this question.</span>;
 	}
 
+	const canGoToNextQuestion = currentEvaluation || !isLastQuestionStep;
+
 	return (
 		<>
 			{completionState === "in-progress" ? (
 				<button
 					className="btn-primary"
-					onClick={currentEvaluation ? goToNextQuestion : checkResult}
+					onClick={canGoToNextQuestion ? nextQuestionStep : checkResult}
 				>
-					{currentEvaluation ? "Nächste Frage" : "Überprüfen"}
+					{canGoToNextQuestion ? "Nächste Frage" : "Überprüfen"}
 				</button>
 			) : completionState === "failed" ? (
 				<button className="btn bg-red-500" onClick={reload}>

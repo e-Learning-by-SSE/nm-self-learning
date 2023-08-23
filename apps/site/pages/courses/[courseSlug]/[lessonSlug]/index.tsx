@@ -1,4 +1,6 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
+import { LessonType } from "@prisma/client";
+import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
@@ -14,7 +16,7 @@ import {
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, LicenseChip, LoadingBox, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -22,12 +24,14 @@ import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
+		preQuestion: CompiledMarkdown | null;
+		subtitle: CompiledMarkdown | null;
 	};
 };
 
@@ -41,9 +45,15 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	lesson.quiz = null; // Not needed on this page, but on /quiz
 	let mdDescription = null;
 	let mdArticle = null;
+	let mdQuestion = null;
+	let mdSubtitle = null;
 
 	if (lesson.description) {
 		mdDescription = await compileMarkdown(lesson.description);
+	}
+
+	if (lesson.subtitle && lesson.subtitle.length > 0) {
+		mdSubtitle = await compileMarkdown(lesson.subtitle);
 	}
 
 	const { content: article } = findContentType("article", lesson.content as LessonContent);
@@ -55,12 +65,19 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		article.value.content = "(replaced)";
 	}
 
+	// TODO change to check if the lesson is self requlated
+	if (lesson.lessonType === LessonType.SELF_REGULATED) {
+		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
+	}
+
 	return {
 		props: {
 			...props,
 			markdown: {
 				article: mdArticle,
-				description: mdDescription
+				description: mdDescription,
+				preQuestion: mdQuestion,
+				subtitle: mdSubtitle
 			}
 		}
 	};
@@ -69,14 +86,14 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	// Handle situations that content creator may created an empty lesson (to add content later)
 	const content = lesson.content as LessonContent;
-	if (content.length > 0) {
-		const router = useRouter();
-		const [preferredMediaType, setPreferredMediaType] = useState(
-			(lesson.content as LessonContent)[0].type
-		);
+	const router = useRouter();
+	const [preferredMediaType, setPreferredMediaType] = useState(
+		content.length > 0 ? content[0].type : null
+	);
 
-		useEffect(() => {
-			const availableMediaTypes = (lesson.content as LessonContent).map(c => c.type);
+	useEffect(() => {
+		if (content.length > 0) {
+			const availableMediaTypes = content.map(c => c.type);
 
 			const { type: typeFromRoute } = router.query;
 			let typeFromStorage: string | null = null;
@@ -93,22 +110,29 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 			if (isIncluded) {
 				setPreferredMediaType(type);
 			}
-		}, [router, lesson]);
-
-		return preferredMediaType;
-	} else {
-		return null;
-	}
+		}
+	}, [router, content]);
+	return preferredMediaType;
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
-	console.log("Lesson", lesson);
-	console.log("Course", course);
+	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
+
+	if (showDialog && markdown.preQuestion) {
+		return (
+			<article className="flex flex-col gap-4">
+				<SelfRegulatedPreQuestion
+					setShowDialog={setShowDialog}
+					question={markdown.preQuestion}
+				/>
+			</article>
+		);
+	}
 
 	return (
 		<article className="flex flex-col gap-4">
@@ -122,7 +146,12 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 				</div>
 			)}
 
-			<LessonHeader lesson={lesson} course={course} mdDescription={markdown.description} />
+			<LessonHeader
+				lesson={lesson}
+				course={course}
+				mdDescription={markdown.description}
+				mdSubtitle={markdown.subtitle}
+			/>
 
 			{preferredMediaType === "article" && markdown.article && (
 				<MarkdownContainer className="mx-auto w-full pt-4">
@@ -144,13 +173,20 @@ Lesson.getLayout = LessonLayout;
 function LessonHeader({
 	course,
 	lesson,
-	mdDescription
+	mdDescription,
+	mdSubtitle
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 	mdDescription?: CompiledMarkdown | null;
+	mdSubtitle?: CompiledMarkdown | null;
 }) {
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
+
+	let license = lesson.license;
+	if (license === null) {
+		license = trpc.licenseRouter.getDefault.useQuery().data ?? null;
+	}
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -163,15 +199,17 @@ function LessonHeader({
 						</span>
 						<LessonControls course={course} lesson={lesson} />
 					</span>
-					{lesson.subtitle && lesson.subtitle.length > 0 && (
-						<span className="mt-2 text-light">{lesson.subtitle}</span>
+					{mdSubtitle && (
+						<MarkdownContainer className="mt-2 text-light">
+							<MDXRemote {...mdSubtitle} />
+						</MarkdownContainer>
 					)}
 
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-3">
 							<Authors authors={lesson.authors} />
 						</span>
-						<LicenseLabel license={lesson.license} />
+						<LicenseLabel license={license} />
 					</span>
 
 					<div className="pt-4">
@@ -240,17 +278,14 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 }
 
 export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
-	let logoUrl = license.logoUrl;
-	if (logoUrl) {
-		// Check if logo should be loaded relative to the current page or if an absolute path is provided
-		logoUrl = logoUrl.startsWith("/") ? `${process.env.NEXT_ASSET_PREFIX}${logoUrl}` : logoUrl;
+	if (license === null) {
+		return <LoadingBox />;
 	}
-
 	if (license.url) {
 		return (
 			<div className="-mt-3">
 				<LabeledField label="Lizenz">
-					<LicenseChip name={license.name} imgUrl={logoUrl} url={license.url} />
+					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={license.url} />
 				</LabeledField>
 			</div>
 		);
@@ -260,7 +295,7 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 				<LabeledField label="Lizenz">
 					<LicenseChip
 						name={license.name}
-						imgUrl={logoUrl}
+						imgUrl={license.logoUrl}
 						description={license.licenseText !== null ? license.licenseText : undefined}
 					/>
 				</LabeledField>
@@ -314,6 +349,47 @@ function MediaTypeSelector({
 					))}
 				</Tabs>
 			)}
+		</>
+	);
+}
+
+function SelfRegulatedPreQuestion({
+	question,
+	setShowDialog
+}: {
+	question: CompiledMarkdown;
+	setShowDialog: Dispatch<SetStateAction<boolean>>;
+}) {
+	const [userAnswer, setUserAnswer] = useState("");
+
+	return (
+		<>
+			<div>
+				<h1>Aktivierungsfrage</h1>
+				<MarkdownContainer className="w-full py-4">
+					<MDXRemote {...question} />
+				</MarkdownContainer>
+				<div className="mt-8">
+					<h2>Deine Antwort:</h2>
+					<textarea
+						className="w-full"
+						placeholder="..."
+						onChange={e => setUserAnswer(e.target.value)}
+					/>
+				</div>
+				<div className="mt-2 flex justify-end gap-2">
+					<button
+						type="button"
+						className="btn-primary"
+						onClick={() => {
+							setShowDialog(false);
+						}}
+						disabled={userAnswer.length == 0}
+					>
+						Antwort Speichern
+					</button>
+				</div>
+			</div>
 		</>
 	);
 }

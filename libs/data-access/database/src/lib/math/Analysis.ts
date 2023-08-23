@@ -1,4 +1,10 @@
-import { createCourse, createLesson, createMultipleChoice, createPdf, createTextQuestion } from '../seed-functions';
+import {
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createPdf,
+	createTextQuestion
+} from "../seed-functions";
 
 export const chapters = [
 	{

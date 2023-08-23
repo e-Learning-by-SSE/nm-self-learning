@@ -9,7 +9,6 @@
 			"implicitDependencies": ["libs/feature/skills-pathfinder"]
 		},
 		"database": "libs/data-access/database",
-		"docs-storybook": "docs/storybook",
 		"feature-admin": "libs/feature/admin",
 		"feature-completion": "libs/feature/completion",
 		"feature-enrollment": "libs/feature/enrollment",

@@ -11,21 +11,21 @@ import {
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useMemo, useState } from "react";
-import { License} from "@self-learning/types";
+import { License } from "@self-learning/types";
 import Link from "next/link";
 import { LicenseViewModal } from "@self-learning/lesson";
 
 export default function LicensesPage() {
 	useRequiredSession();
 
-    const [displayName, setDisplayName] = useState("");
+	const [displayName, setDisplayName] = useState("");
 	const { data: licenses, isLoading } = trpc.licenseRouter.getAll.useQuery();
 	const [editTarget, setEditTarget] = useState<number | null>(null);
 	const [createLicenseDialog, setCreateLicenseDialog] = useState(false);
 
 	const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
 
-    const filteredLicenses = useMemo(() => {
+	const filteredLicenses = useMemo(() => {
 		if (!licenses) return [];
 		if (!displayName || displayName.length === 0) return licenses;
 
@@ -35,20 +35,21 @@ export default function LicensesPage() {
 		);
 	}, [displayName, licenses]);
 
-
 	function onEditDialogClose(): void {
 		setEditTarget(null);
-        setCreateLicenseDialog(false);
 	}
 
-    function onEdit(licenseId: number): void {
-        setEditTarget(licenseId);
-    }
+	function onCreateDialogClose(): void {
+		setCreateLicenseDialog(false);
+	}
+
+	function onEdit(licenseId: number): void {
+		setEditTarget(licenseId);
+	}
 
 	const toggleAccordion = (index: number) => {
 		setActiveRowIndex(activeRowIndex === index ? null : index);
-	  };
-
+	};
 
 	return (
 		<AdminGuard>
@@ -60,13 +61,16 @@ export default function LicensesPage() {
 						<span>Lizenz hinzufügen</span>
 					</button>
 					{createLicenseDialog && (
-                       <CreateLicenseDialog onClose={onEditDialogClose} licenseId={editTarget} />
+						<CreateLicenseDialog onClose={onCreateDialogClose} licenseId={0} />
 					)}
 				</div>
 
 				<SearchField
 					placeholder="Suche nach Lizenz"
-					onChange={e => {setDisplayName(e.target.value); setActiveRowIndex(null)}}
+					onChange={e => {
+						setDisplayName(e.target.value);
+						setActiveRowIndex(null);
+					}}
 				/>
 
 				{editTarget && (
@@ -85,7 +89,7 @@ export default function LicensesPage() {
 							</>
 						}
 					>
-						{filteredLicenses.map(({licenseId, name, logoUrl}, index, value) => (
+						{filteredLicenses.map(({ licenseId, name, logoUrl }, index, value) => (
 							<Fragment key={name}>
 								{name && (
 									<tr key={name}>
@@ -97,7 +101,11 @@ export default function LicensesPage() {
 										</TableDataColumn>
 										<TableDataColumn>
 											<div className="flex flex-wrap gap-4">
-												<div className="text-sm font-medium hover:text-secondary" style={{cursor: "pointer"}} onClick={() => toggleAccordion(index)}>
+												<div
+													className="text-sm font-medium hover:text-secondary"
+													style={{ cursor: "pointer" }}
+													onClick={() => toggleAccordion(index)}
+												>
 													{name}
 												</div>
 											</div>
@@ -115,15 +123,17 @@ export default function LicensesPage() {
 									</tr>
 								)}
 								{activeRowIndex === index && (
-									<AccordionElement license={{
+									<AccordionElement
+										license={{
 											licenseId: licenseId,
 											name: name,
-											imgUrl: logoUrl,
+											logoUrl: logoUrl,
 											licenseText: value[index].licenseText,
-											licenseUrl: value[index].url,
+											url: value[index].url,
 											oerCompatible: value[index].oerCompatible,
 											selectable: value[index].selectable,
-										}} 
+											defaultSuggestion: value[index].defaultSuggestion
+										}}
 										index={index}
 										activeRowIndex={activeRowIndex}
 									/>
@@ -137,42 +147,52 @@ export default function LicensesPage() {
 	);
 }
 
-export function AccordionElement({ license ,index , activeRowIndex }: { license: License, index: number, activeRowIndex: number }) {
-
+export function AccordionElement({
+	license,
+	index,
+	activeRowIndex
+}: {
+	license: License;
+	index: number;
+	activeRowIndex: number;
+}) {
 	const [viewLicenseDialog, setViewLicenseDialog] = useState(false);
 
-	return(
+	return (
 		<tr className="border-b border-gray-300">
 			<TableDataColumn>
-			<button className="btn-primary btn-small" onClick={() => {setViewLicenseDialog(true)}}>
-						<span>Preview</span>
-					</button>
+				<button
+					className="btn-primary btn-small"
+					onClick={() => {
+						setViewLicenseDialog(true);
+					}}
+				>
+					<span>Preview</span>
+				</button>
 			</TableDataColumn>
 			<td colSpan={5} className="py-2 px-3">
 				<div
-					className={`px-6 pt-0 overflow-hidden transition-[max-height] duration-500 ease-in ${
-					activeRowIndex === index ? 'max-h-36' : 'max-h-0'
-					}`}>
+					className={`overflow-hidden px-6 pt-0 transition-[max-height] duration-500 ease-in ${
+						activeRowIndex === index ? "max-h-36" : "max-h-0"
+					}`}
+				>
 					<LicenseDetail license={license} />
 					{viewLicenseDialog && (
-						<LicenseViewModal 
+						<LicenseViewModal
 							description={license.licenseText ?? ""}
 							name={license.name}
-							logoUrl={license.imgUrl ?? ""}
-							onClose={() => setViewLicenseDialog(false)} 
+							logoUrl={license.logoUrl ?? ""}
+							onClose={() => setViewLicenseDialog(false)}
 						></LicenseViewModal>
 					)}
 				</div>
 			</td>
 		</tr>
 	);
-
 }
 
 export function LicenseDetail({ license }: { license: License }) {
-
 	const [viewLicenseDialog, setViewLicenseDialog] = useState(false);
-	
 
 	function shortenLongText(url: string): string {
 		if (url.length > 20) {
@@ -181,7 +201,7 @@ export function LicenseDetail({ license }: { license: License }) {
 		return url;
 	}
 
-	return(
+	return (
 		<div className="grid grid-cols-2 gap-4">
 			<div className="col-span-1">
 				<div className="text-sm font-medium">Url der Lizenzwebseite:</div>
@@ -190,35 +210,35 @@ export function LicenseDetail({ license }: { license: License }) {
 				<div className="text-sm font-medium">OER - Kompatible:</div>
 			</div>
 			<div className="col-span-1">
-				{license.licenseUrl ? (
-					<Link
-						className="text-sm font-medium hover:text-secondary"
-						href={license.licenseUrl}
-					>
-						{shortenLongText(license.licenseUrl)}
+				{license.url ? (
+					<Link className="text-sm font-medium hover:text-secondary" href={license.url}>
+						{shortenLongText(license.url)}
 					</Link>
-				):
+				) : (
 					<div className="text-sm font-medium">Nicht definiert</div>
-				}
+				)}
 				{license.licenseText ? (
-					<div className="text-sm font-medium hover:text-secondary" style={{cursor: "pointer"}} onClick={() => setViewLicenseDialog(true)}>
+					<div
+						className="text-sm font-medium hover:text-secondary"
+						style={{ cursor: "pointer" }}
+						onClick={() => setViewLicenseDialog(true)}
+					>
 						{shortenLongText(license.licenseText)}
 					</div>
-				):
+				) : (
 					<div className="text-sm font-medium">Nicht definiert</div>
-				}
-				<div className="text-sm font-medium">{ license.selectable ? "Ja" : "Nein" }</div>
-				<div className="text-sm font-medium">{ license.oerCompatible ? "Ja" : "Nein" }</div>
+				)}
+				<div className="text-sm font-medium">{license.selectable ? "Ja" : "Nein"}</div>
+				<div className="text-sm font-medium">{license.oerCompatible ? "Ja" : "Nein"}</div>
 			</div>
 			{viewLicenseDialog && (
-				<LicenseViewModal 
+				<LicenseViewModal
 					description={license.licenseText ?? ""}
 					name={license.name}
-					logoUrl={license.imgUrl ?? ""}
-				 	onClose={() => setViewLicenseDialog(false)} 
-					></LicenseViewModal>
-				)}
+					logoUrl={license.logoUrl ?? ""}
+					onClose={() => setViewLicenseDialog(false)}
+				></LicenseViewModal>
+			)}
 		</div>
-
 	);
 }

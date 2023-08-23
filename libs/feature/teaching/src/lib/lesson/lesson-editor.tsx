@@ -3,13 +3,14 @@ import { lessonSchema } from "@self-learning/types";
 import { SectionHeader, showToast } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { OpenAsJsonButton } from "../json-editor-dialog";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
+import { LessonType } from "@prisma/client";
 
 export function LessonEditor({
 	lesson,
@@ -23,6 +24,8 @@ export function LessonEditor({
 		resolver: zodResolver(lessonSchema),
 		defaultValues: lesson
 	});
+
+	const [selectedLessonType, setLessonType] = useState(lesson.lessonType);
 
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
@@ -78,11 +81,14 @@ export function LessonEditor({
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
 
-								<LessonInfoEditor />
+								<LessonInfoEditor setLessonType={setLessonType} />
 							</>
 						}
 					>
 						<LessonDescriptionForm />
+						{selectedLessonType === LessonType.SELF_REGULATED && (
+							<LessonPreQuestionEditor />
+						)}
 						<LessonContentEditor />
 						<QuizEditor />
 					</SidebarEditorLayout>
@@ -105,6 +111,28 @@ function LessonDescriptionForm() {
 				<Controller
 					control={control}
 					name="description"
+					render={({ field }) => (
+						<MarkdownField content={field.value as string} setValue={field.onChange} />
+					)}
+				></Controller>
+			</Form.MarkdownWithPreviewContainer>
+		</section>
+	);
+}
+
+function LessonPreQuestionEditor() {
+	const { control } = useFormContext<LessonFormModel>();
+
+	return (
+		<section>
+			<SectionHeader
+				title="Aktivierungsfrage"
+				subtitle="Die Aktivierungsfrage, die den Lernenden helfen soll, ihre Wissensbasis zu aktivieren."
+			/>
+			<Form.MarkdownWithPreviewContainer>
+				<Controller
+					control={control}
+					name="selfRegulatedQuestion"
 					render={({ field }) => (
 						<MarkdownField content={field.value as string} setValue={field.onChange} />
 					)}

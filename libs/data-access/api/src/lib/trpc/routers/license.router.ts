@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { t, adminProcedure} from "../trpc";
+import { t, adminProcedure } from "../trpc";
 import * as z from "zod";
 import { licenseSchema } from "@self-learning/types";
 
@@ -28,11 +28,12 @@ export const licenseRouter = t.router({
 				where: { licenseId: input.licenseId },
 				data: {
 					name: input.license.name,
-					url: input.license.licenseUrl,
+					url: input.license.url,
 					licenseText: input.license.licenseText,
-					logoUrl: input.license.imgUrl,
+					logoUrl: input.license.logoUrl,
 					oerCompatible: input.license.oerCompatible,
-					selectable: input.license.selectable
+					selectable: input.license.selectable,
+					defaultSuggestion: input.license.defaultSuggestion
 				}
 			});
 
@@ -53,9 +54,9 @@ export const licenseRouter = t.router({
 			const created = await database.license.create({
 				data: {
 					name: input.license.name,
-					url: input.license.licenseUrl,
+					url: input.license.url,
 					licenseText: input.license.licenseText,
-					logoUrl: input.license.imgUrl,
+					logoUrl: input.license.logoUrl,
 					oerCompatible: input.license.oerCompatible,
 					selectable: input.license.selectable
 				}
@@ -66,25 +67,40 @@ export const licenseRouter = t.router({
 			return created;
 		}),
 	getDefault: t.procedure.query(async () => {
-		// Default: Find first license with defaultSuggestion = true
-		let data = await database.license.findFirst({
-			where: {
-				defaultSuggestion: true
-			},
-			orderBy: {
-				name: "asc"
-			}
-		});
-
-		// Fallback: Find first license
-		if (!data) {
-			data = await database.license.findFirst({
-				orderBy: {
-					name: "asc"
+		return await findLicenseWithDefault();
+	}),
+	getOneOrDefault: t.procedure
+		.input(z.object({ licenseId: z.number() }))
+		.query(async ({ input }) => {
+			const data = await database.license.findUnique({
+				where: {
+					licenseId: input.licenseId
 				}
 			});
-		}
-
-		return data;
-	})
+			return data || (await findLicenseWithDefault());
+		})
 });
+
+async function findLicenseWithDefault() {
+	const license = await database.license.findFirst({
+		where: {
+			defaultSuggestion: true
+		},
+		orderBy: {
+			name: "asc"
+		}
+	});
+
+	return (
+		license || {
+			name: "Keine Lizenz",
+			licenseId: 0,
+			url: "",
+			licenseText: "",
+			logoUrl: "",
+			oerCompatible: false,
+			selectable: false,
+			defaultSuggestion: true
+		}
+	);
+}
