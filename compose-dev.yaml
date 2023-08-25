@@ -1,26 +1,23 @@
 services:
-  app:
-    entrypoint:
-    - sleep
-    - infinity
-    build:
-      context: docker
-      dockerfile: Dockerfile-Dev-Env
-    init: true
-    volumes:
-    - type: bind
-      source: /var/run/docker.sock
-      target: /var/run/docker.sock
-  dev-db:
-    image: postgres:13
-    ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: username
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: SelfLearningDb
-    volumes:
-      - dev_db_data:/var/lib/postgresql/data
+    app:
+        image: ghcr.io/e-learning-by-sse/dev-env-javascript:latest
+        entrypoint:
+            - sleep
+            - infinity
+        init: true
+        volumes:
+            - type: bind
+              source: /var/run/docker.sock
+              target: /var/run/docker.sock
+    dev-db:
+        image: postgres:13
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_USER: username
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: SelfLearningDb
+        volumes:
+            - dev_db_data:/var/lib/postgresql/data
 volumes:
-  dev_db_data:
-
+    dev_db_data:
