@@ -228,12 +228,6 @@ model QuizAnswer {
   @@index([questionId])
 }
 
-model LearningDiary {
-  username String  @id
-  goals    String?
-  student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
-}
-
 model UploadedAssets {
   objectName String   @id
   fileName   String
@@ -270,4 +264,75 @@ model License {
     selectable        Boolean @default(true)
     // Back reference required by Prisma -> Provides overview about usage
     lessons           Lesson[]
+}
+
+model LearningDiary {
+  username String  @id
+  goals    LearningGoal[] 
+  student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
+  entries DiaryEntry[]
+  learningTimes LearningTime[]
+}
+
+model LearningGoal {
+  id String       @id @default(uuid())
+  type GoalType @default(USERSPECIFIC)
+  description String?
+  // Specifies the ammount based on the GoalType
+  value Int?
+  priority Int
+  achieved Boolean @default(false)
+  createdAt DateTime @default(now())
+  diary LearningDiary @relation(fields: [diaryID], references: [username])
+  diaryID String
+  learningTime LearningTime?
+}
+
+model LearningTime {
+  id String       @id @default(uuid())
+  startingDate DateTime
+  endDate DateTime
+  // Specifics the frequency of the Learning 1 week, 2weeks, etc.
+  frequency Int
+  location String?
+  goal LearningGoal? @relation(fields: [goalID], references: [id])
+  goalID String? @unique
+  diary LearningDiary @relation(fields: [diaryID], references: [username])
+  diaryID String
+}
+
+model DiaryEntry {
+  id String       @id @default(uuid())
+  diary LearningDiary @relation(fields: [diaryID], references: [username])
+  diaryID String
+  distractions String?
+  efforts String?
+  learningStrategies LearningStrategy[]
+  notes String?
+  //lesson Lesson
+  //quizAttempt QuizAttempt?
+  //completedLesson CompletedLesson?
+}
+
+model LearningStrategy {
+  id String @id @default(uuid())
+  type StrategyType
+  duration Int?
+  confidenceRating Int
+  notes String?
+  diaryEntry DiaryEntry @relation(fields: [diaryEntryID], references: [id])
+  diaryEntryID String
+}
+
+enum StrategyType {
+  USERSPECIFIC
+  REPEATING
+  //ToDo
+}
+
+enum GoalType {
+  USERSPECIFIC
+  NUMBEROFLESSONS
+  NUMBEROFQUIZATTEMPTS
+  //ToDo
 }

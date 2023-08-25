@@ -92,8 +92,7 @@ const users: Prisma.UserCreateInput[] = students.map(student => ({
 }));
 
 const learningDiaries: Prisma.LearningDiaryCreateManyInput[] = students.map(student => ({
-	username: student.username,
-	goals: "- Goal 1\n- Goal 2\n- Goal 3"
+	username: student.username
 }));
 
 const subjects: Prisma.SubjectCreateManyInput[] = [
