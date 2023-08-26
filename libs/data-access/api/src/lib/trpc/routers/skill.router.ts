@@ -1,25 +1,50 @@
 import { t, authorProcedure } from "../trpc";
 import * as z from "zod";
 import { database } from "@self-learning/database";
-import { skillCreationFormSchema, skillRepositoryCreationSchema } from "@self-learning/types";
+import {
+	ResolvedValue,
+	skillCreationFormSchema,
+	skillFormSchema,
+	skillRepositoryCreationSchema,
+	skillRepositorySchema
+} from "@self-learning/types";
 
-//TODO: SECURITY: Check if user is allowed to do this
+export type SkillResolved = ResolvedValue<typeof getSkillById>;
+export type SkillUnresolved = Omit<SkillResolved, "children" | "repository">;
+
+function getSkillById(id: string) {
+	return database.skill.findUnique({
+		where: { id },
+		include: {
+			children: true,
+			repository: true
+		}
+	});
+}
 
 export const skillRouter = t.router({
-	getRepsFromUser: authorProcedure.query(async ({ ctx }) => {
+	getRepository: authorProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
+		return await database.skillRepository.findUnique({
+			where: { id: input.id }
+		});
+	}),
+	getRepositories: authorProcedure.query(async () => {
+		return await database.skillRepository.findMany();
+	}),
+	getRepositoriesByUser: authorProcedure.query(async ({ ctx }) => {
 		const { id: userId } = ctx.user;
 		const repositories = await database.skillRepository.findMany({
-			where: { id: userId }
+			where: { ownerId: userId }
 		});
 		return repositories;
 	}),
-	// getUnresolvedSkillsFromRepo: authorProcedure
-	// 	.input(z.object({ id: z.string() }))
-	// 	.query(async ({ input }) => {
-	// 		return await skillServiceApi.SkillMgmtController_loadRepository({
-	// 			params: { repositoryId: input.id }
-	// 		});
-	// 	}),
+	getUnresolvedSkillsFromRepo: authorProcedure
+		.input(z.object({ repoId: z.string() }))
+		.query(async ({ input }) => {
+			return await database.skill.findMany({
+				where: { repositoryId: input.repoId }
+			});
+		}),
 	addRepo: authorProcedure
 		.input(z.object({ rep: skillRepositoryCreationSchema }))
 		.mutation(async ({ input }) => {
@@ -27,11 +52,11 @@ export const skillRouter = t.router({
 				data: { ...input.rep }
 			});
 		}),
-	changeRepo: authorProcedure
+	updateRepo: authorProcedure
 		.input(
 			z.object({
 				repoId: z.string(),
-				rep: skillRepositoryCreationSchema
+				rep: skillRepositorySchema
 			})
 		)
 		.mutation(async ({ input }) => {
@@ -40,36 +65,28 @@ export const skillRouter = t.router({
 				data: { ...input.rep }
 			});
 		}),
-	// getSkillFromId: authorProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
+	updateSkill: authorProcedure
+		.input(
+			z.object({
+				skill: skillFormSchema
+			})
+		)
+		.mutation(async ({ input }) => {
+			// TODO check for cycles
+			// TODO verify this
+			return await database.skill.update({
+				where: { id: input.skill.id },
+				data: {
+					description: input.skill.description,
+					name: input.skill.name,
+					children: {
+						connect: input.skill.children.map(id => ({ id }))
+					},
+					repository: { connect: { id: input.skill.repositoryId } }
+				}
+			});
+		}),
 
-	// 	return await skillServiceApi.SkillMgmtController_getSkill({
-	// 		params: { skillId: input.id }
-	// 	});
-	// }),
-	// getSkillsFromIdArray: authorProcedure
-	// 	.input(z.object({ ids: z.array(z.string()) }))
-	// 	.query(async ({ input }) => {
-	// 		const skills = [];
-	// 		for (const id of input.ids) {
-	// 			skills.push(
-	// 				await skillServiceApi.SkillMgmtController_getSkill({ params: { skillId: id } })
-	// 			);
-	// 		}
-	// 		return skills;
-	// 	}),
-	// changeSkillById: authorProcedure
-	// 	.input(
-	// 		z.object({
-	// 			repoId: z.string(),
-	// 			skill: SkillServiceZodSchemas.SkillCreationDto
-	// 		})
-	// 	)
-	// 	.mutation(async ({ input }) => {
-	// 		return await skillServiceApi.SkillMgmtController_adaptSkill(
-	// 			{ ...input.skill },
-	// 			{ params: { repositoryId: input.repoId } }
-	// 		);
-	// 	}),
 	createSkill: authorProcedure
 		.input(
 			z.object({
@@ -78,19 +95,43 @@ export const skillRouter = t.router({
 			})
 		)
 		.mutation(async ({ input }) => {
-			// check for cycles in the graph
-			// const pathPlanner = new PathPlanner();
-			// const isAcyclic = await pathPlanner.isAcyclic(input.skill);
-			// if (!isAcyclic) {
-			// 	throw new Error("The graph is not acyclic.");
-			// }
-			return await database.skill.create({
-				data: {
-					...input.skill,
-					repository: { connect: { id: input.repId } }
+			// TODO check for cycles
+			const skillData = {
+				...input.skill,
+				repository: { connect: { id: input.repId } },
+				children: {
+					connect: input.skill.children.map(id => ({ id }))
 				}
+			};
+			return await database.skill.create({
+				data: skillData
 			});
+		}),
+
+	getSkillById: authorProcedure
+		.input(
+			z.object({
+				skillId: z.string()
+			})
+		)
+		.query(async ({ input }) => {
+			return getSkillById(input.skillId);
 		})
+	// getResolvedSkill: authorProcedure
+	// 	.input(
+	// 		z.object({
+	// 			skillId: z.string()
+	// 		})
+	// 	)
+	// 	.query(async ({ input }) => {
+	// 		return await database.skill.findUnique({
+	// 			where: { id: input.skillId },
+	// 			include: {
+	// 				children: true
+	// 			}
+	// 		});
+	// 	})
+
 	// deleteSkill: authorProcedure.input(z.object({
 	// 	id: z.string() })).mutation( async({ input }) => {
 	// 		// return await skillServiceApi.SkillMgmtController_deleteSkill( { params: { skillId: input.id } });

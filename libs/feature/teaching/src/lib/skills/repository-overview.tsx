@@ -1,30 +1,18 @@
-import {
-	LoadingBox,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn
-} from "@self-learning/ui/common";
+import { LoadingBox, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { AuthorGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { Fragment, useState, useMemo} from "react";
-import Link  from "next/link";
+import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
+import { Fragment, useState, useMemo } from "react";
+import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 
+export function SkillRepositoryOverview() {
+	useRequiredSession();
 
+	const [displayName, setDisplayName] = useState("");
 
+	const { data: skillTrees, isLoading } = trpc.skill.getRepositoriesByUser.useQuery();
 
-
-export function SkillRepoPage() {
-    useRequiredSession();
-
-    const [displayName, setDisplayName] = useState("");
-
-    
-    const { data: skillTrees, isLoading } =  trpc.skill.getRepsFromUser.useQuery();
-
-
-
-    const filteredSkillTrees = useMemo(() => {
+	const filteredSkillTrees = useMemo(() => {
 		if (!skillTrees) return [];
 		if (!displayName || displayName.length === 0) return skillTrees;
 		const lowerCaseDisplayName = displayName.toLowerCase().trim();
@@ -33,18 +21,15 @@ export function SkillRepoPage() {
 		);
 	}, [displayName, skillTrees]);
 
-
-
-
-
-    return (
-        <AuthorGuard>
+	return (
+		<AuthorGuard>
 			<div className="flex min-h-[300px] flex-col">
 				<SearchField
 					placeholder="Suche nach Skill-Trees"
-					onChange={e => {setDisplayName(e.target.value)}}
+					onChange={e => {
+						setDisplayName(e.target.value);
+					}}
 				/>
-
 
 				{isLoading ? (
 					<LoadingBox />
@@ -57,7 +42,7 @@ export function SkillRepoPage() {
 							</>
 						}
 					>
-						{filteredSkillTrees.map(({name, id}) => (
+						{filteredSkillTrees.map(({ name, id }) => (
 							<Fragment key={name}>
 								{name && (
 									<tr key={name}>
@@ -75,7 +60,9 @@ export function SkillRepoPage() {
 											<div className="flex flex-wrap justify-end gap-4">
 												<button
 													className="btn-stroked"
-													onClick={() => {/* new function */}}
+													onClick={() => {
+														/* new function */
+													}}
 												>
 													Editieren
 												</button>
@@ -104,7 +91,6 @@ export function SkillRepoPage() {
 					</Table>
 				)}
 			</div>
-		</AuthorGuard>);
-
+		</AuthorGuard>
+	);
 }
-

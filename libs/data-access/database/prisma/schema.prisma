@@ -274,7 +274,6 @@ model License {
     lessons           Lesson[]
 }
 
-
 model SkillRepository {
   id            String        @id @default(cuid())
   name          String
@@ -287,31 +286,16 @@ model SkillRepository {
 }
 
 model Skill {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
-
-  repositoryId      String
-  repository        SkillRepository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
-  // parentSkills      Skill[]    @relation("parentSkills")
-  // nestedSkills      Skill[]    @relation("parentSkills")
-  
-  // pathTeachingGoals PathGoal[] @relation("pathTeachingGoal")
-  // requirements      PathGoal[] @relation("requirements")
-
-  // Use in Learning Objects
+  id                  String  @id @default(cuid())
+  name                String
+  description         String?
+  repositoryId        String
+  repository          SkillRepository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  children            Skill[] @relation("parent")
+  parents             Skill[] @relation("parent")
   goalsOf             Lesson[]      @relation("teachingGoals")
   requirementsOf      Lesson[]      @relation("requirements")
 
   @@unique([repositoryId, name])
   @@map("skills")
 }
-
-// MS to @Sascha: is this relation really needed?
-// model PathGoal {
-//   id                String         @id @default(cuid())
-//   pathTeachingGoals Skill[]        @relation("pathTeachingGoal")
-//   requirements      Skill[]        @relation("requirements")
-
-//   @@map("path_goals")
-// }
