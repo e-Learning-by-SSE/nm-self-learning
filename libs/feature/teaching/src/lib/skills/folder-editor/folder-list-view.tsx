@@ -7,20 +7,14 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { useState, useMemo, memo, useEffect } from "react";
-
-import {
-	FolderIcon,
-	PlusIcon,
-	DocumentTextIcon,
-	FolderDownloadIcon,
-	TrashIcon
-} from "@heroicons/react/solid";
+import { useState, useMemo, memo, useEffect, useContext } from "react";
+import { FolderIcon, PlusIcon, DocumentTextIcon, FolderDownloadIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { SkillRepository } from "@prisma/client";
-import { SkillSelectHandler } from "./folder-editor";
 import { SkillResolved } from "@self-learning/api";
 import { SkillFormModel } from "@self-learning/types";
+import { SkillTaskbar } from "./skill-taskbar";
+import { FolderContext, SkillSelectHandler } from "./folder-editor";
 
 function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 	return {
@@ -32,13 +26,7 @@ function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 	};
 }
 
-function FolderListView({
-	repository,
-	onSelect
-}: {
-	repository: SkillRepository;
-	onSelect: SkillSelectHandler;
-}) {
+function FolderListView({ repository }: { repository: SkillRepository }) {
 	const [displayName, setDisplayName] = useState("");
 	const [skillArray, setSkillArray] = useState<string[]>();
 	const { data: skills } = trpc.skill.getUnresolvedSkillsFromRepo.useQuery({
@@ -60,6 +48,7 @@ function FolderListView({
 	}, [skillArray, displayName]);
 
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
+	const { onSelect } = useContext(FolderContext);
 
 	const createSkillAndSubmit = async () => {
 		const newSkill = {
@@ -120,12 +109,11 @@ function FolderListView({
 					}
 				>
 					{filteredSkillTrees.map(element => (
-						<ListElementMemorized
+						<ListSkillEntryWithChildrenMemorized
 							key={"baseDir child:" + element}
-							skillInfo={{ skillId: element, repoId: repository.id }}
-							color={0 * 100}
+							skillId={element}
 							depth={1}
-							onSelect={onSelect}
+							showChildren={false}
 						/>
 					))}
 				</Table>
@@ -136,198 +124,103 @@ function FolderListView({
 
 export default memo(FolderListView);
 
-export const ListElementMemorized = memo(ListElement);
-
-function ListElement({
-	skillInfo,
+function SkillRow({
+	skill,
 	depth,
-	onSelect,
-	color
+	childrenFoldedOut,
+	onSelect
 }: {
-	skillInfo: { skillId: string; repoId: string };
+	skill: SkillResolved;
 	depth: number;
+	childrenFoldedOut: boolean;
 	onSelect: SkillSelectHandler;
-	color: number;
 }) {
-	const [open, setOpen] = useState<boolean>(false);
 	const [openTaskbar, setOpenTaskbar] = useState<boolean>(false);
 
-	const { data: skill, isLoading } = trpc.skill.getSkillById.useQuery({
-		skillId: skillInfo.skillId
-	});
+	return (
+		<tr
+			key={skill.id /* TODO: add uid */}
+			className={`bg-gray-${depth * 100}`}
+			onMouseEnter={() => {
+				setOpenTaskbar(true);
+			}}
+			onMouseLeave={() => {
+				setOpenTaskbar(false);
+			}}
+		>
+			<TableDataColumn>
+				<div className="flex items-center gap-4">
+					{skill.children.length > 0 ? (
+						<>
+							{" "}
+							{childrenFoldedOut ? (
+								<FolderDownloadIcon className="icon h-5 text-lg hover:text-secondary" />
+							) : (
+								<FolderIcon className="icon h-5 text-lg hover:text-secondary" />
+							)}{" "}
+						</>
+					) : (
+						<DocumentTextIcon className="icon h-5 text-lg hover:text-secondary" />
+					)}
+					<div
+						className="text-sm font-medium hover:text-secondary"
+						style={{ cursor: "pointer" }}
+						onClick={() => onSelect(toSkillFormModel(skill))}
+					>
+						{depth}.{skill.name}
+					</div>
+				</div>
+			</TableDataColumn>
+			<TableDataColumn>
+				{openTaskbar && <SkillTaskbar selectedSkill={toSkillFormModel(skill)} />}
+			</TableDataColumn>
+		</tr>
+	);
+}
+
+function ListSkillEntryWithChildren({
+	skillId,
+	depth,
+	showChildren
+}: {
+	skillId: string;
+	depth: number;
+	showChildren: boolean;
+}) {
+	const { onSelect } = useContext(FolderContext);
+	const { data: skill, isLoading } = trpc.skill.getSkillById.useQuery({ skillId });
+	const [open, setOpen] = useState(showChildren);
+
+	const unfoldChildren = (selectedSkill: SkillFormModel) => {
+		setOpen(!open);
+		onSelect(selectedSkill);
+	};
 
 	return (
 		// eslint-disable-next-line react/jsx-no-useless-fragment
 		<>
-			{isLoading ? (
+			{isLoading || !skill ? (
 				<LoadingBox />
 			) : (
-				// eslint-disable-next-line react/jsx-no-useless-fragment
 				<>
-					{skill && (
-						<>
-							<tr
-								key={skill.id /* TODO: add uid */}
-								className={`bg-gray-${color}`}
-								onMouseEnter={() => {
-									setOpenTaskbar(true);
-								}}
-								onMouseLeave={() => {
-									setOpenTaskbar(false);
-								}}
-							>
-								<TableDataColumn>
-									<div className="flex items-center gap-4">
-										{skill.children.length > 0 ? (
-											<>
-												{" "}
-												{open ? (
-													<FolderDownloadIcon className="icon h-5 text-lg hover:text-secondary" />
-												) : (
-													<FolderIcon className="icon h-5 text-lg hover:text-secondary" />
-												)}{" "}
-											</>
-										) : (
-											<DocumentTextIcon className="icon h-5 text-lg hover:text-secondary" />
-										)}
-										<div
-											className="text-sm font-medium hover:text-secondary"
-											style={{ cursor: "pointer" }}
-											onClick={() => {
-												setOpen(!open);
-												onSelect(toSkillFormModel(skill));
-											}}
-										>
-											{depth}.{skill.name}
-										</div>
-									</div>
-								</TableDataColumn>
-								<TableDataColumn>
-									{openTaskbar && (
-										<SkillTaskbar selectedSkill={toSkillFormModel(skill)} />
-									)}
-								</TableDataColumn>
-							</tr>
-							{open &&
-								skill.children.length > 0 &&
-								skill.children.map(element => (
-									<ListElementMemorized
-										skillInfo={{
-											skillId: element.id,
-											repoId: skillInfo.repoId
-										}}
-										color={depth * 100}
-										onSelect={onSelect}
-										depth={depth + 1}
-									/>
-								))}
-						</>
-					)}
+					<SkillRow
+						skill={skill}
+						depth={depth}
+						onSelect={unfoldChildren}
+						childrenFoldedOut={open}
+					/>
+					{open &&
+						skill.children.map(element => (
+							<ListSkillEntryWithChildrenMemorized // recursive structure to add <SkillRow /> for each child
+								key={"baseDir child:" + element}
+								skillId={element.id}
+								showChildren={false}
+								depth={depth + 1}
+							/>
+						))}
 				</>
 			)}
 		</>
 	);
 }
-
-function SkillTaskbar({ selectedSkill }: { selectedSkill: SkillFormModel }) {
-	return (
-		<div className="flex flex-wrap justify-end gap-4">
-			<SkillQuickAddOption selectedSkill={selectedSkill} />
-			<SkillDeleteOption skill={selectedSkill} />
-		</div>
-	);
-}
-
-function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel }) {
-	const [addSkill, setAddSkill] = useState<boolean>(false);
-	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
-	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
-
-	useEffect(() => {
-		const handleAddSkill = async () => {
-			const newSkill = {
-				name: selectedSkill.name + " Child",
-				description: "Add here",
-				children: []
-			};
-			try {
-				const createdSkill = await createSkill({
-					repId: selectedSkill.repositoryId,
-					skill: newSkill
-				});
-				const adaptedCurrentSkill: SkillFormModel = {
-					...selectedSkill,
-					children: [...selectedSkill.children, createdSkill.id]
-				};
-
-				try {
-					await updateSkill({ skill: adaptedCurrentSkill });
-					showToast({
-						type: "success",
-						title: "Skill gespeichert!",
-						subtitle: ""
-					});
-				} catch (error) {
-					if (error instanceof Error) {
-						showToast({
-							type: "error",
-							title: "Skill konnte nicht gespeichert werden!",
-							subtitle: error.message ?? ""
-						});
-					}
-					// await deleteSkill({ id: createdSkill.id });
-				}
-			} catch (error) {
-				if (error instanceof Error) {
-					showToast({
-						type: "error",
-						title: "Skill konnte nicht gespeichert werden!",
-						subtitle: error.message ?? ""
-					});
-				}
-			}
-		};
-		if (addSkill) {
-			handleAddSkill();
-			setAddSkill(false);
-		}
-	}, [addSkill, selectedSkill, createSkill, updateSkill]);
-
-	return (
-		<PlusIcon
-			className="icon h-5 text-lg hover:text-secondary"
-			style={{ cursor: "pointer" }}
-			onClick={() => setAddSkill(true)}
-		/>
-	);
-}
-
-function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
-	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
-	const handleDelete = async () => {
-		try {
-			await deleteSkill({ id: skill.id });
-			showToast({
-				type: "success",
-				title: "Skill gelöscht!",
-				subtitle: ""
-			});
-		} catch (error) {
-			if (error instanceof Error) {
-				showToast({
-					type: "error",
-					title: "Skill konnte nicht gelöscht werden!",
-					subtitle: error.message ?? ""
-				});
-			}
-		}
-	};
-
-	return (
-		<TrashIcon
-			className="icon h-5 text-lg hover:text-red-500"
-			style={{ cursor: "pointer" }}
-			onClick={() => handleDelete()}
-		/>
-	);
-}
+const ListSkillEntryWithChildrenMemorized = memo(ListSkillEntryWithChildren);
