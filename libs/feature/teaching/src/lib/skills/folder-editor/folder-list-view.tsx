@@ -30,7 +30,7 @@ function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 function FolderListView({ repository }: { repository: SkillRepository }) {
 	const [displayName, setDisplayName] = useState("");
 	const [skillArray, setSkillArray] = useState<string[]>();
-	const { data: skills } = trpc.skill.getUnresolvedSkillsFromRepo.useQuery({
+	const { data: skills } = trpc.skill.getSkillsWithoutParentFromRepo.useQuery({
 		repoId: repository.id
 	});
 

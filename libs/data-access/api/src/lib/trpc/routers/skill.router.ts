@@ -45,6 +45,14 @@ export const skillRouter = t.router({
 				where: { id: input.id }
 			});
 		}),
+	getSkillsWithoutParentFromRepo: authorProcedure
+		.input(z.object({ repoId: z.string() }))
+		.query(async ({ input }) => {
+			return await database.skill.findMany({
+				where: { repositoryId: input.repoId, parents: { none: {} } }
+			});
+		}),
+
 	getUnresolvedSkillsFromRepo: authorProcedure
 		.input(z.object({ repoId: z.string() }))
 		.query(async ({ input }) => {
