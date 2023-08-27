@@ -1,9 +1,14 @@
 import { LoadingBox, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	AuthorGuard,
+	CriticalConfirmationDialog,
+	useRequiredSession
+} from "@self-learning/ui/layouts";
 import { Fragment, useState, useMemo } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
+import { TrashIcon } from "@heroicons/react/solid";
 
 export function SkillRepositoryOverview() {
 	useRequiredSession();
@@ -57,16 +62,7 @@ export function SkillRepositoryOverview() {
 											</div>
 										</TableDataColumn>
 										<TableDataColumn>
-											<div className="flex flex-wrap justify-end gap-4">
-												<button
-													className="btn-stroked"
-													onClick={() => {
-														/* new function */
-													}}
-												>
-													Editieren
-												</button>
-											</div>
+											<RepositoryTaskbar repositoryId={id} />
 										</TableDataColumn>
 									</tr>
 								)}
@@ -92,5 +88,59 @@ export function SkillRepositoryOverview() {
 				)}
 			</div>
 		</AuthorGuard>
+	);
+}
+
+function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
+	return (
+		<div className="flex flex-wrap justify-end gap-4">
+			<button
+				className="btn-stroked"
+				onClick={() => {
+					/* new function */
+				}}
+			>
+				Editieren
+			</button>
+			<RepositoryDeleteOption repositoryId={repositoryId} />
+		</div>
+	);
+}
+
+function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
+	const { mutateAsync: deleteRepo } = trpc.skill.deleteRepository.useMutation();
+	const [showConfirmation, setShowConfirmation] = useState(false);
+
+	const handleDelete = async () => {
+		await deleteRepo({ id: repositoryId });
+	};
+
+	const handleConfirm = () => {
+		handleDelete();
+		setShowConfirmation(false);
+	};
+
+	const handleCancel = () => {
+		setShowConfirmation(false);
+	};
+
+	return (
+		<>
+			<button
+				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
+				onClick={() => setShowConfirmation(true)}
+			>
+				<div className="ml-4">
+					<TrashIcon className="icon " />
+				</div>
+			</button>
+			{showConfirmation && (
+				<CriticalConfirmationDialog
+					onConfirm={handleConfirm}
+					onCancel={handleCancel}
+					confirmationText="Dieses Element wirklich löschen?"
+				/>
+			)}
+		</>
 	);
 }
