@@ -1,4 +1,4 @@
-import { useEffect, useMemo, memo } from "react";
+import { useEffect, memo, useState } from "react";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -12,40 +12,33 @@ import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 
 function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
-	const getSkillOrDefault = useMemo(() => {
-		return {
+	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
+	const [isNoSkillSelected, setNoSkillSelected] = useState(false);
+
+	const onSubmit = (data: SkillFormModel) => {
+		if (!skill) return;
+		updateSkill({ skill: { ...data, repositoryId: skill.repositoryId, id: skill.id } });
+	};
+
+	const form = useForm({
+		defaultValues: {
 			id: skill?.id ?? "",
-			repositoryId: skill?.repositoryId ?? "10",
+			repositoryId: skill?.repositoryId ?? "0",
 			name: skill?.name ?? "",
 			description: skill?.description || null,
 			children: skill?.children ?? []
-		};
-	}, [skill]);
-
-	const form = useForm({
-		defaultValues: getSkillOrDefault,
+		},
 		resolver: zodResolver(skillFormSchema)
 	});
 
 	const errors = form.formState.errors;
 
 	useEffect(() => {
-		const skill = getSkillOrDefault;
-		form.setValue("name", skill.name);
-		form.setValue("description", skill.description);
-		form.setValue("children", skill.children);
-	}, [form, getSkillOrDefault]);
-
-	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
-	const onSubmit = (data: SkillFormModel) => {
-		// TODO: fix this
-		// we missing repositoryId and id in the data object
-		// naive solution:
-		if (!skill) return;
-		updateSkill({ skill: { ...data, repositoryId: skill.repositoryId, id: skill.id } });
-		// better solution would be to have the repositoryId and id in the data
-		// updateSkill({ skill: data });
-	};
+		setNoSkillSelected(!skill);
+		form.setValue("name", skill?.name ?? "< Bitte einen Skill auswählen... > ");
+		form.setValue("description", skill?.description ?? "");
+		form.setValue("children", skill?.children ?? []);
+	}, [skill, form, isNoSkillSelected]);
 
 	return (
 		<FormProvider {...form}>
@@ -56,13 +49,21 @@ function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 						subtitle="Informationen über den rechts ausgewählten Skill"
 					/>
 					<div className="flex flex-col gap-4">
-						<LabeledField label="Name" error={errors.name?.message}>
+						<LabeledField
+							label="Name"
+							error={errors.name?.message}
+							disabled={isNoSkillSelected}
+						>
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>
-						<LabeledField label="Beschreibung" error={errors.description?.message}>
+						<LabeledField
+							label="Beschreibung"
+							error={errors.description?.message}
+							disabled={isNoSkillSelected}
+						>
 							<textarea {...form.register("description")} />
 						</LabeledField>
-						<LabeledField label="Abhängig von:">
+						<LabeledField label="Abhängig von:" disabled={isNoSkillSelected}>
 							<input
 								type="text"
 								className="textfield"

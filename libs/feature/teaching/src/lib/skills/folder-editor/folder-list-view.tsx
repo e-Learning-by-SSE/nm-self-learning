@@ -1,6 +1,5 @@
 import {
 	LoadingBox,
-	Tab,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
@@ -8,7 +7,7 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { useState, useMemo, memo, useEffect, useContext } from "react";
+import { useState, useMemo, memo, useEffect, useContext, useRef } from "react";
 import { FolderIcon, PlusIcon, DocumentTextIcon, FolderDownloadIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { SkillRepository } from "@prisma/client";
@@ -49,7 +48,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 	}, [skillArray, displayName]);
 
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
-	const { onSelect } = useContext(FolderContext);
+	const { handleSelection } = useContext(FolderContext);
 
 	const createSkillAndSubmit = async () => {
 		const newSkill = {
@@ -70,7 +69,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 			});
 			console.log("New skill created", createdSkill);
 
-			onSelect({ ...createdSkill, children: [] });
+			handleSelection({ ...createdSkill, children: [] });
 			setSkillArray([...(skillArray ?? []), createdSkill.id]);
 		} catch (error) {
 			if (error instanceof Error) {
@@ -143,7 +142,7 @@ function SkillRow({
 
 	return (
 		<tr
-			key={skill.id /* TODO: add uid */}
+			key={skill.id + "_" + depth}
 			className={`bg-gray-${depth * 100}`}
 			onMouseEnter={() => {
 				setOpenTaskbar(true);
@@ -198,11 +197,11 @@ function ListSkillEntryWithChildren({
 	depth: number;
 	showChildren: boolean;
 }) {
-	const { onSelect } = useContext(FolderContext);
+	const { handleSelection: onSelect } = useContext(FolderContext);
 	const { data: skill, isLoading } = trpc.skill.getSkillById.useQuery({ skillId });
 	const [open, setOpen] = useState(showChildren);
 
-	const unfoldChildren = (selectedSkill: SkillFormModel) => {
+	const unfoldChildren: SkillSelectHandler = selectedSkill => {
 		setOpen(!open);
 		onSelect(selectedSkill);
 	};

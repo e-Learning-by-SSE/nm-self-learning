@@ -1,8 +1,9 @@
 import { trpc } from "@self-learning/api-client";
 import { SkillFormModel } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { useEffect, useState } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/solid";
+import { useContext } from "react";
+import { FolderContext } from "./folder-editor";
 
 export function SkillTaskbar({ selectedSkill }: { selectedSkill: SkillFormModel }) {
 	return (
@@ -14,44 +15,34 @@ export function SkillTaskbar({ selectedSkill }: { selectedSkill: SkillFormModel 
 }
 
 function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel }) {
-	const [addSkill, setAddSkill] = useState<boolean>(false);
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
+	const { handleSelection } = useContext(FolderContext);
 
-	useEffect(() => {
-		const handleAddSkill = async () => {
-			const newSkill = {
-				name: selectedSkill.name + " Child",
-				description: "Add here",
-				children: []
+	const handleAddSkill = async () => {
+		const newSkill = {
+			name: selectedSkill.name + " Child",
+			description: "Add here",
+			children: []
+		};
+		try {
+			const createdSkill = await createSkill({
+				repId: selectedSkill.repositoryId,
+				skill: newSkill
+			});
+			const adaptedCurrentSkill = {
+				...selectedSkill,
+				children: [...selectedSkill.children, createdSkill.id]
 			};
-			try {
-				const createdSkill = await createSkill({
-					repId: selectedSkill.repositoryId,
-					skill: newSkill
-				});
-				const adaptedCurrentSkill: SkillFormModel = {
-					...selectedSkill,
-					children: [...selectedSkill.children, createdSkill.id]
-				};
 
-				try {
-					await updateSkill({ skill: adaptedCurrentSkill });
-					showToast({
-						type: "success",
-						title: "Skill gespeichert!",
-						subtitle: ""
-					});
-				} catch (error) {
-					if (error instanceof Error) {
-						showToast({
-							type: "error",
-							title: "Skill konnte nicht gespeichert werden!",
-							subtitle: error.message ?? ""
-						});
-					}
-					// await deleteSkill({ id: createdSkill.id });
-				}
+			try {
+				await updateSkill({ skill: adaptedCurrentSkill });
+				showToast({
+					type: "success",
+					title: "Skill gespeichert!",
+					subtitle: ""
+				});
+				handleSelection(adaptedCurrentSkill);
 			} catch (error) {
 				if (error instanceof Error) {
 					showToast({
@@ -60,25 +51,31 @@ function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel 
 						subtitle: error.message ?? ""
 					});
 				}
+				// await deleteSkill({ id: createdSkill.id });
 			}
-		};
-		if (addSkill) {
-			handleAddSkill();
-			setAddSkill(false);
+		} catch (error) {
+			if (error instanceof Error) {
+				showToast({
+					type: "error",
+					title: "Skill konnte nicht gespeichert werden!",
+					subtitle: error.message ?? ""
+				});
+			}
 		}
-	}, [addSkill, selectedSkill, createSkill, updateSkill]);
+	};
 
 	return (
 		<PlusIcon
 			className="icon h-5 text-lg hover:text-secondary"
 			style={{ cursor: "pointer" }}
-			onClick={() => setAddSkill(true)}
+			onClick={() => handleAddSkill()}
 		/>
 	);
 }
 
-function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
+export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
+	const { handleSelection } = useContext(FolderContext);
 	const handleDelete = async () => {
 		try {
 			await deleteSkill({ id: skill.id });
@@ -96,6 +93,7 @@ function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 				});
 			}
 		}
+		handleSelection(null);
 	};
 
 	return (
