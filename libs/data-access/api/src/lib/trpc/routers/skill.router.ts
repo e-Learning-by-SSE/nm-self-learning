@@ -38,6 +38,13 @@ export const skillRouter = t.router({
 		});
 		return repositories;
 	}),
+	deleteRepository: authorProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ input }) => {
+			return await database.skillRepository.delete({
+				where: { id: input.id }
+			});
+		}),
 	getUnresolvedSkillsFromRepo: authorProcedure
 		.input(z.object({ repoId: z.string() }))
 		.query(async ({ input }) => {
@@ -116,7 +123,7 @@ export const skillRouter = t.router({
 		)
 		.query(async ({ input }) => {
 			return getSkillById(input.skillId);
-		})
+		}),
 	// getResolvedSkill: authorProcedure
 	// 	.input(
 	// 		z.object({
@@ -132,8 +139,16 @@ export const skillRouter = t.router({
 	// 		});
 	// 	})
 
-	// deleteSkill: authorProcedure.input(z.object({
-	// 	id: z.string() })).mutation( async({ input }) => {
-	// 		// return await skillServiceApi.SkillMgmtController_deleteSkill( { params: { skillId: input.id } });
-	// })
+	deleteSkill: authorProcedure
+		.input(
+			z.object({
+				id: z.string()
+			})
+		)
+		.mutation(async ({ input }) => {
+			// TODO decide what to do with children
+			return await database.skill.delete({
+				where: { id: input.id }
+			});
+		})
 });

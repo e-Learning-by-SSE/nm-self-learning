@@ -22,7 +22,7 @@ import { SkillSelectHandler } from "./folder-editor";
 import { SkillResolved } from "@self-learning/api";
 import { SkillFormModel } from "@self-learning/types";
 
-export function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
+function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 	return {
 		id: dbSkill.id,
 		name: dbSkill.name,
@@ -303,10 +303,10 @@ function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel 
 }
 
 function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
-	// const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
+	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
 	const handleDelete = async () => {
 		try {
-			// await deleteSkill({ id: skill.id });
+			await deleteSkill({ id: skill.id });
 			showToast({
 				type: "success",
 				title: "Skill gelöscht!",
