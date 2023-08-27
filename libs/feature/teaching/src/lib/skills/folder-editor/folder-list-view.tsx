@@ -18,9 +18,9 @@ import {
 } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { SkillRepository } from "@prisma/client";
-import { SkillFormModel } from "@self-learning/types";
 import { SkillSelectHandler } from "./folder-editor";
 import { SkillResolved } from "@self-learning/api";
+import { SkillFormModel } from "@self-learning/types";
 
 export function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 	return {
@@ -151,84 +151,10 @@ function ListElement({
 }) {
 	const [open, setOpen] = useState<boolean>(false);
 	const [openTaskbar, setOpenTaskbar] = useState<boolean>(false);
-	const [refreshData, setRefreshData] = useState<boolean>(false);
 
 	const { data: skill, isLoading } = trpc.skill.getSkillById.useQuery({
 		skillId: skillInfo.skillId
 	});
-
-	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
-	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
-	// const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
-
-	const addSkill = async () => {
-		if (isLoading) return;
-		if (!skill) return;
-
-		const newSkill = {
-			name: skill.name + " Child",
-			description: "Add here",
-			children: []
-		};
-
-		try {
-			const createdSkill = await createSkill({ repId: skillInfo.repoId, skill: newSkill });
-			const adaptedCurrentSkill: SkillFormModel = {
-				...skill,
-				children: [...skill.children.map(child => child.id), createdSkill.id]
-			};
-
-			try {
-				await updateSkill({ skill: adaptedCurrentSkill });
-				setRefreshData(!refreshData);
-				showToast({
-					type: "success",
-					title: "Skill gespeichert!",
-					subtitle: ""
-				});
-			} catch (error) {
-				if (error instanceof Error) {
-					showToast({
-						type: "error",
-						title: "Skill konnte nicht gespeichert werden!",
-						subtitle: error.message ?? ""
-					});
-				}
-				// await deleteSkill({ id: createdSkill.id });
-			}
-		} catch (error) {
-			if (error instanceof Error) {
-				showToast({
-					type: "error",
-					title: "Skill konnte nicht gespeichert werden!",
-					subtitle: error.message ?? ""
-				});
-			}
-		}
-	};
-
-	const deleteThisSkill = async () => {
-		if (isLoading) return;
-		if (!skill) return;
-
-		try {
-			// await deleteSkill({ id: skillInfo.skillId });
-			showToast({
-				type: "success",
-				title: "Skill gelöscht!",
-				subtitle: ""
-			});
-			setRefreshData(!refreshData);
-		} catch (error) {
-			if (error instanceof Error) {
-				showToast({
-					type: "error",
-					title: "Skill konnte nicht gelöscht werden!",
-					subtitle: error.message ?? ""
-				});
-			}
-		}
-	};
 
 	return (
 		// eslint-disable-next-line react/jsx-no-useless-fragment
@@ -277,26 +203,9 @@ function ListElement({
 									</div>
 								</TableDataColumn>
 								<TableDataColumn>
-									<div className="flex flex-wrap justify-end gap-4">
-										{openTaskbar && (
-											<>
-												<PlusIcon
-													className="icon h-5 text-lg hover:text-secondary"
-													style={{ cursor: "pointer" }}
-													onClick={() => {
-														addSkill();
-													}}
-												/>
-												<TrashIcon
-													className="icon h-5 text-lg hover:text-red-500"
-													style={{ cursor: "pointer" }}
-													onClick={() => {
-														deleteThisSkill();
-													}}
-												/>
-											</>
-										)}
-									</div>
+									{openTaskbar && (
+										<SkillTaskbar selectedSkill={toSkillFormModel(skill)} />
+									)}
 								</TableDataColumn>
 							</tr>
 							{open &&
@@ -317,5 +226,108 @@ function ListElement({
 				</>
 			)}
 		</>
+	);
+}
+
+function SkillTaskbar({ selectedSkill }: { selectedSkill: SkillFormModel }) {
+	return (
+		<div className="flex flex-wrap justify-end gap-4">
+			<SkillQuickAddOption selectedSkill={selectedSkill} />
+			<SkillDeleteOption skill={selectedSkill} />
+		</div>
+	);
+}
+
+function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel }) {
+	const [addSkill, setAddSkill] = useState<boolean>(false);
+	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
+	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
+
+	useEffect(() => {
+		const handleAddSkill = async () => {
+			const newSkill = {
+				name: selectedSkill.name + " Child",
+				description: "Add here",
+				children: []
+			};
+			try {
+				const createdSkill = await createSkill({
+					repId: selectedSkill.repositoryId,
+					skill: newSkill
+				});
+				const adaptedCurrentSkill: SkillFormModel = {
+					...selectedSkill,
+					children: [...selectedSkill.children, createdSkill.id]
+				};
+
+				try {
+					await updateSkill({ skill: adaptedCurrentSkill });
+					showToast({
+						type: "success",
+						title: "Skill gespeichert!",
+						subtitle: ""
+					});
+				} catch (error) {
+					if (error instanceof Error) {
+						showToast({
+							type: "error",
+							title: "Skill konnte nicht gespeichert werden!",
+							subtitle: error.message ?? ""
+						});
+					}
+					// await deleteSkill({ id: createdSkill.id });
+				}
+			} catch (error) {
+				if (error instanceof Error) {
+					showToast({
+						type: "error",
+						title: "Skill konnte nicht gespeichert werden!",
+						subtitle: error.message ?? ""
+					});
+				}
+			}
+		};
+		if (addSkill) {
+			handleAddSkill();
+			setAddSkill(false);
+		}
+	}, [addSkill, selectedSkill, createSkill, updateSkill]);
+
+	return (
+		<PlusIcon
+			className="icon h-5 text-lg hover:text-secondary"
+			style={{ cursor: "pointer" }}
+			onClick={() => setAddSkill(true)}
+		/>
+	);
+}
+
+function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
+	// const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
+	const handleDelete = async () => {
+		try {
+			// await deleteSkill({ id: skill.id });
+			showToast({
+				type: "success",
+				title: "Skill gelöscht!",
+				subtitle: ""
+			});
+		} catch (error) {
+			if (error instanceof Error) {
+				showToast({
+					type: "error",
+					title: "Skill konnte nicht gelöscht werden!",
+					subtitle: error.message ?? ""
+				});
+			}
+		}
+	};
+
+	return (
+		<TrashIcon
+			className="icon h-5 text-lg hover:text-red-500"
+			style={{ cursor: "pointer" }}
+			onClick={() => handleDelete()}
+		/>
 	);
 }
