@@ -1,5 +1,6 @@
 import {
 	LoadingBox,
+	Tab,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
@@ -103,7 +104,10 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 				<Table
 					head={
 						<>
-							<TableHeaderColumn>Name</TableHeaderColumn>
+							<TableHeaderColumn>Kinder</TableHeaderColumn>
+							<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
+							<TableHeaderColumn>Ebene</TableHeaderColumn>
+							<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>
 							<TableHeaderColumn></TableHeaderColumn>
 						</>
 					}
@@ -112,7 +116,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 						<ListSkillEntryWithChildrenMemorized
 							key={"baseDir child:" + element}
 							skillId={element}
-							depth={1}
+							depth={0}
 							showChildren={false}
 						/>
 					))}
@@ -149,30 +153,37 @@ function SkillRow({
 			}}
 		>
 			<TableDataColumn>
-				<div className="flex items-center gap-4">
+				<div className="flex items-center">
 					{skill.children.length > 0 ? (
 						<>
 							{" "}
 							{childrenFoldedOut ? (
-								<FolderDownloadIcon className="icon h-5 text-lg hover:text-secondary" />
+								<FolderDownloadIcon className="icon h-5 text-lg" />
 							) : (
-								<FolderIcon className="icon h-5 text-lg hover:text-secondary" />
+								<FolderIcon className="icon h-5 text-lg" />
 							)}{" "}
 						</>
 					) : (
-						<DocumentTextIcon className="icon h-5 text-lg hover:text-secondary" />
+						<DocumentTextIcon className="icon h-5 text-lg" />
 					)}
-					<div
-						className="text-sm font-medium hover:text-secondary"
-						style={{ cursor: "pointer" }}
-						onClick={() => onSelect(toSkillFormModel(skill))}
-					>
-						{depth}.{skill.name}
-					</div>
+					<span>{skill.children.length}</span>
 				</div>
 			</TableDataColumn>
 			<TableDataColumn>
-				{openTaskbar && <SkillTaskbar selectedSkill={toSkillFormModel(skill)} />}
+				<div
+					className="text-sm font-medium hover:text-secondary"
+					style={{ cursor: "pointer" }}
+					onClick={() => onSelect(toSkillFormModel(skill))}
+				>
+					{skill.name}
+				</div>
+			</TableDataColumn>
+			<TableDataColumn>{depth}</TableDataColumn>
+			<TableDataColumn>{skill.repository.name}</TableDataColumn>
+			<TableDataColumn>
+				<div className="flex flex-wrap justify-end gap-4">
+					{openTaskbar && <SkillTaskbar selectedSkill={toSkillFormModel(skill)} />}
+				</div>
 			</TableDataColumn>
 		</tr>
 	);

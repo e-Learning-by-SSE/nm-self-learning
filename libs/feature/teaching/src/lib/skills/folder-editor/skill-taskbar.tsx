@@ -6,10 +6,10 @@ import { PlusIcon, TrashIcon } from "@heroicons/react/solid";
 
 export function SkillTaskbar({ selectedSkill }: { selectedSkill: SkillFormModel }) {
 	return (
-		<div className="flex flex-wrap justify-end gap-4">
+		<>
 			<SkillQuickAddOption selectedSkill={selectedSkill} />
 			<SkillDeleteOption skill={selectedSkill} />
-		</div>
+		</>
 	);
 }
 

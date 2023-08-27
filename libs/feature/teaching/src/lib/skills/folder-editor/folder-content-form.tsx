@@ -41,10 +41,10 @@ function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 		// TODO: fix this
 		// we missing repositoryId and id in the data object
 		// naive solution:
-		//     if (!skill) return;
-		//     updateSkill({ skill: { ...data, repositoryId: skill.repositoryId, id: skill.id } });
+		if (!skill) return;
+		updateSkill({ skill: { ...data, repositoryId: skill.repositoryId, id: skill.id } });
 		// better solution would be to have the repositoryId and id in the data
-		updateSkill({ skill: data });
+		// updateSkill({ skill: data });
 	};
 
 	return (
@@ -52,7 +52,7 @@ function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
 				<Form.SidebarSection>
 					<Form.SidebarSectionTitle
-						title="Skill - Daten"
+						title="Bearbeiten"
 						subtitle="Informationen über den rechts ausgewählten Skill"
 					/>
 					<div className="flex flex-col gap-4">

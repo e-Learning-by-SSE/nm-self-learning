@@ -27,7 +27,7 @@ export function FolderSkillEditor({ repositoryID }: { repositoryID: string }) {
 					<>
 						<div>
 							<span className="text-2xl font-semibold text-secondary">
-								Skilltree editieren
+								Skillkarten editieren
 							</span>
 						</div>
 
