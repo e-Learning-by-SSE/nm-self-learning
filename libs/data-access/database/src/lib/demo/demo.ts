@@ -17,6 +17,7 @@ import { getRandomId } from "@self-learning/util/common";
 
 import { javaExample } from "./java-example";
 import { Quiz } from "@self-learning/quiz";
+import { javaSkillSeed } from "./java-skills";
 
 faker.seed(1);
 
@@ -586,6 +587,7 @@ export async function seedDemos(): Promise<void> {
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
+	await javaSkillSeed();
 	await javaExample();
 }
 

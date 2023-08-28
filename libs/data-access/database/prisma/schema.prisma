@@ -46,6 +46,7 @@ model User {
   sessions       Session[]
   student        Student?
   uploadedAssets UploadedAssets[]
+  skillRepositories SkillRepository[]
 }
 
 model VerificationToken {
@@ -280,6 +281,7 @@ model SkillRepository {
   description   String?
   skills        Skill[]
   ownerId       String
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@unique([ownerId, name])
   @@map("skill-repositories")
