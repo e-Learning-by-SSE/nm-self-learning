@@ -11,8 +11,23 @@ pipeline {
     options {
         ansiColor('xterm')
     }
-
     stages { 
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM', 
+                    doGenerateSubmoduleConfigurations: false, 
+                    extensions: [[$class: 'SubmoduleOption', 
+                                    disableSubmodules: false, 
+                                    parentCredentials: false, 
+                                    recursiveSubmodules: true, 
+                                    reference: '', 
+                                    trackingSubmodules: false]], 
+                    submoduleCfg: [], 
+                    userRemoteConfigs: [[url: 'https://github.com/e-Learning-by-SSE/nm-self-learning', credentialsId: 'STM-SSH-DEMO']]
+                ])
+            }
+        }
         stage("NodeJS Build") {
             agent {
                 docker {
