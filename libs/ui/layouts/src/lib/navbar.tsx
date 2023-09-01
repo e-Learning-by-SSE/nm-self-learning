@@ -1,4 +1,4 @@
-import { AcademicCapIcon, LogoutIcon, UserIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
+import { AcademicCapIcon, LogoutIcon, UserIcon, MenuIcon, XIcon, BookOpenIcon } from "@heroicons/react/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -167,6 +167,19 @@ export function NavbarDropdownMenu({
 							>
 								<UserIcon className="h-5" />
 								<span>Übersicht</span>
+							</Link>
+						)}
+					</Menu.Item>
+					<Menu.Item as="div" className="p-1">
+						{({ active }) => (
+							<Link
+								href="/learning-diary"
+								className={`${
+									active ? "bg-emerald-500 text-white" : ""
+								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+							>
+								<BookOpenIcon className="h-5" />
+								<span>Lerntagebuch</span>
 							</Link>
 						)}
 					</Menu.Item>
