@@ -78,13 +78,13 @@ export const learningDiaryRouter = t.router({
 			z.object({ diaryId: z.string(), goalId: z.string() })
 		)
 		.mutation(async ({ input: { diaryId, goalId }, ctx }) => {
-			
+
 
 			const removed = await database.learningDiary.update({
 				where: { username: diaryId },
 				data: {
 					goals: {
-						disconnect: { id:goalId }
+						disconnect: { id: goalId }
 					}
 				},
 				select: {
@@ -99,7 +99,7 @@ export const learningDiaryRouter = t.router({
 			);
 			return removed;
 		}),
-		addEntry: authProcedure
+	addEntry: authProcedure
 		.input(
 			z.object({ diaryId: z.string(), entryId: z.string() })
 		)
@@ -124,18 +124,18 @@ export const learningDiaryRouter = t.router({
 			);
 			return added;
 		}),
-		removeEntry: authProcedure
+	removeEntry: authProcedure
 		.input(
 			z.object({ diaryId: z.string(), entryId: z.string() })
 		)
 		.mutation(async ({ input: { diaryId, entryId }, ctx }) => {
-			
+
 
 			const removed = await database.learningDiary.update({
 				where: { username: diaryId },
 				data: {
 					entries: {
-						disconnect: { id:entryId}
+						disconnect: { id: entryId }
 					}
 				},
 				select: {
@@ -150,7 +150,7 @@ export const learningDiaryRouter = t.router({
 			);
 			return removed;
 		}),
-		addLearningTime: authProcedure
+	addLearningTime: authProcedure
 		.input(
 			z.object({ diaryId: z.string(), learningTimeId: z.string() })
 		)
@@ -175,18 +175,18 @@ export const learningDiaryRouter = t.router({
 			);
 			return added;
 		}),
-		removeLearningTime: authProcedure
+	removeLearningTime: authProcedure
 		.input(
 			z.object({ diaryId: z.string(), learningTimeId: z.string() })
 		)
 		.mutation(async ({ input: { diaryId, learningTimeId }, ctx }) => {
-			
+
 
 			const removed = await database.learningDiary.update({
 				where: { username: diaryId },
 				data: {
 					learningTimes: {
-						disconnect: { id:learningTimeId}
+						disconnect: { id: learningTimeId }
 					}
 				},
 				select: {
@@ -201,13 +201,13 @@ export const learningDiaryRouter = t.router({
 			);
 			return removed;
 		}),
-		createGoal: authProcedure
+	createGoal: authProcedure
 		.input(
 			z.object({
 				type: z.custom<GoalType>(),
-  				description: z.string(),
-  				value: z.number(),
-  				priority: z.number()
+				description: z.string(),
+				value: z.number(),
+				priority: z.number()
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -227,7 +227,7 @@ export const learningDiaryRouter = t.router({
 
 			return goal;
 		}),
-		createDiaryEntry: authProcedure
+	createDiaryEntry: authProcedure
 		.input(
 			z.object({
 				distractions: z.string(),
@@ -251,7 +251,7 @@ export const learningDiaryRouter = t.router({
 
 			return entry;
 		}),
-		addStrategytoEntry: authProcedure
+	addStrategytoEntry: authProcedure
 		.input(
 			z.object({ entryId: z.string(), strategyId: z.string() })
 		)
@@ -276,18 +276,18 @@ export const learningDiaryRouter = t.router({
 			);
 			return added;
 		}),
-		removeStrategyfromEntry: authProcedure
+	removeStrategyfromEntry: authProcedure
 		.input(
 			z.object({ entryId: z.string(), strategyId: z.string() })
 		)
 		.mutation(async ({ input: { entryId, strategyId }, ctx }) => {
-			
+
 
 			const removed = await database.diaryEntry.update({
 				where: { id: entryId },
 				data: {
 					learningStrategies: {
-						disconnect: { id:strategyId}
+						disconnect: { id: strategyId }
 					}
 				},
 				select: {
@@ -302,7 +302,7 @@ export const learningDiaryRouter = t.router({
 			);
 			return removed;
 		}),
-		createLearningStrategy: authProcedure
+	createLearningStrategy: authProcedure
 		.input(
 			z.object({
 				type: z.custom<StrategyType>(),
@@ -329,7 +329,7 @@ export const learningDiaryRouter = t.router({
 
 			return strategy;
 		}),
-		createLearningTime: authProcedure
+	createLearningTime: authProcedure
 		.input(
 			z.object({
 				startingDate: z.date(),
