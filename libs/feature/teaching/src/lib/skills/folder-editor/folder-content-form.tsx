@@ -10,6 +10,7 @@ import {
 } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
+import { SkillResolved } from "@self-learning/api";
 
 function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
@@ -35,9 +36,9 @@ function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 
 	useEffect(() => {
 		setNoSkillSelected(!skill);
+		if (!skill) return;
 		form.setValue("name", skill?.name ?? "< Bitte einen Skill auswählen... > ");
 		form.setValue("description", skill?.description ?? "");
-		form.setValue("children", skill?.children ?? []);
 	}, [skill, form, isNoSkillSelected]);
 
 	return (
@@ -63,14 +64,11 @@ function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 						>
 							<textarea {...form.register("description")} />
 						</LabeledField>
-						<LabeledField label="Abhängig von:" disabled={isNoSkillSelected}>
-							<input
-								type="text"
-								className="textfield"
-								readOnly
-								value={form.getValues("children")}
-							/>
-						</LabeledField>
+						{skill ? (
+							<DependencyInfoWithDbData skill={skill} />
+						) : (
+							<EmptyDependencyInfo />
+						)}
 						<div className="flex justify-between">
 							<button type="submit" className="btn-primary w-full">
 								Speichern
@@ -80,6 +78,53 @@ function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 				</Form.SidebarSection>
 			</form>
 		</FormProvider>
+	);
+}
+
+function EmptyDependencyInfo() {
+	return <SkillDependencyInfo isDisabled={true} children="" parents="" />;
+}
+
+function DependencyInfoWithDbData({ skill }: { skill: SkillFormModel }) {
+	const [skillParents, setSkillParents] = useState<SkillResolved["parents"]>([]);
+	const [skillChildren, setSkillChildren] = useState<SkillResolved["children"]>([]);
+
+	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
+		skillId: skill?.id
+	});
+
+	useEffect(() => {
+		setSkillChildren(dbSkill?.children ?? []);
+		setSkillParents(dbSkill?.parents ?? []);
+	}, [dbSkill]);
+
+	return (
+		<SkillDependencyInfo
+			isDisabled={true}
+			children={skillChildren.map(child => child.name).join(", ")}
+			parents={skillParents.map(parent => parent.name).join(", ")}
+		/>
+	);
+}
+
+function SkillDependencyInfo({
+	isDisabled,
+	children,
+	parents
+}: {
+	isDisabled: boolean;
+	children: string;
+	parents: string;
+}) {
+	return (
+		<>
+			<LabeledField label="Beinhaltet folgende Skills (Kinder):" disabled={isDisabled}>
+				<input type="text" className="textfield" readOnly value={children} />
+			</LabeledField>
+			<LabeledField label="Gehört zu folgenden Skills (Eltern):" disabled={true}>
+				<input type="text" className="textfield" readOnly value={parents} />
+			</LabeledField>
+		</>
 	);
 }
 

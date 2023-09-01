@@ -3,4 +3,4 @@ export * from "./lib/trpc/trpc";
 export * from "./lib/auth";
 
 // TODO maybe find a better place for those types
-export { SkillResolved, SkillUnresolved } from "./lib/trpc/routers/skill.router";
+export type { SkillResolved, SkillUnresolved } from "./lib/trpc/routers/skill.router";

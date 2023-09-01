@@ -17,7 +17,8 @@ function getSkillById(id: string) {
 		where: { id },
 		include: {
 			children: true,
-			repository: true
+			repository: true,
+			parents: true
 		}
 	});
 }
@@ -52,7 +53,6 @@ export const skillRouter = t.router({
 				where: { repositoryId: input.repoId, parents: { none: {} } }
 			});
 		}),
-
 	getUnresolvedSkillsFromRepo: authorProcedure
 		.input(z.object({ repoId: z.string() }))
 		.query(async ({ input }) => {
@@ -98,6 +98,11 @@ export const skillRouter = t.router({
 						connect: input.skill.children.map(id => ({ id }))
 					},
 					repository: { connect: { id: input.skill.repositoryId } }
+				},
+				include: {
+					children: true,
+					repository: true,
+					parents: true
 				}
 			});
 		}),
@@ -111,15 +116,19 @@ export const skillRouter = t.router({
 		)
 		.mutation(async ({ input }) => {
 			// TODO check for cycles
-			const skillData = {
-				...input.skill,
-				repository: { connect: { id: input.repId } },
-				children: {
-					connect: input.skill.children.map(id => ({ id }))
-				}
-			};
 			return await database.skill.create({
-				data: skillData
+				data: {
+					...input.skill,
+					repository: { connect: { id: input.repId } },
+					children: {
+						connect: input.skill.children.map(id => ({ id }))
+					}
+				},
+				include: {
+					children: true,
+					repository: true,
+					parents: true
+				}
 			});
 		}),
 
