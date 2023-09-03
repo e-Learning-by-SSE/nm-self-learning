@@ -43,7 +43,7 @@ export function FolderSkillEditor({ repositoryID }: { repositoryID: string }) {
 								)}
 							</>
 						)}
-						<SkillInfoForm skill={selectedItem} />
+						{selectedItem && <SkillInfoForm skill={selectedItem} />}
 					</>
 				}
 			>

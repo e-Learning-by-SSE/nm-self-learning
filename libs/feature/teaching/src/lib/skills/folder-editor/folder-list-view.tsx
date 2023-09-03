@@ -7,8 +7,8 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { useState, useMemo, memo, useEffect, useContext, useRef } from "react";
-import { FolderIcon, PlusIcon, DocumentTextIcon, FolderDownloadIcon } from "@heroicons/react/solid";
+import { useState, useMemo, memo, useEffect, useContext } from "react";
+import { FolderIcon, PlusIcon, FolderDownloadIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { SkillRepository } from "@prisma/client";
 import { SkillResolved } from "@self-learning/api";
@@ -22,7 +22,8 @@ function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 		name: dbSkill.name,
 		description: dbSkill.description,
 		repositoryId: dbSkill.repositoryId,
-		children: dbSkill.children?.map(child => child.id)
+		children: dbSkill.children?.map(child => child.id),
+		parents: dbSkill.parents?.map(parent => parent.id)
 	};
 }
 
@@ -69,7 +70,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 			});
 			console.log("New skill created", createdSkill);
 
-			handleSelection({ ...createdSkill, children: [] });
+			handleSelection(toSkillFormModel(createdSkill));
 			setSkillArray([...(skillArray ?? []), createdSkill.id]);
 		} catch (error) {
 			if (error instanceof Error) {
@@ -86,7 +87,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 		<div>
 			<CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
-					<h1 className="text-5xl">SkillTrees</h1>
+					<h1 className="text-5xl">{repository.name}</h1>
 					<button className="btn-primary" onClick={() => createSkillAndSubmit()}>
 						<PlusIcon className="icon h-5" />
 						<span>Skill hinzufügen</span>
@@ -103,7 +104,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 				<Table
 					head={
 						<>
-							<TableHeaderColumn>Kinder</TableHeaderColumn>
+							{/* <TableHeaderColumn>Kinder</TableHeaderColumn> */}
 							<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
 							<TableHeaderColumn>Ebene</TableHeaderColumn>
 							<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>
@@ -139,11 +140,11 @@ function SkillRow({
 	onSelect: SkillSelectHandler;
 }) {
 	const [openTaskbar, setOpenTaskbar] = useState<boolean>(false);
-
+	const key = skill.id + "_" + depth + "_" + Math.floor(Math.random() * 10000000001);
 	return (
 		<tr
-			key={skill.id + "_" + depth}
-			className={`bg-gray-${depth * 100}`}
+			key={key}
+			// className={`bg-gray-${depth * 100}`}
 			onMouseEnter={() => {
 				setOpenTaskbar(true);
 			}}
@@ -151,30 +152,37 @@ function SkillRow({
 				setOpenTaskbar(false);
 			}}
 		>
-			<TableDataColumn>
-				<div className="flex items-center">
-					{skill.children.length > 0 ? (
-						<>
-							{" "}
-							{childrenFoldedOut ? (
-								<FolderDownloadIcon className="icon h-5 text-lg" />
-							) : (
-								<FolderIcon className="icon h-5 text-lg" />
-							)}{" "}
-						</>
-					) : (
-						<DocumentTextIcon className="icon h-5 text-lg" />
-					)}
-					<span>{skill.children.length}</span>
-				</div>
-			</TableDataColumn>
-			<TableDataColumn>
+			<TableDataColumn
+				className={`border- px-4 pl-7 text-sm ${
+					depth % 2 === 0 ? "border-gray-400" : "border-gray-500"
+				} `}
+			>
+				<div className="flex items-center"></div>
+				{/* </TableDataColumn>
+			<TableDataColumn> */}
 				<div
-					className="text-sm font-medium hover:text-secondary"
+					className="flex text-sm font-medium hover:text-secondary"
 					style={{ cursor: "pointer" }}
 					onClick={() => onSelect(toSkillFormModel(skill))}
 				>
-					{skill.name}
+					<span>{skill.children.length !== 0 ? skill.children.length : ""}</span>
+					<span></span>
+					<div className="px-3">
+						{skill.children.length > 0 ? (
+							<>
+								{" "}
+								{childrenFoldedOut ? (
+									<FolderDownloadIcon className="icon h-5 text-lg" />
+								) : (
+									<FolderIcon className="icon h-5 text-lg" />
+								)}{" "}
+							</>
+						) : (
+							<div className="px-2">•</div>
+							// <DocumentTextIcon className="icon h-5 text-lg" />
+						)}
+					</div>
+					<span>{skill.name}</span>
 				</div>
 			</TableDataColumn>
 			<TableDataColumn>{depth}</TableDataColumn>

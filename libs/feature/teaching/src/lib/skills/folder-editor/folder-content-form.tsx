@@ -11,35 +11,37 @@ import {
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { SkillResolved } from "@self-learning/api";
+import { PlusCircleIcon, XIcon } from "@heroicons/react/solid";
 
-function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
+function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
-	const [isNoSkillSelected, setNoSkillSelected] = useState(false);
-
+	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
+		skillId: skill.id
+	});
 	const onSubmit = (data: SkillFormModel) => {
-		if (!skill) return;
-		updateSkill({ skill: { ...data, repositoryId: skill.repositoryId, id: skill.id } });
+		updateSkill({
+			skill: {
+				...data,
+				repositoryId: skill.repositoryId,
+				id: skill.id,
+				// don't use the form values. parents|children are changed from inside the dependency info component
+				children: skill.children,
+				parents: skill.parents
+			}
+		});
 	};
 
 	const form = useForm({
-		defaultValues: {
-			id: skill?.id ?? "",
-			repositoryId: skill?.repositoryId ?? "0",
-			name: skill?.name ?? "",
-			description: skill?.description || null,
-			children: skill?.children ?? []
-		},
+		defaultValues: skill,
 		resolver: zodResolver(skillFormSchema)
 	});
 
 	const errors = form.formState.errors;
 
 	useEffect(() => {
-		setNoSkillSelected(!skill);
-		if (!skill) return;
-		form.setValue("name", skill?.name ?? "< Bitte einen Skill auswählen... > ");
-		form.setValue("description", skill?.description ?? "");
-	}, [skill, form, isNoSkillSelected]);
+		form.setValue("name", skill.name);
+		form.setValue("description", skill?.description);
+	}, [skill, form]);
 
 	return (
 		<FormProvider {...form}>
@@ -50,25 +52,17 @@ function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 						subtitle="Informationen über den rechts ausgewählten Skill"
 					/>
 					<div className="flex flex-col gap-4">
-						<LabeledField
-							label="Name"
-							error={errors.name?.message}
-							disabled={isNoSkillSelected}
-						>
+						<LabeledField label="Name" error={errors.name?.message}>
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>
-						<LabeledField
-							label="Beschreibung"
-							error={errors.description?.message}
-							disabled={isNoSkillSelected}
-						>
+						<LabeledField label="Beschreibung" error={errors.description?.message}>
 							<textarea {...form.register("description")} />
 						</LabeledField>
-						{skill ? (
-							<DependencyInfoWithDbData skill={skill} />
-						) : (
-							<EmptyDependencyInfo />
-						)}
+						<SkillToSkillDepsInfo
+							parents={dbSkill?.parents ?? []}
+							children={dbSkill?.children ?? []}
+							skill={skill}
+						/>
 						<div className="flex justify-between">
 							<button type="submit" className="btn-primary w-full">
 								Speichern
@@ -81,50 +75,103 @@ function SkillInfoForm({ skill }: { skill: SkillFormModel | null }) {
 	);
 }
 
-function EmptyDependencyInfo() {
-	return <SkillDependencyInfo isDisabled={true} children="" parents="" />;
-}
-
-function DependencyInfoWithDbData({ skill }: { skill: SkillFormModel }) {
-	const [skillParents, setSkillParents] = useState<SkillResolved["parents"]>([]);
-	const [skillChildren, setSkillChildren] = useState<SkillResolved["children"]>([]);
-
-	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
-		skillId: skill?.id
-	});
+function SkillToSkillDepsInfo({
+	parents,
+	children,
+	skill
+}: {
+	parents: SkillResolved["parents"];
+	children: SkillResolved["children"];
+	skill: SkillFormModel;
+}) {
+	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
+	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
+	useEffect(() => {
+		setParentItems(parents);
+	}, [parents]);
 
 	useEffect(() => {
-		setSkillChildren(dbSkill?.children ?? []);
-		setSkillParents(dbSkill?.parents ?? []);
-	}, [dbSkill]);
+		setChildItems(children);
+	}, [children]);
+
+	const removeParent = (id: string) => {
+		setParentItems(parentItems.filter(item => item.id !== id));
+		skill.parents = skill.parents.filter(item => item !== id);
+	};
+	const removeChild = (id: string) => {
+		setChildItems(childItems.filter(item => item.id !== id));
+		skill.children = skill.children.filter(item => item !== id);
+	};
 
 	return (
-		<SkillDependencyInfo
-			isDisabled={true}
-			children={skillChildren.map(child => child.name).join(", ")}
-			parents={skillParents.map(parent => parent.name).join(", ")}
-		/>
+		<>
+			<label>
+				<span className="text-sm font-semibold">
+					{"Beinhaltet folgende Skills (Kinder):"}
+				</span>
+			</label>
+			<div>
+				{childItems.map((child, index) => (
+					<RemovableInlineButton
+						key={index}
+						label={child.name}
+						onRemove={() => removeChild(child.id)}
+						onClick={() => {}}
+					/>
+				))}
+				<PlusCircleIcon
+					className="icon h-5 px-4 text-lg hover:text-secondary"
+					style={{ cursor: "pointer" }}
+					onClick={() => {}}
+				/>
+			</div>
+			<label>
+				<span className="text-sm font-semibold">
+					{"Ist Teil von folgenden Skills (Eltern):"}
+				</span>
+			</label>
+			<div>
+				{parentItems.map((child, index) => (
+					<RemovableInlineButton
+						key={index}
+						label={child.name}
+						onRemove={() => removeParent(child.id)}
+						onClick={() => {}}
+					/>
+				))}
+				<PlusCircleIcon
+					className="icon h-5 px-4 text-lg hover:text-secondary"
+					style={{ cursor: "pointer" }}
+					onClick={() => {}}
+				/>
+			</div>
+		</>
 	);
 }
 
-function SkillDependencyInfo({
-	isDisabled,
-	children,
-	parents
+function RemovableInlineButton({
+	label,
+	onRemove,
+	onClick
 }: {
-	isDisabled: boolean;
-	children: string;
-	parents: string;
+	label: string;
+	onRemove: () => void;
+	onClick: () => void;
 }) {
 	return (
-		<>
-			<LabeledField label="Beinhaltet folgende Skills (Kinder):" disabled={isDisabled}>
-				<input type="text" className="textfield" readOnly value={children} />
-			</LabeledField>
-			<LabeledField label="Gehört zu folgenden Skills (Eltern):" disabled={true}>
-				<input type="text" className="textfield" readOnly value={parents} />
-			</LabeledField>
-		</>
+		<div className="inline-block">
+			<div className="flex items-center rounded-lg border border-light-border bg-white text-sm">
+				<span className="flex flex-grow flex-col px-4">{label}</span>
+				<button
+					type="button"
+					data-testid="remove"
+					className="mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
+					onClick={onRemove}
+				>
+					<XIcon className="h-3" />
+				</button>
+			</div>
+		</div>
 	);
 }
 

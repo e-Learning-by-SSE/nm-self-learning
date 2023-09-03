@@ -10,7 +10,8 @@ export type SkillCreationFormModel = z.infer<typeof skillCreationFormSchema>;
 
 export const skillFormSchema = skillCreationFormSchema.extend({
 	id: z.string(),
-	repositoryId: z.string()
+	repositoryId: z.string(),
+	parents: z.array(z.string())
 });
 export type SkillFormModel = z.infer<typeof skillFormSchema>;
 

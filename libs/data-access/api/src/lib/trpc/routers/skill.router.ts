@@ -10,7 +10,7 @@ import {
 } from "@self-learning/types";
 
 export type SkillResolved = ResolvedValue<typeof getSkillById>;
-export type SkillUnresolved = Omit<SkillResolved, "children" | "repository">;
+export type SkillUnresolved = Omit<SkillResolved, "children" | "repository | parents">;
 
 function getSkillById(id: string) {
 	return database.skill.findUnique({
@@ -89,14 +89,16 @@ export const skillRouter = t.router({
 		.mutation(async ({ input }) => {
 			// TODO check for cycles
 			// TODO verify this
+			const children = input.skill.children.map(id => ({ id }));
+			const parents = input.skill.parents.map(id => ({ id }));
+			console.log(children, parents);
 			return await database.skill.update({
 				where: { id: input.skill.id },
 				data: {
-					description: input.skill.description,
 					name: input.skill.name,
-					children: {
-						connect: input.skill.children.map(id => ({ id }))
-					},
+					description: input.skill.description,
+					children: { set: children },
+					parents: { set: parents },
 					repository: { connect: { id: input.skill.repositoryId } }
 				},
 				include: {
