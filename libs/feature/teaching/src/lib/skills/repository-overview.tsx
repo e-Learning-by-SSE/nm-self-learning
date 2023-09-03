@@ -1,10 +1,13 @@
-import { LoadingBox, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { SearchField } from "@self-learning/ui/forms";
 import {
-	AuthorGuard,
-	CriticalConfirmationDialog,
-	useRequiredSession
-} from "@self-learning/ui/layouts";
+	Dialog,
+	DialogActions,
+	LoadingBox,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn
+} from "@self-learning/ui/common";
+import { SearchField } from "@self-learning/ui/forms";
+import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useState, useMemo } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
@@ -135,11 +138,14 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 				</div>
 			</button>
 			{showConfirmation && (
-				<CriticalConfirmationDialog
-					onConfirm={handleConfirm}
-					onCancel={handleCancel}
-					confirmationText="Dieses Element wirklich löschen?"
-				/>
+				<Dialog title={"Löschen"} onClose={handleCancel}>
+					Möchten Sie dieses Repository wirklich löschen?
+					<DialogActions onClose={handleCancel}>
+						<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
+							Löschen
+						</button>
+					</DialogActions>
+				</Dialog>
 			)}
 		</>
 	);
