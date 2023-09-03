@@ -21,7 +21,7 @@ function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel 
 
 	const handleAddSkill = async () => {
 		const newSkill = {
-			name: selectedSkill.name + " Child",
+			name: selectedSkill.name + " Child" + Math.floor(Math.random() * 100),
 			description: "Add here",
 			children: []
 		};
