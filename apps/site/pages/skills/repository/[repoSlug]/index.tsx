@@ -13,12 +13,12 @@ export default function CreateAndViewRepository() {
 	const [repositoryID, setRepositoryID] = useState<string>("1");
 
 	useEffect(() => {
-		if (!router.query.createSlug) return;
-		if (typeof router.query.createSlug !== "string") return;
-		if (Array.isArray(router.query.createSlug)) return;
+		if (!router.query.repoSlug) return;
+		if (typeof router.query.repoSlug !== "string") return;
+		if (Array.isArray(router.query.repoSlug)) return;
 		if (session.data?.user.id === undefined) return;
 		const userId = session.data.user.id;
-		const slug = router.query.createSlug ?? "";
+		const slug = router.query.repoSlug ?? "";
 
 		const createNewRep = async () => {
 			setIsLoading(true);
@@ -36,12 +36,12 @@ export default function CreateAndViewRepository() {
 			setIsLoading(false);
 		};
 
-		if (slug === "new") {
+		if (slug === "create") {
 			createNewRep();
 		} else {
 			setRepositoryID(slug);
 		}
-	}, [router.query.createSlug, createRep, session.data?.user.id]);
+	}, [router.query.repoSlug, createRep, session.data?.user.id]);
 
 	return (
 		<div>{isLoading ? <LoadingBox /> : <FolderSkillEditor repositoryID={repositoryID} />}</div>

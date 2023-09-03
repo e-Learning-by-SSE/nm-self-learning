@@ -58,7 +58,7 @@ export function SkillRepositoryOverview() {
 											<div className="flex flex-wrap gap-4">
 												<Link
 													className="text-sm font-medium hover:text-secondary"
-													href={`/skills/create/${id}`}
+													href={`/skills/repository/${id}`}
 												>
 													{name}
 												</Link>

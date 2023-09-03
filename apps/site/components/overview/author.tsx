@@ -292,12 +292,12 @@ export default function AuthorOverview({ author }: Props) {
 				<section>
 					<div className="flex justify-between gap-4">
 						<SectionHeader
-							title="Skill Repositorie"
+							title="Skillkarten"
 							subtitle="Besitzer der folgenden Repositories"
 						/>
-						<Link href="skills/create/new" className="btn-primary h-fit w-fit">
+						<Link href="skills/repository/create" className="btn-primary h-fit w-fit">
 							<PlusIcon className="icon h-5" />
-							<span>Skilltree anlegen</span>
+							<span>Skillkarten anlegen</span>
 						</Link>
 					</div>
 					<SkillRepositoryOverview />
