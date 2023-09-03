@@ -1,10 +1,11 @@
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { RepositoryInfoMemorized, SkillInfoForm } from "./folder-content-form";
 import { createContext, useState } from "react";
 import { trpc } from "@self-learning/api-client";
 import { Divider, LoadingBox } from "@self-learning/ui/common";
 import FolderListView from "./folder-list-view";
 import { SkillFormModel } from "@self-learning/types";
+import { RepositoryInfoMemorized } from "./repository-edit-form";
+import { SkillInfoForm } from "./skill-edit-form";
 
 export type SkillSelectHandler = (selectedSkill: SkillFormModel | null) => void;
 export interface FolderContextProps {
