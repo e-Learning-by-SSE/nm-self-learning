@@ -1,24 +1,23 @@
 import { ArrowCircleRightIcon } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
-import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { endOfWeek, format, isToday, isYesterday, parseISO, startOfWeek } from "date-fns";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
-import { ReactElement, useRef } from "react";
-import { useState } from 'react';
-import { Tab } from '@headlessui/react';
-import { Disclosure } from '@headlessui/react';
-import { GoalType } from "@prisma/client";
+import { ReactElement, useRef, useState } from "react";
+import { Tab, Disclosure } from '@headlessui/react';
+import { GoalType, LearningStrategy } from "@prisma/client";
+import { ChevronRightIcon} from "@heroicons/react/solid";
 
 
 
 type CompletedLesson = ResolvedValue<typeof getCompletedLessonsThisWeek>[0];
-type LearningGoal = ResolvedValue<typeof getGoals>[0]
+type LearningGoal = ResolvedValue<typeof getGoals>[0];
+type DiaryEntry = ResolvedValue<typeof getEntries>[0];
+
 type LearningDiaryProps = {
 	completedLessons: {
 		today: CompletedLesson[];
@@ -26,6 +25,11 @@ type LearningDiaryProps = {
 		week: CompletedLesson[];
 	},
 	goals: LearningGoal[];
+	entries: {
+		today: DiaryEntry[];
+		yesterday: DiaryEntry[];
+		week: DiaryEntry[];
+	}
 };
 
 function classNames(...classes: any[]) {
@@ -39,19 +43,21 @@ export const getServerSideProps: GetServerSideProps<LearningDiaryProps> = async 
 		return { redirect: { destination: "/login?callbackUrl=learning-diary", permanent: false } };
 	}
 
-	const [completedLessons, goals] = await Promise.all([
+	const [completedLessons, goals, entries] = await Promise.all([
 		JSON.parse(JSON.stringify(await getCompletedLessonsThisWeek(session.user.name, Date.now()))),
 		/*database.learningDiary.findUnique({
 			where: { username: session.user.name },
 			include: { goals: true }
 		}),*/
-		JSON.parse(JSON.stringify(await getGoals(session.user.name)))
+		JSON.parse(JSON.stringify(await getGoals(session.user.name))),
+		JSON.parse(JSON.stringify(await getEntries(session.user.name)))
 	]);
 
 	return {
 		props: {
 			goals: goals,
-			completedLessons: groupCompletedLessons(completedLessons)
+			completedLessons: groupCompletedLessons(completedLessons),
+			entries: groupEntries(entries)
 		}
 	};
 };
@@ -73,6 +79,23 @@ function getGoals(username: string) {
 		orderBy:
 		{
 			priority: "desc"
+		},
+		where: {
+			diaryID: username
+		}
+	});
+}
+
+function getEntries(username: string) {
+	return database.diaryEntry.findMany({
+			include: {
+				learningStrategies: true,
+				completedLesson:{
+					include: {
+						lesson: true,
+						course: true
+					  },
+				}	
 		},
 		where: {
 			diaryID: username
@@ -104,7 +127,8 @@ async function getCompletedLessonsThisWeek(username: string, dateNow: number) {
 				createdAt: {
 					gte: startOfWeek(dateNow, { weekStartsOn: 1 }),
 					lte: endOfWeek(dateNow, { weekStartsOn: 1 })
-				}
+				},
+				diaryEntry: null
 			}
 		}
 	});
@@ -118,9 +142,9 @@ function groupCompletedLessons(
 	const week = [];
 
 	for (const lesson of completedLessons) {
-		if (isToday(lesson.createdAt)) {
+		if (isToday(parseISO(lesson.createdAt as unknown as string))) {
 			today.push(lesson);
-		} else if (isYesterday(lesson.createdAt)) {
+		} else if (isYesterday(parseISO(lesson.createdAt as unknown as string))) {
 			yesterday.push(lesson);
 		} else {
 			week.push(lesson);
@@ -128,6 +152,26 @@ function groupCompletedLessons(
 	}
 	return { today, yesterday, week };
 }
+
+function groupEntries(
+	entries: DiaryEntry[]
+): LearningDiaryProps["entries"] {
+	const today = [];
+	const yesterday = [];
+	const week = [];
+
+	for (const entry of entries) {
+		if (entry.completedLesson!=null && isToday(parseISO(entry.completedLesson.createdAt as unknown as string))) {
+			today.push(entry);
+		} else if (entry.completedLesson!=null && isYesterday(parseISO(entry.completedLesson.createdAt as unknown as string))) {
+			yesterday.push(entry);
+		} else {
+			week.push(entry);
+		}
+	}
+	return { today, yesterday, week };
+}
+
 /*
 <ChevronUpIcon
 									className={`${open ? 'rotate-180 transform' : ''
@@ -135,24 +179,27 @@ function groupCompletedLessons(
 								/>
 								*/
 function Goal({
-	description="",
+	description = "",
 	priority,
 	type
 }: {
-	description: string|null;
+	description: string | null;
 	priority: number;
 	type: GoalType;
 }) {
 	return (
-		<div className="w-full px-4">
-			<div className="mx-auto w-full max-w-md rounded-2xl bg-white p-2">
+		<div className="w-full">
+			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
 				<Disclosure>
 					{({ open }) => (
 						<>
-							<Disclosure.Button className="flex w-full justify-between rounded-lg px-2 py-1 text-left text-sm font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
-								<span>{description}</span>
+							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left text-sm font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
+								<div className="flex row justify-between flex-grow">
+									<span>{description}</span>
+									<ChevronRightIcon className={open ? 'rotate-90 transform h-5 w-5' : 'h-5 w-5'} />
+								</div>
 							</Disclosure.Button>
-							<Disclosure.Panel className="px-4 pt-1 pb-1 text-sm text-gray-500">
+							<Disclosure.Panel className="text-sm text-gray-500">
 								<span>TEST {priority}</span>
 							</Disclosure.Panel>
 						</>
@@ -166,27 +213,6 @@ function Goal({
 function TabGoals({ goals }: LearningDiaryProps) {
 
 	const [selectedIndex, setSelectedIndex] = useState(0)
-	/*
-	const inputRef = useRef<HTMLTextAreaElement>(null);
-	const { mutate, isLoading: isSaving } = trpc.learningDiary.addGoal.useMutation({
-		onSettled(_data, error) {
-			if (error) {
-				console.error(error);
-				showToast({
-					type: "error",
-					title: "Fehler",
-					subtitle: "Deine Ziele konnten nicht gespeichert werden."
-				});
-			} else {
-				showToast({
-					type: "success",
-					title: "Gespeichert",
-					subtitle: "Deine Ziele wurden erfolgreich gespeichert."
-				});
-			}
-		}
-	});
-	*/
 	return (
 		<section className="border-card flex flex-col gap-8 bg-white p-4">
 			<div className="flex justify-between">
@@ -215,28 +241,29 @@ function TabGoals({ goals }: LearningDiaryProps) {
 					<Tab.Panel>
 						<ul className="flex flex-col gap-2 text-sm">
 							{goals
-							.filter(i => i.achieved === false)
-							.map(({ id,description, priority, type }) => (
-								<Goal
-									key={id}
-									description={description}
-									priority={priority}
-									type={type}
-								/>
-							))}
+								.filter(i => i.achieved === false)
+								.map(({ id, description, priority, type }) => (
+									<Goal
+										key={id}
+										description={description}
+										priority={priority}
+										type={type}
+									/>
+								))}
 						</ul>
 					</Tab.Panel>
 					<Tab.Panel>
 						<ul className="flex flex-col gap-2 text-sm">
 							{goals
-							.filter(i => i.achieved === true)
-							.map(({ id,description, priority }) => (
-								<Goal
-									key={id}
-									description={description}
-									priority={priority}
-								/>
-							))}
+								.filter(i => i.achieved === true)
+								.map(({ id, description, priority, type }) => (
+									<Goal
+										key={id}
+										description={description}
+										priority={priority}
+										type={type}
+									/>
+								))}
 						</ul>
 					</Tab.Panel>
 				</Tab.Panels>
@@ -279,7 +306,7 @@ function CompletedSection({
 			</div>
 			<ul className="flex flex-col gap-2 text-sm">
 				{completedLessons.map(({ lesson, createdAt, course }) => (
-					<CompletedLesson
+					<CompletedLessonDisclosure
 						key={lesson.lessonId}
 						title={lesson.title}
 						topic={course ? course.title : lesson.title}
@@ -296,7 +323,99 @@ function CompletedSection({
 	);
 }
 
-function CompletedLesson({
+function EntriesSection({
+	title,
+	subtitle,
+	entries
+}: {
+	title: string;
+	subtitle: (amount: ReactElement) => ReactElement;
+	entries: DiaryEntry[]; 
+}) {
+	return (
+		<section className="flex flex-col gap-4">
+			<div className="flex flex-col gap-1">
+				<span className="font-semibold">{title}</span>
+				<span className="text-xs text-light">
+					{subtitle(<span className="font-semibold">{entries.length}</span>)}
+				</span>
+			</div>
+			<ul className="flex flex-col gap-2 text-sm">
+				{entries.map(({ id, completedLesson,distractions,efforts,learningStrategies,notes }) => (
+					<EntriesDisclosure
+						key={id}
+						completedLesson={completedLesson}
+						distractions={distractions}
+						efforts={efforts}
+						learningStrategies={learningStrategies}
+						notes={notes}
+					/>
+				))}
+			</ul>
+		</section>
+	);
+}
+
+
+function EntriesDisclosure({
+	completedLesson,
+	distractions="",
+	efforts="",
+	learningStrategies,
+	notes=""
+}: {
+	distractions: string | null;
+	efforts: string | null;
+	learningStrategies: LearningStrategy[] | null;
+	notes: string | null;
+	completedLesson: CompletedLesson | null;
+}) {
+	let button:any;
+	let panel:any;
+    if (completedLesson != null) {
+      button = <div>{completedLesson.lesson.title} - {format(parseISO(completedLesson.createdAt as unknown as string), "HH:mm dd-MM-yyyy")}</div>;
+	  panel = <div><Link href={
+		completedLesson.course
+		? `/courses/${completedLesson.course.slug}/${completedLesson.lesson.slug}`
+		: `/lessons/${completedLesson.lesson.slug}`
+	} className="font-medium">
+		{completedLesson.lesson.title}
+	</Link>
+	<div className="flex flex-col gap-1">
+
+		<span className="text-xs text-light">
+			in <span className="text-secondary">{completedLesson.course ? completedLesson.course.title : completedLesson.lesson.title}</span>
+		</span>
+	</div>
+	<div className="text-xs text-light">
+		{format(parseISO(completedLesson.createdAt as unknown as string), "HH:mm dd-MM-yyyy")}
+	</div>	</div>
+	} else {
+      button = <div> Ein Eintrag </div>;
+	  panel = <div>Todo</div>
+    }
+	return (
+		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
+			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
+				<Disclosure>
+					{({ open }) => (
+						<>
+							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
+								{button}
+								<ChevronRightIcon className={open ? 'rotate-90 transform h-5 w-5' : 'h-5 w-5'} />
+								</Disclosure.Button>
+							<Disclosure.Panel className="text-gray-500">
+								{panel}
+							</Disclosure.Panel>
+						</>
+					)}
+				</Disclosure>
+			</div>
+		</li>
+	);
+}
+
+function CompletedLessonDisclosure({
 	title,
 	href,
 	topic,
@@ -308,23 +427,39 @@ function CompletedLesson({
 	date: Date;
 }) {
 	return (
-		<li className="border-card flex flex-wrap items-center justify-between gap-2 bg-white p-3">
-			<div className="flex flex-col gap-1">
-				<Link href={href} className="font-medium">
-					{title}
-				</Link>
-				<span className="text-xs text-light">
-					in <span className="text-secondary">{topic}</span>
-				</span>
-			</div>
-			<div className="text-xs text-light">
-				{format(parseISO(date as unknown as string), "HH:mm")}
+		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
+			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
+				<Disclosure>
+					{({ open }) => (
+						<>
+							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
+								{title} - {format(parseISO(date as unknown as string), "HH:mm dd-MM-yyyy")}
+								<ChevronRightIcon className={open ? 'rotate-90 transform h-5 w-5' : 'h-5 w-5'} />
+							</Disclosure.Button>
+							<Disclosure.Panel className="text-gray-500">
+								<Link href={href} className="font-medium">
+									{title}
+								</Link>
+								<div className="flex flex-col gap-1">
+
+									<span className="text-xs text-light">
+										in <span className="text-secondary">{topic}</span>
+									</span>
+								</div>
+								<div className="text-xs text-light">
+									{format(parseISO(date as unknown as string), "HH:mm dd-MM-yyyy")}
+								</div>
+							</Disclosure.Panel>
+						</>
+					)}
+				</Disclosure>
 			</div>
 		</li>
 	);
 }
 
-function TabGroupEntries({ completedLessons }: LearningDiaryProps) {
+
+function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 	const [selectedIndex, setSelectedIndex] = useState(0)
 	return (
 		<section className="flex flex-col gap-8 p-4 bg-white ">
@@ -353,8 +488,28 @@ function TabGroupEntries({ completedLessons }: LearningDiaryProps) {
 				</Tab.List>
 				<Tab.Panels className="mt-8 flex flex-col gap-12 flex-grow" >
 					<Tab.Panel>
-						<section className="mt-8 flex flex-col gap-12 flex-grow">
-							Keine Einträge
+						<section>
+							<EntriesSection
+								title="Heute"
+								subtitle={amount => <>Deine heutigen Tagebucheinträge: {amount}.</>}
+								entries={entries.today}
+							/>
+							<EntriesSection
+								title="Gestern"
+								subtitle={amount => <>Deine gestrigen Tagebucheinträge: {amount}.</>}
+								entries={entries.yesterday}
+							/>
+							<EntriesSection
+								title="Diese Woche"
+								subtitle={amount => (<>Deine restlichen Tagebucheinträge: {amount}.</>)}
+								entries={entries.week}
+							/>
+							<section>
+								<button className="flex flex-row items-end gap-2 text-sm text-light">
+									<span className="font-medium">Vorherige Woche anzeigen</span>
+									<ArrowCircleRightIcon className="h-6" />
+								</button>
+							</section>
 						</section>
 					</Tab.Panel>
 					<Tab.Panel>
@@ -389,21 +544,26 @@ function TabGroupEntries({ completedLessons }: LearningDiaryProps) {
 		</section>
 	)
 }
-//export default function LearningDiary({completedLessons,goals}: LearningDiaryProps) {
+
+
 export default function LearningDiary(props: LearningDiaryProps) {
 	return (
 		<CenteredSection className="bg-gray-50 flex">
 			<h1 className="mb-16 text-5xl">Mein Lerntagebuch</h1>
 			<section className="mt-8 flex flex-row justify-between gap-12">
 				<section className="mt-8 flex flex-col gap-12 flex-grow" >
-					<TabGroupEntries completedLessons={props.completedLessons} goals={[]} />
+					<TabGroupEntries completedLessons={props.completedLessons} goals={[]} entries={props.entries} />
 				</section>
 				<section className="mt-8 flex flex-col gap-12 flex-grow" >
 					<TabGoals goals={props.goals} completedLessons={{
 						today: [],
 						yesterday: [],
 						week: []
-					}} />
+					}} entries={{
+						today: [],
+						yesterday: [],
+						week: []
+					}}/>
 					<Strategies initialValue={""} />
 				</section>
 			</section>
@@ -411,5 +571,3 @@ export default function LearningDiary(props: LearningDiaryProps) {
 		</CenteredSection>
 	);
 }
-
-
