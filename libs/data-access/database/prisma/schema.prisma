@@ -200,6 +200,7 @@ model CompletedLesson {
   course            Course?  @relation(fields: [courseId], references: [courseId])
   lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
   user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
+  diaryEntry        DiaryEntry?    
 
   @@index([username, lessonId])
 }
@@ -311,7 +312,8 @@ model DiaryEntry {
   notes String?
   //lesson Lesson
   //quizAttempt QuizAttempt?
-  //completedLesson CompletedLesson?
+  completedLesson CompletedLesson? @relation(fields: [completedLessonId], references: [completedLessonId])
+  completedLessonId Int? @unique
 }
 
 model LearningStrategy {
