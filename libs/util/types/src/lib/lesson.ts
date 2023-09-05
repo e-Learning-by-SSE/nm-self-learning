@@ -3,6 +3,7 @@ import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 import { LessonType } from "@prisma/client";
+import { skillFormSchema } from "./skill";
 
 export type LessonInfo = {
 	lessonId: string;
@@ -22,6 +23,8 @@ export const lessonSchema = z.object({
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
 	licenseId: z.number().nullable(),
+	requirements: z.array(skillFormSchema),
+	teachingGoals: z.array(skillFormSchema),
 	lessonType: z.nativeEnum(LessonType),
 	selfRegulatedQuestion: z.string().nullable(),
 	quiz: z
@@ -46,6 +49,8 @@ export function createEmptyLesson(): Lesson {
 		imgUrl: null,
 		quiz: null,
 		licenseId: null,
+		requirements: [],
+		teachingGoals: [],
 		content: [],
 		authors: [],
 		lessonType: LessonType.TRADITIONAL,

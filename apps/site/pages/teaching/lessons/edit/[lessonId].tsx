@@ -32,6 +32,8 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 			quiz: true,
 			imgUrl: true,
 			licenseId: true,
+			requirements: true,
+			teachingGoals: true,
 			authors: true,
 			lessonType: true,
 			selfRegulatedQuestion: true
@@ -74,6 +76,12 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 		imgUrl: lesson.imgUrl,
 		authors: lesson.authors.map(a => ({ username: a.username })),
 		licenseId: lesson.licenseId,
+		requirements: lesson.requirements.map((r) => ({
+			...r,children: []
+			})),
+		teachingGoals: lesson.teachingGoals.map(t =>({
+			...t,children: []
+			})),
 		// Need type casting because JsonArray from prisma causes error
 		content: (lesson.content ?? []) as LessonContent,
 		quiz: lesson.quiz as Quiz,
