@@ -91,7 +91,6 @@ export const skillRouter = t.router({
 			// TODO verify this
 			const children = input.skill.children.map(id => ({ id }));
 			const parents = input.skill.parents.map(id => ({ id }));
-			console.log(children, parents);
 			return await database.skill.update({
 				where: { id: input.skill.id },
 				data: {

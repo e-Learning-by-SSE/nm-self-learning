@@ -18,48 +18,49 @@ export function FolderSkillEditor({ repositoryID }: { repositoryID: string }) {
 	const [selectedItem, setSelectedItem] = useState<SkillFormModel | null>(null);
 
 	const changeSelectedItem: SkillSelectHandler = item => {
+		console.log("changed item", item);
 		setSelectedItem(item);
 	};
 
 	return (
 		<div className="bg-gray-50">
-			<SidebarEditorLayout
-				sidebar={
-					<>
-						<div>
-							<span className="text-2xl font-semibold text-secondary">
-								Skillkarten editieren
-							</span>
-						</div>
+			<FolderContext.Provider value={{ handleSelection: changeSelectedItem }}>
+				<SidebarEditorLayout
+					sidebar={
+						<>
+							<div>
+								<span className="text-2xl font-semibold text-secondary">
+									Skillkarten editieren
+								</span>
+							</div>
 
-						{isLoading ? (
-							<LoadingBox />
-						) : (
-							<>
-								{repository && (
-									<>
-										<RepositoryInfoMemorized repository={repository} />
-										<Divider />
-									</>
-								)}
-							</>
-						)}
-						{selectedItem && <SkillInfoForm skill={selectedItem} />}
-					</>
-				}
-			>
-				{isLoading ? (
-					<LoadingBox />
-				) : (
-					<div>
-						{repository && (
-							<FolderContext.Provider value={{ handleSelection: changeSelectedItem }}>
-								<FolderListView repository={repository} />
-							</FolderContext.Provider>
-						)}
-					</div>
-				)}
-			</SidebarEditorLayout>
+							{isLoading ? (
+								<LoadingBox />
+							) : (
+								<>
+									{repository && (
+										<>
+											<RepositoryInfoMemorized repository={repository} />
+											<Divider />
+										</>
+									)}
+								</>
+							)}
+							{selectedItem ? (
+								<SkillInfoForm skill={selectedItem} />
+							) : (
+								"Einen Skill aus der Liste auswählen um das Bearbeiten zu starten..."
+							)}
+						</>
+					}
+				>
+					{isLoading ? (
+						<LoadingBox />
+					) : (
+						<div>{repository && <FolderListView repository={repository} />}</div>
+					)}
+				</SidebarEditorLayout>
+			</FolderContext.Provider>
 		</div>
 	);
 }

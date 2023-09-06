@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -6,12 +6,16 @@ import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/api";
 import { PlusCircleIcon, XIcon } from "@heroicons/react/solid";
+import { FolderContext } from "./folder-editor";
+import { SkillDeleteOption } from "./skill-taskbar";
+import { showToast } from "@self-learning/ui/common";
 
 export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
 	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
 		skillId: skill.id
 	});
+
 	const onSubmit = (data: SkillFormModel) => {
 		updateSkill({
 			skill: {
@@ -22,6 +26,11 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 				children: skill.children,
 				parents: skill.parents
 			}
+		});
+		showToast({
+			type: "success",
+			title: "Skill gespeichert!",
+			subtitle: ""
 		});
 	};
 
@@ -37,14 +46,25 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 		form.setValue("description", skill?.description);
 	}, [skill, form]);
 
+	const { handleSelection } = useContext(FolderContext);
 	return (
 		<FormProvider {...form}>
 			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
 				<Form.SidebarSection>
-					<Form.SidebarSectionTitle
-						title="Bearbeiten"
-						subtitle="Informationen über den rechts ausgewählten Skill"
-					/>
+					<div className="flex justify-between">
+						<Form.SidebarSectionTitle
+							title="Bearbeiten"
+							subtitle="Informationen über den rechts ausgewählten Skill"
+						/>
+						<button
+							type="button"
+							className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
+							title="Ansicht ohne Veränderungen schließen"
+							onClick={() => handleSelection(null)}
+						>
+							<XIcon className="h-5" />
+						</button>
+					</div>
 					<div className="flex flex-col gap-4">
 						<LabeledField label="Name" error={errors.name?.message}>
 							<input type="text" className="textfield" {...form.register("name")} />
@@ -55,13 +75,12 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 						<SkillToSkillDepsInfo
 							parents={dbSkill?.parents ?? []}
 							children={dbSkill?.children ?? []}
-							skill={skill}
+							skillToChange={skill}
 						/>
-						<div className="flex justify-between">
-							<button type="submit" className="btn-primary w-full">
-								Speichern
-							</button>
-						</div>
+						<button type="submit" className="btn-primary w-full">
+							Speichern
+						</button>
+						<SkillDeleteOption skill={skill} />
 					</div>
 				</Form.SidebarSection>
 			</form>
@@ -72,12 +91,13 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 function SkillToSkillDepsInfo({
 	parents,
 	children,
-	skill
+	skillToChange
 }: {
 	parents: SkillResolved["parents"];
 	children: SkillResolved["children"];
-	skill: SkillFormModel;
+	skillToChange: SkillFormModel;
 }) {
+	const { handleSelection } = useContext(FolderContext);
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
 	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
 	useEffect(() => {
@@ -90,11 +110,11 @@ function SkillToSkillDepsInfo({
 
 	const removeParent = (id: string) => {
 		setParentItems(parentItems.filter(item => item.id !== id));
-		skill.parents = skill.parents.filter(item => item !== id);
+		skillToChange.parents = skillToChange.parents.filter(item => item !== id);
 	};
 	const removeChild = (id: string) => {
 		setChildItems(childItems.filter(item => item.id !== id));
-		skill.children = skill.children.filter(item => item !== id);
+		skillToChange.children = skillToChange.children.filter(item => item !== id);
 	};
 
 	return (
@@ -106,16 +126,15 @@ function SkillToSkillDepsInfo({
 			</label>
 			<div>
 				{childItems.map((child, index) => (
-					<RemovableInlineButton
+					<InlineRemoveButton
 						key={index}
 						label={child.name}
 						onRemove={() => removeChild(child.id)}
-						onClick={() => {}}
+						onClick={() => handleSelection({ ...child, children: [], parents: [] })} // TODO feature: unfold children when clicked
 					/>
 				))}
 				<PlusCircleIcon
-					className="icon h-5 px-4 text-lg hover:text-secondary"
-					style={{ cursor: "pointer" }}
+					className="icon mt-2 h-5 cursor-pointer px-4 text-lg hover:text-secondary"
 					onClick={() => {}}
 				/>
 			</div>
@@ -126,24 +145,25 @@ function SkillToSkillDepsInfo({
 			</label>
 			<div>
 				{parentItems.map((child, index) => (
-					<RemovableInlineButton
+					<InlineRemoveButton
 						key={index}
 						label={child.name}
 						onRemove={() => removeParent(child.id)}
-						onClick={() => {}}
+						onClick={() => handleSelection({ ...child, children: [], parents: [] })}
 					/>
 				))}
 				<PlusCircleIcon
-					className="icon h-5 px-4 text-lg hover:text-secondary"
-					style={{ cursor: "pointer" }}
-					onClick={() => {}}
+					className="icon mt-2 h-5 cursor-pointer px-4 text-lg hover:text-secondary"
+					onClick={() => {
+						console.log("added");
+					}}
 				/>
 			</div>
 		</>
 	);
 }
 
-function RemovableInlineButton({
+function InlineRemoveButton({
 	label,
 	onRemove,
 	onClick
@@ -155,7 +175,13 @@ function RemovableInlineButton({
 	return (
 		<div className="inline-block">
 			<div className="flex items-center rounded-lg border border-light-border bg-white text-sm">
-				<span className="flex flex-grow flex-col px-4">{label}</span>
+				<button
+					className="flex flex-grow cursor-pointer flex-col px-4 hover:text-secondary"
+					onClick={onClick}
+					type="button"
+				>
+					{label}
+				</button>
 				<button
 					type="button"
 					data-testid="remove"

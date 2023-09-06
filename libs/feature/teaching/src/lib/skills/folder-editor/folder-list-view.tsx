@@ -7,16 +7,18 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { useState, useMemo, memo, useEffect, useContext } from "react";
-import { FolderIcon, PlusIcon, FolderDownloadIcon } from "@heroicons/react/solid";
+import React, { useState, useMemo, memo, useEffect, useContext } from "react";
+import { FolderIcon, PlusIcon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/solid";
+import { PencilIcon, PuzzleIcon } from "@heroicons/react/outline";
 import { trpc } from "@self-learning/api-client";
 import { SkillRepository } from "@prisma/client";
 import { SkillResolved } from "@self-learning/api";
 import { SkillFormModel } from "@self-learning/types";
-import { SkillTaskbar } from "./skill-taskbar";
+import { SkillQuickAddOption } from "./skill-taskbar";
 import { FolderContext, SkillSelectHandler } from "./folder-editor";
+import styles from "./folder-list-view.module.css";
 
-function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
+export function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 	return {
 		id: dbSkill.id,
 		name: dbSkill.name,
@@ -104,11 +106,8 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 				<Table
 					head={
 						<>
-							{/* <TableHeaderColumn>Kinder</TableHeaderColumn> */}
 							<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
-							<TableHeaderColumn>Ebene</TableHeaderColumn>
 							<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>
-							<TableHeaderColumn></TableHeaderColumn>
 						</>
 					}
 				>
@@ -132,66 +131,65 @@ function SkillRow({
 	skill,
 	depth,
 	childrenFoldedOut,
-	onSelect
+	onSelect,
+	onEdit
 }: {
 	skill: SkillResolved;
 	depth: number;
 	childrenFoldedOut: boolean;
-	onSelect: SkillSelectHandler;
+	onSelect: () => void;
+	onEdit: SkillSelectHandler;
 }) {
-	const [openTaskbar, setOpenTaskbar] = useState<boolean>(false);
 	const key = skill.id + "_" + depth + "_" + Math.floor(Math.random() * 10000000001);
+	const depthCssStyle = {
+		"--depth": depth
+	} as React.CSSProperties;
+
+	const hasChildren = skill.children.length !== 0;
 	return (
-		<tr
-			key={key}
-			// className={`bg-gray-${depth * 100}`}
-			onMouseEnter={() => {
-				setOpenTaskbar(true);
-			}}
-			onMouseLeave={() => {
-				setOpenTaskbar(false);
-			}}
-		>
-			<TableDataColumn
-				className={`border- px-4 pl-7 text-sm ${
-					depth % 2 === 0 ? "border-gray-400" : "border-gray-500"
-				} `}
-			>
-				<div className="flex items-center"></div>
-				{/* </TableDataColumn>
-			<TableDataColumn> */}
-				<div
-					className="flex text-sm font-medium hover:text-secondary"
-					style={{ cursor: "pointer" }}
-					onClick={() => onSelect(toSkillFormModel(skill))}
-				>
-					<span>{skill.children.length !== 0 ? skill.children.length : ""}</span>
-					<span></span>
-					<div className="px-3">
-						{skill.children.length > 0 ? (
-							<>
-								{" "}
-								{childrenFoldedOut ? (
-									<FolderDownloadIcon className="icon h-5 text-lg" />
-								) : (
-									<FolderIcon className="icon h-5 text-lg" />
-								)}{" "}
-							</>
-						) : (
-							<div className="px-2">•</div>
-							// <DocumentTextIcon className="icon h-5 text-lg" />
-						)}
+		<tr key={key} style={depthCssStyle} className="group cursor-pointer hover:bg-gray-100">
+			<TableDataColumn className={`${styles["folder-line"]} text-sm font-medium`}>
+				<div className="flex px-2">
+					<div
+						className={`flex ${hasChildren && "hover:text-secondary"}`}
+						onClick={onSelect}
+					>
+						<div className="flex px-3">
+							{hasChildren ? (
+								<>
+									<div className="mr-1">
+										{childrenFoldedOut ? (
+											<ChevronDownIcon className=" icon h-5 text-lg" />
+										) : (
+											<ChevronRightIcon className="icon h-5 text-lg" />
+										)}{" "}
+									</div>
+									<FolderIcon className="icon h-5 text-lg" />{" "}
+								</>
+							) : (
+								<div className="ml-6">
+									<PuzzleIcon className="icon h-5 text-lg" />
+								</div>
+							)}
+						</div>
+						<span>
+							{skill.name}
+							{hasChildren && " (" + skill.children.length + ")"}
+						</span>
 					</div>
-					<span>{skill.name}</span>
+					<div className="invisible  group-hover:visible">
+						<button
+							title="Bearbeiten"
+							className="mr-3 px-2 hover:text-secondary"
+							onClick={() => onEdit(toSkillFormModel(skill))}
+						>
+							<PencilIcon className="ml-1 h-5 text-lg" />
+						</button>
+						<SkillQuickAddOption selectedSkill={toSkillFormModel(skill)} />
+					</div>
 				</div>
 			</TableDataColumn>
-			<TableDataColumn>{depth}</TableDataColumn>
 			<TableDataColumn>{skill.repository.name}</TableDataColumn>
-			<TableDataColumn>
-				<div className="flex flex-wrap justify-end gap-4">
-					{openTaskbar && <SkillTaskbar selectedSkill={toSkillFormModel(skill)} />}
-				</div>
-			</TableDataColumn>
 		</tr>
 	);
 }
@@ -205,14 +203,9 @@ function ListSkillEntryWithChildren({
 	depth: number;
 	showChildren: boolean;
 }) {
-	const { handleSelection: onSelect } = useContext(FolderContext);
+	const { handleSelection } = useContext(FolderContext);
 	const { data: skill, isLoading } = trpc.skill.getSkillById.useQuery({ skillId });
 	const [open, setOpen] = useState(showChildren);
-
-	const unfoldChildren: SkillSelectHandler = selectedSkill => {
-		setOpen(!open);
-		onSelect(selectedSkill);
-	};
 
 	return (
 		// eslint-disable-next-line react/jsx-no-useless-fragment
@@ -224,7 +217,8 @@ function ListSkillEntryWithChildren({
 					<SkillRow
 						skill={skill}
 						depth={depth}
-						onSelect={unfoldChildren}
+						onSelect={() => setOpen(!open)}
+						onEdit={handleSelection}
 						childrenFoldedOut={open}
 					/>
 					{open &&

@@ -1,20 +1,12 @@
 import { trpc } from "@self-learning/api-client";
 import { SkillFormModel } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { PlusIcon, TrashIcon } from "@heroicons/react/solid";
+import { TrashIcon } from "@heroicons/react/solid";
+import { FolderAddIcon } from "@heroicons/react/outline";
 import { useContext } from "react";
 import { FolderContext } from "./folder-editor";
 
-export function SkillTaskbar({ selectedSkill }: { selectedSkill: SkillFormModel }) {
-	return (
-		<>
-			<SkillQuickAddOption selectedSkill={selectedSkill} />
-			<SkillDeleteOption skill={selectedSkill} />
-		</>
-	);
-}
-
-function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel }) {
+export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel }) {
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
 	const { handleSelection } = useContext(FolderContext);
@@ -65,11 +57,13 @@ function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel 
 	};
 
 	return (
-		<PlusIcon
-			className="icon h-5 text-lg hover:text-secondary"
-			style={{ cursor: "pointer" }}
-			onClick={() => handleAddSkill()}
-		/>
+		<button
+			title="Neuen Skill in dieser Skillgruppe anlegen"
+			className="hover:text-secondary"
+			onClick={handleAddSkill}
+		>
+			<FolderAddIcon className="icon h-5 text-lg" style={{ cursor: "pointer" }} />
+		</button>
 	);
 }
 
@@ -97,10 +91,11 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 	};
 
 	return (
-		<TrashIcon
-			className="icon h-5 text-lg hover:text-red-500"
-			style={{ cursor: "pointer" }}
-			onClick={() => handleDelete()}
-		/>
+		<button
+			className="rounded-lg border border-light-border bg-red-400 py-2 px-2  hover:bg-red-600"
+			onClick={handleDelete}
+		>
+			<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
+		</button>
 	);
 }
