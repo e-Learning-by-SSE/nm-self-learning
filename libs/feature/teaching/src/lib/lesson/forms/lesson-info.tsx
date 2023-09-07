@@ -123,7 +123,7 @@ export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<Le
 					emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
 				/>
 
-				<SkillForm/>
+				<SkillForm />
 
 				<LicenseForm />
 			</div>

@@ -5,22 +5,21 @@ export function Chip({
 	children,
 	onRemove,
 	displayImage,
-	imgUrl,
+	imgUrl
 }: {
 	children: React.ReactNode;
 	onRemove?: () => void;
 	displayImage: boolean;
 	imgUrl?: string | null;
 }) {
-
-	return(
+	return (
 		<li className="flex items-center rounded-lg border border-light-border bg-white text-sm">
-			{displayImage && 
+			{displayImage && (
 				<ImageOrPlaceholder
 					src={imgUrl ?? undefined}
 					className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 				/>
-			}
+			)}
 
 			<span className="flex w-full flex-col px-4">{children}</span>
 
@@ -35,6 +34,5 @@ export function Chip({
 				</button>
 			)}
 		</li>
-	)
-
+	);
 }
