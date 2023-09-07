@@ -25,41 +25,36 @@ export function FolderSkillEditor({ repositoryID }: { repositoryID: string }) {
 	return (
 		<div className="bg-gray-50">
 			<FolderContext.Provider value={{ handleSelection: changeSelectedItem }}>
-				<SidebarEditorLayout
-					sidebar={
-						<>
-							<div>
-								<span className="text-2xl font-semibold text-secondary">
-									Skillkarten editieren
-								</span>
-							</div>
+				{isLoading ? (
+					<LoadingBox />
+				) : (
+					<SidebarEditorLayout
+						sidebar={
+							<>
+								<div>
+									<span className="text-2xl font-semibold text-secondary">
+										Skillkarten editieren
+									</span>
+								</div>
 
-							{isLoading ? (
-								<LoadingBox />
-							) : (
-								<>
-									{repository && (
-										<>
-											<RepositoryInfoMemorized repository={repository} />
-											<Divider />
-										</>
-									)}
-								</>
-							)}
-							{selectedItem ? (
-								<SkillInfoForm skill={selectedItem} />
-							) : (
-								"Einen Skill aus der Liste auswählen um das Bearbeiten zu starten..."
-							)}
-						</>
-					}
-				>
-					{isLoading ? (
-						<LoadingBox />
-					) : (
-						<div>{repository && <FolderListView repository={repository} />}</div>
-					)}
-				</SidebarEditorLayout>
+								{repository && (
+									<>
+										<RepositoryInfoMemorized repository={repository} />
+										<Divider />
+									</>
+								)}
+
+								{selectedItem ? (
+									<SkillInfoForm skill={selectedItem} />
+								) : (
+									"Einen Skill aus der Liste auswählen um das Bearbeiten zu starten..."
+								)}
+							</>
+						}
+					>
+						{repository && <FolderListView repository={repository} />}
+					</SidebarEditorLayout>
+				)}
 			</FolderContext.Provider>
 		</div>
 	);
