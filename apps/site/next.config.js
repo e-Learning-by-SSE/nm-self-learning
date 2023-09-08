@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const withNx = require("@nx/next/plugins/with-nx");
+const { composePlugins, withNx } = require("@nx/next");
 const { withPlausibleProxy } = require("next-plausible");
 
 /**
@@ -27,10 +27,8 @@ const nextConfig = {
 	productionBrowserSourceMaps: process.env.NODE_ENV === "development"
 };
 
-const plugins = [
-	config => withNx(config),
+module.exports = withNx(
 	withPlausibleProxy({
 		customDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE
-	})
-];
-module.exports = plugins.reduce((config, plugin) => plugin(config), nextConfig);
+	})(nextConfig)
+);
