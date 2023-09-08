@@ -15,6 +15,7 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
+			"@self-learning/LIBRARY_NAME": ["libs/feature/learning-diary/src/index.ts"],
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/api-client": ["libs/data-access/api-client/src/index.ts"],
@@ -22,6 +23,7 @@
 			"@self-learning/completion": ["libs/feature/completion/src/index.ts"],
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],
 			"@self-learning/enrollment": ["libs/feature/enrollment/src/index.ts"],
+			"@self-learning/learning-diary": ["libs/feature/learning-diary/src/index.ts"],
 			"@self-learning/lesson": ["libs/feature/lesson/src/index.ts"],
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
 			"@self-learning/question-types": ["libs/feature/question-types/src/index.ts"],

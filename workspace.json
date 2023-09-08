@@ -8,6 +8,7 @@
 		"feature-admin": "libs/feature/admin",
 		"feature-completion": "libs/feature/completion",
 		"feature-enrollment": "libs/feature/enrollment",
+		"feature-learning-diary": "libs/feature/learning-diary",
 		"feature-lesson": "libs/feature/lesson",
 		"feature-question-types": "libs/feature/question-types",
 		"feature-quiz": "libs/feature/quiz",
