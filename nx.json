@@ -14,13 +14,7 @@
 		}
 	},
 	"generators": {
-		"@nrwl/next": {
-			"application": {
-				"style": "css",
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/next:library": {
+		"@nx/next:library": {
 			"style": "none",
 			"importPath": "@self-learning/LIBRARY_NAME",
 			"standaloneConfig": true,
@@ -64,6 +58,12 @@
 		"@nx/react": {
 			"application": {
 				"babel": true
+			}
+		},
+		"@nx/next": {
+			"application": {
+				"style": "css",
+				"linter": "eslint"
 			}
 		}
 	},
