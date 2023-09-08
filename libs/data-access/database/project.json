@@ -1,4 +1,5 @@
 {
+	"name": "database",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/data-access/database/src",
 	"projectType": "library",
@@ -19,6 +20,5 @@
 			}
 		}
 	},
-	"tags": [],
-	"name": "data-access-database"
+	"tags": []
 }
