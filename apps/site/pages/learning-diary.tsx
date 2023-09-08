@@ -1,4 +1,4 @@
-import { ArrowCircleRightIcon } from "@heroicons/react/outline";
+import { ArrowCircleRightIcon, CheckIcon, PlusIcon, XIcon } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
@@ -73,14 +73,15 @@ function getGoals(username: string) {
 			achieved: true,
 			priority: true,
 			type: true,
-			value: true,
+			actualValue: true,
+			targetValue: true,
 			createdAt: true,
 			description: true,
 			diaryID: true,
 			learningTime: true
 		},
 		orderBy: {
-			priority: "desc"
+			priority: "asc"
 		},
 		where: {
 			diaryID: username
@@ -179,35 +180,96 @@ function groupEntries(entries: DiaryEntry[]): LearningDiaryProps["entries"] {
 }
 
 function Goal({
+	id,
 	description = "",
 	priority,
-	type
+	targetValue,
+	actualValue,
+	achieved
 }: {
-	description: string | null;
+	id: string;
+	description: string;
 	priority: number;
-	type: GoalType;
+	targetValue: number;
+	actualValue: number;
+	achieved: boolean;
 }) {
+	const { mutateAsync: incrementActualValueForGoal } =
+		trpc.learningDiary.incrementActualValueForGoal.useMutation();
+	const { mutateAsync: markGoalAsAchieved } = trpc.learningDiary.markGoalAsAchieved.useMutation();
+	const { mutateAsync: deleteGoal } = trpc.learningDiary.deleteGoal.useMutation();
+	const router = useRouter();
+
+	async function incrementGoal() {
+		actualValue = actualValue + 1;
+
+		const result = await incrementActualValueForGoal({
+			id: id,
+			actualValue: actualValue
+		});
+		console.log(result);
+
+		if (actualValue == targetValue) {
+			const result = await markGoalAsAchieved({ id: id });
+			console.log(result);
+		}
+		router.replace(router.asPath);
+	}
+
+	async function markAsAchievedGoal() {
+		const result = await markGoalAsAchieved({ id: id });
+		console.log(result);
+		router.replace(router.asPath);
+	}
+
+	async function delGoal() {
+		const result = await deleteGoal({ id: id });
+		console.log(result);
+		router.replace(router.asPath);
+	}
+
 	return (
-		<div className="w-full">
-			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
-				<Disclosure>
-					{({ open }) => (
-						<>
-							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left text-sm font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
-								<div className="row flex flex-grow justify-between">
-									<span>{description}</span>
-									<ChevronRightIcon
-										className={open ? "h-5 w-5 rotate-90 transform" : "h-5 w-5"}
-									/>
-								</div>
-							</Disclosure.Button>
-							<Disclosure.Panel className="text-sm text-gray-500">
-								<span>TEST {priority}</span>
-							</Disclosure.Panel>
-						</>
+		<div className="flex flex-row items-center">
+			{targetValue > 0 && (
+				<div className="mx-auto flex w-full flex-row justify-between gap-4">
+					<div>
+						{description} {actualValue} / {targetValue} (Priorität: {priority})
+					</div>
+					{!achieved && (
+						<button
+							id={id}
+							onClick={incrementGoal}
+							className="btn-small place-content-center items-center"
+							title="Ist Wert erhöhen"
+						>
+							<PlusIcon className="h-3 w-3" />
+						</button>
 					)}
-				</Disclosure>
-			</div>
+				</div>
+			)}
+			{targetValue == 0 && (
+				<div className="mx-auto flex w-full flex-row justify-between gap-4">
+					<div>
+						{description} (Priorität: {priority})
+					</div>
+					{!achieved && (
+						<button
+							onClick={markAsAchievedGoal}
+							className="btn-small place-content-center items-center"
+							title="Als erfüllt markieren"
+						>
+							<CheckIcon className="h-3 w-3" />
+						</button>
+					)}
+				</div>
+			)}
+			<button
+				onClick={delGoal}
+				className="btn-small place-content-center items-center"
+				title="Ziel Löschen"
+			>
+				<XIcon className="h-3 w-3" />
+			</button>
 		</div>
 	);
 }
@@ -262,10 +324,9 @@ function TabGoals({ goals }: LearningDiaryProps) {
 		setShowForm(!showForm);
 	};
 	return (
-		<section className="border-card flex flex-col gap-8 bg-white p-4">
-			<div className="flex justify-between">
-				<span className="text-lg font-semibold text-light">Meine Ziele</span>
-			</div>
+		<section className="border-card flex w-full flex-col gap-8 bg-white p-4">
+			<span className="text-lg font-semibold text-light">Meine Ziele</span>
+
 			<Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
 				<Tab.List className="flex w-full flex-wrap gap-4 border-b border-light-border">
 					<Tab
@@ -289,33 +350,57 @@ function TabGoals({ goals }: LearningDiaryProps) {
 						Erledigt
 					</Tab>
 				</Tab.List>
-				<Tab.Panels className="mt-8 flex flex-grow flex-col gap-12">
+				<Tab.Panels className="flex flex-grow flex-col gap-12">
 					<Tab.Panel>
-						<ul className="flex flex-col gap-2 text-sm">
+						<ul className="flex flex-col gap-1 text-sm">
 							{goals
 								.filter(i => i.achieved === false)
-								.map(({ id, description, priority, type }) => (
-									<Goal
-										key={id}
-										description={description}
-										priority={priority}
-										type={type}
-									/>
-								))}
+								.map(
+									({
+										id,
+										description,
+										priority,
+										targetValue,
+										actualValue,
+										achieved
+									}) => (
+										<Goal
+											key={id}
+											id={id}
+											description={description}
+											priority={priority}
+											targetValue={targetValue}
+											actualValue={actualValue}
+											achieved={achieved}
+										/>
+									)
+								)}
 						</ul>
 					</Tab.Panel>
 					<Tab.Panel>
 						<ul className="flex flex-col gap-2 text-sm">
 							{goals
 								.filter(i => i.achieved === true)
-								.map(({ id, description, priority, type }) => (
-									<Goal
-										key={id}
-										description={description}
-										priority={priority}
-										type={type}
-									/>
-								))}
+								.map(
+									({
+										id,
+										description,
+										priority,
+										targetValue,
+										actualValue,
+										achieved
+									}) => (
+										<Goal
+											key={id}
+											id={id}
+											description={description}
+											priority={priority}
+											targetValue={targetValue}
+											actualValue={actualValue}
+											achieved={achieved}
+										/>
+									)
+								)}
 						</ul>
 					</Tab.Panel>
 				</Tab.Panels>
@@ -335,7 +420,8 @@ function TabGoals({ goals }: LearningDiaryProps) {
 							description: "",
 							achieved: false,
 							priority: 1,
-							value: 0,
+							targetValue: 0,
+							actualValue: 0,
 							type: "USERSPECIFIC"
 						}}
 					/>
@@ -567,12 +653,10 @@ function CompletedLessonDisclosure({
 function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	return (
-		<section className="flex flex-col gap-8 bg-white p-4 ">
-			<div className="flex justify-between">
-				<span className="text-lg font-semibold text-light">Meine Einträge</span>
-			</div>
+		<section className="flex w-full flex-col gap-8 bg-white p-4">
+			<span className="text-lg font-semibold text-light">Meine Einträge</span>
 			<Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-				<Tab.List className="flex w-full flex-wrap gap-4 border-b border-light-border">
+				<Tab.List className="flex w-full flex-wrap border-b border-light-border">
 					<Tab
 						className={({ selected }) =>
 							classNames(
@@ -594,7 +678,7 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 						Zu ergänzen
 					</Tab>
 				</Tab.List>
-				<Tab.Panels className="mt-8 flex flex-grow flex-col gap-12">
+				<Tab.Panels className="flex-grow flex-col gap-12">
 					<Tab.Panel>
 						<section>
 							<EntriesSection
@@ -668,15 +752,14 @@ export default function LearningDiary(props: LearningDiaryProps) {
 	return (
 		<CenteredSection className="flex bg-gray-50">
 			<h1 className="mb-16 text-5xl">Mein Lerntagebuch</h1>
-			<section className="mt-8 flex flex-row justify-between gap-12">
-				<section className="mt-8 flex flex-grow flex-col gap-12">
-					<TabGroupEntries
-						completedLessons={props.completedLessons}
-						goals={[]}
-						entries={props.entries}
-					/>
-				</section>
-				<section className="mt-8 flex flex-grow flex-col gap-12">
+			<section className="flew-row flex w-full gap-5">
+				<TabGroupEntries
+					completedLessons={props.completedLessons}
+					goals={[]}
+					entries={props.entries}
+				/>
+
+				<section className="flex w-full flex-col gap-5">
 					<TabGoals
 						goals={props.goals}
 						completedLessons={{

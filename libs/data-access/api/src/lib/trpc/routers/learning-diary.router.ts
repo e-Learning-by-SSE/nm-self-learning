@@ -181,7 +181,7 @@ export const learningDiaryRouter = t.router({
 			z.object({
 				type: z.nativeEnum(GoalType),
 				description: z.string(),
-				value: z.number(),
+				targetValue: z.number(),
 				priority: z.number()
 			})
 		)
@@ -190,7 +190,7 @@ export const learningDiaryRouter = t.router({
 				data: {
 					type: input.type,
 					description: input.description,
-					value: input.value,
+					targetValue: input.targetValue,
 					priority: input.priority,
 					diaryID: ctx.user.name
 				}
@@ -202,6 +202,76 @@ export const learningDiaryRouter = t.router({
 
 			return goal;
 		}),
+
+	incrementActualValueForGoal: authProcedure
+		.input(
+			z.object({
+				actualValue: z.number(),
+				id: z.string()
+			})
+		)
+		.mutation(async ({ input: { id, actualValue }, ctx }) => {
+			const goal = await database.learningGoal.update({
+				where: { id: id },
+				data: {
+					actualValue: actualValue
+				},
+				select: {
+					id: true
+				}
+			});
+
+			console.log(
+				"[learningDiaryRouter.incrementActualValueForGoal]: Actual value was incremented for Goal by",
+				ctx.user.name,
+				{ id, actualValue }
+			);
+
+			return goal;
+		}),
+
+	markGoalAsAchieved: authProcedure
+		.input(
+			z.object({
+				id: z.string()
+			})
+		)
+		.mutation(async ({ input: { id }, ctx }) => {
+			const goal = await database.learningGoal.update({
+				where: { id: id },
+				data: {
+					achieved: true
+				},
+				select: {
+					id: true
+				}
+			});
+
+			console.log(
+				"[learningDiaryRouter.markGoalAsAchieved]: Goal was marked as achieved by",
+				ctx.user.name,
+				{ id }
+			);
+
+			return goal;
+		}),
+
+	deleteGoal: authProcedure
+		.input(
+			z.object({
+				id: z.string()
+			})
+		)
+		.mutation(async ({ input: { id }, ctx }) => {
+			const goal = await database.learningGoal.delete({
+				where: { id: id }
+			});
+
+			console.log("[learningDiaryRouter.delete]: Goal was deleted by", ctx.user.name, { id });
+
+			return goal;
+		}),
+
 	createDiaryEntry: authProcedure
 		.input(
 			z.object({
