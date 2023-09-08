@@ -14,11 +14,6 @@
 		}
 	},
 	"generators": {
-		"@nrwl/react": {
-			"application": {
-				"babel": true
-			}
-		},
 		"@nrwl/next": {
 			"application": {
 				"style": "css",
@@ -37,7 +32,7 @@
 			"standaloneConfig": true,
 			"strict": true
 		},
-		"@nrwl/react:library": {
+		"@nx/react:library": {
 			"style": "none",
 			"importPath": "@self-learning/LIBRARY_NAME",
 			"standaloneConfig": true,
@@ -65,6 +60,11 @@
 			"flat": true,
 			"inlineTemplate": true,
 			"skipTests": true
+		},
+		"@nx/react": {
+			"application": {
+				"babel": true
+			}
 		}
 	},
 	"defaultProject": "site",

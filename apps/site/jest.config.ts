@@ -3,7 +3,7 @@ export default {
 	displayName: "site",
 
 	transform: {
-		"^(?!.*\\.(js|jsx|ts|tsx|css|json)$)": "@nrwl/react/plugins/jest",
+		"^(?!.*\\.(js|jsx|ts|tsx|css|json)$)": "@nx/react/plugins/jest",
 		"^.+\\.[tj]sx?$": ["babel-jest", { presets: ["@nrwl/next/babel"] }]
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
