@@ -1,123 +1,98 @@
 {
-  "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "npmScope": "self-learning",
-  "affected": {
-    "defaultBase": "master"
-  },
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx-cloud",
-      "options": {
-        "cacheableOperations": [
-          "lint",
-          "test",
-          "e2e",
-          "component-test"
-        ],
-        "accessToken": "ZjhkZTI2MmQtYjcwYi00YTllLWE4NDgtNGJjNWNiNDgxZjdkfHJlYWQtd3JpdGU="
-      }
-    }
-  },
-  "generators": {
-    "@nrwl/react": {
-      "application": {
-        "babel": true
-      }
-    },
-    "@nrwl/next": {
-      "application": {
-        "style": "css",
-        "linter": "eslint"
-      }
-    },
-    "@nrwl/next:library": {
-      "style": "none",
-      "importPath": "@self-learning/LIBRARY_NAME",
-      "standaloneConfig": true,
-      "strict": true,
-      "component": false
-    },
-    "@nrwl/workspace:library": {
-      "importPath": "@self-learning/LIBRARY_NAME",
-      "standaloneConfig": true,
-      "strict": true
-    },
-    "@nrwl/react:library": {
-      "style": "none",
-      "importPath": "@self-learning/LIBRARY_NAME",
-      "standaloneConfig": true,
-      "strict": true
-    },
-    "@nrwl/angular:application": {
-      "style": "css",
-      "linter": "eslint",
-      "unitTestRunner": "jest",
-      "e2eTestRunner": "none"
-    },
-    "@nrwl/angular:library": {
-      "linter": "eslint",
-      "unitTestRunner": "jest"
-    },
-    "@nrwl/angular:component": {
-      "style": "none",
-      "changeDetection": "OnPush",
-      "inlineTemplate": true,
-      "skipTests": true
-    },
-    "@nrwl/angular:scam": {
-      "style": "none",
-      "changeDetection": "OnPush",
-      "flat": true,
-      "inlineTemplate": true,
-      "skipTests": true
-    }
-  },
-  "defaultProject": "site",
-  "targetDefaults": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ]
-    },
-    "e2e": {
-      "inputs": [
-        "default",
-        "^production"
-      ]
-    },
-    "test": {
-      "inputs": [
-        "default",
-        "^production",
-        "{workspaceRoot}/jest.preset.js"
-      ]
-    },
-    "lint": {
-      "inputs": [
-        "default",
-        "{workspaceRoot}/.eslintrc.json"
-      ]
-    }
-  },
-  "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
-    "sharedGlobals": [
-      "{workspaceRoot}/babel.config.json"
-    ],
-    "production": [
-      "default",
-      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-      "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/jest.config.[jt]s",
-      "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
-    ]
-  }
+	"$schema": "./node_modules/nx/schemas/nx-schema.json",
+	"npmScope": "self-learning",
+	"affected": {
+		"defaultBase": "master"
+	},
+	"tasksRunnerOptions": {
+		"default": {
+			"runner": "nx-cloud",
+			"options": {
+				"cacheableOperations": ["lint", "test", "e2e", "component-test"],
+				"accessToken": "ZjhkZTI2MmQtYjcwYi00YTllLWE4NDgtNGJjNWNiNDgxZjdkfHJlYWQtd3JpdGU="
+			}
+		}
+	},
+	"generators": {
+		"@nrwl/react": {
+			"application": {
+				"babel": true
+			}
+		},
+		"@nrwl/next": {
+			"application": {
+				"style": "css",
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/next:library": {
+			"style": "none",
+			"importPath": "@self-learning/LIBRARY_NAME",
+			"standaloneConfig": true,
+			"strict": true,
+			"component": false
+		},
+		"@nx/workspace:library": {
+			"importPath": "@self-learning/LIBRARY_NAME",
+			"standaloneConfig": true,
+			"strict": true
+		},
+		"@nrwl/react:library": {
+			"style": "none",
+			"importPath": "@self-learning/LIBRARY_NAME",
+			"standaloneConfig": true,
+			"strict": true
+		},
+		"@nrwl/angular:application": {
+			"style": "css",
+			"linter": "eslint",
+			"unitTestRunner": "jest",
+			"e2eTestRunner": "none"
+		},
+		"@nrwl/angular:library": {
+			"linter": "eslint",
+			"unitTestRunner": "jest"
+		},
+		"@nrwl/angular:component": {
+			"style": "none",
+			"changeDetection": "OnPush",
+			"inlineTemplate": true,
+			"skipTests": true
+		},
+		"@nrwl/angular:scam": {
+			"style": "none",
+			"changeDetection": "OnPush",
+			"flat": true,
+			"inlineTemplate": true,
+			"skipTests": true
+		}
+	},
+	"defaultProject": "site",
+	"targetDefaults": {
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": ["production", "^production"]
+		},
+		"e2e": {
+			"inputs": ["default", "^production"]
+		},
+		"test": {
+			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
+		},
+		"lint": {
+			"inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+		}
+	},
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*", "sharedGlobals"],
+		"sharedGlobals": ["{workspaceRoot}/babel.config.json"],
+		"production": [
+			"default",
+			"!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+			"!{projectRoot}/tsconfig.spec.json",
+			"!{projectRoot}/jest.config.[jt]s",
+			"!{projectRoot}/.eslintrc.json",
+			"!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
+		]
+	}
 }
