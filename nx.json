@@ -92,7 +92,8 @@
 			"!{projectRoot}/tsconfig.spec.json",
 			"!{projectRoot}/jest.config.[jt]s",
 			"!{projectRoot}/.eslintrc.json",
-			"!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
+			"!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
+			"!{projectRoot}/src/test-setup.[jt]s"
 		]
 	}
 }
