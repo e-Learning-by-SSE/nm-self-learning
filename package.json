@@ -62,8 +62,7 @@
 		"remark-math": "^5.1.1",
 		"sharp": "^0.30.6",
 		"tslib": "^2.4.1",
-		"zod": "^3.20.2",
-		"@nx/next": "16.8.1"
+		"zod": "^3.20.2"
 	},
 	"devDependencies": {
 		"@babel/core": "7.20.5",
@@ -119,6 +118,7 @@
 		"ts-node": "10.9.1",
 		"tsconfig-paths": "^3.14.1",
 		"typescript": "4.9.4",
-		"url-loader": "^3.0.0"
+		"url-loader": "^3.0.0",
+		"@nx/next": "16.8.1"
 	}
 }
