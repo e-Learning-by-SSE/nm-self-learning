@@ -1,4 +1,5 @@
 {
+	"name": "ui-layouts",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/ui/layouts/src",
 	"projectType": "library",
@@ -19,6 +20,5 @@
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "ui-layouts"
+	}
 }

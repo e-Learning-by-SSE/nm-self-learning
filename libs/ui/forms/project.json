@@ -1,4 +1,5 @@
 {
+	"name": "ui-forms",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/ui/forms/src",
 	"projectType": "library",
@@ -19,6 +20,5 @@
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "ui-forms"
+	}
 }

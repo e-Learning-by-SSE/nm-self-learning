@@ -1,4 +1,5 @@
 {
+	"name": "feature-quiz",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/feature/quiz/src",
 	"projectType": "library",
@@ -19,6 +20,5 @@
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "feature-quiz"
+	}
 }

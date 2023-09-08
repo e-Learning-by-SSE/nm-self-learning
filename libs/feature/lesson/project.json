@@ -1,4 +1,5 @@
 {
+	"name": "feature-lesson",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/feature/lesson/src",
 	"projectType": "library",
@@ -19,6 +20,5 @@
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "feature-lesson"
+	}
 }

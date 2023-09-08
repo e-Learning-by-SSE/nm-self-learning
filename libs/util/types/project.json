@@ -1,4 +1,5 @@
 {
+	"name": "util-types",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/util/types/src",
 	"projectType": "library",
@@ -19,6 +20,5 @@
 			}
 		}
 	},
-	"tags": [],
-	"name": "util-types"
+	"tags": []
 }

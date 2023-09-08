@@ -1,4 +1,5 @@
 {
+	"name": "ui-course",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/ui/course/src",
 	"projectType": "library",
@@ -19,6 +20,5 @@
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "ui-course"
+	}
 }

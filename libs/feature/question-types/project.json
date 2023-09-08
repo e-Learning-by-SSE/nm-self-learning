@@ -1,4 +1,5 @@
 {
+	"name": "feature-question-types",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/feature/question-types/src",
 	"projectType": "library",
@@ -19,6 +20,5 @@
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "feature-question-types"
+	}
 }
