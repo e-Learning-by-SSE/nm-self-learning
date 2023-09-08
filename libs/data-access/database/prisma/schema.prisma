@@ -278,9 +278,10 @@ model LearningDiary {
 model LearningGoal {
   id String       @id @default(uuid())
   type GoalType @default(USERSPECIFIC)
-  description String?
+  description String
   // Specifies the ammount based on the GoalType
-  value Int?
+  targetValue Int @default(0)
+  actualValue Int @default(0)
   priority Int
   achieved Boolean @default(false)
   createdAt DateTime @default(now())

@@ -45,13 +45,13 @@ export function GoalEditor({
 					<div>
 						<span className="font-semibold text-secondary">Goal editieren</span>
 
-						<button className="btn-primary w-full" type="submit">
-							{isNew ? "Erstellen" : "Speichern"}
-						</button>
-
 						<GoalTypForm setGoalType={setGoalType} />
 						{selectedGoalType === GoalType.USERSPECIFIC && <GoalUSDescriptionForm />}
 						<GoalInfoForm />
+
+						<button className="btn-primary mt-5 w-full" type="submit">
+							{isNew ? "Erstellen" : "Speichern"}
+						</button>
 					</div>
 				</form>
 			</FormProvider>
@@ -67,9 +67,12 @@ export function GoalInfoForm() {
 	} = form;
 	return (
 		<div className="flex flex-col gap-4">
-			<LabeledField label="Zu erreichende Anzahl (optional)" error={errors.value?.message}>
+			<LabeledField
+				label="Zu erreichende Anzahl (optional)"
+				error={errors.targetValue?.message}
+			>
 				<input
-					{...register("value", { valueAsNumber: true })}
+					{...register("targetValue", { valueAsNumber: true })}
 					type="number"
 					className="textfield"
 				/>
