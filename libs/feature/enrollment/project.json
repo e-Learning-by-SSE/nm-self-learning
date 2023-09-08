@@ -13,7 +13,7 @@
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/feature/enrollment"],
 			"options": {
 				"jestConfig": "libs/feature/enrollment/jest.config.ts",

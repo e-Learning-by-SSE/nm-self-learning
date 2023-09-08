@@ -12,7 +12,7 @@
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/data-access/api"],
 			"options": {
 				"jestConfig": "libs/data-access/api/jest.config.ts",
