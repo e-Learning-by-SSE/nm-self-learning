@@ -8,11 +8,13 @@ import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { ReactElement, useRef, useState } from "react";
-import { Tab, Disclosure } from '@headlessui/react';
+import { Tab, Disclosure } from "@headlessui/react";
 import { GoalType, LearningStrategy } from "@prisma/client";
-import { ChevronRightIcon} from "@heroicons/react/solid";
-
-
+import { ChevronRightIcon } from "@heroicons/react/solid";
+import { GoalEditor, GoalFormModel } from "@self-learning/learning-diary";
+import { trpc } from "libs/data-access/api-client/src/lib/trpc";
+import { showToast } from "@self-learning/ui/common";
+import { useRouter } from "next/router";
 
 type CompletedLesson = ResolvedValue<typeof getCompletedLessonsThisWeek>[0];
 type LearningGoal = ResolvedValue<typeof getGoals>[0];
@@ -23,17 +25,17 @@ type LearningDiaryProps = {
 		today: CompletedLesson[];
 		yesterday: CompletedLesson[];
 		week: CompletedLesson[];
-	},
+	};
 	goals: LearningGoal[];
 	entries: {
 		today: DiaryEntry[];
 		yesterday: DiaryEntry[];
 		week: DiaryEntry[];
-	}
+	};
 };
 
 function classNames(...classes: any[]) {
-	return classes.filter(Boolean).join(' ')
+	return classes.filter(Boolean).join(" ");
 }
 
 export const getServerSideProps: GetServerSideProps<LearningDiaryProps> = async ctx => {
@@ -44,7 +46,9 @@ export const getServerSideProps: GetServerSideProps<LearningDiaryProps> = async 
 	}
 
 	const [completedLessons, goals, entries] = await Promise.all([
-		JSON.parse(JSON.stringify(await getCompletedLessonsThisWeek(session.user.name, Date.now()))),
+		JSON.parse(
+			JSON.stringify(await getCompletedLessonsThisWeek(session.user.name, Date.now()))
+		),
 		/*database.learningDiary.findUnique({
 			where: { username: session.user.name },
 			include: { goals: true }
@@ -62,7 +66,6 @@ export const getServerSideProps: GetServerSideProps<LearningDiaryProps> = async 
 	};
 };
 
-
 function getGoals(username: string) {
 	return database.learningGoal.findMany({
 		select: {
@@ -76,8 +79,7 @@ function getGoals(username: string) {
 			diaryID: true,
 			learningTime: true
 		},
-		orderBy:
-		{
+		orderBy: {
 			priority: "desc"
 		},
 		where: {
@@ -88,14 +90,14 @@ function getGoals(username: string) {
 
 function getEntries(username: string) {
 	return database.diaryEntry.findMany({
-			include: {
-				learningStrategies: true,
-				completedLesson:{
-					include: {
-						lesson: true,
-						course: true
-					  },
-				}	
+		include: {
+			learningStrategies: true,
+			completedLesson: {
+				include: {
+					lesson: true,
+					course: true
+				}
+			}
 		},
 		where: {
 			diaryID: username
@@ -153,17 +155,21 @@ function groupCompletedLessons(
 	return { today, yesterday, week };
 }
 
-function groupEntries(
-	entries: DiaryEntry[]
-): LearningDiaryProps["entries"] {
+function groupEntries(entries: DiaryEntry[]): LearningDiaryProps["entries"] {
 	const today = [];
 	const yesterday = [];
 	const week = [];
 
 	for (const entry of entries) {
-		if (entry.completedLesson!=null && isToday(parseISO(entry.completedLesson.createdAt as unknown as string))) {
+		if (
+			entry.completedLesson != null &&
+			isToday(parseISO(entry.completedLesson.createdAt as unknown as string))
+		) {
 			today.push(entry);
-		} else if (entry.completedLesson!=null && isYesterday(parseISO(entry.completedLesson.createdAt as unknown as string))) {
+		} else if (
+			entry.completedLesson != null &&
+			isYesterday(parseISO(entry.completedLesson.createdAt as unknown as string))
+		) {
 			yesterday.push(entry);
 		} else {
 			week.push(entry);
@@ -172,12 +178,6 @@ function groupEntries(
 	return { today, yesterday, week };
 }
 
-/*
-<ChevronUpIcon
-									className={`${open ? 'rotate-180 transform' : ''
-										} h-5 w-5 text-purple-500`}
-								/>
-								*/
 function Goal({
 	description = "",
 	priority,
@@ -194,9 +194,11 @@ function Goal({
 					{({ open }) => (
 						<>
 							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left text-sm font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
-								<div className="flex row justify-between flex-grow">
+								<div className="row flex flex-grow justify-between">
 									<span>{description}</span>
-									<ChevronRightIcon className={open ? 'rotate-90 transform h-5 w-5' : 'h-5 w-5'} />
+									<ChevronRightIcon
+										className={open ? "h-5 w-5 rotate-90 transform" : "h-5 w-5"}
+									/>
 								</div>
 							</Disclosure.Button>
 							<Disclosure.Panel className="text-sm text-gray-500">
@@ -207,12 +209,58 @@ function Goal({
 				</Disclosure>
 			</div>
 		</div>
-	)
+	);
+}
+
+function getGoalType(type: GoalType) {
+	let out: string;
+	switch (type) {
+		case "NUMBEROFLESSONS":
+			out = "Abgeschlossene Lerneinheiten pro Woche:";
+			break;
+		case "NUMBEROFQUIZATTEMPTS":
+			out = "Absolvierte Quizversuche pro Woche:";
+			break;
+		default:
+			out = "error";
+			break;
+	}
+	return out;
 }
 
 function TabGoals({ goals }: LearningDiaryProps) {
+	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [showForm, setShowForm] = useState(false);
+	const { mutateAsync: createGoal } = trpc.learningDiary.createGoal.useMutation();
+	const router = useRouter();
 
-	const [selectedIndex, setSelectedIndex] = useState(0)
+	async function onConfirm(goal: GoalFormModel) {
+		if (goal.description === "") {
+			goal.description = getGoalType(goal.type);
+		}
+		try {
+			const result = await createGoal(goal);
+			console.log(result);
+			showToast({
+				type: "success",
+				title: "Ziel erstellt!",
+				subtitle: result.id
+			});
+			setShowForm(false);
+			router.replace(router.asPath);
+		} catch (error) {
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle:
+					"Das Ziel konnte nicht erstellt werden. Siehe Konsole für mehr Informationen."
+			});
+		}
+	}
+
+	const toggleShowForm = () => {
+		setShowForm(!showForm);
+	};
 	return (
 		<section className="border-card flex flex-col gap-8 bg-white p-4">
 			<div className="flex justify-between">
@@ -220,24 +268,28 @@ function TabGoals({ goals }: LearningDiaryProps) {
 			</div>
 			<Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
 				<Tab.List className="flex w-full flex-wrap gap-4 border-b border-light-border">
-					<Tab className={({ selected }) =>
-						classNames(
-							'mx-auto px-2 py-2 font-semibold',
-							selected ? "text-secondary" : "text-light"
-						)
-					}>
+					<Tab
+						className={({ selected }) =>
+							classNames(
+								"mx-auto px-2 py-2 font-semibold",
+								selected ? "text-secondary" : "text-light"
+							)
+						}
+					>
 						Offene
 					</Tab>
-					<Tab className={({ selected }) =>
-						classNames(
-							'mx-auto px-2 py-2 font-semibold',
-							selected ? "text-secondary" : "text-light"
-						)
-					}>
+					<Tab
+						className={({ selected }) =>
+							classNames(
+								"mx-auto px-2 py-2 font-semibold",
+								selected ? "text-secondary" : "text-light"
+							)
+						}
+					>
 						Erledigt
 					</Tab>
 				</Tab.List>
-				<Tab.Panels className="mt-8 flex flex-col gap-12 flex-grow" >
+				<Tab.Panels className="mt-8 flex flex-grow flex-col gap-12">
 					<Tab.Panel>
 						<ul className="flex flex-col gap-2 text-sm">
 							{goals
@@ -268,6 +320,32 @@ function TabGoals({ goals }: LearningDiaryProps) {
 					</Tab.Panel>
 				</Tab.Panels>
 			</Tab.Group>
+			<div>
+				{!showForm && (
+					<button className="btn-primary w-full" onClick={toggleShowForm}>
+						Neues Ziel erstellen
+					</button>
+				)}
+
+				{showForm && (
+					<GoalEditor
+						onConfirm={onConfirm}
+						goal={{
+							id: "",
+							description: "",
+							achieved: false,
+							priority: 1,
+							value: 0,
+							type: "USERSPECIFIC"
+						}}
+					/>
+				)}
+			</div>
+			{showForm && (
+				<button className="btn-primary w-full" onClick={toggleShowForm}>
+					Abbrechen
+				</button>
+			)}
 		</section>
 	);
 }
@@ -330,7 +408,7 @@ function EntriesSection({
 }: {
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
-	entries: DiaryEntry[]; 
+	entries: DiaryEntry[];
 }) {
 	return (
 		<section className="flex flex-col gap-4">
@@ -341,28 +419,29 @@ function EntriesSection({
 				</span>
 			</div>
 			<ul className="flex flex-col gap-2 text-sm">
-				{entries.map(({ id, completedLesson,distractions,efforts,learningStrategies,notes }) => (
-					<EntriesDisclosure
-						key={id}
-						completedLesson={completedLesson}
-						distractions={distractions}
-						efforts={efforts}
-						learningStrategies={learningStrategies}
-						notes={notes}
-					/>
-				))}
+				{entries.map(
+					({ id, completedLesson, distractions, efforts, learningStrategies, notes }) => (
+						<EntriesDisclosure
+							key={id}
+							completedLesson={completedLesson}
+							distractions={distractions}
+							efforts={efforts}
+							learningStrategies={learningStrategies}
+							notes={notes}
+						/>
+					)
+				)}
 			</ul>
 		</section>
 	);
 }
 
-
 function EntriesDisclosure({
 	completedLesson,
-	distractions="",
-	efforts="",
+	distractions = "",
+	efforts = "",
 	learningStrategies,
-	notes=""
+	notes = ""
 }: {
 	distractions: string | null;
 	efforts: string | null;
@@ -370,30 +449,52 @@ function EntriesDisclosure({
 	notes: string | null;
 	completedLesson: CompletedLesson | null;
 }) {
-	let button:any;
-	let panel:any;
-    if (completedLesson != null) {
-      button = <div>{completedLesson.lesson.title} - {format(parseISO(completedLesson.createdAt as unknown as string), "HH:mm dd-MM-yyyy")}</div>;
-	  panel = <div><Link href={
-		completedLesson.course
-		? `/courses/${completedLesson.course.slug}/${completedLesson.lesson.slug}`
-		: `/lessons/${completedLesson.lesson.slug}`
-	} className="font-medium">
-		{completedLesson.lesson.title}
-	</Link>
-	<div className="flex flex-col gap-1">
-
-		<span className="text-xs text-light">
-			in <span className="text-secondary">{completedLesson.course ? completedLesson.course.title : completedLesson.lesson.title}</span>
-		</span>
-	</div>
-	<div className="text-xs text-light">
-		{format(parseISO(completedLesson.createdAt as unknown as string), "HH:mm dd-MM-yyyy")}
-	</div>	</div>
+	let button: any;
+	let panel: any;
+	if (completedLesson != null) {
+		button = (
+			<div>
+				{completedLesson.lesson.title} -{" "}
+				{format(
+					parseISO(completedLesson.createdAt as unknown as string),
+					"HH:mm dd-MM-yyyy"
+				)}
+			</div>
+		);
+		panel = (
+			<div>
+				<Link
+					href={
+						completedLesson.course
+							? `/courses/${completedLesson.course.slug}/${completedLesson.lesson.slug}`
+							: `/lessons/${completedLesson.lesson.slug}`
+					}
+					className="font-medium"
+				>
+					{completedLesson.lesson.title}
+				</Link>
+				<div className="flex flex-col gap-1">
+					<span className="text-xs text-light">
+						in{" "}
+						<span className="text-secondary">
+							{completedLesson.course
+								? completedLesson.course.title
+								: completedLesson.lesson.title}
+						</span>
+					</span>
+				</div>
+				<div className="text-xs text-light">
+					{format(
+						parseISO(completedLesson.createdAt as unknown as string),
+						"HH:mm dd-MM-yyyy"
+					)}
+				</div>{" "}
+			</div>
+		);
 	} else {
-      button = <div> Ein Eintrag </div>;
-	  panel = <div>Todo</div>
-    }
+		button = <div> Ein Eintrag </div>;
+		panel = <div>Todo</div>;
+	}
 	return (
 		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
 			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
@@ -402,11 +503,11 @@ function EntriesDisclosure({
 						<>
 							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
 								{button}
-								<ChevronRightIcon className={open ? 'rotate-90 transform h-5 w-5' : 'h-5 w-5'} />
-								</Disclosure.Button>
-							<Disclosure.Panel className="text-gray-500">
-								{panel}
-							</Disclosure.Panel>
+								<ChevronRightIcon
+									className={open ? "h-5 w-5 rotate-90 transform" : "h-5 w-5"}
+								/>
+							</Disclosure.Button>
+							<Disclosure.Panel className="text-gray-500">{panel}</Disclosure.Panel>
 						</>
 					)}
 				</Disclosure>
@@ -433,21 +534,26 @@ function CompletedLessonDisclosure({
 					{({ open }) => (
 						<>
 							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
-								{title} - {format(parseISO(date as unknown as string), "HH:mm dd-MM-yyyy")}
-								<ChevronRightIcon className={open ? 'rotate-90 transform h-5 w-5' : 'h-5 w-5'} />
+								{title} -{" "}
+								{format(parseISO(date as unknown as string), "HH:mm dd-MM-yyyy")}
+								<ChevronRightIcon
+									className={open ? "h-5 w-5 rotate-90 transform" : "h-5 w-5"}
+								/>
 							</Disclosure.Button>
 							<Disclosure.Panel className="text-gray-500">
 								<Link href={href} className="font-medium">
 									{title}
 								</Link>
 								<div className="flex flex-col gap-1">
-
 									<span className="text-xs text-light">
 										in <span className="text-secondary">{topic}</span>
 									</span>
 								</div>
 								<div className="text-xs text-light">
-									{format(parseISO(date as unknown as string), "HH:mm dd-MM-yyyy")}
+									{format(
+										parseISO(date as unknown as string),
+										"HH:mm dd-MM-yyyy"
+									)}
 								</div>
 							</Disclosure.Panel>
 						</>
@@ -458,11 +564,10 @@ function CompletedLessonDisclosure({
 	);
 }
 
-
 function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
-	const [selectedIndex, setSelectedIndex] = useState(0)
+	const [selectedIndex, setSelectedIndex] = useState(0);
 	return (
-		<section className="flex flex-col gap-8 p-4 bg-white ">
+		<section className="flex flex-col gap-8 bg-white p-4 ">
 			<div className="flex justify-between">
 				<span className="text-lg font-semibold text-light">Meine Einträge</span>
 			</div>
@@ -471,22 +576,25 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 					<Tab
 						className={({ selected }) =>
 							classNames(
-								'mx-auto px-2 py-2 font-semibold',
+								"mx-auto px-2 py-2 font-semibold",
 								selected ? "text-secondary" : "text-light"
 							)
-						}>
+						}
+					>
 						Alle
 					</Tab>
-					<Tab className={({ selected }) =>
-						classNames(
-							'mx-auto px-2 py-2 font-semibold',
-							selected ? "text-secondary" : "text-light"
-						)
-					}>
+					<Tab
+						className={({ selected }) =>
+							classNames(
+								"mx-auto px-2 py-2 font-semibold",
+								selected ? "text-secondary" : "text-light"
+							)
+						}
+					>
 						Zu ergänzen
 					</Tab>
 				</Tab.List>
-				<Tab.Panels className="mt-8 flex flex-col gap-12 flex-grow" >
+				<Tab.Panels className="mt-8 flex flex-grow flex-col gap-12">
 					<Tab.Panel>
 						<section>
 							<EntriesSection
@@ -496,12 +604,16 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 							/>
 							<EntriesSection
 								title="Gestern"
-								subtitle={amount => <>Deine gestrigen Tagebucheinträge: {amount}.</>}
+								subtitle={amount => (
+									<>Deine gestrigen Tagebucheinträge: {amount}.</>
+								)}
 								entries={entries.yesterday}
 							/>
 							<EntriesSection
 								title="Diese Woche"
-								subtitle={amount => (<>Deine restlichen Tagebucheinträge: {amount}.</>)}
+								subtitle={amount => (
+									<>Deine restlichen Tagebucheinträge: {amount}.</>
+								)}
 								entries={entries.week}
 							/>
 							<section>
@@ -516,18 +628,25 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 						<section>
 							<CompletedSection
 								title="Heute"
-								subtitle={amount => <>Du hast heute {amount} Lerneinheiten bearbeitet.</>}
+								subtitle={amount => (
+									<>Du hast heute {amount} Lerneinheiten bearbeitet.</>
+								)}
 								completedLessons={completedLessons.today}
 							/>
 							<CompletedSection
 								title="Gestern"
-								subtitle={amount => <>Du hast gestern {amount} Lerneinheiten bearbeitet.</>}
+								subtitle={amount => (
+									<>Du hast gestern {amount} Lerneinheiten bearbeitet.</>
+								)}
 								completedLessons={completedLessons.yesterday}
 							/>
 							<CompletedSection
 								title="Diese Woche"
 								subtitle={amount => (
-									<>Du hast in dieser Woche {amount} weitere Lerneinheiten bearbeitet.</>
+									<>
+										Du hast in dieser Woche {amount} weitere Lerneinheiten
+										bearbeitet.
+									</>
 								)}
 								completedLessons={completedLessons.week}
 							/>
@@ -542,32 +661,38 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 				</Tab.Panels>
 			</Tab.Group>
 		</section>
-	)
+	);
 }
-
 
 export default function LearningDiary(props: LearningDiaryProps) {
 	return (
-		<CenteredSection className="bg-gray-50 flex">
+		<CenteredSection className="flex bg-gray-50">
 			<h1 className="mb-16 text-5xl">Mein Lerntagebuch</h1>
 			<section className="mt-8 flex flex-row justify-between gap-12">
-				<section className="mt-8 flex flex-col gap-12 flex-grow" >
-					<TabGroupEntries completedLessons={props.completedLessons} goals={[]} entries={props.entries} />
+				<section className="mt-8 flex flex-grow flex-col gap-12">
+					<TabGroupEntries
+						completedLessons={props.completedLessons}
+						goals={[]}
+						entries={props.entries}
+					/>
 				</section>
-				<section className="mt-8 flex flex-col gap-12 flex-grow" >
-					<TabGoals goals={props.goals} completedLessons={{
-						today: [],
-						yesterday: [],
-						week: []
-					}} entries={{
-						today: [],
-						yesterday: [],
-						week: []
-					}}/>
+				<section className="mt-8 flex flex-grow flex-col gap-12">
+					<TabGoals
+						goals={props.goals}
+						completedLessons={{
+							today: [],
+							yesterday: [],
+							week: []
+						}}
+						entries={{
+							today: [],
+							yesterday: [],
+							week: []
+						}}
+					/>
 					<Strategies initialValue={""} />
 				</section>
 			</section>
-
 		</CenteredSection>
 	);
 }
