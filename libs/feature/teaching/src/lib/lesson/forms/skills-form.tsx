@@ -114,24 +114,12 @@ function LinkedSkillRepository({
 	// TODO Make a method to get a smaller version of the repository
 	const { data: repositories, isLoading } = trpc.skill.getRepositories.useQuery();
 
-	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
-
 	const onChange = (id: string) => {
-		if (repositories) {
-			const selectedRepository = repositories.find(repository => repository.id === id);
-			if (selectedRepository) {
-				selectRepository(selectedRepository);
-				setSelectedRepository(selectedRepository);
-			}
+		const repository = repositories?.find(repository => repository.id === id);
+		if (repository) {
+			selectRepository(repository);
 		}
 	};
-
-	useEffect(() => {
-		if (repositories && repositories.length > 0) {
-			selectRepository(repositories[0]);
-			setSelectedRepository(repositories[0]);
-		}
-	}, [repositories, selectRepository]);
 
 	return (
 		<>
@@ -141,22 +129,46 @@ function LinkedSkillRepository({
 				<>
 					{repositories && repositories.length > 0 && (
 						<LabeledField label="Verlinkte Skill-Repositories">
-							<select
-								className="textfield w-64 rounded-lg px-8"
-								value={selectedRepository?.id ?? repositories[0].id}
-								onChange={e => onChange(e.target.value)}
-							>
-								{repositories.map(repository => (
-									<option key={repository.id} value={repository.id}>
-										{repository.name}
-									</option>
-								))}
-							</select>
+							<RepositoryDropDown repositories={repositories} onChange={onChange} />
 						</LabeledField>
 					)}
 				</>
 			)}
 		</>
+	);
+}
+
+function RepositoryDropDown({
+	repositories,
+	onChange
+}: {
+	repositories: SkillRepositoryModel[];
+	onChange: (id: string) => void;
+}) {
+	const [selectedRepository, setSelectedRepository] = useState<string>(repositories[0].id);
+
+	const changeDisplaySelectedRepository = (id: string) => {
+		setSelectedRepository(id);
+	};
+
+	useEffect(() => {
+		onChange(selectedRepository);
+	}, [onChange, selectedRepository]);
+
+	return (
+		<select
+			className="textfield w-64 rounded-lg px-8"
+			value={selectedRepository ?? repositories[0].id}
+			onChange={e => {
+				changeDisplaySelectedRepository(e.target.value);
+			}}
+		>
+			{repositories.map(repository => (
+				<option key={repository.id} value={repository.id}>
+					{repository.name}
+				</option>
+			))}
+		</select>
 	);
 }
 
