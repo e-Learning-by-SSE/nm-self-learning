@@ -4,9 +4,10 @@
 	"license": "MIT",
 	"scripts": {
 		"start": "nx serve",
-		"build": "nx build",
+		"build": "nx affected:build --parallel",
+		"build:full": "nx run-many --target=build --all --parallel --skip-nx-cache",
 		"test": "env TZ='Europe/Berlin' jest --runInBand",
-		"test:ci": "env TZ='Europe/Berlin' jest --runInBand",
+		"test:ci": "env TZ='Europe/Berlin' nx affected:test --parallel=3 --runInBand",
 		"cypress": "cypress open --project=apps/site-e2e",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write '{apps,libs}/**/*.{ts,tsx}'",
