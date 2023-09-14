@@ -9,6 +9,7 @@ import { PlusCircleIcon, XIcon } from "@heroicons/react/solid";
 import { FolderContext } from "./folder-editor";
 import { SkillDeleteOption } from "./skill-taskbar";
 import { showToast } from "@self-learning/ui/common";
+import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 
 export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
@@ -65,7 +66,7 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 							<XIcon className="h-5" />
 						</button>
 					</div>
-					<div className="flex flex-col gap-4">
+					<div className="flex flex-col gap-4 border-light-border border-b-2">
 						<LabeledField label="Name" error={errors.name?.message}>
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>
@@ -77,6 +78,8 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 							children={dbSkill?.children ?? []}
 							skillToChange={skill}
 						/>
+					</div>
+					<div className="flex justify-between">
 						<button type="submit" className="btn-primary w-full">
 							Speichern
 						</button>
@@ -125,18 +128,14 @@ function SkillToSkillDepsInfo({
 				</span>
 			</label>
 			<div>
-				{childItems.map((child, index) => (
-					<InlineRemoveButton
-						key={index}
-						label={child.name}
-						onRemove={() => removeChild(child.id)}
-						onClick={() => handleSelection({ ...child, children: [], parents: [] })} // TODO feature: unfold children when clicked
-					/>
-				))}
-				<PlusCircleIcon
-					className="icon mt-2 h-5 cursor-pointer px-4 text-lg hover:text-secondary"
-					onClick={() => {}}
-				/>
+			<SelectSkillsView 
+				skills={childItems as SkillFormModel[]} //TODO need to be refactored
+				onDeleteSkill={skill => {
+					removeChild(skill.id);
+				}}
+				onAddSkill={() => {}} //TODO need to be implemented
+				repoId={"1"} //TODO need no be implemented
+			/>
 			</div>
 			<label>
 				<span className="text-sm font-semibold">
@@ -144,53 +143,15 @@ function SkillToSkillDepsInfo({
 				</span>
 			</label>
 			<div>
-				{parentItems.map((child, index) => (
-					<InlineRemoveButton
-						key={index}
-						label={child.name}
-						onRemove={() => removeParent(child.id)}
-						onClick={() => handleSelection({ ...child, children: [], parents: [] })}
-					/>
-				))}
-				<PlusCircleIcon
-					className="icon mt-2 h-5 cursor-pointer px-4 text-lg hover:text-secondary"
-					onClick={() => {
-						console.log("added");
-					}}
-				/>
+			<SelectSkillsView 
+				skills={parentItems as SkillFormModel[]} //TODO need to be refactored
+				onDeleteSkill={skill => {
+					removeParent(skill.id);
+				}}
+				onAddSkill={() => {}} //TODO need to be implemented
+				repoId={"1"} //TODO need no be implemented
+			/>
 			</div>
 		</>
-	);
-}
-
-function InlineRemoveButton({
-	label,
-	onRemove,
-	onClick
-}: {
-	label: string;
-	onRemove: () => void;
-	onClick: () => void;
-}) {
-	return (
-		<div className="inline-block">
-			<div className="flex items-center rounded-lg border border-light-border bg-white text-sm">
-				<button
-					className="flex flex-grow cursor-pointer flex-col px-4 hover:text-secondary"
-					onClick={onClick}
-					type="button"
-				>
-					{label}
-				</button>
-				<button
-					type="button"
-					data-testid="remove"
-					className="mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
-					onClick={onRemove}
-				>
-					<XIcon className="h-3" />
-				</button>
-			</div>
-		</div>
 	);
 }

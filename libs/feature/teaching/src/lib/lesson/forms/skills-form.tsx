@@ -8,6 +8,7 @@ import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog
 import { PlusIcon } from "@heroicons/react/solid";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
+import { SelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
 
 export default function SkillForm() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
@@ -26,7 +27,7 @@ export default function SkillForm() {
 
 	const addSkills = (skill: SkillFormModel[] | undefined, id: "TEACHING" | "REQUIREMENT") => {
 		if (!skill) return;
-		skill = skill.map(skill => ({ ...skill, children: [] }));
+		skill = skill.map(skill => ({ ...skill, children: [], parents: [] }));
 		if (id === "TEACHING") {
 			setValue("teachingGoals", [...teachingGoals, ...skill]);
 		} else {
@@ -58,35 +59,27 @@ export default function SkillForm() {
 			{selectedRepository && (
 				<>
 					<LabeledField label="Vermittelte Skills">
-						<IconButton
-							type="button"
-							data-testid="VermittelteSkills-add"
-							onClick={() => setSelectSkillModal({ id: "TEACHING" })}
-							title="Hinzufügen"
-							text="Hinzufügen"
-							icon={<PlusIcon className="h-5" />}
-						/>
-						<SkillList
+						<SelectSkillsView 
 							skills={teachingGoals}
-							deleteSkill={skill => {
+							onDeleteSkill={skill => {
 								deleteSkill(skill, "TEACHING");
 							}}
+							onAddSkill={skill => {
+								addSkills(skill, "TEACHING");
+							}}
+							repoId={selectedRepository.id}
 						/>
 					</LabeledField>
 					<LabeledField label="Benötigte Skills">
-						<IconButton
-							type="button"
-							data-testid="BenoetigteSkills-add"
-							onClick={() => setSelectSkillModal({ id: "REQUIREMENT" })}
-							title="Hinzufügen"
-							text="Hinzufügen"
-							icon={<PlusIcon className="h-5" />}
-						/>
-						<SkillList
+					<SelectSkillsView 
 							skills={requirementSkills}
-							deleteSkill={skill => {
+							onDeleteSkill={skill => {
 								deleteSkill(skill, "REQUIREMENT");
 							}}
+							onAddSkill={skill => {
+								addSkills(skill, "REQUIREMENT");
+							}}
+							repoId={selectedRepository.id}
 						/>
 					</LabeledField>
 					{selectSkillModal && (
@@ -156,44 +149,21 @@ function RepositoryDropDown({
 	}, [onChange, selectedRepository]);
 
 	return (
-		<select
-			className="textfield w-64 rounded-lg px-8"
-			value={selectedRepository ?? repositories[0].id}
-			onChange={e => {
-				changeDisplaySelectedRepository(e.target.value);
-			}}
-		>
-			{repositories.map(repository => (
-				<option key={repository.id} value={repository.id}>
-					{repository.name}
-				</option>
-			))}
-		</select>
+		<div className="flex flex-col">
+				<select
+					className="textfield"
+					value={selectedRepository ?? repositories[0].id}
+					onChange={e => {
+						changeDisplaySelectedRepository(e.target.value);
+					}}
+				>
+					{repositories.map(repository => (
+						<option key={repository.id} value={repository.id}>
+							{repository.name}
+						</option>
+					))}
+				</select>
+		</div>
 	);
 }
 
-function SkillList({
-	skills,
-	deleteSkill
-}: {
-	skills: SkillFormModel[];
-	deleteSkill: (skill: SkillFormModel) => void;
-}) {
-	return (
-		<>
-			{skills.length === 0 ? (
-				<p className="mt-3 text-center text-sm text-light">Keinen Skill hinzugefügt</p>
-			) : (
-				<ul className="mt-3 grid  max-h-40 gap-4 overflow-auto">
-					{skills.map((skill, index) => (
-						<TextChip key={skill.id + index} onRemove={() => deleteSkill(skill)}>
-							<div className="flex text-center">
-								<span>{skill.name}</span>
-							</div>
-						</TextChip>
-					))}
-				</ul>
-			)}
-		</>
-	);
-}
