@@ -23,6 +23,9 @@ pipeline {
             }
             steps {
                 sh 'git fetch origin master:master'
+                sh 'git checkout master'
+                sh 'git checkout -'
+                sh 'git branch'
                 sh 'npm ci --force'
                 sh 'cp -f .env.example .env'
                 sh 'npm run build'
