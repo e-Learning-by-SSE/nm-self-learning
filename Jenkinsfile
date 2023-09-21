@@ -22,6 +22,7 @@ pipeline {
                 }
             }
             steps {
+                sh 'git fetch origin master:master'
                 sh 'npm ci --force'
                 sh 'cp -f .env.example .env'
                 sh 'npm run build'
@@ -52,6 +53,9 @@ pipeline {
                 }
             }
             steps {
+                // Before a new release, don't use the cache
+                sh 'npm run test'
+                sh 'npm run build:full'
 				ssedocker {
 					create {
 						target "${env.TARGET_PREFIX}:latest"

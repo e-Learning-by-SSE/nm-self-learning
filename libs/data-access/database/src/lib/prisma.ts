@@ -18,7 +18,7 @@ declare global {
 export let database: PrismaClient = null as unknown as PrismaClient;
 
 if (typeof window === "undefined") {
-	if (process.env.NODE_ENV === "production") {
+	if (process.env["NODE_ENV"] === "production") {
 		database = new PrismaClient();
 	} else {
 		// @ts-ignore
@@ -29,6 +29,6 @@ if (typeof window === "undefined") {
 		// @ts-ignore
 		database = global.prisma;
 	}
-} else if ((process.env.NODE_ENV as string) === "test") {
+} else if ((process.env["NODE_ENV"] as string) === "test") {
 	database = new PrismaClient();
 }

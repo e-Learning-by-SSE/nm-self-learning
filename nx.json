@@ -1,12 +1,11 @@
 {
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
-	"npmScope": "self-learning",
 	"affected": {
-		"defaultBase": "master"
+		"defaultBase": "origin/master"
 	},
 	"tasksRunnerOptions": {
 		"default": {
-			"runner": "@nrwl/nx-cloud",
+			"runner": "nx-cloud",
 			"options": {
 				"cacheableOperations": ["lint", "test", "e2e", "component-test"],
 				"accessToken": "ZjhkZTI2MmQtYjcwYi00YTllLWE4NDgtNGJjNWNiNDgxZjdkfHJlYWQtd3JpdGU="
@@ -14,30 +13,19 @@
 		}
 	},
 	"generators": {
-		"@nrwl/react": {
-			"application": {
-				"babel": true
-			}
-		},
-		"@nrwl/next": {
-			"application": {
-				"style": "css",
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/next:library": {
+		"@nx/next:library": {
 			"style": "none",
 			"importPath": "@self-learning/LIBRARY_NAME",
 			"standaloneConfig": true,
 			"strict": true,
 			"component": false
 		},
-		"@nrwl/workspace:library": {
+		"@nx/workspace:library": {
 			"importPath": "@self-learning/LIBRARY_NAME",
 			"standaloneConfig": true,
 			"strict": true
 		},
-		"@nrwl/react:library": {
+		"@nx/react:library": {
 			"style": "none",
 			"importPath": "@self-learning/LIBRARY_NAME",
 			"standaloneConfig": true,
@@ -65,6 +53,17 @@
 			"flat": true,
 			"inlineTemplate": true,
 			"skipTests": true
+		},
+		"@nx/react": {
+			"application": {
+				"babel": true
+			}
+		},
+		"@nx/next": {
+			"application": {
+				"style": "css",
+				"linter": "eslint"
+			}
 		}
 	},
 	"defaultProject": "site",
@@ -92,7 +91,8 @@
 			"!{projectRoot}/tsconfig.spec.json",
 			"!{projectRoot}/jest.config.[jt]s",
 			"!{projectRoot}/.eslintrc.json",
-			"!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
+			"!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
+			"!{projectRoot}/src/test-setup.[jt]s"
 		]
 	}
 }

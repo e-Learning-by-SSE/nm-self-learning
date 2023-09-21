@@ -1,17 +1,18 @@
 {
+	"name": "util-markdown",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/util/markdown/src",
 	"projectType": "library",
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/util/markdown/**/*.ts"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/util/markdown"],
 			"options": {
 				"jestConfig": "libs/util/markdown/jest.config.ts",
@@ -19,6 +20,5 @@
 			}
 		}
 	},
-	"tags": [],
-	"name": "util-markdown"
+	"tags": []
 }

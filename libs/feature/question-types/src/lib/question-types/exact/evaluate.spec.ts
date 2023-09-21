@@ -8,6 +8,7 @@ describe("evaluateExact", () => {
 		hints: [],
 		statement: "Test Question",
 		withCertainty: false,
+		caseSensitive: false,
 		acceptedAnswers: []
 	};
 

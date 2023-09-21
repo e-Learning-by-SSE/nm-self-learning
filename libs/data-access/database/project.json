@@ -1,17 +1,18 @@
 {
+	"name": "database",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/data-access/database/src",
 	"projectType": "library",
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/data-access/database/**/*.ts"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/data-access/database"],
 			"options": {
 				"jestConfig": "libs/data-access/database/jest.config.ts",
@@ -19,6 +20,5 @@
 			}
 		}
 	},
-	"tags": [],
-	"name": "data-access-database"
+	"tags": []
 }
