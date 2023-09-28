@@ -12,6 +12,7 @@ import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdow
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
+import { scrambleArrayRef } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -53,6 +54,8 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 		}
 
 		if (question.type === "multiple-choice") {
+			//make answers random
+			scrambleArrayRef(question.answers);
 			for (const answer of question.answers) {
 				answersMd[answer.answerId] = await compileMarkdown(answer.content);
 			}
