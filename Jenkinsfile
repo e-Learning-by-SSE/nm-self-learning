@@ -13,7 +13,7 @@ pipeline {
     }
 
     stages { 
-        stage("NodeJS Build") {
+        stage("NodeJS Affected Build") {
             agent {
                 docker {
                     image 'node:18-bullseye'
@@ -21,17 +21,19 @@ pipeline {
                     args '--tmpfs /.cache -v $HOME/.npm:/.npm'
                 }
             }
+            environment {
+                NX_BASE='master'
+                NX_HEAD='HEAD'
+            }
             steps {
                 sh 'git fetch origin master:master'
-                sh 'git checkout master'
-                sh 'git checkout -'
-                sh 'git branch'
                 sh 'npm ci --force'
                 sh 'cp -f .env.example .env'
-                sh 'npm run build'
+                sh 'pwd'
+                sh 'npm run build:affected'
             }
         }
-        stage('Test') {
+        stage('Affected Tests') {
             environment {
                 POSTGRES_DB = 'SelfLearningDb'
                 POSTGRES_USER = 'username'
@@ -42,13 +44,13 @@ pipeline {
                 script {
                     withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ]).insideSidecar('node:18-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                         sh 'npm run prisma db push'
-                        sh 'npm run test:ci'
+                        sh 'npm run test:affected'
                     }
                 }
             }
         }
 
-        stage('Docker Publish Master') {
+        stage('Publish Release') {
             when {
                 allOf {
                     branch 'master'
@@ -58,7 +60,7 @@ pipeline {
             steps {
                 // Before a new release, don't use the cache
                 sh 'npm run test'
-                sh 'npm run build:full'
+                sh 'npm run build'
 				ssedocker {
 					create {
 						target "${env.TARGET_PREFIX}:latest"
@@ -70,7 +72,7 @@ pipeline {
             }
         }
 
-        stage('Docker Publish Dev') {
+        stage('Publish and Deploy Unstable') {
             when {
                 branch 'dev'
             }
