@@ -11,8 +11,7 @@ import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useState, useMemo } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
-import { TrashIcon } from "@heroicons/react/solid";
-import { useRouter } from "next/router";
+import { PencilIcon, TrashIcon } from "@heroicons/react/solid";
 
 export function SkillRepositoryOverview() {
 	useRequiredSession();
@@ -96,18 +95,14 @@ export function SkillRepositoryOverview() {
 }
 
 function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
-	const router = useRouter();
-
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
-			<button
-				className="btn-stroked"
-				onClick={() => {
-					router.push(`/skills/repository/${repositoryId}`);
-				}}
-			>
-				Editieren
-			</button>
+			<Link href={`/skills/repository/${repositoryId}`}>
+				<button type="button" className="btn-stroked w-fit self-end">
+					<PencilIcon className="icon" />
+					<span>Bearbeiten</span>
+				</button>
+			</Link>
 			<RepositoryDeleteOption repositoryId={repositoryId} />
 		</div>
 	);
