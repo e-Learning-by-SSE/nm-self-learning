@@ -10,7 +10,7 @@ import {
 } from "@self-learning/types";
 
 export type SkillResolved = ResolvedValue<typeof getSkillById>;
-export type SkillUnresolved = Omit<SkillResolved, "children" | "repository | parents">;
+export type SkillUnresolved = Omit<SkillResolved, "children" | "repository" | "parents">;
 
 function getSkillById(id: string) {
 	return database.skill.findUnique({

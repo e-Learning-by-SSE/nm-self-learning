@@ -1,8 +1,8 @@
 import { PlusIcon, XIcon } from "@heroicons/react/solid";
-import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { IconButton } from "@self-learning/ui/common";
 import { SelectSkillDialog } from "./select-skill-dialog";
 import { useState } from "react";
+import { SkillUnresolved } from "@self-learning/api";
 
 export function SelectSkillsView({
 	skills,
@@ -10,15 +10,15 @@ export function SelectSkillsView({
 	onAddSkill,
 	repoId
 }: {
-	skills: SkillFormModel[];
-	onDeleteSkill: (skill: SkillFormModel) => void;
-	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
+	skills: SkillUnresolved[];
+	onDeleteSkill: (skill: SkillUnresolved) => void;
+	onAddSkill: (skill: SkillUnresolved[] | undefined) => void;
 	repoId: string;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
 	return (
-        <div className="flex flex-col">
+		<div className="flex flex-col">
 			<IconButton
 				type="button"
 				data-testid="BenoetigteSkills-add"
@@ -28,18 +28,18 @@ export function SelectSkillsView({
 				icon={<PlusIcon className="h-5" />}
 			/>
 			{skills.length === 0 && (
-				<div className="text-sm mt-3 text-gray-500">Keine Skills vorhanden</div>
+				<div className="mt-3 text-sm text-gray-500">Keine Skills vorhanden</div>
 			)}
-            <div className="mt-3 overflow-auto max-h-40">
-                {skills.map((skill, index) => (
-                    <InlineRemoveButton
-                        key={index}
-                        label={skill.name}
-                        onRemove={() => onDeleteSkill(skill)}
-                        onClick={() => {}} //TODO
-                    />
-                ))}
-            </div>
+			<div className="mt-3 max-h-40 overflow-auto">
+				{skills.map((skill, index) => (
+					<InlineRemoveButton
+						key={index}
+						label={skill.name}
+						onRemove={() => onDeleteSkill(skill)}
+						onClick={() => {}} //TODO
+					/>
+				))}
+			</div>
 			{selectSkillModal && (
 				<SelectSkillDialog
 					onClose={skill => {

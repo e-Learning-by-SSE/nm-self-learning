@@ -5,7 +5,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/api";
-import { PlusCircleIcon, XIcon } from "@heroicons/react/solid";
+import { XIcon } from "@heroicons/react/solid";
 import { FolderContext } from "./folder-editor";
 import { SkillDeleteOption } from "./skill-taskbar";
 import { showToast } from "@self-learning/ui/common";
@@ -66,7 +66,7 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 							<XIcon className="h-5" />
 						</button>
 					</div>
-					<div className="flex flex-col gap-4 border-light-border border-b-2">
+					<div className="flex flex-col gap-4 border-b-2 border-light-border">
 						<LabeledField label="Name" error={errors.name?.message}>
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>
@@ -128,14 +128,14 @@ function SkillToSkillDepsInfo({
 				</span>
 			</label>
 			<div>
-			<SelectSkillsView 
-				skills={childItems as SkillFormModel[]} //TODO need to be refactored
-				onDeleteSkill={skill => {
-					removeChild(skill.id);
-				}}
-				onAddSkill={() => {}} //TODO need to be implemented
-				repoId={"1"} //TODO need no be implemented
-			/>
+				<SelectSkillsView
+					skills={childItems}
+					onDeleteSkill={skill => {
+						removeChild(skill.id);
+					}}
+					onAddSkill={() => {}} //TODO need to be implemented
+					repoId={skillToChange.repositoryId}
+				/>
 			</div>
 			<label>
 				<span className="text-sm font-semibold">
@@ -143,14 +143,14 @@ function SkillToSkillDepsInfo({
 				</span>
 			</label>
 			<div>
-			<SelectSkillsView 
-				skills={parentItems as SkillFormModel[]} //TODO need to be refactored
-				onDeleteSkill={skill => {
-					removeParent(skill.id);
-				}}
-				onAddSkill={() => {}} //TODO need to be implemented
-				repoId={"1"} //TODO need no be implemented
-			/>
+				<SelectSkillsView
+					skills={parentItems}
+					onDeleteSkill={skill => {
+						removeParent(skill.id);
+					}}
+					onAddSkill={() => {}} //TODO need to be implemented
+					repoId={skillToChange.repositoryId}
+				/>
 			</div>
 		</>
 	);
