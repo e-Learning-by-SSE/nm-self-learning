@@ -1,17 +1,21 @@
-import { ArrowCircleRightIcon, CheckIcon, PlusIcon, XIcon } from "@heroicons/react/outline";
+import { CheckIcon, PlusIcon, XIcon } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
-import { ResolvedValue } from "@self-learning/types";
-import { CenteredSection } from "@self-learning/ui/layouts";
-import { endOfWeek, format, isToday, isYesterday, parseISO, startOfWeek } from "date-fns";
+import { ResolvedValue, StrategyOverview, getStrategyNameByType } from "@self-learning/types";
+import { CenteredContainerXL } from "@self-learning/ui/layouts";
+import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
-import Link from "next/link";
-import { ReactElement, useRef, useState } from "react";
-import { Tab, Disclosure } from "@headlessui/react";
-import { GoalType, LearningStrategy } from "@prisma/client";
-import { ChevronRightIcon } from "@heroicons/react/solid";
-import { GoalEditor, GoalFormModel } from "@self-learning/learning-diary";
+import { ReactElement, useState } from "react";
+import { Tab } from "@headlessui/react";
+import { Course, GoalType, LearningStrategy, Lesson, StrategyType } from "@prisma/client";
+import {
+	EntryEditor,
+	EntryFormModel,
+	GoalEditor,
+	GoalFormModel,
+	Lessons
+} from "@self-learning/learning-diary";
 import { trpc } from "libs/data-access/api-client/src/lib/trpc";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
@@ -19,6 +23,8 @@ import { useRouter } from "next/router";
 type CompletedLesson = ResolvedValue<typeof getCompletedLessonsThisWeek>[0];
 type LearningGoal = ResolvedValue<typeof getGoals>[0];
 type DiaryEntry = ResolvedValue<typeof getEntries>[0];
+type SelectEntryFunction = (id: string) => void;
+type SelectCompletedLessonFunction = (lessonId: string, completedLessonId: number) => void;
 
 type LearningDiaryProps = {
 	completedLessons: {
@@ -98,7 +104,8 @@ function getEntries(username: string) {
 					lesson: true,
 					course: true
 				}
-			}
+			},
+			lesson: true
 		},
 		where: {
 			diaryID: username
@@ -109,6 +116,7 @@ function getEntries(username: string) {
 async function getCompletedLessonsThisWeek(username: string, dateNow: number) {
 	return database.completedLesson.findMany({
 		select: {
+			completedLessonId: true,
 			createdAt: true,
 			course: {
 				select: {
@@ -127,10 +135,6 @@ async function getCompletedLessonsThisWeek(username: string, dateNow: number) {
 		where: {
 			AND: {
 				username,
-				createdAt: {
-					gte: startOfWeek(dateNow, { weekStartsOn: 1 }),
-					lte: endOfWeek(dateNow, { weekStartsOn: 1 })
-				},
 				diaryEntry: null
 			}
 		}
@@ -162,15 +166,9 @@ function groupEntries(entries: DiaryEntry[]): LearningDiaryProps["entries"] {
 	const week = [];
 
 	for (const entry of entries) {
-		if (
-			entry.completedLesson != null &&
-			isToday(parseISO(entry.completedLesson.createdAt as unknown as string))
-		) {
+		if (isToday(parseISO(entry.createdAt as unknown as string))) {
 			today.push(entry);
-		} else if (
-			entry.completedLesson != null &&
-			isYesterday(parseISO(entry.completedLesson.createdAt as unknown as string))
-		) {
+		} else if (isYesterday(parseISO(entry.createdAt as unknown as string))) {
 			yesterday.push(entry);
 		} else {
 			week.push(entry);
@@ -306,7 +304,7 @@ function TabGoals({ goals }: LearningDiaryProps) {
 			showToast({
 				type: "success",
 				title: "Ziel erstellt!",
-				subtitle: result.id
+				subtitle: ""
 			});
 			setShowForm(false);
 			router.replace(router.asPath);
@@ -436,26 +434,58 @@ function TabGoals({ goals }: LearningDiaryProps) {
 	);
 }
 
-function Strategies({ initialValue }: { initialValue: string }) {
-	const inputRef = useRef<HTMLTextAreaElement>(null);
-
+function StrategyOverviews() {
+	const { data: strategyOverviews } = trpc.learningDiary.getStrategyOverview.useQuery();
 	return (
 		<section className="border-card flex flex-col gap-8 bg-white p-4">
-			<div className="flex h-full flex-col gap-4">
-				<div className="flex justify-between">
-					<span className="text-lg font-semibold text-light">Überblick Strategien</span>
+			<div className="flex h-full flex-col justify-between gap-4">
+				<span className="text-sm font-semibold text-light">Überblick Strategien</span>
+				<div className="flex h-full flex-row justify-between gap-4">
+					<span className="text-sm font-semibold text-light">Strategy</span>
+					<span className="text-sm font-semibold text-light">
+						Vertrauensbewertung (avg):
+					</span>
+					<span className="text-sm font-semibold text-light">Summe der Nutzungen</span>
 				</div>
-				<textarea ref={inputRef} defaultValue={initialValue} rows={5} className="h-full" />
+				{strategyOverviews
+					?.filter(i => i.type != StrategyType.USERSPECIFIC)
+					.map(({ type, _avg, _count }) => (
+						<Strategy
+							key={type}
+							type={type}
+							_count={{
+								type: _count.type
+							}}
+							_avg={{
+								confidenceRating: _avg.confidenceRating
+							}}
+						/>
+					))}
 			</div>
 		</section>
 	);
 }
+function Strategy(strategyOverview: StrategyOverview) {
+	return (
+		<div className="flex h-full flex-row justify-between gap-4">
+			<span className="text-sm font-semibold text-light">
+				{getStrategyNameByType(strategyOverview.type)}
+			</span>
+			<span className="text-sm font-semibold text-light">
+				{strategyOverview._avg.confidenceRating}
+			</span>
+			<span className="text-sm font-semibold text-light">{strategyOverview._count.type}</span>
+		</div>
+	);
+}
 
 function CompletedSection({
+	selectCompletedLesson,
 	title,
 	subtitle,
 	completedLessons
 }: {
+	selectCompletedLesson: SelectCompletedLessonFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
 	completedLessons: CompletedLesson[];
@@ -469,17 +499,14 @@ function CompletedSection({
 				</span>
 			</div>
 			<ul className="flex flex-col gap-2 text-sm">
-				{completedLessons.map(({ lesson, createdAt, course }) => (
-					<CompletedLessonDisclosure
+				{completedLessons.map(({ lesson, createdAt, completedLessonId }) => (
+					<CompletedLessonList
 						key={lesson.lessonId}
+						lessonId={lesson.lessonId}
+						completedLessonId={completedLessonId}
 						title={lesson.title}
-						topic={course ? course.title : lesson.title}
-						href={
-							course
-								? `/courses/${course.slug}/${lesson.slug}`
-								: `/lessons/${lesson.slug}`
-						}
 						date={createdAt}
+						selectCompletedLesson={selectCompletedLesson}
 					/>
 				))}
 			</ul>
@@ -488,10 +515,12 @@ function CompletedSection({
 }
 
 function EntriesSection({
+	selectEntry,
 	title,
 	subtitle,
 	entries
 }: {
+	selectEntry: SelectEntryFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
 	entries: DiaryEntry[];
@@ -505,156 +534,138 @@ function EntriesSection({
 				</span>
 			</div>
 			<ul className="flex flex-col gap-2 text-sm">
-				{entries.map(
-					({ id, completedLesson, distractions, efforts, learningStrategies, notes }) => (
-						<EntriesDisclosure
-							key={id}
-							completedLesson={completedLesson}
-							distractions={distractions}
-							efforts={efforts}
-							learningStrategies={learningStrategies}
-							notes={notes}
-						/>
-					)
-				)}
+				{entries.map(({ id, completedLesson, lesson, createdAt }) => (
+					<EntriesList
+						key={id}
+						id={id}
+						lesson={lesson}
+						completedLesson={completedLesson}
+						createdAt={createdAt}
+						selectEntry={selectEntry}
+					/>
+				))}
 			</ul>
 		</section>
 	);
 }
 
-function EntriesDisclosure({
+function EntriesList({
+	id,
 	completedLesson,
-	distractions = "",
-	efforts = "",
-	learningStrategies,
-	notes = ""
+	lesson,
+	createdAt,
+	selectEntry
 }: {
-	distractions: string | null;
-	efforts: string | null;
-	learningStrategies: LearningStrategy[] | null;
-	notes: string | null;
+	id: string;
 	completedLesson: CompletedLesson | null;
+	lesson: Lesson | null;
+	createdAt: Date;
+	selectEntry: SelectEntryFunction;
 }) {
-	let button: any;
-	let panel: any;
+	let title: string;
 	if (completedLesson != null) {
-		button = (
-			<div>
-				{completedLesson.lesson.title} -{" "}
-				{format(
-					parseISO(completedLesson.createdAt as unknown as string),
-					"HH:mm dd-MM-yyyy"
-				)}
-			</div>
-		);
-		panel = (
-			<div>
-				<Link
-					href={
-						completedLesson.course
-							? `/courses/${completedLesson.course.slug}/${completedLesson.lesson.slug}`
-							: `/lessons/${completedLesson.lesson.slug}`
-					}
-					className="font-medium"
-				>
-					{completedLesson.lesson.title}
-				</Link>
-				<div className="flex flex-col gap-1">
-					<span className="text-xs text-light">
-						in{" "}
-						<span className="text-secondary">
-							{completedLesson.course
-								? completedLesson.course.title
-								: completedLesson.lesson.title}
-						</span>
-					</span>
-				</div>
-				<div className="text-xs text-light">
-					{format(
-						parseISO(completedLesson.createdAt as unknown as string),
-						"HH:mm dd-MM-yyyy"
-					)}
-				</div>{" "}
-			</div>
-		);
+		title =
+			completedLesson.lesson.title +
+			" " +
+			format(parseISO(completedLesson.createdAt as unknown as string), "HH:mm dd-MM-yyyy");
+	} else if (lesson != null) {
+		title =
+			lesson.title +
+			" " +
+			format(parseISO(createdAt as unknown as string), "HH:mm dd-MM-yyyy");
 	} else {
-		button = <div> Ein Eintrag </div>;
-		panel = <div>Todo</div>;
+		title = "Eintrag - " + format(parseISO(createdAt as unknown as string), "HH:mm dd-MM-yyyy");
 	}
 	return (
 		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
-			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
-				<Disclosure>
-					{({ open }) => (
-						<>
-							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
-								{button}
-								<ChevronRightIcon
-									className={open ? "h-5 w-5 rotate-90 transform" : "h-5 w-5"}
-								/>
-							</Disclosure.Button>
-							<Disclosure.Panel className="text-gray-500">{panel}</Disclosure.Panel>
-						</>
-					)}
-				</Disclosure>
-			</div>
+			<button className="link" onClick={() => selectEntry(id)}>
+				{title}
+			</button>
 		</li>
 	);
 }
 
-function CompletedLessonDisclosure({
+function CompletedLessonList({
+	lessonId,
+	completedLessonId,
 	title,
-	href,
-	topic,
-	date
+	date,
+	selectCompletedLesson
 }: {
+	lessonId: string;
+	completedLessonId: number;
 	title: string;
-	href: string;
-	topic: string;
 	date: Date;
+	selectCompletedLesson: SelectCompletedLessonFunction;
 }) {
 	return (
 		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
 			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
-				<Disclosure>
-					{({ open }) => (
-						<>
-							<Disclosure.Button className="flex w-full justify-between rounded-lg text-left font-medium hover:text-secondary focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
-								{title} -{" "}
-								{format(parseISO(date as unknown as string), "HH:mm dd-MM-yyyy")}
-								<ChevronRightIcon
-									className={open ? "h-5 w-5 rotate-90 transform" : "h-5 w-5"}
-								/>
-							</Disclosure.Button>
-							<Disclosure.Panel className="text-gray-500">
-								<Link href={href} className="font-medium">
-									{title}
-								</Link>
-								<div className="flex flex-col gap-1">
-									<span className="text-xs text-light">
-										in <span className="text-secondary">{topic}</span>
-									</span>
-								</div>
-								<div className="text-xs text-light">
-									{format(
-										parseISO(date as unknown as string),
-										"HH:mm dd-MM-yyyy"
-									)}
-								</div>
-							</Disclosure.Panel>
-						</>
-					)}
-				</Disclosure>
+				<button
+					className="link"
+					onClick={() => selectCompletedLesson(lessonId, completedLessonId)}
+				>
+					{title} - {format(parseISO(date as unknown as string), "HH:mm dd-MM-yyyy")}
+				</button>
 			</div>
 		</li>
 	);
 }
 
-function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
+export function TabGroupEntries({
+	selectEntry,
+	selectCompletedLesson,
+	completedLessons,
+	entries
+}: {
+	selectEntry: SelectEntryFunction;
+	selectCompletedLesson: SelectCompletedLessonFunction;
+	completedLessons: {
+		today: {
+			completedLessonId: number;
+			createdAt: Date;
+			lesson: { title: string; slug: string; lessonId: string };
+			course: { title: string; slug: string } | null;
+		}[];
+		yesterday: {
+			completedLessonId: number;
+			createdAt: Date;
+			lesson: { title: string; slug: string; lessonId: string };
+			course: { title: string; slug: string } | null;
+		}[];
+		week: {
+			completedLessonId: number;
+			createdAt: Date;
+			lesson: { title: string; slug: string; lessonId: string };
+			course: { title: string; slug: string } | null;
+		}[];
+	};
+	entries: {
+		today: (DiaryEntry & {
+			learningStrategies: LearningStrategy[];
+			lesson: Lesson | null;
+			completedLesson: (CompletedLesson & { lesson: Lesson; course: Course | null }) | null;
+		})[];
+		yesterday: (DiaryEntry & {
+			learningStrategies: LearningStrategy[];
+			lesson: Lesson | null;
+			completedLesson: (CompletedLesson & { lesson: Lesson; course: Course | null }) | null;
+		})[];
+		week: (DiaryEntry & {
+			learningStrategies: LearningStrategy[];
+			lesson: Lesson | null;
+			completedLesson: (CompletedLesson & { lesson: Lesson; course: Course | null }) | null;
+		})[];
+	};
+}) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	return (
-		<section className="flex w-full flex-col gap-8 bg-white p-4">
+		<section className="border-card flex w-full flex-col gap-8 bg-white p-4">
 			<span className="text-lg font-semibold text-light">Meine Einträge</span>
+			<button className="btn-primary w-full" onClick={() => selectEntry("")}>
+				Neue Eintrag erstellen
+			</button>
+
 			<Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
 				<Tab.List className="flex w-full flex-wrap border-b border-light-border">
 					<Tab
@@ -682,11 +693,13 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 					<Tab.Panel>
 						<section>
 							<EntriesSection
+								selectEntry={selectEntry}
 								title="Heute"
 								subtitle={amount => <>Deine heutigen Tagebucheinträge: {amount}.</>}
 								entries={entries.today}
 							/>
 							<EntriesSection
+								selectEntry={selectEntry}
 								title="Gestern"
 								subtitle={amount => (
 									<>Deine gestrigen Tagebucheinträge: {amount}.</>
@@ -694,23 +707,19 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 								entries={entries.yesterday}
 							/>
 							<EntriesSection
-								title="Diese Woche"
+								selectEntry={selectEntry}
+								title="Alle Einträge"
 								subtitle={amount => (
 									<>Deine restlichen Tagebucheinträge: {amount}.</>
 								)}
 								entries={entries.week}
 							/>
-							<section>
-								<button className="flex flex-row items-end gap-2 text-sm text-light">
-									<span className="font-medium">Vorherige Woche anzeigen</span>
-									<ArrowCircleRightIcon className="h-6" />
-								</button>
-							</section>
 						</section>
 					</Tab.Panel>
 					<Tab.Panel>
 						<section>
 							<CompletedSection
+								selectCompletedLesson={selectCompletedLesson}
 								title="Heute"
 								subtitle={amount => (
 									<>Du hast heute {amount} Lerneinheiten bearbeitet.</>
@@ -718,6 +727,7 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 								completedLessons={completedLessons.today}
 							/>
 							<CompletedSection
+								selectCompletedLesson={selectCompletedLesson}
 								title="Gestern"
 								subtitle={amount => (
 									<>Du hast gestern {amount} Lerneinheiten bearbeitet.</>
@@ -725,21 +735,13 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 								completedLessons={completedLessons.yesterday}
 							/>
 							<CompletedSection
-								title="Diese Woche"
+								selectCompletedLesson={selectCompletedLesson}
+								title="Alle Einträge"
 								subtitle={amount => (
-									<>
-										Du hast in dieser Woche {amount} weitere Lerneinheiten
-										bearbeitet.
-									</>
+									<>Du hast {amount} weitere Lerneinheiten bearbeitet.</>
 								)}
 								completedLessons={completedLessons.week}
 							/>
-							<section>
-								<button className="flex flex-row items-end gap-2 text-sm text-light">
-									<span className="font-medium">Vorherige Woche anzeigen</span>
-									<ArrowCircleRightIcon className="h-6" />
-								</button>
-							</section>
 						</section>
 					</Tab.Panel>
 				</Tab.Panels>
@@ -748,18 +750,160 @@ function TabGroupEntries({ completedLessons, entries }: LearningDiaryProps) {
 	);
 }
 
-export default function LearningDiary(props: LearningDiaryProps) {
+function Entry(diaryEntry: DiaryEntry) {
+	function fetchCourseSlugsByUser() {
+		const { data: enrollments } = trpc.enrollment.getEnrollments.useQuery();
+		const course: string[] = [];
+
+		if (enrollments)
+			enrollments.forEach((element: { course: { slug: string } }) => {
+				course.push(element.course.slug);
+			});
+		return course;
+	}
+	const { mutateAsync: createDiaryEntry } = trpc.learningDiary.createDiaryEntry.useMutation();
+	const { mutateAsync: updateDiaryEntry } = trpc.learningDiary.updateDiaryEntry.useMutation();
+
+	const { data: inputDiaryEntry } = trpc.learningDiary.getEntryForEdit.useQuery({
+		entryId: diaryEntry.id
+	});
+
+	const slugs = fetchCourseSlugsByUser();
+	const { data: lessonsData } = trpc.learningDiary.getLessons.useQuery({ slugs });
+	const lessons: Lessons[] = [];
+	if (lessonsData ?? false) {
+		lessonsData?.forEach((ele: { lessonId: string; title: string }) => {
+			lessons.push({ id: ele.lessonId, name: ele.title });
+		});
+	}
+	const router = useRouter();
+
+	async function onConfirm(entryForm: EntryFormModel) {
+		if (diaryEntry.id != "") {
+			try {
+				const result = await updateDiaryEntry({
+					id: diaryEntry.id,
+					completedLessonId: entryForm.completedLessonId,
+					distractions: entryForm.distractions,
+					duration: entryForm.duration,
+					efforts: entryForm.efforts,
+					lessonId: entryForm.lessonId,
+					notes: entryForm.notes
+				});
+				console.log(result);
+				showToast({
+					type: "success",
+					title: "Eintrag wurde bearbeitet!",
+					subtitle: ""
+				});
+
+				router.replace(router.asPath);
+			} catch (error) {
+				showToast({
+					type: "error",
+					title: "Fehler",
+					subtitle:
+						"Der Eintrag konnte nicht bearbeitet werden. Siehe Konsole für mehr Informationen."
+				});
+			}
+		} else {
+			entryForm.id = null;
+			try {
+				const result = await createDiaryEntry(entryForm);
+				showToast({
+					type: "success",
+					title: "Eintrag erstellt!",
+					subtitle: ""
+				});
+				router.replace(router.asPath);
+			} catch (error) {
+				showToast({
+					type: "error",
+					title: "Fehler",
+					subtitle:
+						"Der Eintrag konnte nicht erstellt werden. Siehe Konsole für mehr Informationen."
+				});
+			}
+		}
+	}
 	return (
-		<CenteredSection className="flex bg-gray-50">
+		<div>
+			{!inputDiaryEntry ? (
+				<EntryEditor
+					onConfirm={onConfirm}
+					entry={{
+						id: "",
+						distractions: "",
+						completedLessonId: diaryEntry.completedLessonId,
+						notes: "",
+						duration: 0,
+						efforts: "",
+						lessonId: diaryEntry.lessonId,
+						learningStrategies: []
+					}}
+					lessons={lessons}
+				/>
+			) : (
+				<EntryEditor
+					onConfirm={onConfirm}
+					entry={{
+						id: inputDiaryEntry.id,
+						distractions: inputDiaryEntry.distractions,
+						completedLessonId: inputDiaryEntry.completedLessonId,
+						notes: inputDiaryEntry.notes,
+						duration: inputDiaryEntry.duration,
+						efforts: inputDiaryEntry.efforts,
+						lessonId: inputDiaryEntry.lessonId,
+						learningStrategies: diaryEntry.learningStrategies
+					}}
+					lessons={lessons}
+				/>
+			)}
+		</div>
+	);
+}
+
+export default function LearningDiary(props: LearningDiaryProps) {
+	const [selectedEntry, setSelectedEntry] = useState("");
+	const [selectedLesson, setSelectedLesson] = useState("");
+	const [selectedCompletedLesson, setSelectedCompletedLesson] = useState(-1);
+	function selectEntry(id: string): void {
+		setSelectedEntry(id);
+		setSelectedCompletedLesson(-1);
+		setSelectedLesson("");
+	}
+	function selectCompletedLesson(lessonId: string, completedLessonId: number): void {
+		setSelectedCompletedLesson(completedLessonId);
+		setSelectedLesson(lessonId);
+		setSelectedEntry("");
+	}
+	return (
+		<CenteredContainerXL>
 			<h1 className="mb-16 text-5xl">Mein Lerntagebuch</h1>
-			<section className="flew-row flex w-full gap-5">
+			<div className="mx-auto flex w-full  max-w-full flex-row justify-between gap-4">
 				<TabGroupEntries
+					selectEntry={selectEntry}
+					selectCompletedLesson={selectCompletedLesson}
 					completedLessons={props.completedLessons}
-					goals={[]}
 					entries={props.entries}
 				/>
-
-				<section className="flex w-full flex-col gap-5">
+				<div className="border-card flex w-full flex-col gap-5 bg-white p-4">
+					<Entry
+						id={selectedEntry}
+						diaryID={""}
+						distractions={null}
+						efforts={null}
+						notes={null}
+						completedLessonId={selectedCompletedLesson}
+						completedLesson={null}
+						learningStrategies={[]}
+						lessonId={selectedLesson}
+						createdAt={new Date()}
+						lesson={null}
+						duration={null}
+					/>
+				</div>
+				<div className="flex w-full flex-col gap-5">
 					<TabGoals
 						goals={props.goals}
 						completedLessons={{
@@ -773,9 +917,9 @@ export default function LearningDiary(props: LearningDiaryProps) {
 							week: []
 						}}
 					/>
-					<Strategies initialValue={""} />
-				</section>
-			</section>
-		</CenteredSection>
+					<StrategyOverviews />
+				</div>
+			</div>
+		</CenteredContainerXL>
 	);
 }

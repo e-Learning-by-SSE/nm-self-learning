@@ -184,6 +184,7 @@ model Lesson {
   updatedAt    DateTime          @updatedAt
   completions  CompletedLesson[]
   quizAttempts QuizAttempt[]
+  diaryEntries DiaryEntry[]
   authors      Author[]          @relation("AuthorToLesson")
   license      License? @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
   licenseId    Int?
@@ -311,19 +312,21 @@ model DiaryEntry {
   efforts String?
   learningStrategies LearningStrategy[]
   notes String?
-  //lesson Lesson
+  lesson Lesson?   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+  lessonId String?
+  createdAt DateTime @default(now())
   //quizAttempt QuizAttempt?
   completedLesson CompletedLesson? @relation(fields: [completedLessonId], references: [completedLessonId])
   completedLessonId Int? @unique
+  duration Int?
 }
 
 model LearningStrategy {
   id String @id @default(uuid())
   type StrategyType
-  duration Int?
   confidenceRating Int
   notes String?
-  diaryEntry DiaryEntry @relation(fields: [diaryEntryID], references: [id])
+  diaryEntry DiaryEntry @relation(fields: [diaryEntryID], references: [id], onDelete: Cascade)
   diaryEntryID String
 }
 

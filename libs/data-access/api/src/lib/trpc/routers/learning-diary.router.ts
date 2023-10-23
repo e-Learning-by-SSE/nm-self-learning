@@ -2,6 +2,13 @@ import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { GoalType, StrategyType } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
+import {
+	CourseContent,
+	StrategyOverview,
+	extractLessonIds,
+	strategySchema
+} from "@self-learning/types";
 
 export const learningDiaryRouter = t.router({
 	getById: authProcedure.input(z.object({ diaryId: z.string() })).query(({ input }) => {
@@ -132,6 +139,28 @@ export const learningDiaryRouter = t.router({
 			);
 			return removed;
 		}),
+	getEntryForEdit: authProcedure.input(z.object({ entryId: z.string() })).query(({ input }) => {
+		return database.diaryEntry.findUniqueOrThrow({
+			where: { id: input.entryId },
+			select: {
+				id: true,
+				distractions: true,
+				completedLesson: true,
+				efforts: true,
+				notes: true,
+				createdAt: true,
+				learningStrategies: true,
+				lesson: true,
+				lessonId: true,
+				completedLessonId: true,
+				duration: true
+			}
+		});
+	}),
+	getStrategyOverview: authProcedure.query(async ({ ctx }) => {
+		return getStrategyOverviewForUser(ctx.user.name);
+	}),
+
 	addLearningTime: authProcedure
 		.input(z.object({ diaryId: z.string(), learningTimeId: z.string() }))
 		.mutation(async ({ input: { diaryId, learningTimeId }, ctx }) => {
@@ -275,9 +304,13 @@ export const learningDiaryRouter = t.router({
 	createDiaryEntry: authProcedure
 		.input(
 			z.object({
-				distractions: z.string(),
-				efforts: z.string(),
-				notes: z.string()
+				distractions: z.string().nullable(),
+				efforts: z.string().nullable(),
+				notes: z.string().nullable(),
+				lessonId: z.string().nullable(),
+				completedLessonId: z.number().nullable(),
+				duration: z.number().nullable(),
+				learningStrategies: z.array(strategySchema).nullable()
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -286,7 +319,10 @@ export const learningDiaryRouter = t.router({
 					distractions: input.distractions,
 					efforts: input.efforts,
 					notes: input.notes,
-					diaryID: ctx.user.name
+					diaryID: ctx.user.name,
+					duration: input.duration,
+					completedLessonId: input.completedLessonId,
+					lessonId: input.lessonId
 				}
 			});
 
@@ -296,6 +332,56 @@ export const learningDiaryRouter = t.router({
 
 			return entry;
 		}),
+	updateDiaryEntry: authProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				distractions: z.string().nullable(),
+				efforts: z.string().nullable(),
+				notes: z.string().nullable(),
+				lessonId: z.string().nullable(),
+				completedLessonId: z.number().nullable(),
+				duration: z.number().nullable()
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const entry = await database.diaryEntry.findUniqueOrThrow({
+				where: { id: input.id },
+				select: {
+					diaryID: true
+				}
+			});
+			if (entry.diaryID != ctx.user.name) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: `Not allowed to change Entry for diaries that not belong to ${ctx.user.name}.`
+				});
+			}
+
+			const diaryEntry = await database.diaryEntry.update({
+				where: { id: input.id },
+				data: {
+					distractions: input.distractions,
+					efforts: input.efforts,
+					notes: input.notes,
+					lessonId: input.lessonId,
+					completedLessonId: input.completedLessonId,
+					duration: input.duration
+				}
+			});
+
+			console.log("[LearningDiaryRouter.updateDiaryEntry]: Entry updated by", ctx.user.name, {
+				distractions: diaryEntry.distractions,
+				efforts: diaryEntry.efforts,
+				notes: diaryEntry.notes,
+				lessonId: diaryEntry.lessonId,
+				completedLessonId: diaryEntry.completedLessonId,
+				duration: diaryEntry.duration
+			});
+
+			return diaryEntry;
+		}),
+
 	addStrategyToEntry: authProcedure
 		.input(z.object({ entryId: z.string(), strategyId: z.string() }))
 		.mutation(async ({ input: { entryId, strategyId }, ctx }) => {
@@ -344,9 +430,8 @@ export const learningDiaryRouter = t.router({
 		.input(
 			z.object({
 				type: z.custom<StrategyType>(),
-				duration: z.number(),
-				confidenceRating: z.number().max(5),
-				notes: z.string(),
+				confidenceRating: z.number().min(0).max(10),
+				notes: z.string().nullable(),
 				diaryEntryID: z.string()
 			})
 		)
@@ -354,7 +439,6 @@ export const learningDiaryRouter = t.router({
 			const strategy = await database.learningStrategy.create({
 				data: {
 					type: input.type,
-					duration: input.duration,
 					confidenceRating: input.confidenceRating,
 					notes: input.notes,
 					diaryEntryID: input.diaryEntryID
@@ -395,5 +479,61 @@ export const learningDiaryRouter = t.router({
 			);
 
 			return learningTime;
+		}),
+	getLessons: t.procedure
+		.input(z.object({ slugs: z.string().array() }))
+		.query(async ({ input }) => {
+			const courses = await database.course.findMany({
+				where: { slug: { in: input.slugs } },
+				select: {
+					content: true
+				}
+			});
+			const contents: CourseContent[] = [];
+			courses.forEach(ele => {
+				const content = (ele.content ?? []) as CourseContent;
+				contents.push(content);
+			});
+			const lessonIds: string[] = [];
+			if (contents ?? false)
+				contents.forEach(element => {
+					lessonIds.push(...extractLessonIds(element));
+				});
+
+			const lessons = await database.lesson.findMany({
+				where: { lessonId: { in: lessonIds } },
+				select: {
+					lessonId: true,
+					title: true
+				}
+			});
+			return lessons;
 		})
 });
+
+export async function getStrategyOverviewForUser(user: string): Promise<StrategyOverview[]> {
+	const idsFound = await database.diaryEntry.findMany({
+		where: { diaryID: user },
+		select: {
+			id: true
+		}
+	});
+	const ids: string[] = [];
+	idsFound.forEach(ele => ids.push(ele.id));
+	return getStrategyOverviewForEntryIDs(ids);
+}
+export async function getStrategyOverviewForEntryIDs(
+	diaryEntryIDs: string[]
+): Promise<StrategyOverview[]> {
+	const strategies = await database.learningStrategy.groupBy({
+		by: ["type"],
+		_avg: {
+			confidenceRating: true
+		},
+		_count: {
+			type: true
+		},
+		where: { diaryEntryID: { in: diaryEntryIDs } }
+	});
+	return strategies;
+}
