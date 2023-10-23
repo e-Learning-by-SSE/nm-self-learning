@@ -335,7 +335,7 @@ function TabGoals({ goals }: LearningDiaryProps) {
 							)
 						}
 					>
-						Offene
+						Offen
 					</Tab>
 					<Tab
 						className={({ selected }) =>
@@ -491,14 +491,14 @@ function CompletedSection({
 	completedLessons: CompletedLesson[];
 }) {
 	return (
-		<section className="flex flex-col gap-4">
+		<section className="flex flex-col gap-2">
 			<div className="flex flex-col gap-1">
 				<span className="font-semibold">{title}</span>
 				<span className="text-xs text-light">
 					{subtitle(<span className="font-semibold">{completedLessons.length}</span>)}
 				</span>
 			</div>
-			<ul className="flex flex-col gap-2 text-sm">
+			<ul className="mb-4 flex flex-col gap-2 text-sm">
 				{completedLessons.map(({ lesson, createdAt, completedLessonId }) => (
 					<CompletedLessonList
 						key={lesson.lessonId}
@@ -526,14 +526,14 @@ function EntriesSection({
 	entries: DiaryEntry[];
 }) {
 	return (
-		<section className="flex flex-col gap-4">
+		<section className="flex flex-col gap-2">
 			<div className="flex flex-col gap-1">
 				<span className="font-semibold">{title}</span>
 				<span className="text-xs text-light">
 					{subtitle(<span className="font-semibold">{entries.length}</span>)}
 				</span>
 			</div>
-			<ul className="flex flex-col gap-2 text-sm">
+			<ul className="mb-4 flex flex-col gap-2 text-sm">
 				{entries.map(({ id, completedLesson, lesson, createdAt }) => (
 					<EntriesList
 						key={id}
@@ -578,9 +578,11 @@ function EntriesList({
 	}
 	return (
 		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
-			<button className="link" onClick={() => selectEntry(id)}>
-				{title}
-			</button>
+			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
+				<button className="link" onClick={() => selectEntry(id)}>
+					{title}
+				</button>
+			</div>
 		</li>
 	);
 }
@@ -663,7 +665,7 @@ export function TabGroupEntries({
 		<section className="border-card flex w-full flex-col gap-8 bg-white p-4">
 			<span className="text-lg font-semibold text-light">Meine Einträge</span>
 			<button className="btn-primary w-full" onClick={() => selectEntry("")}>
-				Neue Eintrag erstellen
+				Neuen Eintrag erstellen
 			</button>
 
 			<Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>

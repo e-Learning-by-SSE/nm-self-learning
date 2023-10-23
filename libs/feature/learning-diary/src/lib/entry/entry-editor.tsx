@@ -204,6 +204,7 @@ export function EntryStrategieForm({ form }: { form: any }) {
 								className="ml-5 max-w-xs"
 								min={0}
 								max={10}
+								defaultValue={0}
 								{...register(`learningStrategies.${number}.confidenceRating`, {
 									valueAsNumber: true
 								})}
