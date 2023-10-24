@@ -39,7 +39,7 @@ export function Feedback({
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ type: "tween", duration: 0.5 }}
-			className={`flex flex-col gap-2 rounded-lg border p-4 text-white ${
+			className={`flex flex-col gap-2 rounded-lg border p-4 ${
 				isCorrect
 					? "border-green-500 bg-green-100 text-green-500"
 					: " border-red-500 bg-red-100 text-red-500"

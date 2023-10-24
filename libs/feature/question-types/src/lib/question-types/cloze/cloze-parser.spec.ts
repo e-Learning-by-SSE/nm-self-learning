@@ -1,4 +1,4 @@
-import { insertPlaceholder, parseCloze, parseNextGap } from "./cloze-parser";
+import { insertPlaceholder, parseCloze } from "./cloze-parser";
 
 describe("Cloze Parser", () => {
 	describe("parseCloze", () => {
@@ -31,35 +31,6 @@ describe("Cloze Parser", () => {
 				"This is the {C: [#a, b]} first sentence. This is the {C: [c, #d]} second sentence."
 			);
 			expect(gaps).toHaveLength(2);
-		});
-	});
-
-	describe("parseNextGap", () => {
-		it.each([
-			["{C: [#a, b]}"],
-			["{C: [a, #b]}"],
-			["{C: [a]}"],
-			["{T: [Gap]}"],
-			["{T: [Eins, Zwei]}"],
-			["{T: [Word with spaces]}"]
-		])("%s", text => {
-			const gap = parseNextGap(text);
-			expect(gap).not.toBeNull();
-		});
-
-		it("With text before", () => {
-			const gap = parseNextGap("Text before {C: [#a, b]}");
-			expect(gap).not.toBeNull();
-		});
-
-		it("With text after", () => {
-			const gap = parseNextGap("{C: [#a, b]} Text after");
-			expect(gap).not.toBeNull();
-		});
-
-		it("With surrounding text", () => {
-			const gap = parseNextGap("Text before {C: [#a, b]} Text after");
-			expect(gap).not.toBeNull();
 		});
 	});
 

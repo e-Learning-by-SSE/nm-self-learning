@@ -5,6 +5,8 @@ import { QuestionTypeForm } from "../../base-question";
 import { createCloze } from "./cloze-parser";
 import { RenderGapType } from "./component";
 import { Cloze } from "./schema";
+import ReactMarkdown from "react-markdown";
+import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 
 export default function ClozeForm({ index }: { question: { type: Cloze["type"] }; index: number }) {
 	const { control } = useFormContext<QuestionTypeForm<Cloze["question"]>>();
@@ -45,7 +47,19 @@ export default function ClozeForm({ index }: { question: { type: Cloze["type"] }
 					<pre className="prose h-full max-w-full whitespace-pre-line border border-light-border bg-white p-4 font-sans">
 						{cloze.segments.map((segment, index) => (
 							<Fragment key={index}>
-								<span>{segment}</span>
+								<ReactMarkdown
+									linkTarget="_blank"
+									remarkPlugins={remarkPlugins}
+									rehypePlugins={rehypePlugins}
+									components={{
+										p(props) {
+											const { ...rest } = props;
+											return <span {...rest} />;
+										}
+									}}
+								>
+									{segment ?? ""}
+								</ReactMarkdown>
 								{cloze.gaps[index] && (
 									<RenderGapType
 										gap={cloze.gaps[index]}
@@ -72,6 +86,12 @@ export default function ClozeForm({ index }: { question: { type: Cloze["type"] }
 						Das ist ein Single-Choice Feld mit {"{C: [#eins, zwei]}"}{" "}
 						Antwortmöglichkeiten, aus denen ausgewählt werden muss. Falsche Antworten
 						werden mit einem # gekennzeichnet.
+					</span>
+					<span className="rounded-lg bg-white p-2 font-mono">
+						LaTeX kann verwendet werden, um mathematische Formeln und Symbole
+						darzustellen. Zum Beispiel: {"$$V_{sphere} = \\frac{4}{3}\\pi r^3$$"}. Es
+						kann auch in Single-Choice Feldern benutzt werden:{" "}
+						{"{C: [#eins, $$V_{sphere} = \\frac{4}{3}\\pi r^3$$]}"}{" "}
 					</span>
 				</li>
 			</ul>

@@ -19,3 +19,4 @@ export * from "./lib/section-card/section-card";
 export * from "./lib/tabs/tabs";
 export * from "./lib/toast/toast";
 export * from "./lib/license/license-chip";
+export * from "./lib/custom-selection/selection";
