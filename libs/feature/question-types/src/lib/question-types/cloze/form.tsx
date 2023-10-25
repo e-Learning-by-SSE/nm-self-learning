@@ -79,7 +79,7 @@ export default function ClozeForm({ index }: { question: { type: Cloze["type"] }
 				<li className="flex flex-col gap-2">
 					<span className="font-semibold">Beispiele</span>
 					<span className="rounded-lg bg-white p-2 font-mono">
-						Das ist eine {"{T: [Textanwort]}"}. Das ist ein Textfeld{" "}
+						Das ist eine {"{T: [Textantwort]}"}. Das ist ein Textfeld{" "}
 						{"{T: [Antwort, Lücke]}"} mit zwei richtigen Möglichkeiten.
 					</span>
 					<span className="rounded-lg bg-white p-2 font-mono">
