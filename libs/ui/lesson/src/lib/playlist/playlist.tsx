@@ -5,12 +5,13 @@ import {
 	ChevronLeftIcon,
 	PlayIcon
 } from "@heroicons/react/solid";
+import { QuizSaveContext } from "@self-learning/lesson";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { Divider } from "@self-learning/ui/common";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 
 export type PlaylistChapter = {
 	title: string;
@@ -241,11 +242,13 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 			</span>
 			<span className="flex justify-between">
 				<Link
-					href={`/courses/${course.slug}/${lesson.slug}/quiz`}
+					href={`/courses/${course.slug}/${lesson.slug}${
+						router.pathname.endsWith("quiz") ? "" : "/quiz"
+					}`}
 					className="btn-primary text-sm"
 					data-testid="quizLink"
 				>
-					Lernkontrolle
+					{router.pathname.endsWith("quiz") ? "Zum Lernhinhalt" : "Zur Lernkontrolle"}
 				</Link>
 				<span className="flex gap-2">
 					<button
