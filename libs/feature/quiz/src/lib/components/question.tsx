@@ -6,15 +6,15 @@ import {
 	QuestionAnswerRenderer,
 	QuestionType,
 	QUESTION_TYPE_DISPLAY_NAMES,
-	useQuestion
+	useQuestion,
 } from "@self-learning/question-types";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { Hints } from "./hints";
 import { useQuiz } from "./quiz-context";
-import { LessonLayoutProps } from "@self-learning/lesson";
+import { LessonLayoutProps, QuizSaveContext } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 export function Question({
 	question,
@@ -55,6 +55,7 @@ export function Question({
 			[question.questionId]: value
 		}));
 	}
+	const quizSaveContext = useContext(QuizSaveContext);
 
 	function setEvaluation(e: any) {
 		setCurrentStep(
@@ -66,6 +67,13 @@ export function Question({
 			...prev,
 			[question.questionId]: e
 		}));
+		if (quizSaveContext.setValue !== null) {
+			quizSaveContext.setValue(prev => ({
+				answers: answers,
+				evaluation: { ...(prev.evaluation as typeof e), [question.questionId]: e },
+				lessonSlug: lesson.slug
+			}));
+		}
 	}
 
 	function nextQuestionStep() {
