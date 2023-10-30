@@ -29,7 +29,7 @@ pipeline {
                 sh 'cp -f .env.example .env'
                 echo "TagBuild: ${buildingTag()}"
                 script {
-                    if (buildingTag()) { 
+                    if (env.BRANCH_NAME =='master') { 
                         sh 'npm run build'
                     } else {
                         sh 'npm run build:affected'
@@ -48,7 +48,7 @@ pipeline {
                 script {
                     withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ]).insideSidecar('node:18-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                         sh 'npm run prisma db push'
-                        if (buildingTag()) { 
+                        if (env.BRANCH_NAME =='master') { 
                             sh 'npm run test'
                         } else {
                             sh 'npm run test:affected'
