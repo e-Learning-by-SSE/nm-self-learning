@@ -2,6 +2,13 @@ import { t, authorProcedure } from "../trpc";
 import * as z from "zod";
 import { database } from "@self-learning/database";
 import {
+	PathPlanner,
+	LearningUnitProvider,
+	SkillProvider,
+	Skill,
+	LearningUnit
+} from "@self-learning/skills-pathfinder";
+import {
 	ResolvedValue,
 	skillCreationFormSchema,
 	skillFormSchema,
@@ -59,6 +66,41 @@ export const skillRouter = t.router({
 			return await database.skill.findMany({
 				where: { repositoryId: input.repoId }
 			});
+		}),
+	getCyclesFromReposetory: authorProcedure
+		.input(z.object({ repoId: z.string() }))
+		.query(async ({ input }) => {
+			const skills = await database.skill.findMany({
+				where: { repositoryId: input.repoId },
+				include: {
+					children: true
+				}
+			});
+
+			const dataSkills = skills.map(skill => {
+				return {
+					id: skill.id,
+					repositoryId: skill.repositoryId,
+					nestedSkills: skill.children.map(child => child.id),
+				};
+			});
+
+			const skillProvider: SkillProvider = {
+				getSkillsByRepository(repositoryId: string): Promise<Skill[]> {
+					return new Promise(function (resolve, reject) {
+						resolve(dataSkills);
+					});
+				}
+			};
+			const lerningUnitProvider: LearningUnitProvider = {getLearningUnitsBySkills(skillIds: string[]): Promise<LearningUnit[]>{return new Promise(function (resolve, reject) {
+				reject;
+			});}};
+
+			const pathPlanner = new PathPlanner(skillProvider, lerningUnitProvider);
+
+			// gets cycled skill's id's and removes "sk" from them
+			const cycles = (await pathPlanner.findACycle(dataSkills[0])).map(innerList => innerList.map(str => str.substring(2)))
+			return cycles;
 		}),
 	addRepo: authorProcedure
 		.input(z.object({ rep: skillRepositoryCreationSchema }))

@@ -17,7 +17,7 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 		skillId: skill.id
 	});
 
-	const onSubmit = (data: SkillFormModel) => {
+	const onSubmit = async (data: SkillFormModel) => {
 		updateSkill({
 			skill: {
 				...data,
@@ -28,6 +28,16 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 				parents: skill.parents
 			}
 		});
+
+		// const skillProvider : SkillProvider = {
+		// getSkillsByRepository(repositoryId: string): Promise<Skill[]> {
+		// return
+		// },
+		// };
+
+		// const pathplaner = new PathPlanner(new SkillProvider(), new LearningUnitProvider());
+
+
 		showToast({
 			type: "success",
 			title: "Skill gespeichert!",
@@ -47,7 +57,7 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 		form.setValue("description", skill?.description);
 	}, [skill, form]);
 
-	const { handleSelection } = useContext(FolderContext);
+	const {handleSelection} = useContext(FolderContext);
 	return (
 		<FormProvider {...form}>
 			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
@@ -63,7 +73,7 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 							title="Ansicht ohne Veränderungen schließen"
 							onClick={() => handleSelection(null)}
 						>
-							<XIcon className="h-5" />
+							<XIcon className="h-5"/>
 						</button>
 					</div>
 					<div className="flex flex-col gap-4 border-b-2 border-light-border">
@@ -83,7 +93,7 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 						<button type="submit" className="btn-primary w-full">
 							Speichern
 						</button>
-						<SkillDeleteOption skill={skill} />
+						<SkillDeleteOption skill={skill}/>
 					</div>
 				</Form.SidebarSection>
 			</form>
@@ -92,15 +102,15 @@ export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
 }
 
 function SkillToSkillDepsInfo({
-	parents,
-	children,
-	skillToChange
-}: {
+								  parents,
+								  children,
+								  skillToChange
+							  }: {
 	parents: SkillResolved["parents"];
 	children: SkillResolved["children"];
 	skillToChange: SkillFormModel;
 }) {
-	const { handleSelection } = useContext(FolderContext);
+	const {handleSelection} = useContext(FolderContext);
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
 	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
 	useEffect(() => {
