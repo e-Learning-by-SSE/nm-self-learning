@@ -12,6 +12,7 @@ import { Fragment, useState, useMemo } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { TrashIcon } from "@heroicons/react/solid";
+import { useRouter } from "next/router";
 
 export function SkillRepositoryOverview() {
 	useRequiredSession();
@@ -95,12 +96,14 @@ export function SkillRepositoryOverview() {
 }
 
 function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
+	const router = useRouter();
+
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
 			<button
 				className="btn-stroked"
 				onClick={() => {
-					/* new function */
+					router.push(`/skills/repository/${repositoryId}`);
 				}}
 			>
 				Editieren
