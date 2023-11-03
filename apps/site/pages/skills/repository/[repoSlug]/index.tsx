@@ -9,19 +9,18 @@ export default function CreateAndViewRepository() {
 	const router = useRouter();
 	const session = useSession();
 	const { mutateAsync: createRep } = trpc.skill.addRepo.useMutation();
-	const [isLoading, setIsLoading] = useState(false);
 	const [repositoryID, setRepositoryID] = useState<string>("1");
 
 	useEffect(() => {
 		if (!router.query.repoSlug) return;
 		if (typeof router.query.repoSlug !== "string") return;
 		if (Array.isArray(router.query.repoSlug)) return;
-		if (session.data?.user.id === undefined) return;
+		if (session.data?.user.id === undefined || session.data === null) return;
 		const userId = session.data.user.id;
 		const slug = router.query.repoSlug ?? "";
-
+		
+		// Saves two repository due to double rendering on development (react feature to detect problems in strict mode)  -> prod has no issue 
 		const createNewRep = async () => {
-			setIsLoading(true);
 			const newRep = {
 				ownerId: userId,
 				name: "New Skilltree: " + Date.now(),
@@ -32,8 +31,11 @@ export default function CreateAndViewRepository() {
 				repoId: result.id,
 				ownerId: result.ownerId
 			});
-			setRepositoryID(result.id);
-			setIsLoading(false);
+			const newRepoSlug = result.id; // route to created repo
+			router.push({
+				pathname: router.pathname,
+				query: { ...router.query, repoSlug: newRepoSlug }
+			});
 		};
 
 		if (slug === "create") {
@@ -41,9 +43,11 @@ export default function CreateAndViewRepository() {
 		} else {
 			setRepositoryID(slug);
 		}
-	}, [router.query.repoSlug, createRep, session.data?.user.id]);
+	}, [router.query.repoSlug, createRep, router, session.data]);
 
 	return (
-		<div>{isLoading ? <LoadingBox /> : <FolderSkillEditor repositoryID={repositoryID} />}</div>
+		<div>
+			<FolderSkillEditor repositoryID={repositoryID} />
+		</div>
 	);
 }
