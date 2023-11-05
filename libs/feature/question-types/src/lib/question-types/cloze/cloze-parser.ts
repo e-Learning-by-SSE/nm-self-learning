@@ -11,8 +11,13 @@ export type Gap = {
 // {C: [#OptionWrong, OptionCorrect]}
 // {T: [Text]}
 // {T: [Text, Alternative]}
+
+//Cloze regex catches all cloze gaps in the text
 // eslint-disable-next-line no-useless-escape
 const clozeRegex = /(?:{[TC]\: \[((?:#*(?:[A-Za-zÄÜÖäüö]+|(?:\$\$.+\$\$)),* *)+)\]})/gm;
+
+
+//Latex regex detects if latex is used in the cloze gap
 // eslint-disable-next-line no-useless-escape
 const latexRegex = /\$\$[^\$]+\$\$/gm;
 const GAP_PLACEHOLDER = "{GAP}";
@@ -28,7 +33,10 @@ export function parseCloze(text: string): Gap[] {
 	let lineIndex = 0;
 
 	for (let i = 0; i < lines.length; i++) {
-		lines[i] = lines[i].trim();
+		//removes all line breaks
+		lines[i] = lines[i].replace(/\r/g, "");
+		lines[i] = lines[i].replace(/\n/g, "");
+
 		const matches = [...lines[i].matchAll(clozeRegex)];
 		if (matches && matches.length > 0) {
 			for (const match of matches) {
