@@ -11,6 +11,8 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { LessonType } from "@prisma/client";
+import Link from "next/link"; //TODO me
+import { trpc } from "@self-learning/api-client"; //TODO me
 
 export function LessonEditor({
 	lesson,
@@ -26,6 +28,30 @@ export function LessonEditor({
 	});
 
 	const [selectedLessonType, setLessonType] = useState(lesson.lessonType);
+
+	const { data: courses } = trpc.course.getAllContent.useQuery();
+	let courseSlug = "";
+	if (lesson.lessonId) {
+		courseSlug = getCourseSlug(courses, lesson.lessonId);
+	}
+
+	function getCourseSlug(courses: any, lessonID: string) {
+		if (courses) {
+			for (const course of courses) {
+				const courseContent = course.content;
+				for (const chapter of courseContent) {
+					if (
+						chapter.content.find(
+							(elemt: { lessonId: string }) => elemt.lessonId === lessonID
+						)
+					) {
+						return course.slug;
+					}
+				}
+			}
+		}
+		return "dummy-course";
+	}
 
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
@@ -71,16 +97,17 @@ export function LessonEditor({
 									<span className="font-semibold text-secondary">
 										Lerneinheit editieren
 									</span>
-
 									<h1 className="text-2xl">{lesson.title}</h1>
 								</div>
-
 								<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+
+								<Link href={`/courses/${courseSlug}/${lesson.slug}`}>
+									<button className="btn-primary w-full">{"Preview"}</button>
+								</Link>
 
 								<button className="btn-primary w-full" type="submit">
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
-
 								<LessonInfoEditor setLessonType={setLessonType} />
 							</>
 						}
