@@ -1,6 +1,6 @@
 import { EntryFormModel, entryFormSchema } from "./entry-form-model";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { Controller, FormProvider, UseFormReturn, useFieldArray, useForm } from "react-hook-form";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Listbox } from "@headlessui/react";
 import { SetStateAction, useEffect, useState } from "react";
@@ -14,11 +14,11 @@ export function EntryEditor({
 	entry,
 	lessons,
 	onConfirm
-}: {
+}: Readonly<{
 	entry: EntryFormModel;
 	lessons: Lessons[];
 	onConfirm: (entry: EntryFormModel) => void;
-}) {
+}>) {
 	const isNew = entry.id === "";
 	const form = useForm<EntryFormModel>({
 		resolver: zodResolver(entryFormSchema),
@@ -82,11 +82,11 @@ export function EntryTopForm({
 	lessons,
 	form,
 	defaultLessonId
-}: {
+}: Readonly<{
 	lessons: Lessons[];
-	form: any;
+	form: UseFormReturn<EntryFormModel>;
 	defaultLessonId: string | null;
-}) {
+}>) {
 	function getName(id: string) {
 		let out: string;
 		const lesson = lessons.find(ele => ele.id === id);
@@ -154,7 +154,7 @@ export function EntryTopForm({
 	);
 }
 
-export function EntryNotesForm({ form }: { form: any }) {
+export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFormModel> }>) {
 	const {
 		register,
 		formState: { errors }
@@ -177,7 +177,7 @@ export function EntryNotesForm({ form }: { form: any }) {
 	);
 }
 
-export function EntryStrategieForm({ form }: { form: any }) {
+export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<EntryFormModel> }>) {
 	const { register, control } = form;
 
 	const { fields, append, remove } = useFieldArray({
@@ -205,7 +205,6 @@ export function EntryStrategieForm({ form }: { form: any }) {
 								className="ml-5 max-w-xs"
 								min={0}
 								max={10}
-								steps={1}
 								defaultValue={0}
 								{...register(`learningStrategies.${number}.confidenceRating`, {
 									valueAsNumber: true
@@ -239,7 +238,13 @@ export function EntryStrategieForm({ form }: { form: any }) {
 	);
 }
 
-const ListBoxStrategy = ({ index, form }: { index: number; form: any }) => {
+const ListBoxStrategy = ({
+	index,
+	form
+}: {
+	index: number;
+	form: UseFormReturn<EntryFormModel>;
+}) => {
 	const { register, control, getValues } = form;
 	const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(StrategyType.REPEATING);
 	const defaultStrategy = getValues(`learningStrategies.${index}.type`);
@@ -281,7 +286,7 @@ const ListBoxStrategy = ({ index, form }: { index: number; form: any }) => {
 					type="Text"
 					className="mt-5 max-w-xs"
 					defaultValue={""}
-					value={null}
+					value={""}
 					{...register(`learningStrategies.${index}.notes` as const)}
 				/>
 			)}

@@ -22,6 +22,21 @@ export const learningDiaryRouter = t.router({
 			}
 		});
 	}),
+	hasDiary: authProcedure.mutation(async ({ ctx }) => {
+		const learningDiary = await database.learningDiary.findUnique({
+			where: {
+				username: ctx.user.name
+			},
+			select: {
+				username: true
+			}
+		});
+		let found = false;
+		if (learningDiary && learningDiary.username == ctx.user.name) {
+			found = true;
+		}
+		return found;
+	}),
 	getForEdit: authProcedure.input(z.object({ diaryId: z.string() })).query(({ input }) => {
 		return database.learningDiary.findUniqueOrThrow({
 			where: { username: input.diaryId },
@@ -34,25 +49,19 @@ export const learningDiaryRouter = t.router({
 			}
 		});
 	}),
-	create: authProcedure
-		.input(
-			z.object({
-				diaryId: z.string()
-			})
-		)
-		.mutation(async ({ ctx, input }) => {
-			const learningDiary = await database.learningDiary.create({
-				data: {
-					username: input.diaryId
-				}
-			});
+	create: authProcedure.mutation(async ({ ctx }) => {
+		const learningDiary = await database.learningDiary.create({
+			data: {
+				username: ctx.user.name
+			}
+		});
 
-			console.log("[learningDiaryRouter.create]: Diary created for", ctx.user.name, {
-				username: learningDiary.username
-			});
+		console.log("[learningDiaryRouter.create]: Diary created for", ctx.user.name, {
+			username: learningDiary.username
+		});
 
-			return learningDiary;
-		}),
+		return learningDiary;
+	}),
 	addGoal: authProcedure
 		.input(z.object({ diaryId: z.string(), goalId: z.string() }))
 		.mutation(async ({ input: { diaryId, goalId }, ctx }) => {

@@ -50,15 +50,19 @@ export const getServerSideProps: GetServerSideProps<LearningDiaryProps> = async 
 	if (!session?.user?.name) {
 		return { redirect: { destination: "/login?callbackUrl=learning-diary", permanent: false } };
 	}
+	const found = await database.learningDiary.findUnique({
+		where: { username: session?.user?.name },
+		select: { username: true }
+	});
+
+	if (found === null) {
+		await database.learningDiary.create({
+			data: { username: session?.user?.name }
+		});
+	}
 
 	const [completedLessons, goals, entries] = await Promise.all([
-		JSON.parse(
-			JSON.stringify(await getCompletedLessonsThisWeek(session.user.name, Date.now()))
-		),
-		/*database.learningDiary.findUnique({
-			where: { username: session.user.name },
-			include: { goals: true }
-		}),*/
+		JSON.parse(JSON.stringify(await getCompletedLessonsThisWeek(session.user.name))),
 		JSON.parse(JSON.stringify(await getGoals(session.user.name))),
 		JSON.parse(JSON.stringify(await getEntries(session.user.name)))
 	]);
@@ -113,7 +117,7 @@ function getEntries(username: string) {
 	});
 }
 
-async function getCompletedLessonsThisWeek(username: string, dateNow: number) {
+async function getCompletedLessonsThisWeek(username: string) {
 	return database.completedLesson.findMany({
 		select: {
 			completedLessonId: true,
@@ -620,7 +624,7 @@ export function TabGroupEntries({
 	selectCompletedLesson,
 	completedLessons,
 	entries
-}: {
+}: Readonly<{
 	selectEntry: SelectEntryFunction;
 	selectCompletedLesson: SelectCompletedLessonFunction;
 	completedLessons: {
@@ -660,7 +664,7 @@ export function TabGroupEntries({
 			completedLesson: (CompletedLesson & { lesson: Lesson; course: Course | null }) | null;
 		})[];
 	};
-}) {
+}>) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	return (
 		<section className="border-card flex w-full flex-col gap-8 bg-white p-4">
@@ -782,7 +786,7 @@ function Entry(diaryEntry: DiaryEntry) {
 	const router = useRouter();
 
 	async function onConfirm(entryForm: EntryFormModel) {
-		console.log(entryForm);
+		if (entryForm.lessonId == "") entryForm.lessonId = null;
 		if (diaryEntry.id != "") {
 			try {
 				const result = await updateDiaryEntry({
@@ -818,7 +822,7 @@ function Entry(diaryEntry: DiaryEntry) {
 				showToast({
 					type: "success",
 					title: "Eintrag erstellt!",
-					subtitle: ""
+					subtitle: result.createdAt
 				});
 				router.replace(router.asPath);
 			} catch (error) {
