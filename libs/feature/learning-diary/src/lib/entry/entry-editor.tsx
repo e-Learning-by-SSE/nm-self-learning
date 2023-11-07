@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Listbox } from "@headlessui/react";
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { StrategyType } from "@prisma/client";
 import { XIcon } from "@heroicons/react/solid";
 import { getStrategyNameByType } from "@self-learning/types";
@@ -26,14 +26,13 @@ export function EntryEditor({
 		shouldUnregister: false
 	});
 
-	form.setValue("duration", entry.duration);
-	form.setValue("distractions", entry.distractions);
-	form.setValue("efforts", entry.efforts);
-	form.setValue("notes", entry.notes);
+	const { reset } = form;
 
-	if (entry.completedLessonId != null && entry.completedLessonId > 0)
-		form.setValue("completedLessonId", entry.completedLessonId);
-	else form.setValue("completedLessonId", null);
+	if (entry.completedLessonId != null && entry.completedLessonId <= 0)
+		entry.completedLessonId = null;
+	useEffect(() => {
+		reset(entry);
+	}, [entry, reset]);
 	return (
 		<div>
 			<FormProvider {...form}>
@@ -60,13 +59,10 @@ export function EntryEditor({
 				>
 					<div>
 						<span className="mb-5 font-semibold text-secondary">Eintrag editieren</span>
-						<div className="mb-5 font-semibold text-secondary">
-							{"Eintrag für " + lessons.find(ele => ele.id === entry.lessonId)?.name}
-						</div>
 						<EntryTopForm
 							lessons={lessons}
-							defaultLesson={!entry.lessonId ? "" : entry.lessonId}
 							form={form}
+							defaultLessonId={entry.lessonId}
 						/>
 						<div className="mt-5 flex-row justify-between">
 							<EntryStrategieForm form={form} />
@@ -84,12 +80,12 @@ export function EntryEditor({
 
 export function EntryTopForm({
 	lessons,
-	defaultLesson,
-	form
+	form,
+	defaultLessonId
 }: {
 	lessons: Lessons[];
-	defaultLesson: string;
 	form: any;
+	defaultLessonId: string | null;
 }) {
 	function getName(id: string) {
 		let out: string;
@@ -105,8 +101,12 @@ export function EntryTopForm({
 		formState: { errors }
 	} = form;
 
-	const [selectedLesson, setSelectedLesson] = useState(defaultLesson);
-
+	let dLId = "";
+	if (defaultLessonId != null) {
+		dLId = defaultLessonId;
+	}
+	const [selectedLesson, setSelectedLesson] = useState(dLId);
+	useEffect(() => setSelectedLesson(dLId), [dLId]);
 	return (
 		<div className="flex flex-col gap-5">
 			<div className="flex flex-col gap-5 border-black">
@@ -114,10 +114,10 @@ export function EntryTopForm({
 					<Controller
 						name="lessonId"
 						control={control}
-						defaultValue=""
 						render={({ field: { onChange } }) => (
 							<Listbox
 								as="div"
+								defaultValue={dLId}
 								value={selectedLesson}
 								onChange={(e: SetStateAction<string>) => {
 									onChange(e);
@@ -184,6 +184,7 @@ export function EntryStrategieForm({ form }: { form: any }) {
 		name: "learningStrategies",
 		control
 	});
+
 	return (
 		<div className="mt-5 flex flex-col">
 			<span className="mb-2 font-semibold text-secondary">Verwendete Lernstrategie</span>
@@ -204,6 +205,7 @@ export function EntryStrategieForm({ form }: { form: any }) {
 								className="ml-5 max-w-xs"
 								min={0}
 								max={10}
+								steps={1}
 								defaultValue={0}
 								{...register(`learningStrategies.${number}.confidenceRating`, {
 									valueAsNumber: true
@@ -211,9 +213,12 @@ export function EntryStrategieForm({ form }: { form: any }) {
 							/>
 
 							<button
-								onClick={() => remove(number)}
+								onClick={() => {
+									console.log(number, ": ", field);
+									remove(number);
+								}}
 								className="btn-small ml-5 place-content-center items-center"
-								title="Ziel Löschen"
+								title="Strategie Löschen"
 							>
 								<XIcon className="h-3 w-3" />
 							</button>
@@ -235,20 +240,20 @@ export function EntryStrategieForm({ form }: { form: any }) {
 }
 
 const ListBoxStrategy = ({ index, form }: { index: number; form: any }) => {
+	const { register, control, getValues } = form;
 	const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(StrategyType.REPEATING);
-
-	const { register, control } = form;
-
+	const defaultStrategy = getValues(`learningStrategies.${index}.type`);
+	useEffect(() => setSelectedStrategy(defaultStrategy), [defaultStrategy]);
 	return (
 		<div className="gab-2 flex flex-col">
 			<Controller
 				name={`learningStrategies.${index}.type`}
 				control={control}
-				defaultValue={StrategyType.REPEATING}
 				render={({ field: { onChange } }) => (
 					<Listbox
 						as="div"
 						value={selectedStrategy}
+						defaultValue={StrategyType.REPEATING}
 						onChange={(e: SetStateAction<StrategyType>) => {
 							onChange(e);
 							setSelectedStrategy(e);
@@ -276,6 +281,7 @@ const ListBoxStrategy = ({ index, form }: { index: number; form: any }) => {
 					type="Text"
 					className="mt-5 max-w-xs"
 					defaultValue={""}
+					value={null}
 					{...register(`learningStrategies.${index}.notes` as const)}
 				/>
 			)}

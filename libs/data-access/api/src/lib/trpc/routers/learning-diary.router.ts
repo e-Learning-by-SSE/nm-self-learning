@@ -140,7 +140,7 @@ export const learningDiaryRouter = t.router({
 			return removed;
 		}),
 	getEntryForEdit: authProcedure.input(z.object({ entryId: z.string() })).query(({ input }) => {
-		return database.diaryEntry.findUniqueOrThrow({
+		return database.diaryEntry.findUnique({
 			where: { id: input.entryId },
 			select: {
 				id: true,
@@ -322,7 +322,12 @@ export const learningDiaryRouter = t.router({
 					diaryID: ctx.user.name,
 					duration: input.duration,
 					completedLessonId: input.completedLessonId,
-					lessonId: input.lessonId
+					lessonId: input.lessonId,
+					learningStrategies: {
+						createMany: {
+							data: getStrategyData(input.learningStrategies)
+						}
+					}
 				}
 			});
 
@@ -341,7 +346,8 @@ export const learningDiaryRouter = t.router({
 				notes: z.string().nullable(),
 				lessonId: z.string().nullable(),
 				completedLessonId: z.number().nullable(),
-				duration: z.number().nullable()
+				duration: z.number().nullable(),
+				learningStrategies: z.array(strategySchema).nullable()
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -357,7 +363,9 @@ export const learningDiaryRouter = t.router({
 					message: `Not allowed to change Entry for diaries that not belong to ${ctx.user.name}.`
 				});
 			}
-
+			await database.learningStrategy.deleteMany({
+				where: { diaryEntryID: input.id }
+			});
 			const diaryEntry = await database.diaryEntry.update({
 				where: { id: input.id },
 				data: {
@@ -366,7 +374,12 @@ export const learningDiaryRouter = t.router({
 					notes: input.notes,
 					lessonId: input.lessonId,
 					completedLessonId: input.completedLessonId,
-					duration: input.duration
+					duration: input.duration,
+					learningStrategies: {
+						createMany: {
+							data: getStrategyData(input.learningStrategies)
+						}
+					}
 				}
 			});
 
@@ -536,4 +549,12 @@ export async function getStrategyOverviewForEntryIDs(
 		where: { diaryEntryID: { in: diaryEntryIDs } }
 	});
 	return strategies;
+}
+function getStrategyData(
+	learningStrategies:
+		| { type: "USERSPECIFIC" | "REPEATING"; notes: string | null; confidenceRating: number }[]
+		| null
+) {
+	if (learningStrategies) return learningStrategies;
+	else return [];
 }

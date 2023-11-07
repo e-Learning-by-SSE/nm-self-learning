@@ -149,9 +149,9 @@ function groupCompletedLessons(
 	const week = [];
 
 	for (const lesson of completedLessons) {
-		if (isToday(parseISO(lesson.createdAt as unknown as string))) {
+		if (isToday(parseISO(new Date(lesson.createdAt).toISOString()))) {
 			today.push(lesson);
-		} else if (isYesterday(parseISO(lesson.createdAt as unknown as string))) {
+		} else if (isYesterday(parseISO(new Date(lesson.createdAt).toISOString()))) {
 			yesterday.push(lesson);
 		} else {
 			week.push(lesson);
@@ -166,9 +166,9 @@ function groupEntries(entries: DiaryEntry[]): LearningDiaryProps["entries"] {
 	const week = [];
 
 	for (const entry of entries) {
-		if (isToday(parseISO(entry.createdAt as unknown as string))) {
+		if (isToday(parseISO(new Date(entry.createdAt).toISOString()))) {
 			today.push(entry);
-		} else if (isYesterday(parseISO(entry.createdAt as unknown as string))) {
+		} else if (isYesterday(parseISO(new Date(entry.createdAt).toISOString()))) {
 			yesterday.push(entry);
 		} else {
 			week.push(entry);
@@ -567,14 +567,15 @@ function EntriesList({
 		title =
 			completedLesson.lesson.title +
 			" " +
-			format(parseISO(completedLesson.createdAt as unknown as string), "HH:mm dd-MM-yyyy");
+			format(parseISO(new Date(completedLesson.createdAt).toISOString()), "HH:mm dd-MM-yyyy");
 	} else if (lesson != null) {
 		title =
 			lesson.title +
 			" " +
-			format(parseISO(createdAt as unknown as string), "HH:mm dd-MM-yyyy");
+			format(parseISO(new Date(createdAt).toISOString()), "HH:mm dd-MM-yyyy");
 	} else {
-		title = "Eintrag - " + format(parseISO(createdAt as unknown as string), "HH:mm dd-MM-yyyy");
+		title =
+			"Eintrag - " + format(parseISO(new Date(createdAt).toISOString()), "HH:mm dd-MM-yyyy");
 	}
 	return (
 		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
@@ -607,7 +608,7 @@ function CompletedLessonList({
 					className="link"
 					onClick={() => selectCompletedLesson(lessonId, completedLessonId)}
 				>
-					{title} - {format(parseISO(date as unknown as string), "HH:mm dd-MM-yyyy")}
+					{title} - {format(parseISO(new Date(date).toISOString()), "HH:mm dd-MM-yyyy")}
 				</button>
 			</div>
 		</li>
@@ -781,6 +782,7 @@ function Entry(diaryEntry: DiaryEntry) {
 	const router = useRouter();
 
 	async function onConfirm(entryForm: EntryFormModel) {
+		console.log(entryForm);
 		if (diaryEntry.id != "") {
 			try {
 				const result = await updateDiaryEntry({
@@ -790,7 +792,8 @@ function Entry(diaryEntry: DiaryEntry) {
 					duration: entryForm.duration,
 					efforts: entryForm.efforts,
 					lessonId: entryForm.lessonId,
-					notes: entryForm.notes
+					notes: entryForm.notes,
+					learningStrategies: entryForm.learningStrategies
 				});
 				console.log(result);
 				showToast({
@@ -856,7 +859,7 @@ function Entry(diaryEntry: DiaryEntry) {
 						duration: inputDiaryEntry.duration,
 						efforts: inputDiaryEntry.efforts,
 						lessonId: inputDiaryEntry.lessonId,
-						learningStrategies: diaryEntry.learningStrategies
+						learningStrategies: inputDiaryEntry.learningStrategies
 					}}
 					lessons={lessons}
 				/>
