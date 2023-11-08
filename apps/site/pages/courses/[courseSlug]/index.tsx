@@ -21,6 +21,7 @@ import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { LessonType } from "@prisma/client";
+import { useSession } from "next-auth/react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -183,6 +184,15 @@ export default function Course({ course, summary, content, markdownDescription }
 	);
 }
 
+// Checks if user is logged in.
+function useSessionInfo() {
+	const userStatus = useSession().status;
+	if (userStatus === "authenticated") {
+		return true;
+	}
+	return false;
+}
+
 function CourseHeader({
 	course,
 	summary,
@@ -214,6 +224,8 @@ function CourseHeader({
 
 		return null;
 	}, [completion, content]);
+
+	const userAuthenticated = useSessionInfo();
 
 	return (
 		<section className="flex flex-col gap-16">
@@ -284,7 +296,7 @@ function CourseHeader({
 						</Link>
 					)}
 
-					{!isEnrolled && (
+					{!isEnrolled && userAuthenticated && (
 						<button
 							className="btn-primary disabled:opacity-50"
 							onClick={() => enroll({ courseId: course.courseId })}
@@ -340,20 +352,34 @@ function Lesson({
 	href: string;
 	isCompleted: boolean;
 }) {
+	const userAuthenticated = useSessionInfo();
+
 	return (
-		<Link
-			href={href}
-			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
-				isCompleted ? "border-emerald-500" : "border-gray-300"
-			}`}
-		>
-			<span className="flex">
-				<span className="w-8 shrink-0 self-center font-medium text-secondary">
-					{lesson.lessonNr}
+		<>
+			{userAuthenticated && (
+				<Link
+					href={href}
+					className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
+						isCompleted ? "border-emerald-500" : "border-gray-300"
+					}`}
+				>
+					<span className="flex">
+						<span className="w-8 shrink-0 self-center font-medium text-secondary">
+							{lesson.lessonNr}
+						</span>
+						<span>{lesson.title}</span>
+					</span>
+				</Link>
+			)}
+			{!userAuthenticated && (
+				<span className="flex">
+					<span className="w-8 shrink-0 self-center font-medium text-secondary">
+						{lesson.lessonNr}
+					</span>
+					<span>{lesson.title}</span>
 				</span>
-				<span>{lesson.title}</span>
-			</span>
-		</Link>
+			)}
+		</>
 	);
 }
 
