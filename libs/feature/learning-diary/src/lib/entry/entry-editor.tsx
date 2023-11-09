@@ -164,7 +164,12 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 			<span className="font-semibold text-secondary">Notizen (Optional)</span>
 			<div className="flex flex-col gap-5 border-black">
 				<LabeledField label="Ablenkungen:" error={errors.distractions?.message}>
-					<input {...register("distractions")} type="text" className="textarea" />
+					<input
+						{...register("distractions")}
+						type="text"
+						className="textarea"
+						placeholder="z.B. eine laute Umgebung"
+					/>
 				</LabeledField>
 				<LabeledField label="Bemühungen" error={errors.efforts?.message}>
 					<input {...register("efforts")} type="text" className="textarea" />
@@ -286,7 +291,7 @@ const ListBoxStrategy = ({
 					type="Text"
 					className="mt-5 max-w-xs"
 					defaultValue={""}
-					value={""}
+					placeholder="Name der Lernstrategie"
 					{...register(`learningStrategies.${index}.notes` as const)}
 				/>
 			)}

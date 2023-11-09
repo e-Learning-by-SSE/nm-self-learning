@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
@@ -9,6 +10,7 @@ import {
 	extractLessonIds,
 	strategySchema
 } from "@self-learning/types";
+import { Paginated, paginate, paginationSchema } from "@self-learning/util/common";
 
 export const learningDiaryRouter = t.router({
 	getById: authProcedure.input(z.object({ diaryId: z.string() })).query(({ input }) => {
@@ -37,18 +39,40 @@ export const learningDiaryRouter = t.router({
 		}
 		return found;
 	}),
-	getForEdit: authProcedure.input(z.object({ diaryId: z.string() })).query(({ input }) => {
-		return database.learningDiary.findUniqueOrThrow({
-			where: { username: input.diaryId },
-			select: {
-				username: true,
-				goals: true,
-				entries: true,
-				learningTimes: true,
-				student: true
-			}
-		});
-	}),
+	findManyEntries: authProcedure
+		.input(paginationSchema.extend({ date: z.string() }))
+		.query(async ({ ctx, input: { page, date } }) => {
+			const diaryId: string = ctx.user.name;
+			const pageSize = 15;
+			const { diaryEntries, count } = await findEntries({
+				date,
+				diaryId,
+				...paginate(pageSize, page)
+			});
+			return {
+				result: diaryEntries,
+				totalCount: count,
+				page,
+				pageSize
+			} satisfies Paginated<unknown>;
+		}),
+	findManyCompletedLessons: authProcedure
+		.input(paginationSchema.extend({ date: z.string() }))
+		.query(async ({ ctx, input: { page, date } }) => {
+			const username: string = ctx.user.name;
+			const pageSize = 15;
+			const { completedLessons, count } = await findCompletedLessons({
+				date,
+				username,
+				...paginate(pageSize, page)
+			});
+			return {
+				result: completedLessons,
+				totalCount: count,
+				page,
+				pageSize
+			} satisfies Paginated<unknown>;
+		}),
 	create: authProcedure.mutation(async ({ ctx }) => {
 		const learningDiary = await database.learningDiary.create({
 			data: {
@@ -62,92 +86,6 @@ export const learningDiaryRouter = t.router({
 
 		return learningDiary;
 	}),
-	addGoal: authProcedure
-		.input(z.object({ diaryId: z.string(), goalId: z.string() }))
-		.mutation(async ({ input: { diaryId, goalId }, ctx }) => {
-			const added = await database.learningDiary.update({
-				where: { username: diaryId },
-				data: {
-					goals: {
-						connect: { id: goalId }
-					}
-				},
-				select: {
-					username: true
-				}
-			});
-
-			console.log("[learningDiary.addGoal]: Goal added to Diary by", ctx.user.name, {
-				diaryId,
-				goalId
-			});
-			return added;
-		}),
-	removeGoal: authProcedure
-		.input(z.object({ diaryId: z.string(), goalId: z.string() }))
-		.mutation(async ({ input: { diaryId, goalId }, ctx }) => {
-			const removed = await database.learningDiary.update({
-				where: { username: diaryId },
-				data: {
-					goals: {
-						disconnect: { id: goalId }
-					}
-				},
-				select: {
-					username: true
-				}
-			});
-
-			console.log(
-				"[learningDiaryRouter.removeGoal]: Goal removed from Diary by",
-				ctx.user.name,
-				{ diaryId, goalId }
-			);
-			return removed;
-		}),
-	addEntry: authProcedure
-		.input(z.object({ diaryId: z.string(), entryId: z.string() }))
-		.mutation(async ({ input: { diaryId, entryId }, ctx }) => {
-			const added = await database.learningDiary.update({
-				where: { username: diaryId },
-				data: {
-					entries: {
-						connect: { id: entryId }
-					}
-				},
-				select: {
-					username: true
-				}
-			});
-
-			console.log("[learningDiary.addEntry]: Entry added to Diary by", ctx.user.name, {
-				diaryId,
-				entryId
-			});
-			return added;
-		}),
-	removeEntry: authProcedure
-		.input(z.object({ diaryId: z.string(), entryId: z.string() }))
-		.mutation(async ({ input: { diaryId, entryId }, ctx }) => {
-			const removed = await database.learningDiary.update({
-				where: { username: diaryId },
-				data: {
-					entries: {
-						disconnect: { id: entryId }
-					}
-				},
-				select: {
-					username: true
-				}
-			});
-
-			console.log(
-				"[learningDiaryRouter.removeEntry]: Entry removed from Diary by",
-				ctx.user.name,
-				{ diaryId, entryId }
-			);
-			return removed;
-		}),
 	getEntryForEdit: authProcedure.input(z.object({ entryId: z.string() })).query(({ input }) => {
 		return database.diaryEntry.findUnique({
 			where: { id: input.entryId },
@@ -169,51 +107,6 @@ export const learningDiaryRouter = t.router({
 	getStrategyOverview: authProcedure.query(async ({ ctx }) => {
 		return getStrategyOverviewForUser(ctx.user.name);
 	}),
-
-	addLearningTime: authProcedure
-		.input(z.object({ diaryId: z.string(), learningTimeId: z.string() }))
-		.mutation(async ({ input: { diaryId, learningTimeId }, ctx }) => {
-			const added = await database.learningDiary.update({
-				where: { username: diaryId },
-				data: {
-					learningTimes: {
-						connect: { id: learningTimeId }
-					}
-				},
-				select: {
-					username: true
-				}
-			});
-
-			console.log(
-				"[learningDiary.addLearningTime]: Learning Time added to Diary by",
-				ctx.user.name,
-				{ diaryId, learningTimeId }
-			);
-			return added;
-		}),
-	removeLearningTime: authProcedure
-		.input(z.object({ diaryId: z.string(), learningTimeId: z.string() }))
-		.mutation(async ({ input: { diaryId, learningTimeId }, ctx }) => {
-			const removed = await database.learningDiary.update({
-				where: { username: diaryId },
-				data: {
-					learningTimes: {
-						disconnect: { id: learningTimeId }
-					}
-				},
-				select: {
-					username: true
-				}
-			});
-
-			console.log(
-				"[learningDiaryRouter.removeEntry]: Learning Time removed from Diary by",
-				ctx.user.name,
-				{ diaryId, learningTimeId }
-			);
-			return removed;
-		}),
 	createGoal: authProcedure
 		.input(
 			z.object({
@@ -403,51 +296,6 @@ export const learningDiaryRouter = t.router({
 
 			return diaryEntry;
 		}),
-
-	addStrategyToEntry: authProcedure
-		.input(z.object({ entryId: z.string(), strategyId: z.string() }))
-		.mutation(async ({ input: { entryId, strategyId }, ctx }) => {
-			const added = await database.diaryEntry.update({
-				where: { id: entryId },
-				data: {
-					learningStrategies: {
-						connect: { id: strategyId }
-					}
-				},
-				select: {
-					id: true
-				}
-			});
-
-			console.log(
-				"[learningDiary.addStrategieToEntry]: Strategy added to Entry by",
-				ctx.user.name,
-				{ entryId, strategyId }
-			);
-			return added;
-		}),
-	removeStrategyFromEntry: authProcedure
-		.input(z.object({ entryId: z.string(), strategyId: z.string() }))
-		.mutation(async ({ input: { entryId, strategyId }, ctx }) => {
-			const removed = await database.diaryEntry.update({
-				where: { id: entryId },
-				data: {
-					learningStrategies: {
-						disconnect: { id: strategyId }
-					}
-				},
-				select: {
-					id: true
-				}
-			});
-
-			console.log(
-				"[learningDiaryRouter.removeStrategyFromEntry]: Strategy removed from Entry by",
-				ctx.user.name,
-				{ entryId, strategyId }
-			);
-			return removed;
-		}),
 	createLearningStrategy: authProcedure
 		.input(
 			z.object({
@@ -566,4 +414,78 @@ function getStrategyData(
 ) {
 	if (learningStrategies) return learningStrategies;
 	else return [];
+}
+
+export async function findEntries({
+	diaryId,
+	date,
+	skip,
+	take
+}: {
+	date: string;
+	diaryId: string;
+	skip?: number;
+	take?: number;
+}) {
+	const where: Prisma.DiaryEntryWhereInput = {
+		diaryID: diaryId,
+		createdAt: { lte: new Date(date) }
+	};
+	const [diaryEntries, count] = await database.$transaction([
+		database.diaryEntry.findMany({
+			select: {
+				id: true,
+				createdAt: true,
+				learningStrategies: true,
+				completedLesson: {
+					include: {
+						course: true,
+						lesson: true
+					}
+				},
+				lesson: true
+			},
+			orderBy: { createdAt: "desc" },
+			where,
+			take,
+			skip
+		}),
+		database.diaryEntry.count({ where })
+	]);
+
+	return { diaryEntries, count };
+}
+
+export async function findCompletedLessons({
+	username,
+	date,
+	skip,
+	take
+}: {
+	date: string;
+	username: string;
+	skip?: number;
+	take?: number;
+}) {
+	const where: Prisma.CompletedLessonWhereInput = {
+		username: username,
+		createdAt: { lte: new Date(date) }
+	};
+	const [completedLessons, count] = await database.$transaction([
+		database.completedLesson.findMany({
+			select: {
+				completedLessonId: true,
+				createdAt: true,
+				lesson: true,
+				course: true
+			},
+			orderBy: { createdAt: "desc" },
+			where,
+			take,
+			skip
+		}),
+		database.completedLesson.count({ where })
+	]);
+
+	return { completedLessons, count };
 }

@@ -2,13 +2,13 @@ import { CheckIcon, PlusIcon, XIcon } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { ResolvedValue, StrategyOverview, getStrategyNameByType } from "@self-learning/types";
-import { CenteredContainerXL } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { ReactElement, useState } from "react";
 import { Tab } from "@headlessui/react";
-import { Course, GoalType, LearningStrategy, Lesson, StrategyType } from "@prisma/client";
+import { GoalType, Lesson, StrategyType } from "@prisma/client";
 import {
 	EntryEditor,
 	EntryFormModel,
@@ -17,12 +17,13 @@ import {
 	Lessons
 } from "@self-learning/learning-diary";
 import { trpc } from "libs/data-access/api-client/src/lib/trpc";
-import { showToast } from "@self-learning/ui/common";
+import { Paginator, showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 
 type CompletedLesson = ResolvedValue<typeof getCompletedLessonsThisWeek>[0];
 type LearningGoal = ResolvedValue<typeof getGoals>[0];
 type DiaryEntry = ResolvedValue<typeof getEntries>[0];
+
 type SelectEntryFunction = (id: string) => void;
 type SelectCompletedLessonFunction = (lessonId: string, completedLessonId: number) => void;
 
@@ -517,7 +518,50 @@ function CompletedSection({
 		</section>
 	);
 }
-
+function CompletedSectionPage({
+	selectCompletedLesson,
+	title,
+	subtitle
+}: {
+	selectCompletedLesson: SelectCompletedLessonFunction;
+	title: string;
+	subtitle: (amount: ReactElement) => ReactElement;
+}) {
+	const router = useRouter();
+	const { page = 1 } = router.query;
+	const date = new Date();
+	date.setDate(date.getDate() - 2);
+	const { data } = trpc.learningDiary.findManyCompletedLessons.useQuery(
+		{ date: date.toISOString(), page: Number(page) },
+		{
+			staleTime: 10_000,
+			keepPreviousData: true
+		}
+	);
+	return (
+		<section className="flex flex-col gap-2">
+			<div className="flex flex-col gap-1">
+				<span className="font-semibold">{title}</span>
+				<span className="text-xs text-light">
+					{subtitle(<span className="font-semibold">{data?.result.length}</span>)}
+				</span>
+			</div>
+			<ul className="mb-4 flex flex-col gap-2 text-sm">
+				{data?.result.map(({ lesson, createdAt, completedLessonId }) => (
+					<CompletedLessonList
+						key={lesson.lessonId}
+						lessonId={lesson.lessonId}
+						completedLessonId={completedLessonId}
+						title={lesson.title}
+						date={JSON.parse(JSON.stringify(createdAt))}
+						selectCompletedLesson={selectCompletedLesson}
+					/>
+				))}
+			</ul>
+			{data?.result && <Paginator pagination={data} url={`/admin/lessons?title=`} />}
+		</section>
+	);
+}
 function EntriesSection({
 	selectEntry,
 	title,
@@ -549,6 +593,50 @@ function EntriesSection({
 					/>
 				))}
 			</ul>
+		</section>
+	);
+}
+function EntriesSectionPage({
+	selectEntry,
+	title,
+	subtitle
+}: {
+	selectEntry: SelectEntryFunction;
+	title: string;
+	subtitle: (amount: ReactElement) => ReactElement;
+}) {
+	const router = useRouter();
+	const { page = 1 } = router.query;
+	const date = new Date();
+	date.setDate(date.getDate() - 2);
+	const { data } = trpc.learningDiary.findManyEntries.useQuery(
+		{ date: date.toISOString(), page: Number(page) },
+		{
+			staleTime: 10_000,
+			keepPreviousData: true
+		}
+	);
+	return (
+		<section className="flex flex-col gap-2">
+			<div className="flex flex-col gap-1">
+				<span className="font-semibold">{title}</span>
+				<span className="text-xs text-light">
+					{subtitle(<span className="font-semibold">{data?.result.length}</span>)}
+				</span>
+			</div>
+			<ul className="mb-4 flex flex-col gap-2 text-sm">
+				{data?.result.map(({ id, completedLesson, lesson, createdAt }) => (
+					<EntriesList
+						key={id}
+						id={id}
+						lesson={JSON.parse(JSON.stringify(lesson))}
+						completedLesson={JSON.parse(JSON.stringify(completedLesson))}
+						createdAt={JSON.parse(JSON.stringify(createdAt))}
+						selectEntry={selectEntry}
+					/>
+				))}
+			</ul>
+			{data?.result && <Paginator pagination={data} url={`/admin/lessons?title=`} />}
 		</section>
 	);
 }
@@ -628,41 +716,14 @@ export function TabGroupEntries({
 	selectEntry: SelectEntryFunction;
 	selectCompletedLesson: SelectCompletedLessonFunction;
 	completedLessons: {
-		today: {
-			completedLessonId: number;
-			createdAt: Date;
-			lesson: { title: string; slug: string; lessonId: string };
-			course: { title: string; slug: string } | null;
-		}[];
-		yesterday: {
-			completedLessonId: number;
-			createdAt: Date;
-			lesson: { title: string; slug: string; lessonId: string };
-			course: { title: string; slug: string } | null;
-		}[];
-		week: {
-			completedLessonId: number;
-			createdAt: Date;
-			lesson: { title: string; slug: string; lessonId: string };
-			course: { title: string; slug: string } | null;
-		}[];
+		today: CompletedLesson[];
+		yesterday: CompletedLesson[];
+		week: CompletedLesson[];
 	};
 	entries: {
-		today: (DiaryEntry & {
-			learningStrategies: LearningStrategy[];
-			lesson: Lesson | null;
-			completedLesson: (CompletedLesson & { lesson: Lesson; course: Course | null }) | null;
-		})[];
-		yesterday: (DiaryEntry & {
-			learningStrategies: LearningStrategy[];
-			lesson: Lesson | null;
-			completedLesson: (CompletedLesson & { lesson: Lesson; course: Course | null }) | null;
-		})[];
-		week: (DiaryEntry & {
-			learningStrategies: LearningStrategy[];
-			lesson: Lesson | null;
-			completedLesson: (CompletedLesson & { lesson: Lesson; course: Course | null }) | null;
-		})[];
+		today: DiaryEntry[];
+		yesterday: DiaryEntry[];
+		week: DiaryEntry[];
 	};
 }>) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -713,13 +774,12 @@ export function TabGroupEntries({
 								)}
 								entries={entries.yesterday}
 							/>
-							<EntriesSection
+							<EntriesSectionPage
 								selectEntry={selectEntry}
 								title="Alle Einträge"
 								subtitle={amount => (
 									<>Deine restlichen Tagebucheinträge: {amount}.</>
 								)}
-								entries={entries.week}
 							/>
 						</section>
 					</Tab.Panel>
@@ -741,13 +801,12 @@ export function TabGroupEntries({
 								)}
 								completedLessons={completedLessons.yesterday}
 							/>
-							<CompletedSection
+							<CompletedSectionPage
 								selectCompletedLesson={selectCompletedLesson}
 								title="Alle Einträge"
 								subtitle={amount => (
 									<>Du hast {amount} weitere Lerneinheiten bearbeitet.</>
 								)}
-								completedLessons={completedLessons.week}
 							/>
 						</section>
 					</Tab.Panel>
@@ -886,49 +945,58 @@ export default function LearningDiary(props: LearningDiaryProps) {
 		setSelectedLesson(lessonId);
 		setSelectedEntry("");
 	}
+
 	return (
-		<CenteredContainerXL>
-			<h1 className="mb-16 text-5xl">Mein Lerntagebuch</h1>
-			<div className="mx-auto flex w-full  max-w-full flex-row justify-between gap-4">
-				<TabGroupEntries
-					selectEntry={selectEntry}
-					selectCompletedLesson={selectCompletedLesson}
-					completedLessons={props.completedLessons}
-					entries={props.entries}
-				/>
-				<div className="border-card flex w-full flex-col gap-5 bg-white p-4">
-					<Entry
-						id={selectedEntry}
-						diaryID={""}
-						distractions={null}
-						efforts={null}
-						notes={null}
-						completedLessonId={selectedCompletedLesson}
-						completedLesson={null}
-						learningStrategies={[]}
-						lessonId={selectedLesson}
-						createdAt={new Date()}
-						lesson={null}
-						duration={null}
-					/>
+		<div>
+			<SidebarEditorLayout
+				sidebar={
+					<>
+						<h1 className="mb-16 text-5xl">Mein Lerntagebuch</h1>
+
+						<TabGroupEntries
+							selectEntry={selectEntry}
+							selectCompletedLesson={selectCompletedLesson}
+							completedLessons={props.completedLessons}
+							entries={props.entries}
+						/>
+					</>
+				}
+			>
+				<div className="mx-auto flex w-full  max-w-full flex-row justify-between gap-4">
+					<div className="border-card flex w-full flex-col gap-5 bg-white p-4">
+						<Entry
+							id={selectedEntry}
+							diaryID={""}
+							distractions={null}
+							efforts={null}
+							notes={null}
+							completedLessonId={selectedCompletedLesson}
+							completedLesson={null}
+							learningStrategies={[]}
+							lessonId={selectedLesson}
+							createdAt={new Date()}
+							lesson={null}
+							duration={null}
+						/>
+					</div>
+					<div className="flex w-full flex-col gap-5">
+						<TabGoals
+							goals={props.goals}
+							completedLessons={{
+								today: [],
+								yesterday: [],
+								week: []
+							}}
+							entries={{
+								today: [],
+								yesterday: [],
+								week: []
+							}}
+						/>
+						<StrategyOverviews />
+					</div>
 				</div>
-				<div className="flex w-full flex-col gap-5">
-					<TabGoals
-						goals={props.goals}
-						completedLessons={{
-							today: [],
-							yesterday: [],
-							week: []
-						}}
-						entries={{
-							today: [],
-							yesterday: [],
-							week: []
-						}}
-					/>
-					<StrategyOverviews />
-				</div>
-			</div>
-		</CenteredContainerXL>
+			</SidebarEditorLayout>
+		</div>
 	);
 }
