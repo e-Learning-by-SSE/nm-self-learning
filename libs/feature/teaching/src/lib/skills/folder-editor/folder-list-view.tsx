@@ -56,7 +56,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 	const createSkillAndSubmit = async () => {
 		const newSkill = {
 			name: "New Skill: " + Date.now(),
-			description: "Desc here",
+			description: "Add here",
 			children: []
 		};
 

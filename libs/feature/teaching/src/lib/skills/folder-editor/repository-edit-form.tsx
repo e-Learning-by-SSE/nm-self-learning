@@ -15,10 +15,9 @@ function RepositoryInfoForm({ repository }: { repository: SkillRepositoryModel }
 
 	const { mutateAsync: changeRep } = trpc.skill.updateRepo.useMutation();
 
-	const onSubmit = (data: SkillRepositoryModel) => {
+	const onSubmit = async (data: SkillRepositoryModel) => {
 		try {
-			const da = changeRep({ rep: data, repoId: data.id ?? "0" });
-			console.log(da);
+			await changeRep({ rep: data, repoId: data.id ?? "0" });
 			showToast({
 				type: "success",
 				title: "Skill Netzwerk gespeichert!",
