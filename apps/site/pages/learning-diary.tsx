@@ -467,7 +467,10 @@ function StrategyOverviews() {
 								<span className="text-light">{getStrategyNameByType(type)}</span>
 							</TableDataColumn>
 							<TableDataColumn>
-								<span className="text-light">{_avg.confidenceRating}</span>
+								<span className="text-light">
+									{_avg.confidenceRating &&
+										Math.round(_avg.confidenceRating * 10) / 10}
+								</span>
 							</TableDataColumn>
 
 							<TableDataColumn>
@@ -481,7 +484,10 @@ function StrategyOverviews() {
 								<span className="text-light">{notes}</span>
 							</TableDataColumn>
 							<TableDataColumn>
-								<span className="text-light">{_avg.confidenceRating}</span>
+								<span className="text-light">
+									{_avg.confidenceRating &&
+										Math.round(_avg.confidenceRating * 10) / 10}
+								</span>
 							</TableDataColumn>
 
 							<TableDataColumn>
@@ -831,7 +837,7 @@ export function TabGroupEntries({
 							/>
 							<EntriesSectionPage
 								selectEntry={selectEntry}
-								title="Alle Einträge"
+								title="Sonstige Einträge"
 								subtitle={amount => (
 									<>Deine restlichen Tagebucheinträge: {amount}.</>
 								)}
@@ -858,7 +864,7 @@ export function TabGroupEntries({
 							/>
 							<CompletedSectionPage
 								selectCompletedLesson={selectCompletedLesson}
-								title="Alle Einträge"
+								title="Sonstige Einträge"
 								subtitle={amount => (
 									<>Du hast {amount} weitere Lerneinheiten bearbeitet.</>
 								)}

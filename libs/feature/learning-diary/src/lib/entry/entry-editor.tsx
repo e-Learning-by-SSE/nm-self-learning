@@ -7,6 +7,7 @@ import { SetStateAction, useEffect, useState } from "react";
 import { StrategyType } from "@prisma/client";
 import { XIcon } from "@heroicons/react/solid";
 import { getStrategyNameByType } from "@self-learning/types";
+import StarRating from "libs/ui/common/src/lib/rating/star-rating";
 
 export type Lessons = { id: string; name: string };
 
@@ -181,7 +182,7 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 }
 
 export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<EntryFormModel> }>) {
-	const { register, control } = form;
+	const { control } = form;
 
 	const { fields, append, remove } = useFieldArray({
 		name: "learningStrategies",
@@ -203,17 +204,15 @@ export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<Entr
 							key={field.id}
 						>
 							<ListBoxStrategy key={field.id} index={number} form={form} />
-							<input
-								type="range"
-								className="ml-5 max-w-xs"
-								min={0}
-								max={10}
-								defaultValue={0}
-								{...register(`learningStrategies.${number}.confidenceRating`, {
-									valueAsNumber: true
-								})}
-							/>
-
+							<span className="ml-5">
+								<Controller
+									name={`learningStrategies.${number}.confidenceRating`}
+									control={control}
+									render={({ field: { onChange, value } }) => (
+										<StarRating onChange={onChange} value={value}></StarRating>
+									)}
+								/>
+							</span>
 							<button
 								onClick={() => {
 									console.log(number, ": ", field);
