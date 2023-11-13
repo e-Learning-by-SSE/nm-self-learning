@@ -96,7 +96,6 @@ export function SkillQuickAddOption({selectedSkill}: { selectedSkill: SkillFormM
     );
 }
 
-
 export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
 	const { handleSelection } = useContext(FolderContext);
@@ -139,61 +138,3 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 			<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
 		</button>
 	);
-
-export function SkillDeleteOption({skill}: { skill: SkillFormModel }) {
-    const {mutateAsync: deleteSkill} = trpc.skill.deleteSkill.useMutation();
-    const {handleSelection} = useContext(FolderContext);
-    const handleDelete = async () => {
-        try {
-            await deleteSkill({id: skill.id});
-            showToast({
-                type: "success",
-                title: "Skill gelöscht!",
-                subtitle: ""
-            });
-        } catch (error) {
-            if (error instanceof Error) {
-                showToast({
-                    type: "error",
-                    title: "Skill konnte nicht gelöscht werden!",
-                    subtitle: error.message ?? ""
-                });
-            }
-        }
-        handleSelection(null);
-    };
-}
-
-export function SkillDeleteOption({skill}: { skill: SkillFormModel }) {
-    const {mutateAsync: deleteSkill} = trpc.skill.deleteSkill.useMutation();
-    const {handleSelection} = useContext(FolderContext);
-    const handleDelete = async () => {
-        try {
-            await deleteSkill({id: skill.id});
-            showToast({
-                type: "success",
-                title: "Skill gelöscht!",
-                subtitle: ""
-            });
-        } catch (error) {
-            if (error instanceof Error) {
-                showToast({
-                    type: "error",
-                    title: "Skill konnte nicht gelöscht werden!",
-                    subtitle: error.message ?? ""
-                });
-            }
-        }
-        handleSelection(null);
-    };
-
-    return (
-        <button
-            className="rounded-lg border border-light-border bg-red-400 py-2 px-2  hover:bg-red-600"
-            onClick={handleDelete}
-        >
-            <TrashIcon className="h-5 " style={{cursor: "pointer"}}/>
-        </button>
-    );
-
-}
