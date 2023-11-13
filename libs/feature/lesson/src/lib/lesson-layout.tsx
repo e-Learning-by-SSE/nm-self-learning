@@ -117,15 +117,26 @@ export function LessonLayout(
 			<Head>
 				<title>{pageProps.lesson.title}</title>
 			</Head>
-
-			<div className="flex flex-col bg-gray-100">
-				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-					<PlaylistArea {...pageProps} />
-					<div className="w-full pt-8 pb-16">
-						<Component {...pageProps} />
+			{!isUnknownCourse(pageProps.course.slug) && (
+				<div className="flex flex-col  bg-gray-100">
+					<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+						<PlaylistArea {...pageProps} />
+						<div className="w-full pt-8 pb-16">
+							<Component {...pageProps} />
+						</div>
 					</div>
 				</div>
-			</div>
+			)}
+			{
+				<div className="flex flex-col bg-gray-100">
+					<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+						<PlaylistAreaUnknownCourse />
+						<div className="w-full pt-8 pb-16">
+							<Component {...pageProps} />
+						</div>
+					</div>
+				</div>
+			}
 		</>
 	);
 }
@@ -154,4 +165,38 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 			)}
 		</aside>
 	);
+}
+
+// -------------------------------------
+export async function getStaticPropsForLayoutUnknownCourse(
+	params?: ParsedUrlQuery | undefined
+): Promise<LessonLayoutProps | { notFound: true }> {
+	const lessonSlug = params?.["lessonSlug"] as string;
+
+	if (!lessonSlug) {
+		throw new Error("No lesson slug provided.");
+	}
+	const course = { courseId: "unknown-id", title: "unknown-title", slug: "unknown" }; // TODO part of dummy data
+	const lesson = await getLesson(lessonSlug);
+
+	if (!course || !lesson) {
+		return { notFound: true };
+	}
+
+	return { lesson, course };
+}
+
+function PlaylistAreaUnknownCourse() {
+	return (
+		<div className="h-full pt-8">
+			<div className="h-full rounded-lg bg-gray-200"></div>
+		</div>
+	);
+}
+
+function isUnknownCourse(courseSlug: string) {
+	if (courseSlug === "unknown") {
+		return true;
+	}
+	return false;
 }
