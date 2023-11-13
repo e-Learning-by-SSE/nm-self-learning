@@ -93,7 +93,10 @@ pipeline {
                 VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"
             }
             when {
-                expression { env.BRANCH_NAME.startsWith("pb_") }
+                anyOf {
+                    expression { env.BRANCH_NAME.endsWith("_pb") }
+                    changeRequest() // pull requests
+                }
             }
             steps {
                 ssedocker {
