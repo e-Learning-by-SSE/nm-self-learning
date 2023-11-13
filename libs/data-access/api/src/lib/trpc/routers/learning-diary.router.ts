@@ -275,6 +275,7 @@ export const learningDiaryRouter = t.router({
 			await database.learningStrategy.deleteMany({
 				where: { diaryEntryID: input.id }
 			});
+
 			const diaryEntry = await database.diaryEntry.update({
 				where: { id: input.id },
 				data: {
@@ -295,6 +296,7 @@ export const learningDiaryRouter = t.router({
 
 			console.log("[LearningDiaryRouter.updateDiaryEntry]: Entry updated by", ctx.user.name, {
 				distractions: diaryEntry.distractions,
+				title: diaryEntry.title,
 				efforts: diaryEntry.efforts,
 				notes: diaryEntry.notes,
 				lessonId: diaryEntry.lessonId,

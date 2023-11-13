@@ -43,7 +43,7 @@ export function EntryEditor({
 						if ((e.target as HTMLElement).id === "entryForm") {
 							form.handleSubmit(
 								data => {
-									console.log("data", data);
+									console.log("form data", data);
 									try {
 										const validated = entryFormSchema.parse(data);
 										onConfirm(validated);
@@ -110,7 +110,7 @@ export function EntryTopForm({
 	useEffect(() => setSelectedLesson(dLId), [dLId]);
 	return (
 		<div className="flex flex-col gap-5">
-			<LabeledField label="Titel des Tagebucheintrags:" error={errors.duration?.message}>
+			<LabeledField label="Titel des Tagebucheintrags:" error={errors.title?.message}>
 				<input {...register("title")} type="text" className="textarea" />
 			</LabeledField>
 			<div className="flex flex-col gap-5 border-black">

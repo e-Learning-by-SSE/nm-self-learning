@@ -120,7 +120,8 @@ function getEntries(username: string) {
 		},
 		where: {
 			diaryID: username
-		}
+		},
+		orderBy: { createdAt: "desc" }
 	});
 }
 
@@ -877,7 +878,17 @@ export function TabGroupEntries({
 	);
 }
 
-function Entry(diaryEntry: DiaryEntry) {
+function Entry({
+	selectedEntry,
+	selectedLesson,
+	selectedCompletedLesson,
+	selectEntry
+}: Readonly<{
+	selectedEntry: string;
+	selectedLesson: string;
+	selectedCompletedLesson: number;
+	selectEntry: SelectEntryFunction;
+}>) {
 	function fetchCourseSlugsByUser() {
 		const { data: enrollments } = trpc.enrollment.getEnrollments.useQuery();
 		const course: string[] = [];
@@ -892,7 +903,7 @@ function Entry(diaryEntry: DiaryEntry) {
 	const { mutateAsync: updateDiaryEntry } = trpc.learningDiary.updateDiaryEntry.useMutation();
 
 	const { data: inputDiaryEntry } = trpc.learningDiary.getEntryForEdit.useQuery({
-		entryId: diaryEntry.id
+		entryId: selectedEntry
 	});
 
 	const slugs = fetchCourseSlugsByUser();
@@ -907,11 +918,11 @@ function Entry(diaryEntry: DiaryEntry) {
 
 	async function onConfirm(entryForm: EntryFormModel) {
 		if (entryForm.lessonId == "") entryForm.lessonId = null;
-		if (diaryEntry.id != "") {
+		if (selectedEntry != "") {
 			try {
 				const result = await updateDiaryEntry({
-					id: diaryEntry.id,
-					title: diaryEntry.title,
+					id: selectedEntry,
+					title: entryForm.title,
 					completedLessonId: entryForm.completedLessonId,
 					distractions: entryForm.distractions,
 					duration: entryForm.duration,
@@ -920,13 +931,11 @@ function Entry(diaryEntry: DiaryEntry) {
 					notes: entryForm.notes,
 					learningStrategies: entryForm.learningStrategies
 				});
-				console.log(result);
 				showToast({
 					type: "success",
 					title: "Eintrag wurde bearbeitet!",
-					subtitle: ""
+					subtitle: result.title
 				});
-
 				router.replace(router.asPath);
 			} catch (error) {
 				showToast({
@@ -940,6 +949,7 @@ function Entry(diaryEntry: DiaryEntry) {
 			entryForm.id = null;
 			try {
 				const result = await createDiaryEntry(entryForm);
+				selectEntry(result.id);
 				showToast({
 					type: "success",
 					title: "Eintrag erstellt!",
@@ -947,6 +957,7 @@ function Entry(diaryEntry: DiaryEntry) {
 				});
 				router.replace(router.asPath);
 			} catch (error) {
+				console.log(error);
 				showToast({
 					type: "error",
 					title: "Fehler",
@@ -965,11 +976,11 @@ function Entry(diaryEntry: DiaryEntry) {
 						id: "",
 						title: "",
 						distractions: "",
-						completedLessonId: diaryEntry.completedLessonId,
+						completedLessonId: selectedCompletedLesson,
 						notes: "",
 						duration: 0,
 						efforts: "",
-						lessonId: diaryEntry.lessonId,
+						lessonId: selectedLesson,
 						learningStrategies: []
 					}}
 					lessons={lessons}
@@ -1029,19 +1040,10 @@ export default function LearningDiary(props: Readonly<LearningDiaryProps>) {
 				<div className="mx-auto flex w-full  max-w-full flex-row justify-between gap-4">
 					<div className="flex w-full flex-col gap-5 p-4">
 						<Entry
-							id={selectedEntry}
-							title={""}
-							diaryID={""}
-							distractions={null}
-							efforts={null}
-							notes={null}
-							completedLessonId={selectedCompletedLesson}
-							completedLesson={null}
-							learningStrategies={[]}
-							lessonId={selectedLesson}
-							createdAt={new Date()}
-							lesson={null}
-							duration={null}
+							selectEntry={selectEntry}
+							selectedEntry={selectedEntry}
+							selectedCompletedLesson={selectedCompletedLesson}
+							selectedLesson={selectedLesson}
 						/>
 					</div>
 					<div className="flex w-full flex-col gap-5">
