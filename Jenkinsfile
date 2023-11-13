@@ -42,11 +42,13 @@ pipeline {
                 POSTGRES_DB = 'SelfLearningDb'
                 POSTGRES_USER = 'username'
                 POSTGRES_PASSWORD = 'password'
+                POSTGRES_PORT = "${portAllocation.generateAvailablePort()}"
                 DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
             }
             steps {
                 script {
-                    withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ]).insideSidecar('node:20-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                    withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB, dbExposedPort: env.POSTGRES_PORT ])
+                            .insideSidecar('node:20-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                         sh 'npm run prisma db push'
                         if (env.BRANCH_NAME =='master') { 
                             sh 'npm run test'
