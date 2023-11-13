@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import {
 	CourseContent,
 	StrategyOverview,
+	UserSpecificStrategyOverview,
 	extractLessonIds,
 	strategySchema
 } from "@self-learning/types";
@@ -106,6 +107,9 @@ export const learningDiaryRouter = t.router({
 	}),
 	getStrategyOverview: authProcedure.query(async ({ ctx }) => {
 		return getStrategyOverviewForUser(ctx.user.name);
+	}),
+	getUserSpecificStrategyOverview: authProcedure.query(async ({ ctx }) => {
+		return getUserSpecificStrategyOverviewForUser(ctx.user.name);
 	}),
 	createGoal: authProcedure
 		.input(
@@ -392,6 +396,21 @@ export async function getStrategyOverviewForUser(user: string): Promise<Strategy
 	idsFound.forEach(ele => ids.push(ele.id));
 	return getStrategyOverviewForEntryIDs(ids);
 }
+
+export async function getUserSpecificStrategyOverviewForUser(
+	user: string
+): Promise<UserSpecificStrategyOverview[]> {
+	const idsFound = await database.diaryEntry.findMany({
+		where: { diaryID: user },
+		select: {
+			id: true
+		}
+	});
+	const ids: string[] = [];
+	idsFound.forEach(ele => ids.push(ele.id));
+	return getUserspecificStrategyOverviewbyEntryIDs(ids);
+}
+
 export async function getStrategyOverviewForEntryIDs(
 	diaryEntryIDs: string[]
 ): Promise<StrategyOverview[]> {
@@ -403,7 +422,26 @@ export async function getStrategyOverviewForEntryIDs(
 		_count: {
 			type: true
 		},
-		where: { diaryEntryID: { in: diaryEntryIDs } }
+		where: { diaryEntryID: { in: diaryEntryIDs }, NOT: { type: StrategyType.USERSPECIFIC } }
+	});
+	return strategies;
+}
+export async function getUserspecificStrategyOverviewbyEntryIDs(
+	diaryEntryIDs: string[]
+): Promise<UserSpecificStrategyOverview[]> {
+	const strategies = await database.learningStrategy.groupBy({
+		by: ["notes"],
+		_avg: {
+			confidenceRating: true
+		},
+		_count: {
+			type: true
+		},
+		where: {
+			diaryEntryID: { in: diaryEntryIDs },
+			type: StrategyType.USERSPECIFIC,
+			NOT: { notes: null }
+		}
 	});
 	return strategies;
 }

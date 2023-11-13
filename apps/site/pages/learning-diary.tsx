@@ -17,7 +17,13 @@ import {
 	Lessons
 } from "@self-learning/learning-diary";
 import { trpc } from "libs/data-access/api-client/src/lib/trpc";
-import { Paginator, showToast } from "@self-learning/ui/common";
+import {
+	Paginator,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn,
+	showToast
+} from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 
 type CompletedLesson = ResolvedValue<typeof getCompletedLessonsThisWeek>[0];
@@ -441,46 +447,51 @@ function TabGoals({ goals }: LearningDiaryProps) {
 
 function StrategyOverviews() {
 	const { data: strategyOverviews } = trpc.learningDiary.getStrategyOverview.useQuery();
+	const { data: userSpecificStrategyOverviews } =
+		trpc.learningDiary.getUserSpecificStrategyOverview.useQuery();
 	return (
 		<section className="border-card flex flex-col gap-8 bg-white p-4">
 			<div className="flex h-full flex-col justify-between gap-4">
-				<span className="text-sm font-semibold text-light">Überblick Strategien</span>
-				<div className="flex h-full flex-row justify-between gap-4">
-					<span className="text-sm font-semibold text-light">Strategy</span>
-					<span className="text-sm font-semibold text-light">
-						Vertrauensbewertung (avg):
-					</span>
-					<span className="text-sm font-semibold text-light">Summe der Nutzungen</span>
-				</div>
-				{strategyOverviews
-					?.filter(i => i.type != StrategyType.USERSPECIFIC)
-					.map(({ type, _avg, _count }) => (
-						<Strategy
-							key={type}
-							type={type}
-							_count={{
-								type: _count.type
-							}}
-							_avg={{
-								confidenceRating: _avg.confidenceRating
-							}}
-						/>
+				<Table
+					head={
+						<>
+							<TableHeaderColumn>Strategy</TableHeaderColumn>
+							<TableHeaderColumn>Vertrauensbewertung (avg):</TableHeaderColumn>
+							<TableHeaderColumn>Summe der Nutzungen</TableHeaderColumn>
+						</>
+					}
+				>
+					{strategyOverviews?.map(({ type, _avg, _count }) => (
+						<tr key={type}>
+							<TableDataColumn>
+								<span className="text-light">{getStrategyNameByType(type)}</span>
+							</TableDataColumn>
+							<TableDataColumn>
+								<span className="text-light">{_avg.confidenceRating}</span>
+							</TableDataColumn>
+
+							<TableDataColumn>
+								<span className="text-light">{_count.type}</span>
+							</TableDataColumn>
+						</tr>
 					))}
+					{userSpecificStrategyOverviews?.map(({ notes, _avg, _count }) => (
+						<tr key={notes}>
+							<TableDataColumn>
+								<span className="text-light">{notes}</span>
+							</TableDataColumn>
+							<TableDataColumn>
+								<span className="text-light">{_avg.confidenceRating}</span>
+							</TableDataColumn>
+
+							<TableDataColumn>
+								<span className="text-light">{_count.type}</span>
+							</TableDataColumn>
+						</tr>
+					))}
+				</Table>
 			</div>
 		</section>
-	);
-}
-function Strategy(strategyOverview: StrategyOverview) {
-	return (
-		<div className="flex h-full flex-row justify-between gap-4">
-			<span className="text-sm font-semibold text-light">
-				{getStrategyNameByType(strategyOverview.type)}
-			</span>
-			<span className="text-sm font-semibold text-light">
-				{strategyOverview._avg.confidenceRating}
-			</span>
-			<span className="text-sm font-semibold text-light">{strategyOverview._count.type}</span>
-		</div>
 	);
 }
 
@@ -672,7 +683,10 @@ function EntriesList({
 	return (
 		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
 			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
-				<button className="link" onClick={() => selectEntry(id)}>
+				<button
+					className="link cursor-pointer hover:text-emerald-500"
+					onClick={() => selectEntry(id)}
+				>
 					{title}
 				</button>
 			</div>
@@ -947,7 +961,7 @@ export default function LearningDiary(props: LearningDiaryProps) {
 	}
 
 	return (
-		<div>
+		<div className="bg-gray-50">
 			<SidebarEditorLayout
 				sidebar={
 					<>

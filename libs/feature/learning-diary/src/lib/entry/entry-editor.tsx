@@ -164,18 +164,13 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 			<span className="font-semibold text-secondary">Notizen (Optional)</span>
 			<div className="flex flex-col gap-5 border-black">
 				<LabeledField label="Ablenkungen:" error={errors.distractions?.message}>
-					<input
-						{...register("distractions")}
-						type="text"
-						className="textarea"
-						placeholder="z.B. eine laute Umgebung"
-					/>
+					<textarea {...register("distractions")} className="textarea" />
 				</LabeledField>
 				<LabeledField label="Bemühungen" error={errors.efforts?.message}>
-					<input {...register("efforts")} type="text" className="textarea" />
+					<textarea {...register("efforts")} className="textarea" />
 				</LabeledField>
 				<LabeledField label="Sonstige Notizen" error={errors.notes?.message}>
-					<input {...register("notes")} type="text" className="textarea" />
+					<textarea {...register("notes")} className="textarea" />
 				</LabeledField>
 			</div>
 		</div>

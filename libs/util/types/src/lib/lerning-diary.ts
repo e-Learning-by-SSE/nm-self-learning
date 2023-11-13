@@ -29,3 +29,12 @@ export type StrategyOverview = {
 		confidenceRating: number | null;
 	};
 };
+export type UserSpecificStrategyOverview = {
+	notes: string | null;
+	_count: {
+		type: number;
+	};
+	_avg: {
+		confidenceRating: number | null;
+	};
+};
