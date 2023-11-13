@@ -18,7 +18,7 @@ pipeline {
         stage("NodeJS Build") {
             agent {
                 docker {
-                    image 'node:18-bullseye'
+                    image 'node:20-bullseye'
                     reuseNode true
                     args '--tmpfs /.cache -v $HOME/.npm:/.npm'
                 }
@@ -46,7 +46,7 @@ pipeline {
             }
             steps {
                 script {
-                    withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ]).insideSidecar('node:18-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                    withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ]).insideSidecar('node:20-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                         sh 'npm run prisma db push'
                         if (env.BRANCH_NAME =='master') { 
                             sh 'npm run test'
