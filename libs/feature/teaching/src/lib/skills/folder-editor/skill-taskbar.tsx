@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { SkillFormModel } from "@self-learning/types";
-import { showToast } from "@self-learning/ui/common";
+import { ButtonActions, SimpleDialog, dispatchDialog, freeDialog, showToast } from "@self-learning/ui/common";
 import { TrashIcon } from "@heroicons/react/solid";
 import { FolderAddIcon } from "@heroicons/react/outline";
 import { useContext } from "react";
@@ -70,28 +70,39 @@ export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFor
 export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
 	const { handleSelection } = useContext(FolderContext);
-	const handleDelete = async () => {
-		try {
-			await deleteSkill({ id: skill.id });
-			showToast({
-				type: "success",
-				title: "Skill gelöscht!",
-				subtitle: ""
-			});
-		} catch (error) {
-			if (error instanceof Error) {
-				showToast({
-					type: "error",
-					title: "Skill konnte nicht gelöscht werden!",
-					subtitle: error.message ?? ""
-				});
-			}
-		}
-		handleSelection(null);
+	const handleDelete = () => {
+		dispatchDialog(
+			<SimpleDialog
+				description="Soll der Skill wirklich gelöscht werden?"
+				name="Warnung"
+				onClose={async (type: ButtonActions) => {
+					if (type === ButtonActions.CANCEL) return;
+					try {
+						await deleteSkill({ id: skill.id });
+						showToast({
+							type: "success",
+							title: "Skill gelöscht!",
+							subtitle: ""
+						});
+					} catch (error) {
+						if (error instanceof Error) {
+							showToast({
+								type: "error",
+								title: "Skill konnte nicht gelöscht werden!",
+								subtitle: error.message ?? ""
+							});
+						}
+					}
+					handleSelection(null);
+					freeDialog();
+				}}
+			/>
+		);
 	};
 
 	return (
 		<button
+			type="button"
 			className="rounded-lg border border-light-border bg-red-400 py-2 px-2  hover:bg-red-600"
 			onClick={handleDelete}
 		>
