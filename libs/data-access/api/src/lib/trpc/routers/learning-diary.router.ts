@@ -1,8 +1,7 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, GoalType, StrategyType } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { GoalType, StrategyType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import {
 	CourseContent,
@@ -92,6 +91,7 @@ export const learningDiaryRouter = t.router({
 			where: { id: input.entryId },
 			select: {
 				id: true,
+				title: true,
 				distractions: true,
 				completedLesson: true,
 				efforts: true,
@@ -213,6 +213,7 @@ export const learningDiaryRouter = t.router({
 				distractions: z.string().nullable(),
 				efforts: z.string().nullable(),
 				notes: z.string().nullable(),
+				title: z.string(),
 				lessonId: z.string().nullable(),
 				completedLessonId: z.number().nullable(),
 				duration: z.number().nullable(),
@@ -222,6 +223,7 @@ export const learningDiaryRouter = t.router({
 		.mutation(async ({ ctx, input }) => {
 			const entry = await database.diaryEntry.create({
 				data: {
+					title: input.title,
 					distractions: input.distractions,
 					efforts: input.efforts,
 					notes: input.notes,
@@ -247,6 +249,7 @@ export const learningDiaryRouter = t.router({
 		.input(
 			z.object({
 				id: z.string(),
+				title: z.string(),
 				distractions: z.string().nullable(),
 				efforts: z.string().nullable(),
 				notes: z.string().nullable(),
@@ -275,6 +278,7 @@ export const learningDiaryRouter = t.router({
 			const diaryEntry = await database.diaryEntry.update({
 				where: { id: input.id },
 				data: {
+					title: input.title,
 					distractions: input.distractions,
 					efforts: input.efforts,
 					notes: input.notes,
@@ -474,6 +478,7 @@ export async function findEntries({
 			select: {
 				id: true,
 				createdAt: true,
+				title: true,
 				learningStrategies: true,
 				completedLesson: {
 					include: {

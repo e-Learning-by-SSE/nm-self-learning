@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const entryFormSchema = z.object({
 	id: z.string().nullable(),
+	title: z.string(),
 	distractions: z.string().nullable(),
 	efforts: z.string().nullable(),
 	notes: z.string().nullable(),

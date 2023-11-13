@@ -109,6 +109,9 @@ export function EntryTopForm({
 	useEffect(() => setSelectedLesson(dLId), [dLId]);
 	return (
 		<div className="flex flex-col gap-5">
+			<LabeledField label="Titel des Tagebucheintrags:" error={errors.duration?.message}>
+				<input {...register("title")} type="text" className="textarea" />
+			</LabeledField>
 			<div className="flex flex-col gap-5 border-black">
 				<LabeledField label="Lerneinheit:">
 					<Controller

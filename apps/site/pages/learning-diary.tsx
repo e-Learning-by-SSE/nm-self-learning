@@ -1,14 +1,14 @@
 import { CheckIcon, PlusIcon, XIcon } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
-import { ResolvedValue, StrategyOverview, getStrategyNameByType } from "@self-learning/types";
+import { ResolvedValue, getStrategyNameByType } from "@self-learning/types";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { ReactElement, useState } from "react";
 import { Tab } from "@headlessui/react";
-import { GoalType, Lesson, StrategyType } from "@prisma/client";
+import { GoalType, Lesson } from "@prisma/client";
 import {
 	EntryEditor,
 	EntryFormModel,
@@ -195,14 +195,14 @@ function Goal({
 	targetValue,
 	actualValue,
 	achieved
-}: {
+}: Readonly<{
 	id: string;
 	description: string;
 	priority: number;
 	targetValue: number;
 	actualValue: number;
 	achieved: boolean;
-}) {
+}>) {
 	const { mutateAsync: incrementActualValueForGoal } =
 		trpc.learningDiary.incrementActualValueForGoal.useMutation();
 	const { mutateAsync: markGoalAsAchieved } = trpc.learningDiary.markGoalAsAchieved.useMutation();
@@ -299,7 +299,7 @@ function getGoalType(type: GoalType) {
 	return out;
 }
 
-function TabGoals({ goals }: LearningDiaryProps) {
+function TabGoals({ goals }: Readonly<LearningDiaryProps>) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [showForm, setShowForm] = useState(false);
 	const { mutateAsync: createGoal } = trpc.learningDiary.createGoal.useMutation();
@@ -333,7 +333,7 @@ function TabGoals({ goals }: LearningDiaryProps) {
 		setShowForm(!showForm);
 	};
 	return (
-		<section className="border-card flex w-full flex-col gap-8 bg-white p-4">
+		<section className="flex w-full flex-col gap-8 p-4">
 			<span className="text-lg font-semibold text-light">Meine Ziele</span>
 
 			<Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
@@ -450,7 +450,7 @@ function StrategyOverviews() {
 	const { data: userSpecificStrategyOverviews } =
 		trpc.learningDiary.getUserSpecificStrategyOverview.useQuery();
 	return (
-		<section className="border-card flex flex-col gap-8 bg-white p-4">
+		<section className="flex flex-col gap-8  p-4">
 			<div className="flex h-full flex-col justify-between gap-4">
 				<Table
 					head={
@@ -500,12 +500,12 @@ function CompletedSection({
 	title,
 	subtitle,
 	completedLessons
-}: {
+}: Readonly<{
 	selectCompletedLesson: SelectCompletedLessonFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
 	completedLessons: CompletedLesson[];
-}) {
+}>) {
 	return (
 		<section className="flex flex-col gap-2">
 			<div className="flex flex-col gap-1">
@@ -513,6 +513,7 @@ function CompletedSection({
 				<span className="text-xs text-light">
 					{subtitle(<span className="font-semibold">{completedLessons.length}</span>)}
 				</span>
+				<hr />
 			</div>
 			<ul className="mb-4 flex flex-col gap-2 text-sm">
 				{completedLessons.map(({ lesson, createdAt, completedLessonId }) => (
@@ -533,11 +534,11 @@ function CompletedSectionPage({
 	selectCompletedLesson,
 	title,
 	subtitle
-}: {
+}: Readonly<{
 	selectCompletedLesson: SelectCompletedLessonFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
-}) {
+}>) {
 	const router = useRouter();
 	const { page = 1 } = router.query;
 	const date = new Date();
@@ -556,6 +557,7 @@ function CompletedSectionPage({
 				<span className="text-xs text-light">
 					{subtitle(<span className="font-semibold">{data?.result.length}</span>)}
 				</span>
+				<hr />
 			</div>
 			<ul className="mb-4 flex flex-col gap-2 text-sm">
 				{data?.result.map(({ lesson, createdAt, completedLessonId }) => (
@@ -578,12 +580,12 @@ function EntriesSection({
 	title,
 	subtitle,
 	entries
-}: {
+}: Readonly<{
 	selectEntry: SelectEntryFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
 	entries: DiaryEntry[];
-}) {
+}>) {
 	return (
 		<section className="flex flex-col gap-2">
 			<div className="flex flex-col gap-1">
@@ -591,11 +593,13 @@ function EntriesSection({
 				<span className="text-xs text-light">
 					{subtitle(<span className="font-semibold">{entries.length}</span>)}
 				</span>
+				<hr />
 			</div>
 			<ul className="mb-4 flex flex-col gap-2 text-sm">
-				{entries.map(({ id, completedLesson, lesson, createdAt }) => (
+				{entries.map(({ id, title, completedLesson, lesson, createdAt }) => (
 					<EntriesList
 						key={id}
+						title={title}
 						id={id}
 						lesson={lesson}
 						completedLesson={completedLesson}
@@ -611,11 +615,11 @@ function EntriesSectionPage({
 	selectEntry,
 	title,
 	subtitle
-}: {
+}: Readonly<{
 	selectEntry: SelectEntryFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
-}) {
+}>) {
 	const router = useRouter();
 	const { page = 1 } = router.query;
 	const date = new Date();
@@ -634,11 +638,13 @@ function EntriesSectionPage({
 				<span className="text-xs text-light">
 					{subtitle(<span className="font-semibold">{data?.result.length}</span>)}
 				</span>
+				<hr />
 			</div>
 			<ul className="mb-4 flex flex-col gap-2 text-sm">
-				{data?.result.map(({ id, completedLesson, lesson, createdAt }) => (
+				{data?.result.map(({ id, title, completedLesson, lesson, createdAt }) => (
 					<EntriesList
 						key={id}
+						title={title}
 						id={id}
 						lesson={JSON.parse(JSON.stringify(lesson))}
 						completedLesson={JSON.parse(JSON.stringify(completedLesson))}
@@ -654,40 +660,59 @@ function EntriesSectionPage({
 
 function EntriesList({
 	id,
+	title,
 	completedLesson,
 	lesson,
 	createdAt,
 	selectEntry
-}: {
+}: Readonly<{
 	id: string;
+	title: string;
 	completedLesson: CompletedLesson | null;
 	lesson: Lesson | null;
 	createdAt: Date;
 	selectEntry: SelectEntryFunction;
-}) {
-	let title: string;
+}>) {
+	let info: string;
+	let isCompletedLessons = false;
 	if (completedLesson != null) {
-		title =
+		info =
+			'Eintrag für "' +
 			completedLesson.lesson.title +
-			" " +
-			format(parseISO(new Date(completedLesson.createdAt).toISOString()), "HH:mm dd-MM-yyyy");
+			'" vom ' +
+			format(
+				parseISO(new Date(completedLesson.createdAt).toISOString()),
+				"dd/MM/yyyy (HH:mm"
+			) +
+			"Uhr)";
+		isCompletedLessons = true;
 	} else if (lesson != null) {
-		title =
+		info =
+			'Eintrag für "' +
 			lesson.title +
-			" " +
-			format(parseISO(new Date(createdAt).toISOString()), "HH:mm dd-MM-yyyy");
+			'" vom ' +
+			format(parseISO(new Date(createdAt).toISOString()), "dd/MM/yyyy (HH:mm") +
+			" Uhr)";
 	} else {
-		title =
-			"Eintrag - " + format(parseISO(new Date(createdAt).toISOString()), "HH:mm dd-MM-yyyy");
+		info =
+			"Eintrag vom " +
+			format(parseISO(new Date(createdAt).toISOString()), "dd/MM/yyyy (HH:mm") +
+			"Uhr)";
 	}
 	return (
-		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
-			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
+		<li className="border-bottom:1px flex flex-wrap items-center justify-between gap-2">
+			<div className="mx-auto w-full max-w-md">
 				<button
-					className="link cursor-pointer hover:text-emerald-500"
+					className="link w-full cursor-pointer hover:bg-emerald-500 hover:text-white"
 					onClick={() => selectEntry(id)}
 				>
-					{title}
+					<div className="mx-auto mt-2 mb-2 flex w-full max-w-md flex-col items-start">
+						<div className="flex w-full max-w-md flex-row justify-between">
+							<span className="text-base font-semibold">{title}</span>{" "}
+							{isCompletedLessons && <CheckIcon className="h-5 w-5" />}
+						</div>
+						<span className="text-xs">{info}</span>
+					</div>
 				</button>
 			</div>
 		</li>
@@ -700,21 +725,32 @@ function CompletedLessonList({
 	title,
 	date,
 	selectCompletedLesson
-}: {
+}: Readonly<{
 	lessonId: string;
 	completedLessonId: number;
 	title: string;
 	date: Date;
 	selectCompletedLesson: SelectCompletedLessonFunction;
-}) {
+}>) {
 	return (
-		<li className="flex flex-wrap items-center justify-between gap-2 bg-white">
-			<div className="mx-auto w-full max-w-md rounded-2xl bg-white">
+		<li className="flex flex-wrap items-center justify-between">
+			<div className="mx-auto w-full max-w-md">
 				<button
-					className="link"
+					className="link  w-full cursor-pointer hover:bg-emerald-500 hover:text-white"
 					onClick={() => selectCompletedLesson(lessonId, completedLessonId)}
 				>
-					{title} - {format(parseISO(new Date(date).toISOString()), "HH:mm dd-MM-yyyy")}
+					<div className=" mx-auto mt-2 mb-2 flex w-full max-w-md flex-col items-start">
+						<span className="text-base font-semibold">{title}</span>
+						<span className="text-xs">
+							{"Abgeschlossene Lerneinheit " +
+								"vom " +
+								format(
+									parseISO(new Date(date).toISOString()),
+									"dd/MM/yyyy (HH:mm"
+								) +
+								"Uhr)"}
+						</span>
+					</div>
 				</button>
 			</div>
 		</li>
@@ -741,8 +777,12 @@ export function TabGroupEntries({
 	};
 }>) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	const count =
+		completedLessons.today.length +
+		completedLessons.week.length +
+		completedLessons.yesterday.length;
 	return (
-		<section className="border-card flex w-full flex-col gap-8 bg-white p-4">
+		<section className="flex w-full flex-col gap-8 p-4">
 			<span className="text-lg font-semibold text-light">Meine Einträge</span>
 			<button className="btn-primary w-full" onClick={() => selectEntry("")}>
 				Neuen Eintrag erstellen
@@ -768,7 +808,8 @@ export function TabGroupEntries({
 							)
 						}
 					>
-						Zu ergänzen
+						Zu ergänzen{" "}
+						{count > 0 ? <span className="text-emerald-500">({count})</span> : ""}
 					</Tab>
 				</Tab.List>
 				<Tab.Panels className="flex-grow flex-col gap-12">
@@ -864,6 +905,7 @@ function Entry(diaryEntry: DiaryEntry) {
 			try {
 				const result = await updateDiaryEntry({
 					id: diaryEntry.id,
+					title: diaryEntry.title,
 					completedLessonId: entryForm.completedLessonId,
 					distractions: entryForm.distractions,
 					duration: entryForm.duration,
@@ -915,6 +957,7 @@ function Entry(diaryEntry: DiaryEntry) {
 					onConfirm={onConfirm}
 					entry={{
 						id: "",
+						title: "",
 						distractions: "",
 						completedLessonId: diaryEntry.completedLessonId,
 						notes: "",
@@ -930,6 +973,7 @@ function Entry(diaryEntry: DiaryEntry) {
 					onConfirm={onConfirm}
 					entry={{
 						id: inputDiaryEntry.id,
+						title: inputDiaryEntry.title,
 						distractions: inputDiaryEntry.distractions,
 						completedLessonId: inputDiaryEntry.completedLessonId,
 						notes: inputDiaryEntry.notes,
@@ -945,7 +989,7 @@ function Entry(diaryEntry: DiaryEntry) {
 	);
 }
 
-export default function LearningDiary(props: LearningDiaryProps) {
+export default function LearningDiary(props: Readonly<LearningDiaryProps>) {
 	const [selectedEntry, setSelectedEntry] = useState("");
 	const [selectedLesson, setSelectedLesson] = useState("");
 	const [selectedCompletedLesson, setSelectedCompletedLesson] = useState(-1);
@@ -977,9 +1021,10 @@ export default function LearningDiary(props: LearningDiaryProps) {
 				}
 			>
 				<div className="mx-auto flex w-full  max-w-full flex-row justify-between gap-4">
-					<div className="border-card flex w-full flex-col gap-5 bg-white p-4">
+					<div className="flex w-full flex-col gap-5 p-4">
 						<Entry
 							id={selectedEntry}
+							title={""}
 							diaryID={""}
 							distractions={null}
 							efforts={null}

@@ -306,6 +306,7 @@ model LearningTime {
 
 model DiaryEntry {
   id String       @id @default(uuid())
+  title String
   diary LearningDiary @relation(fields: [diaryID], references: [username])
   diaryID String
   distractions String?
