@@ -1,12 +1,10 @@
-import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
+import { PlayIcon } from "@heroicons/react/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
-import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
-	getStaticPropsForLayoutUnknownCourse, // TODO
+	getStaticPropsForLayoutUnknownCourse,
 	LessonLayout,
-	LessonLayoutProps,
-	useLessonContext
+	LessonLayoutProps
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -25,6 +23,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { unknownCourse } from "../unknownCourse";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -36,7 +35,7 @@ export type LessonProps = LessonLayoutProps & {
 };
 
 export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
-	const props = await getStaticPropsForLayoutUnknownCourse(params); // TODO
+	const props = await getStaticPropsForLayoutUnknownCourse(params);
 
 	if ("notFound" in props) return { notFound: true };
 
@@ -147,7 +146,6 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 			)}
 			<LessonHeader
 				lesson={lesson}
-				course={course}
 				mdDescription={markdown.description}
 				mdSubtitle={markdown.subtitle}
 			/>
@@ -168,12 +166,10 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 Lesson.getLayout = LessonLayout;
 
 function LessonHeader({
-	course,
 	lesson,
 	mdDescription,
 	mdSubtitle
 }: {
-	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 	mdDescription?: CompiledMarkdown | null;
 	mdSubtitle?: CompiledMarkdown | null;
@@ -191,9 +187,7 @@ function LessonHeader({
 						<span className="flex flex-col gap-2">
 							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
-						{/** TODO maybe add link to quiz
-						 <LessonControls course={course} lesson={lesson} />
-						 */}
+						<LessonControls lesson={lesson} />
 					</span>
 					{mdSubtitle && (
 						<MarkdownContainer className="mt-2 text-light">
@@ -222,25 +216,15 @@ function LessonHeader({
 		</div>
 	);
 }
-/*
-function LessonControls({
-	course,
-	lesson
-}: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
-}) {
-	//const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
-	//const completion = useCourseCompletion(course.slug);
-	//const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
+
+function LessonControls({ lesson }: { lesson: LessonProps["lesson"] }) {
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
-			<span>Hier is lesson control</span>
 			{hasQuiz && (
 				<Link
-					href={`/courses/${course.slug}/${lesson.slug}/quiz`}
+					href={`/courses/${unknownCourse.slug}/${lesson.slug}/quiz`}
 					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					data-testid="quizLink"
 				>
@@ -251,7 +235,6 @@ function LessonControls({
 		</div>
 	);
 }
-*/
 
 function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 	return (
