@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { StrategyType } from "@prisma/client";
 import { XIcon, PlusIcon } from "@heroicons/react/solid";
 import { getStrategyNameByType } from "@self-learning/types";
-import StarRating from "libs/ui/common/src/lib/rating/star-rating";
+import { StarRating } from "libs/ui/common/src/lib/rating/star-rating";
 import { SectionHeader } from "@self-learning/ui/common";
 
 export type Lessons = { id: string; name: string };
@@ -171,17 +171,18 @@ export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<Entr
 					<PlusIcon className="icon h-5" />
 					<span>Strategie hinzufügen</span>
 				</button>
-				<div className="mt-2 flex flex-row">
-					<span className="mr-24 text-sm font-semibold">Strategie:</span>
+				<div className="mt-2 flex flex-row items-center">
+					<span className="mx-auto flex w-full flex-row justify-between text-sm font-semibold">
+						Strategie:
+					</span>
 					<span className="text-sm font-semibold">Vertrauensbewertung:</span>
 				</div>
 				{fields.map((field, number) => {
 					return (
-						<div
-							className="form-control flex flex-row place-items-center"
-							key={field.id}
-						>
-							<ListBoxStrategy key={field.id} index={number} form={form} />
+						<div className="mb-2 flex flex-row items-center" key={field.id}>
+							<div className="mx-auto flex w-full flex-row justify-between gap-4">
+								<ListBoxStrategy key={field.id} index={number} form={form} />
+							</div>
 							<span className="ml-5">
 								<Controller
 									name={`learningStrategies.${number}.confidenceRating`}
@@ -240,8 +241,8 @@ const ListBoxStrategy = ({
 			</select>
 			{selectedStrategy === StrategyType.USERSPECIFIC && (
 				<input
-					type="Text"
-					className="mt-5 max-w-xs"
+					type="text"
+					className="textfield max-content mt-1"
 					defaultValue={""}
 					placeholder="Name der Lernstrategie"
 					{...register(`learningStrategies.${index}.notes` as const)}

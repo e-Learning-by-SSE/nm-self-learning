@@ -6,9 +6,9 @@ import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
-import { ReactElement, useState } from "react";
+import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import { Tab } from "@headlessui/react";
-import { GoalType, Lesson } from "@prisma/client";
+import { GoalType, Lesson, StrategyType } from "@prisma/client";
 import {
 	EntryEditor,
 	EntryFormModel,
@@ -26,6 +26,9 @@ import {
 	showToast
 } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
+import Link from "next/link";
+import { Star } from "libs/ui/common/src/lib/rating/star-rating";
+import { PencilIcon } from "@heroicons/react/solid";
 
 type CompletedLesson = ResolvedValue<typeof getCompletedLessonsThisWeek>[0];
 type LearningGoal = ResolvedValue<typeof getGoals>[0];
@@ -301,7 +304,7 @@ function getGoalType(type: GoalType) {
 	return out;
 }
 
-function TabGoals({ goals }: Readonly<LearningDiaryProps>) {
+function TabGoals({ goals }: Readonly<{ goals: LearningGoal[] }>) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [showForm, setShowForm] = useState(false);
 	const { mutateAsync: createGoal } = trpc.learningDiary.createGoal.useMutation();
@@ -630,11 +633,13 @@ function EntriesSectionPage({
 	selectEntry,
 	title,
 	subtitle,
+	selectedEntry,
 	page
 }: Readonly<{
 	selectEntry: SelectEntryFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
+	selectedEntry: string;
 	page: number | string | string[];
 }>) {
 	const date = new Date();
@@ -665,6 +670,7 @@ function EntriesSectionPage({
 						completedLesson={JSON.parse(JSON.stringify(completedLesson))}
 						createdAt={JSON.parse(JSON.stringify(createdAt))}
 						selectEntry={selectEntry}
+						selectedEntry={selectedEntry}
 					/>
 				))}
 			</ul>
@@ -903,6 +909,93 @@ export function TabGroupEntries({
 
 function Entry({
 	selectedEntry,
+	setEditing
+}: Readonly<{
+	selectedEntry: string;
+	setEditing: Dispatch<SetStateAction<boolean>>;
+}>) {
+	const { data: diaryEntry } = trpc.learningDiary.getEntryForEdit.useQuery({
+		entryId: selectedEntry
+	});
+	return (
+		<div className="flex flex-col">
+			<div className="flex justify-between">
+				<SectionHeader title="Lernsession" subtitle="Beschreibung der Lernsession." />
+				<button
+					type="button"
+					className="btn-stroked w-fit self-start"
+					onClick={() => setEditing(true)}
+				>
+					<PencilIcon className="icon" />
+					<span>Bearbeiten</span>
+				</button>
+			</div>
+			<label className="text-sm font-semibold">Titel:</label>
+			<label>{diaryEntry?.title}</label>
+
+			<div className="mt-5 flex flex-col">
+				{diaryEntry?.lesson && (
+					<div className="flex flex-col">
+						<label className="text-sm font-semibold">Lerneinheit:</label>
+						<label className="text-sm font-medium hover:text-secondary">
+							{diaryEntry?.lesson?.title}
+						</label>
+					</div>
+				)}
+				<label className="mt-5 text-sm font-semibold">Dauer (inMinuten):</label>
+				<label className="mb-5">{diaryEntry?.duration}</label>
+			</div>
+			<SectionHeader title="Verwendete Lernstrategie:" />
+			<Table
+				head={
+					<>
+						<TableHeaderColumn>Strategie</TableHeaderColumn>
+						<TableHeaderColumn>Vertrauensbewertung:</TableHeaderColumn>
+					</>
+				}
+			>
+				{diaryEntry?.learningStrategies.map(strategy => (
+					<tr key={strategy.type}>
+						<TableDataColumn>
+							<span className="text-light">
+								{strategy.type == StrategyType.USERSPECIFIC
+									? strategy.notes
+									: getStrategyNameByType(strategy.type)}
+							</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<div
+								key={strategy.type}
+								className="form-control flex flex-row place-items-center"
+							>
+								{[1, 2, 3, 4, 5].map(value => (
+									<Star key={value} filled={value <= strategy.confidenceRating} />
+								))}
+							</div>
+						</TableDataColumn>
+					</tr>
+				))}
+			</Table>
+			<div className="mt-5 flex flex-col">
+				<SectionHeader
+					title="Notizen"
+					subtitle="Ausführliche Beschreibung der Ablenkungen und Bemühungen während der Lernsession (Optional)."
+				/>
+				<div className="flex flex-col ">
+					<label className="mt-5 text-sm font-semibold">Ablenkungen:</label>
+					<label>{diaryEntry?.distractions}</label>
+					<label className="mt-5 text-sm font-semibold">Bemühungen:</label>
+					<label>{diaryEntry?.efforts}</label>
+					<label className="mt-5 text-sm font-semibold">Sonstige Notizen</label>
+					<label>{diaryEntry?.notes}</label>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function EntryWithEditor({
+	selectedEntry,
 	selectedLesson,
 	selectedCompletedLesson,
 	selectEntry
@@ -959,6 +1052,7 @@ function Entry({
 					title: "Eintrag wurde bearbeitet!",
 					subtitle: result.title
 				});
+				selectEntry(result.id);
 				router.replace(router.asPath);
 			} catch (error) {
 				showToast({
@@ -1033,17 +1127,21 @@ export default function LearningDiary(props: Readonly<LearningDiaryProps>) {
 	const { page = 1 } = router.query;
 
 	const [selectedEntry, setSelectedEntry] = useState("");
+	const [isEditing, setIsEditing] = useState(true);
 	const [selectedLesson, setSelectedLesson] = useState("");
 	const [selectedCompletedLesson, setSelectedCompletedLesson] = useState(-1);
 	function selectEntry(id: string): void {
 		setSelectedEntry(id);
 		setSelectedCompletedLesson(-1);
 		setSelectedLesson("");
+		if (id == "") setIsEditing(true);
+		else setIsEditing(false);
 	}
 	function selectCompletedLesson(lessonId: string, completedLessonId: number): void {
 		setSelectedCompletedLesson(completedLessonId);
 		setSelectedLesson(lessonId);
 		setSelectedEntry("");
+		setIsEditing(true);
 	}
 
 	return (
@@ -1066,27 +1164,19 @@ export default function LearningDiary(props: Readonly<LearningDiaryProps>) {
 			>
 				<div className="mx-auto flex w-full  max-w-full flex-row justify-between gap-4">
 					<div className="flex w-full flex-col gap-5 p-4">
-						<Entry
-							selectEntry={selectEntry}
-							selectedEntry={selectedEntry}
-							selectedCompletedLesson={selectedCompletedLesson}
-							selectedLesson={selectedLesson}
-						/>
+						{isEditing ? (
+							<EntryWithEditor
+								selectEntry={selectEntry}
+								selectedEntry={selectedEntry}
+								selectedCompletedLesson={selectedCompletedLesson}
+								selectedLesson={selectedLesson}
+							/>
+						) : (
+							<Entry selectedEntry={selectedEntry} setEditing={setIsEditing} />
+						)}
 					</div>
 					<div className="flex w-full flex-col gap-5">
-						<TabGoals
-							goals={props.goals}
-							completedLessons={{
-								today: [],
-								yesterday: [],
-								week: []
-							}}
-							entries={{
-								today: [],
-								yesterday: [],
-								week: []
-							}}
-						/>
+						<TabGoals goals={props.goals} />
 						<StrategyOverviews />
 					</div>
 				</div>

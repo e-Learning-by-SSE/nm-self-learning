@@ -1,9 +1,7 @@
 import { StarIcon } from "@heroicons/react/solid";
 import { useState } from "react";
 
-export default StarRating;
-
-function Star({
+export function Star({
 	filled,
 	onClick
 }: Readonly<{ filled: boolean; onClick?: React.MouseEventHandler }>) {
@@ -12,7 +10,7 @@ function Star({
 	);
 }
 
-function StarRating({
+export function StarRating({
 	onChange,
 	value
 }: Readonly<{ onChange: (value: number) => void; value: number }>) {
