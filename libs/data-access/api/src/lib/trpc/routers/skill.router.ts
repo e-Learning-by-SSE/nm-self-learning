@@ -6,7 +6,7 @@ import {
 	LearningUnitProvider,
 	SkillProvider,
 	Skill,
-	LearningUnit
+	LearningUnit, findCycles
 } from "@self-learning/skills-pathfinder";
 import {
 	ResolvedValue,
@@ -67,7 +67,7 @@ export const skillRouter = t.router({
 				where: { repositoryId: input.repoId }
 			});
 		}),
-	getCyclesFromReposetory: authorProcedure
+	getCyclesFromRepo: authorProcedure
 		.input(z.object({ repoId: z.string() }))
 		.query(async ({ input }) => {
 			const skills = await database.skill.findMany({
@@ -99,7 +99,7 @@ export const skillRouter = t.router({
 			const pathPlanner = new PathPlanner(skillProvider, lerningUnitProvider);
 
 			// gets cycled skill's id's and removes "sk" from them
-			const cycles = (await pathPlanner.findACycle(dataSkills[0])).map(innerList => innerList.map(str => str.substring(2)))
+			const cycles = pathPlanner.findCycles(dataSkills[0]).map(innerList => innerList.map(str => str.substring(2)))
 			return cycles;
 		}),
 	addRepo: authorProcedure

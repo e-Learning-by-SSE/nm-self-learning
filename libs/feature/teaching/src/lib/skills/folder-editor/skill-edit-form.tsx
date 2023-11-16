@@ -1,21 +1,15 @@
-import { useContext, useEffect, useState } from "react";
-import { Form, LabeledField } from "@self-learning/ui/forms";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm } from "react-hook-form";
-import { SkillFormModel, skillFormSchema } from "@self-learning/types";
-import { trpc } from "@self-learning/api-client";
-import { SkillResolved } from "@self-learning/api";
-import { XIcon } from "@heroicons/react/solid";
-import { FolderContext } from "./folder-editor";
-import { SkillDeleteOption } from "./skill-taskbar";
-import { showToast } from "@self-learning/ui/common";
-import { SelectSkillsView } from "../skill-dialog/select-skill-view";
-<<<<<<< HEAD
-
-export function SkillInfoForm({ skill }: { skill: SkillFormModel }) {
-=======
-import { FolderItem } from "./cycle-detection/cycle-detection";
-import { dispatchDetection } from "./cycle-detection/detection-hook";
+import {useContext, useEffect, useState} from "react";
+import {Form, LabeledField} from "@self-learning/ui/forms";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {FormProvider, useForm} from "react-hook-form";
+import {SkillFormModel, skillFormSchema} from "@self-learning/types";
+import {trpc} from "@self-learning/api-client";
+import {SkillResolved} from "@self-learning/api";
+import {PlusCircleIcon, XIcon} from "@heroicons/react/solid";
+import {FolderContext} from "./folder-editor";
+import {SkillDeleteOption} from "./skill-taskbar";
+import {showToast} from "@self-learning/ui/common";
+import {SelectSkillsView} from "../skill-dialog/select-skill-view";
 
 // import { PathPlanner, LearningUnitProvider, SkillProvider } from "@self-learning/skills-pathfinder";
 
@@ -27,9 +21,9 @@ export function SkillInfoForm({
 	previousSkill: SkillFormModel | null;
 }) {
 	console.log("skill", skill);
->>>>>>> d3abb65 (feat(skill-folder-editor): add cycle checking)
-	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
-	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
+	const {mutateAsync: updateSkill} = trpc.skill.updateSkill.useMutation();
+	const {data: deineMutter, isLoading} = trpc.skill.getCyclesFromReposetory.useQuery({repoId: skill.repositoryId});
+	const {data: dbSkill} = trpc.skill.getSkillById.useQuery({
 		skillId: skill.id
 	});
 
@@ -156,12 +150,9 @@ function SkillToSkillDepsInfo({
 					onDeleteSkill={skill => {
 						removeChild(skill.id);
 					}}
-					onAddSkill={() => {}} //TODO need to be implemented
-<<<<<<< HEAD
-					repoId={skillToChange.repositoryId}
-=======
+					onAddSkill={() => {
+					}} //TODO need to be implemented
 					repoId={"1"} //TODO need no be implemented
->>>>>>> d3abb65 (feat(skill-folder-editor): add cycle checking)
 				/>
 			</div>
 			<label>
@@ -175,12 +166,9 @@ function SkillToSkillDepsInfo({
 					onDeleteSkill={skill => {
 						removeParent(skill.id);
 					}}
-					onAddSkill={() => {}} //TODO need to be implemented
-<<<<<<< HEAD
-					repoId={skillToChange.repositoryId}
-=======
+					onAddSkill={() => {
+					}} //TODO need to be implemented
 					repoId={"1"} //TODO need no be implemented
->>>>>>> d3abb65 (feat(skill-folder-editor): add cycle checking)
 				/>
 			</div>
 		</>

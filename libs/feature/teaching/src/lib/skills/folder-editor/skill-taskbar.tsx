@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { trpc } from "@self-learning/api-client";
 import { SkillFormModel } from "@self-learning/types";
 import { ButtonActions, SimpleDialog, dispatchDialog, freeDialog, showToast } from "@self-learning/ui/common";
@@ -6,18 +5,10 @@ import { TrashIcon } from "@heroicons/react/solid";
 import { FolderAddIcon } from "@heroicons/react/outline";
 import { useContext } from "react";
 import { FolderContext } from "./folder-editor";
-=======
-import {trpc} from "@self-learning/api-client";
-import {SkillFormModel} from "@self-learning/types";
-import {showToast} from "@self-learning/ui/common";
-import {TrashIcon} from "@heroicons/react/solid";
-import {FolderAddIcon} from "@heroicons/react/outline";
-import {useContext} from "react";
-import {FolderContext} from "./folder-editor";
 import {findCycles} from "@self-learning/skills-pathfinder";
 import {dispatchDetection} from "./cycle-detection/detection-hook";
 import {FolderItem} from "./cycle-detection/cycle-detection";
->>>>>>> d3abb65 (feat(skill-folder-editor): add cycle checking)
+
 
 
 export function SkillQuickAddOption({selectedSkill}: { selectedSkill: SkillFormModel }) {
@@ -105,7 +96,7 @@ export function SkillQuickAddOption({selectedSkill}: { selectedSkill: SkillFormM
     );
 }
 
-<<<<<<< HEAD
+
 export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
 	const { handleSelection } = useContext(FolderContext);
@@ -148,7 +139,31 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 			<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
 		</button>
 	);
-=======
+
+export function SkillDeleteOption({skill}: { skill: SkillFormModel }) {
+    const {mutateAsync: deleteSkill} = trpc.skill.deleteSkill.useMutation();
+    const {handleSelection} = useContext(FolderContext);
+    const handleDelete = async () => {
+        try {
+            await deleteSkill({id: skill.id});
+            showToast({
+                type: "success",
+                title: "Skill gelöscht!",
+                subtitle: ""
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                showToast({
+                    type: "error",
+                    title: "Skill konnte nicht gelöscht werden!",
+                    subtitle: error.message ?? ""
+                });
+            }
+        }
+        handleSelection(null);
+    };
+}
+
 export function SkillDeleteOption({skill}: { skill: SkillFormModel }) {
     const {mutateAsync: deleteSkill} = trpc.skill.deleteSkill.useMutation();
     const {handleSelection} = useContext(FolderContext);
@@ -180,5 +195,5 @@ export function SkillDeleteOption({skill}: { skill: SkillFormModel }) {
             <TrashIcon className="h-5 " style={{cursor: "pointer"}}/>
         </button>
     );
->>>>>>> d3abb65 (feat(skill-folder-editor): add cycle checking)
+
 }
