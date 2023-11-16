@@ -540,20 +540,20 @@ function CompletedSection({
 function CompletedSectionPage({
 	selectCompletedLesson,
 	title,
-	subtitle
+	subtitle,
+	page
 }: Readonly<{
 	selectCompletedLesson: SelectCompletedLessonFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
+	page: number | string | string[];
 }>) {
-	const router = useRouter();
-	const { page = 1 } = router.query;
 	const date = new Date();
 	date.setDate(date.getDate() - 2);
 	const { data } = trpc.learningDiary.findManyCompletedLessons.useQuery(
 		{ date: date.toISOString(), page: Number(page) },
 		{
-			staleTime: 10_000,
+			staleTime: 120000,
 			keepPreviousData: true
 		}
 	);
@@ -578,7 +578,7 @@ function CompletedSectionPage({
 					/>
 				))}
 			</ul>
-			{data?.result && <Paginator pagination={data} url={`/admin/lessons?title=`} />}
+			{data?.result && <Paginator pagination={data} url={`/learning-diary?`} />}
 		</section>
 	);
 }
@@ -621,20 +621,20 @@ function EntriesSection({
 function EntriesSectionPage({
 	selectEntry,
 	title,
-	subtitle
+	subtitle,
+	page
 }: Readonly<{
 	selectEntry: SelectEntryFunction;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
+	page: number | string | string[];
 }>) {
-	const router = useRouter();
-	const { page = 1 } = router.query;
 	const date = new Date();
 	date.setDate(date.getDate() - 2);
 	const { data } = trpc.learningDiary.findManyEntries.useQuery(
 		{ date: date.toISOString(), page: Number(page) },
 		{
-			staleTime: 10_000,
+			staleTime: 120000,
 			keepPreviousData: true
 		}
 	);
@@ -660,7 +660,7 @@ function EntriesSectionPage({
 					/>
 				))}
 			</ul>
-			{data?.result && <Paginator pagination={data} url={`/admin/lessons?title=`} />}
+			{data?.result && <Paginator pagination={data} url={`/learning-diary?`} />}
 		</section>
 	);
 }
@@ -768,7 +768,8 @@ export function TabGroupEntries({
 	selectEntry,
 	selectCompletedLesson,
 	completedLessons,
-	entries
+	entries,
+	page
 }: Readonly<{
 	selectEntry: SelectEntryFunction;
 	selectCompletedLesson: SelectCompletedLessonFunction;
@@ -782,6 +783,7 @@ export function TabGroupEntries({
 		yesterday: DiaryEntry[];
 		week: DiaryEntry[];
 	};
+	page: number | string | string[];
 }>) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const count =
@@ -836,12 +838,13 @@ export function TabGroupEntries({
 								)}
 								entries={entries.yesterday}
 							/>
-							<EntriesSectionPage
+							<EntriesSection
 								selectEntry={selectEntry}
 								title="Sonstige Einträge"
 								subtitle={amount => (
 									<>Deine restlichen Tagebucheinträge: {amount}.</>
 								)}
+								entries={entries.week}
 							/>
 						</section>
 					</Tab.Panel>
@@ -863,12 +866,13 @@ export function TabGroupEntries({
 								)}
 								completedLessons={completedLessons.yesterday}
 							/>
-							<CompletedSectionPage
+							<CompletedSection
 								selectCompletedLesson={selectCompletedLesson}
 								title="Sonstige Einträge"
 								subtitle={amount => (
 									<>Du hast {amount} weitere Lerneinheiten bearbeitet.</>
 								)}
+								completedLessons={completedLessons.yesterday}
 							/>
 						</section>
 					</Tab.Panel>
@@ -957,7 +961,6 @@ function Entry({
 				});
 				router.replace(router.asPath);
 			} catch (error) {
-				console.log(error);
 				showToast({
 					type: "error",
 					title: "Fehler",
@@ -1007,6 +1010,9 @@ function Entry({
 }
 
 export default function LearningDiary(props: Readonly<LearningDiaryProps>) {
+	const router = useRouter();
+	const { page = 1 } = router.query;
+
 	const [selectedEntry, setSelectedEntry] = useState("");
 	const [selectedLesson, setSelectedLesson] = useState("");
 	const [selectedCompletedLesson, setSelectedCompletedLesson] = useState(-1);
@@ -1033,6 +1039,7 @@ export default function LearningDiary(props: Readonly<LearningDiaryProps>) {
 							selectCompletedLesson={selectCompletedLesson}
 							completedLessons={props.completedLessons}
 							entries={props.entries}
+							page={page}
 						/>
 					</>
 				}

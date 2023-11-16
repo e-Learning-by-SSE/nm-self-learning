@@ -60,11 +60,7 @@ export function EntryEditor({
 				>
 					<div>
 						<span className="mb-5 font-semibold text-secondary">Eintrag editieren</span>
-						<EntryTopForm
-							lessons={lessons}
-							form={form}
-							defaultLessonId={entry.lessonId}
-						/>
+						<EntryTopForm lessons={lessons} form={form} />
 						<div className="mt-5 flex-row justify-between">
 							<EntryStrategieForm form={form} />
 							<EntryNotesForm form={form} />
@@ -81,33 +77,16 @@ export function EntryEditor({
 
 export function EntryTopForm({
 	lessons,
-	form,
-	defaultLessonId
+	form
 }: Readonly<{
 	lessons: Lessons[];
 	form: UseFormReturn<EntryFormModel>;
-	defaultLessonId: string | null;
 }>) {
-	function getName(id: string) {
-		let out: string;
-		const lesson = lessons.find(ele => ele.id === id);
-		if (lesson === undefined || lesson === null) out = "Eintrag auswählen";
-		else out = lesson.name;
-		return out;
-	}
-
 	const {
 		register,
-		control,
 		formState: { errors }
 	} = form;
 
-	let dLId = "";
-	if (defaultLessonId != null) {
-		dLId = defaultLessonId;
-	}
-	const [selectedLesson, setSelectedLesson] = useState(dLId);
-	useEffect(() => setSelectedLesson(dLId), [dLId]);
 	return (
 		<div className="flex flex-col gap-5">
 			<LabeledField label="Titel des Tagebucheintrags:" error={errors.title?.message}>
@@ -115,36 +94,16 @@ export function EntryTopForm({
 			</LabeledField>
 			<div className="flex flex-col gap-5 border-black">
 				<LabeledField label="Lerneinheit:">
-					<Controller
-						name="lessonId"
-						control={control}
-						render={({ field: { onChange } }) => (
-							<Listbox
-								as="div"
-								defaultValue={dLId}
-								value={selectedLesson}
-								onChange={(e: SetStateAction<string>) => {
-									onChange(e);
-									setSelectedLesson(e);
-								}}
-							>
-								<Listbox.Button className="focus:shadow-outline-blue relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left transition duration-150 ease-in-out focus:border-blue-300 focus:outline-none sm:text-sm sm:leading-5">
-									{getName(selectedLesson)}
-								</Listbox.Button>
-								<Listbox.Options className="shadow-xs max-h-60 overflow-auto rounded-md py-1 text-base leading-6 focus:outline-none sm:text-sm sm:leading-5">
-									{lessons.map(lesson => (
-										<Listbox.Option
-											key={lesson.id}
-											value={lesson.id}
-											className="shadow-xs max-h-60 overflow-auto rounded-md py-1 text-base leading-6 focus:outline-none sm:text-sm sm:leading-5"
-										>
-											{lesson.name}
-										</Listbox.Option>
-									))}
-								</Listbox.Options>
-							</Listbox>
-						)}
-					/>
+					<select {...register("lessonId")}>
+						<option value={""} hidden>
+							Bitte wählen...
+						</option>
+						{lessons.map(lesson => (
+							<option key={lesson.id} value={lesson.id}>
+								{lesson.name}
+							</option>
+						))}
+					</select>
 				</LabeledField>
 				<LabeledField label="Dauer (in Minuten):" error={errors.duration?.message}>
 					<input
@@ -247,42 +206,25 @@ const ListBoxStrategy = ({
 	index: number;
 	form: UseFormReturn<EntryFormModel>;
 }) => {
-	const { register, control, getValues } = form;
+	const { register } = form;
 	const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(StrategyType.REPEATING);
-	const defaultStrategy = getValues(`learningStrategies.${index}.type`);
-	useEffect(() => setSelectedStrategy(defaultStrategy), [defaultStrategy]);
 	return (
 		<div className="gab-2 flex flex-col">
-			<Controller
-				name={`learningStrategies.${index}.type`}
-				control={control}
-				render={({ field: { onChange } }) => (
-					<Listbox
-						as="div"
-						value={selectedStrategy}
-						defaultValue={StrategyType.REPEATING}
-						onChange={(e: SetStateAction<StrategyType>) => {
-							onChange(e);
-							setSelectedStrategy(e);
-						}}
-					>
-						<Listbox.Button className="focus:shadow-outline-blue relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left transition duration-150 ease-in-out focus:border-blue-300 focus:outline-none sm:text-sm sm:leading-5">
-							{getStrategyNameByType(selectedStrategy)}
-						</Listbox.Button>
-						<Listbox.Options className="shadow-xs max-h-60 overflow-auto rounded-md py-1 text-base leading-6 focus:outline-none sm:text-sm sm:leading-5">
-							{Object.values(StrategyType).map(type => (
-								<Listbox.Option
-									key={type}
-									value={type}
-									className="shadow-xs max-h-60 overflow-auto rounded-md py-1 text-base leading-6 focus:outline-none sm:text-sm sm:leading-5"
-								>
-									{getStrategyNameByType(type)}
-								</Listbox.Option>
-							))}
-						</Listbox.Options>
-					</Listbox>
-				)}
-			/>
+			<select
+				{...register(`learningStrategies.${index}.type`)}
+				onChange={e => {
+					setSelectedStrategy(e.target.value as StrategyType);
+				}}
+			>
+				<option value={""} hidden>
+					Bitte wählen...
+				</option>
+				{Object.values(StrategyType).map(type => (
+					<option key={type} value={type}>
+						{getStrategyNameByType(type)}
+					</option>
+				))}
+			</select>
 			{selectedStrategy === StrategyType.USERSPECIFIC && (
 				<input
 					type="Text"
