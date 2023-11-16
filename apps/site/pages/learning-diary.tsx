@@ -19,6 +19,7 @@ import {
 import { trpc } from "libs/data-access/api-client/src/lib/trpc";
 import {
 	Paginator,
+	SectionHeader,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
@@ -334,11 +335,14 @@ function TabGoals({ goals }: Readonly<LearningDiaryProps>) {
 		setShowForm(!showForm);
 	};
 	return (
-		<section className="flex w-full flex-col gap-8 p-4">
-			<span className="text-lg font-semibold text-light">Meine Ziele</span>
+		<section className="flex w-full flex-col">
+			<SectionHeader
+				title="Meine Ziele"
+				subtitle="Liste der offenen und abgeschlossenen Ziele."
+			/>
 
 			<Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-				<Tab.List className="flex w-full flex-wrap gap-4 border-b border-light-border">
+				<Tab.List className="flex w-full flex-wrap border-b border-light-border">
 					<Tab
 						className={({ selected }) =>
 							classNames(
@@ -418,7 +422,8 @@ function TabGoals({ goals }: Readonly<LearningDiaryProps>) {
 			<div>
 				{!showForm && (
 					<button className="btn-primary w-full" onClick={toggleShowForm}>
-						Neues Ziel erstellen
+						<PlusIcon className="icon h-5" />
+						<span>Ziel hinzufügen</span>{" "}
 					</button>
 				)}
 
@@ -584,11 +589,13 @@ function CompletedSectionPage({
 }
 function EntriesSection({
 	selectEntry,
+	selectedEntry,
 	title,
 	subtitle,
 	entries
 }: Readonly<{
 	selectEntry: SelectEntryFunction;
+	selectedEntry: string;
 	title: string;
 	subtitle: (amount: ReactElement) => ReactElement;
 	entries: DiaryEntry[];
@@ -612,6 +619,7 @@ function EntriesSection({
 						completedLesson={completedLesson}
 						createdAt={createdAt}
 						selectEntry={selectEntry}
+						selectedEntry={selectedEntry}
 					/>
 				))}
 			</ul>
@@ -671,6 +679,7 @@ function EntriesList({
 	completedLesson,
 	lesson,
 	createdAt,
+	selectedEntry,
 	selectEntry
 }: Readonly<{
 	id: string;
@@ -678,6 +687,7 @@ function EntriesList({
 	completedLesson: CompletedLesson | null;
 	lesson: Lesson | null;
 	createdAt: Date;
+	selectedEntry: string;
 	selectEntry: SelectEntryFunction;
 }>) {
 	let info: string;
@@ -706,13 +716,14 @@ function EntriesList({
 			format(parseISO(new Date(createdAt).toISOString()), "dd/MM/yyyy (HH:mm") +
 			"Uhr)";
 	}
+	let className = "link w-full cursor-pointer hover:bg-emerald-500 hover:text-white";
+	if (id == selectedEntry) {
+		className = "link w-full cursor-pointer bg-emerald-500 text-white";
+	}
 	return (
 		<li className="border-bottom:1px flex flex-wrap items-center justify-between gap-2">
 			<div className="mx-auto w-full max-w-md">
-				<button
-					className="link w-full cursor-pointer hover:bg-emerald-500 hover:text-white"
-					onClick={() => selectEntry(id)}
-				>
+				<button className={className} onClick={() => selectEntry(id)}>
 					<div className="mx-auto mt-2 mb-2 flex w-full max-w-md flex-col items-start">
 						<div className="flex w-full max-w-md flex-row justify-between">
 							<span className="text-base font-semibold">{title}</span>{" "}
@@ -766,12 +777,14 @@ function CompletedLessonList({
 
 export function TabGroupEntries({
 	selectEntry,
+	selectedEntry,
 	selectCompletedLesson,
 	completedLessons,
 	entries,
 	page
 }: Readonly<{
 	selectEntry: SelectEntryFunction;
+	selectedEntry: string;
 	selectCompletedLesson: SelectCompletedLessonFunction;
 	completedLessons: {
 		today: CompletedLesson[];
@@ -792,7 +805,10 @@ export function TabGroupEntries({
 		completedLessons.yesterday.length;
 	return (
 		<section className="flex w-full flex-col gap-8 p-4">
-			<span className="text-lg font-semibold text-light">Meine Einträge</span>
+			<SectionHeader
+				title="Meine Einträge"
+				subtitle="Liste der erstellten und offenen Einträge."
+			/>
 			<button className="btn-primary w-full" onClick={() => selectEntry("")}>
 				Neuen Eintrag erstellen
 			</button>
@@ -826,12 +842,14 @@ export function TabGroupEntries({
 						<section>
 							<EntriesSection
 								selectEntry={selectEntry}
+								selectedEntry={selectedEntry}
 								title="Heute"
 								subtitle={amount => <>Deine heutigen Tagebucheinträge: {amount}.</>}
 								entries={entries.today}
 							/>
 							<EntriesSection
 								selectEntry={selectEntry}
+								selectedEntry={selectedEntry}
 								title="Gestern"
 								subtitle={amount => (
 									<>Deine gestrigen Tagebucheinträge: {amount}.</>
@@ -840,6 +858,7 @@ export function TabGroupEntries({
 							/>
 							<EntriesSection
 								selectEntry={selectEntry}
+								selectedEntry={selectedEntry}
 								title="Sonstige Einträge"
 								subtitle={amount => (
 									<>Deine restlichen Tagebucheinträge: {amount}.</>
@@ -1036,6 +1055,7 @@ export default function LearningDiary(props: Readonly<LearningDiaryProps>) {
 
 						<TabGroupEntries
 							selectEntry={selectEntry}
+							selectedEntry={selectedEntry}
 							selectCompletedLesson={selectCompletedLesson}
 							completedLessons={props.completedLessons}
 							entries={props.entries}

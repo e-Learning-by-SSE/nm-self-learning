@@ -131,7 +131,7 @@ export function GoalUSDescriptionForm() {
 				<input
 					{...register("description")}
 					type="text"
-					className="textarea"
+					className="textfield"
 					placeholder="Beschreibung des Ziels"
 				/>
 			</LabeledField>

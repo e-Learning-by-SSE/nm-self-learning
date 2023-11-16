@@ -2,12 +2,12 @@ import { EntryFormModel, entryFormSchema } from "./entry-form-model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, FormProvider, UseFormReturn, useFieldArray, useForm } from "react-hook-form";
 import { LabeledField } from "@self-learning/ui/forms";
-import { Listbox } from "@headlessui/react";
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { StrategyType } from "@prisma/client";
-import { XIcon } from "@heroicons/react/solid";
+import { XIcon, PlusIcon } from "@heroicons/react/solid";
 import { getStrategyNameByType } from "@self-learning/types";
 import StarRating from "libs/ui/common/src/lib/rating/star-rating";
+import { SectionHeader } from "@self-learning/ui/common";
 
 export type Lessons = { id: string; name: string };
 
@@ -89,8 +89,14 @@ export function EntryTopForm({
 
 	return (
 		<div className="flex flex-col gap-5">
-			<LabeledField label="Titel des Tagebucheintrags:" error={errors.title?.message}>
-				<input {...register("title")} type="text" className="textarea" />
+			<SectionHeader title="Lernsession" subtitle="Beschreibung der Lernsession." />
+			<LabeledField label="Titel:" error={errors.title?.message}>
+				<input
+					{...register("title")}
+					className="textfield"
+					type="text"
+					placeholder="Des neuen Tagebucheintrags"
+				/>
 			</LabeledField>
 			<div className="flex flex-col gap-5 border-black">
 				<LabeledField label="Lerneinheit:">
@@ -109,7 +115,7 @@ export function EntryTopForm({
 					<input
 						{...register("duration", { valueAsNumber: true })}
 						type="text"
-						className="textarea"
+						className="textfield"
 					/>
 				</LabeledField>
 			</div>
@@ -124,7 +130,10 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 	} = form;
 	return (
 		<div className="mt-5 flex flex-col">
-			<span className="font-semibold text-secondary">Notizen (Optional)</span>
+			<SectionHeader
+				title="Notizen"
+				subtitle="Ausführliche Beschreibung der Ablenkungen und Bemühungen während der Lernsession (Optional)."
+			/>
 			<div className="flex flex-col gap-5 border-black">
 				<LabeledField label="Ablenkungen:" error={errors.distractions?.message}>
 					<textarea {...register("distractions")} className="textarea" />
@@ -150,9 +159,19 @@ export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<Entr
 
 	return (
 		<div className="mt-5 flex flex-col">
-			<span className="mb-2 font-semibold text-secondary">Verwendete Lernstrategie</span>
+			<SectionHeader title="Verwendete Lernstrategie" />
 			<div className="flex-col">
-				<div className="flex flex-row">
+				<button
+					type="button"
+					className="btn-primary mt-5 w-full"
+					onClick={() =>
+						append({ confidenceRating: 0, type: StrategyType.REPEATING, notes: "" })
+					}
+				>
+					<PlusIcon className="icon h-5" />
+					<span>Strategie hinzufügen</span>
+				</button>
+				<div className="mt-2 flex flex-row">
 					<span className="mr-24 text-sm font-semibold">Strategie:</span>
 					<span className="text-sm font-semibold">Vertrauensbewertung:</span>
 				</div>
@@ -185,15 +204,6 @@ export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<Entr
 						</div>
 					);
 				})}
-				<button
-					type="button"
-					className="btn-primary mt-5 w-full"
-					onClick={() =>
-						append({ confidenceRating: 0, type: StrategyType.REPEATING, notes: "" })
-					}
-				>
-					Strategie hinzufügen
-				</button>
 			</div>
 		</div>
 	);
@@ -206,8 +216,11 @@ const ListBoxStrategy = ({
 	index: number;
 	form: UseFormReturn<EntryFormModel>;
 }) => {
-	const { register } = form;
+	const { register, getValues } = form;
 	const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(StrategyType.REPEATING);
+	useEffect(() => {
+		setSelectedStrategy(getValues(`learningStrategies.${index}.type`));
+	}, [getValues, index]);
 	return (
 		<div className="gab-2 flex flex-col">
 			<select
