@@ -6,25 +6,43 @@ import FolderListView from "./folder-list-view";
 import { SkillFormModel } from "@self-learning/types";
 import { RepositoryInfoMemorized } from "./repository-edit-form";
 import { SkillInfoForm } from "./skill-edit-form";
+import { SkillProps } from "../../../../../../../apps/site/pages/skills/repository/[repoSlug]";
+import { FolderItem } from "./cycle-detection/cycle-detection";
 
 export type SkillSelectHandler = (selectedSkill: SkillFormModel | null) => void;
 export interface FolderContextProps {
 	handleSelection: SkillSelectHandler;
+	skillMap: Map<string, FolderItem>;
 }
-export const FolderContext = createContext<FolderContextProps>({ handleSelection: () => {} });
+export const FolderContext = createContext<FolderContextProps>({
+	handleSelection: () => {},
+	skillMap: new Map<string, FolderItem>()
+});
 
-export function FolderSkillEditor({ repositoryID }: { repositoryID: string }) {
-	const { data: repository, isLoading } = trpc.skill.getRepository.useQuery({ id: repositoryID });
-	const [selectedItem, setSelectedItem] = useState<SkillFormModel | null>(null);
+export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
+	const { data: repository, isLoading } = trpc.skill.getRepository.useQuery({
+		id: skillProps.repoId
+	});
+	const [selectedItem, setSelectedItem] = useState<{
+		selected: SkillFormModel;
+		previousSkill: SkillFormModel | null;
+	} | null>(null);
+
+	const skillMap = new Map<string, FolderItem>(
+		skillProps.skills.map(skill => [skill.id, { skill: skill, selectedSkill: false }])
+	);
 
 	const changeSelectedItem: SkillSelectHandler = item => {
+		if (!item) return;
 		console.log("changed item", item);
-		setSelectedItem(item);
+		setSelectedItem({ selected: item, previousSkill: selectedItem?.selected ?? null });
 	};
 
 	return (
 		<div className="bg-gray-50">
-			<FolderContext.Provider value={{ handleSelection: changeSelectedItem }}>
+			<FolderContext.Provider
+				value={{ handleSelection: changeSelectedItem, skillMap: skillMap }}
+			>
 				{isLoading ? (
 					<LoadingBox />
 				) : (
@@ -45,7 +63,10 @@ export function FolderSkillEditor({ repositoryID }: { repositoryID: string }) {
 								)}
 
 								{selectedItem ? (
-									<SkillInfoForm skill={selectedItem} />
+									<SkillInfoForm
+										skill={selectedItem.selected}
+										previousSkill={selectedItem.previousSkill}
+									/>
 								) : (
 									"Einen Skill aus der Liste auswählen um das Bearbeiten zu starten..."
 								)}

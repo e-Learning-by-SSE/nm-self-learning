@@ -1,0 +1,27 @@
+import {motion} from "framer-motion";
+import { ExclamationCircleIcon, InformationCircleIcon, CheckCircleIcon } from "@heroicons/react/outline";
+export type warningType = { severity: "WARNING" | "ERROR" | "INFORMATION" | "SUCCESS", message: string };
+
+export function Alert({type}: {type: warningType}) {
+	return (
+		<motion.div
+			initial={{opacity: 0}}
+			animate={{opacity: 1}}
+			transition={{type: "tween", duration: 0.5}}
+			className={`flex flex-col gap-2 rounded-lg border p-4 text-white ${
+				type.severity === "WARNING" ? "border-yellow-500 bg-yellow-100 text-yellow-500" :
+				type.severity === "ERROR" ? "border-red-500 bg-red-100 text-red-500" :
+				type.severity === "INFORMATION" ? "border-blue-500 bg-blue-100 text-blue-500" :
+				"border-green-500 bg-green-100 text-green-500"
+			}`}
+		>
+			<div className="flex flex-row gap-2">
+				{type.severity === "WARNING" ? <ExclamationCircleIcon className="icon h-5 text-lg"/> :
+				type.severity === "ERROR" ? <CheckCircleIcon className="icon h-5 text-lg"/>:
+				type.severity === "INFORMATION" ? <InformationCircleIcon className="icon h-5 text-lg" /> : <CheckCircleIcon className="icon h-5 text-lg"/>}
+				<span className="font-medium">{type.message}</span>
+			</div>
+		</motion.div>
+	);
+}
+

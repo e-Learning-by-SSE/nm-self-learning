@@ -1,33 +1,25 @@
-import {
-	LoadingBox,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn,
-	showToast
-} from "@self-learning/ui/common";
+import { Table, TableDataColumn, TableHeaderColumn, showToast } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useState, useMemo, memo, useEffect, useContext } from "react";
-import { FolderIcon, PlusIcon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/solid";
-import { PencilIcon, PuzzleIcon } from "@heroicons/react/outline";
+import {
+	LightningBoltIcon,
+	FolderIcon,
+	PlusIcon,
+	ChevronDownIcon,
+	ChevronRightIcon
+} from "@heroicons/react/solid";
+import { ArrowCircleLeftIcon, PencilIcon, PuzzleIcon } from "@heroicons/react/outline";
 import { trpc } from "@self-learning/api-client";
 import { SkillRepository } from "@prisma/client";
-import { SkillResolved } from "@self-learning/api";
 import { SkillFormModel } from "@self-learning/types";
 import { SkillQuickAddOption } from "./skill-taskbar";
 import { FolderContext, SkillSelectHandler } from "./folder-editor";
 import styles from "./folder-list-view.module.css";
-
-export function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
-	return {
-		id: dbSkill.id,
-		name: dbSkill.name,
-		description: dbSkill.description,
-		repositoryId: dbSkill.repositoryId,
-		children: dbSkill.children?.map(child => child.id),
-		parents: dbSkill.parents?.map(parent => parent.id)
-	};
-}
+import { mockProviders } from "next-auth/client/__tests__/helpers/mocks";
+import { Alert } from "../../../../../../ui/common/src/lib/alert/alert";
+import { useDetection } from "./cycle-detection/detection-hook";
+import type = mockProviders.github.type;
 
 function FolderListView({ repository }: { repository: SkillRepository }) {
 	const [displayName, setDisplayName] = useState("");
@@ -52,7 +44,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
 	const { handleSelection } = useContext(FolderContext);
-
+	//TODO: fix this
 	const createSkillAndSubmit = async () => {
 		const newSkill = {
 			name: "New Skill: " + Date.now(),
@@ -72,7 +64,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 			});
 			console.log("New skill created", createdSkill);
 
-			handleSelection(toSkillFormModel(createdSkill));
+			handleSelection(createdSkill);
 			setSkillArray([...(skillArray ?? []), createdSkill.id]);
 		} catch (error) {
 			if (error instanceof Error) {
@@ -103,6 +95,7 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 					}}
 				/>
 
+				<Alert type={{ severity: "ERROR", message: "MESSAGE" }} />
 				<Table
 					head={
 						<>
@@ -134,12 +127,13 @@ function SkillRow({
 	onSelect,
 	onEdit
 }: {
-	skill: SkillResolved;
+	skill: SkillFormModel;
 	depth: number;
 	childrenFoldedOut: boolean;
 	onSelect: () => void;
 	onEdit: SkillSelectHandler;
 }) {
+	const folderItem = useDetection(skill.id);
 	const key = skill.id + "_" + depth + "_" + Math.floor(Math.random() * 10000000001);
 	const depthCssStyle = {
 		"--depth": depth
@@ -150,6 +144,12 @@ function SkillRow({
 		<tr key={key} style={depthCssStyle} className="group cursor-pointer hover:bg-gray-100">
 			<TableDataColumn className={`${styles["folder-line"]} text-sm font-medium`}>
 				<div className="flex px-2">
+					{folderItem.item !== null && folderItem.item.cycle && (
+						<LightningBoltIcon className="icon h-5 text-lg text-red-500" />
+					)}
+					{folderItem.item !== null && folderItem.item.selectedSkill && (
+						<ArrowCircleLeftIcon className="icon h-5 text-lg text-secondary" />
+					)}
 					<div
 						className={`flex ${hasChildren && "hover:text-secondary"}`}
 						onClick={onSelect}
@@ -181,15 +181,15 @@ function SkillRow({
 						<button
 							title="Bearbeiten"
 							className="mr-3 px-2 hover:text-secondary"
-							onClick={() => onEdit(toSkillFormModel(skill))}
+							onClick={() => onEdit(skill)}
 						>
 							<PencilIcon className="ml-1 h-5 text-lg" />
 						</button>
-						<SkillQuickAddOption selectedSkill={toSkillFormModel(skill)} />
+						<SkillQuickAddOption selectedSkill={skill} />
 					</div>
 				</div>
 			</TableDataColumn>
-			<TableDataColumn>{skill.repository.name}</TableDataColumn>
+			<TableDataColumn>{"name später"}</TableDataColumn>
 		</tr>
 	);
 }
@@ -203,36 +203,35 @@ function ListSkillEntryWithChildren({
 	depth: number;
 	showChildren: boolean;
 }) {
-	const { handleSelection } = useContext(FolderContext);
-	const { data: skill, isLoading } = trpc.skill.getSkillById.useQuery({ skillId });
+	const { handleSelection, skillMap } = useContext(FolderContext);
+	const skill = skillMap.get(skillId)?.skill;
 	const [open, setOpen] = useState(showChildren);
+
+	if (!skill) return <div>503</div>;
 
 	return (
 		// eslint-disable-next-line react/jsx-no-useless-fragment
 		<>
-			{isLoading || !skill ? (
-				<LoadingBox />
-			) : (
-				<>
-					<SkillRow
-						skill={skill}
-						depth={depth}
-						onSelect={() => setOpen(!open)}
-						onEdit={handleSelection}
-						childrenFoldedOut={open}
-					/>
-					{open &&
-						skill.children.map(element => (
-							<ListSkillEntryWithChildrenMemorized // recursive structure to add <SkillRow /> for each child
-								key={"baseDir child:" + element}
-								skillId={element.id}
-								showChildren={false}
-								depth={depth + 1}
-							/>
-						))}
-				</>
-			)}
+			<>
+				<SkillRow
+					skill={skill}
+					depth={depth}
+					onSelect={() => setOpen(!open)}
+					onEdit={handleSelection}
+					childrenFoldedOut={open}
+				/>
+				{open &&
+					skill.children.map(element => (
+						<ListSkillEntryWithChildrenMemorized // recursive structure to add <SkillRow /> for each child
+							key={"baseDir child:" + element}
+							skillId={element}
+							showChildren={false}
+							depth={depth + 1}
+						/>
+					))}
+			</>
 		</>
 	);
 }
+
 const ListSkillEntryWithChildrenMemorized = memo(ListSkillEntryWithChildren);

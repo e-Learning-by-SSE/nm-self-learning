@@ -112,6 +112,7 @@ type CourseProps = {
 export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ params }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
 
+
 	if (!courseSlug) {
 		throw new Error("No slug provided.");
 	}
