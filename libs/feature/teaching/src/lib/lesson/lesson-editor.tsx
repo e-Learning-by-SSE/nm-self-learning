@@ -102,7 +102,7 @@ export function LessonEditor({
 								<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
 
 								<Link href={`/courses/${courseSlug}/${lesson.slug}`}>
-									<button className="btn-primary w-full">{"Preview"}</button>
+									<button className="btn-primary w-full">{"Vorschau"}</button>
 								</Link>
 
 								<button className="btn-primary w-full" type="submit">

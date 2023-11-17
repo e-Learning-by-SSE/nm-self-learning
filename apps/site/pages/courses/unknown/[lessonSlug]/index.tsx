@@ -4,7 +4,8 @@ import { trpc } from "@self-learning/api-client";
 import {
 	getStaticPropsForLayoutUnknownCourse,
 	LessonLayout,
-	LessonLayoutProps
+	LessonLayoutProps,
+	useLessonContext
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -185,6 +186,7 @@ function LessonHeader({
 				<div className="flex w-full flex-col">
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
+							<br></br>
 							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
 						<LessonControls lesson={lesson} />
