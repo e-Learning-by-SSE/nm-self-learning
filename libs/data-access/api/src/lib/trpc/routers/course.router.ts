@@ -152,7 +152,15 @@ export const courseRouter = t.router({
 
 			console.log("[courseRouter.edit]: Course updated by", ctx.user.name, updated);
 			return updated;
-		})
+		}),
+	getAllContent: t.procedure.query(() => {
+		return database.course.findMany({
+			select: {
+				slug: true,
+				content: true
+			}
+		});
+	})
 });
 
 function canCreate(user: UserFromSession): boolean {

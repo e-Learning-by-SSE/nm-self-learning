@@ -1,9 +1,8 @@
-import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
+import { PlayIcon } from "@heroicons/react/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
-import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
-	getStaticPropsForLayout,
+	getStaticPropsForLayoutUnknownCourse,
 	LessonLayout,
 	LessonLayoutProps,
 	useLessonContext
@@ -25,6 +24,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { unknownCourse } from "../unknownCourse";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -36,7 +36,7 @@ export type LessonProps = LessonLayoutProps & {
 };
 
 export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
-	const props = await getStaticPropsForLayout(params);
+	const props = await getStaticPropsForLayoutUnknownCourse(params);
 
 	if ("notFound" in props) return { notFound: true };
 
@@ -65,7 +65,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 		article.value.content = "(replaced)";
 	}
 
-	// TODO change to check if the lesson is self requlated
+	// TODO change to check if the lesson is self regulated
 	if (lesson.lessonType === LessonType.SELF_REGULATED) {
 		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
 	}
@@ -145,20 +145,16 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					)}
 				</div>
 			)}
-
 			<LessonHeader
 				lesson={lesson}
-				course={course}
 				mdDescription={markdown.description}
 				mdSubtitle={markdown.subtitle}
 			/>
-
 			{preferredMediaType === "article" && markdown.article && (
 				<MarkdownContainer className="mx-auto w-full pt-4">
 					<MDXRemote {...markdown.article} />
 				</MarkdownContainer>
 			)}
-
 			{preferredMediaType === "pdf" && pdf?.value.url && (
 				<div className="h-[90vh] xl:h-[80vh]">
 					<PdfViewer url={pdf.value.url} />
@@ -171,18 +167,14 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 Lesson.getLayout = LessonLayout;
 
 function LessonHeader({
-	course,
 	lesson,
 	mdDescription,
 	mdSubtitle
 }: {
-	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 	mdDescription?: CompiledMarkdown | null;
 	mdSubtitle?: CompiledMarkdown | null;
 }) {
-	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
-
 	let license = lesson.license;
 	if (license === null) {
 		license = trpc.licenseRouter.getDefault.useQuery().data ?? null;
@@ -194,10 +186,10 @@ function LessonHeader({
 				<div className="flex w-full flex-col">
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
-							<span className="font-semibold text-secondary">{chapterName}</span>
+							<br></br>
 							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
-						<LessonControls course={course} lesson={lesson} />
+						<LessonControls lesson={lesson} />
 					</span>
 					{mdSubtitle && (
 						<MarkdownContainer className="mt-2 text-light">
@@ -213,7 +205,7 @@ function LessonHeader({
 					</span>
 
 					<div className="pt-4">
-						<MediaTypeSelector lesson={lesson} course={course} />
+						<MediaTypeSelector lesson={lesson} />
 					</div>
 				</div>
 			</div>
@@ -227,39 +219,20 @@ function LessonHeader({
 	);
 }
 
-function LessonControls({
-	course,
-	lesson
-}: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
-}) {
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
-	const completion = useCourseCompletion(course.slug);
-	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
+function LessonControls({ lesson }: { lesson: LessonProps["lesson"] }) {
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			{hasQuiz && (
 				<Link
-					href={`/courses/${course.slug}/${lesson.slug}/quiz`}
+					href={`/courses/${unknownCourse.slug}/${lesson.slug}/quiz`}
 					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					data-testid="quizLink"
 				>
 					<span>Zur Lernkontrolle</span>
 					<PlayIcon className="h-6 shrink-0" />
 				</Link>
-			)}
-
-			{!hasQuiz && !isCompletedLesson && (
-				<button
-					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
-					onClick={markAsCompleted}
-				>
-					<span>Als abgeschlossen markieren</span>
-					<CheckCircleIcon className="h-6 shrink-0" />
-				</button>
 			)}
 		</div>
 	);
@@ -304,13 +277,7 @@ export function LicenseLabel({ license }: { license: LessonProps["lesson"]["lice
 	}
 }
 
-function MediaTypeSelector({
-	lesson,
-	course
-}: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
-}) {
+function MediaTypeSelector({ lesson }: { lesson: LessonProps["lesson"] }) {
 	const lessonContent = lesson.content as LessonContent;
 	// If no content is specified at this time, use video as default (and don't s´display anything)
 	const preferredMediaType = usePreferredMediaType(lesson) ?? "video";
@@ -322,8 +289,7 @@ function MediaTypeSelector({
 		const type = lessonContent[index].type;
 
 		window.localStorage.setItem("preferredMediaType", type);
-
-		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
+		router.push(`/courses/unknown/${lesson.slug}?type=${type}`, undefined, {
 			shallow: true
 		});
 
