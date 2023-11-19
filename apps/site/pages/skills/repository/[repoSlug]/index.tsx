@@ -1,11 +1,8 @@
-import {useRouter} from "next/router";
-import {useEffect, useState} from "react";
-import {trpc} from "@self-learning/api-client";
-import {getSession, useSession} from "next-auth/react";
+import {getSession} from "next-auth/react";
 import {FolderSkillEditor} from "@self-learning/teaching";
 import {GetServerSideProps} from "next";
 import {database} from "@self-learning/database";
-import {SkillFormModel, skillRepositoryCreationSchema} from "@self-learning/types";
+import {SkillFormModel} from "@self-learning/types";
 
 
 const createNew = async (userId: string) => {
@@ -65,13 +62,13 @@ export const getServerSideProps: GetServerSideProps<SkillProps> = async (ctx) =>
 
 	const session = await getSession(ctx);
 
-	if(!(session && session !== null && session.user && session.user.id)) {
+	if (!(session && session !== null && session.user && session.user.id)) {
 		return {
-		redirect: {
-			destination: `/403`, // your new URL here
-			permanent: false,
-		},
-	};
+			redirect: {
+				destination: `/403`, // your new URL here
+				permanent: false,
+			},
+		};
 	}
 
 	if (!repoId || repoId === "") return {notFound: true}

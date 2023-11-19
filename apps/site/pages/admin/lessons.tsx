@@ -1,21 +1,19 @@
-import { PlusIcon, ChevronDownIcon } from "@heroicons/react/solid";
-import { trpc } from "@self-learning/api-client";
-import { Paginator, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { SearchField } from "@self-learning/ui/forms";
-import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { formatDateAgo } from "@self-learning/util/common";
+import {PlusIcon} from "@heroicons/react/solid";
+import {trpc} from "@self-learning/api-client";
+import {Paginator, Table, TableDataColumn, TableHeaderColumn} from "@self-learning/ui/common";
+import {SearchField} from "@self-learning/ui/forms";
+import {AdminGuard, CenteredSection, useRequiredSession} from "@self-learning/ui/layouts";
+import {formatDateAgo} from "@self-learning/util/common";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { Fragment } from "react";
-import { Menu, Transition } from "@headlessui/react";
+import {useRouter} from "next/router";
+import {useEffect, useState} from "react";
 
 export default function LessonManagementPage() {
 	const router = useRouter();
-	const { page = 1, title = "" } = router.query;
+	const {page = 1, title = ""} = router.query;
 	const [titleFilter, setTitle] = useState(title);
-	const { data } = trpc.lesson.findMany.useQuery(
-		{ title: titleFilter as string, page: Number(page) },
+	const {data} = trpc.lesson.findMany.useQuery(
+		{title: titleFilter as string, page: Number(page)},
 		{
 			staleTime: 10_000,
 			keepPreviousData: true
@@ -38,7 +36,7 @@ export default function LessonManagementPage() {
 				<h1 className="text-5xl">Lerneinheiten</h1>
 
 				<Link href="/teaching/lessons/create" className="btn-primary flex w-fit">
-					<PlusIcon className="icon h-5" />
+					<PlusIcon className="icon h-5"/>
 					<span>Lerneinheit hinzufügen</span>
 				</Link>
 			</div>
@@ -97,7 +95,7 @@ export default function LessonManagementPage() {
 			</Table>
 
 			{data?.result && (
-				<Paginator pagination={data} url={`/admin/lessons?title=${titleFilter}`} />
+				<Paginator pagination={data} url={`/admin/lessons?title=${titleFilter}`}/>
 			)}
 		</CenteredSection>
 	);

@@ -1,14 +1,7 @@
-import {
-	Dialog,
-	DialogActions,
-	LoadingBox,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn
-} from "@self-learning/ui/common";
-import { SearchField } from "@self-learning/ui/forms";
-import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
-import { Fragment, useState, useMemo } from "react";
+import {Dialog, DialogActions, LoadingBox, Table, TableDataColumn, TableHeaderColumn} from "@self-learning/ui/common";
+import {SearchField} from "@self-learning/ui/forms";
+import {AuthorGuard, useRequiredSession} from "@self-learning/ui/layouts";
+import {Fragment, useMemo, useState} from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { PencilIcon, TrashIcon } from "@heroicons/react/solid";
@@ -18,7 +11,7 @@ export function SkillRepositoryOverview() {
 
 	const [displayName, setDisplayName] = useState("");
 
-	const { data: skillTrees, isLoading } = trpc.skill.getRepositoriesByUser.useQuery();
+	const {data: skillTrees, isLoading} = trpc.skill.getRepositoriesByUser.useQuery();
 
 	const filteredSkillTrees = useMemo(() => {
 		if (!skillTrees) return [];
@@ -40,7 +33,7 @@ export function SkillRepositoryOverview() {
 				/>
 
 				{isLoading ? (
-					<LoadingBox />
+					<LoadingBox/>
 				) : (
 					<Table
 						head={
@@ -50,7 +43,7 @@ export function SkillRepositoryOverview() {
 							</>
 						}
 					>
-						{filteredSkillTrees.map(({ name, id }) => (
+						{filteredSkillTrees.map(({name, id}) => (
 							<Fragment key={name}>
 								{name && (
 									<tr key={name}>
@@ -65,7 +58,7 @@ export function SkillRepositoryOverview() {
 											</div>
 										</TableDataColumn>
 										<TableDataColumn>
-											<RepositoryTaskbar repositoryId={id} />
+											<RepositoryTaskbar repositoryId={id}/>
 										</TableDataColumn>
 									</tr>
 								)}
@@ -82,7 +75,7 @@ export function SkillRepositoryOverview() {
 										</div>
 									</TableDataColumn>
 									<TableDataColumn>
-										<div className="flex flex-wrap justify-end gap-4" />
+										<div className="flex flex-wrap justify-end gap-4"/>
 									</TableDataColumn>
 								</tr>
 							</Fragment>
@@ -108,12 +101,12 @@ function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
 	);
 }
 
-function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
-	const { mutateAsync: deleteRepo } = trpc.skill.deleteRepository.useMutation();
+function RepositoryDeleteOption({repositoryId}: { repositoryId: string }) {
+	const {mutateAsync: deleteRepo} = trpc.skill.deleteRepository.useMutation();
 	const [showConfirmation, setShowConfirmation] = useState(false);
 
 	const handleDelete = async () => {
-		await deleteRepo({ id: repositoryId });
+		await deleteRepo({id: repositoryId});
 	};
 
 	const handleConfirm = () => {
@@ -132,7 +125,7 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 				onClick={() => setShowConfirmation(true)}
 			>
 				<div className="ml-4">
-					<TrashIcon className="icon " />
+					<TrashIcon className="icon "/>
 				</div>
 			</button>
 			{showConfirmation && (

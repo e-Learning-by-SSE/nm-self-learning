@@ -1,15 +1,17 @@
-import {useContext, useEffect, useState} from "react";
-import {Form, LabeledField} from "@self-learning/ui/forms";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {FormProvider, useForm} from "react-hook-form";
-import {SkillFormModel, skillFormSchema} from "@self-learning/types";
-import {trpc} from "@self-learning/api-client";
-import {SkillResolved} from "@self-learning/api";
-import {PlusCircleIcon, XIcon} from "@heroicons/react/solid";
-import {FolderContext} from "./folder-editor";
-import {SkillDeleteOption} from "./skill-taskbar";
-import {showToast} from "@self-learning/ui/common";
-import {SelectSkillsView} from "../skill-dialog/select-skill-view";
+import { useContext, useEffect, useState } from "react";
+import { Form, LabeledField } from "@self-learning/ui/forms";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider, useForm, useFormContext } from "react-hook-form";
+import { SkillFormModel, skillFormSchema } from "@self-learning/types";
+import { trpc } from "@self-learning/api-client";
+import { SkillResolved } from "@self-learning/api";
+import { PlusCircleIcon, XIcon } from "@heroicons/react/solid";
+import { FolderContext } from "./folder-editor";
+import { SkillDeleteOption } from "./skill-taskbar";
+import { showToast } from "@self-learning/ui/common";
+import { SelectSkillsView } from "../skill-dialog/select-skill-view";
+import { dispatchDetection } from "./cycle-detection/detection-hook";
+import { FolderItem, checkForCycles } from "./cycle-detection/cycle-detection";
 
 // import { PathPlanner, LearningUnitProvider, SkillProvider } from "@self-learning/skills-pathfinder";
 
@@ -20,15 +22,14 @@ export function SkillInfoForm({
 	skill: SkillFormModel;
 	previousSkill: SkillFormModel | null;
 }) {
-	console.log("skill", skill);
-	const {mutateAsync: updateSkill} = trpc.skill.updateSkill.useMutation();
-	const {data: deineMutter, isLoading} = trpc.skill.getCyclesFromReposetory.useQuery({repoId: skill.repositoryId});
-	const {data: dbSkill} = trpc.skill.getSkillById.useQuery({
+	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
+	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
 		skillId: skill.id
 	});
+	const { skillMap } = useContext(FolderContext);
 
 	const onSubmit = async (data: SkillFormModel) => {
-		updateSkill({
+		const updatedSkill = await updateSkill({
 			skill: {
 				...data,
 				repositoryId: skill.repositoryId,
@@ -38,12 +39,21 @@ export function SkillInfoForm({
 				parents: skill.parents
 			}
 		});
+		const updatedSkillFormModel = {
+			id: updatedSkill.id,
+			name: updatedSkill.name,
+			description: updatedSkill.description,
+			children: updatedSkill.children.map(skill => skill.id),
+			parents: updatedSkill.parents.map(skill => skill.id),
+			repositoryId: updatedSkill.repository.id
+		};
 
 		showToast({
 			type: "success",
 			title: "Skill gespeichert!",
 			subtitle: ""
 		});
+		await checkForCycles(skillMap);
 	};
 
 	const form = useForm({
@@ -56,13 +66,29 @@ export function SkillInfoForm({
 	useEffect(() => {
 		form.setValue("name", skill.name);
 		form.setValue("description", skill?.description);
-		const items: FolderItem[] = [{ skill: skill, selectedSkill: true }];
+		let folderItemHistory = skillMap.get(skill.id);
+		if(!folderItemHistory) return;
+		const items: FolderItem[] = [
+			{
+				skill: skill,
+				selectedSkill: true,
+				cycle: folderItemHistory.cycle,
+				parent: folderItemHistory.parent ?? undefined
+			}
+		];
 		if (previousSkill !== null) {
-			items.push({ skill: previousSkill, selectedSkill: false });
+			folderItemHistory = skillMap.get(previousSkill.id);
+			if(!folderItemHistory) return;
+			items.push({
+				skill: previousSkill,
+				selectedSkill: false,
+				cycle: folderItemHistory.cycle,
+				parent: folderItemHistory.parent ?? undefined
+			});
 		}
 		//informs the specific row about the change
 		dispatchDetection(items);
-	}, [skill, form, previousSkill]);
+	}, [skill, form, previousSkill, skillMap]);
 
 	const { handleSelection } = useContext(FolderContext);
 	return (
@@ -93,6 +119,7 @@ export function SkillInfoForm({
 						<SkillToSkillDepsInfo
 							parents={dbSkill?.parents ?? []}
 							children={dbSkill?.children ?? []}
+							repoId={skill.repositoryId}
 							skillToChange={skill}
 						/>
 					</div>
@@ -111,15 +138,19 @@ export function SkillInfoForm({
 function SkillToSkillDepsInfo({
 	parents,
 	children,
+	repoId,
 	skillToChange
 }: {
 	parents: SkillResolved["parents"];
 	children: SkillResolved["children"];
+	repoId: string;
 	skillToChange: SkillFormModel;
 }) {
 	const { handleSelection } = useContext(FolderContext);
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
 	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
+	const { setValue, getValues } = useFormContext<SkillFormModel>();
+
 	useEffect(() => {
 		setParentItems(parents);
 	}, [parents]);
@@ -137,6 +168,18 @@ function SkillToSkillDepsInfo({
 		skillToChange.children = skillToChange.children.filter(item => item !== id);
 	};
 
+	const addChildren = (skills: SkillFormModel[]) => {
+		setChildItems([...childItems, ...skills]);
+		skillToChange.children = [...skillToChange.children, ...skills.map(item => item.id)];
+		setValue("children", skillToChange.children);
+	};
+
+	const addParent = (skills: SkillFormModel[]) => {
+		setParentItems([...parentItems, ...skills]);
+		skillToChange.parents = [...skillToChange.parents, ...skills.map(item => item.id)];
+		setValue("parents", skillToChange.parents);
+	};
+
 	return (
 		<>
 			<label>
@@ -150,9 +193,11 @@ function SkillToSkillDepsInfo({
 					onDeleteSkill={skill => {
 						removeChild(skill.id);
 					}}
-					onAddSkill={() => {
-					}} //TODO need to be implemented
-					repoId={"1"} //TODO need no be implemented
+					onAddSkill={skills => {
+						if (!skills) return;
+						addChildren(skills);
+					}}
+					repoId={repoId}
 				/>
 			</div>
 			<label>
@@ -166,9 +211,11 @@ function SkillToSkillDepsInfo({
 					onDeleteSkill={skill => {
 						removeParent(skill.id);
 					}}
-					onAddSkill={() => {
-					}} //TODO need to be implemented
-					repoId={"1"} //TODO need no be implemented
+					onAddSkill={skills => {
+						if (!skills) return;
+						addChildren(skills);
+					}}
+					repoId={repoId}
 				/>
 			</div>
 		</>

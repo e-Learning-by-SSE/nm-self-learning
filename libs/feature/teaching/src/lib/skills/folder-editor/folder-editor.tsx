@@ -1,26 +1,29 @@
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { createContext, useState } from "react";
-import { trpc } from "@self-learning/api-client";
-import {  DialogHandler, Divider, LoadingBox } from "@self-learning/ui/common";
+import {SidebarEditorLayout} from "@self-learning/ui/layouts";
+import {createContext, useEffect, useMemo, useState} from "react";
+import {trpc} from "@self-learning/api-client";
+import {DialogHandler, Divider, LoadingBox} from "@self-learning/ui/common";
 import FolderListView from "./folder-list-view";
-import { SkillFormModel } from "@self-learning/types";
-import { RepositoryInfoMemorized } from "./repository-edit-form";
-import { SkillInfoForm } from "./skill-edit-form";
-import { SkillProps } from "../../../../../../../apps/site/pages/skills/repository/[repoSlug]";
-import { FolderItem } from "./cycle-detection/cycle-detection";
+import {SkillFormModel} from "@self-learning/types";
+import {RepositoryInfoMemorized} from "./repository-edit-form";
+import {SkillInfoForm} from "./skill-edit-form";
+import {SkillProps} from "../../../../../../../apps/site/pages/skills/repository/[repoSlug]";
+import {checkForCycles, FolderItem} from "./cycle-detection/cycle-detection";
 
 export type SkillSelectHandler = (selectedSkill: SkillFormModel | null) => void;
+
 export interface FolderContextProps {
 	handleSelection: SkillSelectHandler;
 	skillMap: Map<string, FolderItem>;
 }
+
 export const FolderContext = createContext<FolderContextProps>({
-	handleSelection: () => {},
+	handleSelection: () => {
+	},
 	skillMap: new Map<string, FolderItem>()
 });
 
-export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
-	const { data: repository, isLoading } = trpc.skill.getRepository.useQuery({
+export function FolderSkillEditor({skillProps}: { skillProps: SkillProps }) {
+	const {data: repository, isLoading} = trpc.skill.getRepository.useQuery({
 		id: skillProps.repoId
 	});
 	const [selectedItem, setSelectedItem] = useState<{
@@ -28,23 +31,34 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 		previousSkill: SkillFormModel | null;
 	} | null>(null);
 
-	const skillMap = new Map<string, FolderItem>(
-		skillProps.skills.map(skill => [skill.id, { skill: skill, selectedSkill: false }])
-	);
+
+	const skillMap = useMemo(() => {
+		return new Map<string, FolderItem>(
+			skillProps.skills.map(skill => [skill.id, {skill: skill, selectedSkill: false}])
+		);
+	}, [skillProps.skills]);
+
+	useEffect(() => {
+		const getCyclen = async () => {
+			await checkForCycles(skillMap);
+		};
+		getCyclen();
+	}, [skillMap]);
+
 
 	const changeSelectedItem: SkillSelectHandler = item => {
 		if (!item) return;
 		console.log("changed item", item);
-		setSelectedItem({ selected: item, previousSkill: selectedItem?.selected ?? null });
+		setSelectedItem({selected: item, previousSkill: selectedItem?.selected ?? null});
 	};
 
 	return (
 		<div className="bg-gray-50">
 			<FolderContext.Provider
-				value={{ handleSelection: changeSelectedItem, skillMap: skillMap }}
+				value={{handleSelection: changeSelectedItem, skillMap: skillMap}}
 			>
 				{isLoading ? (
-					<LoadingBox />
+					<LoadingBox/>
 				) : (
 					<SidebarEditorLayout
 						sidebar={
@@ -57,8 +71,8 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 
 								{repository && (
 									<>
-										<RepositoryInfoMemorized repository={repository} />
-										<Divider />
+										<RepositoryInfoMemorized repository={repository}/>
+										<Divider/>
 									</>
 								)}
 
@@ -73,10 +87,10 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 							</>
 						}
 					>
-						{repository && <FolderListView repository={repository} />}
+						{repository && <FolderListView repository={repository} skillMap={skillMap}/>}
 					</SidebarEditorLayout>
 				)}
-				<DialogHandler id={"simpleDialog"} />
+				<DialogHandler id={"simpleDialog"}/>
 			</FolderContext.Provider>
 		</div>
 	);
