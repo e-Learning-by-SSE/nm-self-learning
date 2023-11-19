@@ -94,10 +94,10 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 						}
 					}
 					handleSelection(null);
-					freeDialog();
+					freeDialog("simpleDialog");
 				}}
 			/>
-		);
+		, "simpleDialog");
 	};
 
 	return (

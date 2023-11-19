@@ -55,7 +55,7 @@ export function FolderSkillEditor({ repositoryID }: { repositoryID: string }) {
 						{repository && <FolderListView repository={repository} />}
 					</SidebarEditorLayout>
 				)}
-				<DialogHandler />
+				<DialogHandler id={"simpleDialog"} />
 			</FolderContext.Provider>
 		</div>
 	);

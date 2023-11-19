@@ -10,6 +10,8 @@ export * from "./lib/chip/image-chip";
 export * from "./lib/chip/text-chip";
 export * from "./lib/divider/divider";
 export * from "./lib/dialog/dialog";
+export * from "./lib/dialog/simple-dialog";
+export * from "./lib/dialog/dialog-handler";
 export * from "./lib/table/table";
 export * from "./lib/image/image-placeholder";
 export * from "./lib/image-card/image-card";
