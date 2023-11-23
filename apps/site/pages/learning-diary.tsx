@@ -1,4 +1,10 @@
-import { CheckIcon, PlusIcon, XIcon } from "@heroicons/react/outline";
+import {
+	CheckIcon,
+	PlusIcon,
+	XIcon,
+	ChevronDownIcon,
+	ChevronUpIcon
+} from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { ResolvedValue, getStrategyNameByType } from "@self-learning/types";
@@ -212,6 +218,7 @@ function Goal({
 		trpc.learningDiary.incrementActualValueForGoal.useMutation();
 	const { mutateAsync: markGoalAsAchieved } = trpc.learningDiary.markGoalAsAchieved.useMutation();
 	const { mutateAsync: deleteGoal } = trpc.learningDiary.deleteGoal.useMutation();
+	const { mutateAsync: setPriority } = trpc.learningDiary.setPriorityForGoal.useMutation();
 	const router = useRouter();
 
 	async function incrementGoal() {
@@ -230,6 +237,16 @@ function Goal({
 		router.replace(router.asPath);
 	}
 
+	async function addToPriority(value: number) {
+		priority = priority + value;
+
+		await setPriority({
+			id: id,
+			priority: priority
+		});
+		router.replace(router.asPath);
+	}
+
 	async function markAsAchievedGoal() {
 		const result = await markGoalAsAchieved({ id: id });
 		console.log(result);
@@ -244,8 +261,32 @@ function Goal({
 
 	return (
 		<div className="flex flex-row items-center">
+			{priority < 10 ? (
+				<button
+					id={id}
+					onClick={() => addToPriority(1)}
+					className="btn-small place-content-center items-center"
+					title="Priorität vermindern"
+				>
+					<ChevronDownIcon className="h-3 w-3" />
+				</button>
+			) : (
+				<span className="w-6" />
+			)}
+			{priority > 1 ? (
+				<button
+					id={id}
+					onClick={() => addToPriority(-1)}
+					className="btn-small place-content-center items-center"
+					title="Priorität erhöhen"
+				>
+					<ChevronUpIcon className="h-3 w-3" />
+				</button>
+			) : (
+				<span className="w-6" />
+			)}
 			{targetValue > 0 && (
-				<div className="mx-auto flex w-full flex-row justify-between gap-4">
+				<div className="mx-auto ml-3 flex w-full flex-row justify-between gap-4">
 					<div>
 						{description} {actualValue} / {targetValue} (Priorität: {priority})
 					</div>
@@ -262,7 +303,7 @@ function Goal({
 				</div>
 			)}
 			{targetValue == 0 && (
-				<div className="mx-auto flex w-full flex-row justify-between gap-4">
+				<div className="mx-auto ml-3 flex w-full flex-row justify-between gap-4">
 					<div>
 						{description} (Priorität: {priority})
 					</div>
@@ -367,11 +408,41 @@ function TabGoals({ goals }: Readonly<{ goals: LearningGoal[] }>) {
 						Erledigt
 					</Tab>
 				</Tab.List>
-				<Tab.Panels className="flex flex-grow flex-col gap-12">
+				<Tab.Panels className="flex flex-col gap-12">
 					<Tab.Panel>
+						<label className="mt-10 text-sm font-semibold">Wöchentliche:</label>
 						<ul className="flex flex-col gap-1 text-sm">
 							{goals
-								.filter(i => i.achieved === false)
+								.filter(
+									i => i.achieved === false && i.type != GoalType.USERSPECIFIC
+								)
+								.map(
+									({
+										id,
+										description,
+										priority,
+										targetValue,
+										actualValue,
+										achieved
+									}) => (
+										<Goal
+											key={id}
+											id={id}
+											description={description}
+											priority={priority}
+											targetValue={targetValue}
+											actualValue={actualValue}
+											achieved={achieved}
+										/>
+									)
+								)}
+						</ul>
+						<label className="mt-10 text-sm font-semibold">Langzeit:</label>
+						<ul className="flex flex-col gap-1 text-sm">
+							{goals
+								.filter(
+									i => i.achieved === false && i.type == GoalType.USERSPECIFIC
+								)
 								.map(
 									({
 										id,
@@ -424,7 +495,7 @@ function TabGoals({ goals }: Readonly<{ goals: LearningGoal[] }>) {
 			</Tab.Group>
 			<div>
 				{!showForm && (
-					<button className="btn-primary w-full" onClick={toggleShowForm}>
+					<button className="btn-primary mt-5 w-full" onClick={toggleShowForm}>
 						<PlusIcon className="icon h-5" />
 						<span>Ziel hinzufügen</span>{" "}
 					</button>

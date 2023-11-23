@@ -164,7 +164,32 @@ export const learningDiaryRouter = t.router({
 
 			return goal;
 		}),
+	setPriorityForGoal: authProcedure
+		.input(
+			z.object({
+				priority: z.number(),
+				id: z.string()
+			})
+		)
+		.mutation(async ({ input: { id, priority }, ctx }) => {
+			const goal = await database.learningGoal.update({
+				where: { id: id },
+				data: {
+					priority: priority
+				},
+				select: {
+					id: true
+				}
+			});
 
+			console.log(
+				"[learningDiaryRouter.setPriorityForGoal]: Priority was set for Goal by",
+				ctx.user.name,
+				{ id, priority }
+			);
+
+			return goal;
+		}),
 	markGoalAsAchieved: authProcedure
 		.input(
 			z.object({
