@@ -125,6 +125,63 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 	);
 }
 
+// TODO integrate in the FolderListView?
+export function SkillTable({ repository }: { repository: SkillRepository }) {
+	const [displayName, setDisplayName] = useState("");
+	const [skillArray, setSkillArray] = useState<string[]>();
+	const { data: skills } = trpc.skill.getSkillsWithoutParentFromRepo.useQuery({
+		repoId: repository.id
+	});
+
+	useEffect(() => {
+		if (skills) {
+			setSkillArray(skills.map(skill => skill.id));
+		}
+	}, [skills]);
+
+	/*
+	const { data: allSkills } = trpc.skill.getUnresolvedSkillsFromRepo.useQuery({
+		repoId: repository.id
+	});
+	*/
+
+	const filteredSkillTrees = useMemo(() => {
+		if (!skillArray) return [];
+		if (!displayName || displayName.length === 0) return skillArray;
+
+		const lowerCaseDisplayName = displayName.toLowerCase().trim();
+		return skillArray.filter(skill => skill.toLowerCase().includes(lowerCaseDisplayName));
+	}, [skillArray, displayName]);
+
+	return (
+		<>
+			<SearchField
+				placeholder="Suche nach Skill-Trees"
+				onChange={e => {
+					setDisplayName(e.target.value);
+				}}
+			/>
+			<Table
+				head={
+					<>
+						<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
+						<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>
+					</>
+				}
+			>
+				{filteredSkillTrees.map(element => (
+					<ListSkillEntryWithChildrenMemorized
+						key={"baseDir child:" + element}
+						skillId={element}
+						depth={0}
+						showChildren={false}
+					/>
+				))}
+			</Table>
+		</>
+	);
+}
+
 export default memo(FolderListView);
 
 function SkillRow({
