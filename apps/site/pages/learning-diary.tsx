@@ -265,7 +265,7 @@ function Goal({
 				<button
 					id={id}
 					onClick={() => addToPriority(1)}
-					className="btn-small place-content-center items-center"
+					className="place-content-center items-center rounded p-1"
 					title="Priorität vermindern"
 				>
 					<ChevronDownIcon className="h-3 w-3" />
@@ -277,7 +277,7 @@ function Goal({
 				<button
 					id={id}
 					onClick={() => addToPriority(-1)}
-					className="btn-small place-content-center items-center"
+					className="place-content-center items-center rounded p-1"
 					title="Priorität erhöhen"
 				>
 					<ChevronUpIcon className="h-3 w-3" />
@@ -517,7 +517,7 @@ function TabGoals({ goals }: Readonly<{ goals: LearningGoal[] }>) {
 				)}
 			</div>
 			{showForm && (
-				<button className="btn-primary w-full" onClick={toggleShowForm}>
+				<button className="btn-primary mt-2 w-full" onClick={toggleShowForm}>
 					Abbrechen
 				</button>
 			)}
@@ -793,9 +793,9 @@ function EntriesList({
 			format(parseISO(new Date(createdAt).toISOString()), "dd/MM/yyyy (HH:mm") +
 			"Uhr)";
 	}
-	let className = "link w-full cursor-pointer hover:bg-emerald-500 hover:text-white";
+	let className = "w-full cursor-pointer hover:bg-emerald-500 hover:text-white";
 	if (id == selectedEntry) {
-		className = "link w-full cursor-pointer bg-emerald-500 text-white";
+		className = "w-full cursor-pointer bg-emerald-500 text-white";
 	}
 	return (
 		<li className="border-bottom:1px flex flex-wrap items-center justify-between gap-2">
@@ -803,10 +803,10 @@ function EntriesList({
 				<button className={className} onClick={() => selectEntry(id)}>
 					<div className="mx-auto mt-2 mb-2 flex w-full max-w-md flex-col items-start">
 						<div className="flex w-full max-w-md flex-row justify-between">
-							<span className="text-base font-semibold">{title}</span>{" "}
+							<span className="text-start text-base font-semibold">{title}</span>{" "}
 							{isCompletedLessons && <CheckIcon className="h-5 w-5" />}
 						</div>
-						<span className="text-xs">{info}</span>
+						<span className="text-start text-xs">{info}</span>
 					</div>
 				</button>
 			</div>
@@ -968,7 +968,7 @@ export function TabGroupEntries({
 								subtitle={amount => (
 									<>Du hast {amount} weitere Lerneinheiten bearbeitet.</>
 								)}
-								completedLessons={completedLessons.yesterday}
+								completedLessons={completedLessons.week}
 							/>
 						</section>
 					</Tab.Panel>
