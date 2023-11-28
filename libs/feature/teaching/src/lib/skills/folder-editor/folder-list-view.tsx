@@ -17,6 +17,7 @@ import { SkillFormModel } from "@self-learning/types";
 import { SkillQuickAddOption } from "./skill-taskbar";
 import { FolderContext, SkillSelectHandler } from "./folder-editor";
 import styles from "./folder-list-view.module.css";
+import { containsComponentDeclaration } from "@nrwl/react/src/generators/stories/stories";
 
 export function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 	return {
@@ -126,41 +127,49 @@ function FolderListView({ repository }: { repository: SkillRepository }) {
 }
 
 // TODO integrate in the FolderListView?
-export function SkillTable({ repository }: { repository: SkillRepository }) {
+export function SkillTable({
+	repository,
+	tableTitle
+}: {
+	repository: SkillRepository;
+	tableTitle: string;
+}) {
 	const [displayName, setDisplayName] = useState("");
-	const [skillArray, setSkillArray] = useState<string[]>();
+	//const [skillArray, setSkillArray] = useState<string[]>();
 	const { data: skills } = trpc.skill.getSkillsWithoutParentFromRepo.useQuery({
 		repoId: repository.id
 	});
-
+	/*
 	useEffect(() => {
 		if (skills) {
 			setSkillArray(skills.map(skill => skill.id));
 		}
 	}, [skills]);
-
-	/*
-	const { data: allSkills } = trpc.skill.getUnresolvedSkillsFromRepo.useQuery({
-		repoId: repository.id
-	});
 	*/
-
 	const filteredSkillTrees = useMemo(() => {
-		if (!skillArray) return [];
-		if (!displayName || displayName.length === 0) return skillArray;
-
-		const lowerCaseDisplayName = displayName.toLowerCase().trim();
-		return skillArray.filter(skill => skill.toLowerCase().includes(lowerCaseDisplayName));
-	}, [skillArray, displayName]);
+		//if (!skillArray) return [];
+		//if (!displayName || displayName.length === 0) return skillArray;
+		if (!skills) {
+			return [];
+		} else {
+			const lowerCaseDisplayName = displayName.toLowerCase().trim();
+			const filteredSkills = skills?.filter(skill =>
+				skill.name.toLowerCase().includes(lowerCaseDisplayName)
+			);
+			const filteredSkillIds = filteredSkills?.map(skill => skill.id);
+			return filteredSkillIds;
+		}
+	}, [skills, displayName]); //[skillArray, displayName]);
 
 	return (
 		<>
 			<SearchField
-				placeholder="Suche nach Skill-Trees"
+				placeholder="Suche nach Skill"
 				onChange={e => {
 					setDisplayName(e.target.value);
 				}}
 			/>
+			<h1 className="p-4 text-3xl"> {tableTitle} </h1>
 			<Table
 				head={
 					<>

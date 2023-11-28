@@ -53,12 +53,13 @@ function Skills() {
 	return (
 		<>
 			<div className="z-1 sticky top-0 flex flex-col gap-0 border-light-border pt-0">
+				{/*
 				<SearchField
 					placeholder="Suche nach Skill"
 					// onChange={e => setTitle(e.target.value)}
 				/>
-				<h1 className="p-4 text-3xl"> Skills </h1>
-				{repository && <SkillTable repository={repository} />}
+				 <h1 className="p-4 text-3xl"> Skills </h1> */}
+				{repository && <SkillTable repository={repository} tableTitle="Skills" />}
 			</div>
 		</>
 	);
@@ -69,7 +70,6 @@ function LessonConfiguration() {
 }
 
 function Lessons() {
-	//const { data: lessons } = trpc.lesson.getAll.useQuery();
 	const router = useRouter();
 	const { page = 1, title = "" } = router.query;
 	const [titleFilter, setTitle] = useState(title);
