@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { i18n } from "@self-learning/util/common";
 
 export function Navbar() {
 	const session = useSession();
@@ -100,7 +101,7 @@ export function Navbar() {
 							</div>
 						</div>
 					</div>
-
+					<LanguageSwitcher />
 					<Disclosure.Panel className="sm:hidden">
 						<div className="space-y-1 px-2 pb-3 pt-2">
 							{navigation.map(item => (
@@ -118,6 +119,25 @@ export function Navbar() {
 				</>
 			)}
 		</Disclosure>
+	);
+}
+
+function LanguageSwitcher() {
+	return (
+		<div className="flex justify-center space-x-4 p-4">
+			<button
+				className="rounded bg-blue-500 px-4 py-2 text-white transition-colors duration-300 hover:bg-blue-700"
+				onClick={() => i18n.changeLanguage("en")}
+			>
+				English
+			</button>
+			<button
+				className="rounded bg-blue-500 px-4 py-2 text-white transition-colors duration-300 hover:bg-blue-700"
+				onClick={() => i18n.changeLanguage("es")}
+			>
+				Deutsch
+			</button>
+		</div>
 	);
 }
 
