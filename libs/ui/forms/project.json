@@ -1,24 +1,24 @@
 {
+	"name": "ui-forms",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/ui/forms/src",
 	"projectType": "library",
 	"tags": [],
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/ui/forms/**/*.{ts,tsx,js,jsx}"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/ui/forms"],
 			"options": {
 				"jestConfig": "libs/ui/forms/jest.config.ts",
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "ui-forms"
+	}
 }
