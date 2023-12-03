@@ -6,7 +6,7 @@ pipeline {
     environment {
         TARGET_PREFIX = 'e-learning-by-sse/nm-self-learning'
         API_VERSION = packageJson.getVersion() // package.json must be in root level in order for this to work
-        NX_BASE='master'
+        NX_BASE='origin/master'
         NX_HEAD='HEAD'
     }
 
@@ -14,20 +14,10 @@ pipeline {
         ansiColor('xterm')
     }
     stages { 
-        stage('Checkout') {
+        stage('Submodule Update') {
             steps {
-                checkout([
-                    $class: 'GitSCM', 
-                    doGenerateSubmoduleConfigurations: false, 
-                    extensions: [[$class: 'SubmoduleOption', 
-                                    disableSubmodules: false, 
-                                    parentCredentials: false, 
-                                    recursiveSubmodules: true, 
-                                    reference: '', 
-                                    trackingSubmodules: false]], 
-                    submoduleCfg: [], 
-                    userRemoteConfigs: [[url: 'https://github.com/e-Learning-by-SSE/nm-self-learning', credentialsId: 'STM-SSH-DEMO']]
-                ])
+                sh 'git submodule init'
+                sh 'git submodule update --remote'
             }
         }
         stage("NodeJS Build") {
@@ -39,10 +29,8 @@ pipeline {
                 }
             }
             steps {
-                sh 'git fetch origin master:master'
-                sh 'npm ci --force'
+                sh 'npm ci'
                 sh 'cp -f .env.example .env'
-                echo "TagBuild: ${buildingTag()}"
                 script {
                     if (env.BRANCH_NAME =='master') { 
                         sh 'npm run build'
