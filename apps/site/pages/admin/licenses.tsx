@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { CreateLicenseDialog, EditLicenseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {

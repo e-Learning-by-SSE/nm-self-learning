@@ -1,6 +1,6 @@
 import { Menu } from "@headlessui/react";
-import { CloudDownloadIcon } from "@heroicons/react/outline";
-import { DotsVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
+import { CloudArrowDownIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -172,7 +172,7 @@ export function AssetPickerButton({
 			title="Aus hochgeladenen Dateien auswählen"
 			onClick={() => setShowAssetPicker(true)}
 		>
-			<CloudDownloadIcon className="h-5" />
+			<CloudArrowDownIcon className="h-5" />
 
 			{showAssetPicker && (
 				<AssetPickerDialog
@@ -386,7 +386,7 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 	return (
 		<Menu as="div" className="relative flex">
 			<Menu.Button className="rounded-full p-2 hover:bg-gray-50">
-				<DotsVerticalIcon className="h-5 text-gray-400" />
+				<EllipsisVerticalIcon className="h-5 text-gray-400" />
 			</Menu.Button>
 			<Menu.Items className="absolute left-4 top-4 divide-y divide-gray-100 rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
 				<Menu.Item as="div" className="p-1">

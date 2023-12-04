@@ -1,4 +1,4 @@
-import { XIcon } from "@heroicons/react/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 
 export function ImageChip({
@@ -26,7 +26,7 @@ export function ImageChip({
 					className="mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
 					onClick={onRemove}
 				>
-					<XIcon className="h-3" />
+					<XMarkIcon className="h-3" />
 				</button>
 			)}
 		</li>

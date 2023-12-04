@@ -1,4 +1,4 @@
-import { LinkIcon, PencilIcon, PlusIcon, XIcon } from "@heroicons/react/solid";
+import { LinkIcon, PencilIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SearchCourseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -214,7 +214,7 @@ export default function SpecializationManagementPage() {
 												title="Aus Spezialisierung entfernen"
 												onClick={() => handleRemoveCourse(course)}
 											>
-												<XIcon className="h-5" />
+												<XMarkIcon className="h-5" />
 											</button>
 										</div>
 									</TableDataColumn>
