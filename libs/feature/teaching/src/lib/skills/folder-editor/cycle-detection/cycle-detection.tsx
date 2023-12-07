@@ -6,7 +6,7 @@ import {Alert, dispatchDialog, freeDialog, SimpleDialog} from "@self-learning/ui
 /**
  *
  * @param skillMap
- * @param item for changing the name of a folderItem
+ * @param item for selecting a specific folderitem
  */
 export async function checkForCycles(skillMap: Map<string, FolderItem>, item?: FolderItem) {
 	const skillsInWrongFormat = Array.from(skillMap.values());
@@ -21,57 +21,70 @@ export async function checkForCycles(skillMap: Map<string, FolderItem>, item?: F
 	});
 
 	const parents = findParentsOfCycledSkills(skills)
-	if (!parents) return;
 
-	const cycles = parents.cycles;
-	const parentList = parents.nestingSkills;
+	if(!parents)  {
+		//No cycle found
 
-	const folderItems: FolderItem[] = [];
-	for (const cycle of cycles) {
-		for (const cycleItem of cycle) {
-			let folderItem = skillMap.get(cycleItem.id);
-			if (item) {
-				folderItem = item;
+		freeDialog("alert");
+		if(item) {
+			dispatchDetection([item]); 
+		}
+		
+	} else {
+		//cycle found
+
+
+		const cycles = parents.cycles;
+		const parentList = parents.nestingSkills;
+	
+		const folderItems: FolderItem[] = [];
+		for (const cycle of cycles) {
+			for (const cycleItem of cycle) {
+				let folderItem = skillMap.get(cycleItem.id);
+				if (item) {
+					folderItem = item;
+				}
+				if (!folderItem) continue;
+				const newFolderItem = {...folderItem, cycle: "taskbar"};
+				skillMap.set(cycleItem.id, newFolderItem);
+				folderItems.push(newFolderItem);
 			}
+		}
+	
+		for (const parent of parentList) {
+			const folderItem = skillMap.get(parent.id);
 			if (!folderItem) continue;
-			const newFolderItem = {...folderItem, cycle: "taskbar"};
-			skillMap.set(cycleItem.id, newFolderItem);
+			const newFolderItem = {...folderItem, parent: "taskbar"};
+			skillMap.set(parent.id, newFolderItem);
 			folderItems.push(newFolderItem);
 		}
+	
+		const cycleStackTrace = getCycleStackTrace(cycles as { name: string }[][])
+		//draws the cycle symbol only in the affected rows.
+		dispatchDetection(folderItems);
+		if (!(cycles.length > 0)) return;
+		const onClickDetailedCycle = () => {
+			dispatchDialog(<SimpleDialog description={cycleStackTrace} name={"Zyklen - Darstellung"}
+										 onClose={() => freeDialog("simpleDialog")}/>, "simpleDialog")
+		}
+		//draws the error message
+		dispatchDialog(<Alert type={{
+			severity: "ERROR", message:
+	
+				<div>
+					<button onClick={onClickDetailedCycle}
+							className="hover:text-red-700 hover:cursor-pointer text-left"><span>
+					Warnung: In Ihrer Modelierung der Lernziele liegt ein Zyclus vor.
+					Aufgrunddessen kann der Algorithmus keinen Gültigen Lernfpad mit denen im Zyclus beteiligten
+					Lernzielen finden.
+					Angegebene Pfadziel sind nicht erreichbar und nur Privat speicherbar.
+					Die betroffenden Skills können
+					durch Klicken auf diesen Text angezeigt werden.	</span></button>
+				</div>
+	
+		}}/>, "alert")
 	}
 
-	for (const parent of parentList) {
-		const folderItem = skillMap.get(parent.id);
-		if (!folderItem) continue;
-		const newFolderItem = {...folderItem, parent: "taskbar"};
-		skillMap.set(parent.id, newFolderItem);
-		folderItems.push(newFolderItem);
-	}
-
-	const cycleStackTrace = getCycleStackTrace(cycles as { name: string }[][])
-	//draws the cycle symbol only in the affected rows.
-	dispatchDetection(folderItems);
-	if (!(cycles.length > 0)) return;
-	const onClickDetailedCycle = () => {
-		dispatchDialog(<SimpleDialog description={cycleStackTrace} name={"Zyklen - Darstellung"}
-									 onClose={() => freeDialog("simpleDialog")}/>, "simpleDialog")
-	}
-	//draws the error message
-	dispatchDialog(<Alert type={{
-		severity: "ERROR", message:
-
-			<div>
-				<button onClick={onClickDetailedCycle}
-						className="hover:text-red-700 hover:cursor-pointer text-left"><span>
-				Warnung: In Ihrer Modelierung der Lernziele liegt ein Zyclus vor.
-				Aufgrunddessen kann der Algorithmus keinen Gültigen Lernfpad mit denen im Zyclus beteiligten
-				Lernzielen finden.
-				Angegebene Pfadziel sind nicht erreichbar und nur Privat speicherbar.
-				Die betroffenden Skills können
-				durch Klicken auf diesen Text angezeigt werden.	</span></button>
-			</div>
-
-	}}/>, "alert")
 }
 
 export function getCycleStackTrace<S extends { name: string }>(cycles: S[][]): string {

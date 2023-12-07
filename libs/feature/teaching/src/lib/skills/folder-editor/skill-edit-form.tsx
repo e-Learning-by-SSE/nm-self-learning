@@ -5,15 +5,14 @@ import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/api";
-import { PlusCircleIcon, XIcon } from "@heroicons/react/solid";
 import { FolderContext } from "./folder-editor";
 import { SkillDeleteOption } from "./skill-taskbar";
 import { showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { dispatchDetection } from "./cycle-detection/detection-hook";
 import { FolderItem, checkForCycles } from "./cycle-detection/cycle-detection";
+import { XIcon } from "@heroicons/react/solid";
 
-// import { PathPlanner, LearningUnitProvider, SkillProvider } from "@self-learning/skills-pathfinder";
 
 export function SkillInfoForm({
 	skill,
@@ -48,12 +47,17 @@ export function SkillInfoForm({
 			repositoryId: updatedSkill.repository.id
 		};
 
+		const folderItem = {
+			skill: updatedSkillFormModel,
+			selectedSkill: true
+		};
+
 		showToast({
 			type: "success",
 			title: "Skill gespeichert!",
 			subtitle: ""
 		});
-		await checkForCycles(skillMap);
+		await checkForCycles(skillMap, folderItem);
 	};
 
 	const form = useForm({
@@ -213,7 +217,7 @@ function SkillToSkillDepsInfo({
 					}}
 					onAddSkill={skills => {
 						if (!skills) return;
-						addChildren(skills);
+						addParent(skills);
 					}}
 					repoId={repoId}
 				/>
