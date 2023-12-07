@@ -278,7 +278,6 @@ function ListSkillEntryWithChildren({
 	let skill = folderItem.skill;
 	if (!folderItemFromDetection.initial) {
 		skill = folderItemFromDetection.item?.skill ?? folderItem.skill;
-		console.log("skill: ", folderItemFromDetection.item?.skill);
 	}
 
 	return (
@@ -295,7 +294,7 @@ function ListSkillEntryWithChildren({
 					childrenFoldedOut={open}
 				/>
 				{open &&
-					folderItem.skill.children.map(element => (
+					skill.children.map(element => (
 						<ListSkillEntryWithChildrenMemorized // recursive structure to add <SkillRow /> for each child
 							key={"baseDir child:" + element}
 							skillId={element}

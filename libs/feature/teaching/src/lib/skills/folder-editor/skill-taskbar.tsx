@@ -12,6 +12,7 @@ import { FolderAddIcon } from "@heroicons/react/outline";
 import { useContext } from "react";
 import { FolderContext } from "./folder-editor";
 import { checkForCycles } from "./cycle-detection/cycle-detection";
+import { dispatchDetection } from "./cycle-detection/detection-hook";
 
 export function SkillQuickAddOption({
 	selectedSkill,
@@ -41,51 +42,50 @@ export function SkillQuickAddOption({
 			};
 
 			try {
+				const updatedSkill = await updateSkill({ skill: adaptedCurrentSkill });
 
-					const updatedSkill = await updateSkill({ skill: adaptedCurrentSkill });
+				showToast({
+					type: "success",
+					title: "Skill gespeichert!",
+					subtitle: ""
+				});
+				//adds the new skill lokal
+				const createSkillFormModel = {
+					name: createdSkill.name,
+					description: createdSkill.description,
+					children: createdSkill.children.map(skill => skill.id),
+					id: createdSkill.id,
+					repositoryId: createdSkill.repository.id,
+					parents: createdSkill.parents.map(skill => skill.id)
+				};
 
-					showToast({
-						type: "success",
-						title: "Skill gespeichert!",
-						subtitle: ""
-					});
-					//adds the new skill lokal
-					const createSkillFormModel = {
-						name: createdSkill.name,
-						description: createdSkill.description,
-						children: createdSkill.children.map(skill => skill.id),
-						id: createdSkill.id,
-						repositoryId: createdSkill.repository.id,
-						parents: createdSkill.parents.map(skill => skill.id)
-					};
+				const updateSkillFormModel = {
+					name: updatedSkill.name,
+					description: updatedSkill.description,
+					children: updatedSkill.children.map(skill => skill.id),
+					id: updatedSkill.id,
+					repositoryId: updatedSkill.repository.id,
+					parents: updatedSkill.parents.map(skill => skill.id)
+				};
 
-					const updateSkillFormModel =  {
-						name: updatedSkill.name,
-						description: updatedSkill.description,
-						children: updatedSkill.children.map(skill => skill.id),
-						id: updatedSkill.id,
-						repositoryId: updatedSkill.repository.id,
-						parents: updatedSkill.parents.map(skill => skill.id)
-					}
-					
-					skillMap.set(createdSkill.id, {
-						skill: createSkillFormModel,
-						selectedSkill: false
-					});
-					skillMap.set(adaptedCurrentSkill.id, {
-						skill: adaptedCurrentSkill,
-						selectedSkill: true
-					});
+				skillMap.set(createdSkill.id, {
+					skill: createSkillFormModel,
+					selectedSkill: false
+				});
+				skillMap.set(adaptedCurrentSkill.id, {
+					skill: adaptedCurrentSkill,
+					selectedSkill: true
+				});
 
-					addChildren(createSkillFormModel);
-					handleSelection(adaptedCurrentSkill);
+				addChildren(createSkillFormModel);
+				handleSelection(adaptedCurrentSkill);
 
-					const folderItem = {
-						skill: updateSkillFormModel,
-						selectedSkill: true
-					};
+				const folderItem = {
+					skill: updateSkillFormModel,
+					selectedSkill: true
+				};
 
-					await checkForCycles(skillMap, folderItem);
+				await checkForCycles(skillMap, folderItem);
 			} catch (error) {
 				if (error instanceof Error) {
 					showToast({
@@ -118,8 +118,13 @@ export function SkillQuickAddOption({
 	);
 }
 
-export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
+export function SkillDeleteOption({
+	skill,
+}: {
+	skill: SkillFormModel;
+}) {
 	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
+	const { mutateAsync: getSkillsFromId } = trpc.skill.getSkillsByIds.useMutation();
 	const { handleSelection } = useContext(FolderContext);
 	const handleDelete = () => {
 		dispatchDialog(
@@ -127,7 +132,10 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 				description="Soll der Skill wirklich gelöscht werden?"
 				name="Warnung"
 				onClose={async (type: ButtonActions) => {
-					if (type === ButtonActions.CANCEL) return;
+					if (type === ButtonActions.CANCEL) {
+						freeDialog("simpleDialog");
+						return;
+					}
 					try {
 						await deleteSkill({ id: skill.id });
 						showToast({
@@ -135,6 +143,34 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 							title: "Skill gelöscht!",
 							subtitle: ""
 						});
+
+						//load parentskill without deleted skill
+						const parentSkills = await getSkillsFromId({
+							skillIds: skill.parents
+						});
+
+						const parentSkillFormModels = parentSkills.map(skill => {
+							return {
+								name: skill.name,
+								description: skill.description,
+								children: skill.children.filter(item => item.id !== skill.id).map(skill => skill.id),
+								id: skill.id,
+								repositoryId: skill.repository.id,
+								parents: skill.parents.map(skill => skill.id)
+							};
+						});
+
+						if(parentSkills.length === 0) return;
+						
+						const folderItems = parentSkillFormModels.map(skill => {
+							return {
+								skill: skill,
+								selectedSkill: false
+							}
+						});
+
+						dispatchDetection(folderItems);
+
 					} catch (error) {
 						if (error instanceof Error) {
 							showToast({
@@ -144,8 +180,8 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 							});
 						}
 					}
-					handleSelection(null);
 					freeDialog("simpleDialog");
+					handleSelection(null);
 				}}
 			/>,
 			"simpleDialog"

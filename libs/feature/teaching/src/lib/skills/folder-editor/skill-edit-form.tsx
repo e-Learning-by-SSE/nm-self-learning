@@ -150,10 +150,9 @@ function SkillToSkillDepsInfo({
 	repoId: string;
 	skillToChange: SkillFormModel;
 }) {
-	const { handleSelection } = useContext(FolderContext);
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
 	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
-	const { setValue, getValues } = useFormContext<SkillFormModel>();
+	const { setValue, } = useFormContext<SkillFormModel>();
 
 	useEffect(() => {
 		setParentItems(parents);

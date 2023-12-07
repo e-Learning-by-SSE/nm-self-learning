@@ -139,20 +139,23 @@ export const skillRouter = t.router({
 		.query(async ({input}) => {
 			return getSkillById(input.skillId);
 		}),
-	// getResolvedSkill: authorProcedure
-	// 	.input(
-	// 		z.object({
-	// 			skillId: z.string()
-	// 		})
-	// 	)
-	// 	.query(async ({ input }) => {
-	// 		return await database.skill.findUnique({
-	// 			where: { id: input.skillId },
-	// 			include: {
-	// 				children: true
-	// 			}
-	// 		});
-	// 	})
+
+	getSkillsByIds: authorProcedure
+		.input(
+			z.object({
+				skillIds: z.array(z.string())
+			})
+		)
+		.mutation(async ({input}) => {
+			return await database.skill.findMany({
+				where: {id: {in: input.skillIds}},
+				include: {
+					children: true,
+					repository: true,
+					parents: true
+				}
+			});
+		}),
 
 	deleteSkill: authorProcedure
 		.input(
