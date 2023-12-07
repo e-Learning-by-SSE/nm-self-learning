@@ -41,31 +41,51 @@ export function SkillQuickAddOption({
 			};
 
 			try {
-				await updateSkill({ skill: adaptedCurrentSkill });
-				showToast({
-					type: "success",
-					title: "Skill gespeichert!",
-					subtitle: ""
-				});
-				const createSkillFormModel = {
-					name: createdSkill.name,
-					description: createdSkill.description,
-					children: createdSkill.children.map(skill => skill.id),
-					id: createdSkill.id,
-					repositoryId: createdSkill.repository.id,
-					parents: createdSkill.parents.map(skill => skill.id)
-				};
-				await skillMap.set(createdSkill.id, {
-					skill: createSkillFormModel,
-					selectedSkill: false
-				});
-				await skillMap.set(adaptedCurrentSkill.id, {
-					skill: adaptedCurrentSkill,
-					selectedSkill: true
-				});
-				addChildren(createSkillFormModel);
-				await handleSelection(adaptedCurrentSkill);
-				await checkForCycles(skillMap);
+
+					const updatedSkill = await updateSkill({ skill: adaptedCurrentSkill });
+
+					showToast({
+						type: "success",
+						title: "Skill gespeichert!",
+						subtitle: ""
+					});
+					//adds the new skill lokal
+					const createSkillFormModel = {
+						name: createdSkill.name,
+						description: createdSkill.description,
+						children: createdSkill.children.map(skill => skill.id),
+						id: createdSkill.id,
+						repositoryId: createdSkill.repository.id,
+						parents: createdSkill.parents.map(skill => skill.id)
+					};
+
+					const updateSkillFormModel =  {
+						name: updatedSkill.name,
+						description: updatedSkill.description,
+						children: updatedSkill.children.map(skill => skill.id),
+						id: updatedSkill.id,
+						repositoryId: updatedSkill.repository.id,
+						parents: updatedSkill.parents.map(skill => skill.id)
+					}
+					
+					skillMap.set(createdSkill.id, {
+						skill: createSkillFormModel,
+						selectedSkill: false
+					});
+					skillMap.set(adaptedCurrentSkill.id, {
+						skill: adaptedCurrentSkill,
+						selectedSkill: true
+					});
+
+					addChildren(createSkillFormModel);
+					handleSelection(adaptedCurrentSkill);
+
+					const folderItem = {
+						skill: updateSkillFormModel,
+						selectedSkill: true
+					};
+
+					await checkForCycles(skillMap, folderItem);
 			} catch (error) {
 				if (error instanceof Error) {
 					showToast({
