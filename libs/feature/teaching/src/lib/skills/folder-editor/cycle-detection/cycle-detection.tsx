@@ -1,6 +1,6 @@
 import {SkillFormModel} from "@self-learning/types";
 import {findParentsOfCycledSkills} from "@self-learning/skills-pathfinder";
-import {dispatchDetection} from "./detection-hook";
+import {ClearCycleDetection, dispatchDetection} from "./detection-hook";
 import {Alert, dispatchDialog, freeDialog, SimpleDialog} from "@self-learning/ui/common";
 
 /**
@@ -21,6 +21,8 @@ export async function checkForCycles(skillMap: Map<string, FolderItem>, item?: F
 	});
 
 	const parents = findParentsOfCycledSkills(skills)
+
+	ClearCycleDetection();
 
 	if(!parents)  {
 		//No cycle found

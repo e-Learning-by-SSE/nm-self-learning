@@ -171,6 +171,13 @@ function SkillRow({
 		<tr
 			key={key}
 			style={depthCssStyle}
+			title={`${
+				displayInfo.hasCycle && !displayInfo.isParent
+					? "Dieser Skill ist Teil eines Zyklus."
+					: !displayInfo.hasCycle && displayInfo.isParent
+					? "Dieser Ordner enthält einen Zyklus, ist aber kein Teil davon."
+					: ""
+			}`}
 			className={`group cursor-pointer hover:bg-gray-100 ${
 				displayInfo.hasCycle && !displayInfo.isSelected ? "bg-red-100" : ""
 			}
@@ -269,7 +276,7 @@ function ListSkillEntryWithChildren({
 	}
 
 	let skill = folderItem.skill;
-	if(!folderItemFromDetection.initial) {
+	if (!folderItemFromDetection.initial) {
 		skill = folderItemFromDetection.item?.skill ?? folderItem.skill;
 		console.log("skill: ", folderItemFromDetection.item?.skill);
 	}
