@@ -1,18 +1,11 @@
-import { trpc } from "@self-learning/api-client";
-import { SkillFormModel } from "@self-learning/types";
-import {
-	ButtonActions,
-	SimpleDialog,
-	dispatchDialog,
-	freeDialog,
-	showToast
-} from "@self-learning/ui/common";
-import { TrashIcon } from "@heroicons/react/solid";
-import { FolderAddIcon } from "@heroicons/react/outline";
-import { useContext } from "react";
-import { FolderContext } from "./folder-editor";
-import { checkForCycles } from "./cycle-detection/cycle-detection";
-import { dispatchDetection } from "./cycle-detection/detection-hook";
+import {trpc} from "@self-learning/api-client";
+import {SkillFormModel} from "@self-learning/types";
+import {ButtonActions, dispatchDialog, freeDialog, showToast, SimpleDialog} from "@self-learning/ui/common";
+import {TrashIcon} from "@heroicons/react/solid";
+import {FolderAddIcon} from "@heroicons/react/outline";
+import {useContext} from "react";
+import {FolderContext} from "./folder-editor";
+import {checkForCycles} from "./cycle-detection/cycle-detection";
 
 export function SkillQuickAddOption({
 	selectedSkill,
@@ -21,9 +14,9 @@ export function SkillQuickAddOption({
 	selectedSkill: SkillFormModel;
 	addChildren: (formModel: SkillFormModel) => void;
 }) {
-	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
-	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
-	const { handleSelection, skillMap } = useContext(FolderContext);
+	const {mutateAsync: createSkill} = trpc.skill.createSkill.useMutation();
+	const {mutateAsync: updateSkill} = trpc.skill.updateSkill.useMutation();
+	const {handleSelection, skillMap} = useContext(FolderContext);
 
 	const handleAddSkill = async () => {
 		const newSkill = {
@@ -42,7 +35,7 @@ export function SkillQuickAddOption({
 			};
 
 			try {
-				const updatedSkill = await updateSkill({ skill: adaptedCurrentSkill });
+				const updatedSkill = await updateSkill({skill: adaptedCurrentSkill});
 
 				showToast({
 					type: "success",
@@ -113,7 +106,7 @@ export function SkillQuickAddOption({
 			className="hover:text-secondary"
 			onClick={handleAddSkill}
 		>
-			<FolderAddIcon className="icon h-5 text-lg" style={{ cursor: "pointer" }} />
+			<FolderAddIcon className="icon h-5 text-lg" style={{cursor: "pointer"}}/>
 		</button>
 	);
 }
@@ -123,9 +116,10 @@ export function SkillDeleteOption({
 }: {
 	skill: SkillFormModel;
 }) {
-	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
-	const { mutateAsync: getSkillsFromId } = trpc.skill.getSkillsByIds.useMutation();
-	const { handleSelection } = useContext(FolderContext);
+	const {mutateAsync: deleteSkill} = trpc.skill.deleteSkill.useMutation();
+	const {mutateAsync: getSkillsFromId} = trpc.skill.getSkillsByIds.useMutation();
+	const {handleSelection} = useContext(FolderContext);
+	const skillMap = useContext(FolderContext).skillMap;
 	const handleDelete = () => {
 		dispatchDialog(
 			<SimpleDialog
@@ -137,7 +131,7 @@ export function SkillDeleteOption({
 						return;
 					}
 					try {
-						await deleteSkill({ id: skill.id });
+						await deleteSkill({id: skill.id});
 						showToast({
 							type: "success",
 							title: "Skill gelöscht!",
@@ -160,8 +154,8 @@ export function SkillDeleteOption({
 							};
 						});
 
-						if(parentSkills.length === 0) return;
-						
+						if (parentSkills.length === 0) return;
+
 						const folderItems = parentSkillFormModels.map(skill => {
 							return {
 								skill: skill,
@@ -169,7 +163,7 @@ export function SkillDeleteOption({
 							}
 						});
 
-						dispatchDetection(folderItems);
+						await checkForCycles(skillMap, ...folderItems);
 
 					} catch (error) {
 						if (error instanceof Error) {
@@ -194,7 +188,7 @@ export function SkillDeleteOption({
 			className="rounded-lg border border-light-border bg-red-400 py-2 px-2  hover:bg-red-600"
 			onClick={handleDelete}
 		>
-			<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
+			<TrashIcon className="h-5 " style={{cursor: "pointer"}}/>
 		</button>
 	);
 }
