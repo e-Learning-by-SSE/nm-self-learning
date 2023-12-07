@@ -167,14 +167,13 @@ function SkillRow({
 
 
 	return (
-		<tr key={key} style={depthCssStyle}
+		<tr key={key} style={depthCssStyle} title={`${displayInfo.hasCycle && !displayInfo.isParent ? "Dieser Skill ist Teil eines Zyklus." :
+						 !displayInfo.hasCycle && displayInfo.isParent ? "Dieser Ordner enthält einen Zyklus, ist aber kein Teil davon." : ""}`}
 			className={`group cursor-pointer hover:bg-gray-100 ${displayInfo.hasCycle && !displayInfo.isSelected ? "bg-red-100" : ""}
 			${displayInfo.isParent && !displayInfo.hasCycle && !displayInfo.isSelected ? "bg-yellow-100" : ""}
 			${displayInfo.isSelected ? "bg-gray-200" : ""} `}>
 			<TableDataColumn className={`${styles["folder-line"]} text-sm font-medium`}>
-				<div className={`flex px-2`}
-					 title={`${displayInfo.hasCycle && !displayInfo.isParent ? "Dieser Skill ist Teil eines Zyklus." :
-						 !displayInfo.hasCycle && displayInfo.isParent ? "Dieser Ordner enthält einen Zyklus, ist aber kein Teil davon." : ""}`}>
+				<div className={`flex px-2`}>
 					<div
 						className={`flex ${hasChildren && "hover:text-secondary"}`}
 						onClick={onSelect}
