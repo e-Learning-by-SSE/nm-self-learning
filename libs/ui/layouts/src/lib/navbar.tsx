@@ -1,22 +1,15 @@
-import {
-	AcademicCapIcon,
-	LogoutIcon,
-	UserIcon,
-	MenuIcon,
-	XIcon,
-	SearchIcon
-} from "@heroicons/react/outline";
+import { AcademicCapIcon, LogoutIcon, UserIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { SearchBar } from "./SearchBar";
 
 export function Navbar() {
 	const session = useSession();
 	const user = session.data?.user;
-	const [searchOpen, setSearchOpen] = useState(false);
 
 	// List with all routes accessible by the User
 	const navigation = [
@@ -80,55 +73,7 @@ export function Navbar() {
 									)}
 								</div>
 							</div>
-							{user && (
-								<div className="hidden flex-1 items-center justify-center px-2 lg:ml-6 lg:flex lg:justify-end">
-									<div className="relative w-full max-w-lg lg:max-w-xs">
-										<label htmlFor="search" className="sr-only">
-											Suche
-										</label>
-										<div className="relative">
-											<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-												<SearchIcon
-													className="h-5 w-5 text-gray-400"
-													aria-hidden="true"
-												/>
-											</div>
-											<input
-												id="search"
-												name="search"
-												className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-500 lg:text-sm lg:leading-6"
-												placeholder="Suchen..."
-												type="search"
-												onClick={() => {
-													setSearchOpen(!searchOpen);
-												}}
-											/>
-										</div>
-
-										<Transition
-											show={searchOpen}
-											enter="transition ease-out duration-100"
-											enterFrom="transform opacity-0 scale-95"
-											enterTo="transform opacity-100 scale-100"
-											leave="transition ease-in duration-75"
-											leaveFrom="transform opacity-100 scale-100"
-											leaveTo="transform opacity-0 scale-95"
-										>
-											<div className="absolute right-0 z-10 mt-2 flex w-full origin-top-right flex-col rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-												<div className="cursor-pointer p-2 hover:bg-emerald-500 hover:text-white">
-													Kurse...
-												</div>
-												<div className="cursor-pointer p-2 hover:bg-emerald-500 hover:text-white">
-													Fachgebiete...
-												</div>
-												<div className="cursor-pointer p-2 hover:bg-emerald-500 hover:text-white">
-													Nanomodule...
-												</div>
-											</div>
-										</Transition>
-									</div>
-								</div>
-							)}
+							{user && <SearchBar />}
 							<div className="absolute inset-y-0 right-0 flex items-center pr-2 lg:static lg:inset-auto lg:ml-6 lg:pr-0">
 								{/* Profile dropdown */}
 								{!user ? (
@@ -155,28 +100,6 @@ export function Navbar() {
 									</div>
 								)}
 							</div>
-
-							<Transition
-								show={searchOpen}
-								enter="transition ease-out duration-100"
-								enterFrom="transform opacity-0 scale-95"
-								enterTo="transform opacity-100 scale-100"
-								leave="transition ease-in duration-75"
-								leaveFrom="transform opacity-100 scale-100"
-								leaveTo="transform opacity-0 scale-95"
-							>
-								<div className="absolute right-0 z-10 mt-2 flex w-full origin-top-right flex-col rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-									<div className="cursor-pointer p-2 hover:bg-emerald-500 hover:text-white">
-										Kurse...
-									</div>
-									<div className="cursor-pointer p-2 hover:bg-emerald-500 hover:text-white">
-										Fachgebiete...
-									</div>
-									<div className="cursor-pointer p-2 hover:bg-emerald-500 hover:text-white">
-										Nanomodule...
-									</div>
-								</div>
-							</Transition>
 						</div>
 					</div>
 
