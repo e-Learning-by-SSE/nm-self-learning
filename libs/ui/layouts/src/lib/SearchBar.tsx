@@ -34,7 +34,7 @@ export function search(searchQuery: string, user: Session["user"] | undefined) {
 		}
 	);
 
-	return [courses ?? undefined, lessons ?? undefined, authors ?? undefined];
+	return [courses, lessons, authors];
 }
 
 export function SearchBar() {
@@ -89,7 +89,7 @@ export function SearchBar() {
 					) : (
 						<div className="absolute right-0 z-10 mt-2 w-full origin-top-right truncate rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
 							{courses.result.length === 0 &&
-							lessons.result.length === 0 &&
+							lessons?.result.length === 0 &&
 							authors.result.length === 0 ? (
 								<div className="px-4 py-8 text-center text-sm sm:px-8">
 									<svg
