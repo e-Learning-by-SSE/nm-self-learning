@@ -185,8 +185,7 @@ export default function Course({ course, summary, content, markdownDescription }
 	);
 }
 
-// Checks if user is logged in.
-function useSessionInfo() {
+function isUserAuthenticatedInSession() {
 	const userStatus = useSession().status;
 	if (userStatus === "authenticated") {
 		return true;
@@ -226,7 +225,7 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
-	const userAuthenticated = useSessionInfo();
+	const isAuthenticated = isUserAuthenticatedInSession();
 
 	return (
 		<section className="flex flex-col gap-16">
@@ -297,7 +296,7 @@ function CourseHeader({
 						</Link>
 					)}
 
-					{!isEnrolled && userAuthenticated && (
+					{!isEnrolled && isAuthenticated && (
 						<button
 							className="btn-primary disabled:opacity-50"
 							onClick={() => enroll({ courseId: course.courseId })}
@@ -307,7 +306,7 @@ function CourseHeader({
 						</button>
 					)}
 
-					{!isEnrolled && !userAuthenticated && (
+					{!isEnrolled && !isAuthenticated && (
 						<button
 							className="btn-primary disabled:opacity-50"
 							onClick={redirectToLogin}
@@ -363,7 +362,7 @@ function Lesson({
 	href: string;
 	isCompleted: boolean;
 }) {
-	const userAuthenticated = useSessionInfo();
+	const isAuthenticated = isUserAuthenticatedInSession();
 
 	return (
 		<Link
@@ -376,8 +375,8 @@ function Lesson({
 				<span className="w-8 shrink-0 self-center font-medium text-secondary">
 					{lesson.lessonNr}
 				</span>
-				{userAuthenticated && <span>{lesson.title}</span>}
-				{!userAuthenticated && <span onClick={redirectToLogin}>{lesson.title}</span>}
+				{isAuthenticated && <span>{lesson.title}</span>}
+				{!isAuthenticated && <span onClick={redirectToLogin}>{lesson.title}</span>}
 			</span>
 		</Link>
 	);
