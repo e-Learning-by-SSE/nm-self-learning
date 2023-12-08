@@ -18,6 +18,7 @@ import { SkillQuickAddOption } from "./skill-taskbar";
 import { FolderContext, SkillSelectHandler } from "./folder-editor";
 import styles from "./folder-list-view.module.css";
 import { containsComponentDeclaration } from "@nrwl/react/src/generators/stories/stories";
+import { string } from "zod";
 
 export function toSkillFormModel(dbSkill: SkillResolved): SkillFormModel {
 	return {
@@ -139,6 +140,7 @@ export function SkillTable({
 	const { data: skills } = trpc.skill.getSkillsWithoutParentFromRepo.useQuery({
 		repoId: repository.id
 	});
+	//let filteredSkills = ["ll"];
 	/*
 	useEffect(() => {
 		if (skills) {
@@ -149,14 +151,19 @@ export function SkillTable({
 	const filteredSkillTrees = useMemo(() => {
 		//if (!skillArray) return [];
 		//if (!displayName || displayName.length === 0) return skillArray;
+
 		if (!skills) {
 			return [];
 		} else {
 			const lowerCaseDisplayName = displayName.toLowerCase().trim();
-			const filteredSkills = skills?.filter(skill =>
+			const filteredSkillObjects = skills?.filter(skill =>
 				skill.name.toLowerCase().includes(lowerCaseDisplayName)
 			);
-			const filteredSkillIds = filteredSkills?.map(skill => skill.id);
+			//filteredSkills = filteredSkillObjects.map(object => object.name);
+			//console.log(filteredSkillObjects);
+			//console.log("filtered skills");
+			//console.log(filteredSkills);
+			const filteredSkillIds = filteredSkillObjects?.map(skill => skill.id);
 			return filteredSkillIds;
 		}
 	}, [skills, displayName]); //[skillArray, displayName]);
@@ -174,7 +181,7 @@ export function SkillTable({
 				head={
 					<>
 						<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
-						<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>
+						<TableHeaderColumn>Repository</TableHeaderColumn>
 					</>
 				}
 			>
@@ -186,6 +193,17 @@ export function SkillTable({
 						showChildren={false}
 					/>
 				))}
+				{/*
+				{displayName.length != 0 &&
+					skills &&
+					filteredSkills.map(element => (
+						<tr key={element}>
+							<TableDataColumn>
+								<span>{element}</span>
+							</TableDataColumn>
+						</tr>
+					))}
+					*/}
 			</Table>
 		</>
 	);

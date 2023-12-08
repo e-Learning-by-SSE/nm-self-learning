@@ -1,7 +1,7 @@
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { createContext, useState } from "react";
 import { trpc } from "@self-learning/api-client";
-import {  DialogHandler, Divider, LoadingBox } from "@self-learning/ui/common";
+import { DialogHandler, Divider, LoadingBox } from "@self-learning/ui/common";
 import FolderListView from "./folder-list-view";
 import { SkillFormModel } from "@self-learning/types";
 import { RepositoryInfoMemorized } from "./repository-edit-form";
