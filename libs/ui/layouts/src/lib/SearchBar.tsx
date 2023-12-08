@@ -88,9 +88,9 @@ export function SearchBar() {
 						<div></div>
 					) : (
 						<div className="absolute right-0 z-10 mt-2 w-full origin-top-right truncate rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-							{courses.result.length === 0 &&
-							lessons?.result.length === 0 &&
-							authors.result.length === 0 ? (
+							{courses?.result?.length === 0 &&
+							lessons?.result?.length === 0 &&
+							authors?.result?.length === 0 ? (
 								<div className="px-4 py-8 text-center text-sm sm:px-8">
 									<svg
 										className="mx-auto h-6 w-6 text-gray-400"
@@ -114,7 +114,7 @@ export function SearchBar() {
 								</div>
 							) : (
 								<>
-									{courses.result.length > 0 ? (
+									{courses && courses.result?.length > 0 ? (
 										<>
 											<div className="bg-gray-200 p-2">Kurse</div>
 											<div className="w-full overflow-hidden text-ellipsis">
@@ -134,7 +134,9 @@ export function SearchBar() {
 										<div></div>
 									)}
 
-									{user?.role === "ADMIN" && lessons?.result.length > 0 ? (
+									{user?.role === "ADMIN" &&
+									lessons &&
+									lessons.result?.length > 0 ? (
 										<>
 											<div className="bg-gray-200 p-2">Lerneinheiten</div>
 											<div className="w-full overflow-hidden text-ellipsis">
@@ -154,7 +156,7 @@ export function SearchBar() {
 										<div></div>
 									)}
 
-									{authors.result.length > 0 ? (
+									{authors && authors.result?.length > 0 ? (
 										<>
 											<div className="bg-gray-200 p-2">Autoren</div>
 											<div className="w-full overflow-hidden text-ellipsis">
