@@ -1,4 +1,11 @@
-import { AcademicCapIcon, LogoutIcon, UserIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
+import {
+	AcademicCapIcon,
+	LogoutIcon,
+	UserIcon,
+	MenuIcon,
+	XIcon,
+	SearchIcon
+} from "@heroicons/react/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -27,9 +34,9 @@ export function Navbar() {
 		>
 			{({ open }) => (
 				<>
-					<div className="mx-auto px-2 sm:px-6 lg:px-8">
+					<div className="mx-auto px-2 lg:px-6 xl:px-8">
 						<div className="relative flex h-16 items-center justify-between">
-							<div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
 								{/* Mobile menu button*/}
 								<Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
 									<span className="sr-only">Menü Öffnen</span>
@@ -40,13 +47,13 @@ export function Navbar() {
 									)}
 								</Disclosure.Button>
 							</div>
-							<div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+							<div className="flex flex-1 items-center justify-center lg:items-stretch lg:justify-start">
 								<div className="flex flex-shrink-0 items-center">
 									<Link href="/" className="flex items-center gap-4">
 										<div className="rounded-full bg-secondary p-1">
 											<AcademicCapIcon className="h-8 shrink-0 text-white" />
 										</div>
-										<div className="hidden w-0 flex-col sm:flex sm:w-fit">
+										<div className="hidden w-0 flex-col lg:flex lg:w-fit">
 											<span className="whitespace-nowrap text-sm text-light">
 												Universität Hildesheim
 											</span>
@@ -56,7 +63,7 @@ export function Navbar() {
 										</div>
 									</Link>
 								</div>
-								<div className="hidden sm:ml-6 sm:block">
+								<div className="hidden lg:ml-6 lg:block">
 									{user && (
 										<div className="flex h-full items-center space-x-4 px-1 text-sm font-medium">
 											{navigation.map(item => (
@@ -72,7 +79,31 @@ export function Navbar() {
 									)}
 								</div>
 							</div>
-							<div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+							{user && (
+								<div className="hidden flex-1 items-center justify-center px-2 lg:ml-6 lg:flex lg:justify-end">
+									<div className="w-full max-w-lg lg:max-w-xs">
+										<label htmlFor="search" className="sr-only">
+											Suche
+										</label>
+										<div className="relative">
+											<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+												<SearchIcon
+													className="h-5 w-5 text-gray-400"
+													aria-hidden="true"
+												/>
+											</div>
+											<input
+												id="search"
+												name="search"
+												className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-500 lg:text-sm lg:leading-6"
+												placeholder="Suchen..."
+												type="search"
+											/>
+										</div>
+									</div>
+								</div>
+							)}
+							<div className="absolute inset-y-0 right-0 flex items-center pr-2 lg:static lg:inset-auto lg:ml-6 lg:pr-0">
 								{/* Profile dropdown */}
 								{!user ? (
 									<button
@@ -88,7 +119,7 @@ export function Navbar() {
 												<StarIcon className="h-5 text-secondary" />
 											</span>
 										)}
-										<span className="invisible w-0 text-sm sm:visible sm:w-fit">
+										<span className="invisible w-0 text-sm lg:visible lg:w-fit">
 											{user.name}
 										</span>
 										<NavbarDropdownMenu
@@ -101,7 +132,7 @@ export function Navbar() {
 						</div>
 					</div>
 
-					<Disclosure.Panel className="sm:hidden">
+					<Disclosure.Panel className="lg:hidden">
 						<div className="space-y-1 px-2 pb-3 pt-2">
 							{navigation.map(item => (
 								<Disclosure.Button
