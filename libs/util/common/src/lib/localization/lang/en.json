@@ -1,5 +1,11 @@
 {
 	"back_to_start": "Back to start",
 	"non_authorized_error": "Not authorized",
-	"non_authorized_error_desc": "You are not authorized to access this resource"
+	"non_authorized_error_desc": "You are not authorized to access this resource",
+	"welcome_message": "Welcome to the Self-Learning platform by the",
+	"navigate_learning_content": "Discover Learning-Content",
+	"welcome_info_text_1": "On this platform individual and flexible learning paths, consisting of smaller learning units, with course specialized learning contents are presented.",
+	"welcome_info_text_2": "You can learn and repeat these at your own pace.",
+	"welcome_info_text_3": "While walking through a Learning-Path, you will get feedback on your learning progress and hints, how to apply learning-strategies, to improve your learning",
+	"welcome_info_text_4": "Our mission is that the platform helps you learn to learn strategically and sustainably "
 }
