@@ -47,8 +47,10 @@ export function FolderSkillEditor({skillProps}: { skillProps: SkillProps }) {
 
 
 	const changeSelectedItem: SkillSelectHandler = item => {
-		if (!item) return;
-		console.log("changed item", item);
+		if (!item) {
+			setSelectedItem(null);
+			return;
+		}
 		setSelectedItem({selected: item, previousSkill: selectedItem?.selected ?? null});
 	};
 
