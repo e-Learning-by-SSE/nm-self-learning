@@ -10,9 +10,8 @@ import { SkillDeleteOption } from "./skill-taskbar";
 import { showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { dispatchDetection } from "./cycle-detection/detection-hook";
-import { FolderItem, checkForCycles } from "./cycle-detection/cycle-detection";
+import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
 import { XIcon } from "@heroicons/react/solid";
-
 
 export function SkillInfoForm({
 	skill,
@@ -71,7 +70,7 @@ export function SkillInfoForm({
 		form.setValue("name", skill.name);
 		form.setValue("description", skill?.description);
 		let folderItemHistory = skillMap.get(skill.id);
-		if(!folderItemHistory) return;
+		if (!folderItemHistory) return;
 		const items: FolderItem[] = [
 			{
 				skill: skill,
@@ -82,7 +81,7 @@ export function SkillInfoForm({
 		];
 		if (previousSkill !== null) {
 			folderItemHistory = skillMap.get(previousSkill.id);
-			if(!folderItemHistory) return;
+			if (!folderItemHistory) return;
 			items.push({
 				skill: previousSkill,
 				selectedSkill: false,
@@ -152,7 +151,7 @@ function SkillToSkillDepsInfo({
 }) {
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
 	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
-	const { setValue, } = useFormContext<SkillFormModel>();
+	const { setValue } = useFormContext<SkillFormModel>();
 
 	useEffect(() => {
 		setParentItems(parents);

@@ -2,7 +2,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database } from "@self-learning/database";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
-import { NextAuthOptions,  User } from "next-auth";
+import { NextAuthOptions, User } from "next-auth";
 import { Adapter } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -55,6 +55,7 @@ function mailToUsername(mail: string): string {
 	}
 	return mail;
 }
+
 export const testingExportMailToUsername = mailToUsername;
 
 const customPrismaAdapter: Adapter = {
@@ -258,7 +259,7 @@ export const authOptions: NextAuthOptions = {
 			}
 
 			session.user = {
-				id : userFromDb.id,
+				id: userFromDb.id,
 				name: username,
 				role: userFromDb.role,
 				isAuthor: !!userFromDb.author,
@@ -274,9 +275,11 @@ export const authOptions: NextAuthOptions = {
 	providers: getProviders()
 };
 
-export async function getAuthenticatedUser(ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>) : Promise<User | undefined> {
+export async function getAuthenticatedUser(
+	ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>
+): Promise<User | undefined> {
 	const session = await getSession(ctx);
-	if(!session) return;
-	if(!session.user) return;
+	if (!session) return;
+	if (!session.user) return;
 	return session.user;
 }

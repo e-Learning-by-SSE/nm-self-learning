@@ -1,9 +1,8 @@
-import {FolderSkillEditor} from "@self-learning/teaching";
-import {GetServerSideProps} from "next";
-import {database} from "@self-learning/database";
-import {SkillFormModel} from "@self-learning/types";
+import { FolderSkillEditor } from "@self-learning/teaching";
+import { GetServerSideProps } from "next";
+import { database } from "@self-learning/database";
+import { SkillFormModel } from "@self-learning/types";
 import { getAuthenticatedUser } from "@self-learning/api";
-
 
 const createNew = async (userId: string) => {
 	const newRep = {
@@ -23,23 +22,23 @@ const createNew = async (userId: string) => {
 	return {
 		redirect: {
 			destination: `/skills/repository/${newRepoSlug}`, // your new URL here
-			permanent: false,
-		},
+			permanent: false
+		}
 	};
-}
+};
 
 const getSkills = async (repoId: string) => {
 	const skills = await database.skill.findMany({
-		where: {repositoryId: repoId},
+		where: { repositoryId: repoId },
 		select: {
 			id: true,
 			name: true,
 			description: true,
 			repositoryId: true,
-			children: {select: {id: true}},
-			parents: {select: {id: true}},
+			children: { select: { id: true } },
+			parents: { select: { id: true } },
 			repository: true
-		},
+		}
 	});
 
 	const transformedSkill = skills.map(skill => {
@@ -53,11 +52,10 @@ const getSkills = async (repoId: string) => {
 		};
 	});
 	return transformedSkill;
-}
-export type SkillProps = { repoId: string, skills: SkillFormModel[] };
+};
+export type SkillProps = { repoId: string; skills: SkillFormModel[] };
 
-
-export const getServerSideProps: GetServerSideProps<SkillProps> = async (ctx) => {
+export const getServerSideProps: GetServerSideProps<SkillProps> = async ctx => {
 	const repoId = ctx.query.repoSlug as string;
 	const user = await getAuthenticatedUser(ctx);
 
@@ -65,30 +63,26 @@ export const getServerSideProps: GetServerSideProps<SkillProps> = async (ctx) =>
 		return {
 			redirect: {
 				destination: `/403`, // your new URL here
-				permanent: false,
-			},
+				permanent: false
+			}
 		};
 	}
 
-
-	if (!repoId || repoId === "") return {notFound: true}
-
+	if (!repoId || repoId === "") return { notFound: true };
 
 	if (repoId === "create") {
 		return await createNew(user.id);
 	}
 
-
 	const transformedSkill = await getSkills(repoId);
 
-	return {props: {repoId, skills: transformedSkill}, notFound: false};
-}
+	return { props: { repoId, skills: transformedSkill }, notFound: false };
+};
 
 export default function CreateAndViewRepository(skills: SkillProps) {
-
 	return (
 		<div>
-			<FolderSkillEditor skillProps={skills}/>
+			<FolderSkillEditor skillProps={skills} />
 		</div>
 	);
 }

@@ -1,10 +1,8 @@
-import React, {memo, useEffect, useState} from "react";
-
+import React, { memo, useEffect, useState } from "react";
 
 const listenerMap: Map<string, Array<(state: State) => void>> = new Map();
 
-let memoryState: State = {isOpen: false, dialog: null};
-
+let memoryState: State = { isOpen: false, dialog: null };
 
 interface State {
 	isOpen: boolean;
@@ -12,10 +10,10 @@ interface State {
 }
 
 export const dispatchDialog = (dialog: React.ReactNode, id: string) => {
-	memoryState = {isOpen: true, dialog: dialog};
+	memoryState = { isOpen: true, dialog: dialog };
 	const listeners = listenerMap.get(id);
 	if (!listeners) return;
-	listeners.forEach((listener) => {
+	listeners.forEach(listener => {
 		listener(memoryState);
 	});
 };
@@ -25,13 +23,13 @@ export const dispatchDialog = (dialog: React.ReactNode, id: string) => {
  * Reason React will not rerender the component if the same dialog is used
  */
 export const freeDialog = (id: string) => {
-	memoryState = {isOpen: false, dialog: null};
+	memoryState = { isOpen: false, dialog: null };
 	const listeners = listenerMap.get(id);
 	if (!listeners) return;
-	listeners.forEach((listener) => {
+	listeners.forEach(listener => {
 		listener(memoryState);
 	});
-}
+};
 
 function useDialog(id: string): State {
 	const [state, setState] = useState<State>(memoryState);
@@ -57,15 +55,12 @@ function useDialog(id: string): State {
 
 export const DialogHandler = memo(DialogHandlerComponent);
 
-function DialogHandlerComponent({id}: { id: string }) {
+function DialogHandlerComponent({ id }: { id: string }) {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const {isOpen, dialog} = useDialog(id);
+	const { isOpen, dialog } = useDialog(id);
 
 	return (
 		// eslint-disable-next-line react/jsx-no-useless-fragment
-		<>
-			{dialog}
-		</>
+		<>{dialog}</>
 	);
-
 }

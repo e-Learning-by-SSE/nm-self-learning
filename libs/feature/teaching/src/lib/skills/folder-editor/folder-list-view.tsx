@@ -251,7 +251,6 @@ function ListSkillEntryWithChildren({
 	const folderItem = skillMap.get(skillId);
 	const [open, setOpen] = useState(showChildren);
 
-
 	if (!folderItem) return <div>503</div>;
 
 	// Set ups the callable value hooks;
