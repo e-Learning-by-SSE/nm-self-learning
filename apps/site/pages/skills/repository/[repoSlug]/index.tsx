@@ -1,8 +1,8 @@
-import {getSession} from "next-auth/react";
 import {FolderSkillEditor} from "@self-learning/teaching";
 import {GetServerSideProps} from "next";
 import {database} from "@self-learning/database";
 import {SkillFormModel} from "@self-learning/types";
+import { getAuthenticatedUser } from "@self-learning/api";
 
 
 const createNew = async (userId: string) => {
@@ -11,7 +11,7 @@ const createNew = async (userId: string) => {
 		name: "New Skilltree: " + Date.now(),
 		description: "New Skilltree Description"
 	};
-	const result = await await database.skillRepository.create({
+	const result = await database.skillRepository.create({
 		data: newRep
 	});
 
@@ -59,10 +59,9 @@ export type SkillProps = { repoId: string, skills: SkillFormModel[] };
 
 export const getServerSideProps: GetServerSideProps<SkillProps> = async (ctx) => {
 	const repoId = ctx.query.repoSlug as string;
+	const user = await getAuthenticatedUser(ctx);
 
-	const session = await getSession(ctx);
-
-	if (!(session && session.user && session.user.id)) {
+	if (!user) {
 		return {
 			redirect: {
 				destination: `/403`, // your new URL here
@@ -71,11 +70,12 @@ export const getServerSideProps: GetServerSideProps<SkillProps> = async (ctx) =>
 		};
 	}
 
+
 	if (!repoId || repoId === "") return {notFound: true}
 
 
 	if (repoId === "create") {
-		return await createNew(session.user.id);
+		return await createNew(user.id);
 	}
 
 

@@ -1,11 +1,10 @@
 /* eslint-disable react/jsx-no-useless-fragment */
 import { trpc } from "@self-learning/api-client";
 import { SkillFormModel, SkillRepositoryModel } from "@self-learning/types";
-import { IconButton, LoadingBox, TextChip } from "@self-learning/ui/common";
+import { LoadingBox } from "@self-learning/ui/common";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { memo, useEffect, useState } from "react";
 import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
-import { PlusIcon } from "@heroicons/react/solid";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { SelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
