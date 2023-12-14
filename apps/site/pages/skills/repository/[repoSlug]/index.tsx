@@ -62,7 +62,7 @@ export const getServerSideProps: GetServerSideProps<SkillProps> = async (ctx) =>
 
 	const session = await getSession(ctx);
 
-	if (!(session && session !== null && session.user && session.user.id)) {
+	if (!(session && session.user && session.user.id)) {
 		return {
 			redirect: {
 				destination: `/403`, // your new URL here
@@ -85,8 +85,6 @@ export const getServerSideProps: GetServerSideProps<SkillProps> = async (ctx) =>
 }
 
 export default function CreateAndViewRepository(skills: SkillProps) {
-
-	console.log(skills)
 
 	return (
 		<div>
