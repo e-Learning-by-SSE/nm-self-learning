@@ -2,7 +2,7 @@ import { PlusIcon, XIcon } from "@heroicons/react/solid";
 import { IconButton } from "@self-learning/ui/common";
 import { SelectSkillDialog } from "./select-skill-dialog";
 import { useState } from "react";
-import { SkillUnresolved } from "@self-learning/api";
+import { SkillFormModel } from "@self-learning/types";
 
 export function SelectSkillsView({
 	skills,
@@ -10,9 +10,9 @@ export function SelectSkillsView({
 	onAddSkill,
 	repoId
 }: {
-	skills: SkillUnresolved[];
-	onDeleteSkill: (skill: SkillUnresolved) => void;
-	onAddSkill: (skill: SkillUnresolved[] | undefined) => void;
+	skills: SkillFormModel[];
+	onDeleteSkill: (skill: SkillFormModel) => void;
+	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	repoId: string;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);

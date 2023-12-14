@@ -191,7 +191,14 @@ function SkillToSkillDepsInfo({
 			</label>
 			<div>
 				<SelectSkillsView
-					skills={childItems}
+					skills={childItems.map(skill => {
+						return {
+							...skill,
+							children: [],
+							parents: [],
+							repositoryId: repoId
+						};
+					})}
 					onDeleteSkill={skill => {
 						removeChild(skill.id);
 					}}
@@ -209,7 +216,14 @@ function SkillToSkillDepsInfo({
 			</label>
 			<div>
 				<SelectSkillsView
-					skills={parentItems}
+					skills={parentItems.map(skill => {
+						return {
+							...skill,
+							children: [],
+							parents: [],
+							repositoryId: repoId
+						};
+					})}
 					onDeleteSkill={skill => {
 						removeParent(skill.id);
 					}}
