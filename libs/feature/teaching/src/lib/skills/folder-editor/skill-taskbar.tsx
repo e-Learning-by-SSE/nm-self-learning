@@ -1,5 +1,5 @@
 import { trpc } from "@self-learning/api-client";
-import { SkillFormModel } from "@self-learning/types";
+import { createSkillFormModelFromSkillResolved, SkillFormModel } from "@self-learning/types";
 import {
 	ButtonActions,
 	dispatchDialog,
@@ -12,7 +12,6 @@ import { FolderAddIcon } from "@heroicons/react/outline";
 import { useContext } from "react";
 import { FolderContext } from "./folder-editor";
 import { checkForCycles } from "./cycle-detection/cycle-detection";
-import { createSkillFormModelFromSkillResolved } from "../../../../../../data-access/api/src/lib/trpc/routers/skill.router";
 
 export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel }) {
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();

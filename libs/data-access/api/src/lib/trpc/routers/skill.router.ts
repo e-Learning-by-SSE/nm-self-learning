@@ -4,7 +4,6 @@ import { database } from "@self-learning/database";
 import {
 	ResolvedValue,
 	skillCreationFormSchema,
-	SkillFormModel,
 	skillFormSchema,
 	skillRepositoryCreationSchema,
 	skillRepositorySchema
@@ -23,17 +22,6 @@ function getSkillById(id: string) {
 		}
 	});
 }
-
-export const createSkillFormModelFromSkillResolved = (skill: SkillResolved): SkillFormModel => {
-	return {
-		name: skill.name,
-		description: skill.description,
-		children: skill.children.map(child => child.id),
-		id: skill.id,
-		repositoryId: skill.repository.id,
-		parents: skill.parents.map(parent => parent.id)
-	};
-};
 
 export const skillRouter = t.router({
 	getRepository: authorProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
