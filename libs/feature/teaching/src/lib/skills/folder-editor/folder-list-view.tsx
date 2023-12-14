@@ -147,7 +147,6 @@ export default memo(FolderListView);
 function SkillRow({
 	skill,
 	depth,
-	addChildren,
 	displayInfo,
 	childrenFoldedOut,
 	onSelect,
@@ -155,7 +154,6 @@ function SkillRow({
 }: {
 	skill: SkillFormModel;
 	depth: number;
-	addChildren: (formModel: SkillFormModel) => void;
 	displayInfo: { isSelected: boolean; hasCycle: boolean; isParent: boolean };
 	childrenFoldedOut: boolean;
 	onSelect: () => void;
@@ -230,7 +228,7 @@ function SkillRow({
 						>
 							<PencilIcon className="ml-1 h-5 text-lg" />
 						</button>
-						<SkillQuickAddOption selectedSkill={skill} addChildren={addChildren} />
+						<SkillQuickAddOption selectedSkill={skill} />
 					</div>
 				</div>
 			</TableDataColumn>
@@ -252,11 +250,7 @@ function ListSkillEntryWithChildren({
 	const folderItemFromDetection = useDetection(skillId);
 	const folderItem = skillMap.get(skillId);
 	const [open, setOpen] = useState(showChildren);
-	const [, setAddChildren] = useState<SkillFormModel | null>(null);
 
-	const addChildrenFunction = (formModel: SkillFormModel) => {
-		setAddChildren(formModel);
-	};
 
 	if (!folderItem) return <div>503</div>;
 
@@ -287,7 +281,6 @@ function ListSkillEntryWithChildren({
 				<SkillRow
 					skill={skill}
 					depth={depth}
-					addChildren={addChildrenFunction}
 					displayInfo={{ isSelected, hasCycle, isParent }}
 					onSelect={() => setOpen(!open)}
 					onEdit={handleSelection}

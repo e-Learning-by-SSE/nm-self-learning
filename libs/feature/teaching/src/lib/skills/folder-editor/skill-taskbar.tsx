@@ -8,11 +8,9 @@ import {FolderContext} from "./folder-editor";
 import {checkForCycles} from "./cycle-detection/cycle-detection";
 
 export function SkillQuickAddOption({
-	selectedSkill,
-	addChildren
+	selectedSkill
 }: {
 	selectedSkill: SkillFormModel;
-	addChildren: (formModel: SkillFormModel) => void;
 }) {
 	const {mutateAsync: createSkill} = trpc.skill.createSkill.useMutation();
 	const {mutateAsync: updateSkill} = trpc.skill.updateSkill.useMutation();
@@ -70,7 +68,6 @@ export function SkillQuickAddOption({
 					selectedSkill: true
 				});
 
-				addChildren(createSkillFormModel);
 				handleSelection(adaptedCurrentSkill);
 
 				const folderItem = {
