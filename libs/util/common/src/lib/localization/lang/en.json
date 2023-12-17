@@ -2,10 +2,36 @@
 	"back_to_start": "Back to start",
 	"non_authorized_error": "Not authorized",
 	"non_authorized_error_desc": "You are not authorized to access this resource",
+
 	"welcome_message": "Welcome to the Self-Learning platform by the",
 	"navigate_learning_content": "Discover Learning-Content",
-	"welcome_info_text_1": "On this platform individual and flexible learning paths, consisting of smaller learning units, with course specialized learning contents are presented.",
+	"welcome_info_text_1": "On this platform individual and flexible learning paths, which consist of smaller learning units, with course specialized learning contents are presented.",
 	"welcome_info_text_2": "You can learn and repeat these at your own pace.",
-	"welcome_info_text_3": "While walking through a Learning-Path, you will get feedback on your learning progress and hints, how to apply learning-strategies, to improve your learning",
-	"welcome_info_text_4": "Our mission is that the platform helps you learn to learn strategically and sustainably "
+	"welcome_info_text_3": "While walking through a Learning-Path, you will get feedback on your learning progress and hints how to apply learning-strategies to improve your learning",
+	"welcome_info_text_4": "Our mission is that the platform helps you learn to learn strategically and sustainably ",
+
+	"to_learn_check": "To Learning-Check",
+	"marked_finished": "Mark as finished",
+	"activation_ask": "Activation ask",
+	"answer": "Your Answer:",
+	"save_answer": "Save Answer",
+
+	"learning_unit": "Learning units",
+	"chapter": "Chapter",
+	"duration": "Duration",
+	"content": "Content",
+	"created": "Created :",
+	"last_change": "Last change:",
+
+	"finished_learning_unit_1": "You have finished the learning unit",
+	"finished_learning_unit_2": "successfully",
+	"next_learning_unit": "The next learning unit is ...",
+	"no_learning_units_1": "The course",
+	"no_learning_units_2": "does not contain any additional learning units for you.",
+	"to_next_learning_unit": "To next learning unit",
+	"quiz_failed": "Failed",
+	"quiz_failed_text_1": "Unfortunately you have too many wrong answers to finish the learning unit",
+	"quiz_failed_text_2": "",
+	"try_again": "Try again",
+	"add_to_learning_plan": "Add to learning plan"
 }

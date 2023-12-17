@@ -25,6 +25,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -238,6 +239,7 @@ function LessonControls({
 	const completion = useCourseCompletion(course.slug);
 	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
+	const { t } = useTranslation();
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
@@ -247,7 +249,7 @@ function LessonControls({
 					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					data-testid="quizLink"
 				>
-					<span>Zur Lernkontrolle</span>
+					<span> {t("to_learn_check")} </span>
 					<PlayIcon className="h-6 shrink-0" />
 				</Link>
 			)}
@@ -257,7 +259,7 @@ function LessonControls({
 					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					onClick={markAsCompleted}
 				>
-					<span>Als abgeschlossen markieren</span>
+					<span>{t("marked_finished")}</span>
 					<CheckCircleIcon className="h-6 shrink-0" />
 				</button>
 			)}
@@ -361,16 +363,17 @@ function SelfRegulatedPreQuestion({
 	setShowDialog: Dispatch<SetStateAction<boolean>>;
 }) {
 	const [userAnswer, setUserAnswer] = useState("");
+	const { t } = useTranslation();
 
 	return (
 		<>
 			<div>
-				<h1>Aktivierungsfrage</h1>
+				<h1>{t("activation_ask")}</h1>
 				<MarkdownContainer className="w-full py-4">
 					<MDXRemote {...question} />
 				</MarkdownContainer>
 				<div className="mt-8">
-					<h2>Deine Antwort:</h2>
+					<h2>{t("answer")}</h2>
 					<textarea
 						className="w-full"
 						placeholder="..."
@@ -386,7 +389,7 @@ function SelfRegulatedPreQuestion({
 						}}
 						disabled={userAnswer.length == 0}
 					>
-						Antwort Speichern
+						{t("save_answer")}
 					</button>
 				</div>
 			</div>

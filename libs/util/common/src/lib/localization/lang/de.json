@@ -2,10 +2,36 @@
 	"back_to_start": "Zurück zur Startseite",
 	"non_authorized_error": "Nicht autorisierter Zugriff",
 	"non_authorized_error_desc": "Sie haben keine Berechtigung, auf diese Seite zuzugreifen.",
+
 	"welcome_message": "Willkommen auf der Selbstlernplattform der",
 	"navigate_learning_content": "Lerninhalte entdecken",
 	"welcome_info_text_1": "Auf der Plattform werden dir studiengangbezogene Lerninhalte in individualisierten und flexiblen Lernpfaden, bestehend aus kleinen Lerneinheiten, präsentiert.",
 	"welcome_info_text_2": "Diese kannst du in deinem eigenen Tempo lernen und wiederholen.",
 	"welcome_info_text_3": "Während du einen Lernpfad durchläufst, erhältst du Feedback zu deinem Lernfortschritt und Hinweise, wie du Lernstrategien anwenden kannst, um dein Lernen zu verbessern.",
-	"welcome_info_text_4": "Unsere Mission ist, dass du durch die Plattform lernst, strategisch und nachhaltig zu lernen."
+	"welcome_info_text_4": "Unsere Mission ist, dass du durch die Plattform lernst, strategisch und nachhaltig zu lernen.",
+
+	"to_learn_check": "Zur Lernkontrolle",
+	"marked_finished": "Als abgeschlossen markieren",
+	"activation_ask": "Aktivierungsfrage",
+	"answer": "Deine Antwort:",
+	"save_answer": "Antwort speichern",
+
+	"learning_unit": "Lerneinheiten",
+	"chapter": "Kapitel",
+	"duration": "Dauer",
+	"content": "Inhalt",
+	"created": "Erstellt:",
+	"last_change": "Letzte Änderung:",
+
+	"finished_learning_unit_1": "Du hast die Lerneinheit",
+	"finished_learning_unit_2": "erfolgreich abgeschlossen.",
+	"next_learning_unit": "Die nächste Lerneinheit ist ...",
+	"no_learning_units_1": "Der Kurs",
+	"no_learning_units_2": "enthält keine weiteren Lerneinheiten für dich.",
+	"to_next_learning_unit": "Zur nächsten Lerneinheit",
+	"quiz_failed": "Nicht Bestanden",
+	"quiz_failed_text_1": "Du hast leider zu viele Fragen falsch beantwortet, um die Lerneinheit",
+	"quiz_failed_text_2": "abzuschließen.",
+	"try_again": "Erneut probieren",
+	"add_to_learning_plan": "Zum Lernplan hinzufügen"
 }
