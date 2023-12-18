@@ -22,7 +22,7 @@ export async function checkForCycles(skillMap: Map<string, FolderItem>, item?: F
 
 	const parents = findParentsOfCycledSkills(skills);
 
-	clearCycleDetection();
+	clearCycleDetection(skillMap);
 
 	if (!parents) {
 		//No cycle found

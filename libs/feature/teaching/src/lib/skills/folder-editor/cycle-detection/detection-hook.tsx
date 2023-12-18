@@ -23,7 +23,7 @@ export const dispatchDetection = (items: FolderItem[]) => {
 	});
 };
 
-export const clearCycleDetection = () => {
+export const clearCycleDetection = (skillMap: Map<string, FolderItem>) => {
 	memorizedDetection.forEach(item => {
 		const listenerCallbacks = listener.get(item.skill.id);
 		if (listenerCallbacks) {
@@ -31,6 +31,7 @@ export const clearCycleDetection = () => {
 				skill: item.skill,
 				selectedSkill: item.selectedSkill
 			};
+			skillMap.set(item.skill.id, folderItem);
 			for (const callback of listenerCallbacks) {
 				callback({ item: folderItem, initial: false });
 			}
