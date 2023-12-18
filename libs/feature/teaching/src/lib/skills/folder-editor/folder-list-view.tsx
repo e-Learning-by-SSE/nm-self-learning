@@ -258,20 +258,13 @@ function ListSkillEntryWithChildren({
 		folderItemFromDetection.item !== null && folderItemFromDetection.item.selectedSkill;
 	let hasCycle = false;
 	let isParent = false;
-	if (folderItemFromDetection.initial) {
-		isParent = !!folderItem.parent;
-		hasCycle = !!folderItem.cycle;
-	} else {
-		isParent =
-			folderItemFromDetection.item && folderItemFromDetection.item.parent ? true : false;
-		hasCycle =
-			folderItemFromDetection.item && folderItemFromDetection.item.cycle ? true : false;
-	}
 
-	let skill = folderItem.skill;
-	if (!folderItemFromDetection.initial) {
-		skill = folderItemFromDetection.item?.skill ?? folderItem.skill;
-	}
+	const { initial, item: detectionItem } = folderItemFromDetection;
+	const { parent, cycle, skill: folderSkill } = folderItem;
+
+	isParent = initial ? !!parent : !!detectionItem?.parent;
+	hasCycle = initial ? !!cycle : !!detectionItem?.cycle;
+	const skill = initial ? folderSkill : detectionItem?.skill ?? folderSkill;
 
 	return (
 		// eslint-disable-next-line react/jsx-no-useless-fragment
