@@ -21,8 +21,8 @@ import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { LessonType } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import { redirectToLogin } from "libs/ui/layouts/src/lib/redirect-to-login";
+import { isUserAuthenticatedInSession } from "libs/feature/authentication/authentication";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -183,14 +183,6 @@ export default function Course({ course, summary, content, markdownDescription }
 			</CenteredSection>
 		</div>
 	);
-}
-
-function isUserAuthenticatedInSession() {
-	const userStatus = useSession().status;
-	if (userStatus === "authenticated") {
-		return true;
-	}
-	return false;
 }
 
 function CourseHeader({
