@@ -227,6 +227,15 @@ function CourseHeader({
 
 	const isAuthenticated = isUserAuthenticatedInSession();
 
+	function handleClick() {
+		if (isAuthenticated) {
+			const courseId = course.courseId;
+			enroll({ courseId });
+		} else {
+			redirectToLogin();
+		}
+	}
+
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
@@ -296,21 +305,8 @@ function CourseHeader({
 						</Link>
 					)}
 
-					{!isEnrolled && isAuthenticated && (
-						<button
-							className="btn-primary disabled:opacity-50"
-							onClick={() => enroll({ courseId: course.courseId })}
-						>
-							<span>Zum Lernplan hinzufügen</span>
-							<PlusCircleIcon className="h-5" />
-						</button>
-					)}
-
-					{!isEnrolled && !isAuthenticated && (
-						<button
-							className="btn-primary disabled:opacity-50"
-							onClick={redirectToLogin}
-						>
+					{!isEnrolled && (
+						<button className="btn-primary disabled:opacity-50" onClick={handleClick}>
 							<span>Zum Lernplan hinzufügen</span>
 							<PlusCircleIcon className="h-5" />
 						</button>
