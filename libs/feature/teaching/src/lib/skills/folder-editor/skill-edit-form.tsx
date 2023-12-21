@@ -7,11 +7,58 @@ import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/api";
 import { FolderContext } from "./folder-editor";
 import { SkillDeleteOption } from "./skill-taskbar";
-import { showToast } from "@self-learning/ui/common";
+import { Divider, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { dispatchDetection } from "./cycle-detection/detection-hook";
 import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
-import { XIcon } from "@heroicons/react/solid";
+import { TrashIcon, XIcon } from "@heroicons/react/solid";
+
+export function SelectedSkillsInfoForm({
+	skills,
+	previousSkill
+}: {
+	skills: SkillFormModel[];
+	previousSkill: SkillFormModel | null;
+}) {
+	return (
+		<div>
+			{skills.length > 1 ? (
+				<MassSelectedInfo skills={skills} />
+			) : (
+				<SkillInfoForm skill={skills[0]} previousSkill={previousSkill} />
+			)}
+		</div>
+	);
+}
+
+export function MassSelectedInfo({ skills }: { skills: SkillFormModel[] }) {
+	return (
+		<>
+			<h2 className="text-xl">Ausgewählte Skills:</h2>
+			<span className="pb-4 text-sm text-light">Die rechts ausgewählten Skills</span>
+
+			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-light-border">
+				<div className="flex flex-col">
+					{skills.map((skill, index) => (
+						<span
+							key={"span: " + skill.id + index}
+							className="flex items-center gap-2 pl-1"
+						>
+							{skill.name}
+						</span>
+					))}
+				</div>
+			</section>
+			<div className="pt-4" />
+			<Divider />
+			<div className="flex justify-between pt-4">
+				<button className="btn w-full bg-red-500">
+					<TrashIcon className="ba h-5 w-5 text-black" />
+				</button>
+			</div>
+		</>
+	);
+}
 
 export function SkillInfoForm({
 	skill,

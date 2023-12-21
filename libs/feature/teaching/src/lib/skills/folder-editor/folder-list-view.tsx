@@ -23,7 +23,7 @@ import { SkillFormModel } from "@self-learning/types";
 import { SkillQuickAddOption } from "./skill-taskbar";
 import { FolderContext, SkillSelectHandler } from "./folder-editor";
 import styles from "./folder-list-view.module.css";
-import { useDetection } from "./cycle-detection/detection-hook";
+import { dispatchDetection, useDetection } from "./cycle-detection/detection-hook";
 import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
 
 function FolderListView({
@@ -35,6 +35,7 @@ function FolderListView({
 }) {
 	const [displayName, setDisplayName] = useState("");
 	const [skillArray, setSkillArray] = useState<FolderItem[]>(Array.from(skillMap.values()));
+	const [masterSelectToggle, setMasterSelectToggle] = useState<boolean>(false);
 
 	const filteredSkillTrees = useMemo(() => {
 		if (!skillArray) return [];
@@ -80,10 +81,20 @@ function FolderListView({
 				parents: createdSkill.parents.map(skill => skill.id)
 			};
 
-			skillMap.set(createdSkill.id, { skill: createSkillFormModel, selectedSkill: false });
-			handleSelection(createSkillFormModel);
-			setSkillArray(skillArray.concat({ skill: createSkillFormModel, selectedSkill: false }));
-			checkForCycles(skillMap);
+			skillMap.set(createdSkill.id, {
+				skill: createSkillFormModel,
+				selectedSkill: false,
+				massSelected: false
+			});
+			handleSelection([createSkillFormModel]);
+			setSkillArray(
+				skillArray.concat({
+					skill: createSkillFormModel,
+					selectedSkill: false,
+					massSelected: false
+				})
+			);
+			await checkForCycles(skillMap);
 		} catch (error) {
 			if (error instanceof Error) {
 				showToast({
@@ -93,6 +104,16 @@ function FolderListView({
 				});
 			}
 		}
+	};
+
+	const handleAllSelected = () => {
+		const arrayOffFolderItems = Array.from(skillMap.values());
+		arrayOffFolderItems.forEach(item => {
+			item.massSelected = !masterSelectToggle;
+		});
+		setMasterSelectToggle(!masterSelectToggle);
+		dispatchDetection(arrayOffFolderItems);
+		handleSelection(arrayOffFolderItems.map(item => item.skill));
 	};
 
 	return (
@@ -118,6 +139,18 @@ function FolderListView({
 				<Table
 					head={
 						<>
+							<th
+								className={
+									"font-semi-bold border-y border-light-border py-4 text-center text-sm"
+								}
+							>
+								<input
+									className="secondary form-checkbox rounded text-secondary focus:ring-secondary"
+									type="checkbox"
+									onChange={() => handleAllSelected()}
+									checked={masterSelectToggle}
+								/>
+							</th>
 							<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
 							<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>
 						</>
@@ -150,14 +183,21 @@ function SkillRow({
 	displayInfo,
 	childrenFoldedOut,
 	onSelect,
-	onEdit
+	onEdit,
+	onMassSelect
 }: {
 	skill: SkillFormModel;
 	depth: number;
-	displayInfo: { isSelected: boolean; hasCycle: boolean; isParent: boolean };
+	displayInfo: {
+		isSelected: boolean;
+		hasCycle: boolean;
+		isParent: boolean;
+		isMassSelected: boolean;
+	};
 	childrenFoldedOut: boolean;
 	onSelect: () => void;
 	onEdit: SkillSelectHandler;
+	onMassSelect: (skillID: string) => void;
 }) {
 	const key = skill.id + "_" + depth + "_" + Math.floor(Math.random() * 10000000001);
 	const depthCssStyle = {
@@ -182,6 +222,14 @@ function SkillRow({
 			${displayInfo.isParent && !displayInfo.hasCycle && !displayInfo.isSelected ? "bg-yellow-100" : ""}
 			${displayInfo.isSelected ? "bg-gray-200" : ""} `}
 		>
+			<TableDataColumn className={"text-center align-middle"}>
+				<input
+					className="secondary form-checkbox rounded text-secondary focus:ring-secondary"
+					type="checkbox"
+					onChange={() => onMassSelect(skill.id)}
+					checked={displayInfo.isMassSelected}
+				/>
+			</TableDataColumn>
 			<TableDataColumn className={`${styles["folder-line"]} text-sm font-medium`}>
 				<div className={`flex px-2`}>
 					<div
@@ -223,7 +271,7 @@ function SkillRow({
 						<button
 							title="Bearbeiten"
 							className="mr-3 px-2 hover:text-secondary"
-							onClick={() => onEdit(skill)}
+							onClick={() => onEdit([skill])}
 							disabled={displayInfo.isSelected}
 						>
 							<PencilIcon className="ml-1 h-5 text-lg" />
@@ -256,6 +304,9 @@ function ListSkillEntryWithChildren({
 	// Set ups the callable value hooks;
 	const isSelected =
 		folderItemFromDetection.item !== null && folderItemFromDetection.item.selectedSkill;
+
+	const isMassSelected = folderItem.massSelected ?? false;
+
 	let hasCycle = false;
 	let isParent = false;
 
@@ -266,6 +317,25 @@ function ListSkillEntryWithChildren({
 	hasCycle = initial ? !!cycle : !!detectionItem?.cycle;
 	const skill = initial ? folderSkill : detectionItem?.skill ?? folderSkill;
 
+	const handleMassSelectionChange = (skillID: string) => {
+		const item = skillMap.get(skillID);
+		if (!item) return;
+		item.massSelected = !item.massSelected;
+
+		const folderItem: FolderItem = {
+			...item,
+			massSelected: true
+		};
+		dispatchDetection([folderItem]);
+		//TODO: Get the array from another source
+
+		handleSelection(
+			Array.from(skillMap.values())
+				.filter(item => item.massSelected)
+				.map(item => item.skill)
+		);
+	};
+
 	return (
 		// eslint-disable-next-line react/jsx-no-useless-fragment
 		<>
@@ -273,10 +343,11 @@ function ListSkillEntryWithChildren({
 				<SkillRow
 					skill={skill}
 					depth={depth}
-					displayInfo={{ isSelected, hasCycle, isParent }}
+					displayInfo={{ isSelected, hasCycle, isParent, isMassSelected }}
 					onSelect={() => setOpen(!open)}
 					onEdit={handleSelection}
 					childrenFoldedOut={open}
+					onMassSelect={handleMassSelectionChange}
 				/>
 				{open &&
 					skill.children.map(element => (

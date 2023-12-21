@@ -120,6 +120,7 @@ export function getCycleStackTrace<S extends { name: string }>(cycles: S[][]): s
 export type FolderItem = {
 	skill: SkillFormModel;
 	selectedSkill: boolean;
+	massSelected?: boolean;
 	cycle?: string;
 	parent?: string;
 };
