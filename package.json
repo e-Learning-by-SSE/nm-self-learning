@@ -21,7 +21,7 @@
 	},
 	"dependencies": {
 		"@dagrejs/dagre": "^1.0.2",
-		"@e-learning-by-sse/nm-skill-lib": "^0.0.2",
+		"@e-learning-by-sse/nm-skill-lib": "^0.1.0",
 		"@headlessui/react": "^1.7.7",
 		"@hello-pangea/dnd": "^16.2.0",
 		"@heroicons/react": "^1.0.6",

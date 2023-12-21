@@ -1,5 +1,5 @@
 import { SkillFormModel } from "@self-learning/types";
-import { findParentsOfCycledSkills } from "@self-learning/skills-pathfinder";
+import { findParentsOfCycledSkills } from "@e-learning-by-sse/nm-skill-lib";
 import { clearCycleDetection, dispatchDetection } from "./detection-hook";
 import { Alert, dispatchDialog, freeDialog, SimpleDialog } from "@self-learning/ui/common";
 
