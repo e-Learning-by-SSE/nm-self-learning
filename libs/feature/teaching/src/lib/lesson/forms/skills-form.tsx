@@ -9,43 +9,36 @@ import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { SelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
 
+type SkillModalIdentifier = "teachingGoals" | "requirements";
+
 export default function SkillForm() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
-	const requirementSkills = watch("requirements");
-	const teachingGoals = watch("teachingGoals");
+	const watchingSkills = {
+		requirements: watch("requirements"),
+		teachingGoals: watch("teachingGoals")
+	};
 
 	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
-	const [selectSkillModal, setSelectSkillModal] = useState<{
-		id: "TEACHING" | "REQUIREMENT";
-	} | null>(null);
+	const [selectSkillModal, setSelectSkillModal] = useState<{ id: SkillModalIdentifier } | null>(
+		null
+	);
 
 	const selectRepository = (id: SkillRepositoryModel) => {
 		setSelectedRepository(id);
 	};
 
-	const addSkills = (skill: SkillFormModel[] | undefined, id: "TEACHING" | "REQUIREMENT") => {
+	const addSkills = (skill: SkillFormModel[] | undefined, id: SkillModalIdentifier) => {
 		if (!skill) return;
 		skill = skill.map(skill => ({ ...skill, children: [], parents: [] }));
-		if (id === "TEACHING") {
-			setValue("teachingGoals", [...teachingGoals, ...skill]);
-		} else {
-			setValue("requirements", [...requirementSkills, ...skill]);
-		}
+		setValue(id, [...watchingSkills[id], ...skill]);
 	};
 
-	const deleteSkill = (skill: SkillFormModel, id: "TEACHING" | "REQUIREMENT") => {
-		if (id === "TEACHING") {
-			setValue(
-				"teachingGoals",
-				teachingGoals.filter(s => s.id !== skill.id)
-			);
-		} else {
-			setValue(
-				"requirements",
-				requirementSkills.filter(s => s.id !== skill.id)
-			);
-		}
+	const deleteSkill = (skill: SkillFormModel, id: SkillModalIdentifier) => {
+		setValue(
+			id,
+			watchingSkills[id].filter(s => s.id !== skill.id)
+		);
 	};
 
 	return (
@@ -59,24 +52,24 @@ export default function SkillForm() {
 				<>
 					<LabeledField label="Vermittelte Skills">
 						<SelectSkillsView
-							skills={teachingGoals}
+							skills={watchingSkills["teachingGoals"]}
 							onDeleteSkill={skill => {
-								deleteSkill(skill, "TEACHING");
+								deleteSkill(skill, "teachingGoals");
 							}}
 							onAddSkill={skill => {
-								addSkills(skill, "TEACHING");
+								addSkills(skill, "teachingGoals");
 							}}
 							repoId={selectedRepository.id}
 						/>
 					</LabeledField>
 					<LabeledField label="Benötigte Skills">
 						<SelectSkillsView
-							skills={requirementSkills}
+							skills={watchingSkills["requirements"]}
 							onDeleteSkill={skill => {
-								deleteSkill(skill, "REQUIREMENT");
+								deleteSkill(skill, "requirements");
 							}}
 							onAddSkill={skill => {
-								addSkills(skill, "REQUIREMENT");
+								addSkills(skill, "requirements");
 							}}
 							repoId={selectedRepository.id}
 						/>
