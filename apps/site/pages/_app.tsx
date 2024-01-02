@@ -40,6 +40,17 @@ export default withTRPC<AppRouter>({
 	}
 })(CustomApp);
 
+const restrictedPathnamePatterns = [/\/teaching\/courses\/edit\/.+\/learnpath/];
+
+function isComponentVisibleForPathname(pathname: string) {
+	for (const pattern of restrictedPathnamePatterns) {
+		if (pattern.test(pathname)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 function CustomApp({ Component, pageProps }: AppProps) {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const Layout = (Component as any).getLayout
@@ -55,6 +66,10 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		}
 	}, []);
 
+	const router = useRouter();
+	const currentPathname = router.pathname;
+	const isComponentVisible = isComponentVisibleForPathname(currentPathname);
+
 	return (
 		<PlausibleProvider
 			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
@@ -68,13 +83,14 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<Head>
 					<title>Self-Learning</title>
 				</Head>
+
 				<MessagePortal />
-				<Navbar />
+				{isComponentVisible && <Navbar />}
 				<main className="grid grow">
 					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 				</main>
 				<Toaster containerStyle={{ top: 96 }} position="top-right" />
-				<Footer />
+				{isComponentVisible && <Footer />}
 				{/* <ReactQueryDevtools position="bottom-right" /> */}
 			</SessionProvider>
 		</PlausibleProvider>
