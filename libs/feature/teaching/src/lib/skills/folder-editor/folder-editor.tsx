@@ -6,10 +6,10 @@ import FolderListView from "./folder-list-view";
 import { SkillFormModel } from "@self-learning/types";
 import { RepositoryInfoMemorized } from "./repository-edit-form";
 import { SkillInfoForm } from "./skill-edit-form";
-import { SkillProps } from "../../../../../../../apps/site/pages/skills/repository/[repoSlug]";
 import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
 
 export type SkillSelectHandler = (selectedSkill: SkillFormModel | null) => void;
+export type SkillProps = { repoId: string; skills: SkillFormModel[] };
 
 export interface FolderContextProps {
 	handleSelection: SkillSelectHandler;
@@ -37,10 +37,10 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 	}, [skillProps.skills]);
 
 	useEffect(() => {
-		const getCyclen = async () => {
+		const getCycles = async () => {
 			await checkForCycles(skillMap);
 		};
-		getCyclen();
+		getCycles();
 	}, [skillMap]);
 
 	const changeSelectedItem: SkillSelectHandler = item => {

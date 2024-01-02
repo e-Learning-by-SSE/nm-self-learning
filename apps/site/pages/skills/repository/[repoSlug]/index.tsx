@@ -1,14 +1,14 @@
-import { FolderSkillEditor } from "@self-learning/teaching";
+import { FolderSkillEditor, SkillProps } from "@self-learning/teaching";
 import { GetServerSideProps } from "next";
 import { database } from "@self-learning/database";
 import { SkillFormModel } from "@self-learning/types";
 import { getAuthenticatedUser } from "@self-learning/api";
 
-const createNew = async (userId: string) => {
+async function createNew(userId: string) {
 	const newRep = {
 		ownerId: userId,
-		name: "New Skilltree: " + Date.now(),
-		description: "New Skilltree Description"
+		name: "Neue Skillkarte: " + Date.now(),
+		description: "Beschreibung der Skillkarte"
 	};
 	const result = await database.skillRepository.create({
 		data: newRep
@@ -25,9 +25,9 @@ const createNew = async (userId: string) => {
 			permanent: false
 		}
 	};
-};
+}
 
-const getSkills = async (repoId: string) => {
+async function getSkills(repoId: string) {
 	const skills = await database.skill.findMany({
 		where: { repositoryId: repoId },
 		select: {
@@ -52,8 +52,7 @@ const getSkills = async (repoId: string) => {
 		};
 	});
 	return transformedSkill;
-};
-export type SkillProps = { repoId: string; skills: SkillFormModel[] };
+}
 
 export const getServerSideProps: GetServerSideProps<SkillProps> = async ctx => {
 	const repoId = ctx.query.repoSlug as string;
