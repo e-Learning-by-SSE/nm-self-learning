@@ -5,11 +5,13 @@ import { DialogHandler, Divider, LoadingBox } from "@self-learning/ui/common";
 import FolderListView from "./folder-list-view";
 import { SkillFormModel } from "@self-learning/types";
 import { RepositoryInfoMemorized } from "./repository-edit-form";
-import { SkillInfoForm } from "./skill-edit-form";
+
+import { SelectedSkillsInfoForm } from "./skill-edit-form";
+import { SkillProps } from "../../../../../../../apps/site/pages/skills/repository/[repoSlug]";
 import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
 
-export type SkillSelectHandler = (selectedSkill: SkillFormModel | null) => void;
-export type SkillProps = { repoId: string; skills: SkillFormModel[] };
+export type SkillSelectHandler = (selectedSkill: SkillFormModel[] | null) => void;
+
 
 export interface FolderContextProps {
 	handleSelection: SkillSelectHandler;
@@ -26,7 +28,7 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 		id: skillProps.repoId
 	});
 	const [selectedItem, setSelectedItem] = useState<{
-		selected: SkillFormModel;
+		selected: SkillFormModel[];
 		previousSkill: SkillFormModel | null;
 	} | null>(null);
 
@@ -48,13 +50,25 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 			setSelectedItem(null);
 			return;
 		}
-		setSelectedItem({ selected: item, previousSkill: selectedItem?.selected ?? null });
+		let previousItem = null;
+
+		if (selectedItem?.selected.length == 1) {
+			previousItem = selectedItem.selected[0];
+		}
+
+		setSelectedItem({
+			selected: item,
+			previousSkill: previousItem
+		});
 	};
 
 	return (
 		<div className="bg-gray-50">
 			<FolderContext.Provider
-				value={{ handleSelection: changeSelectedItem, skillMap: skillMap }}
+				value={{
+					handleSelection: changeSelectedItem,
+					skillMap: skillMap
+				}}
 			>
 				{isLoading ? (
 					<LoadingBox />
@@ -76,8 +90,8 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 								)}
 
 								{selectedItem ? (
-									<SkillInfoForm
-										skill={selectedItem.selected}
+									<SelectedSkillsInfoForm
+										skills={selectedItem.selected}
 										previousSkill={selectedItem.previousSkill}
 									/>
 								) : (

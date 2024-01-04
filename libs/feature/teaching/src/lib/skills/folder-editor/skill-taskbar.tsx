@@ -12,6 +12,7 @@ import { FolderAddIcon } from "@heroicons/react/outline";
 import { useContext } from "react";
 import { FolderContext } from "./folder-editor";
 import { checkForCycles } from "./cycle-detection/cycle-detection";
+import { dispatchDetection } from "./cycle-detection/detection-hook";
 
 export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel }) {
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
@@ -56,7 +57,7 @@ export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFor
 					selectedSkill: true
 				});
 
-				handleSelection(adaptedCurrentSkill);
+				handleSelection([adaptedCurrentSkill]);
 
 				const folderItem = {
 					skill: updateSkillFormModel,
@@ -96,7 +97,13 @@ export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFor
 	);
 }
 
-export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
+export function SkillDeleteOption({
+	skills,
+	classname
+}: {
+	skills: SkillFormModel[];
+	classname?: string;
+}) {
 	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
 	const { mutateAsync: getSkillsFromId } = trpc.skill.getSkillsByIds.useMutation();
 	const { handleSelection } = useContext(FolderContext);
@@ -104,56 +111,60 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 	const handleDelete = () => {
 		dispatchDialog(
 			<SimpleDialog
-				description="Soll der Skill wirklich gelöscht werden?"
+				description={`${
+					skills.length > 1 ? "Sollen die Skills " : "Soll der Skill"
+				} wirklich gelöscht werden?`}
 				name="Warnung"
 				onClose={async (type: ButtonActions) => {
 					if (type === ButtonActions.CANCEL) {
 						freeDialog("simpleDialog");
 						return;
 					}
-					try {
-						await deleteSkill({ id: skill.id });
-						showToast({
-							type: "success",
-							title: "Skill gelöscht!",
-							subtitle: ""
-						});
 
-						//load parentskill without deleted skill
-						const parentSkills = await getSkillsFromId({
-							skillIds: skill.parents
-						});
-
-						const parentSkillFormModels = parentSkills.map(skill => {
-							return {
-								name: skill.name,
-								description: skill.description,
-								children: skill.children
-									.filter(item => item.id !== skill.id)
-									.map(skill => skill.id),
-								id: skill.id,
-								repositoryId: skill.repository.id,
-								parents: skill.parents.map(skill => skill.id)
-							};
-						});
-
-						if (parentSkills.length === 0) return;
-
-						const folderItems = parentSkillFormModels.map(skill => {
-							return {
-								skill: skill,
-								selectedSkill: false
-							};
-						});
-
-						await checkForCycles(skillMap, ...folderItems);
-					} catch (error) {
-						if (error instanceof Error) {
+					for (const skill of skills) {
+						try {
+							await deleteSkill({ id: skill.id });
 							showToast({
-								type: "error",
-								title: "Skill konnte nicht gelöscht werden!",
-								subtitle: error.message ?? ""
+								type: "success",
+								title: "Skill gelöscht!",
+								subtitle: ""
 							});
+
+							//load parentskill without deleted skill
+							const parentSkills = await getSkillsFromId({
+								skillIds: skill.parents
+							});
+
+							const parentSkillFormModels = parentSkills.map(skill => {
+								return {
+									name: skill.name,
+									description: skill.description,
+									children: skill.children
+										.filter(item => item.id !== skill.id)
+										.map(skill => skill.id),
+									id: skill.id,
+									repositoryId: skill.repository.id,
+									parents: skill.parents.map(skill => skill.id)
+								};
+							});
+
+							const folderItems = parentSkillFormModels.map(skill => {
+								return {
+									skill: skill,
+									selectedSkill: false
+								};
+							});
+							await checkForCycles(skillMap, ...folderItems);
+						} catch (error) {
+							if (error instanceof Error) {
+								showToast({
+									type: "error",
+									title: `${
+										skills.length > 1 ? "Skills konnten" : "Skill konnte"
+									} nicht gelöscht werden!`,
+									subtitle: error.message ?? ""
+								});
+							}
 						}
 					}
 					freeDialog("simpleDialog");
@@ -167,7 +178,7 @@ export function SkillDeleteOption({ skill }: { skill: SkillFormModel }) {
 	return (
 		<button
 			type="button"
-			className="rounded-lg border border-light-border bg-red-400 py-2 px-2  hover:bg-red-600"
+			className={`rounded-lg border border-light-border bg-red-400 hover:bg-red-600 ${classname}`}
 			onClick={handleDelete}
 		>
 			<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />

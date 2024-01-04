@@ -7,11 +7,58 @@ import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/api";
 import { FolderContext } from "./folder-editor";
 import { SkillDeleteOption } from "./skill-taskbar";
-import { showToast } from "@self-learning/ui/common";
+import { Divider, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { dispatchDetection } from "./cycle-detection/detection-hook";
 import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
 import { XIcon } from "@heroicons/react/solid";
+
+export function SelectedSkillsInfoForm({
+	skills,
+	previousSkill
+}: {
+	skills: SkillFormModel[];
+	previousSkill: SkillFormModel | null;
+}) {
+	if (skills.length > 0) {
+		return (
+			<div>
+				{skills.length > 1 ? (
+					<MassSelectedInfo skills={skills} />
+				) : (
+					<SkillInfoForm skill={skills[0]} previousSkill={previousSkill} />
+				)}
+			</div>
+		);
+	} else {
+		return <div />;
+	}
+}
+
+export function MassSelectedInfo({ skills }: { skills: SkillFormModel[] }) {
+	return (
+		<>
+			<h2 className="text-xl">Ausgewählte Skills:</h2>
+			<span className="pb-4 text-sm text-light">Die rechts ausgewählten Skills</span>
+
+			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-light-border">
+				<div className="flex flex-col">
+					{skills.map((skill, index) => (
+						<span
+							key={"span: " + skill.id + index}
+							className="flex items-center gap-2 pl-1"
+						>
+							{skill.name}
+						</span>
+					))}
+				</div>
+			</section>
+			<div className="pt-4" />
+			<Divider />
+			<SkillDeleteOption skills={skills} classname={"py-2 px-8"} />
+		</>
+	);
+}
 
 export function SkillInfoForm({
 	skill,
@@ -130,7 +177,7 @@ export function SkillInfoForm({
 						<button type="submit" className="btn-primary w-full">
 							Speichern
 						</button>
-						<SkillDeleteOption skill={skill} />
+						<SkillDeleteOption skills={[skill]} classname={"py-2 px-2"} />
 					</div>
 				</Form.SidebarSection>
 			</form>
