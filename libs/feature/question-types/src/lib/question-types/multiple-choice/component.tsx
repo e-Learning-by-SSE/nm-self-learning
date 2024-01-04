@@ -53,7 +53,7 @@ export default function MultipleChoiceAnswer({
 						) : (
 							<span className="text-red-500">Error: No markdown content found.</span>
 						)}
-	sehr gut xD				</MultipleChoiceOption>
+					</MultipleChoiceOption>
 				))}
 			</section>
 

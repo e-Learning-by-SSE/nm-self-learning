@@ -4,14 +4,7 @@ import {
 	INITIAL_ANSWER_VALUE_FUNCTIONS,
 	QuestionType
 } from "@self-learning/question-types";
-import {
-	createContext,
-	Dispatch,
-	SetStateAction,
-	useContext,
-	useMemo,
-	useState
-} from "react";
+import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
 import { QuizConfig } from "../quiz";
 import { QuizSaveContext } from "@self-learning/lesson";
 import { useRouter } from "next/router";
@@ -101,7 +94,6 @@ export function QuizProvider({
 			router.asPath.endsWith(quizSaveContext.getValue.lessonSlug + "/quiz")
 		) {
 			const savedEvals = quizSaveContext.getValue.evaluation as typeof evals;
-			// return quizSaveContext.getValue.evaluation as typeof evals;
 			for (const q of questions) {
 				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 				if (savedEvals[q.questionId]) {
