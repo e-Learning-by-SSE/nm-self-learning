@@ -20,15 +20,19 @@ export function SelectedSkillsInfoForm({
 	skills: SkillFormModel[];
 	previousSkill: SkillFormModel | null;
 }) {
-	return (
-		<div>
-			{skills.length > 1 ? (
-				<MassSelectedInfo skills={skills} />
-			) : (
-				<SkillInfoForm skill={skills[0]} previousSkill={previousSkill} />
-			)}
-		</div>
-	);
+	if (skills[0]) {
+		return (
+			<div>
+				{skills.length > 1 ? (
+					<MassSelectedInfo skills={skills} />
+				) : (
+					<SkillInfoForm skill={skills[0]} previousSkill={previousSkill} />
+				)}
+			</div>
+		);
+	} else {
+		return <div />;
+	}
 }
 
 export function MassSelectedInfo({ skills }: { skills: SkillFormModel[] }) {
