@@ -11,7 +11,7 @@ import { Divider, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { dispatchDetection } from "./cycle-detection/detection-hook";
 import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
-import { TrashIcon, XIcon } from "@heroicons/react/solid";
+import { XIcon } from "@heroicons/react/solid";
 
 export function SelectedSkillsInfoForm({
 	skills,
@@ -20,7 +20,7 @@ export function SelectedSkillsInfoForm({
 	skills: SkillFormModel[];
 	previousSkill: SkillFormModel | null;
 }) {
-	if (skills[0]) {
+	if (skills.length > 0) {
 		return (
 			<div>
 				{skills.length > 1 ? (
@@ -55,11 +55,7 @@ export function MassSelectedInfo({ skills }: { skills: SkillFormModel[] }) {
 			</section>
 			<div className="pt-4" />
 			<Divider />
-			<div className="flex justify-between pt-4">
-				<button className="btn w-full bg-red-500">
-					<TrashIcon className="ba h-5 w-5 text-black" />
-				</button>
-			</div>
+			<SkillDeleteOption skills={skills} classname={"py-2 px-8"} />
 		</>
 	);
 }
@@ -181,7 +177,7 @@ export function SkillInfoForm({
 						<button type="submit" className="btn-primary w-full">
 							Speichern
 						</button>
-						<SkillDeleteOption skill={skill} />
+						<SkillDeleteOption skills={[skill]} classname={"py-2 px-2"} />
 					</div>
 				</Form.SidebarSection>
 			</form>
