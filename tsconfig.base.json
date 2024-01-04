@@ -15,7 +15,6 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
-			"@self-learning/skills-pathfinder": ["libs/feature/skills-pathfinder/src/index.ts"],
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/api-client": ["libs/data-access/api-client/src/index.ts"],

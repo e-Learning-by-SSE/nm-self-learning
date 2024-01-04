@@ -21,6 +21,9 @@ nx serve
         -   You can generate a secret via this command: `openssl rand -base64 32`
 
 ```
+# Modify npmrc
+Because we use github packages, you need to copy `.npmrc.example` to `.npmrc` and add your github auth token. 
+
 # Install dependencies
 npm ci
 
