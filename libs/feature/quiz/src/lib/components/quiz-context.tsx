@@ -8,6 +8,7 @@ import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState 
 import { QuizConfig } from "../quiz";
 import { QuizSaveContext } from "@self-learning/lesson";
 import { useRouter } from "next/router";
+
 type QuizCompletionState = "in-progress" | "completed" | "failed";
 
 export type QuizContextValue = {
@@ -111,7 +112,7 @@ export function QuizProvider({
 			return "in-progress";
 		}
 
-		if (allEvaluations.every(e => e && e.isCorrect === true)) {
+		if (allEvaluations.every(e => e && e.isCorrect)) {
 			return "completed";
 		}
 
