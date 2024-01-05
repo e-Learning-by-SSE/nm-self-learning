@@ -3,6 +3,8 @@
 # npm config
 .npmrc
 
+.nx/cache
+
 # compiled output
 /dist
 /tmp
