@@ -58,8 +58,9 @@ export default function SkillForm() {
 			<LinkedSkillRepositoryMemorized selectRepository={selectRepository} />
 			{selectedRepository && (
 				<>
+					{/* TODO original
 					<LabeledField label="Vermittelte Skills">
-						<SelectSkillsView 
+						<SelectSkillsView
 							skills={teachingGoals}
 							onDeleteSkill={skill => {
 								deleteSkill(skill, "TEACHING");
@@ -70,8 +71,9 @@ export default function SkillForm() {
 							repoId={selectedRepository.id}
 						/>
 					</LabeledField>
+
 					<LabeledField label="Benötigte Skills">
-					<SelectSkillsView 
+					<SelectSkillsView
 							skills={requirementSkills}
 							onDeleteSkill={skill => {
 								deleteSkill(skill, "REQUIREMENT");
@@ -82,6 +84,7 @@ export default function SkillForm() {
 							repoId={selectedRepository.id}
 						/>
 					</LabeledField>
+					*/}
 					{selectSkillModal && (
 						<SelectSkillDialog
 							onClose={skill => {
@@ -150,20 +153,19 @@ function RepositoryDropDown({
 
 	return (
 		<div className="flex flex-col">
-				<select
-					className="textfield"
-					value={selectedRepository ?? repositories[0].id}
-					onChange={e => {
-						changeDisplaySelectedRepository(e.target.value);
-					}}
-				>
-					{repositories.map(repository => (
-						<option key={repository.id} value={repository.id}>
-							{repository.name}
-						</option>
-					))}
-				</select>
+			<select
+				className="textfield"
+				value={selectedRepository ?? repositories[0].id}
+				onChange={e => {
+					changeDisplaySelectedRepository(e.target.value);
+				}}
+			>
+				{repositories.map(repository => (
+					<option key={repository.id} value={repository.id}>
+						{repository.name}
+					</option>
+				))}
+			</select>
 		</div>
 	);
 }
-

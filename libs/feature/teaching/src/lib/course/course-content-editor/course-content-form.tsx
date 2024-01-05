@@ -387,7 +387,9 @@ function EditExistingLessonDialog({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 }) {
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
-
+	// TODO remove my change
+	return data ? <p>Here we have a problem </p> : null;
+	/* TODO original
 	return data ? (
 		<EditLessonDialog
 			onClose={onClose}
@@ -401,4 +403,5 @@ function EditExistingLessonDialog({
 			}}
 		/>
 	) : null;
+	*/
 }
