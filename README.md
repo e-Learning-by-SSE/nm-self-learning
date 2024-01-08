@@ -11,4 +11,4 @@ In this project we use contributing guidelines you can find here: https://github
 
 ## Deploy the Plattform
 
-Please see [the Production guide](https://github.com/e-Learning-by-SSE/nm-self-learning/wiki/Development-Environment#production) and the [configuration guide](https://github.com/e-Learning-by-SSE/nm-self-learning/wiki/Development-Environment#production) for necessary environment variables.
+Please see [the Production guide](https://github.com/e-Learning-by-SSE/nm-self-learning/wiki/Development-Environment#production) and the [configuration guide](https://github.com/e-Learning-by-SSE/nm-self-learning/wiki/ENV-Configuration) for necessary environment variables.

@@ -12,6 +12,7 @@
 		"cypress": "cypress open --project=apps/site-e2e",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write '{apps,libs}/**/*.{ts,tsx}'",
+		"prisma": "prisma",
 		"preprisma:seed": "prisma generate",
 		"prisma:seed": "prisma db push --accept-data-loss && prisma db seed",
 		"start:prod": "cd dist/apps/site && npm start"
