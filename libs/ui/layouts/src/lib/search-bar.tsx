@@ -1,5 +1,5 @@
 import { EmojiSadIcon, SearchIcon } from "@heroicons/react/outline";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Transition } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
@@ -25,10 +25,6 @@ export function SearchBar() {
 		displayName: searchQuery,
 		page: 1
 	});
-
-	useEffect(() => {
-		setSearchQuery(searchQuery as string);
-	}, [searchQuery]);
 
 	return (
 		<div className="hidden flex-1 items-center justify-center px-2 lg:ml-6 lg:flex lg:justify-end">
