@@ -26,6 +26,10 @@ export function SearchBar() {
 		page: 1
 	});
 
+	const resetCallback = () => {
+		setSearchQuery("");
+	};
+
 	return (
 		<div className="hidden flex-1 items-center justify-center px-2 lg:ml-6 lg:flex lg:justify-end">
 			<div className="relative w-full max-w-lg lg:max-w-xs">
@@ -85,7 +89,7 @@ export function SearchBar() {
 												};
 											})}
 											baseLink="courses"
-											setSearchQuery={setSearchQuery}
+											onClick={resetCallback}
 										/>
 									) : (
 										<div></div>
@@ -103,7 +107,7 @@ export function SearchBar() {
 												};
 											})}
 											baseLink="teaching/lessons/edit"
-											setSearchQuery={setSearchQuery}
+											onClick={resetCallback}
 										/>
 									) : (
 										<div></div>
@@ -119,7 +123,7 @@ export function SearchBar() {
 												};
 											})}
 											baseLink="authors"
-											setSearchQuery={setSearchQuery}
+											onClick={resetCallback}
 										/>
 									) : (
 										<div></div>

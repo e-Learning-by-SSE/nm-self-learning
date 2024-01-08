@@ -4,14 +4,14 @@ export function SearchSection({
 	title,
 	results,
 	baseLink,
-	setSearchQuery,
+	onClick,
 	maxDisplayedSearchResults = 4, // how many search results are at most displayed for the section
 	searchResultOffset = 0 // Where in the results the display should start
 }: {
 	title: string;
 	results: { title: string; slug: string }[];
 	baseLink: string;
-	setSearchQuery: (changes: string) => void;
+	onClick: () => void;
 	maxDisplayedSearchResults?: number;
 	searchResultOffset?: number;
 }) {
@@ -23,7 +23,7 @@ export function SearchSection({
 					<Link
 						className="block w-full overflow-hidden text-ellipsis p-2 hover:bg-emerald-500 hover:text-white"
 						key={result.title}
-						onClick={() => setSearchQuery("")}
+						onClick={onClick}
 						href={`/${baseLink}/${result.slug}`}
 					>
 						{result.title}
