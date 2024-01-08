@@ -41,6 +41,7 @@ export function SearchBar() {
 						<SearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
 					</div>
 					<input
+						autoComplete="off"
 						id="search"
 						name="search"
 						className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-500 lg:text-sm lg:leading-6"
