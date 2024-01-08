@@ -5,7 +5,7 @@ import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { SearchBar } from "./SearchBar";
+import { SearchBar } from "./search-bar";
 
 export function Navbar() {
 	const session = useSession();
