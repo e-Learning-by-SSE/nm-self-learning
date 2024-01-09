@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
+	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
@@ -99,6 +100,9 @@ export const courseRouter = t.router({
 		}
 
 		return { content, lessonMap };
+	}),
+	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+		return getFullCourseExport(input.slug);
 	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
 		if (!canCreate(ctx.user)) {
