@@ -8,6 +8,8 @@ import {
 } from "./low-level-api";
 import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
+import { Quiz } from "@self-learning/quiz";
+import { QuestionType, QuizContent } from "@self-learning/question-types";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
 
@@ -107,7 +109,7 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 	if (article.content) {
 		const articleIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
 		const articlePart = {
-			title: "Article",
+			title: "Artikel",
 			indent: articleIndent,
 			body: [markdownify(article.content.value.content, { htmlTag: "article" })]
 		};
@@ -125,5 +127,46 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 		};
 
 		sections.push(pdfPart);
+	}
+
+	if (lesson.quiz) {
+		const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+		const quizPart = {
+			title: "Lernzielkontrolle",
+			indent: quizIndent,
+			body: [] as string[]
+		};
+
+		const quiz = lesson.quiz as Quiz;
+		for (const question of quiz.questions) {
+			console.log(question);
+			switch (question.type) {
+				case "multiple-choice": {
+					let answers = "";
+					for (const answer of question.answers) {
+						if (answer.isCorrect) {
+							answers += `- [[x]] ${markdownify(answer.content)}\n`;
+						} else {
+							answers += `- [[ ]] ${markdownify(answer.content)}\n`;
+						}
+					}
+					quizPart.body.push(markdownify(question.statement + "\n\n" + answers));
+					break;
+				}
+				case "exact":
+					break;
+				case "text":
+					break;
+				case "cloze":
+					break;
+				case "programming":
+					break;
+				default:
+					console.log(`Unknown question type: ${question.type}`);
+					break;
+			}
+		}
+
+		sections.push(quizPart);
 	}
 }
