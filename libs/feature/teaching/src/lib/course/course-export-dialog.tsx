@@ -13,38 +13,44 @@ export function ExportCourseDialog({
 	onClose: () => void;
 }) {
 	const [open, setOpen] = useState(true);
-	const [shallExport, setExport] = useState(true);
 	const [message, setMessage] = useState(`Exporting: ${course.title}`);
 
-	const { data: courseObj, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
+	const { data, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
 
+	const [md, setMd] = useState("");
+
+	// This effect triggers the download after the content was generated
 	useEffect(() => {
-		if (!isLoading && open) {
-			if (courseObj === undefined) return;
-			exportCourse(courseObj)
-				.then(md => {
-					if (shallExport) {
-						setExport(false);
-						const blob = new Blob([md], { type: "text/plain" });
-						const href = URL.createObjectURL(blob);
-						const link = document.createElement("a");
-						link.href = href;
-						link.download = "Course.md";
-						document.body.appendChild(link);
-						link.click();
-						// Clean up and remove the link
-						// document.body.removeChild(link);
-						// URL.revokeObjectURL(href);
-						setOpen(false);
-						onClose();
-					}
-				})
-				.catch(error => {
-					setExport(false);
-					setMessage(`Error: ${error}`);
-				});
+		if (md !== "") {
+			try {
+				const blob = new Blob([md], { type: "text/plain" });
+				const downloadUrl = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = downloadUrl;
+				a.download = `${data?.course.title}.md` ?? "ExportedCourse.md";
+				document.body.appendChild(a);
+				a.click();
+				window.URL.revokeObjectURL(downloadUrl);
+				document.body.removeChild(a);
+				setOpen(false);
+				onClose();
+			} catch (error) {
+				// Display error message to user
+				setMessage(`Error: ${error}`);
+			}
 		}
-	}, [open, courseObj, onClose, isLoading, shallExport]);
+	}, [md, open, onClose, data]);
+
+	// This effect will trigger the content generation after the data was loaded completely
+	useEffect(() => {
+		if (data && !isLoading) {
+			const convert = async () => {
+				setMd(await exportCourse(data));
+			};
+
+			convert();
+		}
+	}, [data, isLoading]);
 
 	if (!open) return null;
 	return (
