@@ -72,7 +72,7 @@ export function markdownify(
 
 	const lines = markdownText.split("\n");
 	const levels = [0];
-
+	console.log("markdownify", lines);
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
 		if (line.startsWith("#")) {
