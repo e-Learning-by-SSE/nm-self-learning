@@ -1,5 +1,5 @@
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { createContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { trpc } from "@self-learning/api-client";
 import { DialogHandler, Divider, LoadingBox } from "@self-learning/ui/common";
 import FolderListView from "./folder-list-view";
@@ -10,18 +10,10 @@ import { SelectedSkillsInfoForm } from "./skill-edit-form";
 import { SkillProps } from "../../../../../../../apps/site/pages/skills/repository/[repoSlug]";
 import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
 
-export type SkillSelectHandler = (selectedSkill: SkillFormModel[] | null) => void;
-
-
-export interface FolderContextProps {
-	handleSelection: SkillSelectHandler;
-	skillMap: Map<string, FolderItem>;
-}
-
-export const FolderContext = createContext<FolderContextProps>({
-	handleSelection: () => {},
-	skillMap: new Map<string, FolderItem>()
-});
+export type SkillSelectHandler = (
+	selectedSkill: SkillFormModel[] | null,
+	skillMap: Map<string, FolderItem>
+) => void;
 
 export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 	const { data: repository, isLoading } = trpc.skill.getRepository.useQuery({
@@ -32,11 +24,13 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 		previousSkill: SkillFormModel | null;
 	} | null>(null);
 
-	const skillMap = useMemo(() => {
+	const memorizedSkillMap = useMemo(() => {
 		return new Map<string, FolderItem>(
 			skillProps.skills.map(skill => [skill.id, { skill: skill, selectedSkill: false }])
 		);
 	}, [skillProps.skills]);
+	
+	const [skillMap, setSkillMap] = useState<Map<string, FolderItem>>(memorizedSkillMap);
 
 	useEffect(() => {
 		const getCycles = async () => {
@@ -52,7 +46,7 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 		}
 		let previousItem = null;
 
-		if (selectedItem?.selected.length == 1) {
+		if (selectedItem?.selected.length === 1) {
 			previousItem = selectedItem.selected[0];
 		}
 
@@ -62,51 +56,49 @@ export function FolderSkillEditor({ skillProps }: { skillProps: SkillProps }) {
 		});
 	};
 
+	const changeContentOfSkillMap = (skillMap: Map<string, FolderItem>) => {
+		setSkillMap(skillMap);
+	}
+
 	return (
 		<div className="bg-gray-50">
-			<FolderContext.Provider
-				value={{
-					handleSelection: changeSelectedItem,
-					skillMap: skillMap
-				}}
-			>
-				{isLoading ? (
-					<LoadingBox />
-				) : (
-					<SidebarEditorLayout
-						sidebar={
-							<>
-								<div>
-									<span className="text-2xl font-semibold text-secondary">
-										Skillkarten editieren
-									</span>
-								</div>
+			{isLoading ? (
+				<LoadingBox />
+			) : (
+				<SidebarEditorLayout
+					sidebar={
+						<>
+							<div>
+								<span className="text-2xl font-semibold text-secondary">
+									Skillkarten editieren
+								</span>
+							</div>
 
-								{repository && (
-									<>
-										<RepositoryInfoMemorized repository={repository} />
-										<Divider />
-									</>
-								)}
+							{repository && (
+								<>
+									<RepositoryInfoMemorized repository={repository} />
+									<Divider />
+								</>
+							)}
 
-								{selectedItem ? (
-									<SelectedSkillsInfoForm
-										skills={selectedItem.selected}
-										previousSkill={selectedItem.previousSkill}
-									/>
-								) : (
-									"Einen Skill aus der Liste auswählen um das Bearbeiten zu starten..."
-								)}
-							</>
-						}
-					>
-						{repository && (
-							<FolderListView repository={repository} skillMap={skillMap} />
-						)}
-					</SidebarEditorLayout>
-				)}
-				<DialogHandler id={"simpleDialog"} />
-			</FolderContext.Provider>
+							{selectedItem ? (
+								<SelectedSkillsInfoForm
+									skills={selectedItem.selected}
+									previousSkill={selectedItem.previousSkill}
+									skillMap={skillMap}
+									handleSelection={changeSelectedItem}
+									handleChangeOfItems={changeContentOfSkillMap}
+								/>
+							) : (
+								"Einen Skill aus der Liste auswählen um das Bearbeiten zu starten..."
+							)}
+						</>
+					}
+				>
+					{repository && <FolderListView repository={repository} initialSkillMap={skillMap} handleSelection={changeSelectedItem} />}
+				</SidebarEditorLayout>
+			)}
+			<DialogHandler id={"simpleDialog"} />
 		</div>
 	);
 }

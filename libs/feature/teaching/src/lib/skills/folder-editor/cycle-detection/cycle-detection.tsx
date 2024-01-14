@@ -1,6 +1,5 @@
 import { SkillFormModel } from "@self-learning/types";
 import { findParentsOfCycledSkills } from "@e-learning-by-sse/nm-skill-lib";
-import { clearCycleDetection, dispatchDetection } from "./detection-hook";
 import { Alert, dispatchDialog, freeDialog, SimpleDialog } from "@self-learning/ui/common";
 
 /**
@@ -22,18 +21,12 @@ export async function checkForCycles(skillMap: Map<string, FolderItem>, item?: F
 
 	const parents = findParentsOfCycledSkills(skills);
 
-	clearCycleDetection(skillMap);
 
 	if (!parents) {
 		//No cycle found
 
 		freeDialog("alert");
-		if (item) {
-			dispatchDetection([item]);
-		}
 	} else {
-		//cycle found
-
 		const cycles = parents.cycles;
 		const parentList = parents.nestingSkills;
 
@@ -60,8 +53,6 @@ export async function checkForCycles(skillMap: Map<string, FolderItem>, item?: F
 		}
 
 		const cycleStackTrace = getCycleStackTrace(cycles as { name: string }[][]);
-		//draws the cycle symbol only in the affected rows.
-		dispatchDetection(folderItems);
 		if (!(cycles.length > 0)) return;
 		const onClickDetailedCycle = () => {
 			dispatchDialog(

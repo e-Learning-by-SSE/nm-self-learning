@@ -7,7 +7,7 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import React, { memo, useContext, useMemo, useState } from "react";
+import React, { memo, useMemo, useState } from "react";
 import {
 	ChevronDownIcon,
 	ChevronRightIcon,
@@ -21,23 +21,34 @@ import { trpc } from "@self-learning/api-client";
 import { SkillRepository } from "@prisma/client";
 import { SkillFormModel } from "@self-learning/types";
 import { SkillQuickAddOption } from "./skill-taskbar";
-import { FolderContext, SkillSelectHandler } from "./folder-editor";
+import { SkillSelectHandler } from "./folder-editor";
 import styles from "./folder-list-view.module.css";
-import { dispatchDetection, useDetection } from "./cycle-detection/detection-hook";
-import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
+import { dispatchChange, useChangeDetection } from "./cycle-detection/detect-change-hook";
+import { FolderItem } from "./cycle-detection/cycle-detection";
+
+export interface FolderProps {
+	handleSelection: SkillSelectHandler;
+	skillMap: Map<string, FolderItem>;
+	setSkillMap: (skillMap: Map<string, FolderItem>) => void;
+}
 
 function FolderListView({
 	repository,
-	skillMap
+	initialSkillMap,
+	handleSelection
 }: {
 	repository: SkillRepository;
-	skillMap: Map<string, FolderItem>;
+	initialSkillMap: Map<string, FolderItem>;
+	handleSelection: SkillSelectHandler;
 }) {
 	const [displayName, setDisplayName] = useState("");
-	const [skillArray, setSkillArray] = useState<FolderItem[]>(Array.from(skillMap.values()));
+	const [skillMapState, setSkillMapState] = useState<Map<string, FolderItem>>(initialSkillMap);
 	const [masterSelectToggle, setMasterSelectToggle] = useState<boolean>(false);
 
+	console.log("FolderListView Rerendered", initialSkillMap);
+
 	const filteredSkillTrees = useMemo(() => {
+		const skillArray = Array.from(skillMapState.values());
 		if (!skillArray) return [];
 		if (!displayName || displayName.length === 0) return skillArray;
 
@@ -45,10 +56,9 @@ function FolderListView({
 		return skillArray.filter(item =>
 			item.skill.name.toLowerCase().includes(lowerCaseDisplayName)
 		);
-	}, [skillArray, displayName]);
+	}, [skillMapState, displayName]);
 
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
-	const { handleSelection } = useContext(FolderContext);
 
 	const compareSkills = (a: FolderItem, b: FolderItem) => {
 		if (a.skill.children.length > 0 && b.skill.children.length === 0) {
@@ -81,20 +91,21 @@ function FolderListView({
 				parents: createdSkill.parents.map(skill => skill.id)
 			};
 
-			skillMap.set(createdSkill.id, {
+			skillMapState.set(createdSkill.id, {
 				skill: createSkillFormModel,
 				selectedSkill: false,
 				massSelected: false
 			});
-			handleSelection([createSkillFormModel]);
-			setSkillArray(
-				skillArray.concat({
-					skill: createSkillFormModel,
-					selectedSkill: false,
-					massSelected: false
-				})
-			);
-			await checkForCycles(skillMap);
+			handleSelection([createSkillFormModel], skillMapState);
+			const newFolderItem: FolderItem = {
+				skill: createSkillFormModel,
+				selectedSkill: false,
+				massSelected: false
+			};
+
+			const newSkillMap = new Map(skillMapState);
+			newSkillMap.set(createdSkill.id, newFolderItem);
+			setSkillMapState(newSkillMap);
 		} catch (error) {
 			if (error instanceof Error) {
 				showToast({
@@ -107,13 +118,16 @@ function FolderListView({
 	};
 
 	const handleAllSelected = () => {
-		const arrayOffFolderItems = Array.from(skillMap.values());
+		const arrayOffFolderItems = Array.from(skillMapState.values());
 		arrayOffFolderItems.forEach(item => {
 			item.massSelected = !masterSelectToggle;
 		});
 		setMasterSelectToggle(!masterSelectToggle);
-		dispatchDetection(arrayOffFolderItems);
-		handleSelection(arrayOffFolderItems.map(item => item.skill));
+		dispatchChange(arrayOffFolderItems);
+		handleSelection(
+			arrayOffFolderItems.map(item => item.skill),
+			skillMapState
+		);
 	};
 
 	return (
@@ -165,6 +179,8 @@ function FolderListView({
 										key={"baseDir child:" + element.skill.id}
 										skillId={element.skill.id}
 										depth={0}
+										handleSelection={handleSelection}
+										skillMap={skillMapState}
 										showChildren={false}
 									/>
 								)
@@ -183,6 +199,8 @@ function SkillRow({
 	displayInfo,
 	childrenFoldedOut,
 	onSelect,
+	skillMap,
+	handleSelection,
 	onEdit,
 	onMassSelect
 }: {
@@ -196,6 +214,8 @@ function SkillRow({
 	};
 	childrenFoldedOut: boolean;
 	onSelect: () => void;
+	skillMap: Map<string, FolderItem>;
+	handleSelection: SkillSelectHandler;
 	onEdit: SkillSelectHandler;
 	onMassSelect: (skillID: string) => void;
 }) {
@@ -271,12 +291,16 @@ function SkillRow({
 						<button
 							title="Bearbeiten"
 							className="mr-3 px-2 hover:text-secondary"
-							onClick={() => onEdit([skill])}
+							onClick={() => onEdit([skill], skillMap)}
 							disabled={displayInfo.isSelected}
 						>
 							<PencilIcon className="ml-1 h-5 text-lg" />
 						</button>
-						<SkillQuickAddOption selectedSkill={skill} />
+						<SkillQuickAddOption
+							selectedSkill={skill}
+							skillMap={skillMap}
+							handleSelection={handleSelection}
+						/>
 					</div>
 				</div>
 			</TableDataColumn>
@@ -288,14 +312,17 @@ function SkillRow({
 function ListSkillEntryWithChildren({
 	skillId,
 	depth,
+	skillMap,
+	handleSelection,
 	showChildren
 }: {
 	skillId: string;
 	depth: number;
+	skillMap: Map<string, FolderItem>;
+	handleSelection: SkillSelectHandler;
 	showChildren: boolean;
 }) {
-	const { handleSelection, skillMap } = useContext(FolderContext);
-	const folderItemFromDetection = useDetection(skillId);
+	const folderItemFromDetection = useChangeDetection(skillId);
 	const folderItem = skillMap.get(skillId);
 	const [open, setOpen] = useState(showChildren);
 
@@ -307,15 +334,9 @@ function ListSkillEntryWithChildren({
 
 	const isMassSelected = folderItem.massSelected ?? false;
 
-	let hasCycle = false;
-	let isParent = false;
-
-	const { initial, item: detectionItem } = folderItemFromDetection;
-	const { parent, cycle, skill: folderSkill } = folderItem;
-
-	isParent = initial ? !!parent : !!detectionItem?.parent;
-	hasCycle = initial ? !!cycle : !!detectionItem?.cycle;
-	const skill = initial ? folderSkill : detectionItem?.skill ?? folderSkill;
+	const hasCycle = folderItem.cycle ? true : false;
+	const isParent = folderItem.parent ? true : false;
+	const skill = folderItem.skill ?? null;
 
 	const handleMassSelectionChange = (skillID: string) => {
 		const item = skillMap.get(skillID);
@@ -326,13 +347,14 @@ function ListSkillEntryWithChildren({
 			...item,
 			massSelected: true
 		};
-		dispatchDetection([folderItem]);
+		dispatchChange([folderItem]);
 		//TODO: Get the array from another source
 
 		handleSelection(
 			Array.from(skillMap.values())
 				.filter(item => item.massSelected)
-				.map(item => item.skill)
+				.map(item => item.skill),
+			skillMap
 		);
 	};
 
@@ -341,10 +363,12 @@ function ListSkillEntryWithChildren({
 		<>
 			<>
 				<SkillRow
-					skill={skill}
+					skill={folderItem.skill}
 					depth={depth}
 					displayInfo={{ isSelected, hasCycle, isParent, isMassSelected }}
 					onSelect={() => setOpen(!open)}
+					skillMap={skillMap}
+					handleSelection={handleSelection}
 					onEdit={handleSelection}
 					childrenFoldedOut={open}
 					onMassSelect={handleMassSelectionChange}
@@ -354,6 +378,8 @@ function ListSkillEntryWithChildren({
 						<ListSkillEntryWithChildrenMemorized // recursive structure to add <SkillRow /> for each child
 							key={"baseDir child:" + element}
 							skillId={element}
+							handleSelection={handleSelection}
+							skillMap={skillMap}
 							showChildren={false}
 							depth={depth + 1}
 						/>

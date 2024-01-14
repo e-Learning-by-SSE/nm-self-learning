@@ -1,32 +1,49 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/api";
-import { FolderContext } from "./folder-editor";
 import { SkillDeleteOption } from "./skill-taskbar";
 import { Divider, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
-import { dispatchDetection } from "./cycle-detection/detection-hook";
-import { checkForCycles, FolderItem } from "./cycle-detection/cycle-detection";
+import { dispatchChange } from "./cycle-detection/detect-change-hook";
+import { FolderItem } from "./cycle-detection/cycle-detection";
 import { XIcon } from "@heroicons/react/solid";
+import { SkillSelectHandler } from "@self-learning/teaching";
 
 export function SelectedSkillsInfoForm({
 	skills,
-	previousSkill
+	previousSkill,
+	skillMap,
+	handleSelection,
+	handleChangeOfItems
 }: {
 	skills: SkillFormModel[];
 	previousSkill: SkillFormModel | null;
+	skillMap: Map<string, FolderItem>;
+	handleSelection: SkillSelectHandler;
+	handleChangeOfItems: (skillMap: Map<string, FolderItem>) => void;
 }) {
 	if (skills.length > 0) {
 		return (
 			<div>
 				{skills.length > 1 ? (
-					<MassSelectedInfo skills={skills} />
+					<MassSelectedInfo
+						skills={skills}
+						handleSelection={handleSelection}
+						handleChangeOfItems={handleChangeOfItems}
+						skillMap={skillMap}
+					/>
 				) : (
-					<SkillInfoForm skill={skills[0]} previousSkill={previousSkill} />
+					<SkillInfoForm
+						skill={skills[0]}
+						previousSkill={previousSkill}
+						handleSelection={handleSelection}
+						handleChangeOfItems={handleChangeOfItems}
+						skillMap={skillMap}
+					/>
 				)}
 			</div>
 		);
@@ -35,7 +52,17 @@ export function SelectedSkillsInfoForm({
 	}
 }
 
-export function MassSelectedInfo({ skills }: { skills: SkillFormModel[] }) {
+export function MassSelectedInfo({
+	skills,
+	skillMap,
+	handleSelection,
+	handleChangeOfItems
+}: {
+	skills: SkillFormModel[];
+	skillMap: Map<string, FolderItem>;
+	handleSelection: SkillSelectHandler;
+	handleChangeOfItems: (skillMap: Map<string, FolderItem>) => void;
+}) {
 	return (
 		<>
 			<h2 className="text-xl">Ausgewählte Skills:</h2>
@@ -55,23 +82,34 @@ export function MassSelectedInfo({ skills }: { skills: SkillFormModel[] }) {
 			</section>
 			<div className="pt-4" />
 			<Divider />
-			<SkillDeleteOption skills={skills} classname={"py-2 px-8"} />
+			<SkillDeleteOption
+				skills={skills}
+				classname={"py-2 px-8"}
+				handleSelection={handleSelection}
+				skillMap={skillMap}
+				handleChangeOfItems={handleChangeOfItems}
+			/>
 		</>
 	);
 }
 
 export function SkillInfoForm({
 	skill,
-	previousSkill
+	previousSkill,
+	skillMap,
+	handleSelection,
+	handleChangeOfItems
 }: {
 	skill: SkillFormModel;
 	previousSkill: SkillFormModel | null;
+	skillMap: Map<string, FolderItem>;
+	handleSelection: SkillSelectHandler;
+	handleChangeOfItems: (skillMap: Map<string, FolderItem>) => void;
 }) {
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
 	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
 		skillId: skill.id
 	});
-	const { skillMap } = useContext(FolderContext);
 
 	const onSubmit = async (data: SkillFormModel) => {
 		const updatedSkill = await updateSkill({
@@ -103,7 +141,10 @@ export function SkillInfoForm({
 			title: "Skill gespeichert!",
 			subtitle: ""
 		});
-		await checkForCycles(skillMap, folderItem);
+
+		skillMap.set(updatedSkill.id, folderItem);
+
+		handleChangeOfItems(skillMap);
 	};
 
 	const form = useForm({
@@ -137,10 +178,9 @@ export function SkillInfoForm({
 			});
 		}
 		//informs the specific row about the change
-		dispatchDetection(items);
+		dispatchChange(items);
 	}, [skill, form, previousSkill, skillMap]);
 
-	const { handleSelection } = useContext(FolderContext);
 	return (
 		<FormProvider {...form}>
 			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
@@ -154,7 +194,7 @@ export function SkillInfoForm({
 							type="button"
 							className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
 							title="Ansicht ohne Veränderungen schließen"
-							onClick={() => handleSelection(null)}
+							onClick={() => handleSelection(null, skillMap)}
 						>
 							<XIcon className="h-5" />
 						</button>
@@ -177,7 +217,13 @@ export function SkillInfoForm({
 						<button type="submit" className="btn-primary w-full">
 							Speichern
 						</button>
-						<SkillDeleteOption skills={[skill]} classname={"py-2 px-2"} />
+						<SkillDeleteOption
+							skills={[skill]}
+							classname={"py-2 px-2"}
+							handleSelection={handleSelection}
+							skillMap={skillMap}
+							handleChangeOfItems={handleChangeOfItems}
+						/>
 					</div>
 				</Form.SidebarSection>
 			</form>

@@ -1,4 +1,4 @@
-import { FolderSkillEditor, SkillProps } from "@self-learning/teaching";
+import { FolderSkillEditor} from "@self-learning/teaching";
 import { GetServerSideProps } from "next";
 import { database } from "@self-learning/database";
 import { SkillFormModel } from "@self-learning/types";
@@ -53,6 +53,8 @@ async function getSkills(repoId: string) {
 	});
 	return transformedSkill;
 }
+
+export type SkillProps = { repoId: string; skills: SkillFormModel[] };
 
 export const getServerSideProps: GetServerSideProps<SkillProps> = async ctx => {
 	const repoId = ctx.query.repoSlug as string;

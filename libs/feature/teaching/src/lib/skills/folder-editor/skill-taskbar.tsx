@@ -9,15 +9,20 @@ import {
 } from "@self-learning/ui/common";
 import { TrashIcon } from "@heroicons/react/solid";
 import { FolderAddIcon } from "@heroicons/react/outline";
-import { useContext } from "react";
-import { FolderContext } from "./folder-editor";
-import { checkForCycles } from "./cycle-detection/cycle-detection";
-import { dispatchDetection } from "./cycle-detection/detection-hook";
+import { FolderItem } from "./cycle-detection/cycle-detection";
+import { SkillSelectHandler } from "@self-learning/teaching";
 
-export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFormModel }) {
+export function SkillQuickAddOption({
+	selectedSkill,
+	skillMap,
+	handleSelection
+}: {
+	selectedSkill: SkillFormModel;
+	skillMap: Map<string, FolderItem>;
+	handleSelection: SkillSelectHandler
+}) {
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
-	const { handleSelection, skillMap } = useContext(FolderContext);
 
 	const handleAddSkill = async () => {
 		const newSkill = {
@@ -36,7 +41,7 @@ export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFor
 			};
 
 			try {
-				const updatedSkill = await updateSkill({ skill: adaptedCurrentSkill });
+				await updateSkill({ skill: adaptedCurrentSkill });
 
 				showToast({
 					type: "success",
@@ -45,8 +50,6 @@ export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFor
 				});
 				//adds the new skill lokal
 				const createSkillFormModel = createSkillFormModelFromSkillResolved(createdSkill);
-
-				const updateSkillFormModel = createSkillFormModelFromSkillResolved(updatedSkill);
 
 				skillMap.set(createdSkill.id, {
 					skill: createSkillFormModel,
@@ -57,14 +60,9 @@ export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFor
 					selectedSkill: true
 				});
 
-				handleSelection([adaptedCurrentSkill]);
+				handleSelection([adaptedCurrentSkill], skillMap);
 
-				const folderItem = {
-					skill: updateSkillFormModel,
-					selectedSkill: true
-				};
 
-				await checkForCycles(skillMap, folderItem);
 			} catch (error) {
 				if (error instanceof Error) {
 					showToast({
@@ -99,15 +97,19 @@ export function SkillQuickAddOption({ selectedSkill }: { selectedSkill: SkillFor
 
 export function SkillDeleteOption({
 	skills,
+	skillMap,
+	handleSelection,
+	handleChangeOfItems,
 	classname
 }: {
 	skills: SkillFormModel[];
+	skillMap: Map<string, FolderItem>;
+	handleSelection: SkillSelectHandler;
+	handleChangeOfItems: (skillMap: Map<string, FolderItem>) => void;
 	classname?: string;
 }) {
 	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkill.useMutation();
 	const { mutateAsync: getSkillsFromId } = trpc.skill.getSkillsByIds.useMutation();
-	const { handleSelection } = useContext(FolderContext);
-	const skillMap = useContext(FolderContext).skillMap;
 	const handleDelete = () => {
 		dispatchDialog(
 			<SimpleDialog
@@ -154,7 +156,17 @@ export function SkillDeleteOption({
 									selectedSkill: false
 								};
 							});
-							await checkForCycles(skillMap, ...folderItems);
+
+							//delete skill from skillMap
+							folderItems.forEach(item => {
+								skillMap.set(item.skill.id, item);
+							});
+
+							skillMap.delete(skill.id);
+
+							handleChangeOfItems(new Map(skillMap))
+						
+
 						} catch (error) {
 							if (error instanceof Error) {
 								showToast({
@@ -168,7 +180,7 @@ export function SkillDeleteOption({
 						}
 					}
 					freeDialog("simpleDialog");
-					handleSelection(null);
+					handleSelection(null, skillMap);
 				}}
 			/>,
 			"simpleDialog"

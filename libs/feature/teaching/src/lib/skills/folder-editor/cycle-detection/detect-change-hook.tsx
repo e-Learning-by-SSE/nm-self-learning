@@ -9,7 +9,7 @@ interface DrawState {
 const listener: Map<string, Array<(state: DrawState) => void>> = new Map();
 const memorizedDetection: FolderItem[] = [];
 
-export function dispatchDetection(items: FolderItem[]) {
+export function dispatchChange(items: FolderItem[]) {
 	items.forEach(item => {
 		const listenerCallbacks = listener.get(item.skill.id);
 		if (listenerCallbacks) {
@@ -40,7 +40,7 @@ export const clearCycleDetection = (skillMap: Map<string, FolderItem>) => {
 	memorizedDetection.length = 0;
 };
 
-export function useDetection(id: string): DrawState {
+export function useChangeDetection(id: string): DrawState {
 	const [state, setState] = useState<DrawState>({ item: null, initial: true });
 
 	useEffect(() => {
