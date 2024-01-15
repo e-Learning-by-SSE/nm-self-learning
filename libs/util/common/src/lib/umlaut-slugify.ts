@@ -2,6 +2,7 @@ import slugify from "slugify";
 
 type SlugifyOptions = NonNullable<Parameters<typeof slugify>[1]>;
 
+// TODO: add support for uppercase umlauts if needed
 function umlautSlugify(text: string, options?: SlugifyOptions) {
 	const umlautMap: { [key: string]: string } = {
 		ä: "ae",
