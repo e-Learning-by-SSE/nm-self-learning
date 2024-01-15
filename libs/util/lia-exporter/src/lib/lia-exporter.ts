@@ -12,15 +12,17 @@ import { Quiz } from "@self-learning/quiz";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
 
-export function exportCourse({ course, lessons }: CourseWithLessons, addTitlePage = false) {
+export function exportCourse({ course, lessons }: CourseWithLessons, addTitlePage = true) {
 	console.log(">Exporting course", course, lessons);
 	const json: ExportFormat = {
 		// The list of supported items are documented here:
 		// https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#176
 		meta: {
 			title: course.title,
-			author: course.authors.join(", "),
+			author: course.authors.map(author => author.displayName).join(", "),
 			date: new Date().toLocaleDateString(),
+			version: "1.0",
+			narrator: "Deutsch Female",
 			...(course.description && { comment: toPlainText(course.description) }),
 			...(course.imgUrl && { logo: course.imgUrl })
 		},
@@ -31,7 +33,7 @@ export function exportCourse({ course, lessons }: CourseWithLessons, addTitlePag
 		console.log(">>Adding a title page");
 		const section = {
 			title: course.title,
-			indent: 1,
+			indent: 1 as IndentationLevels,
 			body: [] as string[]
 		};
 
@@ -45,6 +47,7 @@ export function exportCourse({ course, lessons }: CourseWithLessons, addTitlePag
 				section.body.push(courseImage);
 			}
 		}
+		json.sections.push(section);
 	}
 
 	const lessonsMap = new Map<string, LessonExport>();
