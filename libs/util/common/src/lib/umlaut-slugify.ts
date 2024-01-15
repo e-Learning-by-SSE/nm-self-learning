@@ -13,7 +13,7 @@ function umlautSlugify(text: string, options?: SlugifyOptions) {
 		Ü: "Ue",
 		ß: "ss"
 	};
-	const replaced = text.replace(/[äöüÄÖÜß]/g, match => umlautMap[match]);
+	const replaced = text.trim().replace(/[äöüÄÖÜß]/g, match => umlautMap[match]);
 	return slugify(replaced, options);
 }
 

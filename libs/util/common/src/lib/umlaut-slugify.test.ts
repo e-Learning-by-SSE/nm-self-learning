@@ -3,7 +3,7 @@ import { slugify } from "./umlaut-slugify";
 describe("umlautSlugify", () => {
 	it("should replace umlauts with their corresponding ASCII characters", () => {
 		const text = "Möbelstück über Äpfel und Öfen";
-		const expected = "moebelstueck-ueber-aepfel-und-eefen";
+		const expected = "moebelstueck-ueber-aepfel-und-oefen";
 		const result = slugify(text, { lower: true, strict: true });
 		expect(result).toEqual(expected);
 	});
@@ -27,6 +27,12 @@ describe("umlautSlugify", () => {
 		const text = "";
 		const expected = "";
 		const result = slugify(text);
+		expect(result).toEqual(expected);
+	});
+	it("should handle leading and trailing whitespaces", () => {
+		const text = "   Möbelstück über Äpfel und Öfen   ";
+		const expected = "moebelstueck-ueber-aepfel-und-oefen";
+		const result = slugify(text, { lower: true, strict: true });
 		expect(result).toEqual(expected);
 	});
 });
