@@ -1,6 +1,5 @@
 import {
 	DialogHandler,
-	showToast,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn
@@ -17,7 +16,6 @@ import {
 	ShieldExclamationIcon
 } from "@heroicons/react/solid";
 import { PencilIcon, PuzzleIcon } from "@heroicons/react/outline";
-import { trpc } from "@self-learning/api-client";
 import { SkillRepository } from "@prisma/client";
 import { SkillFormModel } from "@self-learning/types";
 import { SkillQuickAddOption } from "./skill-taskbar";
@@ -25,6 +23,7 @@ import { SkillSelectHandler } from "./folder-editor";
 import styles from "./folder-list-view.module.css";
 import { dispatchChange, useChangeDetection } from "./cycle-detection/detect-change-hook";
 import { FolderItem } from "./cycle-detection/cycle-detection";
+import { useSkillOperations } from "./skill-operations-hook";
 
 export interface FolderProps {
 	handleSelection: SkillSelectHandler;
@@ -45,8 +44,6 @@ function FolderListView({
 	const [skillMapState, setSkillMapState] = useState<Map<string, FolderItem>>(initialSkillMap);
 	const [masterSelectToggle, setMasterSelectToggle] = useState<boolean>(false);
 
-	console.log("FolderListView Rerendered", initialSkillMap);
-
 	const filteredSkillTrees = useMemo(() => {
 		const skillArray = Array.from(skillMapState.values());
 		if (!skillArray) return [];
@@ -58,7 +55,7 @@ function FolderListView({
 		);
 	}, [skillMapState, displayName]);
 
-	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
+	const { addSkillWithoutParent } = useSkillOperations(skillMapState, handleSelection);
 
 	const compareSkills = (a: FolderItem, b: FolderItem) => {
 		if (a.skill.children.length > 0 && b.skill.children.length === 0) {
@@ -72,49 +69,7 @@ function FolderListView({
 	};
 
 	const createSkillAndSubmit = async () => {
-		const newSkill = {
-			name: "New Skill: " + Date.now(),
-			description: "Add here",
-			children: []
-		};
-		try {
-			const createdSkill = await createSkill({
-				repId: repository.id,
-				skill: newSkill
-			});
-			const createSkillFormModel = {
-				name: createdSkill.name,
-				description: createdSkill.description,
-				children: createdSkill.children.map(skill => skill.id),
-				id: createdSkill.id,
-				repositoryId: createdSkill.repository.id,
-				parents: createdSkill.parents.map(skill => skill.id)
-			};
-
-			skillMapState.set(createdSkill.id, {
-				skill: createSkillFormModel,
-				selectedSkill: false,
-				massSelected: false
-			});
-			handleSelection([createSkillFormModel], skillMapState);
-			const newFolderItem: FolderItem = {
-				skill: createSkillFormModel,
-				selectedSkill: false,
-				massSelected: false
-			};
-
-			const newSkillMap = new Map(skillMapState);
-			newSkillMap.set(createdSkill.id, newFolderItem);
-			setSkillMapState(newSkillMap);
-		} catch (error) {
-			if (error instanceof Error) {
-				showToast({
-					type: "error",
-					title: "Skill konnte nicht gespeichert werden!",
-					subtitle: error.message ?? ""
-				});
-			}
-		}
+			await addSkillWithoutParent(repository.id, setSkillMapState);
 	};
 
 	const handleAllSelected = () => {
