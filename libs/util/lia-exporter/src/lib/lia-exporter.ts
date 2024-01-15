@@ -9,18 +9,20 @@ import {
 import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
-import { QuestionType, QuizContent } from "@self-learning/question-types";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
 
 export function exportCourse({ course, lessons }: CourseWithLessons, addTitlePage = false) {
 	console.log(">Exporting course", course, lessons);
 	const json: ExportFormat = {
+		// The list of supported items are documented here:
+		// https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#176
 		meta: {
 			title: course.title,
 			author: course.authors.join(", "),
-			description: course.description ? toPlainText(course.description) : undefined,
-			version: "1.0"
+			date: new Date().toLocaleDateString(),
+			...(course.description && { comment: toPlainText(course.description) }),
+			...(course.imgUrl && { logo: course.imgUrl })
 		},
 		sections: []
 	};
@@ -96,6 +98,15 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 		body: [] as string[]
 	};
 
+	// Lesson's overview page, may contain:
+	// - Sub title
+	// - Picture
+	// - Description
+	// - Self-regulated question
+	if (lesson.subtitle) {
+		const subtitle = markdownify(lesson.subtitle);
+		nm.body.push(subtitle);
+	}
 	if (lesson.description) {
 		const description = markdownify(lesson.description);
 		nm.body.push(description);
@@ -122,7 +133,7 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 		const articlePart = {
 			title: "Artikel",
 			indent: articleIndent,
-			body: [markdownify(article.content.value.content, { htmlTag: "article" })]
+			body: [markdownify(article.content.value.content, { htmlTag: "section" })]
 		};
 
 		sections.push(articlePart);
@@ -155,7 +166,6 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 			switch (question.type) {
 				case "multiple-choice": {
 					let answers = "";
-					let hints = "";
 					for (const answer of question.answers) {
 						if (answer.isCorrect) {
 							answers += `- [[x]] ${markdownify(answer.content)}\n`;
@@ -163,7 +173,7 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 							answers += `- [[ ]] ${markdownify(answer.content)}\n`;
 						}
 					}
-					hints = addHints(question.hints);
+					const hints = addHints(question.hints);
 					quizPart.body.push(markdownify(question.statement + "\n\n" + answers + hints));
 					break;
 				}

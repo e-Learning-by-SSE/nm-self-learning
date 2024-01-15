@@ -50,10 +50,11 @@ export function toPlainText(markdown: string) {
  * @param markdownText The markdown formatted text to convert.
  * @param htmlTag As specified by the LiaScript API, either "section" or "article".
  * @returns The converted markdown text.
+ * @see https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#10
  */
 export function markdownify(
 	markdownText: string,
-	options: { htmlTag?: "section" | "article"; removeLineNumbers?: boolean } = {
+	options: { htmlTag?: "section" | "article" | "div"; removeLineNumbers?: boolean } = {
 		htmlTag: "section",
 		removeLineNumbers: true
 	}
