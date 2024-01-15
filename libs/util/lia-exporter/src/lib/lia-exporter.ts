@@ -248,29 +248,36 @@ function addTextQuizOptionScript(acceptedAnswers: { value: string; acceptedAnswe
 function addClozeQuiz(text: string) {
 	//const text = "Das ist eine {T: [Textantwort]}. Das ist ein Textfeld {T: [Antwort, Lücke]} mit zwei richtigen Möglichkeiten.Das ist ein Single-Choice Feld mit {C: [#eins, zwei]} Antwortmöglichkeiten, aus denen ausgewählt werden muss. Falsche Antworten werden mit einem # gekennzeichnet.LaTeX kann verwendet werden, um mathematische Formeln und Symbole darzustellen. Zum Beispiel: $$V_{sphere} = \frac{4}{3}\pi r^3$$. Es kann auch in Single-Choice Feldern benutzt werden: {C: [#eins, $$V_{sphere} = \frac{4}{3}\pi r^3$$]}"
 	let chars = [...text];
-	let start = 0;
-	let index = 0;
-	let indexEnd = 0;
-	let found = 0;
-	let conf = 0;
-	let reducedToN = false;
+	let start = 0; //indicator/ counter for {
+	let index = 0; //the index where the { is found
+	let indexEnd = 0; //the index where the last closing } is found
+	let found = 0; //confirmation that the first { is used to denote a answer in the cloze text
+	let conf = 0; //as the second character can be a letter T or C make sure that the third is a ":" only then consider a answer block found
+	let reducedToN = false; //used to indicate that a cloze answer is fully found and allows the conversion to start
 	for (let i = 0; i < chars.length; i++) {
+		//run through all letters of the text
 		if (chars[i] == `}`) {
+			//created to allow/ deal with } inside of normal text or answer blocks
 			start--;
 			if (start <= 0) {
+				//no reason / use to have it below 0, but meant as a catch for } without the opening counterpart
 				start = 0;
 				if (conf == 1) {
+					//Only start the reduction to 0 IF conf is 1 meaning a answer block is identified
 					reducedToN = true;
 				}
 			}
 		}
+		//set found if the character matches one of the expected next ones only IF start is 1 otherwise reset index as well as start
 		if (start == 1 && found == 0 && chars[i] != `T` && chars[i] != `C` && chars[i] != " ") {
 			start = 0;
 			index = 0;
 		} else if (start == 1 && found == 0) {
 			found++;
 		}
+		//Only if start and found are set, add conf if the next character matches the expected ones
 		if (start == 1 && found == 1 && conf == 0 && chars[i] != `:`) {
+			//make it insensitive to whitespaces in the start of the answer block
 			if (chars[i] != `C` && chars[i] != `T` && chars[i] != " ") {
 				start = 0;
 				found = 0;
@@ -279,7 +286,7 @@ function addClozeQuiz(text: string) {
 		} else if (start == 1 && found == 1 && conf == 0) {
 			conf++;
 		}
-
+		//count the opening {}
 		if (chars[i] == `{`) {
 			start++;
 			if (start == 1) {
@@ -288,32 +295,42 @@ function addClozeQuiz(text: string) {
 		}
 		if (reducedToN) {
 			indexEnd = i + 1;
+			//transform a single answer block into the format needed for lia Script
 			let newString = text.substring(index, indexEnd).replace(/(?<!\\)([\]|[])/g, ``); //remove the unneeded [ ]
 			newString = newString.replace(`{`, `[[`); //Matches and substitutes the first { for the needed [[
 			newString = newString.replace(/}(?=[^}]*$)/, `]]`); //Matches and replaced only the last } with ]]
 			const cmatch = newString.match(/C:/); // prepare for selection type word
 			newString = newString.replace(/[T|C]:/g, ``); // removes the unneeded T and C starters
+			//Deal with the selection sub case by adding () all answers marked by #
 			if (cmatch != null) {
-				const word = newString.match(/(?<=\[\[)(.*?)(?=,)/g);
+				const word = newString.match(
+					/(?<=\[\[\s#|,#|\[\[#|,\s#)\s*(.*?)\s*(?=,|\]\]|\s,|\s\]\])/g
+				);
 				if (word != null) {
-					const strWord = word.join(" ");
-					const start = newString.indexOf(strWord);
-					const end = start + strWord.length;
-					newString =
-						newString.slice(0, start) +
-						`(` +
-						newString.slice(start, end) +
-						`)` +
-						newString.slice(end);
+					for (const match of word) {
+						const strWord = match; //only get the matched word!
+						const start = newString.indexOf(strWord);
+						const end = start + strWord.length;
+						newString =
+							newString.slice(0, start) +
+							`(` +
+							newString.slice(start, end) +
+							`)` +
+							newString.slice(end);
+						newString = newString.replace(
+							/(?<=\[\[\s|,|\[\[|,\s)\s*#(?=.*,|.*\]\]|.*\s,|.*\s\]\])/,
+							``
+						); //get rid of the # of the current answer
+					}
 				}
 			}
 			newString = newString.replace(/,/g, `|`); // replace all , with |
 			reducedToN = false;
-			text = text.slice(0, index) + newString + text.slice(indexEnd);
+			text = text.slice(0, index) + newString + text.slice(indexEnd); //replace the old answer block with the new one
 			indexEnd = 0;
 			found = 0;
 			conf = 0;
-			chars = [...text];
+			chars = [...text]; // re split the text as the index of everything might have changed
 		}
 	}
 	return text;
