@@ -6,8 +6,8 @@ import {
 } from "@self-learning/question-types";
 import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
 import { QuizConfig } from "../quiz";
-import { QuizSaveContext } from "@self-learning/lesson";
 import { useRouter } from "next/router";
+import { SavedAnswersContext } from "../../../../../../apps/site/pages/courses/[courseSlug]/[lessonSlug]/quiz";
 
 type QuizCompletionState = "in-progress" | "completed" | "failed";
 
@@ -59,17 +59,19 @@ export function QuizProvider({
 	reload: () => void;
 	children: React.ReactNode;
 }) {
-	const quizSaveContext = useContext(QuizSaveContext);
+	const answerData = useContext(SavedAnswersContext);
+	const quizAnswers = answerData.answers;
+	const quizLessonSlug = answerData.lessonSlug;
 	const router = useRouter();
 	const [answers, setAnswers] = useState(() => {
 		const ans: QuizContextValue["answers"] = {};
 
 		if (
-			quizSaveContext.getValue.answers !== null &&
-			quizSaveContext.getValue.answers !== undefined &&
-			router.asPath.endsWith(quizSaveContext.getValue.lessonSlug + "/quiz")
+			quizAnswers !== null &&
+			quizAnswers !== undefined &&
+			router.asPath.endsWith(quizLessonSlug + "/quiz")
 		) {
-			return quizSaveContext.getValue.answers as typeof ans;
+			return quizAnswers as typeof ans;
 		}
 
 		for (const q of questions) {
@@ -87,20 +89,6 @@ export function QuizProvider({
 
 		for (const q of questions) {
 			evals[q.questionId] = null;
-		}
-
-		if (
-			quizSaveContext.getValue.evaluation !== null &&
-			quizSaveContext.getValue.evaluation !== undefined &&
-			router.asPath.endsWith(quizSaveContext.getValue.lessonSlug + "/quiz")
-		) {
-			const savedEvals = quizSaveContext.getValue.evaluation as typeof evals;
-			for (const q of questions) {
-				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-				if (savedEvals[q.questionId]) {
-					evals[q.questionId] = savedEvals[q.questionId];
-				}
-			}
 		}
 		return evals;
 	});

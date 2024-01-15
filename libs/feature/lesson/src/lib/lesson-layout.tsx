@@ -6,8 +6,7 @@ import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/les
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { createContext } from "react";
+import { useMemo } from "react";
 
 export type LessonLayoutProps = {
 	lesson: ResolvedValue<typeof getLesson>;
@@ -109,22 +108,10 @@ function mapToPlaylistContent(
 	return playlistContent;
 }
 
-export const QuizSaveContext = createContext<{
-	getValue: { answers: unknown; evaluation: unknown; lessonSlug: string };
-	setValue: Dispatch<
-		SetStateAction<{ answers: unknown; evaluation: unknown; lessonSlug: string }>
-	> | null;
-}>({ getValue: { answers: null, evaluation: null, lessonSlug: "" }, setValue: null });
-
 export function LessonLayout(
 	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
 	pageProps: LessonLayoutProps
 ) {
-	const [getValue, setValue] = useState<{
-		answers: unknown;
-		evaluation: unknown;
-		lessonSlug: string;
-	}>({ answers: null, evaluation: null, lessonSlug: "" });
 	return (
 		<>
 			<Head>
@@ -133,12 +120,10 @@ export function LessonLayout(
 
 			<div className="flex flex-col bg-gray-100">
 				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-					<QuizSaveContext.Provider value={{ getValue: getValue, setValue: setValue }}>
-						<PlaylistArea {...pageProps} />
-						<div className="w-full pt-8 pb-16">
-							<Component {...pageProps} />{" "}
-						</div>
-					</QuizSaveContext.Provider>
+					<PlaylistArea {...pageProps} />
+					<div className="w-full pt-8 pb-16">
+						<Component {...pageProps} />{" "}
+					</div>
 				</div>
 			</div>
 		</>
