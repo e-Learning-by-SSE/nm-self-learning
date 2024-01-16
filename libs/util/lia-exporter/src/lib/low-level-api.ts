@@ -128,7 +128,7 @@ export function markdownify(
  * @param options Options for the export, which include the narrator voice.
  * @see https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#189
  */
-export function selectNarrator(options: ExportOptions) {
+export function selectNarrator(options: NonNullable<ExportOptions>) {
 	switch (options.language) {
 		case "de":
 			return options.narrator == "female" ? "Deutsch Female" : "Deutsch Male";

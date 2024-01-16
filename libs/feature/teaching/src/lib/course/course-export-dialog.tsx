@@ -12,8 +12,14 @@ export function ExportCourseDialog({
 	course: CourseFormModel;
 	onClose: () => void;
 }) {
+	const minioURL = process.env["MINIO_USE_SSL"]
+		? `https://${process.env["MINIO_ENDPOINT"]}`
+		: `http://${process.env["MINIO_ENDPOINT"]}`;
 	const [open, setOpen] = useState(true);
 	const [message, setMessage] = useState(`Exporting: ${course.title}`);
+	console.log(`MINIO_USE_SSL: ${process.env["MINIO_USE_SSL"]}`);
+	console.log(`MINIO_ENDPOINT: ${process.env["MINIO_ENDPOINT"]}`);
+	console.log(`Minio URL: ${minioURL}`);
 
 	const { data, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
 

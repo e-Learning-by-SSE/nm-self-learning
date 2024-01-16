@@ -14,16 +14,16 @@ import { Quiz } from "@self-learning/quiz";
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
 import { ExportOptions } from "./types";
 
-export function exportCourse(
-	{ course, lessons }: CourseWithLessons,
-	options: ExportOptions = {
+export function exportCourse({ course, lessons }: CourseWithLessons, options?: ExportOptions) {
+	options = {
 		addTitlePage: true,
 		language: "de",
 		narrator: "female",
 		considerTopics: true,
-		exportMailAddresses: true
-	}
-) {
+		exportMailAddresses: true,
+		storagesToInclude: [],
+		...options
+	};
 	console.log(">Exporting course", course, lessons);
 	const json: ExportFormat = {
 		// The list of supported items are documented here:
@@ -58,6 +58,7 @@ export function exportCourse(
 
 		addSection(chapter, lessonsMap, baseIndent, json.sections);
 	}
+	console.log(`Options: ${JSON.stringify(options)}`);
 
 	return liaScriptExport(json);
 }
@@ -192,7 +193,7 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 	}
 
 	if (lesson.quiz) {
-		console.log(">>>Creating a Quiz !!");
+		// console.log(">>>Creating a Quiz !!");
 		const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
 		const quizPart = {
 			title: "Lernzielkontrolle",
@@ -202,7 +203,7 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 
 		const quiz = lesson.quiz as Quiz;
 		for (const question of quiz.questions) {
-			console.log(question);
+			// console.log(question);
 			switch (question.type) {
 				case "multiple-choice": {
 					let answers = "";
