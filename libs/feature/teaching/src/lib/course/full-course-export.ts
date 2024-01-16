@@ -3,8 +3,8 @@ import { CourseContent } from "@self-learning/types";
 import { LessonContent, getLessons } from "@self-learning/lesson";
 import { ResolvedValue } from "@self-learning/types";
 
-export async function getFullCourseExport(slug: string) {
-	const course = await database.course.findUniqueOrThrow({
+async function loadFullCourse(slug: string) {
+	return database.course.findUniqueOrThrow({
 		where: { slug: slug },
 		select: {
 			courseId: true,
@@ -17,7 +17,12 @@ export async function getFullCourseExport(slug: string) {
 			meta: true,
 			authors: {
 				select: {
-					displayName: true
+					displayName: true,
+					user: {
+						select: {
+							email: true
+						}
+					}
 				}
 			},
 			subject: {
@@ -34,6 +39,12 @@ export async function getFullCourseExport(slug: string) {
 			}
 		}
 	});
+}
+
+export type FullCourseData = ResolvedValue<typeof loadFullCourse>;
+
+export async function getFullCourseExport(slug: string) {
+	const course = await loadFullCourse(slug);
 
 	const courseContent = (course.content ?? []) as CourseContent;
 	const lessonIds = courseContent.flatMap(chapter =>

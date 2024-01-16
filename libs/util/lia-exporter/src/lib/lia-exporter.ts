@@ -4,15 +4,26 @@ import {
 	ExportFormat,
 	liaScriptExport,
 	IndentationLevels,
-	LiaScriptSection
+	LiaScriptSection,
+	selectNarrator
 } from "./low-level-api";
-import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
+import { FullCourseExport as CourseWithLessons, FullCourseData } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
+import { ExportOptions } from "./types";
 
-export function exportCourse({ course, lessons }: CourseWithLessons, addTitlePage = true) {
+export function exportCourse(
+	{ course, lessons }: CourseWithLessons,
+	options: ExportOptions = {
+		addTitlePage: true,
+		language: "de",
+		narrator: "female",
+		considerTopics: true,
+		exportMailAddresses: true
+	}
+) {
 	console.log(">Exporting course", course, lessons);
 	const json: ExportFormat = {
 		// The list of supported items are documented here:
@@ -20,34 +31,20 @@ export function exportCourse({ course, lessons }: CourseWithLessons, addTitlePag
 		meta: {
 			title: course.title,
 			author: course.authors.map(author => author.displayName).join(", "),
+			...(options.exportMailAddresses && {
+				email: course.authors.map(author => author.user.email).join(", ")
+			}),
 			date: new Date().toLocaleDateString(),
 			version: "1.0",
-			narrator: "Deutsch Female",
+			narrator: selectNarrator(options),
 			...(course.description && { comment: toPlainText(course.description) }),
 			...(course.imgUrl && { logo: course.imgUrl })
 		},
 		sections: []
 	};
 
-	if (addTitlePage) {
-		console.log(">>Adding a title page");
-		const section = {
-			title: course.title,
-			indent: 1 as IndentationLevels,
-			body: [] as string[]
-		};
-
-		if (course.description) {
-			console.log(">>>Adding a course description");
-			const description = markdownify(course.description);
-			section.body.push(description);
-			if (course.imgUrl != null) {
-				console.log(">>>>Adding an image");
-				const courseImage = markdownify(course.imgUrl);
-				section.body.push(courseImage);
-			}
-		}
-		json.sections.push(section);
+	if (options.addTitlePage) {
+		addTitlePage(course, json.sections, options);
 	}
 
 	const lessonsMap = new Map<string, LessonExport>();
@@ -57,12 +54,57 @@ export function exportCourse({ course, lessons }: CourseWithLessons, addTitlePag
 	}
 	for (const chapter of course.content as CourseChapter[]) {
 		console.log(">>Adding a chapter", chapter.title); //Chapters are collections of lessons.
-		const baseIndent = addTitlePage ? 2 : 1;
+		const baseIndent = options.addTitlePage ? 2 : 1;
 
 		addSection(chapter, lessonsMap, baseIndent, json.sections);
 	}
 
 	return liaScriptExport(json);
+}
+
+/**
+ * Generates a title page for the course (indented by 1). This includes:
+ * - Title
+ * - Subtitle (optional)
+ * - Picture (optional)
+ * - Description (optional)
+ * - Subject (optional)
+ * - Specializations (optional)
+ * @param course The course to export
+ * @param sections The data used to generate the LiaScript export (will be altered as a side effect)
+ * @param options The options to consider
+ */
+function addTitlePage(
+	course: FullCourseData,
+	sections: LiaScriptSection[],
+	options: ExportOptions
+) {
+	console.log(">>Adding a title page");
+	const section = {
+		title: course.title,
+		indent: 1 as IndentationLevels,
+		body: [] as string[]
+	};
+
+	// Support that subtile may become optional in future
+	course.subtitle && section.body.push(markdownify(course.subtitle));
+	// Add (optional) picture after subtitle before (optional) description
+	course.imgUrl && section.body.push(`![Course Logo](${course.imgUrl})`);
+	course.description && section.body.push(markdownify(course.description));
+
+	// Add subject and specializations
+	if (options.considerTopics) {
+		course.subject && section.body.push(`**Fach:** ${course.subject.title}`);
+
+		if (course.specializations.length > 0) {
+			const topic =
+				course.specializations.length > 1 ? "Spezialisierungen" : "Spezialisierung";
+			section.body.push(
+				`**${topic}:** ${course.specializations.map(s => s.title).join(", ")}`
+			);
+		}
+	}
+	sections.push(section);
 }
 
 function addSection(
@@ -103,17 +145,12 @@ function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: Li
 
 	// Lesson's overview page, may contain:
 	// - Sub title
-	// - Picture
 	// - Description
 	// - Self-regulated question
-	if (lesson.subtitle) {
-		const subtitle = markdownify(lesson.subtitle);
-		nm.body.push(subtitle);
-	}
-	if (lesson.description) {
-		const description = markdownify(lesson.description);
-		nm.body.push(description);
-	}
+	lesson.subtitle && nm.body.push(markdownify(lesson.subtitle));
+	lesson.description && nm.body.push(markdownify(lesson.description));
+	lesson.selfRegulatedQuestion &&
+		nm.body.push(markdownify(`Aktivierungsfrage: ${lesson.selfRegulatedQuestion}`));
 	sections.push(nm);
 
 	const lessonContent = lesson.content as LessonContent;

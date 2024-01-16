@@ -1,4 +1,5 @@
 import liascriptify from "@liascript/markdownify";
+import { ExportOptions } from "./types";
 
 export type IndentationLevels = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -120,4 +121,21 @@ export function markdownify(
 	}
 
 	return lines.join("\n").trim();
+}
+
+/**
+ * Selects the narrator voice for the exported course.
+ * @param options Options for the export, which include the narrator voice.
+ * @see https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#189
+ */
+export function selectNarrator(options: ExportOptions) {
+	switch (options.language) {
+		case "de":
+			return options.narrator == "female" ? "Deutsch Female" : "Deutsch Male";
+		case "en":
+			return options.narrator == "female" ? "US English Female" : "US English Male";
+		default:
+			// Default value, if unspecified: German platform + female speaker
+			return "Deutsch Female";
+	}
 }
