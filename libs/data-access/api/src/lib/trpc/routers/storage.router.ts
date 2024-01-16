@@ -112,7 +112,20 @@ export const storageRouter = t.router({
 			console.log("[storageRouter.removeMyAsset] File removed:", deleted);
 
 			return deleted;
-		})
+		}),
+	getStorageUrl: t.procedure.query(() => {
+		let url = minioConfig.useSSL
+			? `https://${minioConfig.endPoint}`
+			: `http://${minioConfig.endPoint}`;
+
+		if (minioConfig.port) {
+			console.log("minioConfig.port", minioConfig.port);
+			url += `:${minioConfig.port}`;
+		} else {
+			console.log("Minio has no port");
+		}
+		return url;
+	})
 });
 
 /** Uses the `minio` SDK to request a presigned URL that users can upload files to. */

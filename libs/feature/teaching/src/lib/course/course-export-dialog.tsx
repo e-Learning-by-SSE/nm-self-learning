@@ -4,6 +4,7 @@ import { CourseFormModel } from "./course-form-model";
 import { exportCourse } from "@self-learning/lia-exporter";
 import { useEffect, useState } from "react";
 import { trpc } from "@self-learning/api-client";
+import { min } from "date-fns";
 
 export function ExportCourseDialog({
 	course,
@@ -12,16 +13,11 @@ export function ExportCourseDialog({
 	course: CourseFormModel;
 	onClose: () => void;
 }) {
-	const minioURL = process.env["MINIO_USE_SSL"]
-		? `https://${process.env["MINIO_ENDPOINT"]}`
-		: `http://${process.env["MINIO_ENDPOINT"]}`;
 	const [open, setOpen] = useState(true);
 	const [message, setMessage] = useState(`Exporting: ${course.title}`);
-	console.log(`MINIO_USE_SSL: ${process.env["MINIO_USE_SSL"]}`);
-	console.log(`MINIO_ENDPOINT: ${process.env["MINIO_ENDPOINT"]}`);
-	console.log(`Minio URL: ${minioURL}`);
 
 	const { data, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
+	const { data: minioUrl, isLoading: isLoadingUrl } = trpc.storage.getStorageUrl.useQuery();
 
 	const [md, setMd] = useState("");
 
@@ -49,14 +45,14 @@ export function ExportCourseDialog({
 
 	// This effect will trigger the content generation after the data was loaded completely
 	useEffect(() => {
-		if (data && !isLoading) {
+		if (data && !isLoading && minioUrl && !isLoadingUrl) {
 			const convert = async () => {
-				setMd(await exportCourse(data));
+				setMd(await exportCourse(data, { storagesToInclude: [minioUrl] }));
 			};
 
 			convert();
 		}
-	}, [data, isLoading]);
+	}, [data, isLoading, minioUrl, isLoadingUrl]);
 
 	if (!open) return null;
 	return (
