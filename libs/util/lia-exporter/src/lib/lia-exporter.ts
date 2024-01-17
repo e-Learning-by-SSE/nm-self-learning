@@ -1,6 +1,6 @@
 import {
 	toPlainText,
-	markdownify,
+	markdownify as markdownifyDelegate,
 	ExportFormat,
 	liaScriptExport,
 	IndentationLevels,
@@ -14,17 +14,27 @@ import { Quiz } from "@self-learning/quiz";
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
 import { ExportOptions } from "./types";
 
-export function exportCourse({ course, lessons }: CourseWithLessons, options?: ExportOptions) {
-	options = {
+/**
+ * Generates a markdown file that can be imported into LiaScript.
+ * @param param0 The course to export
+ * @param exportOptions Options to consider
+ * @returns A markdown string that can be used to write a LiaScript compatible markdown file.
+ */
+export function exportCourse(
+	{ course, lessons }: CourseWithLessons,
+	exportOptions?: ExportOptions
+) {
+	const options: NonNullable<ExportOptions> = {
 		addTitlePage: true,
 		language: "de",
 		narrator: "female",
 		considerTopics: true,
 		exportMailAddresses: true,
 		storagesToInclude: [],
-		...options
+		...exportOptions
 	};
-	console.log(">Exporting course", course, lessons);
+	const mediaFiles: string[] = [];
+
 	const json: ExportFormat = {
 		// The list of supported items are documented here:
 		// https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#176
@@ -42,9 +52,12 @@ export function exportCourse({ course, lessons }: CourseWithLessons, options?: E
 		},
 		sections: []
 	};
+	const sections = json.sections;
+
+	console.log(">Exporting course", course, lessons);
 
 	if (options.addTitlePage) {
-		addTitlePage(course, json.sections, options);
+		addTitlePage();
 	}
 
 	const lessonsMap = new Map<string, LessonExport>();
@@ -56,209 +69,245 @@ export function exportCourse({ course, lessons }: CourseWithLessons, options?: E
 		console.log(">>Adding a chapter", chapter.title); //Chapters are collections of lessons.
 		const baseIndent = options.addTitlePage ? 2 : 1;
 
-		addSection(chapter, lessonsMap, baseIndent, json.sections);
+		addSection(chapter, baseIndent);
 	}
+
 	console.log(`Options: ${JSON.stringify(options)}`);
+	console.log(`Media Files: ${mediaFiles.join(", ")}`);
 
 	return liaScriptExport(json);
-}
 
-/**
- * Generates a title page for the course (indented by 1). This includes:
- * - Title
- * - Subtitle (optional)
- * - Picture (optional)
- * - Description (optional)
- * - Subject (optional)
- * - Specializations (optional)
- * @param course The course to export
- * @param sections The data used to generate the LiaScript export (will be altered as a side effect)
- * @param options The options to consider
- */
-function addTitlePage(
-	course: FullCourseData,
-	sections: LiaScriptSection[],
-	options: ExportOptions
-) {
-	console.log(">>Adding a title page");
-	const section = {
-		title: course.title,
-		indent: 1 as IndentationLevels,
-		body: [] as string[]
-	};
+	/**
+	 * Checks if a given (optional) URL points to a file on our storage.
+	 * If so, it adds it to the list of media files and returns the relative path.
+	 * @param url A media URL (video, image, etc.) which may point to our storage.
+	 * @returns A relative URL or the input URL if it does not point to our storage.
+	 */
+	function relativizeUrl(url?: string) {
+		if (url) {
+			if (options?.storagesToInclude && options.storagesToInclude.length > 0) {
+				for (const storageUrl of options.storagesToInclude) {
+					if (url.startsWith(storageUrl)) {
+						mediaFiles.push(url);
+						url = url.replace(storageUrl, "");
+						break;
+					}
+				}
+			}
 
-	// Support that subtile may become optional in future
-	course.subtitle && section.body.push(markdownify(course.subtitle));
-	// Add (optional) picture after subtitle before (optional) description
-	course.imgUrl && section.body.push(`![Course Logo](${course.imgUrl})`);
-	course.description && section.body.push(markdownify(course.description));
-
-	// Add subject and specializations
-	if (options.considerTopics) {
-		course.subject && section.body.push(`**Fach:** ${course.subject.title}`);
-
-		if (course.specializations.length > 0) {
-			const topic =
-				course.specializations.length > 1 ? "Spezialisierungen" : "Spezialisierung";
-			section.body.push(
-				`**${topic}:** ${course.specializations.map(s => s.title).join(", ")}`
-			);
+			return url;
 		}
-	}
-	sections.push(section);
-}
 
-function addSection(
-	chapter: CourseChapter,
-	lessons: Map<string, LessonExport>,
-	indent: IndentationLevels,
-	sections: LiaScriptSection[]
-) {
-	console.log(">>>Adding a section", chapter.title);
-	const section = {
-		title: chapter.title,
-		indent: indent,
-		body: [] as (string | object)[]
-	};
-
-	if (chapter.description) {
-		const description = markdownify(chapter.description);
-		section.body.push(description);
+		return "";
 	}
 
-	sections.push(section);
+	function markdownify(input: string) {
+		const { markdown, resources } = markdownifyDelegate(input, {
+			storageUrls: options?.storagesToInclude ?? []
+		});
+		mediaFiles.push(...resources);
 
-	chapter.content.forEach(entry => {
-		const lesson = lessons.get(entry.lessonId);
-		if (lesson) {
-			const lessonIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
-			addLesson(lesson, lessonIndent, sections);
-		}
-	});
-}
-
-function addLesson(lesson: LessonExport, indent: IndentationLevels, sections: LiaScriptSection[]) {
-	const nm = {
-		title: lesson.title,
-		indent: indent,
-		body: [] as string[]
-	};
-
-	// Lesson's overview page, may contain:
-	// - Sub title
-	// - Description
-	// - Self-regulated question
-	lesson.subtitle && nm.body.push(markdownify(lesson.subtitle));
-	lesson.description && nm.body.push(markdownify(lesson.description));
-	lesson.selfRegulatedQuestion &&
-		nm.body.push(markdownify(`Aktivierungsfrage: ${lesson.selfRegulatedQuestion}`));
-	sections.push(nm);
-
-	const lessonContent = lesson.content as LessonContent;
-
-	const video = findContentType("video", lessonContent);
-	if (video.content) {
-		const videoIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
-		const videoPart = {
-			title: "Video",
-			indent: videoIndent,
-			body: [`!?[Video](${video.content.value.url})`]
-		};
-
-		sections.push(videoPart);
+		return markdown;
 	}
 
-	const article = findContentType("article", lessonContent);
-	if (article.content) {
-		const articleIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
-		const articlePart = {
-			title: "Artikel",
-			indent: articleIndent,
-			body: [markdownify(article.content.value.content, { htmlTag: "section" })]
-		};
-
-		sections.push(articlePart);
-	}
-
-	const pdf = findContentType("pdf", lessonContent);
-	if (pdf.content) {
-		const pdfIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
-		const pdfPart = {
-			title: "PDF",
-			indent: pdfIndent,
-			body: [pdf.content.value.url]
-		};
-
-		sections.push(pdfPart);
-	}
-
-	if (lesson.quiz) {
-		// console.log(">>>Creating a Quiz !!");
-		const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
-		const quizPart = {
-			title: "Lernzielkontrolle",
-			indent: quizIndent,
+	/**
+	 * Generates a title page for the course (indented by 1). This includes:
+	 * - Title
+	 * - Subtitle (optional)
+	 * - Picture (optional)
+	 * - Description (optional)
+	 * - Subject (optional)
+	 * - Specializations (optional)
+	 */
+	function addTitlePage() {
+		console.log(">>Adding a title page");
+		const section = {
+			title: course.title,
+			indent: 1 as IndentationLevels,
 			body: [] as string[]
 		};
 
-		const quiz = lesson.quiz as Quiz;
-		for (const question of quiz.questions) {
-			// console.log(question);
-			switch (question.type) {
-				case "multiple-choice": {
-					let answers = "";
-					for (const answer of question.answers) {
-						if (answer.isCorrect) {
-							answers += `- [[x]] ${markdownify(answer.content)}\n`;
-						} else {
-							answers += `- [[ ]] ${markdownify(answer.content)}\n`;
-						}
-					}
-					const hints = addHints(question.hints);
-					quizPart.body.push(markdownify(question.statement + "\n\n" + answers + hints));
-					break;
-				}
-				case "exact": {
-					const answers = `- [[${markdownify(question.acceptedAnswers[0].value)}]]\n`;
-					const hints = addHints(question.hints);
-					const answerScript = addTextQuizOptionScript(question.acceptedAnswers);
-					quizPart.body.push(
-						markdownify(question.statement + "\n\n" + answers + hints + answerScript)
-					);
-					break;
-				}
-				case "text": {
-					// As we have no "correct" answer for this, we just use a text input which cannot be wrong.
-					const answers = `- [[Freitext]]\n`;
-					const hints = addHints(question.hints);
-					const answerScript = `<script>\nlet input = "@input".trim()\ninput != ""</script>\n`;
-					quizPart.body.push(
-						markdownify(question.statement + "\n\n" + answers + hints + answerScript)
-					);
-					break;
-				}
-				case "cloze":
-					{
-						console.log("Cloze Question: ", question);
-						let answer = question.clozeText;
-						answer = addClozeQuiz(answer);
-						quizPart.body.push(markdownify(question.statement + "\n\n" + answer));
-					}
-					break;
-				case "programming":
-					{
-						console.log("PRogramming Question: ", question);
-					}
-					break;
-				default:
-					console.log(`Unknown question type: ${question.type}`);
-					break;
-			}
+		// Support that subtile may become optional in future
+		course.subtitle && section.body.push(markdownify(course.subtitle));
+		// Add (optional) picture after subtitle before (optional) description
+		if (course.imgUrl) {
+			const imgUrl = relativizeUrl(course.imgUrl);
+			section.body.push(`![Course Logo](${imgUrl})`);
 		}
 
-		sections.push(quizPart);
+		course.description && section.body.push(markdownify(course.description));
+
+		// Add subject and specializations
+		if (options.considerTopics) {
+			course.subject && section.body.push(`**Fach:** ${course.subject.title}`);
+
+			if (course.specializations.length > 0) {
+				const topic =
+					course.specializations.length > 1 ? "Spezialisierungen" : "Spezialisierung";
+				section.body.push(
+					`**${topic}:** ${course.specializations.map(s => s.title).join(", ")}`
+				);
+			}
+		}
+		sections.push(section);
+	}
+
+	function addSection(chapter: CourseChapter, indent: IndentationLevels) {
+		console.log(">>>Adding a section", chapter.title);
+		const section = {
+			title: chapter.title,
+			indent: indent,
+			body: [] as (string | object)[]
+		};
+
+		if (chapter.description) {
+			const description = markdownify(chapter.description);
+			section.body.push(description);
+		}
+
+		sections.push(section);
+
+		chapter.content.forEach(entry => {
+			const lesson = lessonsMap.get(entry.lessonId);
+			if (lesson) {
+				const lessonIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+				addLesson(lesson, lessonIndent);
+			}
+		});
+	}
+
+	function addLesson(lesson: LessonExport, indent: IndentationLevels) {
+		const nm = {
+			title: lesson.title,
+			indent: indent,
+			body: [] as string[]
+		};
+
+		// Lesson's overview page, may contain:
+		// - Sub title
+		// - Description
+		// - Self-regulated question
+		lesson.subtitle && nm.body.push(markdownify(lesson.subtitle));
+		lesson.description && nm.body.push(markdownify(lesson.description));
+		lesson.selfRegulatedQuestion &&
+			nm.body.push(markdownify(`**Aktivierungsfrage:** ${lesson.selfRegulatedQuestion}`));
+		sections.push(nm);
+
+		const lessonContent = lesson.content as LessonContent;
+
+		const video = findContentType("video", lessonContent);
+		if (video.content) {
+			const videoIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+			const videoUrl = relativizeUrl(video.content.value.url);
+			const videoPart = {
+				title: "Video",
+				indent: videoIndent,
+				body: [`!?[Video](${videoUrl})`]
+			};
+
+			sections.push(videoPart);
+		}
+
+		const article = findContentType("article", lessonContent);
+		if (article.content) {
+			const articleIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+			const articleUrl = relativizeUrl(article.content.value.content);
+			const articlePart = {
+				title: "Artikel",
+				indent: articleIndent,
+				body: [articleUrl]
+			};
+
+			sections.push(articlePart);
+		}
+
+		const pdf = findContentType("pdf", lessonContent);
+		if (pdf.content) {
+			const pdfIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+			const pdfPart = {
+				title: "PDF",
+				indent: pdfIndent,
+				body: [pdf.content.value.url]
+			};
+
+			sections.push(pdfPart);
+		}
+
+		if (lesson.quiz) {
+			// console.log(">>>Creating a Quiz !!");
+			const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+			const quizPart = {
+				title: "Lernzielkontrolle",
+				indent: quizIndent,
+				body: [] as string[]
+			};
+
+			const quiz = lesson.quiz as Quiz;
+			for (const question of quiz.questions) {
+				// console.log(question);
+				switch (question.type) {
+					case "multiple-choice": {
+						let answers = "";
+						for (const answer of question.answers) {
+							if (answer.isCorrect) {
+								answers += `- [[x]] ${answer.content}\n`;
+							} else {
+								answers += `- [[ ]] ${answer.content}\n`;
+							}
+						}
+						const hints = addHints(question.hints);
+						quizPart.body.push(
+							markdownify(question.statement + "\n\n" + answers + hints)
+						);
+						break;
+					}
+					case "exact": {
+						const answers = `- [[${question.acceptedAnswers[0].value}]]\n`;
+						const hints = addHints(question.hints);
+						const answerScript = addTextQuizOptionScript(question.acceptedAnswers);
+						quizPart.body.push(
+							markdownify(
+								question.statement + "\n\n" + answers + hints + answerScript
+							)
+						);
+						break;
+					}
+					case "text": {
+						// As we have no "correct" answer for this, we just use a text input which cannot be wrong.
+						const answers = `- [[Freitext]]\n`;
+						const hints = addHints(question.hints);
+						const answerScript = `<script>\nlet input = "@input".trim()\ninput != ""</script>\n`;
+						quizPart.body.push(
+							markdownify(
+								question.statement + "\n\n" + answers + hints + answerScript
+							)
+						);
+						break;
+					}
+					case "cloze":
+						{
+							console.log("Cloze Question: ", question);
+							let answer = question.clozeText;
+							answer = addClozeQuiz(answer);
+							quizPart.body.push(markdownify(question.statement + "\n\n" + answer));
+						}
+						break;
+					case "programming":
+						{
+							console.log("PRogramming Question: ", question);
+						}
+						break;
+					default:
+						console.log(`Unknown question type: ${question.type}`);
+						break;
+				}
+			}
+
+			sections.push(quizPart);
+		}
 	}
 }
+
 function addHints(hints: { hintId: string; content: string }[]) {
 	let hintsList = "";
 	for (const hint of hints) {

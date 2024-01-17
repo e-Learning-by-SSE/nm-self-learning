@@ -55,9 +55,14 @@ export function toPlainText(markdown: string) {
  */
 export function markdownify(
 	markdownText: string,
-	options: { htmlTag?: "section" | "article" | "div"; removeLineNumbers?: boolean } = {
+	options: {
+		htmlTag?: "section" | "article" | "div";
+		removeLineNumbers?: boolean;
+		storageUrls?: string[];
+	} = {
 		htmlTag: "section",
-		removeLineNumbers: true
+		removeLineNumbers: true,
+		storageUrls: undefined
 	}
 ) {
 	/**
@@ -70,6 +75,19 @@ export function markdownify(
 		const level = titleLevel ? titleLevel[0].length : 0;
 
 		return level;
+	}
+
+	function removeStorageUrls(markdown: string) {
+		const resources: string[] = [];
+		for (const url of options.storageUrls ?? []) {
+			const regex = new RegExp(`!\\[([^\\]]*)\\]\\(${url}\\/([\\w|_-]*)\\)`, "g");
+			markdown = markdown.replace(regex, (match, captureGroup1, captureGroup2) => {
+				resources.push(captureGroup2);
+				return `![${captureGroup1}](${captureGroup2})`;
+			});
+		}
+
+		return { markdown, resources };
 	}
 
 	const lines = markdownText.split("\n");
@@ -120,7 +138,14 @@ export function markdownify(
 		lines.push(`</${options.htmlTag}>\n`);
 	}
 
-	return lines.join("\n").trim();
+	const markdownStr = lines.join("\n").trim();
+
+	if (options.storageUrls) {
+		const { markdown, resources } = removeStorageUrls(markdownStr);
+		return { markdown, resources };
+	}
+	const resources: string[] = [];
+	return { markdown: markdownStr, resources };
 }
 
 /**

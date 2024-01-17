@@ -47,7 +47,11 @@ export function ExportCourseDialog({
 	useEffect(() => {
 		if (data && !isLoading && minioUrl && !isLoadingUrl) {
 			const convert = async () => {
-				setMd(await exportCourse(data, { storagesToInclude: [minioUrl] }));
+				setMd(
+					await exportCourse(data, {
+						storagesToInclude: [minioUrl]
+					})
+				);
 			};
 
 			convert();
