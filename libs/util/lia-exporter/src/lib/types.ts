@@ -5,4 +5,13 @@ export type ExportOptions = {
 	considerTopics?: boolean;
 	exportMailAddresses?: boolean;
 	storagesToInclude?: string[];
+	storageDestination?: string;
+};
+
+/**
+ * Used to make absolute paths to media files on our storage server relative.
+ */
+export type MediaFileReplacement = {
+	source: string;
+	destination: string;
 };

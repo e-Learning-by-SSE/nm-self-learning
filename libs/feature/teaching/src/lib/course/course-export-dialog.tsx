@@ -1,7 +1,7 @@
 import { DialogWithReactNodeTitle } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { CourseFormModel } from "./course-form-model";
-import { exportCourseMarkdown } from "@self-learning/lia-exporter";
+import { exportCourseArchive } from "@self-learning/lia-exporter";
 import { useEffect, useState } from "react";
 import { trpc } from "@self-learning/api-client";
 
@@ -18,17 +18,20 @@ export function ExportCourseDialog({
 	const { data, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
 	const { data: minioUrl, isLoading: isLoadingUrl } = trpc.storage.getStorageUrl.useQuery();
 
-	const [md, setMd] = useState("");
+	const [generated, setGenerated] = useState(false);
+	const [md, setMd] = useState<Blob>(new Blob());
 
 	// This effect triggers the download after the content was generated
 	useEffect(() => {
-		if (md !== "") {
+		if (generated) {
 			try {
-				const blob = new Blob([md], { type: "text/plain" });
+				// const blob = new Blob([md], { type: "text/plain" });
+				const blob = new Blob([md], { type: "blob" });
 				const downloadUrl = window.URL.createObjectURL(blob);
 				const a = document.createElement("a");
 				a.href = downloadUrl;
-				a.download = `${data?.course.title}.md` ?? "ExportedCourse.md";
+				// a.download = `${data?.course.title}.md` ?? "ExportedCourse.md";
+				a.download = `${data?.course.title}.zip` ?? "ExportedCourse.zip";
 				document.body.appendChild(a);
 				a.click();
 				window.URL.revokeObjectURL(downloadUrl);
@@ -40,17 +43,21 @@ export function ExportCourseDialog({
 				setMessage(`Error: ${error}`);
 			}
 		}
-	}, [md, open, onClose, data]);
+	}, [md, open, onClose, data, generated]);
 
 	// This effect will trigger the content generation after the data was loaded completely
 	useEffect(() => {
 		if (data && !isLoading && minioUrl && !isLoadingUrl) {
 			const convert = async () => {
 				setMd(
-					await exportCourseMarkdown(data, {
-						storagesToInclude: [minioUrl]
+					await exportCourseArchive(data, setMessage, {
+						storagesToInclude: [
+							minioUrl,
+							"https://staging.sse.uni-hildesheim.de:9006/upload/"
+						]
 					})
 				);
+				setGenerated(true);
 			};
 
 			convert();
@@ -68,19 +75,19 @@ export function ExportCourseDialog({
 					onClose();
 				}}
 			>
-				<CenteredContainer>
-					<div className="overlay">"{message}"</div>
+				<div className="overlay">{message}</div>
+				<div className="grid justify-items-end">
 					<button
-						className="btn-primary w-full"
+						className="btn-primary w-min "
 						type="button"
 						onClick={() => {
 							setOpen(false);
 							onClose();
 						}}
 					>
-						"Close"
+						Close
 					</button>
-				</CenteredContainer>
+				</div>
 			</DialogWithReactNodeTitle>
 		</CenteredContainer>
 	);

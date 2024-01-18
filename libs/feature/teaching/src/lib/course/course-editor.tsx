@@ -72,7 +72,7 @@ export function CourseEditor({
 										{isNew ? "Erstellen" : "Speichern"}
 									</button>
 									<button
-										className="btn-primary w-full"
+										className="btn-primary w-full text-right"
 										type="button"
 										onClick={() => setViewExportDialog(true)}
 									>

@@ -1,5 +1,5 @@
 import liascriptify from "@liascript/markdownify";
-import { ExportOptions } from "./types";
+import { ExportOptions, MediaFileReplacement } from "./types";
 
 /**
  * Allowed indentation levels for LiaScript sections.
@@ -47,6 +47,34 @@ export function toPlainText(markdown: string) {
 	return escapedHeaders.replace(/(\r\n|\n|\r)+/g, " ");
 }
 
+export function removeStorageUrls(
+	text: string,
+	options: {
+		storageUrls?: string[];
+		storageDestination?: string;
+	} = {
+		storageUrls: undefined,
+		storageDestination: ""
+	}
+) {
+	const resources: MediaFileReplacement[] = [];
+	for (const url of options.storageUrls ?? []) {
+		const regex = new RegExp(`!\\[([^\\]]*)\\]\\(${url}\\/([\\w|_-]*)\\)`, "g");
+		text = text.replace(regex, (match, captureGroup1, captureGroup2) => {
+			const dest = `${options.storageDestination}${captureGroup2}`;
+			const mediaFile: MediaFileReplacement = {
+				source: `${url}/${captureGroup2}`,
+				destination: dest
+			};
+
+			resources.push(mediaFile);
+			return `![${captureGroup1}](${dest})`;
+		});
+	}
+
+	return { text, resources };
+}
+
 /**
  * Fixes markdown texts to be compatible with the LiaScript API:
  * - Wraps headers in section-tags to avoid page breaks
@@ -62,10 +90,12 @@ export function markdownify(
 		htmlTag?: "section" | "article" | "div";
 		removeLineNumbers?: boolean;
 		storageUrls?: string[];
+		storageDestination?: string;
 	} = {
 		htmlTag: "section",
 		removeLineNumbers: true,
-		storageUrls: undefined
+		storageUrls: undefined,
+		storageDestination: ""
 	}
 ) {
 	/**
@@ -80,22 +110,8 @@ export function markdownify(
 		return level;
 	}
 
-	function removeStorageUrls(markdown: string) {
-		const resources: string[] = [];
-		for (const url of options.storageUrls ?? []) {
-			const regex = new RegExp(`!\\[([^\\]]*)\\]\\(${url}\\/([\\w|_-]*)\\)`, "g");
-			markdown = markdown.replace(regex, (match, captureGroup1, captureGroup2) => {
-				resources.push(captureGroup2);
-				return `![${captureGroup1}](${captureGroup2})`;
-			});
-		}
-
-		return { markdown, resources };
-	}
-
 	const lines = markdownText.split("\n");
 	const levels = [0];
-	console.log("markdownify", lines);
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
 		if (line.startsWith("#")) {
@@ -144,10 +160,10 @@ export function markdownify(
 	const markdownStr = lines.join("\n").trim();
 
 	if (options.storageUrls) {
-		const { markdown, resources } = removeStorageUrls(markdownStr);
-		return { markdown, resources };
+		const { text, resources } = removeStorageUrls(markdownStr);
+		return { markdown: text, resources };
 	}
-	const resources: string[] = [];
+	const resources: MediaFileReplacement[] = [];
 	return { markdown: markdownStr, resources };
 }
 

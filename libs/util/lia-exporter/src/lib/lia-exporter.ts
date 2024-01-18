@@ -4,35 +4,45 @@ import {
 	ExportFormat,
 	liaScriptExport,
 	IndentationLevels,
-	selectNarrator
+	selectNarrator,
+	removeStorageUrls
 } from "./liascript-api-utils";
 import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
-import { ExportOptions } from "./types";
+import { ExportOptions, MediaFileReplacement } from "./types";
 import { createMultipleChoiceQuestion } from "./question-utils";
 import JSZip = require("jszip");
 
 /**
- * Generates a zip file (markdown file + media files) that can be imported into LiaScript.
+ * Generates a zip file (markdown file + media files)that can be imported into LiaScript.
  * @param param0 The course to export
  * @param exportOptions Options to consider
  * @returns A markdown string that can be used to write a LiaScript compatible markdown file.
  */
 export async function exportCourseArchive(
 	{ course, lessons }: CourseWithLessons,
+	fn?: (msg: string) => void,
 	exportOptions?: ExportOptions
 ) {
-	const { markdown, mediaFiles } = await exportCourse({ course, lessons }, exportOptions);
+	const options: ExportOptions = {
+		storageDestination: `media/${course.slug}/`,
+		...exportOptions
+	};
+	const { markdown, mediaFiles } = await exportCourse({ course, lessons }, options);
 	const zip = new JSZip();
 	zip.file(`${course.title}.md`, markdown);
-	zip.folder(`media/${course.slug}`);
 
 	for (const mediaFile of mediaFiles) {
+		if (fn) {
+			fn(`Fetch resource: ${mediaFile.source}`);
+		}
 		// TODO SE: fetch media file from storage
-		zip.file(`media/${course.slug}/${mediaFile}`, mediaFile);
+		// Based on: https://stackoverflow.com/a/52410044
+		const blob = await fetch(mediaFile.source).then(r => r.blob());
+		zip.file(mediaFile.destination, blob);
 	}
 
 	return zip.generateAsync({ type: "blob" });
@@ -54,7 +64,7 @@ export async function exportCourseMarkdown(
 }
 
 /**
- * Generates a markdown file that can be imported into LiaScript.
+ * Generates a markdown file that can be imported into LiaScript together with a list of extracted media files stored on our own storage.
  * @param param0 The course to export
  * @param exportOptions Options to consider
  * @returns A markdown string that can be used to write a LiaScript compatible markdown file.
@@ -69,13 +79,20 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		considerTopics: true,
 		exportMailAddresses: true,
 		storagesToInclude: [],
+		storageDestination: `media/${course.slug}/`,
 		...exportOptions
 	};
 
 	// List of media files, which were stored on our storage ans shall be exported (downloaded) as well
-	const mediaFiles: string[] = [];
+	const mediaFiles: MediaFileReplacement[] = [];
 
 	// The JSON object that is used as input for the LiaScript API
+	let courseDescription: string | undefined;
+	if (course.description) {
+		const { text, resources } = removeStorageUrls(toPlainText(course.description), options);
+		courseDescription = text;
+		mediaFiles.push(...resources);
+	}
 	const json: ExportFormat = {
 		// The list of supported items are documented here:
 		// https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#176
@@ -88,7 +105,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			date: new Date().toLocaleDateString(),
 			version: "1.0",
 			narrator: selectNarrator(options),
-			...(course.description && { comment: toPlainText(course.description) }),
+			...(courseDescription && { comment: courseDescription }),
 			...(course.imgUrl && { logo: course.imgUrl })
 		},
 		sections: []
@@ -110,7 +127,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	}
 
 	console.log(`Options: ${JSON.stringify(options)}`);
-	console.log(`Media Files: ${mediaFiles.join(", ")}`);
+	console.log(`Media Files: ${mediaFiles.map(m => m.source).join(", ")}`);
 
 	const markdown = await liaScriptExport(json);
 	return { markdown, mediaFiles };
@@ -126,8 +143,9 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			if (options.storagesToInclude && options.storagesToInclude.length > 0) {
 				for (const storageUrl of options.storagesToInclude) {
 					if (url.startsWith(storageUrl)) {
-						mediaFiles.push(url);
-						url = url.replace(storageUrl, "");
+						const source = url;
+						url = url.replace(storageUrl, options.storageDestination ?? "");
+						mediaFiles.push({ source, destination: url });
 						break;
 					}
 				}
@@ -140,9 +158,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	}
 
 	function markdownify(input: string) {
-		const { markdown, resources } = markdownifyDelegate(input, {
-			storageUrls: options.storagesToInclude ?? []
-		});
+		const { markdown, resources } = markdownifyDelegate(input, options);
 		mediaFiles.push(...resources);
 
 		return markdown;
@@ -262,17 +278,17 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		const pdf = findContentType("pdf", lessonContent);
 		if (pdf.content) {
 			const pdfIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+			const pdfUrl = relativizeUrl(pdf.content.value.url);
 			const pdfPart = {
 				title: "PDF",
 				indent: pdfIndent,
-				body: [pdf.content.value.url]
+				body: [pdfUrl]
 			};
 
 			sections.push(pdfPart);
 		}
 
 		if (lesson.quiz) {
-			// console.log(">>>Creating a Quiz !!");
 			const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
 			const quizPart = {
 				title: "Lernzielkontrolle",
@@ -282,7 +298,6 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 			const quiz = lesson.quiz as Quiz;
 			for (const question of quiz.questions) {
-				// console.log(question);
 				switch (question.type) {
 					case "multiple-choice": {
 						quizPart.body.push(
