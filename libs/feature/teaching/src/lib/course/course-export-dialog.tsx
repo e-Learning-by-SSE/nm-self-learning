@@ -21,6 +21,8 @@ export function ExportCourseDialog({
 	const [generated, setGenerated] = useState(false);
 	const [md, setMd] = useState<Blob>(new Blob());
 
+	const [progress, setProgress] = useState(0);
+
 	// This effect triggers the download after the content was generated
 	useEffect(() => {
 		if (generated) {
@@ -43,14 +45,14 @@ export function ExportCourseDialog({
 				setMessage(`Error: ${error}`);
 			}
 		}
-	}, [md, open, onClose, data, generated]);
+	}, [md, open, data, generated, onClose]);
 
 	// This effect will trigger the content generation after the data was loaded completely
 	useEffect(() => {
 		if (data && !isLoading && minioUrl && !isLoadingUrl) {
 			const convert = async () => {
 				setMd(
-					await exportCourseArchive(data, setMessage, {
+					await exportCourseArchive(data, setProgress, setMessage, {
 						storagesToInclude: [
 							minioUrl,
 							"https://staging.sse.uni-hildesheim.de:9006/upload/"
@@ -75,6 +77,12 @@ export function ExportCourseDialog({
 					onClose();
 				}}
 			>
+				<div className="mb-4 h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+					<div
+						className="h-2.5 rounded-full bg-emerald-500"
+						style={{ width: `${progress}%` }}
+					></div>
+				</div>
 				<div className="overlay">{message}</div>
 				<div className="grid justify-items-end">
 					<button

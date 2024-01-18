@@ -24,6 +24,7 @@ import JSZip = require("jszip");
  */
 export async function exportCourseArchive(
 	{ course, lessons }: CourseWithLessons,
+	progress: (progress: number) => void,
 	fn?: (msg: string) => void,
 	exportOptions?: ExportOptions
 ) {
@@ -35,6 +36,7 @@ export async function exportCourseArchive(
 	const zip = new JSZip();
 	zip.file(`${course.title}.md`, markdown);
 
+	let value = 0;
 	for (const mediaFile of mediaFiles) {
 		if (fn) {
 			fn(`Fetch resource: ${mediaFile.source}`);
@@ -43,6 +45,12 @@ export async function exportCourseArchive(
 		// Based on: https://stackoverflow.com/a/52410044
 		const blob = await fetch(mediaFile.source).then(r => r.blob());
 		zip.file(mediaFile.destination, blob);
+		if (value == 0) {
+			progress(10);
+			value = 0.1;
+		} else {
+			progress(50);
+		}
 	}
 
 	return zip.generateAsync({ type: "blob" });
