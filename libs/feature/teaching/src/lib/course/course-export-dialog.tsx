@@ -1,10 +1,9 @@
 import { DialogWithReactNodeTitle } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { CourseFormModel } from "./course-form-model";
-import { exportCourse } from "@self-learning/lia-exporter";
+import { exportCourseMarkdown } from "@self-learning/lia-exporter";
 import { useEffect, useState } from "react";
 import { trpc } from "@self-learning/api-client";
-import { min } from "date-fns";
 
 export function ExportCourseDialog({
 	course,
@@ -48,7 +47,7 @@ export function ExportCourseDialog({
 		if (data && !isLoading && minioUrl && !isLoadingUrl) {
 			const convert = async () => {
 				setMd(
-					await exportCourse(data, {
+					await exportCourseMarkdown(data, {
 						storagesToInclude: [minioUrl]
 					})
 				);

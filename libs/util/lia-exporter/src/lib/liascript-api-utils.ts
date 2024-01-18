@@ -1,6 +1,9 @@
 import liascriptify from "@liascript/markdownify";
 import { ExportOptions } from "./types";
 
+/**
+ * Allowed indentation levels for LiaScript sections.
+ */
 export type IndentationLevels = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type LiaScriptSection = {

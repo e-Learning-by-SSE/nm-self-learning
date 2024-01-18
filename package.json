@@ -43,6 +43,7 @@
 		"framer-motion": "^8.0.2",
 		"gray-matter": "^4.0.3",
 		"http-status-codes": "^2.2.0",
+		"jszip": "^3.10.1",
 		"jwt-decode": "^3.1.2",
 		"minio": "^7.0.32",
 		"next": "13.3.0",

@@ -5,13 +5,38 @@ import {
 	liaScriptExport,
 	IndentationLevels,
 	selectNarrator
-} from "./low-level-api";
+} from "./liascript-api-utils";
 import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
 import { ExportOptions } from "./types";
+import { createMultipleChoiceQuestion } from "./question-utils";
+import JSZip = require("jszip");
+
+/**
+ * Generates a zip file (markdown file + media files) that can be imported into LiaScript.
+ * @param param0 The course to export
+ * @param exportOptions Options to consider
+ * @returns A markdown string that can be used to write a LiaScript compatible markdown file.
+ */
+export async function exportCourseArchive(
+	{ course, lessons }: CourseWithLessons,
+	exportOptions?: ExportOptions
+) {
+	const { markdown, mediaFiles } = await exportCourse({ course, lessons }, exportOptions);
+	const zip = new JSZip();
+	zip.file(`${course.title}.md`, markdown);
+	zip.folder(`media/${course.slug}`);
+
+	for (const mediaFile of mediaFiles) {
+		// TODO SE: fetch media file from storage
+		zip.file(`media/${course.slug}/${mediaFile}`, mediaFile);
+	}
+
+	return zip.generateAsync({ type: "blob" });
+}
 
 /**
  * Generates a markdown file that can be imported into LiaScript.
@@ -19,10 +44,22 @@ import { ExportOptions } from "./types";
  * @param exportOptions Options to consider
  * @returns A markdown string that can be used to write a LiaScript compatible markdown file.
  */
-export function exportCourse(
+export async function exportCourseMarkdown(
 	{ course, lessons }: CourseWithLessons,
 	exportOptions?: ExportOptions
 ) {
+	const { markdown } = await exportCourse({ course, lessons }, exportOptions);
+
+	return markdown;
+}
+
+/**
+ * Generates a markdown file that can be imported into LiaScript.
+ * @param param0 The course to export
+ * @param exportOptions Options to consider
+ * @returns A markdown string that can be used to write a LiaScript compatible markdown file.
+ */
+async function exportCourse({ course, lessons }: CourseWithLessons, exportOptions?: ExportOptions) {
 	// Options for all (nested) export functions
 	// Specifies default values, which may be overwritten by optional parameters
 	const options: NonNullable<ExportOptions> = {
@@ -75,7 +112,8 @@ export function exportCourse(
 	console.log(`Options: ${JSON.stringify(options)}`);
 	console.log(`Media Files: ${mediaFiles.join(", ")}`);
 
-	return liaScriptExport(json);
+	const markdown = await liaScriptExport(json);
+	return { markdown, mediaFiles };
 
 	/**
 	 * Checks if a given (optional) URL points to a file on our storage.
@@ -247,17 +285,14 @@ export function exportCourse(
 				// console.log(question);
 				switch (question.type) {
 					case "multiple-choice": {
-						let answers = "";
-						for (const answer of question.answers) {
-							if (answer.isCorrect) {
-								answers += `- [[x]] ${answer.content}\n`;
-							} else {
-								answers += `- [[ ]] ${answer.content}\n`;
-							}
-						}
-						const hints = addHints(question.hints);
 						quizPart.body.push(
-							markdownify(question.statement + "\n\n" + answers + hints)
+							markdownify(
+								createMultipleChoiceQuestion(
+									question.statement,
+									question.answers,
+									question.hints
+								)
+							)
 						);
 						break;
 					}
@@ -294,7 +329,7 @@ export function exportCourse(
 						break;
 					case "programming":
 						{
-							console.log("PRogramming Question: ", question);
+							console.log("Programming Question: ", question);
 						}
 						break;
 					default:
