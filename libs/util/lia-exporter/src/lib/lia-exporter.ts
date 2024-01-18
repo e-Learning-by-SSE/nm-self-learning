@@ -4,10 +4,9 @@ import {
 	ExportFormat,
 	liaScriptExport,
 	IndentationLevels,
-	LiaScriptSection,
 	selectNarrator
 } from "./low-level-api";
-import { FullCourseExport as CourseWithLessons, FullCourseData } from "@self-learning/teaching";
+import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 
@@ -24,6 +23,8 @@ export function exportCourse(
 	{ course, lessons }: CourseWithLessons,
 	exportOptions?: ExportOptions
 ) {
+	// Options for all (nested) export functions
+	// Specifies default values, which may be overwritten by optional parameters
 	const options: NonNullable<ExportOptions> = {
 		addTitlePage: true,
 		language: "de",
@@ -33,8 +34,11 @@ export function exportCourse(
 		storagesToInclude: [],
 		...exportOptions
 	};
+
+	// List of media files, which were stored on our storage ans shall be exported (downloaded) as well
 	const mediaFiles: string[] = [];
 
+	// The JSON object that is used as input for the LiaScript API
 	const json: ExportFormat = {
 		// The list of supported items are documented here:
 		// https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#176
@@ -54,17 +58,13 @@ export function exportCourse(
 	};
 	const sections = json.sections;
 
-	console.log(">Exporting course", course, lessons);
+	// The lessons of the course, accessible by their ID
+	const lessonsMap = convertLessonsToMap(lessons);
 
 	if (options.addTitlePage) {
 		addTitlePage();
 	}
 
-	const lessonsMap = new Map<string, LessonExport>();
-	for (const lesson of lessons) {
-		console.log(">>Adding a lesson to map?", lesson.title);
-		lessonsMap.set(lesson.lessonId, lesson);
-	}
 	for (const chapter of course.content as CourseChapter[]) {
 		console.log(">>Adding a chapter", chapter.title); //Chapters are collections of lessons.
 		const baseIndent = options.addTitlePage ? 2 : 1;
@@ -85,7 +85,7 @@ export function exportCourse(
 	 */
 	function relativizeUrl(url?: string) {
 		if (url) {
-			if (options?.storagesToInclude && options.storagesToInclude.length > 0) {
+			if (options.storagesToInclude && options.storagesToInclude.length > 0) {
 				for (const storageUrl of options.storagesToInclude) {
 					if (url.startsWith(storageUrl)) {
 						mediaFiles.push(url);
@@ -103,7 +103,7 @@ export function exportCourse(
 
 	function markdownify(input: string) {
 		const { markdown, resources } = markdownifyDelegate(input, {
-			storageUrls: options?.storagesToInclude ?? []
+			storageUrls: options.storagesToInclude ?? []
 		});
 		mediaFiles.push(...resources);
 
@@ -306,6 +306,20 @@ export function exportCourse(
 			sections.push(quizPart);
 		}
 	}
+}
+
+/**
+ * Converts Lessons[] to Map<lessonId, Lesson>.
+ * @param lessons The lessons to restructure.
+ * @returns Lessons as map to identify them faster by their ID.
+ */
+function convertLessonsToMap(lessons: LessonExport[]) {
+	const lessonsMap = new Map<string, LessonExport>();
+	for (const lesson of lessons) {
+		console.log(">>Adding a lesson to map?", lesson.title);
+		lessonsMap.set(lesson.lessonId, lesson);
+	}
+	return lessonsMap;
 }
 
 function addHints(hints: { hintId: string; content: string }[]) {
