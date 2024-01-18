@@ -6,13 +6,32 @@ import { useRouter } from "next/router";
 
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
+	const { mutateAsync: addCourse } = trpc.specialization.addCourse.useMutation();
 	const router = useRouter();
+	const { specializationId } = router.query;
+	const { subjectId } = router.query;
 	const session = useRequiredSession();
 	const author = session.data?.user.name;
 
 	async function onConfirm(course: CourseFormModel) {
 		try {
-			const { title, slug } = await createCourse(course);
+			const { title, slug, courseId } = await createCourse(course);
+
+			if (
+				specializationId !== null &&
+				specializationId !== undefined &&
+				typeof specializationId === "string" &&
+				subjectId !== null &&
+				subjectId !== undefined &&
+				typeof subjectId === "string"
+			) {
+				await addCourse({
+					subjectId: subjectId,
+					specializationId: specializationId,
+					courseId: courseId
+				});
+			}
+
 			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
 			router.push(`/courses/${slug}`);
 		} catch (error) {
