@@ -119,11 +119,14 @@ export const storageRouter = t.router({
 			: `http://${minioConfig.endPoint}`;
 
 		if (minioConfig.port) {
-			console.log("minioConfig.port", minioConfig.port);
 			url += `:${minioConfig.port}`;
-		} else {
-			console.log("Minio has no port");
 		}
+
+		if (minioConfig.bucketName) {
+			url += `/${minioConfig.bucketName}`;
+		}
+
+		console.log("MiniIO URL:", url);
 		return url;
 	})
 });

@@ -15,45 +15,88 @@ import { CourseChapter, LessonContent, findContentType } from "@self-learning/ty
 import { ExportOptions, MediaFileReplacement } from "./types";
 import { createMultipleChoiceQuestion } from "./question-utils";
 import JSZip = require("jszip");
+import { downloadWithProgress, getFileSize } from "./network-utils";
 
 /**
  * Generates a zip file (markdown file + media files)that can be imported into LiaScript.
  * @param param0 The course to export
+ * @param onProgress A callback to inform about the progress (in percent: 0 .. 100)
+ * @param onInfo A callback to inform about the current action (e.g. which file is currently downloaded)
  * @param exportOptions Options to consider
  * @returns A markdown string that can be used to write a LiaScript compatible markdown file.
  */
 export async function exportCourseArchive(
 	{ course, lessons }: CourseWithLessons,
-	progress: (progress: number) => void,
-	fn?: (msg: string) => void,
+	onProgress?: (progress: number) => void,
+	onInfo?: (msg: string) => void,
 	exportOptions?: ExportOptions
 ) {
 	const options: ExportOptions = {
 		storageDestination: `media/${course.slug}/`,
 		...exportOptions
 	};
+	// Generate markdown file and create a zip archive with this file
 	const { markdown, mediaFiles } = await exportCourse({ course, lessons }, options);
 	const zip = new JSZip();
 	zip.file(`${course.title}.md`, markdown);
 
-	let value = 0;
+	// Download all media files located on our storage server
+
+	// Compute the total size of all media files
+	let downloadSize = 0;
+	const sizePerFile = new Map<string, number>();
 	for (const mediaFile of mediaFiles) {
-		if (fn) {
-			fn(`Fetch resource: ${mediaFile.source}`);
-		}
-		// TODO SE: fetch media file from storage
-		// Based on: https://stackoverflow.com/a/52410044
-		const blob = await fetch(mediaFile.source).then(r => r.blob());
+		const size = await getFileSize(mediaFile.source);
+		downloadSize += size;
+		sizePerFile.set(mediaFile.source, size);
+	}
+	// Zipping takes also some time, we roughly estimate 10% overheads for this
+	const totalSize = 1.1 * downloadSize;
+
+	// Download all media files, add them to the zip archive, and report progress
+	let alreadyLoaded = 0;
+	for (const mediaFile of mediaFiles) {
+		const estimatedFileSize = sizePerFile.get(mediaFile.source);
+		onInfo && onInfo(`Downloade: ${mediaFile.source}`);
+
+		// Call back used to report progress
+		// Takes downloaded bytes of current file and computes overall progress
+		const onProgressWrapper = (loaded: number) => {
+			if (onProgress) {
+				// For some reason (I expect network overhead) some files return a higher loaded value than the estimated file size.
+				// To avoid progress > 100%, we take the minimum of both values.
+				const maxFileSize = estimatedFileSize ?? loaded;
+				const actuallyLoaded = Math.min(loaded, maxFileSize);
+
+				const percentage = ((actuallyLoaded + alreadyLoaded) / totalSize) * 100;
+				onProgress(percentage);
+			}
+		};
+		const blob = await downloadWithProgress(mediaFile.source, onProgressWrapper);
+
+		alreadyLoaded += estimatedFileSize ?? 0;
 		zip.file(mediaFile.destination, blob);
-		if (value == 0) {
-			progress(10);
-			value = 0.1;
-		} else {
-			progress(50);
-		}
 	}
 
-	return zip.generateAsync({ type: "blob" });
+	// 100 % of download completed
+	onProgress && onProgress((downloadSize / totalSize) * 100);
+
+	// Callback used to report progress of zipping
+	const zipUpdateFn: JSZip.OnUpdateCallback = (metadata: {
+		percent: number;
+		currentFile: string | null;
+	}) => {
+		if (onInfo && metadata.currentFile) {
+			onInfo(`Füge ${metadata.currentFile} dem Archiv hinzu.`);
+		}
+
+		// Compute overall progress (we assumed 10% overheads for zipping)
+		const percentage = (((1 + metadata.percent / 1000) * downloadSize) / totalSize) * 100;
+		onProgress && onProgress(percentage);
+	};
+
+	// Create Zip archive and report progress
+	return await zip.generateAsync({ type: "blob" }, zipUpdateFn);
 }
 
 /**
@@ -133,9 +176,6 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 		addSection(chapter, baseIndent);
 	}
-
-	console.log(`Options: ${JSON.stringify(options)}`);
-	console.log(`Media Files: ${mediaFiles.map(m => m.source).join(", ")}`);
 
 	const markdown = await liaScriptExport(json);
 	return { markdown, mediaFiles };

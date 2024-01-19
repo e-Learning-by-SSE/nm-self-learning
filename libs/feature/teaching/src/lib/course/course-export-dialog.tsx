@@ -1,4 +1,4 @@
-import { DialogWithReactNodeTitle } from "@self-learning/ui/common";
+import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { CourseFormModel } from "./course-form-model";
 import { exportCourseArchive } from "@self-learning/lia-exporter";
@@ -13,7 +13,7 @@ export function ExportCourseDialog({
 	onClose: () => void;
 }) {
 	const [open, setOpen] = useState(true);
-	const [message, setMessage] = useState(`Exporting: ${course.title}`);
+	const [message, setMessage] = useState(`Export: ${course.title}`);
 
 	const { data, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
 	const { data: minioUrl, isLoading: isLoadingUrl } = trpc.storage.getStorageUrl.useQuery();
@@ -77,12 +77,7 @@ export function ExportCourseDialog({
 					onClose();
 				}}
 			>
-				<div className="mb-4 h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-					<div
-						className="h-2.5 rounded-full bg-emerald-500"
-						style={{ width: `${progress}%` }}
-					></div>
-				</div>
+				<ProgressBar progress={progress} />
 				<div className="overlay">{message}</div>
 				<div className="grid justify-items-end">
 					<button
