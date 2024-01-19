@@ -17,20 +17,11 @@ export default function CreateCoursePage() {
 		try {
 			const { title, slug, courseId } = await createCourse(course);
 
-			if (
-				specializationId !== null &&
-				specializationId !== undefined &&
-				typeof specializationId === "string" &&
-				subjectId !== null &&
-				subjectId !== undefined &&
-				typeof subjectId === "string"
-			) {
-				await addCourse({
-					subjectId: subjectId,
-					specializationId: specializationId,
-					courseId: courseId
-				});
-			}
+			await addCourse({
+				subjectId: subjectId as string,
+				specializationId: specializationId as string,
+				courseId: courseId as string
+			});
 
 			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
 			router.push(`/courses/${slug}`);
