@@ -71,7 +71,7 @@ export function ExportCourseDialog({
 		<CenteredContainer>
 			<DialogWithReactNodeTitle
 				style={{ height: "30vh", width: "60vw", overflow: "auto" }}
-				title={`Exporting: ${course.title}`}
+				title={`Exportiere: ${course.title}`}
 				onClose={() => {
 					setOpen(false);
 					onClose();
