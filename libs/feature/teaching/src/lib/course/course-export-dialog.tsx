@@ -19,20 +19,19 @@ export function ExportCourseDialog({
 	const { data: minioUrl, isLoading: isLoadingUrl } = trpc.storage.getStorageUrl.useQuery();
 
 	const [generated, setGenerated] = useState(false);
-	const [md, setMd] = useState<Blob>(new Blob());
+	const [exportResult, setExportResult] = useState<Blob>(new Blob());
 
 	const [progress, setProgress] = useState(0);
+	const [lblClose, setCloseLabel] = useState("Abbrechen");
 
 	// This effect triggers the download after the content was generated
 	useEffect(() => {
 		if (generated) {
 			try {
-				// const blob = new Blob([md], { type: "text/plain" });
-				const blob = new Blob([md], { type: "blob" });
+				const blob = new Blob([exportResult], { type: "blob" });
 				const downloadUrl = window.URL.createObjectURL(blob);
 				const a = document.createElement("a");
 				a.href = downloadUrl;
-				// a.download = `${data?.course.title}.md` ?? "ExportedCourse.md";
 				a.download = `${data?.course.title}.zip` ?? "ExportedCourse.zip";
 				document.body.appendChild(a);
 				a.click();
@@ -42,23 +41,25 @@ export function ExportCourseDialog({
 				onClose();
 			} catch (error) {
 				// Display error message to user
+				setCloseLabel("Schließen");
 				setMessage(`Error: ${error}`);
 			}
 		}
-	}, [md, open, data, generated, onClose]);
+	}, [exportResult, open, data, generated, onClose]);
 
 	// This effect will trigger the content generation after the data was loaded completely
 	useEffect(() => {
 		if (data && !isLoading && minioUrl && !isLoadingUrl) {
 			const convert = async () => {
-				setMd(
-					await exportCourseArchive(data, setProgress, setMessage, {
-						storagesToInclude: [
-							minioUrl,
-							"https://staging.sse.uni-hildesheim.de:9006/upload/"
-						]
-					})
-				);
+				const zipArchive = await exportCourseArchive(data, setProgress, setMessage, {
+					storagesToInclude: [
+						minioUrl,
+						"https://staging.sse.uni-hildesheim.de:9006/upload/"
+					]
+				});
+				if (zipArchive) {
+					setExportResult(zipArchive);
+				}
 				setGenerated(true);
 			};
 
@@ -88,7 +89,7 @@ export function ExportCourseDialog({
 							onClose();
 						}}
 					>
-						Close
+						{lblClose}
 					</button>
 				</div>
 			</DialogWithReactNodeTitle>

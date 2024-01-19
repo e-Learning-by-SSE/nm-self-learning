@@ -54,6 +54,5 @@ export async function downloadWithProgress(url: string, onProgress?: (bytes: num
 		})
 	);
 
-	const blob = await res.blob();
-	return blob;
+	return await res.blob();
 }
