@@ -47,23 +47,16 @@ export function DialogWithReactNodeTitle<TResult>({
 	children,
 	title,
 	style,
-	className,
-	onAbort
+	className
 }: {
 	title: ReactNode;
 	onClose: OnDialogCloseFn<TResult>;
 	children: React.ReactNode;
 	style?: CSSProperties;
 	className?: string;
-	onAbort?: OnDialogCloseFn<TResult>;
 }) {
 	return (
-		<HeadlessDialog
-			open={true}
-			onClose={() => onClose(undefined)}
-			{...(onAbort && { onAbort: () => onAbort(undefined) })}
-			className="relative z-50"
-		>
+		<HeadlessDialog open={true} onClose={() => onClose(undefined)} className="relative z-50">
 			{/* The backdrop, rendered as a fixed sibling to the panel container */}
 			<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 			{/* Full-screen scrollable container */}
