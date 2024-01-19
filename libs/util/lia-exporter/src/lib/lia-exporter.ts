@@ -16,17 +16,19 @@ import { ExportOptions, MediaFileReplacement } from "./types";
 import { createMultipleChoiceQuestion } from "./question-utils";
 import JSZip = require("jszip");
 import { downloadWithProgress, getFileSize } from "./network-utils";
-
 /**
  * Generates a zip file (markdown file + media files)that can be imported into LiaScript.
  * @param param0 The course to export
+ * @param signal An abort signal to allow aborting the download by the user. Created via AbortController.
  * @param onProgress A callback to inform about the progress (in percent: 0 .. 100)
  * @param onInfo A callback to inform about the current action (e.g. which file is currently downloaded)
  * @param exportOptions Options to consider
  * @returns A markdown string that can be used to write a LiaScript compatible markdown file.
+ * @throws Error if a resource cannot be downloaded or the page is reloaded during action (will abort the stream unexpectedly)
  */
 export async function exportCourseArchive(
 	{ course, lessons }: CourseWithLessons,
+	signal: AbortSignal,
 	onProgress?: (progress: number) => void,
 	onInfo?: (msg: string) => void,
 	exportOptions?: ExportOptions
@@ -72,7 +74,7 @@ export async function exportCourseArchive(
 				onProgress(percentage);
 			}
 		};
-		const blob = await downloadWithProgress(mediaFile.source, onProgressWrapper);
+		const blob = await downloadWithProgress(mediaFile.source, signal, onProgressWrapper);
 
 		alreadyLoaded += estimatedFileSize ?? 0;
 		zip.file(mediaFile.destination, blob);
@@ -95,8 +97,12 @@ export async function exportCourseArchive(
 		onProgress && onProgress(percentage);
 	};
 
-	// Create Zip archive and report progress
-	return await zip.generateAsync({ type: "blob" }, zipUpdateFn);
+	if (!signal.aborted) {
+		// Create Zip archive and report progress
+		return await zip.generateAsync({ type: "blob" }, zipUpdateFn);
+	} else {
+		throw new Error("Download aborted");
+	}
 }
 
 /**

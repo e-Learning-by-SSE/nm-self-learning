@@ -2,7 +2,7 @@ import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common"
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { CourseFormModel } from "./course-form-model";
 import { exportCourseArchive } from "@self-learning/lia-exporter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, use } from "react";
 import { trpc } from "@self-learning/api-client";
 
 export function ExportCourseDialog({
@@ -23,6 +23,7 @@ export function ExportCourseDialog({
 
 	const [progress, setProgress] = useState(0);
 	const [lblClose, setCloseLabel] = useState("Abbrechen");
+	const abortController = useRef(new AbortController());
 
 	// This effect triggers the download after the content was generated
 	useEffect(() => {
@@ -51,16 +52,28 @@ export function ExportCourseDialog({
 	useEffect(() => {
 		if (data && !isLoading && minioUrl && !isLoadingUrl) {
 			const convert = async () => {
-				const zipArchive = await exportCourseArchive(data, setProgress, setMessage, {
-					storagesToInclude: [
-						minioUrl,
-						"https://staging.sse.uni-hildesheim.de:9006/upload/"
-					]
-				});
-				if (zipArchive) {
-					setExportResult(zipArchive);
+				try {
+					const zipArchive = await exportCourseArchive(
+						data,
+						abortController.current.signal,
+						setProgress,
+						setMessage,
+						{
+							storagesToInclude: [
+								minioUrl,
+								"https://staging.sse.uni-hildesheim.de:9006/upload/"
+							]
+						}
+					);
+					if (zipArchive) {
+						setExportResult(zipArchive);
+					}
+					setGenerated(true);
+				} catch (error) {
+					// Display error message to user
+					setCloseLabel("Schließen");
+					setMessage(`Error: ${error}`);
 				}
-				setGenerated(true);
 			};
 
 			convert();
@@ -74,6 +87,7 @@ export function ExportCourseDialog({
 				style={{ height: "30vh", width: "60vw", overflow: "auto" }}
 				title={`Exportiere: ${course.title}`}
 				onClose={() => {
+					abortController.current.abort();
 					setOpen(false);
 					onClose();
 				}}
@@ -85,6 +99,7 @@ export function ExportCourseDialog({
 						className="btn-primary w-min "
 						type="button"
 						onClick={() => {
+							abortController.current.abort();
 							setOpen(false);
 							onClose();
 						}}
