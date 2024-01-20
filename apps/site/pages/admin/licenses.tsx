@@ -3,6 +3,7 @@ import { CreateLicenseDialog, EditLicenseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
 	ImageOrPlaceholder,
+	LicenseViewModal,
 	LoadingBox,
 	Table,
 	TableDataColumn,
@@ -13,7 +14,6 @@ import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/
 import { Fragment, useMemo, useState } from "react";
 import { License } from "@self-learning/types";
 import Link from "next/link";
-import { LicenseViewModal } from "@self-learning/lesson";
 
 export default function LicensesPage() {
 	useRequiredSession();
@@ -60,9 +60,7 @@ export default function LicensesPage() {
 						<PlusIcon className="icon h-5" />
 						<span>Lizenz hinzufügen</span>
 					</button>
-					{createLicenseDialog && (
-						<CreateLicenseDialog onClose={onCreateDialogClose} licenseId={0} />
-					)}
+					{createLicenseDialog && <CreateLicenseDialog onClose={onCreateDialogClose} />}
 				</div>
 
 				<SearchField
@@ -163,9 +161,7 @@ export function AccordionElement({
 			<TableDataColumn>
 				<button
 					className="btn-primary btn-small"
-					onClick={() => {
-						setViewLicenseDialog(true);
-					}}
+					onClick={() => setViewLicenseDialog(true)}
 				>
 					<span>Preview</span>
 				</button>
@@ -183,7 +179,7 @@ export function AccordionElement({
 							name={license.name}
 							logoUrl={license.logoUrl ?? ""}
 							onClose={() => setViewLicenseDialog(false)}
-						></LicenseViewModal>
+						/>
 					)}
 				</div>
 			</td>
@@ -237,7 +233,7 @@ export function LicenseDetail({ license }: { license: License }) {
 					name={license.name}
 					logoUrl={license.logoUrl ?? ""}
 					onClose={() => setViewLicenseDialog(false)}
-				></LicenseViewModal>
+				/>
 			)}
 		</div>
 	);

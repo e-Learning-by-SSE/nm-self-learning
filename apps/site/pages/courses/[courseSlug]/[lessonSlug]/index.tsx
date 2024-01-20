@@ -183,11 +183,6 @@ function LessonHeader({
 }) {
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
 
-	let license = lesson.license;
-	if (license === null) {
-		license = trpc.licenseRouter.getDefault.useQuery().data ?? null;
-	}
-
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap justify-between gap-4">
@@ -209,7 +204,13 @@ function LessonHeader({
 						<span className="flex flex-col gap-3">
 							<Authors authors={lesson.authors} />
 						</span>
-						<LicenseLabel license={license} />
+						<div className="-mt-3">
+							{!lesson.license ? (
+								<DefaultLicenseLabel />
+							) : (
+								<LicenseLabel license={lesson.license} />
+							)}
+						</div>
 					</span>
 
 					<div className="pt-4">
@@ -224,6 +225,40 @@ function LessonHeader({
 				</MarkdownContainer>
 			)}
 		</div>
+	);
+}
+
+function DefaultLicenseLabel() {
+	const { data } = trpc.licenseRouter.getDefault.useQuery();
+	const [license, setLicense] = useState<NonNullable<LessonProps["lesson"]["license"]>>({
+		name: "Keine Lizenz verfügbar",
+		logoUrl: "",
+		url: "",
+		licenseText:
+			"*Für diese Lektion ist keine Lizenz verfügbar. Bei Nachfragen, wenden Sie sich an den Autor*"
+	});
+
+	useEffect(() => {
+		if (!data) {
+			console.log("No default license found");
+		} else {
+			setLicense(data);
+		}
+	}, [data]);
+
+	return <>{license && <LicenseLabel license={license} />}</>;
+}
+
+function LicenseLabel({ license }: { license: NonNullable<LessonProps["lesson"]["license"]> }) {
+	return (
+		<LabeledField label="Lizenz">
+			<LicenseChip
+				name={license.name}
+				imgUrl={license.logoUrl ?? undefined}
+				description={license.licenseText ?? undefined}
+				url={license.url ?? undefined}
+			/>
+		</LabeledField>
 	);
 }
 
@@ -275,33 +310,6 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 			)}
 		</>
 	);
-}
-
-export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
-	if (license === null) {
-		return <LoadingBox />;
-	}
-	if (license.url) {
-		return (
-			<div className="-mt-3">
-				<LabeledField label="Lizenz">
-					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={license.url} />
-				</LabeledField>
-			</div>
-		);
-	} else {
-		return (
-			<div className="-mt-3">
-				<LabeledField label="Lizenz">
-					<LicenseChip
-						name={license.name}
-						imgUrl={license.logoUrl}
-						description={license.licenseText !== null ? license.licenseText : undefined}
-					/>
-				</LabeledField>
-			</div>
-		);
-	}
 }
 
 function MediaTypeSelector({

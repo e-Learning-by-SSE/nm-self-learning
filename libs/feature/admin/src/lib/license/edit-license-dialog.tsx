@@ -10,15 +10,10 @@ import {
 } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
-export function CreateLicenseDialog({
-	licenseId,
-	onClose
-}: {
-	licenseId: number;
-	onClose: OnDialogCloseFn<License>;
-}) {
+export function CreateLicenseDialog({ onClose }: { onClose: OnDialogCloseFn<License> }) {
 	const { mutateAsync: createLicense } = trpc.licenseRouter.createAsAdmin.useMutation();
 
 	async function onSubmit(license: License) {
@@ -40,7 +35,22 @@ export function CreateLicenseDialog({
 		}
 	}
 
-	return <LicenseModal licenseId={licenseId} onSubmit={onSubmit} onClose={onClose} />;
+	return (
+		<LicenseModal
+			license={{
+				licenseId: 0,
+				name: "",
+				url: "",
+				logoUrl: "",
+				licenseText: "",
+				selectable: true,
+				oerCompatible: false,
+				defaultSuggestion: false
+			}}
+			onSubmit={onSubmit}
+			onClose={onClose}
+		/>
+	);
 }
 
 export function EditLicenseDialog({
@@ -51,6 +61,9 @@ export function EditLicenseDialog({
 	onClose: OnDialogCloseFn<License>;
 }) {
 	const { mutateAsync: updateLicense } = trpc.licenseRouter.updateAsAdmin.useMutation();
+	const { data: license, isLoading } = trpc.licenseRouter.getOne.useQuery({
+		licenseId: licenseId
+	});
 
 	async function onSubmit(license: License) {
 		try {
@@ -70,62 +83,46 @@ export function EditLicenseDialog({
 			});
 		}
 	}
+	const [licenseFound, setLicenseFound] = useState<boolean | null>(null);
 
-	return <LicenseModal licenseId={licenseId} onSubmit={onSubmit} onClose={onClose} />;
+	useEffect(() => {
+		if (!isLoading) {
+			setLicenseFound(!!license);
+			if (!license) {
+				showToast({
+					type: "error",
+					title: "Lizenz nicht gefunden!",
+					subtitle: "Die Lizenz konnte nicht gefunden werden. Erstellen Sie eine neue."
+				});
+			}
+		}
+	}, [isLoading, license]);
+
+	if (isLoading) {
+		return <LoadingBox />;
+	} else if (licenseFound && license) {
+		return <LicenseModal license={license} onSubmit={onSubmit} onClose={onClose} />;
+	} else {
+		return <CreateLicenseDialog onClose={onClose} />;
+	}
 }
 
 function LicenseModal({
-	licenseId,
+	license,
 	onSubmit,
 	onClose
 }: {
-	licenseId: number;
+	license: License;
 	onSubmit: (license: License) => void;
 	onClose: OnDialogCloseFn<License>;
 }) {
-	const { data: license, isLoading } = getLicenseOrDefault(licenseId);
-
 	return (
-		<Dialog
-			onClose={() => onClose(undefined)}
-			title={licenseId === null ? "Neue Lizenz" : license?.name ?? "Neue Lizenz"}
-		>
-			{isLoading ? (
-				<LoadingBox />
-			) : (
-				<>
-					{license && (
-						<LicenseForm
-							onClose={onClose}
-							initialLicense={license}
-							onSubmit={onSubmit}
-						/>
-					)}
-				</>
+		<Dialog onClose={() => onClose(undefined)} title={license?.name ?? "Neue Lizenz"}>
+			{license && (
+				<LicenseForm onClose={onClose} initialLicense={license} onSubmit={onSubmit} />
 			)}
 		</Dialog>
 	);
-}
-
-function getLicenseOrDefault(licenseId: number) {
-	if (licenseId === 0) {
-		return {
-			isLoading: false,
-			data: {
-				licenseId: 0,
-				name: "",
-				url: "",
-				logoUrl: "",
-				licenseText: "",
-				selectable: true,
-				oerCompatible: false,
-				defaultSuggestion: false
-			} as License
-		};
-	} else {
-		const data = trpc.licenseRouter.getOne.useQuery({ licenseId: licenseId });
-		return data;
-	}
 }
 
 function LicenseForm({
