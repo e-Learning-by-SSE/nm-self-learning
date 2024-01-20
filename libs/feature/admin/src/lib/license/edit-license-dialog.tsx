@@ -1,11 +1,15 @@
+import { QuestionMarkCircleIcon } from "@heroicons/react/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Tooltip } from "@mui/material";
 import { trpc } from "@self-learning/api-client";
 import { License, licenseSchema } from "@self-learning/types";
 import {
 	Dialog,
 	DialogActions,
+	LicenseViewModal,
 	LoadingBox,
 	OnDialogCloseFn,
+	QuestionMarkTooltip,
 	showToast
 } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
@@ -18,6 +22,7 @@ export function CreateLicenseDialog({ onClose }: { onClose: OnDialogCloseFn<Lice
 
 	async function onSubmit(license: License) {
 		try {
+			console.log(license);
 			const result = await createLicense({ license: license });
 			showToast({
 				type: "success",
@@ -36,10 +41,10 @@ export function CreateLicenseDialog({ onClose }: { onClose: OnDialogCloseFn<Lice
 	}
 
 	return (
-		<LicenseModal
+		<LicenseFormModal
 			license={{
 				licenseId: 0,
-				name: "",
+				name: "Neue Lizenz",
 				url: "",
 				logoUrl: "",
 				licenseText: "",
@@ -101,13 +106,13 @@ export function EditLicenseDialog({
 	if (isLoading) {
 		return <LoadingBox />;
 	} else if (licenseFound && license) {
-		return <LicenseModal license={license} onSubmit={onSubmit} onClose={onClose} />;
+		return <LicenseFormModal license={license} onSubmit={onSubmit} onClose={onClose} />;
 	} else {
 		return <CreateLicenseDialog onClose={onClose} />;
 	}
 }
 
-function LicenseModal({
+function LicenseFormModal({
 	license,
 	onSubmit,
 	onClose
@@ -141,12 +146,16 @@ function LicenseForm({
 
 	return (
 		<FormProvider {...form}>
-			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
-				<div className="absolute top-8 right-8">
+			<form
+				className="m flex flex-col justify-between"
+				onSubmit={form.handleSubmit(onSubmit)}
+			>
+				<div className="absolute top-8 right-8 flex">
+					<LicensePreviewModal />
 					<OpenAsJsonButton form={form} validationSchema={licenseSchema} />
 				</div>
 
-				<LicenseData />
+				<LicenseDataEditSection />
 
 				<DialogActions onClose={onClose}>
 					<button className="btn-primary" type="submit">
@@ -158,10 +167,36 @@ function LicenseForm({
 	);
 }
 
-function LicenseData() {
+function LicensePreviewModal() {
+	const [viewLicenseDialog, setViewLicenseDialog] = useState(false);
+	const { watch } = useFormContext<License>();
+	const formData = watch();
+
+	return (
+		<>
+			<button
+				type="button"
+				className="btn-stroked rounded"
+				onClick={() => setViewLicenseDialog(true)}
+			>
+				<span>Vorschau</span>
+			</button>
+			{viewLicenseDialog && (
+				<LicenseViewModal
+					description={formData.licenseText ?? ""}
+					name={formData.name ?? ""}
+					logoUrl={formData.logoUrl ?? ""}
+					onClose={() => setViewLicenseDialog(false)}
+				/>
+			)}
+		</>
+	);
+}
+
+function LicenseDataEditSection() {
 	const { register, control, formState, setValue } = useFormContext<License>();
 	const selectable = useWatch({ control: control, name: "selectable" });
-	const oercompatible = useWatch({ control: control, name: "oerCompatible" });
+	const oerCompatible = useWatch({ control: control, name: "oerCompatible" });
 	const defaultSuggestion = useWatch({ control: control, name: "defaultSuggestion" });
 
 	const errors = formState.errors;
@@ -197,24 +232,26 @@ function LicenseData() {
 							<label htmlFor={"selectable"} className="text-sm font-semibold">
 								Auswählbar
 							</label>
+							<QuestionMarkTooltip tooltipText="Entscheidet ob die Lizenz für neue Lerneinheiten ausgewählt werden kann. Bestehende Zuordnungen bleiben bestehen" />
 						</span>
 						<span className="flex items-center gap-2">
 							<input
-								id={"oercompatible"}
+								id={"oerCompatible"}
 								type={"checkbox"}
 								className="checkbox"
-								checked={oercompatible}
+								checked={oerCompatible}
 								onChange={() => {
-									setValue("oerCompatible", !oercompatible);
+									setValue("oerCompatible", !oerCompatible);
 								}}
 							/>
-							<label htmlFor={"oercompatible"} className="text-sm font-semibold">
-								OER-kompatibel
+							<label htmlFor={"oerCompatible"} className="text-sm font-semibold">
+								Export erlaubt
 							</label>
+							<QuestionMarkTooltip tooltipText="Entscheidet ob die LiaScript-Exportfunktion bei Lerneinheiten mit dieser Lizenz verwendet werden kann." />
 						</span>
 						<span className="flex items-center gap-2">
 							<input
-								id={"defaultsuggestion"}
+								id={"defaultSuggestion"}
 								type={"checkbox"}
 								className="checkbox"
 								checked={defaultSuggestion}
@@ -222,9 +259,10 @@ function LicenseData() {
 									setValue("defaultSuggestion", !defaultSuggestion);
 								}}
 							/>
-							<label htmlFor={"defaultsuggestion"} className="text-sm font-semibold">
-								Default - Suggestion
+							<label htmlFor={"defaultSuggestion"} className="text-sm font-semibold">
+								Standardlizenz
 							</label>
+							<QuestionMarkTooltip tooltipText="Eine Standardlizenz wird für alle neuen Lerneinheiten vorgeschlagen. Alle Lerneinheiten ohne zugeordnete Lizenz erhalten ebenfalls die Standardlizenz. Es kann nur eine Standardlizenz geben." />
 						</span>
 					</div>
 				</LabeledField>

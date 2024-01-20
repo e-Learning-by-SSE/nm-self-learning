@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/solid";
+import { BadgeCheckIcon, BanIcon, PlusIcon, StarIcon } from "@heroicons/react/solid";
 import { CreateLicenseDialog, EditLicenseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -14,6 +14,8 @@ import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/
 import { Fragment, useMemo, useState } from "react";
 import { License } from "@self-learning/types";
 import Link from "next/link";
+import { ShareIcon } from "@heroicons/react/outline";
+import { Tooltip } from "@mui/material";
 
 export default function LicensesPage() {
 	useRequiredSession();
@@ -22,8 +24,6 @@ export default function LicensesPage() {
 	const { data: licenses, isLoading } = trpc.licenseRouter.getAll.useQuery();
 	const [editTarget, setEditTarget] = useState<number | null>(null);
 	const [createLicenseDialog, setCreateLicenseDialog] = useState(false);
-
-	const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
 
 	const filteredLicenses = useMemo(() => {
 		if (!licenses) return [];
@@ -47,10 +47,6 @@ export default function LicensesPage() {
 		setEditTarget(licenseId);
 	}
 
-	const toggleAccordion = (index: number) => {
-		setActiveRowIndex(activeRowIndex === index ? null : index);
-	};
-
 	return (
 		<AdminGuard>
 			<CenteredSection>
@@ -65,10 +61,7 @@ export default function LicensesPage() {
 
 				<SearchField
 					placeholder="Suche nach Lizenz"
-					onChange={e => {
-						setDisplayName(e.target.value);
-						setActiveRowIndex(null);
-					}}
+					onChange={e => setDisplayName(e.target.value)}
 				/>
 
 				{editTarget && (
@@ -83,61 +76,65 @@ export default function LicensesPage() {
 							<>
 								<TableHeaderColumn></TableHeaderColumn>
 								<TableHeaderColumn>Name</TableHeaderColumn>
+								<TableHeaderColumn>Eigenschaften</TableHeaderColumn>
 								<TableHeaderColumn></TableHeaderColumn>
 							</>
 						}
 					>
-						{filteredLicenses.map(({ licenseId, name, logoUrl }, index, value) => (
-							<Fragment key={name}>
-								{name && (
-									<tr key={name}>
-										<TableDataColumn>
-											<ImageOrPlaceholder
-												src={logoUrl ?? undefined}
-												className="m-0 h-10 w-10 rounded-lg object-cover"
-											/>
-										</TableDataColumn>
-										<TableDataColumn>
-											<div className="flex flex-wrap gap-4">
-												<div
-													className="text-sm font-medium hover:text-secondary"
-													style={{ cursor: "pointer" }}
-													onClick={() => toggleAccordion(index)}
-												>
-													{name}
+						{filteredLicenses.map(
+							({
+								licenseId,
+								name,
+								logoUrl,
+								oerCompatible,
+								defaultSuggestion,
+								selectable
+							}) => (
+								<Fragment key={name}>
+									{name && (
+										<tr key={name}>
+											<TableDataColumn>
+												<ImageOrPlaceholder
+													src={logoUrl ?? undefined}
+													className="m-0 h-10 w-10 rounded-lg object-cover"
+												/>
+											</TableDataColumn>
+											<TableDataColumn>
+												<div className="flex flex-wrap gap-4">
+													<div
+														className={`text-sm font-medium ${
+															selectable ? "" : "line-through"
+														}`}
+														style={{ cursor: "pointer" }}
+													>
+														{name}
+													</div>
 												</div>
-											</div>
-										</TableDataColumn>
-										<TableDataColumn>
-											<div className="flex flex-wrap justify-end gap-4">
-												<button
-													className="btn-stroked"
-													onClick={() => onEdit(licenseId)}
-												>
-													Editieren
-												</button>
-											</div>
-										</TableDataColumn>
-									</tr>
-								)}
-								{activeRowIndex === index && (
-									<AccordionElement
-										license={{
-											licenseId: licenseId,
-											name: name,
-											logoUrl: logoUrl,
-											licenseText: value[index].licenseText,
-											url: value[index].url,
-											oerCompatible: value[index].oerCompatible,
-											selectable: value[index].selectable,
-											defaultSuggestion: value[index].defaultSuggestion
-										}}
-										index={index}
-										activeRowIndex={activeRowIndex}
-									/>
-								)}
-							</Fragment>
-						))}
+											</TableDataColumn>
+											<TableDataColumn>
+												<div className="flex flex-wrap gap-1">
+													<LicenseFeatureIcons
+														oerCompatible={oerCompatible}
+														selectable={selectable}
+														defaultSuggestion={defaultSuggestion}
+													/>
+												</div>
+											</TableDataColumn>
+											<TableDataColumn>
+												<div className="flex flex-wrap justify-end gap-4">
+													<button
+														className="btn-stroked"
+														onClick={() => onEdit(licenseId)}
+													>
+														Editieren
+													</button>
+												</div>
+											</TableDataColumn>
+										</tr>
+									)}
+								</Fragment>
+							)
+						)}
 					</Table>
 				)}
 			</CenteredSection>
@@ -145,45 +142,33 @@ export default function LicensesPage() {
 	);
 }
 
-export function AccordionElement({
-	license,
-	index,
-	activeRowIndex
+function LicenseFeatureIcons({
+	oerCompatible,
+	selectable,
+	defaultSuggestion
 }: {
-	license: License;
-	index: number;
-	activeRowIndex: number;
+	oerCompatible: boolean;
+	selectable: boolean;
+	defaultSuggestion: boolean;
 }) {
-	const [viewLicenseDialog, setViewLicenseDialog] = useState(false);
-
 	return (
-		<tr className="border-b border-gray-300">
-			<TableDataColumn>
-				<button
-					className="btn-primary btn-small"
-					onClick={() => setViewLicenseDialog(true)}
-				>
-					<span>Preview</span>
-				</button>
-			</TableDataColumn>
-			<td colSpan={5} className="py-2 px-3">
-				<div
-					className={`overflow-hidden px-6 pt-0 transition-[max-height] duration-500 ease-in ${
-						activeRowIndex === index ? "max-h-36" : "max-h-0"
-					}`}
-				>
-					<LicenseDetail license={license} />
-					{viewLicenseDialog && (
-						<LicenseViewModal
-							description={license.licenseText ?? ""}
-							name={license.name}
-							logoUrl={license.logoUrl ?? ""}
-							onClose={() => setViewLicenseDialog(false)}
-						/>
-					)}
-				</div>
-			</td>
-		</tr>
+		<>
+			{defaultSuggestion && (
+				<Tooltip title="Standard Lizenz">
+					<BadgeCheckIcon className="icon h-5" />
+				</Tooltip>
+			)}
+			{oerCompatible && (
+				<Tooltip title="Erlaubt Exportierfunktion">
+					<ShareIcon className="icon h-5" />
+				</Tooltip>
+			)}
+			{!selectable && (
+				<Tooltip title="Lizenz ist nicht in neuen Lerneinheiten auswählbar.">
+					<BanIcon className="icon h-5" />
+				</Tooltip>
+			)}
+		</>
 	);
 }
 
