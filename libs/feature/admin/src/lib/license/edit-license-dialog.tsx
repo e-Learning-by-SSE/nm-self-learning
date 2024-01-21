@@ -120,7 +120,11 @@ function LicenseFormModal({
 	onClose: OnDialogCloseFn<License>;
 }) {
 	return (
-		<Dialog onClose={() => onClose(undefined)} title={license?.name ?? "Neue Lizenz"}>
+		<Dialog
+			style={{ height: "80vh", width: "60vw", overflow: "auto" }}
+			onClose={() => onClose(undefined)}
+			title={license?.name ?? "Neue Lizenz"}
+		>
 			{license && (
 				<LicenseForm onClose={onClose} initialLicense={license} onSubmit={onSubmit} />
 			)}
