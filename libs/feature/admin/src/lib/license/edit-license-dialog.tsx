@@ -1,6 +1,4 @@
-import { QuestionMarkCircleIcon } from "@heroicons/react/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Tooltip } from "@mui/material";
 import { trpc } from "@self-learning/api-client";
 import { License, licenseSchema } from "@self-learning/types";
 import {
@@ -67,12 +65,12 @@ export function EditLicenseDialog({
 }) {
 	const { mutateAsync: updateLicense } = trpc.licenseRouter.updateAsAdmin.useMutation();
 	const { data: license, isLoading } = trpc.licenseRouter.getOne.useQuery({
-		licenseId: licenseId
+		licenseId
 	});
 
 	async function onSubmit(license: License) {
 		try {
-			const result = await updateLicense({ license: license, licenseId: licenseId });
+			const result = await updateLicense({ license, licenseId });
 			showToast({
 				type: "success",
 				title: "Lizenz gespeichert!",

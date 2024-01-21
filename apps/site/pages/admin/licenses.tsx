@@ -22,8 +22,7 @@ export default function LicensesPage() {
 
 	const [displayName, setDisplayName] = useState("");
 	const { data: licenses, isLoading } = trpc.licenseRouter.getAll.useQuery();
-	const [editTarget, setEditTarget] = useState<number | null>(null);
-	const [createLicenseDialog, setCreateLicenseDialog] = useState(false);
+	const [editTarget, setEditTarget] = useState<number | "new" | null>(null);
 
 	const filteredLicenses = useMemo(() => {
 		if (!licenses) return [];
@@ -39,24 +38,15 @@ export default function LicensesPage() {
 		setEditTarget(null);
 	}
 
-	function onCreateDialogClose(): void {
-		setCreateLicenseDialog(false);
-	}
-
-	function onEdit(licenseId: number): void {
-		setEditTarget(licenseId);
-	}
-
 	return (
 		<AdminGuard>
 			<CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">Lizenzen</h1>
-					<button className="btn-primary" onClick={() => setCreateLicenseDialog(true)}>
+					<button className="btn-primary" onClick={() => setEditTarget("new")}>
 						<PlusIcon className="icon h-5" />
 						<span>Lizenz hinzufügen</span>
 					</button>
-					{createLicenseDialog && <CreateLicenseDialog onClose={onCreateDialogClose} />}
 				</div>
 
 				<SearchField
@@ -64,81 +54,88 @@ export default function LicensesPage() {
 					onChange={e => setDisplayName(e.target.value)}
 				/>
 
-				{editTarget && (
+				{editTarget === "new" && (
+					<CreateLicenseDialog onClose={() => setEditTarget(null)} />
+				)}
+				{typeof editTarget === "number" && (
 					<EditLicenseDialog onClose={onEditDialogClose} licenseId={editTarget} />
 				)}
-
 				{isLoading ? (
 					<LoadingBox />
 				) : (
-					<Table
-						head={
-							<>
-								<TableHeaderColumn></TableHeaderColumn>
-								<TableHeaderColumn>Name</TableHeaderColumn>
-								<TableHeaderColumn>Eigenschaften</TableHeaderColumn>
-								<TableHeaderColumn></TableHeaderColumn>
-							</>
-						}
-					>
-						{filteredLicenses.map(
-							({
-								licenseId,
-								name,
-								logoUrl,
-								oerCompatible,
-								defaultSuggestion,
-								selectable
-							}) => (
-								<Fragment key={name}>
-									{name && (
-										<tr key={name}>
-											<TableDataColumn>
-												<ImageOrPlaceholder
-													src={logoUrl ?? undefined}
-													className="m-0 h-10 w-10 rounded-lg object-cover"
-												/>
-											</TableDataColumn>
-											<TableDataColumn>
-												<div className="flex flex-wrap gap-4">
-													<div
-														className={`text-sm font-medium ${
-															selectable ? "" : "line-through"
-														}`}
-														style={{ cursor: "pointer" }}
-													>
-														{name}
-													</div>
-												</div>
-											</TableDataColumn>
-											<TableDataColumn>
-												<div className="flex flex-wrap gap-1">
-													<LicenseFeatureIcons
-														oerCompatible={oerCompatible}
-														selectable={selectable}
-														defaultSuggestion={defaultSuggestion}
-													/>
-												</div>
-											</TableDataColumn>
-											<TableDataColumn>
-												<div className="flex flex-wrap justify-end gap-4">
-													<button
-														className="btn-stroked"
-														onClick={() => onEdit(licenseId)}
-													>
-														Editieren
-													</button>
-												</div>
-											</TableDataColumn>
-										</tr>
-									)}
-								</Fragment>
-							)
-						)}
-					</Table>
+					<LicenseTable licenses={filteredLicenses} changeEditTarget={setEditTarget} />
 				)}
 			</CenteredSection>
 		</AdminGuard>
+	);
+}
+
+function LicenseTable({
+	licenses,
+	changeEditTarget
+}: {
+	licenses: License[];
+	changeEditTarget: (licenseId: number) => void;
+}) {
+	return (
+		<Table
+			head={
+				<>
+					<TableHeaderColumn></TableHeaderColumn>
+					<TableHeaderColumn>Name</TableHeaderColumn>
+					<TableHeaderColumn>Eigenschaften</TableHeaderColumn>
+					<TableHeaderColumn></TableHeaderColumn>
+				</>
+			}
+		>
+			{licenses.map(
+				({ licenseId, name, logoUrl, oerCompatible, defaultSuggestion, selectable }) => (
+					<Fragment key={name}>
+						{name && (
+							<tr key={name}>
+								<TableDataColumn>
+									<ImageOrPlaceholder
+										src={logoUrl ?? undefined}
+										className="m-0 h-10 w-10 rounded-lg object-cover"
+									/>
+								</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap gap-4">
+										<div
+											className={`text-sm font-medium ${
+												selectable ? "" : "line-through"
+											}`}
+											style={{ cursor: "pointer" }}
+										>
+											{name}
+										</div>
+									</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap gap-1">
+										<LicenseFeatureIcons
+											oerCompatible={oerCompatible}
+											selectable={selectable}
+											defaultSuggestion={defaultSuggestion}
+										/>
+									</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap justify-end gap-4">
+										<button
+											className="btn-stroked"
+											onClick={() => changeEditTarget(licenseId)}
+										>
+											Editieren
+										</button>
+									</div>
+								</TableDataColumn>
+							</tr>
+						)}
+					</Fragment>
+				)
+			)}
+		</Table>
 	);
 }
 
@@ -159,7 +156,7 @@ function LicenseFeatureIcons({
 				</Tooltip>
 			)}
 			{oerCompatible && (
-				<Tooltip title="Erlaubt Exportierfunktion">
+				<Tooltip title="Erlaubt Exportfunktion">
 					<ShareIcon className="icon h-5" />
 				</Tooltip>
 			)}
