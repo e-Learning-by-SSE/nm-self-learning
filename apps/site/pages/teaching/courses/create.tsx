@@ -20,7 +20,7 @@ export default function CreateCoursePage() {
 			await addCourse({
 				subjectId: subjectId as string,
 				specializationId: specializationId as string,
-				courseId: courseId as string
+				courseId: courseId
 			});
 
 			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
