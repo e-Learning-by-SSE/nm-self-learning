@@ -36,6 +36,34 @@ export function addHints(hints: { hintId: string; content: string }[]) {
 	return hints.map(hint => `[[?]] ${toPlainText(hint.content)}`).join("\n");
 }
 
+/**
+ * Adds a script to a quiz question which checks if the answer is correct. The advantage is, this can accept multiple different answers like synonyms.
+ * Only needed in case the question allows for multiple correct answers.
+ * @param acceptedAnswers an array of answers and their respective ID, should be > 1 as this function is not needed otherwise.
+ * @returns a string denoting a script accepting each of the different answers as correct.
+ */
+export function addTextQuizOptionScript(
+	acceptedAnswers: { value: string; acceptedAnswerId: string }[]
+) {
+	let script = `<script>\n`;
+	script += `let input = "@input".trim()\n`;
+	for (const [i, answer] of acceptedAnswers.entries()) {
+		if (i == acceptedAnswers.length - 1) {
+			script += `input == "${answer.value}"\n`;
+		} else {
+			script += `input == "${answer.value}" ||`;
+		}
+	}
+	script += `</script>\n`;
+	return script;
+}
+
+/**
+ * Function to add a gap text question to the markdown file. Done by iterating over each letter to find the gaps as denoted by the e-learning platform and then converting them to the lia script format.
+ * There is no complete conversion as the lia script side does not have a equivalent to the multiple answer option of the question.
+ * @param text The complete text including the gaps as denoted by the e-learning platform.
+ * @returns The text with the lia script setup.
+ */
 export function addClozeQuiz(text: string) {
 	//const text = "Das ist eine {T: [Textantwort]}. Das ist ein Textfeld {T: [Antwort, Lücke]} mit zwei richtigen Möglichkeiten.Das ist ein Single-Choice Feld mit {C: [#eins, zwei]} Antwortmöglichkeiten, aus denen ausgewählt werden muss. Falsche Antworten werden mit einem # gekennzeichnet.LaTeX kann verwendet werden, um mathematische Formeln und Symbole darzustellen. Zum Beispiel: $$V_{sphere} = \frac{4}{3}\pi r^3$$. Es kann auch in Single-Choice Feldern benutzt werden: {C: [#eins, $$V_{sphere} = \frac{4}{3}\pi r^3$$]}"
 	let chars = [...text];
