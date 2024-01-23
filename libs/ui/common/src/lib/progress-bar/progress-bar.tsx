@@ -1,3 +1,9 @@
+/**
+ * A reusable progress bar component, which uses the platform's color scheme (emerald).
+ * @param progress A function which indicates the current progress in percent (0 = not started; 100 = finished)
+ * @param hideOnComplete If true, the progress bar will be hidden after the progress has finished
+ * @returns A React component to visualize the progress
+ */
 export function ProgressBar({
 	progress,
 	hideOnComplete = true
