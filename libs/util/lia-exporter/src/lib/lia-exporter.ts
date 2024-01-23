@@ -9,16 +9,11 @@ import {
 } from "./liascript-api-utils";
 import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
-import { Question, Quiz } from "@self-learning/quiz";
+import { Quiz } from "@self-learning/quiz";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
 import { ExportOptions, MediaFileReplacement } from "./types";
-import {
-	createMultipleChoiceQuestion,
-	addHints,
-	addClozeQuiz,
-	addTextQuizOptionScript
-} from "./question-utils";
+import { convertQuizzes } from "./question-utils";
 import JSZip = require("jszip");
 import { downloadWithProgress, getFileSize } from "./network-utils";
 /**
@@ -85,7 +80,7 @@ export async function exportCourseArchive(
 		zip.file(mediaFile.destination, blob);
 	}
 
-	// 100 % of download completed
+	// 100 % of download completed, but not zipped yet
 	onProgress && onProgress((downloadSize / totalSize) * 100);
 
 	// Callback used to report progress of zipping
@@ -182,9 +177,8 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	}
 
 	for (const chapter of course.content as CourseChapter[]) {
-		console.log(">>Adding a chapter", chapter.title); //Chapters are collections of lessons.
+		// Chapters are collections of lessons.
 		const baseIndent = options.addTitlePage ? 2 : 1;
-
 		addSection(chapter, baseIndent);
 	}
 
@@ -216,6 +210,11 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		return "";
 	}
 
+	/**
+	 * Wraps the markdownify function of the liaScript API Utils to handle directly the extracted media files.
+	 * @param input The Markdown formatted text to convert into LiaScript compatible markdown.
+	 * @returns LiaScript compatible markdown.
+	 */
 	function markdownify(input: string) {
 		const { markdown, resources } = markdownifyDelegate(input, options);
 		mediaFiles.push(...resources);
@@ -233,7 +232,6 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	 * - Specializations (optional)
 	 */
 	function addTitlePage() {
-		console.log(">>Adding a title page");
 		const section = {
 			title: course.title,
 			indent: 1 as IndentationLevels,
@@ -306,8 +304,8 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			nm.body.push(markdownify(`**Aktivierungsfrage:** ${lesson.selfRegulatedQuestion}`));
 		sections.push(nm);
 
+		// Convert content, which may contain: video, article, pdf, link to external web page
 		const lessonContent = lesson.content as LessonContent;
-
 		const video = findContentType("video", lessonContent);
 		if (video.content) {
 			const videoIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
@@ -324,7 +322,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		const article = findContentType("article", lessonContent);
 		if (article.content) {
 			const articleIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
-			const articleUrl = relativizeUrl(article.content.value.content);
+			const articleUrl = markdownify(article.content.value.content);
 			const articlePart = {
 				title: "Artikel",
 				indent: articleIndent,
@@ -347,87 +345,14 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			sections.push(pdfPart);
 		}
 
+		// Add quizzes
 		if (lesson.quiz) {
 			const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
 			const quizPart = {
 				title: "Lernzielkontrolle",
 				indent: quizIndent,
-				body: [] as string[]
+				body: convertQuizzes(lesson.quiz as Quiz, markdownify)
 			};
-
-			const quiz = lesson.quiz as Quiz;
-			for (const question of quiz.questions) {
-				switch (question.type) {
-					case "multiple-choice": {
-						quizPart.body.push(
-							markdownify(
-								createMultipleChoiceQuestion(
-									question.statement,
-									question.answers,
-									question.hints
-								)
-							)
-						);
-						break;
-					}
-					case "exact": {
-						const answers = `- [[${question.acceptedAnswers[0].value}]]\n`;
-						const hints = addHints(question.hints);
-						const answerScript = addTextQuizOptionScript(question.acceptedAnswers);
-						quizPart.body.push(
-							markdownify(
-								question.statement + "\n\n" + answers + hints + answerScript
-							)
-						);
-						break;
-					}
-					case "text": {
-						// As we have no "correct" answer for this, we just use a text input which cannot be wrong.
-						const answers = `- [[Freitext]]\n`;
-						const hints = addHints(question.hints);
-						const answerScript = `<script>\nlet input = "@input".trim()\ninput != ""</script>\n`;
-						quizPart.body.push(
-							markdownify(
-								question.statement + "\n\n" + answers + hints + answerScript
-							)
-						);
-						break;
-					}
-					case "cloze":
-						{
-							console.log("Cloze Question: ", question);
-							let answer = question.clozeText;
-							answer = addClozeQuiz(answer);
-							quizPart.body.push(markdownify(question.statement + "\n\n" + answer));
-						}
-						break;
-					case "programming":
-						{
-							console.log("Programming Question: ", question);
-							let code = `\`\`\` ` + question.language + `\n`;
-
-							if (question.custom.mode == "standalone") {
-								code += `\n\n`;
-							} else {
-								code += question.custom.solutionTemplate; //provide the starting point for the solution
-							}
-							code += `\n\`\`\`\n`;
-							if (
-								//Only make code executable when the code is javascript or typescript
-								question.language == `javascript` ||
-								question.language == `typescript`
-							) {
-								code += `<script>@input</script>\n`;
-							}
-							//const hints = addHints(question.hints); Does not work when converted
-							quizPart.body.push(markdownify(question.statement + "\n\n" + code));
-						}
-						break;
-					default:
-						console.log(`Unknown question type: ${question.type}`);
-						break;
-				}
-			}
 
 			sections.push(quizPart);
 		}
@@ -435,7 +360,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 }
 
 /**
- * Converts Lessons[] to Map<lessonId, Lesson>.
+ * Converts Lessons[] to Map<lessonId, Lesson> to support faster retrieval by ID.
  * @param lessons The lessons to restructure.
  * @returns Lessons as map to identify them faster by their ID.
  */

@@ -1,5 +1,85 @@
-import { t } from "@self-learning/api";
 import { toPlainText } from "./liascript-api-utils";
+import { Quiz } from "@self-learning/quiz";
+
+/**
+ * Converts all quizzes of a Nano-Module into LiaScript format.
+ * @param quiz The quizzes of a Nano-Module to convert.
+ * @param markdownify A function to escape a markdown-formatted text to be used in LiaScript.
+ * @returns
+ */
+export function convertQuizzes(quiz: Quiz, markdownify: (input: string) => string) {
+	const convertedQuizzes: string[] = [];
+	for (const question of quiz.questions) {
+		switch (question.type) {
+			case "multiple-choice": {
+				convertedQuizzes.push(
+					markdownify(
+						createMultipleChoiceQuestion(
+							question.statement,
+							question.answers,
+							question.hints
+						)
+					)
+				);
+				break;
+			}
+			case "exact": {
+				const answers = `- [[${question.acceptedAnswers[0].value}]]\n`;
+				const hints = addHints(question.hints);
+				const answerScript = addTextQuizOptionScript(question.acceptedAnswers);
+				convertedQuizzes.push(
+					markdownify(question.statement + "\n\n" + answers + hints + answerScript)
+				);
+				break;
+			}
+			case "text": {
+				// As we have no "correct" answer for this, we just use a text input which cannot be wrong.
+				const answers = `- [[Freitext]]\n`;
+				const hints = addHints(question.hints);
+				const answerScript = `<script>\nlet input = "@input".trim()\ninput != ""</script>\n`;
+				convertedQuizzes.push(
+					markdownify(question.statement + "\n\n" + answers + hints + answerScript)
+				);
+				break;
+			}
+			case "cloze":
+				{
+					console.log("Cloze Question: ", question);
+					let answer = question.clozeText;
+					answer = addClozeQuiz(answer);
+					convertedQuizzes.push(markdownify(question.statement + "\n\n" + answer));
+				}
+				break;
+			case "programming":
+				{
+					console.log("Programming Question: ", question);
+					let code = `\`\`\` ` + question.language + `\n`;
+
+					if (question.custom.mode == "standalone") {
+						code += `\n\n`;
+					} else {
+						code += question.custom.solutionTemplate; //provide the starting point for the solution
+					}
+					code += `\n\`\`\`\n`;
+					if (
+						//Only make code executable when the code is javascript or typescript
+						question.language == `javascript` ||
+						question.language == `typescript`
+					) {
+						code += `<script>@input</script>\n`;
+					}
+					//const hints = addHints(question.hints); Does not work when converted
+					convertedQuizzes.push(markdownify(question.statement + "\n\n" + code));
+				}
+				break;
+			default:
+				console.log(`Unknown question type: ${question.type}`);
+				break;
+		}
+	}
+
+	return convertedQuizzes;
+}
 
 /**
  * Converts a multiple choice question into LiaScript format.
@@ -96,7 +176,7 @@ export function addClozeQuiz(text: string) {
 		}
 		//Only if start and found are set, add conf if the next character matches the expected ones
 		if (start == 1 && found == 1 && conf == 0 && chars[i] != `:`) {
-			//make it insensitive to whitespaces in the start of the answer block
+			//make it insensitive to white spaces in the start of the answer block
 			if (chars[i] != `C` && chars[i] != `T` && chars[i] != " ") {
 				start = 0;
 				found = 0;
@@ -118,16 +198,16 @@ export function addClozeQuiz(text: string) {
 			let newString = text.substring(index, indexEnd).replace(/(?<!\\)([\]|[])/g, ``); //remove the unneeded [ ]
 			newString = newString.replace(`{`, `[[`); //Matches and substitutes the first { for the needed [[
 			newString = newString.replace(/}(?=[^}]*$)/, `]]`); //Matches and replaced only the last } with ]]
-			const tmatch = newString.match(/\[\[\s*T:\s*([^,]+,)(?=.*\])/); //catches our gaps with multiple correct answers
-			if (tmatch != null) {
+			const tMatch = newString.match(/\[\[\s*T:\s*([^,]+,)(?=.*\])/); //catches our gaps with multiple correct answers
+			if (tMatch != null) {
 				newString =
-					newString.substring(0, newString.indexOf(tmatch[0]) + tmatch[0].length - 1) + //cut off everything after the first option and close it with new ]]
+					newString.substring(0, newString.indexOf(tMatch[0]) + tMatch[0].length - 1) + //cut off everything after the first option and close it with new ]]
 					`]]`;
 			}
-			const cmatch = newString.match(/C:/); // prepare for selection type word
+			const cMatch = newString.match(/C:/); // prepare for selection type word
 			newString = newString.replace(/[T|C]:/g, ``); // removes the unneeded T and C starters
 			//Deal with the selection sub case by adding () all answers marked by #
-			if (cmatch != null) {
+			if (cMatch != null) {
 				const word = newString.match(
 					/(?<=\[\[\s#|,#|\[\[#|,\s#)\s*(.*?)\s*(?=,|\]\]|\s,|\s\]\])/g
 				);
@@ -160,5 +240,3 @@ export function addClozeQuiz(text: string) {
 	}
 	return text;
 }
-
-export function addProgrammingTask(text: string) {}
