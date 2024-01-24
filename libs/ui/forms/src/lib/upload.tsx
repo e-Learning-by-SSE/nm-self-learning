@@ -6,11 +6,9 @@ import { trpc } from "@self-learning/api-client";
 import {
 	Dialog,
 	DialogActions,
-	DialogWithReactNodeTitle,
 	LoadingBox,
 	OnDialogCloseFn,
 	Paginator,
-	ProgressBar,
 	showToast,
 	Table,
 	TableDataColumn,
@@ -92,26 +90,57 @@ export function Upload({
 			};
 		}
 
-		const { presignedUrl, downloadUrl } = await getPresignedUrl({ filename: objectName });
+		try {
+			const { presignedUrl, downloadUrl } = await getPresignedUrl({ filename: objectName });
 
-		await uploadWithProgress(
-			presignedUrl,
-			file,
-			() => setViewProgressDialog(true),
-			setProgress,
-			() => {
-				console.log("File uploaded to:", downloadUrl);
+			const onFinish = (e: ProgressEvent<XMLHttpRequestEventTarget>) => {
+				const status = e.type === "loadend" ? "finished" : "failed";
+				console.log(`File upload to ${downloadUrl} ${status}.`);
 				setFileName("");
 				onUploadCompleted(downloadUrl, meta);
-			}
-		);
+			};
+			await uploadWithProgress(
+				presignedUrl,
+				file,
+				() => setViewProgressDialog(true),
+				setProgress,
+				onFinish
+			);
 
-		try {
-			// TODO: Requires public download option -> Implement download via presignedUrl
-			await registerAsset({ objectName, publicUrl: downloadUrl, fileType, fileName });
+			try {
+				// TODO: Requires public download option -> Implement download via presignedUrl
+				await registerAsset({ objectName, publicUrl: downloadUrl, fileType, fileName });
+			} catch (error) {
+				console.log("Failed to register asset.");
+				console.error(error);
+			}
 		} catch (error) {
-			console.log("Failed to register asset.");
-			console.error(error);
+			let msg = "Upload fehlgeschlagen.";
+			if (error instanceof TRPCClientError) {
+				switch (error.data.httpStatus) {
+					case 403:
+						msg = "Datei zu groß.";
+						break;
+					case 500:
+						if (error.data.stack?.startsWith("Error: connect ECONNREFUSED")) {
+							// MinIO server misconfigured / down
+							msg =
+								"Upload-Server nicht erreichbar. Bitte kontaktieren Sie einen Administrator.";
+						} else {
+							msg = "Unbekannter Serverfehler.";
+						}
+						break;
+					default:
+						msg = error.message;
+						break;
+				}
+			}
+
+			showToast({
+				type: "error",
+				title: "Upload fehlgeschlagen",
+				subtitle: msg
+			});
 		}
 	}
 
@@ -168,7 +197,7 @@ function tryGetMediaType(file: File): string | null {
 	return null;
 }
 
-export async function uploadWithProgress(
+async function uploadWithProgress(
 	url: string,
 	file: File,
 	showDialog?: () => void,
