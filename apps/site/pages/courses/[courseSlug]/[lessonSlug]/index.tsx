@@ -116,12 +116,57 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
+	// Learning Analytics: navigate from page
+	const router = useRouter();
+	useEffect(() => {
+		const navigateFromPage = () => {
+			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
+			if (lALessonInfo && lALessonInfo != "") {
+				lALessonInfo.end = "" + new Date();
+				window.localStorage.setItem("la_lessonInfo", JSON.stringify(lALessonInfo));
+			}
+		};
+		router.events.on("routeChangeStart", navigateFromPage);
+		return () => {
+			router.events.off("routeChangeStart", navigateFromPage);
+		};
+	}, [router.events]);
+
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
+
+	// Learning Analytics: init or save lesson info
+	useEffect(() => {
+		if (window !== undefined) {
+			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
+			if (lALessonInfo && lALessonInfo != "") {
+				if (lALessonInfo.lessonId != lesson.lessonId) {
+					//ToDo Save
+					window.localStorage.setItem(
+						"la_lessonInfo",
+						JSON.stringify({
+							lessonId: lesson.lessonId,
+							start: "" + new Date(),
+							end: ""
+						})
+					);
+				}
+			} else {
+				window.localStorage.setItem(
+					"la_lessonInfo",
+					JSON.stringify({
+						lessonId: lesson.lessonId,
+						start: "" + new Date(),
+						end: ""
+					})
+				);
+			}
+		}
+	}, [lesson.lessonId]);
 
 	if (showDialog && markdown.preQuestion) {
 		return (
@@ -318,6 +363,60 @@ function MediaTypeSelector({
 	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();
 
+	// Learning Analytics: number of changes of the media type and preferred media type
+	const [numberOfChangesMediaType, setNumberOfChangesMediaType] = useState({
+		video: preferredMediaType == "video" ? 1 : 0,
+		article: preferredMediaType == "article" ? 1 : 0,
+		pdf: preferredMediaType == "pdf" ? 1 : 0,
+		iframe: preferredMediaType == "iframe" ? 1 : 0
+	});
+
+	useEffect(() => {
+		const numberOfChanges = JSON.parse(
+			window.localStorage.getItem("la_numberOfChangesMediaType") + ""
+		);
+		if (numberOfChanges && numberOfChanges != "") {
+			setNumberOfChangesMediaType(numberOfChanges);
+		}
+	}, []);
+
+	function addNumberOfChangesMediaType(type: string) {
+		if (typeof window !== "undefined") {
+			switch (type) {
+				case "pdf":
+					setNumberOfChangesMediaType(numberOfChangesMediaType => ({
+						...numberOfChangesMediaType,
+						pdf: numberOfChangesMediaType.pdf + 1
+					}));
+					break;
+				case "iframe":
+					setNumberOfChangesMediaType(numberOfChangesMediaType => ({
+						...numberOfChangesMediaType,
+						iframe: numberOfChangesMediaType.iframe + 1
+					}));
+					break;
+				case "video":
+					setNumberOfChangesMediaType(numberOfChangesMediaType => ({
+						...numberOfChangesMediaType,
+						video: numberOfChangesMediaType.video + 1
+					}));
+					break;
+				case "article":
+					setNumberOfChangesMediaType(numberOfChangesMediaType => ({
+						...numberOfChangesMediaType,
+						article: numberOfChangesMediaType.article + 1
+					}));
+					break;
+			}
+
+			window.localStorage.setItem(
+				"la_numberOfChangesMediaType",
+				JSON.stringify(numberOfChangesMediaType)
+			);
+		}
+	}
+	// Learning Analytics: end
+
 	function changeMediaType(index: number) {
 		const type = lessonContent[index].type;
 
@@ -326,7 +425,7 @@ function MediaTypeSelector({
 		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
 			shallow: true
 		});
-
+		addNumberOfChangesMediaType(type);
 		setSelectedIndex(index);
 	}
 

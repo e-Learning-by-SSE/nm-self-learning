@@ -84,6 +84,34 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	// const hasPrevious = nextIndex > 1;
 	// const hasNext = nextIndex < questions.length;
 
+	//Learning Analytics: init or save quiz info
+
+	useEffect(() => {
+		const navigateFromPage = () => {
+			const quizInfo = JSON.parse(localStorage.getItem("la_quizInfo") + "");
+			if (quizInfo && quizInfo != "") {
+				quizInfo.end = "" + new Date();
+				window.localStorage.setItem("la_quizInfo", JSON.stringify(quizInfo));
+			}
+		};
+		router.events.on("routeChangeStart", navigateFromPage);
+		return () => {
+			router.events.off("routeChangeStart", navigateFromPage);
+		};
+	}, [router.events]);
+
+	useEffect(() => {
+		const quizInfos = JSON.parse(localStorage.getItem("la_quizInfo") + "");
+		if (quizInfos && quizInfos !== "") {
+			// TODO save
+		} else {
+			window.localStorage.setItem(
+				"la_quizInfo",
+				JSON.stringify({ start: "" + new Date(), end: "", right: 0, wrong: 0, hint: 0 })
+			);
+		}
+	}, []);
+
 	const goToNextQuestion = useCallback(() => {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true

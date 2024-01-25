@@ -188,7 +188,8 @@ model Lesson {
   license      License? @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
   licenseId    Int?
   lessonType              LessonType        @default(TRADITIONAL)
-  selfRegulatedQuestion   String? // Question to ask the student before the lesson starts
+  selfRegulatedQuestion   String? //Question to ask the student before the lesson starts
+  learninAnalytics    LearningAnalytics[] 
 }
 
 model CompletedLesson {
@@ -270,4 +271,35 @@ model License {
     selectable        Boolean @default(true)
     // Back reference required by Prisma -> Provides overview about usage
     lessons           Lesson[]
+}
+
+model LASession {
+  id                  Int     @id @default(autoincrement())
+  start               DateTime @default(now())
+  end                 DateTime? 
+  username            String
+  learninAnalytics    LearningAnalytics[]
+}
+
+model LearningAnalytics {
+  id                  Int     @id @default(autoincrement())
+  session             LASession @relation(fields:[sessionId], references: [id], onDelete: Cascade)
+  sessionId           Int
+  courseId            Int?
+  lesson              Lesson?   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+  lessonId            String?
+  start               DateTime?
+  end                 DateTime?
+  quizStart           DateTime?
+	quizEnd             DateTime?
+	numberCorrectAnswers      Int?
+	numberIncorrectAnswers    Int?
+  numberOfUsedHints         Int?
+	numberOfChangesMediaType  Int?
+	preferredMediaType  String?
+	videoBreaks         Int?
+	videoStart          DateTime?
+	videoEnd            DateTime?
+	videoSpeed          Float?
+	videoCalculatedSpeed      Float?
 }
