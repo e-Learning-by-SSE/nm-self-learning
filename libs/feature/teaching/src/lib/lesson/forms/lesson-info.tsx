@@ -14,8 +14,16 @@ import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LessonType } from "@prisma/client";
 import { Dispatch } from "react";
+import { lessonSchema } from "@self-learning/types";
+import { OpenAsJsonButton } from "../../json-editor-dialog";
 
-export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<LessonType> }) {
+export function LessonInfoEditor({
+	setLessonType,
+	lesson
+}: {
+	setLessonType: Dispatch<LessonType>;
+	lesson?: LessonFormModel;
+}) {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -27,10 +35,17 @@ export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<Le
 
 	return (
 		<Form.SidebarSection>
+			<div>
+				<span className="font-semibold text-secondary">Lerneinheit editieren</span>
+
+				<h1 className="text-2xl">{lesson?.title}</h1>
+			</div>
+
 			<Form.SidebarSectionTitle
 				title="Daten"
 				subtitle="Informationen über diese Lerneinheit"
 			/>
+			<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
 
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Titel" error={errors.title?.message}>
