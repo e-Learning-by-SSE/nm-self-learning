@@ -1,12 +1,13 @@
 import { authOptions } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
-import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
+import { LessonFormModel } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
-import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
+import { LessonEditorFormProvider } from "../../../../../../libs/feature/lesson/src/lib/lesson-editor";
+import { OnDialogCloseFn, showToast } from "@self-learning/ui/common";
+import { trpc } from "@self-learning/api-client";
 import { useRouter } from "next/router";
 
 type EditLessonProps = {
@@ -87,32 +88,33 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 };
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
+	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
-	const { mutateAsync: updateLesson } = trpc.lesson.edit.useMutation();
+	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
+		if (!updatedLesson) {
+			router.push(document.referrer);
+			return;
+		}
 
-	async function onConfirm(updatedLesson: LessonFormModel) {
 		try {
-			const result = await updateLesson({
+			const result = await editLessonAsync({
 				lesson: updatedLesson,
-				lessonId: lesson.lessonId as string
+				lessonId: updatedLesson.lessonId as string
 			});
-
 			showToast({
 				type: "success",
-				title: "Änderungen gespeichert!",
+				title: "Lerneinheit gespeichert!",
 				subtitle: result.title
 			});
-
-			router.replace(router.asPath, undefined, { scroll: false });
+			router.push(document.referrer);
 		} catch (error) {
 			showToast({
 				type: "error",
 				title: "Fehler",
-				subtitle:
-					"Das Speichern der Lerneinheit ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
+				subtitle: "Die Lernheit konnte nicht gespeichert werden."
 			});
 		}
-	}
+	};
 
-	return <LessonEditor lesson={lesson} onConfirm={onConfirm} />;
+	return <LessonEditorFormProvider initialLesson={lesson} onClose={handleEditClose} />;
 }

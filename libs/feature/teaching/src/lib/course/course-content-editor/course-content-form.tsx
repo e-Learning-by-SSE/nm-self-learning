@@ -11,13 +11,12 @@ import {
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
-import { OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
+import { SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
-import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
-import { EditLessonDialog } from "./dialogs/edit-lesson-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
 import { useCourseContentForm } from "./use-content-form";
+import { CreateLessonDialog, EditLessonDialog } from "./dialogs/lesson-editor-dialog";
 
 type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
 
@@ -126,32 +125,6 @@ function LessonNode({
 }) {
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
-	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
-
-	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		if (!updatedLesson) {
-			return setLessonEditorDialog(false);
-		}
-
-		try {
-			const result = await editLessonAsync({
-				lesson: updatedLesson,
-				lessonId: lesson.lessonId
-			});
-			showToast({
-				type: "success",
-				title: "Lerneinheit gespeichert!",
-				subtitle: result.title
-			});
-			setLessonEditorDialog(false);
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle: "Die Lernheit konnte nicht gespeichert werden."
-			});
-		}
-	};
 
 	return (
 		<span className="flex justify-between gap-4 rounded-lg bg-white px-4 py-2">
@@ -182,12 +155,7 @@ function LessonNode({
 				>
 					<span className="text-sm">{data ? data.title : "Loading..."}</span>
 
-					{lessonEditorDialog && (
-						<EditExistingLessonDialog
-							lessonId={lesson.lessonId}
-							onClose={handleEditDialogClose}
-						/>
-					)}
+					{lessonEditorDialog && <EditExistingLessonDialog lessonId={lesson.lessonId} />}
 				</button>
 			</div>
 
@@ -234,34 +202,11 @@ function ChapterNode({
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const [editChapterDialogOpen, setEditChapterDialogOpen] = useState(false);
 	const [expanded, setExpanded] = useState(true);
-	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
-
 	function onCloseLessonSelector(lesson?: LessonSummary) {
 		setLessonSelectorOpen(false);
 
 		if (lesson) {
 			onLessonAdded(index, lesson);
-		}
-	}
-
-	async function handleLessonEditorClosed(lesson?: LessonFormModel) {
-		if (!lesson) {
-			return setCreateLessonDialogOpen(false);
-		}
-
-		try {
-			console.log("Creating lesson...", lesson);
-			const result = await createLessonAsync(lesson);
-			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
-			onLessonAdded(index, { lessonId: result.lessonId });
-			setCreateLessonDialogOpen(false);
-		} catch (error) {
-			console.error(error);
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle: "Lerneinheit konnte nicht erstellt werden."
-			});
 		}
 	}
 
@@ -371,7 +316,7 @@ function ChapterNode({
 			{lessonSelectorOpen && (
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 			)}
-			{createLessonDialogOpen && <EditLessonDialog onClose={handleLessonEditorClosed} />}
+			{createLessonDialogOpen && <CreateLessonDialog />}
 			{editChapterDialogOpen && (
 				<ChapterDialog chapter={chapter} onClose={handleEditChapterDialogClosed} />
 			)}
@@ -379,18 +324,10 @@ function ChapterNode({
 	);
 }
 
-function EditExistingLessonDialog({
-	lessonId,
-	onClose
-}: {
-	lessonId: string;
-	onClose: OnDialogCloseFn<LessonFormModel>;
-}) {
+function EditExistingLessonDialog({ lessonId }: { lessonId: string }) {
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
-
 	return data ? (
 		<EditLessonDialog
-			onClose={onClose}
 			initialLesson={{
 				...data,
 				// currently there is no license label in the UI so we don't need to set this; see sample implementation below

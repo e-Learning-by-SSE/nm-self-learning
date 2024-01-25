@@ -1,19 +1,19 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
-import { LabeledField, MarkdownEditorDialog, MarkdownField } from "@self-learning/ui/forms";
+import { DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
+import { LessonFormModel } from "@self-learning/teaching";
 import { useRequiredSession } from "@self-learning/ui/layouts";
-import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
 import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
+import { createEmptyLesson, lessonSchema } from "@self-learning/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { OpenAsJsonButton } from "../../../teaching/src/lib/json-editor-dialog";
+import { LessonContentEditor } from "../../../teaching/src/lib/lesson/forms/lesson-content";
+import { QuizEditor } from "../../../teaching/src/lib/lesson/forms/quiz-editor";
 import slugify from "slugify";
-import { AuthorsForm } from "../../../author/authors-form";
-import { OpenAsJsonButton } from "../../../json-editor-dialog";
-import { LessonContentEditor } from "../../../lesson/forms/lesson-content";
-import { QuizEditor } from "../../../lesson/forms/quiz-editor";
-import { LessonFormModel } from "../../../lesson/lesson-form-model";
+import { SidebarSectionTitle } from "../../../../ui/forms/src/lib/form-container";
+import { LabeledField, MarkdownEditorDialog, MarkdownField } from "@self-learning/ui/forms";
+import { AuthorsForm } from "../../../teaching/src/lib/author/authors-form";
 
-export function EditLessonDialog({
+export function LessonEditorFormProvider({
 	onClose,
 	initialLesson
 }: {
@@ -21,13 +21,7 @@ export function EditLessonDialog({
 	initialLesson?: LessonFormModel;
 }) {
 	const session = useRequiredSession();
-	const canEdit =
-		session.data?.user.role === "ADMIN" ||
-		initialLesson?.authors.some(a => a.username === session.data?.user.name);
-
 	const [selectedTab, setSelectedTab] = useState(0);
-	const isNew = !initialLesson;
-
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
@@ -38,86 +32,51 @@ export function EditLessonDialog({
 		resolver: zodResolver(lessonSchema)
 	});
 
-	if (initialLesson?.lessonId && !canEdit) {
-		return (
-			<Dialog title="Nicht erlaubt" onClose={onClose}>
-				<div className="flex flex-col gap-8">
-					<p className="text-light">
-						Du hast keine Berechtigung, diese Lerneinheit zu bearbeiten:
-					</p>
-
-					<div className="flex flex-col">
-						<span className="font-semibold">Titel:</span>
-						<span className="font-semibold text-secondary">{initialLesson.title}</span>
-					</div>
-
-					<div>
-						<span className="font-semibold">Autoren:</span>
-
-						<ul className="flex flex-col">
-							{initialLesson.authors.map(a => (
-								<span className="font-semibold text-secondary">{a.username}</span>
-							))}
-						</ul>
-					</div>
-				</div>
-
-				<DialogActions onClose={onClose} />
-			</Dialog>
-		);
-	}
-
 	return (
-		<Dialog
-			title={isNew ? "Neue Lernheit erstellen" : "Lerneinheit anpassen"}
-			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
-			style={{ height: "80vh", width: "80vw" }}
-		>
-			<FormProvider {...form}>
-				<div className="absolute right-8 top-8 flex gap-4">
-					<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
-					{initialLesson?.lessonId && (
-						<a
-							className="btn-stroked"
-							target="_blank"
-							rel="noreferrer"
-							href={`/teaching/lessons/edit/${initialLesson?.lessonId}`}
-							title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
-						>
-							Im separaten Editor öffnen
-						</a>
-					)}
-				</div>
-				<form
-					id="lessonform"
-					onSubmit={form.handleSubmit(onClose, console.log)}
-					className="flex h-full flex-col overflow-hidden"
-				>
-					<div className="flex h-full flex-col gap-4 overflow-hidden">
-						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-							<Tab>Übersicht</Tab>
-							<Tab>Lernkontrolle</Tab>
-						</Tabs>
+		<FormProvider {...form}>
+			<div className="absolute right-8 top-8 flex gap-4">
+				<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+				{initialLesson?.lessonId && (
+					<a
+						className="btn-stroked"
+						target="_blank"
+						rel="noreferrer"
+						href={`/teaching/lessons/edit/${initialLesson?.lessonId}`}
+						title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
+					>
+						Im separaten Editor öffnen
+					</a>
+				)}
+			</div>
+			<form
+				id="lessonform"
+				onSubmit={form.handleSubmit(onClose, console.log)}
+				className="flex h-full flex-col overflow-hidden"
+			>
+				<div className="flex h-full flex-col gap-4 overflow-hidden">
+					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+						<Tab>Übersicht</Tab>
+						<Tab>Lernkontrolle</Tab>
+					</Tabs>
 
-						<div className="playlist-scroll flex h-full flex-col gap-4 overflow-auto">
-							{selectedTab === 0 && (
-								<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-									<Overview />
-									<LessonContentEditor />
-								</div>
-							)}
-							{selectedTab === 1 && <QuizEditor />}
-						</div>
+					<div className="playlist-scroll flex h-full flex-col gap-4 overflow-auto">
+						{selectedTab === 0 && (
+							<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
+								<Overview />
+								<LessonContentEditor />
+							</div>
+						)}
+						{selectedTab === 1 && <QuizEditor />}
 					</div>
+				</div>
 
-					<DialogActions onClose={onClose}>
-						<button type="submit" className="btn-primary">
-							Speichern
-						</button>
-					</DialogActions>
-				</form>
-			</FormProvider>
-		</Dialog>
+				<DialogActions onClose={onClose}>
+					<button type="submit" className="btn-primary">
+						Speichern
+					</button>
+				</DialogActions>
+			</form>
+		</FormProvider>
 	);
 }
 
