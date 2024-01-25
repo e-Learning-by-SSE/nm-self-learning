@@ -17,7 +17,7 @@ import {
 import { formatDateAgo } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
-import { parseISO } from "date-fns";
+import { parseISO, set } from "date-fns";
 import { ReactElement, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
@@ -98,6 +98,7 @@ export function Upload({
 				console.log(`File upload to ${downloadUrl} ${status}.`);
 				setFileName("");
 				onUploadCompleted(downloadUrl, meta);
+				setViewProgressDialog(false);
 			};
 			await uploadWithProgress(
 				presignedUrl,
@@ -146,13 +147,7 @@ export function Upload({
 
 	return (
 		<div className="relative flex flex-col gap-4">
-			{viewProgressDialog && (
-				<UploadProgressDialog
-					name={fileName}
-					progress={progress}
-					onClose={() => setViewProgressDialog(false)}
-				/>
-			)}
+			{viewProgressDialog && <UploadProgressDialog name={fileName} progress={progress} />}
 
 			<div className="flex gap-1">
 				<label className="btn-primary w-full" htmlFor={id}>

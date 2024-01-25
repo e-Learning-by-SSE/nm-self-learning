@@ -10,34 +10,14 @@ import { useState, useEffect } from "react";
  * @param onClose A function that is called when the dialog is closed (e.g. external setState function to close the dialog)
  * @returns A dialog visualizing the progress of the file upload
  */
-export function UploadProgressDialog({
-	name,
-	progress,
-	onClose
-}: {
-	name: string;
-	progress: number;
-	onClose: () => void;
-}) {
-	const [open, setOpen] = useState(true);
-	useEffect(() => {
-		if (progress === 0) {
-			setOpen(true);
-		} else if (progress === 100) {
-			setOpen(false);
-		}
-	}, [progress]);
-
-	if (!open) return null;
+export function UploadProgressDialog({ name, progress }: { name: string; progress: number }) {
 	return (
 		<CenteredContainer>
 			<DialogWithReactNodeTitle
-				style={{ height: "30vh", width: "60vw", overflow: "auto" }}
+				style={{ height: "20vh", width: "40vw", overflow: "auto" }}
 				title={<span className="text-3xl font-semibold">{name} wird hochgeladen</span>}
-				onClose={() => {
-					setOpen(false);
-					onClose();
-				}}
+				// This makes the dialog modal (i.e. the user cannot click outside of the dialog to close it)
+				onClose={() => {}}
 			>
 				<ProgressBar progress={progress} />
 			</DialogWithReactNodeTitle>
