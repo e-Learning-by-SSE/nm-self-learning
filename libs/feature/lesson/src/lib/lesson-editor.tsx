@@ -1,4 +1,4 @@
-import { DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
+import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { LessonFormModel } from "@self-learning/teaching";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { useState } from "react";
@@ -13,7 +13,61 @@ import { SidebarSectionTitle } from "../../../../ui/forms/src/lib/form-container
 import { LabeledField, MarkdownEditorDialog, MarkdownField } from "@self-learning/ui/forms";
 import { AuthorsForm } from "../../../teaching/src/lib/author/authors-form";
 
-export function LessonEditorFormProvider({
+export async function onLessonCreatorClosed(
+	onClose: () => void,
+	createLessonAsync: (lesson: LessonFormModel) => any,
+	lesson?: LessonFormModel
+) {
+	if (!lesson) {
+		onClose();
+		return;
+	}
+	try {
+		console.log("Creating lesson...", lesson);
+		const result = await createLessonAsync(lesson);
+		showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
+		onClose();
+	} catch (error) {
+		console.error(error);
+		showToast({
+			type: "error",
+			title: "Fehler",
+			subtitle: "Lerneinheit konnte nicht erstellt werden."
+		});
+	}
+}
+
+export async function onLessonEditorClosed(
+	onClose: () => void,
+	editLessonAsync: (lesson: any) => any,
+	lesson?: LessonFormModel
+) {
+	if (!lesson) {
+		onClose();
+		return;
+	}
+
+	try {
+		const result = await editLessonAsync({
+			lesson: lesson,
+			lessonId: lesson.lessonId as string
+		});
+		showToast({
+			type: "success",
+			title: "Lerneinheit gespeichert!",
+			subtitle: result.title
+		});
+		onClose();
+	} catch (error) {
+		showToast({
+			type: "error",
+			title: "Fehler",
+			subtitle: "Die Lernheit konnte nicht gespeichert werden."
+		});
+	}
+}
+
+export function LessonEditor({
 	onClose,
 	initialLesson
 }: {

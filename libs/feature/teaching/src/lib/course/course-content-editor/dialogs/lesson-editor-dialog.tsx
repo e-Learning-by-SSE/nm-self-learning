@@ -1,9 +1,13 @@
-import { Dialog, DialogActions, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
+import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { useState } from "react";
 import { LessonFormModel } from "@self-learning/teaching";
 import { trpc } from "@self-learning/api-client";
-import { LessonEditorFormProvider } from "../../../../../../lesson/src/lib/lesson-editor";
+import {
+	LessonEditor,
+	onLessonCreatorClosed,
+	onLessonEditorClosed
+} from "../../../../../../lesson/src/lib/lesson-editor";
 
 export function CreateLessonDialog() {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -11,23 +15,13 @@ export function CreateLessonDialog() {
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
-		if (!lesson) {
-			return setCreateLessonDialogOpen(false);
-		}
-
-		try {
-			console.log("Creating lesson...", lesson);
-			const result = await createLessonAsync(lesson);
-			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
-			setCreateLessonDialogOpen(false);
-		} catch (error) {
-			console.error(error);
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle: "Lerneinheit konnte nicht erstellt werden."
-			});
-		}
+		await onLessonCreatorClosed(
+			() => {
+				setCreateLessonDialogOpen(false);
+			},
+			createLessonAsync,
+			lesson
+		);
 	}
 
 	return <LessonEditorDialog onClose={handleCreateDialogClose}></LessonEditorDialog>;
@@ -38,28 +32,13 @@ export function EditLessonDialog({ initialLesson }: { initialLesson?: LessonForm
 	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		if (!updatedLesson) {
-			return;
-		}
-
-		try {
-			const result = await editLessonAsync({
-				lesson: updatedLesson,
-				lessonId: updatedLesson.lessonId as string
-			});
-			showToast({
-				type: "success",
-				title: "Lerneinheit gespeichert!",
-				subtitle: result.title
-			});
-			setLessonEditorDialog(false);
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle: "Die Lernheit konnte nicht gespeichert werden."
-			});
-		}
+		await onLessonEditorClosed(
+			() => {
+				setLessonEditorDialog(false);
+			},
+			editLessonAsync,
+			updatedLesson
+		);
 	};
 
 	return (
@@ -119,7 +98,7 @@ export function LessonEditorDialog({
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			style={{ height: "80vh", width: "80vw" }}
 		>
-			<LessonEditorFormProvider onClose={onClose} initialLesson={initialLesson} />
+			<LessonEditor onClose={onClose} initialLesson={initialLesson} />
 		</Dialog>
 	);
 }

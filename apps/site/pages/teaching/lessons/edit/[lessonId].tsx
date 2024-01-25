@@ -5,10 +5,13 @@ import { LessonFormModel } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
-import { LessonEditorFormProvider } from "../../../../../../libs/feature/lesson/src/lib/lesson-editor";
-import { OnDialogCloseFn, showToast } from "@self-learning/ui/common";
-import { trpc } from "@self-learning/api-client";
+import {
+	LessonEditor,
+	onLessonEditorClosed
+} from "../../../../../../libs/feature/lesson/src/lib/lesson-editor";
+import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
+import { trpc } from "@self-learning/api-client";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -91,30 +94,14 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		if (!updatedLesson) {
-			router.push(document.referrer);
-			return;
-		}
-
-		try {
-			const result = await editLessonAsync({
-				lesson: updatedLesson,
-				lessonId: updatedLesson.lessonId as string
-			});
-			showToast({
-				type: "success",
-				title: "Lerneinheit gespeichert!",
-				subtitle: result.title
-			});
-			router.push(document.referrer);
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle: "Die Lernheit konnte nicht gespeichert werden."
-			});
-		}
+		await onLessonEditorClosed(
+			() => {
+				router.push(document.referrer);
+			},
+			editLessonAsync,
+			updatedLesson
+		);
 	};
 
-	return <LessonEditorFormProvider initialLesson={lesson} onClose={handleEditClose} />;
+	return <LessonEditor initialLesson={lesson} onClose={handleEditClose} />;
 }
