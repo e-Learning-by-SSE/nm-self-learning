@@ -49,19 +49,19 @@ export function toPlainText(markdown: string) {
 
 export function removeStorageUrls(
 	text: string,
-	options: {
+	{
+		storageUrls = undefined,
+		storageDestination = ""
+	}: {
 		storageUrls?: string[];
 		storageDestination?: string;
-	} = {
-		storageUrls: undefined,
-		storageDestination: ""
 	}
 ) {
 	const resources: MediaFileReplacement[] = [];
-	for (const url of options.storageUrls ?? []) {
+	for (const url of storageUrls ?? []) {
 		const regex = new RegExp(`!\\[([^\\]]*)\\]\\(${url}\\/([\\w|_-]*)\\)`, "g");
 		text = text.replace(regex, (match, captureGroup1, captureGroup2) => {
-			const dest = `${options.storageDestination}${captureGroup2}`;
+			const dest = `${storageDestination}${captureGroup2}`;
 			const mediaFile: MediaFileReplacement = {
 				source: `${url}/${captureGroup2}`,
 				destination: dest
@@ -86,16 +86,16 @@ export function removeStorageUrls(
  */
 export function markdownify(
 	markdownText: string,
-	options: {
+	{
+		htmlTag = "section",
+		removeLineNumbers = true,
+		storageUrls = undefined,
+		storageDestination = ""
+	}: {
 		htmlTag?: "section" | "article" | "div";
 		removeLineNumbers?: boolean;
 		storageUrls?: string[];
 		storageDestination?: string;
-	} = {
-		htmlTag: "section",
-		removeLineNumbers: true,
-		storageUrls: undefined,
-		storageDestination: ""
 	}
 ) {
 	/**
@@ -122,13 +122,13 @@ export function markdownify(
 				// A new header on the same level as the previous one
 				// Close the previous header and open a new one
 
-				lines.splice(i++, 0, `</${options.htmlTag}>\n`);
-				lines.splice(i++, 0, `<${options.htmlTag}>\n`);
+				lines.splice(i++, 0, `</${htmlTag}>\n`);
+				lines.splice(i++, 0, `<${htmlTag}>\n`);
 			} else if (level > lastLevel) {
 				// A new header on a higher level than the previous one
 				// Open a new header
 
-				lines.splice(i++, 0, `<${options.htmlTag}>\n`);
+				lines.splice(i++, 0, `<${htmlTag}>\n`);
 				levels.push(level);
 			} else if (level < lastLevel) {
 				// A new header on a lower level than the previous one
@@ -137,12 +137,12 @@ export function markdownify(
 				const nLevelsClosed = lastLevel - level;
 				for (let j = 0; j <= nLevelsClosed; j++) {
 					levels.pop();
-					lines.splice(i++, 0, `</${options.htmlTag}>\n`);
+					lines.splice(i++, 0, `</${htmlTag}>\n`);
 				}
-				lines.splice(i++, 0, `<${options.htmlTag}>\n`);
+				lines.splice(i++, 0, `<${htmlTag}>\n`);
 				levels.push(level);
 			}
-		} else if (options.removeLineNumbers && line.startsWith("```") && line.length > 3) {
+		} else if (removeLineNumbers && line.startsWith("```") && line.length > 3) {
 			// Removes unsupported line numbers from code blocks
 			// Actually, this removes everything after the first space (language spec)
 
@@ -154,13 +154,16 @@ export function markdownify(
 	// Close all remaining levels
 	while (levels.length > 1) {
 		levels.pop();
-		lines.push(`</${options.htmlTag}>\n`);
+		lines.push(`</${htmlTag}>\n`);
 	}
 
 	const markdownStr = lines.join("\n").trim();
 
-	if (options.storageUrls) {
-		const { text, resources } = removeStorageUrls(markdownStr);
+	if (storageUrls) {
+		const { text, resources } = removeStorageUrls(markdownStr, {
+			storageUrls,
+			storageDestination
+		});
 		return { markdown: text, resources };
 	}
 	const resources: MediaFileReplacement[] = [];

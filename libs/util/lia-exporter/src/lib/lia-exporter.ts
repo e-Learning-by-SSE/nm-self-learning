@@ -216,7 +216,12 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	 * @returns LiaScript compatible markdown.
 	 */
 	function markdownify(input: string) {
-		const { markdown, resources } = markdownifyDelegate(input, options);
+		const { markdown, resources } = markdownifyDelegate(input, {
+			htmlTag: "section",
+			removeLineNumbers: true,
+			storageUrls: options.storagesToInclude,
+			storageDestination: options.storageDestination
+		});
 		mediaFiles.push(...resources);
 
 		return markdown;
