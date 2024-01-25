@@ -147,7 +147,9 @@ export function markdownify(
 			// Actually, this removes everything after the first space (language spec)
 
 			const index = line.indexOf(" ");
-			lines[i] = line.slice(0, index);
+			if (index > 0) {
+				lines[i] = line.slice(0, index);
+			}
 		}
 	}
 

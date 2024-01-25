@@ -53,14 +53,14 @@ export function convertQuizzes(quiz: Quiz, markdownify: (input: string) => strin
 			case "programming":
 				{
 					console.log("Programming Question: ", question);
-					let code = `\`\`\` ` + question.language + `\n`;
+					let code = `\`\`\`${question.language}\n`;
 
 					if (question.custom.mode == "standalone") {
-						code += `\n\n`;
+						code += "\n\n";
 					} else {
 						code += question.custom.solutionTemplate; //provide the starting point for the solution
 					}
-					code += `\n\`\`\`\n`;
+					code += "\n```\n";
 					if (
 						//Only make code executable when the code is javascript or typescript
 						question.language == `javascript` ||
