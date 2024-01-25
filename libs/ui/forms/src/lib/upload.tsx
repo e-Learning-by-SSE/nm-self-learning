@@ -116,31 +116,20 @@ export function Upload({
 				console.error(error);
 			}
 		} catch (error) {
-			let msg = "Upload fehlgeschlagen.";
-			if (error instanceof TRPCClientError) {
-				switch (error.data.httpStatus) {
-					case 403:
-						msg = "Datei zu groß.";
-						break;
-					case 500:
-						if (error.data.stack?.startsWith("Error: connect ECONNREFUSED")) {
-							// MinIO server misconfigured / down
-							msg =
-								"Upload-Server nicht erreichbar. Bitte kontaktieren Sie einen Administrator.";
-						} else {
-							msg = "Unbekannter Serverfehler.";
-						}
-						break;
-					default:
-						msg = error.message;
-						break;
+			if (error instanceof TRPCClientError && error.data.httpStatus === 500) {
+				if (error.data.stack?.startsWith("Error: connect ECONNREFUSED")) {
+					console.error(
+						"MinIO server not reachable. Possible cause: Server not started or misconfigured."
+					);
 				}
 			}
 
+			console.error("Upload Error:", error);
 			showToast({
 				type: "error",
 				title: "Upload fehlgeschlagen",
-				subtitle: msg
+				subtitle:
+					"Upload fehlgeschlagen. Wenn der Fehler länger bestehen bleibt, kontaktieren Sie bitte einen Administrator."
 			});
 		}
 	}
@@ -195,35 +184,31 @@ function tryGetMediaType(file: File): string | null {
 async function uploadWithProgress(
 	url: string,
 	file: File,
-	showDialog?: () => void,
-	onProgress?: (bytes: number) => void,
-	onComplete?: (e: ProgressEvent<XMLHttpRequestEventTarget>) => void
+	showDialog: () => void,
+	onProgress: (bytes: number) => void,
+	onComplete: (e: ProgressEvent<XMLHttpRequestEventTarget>) => void
 ) {
-	showDialog && showDialog();
+	showDialog();
 
 	// Upload with progress based on XHR
 	// Based on https://www.sitepoint.com/html5-javascript-file-upload-progress-bar/
 	const xhr = new XMLHttpRequest();
 
-	if (onProgress) {
-		// Set progress to 0% before start
-		onProgress(0);
+	// Set progress to 0% before start
+	onProgress(0);
 
-		xhr.upload.addEventListener(
-			"progress",
-			function (e) {
-				const pc = (e.loaded / e.total) * 100;
-				onProgress(pc);
-			},
-			false
-		);
-	}
+	xhr.upload.addEventListener(
+		"progress",
+		function (e) {
+			const pc = (e.loaded / e.total) * 100;
+			onProgress(pc);
+		},
+		false
+	);
 
-	if (onComplete) {
-		// Event listener for (un)successful finishing the task.
-		// List of listener types: https://stackoverflow.com/a/15491086
-		xhr.upload.addEventListener("loadend", onComplete, false);
-	}
+	// Event listener for (un)successful finishing the task.
+	// List of listener types: https://stackoverflow.com/a/15491086
+	xhr.upload.addEventListener("loadend", onComplete, false);
 
 	// start upload
 	xhr.open("PUT", url, true);

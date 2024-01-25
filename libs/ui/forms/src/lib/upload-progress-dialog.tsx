@@ -1,6 +1,5 @@
 import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { useState, useEffect } from "react";
 
 /**
  * Dialog that indicates the progress of a file upload.
