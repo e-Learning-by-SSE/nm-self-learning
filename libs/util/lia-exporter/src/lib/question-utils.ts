@@ -63,8 +63,7 @@ export function convertQuizzes(quiz: Quiz, markdownify: (input: string) => strin
 					code += "\n```\n";
 					if (
 						//Only make code executable when the code is javascript or typescript
-						question.language == `javascript` ||
-						question.language == `typescript`
+						question.language == `javascript`
 					) {
 						code += `<script>@input</script>\n`;
 					}
