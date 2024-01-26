@@ -12,7 +12,12 @@ import { LessonContent as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
-import { ExportOptions, MediaFileReplacement } from "./types";
+import {
+	ExportOptions,
+	IncompleteNanoModuleExport,
+	MediaFileReplacement,
+	MissedElement
+} from "./types";
 import { convertQuizzes } from "./question-utils";
 import JSZip = require("jszip");
 import { downloadWithProgress, getFileSize } from "./network-utils";
@@ -38,7 +43,10 @@ export async function exportCourseArchive(
 		...exportOptions
 	};
 	// Generate markdown file and create a zip archive with this file
-	const { markdown, mediaFiles } = await exportCourse({ course, lessons }, options);
+	const { markdown, mediaFiles, incompleteExportedItems } = await exportCourse(
+		{ course, lessons },
+		options
+	);
 	const zip = new JSZip();
 	zip.file(`${course.title}.md`, markdown);
 
@@ -99,7 +107,8 @@ export async function exportCourseArchive(
 
 	if (!signal.aborted) {
 		// Create Zip archive and report progress
-		return await zip.generateAsync({ type: "blob" }, zipUpdateFn);
+		const zipArchive = await zip.generateAsync({ type: "blob" }, zipUpdateFn);
+		return { zipArchive, incompleteExportedItems };
 	} else {
 		throw new Error("Download aborted");
 	}
@@ -146,10 +155,18 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	// The JSON object that is used as input for the LiaScript API
 	let courseDescription: string | undefined;
 	if (course.description) {
-		const { text, resources } = removeStorageUrls(toPlainText(course.description), options);
+		const { text, resources } = removeStorageUrls(toPlainText(course.description), {
+			storageUrls: options.storagesToInclude,
+			storageDestination: options.storageDestination
+		});
 		courseDescription = text;
 		mediaFiles.push(...resources);
 	}
+
+	// Stores the list of items which could not exported completely
+	// Will be altered by side effect of nested functions
+	const incompleteExportedItems: IncompleteNanoModuleExport[] = [];
+
 	const json: ExportFormat = {
 		// The list of supported items are documented here:
 		// https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#176
@@ -183,7 +200,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	}
 
 	const markdown = await liaScriptExport(json);
-	return { markdown, mediaFiles };
+	return { markdown, mediaFiles, incompleteExportedItems };
 
 	/**
 	 * Checks if a given (optional) URL points to a file on our storage.
@@ -269,7 +286,6 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	}
 
 	function addSection(chapter: CourseChapter, indent: IndentationLevels) {
-		console.log(">>>Adding a section", chapter.title);
 		const section = {
 			title: chapter.title,
 			indent: indent,
@@ -293,6 +309,15 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	}
 
 	function addLesson(lesson: LessonExport, indent: IndentationLevels) {
+		// List of potentially incomplete exported elements
+		const incompleteExport: IncompleteNanoModuleExport = {
+			nanomodule: {
+				name: lesson.title,
+				id: lesson.lessonId
+			},
+			missedElements: []
+		};
+
 		const nm = {
 			title: lesson.title,
 			indent: indent,
@@ -352,14 +377,23 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 		// Add quizzes
 		if (lesson.quiz) {
+			const reporter = (report: MissedElement) => {
+				incompleteExport.missedElements.push(report);
+			};
+
 			const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
 			const quizPart = {
 				title: "Lernzielkontrolle",
 				indent: quizIndent,
-				body: convertQuizzes(lesson.quiz as Quiz, markdownify)
+				body: convertQuizzes(lesson.quiz as Quiz, markdownify, reporter)
 			};
 
 			sections.push(quizPart);
+		}
+
+		// Add missing elements to the export if there are any
+		if (incompleteExport.missedElements.length > 0) {
+			incompleteExportedItems.push(incompleteExport);
 		}
 	}
 }

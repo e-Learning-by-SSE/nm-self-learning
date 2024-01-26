@@ -15,3 +15,30 @@ export type MediaFileReplacement = {
 	source: string;
 	destination: string;
 };
+
+export type IncompleteNanoModuleExport = {
+	nanomodule: {
+		name: string;
+		id: string;
+	};
+	missedElements: MissedElement[];
+};
+
+/**
+ * List of unsupported items (w.r.t reporting).
+ * Extend this list if necessary.
+ */
+export type MissedElement = IncompleteArticle | IncompleteProgrammingTask;
+
+export type IncompleteArticle = {
+	type: "article";
+	id: string;
+	cause: string[];
+};
+
+export type IncompleteProgrammingTask = {
+	type: "programming";
+	id: string;
+	cause: "unsupportedLanguage" | "unsupportedSolution";
+	language: string;
+};

@@ -1,5 +1,7 @@
 import { toPlainText } from "./liascript-api-utils";
 import { Quiz } from "@self-learning/quiz";
+import { MissedElement } from "./types";
+import { report } from "process";
 
 /**
  * Converts all quizzes of a Nano-Module into LiaScript format.
@@ -7,7 +9,11 @@ import { Quiz } from "@self-learning/quiz";
  * @param markdownify A function to escape a markdown-formatted text to be used in LiaScript.
  * @returns
  */
-export function convertQuizzes(quiz: Quiz, markdownify: (input: string) => string) {
+export function convertQuizzes(
+	quiz: Quiz,
+	markdownify: (input: string) => string,
+	onUnsupportedItem: (report: MissedElement) => void
+) {
 	const convertedQuizzes: string[] = [];
 	for (const question of quiz.questions) {
 		switch (question.type) {
@@ -66,6 +72,14 @@ export function convertQuizzes(quiz: Quiz, markdownify: (input: string) => strin
 						question.language == `javascript`
 					) {
 						code += `<script>@input</script>\n`;
+					} else {
+						// Report unsupported programming language
+						onUnsupportedItem({
+							type: "programming",
+							id: question.questionId,
+							language: question.language,
+							cause: "unsupportedLanguage"
+						});
 					}
 					//const hints = addHints(question.hints); Does not work when converted
 					convertedQuizzes.push(markdownify(question.statement + "\n\n" + code));
