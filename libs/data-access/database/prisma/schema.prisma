@@ -320,6 +320,8 @@ model DiaryEntry {
   completedLesson CompletedLesson? @relation(fields: [completedLessonId], references: [completedLessonId])
   completedLessonId Int? @unique
   duration Int?
+  location LocationType @default(EMPTY)
+  locationNote String?
 }
 
 model LearningStrategy {
@@ -329,6 +331,14 @@ model LearningStrategy {
   notes String?
   diaryEntry DiaryEntry @relation(fields: [diaryEntryID], references: [id], onDelete: Cascade)
   diaryEntryID String
+}
+
+enum LocationType {
+  EMPTY
+  UNIVERSITY
+  HOME
+  ONTHEROAD
+  USERSPECIFIC
 }
 
 enum StrategyType {

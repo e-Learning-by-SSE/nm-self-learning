@@ -1,3 +1,4 @@
+import { LocationType } from "@prisma/client";
 import { strategySchema } from "@self-learning/types";
 import { z } from "zod";
 
@@ -10,7 +11,9 @@ export const entryFormSchema = z.object({
 	lessonId: z.string().nullable(),
 	completedLessonId: z.number().nullable(),
 	duration: z.number().nullable(),
-	learningStrategies: z.array(strategySchema).nullable()
+	learningStrategies: z.array(strategySchema).nullable(),
+	location: z.nativeEnum(LocationType),
+	locationNote: z.string().nullable()
 });
 
 export type EntryFormModel = z.infer<typeof entryFormSchema>;

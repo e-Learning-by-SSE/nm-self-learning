@@ -9,6 +9,7 @@ import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import {
 	ResolvedValue,
+	getLocationNameByType,
 	getStrategyNameByType,
 	getUSerSpecificName,
 	isUserSpecific
@@ -19,7 +20,7 @@ import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import { Tab } from "@headlessui/react";
-import { GoalType, Lesson, StrategyType } from "@prisma/client";
+import { GoalType, Lesson, LocationType, StrategyType } from "@prisma/client";
 import {
 	EntryEditor,
 	EntryFormModel,
@@ -1006,10 +1007,27 @@ function Entry({
 					<span>Bearbeiten</span>
 				</button>
 			</div>
-			<span className="text-sm font-semibold">Titel:</span>
-			<span>{diaryEntry?.title}</span>
 
-			<div className="mt-5 flex flex-col">
+			<div className="flex flex-row items-center">
+				<div className="mx-auto flex w-full flex-row justify-between gap-2">
+					<div className="flex flex-col">
+						<span className="text-sm font-semibold">Titel:</span>
+						<span>{diaryEntry?.title}</span>
+					</div>
+				</div>
+				<div className="flex flex-col">
+					<span className="text-sm font-semibold"> Ort: </span>
+					<span className="text-light">
+						{diaryEntry?.location === LocationType.USERSPECIFIC
+							? diaryEntry?.locationNote
+							: getLocationNameByType(
+									diaryEntry?.location ? diaryEntry.location : LocationType.EMPTY
+							  )}
+					</span>
+				</div>
+			</div>
+
+			<div className="mt-3 flex flex-col">
 				{diaryEntry?.lesson && (
 					<div className="flex flex-col">
 						<span className="text-sm font-semibold">Lerneinheit:</span>
@@ -1152,7 +1170,9 @@ function EntryWithEditor({
 					efforts: entryForm.efforts,
 					lessonId: entryForm.lessonId,
 					notes: entryForm.notes,
-					learningStrategies: entryForm.learningStrategies
+					learningStrategies: entryForm.learningStrategies,
+					location: entryForm.location,
+					locationNote: entryForm.locationNote
 				});
 				showToast({
 					type: "success",
@@ -1204,7 +1224,9 @@ function EntryWithEditor({
 						duration: 0,
 						efforts: 0,
 						lessonId: selectedLesson,
-						learningStrategies: []
+						learningStrategies: [],
+						location: LocationType.EMPTY,
+						locationNote: ""
 					}}
 					lessons={lessons}
 				/>
@@ -1220,7 +1242,9 @@ function EntryWithEditor({
 						duration: inputDiaryEntry.duration,
 						efforts: inputDiaryEntry.efforts,
 						lessonId: inputDiaryEntry.lessonId,
-						learningStrategies: inputDiaryEntry.learningStrategies
+						learningStrategies: inputDiaryEntry.learningStrategies,
+						location: inputDiaryEntry.location,
+						locationNote: inputDiaryEntry.locationNote
 					}}
 					lessons={lessons}
 				/>

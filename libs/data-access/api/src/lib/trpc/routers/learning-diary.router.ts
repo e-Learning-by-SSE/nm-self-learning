@@ -1,4 +1,4 @@
-import { Prisma, GoalType, StrategyType } from "@prisma/client";
+import { Prisma, GoalType, StrategyType, LocationType } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
@@ -101,7 +101,9 @@ export const learningDiaryRouter = t.router({
 				lesson: true,
 				lessonId: true,
 				completedLessonId: true,
-				duration: true
+				duration: true,
+				location: true,
+				locationNote: true
 			}
 		});
 	}),
@@ -242,7 +244,9 @@ export const learningDiaryRouter = t.router({
 				lessonId: z.string().nullable(),
 				completedLessonId: z.number().nullable(),
 				duration: z.number().nullable(),
-				learningStrategies: z.array(strategySchema).nullable()
+				learningStrategies: z.array(strategySchema).nullable(),
+				location: z.nativeEnum(LocationType),
+				locationNote: z.string().nullable()
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -256,6 +260,8 @@ export const learningDiaryRouter = t.router({
 					duration: input.duration,
 					completedLessonId: input.completedLessonId,
 					lessonId: input.lessonId,
+					location: input.location,
+					locationNote: input.locationNote,
 					learningStrategies: {
 						createMany: {
 							data: getStrategyData(input.learningStrategies)
@@ -281,7 +287,9 @@ export const learningDiaryRouter = t.router({
 				lessonId: z.string().nullable(),
 				completedLessonId: z.number().nullable(),
 				duration: z.number().nullable(),
-				learningStrategies: z.array(strategySchema).nullable()
+				learningStrategies: z.array(strategySchema).nullable(),
+				location: z.nativeEnum(LocationType),
+				locationNote: z.string().nullable()
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -311,6 +319,8 @@ export const learningDiaryRouter = t.router({
 					lessonId: input.lessonId,
 					completedLessonId: input.completedLessonId,
 					duration: input.duration,
+					location: input.location,
+					locationNote: input.locationNote,
 					learningStrategies: {
 						createMany: {
 							data: getStrategyData(input.learningStrategies)

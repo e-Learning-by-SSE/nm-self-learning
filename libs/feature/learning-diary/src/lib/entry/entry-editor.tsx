@@ -3,9 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, FormProvider, UseFormReturn, useFieldArray, useForm } from "react-hook-form";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useEffect, useState } from "react";
-import { StrategyType } from "@prisma/client";
+import { LocationType, StrategyType } from "@prisma/client";
 import { XIcon, PlusIcon } from "@heroicons/react/solid";
-import { getStrategyNameByType, isUserSpecific } from "@self-learning/types";
+import { getLocationNameByType, getStrategyNameByType, isUserSpecific } from "@self-learning/types";
 import { StarRating } from "libs/ui/common/src/lib/rating/star-rating";
 import { SectionHeader } from "@self-learning/ui/common";
 
@@ -90,14 +90,25 @@ export function EntryTopForm({
 	return (
 		<div className="flex flex-col gap-5">
 			<SectionHeader title="Lernsession" subtitle="Beschreibung der Lernsession." />
-			<LabeledField label="Titel:" error={errors.title?.message}>
-				<input
-					{...register("title")}
-					className="textfield"
-					type="text"
-					placeholder="Des neuen Tagebucheintrags"
-				/>
-			</LabeledField>
+
+			<div className="mb-2 flex flex-row items-center">
+				<div className="mx-auto flex w-full flex-row justify-between gap-4">
+					<LabeledField label="Titel:" error={errors.title?.message}>
+						<input
+							{...register("title")}
+							className="textfield"
+							type="text"
+							placeholder="Des neuen Tagebucheintrags"
+						/>
+					</LabeledField>
+				</div>
+				<span className="ml-5">
+					<LabeledField label="Ort: ">
+						<ListBoxLocation form={form} />
+					</LabeledField>
+				</span>
+			</div>
+
 			<div className="flex flex-col gap-5 border-black">
 				<LabeledField label="Lerneinheit:">
 					<select {...register("lessonId")}>
@@ -136,7 +147,7 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 				subtitle="Ausführliche Beschreibung der Ablenkungen und Bemühungen während der Lernsession (Optional)."
 			/>
 			<div className="flex flex-col gap-5 border-black">
-				<div className="mb-2 flex flex-row items-center" key={"distraction"}>
+				<div className="mb-2 flex flex-row items-center">
 					<div className="mx-auto flex w-full flex-row justify-between gap-4">
 						<span>Ablenkungen:</span>
 					</div>
@@ -153,7 +164,7 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 						/>
 					</span>
 				</div>
-				<div className="mb-2 flex flex-row items-center" key={"distraction"}>
+				<div className="mb-2 flex flex-row items-center">
 					<div className="mx-auto flex w-full flex-row justify-between gap-4">
 						<span>Bemühungen:</span>
 					</div>
@@ -281,6 +292,42 @@ const ListBoxStrategy = ({
 					defaultValue={""}
 					placeholder="Name der Lernstrategie"
 					{...register(`learningStrategies.${index}.notes` as const)}
+				/>
+			)}
+		</div>
+	);
+};
+
+const ListBoxLocation = ({ form }: { form: UseFormReturn<EntryFormModel> }) => {
+	const { register, getValues } = form;
+	const [selectedLocation, setSelectedLocation] = useState<LocationType>(LocationType.HOME);
+	useEffect(() => {
+		setSelectedLocation(getValues(`location`));
+	}, [getValues]);
+	return (
+		<div className="gab-2 flex flex-col">
+			<select
+				{...register("location")}
+				onChange={e => {
+					setSelectedLocation(e.target.value as LocationType);
+				}}
+			>
+				<option value={""} hidden>
+					Bitte wählen...
+				</option>
+				{Object.values(LocationType).map(type => (
+					<option key={type} value={type}>
+						{getLocationNameByType(type)}
+					</option>
+				))}
+			</select>
+			{selectedLocation === LocationType.USERSPECIFIC && (
+				<input
+					type="text"
+					className="textfield max-content mt-1"
+					defaultValue={""}
+					placeholder="Beschreibung des Orts"
+					{...register(`locationNote` as const)}
 				/>
 			)}
 		</div>

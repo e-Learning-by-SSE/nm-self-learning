@@ -1,5 +1,24 @@
-import { StrategyType } from "@prisma/client";
+import { LocationType, StrategyType } from "@prisma/client";
 import { z } from "zod";
+
+export function getLocationNameByType(type: LocationType) {
+	let result = "Keine Angabe";
+	switch (type) {
+		case "HOME":
+			result = "Zuhause";
+			break;
+		case "ONTHEROAD":
+			result = "Unterwegs";
+			break;
+		case "UNIVERSITY":
+			result = "Universität";
+			break;
+		case "USERSPECIFIC":
+			result = "[offenes Eingabefeld]";
+			break;
+	}
+	return result;
+}
 
 export const strategySchema = z.object({
 	type: z.nativeEnum(StrategyType),
