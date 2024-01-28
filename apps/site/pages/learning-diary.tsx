@@ -7,7 +7,12 @@ import {
 } from "@heroicons/react/outline";
 import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
-import { ResolvedValue, getStrategyNameByType } from "@self-learning/types";
+import {
+	ResolvedValue,
+	getStrategyNameByType,
+	getUSerSpecificName,
+	isUserSpecific
+} from "@self-learning/types";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { GetServerSideProps } from "next";
@@ -32,7 +37,7 @@ import {
 	showToast
 } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
-import Link from "next/link";
+
 import { Star } from "libs/ui/common/src/lib/rating/star-rating";
 import { PencilIcon } from "@heroicons/react/solid";
 
@@ -410,7 +415,7 @@ function TabGoals({ goals }: Readonly<{ goals: LearningGoal[] }>) {
 				</Tab.List>
 				<Tab.Panels className="flex flex-col gap-12">
 					<Tab.Panel>
-						<label className="mt-10 text-sm font-semibold">Wöchentliche:</label>
+						<span className="mt-10 text-sm font-semibold">Wöchentliche:</span>
 						<ul className="flex flex-col gap-1 text-sm">
 							{goals
 								.filter(
@@ -437,7 +442,7 @@ function TabGoals({ goals }: Readonly<{ goals: LearningGoal[] }>) {
 									)
 								)}
 						</ul>
-						<label className="mt-10 text-sm font-semibold">Langzeit:</label>
+						<span className="mt-10 text-sm font-semibold">Langzeit:</span>
 						<ul className="flex flex-col gap-1 text-sm">
 							{goals
 								.filter(
@@ -1001,20 +1006,20 @@ function Entry({
 					<span>Bearbeiten</span>
 				</button>
 			</div>
-			<label className="text-sm font-semibold">Titel:</label>
-			<label>{diaryEntry?.title}</label>
+			<span className="text-sm font-semibold">Titel:</span>
+			<span>{diaryEntry?.title}</span>
 
 			<div className="mt-5 flex flex-col">
 				{diaryEntry?.lesson && (
 					<div className="flex flex-col">
-						<label className="text-sm font-semibold">Lerneinheit:</label>
-						<label className="text-sm font-medium hover:text-secondary">
+						<span className="text-sm font-semibold">Lerneinheit:</span>
+						<span className="text-sm font-medium hover:text-secondary">
 							{diaryEntry?.lesson?.title}
-						</label>
+						</span>
 					</div>
 				)}
-				<label className="mt-5 text-sm font-semibold">Dauer (inMinuten):</label>
-				<label className="mb-5">{diaryEntry?.duration}</label>
+				<span className="mt-5 text-sm font-semibold">Dauer (inMinuten):</span>
+				<span className="mb-5">{diaryEntry?.duration}</span>
 			</div>
 			<SectionHeader title="Verwendete Lernstrategie:" />
 			<Table
@@ -1029,8 +1034,8 @@ function Entry({
 					<tr key={strategy.type}>
 						<TableDataColumn>
 							<span className="text-light">
-								{strategy.type == StrategyType.USERSPECIFIC
-									? strategy.notes
+								{isUserSpecific(strategy.type)
+									? getUSerSpecificName(strategy.type) + strategy.notes
 									: getStrategyNameByType(strategy.type)}
 							</span>
 						</TableDataColumn>
@@ -1053,12 +1058,43 @@ function Entry({
 					subtitle="Ausführliche Beschreibung der Ablenkungen und Bemühungen während der Lernsession (Optional)."
 				/>
 				<div className="flex flex-col ">
-					<label className="mt-5 text-sm font-semibold">Ablenkungen:</label>
-					<label>{diaryEntry?.distractions}</label>
-					<label className="mt-5 text-sm font-semibold">Bemühungen:</label>
-					<label>{diaryEntry?.efforts}</label>
-					<label className="mt-5 text-sm font-semibold">Sonstige Notizen</label>
-					<label>{diaryEntry?.notes}</label>
+					<span className="mt-5 text-sm font-semibold">Ablenkungen:</span>
+					<div
+						key={"distractions"}
+						className="form-control flex flex-row place-items-center"
+					>
+						{[1, 2, 3, 4, 5].map(value => (
+							<Star
+								key={value}
+								filled={
+									value <=
+									(diaryEntry
+										? diaryEntry.distractions
+											? diaryEntry?.distractions
+											: 0
+										: 0)
+								}
+							/>
+						))}
+					</div>
+					<span className="mt-5 text-sm font-semibold">Bemühungen:</span>
+					<div key={"effort"} className="form-control flex flex-row place-items-center">
+						{[1, 2, 3, 4, 5].map(value => (
+							<Star
+								key={value}
+								filled={
+									value <=
+									(diaryEntry
+										? diaryEntry.efforts
+											? diaryEntry?.efforts
+											: 0
+										: 0)
+								}
+							/>
+						))}
+					</div>
+					<span className="mt-5 text-sm font-semibold">Sonstige Notizen</span>
+					<span>{diaryEntry?.notes}</span>
 				</div>
 			</div>
 		</div>
@@ -1162,11 +1198,11 @@ function EntryWithEditor({
 					entry={{
 						id: "",
 						title: "",
-						distractions: "",
+						distractions: 0,
 						completedLessonId: selectedCompletedLesson,
 						notes: "",
 						duration: 0,
-						efforts: "",
+						efforts: 0,
 						lessonId: selectedLesson,
 						learningStrategies: []
 					}}

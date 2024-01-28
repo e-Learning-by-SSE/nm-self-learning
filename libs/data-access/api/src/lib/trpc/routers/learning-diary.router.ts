@@ -235,8 +235,8 @@ export const learningDiaryRouter = t.router({
 	createDiaryEntry: authProcedure
 		.input(
 			z.object({
-				distractions: z.string().nullable(),
-				efforts: z.string().nullable(),
+				distractions: z.number().nullable(),
+				efforts: z.number().nullable(),
 				notes: z.string().nullable(),
 				title: z.string(),
 				lessonId: z.string().nullable(),
@@ -275,8 +275,8 @@ export const learningDiaryRouter = t.router({
 			z.object({
 				id: z.string(),
 				title: z.string(),
-				distractions: z.string().nullable(),
-				efforts: z.string().nullable(),
+				distractions: z.number().nullable(),
+				efforts: z.number().nullable(),
 				notes: z.string().nullable(),
 				lessonId: z.string().nullable(),
 				completedLessonId: z.number().nullable(),
@@ -478,7 +478,7 @@ export async function getUserspecificStrategyOverviewbyEntryIDs(
 }
 function getStrategyData(
 	learningStrategies:
-		| { type: "USERSPECIFIC" | "REPEATING"; notes: string | null; confidenceRating: number }[]
+		| { type: StrategyType; notes: string | null; confidenceRating: number }[]
 		| null
 ) {
 	if (learningStrategies) return learningStrategies;

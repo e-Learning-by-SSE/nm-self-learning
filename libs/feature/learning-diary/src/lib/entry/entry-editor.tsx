@@ -5,7 +5,7 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { useEffect, useState } from "react";
 import { StrategyType } from "@prisma/client";
 import { XIcon, PlusIcon } from "@heroicons/react/solid";
-import { getStrategyNameByType } from "@self-learning/types";
+import { getStrategyNameByType, isUserSpecific } from "@self-learning/types";
 import { StarRating } from "libs/ui/common/src/lib/rating/star-rating";
 import { SectionHeader } from "@self-learning/ui/common";
 
@@ -126,6 +126,7 @@ export function EntryTopForm({
 export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFormModel> }>) {
 	const {
 		register,
+		control,
 		formState: { errors }
 	} = form;
 	return (
@@ -135,12 +136,40 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 				subtitle="Ausführliche Beschreibung der Ablenkungen und Bemühungen während der Lernsession (Optional)."
 			/>
 			<div className="flex flex-col gap-5 border-black">
-				<LabeledField label="Ablenkungen:" error={errors.distractions?.message}>
-					<textarea {...register("distractions")} className="textarea" />
-				</LabeledField>
-				<LabeledField label="Bemühungen" error={errors.efforts?.message}>
-					<textarea {...register("efforts")} className="textarea" />
-				</LabeledField>
+				<div className="mb-2 flex flex-row items-center" key={"distraction"}>
+					<div className="mx-auto flex w-full flex-row justify-between gap-4">
+						<span>Ablenkungen:</span>
+					</div>
+					<span className="ml-5">
+						<Controller
+							name={"distractions"}
+							control={control}
+							render={({ field: { onChange, value } }) => (
+								<StarRating
+									onChange={onChange}
+									value={value ? value : 0}
+								></StarRating>
+							)}
+						/>
+					</span>
+				</div>
+				<div className="mb-2 flex flex-row items-center" key={"distraction"}>
+					<div className="mx-auto flex w-full flex-row justify-between gap-4">
+						<span>Bemühungen:</span>
+					</div>
+					<span className="ml-5">
+						<Controller
+							name={"efforts"}
+							control={control}
+							render={({ field: { onChange, value } }) => (
+								<StarRating
+									onChange={onChange}
+									value={value ? value : 0}
+								></StarRating>
+							)}
+						/>
+					</span>
+				</div>
 				<LabeledField label="Sonstige Notizen" error={errors.notes?.message}>
 					<textarea {...register("notes")} className="textarea" />
 				</LabeledField>
@@ -165,7 +194,11 @@ export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<Entr
 					type="button"
 					className="btn-primary mt-5 w-full"
 					onClick={() =>
-						append({ confidenceRating: 0, type: StrategyType.REPEATING, notes: "" })
+						append({
+							confidenceRating: 0,
+							type: StrategyType.REPEATING_ACTIVATIONQUESTION,
+							notes: ""
+						})
 					}
 				>
 					<PlusIcon className="icon h-5" />
@@ -218,7 +251,9 @@ const ListBoxStrategy = ({
 	form: UseFormReturn<EntryFormModel>;
 }) => {
 	const { register, getValues } = form;
-	const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(StrategyType.REPEATING);
+	const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(
+		StrategyType.REPEATING_ACTIVATIONQUESTION
+	);
 	useEffect(() => {
 		setSelectedStrategy(getValues(`learningStrategies.${index}.type`));
 	}, [getValues, index]);
@@ -239,7 +274,7 @@ const ListBoxStrategy = ({
 					</option>
 				))}
 			</select>
-			{selectedStrategy === StrategyType.USERSPECIFIC && (
+			{isUserSpecific(selectedStrategy) && (
 				<input
 					type="text"
 					className="textfield max-content mt-1"
