@@ -21,7 +21,7 @@ export default function CreateLessonPage() {
 	async function handleCreateClose(lesson?: LessonFormModel) {
 		await onLessonCreatorClosed(
 			() => {
-				router.push(document.referrer);
+				router.push("/overview");
 			},
 			createLessonAsync,
 			lesson

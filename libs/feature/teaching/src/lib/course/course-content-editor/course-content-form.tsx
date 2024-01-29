@@ -155,7 +155,12 @@ function LessonNode({
 				>
 					<span className="text-sm">{data ? data.title : "Loading..."}</span>
 
-					{lessonEditorDialog && <EditExistingLessonDialog lessonId={lesson.lessonId} />}
+					{lessonEditorDialog && (
+						<EditExistingLessonDialog
+							setLessonEditorDialog={setLessonEditorDialog}
+							lessonId={lesson.lessonId}
+						/>
+					)}
 				</button>
 			</div>
 
@@ -316,7 +321,9 @@ function ChapterNode({
 			{lessonSelectorOpen && (
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 			)}
-			{createLessonDialogOpen && <CreateLessonDialog />}
+			{createLessonDialogOpen && (
+				<CreateLessonDialog setCreateLessonDialogOpen={setCreateLessonDialogOpen} />
+			)}
 			{editChapterDialogOpen && (
 				<ChapterDialog chapter={chapter} onClose={handleEditChapterDialogClosed} />
 			)}
@@ -324,10 +331,19 @@ function ChapterNode({
 	);
 }
 
-function EditExistingLessonDialog({ lessonId }: { lessonId: string }) {
+interface EditExistingLessonDialogProps {
+	lessonId: string;
+	setLessonEditorDialog: (value: boolean) => void;
+}
+
+function EditExistingLessonDialog({
+	lessonId,
+	setLessonEditorDialog
+}: EditExistingLessonDialogProps) {
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
 	return data ? (
 		<EditLessonDialog
+			setLessonEditorDialog={setLessonEditorDialog}
 			initialLesson={{
 				...data,
 				// currently there is no license label in the UI so we don't need to set this; see sample implementation below

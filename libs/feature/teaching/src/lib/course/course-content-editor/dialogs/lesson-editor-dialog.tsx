@@ -1,6 +1,5 @@
 import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRequiredSession } from "@self-learning/ui/layouts";
-import { useState } from "react";
 import { LessonFormModel } from "@self-learning/teaching";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -9,9 +8,12 @@ import {
 	onLessonEditorClosed
 } from "../../../../../../lesson/src/lib/lesson-editor";
 
-export function CreateLessonDialog() {
+interface CreateLessonDialogProps {
+	setCreateLessonDialogOpen: (open: boolean) => void;
+}
+
+export function CreateLessonDialog({ setCreateLessonDialogOpen }: CreateLessonDialogProps) {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
@@ -24,12 +26,16 @@ export function CreateLessonDialog() {
 		);
 	}
 
-	return <LessonEditorDialog onClose={handleCreateDialogClose}></LessonEditorDialog>;
+	return <LessonEditorDialog onClose={handleCreateDialogClose} />;
 }
 
-export function EditLessonDialog({ initialLesson }: { initialLesson?: LessonFormModel }) {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
+export function EditLessonDialog({
+	initialLesson,
+	setLessonEditorDialog
+}: {
+	initialLesson?: LessonFormModel;
+	setLessonEditorDialog: (value: boolean) => void;
+}) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
 		await onLessonEditorClosed(
@@ -41,12 +47,7 @@ export function EditLessonDialog({ initialLesson }: { initialLesson?: LessonForm
 		);
 	};
 
-	return (
-		<LessonEditorDialog
-			initialLesson={initialLesson}
-			onClose={handleEditDialogClose}
-		></LessonEditorDialog>
-	);
+	return <LessonEditorDialog initialLesson={initialLesson} onClose={handleEditDialogClose} />;
 }
 
 export function LessonEditorDialog({

@@ -74,7 +74,6 @@ export function LessonEditor({
 	const session = useRequiredSession();
 	const [selectedLessonType, setLessonType] = useState(initialLesson?.lessonType);
 	const [selectedTab, setSelectedTab] = useState(0);
-	const isNew = initialLesson?.lessonId === "";
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
