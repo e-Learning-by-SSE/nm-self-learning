@@ -1,30 +1,79 @@
-import {  SkillFormModel } from "@self-learning/types";
+import { SkillFormModel } from "@self-learning/types";
 import {
 	ButtonActions,
 	dispatchDialog,
 	freeDialog,
+	showToast,
 	SimpleDialog
 } from "@self-learning/ui/common";
-import { TrashIcon } from "@heroicons/react/solid";
+import { PlusIcon, TrashIcon } from "@heroicons/react/solid";
 import { FolderAddIcon } from "@heroicons/react/outline";
-import { FolderItem } from "./cycle-detection/cycle-detection";
-import { SkillSelectHandler } from "@self-learning/teaching";
-import { useSkillOperations } from "./skill-operations-hook";
+import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
+import { trpc } from "@self-learning/api-client";
+import { Skill } from "@prisma/client";
 
-export function SkillQuickAddOption({
-	selectedSkill,
-	skillMap,
-	handleSelection
+const withErrorHandling = async (fn: () => Promise<void>) => {
+	try {
+		await fn();
+		showToast({
+			type: "success",
+			title: "Aktion erfolgreich!",
+			subtitle: ""
+		});
+	} catch (error) {
+		if (error instanceof Error) {
+			showToast({
+				type: "error",
+				title: "Ihre Aktion konnte nicht durchgeführt werden",
+				subtitle: error.message ?? ""
+			});
+		}
+		console.log("Could not change skill:", error);
+	}
+};
+
+export function AddChildButton({
+	parentSkill,
+	updateSkillDisplay,
+	handleSelection,
+	skillDefaults
 }: {
-	selectedSkill: SkillFormModel;
-	skillMap: Map<string, FolderItem>;
-	handleSelection: SkillSelectHandler
+	parentSkill: SkillFormModel;
+	updateSkillDisplay: UpdateVisuals;
+	handleSelection: SkillSelectHandler;
+	skillDefaults?: Partial<Skill>;
 }) {
-	const { addSkillOnParent } = useSkillOperations(skillMap, handleSelection);
-
-	const handleAddSkill = async () => {
-		await addSkillOnParent(selectedSkill);
+	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
+	const newSkill = {
+		name: `${parentSkill.children.length + 1}. Kind - ${parentSkill.name}`,
+		description: "Add here",
+		children: [],
+		parents: [parentSkill.id],
+		repositoryId: parentSkill.repositoryId,
+		...skillDefaults
 	};
+	const handleAddSkill = async () =>
+		await withErrorHandling(async () => {
+			const result = await addSkillOnParent({
+				repoId: parentSkill.repositoryId,
+				parentSkillId: parentSkill.id,
+				skill: newSkill
+			});
+			if (result) {
+				const { createdSkill, parentSkill } = result;
+				updateSkillDisplay([
+					{ id: createdSkill.id, shortHighlight: true },
+					{
+						id: parentSkill.id,
+						shortHighlight: true,
+						isExpanded: true
+					}
+				]);
+				handleSelection(createdSkill.id);
+			} else {
+				throw new Error("Could not create skill");
+			}
+		});
 
 	return (
 		<button
@@ -38,37 +87,39 @@ export function SkillQuickAddOption({
 }
 
 export function SkillDeleteOption({
-	skills,
-	skillMap,
-	handleSelection,
-	handleChangeOfItems,
-	classname
+	skillIds,
+	className,
+	onDeleteSuccess
 }: {
-	skills: SkillFormModel[];
-	skillMap: Map<string, FolderItem>;
-	handleSelection: SkillSelectHandler;
-	handleChangeOfItems: (skillMap: Map<string, FolderItem>) => void;
-	classname?: string;
+	skillIds: SkillFormModel["id"][];
+	className?: string;
+	onDeleteSuccess?: () => void | PromiseLike<void>;
 }) {
-	const { removeSkill } = useSkillOperations(skillMap, handleSelection);
+	const { mutateAsync: deleteSkills } = trpc.skill.deleteSkills.useMutation();
+
+	const onClose = async () => {
+		await withErrorHandling(async () => {
+			await deleteSkills({ ids: skillIds });
+			await onDeleteSuccess?.();
+		});
+	};
 
 	const handleDelete = () => {
 		dispatchDialog(
 			<SimpleDialog
-				description={`${
-					skills.length > 1 ? "Sollen die Skills " : "Soll der Skill"
-				} wirklich gelöscht werden?`}
 				name="Warnung"
 				onClose={async (type: ButtonActions) => {
 					if (type === ButtonActions.CANCEL) {
 						freeDialog("simpleDialog");
 						return;
 					}
-						await removeSkill(skills, handleChangeOfItems);
-					
+					onClose();
 					freeDialog("simpleDialog");
 				}}
-			/>,
+			>
+				{skillIds.length > 1 ? "Sollen die Skills " : "Soll der Skill"} wirklich gelöscht
+				werden?
+			</SimpleDialog>,
 			"simpleDialog"
 		);
 	};
@@ -76,7 +127,11 @@ export function SkillDeleteOption({
 	return (
 		<button
 			type="button"
-			className={`rounded-lg border border-light-border bg-red-400 hover:bg-red-600 ${classname}`}
+			className={` ${
+				className
+					? className
+					: "rounded-lg border border-light-border bg-red-400 px-2 py-2 hover:bg-red-600"
+			}`}
 			onClick={handleDelete}
 		>
 			<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
@@ -84,3 +139,37 @@ export function SkillDeleteOption({
 	);
 }
 
+export function NewSkillButton({
+	repoId,
+	onSuccess,
+	skillDefaults
+}: {
+	repoId: string;
+	onSuccess?: (skill: Skill) => Promise<void>;
+	skillDefaults?: Partial<Skill>;
+}) {
+	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
+
+	const date = new Date();
+	const formattedDate = date.toLocaleDateString("de-DE");
+
+	const newSkill = {
+		name: `Skill vom ${formattedDate}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+		description: "Add here",
+		children: [],
+		...skillDefaults
+	};
+	const onCreateSkill = async () => {
+		const createdSkill = await createNewSkill({
+			repoId: repoId,
+			skill: newSkill
+		});
+		await onSuccess?.(createdSkill ?? null);
+	};
+	return (
+		<button className="btn-primary" onClick={onCreateSkill}>
+			<PlusIcon className="icon h-5" />
+			<span>Skill hinzufügen</span>
+		</button>
+	);
+}

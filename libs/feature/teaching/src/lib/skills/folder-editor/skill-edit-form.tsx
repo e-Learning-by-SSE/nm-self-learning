@@ -6,105 +6,62 @@ import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/api";
 import { SkillDeleteOption } from "./skill-taskbar";
-import { Divider, showToast } from "@self-learning/ui/common";
+import { showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
-import { dispatchChange } from "./cycle-detection/detect-change-hook";
-import { FolderItem } from "./cycle-detection/cycle-detection";
 import { XIcon } from "@heroicons/react/solid";
-import { SkillSelectHandler } from "@self-learning/teaching";
+import { SkillSelectHandler } from "./skill-display";
 
 export function SelectedSkillsInfoForm({
 	skills,
-	previousSkill,
-	skillMap,
-	handleSelection,
-	handleChangeOfItems
+	onSkillSelect
 }: {
 	skills: SkillFormModel[];
-	previousSkill: SkillFormModel | null;
-	skillMap: Map<string, FolderItem>;
-	handleSelection: SkillSelectHandler;
-	handleChangeOfItems: (skillMap: Map<string, FolderItem>) => void;
+	onSkillSelect: SkillSelectHandler;
 }) {
 	if (skills.length > 0) {
-		return (
-			<div>
-				{skills.length > 1 ? (
-					<MassSelectedInfo
-						skills={skills}
-						handleSelection={handleSelection}
-						handleChangeOfItems={handleChangeOfItems}
-						skillMap={skillMap}
-					/>
-				) : (
-					<SkillInfoForm
-						skill={skills[0]}
-						previousSkill={previousSkill}
-						handleSelection={handleSelection}
-						handleChangeOfItems={handleChangeOfItems}
-						skillMap={skillMap}
-					/>
-				)}
-			</div>
-		);
+		return <SkillInfoForm skill={skills[0]} handleSelection={onSkillSelect} />;
 	} else {
-		return <div />;
+		return <> </>;
 	}
 }
 
-export function MassSelectedInfo({
-	skills,
-	skillMap,
-	handleSelection,
-	handleChangeOfItems
-}: {
-	skills: SkillFormModel[];
-	skillMap: Map<string, FolderItem>;
-	handleSelection: SkillSelectHandler;
-	handleChangeOfItems: (skillMap: Map<string, FolderItem>) => void;
-}) {
-	return (
-		<>
-			<h2 className="text-xl">Ausgewählte Skills:</h2>
-			<span className="pb-4 text-sm text-light">Die rechts ausgewählten Skills</span>
+// export function MassSelectedInfo({
+// 	skills,
+// 	onSelectItem
+// }: {
+// 	skills: SkillFormModel[];
+// 	onSelectItem: SkillSelectHandler;
+// }) {
+// 	return (
+// 		<>
+// 			<h2 className="text-xl">Ausgewählte Skills:</h2>
+// 			<span className="pb-4 text-sm text-light">Die rechts ausgewählten Skills</span>
 
-			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-light-border">
-				<div className="flex flex-col">
-					{skills.map((skill, index) => (
-						<span
-							key={"span: " + skill.id + index}
-							className="flex items-center gap-2 pl-1"
-						>
-							{skill.name}
-						</span>
-					))}
-				</div>
-			</section>
-			<div className="pt-4" />
-			<Divider />
-			<SkillDeleteOption
-				skills={skills}
-				classname={"py-2 px-8"}
-				handleSelection={handleSelection}
-				skillMap={skillMap}
-				handleChangeOfItems={handleChangeOfItems}
-			/>
-		</>
-	);
-}
+// 			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-light-border">
+// 				<div className="flex flex-col">
+// 					{skills.map((skill, index) => (
+// 						<span
+// 							key={"span: " + skill.id + index}
+// 							className="flex items-center gap-2 pl-1"
+// 						>
+// 							{skill.name}
+// 						</span>
+// 					))}
+// 				</div>
+// 			</section>
+// 			<div className="pt-4" />
+// 			<Divider />
+// 			<SkillDeleteOption skills={skills} classname={"py-2 px-8"} onChange={() => {}} />
+// 		</>
+// 	);
+// }
 
 export function SkillInfoForm({
 	skill,
-	previousSkill,
-	skillMap,
-	handleSelection,
-	handleChangeOfItems
+	handleSelection
 }: {
 	skill: SkillFormModel;
-	previousSkill: SkillFormModel | null;
-	skillMap: Map<string, FolderItem>;
 	handleSelection: SkillSelectHandler;
-	handleChangeOfItems: (skillMap: Map<string, FolderItem>) => void;
 }) {
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
 	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
@@ -112,7 +69,7 @@ export function SkillInfoForm({
 	});
 
 	const onSubmit = async (data: SkillFormModel) => {
-		const updatedSkill = await updateSkill({
+		await updateSkill({
 			skill: {
 				...data,
 				repositoryId: skill.repositoryId,
@@ -122,64 +79,22 @@ export function SkillInfoForm({
 				parents: skill.parents
 			}
 		});
-		const updatedSkillFormModel = {
-			id: updatedSkill.id,
-			name: updatedSkill.name,
-			description: updatedSkill.description,
-			children: updatedSkill.children.map(skill => skill.id),
-			parents: updatedSkill.parents.map(skill => skill.id),
-			repositoryId: updatedSkill.repository.id
-		};
-
-		const folderItem = {
-			skill: updatedSkillFormModel,
-			selectedSkill: true
-		};
 
 		showToast({
 			type: "success",
 			title: "Skill gespeichert!",
 			subtitle: ""
 		});
-
-		skillMap.set(updatedSkill.id, folderItem);
-
-		handleChangeOfItems(skillMap);
 	};
 
 	const form = useForm({
 		defaultValues: skill,
 		resolver: zodResolver(skillFormSchema)
 	});
-
 	const errors = form.formState.errors;
-
-	useEffect(() => {
-		form.setValue("name", skill.name);
-		form.setValue("description", skill?.description);
-		let folderItemHistory = skillMap.get(skill.id);
-		if (!folderItemHistory) return;
-		const items: FolderItem[] = [
-			{
-				skill: skill,
-				selectedSkill: true,
-				cycle: folderItemHistory.cycle,
-				parent: folderItemHistory.parent ?? undefined
-			}
-		];
-		if (previousSkill !== null) {
-			folderItemHistory = skillMap.get(previousSkill.id);
-			if (!folderItemHistory) return;
-			items.push({
-				skill: previousSkill,
-				selectedSkill: false,
-				cycle: folderItemHistory.cycle,
-				parent: folderItemHistory.parent ?? undefined
-			});
-		}
-		//informs the specific row about the change
-		dispatchChange(items);
-	}, [skill, form, previousSkill, skillMap]);
+	form.setValue("name", skill.name);
+	form.setValue("description", skill?.description);
+	const resetEditTarget = () => handleSelection(undefined);
 
 	return (
 		<FormProvider {...form}>
@@ -194,7 +109,7 @@ export function SkillInfoForm({
 							type="button"
 							className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
 							title="Ansicht ohne Veränderungen schließen"
-							onClick={() => handleSelection(null, skillMap)}
+							onClick={resetEditTarget}
 						>
 							<XIcon className="h-5" />
 						</button>
@@ -218,11 +133,8 @@ export function SkillInfoForm({
 							Speichern
 						</button>
 						<SkillDeleteOption
-							skills={[skill]}
-							classname={"py-2 px-2"}
-							handleSelection={handleSelection}
-							skillMap={skillMap}
-							handleChangeOfItems={handleChangeOfItems}
+							skillIds={[skill.id]}
+							onDeleteSuccess={resetEditTarget}
 						/>
 					</div>
 				</Form.SidebarSection>

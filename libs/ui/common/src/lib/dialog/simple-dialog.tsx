@@ -11,11 +11,11 @@ export const ButtonActions = {
 };
 
 export function SimpleDialog({
-	description,
+	children,
 	name,
 	onClose
 }: {
-	description: string;
+	children: React.ReactNode;
 	name: string;
 	onClose: (action: ButtonActions) => void;
 }) {
@@ -36,9 +36,7 @@ export function SimpleDialog({
 					onDialogClose();
 				}}
 			>
-				<CenteredContainer>
-					<MarkdownViewer content={description} />
-				</CenteredContainer>
+				<CenteredContainer>{children}</CenteredContainer>
 				<div className="mt-auto">
 					<DialogActions onClose={onDialogClose}>
 						<button
