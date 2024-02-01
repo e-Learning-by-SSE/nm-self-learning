@@ -99,6 +99,21 @@ export function LessonEditorDialog({
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			style={{ height: "80vh", width: "80vw" }}
 		>
+			<div className="absolute right-8 top-8 flex gap-4">
+				<a
+					className="btn-stroked"
+					target="_blank"
+					rel="noreferrer"
+					href={
+						initialLesson
+							? `/teaching/lessons/edit/${initialLesson?.lessonId}`
+							: `/teaching/lessons/create`
+					}
+					title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
+				>
+					Im separaten Editor öffnen
+				</a>
+			</div>
 			<LessonEditor onClose={onClose} initialLesson={initialLesson} />
 		</Dialog>
 	);

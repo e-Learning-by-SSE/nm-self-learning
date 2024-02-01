@@ -5,7 +5,6 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { OpenAsJsonButton } from "../../../teaching/src/lib/json-editor-dialog";
 import { LessonContentEditor } from "../../../teaching/src/lib/lesson/forms/lesson-content";
 import { QuizEditor } from "../../../teaching/src/lib/lesson/forms/quiz-editor";
 import { LessonInfoEditor } from "../../../teaching/src/lib/lesson/forms/lesson-info";
@@ -86,20 +85,6 @@ export function LessonEditor({
 
 	return (
 		<FormProvider {...form}>
-			<div className="absolute right-8 top-8 flex gap-4">
-				<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
-				{initialLesson?.lessonId && (
-					<a
-						className="btn-stroked"
-						target="_blank"
-						rel="noreferrer"
-						href={`/teaching/lessons/edit/${initialLesson?.lessonId}`}
-						title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
-					>
-						Im separaten Editor öffnen
-					</a>
-				)}
-			</div>
 			<form
 				id="lessonform"
 				onSubmit={form.handleSubmit(onClose, console.log)}
