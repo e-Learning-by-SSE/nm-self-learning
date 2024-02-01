@@ -5,7 +5,6 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
-import ErrorBoundary from "./error-boundary";
 
 export function MarkdownField({
 	content,
@@ -119,7 +118,6 @@ export function MarkdownEditorDialog({
 					</span>
 					<div className="relative flex h-full w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
-							<ErrorBoundary>
 								<ReactMarkdown
 									linkTarget="_blank"
 									remarkPlugins={remarkPlugins}
@@ -127,7 +125,6 @@ export function MarkdownEditorDialog({
 								>
 									{value ?? ""}
 								</ReactMarkdown>
-							</ErrorBoundary>
 						</div>
 					</div>
 				</div>
