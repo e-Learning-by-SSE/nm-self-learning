@@ -145,7 +145,7 @@ export function NewSkillButton({
 	skillDefaults
 }: {
 	repoId: string;
-	onSuccess?: (skill: Skill) => Promise<void>;
+	onSuccess?: (skill: Skill) => void | Promise<void>;
 	skillDefaults?: Partial<Skill>;
 }) {
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();

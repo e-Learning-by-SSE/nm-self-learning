@@ -6,6 +6,7 @@ import { SkillRepository } from "@prisma/client";
 import { ListSkillEntryWithChildren } from "./skill-row-entry";
 import { NewSkillButton } from "./skill-taskbar";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
+import { Skill } from "@prisma/client";
 
 const compareSkills = (a: SkillFolderVisualization, b: SkillFolderVisualization) => {
 	return (
@@ -36,16 +37,19 @@ export function SkillFolderTable({
 		return skills.filter(
 			skill =>
 				skill.skill.name.toLowerCase().includes(normalizedSearchTerm) ||
-				skill.displayName.toLowerCase().includes(normalizedSearchTerm)
+				skill.displayName?.toLowerCase().includes(normalizedSearchTerm)
 		);
 	}, [skillDisplayData, searchTerm]);
+
+	const setShortHighlight = (skill: Skill) =>
+		updateSkillDisplay([{ id: skill.id, shortHighlight: true }]);
 
 	return (
 		<div>
 			<CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">{repository.name}</h1>
-					<NewSkillButton repoId={repository.id} />
+					<NewSkillButton repoId={repository.id} onSuccess={setShortHighlight} />
 				</div>
 
 				<SearchField

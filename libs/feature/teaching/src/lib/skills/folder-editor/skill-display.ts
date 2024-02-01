@@ -13,15 +13,14 @@ export type CycleType = "parent" | "child" | "none";
 export type SkillFolderVisualization = {
 	id: string;
 	isSelected: boolean;
-	massSelected?: boolean;
 	cycleType: CycleType;
 	skill: SkillFormModel;
 	isExpanded: boolean;
-	displayName: string;
 	numberChildren: number;
 	shortHighlight: boolean;
 	isFolder: boolean;
-	skipNextRender?: boolean;
+	displayName?: string; // alt name for display. Preffered over skill.name
+	massSelected?: boolean;
 };
 
 export const visualSkillDefaultValues = {
@@ -30,6 +29,15 @@ export const visualSkillDefaultValues = {
 	cycleType: "none" as CycleType,
 	isExpanded: false,
 	shortHighlight: false
+};
+
+const inferInformationFromSkill = (skill: SkillFormModel) => {
+	return {
+		isFolder: skill.children.length > 0,
+		numberChildren: skill.children.length,
+		id: skill.id,
+		skill
+	};
 };
 
 /**
@@ -44,16 +52,12 @@ export const createDisplayData = (
 ): SkillFolderVisualization => {
 	return {
 		...visualSkillDefaultValues,
-		displayName: skill.name,
 		...existingData,
-		isFolder: skill.children.length > 0,
-		numberChildren: skill.children.length,
-		id: skill.id,
-		skill
+		...inferInformationFromSkill(skill)
 	};
 };
 
-export function updateDisplay({
+export function changeDisplay({
 	displayUpdate,
 	skills,
 	historicDisplayData
@@ -64,7 +68,7 @@ export function updateDisplay({
 }) {
 	const initialData = {
 		displayData: new Map<string, SkillFolderVisualization>(historicDisplayData),
-		displayWithoutSkill: [] as OptionalVisualizationWithRequiredId[]
+		ignoredData: [] as OptionalVisualizationWithRequiredId[]
 	};
 
 	if (!displayUpdate) {
@@ -80,7 +84,7 @@ export function updateDisplay({
 				createDisplayData(skillData, { ...oldVisual, ...updateData })
 			);
 		} else {
-			acc.displayWithoutSkill.push(updateData);
+			acc.ignoredData.push(updateData);
 		}
 		return acc;
 	}, initialData);
@@ -93,7 +97,7 @@ export const switchSelectionDisplayValue = (
 	const idPropertiesMap: { [key: string]: Partial<SkillFolderVisualization> } = {};
 
 	if (previousSelectionId) {
-		idPropertiesMap[previousSelectionId] = { shortHighlight: false, isSelected: false };
+		idPropertiesMap[previousSelectionId] = { isSelected: false };
 	}
 
 	if (newSelectionId) {

@@ -64,7 +64,17 @@ function SkillRow({
 	const depthCssStyle = {
 		"--depth": depth
 	} as React.CSSProperties;
-	const onOpen = () => updateSkillDisplay([{ id: skill.id, isExpanded: !skill.isExpanded }]);
+	const onOpen = () => {
+		// disables highlight effect after user interacted with the element
+		const childrenDisplays = skill.skill.children.map(cid => ({
+			id: cid,
+			shortHighlight: false
+		}));
+		updateSkillDisplay([
+			...childrenDisplays,
+			{ id: skill.id, isExpanded: !skill.isExpanded, shortHighlight: false }
+		]);
+	};
 
 	return (
 		<tr
@@ -94,7 +104,12 @@ function SkillRow({
 					defaultChecked={false} // TODO mass select
 				/>
 			</TableDataColumn>
-			<TableDataColumn className={`${styles["folder-line"]} text-sm font-medium`}>
+
+			<TableDataColumn
+				className={`${styles["folder-line"]} ${
+					skill.shortHighlight ? "animate-highlight rounded-md" : ""
+				} text-sm font-medium`}
+			>
 				<div className={`flex px-2`}>
 					<div
 						className={`flex ${skill.isFolder && "hover:text-secondary"}`}
@@ -134,9 +149,9 @@ function SkillRow({
 								<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 							)} */}
 						<span className={`${skill.isSelected ? "text-secondary" : ""}`}>
-							{skill.displayName}
+							{skill.displayName ?? skill.skill.name}
 						</span>
-						{/* <span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span> */}
+						<span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span>
 					</div>
 					<div className="invisible  group-hover:visible">
 						<QuickEditButton onClick={() => handleSelection(skill.id)} skill={skill} />

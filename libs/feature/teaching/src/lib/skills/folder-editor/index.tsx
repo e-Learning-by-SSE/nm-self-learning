@@ -12,7 +12,7 @@ import {
 	SkillSelectHandler,
 	createDisplayData,
 	switchSelectionDisplayValue,
-	updateDisplay
+	changeDisplay
 } from "./skill-display";
 import { SkillRepository } from "@prisma/client";
 import { SkillFolderTable } from "./folder-table";
@@ -39,15 +39,22 @@ export function SkillFolderEditor({
 
 	const updateSkillDisplay = useCallback(
 		(displayUpdate: OptionalVisualizationWithRequiredId[] | null) => {
-			const { displayData, displayWithoutSkill } = updateDisplay({
-				historicDisplayData: skillDisplayData,
-				displayUpdate,
-				skills
+			setSkillDisplayData(historicDisplayData => {
+				const { displayData, ignoredData: displayWithoutSkill } = changeDisplay({
+					historicDisplayData,
+					displayUpdate,
+					skills
+				});
+				if (displayWithoutSkill.length > 0) {
+					// prevent unnecessary rerender
+					setDisplayBuffer(
+						prev => prev?.concat(displayWithoutSkill) ?? displayWithoutSkill
+					);
+				}
+				return displayData;
 			});
-			setSkillDisplayData(displayData);
-			setDisplayBuffer(prev => prev?.concat(displayWithoutSkill) ?? displayWithoutSkill);
 		},
-		[skills, skillDisplayData]
+		[skills]
 	);
 
 	const changeEditTarget = useCallback(
@@ -78,7 +85,6 @@ export function SkillFolderEditor({
 			});
 			return displayData;
 		});
-		console.log(displayData);
 	}, [skills, displayBuffer]);
 
 	const cycleParticipants = checkCycles2(skills);
