@@ -15,9 +15,24 @@ function generateReport(missedItem: MissedElement) {
 				case "unsupportedSolution":
 					return (
 						<>
-							Für die Programmieraufgabe{" "}
-							<span className="font-mono">${missedItem.id}</span> konnte keine
-							automatische Überprüfung der Lösung exportiert werden.`
+							Für Programmieraufgaben können keine automatische Überprüfung der Lösung
+							exportiert werden.
+						</>
+					);
+				case "hintsUnsupported":
+					return <>Für Programmieraufgaben können keine Hints erstellt werden.</>;
+			}
+			break;
+		case "clozeText":
+			switch (missedItem.cause) {
+				case "unsupportedAnswerType":
+					return (
+						<>
+							Für den Lückentext <span className="font-mono">{missedItem.id}</span>{" "}
+							konnten eine oder mehrere Lücken nicht korrekt exportiert werden. Es ist
+							nicht möglich Lücken mit mehreren Antworten zu exportieren, diese Lücken
+							werden als Einzelantwort behandelt. Die korrekte Antwort entspricht
+							dabei der ersten Antwort alle Möglichen.
 						</>
 					);
 			}

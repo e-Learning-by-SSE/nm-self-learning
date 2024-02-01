@@ -28,7 +28,11 @@ export type IncompleteNanoModuleExport = {
  * List of unsupported items (w.r.t reporting).
  * Extend this list if necessary.
  */
-export type MissedElement = IncompleteArticle | IncompleteProgrammingTask;
+export type MissedElement =
+	| IncompleteArticle
+	| IncompleteProgrammingTask
+	| IncompleteClozeText
+	| IncompleteGeneralProgrammingTask;
 
 export type IncompleteArticle = {
 	type: "article";
@@ -39,6 +43,18 @@ export type IncompleteArticle = {
 export type IncompleteProgrammingTask = {
 	type: "programming";
 	id: string;
-	cause: "unsupportedLanguage" | "unsupportedSolution";
+	cause: "unsupportedLanguage";
 	language: string;
+};
+
+export type IncompleteGeneralProgrammingTask = {
+	type: "programming";
+	id: "all";
+	cause: "unsupportedSolution" | "hintsUnsupported";
+};
+
+export type IncompleteClozeText = {
+	type: "clozeText";
+	id: string;
+	cause: "unsupportedAnswerType";
 };

@@ -15,6 +15,7 @@ export function convertQuizzes(
 	onUnsupportedItem: (report: MissedElement) => void
 ) {
 	const convertedQuizzes: string[] = [];
+	let convertedProgrammingTask = false;
 	for (const question of quiz.questions) {
 		switch (question.type) {
 			case "multiple-choice": {
@@ -52,7 +53,15 @@ export function convertQuizzes(
 				{
 					console.log("Cloze Question: ", question);
 					let answer = question.clozeText;
-					answer = addClozeQuiz(answer);
+					let foundGap = false;
+					[answer, foundGap] = addClozeQuiz(answer);
+					if (foundGap) {
+						onUnsupportedItem({
+							type: "clozeText",
+							id: question.questionId,
+							cause: "unsupportedAnswerType"
+						});
+					}
 					convertedQuizzes.push(markdownify(question.statement + "\n\n" + answer));
 				}
 				break;
@@ -81,6 +90,7 @@ export function convertQuizzes(
 							cause: "unsupportedLanguage"
 						});
 					}
+					convertedProgrammingTask = true;
 					//const hints = addHints(question.hints); Does not work when converted
 					convertedQuizzes.push(markdownify(question.statement + "\n\n" + code));
 				}
@@ -90,7 +100,18 @@ export function convertQuizzes(
 				break;
 		}
 	}
-
+	if (convertedProgrammingTask) {
+		onUnsupportedItem({
+			type: "programming",
+			id: "all",
+			cause: "hintsUnsupported"
+		});
+		onUnsupportedItem({
+			type: "programming",
+			id: "all",
+			cause: "unsupportedSolution"
+		});
+	}
 	return convertedQuizzes;
 }
 
@@ -157,7 +178,7 @@ export function addTextQuizOptionScript(
  * @param text The complete text including the gaps as denoted by the e-learning platform.
  * @returns The text with the lia script setup.
  */
-export function addClozeQuiz(text: string) {
+export function addClozeQuiz(text: string): [string, boolean] {
 	//const text = "Das ist eine {T: [Textantwort]}. Das ist ein Textfeld {T: [Antwort, Lücke]} mit zwei richtigen Möglichkeiten.Das ist ein Single-Choice Feld mit {C: [#eins, zwei]} Antwortmöglichkeiten, aus denen ausgewählt werden muss. Falsche Antworten werden mit einem # gekennzeichnet.LaTeX kann verwendet werden, um mathematische Formeln und Symbole darzustellen. Zum Beispiel: $$V_{sphere} = \frac{4}{3}\pi r^3$$. Es kann auch in Single-Choice Feldern benutzt werden: {C: [#eins, $$V_{sphere} = \frac{4}{3}\pi r^3$$]}"
 	let chars = [...text];
 	let start = 0; //indicator/ counter for {
@@ -166,6 +187,7 @@ export function addClozeQuiz(text: string) {
 	let found = 0; //confirmation that the first { is used to denote a answer in the cloze text
 	let conf = 0; //as the second character can be a letter T or C make sure that the third is a ":" only then consider a answer block found
 	let reducedToN = false; //used to indicate that a cloze answer is fully found and allows the conversion to start
+	let multipleAnswerGap = false; //shall indicate if the text has a gap we cannot translate (multiple answers in one gap)
 	for (let i = 0; i < chars.length; i++) {
 		//run through all letters of the text
 		if (chars[i] == `}`) {
@@ -216,6 +238,7 @@ export function addClozeQuiz(text: string) {
 				newString =
 					newString.substring(0, newString.indexOf(tMatch[0]) + tMatch[0].length - 1) + //cut off everything after the first option and close it with new ]]
 					`]]`;
+				multipleAnswerGap = true;
 			}
 			const cMatch = newString.match(/C:/); // prepare for selection type word
 			newString = newString.replace(/[T|C]:/g, ``); // removes the unneeded T and C starters
@@ -251,5 +274,5 @@ export function addClozeQuiz(text: string) {
 			chars = [...text]; // re split the text as the index of everything might have changed
 		}
 	}
-	return text;
+	return [text, multipleAnswerGap];
 }
