@@ -1,158 +1,90 @@
-import { LabeledField } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { SkillSelectDialog } from "libs/feature/teaching/src/lib/course/course-learnpath-editor/skill-select-dialog";
-import ReactFlow, { Background, Controls, Edge, MiniMap, Node, Position } from "reactflow";
 import "reactflow/dist/style.css";
-import { Tab, Table, TableDataColumn, Tabs } from "@self-learning/ui/common";
+import { Tab, Table, TableDataColumn, TableHeaderColumn, Tabs } from "@self-learning/ui/common";
 import { PencilIcon, TrashIcon } from "@heroicons/react/solid"; // TODO which version is it?
+import {
+	LessonSelector,
+	LessonSummary
+} from "libs/feature/teaching/src/lib/course/course-content-editor/dialogs/lesson-selector";
 
-// ---------- GraphGenerator ------------------------------------------
-// TODO: put graph generator into separate file
-// TODO: remove later (dummy data)
-const initMeshes = [
+interface Mesh {
+	requiredSkills: any[];
+	lesson: LessonSummary;
+	gainedSkills: any[];
+}
+
+const tabNames = ["Konfigurierte Lerneinheiten", "Verlauf"];
+
+// ---------- Dummy Data ------------------------------------------
+// TODO remove later
+const initLesson: LessonSummary = { title: "Dummy Lesson 1", lessonId: "", slug: "" };
+const initLesson2: LessonSummary = { title: "Dummy Lesson 2", lessonId: "", slug: "" };
+const initLesson3: LessonSummary = { title: "Dummy Lesson 3", lessonId: "", slug: "" };
+
+const initMeshes: Mesh[] = [
 	{
-		requiredSkill: null,
-		lesson: "Python 1",
-		gainedSkill: "Basic Python"
+		requiredSkills: ["skill-0"],
+		lesson: initLesson,
+		gainedSkills: ["skill-1"]
 	},
 	{
-		requiredSkill: "Basic Python",
-		lesson: "Python 2",
-		gainedSkill: "Advanced Python"
+		requiredSkills: ["skill-1"],
+		lesson: initLesson2,
+		gainedSkills: ["skill-2"]
 	},
 	{
-		requiredSkill: "Advanced Python",
-		lesson: "Python 3",
-		gainedSkill: "skill"
+		requiredSkills: ["skill-2"],
+		lesson: initLesson3,
+		gainedSkills: ["skill-3"]
 	}
 ];
+// --------------------------------------------------------------------------------------------
 
-// standard starting position of node and standard distance between node
-const xAxisStartPosition = 40;
-const yAxisStartPosition = 40;
-const xAxisNodeDistance = 260;
-const yAxisNodeDistance = 200;
+const placeholderMesh: Mesh = {
+	requiredSkills: ["placeholder-req-skill"],
+	lesson: { title: "placeholder-lesson", lessonId: "", slug: "" },
+	gainedSkills: ["placeholder-gain-skill"]
+};
 
-function isInArray(edge: Edge, arr: Edge[]) {
-	for (const elem of arr) {
-		if (edge.label === elem.label) {
-			if (edge.source === elem.source && edge.target === elem.target) {
-				return true;
-			}
-		}
+function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
+	const temp = meshes.filter(elemt => elemt.lesson.title === mesh.lesson.title);
+	if (temp.length > 0) {
+		return true;
+	} else {
+		return false;
 	}
-	return false;
 }
 
-function removeDuplicates(arr: Edge[]) {
-	const resultArr: Edge[] = [];
-	for (const elem of arr) {
-		if (!isInArray(elem, resultArr)) {
-			resultArr.push(elem);
-		}
-	}
-	return resultArr;
-}
-
-function setEdgeIds(arr: Edge[]) {
-	const resultArr: Edge[] = [];
-	let id = 1;
-	for (const edge of arr) {
-		edge.id = String(id);
-		resultArr.push(edge);
-		id++;
-	}
-	return resultArr;
-}
-
-function getEdgesWithLabel(edges: Edge[], label: string) {
-	const result: Edge[] = [];
-	for (const edge of edges) {
-		if (edge.label === label) {
-			result.push(edge);
-		}
-	}
-	return result;
-}
-
-function generateGraph(meshes: any) {
-	const nodes: Node[] = [];
-	const edges: Edge[] = [];
-	let id = 1;
-	let x = xAxisStartPosition;
-	const y = yAxisStartPosition;
-
-	for (const mesh of meshes) {
-		const node: Node = {
-			id: String(id),
-			position: { x: x, y: y },
-			data: { label: mesh.lesson },
-			targetPosition: Position.Left,
-			sourcePosition: Position.Right
-		};
-		nodes.push(node);
-
-		if (mesh.gainedSkill) {
-			const edge: Edge = {
-				id: "",
-				source: String(id),
-				target: "",
-				label: mesh.gainedSkill
-			};
-			edges.push(edge);
-		}
-
-		id++;
-		x += xAxisNodeDistance;
-	}
-
-	id = 1;
-	for (const mesh of meshes) {
-		if (mesh.requiredSkill) {
-			const edgesRequiringSkill = getEdgesWithLabel(edges, mesh.requiredSkill);
-			for (const edge of edgesRequiringSkill) {
-				if (edge) {
-					const newEdge = structuredClone(edge);
-					newEdge.target = String(id);
-					edges.push(newEdge);
-				}
-			}
-		}
-		id++;
-	}
-	const edgesWithoutDuplicates = removeDuplicates(edges);
-	const edgesWithIds = setEdgeIds(edgesWithoutDuplicates);
-	// TODO adjusting the position of the nodes
-	return { nodes: nodes, edges: edgesWithIds };
-}
-
-// ------------------------------------------------------------------
-
-const initGraph = generateGraph(initMeshes); // TODO later with data from DB or empty
-
-export default function LearnPathEditor() {
+export default function LearnpathEditor() {
 	const [skillsLessonMeshes, setSkillsLessonMeshes] = useState(initMeshes);
-	const [graph, setGraph] = useState(initGraph);
+	const [currentMesh, setCurrentMesh] = useState(placeholderMesh);
 
-	const handleSkillLessonLinkerClick = (mesh: any) => {
-		// update meshes
-		const updatedSkillLessonMeshes = skillsLessonMeshes;
-		updatedSkillLessonMeshes.push(mesh);
+	const addMesh = (mesh: Mesh) => {
+		const updatedSkillLessonMeshes = [...skillsLessonMeshes];
+		if (!isLessonInMeshes(mesh, skillsLessonMeshes)) {
+			updatedSkillLessonMeshes.push(mesh);
+		} else {
+			const meshToEdit = skillsLessonMeshes.filter(
+				elem => elem.lesson.title === mesh.lesson.title
+			)[0];
+			meshToEdit.requiredSkills = mesh.requiredSkills;
+			meshToEdit.gainedSkills = mesh.gainedSkills;
+			updatedSkillLessonMeshes.map(
+				elem => elem.lesson.title === mesh.lesson.title || meshToEdit
+			);
+		}
 		setSkillsLessonMeshes(updatedSkillLessonMeshes);
-		// update graph
-		const newGraph = generateGraph(skillsLessonMeshes);
-		setGraph(newGraph);
 	};
-
-	const removeMesh = (indexToRemove: number) => {
-		// update meshes
+	const removeMesh = (meshToRemove: Mesh) => {
 		const updatedSkillLessonMeshes = skillsLessonMeshes.filter(
-			(_, index) => index !== indexToRemove
+			mesh => mesh.lesson.title !== meshToRemove.lesson.title
 		);
 		setSkillsLessonMeshes(updatedSkillLessonMeshes);
-		// update graph
-		const newGraph = generateGraph(updatedSkillLessonMeshes);
-		setGraph(newGraph);
+	};
+
+	const editMesh = (mesh: Mesh) => {
+		setCurrentMesh(mesh);
 	};
 
 	return (
@@ -165,23 +97,28 @@ export default function LearnPathEditor() {
 					<h1 className="text-2xl">Lerneinheiten verknüpfen</h1>
 					<div className="">
 						<SkillLessonLinker
-							onSkillLessonLinkerClick={handleSkillLessonLinkerClick}
+							onSkillLessonLinkerClick={addMesh}
+							changeCurrentMesh={editMesh}
+							currentMesh={currentMesh}
 						/>
 					</div>
 				</div>
 
+				{/**
 				<div className="my-1 flex flex-col">
 					<h1 className="px-2 text-2xl">Abhängigkeitsvisualisierung</h1>
 					<div className="border bg-white px-2">
 						<Flow nodes={graph.nodes} edges={graph.edges} size={530} />
 					</div>
 				</div>
-
+				*/}
 				<div className="bottom-0 left-1/3 mx-auto min-h-[200px] flex-col">
-					<div className="min-h-full max-w-[900px]">
+					<div className="min-h-full max-w-[1200px]">
 						<LearnpathEditorLogs
-							data={skillsLessonMeshes}
+							meshes={skillsLessonMeshes}
+							//nodes={graph.nodes}
 							onRemoveMeshClick={removeMesh}
+							onEditClick={editMesh}
 						/>
 					</div>
 				</div>
@@ -189,117 +126,164 @@ export default function LearnPathEditor() {
 		</>
 	);
 }
-
-function Flow({ nodes, edges, size }: { nodes: Node[]; edges: Edge[]; size: number }) {
-	return (
-		<div style={{ height: size }}>
-			<ReactFlow nodes={nodes} edges={edges}>
-				<Background />
-				<Controls />
-				<MiniMap />
-			</ReactFlow>
-		</div>
-	);
-}
+// ----------------------------------------
 
 function LearnpathEditorLogs({
-	onRemoveMeshClick,
-	data
+	onRemoveMeshClick: onRemoveMeshClick,
+	onEditClick: onEditClick,
+	meshes
 }: {
-	onRemoveMeshClick: (index: number) => void;
-	data: any;
+	onRemoveMeshClick: (mesh: Mesh) => void;
+	onEditClick: (mesh: Mesh) => void;
+	meshes: Mesh[];
 }) {
-	const remove = (index: number) => {
-		onRemoveMeshClick(index);
+	const remove = (mesh: Mesh) => {
+		onRemoveMeshClick(mesh);
 	};
+
+	const edit = (mesh: Mesh) => {
+		onEditClick(mesh);
+	};
+
 	const index = 0;
 	const [selectedIndex, setSelectedIndex] = useState(index);
-
-	const value = ["Lerneinheiten", "Verlauf"];
 
 	function handleChange(index: number) {
 		setSelectedIndex(index);
 	}
+
 	return (
 		<>
 			<Tabs selectedIndex={selectedIndex} onChange={handleChange}>
-				{value.map((val, idx) => (
+				{tabNames.map((val, idx) => (
 					<Tab key={idx}>
 						<p className="px-2 text-2xl">{val}</p>
 					</Tab>
 				))}
 			</Tabs>
-
 			{selectedIndex === 0 && (
-				<Table head={<></>}>
-					{data.map(
-						(
-							mesh: { requiredSkill: string; lesson: string; gainedSkill: string },
-							index: number
-						) => (
-							<Fragment key={index}>
-								<tr key={index}>
-									<TableDataColumn>{index + 1}</TableDataColumn>
-									<TableDataColumn>
-										<div className="flex flex-wrap gap-4">{mesh.lesson}</div>
-									</TableDataColumn>
-									<TableDataColumn>
-										<button
-											type="button"
-											className="btn-stroked w-fit self-end"
-										>
-											<PencilIcon className="icon" />
-											<span>Bearbeiten</span>
-										</button>
-									</TableDataColumn>
-									<TableDataColumn>
-										<button
-											className="ml-3 border bg-gray-50 px-1 text-sm"
-											onClick={() => remove(index)}
-										>
-											<div className="ml-4">
-												<TrashIcon className="icon " />
-											</div>
-										</button>
-									</TableDataColumn>
-								</tr>
-							</Fragment>
-						)
-					)}
+				<Table
+					head={
+						<>
+							<TableHeaderColumn></TableHeaderColumn>
+							<TableHeaderColumn>Lerneinheit</TableHeaderColumn>
+							<TableHeaderColumn>Voraussetzung</TableHeaderColumn>
+							<TableHeaderColumn>Lernziel</TableHeaderColumn>
+							<TableHeaderColumn></TableHeaderColumn>
+							<TableHeaderColumn></TableHeaderColumn>
+							<TableHeaderColumn></TableHeaderColumn>
+						</>
+					}
+				>
+					{meshes.map((mesh: Mesh, index: number) => (
+						<Fragment key={index}>
+							<tr key={index}>
+								<TableDataColumn>{index + 1}</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap gap-4">{mesh.lesson.title}</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap gap-4">
+										{mesh.requiredSkills}
+									</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap gap-4">{mesh.gainedSkills}</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<button
+										type="button"
+										className="btn-stroked w-fit self-end"
+										onClick={() => edit(mesh)}
+									>
+										<PencilIcon className="icon" />
+										<span>Verknüpfung anpassen</span>
+									</button>
+								</TableDataColumn>
+								<TableDataColumn>
+									<button type="button" className="btn-stroked w-fit self-end">
+										<PencilIcon className="icon" />
+										<span>Lerneinheit anpassen</span>
+									</button>
+								</TableDataColumn>
+								<TableDataColumn>
+									<button
+										className="ml-3 border bg-gray-50 px-1 text-sm"
+										onClick={() => remove(mesh)}
+									>
+										<div className="ml-4">
+											<TrashIcon className="icon " />
+										</div>
+									</button>
+								</TableDataColumn>
+							</tr>
+						</Fragment>
+					))}
 				</Table>
 			)}
 			{selectedIndex === 1 && (
-				<div className="mt-1 min-h-[300px] min-w-[500px] border bg-white px-2">TODO ?</div>
+				<div className="mt-1 min-h-[300px] min-w-[500px] border bg-white px-2">TODO</div>
 			)}
 		</>
 	);
 }
 
-function SkillLessonLinker({ onSkillLessonLinkerClick = (mesh: any) => {} }) {
+function SkillLessonLinker({
+	onSkillLessonLinkerClick: onSkillLessonLinkerClick,
+	changeCurrentMesh: changeCurrentMesh,
+	currentMesh
+}: {
+	onSkillLessonLinkerClick: (mesh: Mesh) => void;
+	changeCurrentMesh: (mesh: Mesh) => void;
+	currentMesh: Mesh;
+}) {
 	const [openSkillSelectDialog, setOpenSkillSelectDialog] = useState(false);
-	const [requiredSkill, setRequiredSkill] = useState("skill");
-	const [gainedSkill, setGainedSkill] = useState("skill");
-	const [lessonTitle, setLessonTitle] = useState("lesson");
+	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 
-	function handleClick() {
-		const mesh = {
-			requiredSkill: requiredSkill,
-			lesson: lessonTitle,
-			gainedSkill: gainedSkill
+	function handleSubmit() {
+		const mesh: Mesh = {
+			requiredSkills: currentMesh.requiredSkills,
+			lesson: currentMesh.lesson,
+			gainedSkills: currentMesh.gainedSkills
 		};
 		onSkillLessonLinkerClick(mesh);
 	}
 
 	function handleSkillSelectDialogClose(result?: any) {
+		// TODO: integrate skill selector
+		// Which data format has result?
+		// decomposed it and update required/gainedSkills arrays
 		if (result) {
+			const mesh: Mesh = {
+				requiredSkills: currentMesh.requiredSkills,
+				lesson: currentMesh.lesson,
+				gainedSkills: currentMesh.gainedSkills
+			};
 			if (result.currentRequiredSkill) {
-				setRequiredSkill(result.currentRequiredSkill);
+				const newSkillsArr: any[] = [result.currentRequiredSkill];
+				mesh.requiredSkills = newSkillsArr;
 			}
 			if (result.currentGainedSkill) {
-				setGainedSkill(result.currentGainedSkill);
+				const newSkillsArr: any[] = [result.currentGainedSkill];
+				mesh.gainedSkills = newSkillsArr;
 			}
+			changeCurrentMesh(mesh);
 		}
 		setOpenSkillSelectDialog(false);
+	}
+
+	function onCloseLessonSelector(lesson?: LessonSummary) {
+		setLessonSelectorOpen(false);
+
+		if (lesson) {
+			const mesh: Mesh = {
+				requiredSkills: currentMesh.requiredSkills,
+				lesson: lesson,
+				gainedSkills: currentMesh.gainedSkills
+			};
+			console.log("lesson", lesson);
+			changeCurrentMesh(mesh);
+		}
 	}
 
 	return (
@@ -308,7 +292,9 @@ function SkillLessonLinker({ onSkillLessonLinkerClick = (mesh: any) => {} }) {
 				<div className="mx-2 mt-2">
 					<h1 className="text-1xl">Voraussetzung</h1>
 					<div className="m-1 flex ">
-						<p className="textfield  mx-1 min-w-[200px] border">{requiredSkill}</p>
+						<p className="textfield  mx-1 min-w-[200px] border">
+							{currentMesh.requiredSkills[0]}
+						</p>
 						<button
 							type="button"
 							className="btn-primary max-h-10 max-w-[0.1px]"
@@ -321,28 +307,31 @@ function SkillLessonLinker({ onSkillLessonLinkerClick = (mesh: any) => {} }) {
 						<SkillSelectDialog onClose={handleSkillSelectDialogClose} />
 					)}
 				</div>
-
-				<form>
-					<div className="m-2 pr-6">
-						<h1 className="text-1xl">Lerneinheit</h1>
-						<div className="">
-							<LabeledField label="">
-								<input
-									type="text"
-									className="textfield"
-									value={lessonTitle}
-									onChange={e => setLessonTitle(e.target.value)}
-									placeholder={"Name"}
-								/>
-							</LabeledField>
-						</div>
+				<div className="m-2 pr-6">
+					<h1 className="text-1xl">Lerneinheit</h1>
+					<div className="m-1 flex ">
+						<p className="textfield  mx-1 min-w-[200px] border">
+							{currentMesh.lesson.title}{" "}
+						</p>
+						<button
+							type="button"
+							className="btn-primary max-h-10 max-w-[0.1px]"
+							onClick={() => setLessonSelectorOpen(true)}
+						>
+							+
+						</button>
 					</div>
-				</form>
+				</div>
+				{lessonSelectorOpen && (
+					<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
+				)}
 
 				<div className="m-2">
 					<h1 className="text-1xl ">Lernziel</h1>
 					<div className="m-1 flex ">
-						<p className="textfield  mx-1 min-w-[200px] border">{gainedSkill}</p>
+						<p className="textfield  mx-1 min-w-[200px] border">
+							{currentMesh.gainedSkills[0]}
+						</p>{" "}
 						<button
 							type="button"
 							className="btn-primary max-h-10 max-w-[0.1px]"
@@ -354,7 +343,11 @@ function SkillLessonLinker({ onSkillLessonLinkerClick = (mesh: any) => {} }) {
 				</div>
 			</div>
 			<div className="flex justify-end">
-				<button type="button" className="btn-primary mt-2 min-w-full" onClick={handleClick}>
+				<button
+					type="button"
+					className="btn-primary mt-2 min-w-full"
+					onClick={handleSubmit}
+				>
 					Bestätigen
 				</button>
 			</div>
