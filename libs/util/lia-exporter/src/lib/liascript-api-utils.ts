@@ -145,9 +145,36 @@ export function markdownify(
 		} else if (removeLineNumbers && line.startsWith("```") && line.length > 3) {
 			// Removes unsupported line numbers from code blocks
 			// Actually, this removes everything after the first space (language spec)
-
+			let addToI = 0; //IF there is need to add a line for the highlighting, we need to skip i by one to not go infinite
 			const index = line.indexOf(" ");
 			if (index > 0) {
+				if (line.includes("showLineNumbers")) {
+					if (line.indexOf("{") > 0) {
+						//get only the lines to highlight
+						let highlightComment = '\n<!-- data-marker="';
+						const numbers = line
+							.slice(line.indexOf("{") + 1, line.indexOf("}"))
+							.split(",");
+						numbers.forEach(number => {
+							//work with single or multiple lines
+							if (number.includes("-")) {
+								// highlight is y1, x1, y2, x2, color, type
+								const range = number.split("-");
+								highlightComment += `${+range[0] - 1} 0 ${
+									+range[1] - 1
+								} 80 yellow text;`;
+							} else {
+								highlightComment += `${+number - 1} 0 ${
+									+number - 1
+								} 80 yellow text;`;
+							}
+						});
+						highlightComment += '" -->';
+						lines.splice(i, 0, highlightComment);
+						addToI++; // if we added something make fix the position of i
+					}
+				}
+				i += addToI;
 				lines[i] = line.slice(0, index);
 			}
 		}
