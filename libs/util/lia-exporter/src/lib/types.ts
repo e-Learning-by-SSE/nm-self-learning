@@ -20,6 +20,7 @@ export type IncompleteNanoModuleExport = {
 	nanomodule: {
 		name: string;
 		id: string;
+		slug: string;
 	};
 	missedElements: MissedElement[];
 };
@@ -43,18 +44,19 @@ export type IncompleteArticle = {
 export type IncompleteProgrammingTask = {
 	type: "programming";
 	id: string;
+	index: number;
 	cause: "unsupportedLanguage";
 	language: string;
 };
 
 export type IncompleteGeneralProgrammingTask = {
-	type: "programming";
-	id: "all";
+	type: "programmingUnspecific";
 	cause: "unsupportedSolution" | "hintsUnsupported";
 };
 
 export type IncompleteClozeText = {
 	type: "clozeText";
 	id: string;
+	index: number;
 	cause: "unsupportedAnswerType";
 };

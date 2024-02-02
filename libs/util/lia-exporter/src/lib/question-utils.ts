@@ -1,7 +1,6 @@
 import { toPlainText } from "./liascript-api-utils";
 import { Quiz } from "@self-learning/quiz";
 import { MissedElement } from "./types";
-import { report } from "process";
 
 /**
  * Converts all quizzes of a Nano-Module into LiaScript format.
@@ -15,8 +14,9 @@ export function convertQuizzes(
 	onUnsupportedItem: (report: MissedElement) => void
 ) {
 	const convertedQuizzes: string[] = [];
-	let convertedProgrammingTask = false;
-	for (const question of quiz.questions) {
+	let programmingTaskWithSolutions = false;
+	let programmingTaskWithHints = false;
+	for (const [index, question] of quiz.questions.entries()) {
 		switch (question.type) {
 			case "multiple-choice": {
 				convertedQuizzes.push(
@@ -59,6 +59,7 @@ export function convertQuizzes(
 						onUnsupportedItem({
 							type: "clozeText",
 							id: question.questionId,
+							index,
 							cause: "unsupportedAnswerType"
 						});
 					}
@@ -86,12 +87,16 @@ export function convertQuizzes(
 						onUnsupportedItem({
 							type: "programming",
 							id: question.questionId,
+							index,
 							language: question.language,
 							cause: "unsupportedLanguage"
 						});
 					}
-					convertedProgrammingTask = true;
 					//const hints = addHints(question.hints); Does not work when converted
+					programmingTaskWithHints =
+						programmingTaskWithHints || question.hints.length > 0;
+					programmingTaskWithSolutions =
+						programmingTaskWithSolutions || question.custom.solutionTemplate.length > 0;
 					convertedQuizzes.push(markdownify(question.statement + "\n\n" + code));
 				}
 				break;
@@ -100,15 +105,16 @@ export function convertQuizzes(
 				break;
 		}
 	}
-	if (convertedProgrammingTask) {
+	// Report general unsupported features, instead of reporting each unsupported feature per quiz
+	if (programmingTaskWithHints) {
 		onUnsupportedItem({
-			type: "programming",
-			id: "all",
+			type: "programmingUnspecific",
 			cause: "hintsUnsupported"
 		});
+	}
+	if (programmingTaskWithSolutions) {
 		onUnsupportedItem({
-			type: "programming",
-			id: "all",
+			type: "programmingUnspecific",
 			cause: "unsupportedSolution"
 		});
 	}

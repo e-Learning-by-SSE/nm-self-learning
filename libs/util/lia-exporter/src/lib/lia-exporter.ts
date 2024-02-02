@@ -313,7 +313,8 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		const incompleteExport: IncompleteNanoModuleExport = {
 			nanomodule: {
 				name: lesson.title,
-				id: lesson.lessonId
+				id: lesson.lessonId,
+				slug: lesson.slug
 			},
 			missedElements: []
 		};

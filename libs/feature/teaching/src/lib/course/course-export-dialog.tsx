@@ -108,7 +108,9 @@ export function ExportCourseDialog({
 				}}
 			>
 				{progress < 100 && <ProgressBar progress={progress} />}
-				{errorReport.length > 0 && <IncompleteExportSynopsis report={errorReport} />}
+				{errorReport.length > 0 && (
+					<IncompleteExportSynopsis report={errorReport} course={course} />
+				)}
 				<div className="overlay">{message}</div>
 				<div className="grid justify-items-end">
 					<button
