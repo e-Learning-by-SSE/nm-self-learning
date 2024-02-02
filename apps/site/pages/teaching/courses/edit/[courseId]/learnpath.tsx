@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { SkillSelectDialog } from "libs/feature/teaching/src/lib/course/course-learnpath-editor/skill-select-dialog";
 import "reactflow/dist/style.css";
 import { Tab, Table, TableDataColumn, TableHeaderColumn, Tabs } from "@self-learning/ui/common";
@@ -7,8 +7,10 @@ import {
 	LessonSelector,
 	LessonSummary
 } from "libs/feature/teaching/src/lib/course/course-content-editor/dialogs/lesson-selector";
+import GraphEditor from "./graphEditor";
+import { convertToGraph } from "./graphEditor";
 
-interface Mesh {
+export interface Mesh {
 	requiredSkills: any[];
 	lesson: LessonSummary;
 	gainedSkills: any[];
@@ -36,11 +38,51 @@ const initMeshes: Mesh[] = [
 	{
 		requiredSkills: ["skill-2"],
 		lesson: initLesson3,
-		gainedSkills: ["skill-3"]
+		gainedSkills: ["skill-3", "skill-3.1"]
 	}
 ];
-// --------------------------------------------------------------------------------------------
 
+// test dummy data
+const l1: LessonSummary = { title: "Lesson 1", lessonId: "", slug: "" };
+const l2: LessonSummary = { title: "Lesson 2", lessonId: "", slug: "" };
+const l3: LessonSummary = { title: "Lesson 3", lessonId: "", slug: "" };
+const l4: LessonSummary = { title: "Lesson 4", lessonId: "", slug: "" };
+const l5: LessonSummary = { title: "Lesson 5", lessonId: "", slug: "" };
+const l6: LessonSummary = { title: "Lesson 6", lessonId: "", slug: "" };
+const testMesh_1: Mesh[] = [
+	{
+		requiredSkills: [],
+		lesson: l1,
+		gainedSkills: ["skill-1.1", "skill-1.2"]
+	},
+	{
+		requiredSkills: ["skill-1.1", "skill-1.2"],
+		lesson: l2,
+		gainedSkills: ["skill-2.1", "skill-2.2"]
+	},
+	{
+		requiredSkills: ["skill-2.1"],
+		lesson: l3,
+		gainedSkills: []
+	},
+	{
+		requiredSkills: ["skill-2.2"],
+		lesson: l4,
+		gainedSkills: []
+	},
+	{
+		requiredSkills: [],
+		lesson: l5,
+		gainedSkills: ["skill-5"]
+	},
+	{
+		requiredSkills: ["skill-5"],
+		lesson: l6,
+		gainedSkills: []
+	}
+];
+
+// --------------------------------------------------------------------------------------------
 const placeholderMesh: Mesh = {
 	requiredSkills: ["placeholder-req-skill"],
 	lesson: { title: "placeholder-lesson", lessonId: "", slug: "" },
@@ -57,8 +99,10 @@ function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
 }
 
 export default function LearnpathEditor() {
-	const [skillsLessonMeshes, setSkillsLessonMeshes] = useState(initMeshes);
+	//const [skillsLessonMeshes, setSkillsLessonMeshes] = useState(initMeshes);
+	const [skillsLessonMeshes, setSkillsLessonMeshes] = useState(testMesh_1);
 	const [currentMesh, setCurrentMesh] = useState(placeholderMesh);
+	const [graph, setGraph] = useState(convertToGraph(skillsLessonMeshes));
 
 	const addMesh = (mesh: Mesh) => {
 		const updatedSkillLessonMeshes = [...skillsLessonMeshes];
@@ -76,6 +120,12 @@ export default function LearnpathEditor() {
 		}
 		setSkillsLessonMeshes(updatedSkillLessonMeshes);
 	};
+
+	useEffect(() => {
+		const updatedGraph = convertToGraph(skillsLessonMeshes);
+		setGraph(updatedGraph);
+	}, [skillsLessonMeshes]);
+
 	const removeMesh = (meshToRemove: Mesh) => {
 		const updatedSkillLessonMeshes = skillsLessonMeshes.filter(
 			mesh => mesh.lesson.title !== meshToRemove.lesson.title
@@ -104,14 +154,13 @@ export default function LearnpathEditor() {
 					</div>
 				</div>
 
-				{/**
 				<div className="my-1 flex flex-col">
 					<h1 className="px-2 text-2xl">Abhängigkeitsvisualisierung</h1>
 					<div className="border bg-white px-2">
-						<Flow nodes={graph.nodes} edges={graph.edges} size={530} />
+						<GraphEditor meshes={skillsLessonMeshes} graph={graph} size={530} />
 					</div>
 				</div>
-				*/}
+
 				<div className="bottom-0 left-1/3 mx-auto min-h-[200px] flex-col">
 					<div className="min-h-full max-w-[1200px]">
 						<LearnpathEditorLogs
@@ -281,7 +330,6 @@ function SkillLessonLinker({
 				lesson: lesson,
 				gainedSkills: currentMesh.gainedSkills
 			};
-			console.log("lesson", lesson);
 			changeCurrentMesh(mesh);
 		}
 	}
