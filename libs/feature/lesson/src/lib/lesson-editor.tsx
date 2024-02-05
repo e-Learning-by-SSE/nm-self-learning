@@ -92,7 +92,7 @@ export function LessonEditor({
 			>
 				<div className="flex h-full flex-col gap-4 overflow-hidden">
 					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-						<Tab>Übersicht</Tab>
+						<Tab>Lerneinheit</Tab>
 						<Tab>Lernkontrolle</Tab>
 					</Tabs>
 					<div className="playlist-scroll flex h-full flex-col gap-4 overflow-auto">
