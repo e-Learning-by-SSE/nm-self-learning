@@ -6,6 +6,7 @@ import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { i18n } from "@self-learning/util/common";
+import { useEffect } from "react";
 
 export function Navbar() {
 	const session = useSession();
@@ -123,22 +124,34 @@ export function Navbar() {
 }
 
 function LanguageSwitcher() {
+	useEffect(() => {
+		const lang = localStorage.getItem("lang");
+		if (lang == null) {
+		} else {
+			i18n.changeLanguage(lang);
+		}
+	}, []);
 	return (
 		<div className="flex justify-center space-x-4 p-4">
 			<button
 				className="rounded bg-blue-500 px-4 py-2 text-white transition-colors duration-300 hover:bg-blue-700"
-				onClick={() => i18n.changeLanguage("en")}
+				onClick={() => Changer("en")}
 			>
 				English
 			</button>
 			<button
 				className="rounded bg-blue-500 px-4 py-2 text-white transition-colors duration-300 hover:bg-blue-700"
-				onClick={() => i18n.changeLanguage("es")}
+				onClick={() => Changer("de")}
 			>
 				Deutsch
 			</button>
 		</div>
 	);
+}
+
+function Changer(lang: string) {
+	i18n.changeLanguage(lang);
+	localStorage.setItem("lang", lang);
 }
 
 export function NavbarDropdownMenu({
