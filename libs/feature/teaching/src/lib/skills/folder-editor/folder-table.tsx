@@ -48,7 +48,7 @@ export function SkillFolderTable({
 		<div>
 			<CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
-					<h1 className="text-5xl">{repository.name}</h1>
+					<RepositoryInfo repository={repository} />
 					<NewSkillButton repoId={repository.id} onSuccess={setShortHighlight} />
 				</div>
 
@@ -98,6 +98,33 @@ export function SkillFolderTable({
 						)}
 				</Table>
 			</CenteredSection>
+		</div>
+	);
+}
+function RepositoryInfo({ repository }: { repository: SkillRepository }) {
+	const [showFullDescription, setShowFullDescription] = useState(false);
+
+	const descLength = repository.description?.length ?? 0;
+	const shouldShowMoreButton = !showFullDescription && descLength > 400;
+
+	const displayedDescription = showFullDescription
+		? repository.description
+		: repository.description?.substring(0, 250);
+
+	return (
+		<div>
+			<h1 className="text-5xl">{repository.name}</h1>
+			<div className="mt-2 text-gray-500" style={{ maxWidth: "700px" }}>
+				{displayedDescription}
+				{shouldShowMoreButton && (
+					<button
+						onClick={() => setShowFullDescription(true)}
+						className="pl-4 text-blue-500"
+					>
+						Mehr anzeigen
+					</button>
+				)}
+			</div>
 		</div>
 	);
 }
