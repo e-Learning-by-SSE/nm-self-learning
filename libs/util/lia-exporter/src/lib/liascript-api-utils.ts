@@ -1,5 +1,6 @@
 import liascriptify from "@liascript/markdownify";
 import { ExportOptions, MediaFileReplacement } from "./types";
+import { MissedElement } from "./types";
 
 /**
  * Allowed indentation levels for LiaScript sections.
@@ -86,6 +87,7 @@ export function removeStorageUrls(
  */
 export function markdownify(
 	markdownText: string,
+	onUnsupportedItem: (missedElement: MissedElement) => void,
 	{
 		htmlTag = "section",
 		removeLineNumbers = true,
@@ -112,6 +114,7 @@ export function markdownify(
 
 	const lines = markdownText.split("\n");
 	const levels = [0];
+	const errorCause: string[] = [];
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
 		if (line.startsWith("#")) {
@@ -173,30 +176,41 @@ export function markdownify(
 						lines.splice(i, 0, highlightComment);
 						addToI++; // if we added something make fix the position of i
 					}
+				} else {
+					errorCause.push("Unsupported Code Style");
 				}
 				i += addToI;
 				lines[i] = line.slice(0, index);
 			}
 		}
-	}
 
-	// Close all remaining levels
-	while (levels.length > 1) {
-		levels.pop();
-		lines.push(`</${htmlTag}>\n`);
-	}
+		// Close all remaining levels
+		while (levels.length > 1) {
+			levels.pop();
+			lines.push(`</${htmlTag}>\n`);
+		}
 
-	const markdownStr = lines.join("\n").trim();
+		const markdownStr = lines.join("\n").trim();
 
-	if (storageUrls) {
-		const { text, resources } = removeStorageUrls(markdownStr, {
-			storageUrls,
-			storageDestination
-		});
-		return { markdown: text, resources };
+		if (storageUrls) {
+			const { text, resources } = removeStorageUrls(markdownStr, {
+				storageUrls,
+				storageDestination
+			});
+			return { markdown: text, resources };
+		}
+		if (errorCause.length > 0) {
+			onUnsupportedItem({
+				type: "article",
+				id: "id",
+				cause: errorCause
+			});
+		}
+
+		const resources: MediaFileReplacement[] = [];
+		return { markdown: markdownStr, resources };
 	}
-	const resources: MediaFileReplacement[] = [];
-	return { markdown: markdownStr, resources };
+	return { markdown: "", resources: [] }; //Added instead of the error that there is nothing returned
 }
 
 /**

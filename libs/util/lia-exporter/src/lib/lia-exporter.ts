@@ -229,11 +229,15 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 	/**
 	 * Wraps the markdownify function of the liaScript API Utils to handle directly the extracted media files.
+	 * This version of the function allows for custom unsupported item handling.
 	 * @param input The Markdown formatted text to convert into LiaScript compatible markdown.
 	 * @returns LiaScript compatible markdown.
 	 */
-	function markdownify(input: string) {
-		const { markdown, resources } = markdownifyDelegate(input, {
+	function markdownifyModifiedReport(
+		input: string,
+		onUnsupportedItem: (missedElement: MissedElement) => void
+	) {
+		const { markdown, resources } = markdownifyDelegate(input, onUnsupportedItem, {
 			htmlTag: "section",
 			removeLineNumbers: true,
 			storageUrls: options.storagesToInclude,
@@ -242,6 +246,19 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		mediaFiles.push(...resources);
 
 		return markdown;
+	}
+
+	/**
+	 * Wraps the markdownify function of the liaScript API Utils to handle directly the extracted media files.
+	 * @param input The Markdown formatted text to convert into LiaScript compatible markdown.
+	 * @returns LiaScript compatible markdown.
+	 */
+	function markdownify(input: string) {
+		const onUnsupportedItem = (missedElement: MissedElement) => {
+			console.log("Unsupported item", missedElement);
+		};
+
+		return markdownifyModifiedReport(input, onUnsupportedItem);
 	}
 
 	/**
@@ -381,12 +398,16 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			const reporter = (report: MissedElement) => {
 				incompleteExport.missedElements.push(report);
 			};
+			//shall enable the usage of the reporter in the needed calls without affecting the convertQuizzes method
+			const markdownifyForQuestions = (input: string) => {
+				return markdownifyModifiedReport(input, reporter);
+			};
 
 			const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
 			const quizPart = {
 				title: "Lernzielkontrolle",
 				indent: quizIndent,
-				body: convertQuizzes(lesson.quiz as Quiz, markdownify, reporter)
+				body: convertQuizzes(lesson.quiz as Quiz, markdownifyForQuestions, reporter)
 			};
 
 			sections.push(quizPart);
