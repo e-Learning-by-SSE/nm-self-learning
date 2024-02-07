@@ -1,3 +1,4 @@
+import { findParentsOfCycledSkills } from "@e-learning-by-sse/nm-skill-lib";
 import { SkillFormModel } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 
@@ -8,12 +9,11 @@ export type OptionalVisualizationWithRequiredId = Pick<SkillFolderVisualization,
 
 export type UpdateVisuals = (skills: OptionalVisualizationWithRequiredId[] | null) => void;
 
-export type CycleType = "parent" | "child" | "none";
-
 export type SkillFolderVisualization = {
 	id: string;
 	isSelected: boolean;
-	cycleType: CycleType;
+	isCycleMember: boolean;
+	hasNestedCycleMembers: boolean;
 	skill: SkillFormModel;
 	isExpanded: boolean;
 	numberChildren: number;
@@ -26,7 +26,8 @@ export type SkillFolderVisualization = {
 export const visualSkillDefaultValues = {
 	isSelected: false,
 	massSelected: false,
-	cycleType: "none" as CycleType,
+	isCycleMember: false,
+	hasNestedCycleMembers: false,
 	isExpanded: false,
 	shortHighlight: false
 };
@@ -106,3 +107,18 @@ export const switchSelectionDisplayValue = (
 
 	return Object.entries(idPropertiesMap).map(([id, properties]) => ({ id, ...properties }));
 };
+
+export function getCycleDisplayInformation(skills: Map<string, SkillFormModel>) {
+	const libSkills = Array.from(skills.values()).map(skill => ({
+		...skill,
+		nestedSkills: skill.children
+	}));
+	const cycleParents = findParentsOfCycledSkills(libSkills);
+	if (!cycleParents) return [];
+	const children = cycleParents.nestingSkills.map(cycle => ({
+		...cycle,
+		hasNestedCycleMembers: true
+	}));
+	const parents = cycleParents.cycles.flat().map(cycle => ({ ...cycle, isCycleMember: true }));
+	return [...children, ...parents];
+}

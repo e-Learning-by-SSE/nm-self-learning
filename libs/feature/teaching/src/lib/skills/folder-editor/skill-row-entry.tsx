@@ -1,6 +1,12 @@
 import { TableDataColumn } from "@self-learning/ui/common";
 import React from "react";
-import { ChevronDownIcon, ChevronRightIcon, FolderIcon, RefreshIcon } from "@heroicons/react/solid";
+import {
+	ChevronDownIcon,
+	ChevronRightIcon,
+	FolderIcon,
+	RefreshIcon,
+	ShieldExclamationIcon
+} from "@heroicons/react/solid";
 import { PencilIcon, PuzzleIcon } from "@heroicons/react/outline";
 import { AddChildButton, SkillDeleteOption } from "./skill-taskbar";
 import styles from "./folder-table.module.css";
@@ -76,25 +82,20 @@ function SkillRow({
 		]);
 	};
 
+	let title = "";
+	if (skill.isCycleMember) {
+		title = "Dieser Skill ist Teil eines Zyklus.";
+	} else if (skill.hasNestedCycleMembers) {
+		title = "Dieser Ordner enthält einen Zyklus, ist aber kein Teil davon.";
+	}
+	const cycleError = skill.isCycleMember;
+	const cycleWarning = skill.hasNestedCycleMembers && !skill.isSelected && !skill.isCycleMember;
 	return (
 		<tr
 			style={depthCssStyle}
-			title={`${
-				skill.cycleType === "child"
-					? "Dieser Skill ist Teil eines Zyklus."
-					: skill.cycleType === "parent"
-					? "Dieser Ordner enthält einen Zyklus, ist aber kein Teil davon."
-					: ""
-			}`}
-			className={`group cursor-pointer hover:bg-gray-100 ${
-				skill.cycleType !== "none" && skill.isSelected ? "bg-red-100" : ""
-			}
-				${
-					skill.cycleType === "parent" &&
-					/* !displayInfo.hasCycle TODO */ !skill.isSelected
-						? "bg-yellow-100"
-						: ""
-				}
+			title={title}
+			className={`group cursor-pointer hover:bg-gray-100 ${cycleError ? "bg-red-100" : ""}
+				${cycleWarning ? "bg-yellow-100" : ""}
 				${skill.isSelected ? "bg-gray-200" : ""} `}
 		>
 			<TableDataColumn className={"text-center align-middle"}>
@@ -142,12 +143,10 @@ function SkillRow({
 								</div>
 							)}
 						</div>
-						{skill.cycleType !== "none" && (
-							<RefreshIcon className="icon h-5 text-lg text-red-500" />
+						{cycleError && <RefreshIcon className="icon h-5 text-lg text-red-500" />}
+						{cycleWarning && (
+							<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 						)}
-						{/* TODO {displayInfo.isParent && !displayInfo.hasCycle && (
-								<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
-							)} */}
 						<span className={`${skill.isSelected ? "text-secondary" : ""}`}>
 							{skill.displayName ?? skill.skill.name}
 						</span>

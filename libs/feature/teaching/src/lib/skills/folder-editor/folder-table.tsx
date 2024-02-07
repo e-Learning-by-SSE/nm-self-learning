@@ -8,13 +8,6 @@ import { NewSkillButton } from "./skill-taskbar";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { Skill } from "@prisma/client";
 
-const compareSkills = (a: SkillFolderVisualization, b: SkillFolderVisualization) => {
-	return (
-		b.skill.children.length - a.skill.children.length ||
-		a.skill.name.localeCompare(b.skill.name)
-	);
-};
-
 export function SkillFolderTable({
 	repository,
 	skillDisplayData,
@@ -27,7 +20,6 @@ export function SkillFolderTable({
 	updateSkillDisplay: UpdateVisuals;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
-
 	const skillsToDisplay = useMemo(() => {
 		const skills = Array.from(skillDisplayData.values());
 
@@ -82,25 +74,35 @@ export function SkillFolderTable({
 					}
 				>
 					{skillsToDisplay
-						.sort(compareSkills)
-						.map(
-							element =>
-								!(element.skill.parents.length > 0) && (
-									<ListSkillEntryWithChildren
-										key={`${element.id}-0`}
-										skillDisplayData={element}
-										depth={0}
-										updateSkillDisplay={updateSkillDisplay}
-										handleSelection={handleSelection}
-										skillResolver={skillId => skillDisplayData.get(skillId)}
-									/>
-								)
-						)}
+						.sort(byChildrenLength)
+						.filter(isTopLevelSkill)
+						.map(element => (
+							<ListSkillEntryWithChildren
+								key={`${element.id}-0`}
+								skillDisplayData={element}
+								depth={0}
+								updateSkillDisplay={updateSkillDisplay}
+								handleSelection={handleSelection}
+								skillResolver={skillId => skillDisplayData.get(skillId)}
+							/>
+						))}
 				</Table>
 			</CenteredSection>
 		</div>
 	);
 }
+
+const byChildrenLength = (a: SkillFolderVisualization, b: SkillFolderVisualization) => {
+	return (
+		b.skill.children.length - a.skill.children.length ||
+		a.skill.name.localeCompare(b.skill.name)
+	);
+};
+
+const isTopLevelSkill = (skill: SkillFolderVisualization) => {
+	return skill.skill.parents.length === 0 || (skill.isCycleMember && skill.hasNestedCycleMembers);
+};
+
 function RepositoryInfo({ repository }: { repository: SkillRepository }) {
 	const [showFullDescription, setShowFullDescription] = useState(false);
 
