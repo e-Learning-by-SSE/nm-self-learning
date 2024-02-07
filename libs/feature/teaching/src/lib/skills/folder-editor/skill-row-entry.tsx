@@ -16,16 +16,19 @@ import { isTruthy } from "@self-learning/util/common";
 export function ListSkillEntryWithChildren({
 	skillResolver,
 	skillDisplayData,
-	depth,
+	depth = 0,
 	handleSelection,
-	updateSkillDisplay
+	updateSkillDisplay,
+	renderedIds = new Set()
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
 	depth: number;
 	handleSelection: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
+	renderedIds?: Set<string>;
 }) {
+	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
 
 	return (
@@ -41,17 +44,23 @@ export function ListSkillEntryWithChildren({
 				skillDisplayData.skill.children
 					.map(childId => skillResolver(childId))
 					.filter(isTruthy)
-					.map(element => (
+					.filter(wasNotRendered)
+					.map(element => {
 						// recursive structure to add <SkillRow /> for each child
-						<ListSkillEntryWithChildren
-							key={`${element.id}-${depth + 1}`}
-							skillDisplayData={element}
-							updateSkillDisplay={updateSkillDisplay}
-							skillResolver={skillResolver}
-							handleSelection={handleSelection}
-							depth={depth + 1}
-						/>
-					))}
+						const newSet = new Set(renderedIds);
+						newSet.add(element.id);
+						return (
+							<ListSkillEntryWithChildren
+								key={`${element.id}-${depth + 1}`}
+								skillDisplayData={element}
+								updateSkillDisplay={updateSkillDisplay}
+								skillResolver={skillResolver}
+								handleSelection={handleSelection}
+								depth={depth + 1}
+								renderedIds={newSet}
+							/>
+						);
+					})}
 		</>
 	);
 }

@@ -1,5 +1,4 @@
 import { SkillFormModel } from "@self-learning/types";
-import { findParentsOfCycledSkills } from "@e-learning-by-sse/nm-skill-lib";
 import { Alert, SimpleDialog } from "@self-learning/ui/common";
 import { useState } from "react";
 
