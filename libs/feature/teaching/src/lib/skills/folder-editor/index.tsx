@@ -32,14 +32,15 @@ export function SkillFolderEditor({
 		currentSkill?: string;
 	}>({});
 
-	const selectedSkill = skills.get(selectedItem.currentSkill ?? "");
+	const cycles = useMemo(() => {
+		const cycleData = getCycleDisplayInformation(skills);
+		updateSkillDisplay(cycleData);
+		return cycleData;
+	}, [skills, updateSkillDisplay]);
 
-	const cycleParticipants = Array.from(skills.values()).filter(
-		skill =>
-			skillDisplayData.get(skill.id)?.hasNestedCycleMembers ||
-			skillDisplayData.get(skill.id)?.isCycleMember
-	);
-	const showCyclesDialog = cycleParticipants.length > 0;
+	const showCyclesDialog = cycles.length > 0;
+
+	const selectedSkill = skills.get(selectedItem.currentSkill ?? "");
 
 	const changeEditTarget = useCallback(
 		(skillId?: string) => {
@@ -67,7 +68,7 @@ export function SkillFolderEditor({
 					/>
 				}
 			>
-				{showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycleParticipants} />}
+				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles} />}
 				<SkillFolderTable
 					repository={repository}
 					skillDisplayData={skillDisplayData}
@@ -107,11 +108,6 @@ function useTableSkillDisplay(skills: Map<string, SkillFormModel>) {
 		},
 		[skills]
 	);
-
-	useMemo(() => {
-		const cycles = getCycleDisplayInformation(skills);
-		updateSkillDisplay(cycles);
-	}, [skills, updateSkillDisplay]);
 
 	useMemo(() => {
 		const checkNewItemBuffer = (skillId: string) =>
