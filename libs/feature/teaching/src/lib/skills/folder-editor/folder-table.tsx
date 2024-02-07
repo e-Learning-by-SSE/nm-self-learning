@@ -80,7 +80,6 @@ export function SkillFolderTable({
 							<ListSkillEntryWithChildren
 								key={`${element.id}-0`}
 								skillDisplayData={element}
-								depth={0}
 								updateSkillDisplay={updateSkillDisplay}
 								handleSelection={handleSelection}
 								skillResolver={skillId => skillDisplayData.get(skillId)}
