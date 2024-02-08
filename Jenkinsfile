@@ -26,8 +26,8 @@ pipeline {
             }
             steps {
                 sh 'git fetch origin master:master'
-                sh 'npm ci --force'
                 sh 'cp .npmrc.example .npmrc'
+                sh 'npm ci --force'
                 sh 'cp -f .env.example .env'
                 echo "TagBuild: ${buildingTag()}"
                 script {
