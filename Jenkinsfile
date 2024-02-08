@@ -6,20 +6,16 @@ pipeline {
     environment {
         TARGET_PREFIX = 'e-learning-by-sse/nm-self-learning'
         API_VERSION = packageJson.getVersion() // package.json must be in root level in order for this to work
-        NX_BASE='origin/master'
+        NX_BASE='master'
         NX_HEAD='HEAD'
+        NPM_TOKEN = credentials('GitHub-NPM')
     }
 
     options {
         ansiColor('xterm')
     }
+
     stages { 
-        stage('Submodule Update') {
-            steps {
-                sh 'git submodule init'
-                sh 'git submodule update --remote'
-            }
-        }
         stage("NodeJS Build") {
             agent {
                 docker {
@@ -29,8 +25,11 @@ pipeline {
                 }
             }
             steps {
-                sh 'npm ci'
+                sh 'git fetch origin master:master'
+                sh 'npm ci --force'
+                sh 'cp .npmrc.example .npmrc'
                 sh 'cp -f .env.example .env'
+                echo "TagBuild: ${buildingTag()}"
                 script {
                     if (env.BRANCH_NAME =='master') { 
                         sh 'npm run build'
@@ -69,6 +68,7 @@ pipeline {
                 ssedocker {
                     create {
                         target "${env.TARGET_PREFIX}:latest"
+                        args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
                     }
                     publish {
                         tag "${env.API_VERSION}"

@@ -8,12 +8,17 @@ RUN apk add --no-cache libc6-compat openssl1.1-compat
 
 # Create app directory
 WORKDIR /app
+ 
 
 # Install dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
+
 COPY package.json package-lock.json ./
 # Install app dependencies
+ARG NPM_TOKEN 
+RUN mv .npmrc.example .npmrc
 RUN npm install
+RUN rm .npmrc
 
 #RUN addgroup --system --gid 1001 nodejs
 #RUN adduser --system --uid 1001 nextjs
