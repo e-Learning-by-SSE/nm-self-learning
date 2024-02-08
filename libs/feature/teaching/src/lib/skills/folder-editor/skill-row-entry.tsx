@@ -23,7 +23,7 @@ export function ListSkillEntryWithChildren({
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
-	depth: number;
+	depth?: number;
 	handleSelection: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
 	renderedIds?: Set<string>;
