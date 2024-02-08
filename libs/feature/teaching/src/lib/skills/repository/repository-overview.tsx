@@ -8,7 +8,7 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
-import { Fragment, useState, useMemo } from "react";
+import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { PencilIcon, TrashIcon } from "@heroicons/react/solid";

@@ -5,6 +5,7 @@ export const DropdownDialog = {
 };
 
 export * from "./lib/author/author-chip";
+export * from "./lib/alert/alert";
 export * from "./lib/button/button";
 export * from "./lib/chip/image-chip";
 export * from "./lib/chip/text-chip";

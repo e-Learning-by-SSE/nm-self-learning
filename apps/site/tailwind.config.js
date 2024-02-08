@@ -48,7 +48,8 @@ module.exports = {
 				"light-border": "var(--color-light-border)"
 			},
 			animation: {
-				blob: "blob 7s infinite"
+				blob: "blob 7s infinite",
+				highlight: "highlight 1s ease-in-out"
 			},
 			keyframes: {
 				blob: {
@@ -65,8 +66,12 @@ module.exports = {
 						transform: "translate(128px, 128px) scale(0.9)"
 					},
 					"100%": {
-						transform: "tranlate(0px, 0px) scale(1)"
+						transform: "translate(0px, 0px) scale(1)"
 					}
+				},
+				highlight: {
+					"0%, 100%": { backgroundColor: "transparent" },
+					"50%": { backgroundColor: "grey" }
 				}
 			}
 		}

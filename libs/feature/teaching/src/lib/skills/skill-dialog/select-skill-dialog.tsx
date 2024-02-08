@@ -2,7 +2,7 @@
 import { SkillFormModel } from "@self-learning/types";
 import { Dialog, DialogActions, LoadingBox, OnDialogCloseFn } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
-import { memo, useState, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
 
 export function SelectSkillDialog({
@@ -54,7 +54,6 @@ function SelectSkillForm({
 }) {
 	const [search, setSearch] = useState("");
 	const [checkBoxMap, setCheckBoxMap] = useState(new Map<SkillFormModel, boolean>());
-
 	useEffect(() => {
 		const map = new Map<SkillFormModel, boolean>();
 		skills.forEach(skill => {
@@ -86,21 +85,23 @@ function SelectSkillForm({
 						{skills.length === 0 && <p>Keine Skills vorhanden</p>}
 						{skills.length > 0 && (
 							<>
-								{filteredSkills.map((skill, index) => (
-									<>
-										<span
-											key={"span: " + skill.id + index}
-											className="flex items-center gap-2"
-										>
-											<SkillElementMemorized
-												key={skill.id + index}
-												skill={skill}
-												value={checkBoxMap.get(skill) ?? false}
-												setSkill={setSkill}
-											/>
-										</span>
-									</>
-								))}
+								{filteredSkills
+									.sort((a, b) => a.name.localeCompare(b.name))
+									.map((skill, index) => (
+										<>
+											<span
+												key={"span: " + skill.id + index}
+												className="flex items-center gap-2"
+											>
+												<SkillElementMemorized
+													key={skill.id + index}
+													skill={skill}
+													value={checkBoxMap.get(skill) ?? false}
+													setSkill={setSkill}
+												/>
+											</span>
+										</>
+									))}
 							</>
 						)}
 					</div>
