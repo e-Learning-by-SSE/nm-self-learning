@@ -1,7 +1,10 @@
-import { Fragment, useCallback, useRef } from "react";
+import React, { Fragment, useCallback, useRef } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 import { createCloze, Gap } from "./cloze-parser";
+import ReactMarkdown from "react-markdown";
+import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
+import { Selection } from "@self-learning/ui/common";
 type SetAnswerFn = (index: number, answer: string) => void;
 
 export default function ClozeAnswer() {
@@ -23,7 +26,19 @@ export default function ClozeAnswer() {
 			<pre className="prose max-w-[75ch] whitespace-pre-line font-sans">
 				{cloze.segments.map((segment, index) => (
 					<Fragment key={index}>
-						<span>{segment}</span>
+						<ReactMarkdown
+							linkTarget="_blank"
+							remarkPlugins={remarkPlugins}
+							rehypePlugins={rehypePlugins}
+							components={{
+								p(props) {
+									const { ...rest } = props;
+									return <span {...rest} />;
+								}
+							}}
+						>
+							{segment ?? ""}
+						</ReactMarkdown>
 						{cloze.gaps[index] && (
 							<RenderGapType
 								gap={cloze.gaps[index]}
@@ -70,20 +85,33 @@ export function RenderGapType({
 	disabled: boolean;
 }) {
 	if (gap.type === "C") {
-		return (
-			<select
-				className="select"
-				value={value}
-				onChange={e => setAnswer(index, e.target.value)}
-				disabled={disabled}
+		const options = gap.values.map(value => (
+			<ReactMarkdown
+				linkTarget="_blank"
+				remarkPlugins={remarkPlugins}
+				rehypePlugins={rehypePlugins}
 			>
-				<option value={""}>-</option>
-				{gap.values.map(value => (
-					<option key={value.text} value={value.text}>
-						{value.text}
-					</option>
-				))}
-			</select>
+				{value.text ?? ""}
+			</ReactMarkdown>
+		));
+		//renders the current selected value
+		const renderedValue = (
+			<ReactMarkdown
+				linkTarget="_blank"
+				remarkPlugins={remarkPlugins}
+				rehypePlugins={rehypePlugins}
+			>
+				{value === "" ? "Select an option" : value}
+			</ReactMarkdown>
+		);
+
+		return (
+			<Selection
+				content={options}
+				value={renderedValue}
+				onChange={valueIndex => setAnswer(index, gap.values[valueIndex].text)}
+				disabled={disabled}
+			/>
 		);
 	}
 

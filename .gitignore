@@ -3,7 +3,7 @@
 # npm config
 .npmrc
 
-.nx/cache
+.nx
 
 # compiled output
 /dist

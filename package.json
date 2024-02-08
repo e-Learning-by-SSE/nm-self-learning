@@ -4,6 +4,7 @@
 	"license": "MIT",
 	"scripts": {
 		"start": "nx serve",
+		"dev": "node scripts/dev-start.js",
 		"build": "nx build --skip-nx-cache",
 		"build:affected": "nx affected:build --parallel",
 		"test": "env TZ='Europe/Berlin' jest --runInBand",
@@ -12,7 +13,9 @@
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write '{apps,libs}/**/*.{ts,tsx}'",
 		"prisma": "prisma",
-		"start:prod": "cd dist/apps/site && npm run start"
+		"preprisma:seed": "prisma generate",
+		"prisma:seed": "prisma db push --accept-data-loss && prisma db seed",
+		"start:prod": "cd dist/apps/site && npm start"
 	},
 	"private": true,
 	"prisma": {
