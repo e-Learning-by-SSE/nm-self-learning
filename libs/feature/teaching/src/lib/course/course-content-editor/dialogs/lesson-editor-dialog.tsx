@@ -7,6 +7,7 @@ import {
 	onLessonCreatorClosed,
 	onLessonEditorClosed
 } from "../../../../../../lesson/src/lib/lesson-editor";
+import React from "react";
 
 interface CreateLessonDialogProps {
 	setCreateLessonDialogOpen: (open: boolean) => void;
@@ -26,7 +27,7 @@ export function CreateLessonDialog({ setCreateLessonDialogOpen }: CreateLessonDi
 		);
 	}
 
-	return <LessonEditorDialog onClose={handleCreateDialogClose} />;
+	return <LessonEditorDialogWithGuard onClose={handleCreateDialogClose} />;
 }
 
 export function EditLessonDialog({
@@ -47,10 +48,15 @@ export function EditLessonDialog({
 		);
 	};
 
-	return <LessonEditorDialog initialLesson={initialLesson} onClose={handleEditDialogClose} />;
+	return (
+		<LessonEditorDialogWithGuard
+			initialLesson={initialLesson}
+			onClose={handleEditDialogClose}
+		/>
+	);
 }
 
-function LessonEditorDialog({
+function LessonEditorDialogWithGuard({
 	onClose,
 	initialLesson
 }: {
@@ -62,40 +68,27 @@ function LessonEditorDialog({
 		session.data?.user.role === "ADMIN" ||
 		initialLesson?.authors.some(a => a.username === session.data?.user.name);
 
-	const isNew = !initialLesson;
+	return (
+		<div>
+			{canEdit ? (
+				<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
+			) : (
+				<NoPermissionToEditComponent initialLesson={initialLesson} onClose={onClose} />
+			)}
+		</div>
+	);
+}
 
-	if (initialLesson?.lessonId && !canEdit) {
-		return (
-			<Dialog title="Nicht erlaubt" onClose={onClose}>
-				<div className="flex flex-col gap-8">
-					<p className="text-light">
-						Du hast keine Berechtigung, diese Lerneinheit zu bearbeiten:
-					</p>
-
-					<div className="flex flex-col">
-						<span className="font-semibold">Titel:</span>
-						<span className="font-semibold text-secondary">{initialLesson.title}</span>
-					</div>
-
-					<div>
-						<span className="font-semibold">Autoren:</span>
-
-						<ul className="flex flex-col">
-							{initialLesson.authors.map(a => (
-								<span className="font-semibold text-secondary">{a.username}</span>
-							))}
-						</ul>
-					</div>
-				</div>
-
-				<DialogActions onClose={onClose} />
-			</Dialog>
-		);
-	}
-
+function LessonEditorDialog({
+	onClose,
+	initialLesson
+}: {
+	onClose: OnDialogCloseFn<LessonFormModel>;
+	initialLesson?: LessonFormModel;
+}) {
 	return (
 		<Dialog
-			title={isNew ? "Neue Lernheit erstellen" : "Lerneinheit anpassen"}
+			title={!initialLesson ? "Neue Lernheit erstellen" : "Lerneinheit anpassen"}
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			style={{ height: "80vh", width: "80vw" }}
 		>
@@ -115,6 +108,42 @@ function LessonEditorDialog({
 				</a>
 			</div>
 			<LessonEditor onClose={onClose} initialLesson={initialLesson} />
+		</Dialog>
+	);
+}
+
+function NoPermissionToEditComponent({
+	onClose,
+	initialLesson
+}: {
+	onClose: OnDialogCloseFn<LessonFormModel>;
+	initialLesson?: LessonFormModel;
+}) {
+	if (!initialLesson) return <></>;
+
+	return (
+		<Dialog title="Nicht erlaubt" onClose={onClose}>
+			<div className="flex flex-col gap-8">
+				<p className="text-light">
+					Du hast keine Berechtigung, diese Lerneinheit zu bearbeiten:
+				</p>
+
+				<div className="flex flex-col">
+					<span className="font-semibold">Titel:</span>
+					<span className="font-semibold text-secondary">{initialLesson.title}</span>
+				</div>
+
+				<div>
+					<span className="font-semibold">Autoren:</span>
+
+					<ul className="flex flex-col">
+						{initialLesson.authors.map(a => (
+							<span className="font-semibold text-secondary">{a.username}</span>
+						))}
+					</ul>
+				</div>
+			</div>
+			<DialogActions onClose={onClose} />
 		</Dialog>
 	);
 }
