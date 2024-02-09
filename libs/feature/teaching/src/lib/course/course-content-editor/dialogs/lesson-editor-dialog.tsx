@@ -50,7 +50,7 @@ export function EditLessonDialog({
 	return <LessonEditorDialog initialLesson={initialLesson} onClose={handleEditDialogClose} />;
 }
 
-export function LessonEditorDialog({
+function LessonEditorDialog({
 	onClose,
 	initialLesson
 }: {
