@@ -14,7 +14,6 @@ interface CreateLessonDialogProps {
 }
 
 export function CreateLessonDialog({ setCreateLessonDialogOpen }: CreateLessonDialogProps) {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
