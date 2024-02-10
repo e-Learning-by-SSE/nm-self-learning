@@ -25,15 +25,7 @@ export function Tooltip({ children, title }: { children: React.ReactNode; title:
 	const referenceElement = useRef(null);
 	const popperElement = useRef(null);
 	const { styles, attributes } = usePopper(referenceElement.current, popperElement.current, {
-		placement: "top" // Customize tooltip position here
-		// modifiers: [
-		// 	{
-		// 		name: "offset",
-		// 		options: {
-		// 			offset: [0, 8] // Adjust the offset of the tooltip [skidding, distance]
-		// 		}
-		// 	}
-		// ]
+		placement: "top"
 	});
 
 	return (
