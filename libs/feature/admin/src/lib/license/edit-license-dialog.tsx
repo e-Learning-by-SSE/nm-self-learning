@@ -12,7 +12,7 @@ import {
 } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
 export function CreateLicenseDialog({ onClose }: { onClose: OnDialogCloseFn<License> }) {
@@ -86,27 +86,18 @@ export function EditLicenseDialog({
 			});
 		}
 	}
-	const [licenseFound, setLicenseFound] = useState<boolean | null>(null);
-
-	useEffect(() => {
-		if (!isLoading) {
-			setLicenseFound(!!license);
-			if (!license) {
-				showToast({
-					type: "error",
-					title: "Lizenz nicht gefunden!",
-					subtitle: "Die Lizenz konnte nicht gefunden werden. Erstellen Sie eine neue."
-				});
-			}
-		}
-	}, [isLoading, license]);
 
 	if (isLoading) {
 		return <LoadingBox />;
-	} else if (licenseFound && license) {
+	} else if (license) {
 		return <LicenseFormModal license={license} onSubmit={onSubmit} onClose={onClose} />;
 	} else {
-		return <CreateLicenseDialog onClose={onClose} />;
+		showToast({
+			type: "error",
+			title: "Lizenz nicht gefunden!",
+			subtitle: "Die Lizenz konnte nicht gefunden werden. Erstellen Sie eine neue."
+		});
+		return null;
 	}
 }
 
