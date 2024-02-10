@@ -1,4 +1,4 @@
-import { BadgeCheckIcon, BanIcon, PlusIcon, StarIcon } from "@heroicons/react/solid";
+import { BadgeCheckIcon, BanIcon, PlusIcon } from "@heroicons/react/solid";
 import { CreateLicenseDialog, EditLicenseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -15,7 +15,7 @@ import { Fragment, useMemo, useState } from "react";
 import { License } from "@self-learning/types";
 import Link from "next/link";
 import { ShareIcon } from "@heroicons/react/outline";
-import { Tooltip } from "@mui/material";
+import Tooltip from "../../../../libs/ui/common/src/lib/tooltip/tooltips";
 
 export default function LicensesPage() {
 	useRequiredSession();
