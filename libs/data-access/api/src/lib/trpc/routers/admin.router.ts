@@ -41,13 +41,27 @@ export const adminRouter = t.router({
 			return { result, totalCount, page, pageSize } satisfies Paginated<unknown>;
 		}),
 	getUsers: adminProcedure
-		.input(paginationSchema)
+		.input(
+			paginationSchema.extend({
+				title: z.string().optional()
+			})
+		)
 		.query(async ({ input }) => {
 			const page = input.page;
 			const pageSize = 15;
 
+			const where: Prisma.UserWhereInput = {
+				name: input.title
+					? {
+							contains: input.title,
+							mode: "insensitive"
+					  }
+					: undefined
+			};
+
 			const [result, totalCount] = await database.$transaction([
 				database.user.findMany({
+					where,
 					select: {
 						name: true,
 						email: true,
@@ -59,7 +73,7 @@ export const adminRouter = t.router({
 					},
 					...paginate(pageSize, page)
 				}),
-				database.user.count()
+				database.user.count({ where })
 			]);
 
 			return { result, totalCount, page, pageSize } satisfies Paginated<unknown>;
