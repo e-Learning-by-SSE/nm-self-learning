@@ -40,6 +40,30 @@ export const adminRouter = t.router({
 
 			return { result, totalCount, page, pageSize } satisfies Paginated<unknown>;
 		}),
+	getUsers: adminProcedure
+		.input(paginationSchema)
+		.query(async ({ input }) => {
+			const page = input.page;
+			const pageSize = 15;
+
+			const [result, totalCount] = await database.$transaction([
+				database.user.findMany({
+					select: {
+						name: true,
+						email: true,
+						role: true,
+						image: true
+					},
+					orderBy: {
+						name: "asc"
+					},
+					...paginate(pageSize, page)
+				}),
+				database.user.count()
+			]);
+
+			return { result, totalCount, page, pageSize } satisfies Paginated<unknown>;
+		}),
 	promoteToAuthor: adminProcedure
 		.input(
 			z.object({
