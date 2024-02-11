@@ -91,27 +91,25 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 		content.length > 0 ? content[0].type : null
 	);
 
-	useEffect(() => {
-		if (content.length > 0) {
-			const availableMediaTypes = content.map(c => c.type);
+	if (content.length > 0) {
+		const availableMediaTypes = content.map(c => c.type);
 
-			const { type: typeFromRoute } = router.query;
-			let typeFromStorage: string | null = null;
+		const { type: typeFromRoute } = router.query;
+		let typeFromStorage: string | null = null;
 
-			if (typeof window !== "undefined") {
-				typeFromStorage = window.localStorage.getItem("preferredMediaType");
-			}
-
-			const { isIncluded, type } = includesMediaType(
-				availableMediaTypes,
-				(typeFromRoute as string) ?? typeFromStorage
-			);
-
-			if (isIncluded) {
-				setPreferredMediaType(type);
-			}
+		if (typeof window !== "undefined") {
+			typeFromStorage = window.localStorage.getItem("preferredMediaType");
 		}
-	}, [router, content]);
+
+		const { isIncluded, type } = includesMediaType(
+			availableMediaTypes,
+			(typeFromRoute as string) ?? typeFromStorage
+		);
+
+		if (isIncluded) {
+			setPreferredMediaType(type);
+		}
+	}
 	return preferredMediaType;
 }
 
@@ -229,24 +227,19 @@ function LessonHeader({
 }
 
 function DefaultLicenseLabel() {
-	const { data } = trpc.licenseRouter.getDefault.useQuery();
-	const [license, setLicense] = useState<NonNullable<LessonProps["lesson"]["license"]>>({
+	const { data, isLoading } = trpc.licenseRouter.getDefault.useQuery();
+	const fallbackLicense = {
 		name: "Keine Lizenz verfügbar",
 		logoUrl: "",
 		url: "",
 		licenseText:
 			"*Für diese Lektion ist keine Lizenz verfügbar. Bei Nachfragen, wenden Sie sich an den Autor*"
-	});
-
-	useEffect(() => {
-		if (!data) {
-			console.log("No default license found");
-		} else {
-			setLicense(data);
-		}
-	}, [data]);
-
-	return <>{license && <LicenseLabel license={license} />}</>;
+	};
+	if (!isLoading && !data) {
+		console.log("No default license found");
+	}
+	if (isLoading) return null;
+	return <LicenseLabel license={data ?? fallbackLicense} />;
 }
 
 function LicenseLabel({ license }: { license: NonNullable<LessonProps["lesson"]["license"]> }) {
