@@ -1,3 +1,5 @@
+ARG NPM_TOKEN 
+
 # Base image
 FROM node:20-alpine3.18 as build
 
@@ -11,12 +13,9 @@ WORKDIR /app
  
 
 # Install dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-
 COPY package.json package-lock.json ./
-# Install app dependencies
-ARG NPM_TOKEN 
-RUN mv .npmrc.example .npmrc
+COPY .npmrc.example .npmrc
+RUN sed -i "s/\${NPM_TOKEN}/${NPM_TOKEN}/g" .npmrc
 RUN npm install
 RUN rm .npmrc
 
