@@ -14,14 +14,12 @@ export async function onLessonCreatorClosed(
 	createLessonAsync: (lesson: LessonFormModel) => any,
 	lesson?: LessonFormModel
 ) {
-	if (!lesson) {
-		onClose();
-		return;
-	}
 	try {
-		console.log("Creating lesson...", lesson);
-		const result = await createLessonAsync(lesson);
-		showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
+		if (lesson) {
+			console.log("Creating lesson...", lesson);
+			const result = await createLessonAsync(lesson);
+			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
+		}
 		onClose();
 	} catch (error) {
 		console.error(error);
@@ -38,21 +36,18 @@ export async function onLessonEditorClosed(
 	editLessonAsync: (lesson: any) => any,
 	lesson?: LessonFormModel
 ) {
-	if (!lesson) {
-		onClose();
-		return;
-	}
-
 	try {
-		const result = await editLessonAsync({
-			lesson: lesson,
-			lessonId: lesson.lessonId as string
-		});
-		showToast({
-			type: "success",
-			title: "Lerneinheit gespeichert!",
-			subtitle: result.title
-		});
+		if (lesson) {
+			const result = await editLessonAsync({
+				lesson: lesson,
+				lessonId: lesson.lessonId as string
+			});
+			showToast({
+				type: "success",
+				title: "Lerneinheit gespeichert!",
+				subtitle: result.title
+			});
+		}
 		onClose();
 	} catch (error) {
 		showToast({
