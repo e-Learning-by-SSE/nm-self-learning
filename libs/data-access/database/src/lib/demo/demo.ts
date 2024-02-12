@@ -2,7 +2,6 @@
 import { subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
-import slugify from "slugify";
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";
@@ -13,10 +12,11 @@ import {
 	extractLessonIds,
 	LessonContent
 } from "@self-learning/types";
-import { getRandomId } from "@self-learning/util/common";
+import { getRandomId, slugify } from "@self-learning/util/common";
 
 import { javaExample } from "./java-example";
 import { Quiz } from "@self-learning/quiz";
+import { javaSkillSeed } from "./java-skills";
 
 faker.seed(1);
 
@@ -582,6 +582,7 @@ export async function seedDemos(): Promise<void> {
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
+	await javaSkillSeed();
 	await javaExample();
 }
 

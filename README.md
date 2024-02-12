@@ -1,5 +1,4 @@
 # Self Learning
-
 ## Development
 
 If you want to develop and contribute to this project, please consider reading one of these guides:

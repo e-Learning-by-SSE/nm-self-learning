@@ -3,6 +3,7 @@ import * as trpcNext from "@trpc/server/adapters/next";
 import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "../auth";
 
+
 export const t = initTRPC.context<Context>().create();
 
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
@@ -25,10 +26,24 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
 	return next({ ctx: ctx as Required<Context> });
 });
 
+const isAuthorMiddleware = t.middleware(async ({ ctx, next }) => {
+	if (!ctx?.user) {
+		throw new TRPCError({ code: "UNAUTHORIZED" });
+	}
+
+	if(ctx.user.isAuthor !== true) {
+		throw new TRPCError({ code: "FORBIDDEN", message: "Requires 'AUTHOR' role." });
+	}
+
+	return next({ ctx: ctx as Required<Context> });
+});
+
 /** Creates a `t.procedure` that requires an authenticated user. */
 export const authProcedure = t.procedure.use(authMiddleware);
 /** Creates a `t.procedure` that requires an authenticated user with `ADMIN` role. */
 export const adminProcedure = t.procedure.use(adminMiddleware);
+/** Creates a `t.procedure` that requires an authenticated user with `AUTHOR` role. */
+export const authorProcedure = t.procedure.use(isAuthorMiddleware);
 
 export async function createTrpcContext({
 	req,
