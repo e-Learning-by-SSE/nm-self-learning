@@ -22,10 +22,7 @@
 		"schema": "libs/data-access/database/prisma/schema.prisma",
 		"seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} --project libs/data-access/database/tsconfig.json --require tsconfig-paths/register libs/data-access/database/src/lib/seed.ts"
 	},
-	"dependencies": {
-		"@emotion/react": "^11.11.3",
-		"@emotion/styled": "^11.11.0",
-		"@headlessui/react": "^1.7.7",
+	"dependencies": {		"@headlessui/react": "^1.7.7",
 		"@hello-pangea/dnd": "^16.2.0",
 		"@heroicons/react": "^1.0.6",
 		"@hookform/resolvers": "^2.9.10",
