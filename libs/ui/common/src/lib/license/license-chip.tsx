@@ -1,7 +1,9 @@
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { LicenseViewModal } from "@self-learning/lesson";
+import { useState } from "react";
+import { CenteredContainer } from "@self-learning/ui/layouts";
+import { DialogWithReactNodeTitle } from "../dialog/dialog";
+import { MarkdownViewer } from "@self-learning/ui/forms";
 
 export function LicenseChip({
 	name,
@@ -10,74 +12,93 @@ export function LicenseChip({
 	url
 }: {
 	name: string;
-	imgUrl?: string | null;
+	imgUrl?: string;
 	description?: string;
 	url?: string;
 }) {
 	const [openModal, setOpenModal] = useState(false);
-	const [isSquare, setSquare] = useState<boolean>(true);
+	const isSquare = !imgUrl;
 
-	useEffect(() => {
-		if (imgUrl === undefined || imgUrl === null) {
-			setSquare(true);
-		}
-		const img = new Image();
-		img.onload = () => {
-			if (img.width !== img.height) {
-				setSquare(false);
-			} else {
-				setSquare(true);
-			}
-		};
-		img.src = imgUrl ?? "";
-	}, [imgUrl]);
-
+	// const defaultLogoUrl = "/assets/images/placeholder.svg";
+	// TODO receive default URL from minio/DB
+	const defaultLogoUrl = "";
 	return (
 		<div>
-			{!url && (
-				<div
-					className={`flex items-center gap-4 rounded-lg border border-light-border bg-white
-                    ${isSquare ? "pr-4" : ""} text-sm`}
-					onClick={() => setOpenModal(true)}
-					style={{ cursor: "pointer" }}
-				>
-					<ImageOrPlaceholder
-						src={imgUrl ?? undefined}
-						className={`h-10 ${isSquare ? "w-10" : "w-30"} rounded-l-lg object-cover`}
-					/>
-					{isSquare && <span className="font-medium hover:text-secondary">{name}</span>}
-				</div>
-			)}
-			{url && (
-				<div>
-					<Link
-						href={url}
-						className={`flex items-center gap-4 rounded-lg border border-light-border bg-white
-                        ${isSquare ? "pr-4" : ""} text-sm`}
-						data-testid="author"
-					>
-						<ImageOrPlaceholder
-							src={imgUrl ?? undefined}
-							className={`h-10 ${
-								isSquare ? "w-10" : "w-30"
-							} rounded-l-lg object-cover`}
-						/>
-						{isSquare && (
-							<span className="font-medium hover:text-secondary">{name}</span>
-						)}
-					</Link>
-				</div>
-			)}
+			<Link
+				href={url || "#"}
+				onClick={e => {
+					if (!url) {
+						e.preventDefault();
+						setOpenModal(true);
+					}
+				}}
+				className={`flex items-center gap-4 rounded-lg border border-light-border bg-white
+						${isSquare ? "pr-4" : ""} text-sm`}
+				data-testid="author"
+				style={url ? {} : { cursor: "pointer" }}
+			>
+				<ImageOrPlaceholder
+					src={imgUrl ?? defaultLogoUrl}
+					className={`h-10 ${isSquare ? "w-10" : "w-30"} rounded-l-lg object-cover`}
+				/>
+				{isSquare && <span className="font-medium hover:text-secondary">{name}</span>}
+			</Link>
 			{openModal && (
 				<LicenseViewModal
 					onClose={() => {
 						setOpenModal(false);
 					}}
-					description={description ?? "No description provided"}
+					description={description ?? "*Keine Beschreibung für diese Lizenz vorhanden*"}
 					name={name}
-					logoUrl={imgUrl ?? ""}
+					logoUrl={imgUrl ?? defaultLogoUrl}
 				/>
 			)}
+		</div>
+	);
+}
+
+export function LicenseViewModal({
+	description,
+	name,
+	logoUrl,
+	onClose
+}: {
+	description: string;
+	name: string;
+	logoUrl: string;
+	onClose: () => void;
+}) {
+	const [open, setOpen] = useState(true);
+
+	if (!open) return null;
+	return (
+		<CenteredContainer>
+			<DialogWithReactNodeTitle
+				style={{ height: "30vh", width: "60vw", overflow: "auto" }}
+				title={<LicenseViewHeader name={name} logoUrl={logoUrl} />}
+				onClose={() => {
+					setOpen(false);
+					onClose();
+				}}
+			>
+				<CenteredContainer>
+					<MarkdownViewer content={description} />
+				</CenteredContainer>
+			</DialogWithReactNodeTitle>
+		</CenteredContainer>
+	);
+}
+
+function LicenseViewHeader({ name, logoUrl }: { name: string; logoUrl: string }) {
+	return (
+		<div className="flex items-center justify-between">
+			<div className="flex items-center gap-4">
+				<ImageOrPlaceholder
+					src={logoUrl}
+					className={`w-30 m-0 h-10 rounded-lg object-cover`}
+				/>
+				<span className="text-3xl font-semibold">{name}</span>
+			</div>
 		</div>
 	);
 }

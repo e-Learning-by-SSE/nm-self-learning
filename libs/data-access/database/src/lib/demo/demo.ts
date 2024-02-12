@@ -2,7 +2,6 @@
 import { subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
-import slugify from "slugify";
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";
@@ -13,10 +12,11 @@ import {
 	extractLessonIds,
 	LessonContent
 } from "@self-learning/types";
-import { getRandomId } from "@self-learning/util/common";
+import { getRandomId, slugify } from "@self-learning/util/common";
 
 import { javaExample } from "./java-example";
 import { Quiz } from "@self-learning/quiz";
+import { javaSkillSeed } from "./java-skills";
 
 faker.seed(1);
 
@@ -37,7 +37,6 @@ const students = [
 
 const license: Prisma.LicenseCreateManyInput[] = [
 	{
-		licenseId: 0,
 		name: "Uni Hi Intern",
 		licenseText:
 			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
@@ -45,7 +44,6 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		selectable: true
 	},
 	{
-		licenseId: 1,
 		name: "CC BY 4.0",
 		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
 		logoUrl: "http://i.creativecommons.org/l/by/3.0/88x31.png",
@@ -54,7 +52,6 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		defaultSuggestion: true
 	},
 	{
-		licenseId: 2,
 		name: "CC BY SA 4.0",
 		url: "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
 		logoUrl: "http://i.creativecommons.org/l/by-sa/3.0/88x31.png",
@@ -62,7 +59,6 @@ const license: Prisma.LicenseCreateManyInput[] = [
 		selectable: true
 	},
 	{
-		licenseId: 3,
 		name: "CC0 1.0",
 		url: "https://creativecommons.org/publicdomain/zero/1.0/deed.de",
 		logoUrl: "http://i.creativecommons.org/p/zero/1.0/88x31.png",
@@ -586,6 +582,7 @@ export async function seedDemos(): Promise<void> {
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
+	await javaSkillSeed();
 	await javaExample();
 }
 

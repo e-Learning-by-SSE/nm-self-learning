@@ -14,6 +14,7 @@ import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LessonType } from "@prisma/client";
 import { Dispatch } from "react";
+import { SkillForm } from "./skills-form";
 import { lessonSchema } from "@self-learning/types";
 import { OpenAsJsonButton } from "../../json-editor-dialog";
 
@@ -136,6 +137,8 @@ export function LessonInfoEditor({
 					subtitle="Autoren dieser Lerneinheit."
 					emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
 				/>
+
+				<SkillForm />
 
 				<LicenseForm />
 			</div>

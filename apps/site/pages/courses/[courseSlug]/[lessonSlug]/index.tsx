@@ -16,7 +16,7 @@ import {
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { AuthorsList, LicenseChip, LoadingBox, Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -91,27 +91,25 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 		content.length > 0 ? content[0].type : null
 	);
 
-	useEffect(() => {
-		if (content.length > 0) {
-			const availableMediaTypes = content.map(c => c.type);
+	if (content.length > 0) {
+		const availableMediaTypes = content.map(c => c.type);
 
-			const { type: typeFromRoute } = router.query;
-			let typeFromStorage: string | null = null;
+		const { type: typeFromRoute } = router.query;
+		let typeFromStorage: string | null = null;
 
-			if (typeof window !== "undefined") {
-				typeFromStorage = window.localStorage.getItem("preferredMediaType");
-			}
-
-			const { isIncluded, type } = includesMediaType(
-				availableMediaTypes,
-				(typeFromRoute as string) ?? typeFromStorage
-			);
-
-			if (isIncluded) {
-				setPreferredMediaType(type);
-			}
+		if (typeof window !== "undefined") {
+			typeFromStorage = window.localStorage.getItem("preferredMediaType");
 		}
-	}, [router, content]);
+
+		const { isIncluded, type } = includesMediaType(
+			availableMediaTypes,
+			(typeFromRoute as string) ?? typeFromStorage
+		);
+
+		if (isIncluded) {
+			setPreferredMediaType(type);
+		}
+	}
 	return preferredMediaType;
 }
 
@@ -183,11 +181,6 @@ function LessonHeader({
 }) {
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
 
-	let license = lesson.license;
-	if (license === null) {
-		license = trpc.licenseRouter.getDefault.useQuery().data ?? null;
-	}
-
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap justify-between gap-4">
@@ -209,7 +202,13 @@ function LessonHeader({
 						<span className="flex flex-col gap-3">
 							<Authors authors={lesson.authors} />
 						</span>
-						<LicenseLabel license={license} />
+						<div className="-mt-3">
+							{!lesson.license ? (
+								<DefaultLicenseLabel />
+							) : (
+								<LicenseLabel license={lesson.license} />
+							)}
+						</div>
 					</span>
 
 					<div className="pt-4">
@@ -224,6 +223,35 @@ function LessonHeader({
 				</MarkdownContainer>
 			)}
 		</div>
+	);
+}
+
+function DefaultLicenseLabel() {
+	const { data, isLoading } = trpc.licenseRouter.getDefault.useQuery();
+	const fallbackLicense = {
+		name: "Keine Lizenz verfügbar",
+		logoUrl: "",
+		url: "",
+		licenseText:
+			"*Für diese Lektion ist keine Lizenz verfügbar. Bei Nachfragen, wenden Sie sich an den Autor*"
+	};
+	if (!isLoading && !data) {
+		console.log("No default license found");
+	}
+	if (isLoading) return null;
+	return <LicenseLabel license={data ?? fallbackLicense} />;
+}
+
+function LicenseLabel({ license }: { license: NonNullable<LessonProps["lesson"]["license"]> }) {
+	return (
+		<LabeledField label="Lizenz">
+			<LicenseChip
+				name={license.name}
+				imgUrl={license.logoUrl ?? undefined}
+				description={license.licenseText ?? undefined}
+				url={license.url ?? undefined}
+			/>
+		</LabeledField>
 	);
 }
 
@@ -275,33 +303,6 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 			)}
 		</>
 	);
-}
-
-export function LicenseLabel({ license }: { license: LessonProps["lesson"]["license"] }) {
-	if (license === null) {
-		return <LoadingBox />;
-	}
-	if (license.url) {
-		return (
-			<div className="-mt-3">
-				<LabeledField label="Lizenz">
-					<LicenseChip name={license.name} imgUrl={license.logoUrl} url={license.url} />
-				</LabeledField>
-			</div>
-		);
-	} else {
-		return (
-			<div className="-mt-3">
-				<LabeledField label="Lizenz">
-					<LicenseChip
-						name={license.name}
-						imgUrl={license.logoUrl}
-						description={license.licenseText !== null ? license.licenseText : undefined}
-					/>
-				</LabeledField>
-			</div>
-		);
-	}
 }
 
 function MediaTypeSelector({
