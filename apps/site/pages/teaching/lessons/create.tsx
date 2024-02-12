@@ -1,8 +1,7 @@
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
-import { LessonFormModel } from "@self-learning/teaching";
+import { LessonEditor, LessonFormModel, onLessonCreatorClosed } from "@self-learning/teaching";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
-import { LessonEditor, onLessonCreatorClosed } from "./edit/[lessonId]";
 
 export default function CreateLessonPage() {
 	const session = useRequiredSession();
