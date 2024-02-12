@@ -9,11 +9,11 @@ import {
 import { trpc } from "@self-learning/api-client";
 import React from "react";
 
-interface CreateLessonDialogProps {
+export function CreateLessonDialog({
+	setCreateLessonDialogOpen
+}: {
 	setCreateLessonDialogOpen: (open: boolean) => void;
-}
-
-export function CreateLessonDialog({ setCreateLessonDialogOpen }: CreateLessonDialogProps) {
+}) {
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
