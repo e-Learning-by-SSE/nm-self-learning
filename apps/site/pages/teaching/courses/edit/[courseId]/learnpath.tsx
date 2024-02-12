@@ -7,9 +7,9 @@ import {
 	LessonSelector,
 	LessonSummary
 } from "libs/feature/teaching/src/lib/course/course-content-editor/dialogs/lesson-selector";
-import GraphEditor from "./graphEditor";
-import { convertToGraph } from "./graphEditor";
+import GraphEditor, { convertToGraph } from "libs/ui/forms/src/lib/graph-editor";
 
+// ---------- Globals ------------------------------------------------
 export interface Mesh {
 	requiredSkills: any[];
 	lesson: LessonSummary;
@@ -20,74 +20,53 @@ const tabNames = ["Konfigurierte Lerneinheiten", "Verlauf"];
 
 // ---------- Dummy Data ------------------------------------------
 // TODO remove later
-const initLesson: LessonSummary = { title: "Dummy Lesson 1", lessonId: "", slug: "" };
-const initLesson2: LessonSummary = { title: "Dummy Lesson 2", lessonId: "", slug: "" };
-const initLesson3: LessonSummary = { title: "Dummy Lesson 3", lessonId: "", slug: "" };
+const l1: LessonSummary = { title: "Lesson 1", lessonId: "", slug: "" };
+const l2a: LessonSummary = { title: "Lesson 2a", lessonId: "", slug: "" };
+const l2b: LessonSummary = { title: "Lesson 2b", lessonId: "", slug: "" };
+const l3a: LessonSummary = { title: "Lesson 3a", lessonId: "", slug: "" };
+const l3b: LessonSummary = { title: "Lesson 3b", lessonId: "", slug: "" };
+const l4: LessonSummary = { title: "Lesson 4", lessonId: "", slug: "" };
+const l5: LessonSummary = { title: "Lesson 5", lessonId: "", slug: "" };
 
-const initMeshes: Mesh[] = [
+const dummy_meshes: Mesh[] = [
 	{
-		requiredSkills: ["skill-0"],
-		lesson: initLesson,
+		requiredSkills: [],
+		lesson: l1,
 		gainedSkills: ["skill-1"]
 	},
 	{
 		requiredSkills: ["skill-1"],
-		lesson: initLesson2,
+		lesson: l2a,
+		gainedSkills: []
+	},
+	{
+		requiredSkills: ["skill-1"],
+		lesson: l2b,
 		gainedSkills: ["skill-2"]
 	},
 	{
 		requiredSkills: ["skill-2"],
-		lesson: initLesson3,
-		gainedSkills: ["skill-3", "skill-3.1"]
-	}
-];
-
-// test dummy data
-const l1: LessonSummary = { title: "Lesson 1", lessonId: "", slug: "" };
-const l2: LessonSummary = { title: "Lesson 2", lessonId: "", slug: "" };
-const l3: LessonSummary = { title: "Lesson 3", lessonId: "", slug: "" };
-const l4: LessonSummary = { title: "Lesson 4", lessonId: "", slug: "" };
-const l5: LessonSummary = { title: "Lesson 5", lessonId: "", slug: "" };
-const l6: LessonSummary = { title: "Lesson 6", lessonId: "", slug: "" };
-const testMesh_1: Mesh[] = [
-	{
-		requiredSkills: [],
-		lesson: l1,
-		gainedSkills: ["skill-1.1", "skill-1.2"]
+		lesson: l3a,
+		gainedSkills: ["skill-3"]
 	},
 	{
-		requiredSkills: ["skill-1.1", "skill-1.2"],
-		lesson: l2,
-		gainedSkills: ["skill-2.1", "skill-2.2"]
+		requiredSkills: ["skill-2"],
+		lesson: l3b,
+		gainedSkills: ["skill-3"]
 	},
 	{
-		requiredSkills: ["skill-2.1"],
-		lesson: l3,
-		gainedSkills: []
-	},
-	{
-		requiredSkills: ["skill-2.2"],
+		requiredSkills: ["skill-3"],
 		lesson: l4,
-		gainedSkills: []
+		gainedSkills: ["skill-4"]
 	},
 	{
-		requiredSkills: [],
+		requiredSkills: ["skill-4"],
 		lesson: l5,
 		gainedSkills: ["skill-5"]
-	},
-	{
-		requiredSkills: ["skill-5"],
-		lesson: l6,
-		gainedSkills: []
 	}
 ];
 
-// --------------------------------------------------------------------------------------------
-const placeholderMesh: Mesh = {
-	requiredSkills: ["placeholder-req-skill"],
-	lesson: { title: "placeholder-lesson", lessonId: "", slug: "" },
-	gainedSkills: ["placeholder-gain-skill"]
-};
+// ---------- Functions ---------------------------------------------------------------
 
 function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
 	const temp = meshes.filter(elemt => elemt.lesson.title === mesh.lesson.title);
@@ -98,39 +77,36 @@ function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
 	}
 }
 
+// ---------- Components ---------------------------------------------------------------
+
 export default function LearnpathEditor() {
-	//const [skillsLessonMeshes, setSkillsLessonMeshes] = useState(initMeshes);
-	const [skillsLessonMeshes, setSkillsLessonMeshes] = useState(testMesh_1);
-	const [currentMesh, setCurrentMesh] = useState(placeholderMesh);
-	const [graph, setGraph] = useState(convertToGraph(skillsLessonMeshes));
+	const [meshes, setMeshes] = useState(dummy_meshes);
+	const [currentMesh, setCurrentMesh] = useState(dummy_meshes[2]);
+	const [graph, setGraph] = useState(convertToGraph(meshes));
 
 	const addMesh = (mesh: Mesh) => {
-		const updatedSkillLessonMeshes = [...skillsLessonMeshes];
-		if (!isLessonInMeshes(mesh, skillsLessonMeshes)) {
-			updatedSkillLessonMeshes.push(mesh);
+		const updatedMeshes = [...meshes];
+		if (!isLessonInMeshes(mesh, meshes)) {
+			updatedMeshes.push(mesh);
 		} else {
-			const meshToEdit = skillsLessonMeshes.filter(
-				elem => elem.lesson.title === mesh.lesson.title
-			)[0];
+			const meshToEdit = meshes.filter(elem => elem.lesson.title === mesh.lesson.title)[0];
 			meshToEdit.requiredSkills = mesh.requiredSkills;
 			meshToEdit.gainedSkills = mesh.gainedSkills;
-			updatedSkillLessonMeshes.map(
-				elem => elem.lesson.title === mesh.lesson.title || meshToEdit
-			);
+			updatedMeshes.map(elem => elem.lesson.title === mesh.lesson.title || meshToEdit);
 		}
-		setSkillsLessonMeshes(updatedSkillLessonMeshes);
+		setMeshes(updatedMeshes);
 	};
 
 	useEffect(() => {
-		const updatedGraph = convertToGraph(skillsLessonMeshes);
+		const updatedGraph = convertToGraph(meshes);
 		setGraph(updatedGraph);
-	}, [skillsLessonMeshes]);
+	}, [meshes]);
 
 	const removeMesh = (meshToRemove: Mesh) => {
-		const updatedSkillLessonMeshes = skillsLessonMeshes.filter(
+		const updatedMeshes = meshes.filter(
 			mesh => mesh.lesson.title !== meshToRemove.lesson.title
 		);
-		setSkillsLessonMeshes(updatedSkillLessonMeshes);
+		setMeshes(updatedMeshes);
 	};
 
 	const editMesh = (mesh: Mesh) => {
@@ -142,7 +118,7 @@ export default function LearnpathEditor() {
 			<div className=" bg-gray-50  p-4">
 				<h1 className="text-3xl"></h1>
 			</div>
-			<div className="mt-2 grid grid-rows-3 bg-gray-50 xl:grid-rows-[200px_600px_400px]">
+			<div className="mt-2 grid grid-rows-3 bg-gray-50 xl:grid-rows-[200px_470px_600px]">
 				<div className="mx-auto flex-col">
 					<h1 className="text-2xl">Lerneinheiten verknüpfen</h1>
 					<div className="">
@@ -157,122 +133,20 @@ export default function LearnpathEditor() {
 				<div className="my-1 flex flex-col">
 					<h1 className="px-2 text-2xl">Abhängigkeitsvisualisierung</h1>
 					<div className="border bg-white px-2">
-						<GraphEditor meshes={skillsLessonMeshes} graph={graph} size={530} />
+						<GraphEditor graph={graph} size={400} />
 					</div>
 				</div>
 
 				<div className="bottom-0 left-1/3 mx-auto min-h-[200px] flex-col">
 					<div className="min-h-full max-w-[1200px]">
 						<LearnpathEditorLogs
-							meshes={skillsLessonMeshes}
-							//nodes={graph.nodes}
+							meshes={meshes}
 							onRemoveMeshClick={removeMesh}
 							onEditClick={editMesh}
 						/>
 					</div>
 				</div>
 			</div>
-		</>
-	);
-}
-// ----------------------------------------
-
-function LearnpathEditorLogs({
-	onRemoveMeshClick: onRemoveMeshClick,
-	onEditClick: onEditClick,
-	meshes
-}: {
-	onRemoveMeshClick: (mesh: Mesh) => void;
-	onEditClick: (mesh: Mesh) => void;
-	meshes: Mesh[];
-}) {
-	const remove = (mesh: Mesh) => {
-		onRemoveMeshClick(mesh);
-	};
-
-	const edit = (mesh: Mesh) => {
-		onEditClick(mesh);
-	};
-
-	const index = 0;
-	const [selectedIndex, setSelectedIndex] = useState(index);
-
-	function handleChange(index: number) {
-		setSelectedIndex(index);
-	}
-
-	return (
-		<>
-			<Tabs selectedIndex={selectedIndex} onChange={handleChange}>
-				{tabNames.map((val, idx) => (
-					<Tab key={idx}>
-						<p className="px-2 text-2xl">{val}</p>
-					</Tab>
-				))}
-			</Tabs>
-			{selectedIndex === 0 && (
-				<Table
-					head={
-						<>
-							<TableHeaderColumn></TableHeaderColumn>
-							<TableHeaderColumn>Lerneinheit</TableHeaderColumn>
-							<TableHeaderColumn>Voraussetzung</TableHeaderColumn>
-							<TableHeaderColumn>Lernziel</TableHeaderColumn>
-							<TableHeaderColumn></TableHeaderColumn>
-							<TableHeaderColumn></TableHeaderColumn>
-							<TableHeaderColumn></TableHeaderColumn>
-						</>
-					}
-				>
-					{meshes.map((mesh: Mesh, index: number) => (
-						<Fragment key={index}>
-							<tr key={index}>
-								<TableDataColumn>{index + 1}</TableDataColumn>
-								<TableDataColumn>
-									<div className="flex flex-wrap gap-4">{mesh.lesson.title}</div>
-								</TableDataColumn>
-								<TableDataColumn>
-									<div className="flex flex-wrap gap-4">
-										{mesh.requiredSkills}
-									</div>
-								</TableDataColumn>
-								<TableDataColumn>
-									<div className="flex flex-wrap gap-4">{mesh.gainedSkills}</div>
-								</TableDataColumn>
-								<TableDataColumn>
-									<button
-										type="button"
-										className="btn-stroked w-fit self-end"
-										onClick={() => edit(mesh)}
-									>
-										<PencilIcon className="icon" />
-										<span>Verknüpfung anpassen</span>
-									</button>
-								</TableDataColumn>
-								<TableDataColumn>
-									<button type="button" className="btn-stroked w-fit self-end">
-										<PencilIcon className="icon" />
-										<span>Lerneinheit anpassen</span>
-									</button>
-								</TableDataColumn>
-								<TableDataColumn>
-									<button
-										className="ml-3 border bg-gray-50 px-1 text-sm"
-										onClick={() => remove(mesh)}
-									>
-										<div className="ml-4">
-											<TrashIcon className="icon " />
-										</div>
-									</button>
-								</TableDataColumn>
-							</tr>
-						</Fragment>
-					))}
-				</Table>
-			)}
-			{selectedIndex === 1 && (
-				<div className="mt-1 min-h-[300px] min-w-[500px] border bg-white px-2">TODO</div>
-			)}
 		</>
 	);
 }
@@ -299,9 +173,6 @@ function SkillLessonLinker({
 	}
 
 	function handleSkillSelectDialogClose(result?: any) {
-		// TODO: integrate skill selector
-		// Which data format has result?
-		// decomposed it and update required/gainedSkills arrays
 		if (result) {
 			const mesh: Mesh = {
 				requiredSkills: currentMesh.requiredSkills,
@@ -399,6 +270,112 @@ function SkillLessonLinker({
 					Bestätigen
 				</button>
 			</div>
+		</>
+	);
+}
+
+function LearnpathEditorLogs({
+	onRemoveMeshClick: onRemoveMeshClick,
+	onEditClick: onEditClick,
+	meshes
+}: {
+	onRemoveMeshClick: (mesh: Mesh) => void;
+	onEditClick: (mesh: Mesh) => void;
+	meshes: Mesh[];
+}) {
+	const remove = (mesh: Mesh) => {
+		onRemoveMeshClick(mesh);
+	};
+
+	const edit = (mesh: Mesh) => {
+		onEditClick(mesh);
+	};
+
+	const index = 0;
+	const [selectedIndex, setSelectedIndex] = useState(index);
+
+	function handleChange(index: number) {
+		setSelectedIndex(index);
+	}
+
+	return (
+		<>
+			<Tabs selectedIndex={selectedIndex} onChange={handleChange}>
+				{tabNames.map((val, idx) => (
+					<Tab key={idx}>
+						<p className="px-2 text-2xl">{val}</p>
+					</Tab>
+				))}
+			</Tabs>
+			{selectedIndex === 0 && (
+				<Table
+					head={
+						<>
+							<TableHeaderColumn></TableHeaderColumn>
+							<TableHeaderColumn>Lerneinheit</TableHeaderColumn>
+							<TableHeaderColumn>Voraussetzung</TableHeaderColumn>
+							<TableHeaderColumn>Lernziel</TableHeaderColumn>
+							<TableHeaderColumn></TableHeaderColumn>
+							<TableHeaderColumn></TableHeaderColumn>
+							<TableHeaderColumn></TableHeaderColumn>
+						</>
+					}
+				>
+					{meshes.map((mesh: Mesh, index: number) => (
+						<Fragment key={index}>
+							<tr key={index}>
+								<TableDataColumn>{index + 1}</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap gap-4">{mesh.lesson.title}</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap gap-4">
+										{mesh.requiredSkills.map((skill: string, inx: number) => (
+											<p key={inx}>{skill}</p>
+										))}
+									</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<div className="flex flex-wrap gap-4">
+										{mesh.gainedSkills.map((skill: string, inx: number) => (
+											<p key={inx}>{skill}</p>
+										))}
+									</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<button
+										type="button"
+										className="btn-stroked w-fit self-end"
+										onClick={() => edit(mesh)}
+									>
+										<PencilIcon className="icon" />
+										<span>Verknüpfung anpassen</span>
+									</button>
+								</TableDataColumn>
+								<TableDataColumn>
+									<button type="button" className="btn-stroked w-fit self-end">
+										<PencilIcon className="icon" />
+										<span>Lerneinheit anpassen</span>
+									</button>
+								</TableDataColumn>
+								<TableDataColumn>
+									<button
+										className="ml-3 border bg-gray-50 px-1 text-sm"
+										onClick={() => remove(mesh)}
+									>
+										<div className="ml-4">
+											<TrashIcon className="icon " />
+										</div>
+									</button>
+								</TableDataColumn>
+							</tr>
+						</Fragment>
+					))}
+				</Table>
+			)}
+			{selectedIndex === 1 && (
+				<div className="mt-1 min-h-[300px] min-w-[500px] border bg-white px-2">TODO</div>
+			)}
 		</>
 	);
 }

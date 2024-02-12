@@ -19,7 +19,7 @@
 		"seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} --project libs/data-access/database/tsconfig.json --require tsconfig-paths/register libs/data-access/database/src/lib/seed.ts"
 	},
 	"dependencies": {
-		"@dagrejs/dagre": "^1.0.2",
+		"@dagrejs/dagre": "^1.0.4",
 		"@headlessui/react": "^1.7.7",
 		"@hello-pangea/dnd": "^16.2.0",
 		"@heroicons/react": "^1.0.6",
