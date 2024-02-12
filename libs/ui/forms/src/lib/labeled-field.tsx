@@ -5,10 +5,22 @@ export function LabeledField({
 	label,
 	htmlFor,
 	error,
-	optional
-}: PropsWithChildren<{ label: string; htmlFor?: string; error?: string; optional?: boolean }>) {
+	optional,
+	disabled
+}: PropsWithChildren<{
+	label: string;
+	htmlFor?: string;
+	error?: string;
+	optional?: boolean;
+	disabled?: boolean;
+}>) {
 	return (
-		<fieldset className="relative flex w-full flex-col gap-1">
+		<fieldset
+			className={`relative flex w-full flex-col gap-1 ${
+				disabled ? "" /*"pointer-events-none opacity-50"*/ : ""
+			}`}
+			disabled={disabled}
+		>
 			<label htmlFor={htmlFor}>
 				<span className="text-sm font-semibold">{label}</span>
 				{optional && <span className="px-2 text-xs text-light">Optional</span>}
