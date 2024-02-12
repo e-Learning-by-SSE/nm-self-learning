@@ -11,7 +11,7 @@ const skill = {
 	description: "description",
 	parents: []
 };
-describe("switchSelectionDisplayValue3", () => {
+describe("switchSelectionDisplayValue", () => {
 	it("should update the display values correctly when previousSelectionId and newSelectionId are provided", () => {
 		const previousSelectionId = "previousId";
 		const newSelectionId = "newId";
@@ -19,7 +19,7 @@ describe("switchSelectionDisplayValue3", () => {
 		const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
 
 		expect(result).toEqual([
-			{ id: previousSelectionId, shortHighlight: false, isSelected: false },
+			{ id: previousSelectionId, isSelected: false },
 			{ id: newSelectionId, shortHighlight: true, isSelected: true }
 		]);
 	});
@@ -30,9 +30,7 @@ describe("switchSelectionDisplayValue3", () => {
 
 		const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
 
-		expect(result).toEqual([
-			{ id: previousSelectionId, shortHighlight: false, isSelected: false }
-		]);
+		expect(result).toEqual([{ id: previousSelectionId, isSelected: false }]);
 	});
 
 	it("should update the display values correctly when only newSelectionId is provided", () => {
@@ -62,7 +60,6 @@ describe("createDisplayData", () => {
 			...visualSkillDefaultValues,
 			isFolder: false,
 			numberChildren: 0,
-			displayName: skill.name,
 			id: skill.id,
 			skill
 		});
