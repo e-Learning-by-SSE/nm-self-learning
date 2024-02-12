@@ -22,7 +22,7 @@ import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { LessonType } from "@prisma/client";
 import { redirectToLogin } from "libs/ui/layouts/src/lib/redirect-to-login";
-import { isUserAuthenticatedInSession } from "libs/feature/authentication/authentication";
+import { isUserAuthenticatedInSession } from "libs/data-access/api/src/lib/auth";
 
 type Course = ResolvedValue<typeof getCourse>;
 

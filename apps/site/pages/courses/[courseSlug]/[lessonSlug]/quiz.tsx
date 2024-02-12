@@ -13,7 +13,7 @@ import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { AuthorizedGuard } from "@self-learning/ui/layouts";
-import { isUserAuthenticatedInSession } from "libs/feature/authentication/authentication";
+import { isUserAuthenticatedInSession } from "libs/data-access/api/src/lib/auth";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";

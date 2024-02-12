@@ -26,7 +26,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { isUserAuthenticatedInSession } from "libs/feature/authentication/authentication";
+import { isUserAuthenticatedInSession } from "libs/data-access/api/src/lib/auth";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {

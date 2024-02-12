@@ -8,6 +8,7 @@ import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import jwt_decode from "jwt-decode";
+import { useSession } from "next-auth/react";
 
 type KeyCloakClaims = {
 	realm_access?: {
@@ -266,3 +267,11 @@ export const authOptions: NextAuthOptions = {
 	},
 	providers: getProviders()
 };
+
+export function isUserAuthenticatedInSession() {
+	const userStatus = useSession().status;
+	if (userStatus === "authenticated") {
+		return true;
+	}
+	return false;
+}
