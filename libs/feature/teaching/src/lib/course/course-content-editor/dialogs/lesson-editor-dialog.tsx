@@ -2,12 +2,12 @@ import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { LessonFormModel } from "@self-learning/teaching";
 import { trpc } from "@self-learning/api-client";
+import React from "react";
 import {
 	LessonEditor,
 	onLessonCreatorClosed,
 	onLessonEditorClosed
-} from "../../../../../../lesson/src/lib/lesson-editor";
-import React from "react";
+} from "../../../../../../../../apps/site/pages/teaching/lessons/edit/[lessonId]";
 
 interface CreateLessonDialogProps {
 	setCreateLessonDialogOpen: (open: boolean) => void;

@@ -207,6 +207,7 @@ function ChapterNode({
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const [editChapterDialogOpen, setEditChapterDialogOpen] = useState(false);
 	const [expanded, setExpanded] = useState(true);
+
 	function onCloseLessonSelector(lesson?: LessonSummary) {
 		setLessonSelectorOpen(false);
 
@@ -330,16 +331,13 @@ function ChapterNode({
 		</li>
 	);
 }
-
-interface EditExistingLessonDialogProps {
-	lessonId: string;
-	setLessonEditorDialog: (value: boolean) => void;
-}
-
 function EditExistingLessonDialog({
 	lessonId,
 	setLessonEditorDialog
-}: EditExistingLessonDialogProps) {
+}: {
+	lessonId: string;
+	setLessonEditorDialog: (value: boolean) => void;
+}) {
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
 	return data ? (
 		<EditLessonDialog
