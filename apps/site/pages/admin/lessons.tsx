@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Paginator, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";

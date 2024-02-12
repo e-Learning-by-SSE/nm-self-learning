@@ -27,7 +27,7 @@
 		"@e-learning-by-sse/nm-skill-lib": "^0.1.0",
 		"@headlessui/react": "^1.7.7",
 		"@hello-pangea/dnd": "^16.2.0",
-		"@heroicons/react": "^1.0.6",
+		"@heroicons/react": "2.0.18",
 		"@hookform/resolvers": "^2.9.10",
 		"@monaco-editor/react": "^4.4.5",
 		"@next-auth/prisma-adapter": "^1.0.5",

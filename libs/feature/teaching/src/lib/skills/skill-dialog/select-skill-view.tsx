@@ -1,8 +1,8 @@
-import { PlusIcon, XIcon } from "@heroicons/react/solid";
 import { IconButton } from "@self-learning/ui/common";
 import { SelectSkillDialog } from "./select-skill-dialog";
 import { useState } from "react";
 import { SkillFormModel } from "@self-learning/types";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 export function SelectSkillsView({
 	skills,
@@ -78,7 +78,7 @@ function InlineRemoveButton({
 					className="mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
 					onClick={onRemove}
 				>
-					<XIcon className="h-3" />
+					<XMarkIcon className="h-3" />
 				</button>
 			</div>
 		</div>

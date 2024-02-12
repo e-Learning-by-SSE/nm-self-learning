@@ -1,4 +1,4 @@
-import { PencilIcon, PlusIcon, TrashIcon, XIcon } from "@heroicons/react/solid";
+import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import {
 	LabeledField,
 	MarkdownEditorDialog,
@@ -147,7 +147,7 @@ export default function ArrangeForm({
 												title="Kategorie entfernen"
 												onClick={() => onDeleteContainer(containerId)}
 											>
-												<XIcon className="h-5 text-red-500" />
+												<XMarkIcon className="h-5 text-red-500" />
 											</button>
 										</div>
 									</span>
@@ -198,7 +198,7 @@ export default function ArrangeForm({
 																			)
 																		}
 																	>
-																		<XIcon className="h-5 text-red-500" />
+																		<XMarkIcon className="h-5 text-red-500" />
 																	</button>
 																</div>
 
