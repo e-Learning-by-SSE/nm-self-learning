@@ -1,9 +1,76 @@
-/** Empty container with `animate-pulse` animation. Can be used to indicate that content is loading. */
-export function LoadingBox({ height }: { height?: string | number }) {
+import { showToast } from "../toast/toast";
+import { useCountdownSeconds } from "../timer/timer";
+
+export function LoadingBox({
+	height,
+	children
+}: {
+	height?: string | number;
+	children?: React.ReactNode;
+}) {
 	return (
 		<div
 			style={{ height: height ?? 500 }}
 			className="h-full animate-pulse rounded-lg bg-gray-100"
-		></div>
+		>
+			{children ? (
+				children
+			) : (
+				<div className="ml-10 mt-4 flex flex-col ">
+					<div className="mb-4 h-6 w-3/4 rounded bg-gray-300"></div>
+					<div className="space-y-4">
+						<div className="h-5 w-5/6 rounded bg-gray-300"></div>
+						<div className="h-5 w-4/6 rounded bg-gray-300"></div>
+						<div className="h-5 w-1/2 rounded bg-gray-300"></div>
+					</div>
+				</div>
+			)}
+		</div>
+	);
+}
+
+/**
+ * Wrapper for a loading circle in the middle of the screen that will block other content.
+ * @returns
+ */
+export function BlockingLoadingCircle({
+	timeout,
+	errorMsg
+}: {
+	timeout?: number;
+	errorMsg?: string;
+}) {
+	const timeLeft = useCountdownSeconds(timeout ?? Infinity);
+	const showMsg = timeLeft === 0;
+
+	if (showMsg && errorMsg) {
+		showToast({
+			type: "error",
+			title: "Fehler",
+			subtitle: errorMsg
+		});
+	}
+
+	if (timeLeft < 0) return null;
+	return (
+		<div className="fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-gray-100 bg-opacity-75">
+			<div
+				className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-t-transparent"
+				role="status"
+			/>
+			<span className="ml-2">Loading...</span>
+		</div>
+	);
+}
+
+export function LoadingCircleCorner() {
+	return (
+		<div className="fixed bottom-12 right-5 z-50 flex items-center justify-center">
+			<div
+				className="inline-block h-4 w-4 animate-spin rounded-full border-4 border-solid border-current border-t-transparent"
+				role="status"
+			/>
+			Loading...
+		</div>
 	);
 }
