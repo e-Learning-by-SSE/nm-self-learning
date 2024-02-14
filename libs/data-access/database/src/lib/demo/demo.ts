@@ -37,6 +37,7 @@ const students = [
 
 const license: Prisma.LicenseCreateManyInput[] = [
 	{
+		licenseId: 0,
 		name: "Uni Hi Intern",
 		licenseText:
 			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
