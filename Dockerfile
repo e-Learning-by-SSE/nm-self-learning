@@ -3,6 +3,9 @@ ARG NPM_TOKEN
 # Base image
 FROM node:20-alpine3.18 as build
 
+ARG NPM_TOKEN 
+ENV NPM_TOKEN=${NPM_TOKEN}
+
 # Missing packages
 # * Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 # * openssl1.1-compat is needed by Prisma Client to work in container
@@ -13,9 +16,9 @@ WORKDIR /app
  
 
 # Install dependencies
-ENV NPM_TOKEN=${NPM_TOKEN}
 COPY package.json package-lock.json ./
 COPY .npmrc.example .npmrc
+RUN sed -i "s/\${NPM_TOKEN}/${NPM_TOKEN}/g" .npmrc
 RUN npm install
 RUN rm .npmrc
 
