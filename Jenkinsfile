@@ -8,6 +8,7 @@ pipeline {
         API_VERSION = packageJson.getVersion() // package.json must be in root level in order for this to work
         NX_BASE='master'
         NX_HEAD='HEAD'
+        NPM_TOKEN = credentials('GitHub-NPM')
     }
 
     options {
@@ -25,6 +26,7 @@ pipeline {
             }
             steps {
                 sh 'git fetch origin master:master'
+                sh 'cp .npmrc.example .npmrc'
                 sh 'npm ci --force'
                 sh 'cp -f .env.example .env'
                 echo "TagBuild: ${buildingTag()}"
@@ -66,6 +68,7 @@ pipeline {
                 ssedocker {
                     create {
                         target "${env.TARGET_PREFIX}:latest"
+                        args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
                     }
                     publish {
                         tag "${env.API_VERSION}"
@@ -79,7 +82,10 @@ pipeline {
             }
             steps {
                 ssedocker {
-                    create { target "${env.TARGET_PREFIX}:unstable" }
+                    create {
+                       target "${env.TARGET_PREFIX}:unstable"
+                       args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
+                    }
                     publish {}
                 }
             }

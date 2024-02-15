@@ -1,4 +1,4 @@
-import { PencilIcon } from "@heroicons/react/solid";
+import { PencilIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useState } from "react";
