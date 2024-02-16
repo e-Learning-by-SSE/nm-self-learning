@@ -1,5 +1,9 @@
-import { ClipboardListIcon, DocumentSearchIcon, HomeIcon } from "@heroicons/react/outline";
-import { AcademicCapIcon, XIcon } from "@heroicons/react/solid";
+import {
+	ClipboardDocumentListIcon,
+	DocumentMagnifyingGlassIcon,
+	HomeIcon
+} from "@heroicons/react/24/outline";
+import { AcademicCapIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -69,7 +73,7 @@ function SidebarHeader({ setOpen }: { setOpen: (open: boolean) => void }) {
 				title="Close Sidebar"
 				onClick={() => setOpen(false)}
 			>
-				<XIcon height="24" />
+				<XMarkIcon height="24" />
 			</button>
 		</div>
 	);
@@ -88,19 +92,19 @@ function SidebarLinks() {
 				isActive={router.route === "/"}
 				href="/"
 				text="Startseite"
-				icon={<HomeIcon height="24"></HomeIcon>}
+				icon={<HomeIcon height="24" />}
 			/>
 			<SidebarLink
 				isActive={router.route === "/courses"}
 				href="/courses"
 				text="Lerninhalte"
-				icon={<DocumentSearchIcon height="24"></DocumentSearchIcon>}
+				icon={<DocumentMagnifyingGlassIcon height="24" />}
 			/>
 			<SidebarLink
 				isActive={router.route === "/lessons/[lessonSlug]"}
 				href="/todo"
 				text="Mein Lernplan"
-				icon={<ClipboardListIcon height="24"></ClipboardListIcon>}
+				icon={<ClipboardDocumentListIcon height="24" />}
 			/>
 		</div>
 	);

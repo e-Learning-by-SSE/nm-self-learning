@@ -6,12 +6,12 @@ import { useRequiredSession } from "@self-learning/ui/layouts";
 import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
 import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import slugify from "slugify";
 import { AuthorsForm } from "../../../author/authors-form";
 import { OpenAsJsonButton } from "../../../json-editor-dialog";
 import { LessonContentEditor } from "../../../lesson/forms/lesson-content";
 import { QuizEditor } from "../../../lesson/forms/quiz-editor";
 import { LessonFormModel } from "../../../lesson/lesson-form-model";
+import { slugify } from "@self-learning/util/common";
 
 export function EditLessonDialog({
 	onClose,

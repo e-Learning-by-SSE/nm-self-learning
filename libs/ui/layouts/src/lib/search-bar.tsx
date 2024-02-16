@@ -1,4 +1,4 @@
-import { EmojiSadIcon, SearchIcon } from "@heroicons/react/outline";
+import { FaceFrownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { Transition } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
@@ -15,7 +15,7 @@ function SearchInput({
 	return (
 		<div className="relative">
 			<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-				<SearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+				<MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
 			</div>
 			<input
 				autoComplete="off"
@@ -36,7 +36,7 @@ function SearchInput({
 function NoResults() {
 	return (
 		<div className="px-4 py-8 text-center text-sm sm:px-8">
-			<EmojiSadIcon className="mx-auto h-7 w-7 text-gray-400" />
+			<FaceFrownIcon className="mx-auto h-7 w-7 text-gray-400" />
 			<p className="mt-4 font-semibold text-gray-900">Nichts hier</p>
 			<p className="mt-2 text-gray-500">Leider konnten wir nichts finden was</p>
 			<p className="text-gray-500">deiner Suchanfrage entspricht</p>

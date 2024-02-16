@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from "@heroicons/react/solid";
+import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { CenteredSection } from "./containers/centered-section";
@@ -14,6 +14,25 @@ export function useRequiredSession() {
 		onUnauthenticated: redirectToLogin
 	});
 	return session;
+}
+
+export function AuthorGuard({
+	children,
+	error
+}: {
+	/** Custom error message to provide additional information, i.e., `<>Only authors can access this site.</>` */
+	error?: React.ReactNode;
+	/** The content to render if the user is an author. */
+	children?: React.ReactNode;
+}) {
+	const session = useRequiredSession();
+
+	if (!session.data?.user.isAuthor) {
+		return <Unauthorized>{error}</Unauthorized>;
+	}
+
+	// eslint-disable-next-line react/jsx-no-useless-fragment
+	return <>{children}</>;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { Menu } from "@headlessui/react";
-import { CloudDownloadIcon } from "@heroicons/react/outline";
-import { DotsVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
+import { CloudArrowDownIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -20,6 +20,7 @@ import { inferRouterOutputs } from "@trpc/server";
 import { parseISO } from "date-fns";
 import { ReactElement, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
+import { UploadProgressDialog } from "./upload-progress-dialog";
 
 type MediaType = "image" | "video" | "pdf";
 
@@ -39,6 +40,9 @@ export function Upload({
 	const { mutateAsync: getPresignedUrl } = trpc.storage.getPresignedUrl.useMutation();
 	const { mutateAsync: registerAsset } = trpc.storage.registerAsset.useMutation();
 	const trpcContext = trpc.useContext();
+	const [viewProgressDialog, setViewProgressDialog] = useState(false);
+	const [progress, setProgress] = useState(0);
+	const [fileName, setFileName] = useState("");
 
 	const accept = useMemo(() => {
 		const mediaTypes = {
@@ -70,6 +74,7 @@ export function Upload({
 
 		const objectName = window.crypto.randomUUID();
 		const fileName = file.name;
+		setFileName(fileName);
 		const fileType = tryGetMediaType(file) ?? "unknown";
 
 		const meta = {
@@ -85,23 +90,54 @@ export function Upload({
 			};
 		}
 
-		const { presignedUrl, downloadUrl } = await getPresignedUrl({ filename: objectName });
-
-		await uploadFile(file, presignedUrl);
-		console.log("File uploaded to:", downloadUrl);
-		onUploadCompleted(downloadUrl, meta);
-
 		try {
-			// TODO: Requires public download option -> Implement download via presignedUrl
-			await registerAsset({ objectName, publicUrl: downloadUrl, fileType, fileName });
+			const { presignedUrl, downloadUrl } = await getPresignedUrl({ filename: objectName });
+
+			const onFinish = (e: ProgressEvent<XMLHttpRequestEventTarget>) => {
+				const status = e.type === "loadend" ? "finished" : "failed";
+				console.log(`File upload to ${downloadUrl} ${status}.`);
+				setFileName("");
+				onUploadCompleted(downloadUrl, meta);
+				setViewProgressDialog(false);
+			};
+			await uploadWithProgress(
+				presignedUrl,
+				file,
+				() => setViewProgressDialog(true),
+				setProgress,
+				onFinish
+			);
+
+			try {
+				// TODO: Requires public download option -> Implement download via presignedUrl
+				await registerAsset({ objectName, publicUrl: downloadUrl, fileType, fileName });
+			} catch (error) {
+				console.log("Failed to register asset.");
+				console.error(error);
+			}
 		} catch (error) {
-			console.log("Failed to register asset.");
-			console.error(error);
+			if (error instanceof TRPCClientError && error.data.httpStatus === 500) {
+				if (error.data.stack?.startsWith("Error: connect ECONNREFUSED")) {
+					console.error(
+						"MinIO server not reachable. Possible cause: Server not started or misconfigured."
+					);
+				}
+			}
+
+			console.error("Upload Error:", error);
+			showToast({
+				type: "error",
+				title: "Upload fehlgeschlagen",
+				subtitle:
+					"Upload fehlgeschlagen. Wenn der Fehler länger bestehen bleibt, kontaktieren Sie bitte einen Administrator."
+			});
 		}
 	}
 
 	return (
 		<div className="relative flex flex-col gap-4">
+			{viewProgressDialog && <UploadProgressDialog name={fileName} progress={progress} />}
+
 			<div className="flex gap-1">
 				<label className="btn-primary w-full" htmlFor={id}>
 					{mediaType === "video"
@@ -145,17 +181,39 @@ function tryGetMediaType(file: File): string | null {
 	return null;
 }
 
-async function uploadFile(file: File, url: string): Promise<void> {
-	const res = await fetch(url, {
-		method: "PUT",
-		body: file
-	});
+async function uploadWithProgress(
+	url: string,
+	file: File,
+	showDialog: () => void,
+	onProgress: (bytes: number) => void,
+	onComplete: (e: ProgressEvent<XMLHttpRequestEventTarget>) => void
+) {
+	showDialog();
 
-	console.log("Upload response:", res);
+	// Upload with progress based on XHR
+	// Based on https://www.sitepoint.com/html5-javascript-file-upload-progress-bar/
+	const xhr = new XMLHttpRequest();
 
-	if (!res.ok) {
-		throw new Error("Failed to upload file");
-	}
+	// Set progress to 0% before start
+	onProgress(0);
+
+	xhr.upload.addEventListener(
+		"progress",
+		function (e) {
+			const pc = (e.loaded / e.total) * 100;
+			onProgress(pc);
+		},
+		false
+	);
+
+	// Event listener for (un)successful finishing the task.
+	// List of listener types: https://stackoverflow.com/a/15491086
+	xhr.upload.addEventListener("loadend", onComplete, false);
+
+	// start upload
+	xhr.open("PUT", url, true);
+	xhr.setRequestHeader("X-FILENAME", file.name);
+	xhr.send(file);
 }
 
 export function AssetPickerButton({
@@ -172,7 +230,7 @@ export function AssetPickerButton({
 			title="Aus hochgeladenen Dateien auswählen"
 			onClick={() => setShowAssetPicker(true)}
 		>
-			<CloudDownloadIcon className="h-5" />
+			<CloudArrowDownIcon className="h-5" />
 
 			{showAssetPicker && (
 				<AssetPickerDialog
@@ -386,7 +444,7 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 	return (
 		<Menu as="div" className="relative flex">
 			<Menu.Button className="rounded-full p-2 hover:bg-gray-50">
-				<DotsVerticalIcon className="h-5 text-gray-400" />
+				<EllipsisVerticalIcon className="h-5 text-gray-400" />
 			</Menu.Button>
 			<Menu.Items className="absolute left-4 top-4 divide-y divide-gray-100 rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
 				<Menu.Item as="div" className="p-1">

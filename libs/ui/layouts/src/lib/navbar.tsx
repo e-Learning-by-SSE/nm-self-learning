@@ -1,5 +1,11 @@
-import { AcademicCapIcon, LogoutIcon, UserIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
-import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
+import {
+	AcademicCapIcon,
+	ArrowLeftOnRectangleIcon,
+	UserIcon,
+	Bars4Icon,
+	XMarkIcon
+} from "@heroicons/react/24/outline";
+import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
@@ -35,9 +41,9 @@ export function Navbar() {
 								<Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
 									<span className="sr-only">Menü Öffnen</span>
 									{open ? (
-										<XIcon className="block h-6 w-6" aria-hidden="true" />
+										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
 									) : (
-										<MenuIcon className="block h-6 w-6" aria-hidden="true" />
+										<Bars4Icon className="block h-6 w-6" aria-hidden="true" />
 									)}
 								</Disclosure.Button>
 							</div>
@@ -180,7 +186,7 @@ export function NavbarDropdownMenu({
 									active ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
-								<LogoutIcon className="h-5" />
+								<ArrowLeftOnRectangleIcon className="h-5" />
 								<span>Logout</span>
 							</button>
 						)}

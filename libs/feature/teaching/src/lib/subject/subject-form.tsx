@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { SpecializationRelation } from "@self-learning/types";
 import { IconButton, ImageChip, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
