@@ -2,13 +2,12 @@ import { useState } from "react";
 import styles from "./message-portal.module.css";
 import { useCountdownSeconds } from "@self-learning/ui/common";
 
-export function MessagePortal() {
-	const message = process.env.NEXT_PUBLIC_SYSTEM_MSG;
+export function MessagePortal({ htmlMessage }: { htmlMessage: string }) {
 	const [hide, setHide] = useState(false);
 	const timeLeftSeconds = useCountdownSeconds(120);
 	const showMessage = timeLeftSeconds > 0 && !hide;
 
-	if (!showMessage || !message) return null;
+	if (!showMessage) return null;
 	return (
 		<div
 			className={`relative bg-blue-500 p-4 text-white opacity-80 ${
@@ -24,7 +23,7 @@ export function MessagePortal() {
 			<p className="absolute top-10 right-2 text-xs opacity-60">
 				Automatisch in {timeLeftSeconds}
 			</p>
-			<p className="text-center" dangerouslySetInnerHTML={{ __html: message }}></p>
+			<p className="text-center" dangerouslySetInnerHTML={{ __html: htmlMessage }}></p>
 		</div>
 	);
 }
