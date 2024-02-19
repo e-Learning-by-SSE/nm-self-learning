@@ -53,16 +53,15 @@ export function convertQuizzes(
 				{
 					console.log("Cloze Question: ", question);
 					let answer = question.clozeText;
-					let foundGap = false;
-					[answer, foundGap] = addClozeQuiz(answer);
-					if (foundGap) {
+					const conversionError: () => void = () => {
 						onUnsupportedItem({
 							type: "clozeText",
 							id: question.questionId,
 							index,
 							cause: "unsupportedAnswerType"
 						});
-					}
+					};
+					[answer] = addClozeQuiz(answer, conversionError);
 					convertedQuizzes.push(markdownify(question.statement + "\n\n" + answer));
 				}
 				break;
@@ -181,104 +180,128 @@ export function addTextQuizOptionScript(
 /**
  * Function to add a gap text question to the markdown file. Done by iterating over each letter to find the gaps as denoted by the e-learning platform and then converting them to the lia script format.
  * There is no complete conversion as the lia script side does not have a equivalent to the multiple answer option of the question.
+ * We are looking for { [T/C] : <Answer options> } where answer options be single choice, free text with one or multiple correct answers
  * @param text The complete text including the gaps as denoted by the e-learning platform.
  * @returns The text with the lia script setup.
  */
-export function addClozeQuiz(text: string): [string, boolean] {
-	//const text = "Das ist eine {T: [Textantwort]}. Das ist ein Textfeld {T: [Antwort, Lücke]} mit zwei richtigen Möglichkeiten.Das ist ein Single-Choice Feld mit {C: [#eins, zwei]} Antwortmöglichkeiten, aus denen ausgewählt werden muss. Falsche Antworten werden mit einem # gekennzeichnet.LaTeX kann verwendet werden, um mathematische Formeln und Symbole darzustellen. Zum Beispiel: $$V_{sphere} = \frac{4}{3}\pi r^3$$. Es kann auch in Single-Choice Feldern benutzt werden: {C: [#eins, $$V_{sphere} = \frac{4}{3}\pi r^3$$]}"
-	let chars = [...text];
-	let start = 0; //indicator/ counter for {
+const removeSelfLearAnswerStructure = /(?<!\\)([\]|[])/g; //Our cloze quizzes use [] to mark correct answers, we do not need this
+const removeClosingCurlyBracesOfAnswer = /}(?=[^}]*$)/; //Removes only the last curly braces of the answer and stops looking ahead, replaces it with ]]
+const identifyGapsWithMultipleCorrectAnswers = /\[\[\s*T:\s*([^,]+,)(?=.*\])/; //catches our gaps with multiple correct answers
+const removeSelfLearnAnswerType = /[T|C]:/g; //removes the T or C and the : of the answer type
+const identifyTypeOfAnswer = /C:/; //checks if this is a drop down menu or a free text
+const identifyCorrectAnswersInMultipleChoiceGaps =
+	/(?<=\[\[\s#|,#|\[\[#|,\s#)\s*(.*?)\s*(?=,|\]\]|\s,|\s\]\])/g; //Grabs the correct answers in { C: [#option, option2]} which is denoted by a #
+const removeTheSelfLearnCorrectAnswerMarker =
+	/(?<=\[\[\s|,|\[\[|,\s)\s*#(?=.*,|.*\]\]|.*\s,|.*\s\]\])/; //removes the # of the current answer
+const startOfAnswerBlock = RegExp(/\{\s*[TC]\s*:\s*.*?\s*/); // searches start of answer option block
+/**
+ * Function that gets all answer blocks from a cloze style question.
+ * It does so by iterating over the text looking for the start of a block and then counting curly braces to make sure
+ * it finds the end while still allowing for any number of nested structures.
+ */
+function getAllClozeAnswerBlocks(text: string): [number, number, string][] {
+	const matches: [number, number, string][] = [];
+	const chars = [...text];
+	let curlyBracketsCount = 0; //indicator/ counter for {
 	let index = 0; //the index where the { is found
 	let indexEnd = 0; //the index where the last closing } is found
-	let found = 0; //confirmation that the first { is used to denote a answer in the cloze text
-	let conf = 0; //as the second character can be a letter T or C make sure that the third is a ":" only then consider a answer block found
-	let reducedToN = false; //used to indicate that a cloze answer is fully found and allows the conversion to start
-	let multipleAnswerGap = false; //shall indicate if the text has a gap we cannot translate (multiple answers in one gap)
+	let foundEndOfBlock = false; //used to indicate that a cloze answer is fully found and allows the conversion to start
+	let foundStartOfBlock = false;
+
 	for (let i = 0; i < chars.length; i++) {
-		//run through all letters of the text
-		if (chars[i] == `}`) {
-			//created to allow/ deal with } inside of normal text or answer blocks
-			start--;
-			if (start <= 0) {
-				//no reason / use to have it below 0, but meant as a catch for } without the opening counterpart
-				start = 0;
-				if (conf == 1) {
-					//Only start the reduction to 0 IF conf is 1 meaning a answer block is identified
-					reducedToN = true;
-				}
-			}
-		}
-		//set found if the character matches one of the expected next ones only IF start is 1 otherwise reset index as well as start
-		if (start == 1 && found == 0 && chars[i] != `T` && chars[i] != `C` && chars[i] != " ") {
-			start = 0;
-			index = 0;
-		} else if (start == 1 && found == 0) {
-			found++;
-		}
-		//Only if start and found are set, add conf if the next character matches the expected ones
-		if (start == 1 && found == 1 && conf == 0 && chars[i] != `:`) {
-			//make it insensitive to white spaces in the start of the answer block
-			if (chars[i] != `C` && chars[i] != `T` && chars[i] != " ") {
-				start = 0;
-				found = 0;
-				index = 0;
-			}
-		} else if (start == 1 && found == 1 && conf == 0) {
-			conf++;
-		}
-		//count the opening {}
 		if (chars[i] == `{`) {
-			start++;
-			if (start == 1) {
-				index = i;
-			}
-		}
-		if (reducedToN) {
-			indexEnd = i + 1;
-			//transform a single answer block into the format needed for lia Script
-			let newString = text.substring(index, indexEnd).replace(/(?<!\\)([\]|[])/g, ``); //remove the unneeded [ ]
-			newString = newString.replace(`{`, `[[`); //Matches and substitutes the first { for the needed [[
-			newString = newString.replace(/}(?=[^}]*$)/, `]]`); //Matches and replaced only the last } with ]]
-			const tMatch = newString.match(/\[\[\s*T:\s*([^,]+,)(?=.*\])/); //catches our gaps with multiple correct answers
-			if (tMatch != null) {
-				newString =
-					newString.substring(0, newString.indexOf(tMatch[0]) + tMatch[0].length - 1) + //cut off everything after the first option and close it with new ]]
-					`]]`;
-				multipleAnswerGap = true;
-			}
-			const cMatch = newString.match(/C:/); // prepare for selection type word
-			newString = newString.replace(/[T|C]:/g, ``); // removes the unneeded T and C starters
-			//Deal with the selection sub case by adding () all answers marked by #
-			if (cMatch != null) {
-				const word = newString.match(
-					/(?<=\[\[\s#|,#|\[\[#|,\s#)\s*(.*?)\s*(?=,|\]\]|\s,|\s\]\])/g
-				);
-				if (word != null) {
-					for (const match of word) {
-						const strWord = match; //only get the matched word!
-						const start = newString.indexOf(strWord);
-						const end = start + strWord.length;
-						newString =
-							newString.slice(0, start) +
-							`(` +
-							newString.slice(start, end) +
-							`)` +
-							newString.slice(end);
-						newString = newString.replace(
-							/(?<=\[\[\s|,|\[\[|,\s)\s*#(?=.*,|.*\]\]|.*\s,|.*\s\]\])/,
-							``
-						); //get rid of the # of the current answer
-					}
+			curlyBracketsCount++;
+			if (!foundStartOfBlock) {
+				foundStartOfBlock = startOfAnswerBlock.test(text.substring(i, i + 5)); //i+5 as this is our tolerance for correct syntax
+				if (foundStartOfBlock) {
+					index = i;
+					curlyBracketsCount = 1;
 				}
 			}
-			newString = newString.replace(/,/g, `|`); // replace all , with |
-			reducedToN = false;
-			text = text.slice(0, index) + newString + text.slice(indexEnd); //replace the old answer block with the new one
-			indexEnd = 0;
-			found = 0;
-			conf = 0;
-			chars = [...text]; // re split the text as the index of everything might have changed
+		}
+
+		if (chars[i] == `}`) {
+			curlyBracketsCount--;
+			if (curlyBracketsCount == 0 && foundStartOfBlock) {
+				foundEndOfBlock = true;
+				foundStartOfBlock = false;
+			}
+		}
+		if (foundEndOfBlock) {
+			indexEnd = i + 1;
+			matches.push([index, indexEnd, text.substring(index, indexEnd)]);
+			foundEndOfBlock = false;
 		}
 	}
-	return [text, multipleAnswerGap];
+	return matches;
+}
+
+function transformClozeAnswerBlock(
+	[index, indexEnd, answerBlock]: [number, number, string],
+	conversionError: () => void
+): [number, number, string] {
+	const transformedAnswer = transformMultipleChoiceAnswerBlock(
+		transformMultipleAnswerTextBlock(
+			answerBlock
+				.replace(removeSelfLearAnswerStructure, ``)
+				.replace(`{`, `[[`)
+				.replace(removeClosingCurlyBracesOfAnswer, `]]`),
+			conversionError
+		)
+	).replace(/,/g, `|`);
+	return [index, indexEnd, transformedAnswer];
+}
+
+function transformMultipleAnswerTextBlock(
+	transformedAnswer: string,
+	conversionError: () => void
+): string {
+	const tMatch = transformedAnswer.match(identifyGapsWithMultipleCorrectAnswers); //catches our gaps with multiple correct answers
+	if (tMatch != null) {
+		transformedAnswer =
+			transformedAnswer.substring(
+				0,
+				transformedAnswer.indexOf(tMatch[0]) + tMatch[0].length - 1
+			) + //cut off everything after the first option and close it with new ]]
+			`]]`;
+		conversionError();
+	}
+	return transformedAnswer;
+}
+
+function transformMultipleChoiceAnswerBlock(transformedAnswer: string): string {
+	const cMatch = transformedAnswer.match(identifyTypeOfAnswer); // prepare for selection type word
+	transformedAnswer = transformedAnswer.replace(removeSelfLearnAnswerType, ``); // removes the unneeded T and C starters
+	if (cMatch != null) {
+		const word = transformedAnswer.match(identifyCorrectAnswersInMultipleChoiceGaps);
+		if (word != null) {
+			for (const match of word) {
+				const start = transformedAnswer.indexOf(match);
+				const end = start + match.length;
+				transformedAnswer = (
+					transformedAnswer.slice(0, start) +
+					`(` +
+					transformedAnswer.slice(start, end) +
+					`)` +
+					transformedAnswer.slice(end)
+				).replace(removeTheSelfLearnCorrectAnswerMarker, ``); //get rid of the # of the current answer;
+			}
+		}
+	}
+	return transformedAnswer;
+}
+
+export function addClozeQuiz(text: string, conversionError: () => void): string {
+	const matches = getAllClozeAnswerBlocks(text);
+
+	const transformedMatches = matches.map(match =>
+		transformClozeAnswerBlock(match, conversionError)
+	);
+	let offset = 0; //needed as we transform the whole text at once and need to adjust the index of the next cloze answer
+	transformedMatches.forEach(([index, indexEnd, transformedAnswer]) => {
+		text = text.slice(0, index + offset) + transformedAnswer + text.slice(indexEnd + offset);
+		offset += transformedAnswer.length - (indexEnd - index);
+	});
+	console.log("OUTPUT CLOZE: ", text);
+	return text;
 }
