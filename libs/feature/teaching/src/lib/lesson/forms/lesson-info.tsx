@@ -1,30 +1,21 @@
 import { LicenseForm } from "@self-learning/teaching";
-import { ImageOrPlaceholder } from "@self-learning/ui/common";
 import {
 	FieldHint,
 	Form,
 	InputWithButton,
 	LabeledField,
 	MarkdownField,
-	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { LessonType } from "@prisma/client";
-import { Dispatch } from "react";
 import { SkillForm } from "./skills-form";
 import { lessonSchema } from "@self-learning/types";
 import { OpenAsJsonButton } from "../../json-editor-dialog";
+import { LabeledCheckbox } from "../../../../../../ui/forms/src/lib/labeled-checkbox";
 
-export function LessonInfoEditor({
-	setLessonType,
-	lesson
-}: {
-	setLessonType: Dispatch<LessonType>;
-	lesson?: LessonFormModel;
-}) {
+export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -95,42 +86,45 @@ export function LessonInfoEditor({
 					></Controller>
 				</LabeledField>
 
-				<LabeledField label="Lernmodell" error={errors.lessonType?.message}>
-					<select
-						{...register("lessonType")}
-						onChange={e => {
-							setLessonType(e.target.value as LessonType);
-						}}
-					>
-						<option value={""} hidden>
-							Bitte wählen...
-						</option>
-						<option value={LessonType.TRADITIONAL}>
-							Nanomodul-basiertes Lernen (Standard)
-						</option>
-						<option value={LessonType.SELF_REGULATED}>Selbstreguliertes Lernen</option>
-					</select>
-				</LabeledField>
-
-				<LabeledField label="Thumbnail" error={errors.imgUrl?.message}>
+				<LabeledField
+					label={"Beschreibung"}
+					error={errors.description?.message}
+					optional={true}
+				>
 					<Controller
 						control={control}
-						name="imgUrl"
+						name={"description"}
 						render={({ field }) => (
-							<Upload
-								key={"image"}
-								mediaType="image"
-								onUploadCompleted={field.onChange}
-								preview={
-									<ImageOrPlaceholder
-										src={field.value ?? undefined}
-										className="aspect-video w-full rounded-lg object-cover"
-									/>
-								}
-							/>
+							<MarkdownField
+								content={field.value as string}
+								setValue={field.onChange}
+								inline={true}
+								placeholder={"1-2 Sätze welche diese Lerneinheit beschreibt."}
+							></MarkdownField>
 						)}
-					/>
-					<FieldHint>Thumbnails werden momentan nicht in der UI angezeigt.</FieldHint>
+					></Controller>
+				</LabeledField>
+
+				<LabeledField
+					label={"Selbstreguliertes Lernen"}
+					error={errors.selfRegulatedQuestion?.message}
+					optional={false}
+				>
+					<Controller
+						control={control}
+						name={"lessonType"}
+						render={({ field }) => (
+							<LabeledCheckbox
+								label={"Aktivierungsfrage und sequenzielles Prüfen:"}
+								checked={field.value === "SELF_REGULATED"}
+								onChange={e => {
+									field.onChange(
+										e.target.checked ? "SELF_REGULATED" : "TRADITIONAL"
+									);
+								}}
+							></LabeledCheckbox>
+						)}
+					></Controller>
 				</LabeledField>
 
 				<AuthorsForm
@@ -138,9 +132,9 @@ export function LessonInfoEditor({
 					emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
 				/>
 
-				<SkillForm />
-
 				<LicenseForm />
+
+				<SkillForm />
 			</div>
 		</Form.SidebarSection>
 	);
