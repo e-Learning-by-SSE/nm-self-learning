@@ -2,6 +2,7 @@ import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
+import { saveEnds, saveLA } from "@self-learning/learning-analytics";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -118,8 +119,18 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	// Learning Analytics: navigate from page
 	const router = useRouter();
+	const { mutateAsync: createLearningAnalytics } =
+		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+
 	useEffect(() => {
-		const navigateFromPage = () => {
+		const navigateFromPage = (url: string) => {
+			if (!url.includes(lesson.slug)) {
+				saveEnds();
+				const data = saveLA();
+				if (data) {
+					createLearningAnalytics(data);
+				}
+			}
 			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
 			if (lALessonInfo && lALessonInfo != "") {
 				lALessonInfo.end = "" + new Date();
@@ -130,7 +141,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 		return () => {
 			router.events.off("routeChangeStart", navigateFromPage);
 		};
-	}, [router.events]);
+	}, [createLearningAnalytics, lesson.slug, router.events]);
 
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
@@ -145,11 +156,15 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
 			if (lALessonInfo && lALessonInfo != "") {
 				if (lALessonInfo.lessonId != lesson.lessonId) {
-					//ToDo Save
+					const data = saveLA();
+					if (data) {
+						createLearningAnalytics(data);
+					}
 					window.localStorage.setItem(
 						"la_lessonInfo",
 						JSON.stringify({
 							lessonId: lesson.lessonId,
+							courseId: course.courseId,
 							start: "" + new Date(),
 							end: ""
 						})
@@ -160,13 +175,14 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					"la_lessonInfo",
 					JSON.stringify({
 						lessonId: lesson.lessonId,
+						courseId: course.courseId,
 						start: "" + new Date(),
 						end: ""
 					})
 				);
 			}
 		}
-	}, [lesson.lessonId]);
+	}, [course.courseId, createLearningAnalytics, lesson.lessonId]);
 
 	if (showDialog && markdown.preQuestion) {
 		return (

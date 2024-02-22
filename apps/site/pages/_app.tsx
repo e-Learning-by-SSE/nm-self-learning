@@ -15,14 +15,8 @@ import { useEffect } from "react";
 import { init } from "@socialgouv/matomo-next";
 import PlausibleProvider from "next-plausible";
 import { trpc } from "@self-learning/api-client";
-import {
-	getLessonsInfo,
-	getMediaType,
-	getQuizInfo,
-	getSessionInfo,
-	getVideoInfo,
-	resetLASession
-} from "@self-learning/learning-analytics";
+import { format, parseISO } from "date-fns";
+import { resetLASession, saveLA } from "@self-learning/learning-analytics";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -70,25 +64,30 @@ function CustomApp({ Component, pageProps }: AppProps) {
 
 	// Learning Analytics: Session handling
 	useEffect(() => {
-		const handleClose = async () => {
+		const handleClose = () => {
 			const laSession = JSON.parse(localStorage.getItem("la_session") + "");
-			if (laSession && laSession !== "") {
+			if (laSession && laSession !== "" && laSession.start) {
 				laSession.end = "" + new Date();
 				window.localStorage.setItem("la_session", JSON.stringify(laSession));
 			}
 		};
-		window.addEventListener("unload", handleClose);
+
+		window.addEventListener("unload", handleClose, false);
 		return () => {
 			window.removeEventListener("unload", handleClose);
 		};
-	}, [setEndOfSession]);
+	}, [createLearningAnalytics, setEndOfSession]);
 
 	useEffect(() => {
 		const laSession = JSON.parse(localStorage.getItem("la_session") + "");
+		const start = laSession
+			? format(parseISO(new Date(laSession.start).toISOString()), "dd.MM.yyyy")
+			: "";
+		const today = format(parseISO(new Date().toISOString()), "dd.MM.yyyy");
 		if (!(laSession && laSession !== "")) {
 			let id = -1;
 			createLASession()
-				.then(promise => {
+				.then((promise: { id: number }) => {
 					id = promise.id;
 					window.localStorage.setItem(
 						"la_session",
@@ -98,36 +97,16 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				.catch(e => {
 					console.error(e);
 				});
-		} else if (laSession.start != "" && laSession.end != "") {
-			const lALessonInfo = getLessonsInfo();
-			const lAVideoInfo = getVideoInfo();
-			const lAQuizInfo = getQuizInfo();
-			const lAMediaType = getMediaType();
-			if (lALessonInfo != null && lALessonInfo?.id != "" && laSession.id > -1) {
-				resetLASession();
-				const date = new Date();
-				const isoDateTime = new Date(
-					date.getTime() - date.getTimezoneOffset() * 60000
-				).toISOString();
-				setEndOfSession({ end: isoDateTime, id: laSession.id });
-				createLearningAnalytics({
-					sessionId: laSession.id,
-					lessonId: lALessonInfo.lessonId,
-					start: new Date(lALessonInfo.start).toISOString(),
-					end: new Date(lALessonInfo.end).toISOString(),
-					quizStart: new Date(lAQuizInfo.start).toISOString(),
-					quizEnd: new Date(lAQuizInfo.end).toISOString(),
-					numberCorrectAnswers: lAQuizInfo.right,
-					numberIncorrectAnswers: lAQuizInfo.wrong,
-					numberOfUsedHints: lAQuizInfo.hint,
-					numberOfChangesMediaType: lAMediaType.numberOfChangesMediaType,
-					preferredMediaType: lAMediaType.preferredMediaType,
-					videoStart: new Date(lAVideoInfo.start).toISOString(),
-					videoEnd: new Date(lAVideoInfo.end).toISOString(),
-					videoBreaks: lAVideoInfo.stops,
-					videoSpeed: lAVideoInfo.speed
-				});
+		} else if (laSession.start != "" && laSession.end != "" && start != today) {
+			const data = saveLA();
+			if (data) {
+				createLearningAnalytics(data);
 			}
+			const date = new Date();
+			const isoDateTime = new Date(
+				date.getTime() - date.getTimezoneOffset() * 60000
+			).toISOString();
+			setEndOfSession({ end: isoDateTime, id: laSession.id }).then(() => resetLASession());
 		}
 	}, [createLASession, createLearningAnalytics, setEndOfSession]);
 

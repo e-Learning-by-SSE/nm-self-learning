@@ -1,3 +1,5 @@
+import { trpc } from "@self-learning/api-client";
+import { getVideoInfo, saveLA } from "@self-learning/learning-analytics";
 import dynamic from "next/dynamic";
 import { SetStateAction, useEffect, useState } from "react";
 
@@ -5,11 +7,12 @@ const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 	//Learning Analytics: init or save video info
-	const [videoInfo, setVideoInfo] = useState({ stops: 1, speed: 1, start: "", end: "" });
+
+	const { mutateAsync: createLearningAnalytics } =
+		trpc.learningAnalytics.createLearningAnalytics.useMutation();
 	useEffect(() => {
 		const videoInfos = JSON.parse(localStorage.getItem("la_videoInfo") + "");
 		if (videoInfos && videoInfos !== "") {
-			setVideoInfo(videoInfos);
 		} else {
 			window.localStorage.setItem(
 				"la_videoInfo",
@@ -18,46 +21,42 @@ export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 		}
 	}, []);
 
-	function changeVideoInfo(
-		changeVideoInfo: SetStateAction<{
-			stops: number;
-			speed: number;
-			start: string;
-			end: string;
-		}>
-	) {
-		setVideoInfo(changeVideoInfo);
-		if (window !== undefined) {
+	function onStart() {
+		const videoInfo = getVideoInfo();
+		if (videoInfo && videoInfo.start !== "") {
+			const data = saveLA();
+			if (data) {
+				createLearningAnalytics(data);
+			}
+		}
+		window.localStorage.setItem(
+			"la_videoInfo",
+			JSON.stringify({ stops: 1, speed: 1, start: "" + new Date(), end: "" })
+		);
+	}
+
+	function onPause() {
+		const videoInfo = getVideoInfo();
+		if (videoInfo) {
+			videoInfo.stops++;
 			window.localStorage.setItem("la_videoInfo", JSON.stringify(videoInfo));
 		}
 	}
 
-	function onStart() {
-		changeVideoInfo(videoInfo => ({
-			...videoInfo,
-			start: "" + new Date()
-		}));
-	}
-
-	function onPause() {
-		changeVideoInfo(videoInfo => ({
-			...videoInfo,
-			stops: videoInfo.stops + 1
-		}));
-	}
-
 	function onEnded() {
-		changeVideoInfo(videoInfo => ({
-			...videoInfo,
-			end: "" + new Date()
-		}));
+		const videoInfo = getVideoInfo();
+		if (videoInfo) {
+			videoInfo.end = "" + new Date();
+			window.localStorage.setItem("la_videoInfo", JSON.stringify(videoInfo));
+		}
 	}
 
 	function onPlaybackRateChange(e: any) {
-		changeVideoInfo(videoInfo => ({
-			...videoInfo,
-			speed: e
-		}));
+		const videoInfo = getVideoInfo();
+		if (videoInfo) {
+			videoInfo.speed = e;
+			window.localStorage.setItem("la_videoInfo", JSON.stringify(videoInfo));
+		}
 	}
 	//Learning Analytics: end
 
@@ -70,6 +69,7 @@ export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 			onStart={onStart}
 			onPause={onPause}
 			onEnded={onEnded}
+			loop={false}
 			onPlaybackRateChange={onPlaybackRateChange}
 		/>
 	);

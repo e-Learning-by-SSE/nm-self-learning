@@ -149,6 +149,7 @@ model Course {
   enrollments     Enrollment[]
   authors         Author[]          @relation("AuthorToCourse")
   specializations Specialization[]  @relation("CourseToSpecialization")
+  learninAnalytics    LearningAnalytics[]
 }
 
 model Enrollment {
@@ -278,14 +279,15 @@ model LASession {
   start               DateTime @default(now())
   end                 DateTime? 
   username            String
-  learninAnalytics    LearningAnalytics[]
+  learningAnalytics    LearningAnalytics[]
 }
 
 model LearningAnalytics {
   id                  Int     @id @default(autoincrement())
   session             LASession @relation(fields:[sessionId], references: [id], onDelete: Cascade)
   sessionId           Int
-  courseId            Int?
+  courseId            String?
+  course              Course?   @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
   lesson              Lesson?   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
   lessonId            String?
   start               DateTime?

@@ -33,6 +33,7 @@ export const learningAnalyticsRouter = t.router({
 		.input(
 			z.object({
 				lessonId: z.string(),
+				courseId: z.string(),
 				sessionId: z.number(),
 				start: z.string().datetime().nullable(),
 				end: z.string().datetime().nullable(),
@@ -55,6 +56,7 @@ export const learningAnalyticsRouter = t.router({
 				data: {
 					sessionId: input.sessionId,
 					lessonId: input.lessonId,
+					courseId: input.courseId,
 					start: input.start,
 					end: input.end,
 					quizStart: input.quizStart,

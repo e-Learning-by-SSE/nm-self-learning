@@ -15,7 +15,7 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
-import { getSessionInfo } from "@self-learning/learning-analytics";
+import { saveEnds, saveLA } from "@self-learning/learning-analytics";
 import { trpc } from "@self-learning/api-client";
 
 export function Question({
@@ -147,20 +147,16 @@ function CheckResult({
 	// We only use "multiple-choice" to get better types ... works for all question types
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
 	const { completionState, reload } = useQuiz();
-	const { mutateAsync: setEndOfSession } = trpc.learningAnalytics.setEndOfSession.useMutation();
-
 	//Learning Analytics: save quiz
+	const { mutateAsync: createLearningAnalytics } =
+		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+
 	function saveQuizBeforeReload() {
-		const lASession = getSessionInfo();
-
-		if (lASession != null) {
-			const date = new Date();
-			const isoDateTime = new Date(
-				date.getTime() - date.getTimezoneOffset() * 60000
-			).toISOString();
-			setEndOfSession({ end: isoDateTime, id: lASession.id });
+		saveEnds();
+		const data = saveLA();
+		if (data) {
+			createLearningAnalytics(data);
 		}
-
 		reload();
 	}
 
@@ -176,9 +172,9 @@ function CheckResult({
 			const quizInfo = JSON.parse(localStorage.getItem("la_quizInfo") + "");
 			if (quizInfo && quizInfo !== "") {
 				if (evaluation.isCorrect) {
-					quizInfo.right = quizInfo.right + 1;
+					quizInfo.right++;
 				} else {
-					quizInfo.wrong = quizInfo.wrong + 1;
+					quizInfo.wrong++;
 				}
 				window.localStorage.setItem("la_quizInfo", JSON.stringify(quizInfo));
 			}
