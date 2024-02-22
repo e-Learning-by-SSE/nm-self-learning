@@ -1,9 +1,9 @@
 import { PlusIcon } from "@heroicons/react/outline";
 import {
 	INITIAL_QUESTION_CONFIGURATION_FUNCTIONS,
+	QUESTION_TYPE_DISPLAY_NAMES,
 	QuestionFormRenderer,
-	QuestionType,
-	QUESTION_TYPE_DISPLAY_NAMES
+	QuestionType
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
@@ -121,7 +121,7 @@ export function QuizEditor() {
 										<span className="text-xs font-normal">
 											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
 										</span>
-										<span>Frage {index + 1}</span>
+										<span>Aufgabe {index + 1}</span>
 									</div>
 								</RemovableTab>
 							</Reorder.Item>
@@ -260,7 +260,7 @@ function BaseQuestionForm({
 			<span className="font-semibold text-secondary">
 				{QUESTION_TYPE_DISPLAY_NAMES[currentQuestion.type]}
 			</span>
-			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">Frage {index + 1}</h5>
+			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">Aufgabe {index + 1}</h5>
 
 			<div className="flex flex-col gap-12">
 				<Controller
