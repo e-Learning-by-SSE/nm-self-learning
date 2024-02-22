@@ -3,6 +3,7 @@ import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ExactQuestion } from "./schema";
+import { DeleteButton } from "@self-learning/ui/common";
 
 export default function ExactForm({
 	index
@@ -73,13 +74,8 @@ export default function ExactForm({
 								placeholder="Antwort"
 								autoComplete="off"
 							/>
-							<button
-								type="button"
-								className="text-xs text-red-500"
-								onClick={() => removeAnswer(acceptedAnswerIndex)}
-							>
-								Entfernen
-							</button>
+
+							<DeleteButton onDelete={() => removeAnswer(acceptedAnswerIndex)} />
 						</div>
 					))}
 				</div>

@@ -71,7 +71,6 @@ export function LessonEditor({
 	initialLesson?: LessonFormModel;
 }) {
 	const session = useRequiredSession();
-	const [selectedLessonType, setLessonType] = useState(initialLesson?.lessonType);
 	const [selectedTab, setSelectedTab] = useState(0);
 	const form = useForm<LessonFormModel>({
 		context: undefined,
@@ -102,7 +101,12 @@ export function LessonEditor({
 								<LessonContentEditor />
 							</div>
 						)}
-						{selectedTab === 1 && <QuizEditor />}
+						{selectedTab === 1 && (
+							<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
+								<LessonInfoEditor lesson={initialLesson} />
+								<QuizEditor />
+							</div>
+						)}
 					</div>
 				</div>
 

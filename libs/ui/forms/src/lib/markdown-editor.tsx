@@ -24,8 +24,7 @@ export function MarkdownField({
 	return (
 		<div className={inline ? "flex flex-col gap-1" : ""}>
 			{!inline && (
-				<div className="flex items-end justify-between">
-					<span className="text-sm font-semibold">{label ?? "Markdown"}</span>
+				<div className="mb-2 flex items-end justify-end">
 					<button
 						type="button"
 						className="btn-stroked w-fit self-end"

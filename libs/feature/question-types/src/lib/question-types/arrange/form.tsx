@@ -1,31 +1,23 @@
-import { PencilIcon, PlusIcon, TrashIcon, XIcon } from "@heroicons/react/solid";
-import {
-	LabeledField,
-	MarkdownEditorDialog,
-	MarkdownField,
-	MarkdownViewer
-} from "@self-learning/ui/forms";
+import { PlusIcon } from "@heroicons/react/solid";
+import { LabeledField, MarkdownField, MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ArrangeItem, ArrangeQuestion } from "./schema";
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
 import {
+	AddButton,
+	DeleteButton,
 	Dialog,
 	DialogActions,
 	Divider,
+	EditButton,
 	OnDialogCloseFn,
 	showToast
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
 
-export default function ArrangeForm({
-	index,
-	question
-}: {
-	index: number;
-	question: ArrangeQuestion;
-}) {
+export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
 	const items = watch(`quiz.questions.${index}.items`);
 	const [addCategoryDialog, setAddCategoryDialog] = useState(false);
@@ -132,23 +124,15 @@ export default function ArrangeForm({
 									<span className="flex items-center justify-between gap-4 font-semibold">
 										<span>{containerId}</span>
 										<div className="flex gap-2">
-											<button
-												type="button"
-												className="rounded-full bg-secondary p-2 hover:bg-emerald-600"
-												title="Element hinzufügen"
-												onClick={() => setEditItemDialog({ containerId })}
-											>
-												<PlusIcon className="h-5 text-white" />
-											</button>
+											<AddButton
+												onAdd={() => setEditItemDialog({ containerId })}
+												title={"Element hinzufügen"}
+											/>
 
-											<button
-												type="button"
-												className="rounded-full p-2 hover:bg-red-50"
-												title="Kategorie entfernen"
-												onClick={() => onDeleteContainer(containerId)}
-											>
-												<XIcon className="h-5 text-red-500" />
-											</button>
+											<DeleteButton
+												onDelete={() => onDeleteContainer(containerId)}
+												title={"Kategorie entfernen"}
+											/>
 										</div>
 									</span>
 
@@ -173,33 +157,25 @@ export default function ArrangeForm({
 																className="prose prose-emerald flex h-fit w-fit max-w-[50ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
 															>
 																<div className="flex gap-2">
-																	<button
-																		type="button"
-																		className="rounded-full p-2 hover:bg-gray-100"
-																		title="Editieren"
-																		onClick={() =>
+																	<EditButton
+																		onEdit={() =>
 																			setEditItemDialog({
 																				containerId,
 																				item
 																			})
 																		}
-																	>
-																		<PencilIcon className="h-5 text-gray-400" />
-																	</button>
+																		title={"Editieren"}
+																	/>
 
-																	<button
-																		type="button"
-																		className="rounded-full p-2 hover:bg-red-50"
-																		title="Löschen"
-																		onClick={() =>
+																	<DeleteButton
+																		onDelete={() =>
 																			onDeleteItem(
 																				containerId,
 																				item.id
 																			)
 																		}
-																	>
-																		<XIcon className="h-5 text-red-500" />
-																	</button>
+																		title="Löschen"
+																	/>
 																</div>
 
 																<Divider />
