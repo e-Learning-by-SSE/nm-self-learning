@@ -11,7 +11,7 @@ import { SelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
 
 type SkillModalIdentifier = "teachingGoals" | "requirements";
 
-export default function SkillForm() {
+export function SkillForm() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {

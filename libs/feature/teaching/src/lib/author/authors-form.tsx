@@ -38,16 +38,16 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 
 	return (
 		<Form.SidebarSection>
-			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle} />
-
-			<IconButton
-				type="button"
-				data-testid="author-add"
-				onClick={() => setOpenAddDialog(true)}
-				title="Hinzufügen"
-				text="Hinzufügen"
-				icon={<PlusIcon className="h-5" />}
-			/>
+			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle}>
+				<IconButton
+					type="button"
+					data-testid="author-add"
+					onClick={() => setOpenAddDialog(true)}
+					title="Hinzufügen"
+					text="Hinzufügen"
+					icon={<PlusIcon className="h-5" />}
+				/>
+			</Form.SidebarSectionTitle>
 
 			{authors.length === 0 ? (
 				<p className="text-sm text-light">{emptyString}</p>
