@@ -29,6 +29,17 @@ export function LoadingBox({
 	);
 }
 
+export function LoadingCircle({ className }: { className?: string }) {
+	return (
+		<div
+			className={`inline-block ${
+				className ?? ""
+			} animate-spin rounded-full border-4 border-solid border-current border-t-transparent`}
+			role="status"
+		/>
+	);
+}
+
 /**
  * Wrapper for a loading circle in the middle of the screen that will block other content.
  * @returns
@@ -54,10 +65,7 @@ export function BlockingLoadingCircle({
 	if (timeLeft < 0) return null;
 	return (
 		<div className="fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-gray-100 bg-opacity-75">
-			<div
-				className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-t-transparent"
-				role="status"
-			/>
+			<LoadingCircle className="h-8 w-8" />
 			<span className="ml-2">Loading...</span>
 		</div>
 	);
@@ -66,10 +74,7 @@ export function BlockingLoadingCircle({
 export function LoadingCircleCorner() {
 	return (
 		<div className="fixed bottom-12 right-5 z-50 flex items-center justify-center">
-			<div
-				className="inline-block h-4 w-4 animate-spin rounded-full border-4 border-solid border-current border-t-transparent"
-				role="status"
-			/>
+			<LoadingCircle className="h-4 w-4" />
 			Loading...
 		</div>
 	);
