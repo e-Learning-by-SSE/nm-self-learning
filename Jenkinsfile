@@ -82,7 +82,10 @@ pipeline {
             }
             steps {
                 ssedocker {
-                    create { target "${env.TARGET_PREFIX}:unstable" }
+                    create {
+                       target "${env.TARGET_PREFIX}:unstable"
+                       args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
+                    }
                     publish {}
                 }
             }
