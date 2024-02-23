@@ -16,7 +16,7 @@ for (let i = 0; i < 40; i++) {
 	const end = new Date(start);
 	end.setHours(end.getHours() + (Math.floor(Math.random() * 5) + 1));
 	lASessions.push({
-		id: i,
+		id: i - 100,
 		start: start,
 		end: end,
 		username: "potter"
@@ -43,7 +43,7 @@ for (let i = 0; i < 40; i++) {
 	for (let j = 0; j < Math.floor(Math.random() * 6) + 2; j++) {
 		const courseIndex = Math.floor(Math.random() * courses.length);
 		learningAnalytics.push({
-			sessionId: i,
+			sessionId: i - 100,
 			start: start,
 			end: end,
 			lessonId:

@@ -49,6 +49,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		  (Component as any).getLayout(Component, pageProps)
 		: null;
+
 	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
 	const { mutateAsync: setEndOfSession } = trpc.learningAnalytics.setEndOfSession.useMutation();
 	const { mutateAsync: createLearningAnalytics } =
@@ -79,34 +80,43 @@ function CustomApp({ Component, pageProps }: AppProps) {
 	}, [createLearningAnalytics, setEndOfSession]);
 
 	useEffect(() => {
+		const setData = async () => {
+			const data = saveLA();
+			if (data) {
+				try {
+					await createLearningAnalytics(data);
+					const date = new Date();
+					const isoDateTime = new Date(
+						date.getTime() - date.getTimezoneOffset() * 60000
+					).toISOString();
+					await setEndOfSession({ end: isoDateTime, id: data.sessionId });
+				} catch (e) {
+					resetLASession();
+				}
+			}
+			resetLASession();
+		};
+		const createNewLASession = async () => {
+			window.localStorage.setItem(
+				"la_session",
+				JSON.stringify({ start: "" + new Date(), end: "", id: "" })
+			);
+			const id = await createLASession();
+			window.localStorage.setItem(
+				"la_session",
+				JSON.stringify({ start: "" + new Date(), end: "", id: id.id })
+			);
+		};
 		const laSession = JSON.parse(localStorage.getItem("la_session") + "");
 		const start = laSession
 			? format(parseISO(new Date(laSession.start).toISOString()), "dd.MM.yyyy")
 			: "";
 		const today = format(parseISO(new Date().toISOString()), "dd.MM.yyyy");
+		console.log(start + " - " + today);
 		if (!(laSession && laSession !== "")) {
-			let id = -1;
-			createLASession()
-				.then((promise: { id: number }) => {
-					id = promise.id;
-					window.localStorage.setItem(
-						"la_session",
-						JSON.stringify({ start: "" + new Date(), end: "", id: id })
-					);
-				})
-				.catch(e => {
-					console.error(e);
-				});
+			createNewLASession();
 		} else if (laSession.start != "" && laSession.end != "" && start != today) {
-			const data = saveLA();
-			if (data) {
-				createLearningAnalytics(data);
-			}
-			const date = new Date();
-			const isoDateTime = new Date(
-				date.getTime() - date.getTimezoneOffset() * 60000
-			).toISOString();
-			setEndOfSession({ end: isoDateTime, id: laSession.id }).then(() => resetLASession());
+			setData();
 		}
 	}, [createLASession, createLearningAnalytics, setEndOfSession]);
 
