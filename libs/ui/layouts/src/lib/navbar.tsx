@@ -172,6 +172,19 @@ export function NavbarDropdownMenu({
 					</Menu.Item>
 					<Menu.Item as="div" className="p-1">
 						{({ active }) => (
+							<Link
+								href="/learning-analytics"
+								className={`${
+									active ? "bg-emerald-500 text-white" : ""
+								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+							>
+								<UserIcon className="h-5" />
+								<span>Lernstatistik</span>
+							</Link>
+						)}
+					</Menu.Item>
+					<Menu.Item as="div" className="p-1">
+						{({ active }) => (
 							<button
 								onClick={signOut}
 								className={`${
