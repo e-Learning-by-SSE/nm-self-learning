@@ -1,5 +1,5 @@
-import { XIcon } from "@heroicons/react/solid";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
+import { DeleteButton } from "@self-learning/ui/common";
 
 export function Chip({
 	children,
@@ -24,14 +24,11 @@ export function Chip({
 			<span className="flex w-full flex-col px-4">{children}</span>
 
 			{onRemove && (
-				<button
-					type="button"
-					data-testid="remove"
-					className="mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
-					onClick={onRemove}
-				>
-					<XIcon className="h-3" />
-				</button>
+				<DeleteButton
+					onDelete={onRemove}
+					data-testid={"remove"}
+					title="Author Entfernen"
+				></DeleteButton>
 			)}
 		</li>
 	);

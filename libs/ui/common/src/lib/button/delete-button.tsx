@@ -15,7 +15,7 @@ export function DeleteButton({
 	return (
 		<UniversalButton
 			onClick={onDelete}
-			title={title}
+			title={title ? title : "Entfernen"}
 			backgroundColor={"bg-red-500"}
 			border={"rounded-md border border-transparent"}
 			focus={"focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"}

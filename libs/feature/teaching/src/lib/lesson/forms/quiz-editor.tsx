@@ -6,7 +6,13 @@ import {
 	QuestionType
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
-import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
+import {
+	Divider,
+	DropdownButton,
+	RemovableTab,
+	SectionHeader,
+	Tabs
+} from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
@@ -91,6 +97,27 @@ export function QuizEditor() {
 			/>
 
 			<QuizConfigForm />
+
+			<DropdownButton title="Options" lable={"test"}>
+				<a
+					href="#"
+					className="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white"
+				>
+					Option 1
+				</a>
+				<a
+					href="#"
+					className="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white"
+				>
+					Option 2
+				</a>
+				<a
+					href="#"
+					className="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white"
+				>
+					Option 3
+				</a>
+			</DropdownButton>
 
 			<div className="flex flex-wrap gap-4 text-sm">
 				{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (

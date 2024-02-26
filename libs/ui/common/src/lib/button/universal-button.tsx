@@ -22,18 +22,17 @@ export function UniversalButton({
 	return (
 		<button
 			type="button"
-			className={`inline-flex items-center justify-center rounded-md ${
-				border ? border : "border border-transparent"
-			} ${backgroundColor ? backgroundColor : "bg-white"} ${
-				size ? size : "px-4 py-2"
-			} text-base font-medium text-white ${hover ? hover : "hover:bg-gray-100"} ${
-				focus ? focus : "focus:primary focus:outline-none focus:ring-2 focus:ring-offset-2"
-			}`}
+			className={`inline-flex items-center justify-center rounded-md
+			${border ? border : "border-1 border-gray-150 border"}
+			${backgroundColor ? backgroundColor : "bg-white"}
+			${size ? size : "px-4 py-2"}
+			${hover ? hover : "hover:bg-gray-100"}
+			${focus ? focus : "focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"}
+			text-base font-medium text-white `}
 			onClick={() => onClick()}
-			aria-label="Delete"
 			title={title}
 		>
-			<div>{children}</div>
+			{children}
 		</button>
 	);
 }

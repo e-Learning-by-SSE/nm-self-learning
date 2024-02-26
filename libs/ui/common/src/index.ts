@@ -10,6 +10,8 @@ export * from "./lib/button/button";
 export * from "./lib/button/delete-button";
 export * from "./lib/button/add-button";
 export * from "./lib/button/edit-button";
+export * from "./lib/button/universal-button";
+export * from "./lib/button/dropdown-button";
 export * from "./lib/chip/image-chip";
 export * from "./lib/chip/text-chip";
 export * from "./lib/divider/divider";
