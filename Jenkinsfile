@@ -6,6 +6,8 @@ pipeline {
     environment {
         TARGET_PREFIX = 'e-learning-by-sse/nm-self-learning'
         API_VERSION = packageJson.getVersion() // package.json must be in root level in order for this to work
+        NX_BASE='master'
+        NX_HEAD='HEAD'
     }
 
     options {
@@ -37,12 +39,20 @@ pipeline {
                 }
             }
             steps {
+                sh 'git fetch origin master:master'
                 sh 'npm ci --force'
                 sh 'cp -f .env.example .env'
-                sh 'npm run build'
+                echo "TagBuild: ${buildingTag()}"
+                script {
+                    if (env.BRANCH_NAME =='master') { 
+                        sh 'npm run build'
+                    } else {
+                        sh 'npm run build:affected'
+                    }
+                }
             }
         }
-        stage('Test') {
+        stage('Tests') {
             environment {
                 POSTGRES_DB = 'SelfLearningDb'
                 POSTGRES_USER = 'username'
@@ -53,39 +63,38 @@ pipeline {
                 script {
                     withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ]).insideSidecar('node:18-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                         sh 'npm run prisma db push'
-                        sh 'npm run test:ci'
+                        if (env.BRANCH_NAME =='master') { 
+                            sh 'npm run test'
+                        } else {
+                            sh 'npm run test:affected'
+                        }
                     }
                 }
             }
         }
-
-        stage('Docker Publish Master') {
+        stage('Publish Tagged Release') {
             when {
-                allOf {
-                    branch 'master'
-                    expression { packageJson.isNewVersion(since: 'LAST_SUCCESSFUL_BUILD') }
+                buildingTag()
+            }
+            steps {
+                ssedocker {
+                    create {
+                        target "${env.TARGET_PREFIX}:latest"
+                    }
+                    publish {
+                        tag "${env.API_VERSION}"
+                    }
                 }
             }
-            steps {
-				ssedocker {
-					create {
-						target "${env.TARGET_PREFIX}:latest"
-					}
-					publish {
-						tag "${env.API_VERSION}"
-					}
-				}
-            }
         }
-
-        stage('Docker Publish Dev') {
+        stage('Publish and Deploy Unstable') {
             when {
-                branch 'dev'
+                branch 'master'
             }
             steps {
-				ssedocker {
-					create { target "${env.TARGET_PREFIX}:unstable" }
-					publish {}
+                ssedocker {
+                    create { target "${env.TARGET_PREFIX}:unstable" }
+                    publish {}
                 }
             }
             post {
@@ -94,7 +103,6 @@ pipeline {
                 }
             }
         }
-
         stage('Docker Publish PB') {
             environment {
                 VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"

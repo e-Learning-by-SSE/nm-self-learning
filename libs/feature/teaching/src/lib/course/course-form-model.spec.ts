@@ -19,7 +19,6 @@ const minValidCourse: CourseFormModel = {
 	description: null,
 	imgUrl: null,
 	subjectId: null,
-	specializations: [],
 	authors: []
 };
 
@@ -212,13 +211,8 @@ describe("courseFormSchema", () => {
 				description: "A description",
 				imgUrl: "http://example.com/image.png",
 				subjectId: "subject-1",
-				specializations: [
-					{
-						specializationId: "specialization-1"
-					},
-					{ specializationId: "specialization-2" }
-				],
-				authors: [{ slug: "author-a" }, { slug: "author-b" }]
+
+				authors: [{ username: "author-a" }, { username: "author-b" }]
 			};
 
 			expect(courseFormSchema.safeParse(course).success).toBeDefined();

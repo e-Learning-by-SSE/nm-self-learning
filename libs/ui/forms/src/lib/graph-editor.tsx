@@ -17,10 +17,10 @@ interface ReactFlowGraph {
 	edges: Edge[];
 }
 
-function applyLayout(graph: ReactFlowGraph) {
+function applyLayout(graph: ReactFlowGraph, direction: string) {
 	const dagreGraph = new dagre.graphlib.Graph();
 	dagreGraph.setDefaultEdgeLabel(() => ({}));
-	const direction = "LR";
+	const isHorizontal = direction === "LR";
 	dagreGraph.setGraph({ rankdir: direction });
 
 	const nodes = graph.nodes;
@@ -37,8 +37,8 @@ function applyLayout(graph: ReactFlowGraph) {
 
 	nodes.forEach(node => {
 		const nodeWithPosition = dagreGraph.node(node.id);
-		node.targetPosition = direction ? Position.Left : Position.Top;
-		node.sourcePosition = direction ? Position.Right : Position.Bottom;
+		node.targetPosition = isHorizontal ? Position.Left : Position.Top;
+		node.sourcePosition = isHorizontal ? Position.Right : Position.Bottom;
 		node.position = {
 			x: nodeWithPosition.x - nodeWidth / 2,
 			y: nodeWithPosition.y - nodeHeight / 2
@@ -50,9 +50,10 @@ function applyLayout(graph: ReactFlowGraph) {
 
 //--------- Graph Generator -----------------------------------------
 // standard starting position of node and standard distance between node
-const xAxisStartPosition = 40;
-const yAxisStartPosition = 40;
+const xAxisStartPosition = 20;
+const yAxisStartPosition = 20;
 const xAxisNodeDistance = 260;
+const yAxisDistance = 86;
 const nodeWidth = 172;
 const nodeHeight = 36;
 const platformColor = "#10b981";
@@ -101,7 +102,7 @@ function getEdgesWithSkill(edges: Edge[], skill: string) {
 }
 
 // Function generates graph with a simplified layout (all nodes in one line)
-function generateGraph(meshes: Mesh[]) {
+function generateGraph(meshes: Mesh[], target: Position, source: Position) {
 	const nodes: Node[] = [];
 	const edges: Edge[] = [];
 	let id = 1;
@@ -113,8 +114,8 @@ function generateGraph(meshes: Mesh[]) {
 			id: String(id),
 			position: { x: x, y: y },
 			data: { label: mesh.lesson.title },
-			targetPosition: Position.Left,
-			sourcePosition: Position.Right
+			targetPosition: target,
+			sourcePosition: source
 		};
 		nodes.push(node);
 
@@ -162,27 +163,48 @@ function generateGraph(meshes: Mesh[]) {
 	return { nodes: nodes, edges: edgesWithIds };
 }
 
+function applySimpleTopToBottomLayout(graph: ReactFlowGraph) {
+	const rawNodes = graph.nodes;
+	let i = 0;
+	for (const node of rawNodes) {
+		node.position.y = i;
+		node.position.x = xAxisStartPosition;
+		i += yAxisDistance;
+	}
+	return graph;
+}
+
 export function convertToGraph(meshes: Mesh[]) {
-	const rawGraph = generateGraph(meshes);
-	const graph = applyLayout(rawGraph);
+	const rawGraph = generateGraph(meshes, Position.Left, Position.Right);
+	const graph = applyLayout(rawGraph, "LR");
+	return graph;
+}
+
+export function convertToLearnpath(meshes: Mesh[]) {
+	const rawGraph = generateGraph(meshes, Position.Top, Position.Bottom);
+	//const graph = applyLayout(rawGraph, "TB"); // TODO: remove later (version with dagrejs)
+	const graph = applySimpleTopToBottomLayout(rawGraph);
 	return graph;
 }
 
 // --------- Component -----------------------------------------
-
 export default function GraphEditor({
 	graph,
-	size
+	height,
+	hasControls,
+	hasMiniMap
 }: {
 	graph: { nodes: Node[]; edges: Edge[] };
-	size: number;
+	height: number;
+	hasControls: boolean;
+	hasMiniMap: boolean;
 }) {
 	return (
-		<div style={{ height: size }}>
+		<div style={{ height: height }}>
 			<ReactFlow nodes={graph.nodes} edges={graph.edges}>
 				<Background />
-				<Controls />
-				<MiniMap />
+				{hasControls && <Controls />}
+				{hasMiniMap && <MiniMap />}
 			</ReactFlow>
 		</div>
 	);

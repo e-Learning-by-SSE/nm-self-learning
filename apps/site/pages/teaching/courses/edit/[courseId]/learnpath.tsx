@@ -1,13 +1,23 @@
 import { Fragment, useEffect, useState } from "react";
 import { SkillSelectDialog } from "libs/feature/teaching/src/lib/course/course-learnpath-editor/skill-select-dialog";
 import "reactflow/dist/style.css";
-import { Tab, Table, TableDataColumn, TableHeaderColumn, Tabs } from "@self-learning/ui/common";
-import { PencilIcon, TrashIcon } from "@heroicons/react/solid"; // TODO which version is it?
+import {
+	IconButton,
+	Tab,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn,
+	Tabs
+} from "@self-learning/ui/common";
+import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/solid"; // TODO which version is it?
 import {
 	LessonSelector,
 	LessonSummary
 } from "libs/feature/teaching/src/lib/course/course-content-editor/dialogs/lesson-selector";
-import GraphEditor, { convertToGraph } from "libs/ui/forms/src/lib/graph-editor";
+import GraphEditor, {
+	convertToGraph,
+	convertToLearnpath
+} from "libs/ui/forms/src/lib/graph-editor";
 
 // ---------- Globals ------------------------------------------------
 export interface Mesh {
@@ -66,6 +76,29 @@ const dummy_meshes: Mesh[] = [
 	}
 ];
 
+const dummy_learnpath: Mesh[] = [
+	{
+		requiredSkills: [],
+		lesson: l1,
+		gainedSkills: ["skill-1"]
+	},
+	{
+		requiredSkills: ["skill-1"],
+		lesson: l2b,
+		gainedSkills: ["skill-2"]
+	},
+	{
+		requiredSkills: ["skill-2"],
+		lesson: l3a,
+		gainedSkills: ["skill-3"]
+	},
+	{
+		requiredSkills: ["skill-4"],
+		lesson: l5,
+		gainedSkills: ["skill-5"]
+	}
+];
+
 // ---------- Functions ---------------------------------------------------------------
 
 function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
@@ -83,6 +116,7 @@ export default function LearnpathEditor() {
 	const [meshes, setMeshes] = useState(dummy_meshes);
 	const [currentMesh, setCurrentMesh] = useState(dummy_meshes[2]);
 	const [graph, setGraph] = useState(convertToGraph(meshes));
+	const [learnpath, setLearnpath] = useState(convertToLearnpath(dummy_learnpath));
 
 	const addMesh = (mesh: Mesh) => {
 		const updatedMeshes = [...meshes];
@@ -113,11 +147,19 @@ export default function LearnpathEditor() {
 		setCurrentMesh(mesh);
 	};
 
+	// Learnpath Sidebar
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+	const toggleSidebar = () => {
+		setIsSidebarOpen(!isSidebarOpen);
+	};
+
 	return (
 		<>
 			<div className=" bg-gray-50  p-4">
 				<h1 className="text-3xl"></h1>
 			</div>
+
 			<div className="mt-2 grid grid-rows-3 bg-gray-50 xl:grid-rows-[200px_470px_600px]">
 				<div className="mx-auto flex-col">
 					<h1 className="text-2xl">Lerneinheiten verknüpfen</h1>
@@ -131,9 +173,21 @@ export default function LearnpathEditor() {
 				</div>
 
 				<div className="my-1 flex flex-col">
-					<h1 className="px-2 text-2xl">Abhängigkeitsvisualisierung</h1>
+					<div className="my-2 grid flex-col xl:grid-cols-[350px_300px]">
+						<h1 className="px-2 text-2xl">Abhängigkeitsvisualisierung</h1>
+
+						<button className="btn-stroked w-fit self-end" onClick={toggleSidebar}>
+							Lernpfad anzeigen
+						</button>
+					</div>
+
 					<div className="border bg-white px-2">
-						<GraphEditor graph={graph} size={400} />
+						<GraphEditor
+							graph={graph}
+							height={400}
+							hasControls={true}
+							hasMiniMap={true}
+						/>
 					</div>
 				</div>
 
@@ -144,6 +198,39 @@ export default function LearnpathEditor() {
 							onRemoveMeshClick={removeMesh}
 							onEditClick={editMesh}
 						/>
+					</div>
+				</div>
+			</div>
+			<div className="flex h-screen">
+				<div
+					className={`border bg-white ${
+						isSidebarOpen ? "translate-x-0" : "translate-x-60"
+					} w-200 fixed inset-y-0 right-0 transform transition-all duration-300`}
+				>
+					<div className="min-w-[260px] flex-1">
+						<div className="grid xl:grid-cols-[20px_200px]">
+							<div className="flex h-screen w-20">
+								<button
+									type="button"
+									className=" h-screen bg-gray-200 hover:bg-slate-300"
+									onClick={toggleSidebar}
+								>
+									<div className="w-5 origin-bottom-left rotate-90 transform">
+										Learnpfad
+									</div>
+								</button>
+							</div>
+							<div className="w-200 pl-4">
+								<h1 className="m-2 mb-5 px-2 text-2xl">Lernpfad</h1>
+
+								<GraphEditor
+									graph={learnpath}
+									height={900}
+									hasControls={false}
+									hasMiniMap={false}
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -173,6 +260,7 @@ function SkillLessonLinker({
 	}
 
 	function handleSkillSelectDialogClose(result?: any) {
+		console.log("handle in SLL");
 		if (result) {
 			const mesh: Mesh = {
 				requiredSkills: currentMesh.requiredSkills,
@@ -207,57 +295,77 @@ function SkillLessonLinker({
 
 	return (
 		<>
-			<div className="grid max-w-[1000px] flex-col space-x-1 border bg-white xl:grid-cols-[300px_300px_300px] ">
-				<div className="mx-2 mt-2">
-					<h1 className="text-1xl">Voraussetzung</h1>
-					<div className="m-1 flex ">
-						<p className="textfield  mx-1 min-w-[200px] border">
+			<div className="grid max-w-[1100px] flex-col space-x-3 border bg-white p-2 xl:grid-cols-[320px_320px_320px] ">
+				{/**
+				<Selector
+					title={"Voraussetzung"}
+					btnText={"Hinzufügen"}
+					isDialogOpen={openSkillSelectDialog}
+					valueToDisplay={currentMesh.requiredSkills[0]}
+					selectorType={<SkillSelectDialog onClose={handleSkillSelectDialogClose} />}
+					handleDialogClose={handleSkillSelectDialogClose}
+				/>
+				*/}
+				<div className="">
+					<div className="flex justify-between">
+						<h1 className="text-1xl">Voraussetzung</h1>
+						<IconButton
+							type="button"
+							onClick={() => setOpenSkillSelectDialog(true)}
+							title="Hinzufügen"
+							text="Hinzufügen"
+							icon={<PlusIcon className="h-4" />}
+							className="btn-primary"
+						/>
+					</div>
+					<div className="pt-2">
+						<p className="textfield min-w-[200px] border">
 							{currentMesh.requiredSkills[0]}
 						</p>
-						<button
-							type="button"
-							className="btn-primary max-h-10 max-w-[0.1px]"
-							onClick={() => setOpenSkillSelectDialog(true)}
-						>
-							+
-						</button>
 					</div>
 					{openSkillSelectDialog && (
 						<SkillSelectDialog onClose={handleSkillSelectDialogClose} />
 					)}
 				</div>
-				<div className="m-2 pr-6">
-					<h1 className="text-1xl">Lerneinheit</h1>
-					<div className="m-1 flex ">
-						<p className="textfield  mx-1 min-w-[200px] border">
-							{currentMesh.lesson.title}{" "}
-						</p>
+
+				<div className="">
+					<div className="flex justify-between">
+						<h1 className="text-1xl">Lerneinheit</h1>
 						<button
 							type="button"
-							className="btn-primary max-h-10 max-w-[0.1px]"
+							className="btn-primary max-h-10 "
 							onClick={() => setLessonSelectorOpen(true)}
 						>
-							+
+							Auswählen
 						</button>
+					</div>
+					<div className="pt-2">
+						<p className="textfield min-w-[200px] border">
+							{currentMesh.lesson.title}{" "}
+						</p>
 					</div>
 				</div>
 				{lessonSelectorOpen && (
 					<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 				)}
 
-				<div className="m-2">
-					<h1 className="text-1xl ">Lernziel</h1>
-					<div className="m-1 flex ">
-						<p className="textfield  mx-1 min-w-[200px] border">
-							{currentMesh.gainedSkills[0]}
-						</p>{" "}
-						<button
+				<div className="">
+					<div className="flex justify-between">
+						<h1 className="text-1xl">Lernziel</h1>
+						<IconButton
 							type="button"
-							className="btn-primary max-h-10 max-w-[0.1px]"
+							data-testid="author-add"
 							onClick={() => setOpenSkillSelectDialog(true)}
-						>
-							+
-						</button>
+							title="Hinzufügen"
+							text="Hinzufügen"
+							icon={<PlusIcon className="h-4" />}
+							className="btn-primary"
+						/>
+					</div>
+					<div className="pt-2">
+						<p className="textfield min-w-[200px] border">
+							{currentMesh.gainedSkills[0]}
+						</p>
 					</div>
 				</div>
 			</div>
@@ -379,3 +487,56 @@ function LearnpathEditorLogs({
 		</>
 	);
 }
+
+/* TODO: remove or integrate
+
+function Selector({
+	title,
+	btnText,
+	valueToDisplay,
+	selectorType,
+	isDialogOpen,
+	handleDialogClose: handleSkillSelectDialogClose
+}: {
+	title: string;
+	btnText: string;
+	valueToDisplay: string;
+	selectorType: ReactNode;
+	isDialogOpen: boolean;
+	handleDialogClose: (result: any) => void;
+}) {
+	const [openSelectDialog, setOpenSelectDialog] = useState(false);
+	function handleCloseDialog(result: any) {
+		setOpenSelectDialog(false);
+		handleSkillSelectDialogClose(result);
+	}
+
+	function handleOnGetValue() {
+		console.log("ojlasdkf");
+	}
+
+	return (
+		<>
+			<div className="">
+				<div className="flex justify-between">
+					<h1 className="text-1xl">{title}</h1>
+					<IconButton
+						type="button"
+						onClick={() => (isDialogOpen = true)}
+						title={btnText}
+						text={btnText}
+						icon={<PlusIcon className="h-4" />}
+						className="btn-primary"
+					/>
+				</div>
+				<div className="">
+					<p className="textfield min-w-[200px] border">{valueToDisplay}</p>
+				</div>
+				{openSelectDialog && <SkillSelectDialog onClose={handleCloseDialog} />}
+				{isDialogOpen && selectorType}
+			</div>
+		</>
+	);
+}
+
+*/
