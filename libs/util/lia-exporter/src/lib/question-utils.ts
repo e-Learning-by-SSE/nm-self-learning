@@ -255,8 +255,14 @@ export function addTextQuizOptionScript(
  */
 const startOfAnswerBlock = RegExp(/\{\s*[TC]\s*:\s*.*?\s*/); // searches start of answer option block
 
-function getAllClozeAnswerBlocks(text: string): [number, number, string][] {
-	const matches: [number, number, string][] = [];
+function getAllClozeAnswerBlocks(
+	text: string
+): { indexStartAnswerBlock: number; indexEndAnswerBlock: number; answerBlock: string }[] {
+	const matches: {
+		indexStartAnswerBlock: number;
+		indexEndAnswerBlock: number;
+		answerBlock: string;
+	}[] = [];
 	const chars = [...text];
 	let curlyBracketsCount = 0; //indicator/ counter for {
 	let index = 0; //the index where the { is found
@@ -285,13 +291,16 @@ function getAllClozeAnswerBlocks(text: string): [number, number, string][] {
 		}
 		if (foundEndOfBlock) {
 			indexEnd = i + 1;
-			matches.push([index, indexEnd, text.substring(index, indexEnd)]);
+			matches.push({
+				indexStartAnswerBlock: index,
+				indexEndAnswerBlock: indexEnd,
+				answerBlock: text.substring(index, indexEnd)
+			});
 			foundEndOfBlock = false;
 		}
 	}
 	return matches;
 }
-
 const removeSelfLearAnswerStructure = /(?<!\\)([\]|[])/g; //Our cloze quizzes use [] to mark correct answers, we do not need this
 const removeClosingCurlyBracesOfAnswer = /}(?=[^}]*$)/; //Removes only the last curly braces of the answer and stops looking ahead, replaces it with ]]
 
@@ -304,9 +313,13 @@ const removeClosingCurlyBracesOfAnswer = /}(?=[^}]*$)/; //Removes only the last 
  */
 
 function transformClozeAnswerBlock(
-	[index, indexEnd, answerBlock]: [number, number, string],
+	{
+		indexStartAnswerBlock,
+		indexEndAnswerBlock,
+		answerBlock
+	}: { indexStartAnswerBlock: number; indexEndAnswerBlock: number; answerBlock: string },
 	conversionError: () => void
-): [number, number, string] {
+): { indexStartAnswerBlock: number; indexEndAnswerBlock: number; transformedAnswer: string } {
 	const transformedAnswer = transformMultipleChoiceAnswerBlock(
 		transformMultipleAnswerTextBlock(
 			answerBlock
@@ -317,7 +330,7 @@ function transformClozeAnswerBlock(
 		)
 	).replace(/,/g, `|`);
 	console.log(transformedAnswer);
-	return [index, indexEnd, transformedAnswer];
+	return { indexStartAnswerBlock, indexEndAnswerBlock, transformedAnswer };
 }
 
 const identifyGapsWithMultipleCorrectAnswers = /\[\[\s*T:\s*([^,]+,)(?=.*\])/; //catches our gaps with multiple correct answers
@@ -395,13 +408,19 @@ export function addClozeQuiz(text: string, conversionError: () => void): string 
 
 	return getAllClozeAnswerBlocks(text)
 		.map(match => transformClozeAnswerBlock(match, conversionError))
-		.reduce((transformedText, [index, indexEnd, transformedAnswer]) => {
-			//The replacement NEEDS to be done before the offset is updated! It is meant to fix the new char positions in the string AFTER changing the answer blocks with new length
-			const temp =
-				transformedText.slice(0, index + offset) +
-				transformedAnswer +
-				transformedText.slice(indexEnd + offset);
-			offset += transformedAnswer.length - (indexEnd - index);
-			return temp;
-		}, text);
+		.reduce(
+			(
+				transformedText,
+				{ indexStartAnswerBlock, indexEndAnswerBlock, transformedAnswer }
+			) => {
+				//The replacement NEEDS to be done before the offset is updated! It is meant to fix the new char positions in the string AFTER changing the answer blocks with new length
+				const temp =
+					transformedText.slice(0, indexStartAnswerBlock + offset) +
+					transformedAnswer +
+					transformedText.slice(indexEndAnswerBlock + offset);
+				offset += transformedAnswer.length - (indexEndAnswerBlock - indexStartAnswerBlock);
+				return temp;
+			},
+			text
+		);
 }
