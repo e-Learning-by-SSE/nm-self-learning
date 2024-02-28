@@ -8,95 +8,61 @@ import { MissedElement } from "./types";
  * @param markdownify A function to escape a markdown-formatted text to be used in LiaScript.
  * @returns
  */
+type QuestionType = Quiz["questions"][0];
 export function convertQuizzes(
 	quiz: Quiz,
 	markdownify: (input: string) => string,
 	onUnsupportedItem: (report: MissedElement) => void
 ) {
-	const convertedQuizzes: string[] = [];
+	const convertedQuizzes: string[] = []; // entfernen -> keine Seiteneffekte -> property zurueckgeben
 	let programmingTaskWithSolutions = false;
 	let programmingTaskWithHints = false;
+
 	for (const [index, question] of quiz.questions.entries()) {
 		switch (question.type) {
 			case "multiple-choice": {
 				convertedQuizzes.push(
-					markdownify(
-						createMultipleChoiceQuestion(
-							question.statement,
-							question.answers,
-							question.hints
-						)
-					)
+					convertMultipleChoice({ question: question, markdownify: markdownify })
 				);
 				break;
 			}
 			case "exact": {
-				const answers = `- [[${question.acceptedAnswers[0].value}]]\n`;
-				const hints = addHints(question.hints);
-				const answerScript = addTextQuizOptionScript(question.acceptedAnswers);
 				convertedQuizzes.push(
-					markdownify(question.statement + "\n\n" + answers + hints + answerScript)
+					convertExactQuiz({ question: question, markdownify: markdownify })
 				);
 				break;
 			}
 			case "text": {
 				// As we have no "correct" answer for this, we just use a text input which cannot be wrong.
-				const answers = `- [[Freitext]]\n`;
-				const hints = addHints(question.hints);
-				const answerScript = `<script>\nlet input = "@input".trim()\ninput != ""</script>\n`;
 				convertedQuizzes.push(
-					markdownify(question.statement + "\n\n" + answers + hints + answerScript)
+					convertTextQuiz({ question: question, markdownify: markdownify })
 				);
 				break;
 			}
 			case "cloze":
 				{
-					console.log("Cloze Question: ", question);
-					let answer = question.clozeText;
-					const conversionError: () => void = () => {
-						onUnsupportedItem({
-							type: "clozeText",
-							id: question.questionId,
-							index,
-							cause: "unsupportedAnswerType"
-						});
-					};
-					[answer] = addClozeQuiz(answer, conversionError);
-					convertedQuizzes.push(markdownify(question.statement + "\n\n" + answer));
+					convertedQuizzes.push(
+						convertClozeAnswerBlock({
+							question: question,
+							markdownify: markdownify,
+							onUnsupportedItem,
+							index: index
+						})
+					);
 				}
 				break;
 			case "programming":
 				{
-					console.log("Programming Question: ", question);
-					let code = `\`\`\`${question.language}\n`;
-
-					if (question.custom.mode == "standalone") {
-						code += "\n\n";
-					} else {
-						code += question.custom.solutionTemplate; //provide the starting point for the solution
-					}
-					code += "\n```\n";
-					if (
-						//Only make code executable when the code is javascript or typescript
-						question.language == `javascript`
-					) {
-						code += `<script>@input</script>\n`;
-					} else {
-						// Report unsupported programming language
-						onUnsupportedItem({
-							type: "programming",
-							id: question.questionId,
-							index,
-							language: question.language,
-							cause: "unsupportedLanguage"
-						});
-					}
-					//const hints = addHints(question.hints); Does not work when converted
-					programmingTaskWithHints =
-						programmingTaskWithHints || question.hints.length > 0;
+					const result = convertProgrammingQuiz({
+						question: question,
+						markdownify: markdownify,
+						onUnsupportedItem: onUnsupportedItem,
+						index: index
+					});
+					convertedQuizzes.push(result.question);
+					programmingTaskWithHints = programmingTaskWithHints || result.hintError;
 					programmingTaskWithSolutions =
-						programmingTaskWithSolutions || question.custom.solutionTemplate.length > 0;
-					convertedQuizzes.push(markdownify(question.statement + "\n\n" + code));
+						programmingTaskWithSolutions || result.solutionError;
 				}
 				break;
 			default:
@@ -120,30 +86,136 @@ export function convertQuizzes(
 	return convertedQuizzes;
 }
 
+function convertTextQuiz({
+	question,
+	markdownify
+}: {
+	question: QuestionType;
+	markdownify: (input: string) => string;
+}): string {
+	return markdownify(
+		question.statement +
+			"\n\n" +
+			`- [[Freitext]]\n` +
+			addHints(question.hints) +
+			`<script>\nlet input = "@input".trim()\ninput != ""</script>\n`
+	);
+}
+
+function convertExactQuiz({
+	question,
+	markdownify
+}: {
+	question: QuestionType & { type: "exact" };
+	markdownify: (input: string) => string;
+}): string {
+	return markdownify(
+		question.statement +
+			"\n\n" +
+			`- [[${question.acceptedAnswers[0].value}]]\n` +
+			addHints(question.hints) +
+			addTextQuizOptionScript(question.acceptedAnswers)
+	);
+}
+
 /**
  * Converts a multiple choice question into LiaScript format.
  * @param question The question (statement) of the multiple choice question.
- * @param answerOptions The allowed answer options of the multiple choice question.
- * @param hints Optional hints for the multiple choice question.
+ * @param markdownify A function to escape a markdown-formatted text to be used in LiaScript.
  * @returns The question which may be used as input for the LiaScript API.
  * However, markdown must be preprocessed before using the API.
  */
-export function createMultipleChoiceQuestion(
-	question: string,
-	answerOptions: { content: string; isCorrect: boolean }[],
-	hints: { hintId: string; content: string }[]
-) {
-	let mc = question + "\n\n";
-	for (const answer of answerOptions) {
+
+function convertMultipleChoice({
+	question,
+	markdownify
+}: {
+	question: QuestionType & { type: "multiple-choice" };
+	markdownify: (input: string) => string;
+}): string {
+	let mc = question.statement + "\n\n";
+	for (const answer of question.answers) {
 		if (answer.isCorrect) {
 			mc += `- [[x]] ${answer.content}\n`;
 		} else {
 			mc += `- [[ ]] ${answer.content}\n`;
 		}
 	}
-	mc += addHints(hints);
+	return markdownify(mc + addHints(question.hints));
+}
 
-	return mc;
+function convertProgrammingQuiz({
+	question,
+	markdownify,
+	onUnsupportedItem,
+	index
+}: {
+	question: QuestionType & { type: "programming" };
+	markdownify: (input: string) => string;
+	onUnsupportedItem: (report: MissedElement) => void;
+	index: number;
+}): { question: string; hintError: boolean; solutionError: boolean } {
+	let code = `\`\`\`${question.language}\n`;
+	if (question.custom.mode == "standalone") {
+		code += "\n\n";
+	} else {
+		code += question.custom.solutionTemplate; //provide the starting point for the solution
+	}
+	code += "\n```\n";
+	if (
+		//Only make code executable when the code is javascript or typescript
+		question.language == `javascript`
+	) {
+		code += `<script>@input</script>\n`;
+	} else {
+		onUnsupportedItem({
+			type: "programming",
+			index: index,
+			id: question.questionId,
+			cause: "unsupportedLanguage",
+			language: question.language
+		});
+	}
+	markdownify(question.statement + "\n\n" + code);
+	return {
+		question: markdownify(question.statement + "\n\n" + code),
+		hintError: question.hints.length > 0,
+		solutionError: question.custom.solutionTemplate.length > 0
+	};
+}
+
+/**
+ * Method to convert a cloze Quiz into a LiaScript compatible format.
+ * @param index Index of the question
+ * @param questionId The ID of the question
+ * @param questionStatement The question text
+ * @param questionClozeText The gap text making up the question
+ * @param convertedQuizzes The list to store all converted quizzes
+ * @param markdownify the method to fit the text into the liascript markdown
+ * @param onUnsupportedItem Method to collect the errors of unsupported structures.
+ */
+function convertClozeAnswerBlock({
+	question,
+	markdownify,
+	onUnsupportedItem,
+	index
+}: {
+	question: QuestionType & { type: "cloze" };
+	markdownify: (input: string) => string;
+	onUnsupportedItem: (report: MissedElement) => void;
+	index: number;
+}): string {
+	const conversionError: () => void = () => {
+		onUnsupportedItem({
+			type: "clozeText",
+			id: question.questionId,
+			index,
+			cause: "unsupportedAnswerType"
+		});
+	};
+	return markdownify(
+		question.statement + "\n\n" + addClozeQuiz(question.clozeText, conversionError)
+	);
 }
 
 /**
@@ -164,8 +236,7 @@ export function addHints(hints: { hintId: string; content: string }[]) {
 export function addTextQuizOptionScript(
 	acceptedAnswers: { value: string; acceptedAnswerId: string }[]
 ) {
-	let script = `<script>\n`;
-	script += `let input = "@input".trim()\n`;
+	let script = `<script>\nlet input = "@input".trim()\n`;
 	for (const [i, answer] of acceptedAnswers.entries()) {
 		if (i == acceptedAnswers.length - 1) {
 			script += `input == "${answer.value}"\n`;
@@ -178,27 +249,12 @@ export function addTextQuizOptionScript(
 }
 
 /**
- * Function to add a gap text question to the markdown file. Done by iterating over each letter to find the gaps as denoted by the e-learning platform and then converting them to the lia script format.
- * There is no complete conversion as the lia script side does not have a equivalent to the multiple answer option of the question.
- * We are looking for { [T/C] : <Answer options> } where answer options be single choice, free text with one or multiple correct answers
- * @param text The complete text including the gaps as denoted by the e-learning platform.
- * @returns The text with the lia script setup.
- */
-const removeSelfLearAnswerStructure = /(?<!\\)([\]|[])/g; //Our cloze quizzes use [] to mark correct answers, we do not need this
-const removeClosingCurlyBracesOfAnswer = /}(?=[^}]*$)/; //Removes only the last curly braces of the answer and stops looking ahead, replaces it with ]]
-const identifyGapsWithMultipleCorrectAnswers = /\[\[\s*T:\s*([^,]+,)(?=.*\])/; //catches our gaps with multiple correct answers
-const removeSelfLearnAnswerType = /[T|C]:/g; //removes the T or C and the : of the answer type
-const identifyTypeOfAnswer = /C:/; //checks if this is a drop down menu or a free text
-const identifyCorrectAnswersInMultipleChoiceGaps =
-	/(?<=\[\[\s#|,#|\[\[#|,\s#)\s*(.*?)\s*(?=,|\]\]|\s,|\s\]\])/g; //Grabs the correct answers in { C: [#option, option2]} which is denoted by a #
-const removeTheSelfLearnCorrectAnswerMarker =
-	/(?<=\[\[\s|,|\[\[|,\s)\s*#(?=.*,|.*\]\]|.*\s,|.*\s\]\])/; //removes the # of the current answer
-const startOfAnswerBlock = RegExp(/\{\s*[TC]\s*:\s*.*?\s*/); // searches start of answer option block
-/**
  * Function that gets all answer blocks from a cloze style question.
  * It does so by iterating over the text looking for the start of a block and then counting curly braces to make sure
  * it finds the end while still allowing for any number of nested structures.
  */
+const startOfAnswerBlock = RegExp(/\{\s*[TC]\s*:\s*.*?\s*/); // searches start of answer option block
+
 function getAllClozeAnswerBlocks(text: string): [number, number, string][] {
 	const matches: [number, number, string][] = [];
 	const chars = [...text];
@@ -236,6 +292,17 @@ function getAllClozeAnswerBlocks(text: string): [number, number, string][] {
 	return matches;
 }
 
+const removeSelfLearAnswerStructure = /(?<!\\)([\]|[])/g; //Our cloze quizzes use [] to mark correct answers, we do not need this
+const removeClosingCurlyBracesOfAnswer = /}(?=[^}]*$)/; //Removes only the last curly braces of the answer and stops looking ahead, replaces it with ]]
+
+/**
+ * The method transforms the cloze answers for a given array. First it replaces the starting and ending curly braces with [[ and ]]
+ *
+ * @param param0 This is a triplet of the start index, the end index and the answer block itself. Only the text will be transformed.
+ * @param conversionError In case we encounter un convertible answer blocks we propagate the error
+ * @returns
+ */
+
 function transformClozeAnswerBlock(
 	[index, indexEnd, answerBlock]: [number, number, string],
 	conversionError: () => void
@@ -249,25 +316,50 @@ function transformClozeAnswerBlock(
 			conversionError
 		)
 	).replace(/,/g, `|`);
+	console.log(transformedAnswer);
 	return [index, indexEnd, transformedAnswer];
 }
 
+const identifyGapsWithMultipleCorrectAnswers = /\[\[\s*T:\s*([^,]+,)(?=.*\])/; //catches our gaps with multiple correct answers
+/**
+ * This method deals with multiple answer free text blocks. These are not supported by liaScript thus we propagate an
+ * error if we encounter them. The block will be translated to a free text block with only one correct answer.
+ * The first correct answer (from left to right) will be used.
+ * If the block does not confirmed multiple answers it is returned as is.
+ * @param transformedAnswer The answer block to transform
+ * @param conversionError In case we are dealing with a multiple answer free text block this will propagate the error
+ * @returns the transformed answer
+ */
 function transformMultipleAnswerTextBlock(
 	transformedAnswer: string,
 	conversionError: () => void
 ): string {
 	const tMatch = transformedAnswer.match(identifyGapsWithMultipleCorrectAnswers); //catches our gaps with multiple correct answers
 	if (tMatch != null) {
+		//cut off everything after the first option and close it with new ]]
 		transformedAnswer =
 			transformedAnswer.substring(
 				0,
 				transformedAnswer.indexOf(tMatch[0]) + tMatch[0].length - 1
-			) + //cut off everything after the first option and close it with new ]]
-			`]]`;
+			) + `]]`;
 		conversionError();
 	}
 	return transformedAnswer;
 }
+
+const removeSelfLearnAnswerType = /[T|C]:/g; //removes the T or C and the : of the answer type
+const identifyTypeOfAnswer = /C:/; //checks if this is a drop down menu or a free text
+const identifyCorrectAnswersInMultipleChoiceGaps =
+	/(?<=\[\[\s#|,#|\[\[#|,\s#)\s*(.*?)\s*(?=,|\]\]|\s,|\s\]\])/g; //Grabs the correct answers in { C: [#option, option2]} which is denoted by a #
+const removeTheSelfLearnCorrectAnswerMarker =
+	/(?<=\[\[\s|,|\[\[|,\s)\s*#(?=.*,|.*\]\]|.*\s,|.*\s\]\])/; //removes the # of the current answer
+
+/**
+ * Deals with multiple choice answer blocks (via dropdown). First all correct answers are identified and then transformed to fit liaScript syntax.
+ * It will just return the input text if there is no multiple choice sighted.
+ * @param transformedAnswer The answer block to transform
+ * @returns The transformed answer block
+ */
 
 function transformMultipleChoiceAnswerBlock(transformedAnswer: string): string {
 	const cMatch = transformedAnswer.match(identifyTypeOfAnswer); // prepare for selection type word
@@ -291,17 +383,25 @@ function transformMultipleChoiceAnswerBlock(transformedAnswer: string): string {
 	return transformedAnswer;
 }
 
-export function addClozeQuiz(text: string, conversionError: () => void): string {
-	const matches = getAllClozeAnswerBlocks(text);
+/**
+ * Function to add a gap text question to the markdown file. First all answer blocks are collected from the text.
+ * These are then transformed to fit liaScript syntax and finally they are added in the text to replace the original answer blocks
+ * @param text The complete text including the gaps as denoted by the e-learning platform.
+ * @returns The text with the lia script setup.
+ */
 
-	const transformedMatches = matches.map(match =>
-		transformClozeAnswerBlock(match, conversionError)
-	);
+export function addClozeQuiz(text: string, conversionError: () => void): string {
 	let offset = 0; //needed as we transform the whole text at once and need to adjust the index of the next cloze answer
-	transformedMatches.forEach(([index, indexEnd, transformedAnswer]) => {
-		text = text.slice(0, index + offset) + transformedAnswer + text.slice(indexEnd + offset);
-		offset += transformedAnswer.length - (indexEnd - index);
-	});
-	console.log("OUTPUT CLOZE: ", text);
-	return text;
+
+	return getAllClozeAnswerBlocks(text)
+		.map(match => transformClozeAnswerBlock(match, conversionError))
+		.reduce((transformedText, [index, indexEnd, transformedAnswer]) => {
+			//The replacement NEEDS to be done before the offset is updated! It is meant to fix the new char positions in the string AFTER changing the answer blocks with new length
+			const temp =
+				transformedText.slice(0, index + offset) +
+				transformedAnswer +
+				transformedText.slice(indexEnd + offset);
+			offset += transformedAnswer.length - (indexEnd - index);
+			return temp;
+		}, text);
 }
