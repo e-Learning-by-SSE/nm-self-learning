@@ -32,7 +32,7 @@ const DropDown: React.FC<DropDownProps> = ({
 			style={{
 				position: "absolute",
 				bottom: "23px",
-				minWidth: "105px",
+				minWidth: "10px",
 				zIndex: "10"
 			}}
 			className={showDropDown ? "" : "border border-gray-300"}
@@ -42,7 +42,8 @@ const DropDown: React.FC<DropDownProps> = ({
 					<div
 						style={{
 							alignItems: "center",
-							display: "flex"
+							display: "flex",
+							minWidth: "90px"
 						}}
 						className={"bg-white hover:bg-green-400  hover:text-white"}
 						key={index}
@@ -50,10 +51,12 @@ const DropDown: React.FC<DropDownProps> = ({
 							onClickHandler(lang);
 						}}
 					>
-						<img src="&#127465" alt="pic" width={30} height={30}></img>
 						<div style={{ minWidth: "70px" }}>
 							<p className="text-center">{lang}</p>
 						</div>
+						<span role="img" aria-label="Flagge">
+							{langs[2][index]}
+						</span>
 					</div>
 				);
 			})}

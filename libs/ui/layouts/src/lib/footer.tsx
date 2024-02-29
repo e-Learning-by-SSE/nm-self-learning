@@ -1,5 +1,6 @@
 import { LinkIcon } from "@heroicons/react/outline";
 import Link from "next/link";
+import LangMenu from "./menu";
 
 function FooterElement({
 	href,
@@ -47,6 +48,13 @@ export function Footer() {
 						href="https://www.uni-hildesheim.de/impressum/"
 						text="Impressum"
 					/>
+				</div>
+				<div
+					style={{
+						position: "relative"
+					}}
+				>
+					<LangMenu />
 				</div>
 			</div>
 		</footer>

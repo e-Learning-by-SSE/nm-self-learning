@@ -6,10 +6,7 @@ import { useEffect } from "react";
 const langList = [
 	["Deutsch", "English"],
 	["de", "en"],
-	[
-		"https://cdn-icons-png.flaticon.com/128/197/197571.png",
-		"https://cdn-icons-png.flaticon.com/128/197/197374.png"
-	]
+	["\u{1F1E9}\u{1F1EA}", "\u{1F1EC}\u{1F1E7}"]
 ];
 const getLangEquivalent = (lang: string) => {
 	if (langList[0].includes(lang)) {
