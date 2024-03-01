@@ -19,6 +19,7 @@ export function convertQuizzes(
 	let programmingTaskWithHints = false;
 
 	for (const [index, question] of quiz.questions.entries()) {
+		console.log("question", question);
 		switch (question.type) {
 			case "multiple-choice": {
 				convertedQuizzes.push(convertMultipleChoice({ question, markdownify }));
@@ -79,7 +80,7 @@ export function convertQuizzes(
 	return convertedQuizzes;
 }
 
-function convertTextQuiz({
+export function convertTextQuiz({
 	question,
 	markdownify
 }: {
@@ -91,11 +92,11 @@ function convertTextQuiz({
 			"\n\n" +
 			"- [[Freitext]]\n" +
 			addHints(question.hints) +
-			`<script>\nlet input = "@input".trim()\ninput != ""</script>\n`
+			`\n<script>\nlet input = "@input".trim()\ninput != ""</script>\n`
 	);
 }
 
-function convertExactQuiz({
+export function convertExactQuiz({
 	question,
 	markdownify
 }: {
@@ -119,7 +120,7 @@ function convertExactQuiz({
  * However, markdown must be preprocessed before using the API.
  */
 
-function convertMultipleChoice({
+export function convertMultipleChoice({
 	question,
 	markdownify
 }: {
@@ -137,7 +138,7 @@ function convertMultipleChoice({
 	return markdownify(mc + addHints(question.hints));
 }
 
-function convertProgrammingQuiz({
+export function convertProgrammingQuiz({
 	question,
 	markdownify,
 	onUnsupportedItem,
@@ -184,7 +185,7 @@ function convertProgrammingQuiz({
  * @param markdownify the method to fit the text into the liascript markdown
  * @param onUnsupportedItem Method to collect the errors of unsupported structures.
  */
-function convertClozeAnswerBlock({
+export function convertClozeAnswerBlock({
 	question,
 	markdownify,
 	onUnsupportedItem,
