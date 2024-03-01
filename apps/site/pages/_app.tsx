@@ -1,5 +1,5 @@
 import type { AppRouter } from "@self-learning/api";
-import { Navbar, Footer, MessagePortal } from "@self-learning/ui/layouts";
+import { Navbar, Footer } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
@@ -14,6 +14,7 @@ import "katex/dist/katex.css";
 import { useEffect } from "react";
 import { init } from "@socialgouv/matomo-next";
 import PlausibleProvider from "next-plausible";
+import { MessagePortal } from "@self-learning/ui/notifications";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -54,6 +55,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
 		}
 	}, []);
+	const globalMessage = process.env.NEXT_PUBLIC_SYSTEM_MSG;
 
 	return (
 		<PlausibleProvider
@@ -68,7 +70,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<Head>
 					<title>Self-Learning</title>
 				</Head>
-				<MessagePortal />
+				{globalMessage && <MessagePortal htmlMessage={globalMessage} />}
 				<Navbar />
 				<main className="grid grow">
 					{Layout ? <>{Layout}</> : <Component {...pageProps} />}

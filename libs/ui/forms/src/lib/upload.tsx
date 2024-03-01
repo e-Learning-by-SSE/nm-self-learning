@@ -22,7 +22,13 @@ import { ReactElement, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
 
-type MediaType = "image" | "video" | "pdf";
+const MediaType = {
+	image: "image",
+	video: "video",
+	pdf: "pdf"
+} as const;
+
+type MediaType = keyof typeof MediaType;
 
 export function Upload({
 	mediaType,
@@ -39,7 +45,6 @@ export function Upload({
 	const id = useId(); // Each file input requires a unique id ... otherwise browser will always pick the first one
 	const { mutateAsync: getPresignedUrl } = trpc.storage.getPresignedUrl.useMutation();
 	const { mutateAsync: registerAsset } = trpc.storage.registerAsset.useMutation();
-	const trpcContext = trpc.useContext();
 	const [viewProgressDialog, setViewProgressDialog] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [fileName, setFileName] = useState("");
@@ -51,7 +56,7 @@ export function Upload({
 			pdf: "application/pdf"
 		};
 
-		let accept: string | undefined = undefined;
+		let accept: string | undefined;
 
 		if (mediaType) {
 			accept = mediaTypes[mediaType];
@@ -80,7 +85,6 @@ export function Upload({
 		const meta = {
 			duration: 0
 		};
-
 		if (mediaType === "video") {
 			const vid = document.createElement("video");
 			vid.src = URL.createObjectURL(file);
@@ -169,16 +173,18 @@ export function Upload({
 	);
 }
 
-function tryGetMediaType(file: File): string | null {
+function tryGetMediaType(file: File): MediaType | null {
 	const [type, extension] = file.type.split("/");
+	const isTypeValid = MediaType[type as MediaType];
+	const isExtensionValid = MediaType[extension as MediaType];
 
-	if (type === "image" || type === "video") {
-		return type;
-	} else if (extension === "pdf") {
-		return "pdf";
+	if (isTypeValid) {
+		return type as MediaType;
+	} else if (isExtensionValid) {
+		return extension as MediaType;
+	} else {
+		return null;
 	}
-
-	return null;
 }
 
 async function uploadWithProgress(
