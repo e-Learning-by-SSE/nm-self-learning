@@ -1,24 +1,24 @@
 {
+	"name": "feature-quiz",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/feature/quiz/src",
 	"projectType": "library",
 	"tags": [],
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/feature/quiz/**/*.{ts,tsx,js,jsx}"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/feature/quiz"],
 			"options": {
 				"jestConfig": "libs/feature/quiz/jest.config.ts",
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "feature-quiz"
+	}
 }

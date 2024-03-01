@@ -1,10 +1,17 @@
-import { AcademicCapIcon, LogoutIcon, UserIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
-import { ChevronDownIcon, StarIcon } from "@heroicons/react/solid";
+import {
+	AcademicCapIcon,
+	ArrowLeftOnRectangleIcon,
+	UserIcon,
+	Bars4Icon,
+	XMarkIcon
+} from "@heroicons/react/24/outline";
+import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { SearchBar } from "./search-bar";
 
 export function Navbar() {
 	const session = useSession();
@@ -27,26 +34,26 @@ export function Navbar() {
 		>
 			{({ open }) => (
 				<>
-					<div className="mx-auto px-2 sm:px-6 lg:px-8">
+					<div className="mx-auto px-2 lg:px-6 xl:px-8">
 						<div className="relative flex h-16 items-center justify-between">
-							<div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
 								{/* Mobile menu button*/}
 								<Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
 									<span className="sr-only">Menü Öffnen</span>
 									{open ? (
-										<XIcon className="block h-6 w-6" aria-hidden="true" />
+										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
 									) : (
-										<MenuIcon className="block h-6 w-6" aria-hidden="true" />
+										<Bars4Icon className="block h-6 w-6" aria-hidden="true" />
 									)}
 								</Disclosure.Button>
 							</div>
-							<div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+							<div className="flex flex-1 items-center justify-center lg:items-stretch lg:justify-start">
 								<div className="flex flex-shrink-0 items-center">
 									<Link href="/" className="flex items-center gap-4">
 										<div className="rounded-full bg-secondary p-1">
 											<AcademicCapIcon className="h-8 shrink-0 text-white" />
 										</div>
-										<div className="hidden w-0 flex-col sm:flex sm:w-fit">
+										<div className="hidden w-0 flex-col lg:flex lg:w-fit">
 											<span className="whitespace-nowrap text-sm text-light">
 												Universität Hildesheim
 											</span>
@@ -56,7 +63,7 @@ export function Navbar() {
 										</div>
 									</Link>
 								</div>
-								<div className="hidden sm:ml-6 sm:block">
+								<div className="hidden lg:ml-6 lg:block">
 									{user && (
 										<div className="flex h-full items-center space-x-4 px-1 text-sm font-medium">
 											{navigation.map(item => (
@@ -72,7 +79,8 @@ export function Navbar() {
 									)}
 								</div>
 							</div>
-							<div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+							{user && <SearchBar />}
+							<div className="absolute inset-y-0 right-0 flex items-center pr-2 lg:static lg:inset-auto lg:ml-6 lg:pr-0">
 								{/* Profile dropdown */}
 								{!user ? (
 									<button
@@ -88,7 +96,7 @@ export function Navbar() {
 												<StarIcon className="h-5 text-secondary" />
 											</span>
 										)}
-										<span className="invisible w-0 text-sm sm:visible sm:w-fit">
+										<span className="invisible w-0 text-sm lg:visible lg:w-fit">
 											{user.name}
 										</span>
 										<NavbarDropdownMenu
@@ -101,7 +109,7 @@ export function Navbar() {
 						</div>
 					</div>
 
-					<Disclosure.Panel className="sm:hidden">
+					<Disclosure.Panel className="lg:hidden">
 						<div className="space-y-1 px-2 pb-3 pt-2">
 							{navigation.map(item => (
 								<Disclosure.Button
@@ -178,7 +186,7 @@ export function NavbarDropdownMenu({
 									active ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
-								<LogoutIcon className="h-5" />
+								<ArrowLeftOnRectangleIcon className="h-5" />
 								<span>Logout</span>
 							</button>
 						)}

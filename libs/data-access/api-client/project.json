@@ -1,16 +1,16 @@
 {
+	"name": "data-access-api-client",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/data-access/api-client/src",
 	"projectType": "library",
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/data-access/api-client/**/*.ts"]
 			}
 		}
 	},
-	"tags": [],
-	"name": "data-access-api-client"
+	"tags": []
 }

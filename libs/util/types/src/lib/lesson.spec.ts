@@ -10,7 +10,9 @@ const minValidLesson: Lesson = {
 	quiz: null,
 	authors: [],
 	lessonType: LessonType.TRADITIONAL,
-	selfRegulatedQuestion: null
+	selfRegulatedQuestion: null,
+	requirements: [],
+	teachingGoals: []
 };
 
 describe("lessonSchema", () => {
@@ -96,8 +98,10 @@ describe("lessonSchema", () => {
 			    "lessonType": "TRADITIONAL",
 			    "licenseId": 1,
 			    "quiz": null,
+			    "requirements": Array [],
 			    "selfRegulatedQuestion": null,
 			    "slug": "slug-1",
+			    "teachingGoals": Array [],
 			    "title": "The Title",
 			  },
 			  "success": true,

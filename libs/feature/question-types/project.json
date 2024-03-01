@@ -1,24 +1,24 @@
 {
+	"name": "feature-question-types",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/feature/question-types/src",
 	"projectType": "library",
 	"tags": [],
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/feature/question-types/**/*.{ts,tsx,js,jsx}"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/feature/question-types"],
 			"options": {
 				"jestConfig": "libs/feature/question-types/jest.config.ts",
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "feature-question-types"
+	}
 }

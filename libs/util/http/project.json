@@ -1,17 +1,18 @@
 {
+	"name": "util-http",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/util/http/src",
 	"projectType": "library",
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/util/http/**/*.ts"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/util/http"],
 			"options": {
 				"jestConfig": "libs/util/http/jest.config.ts",
@@ -19,6 +20,5 @@
 			}
 		}
 	},
-	"tags": [],
-	"name": "util-http"
+	"tags": []
 }

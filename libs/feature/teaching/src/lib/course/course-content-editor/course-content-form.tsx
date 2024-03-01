@@ -6,8 +6,8 @@ import {
 	LinkIcon,
 	PencilIcon,
 	PlusIcon,
-	XIcon
-} from "@heroicons/react/solid";
+	XMarkIcon
+} from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
@@ -204,7 +204,7 @@ function LessonNode({
 					title="Entfernen"
 					onClick={onRemove}
 				>
-					<XIcon className="h-4 " />
+					<XMarkIcon className="h-4 " />
 				</button>
 			</div>
 		</span>
@@ -395,6 +395,26 @@ function EditExistingLessonDialog({
 			onClose={onClose}
 			initialLesson={{
 				...data,
+				requirements: [
+					{
+						name: "",
+						description: null,
+						children: [],
+						id: "",
+						repositoryId: "",
+						parents: []
+					}
+				],
+				teachingGoals: [
+					{
+						description: null,
+						name: "",
+						id: "",
+						children: [],
+						repositoryId: "",
+						parents: []
+					}
+				],
 				// currently there is no license label in the UI so we don't need to set this; see sample implementation below
 				// licenseId: data.licenseId ?? trpc.licenseRouter.getDefault.useQuery().data?.licenseId ?? 0,
 				authors: data.authors.map(a => ({ username: a.username })),

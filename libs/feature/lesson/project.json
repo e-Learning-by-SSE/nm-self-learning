@@ -1,24 +1,24 @@
 {
+	"name": "feature-lesson",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/feature/lesson/src",
 	"projectType": "library",
 	"tags": [],
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/feature/lesson/**/*.{ts,tsx,js,jsx}"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/feature/lesson"],
 			"options": {
 				"jestConfig": "libs/feature/lesson/jest.config.ts",
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "feature-lesson"
+	}
 }

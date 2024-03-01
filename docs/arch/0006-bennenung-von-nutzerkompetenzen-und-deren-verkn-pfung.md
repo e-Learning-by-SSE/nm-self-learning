@@ -23,7 +23,7 @@ Wir entwickeln ein System, das die verschiedenen Fähigkeiten oder Kompetenzen e
 
 - **Skill Repository**:
   - "Skill Map" wurde ausgeschlossen, da "Map" leicht mit einem Datentyp im Code zu verwechseln ist.
-  - "Skill Tree" wurde ausgeschlossen, da es nicht immer einen Graph-Baum darstellen muss.
+  - "Skill Tree" wurde ausgeschlossen, da es nicht immer einen Graph-Baum darstellen muss. Zusätzlich ist der Name mehrdeutig, da sich mehrere Bäume innerhalb eines Repositories sein können. 
   - "Skill Network" wurde nicht in Betracht gezogen, weil es nicht die strukturierte Art der Verknüpfung von Skills widerspiegelt.
   - Obwohl "Repository" in Enterprise-Frameworks oft für Datenbank-Repositories verwendet wird, wurde sich für "Skill Repository" entschieden, da dieser Begriff bereits in vielen Prototypen Verwendung fand und somit für das Team erkennbar und verständlich ist.
 

@@ -1,24 +1,24 @@
 {
+	"name": "feature-completion",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/feature/completion/src",
 	"projectType": "library",
 	"tags": [],
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/feature/completion/**/*.{ts,tsx,js,jsx}"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/feature/completion"],
 			"options": {
 				"jestConfig": "libs/feature/completion/jest.config.ts",
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "feature-completion"
+	}
 }

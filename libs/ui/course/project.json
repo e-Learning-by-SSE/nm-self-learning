@@ -1,24 +1,24 @@
 {
+	"name": "ui-course",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/ui/course/src",
 	"projectType": "library",
 	"tags": [],
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/linter:eslint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/ui/course/**/*.{ts,tsx,js,jsx}"]
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/libs/ui/course"],
 			"options": {
 				"jestConfig": "libs/ui/course/jest.config.ts",
 				"passWithNoTests": true
 			}
 		}
-	},
-	"name": "ui-course"
+	}
 }

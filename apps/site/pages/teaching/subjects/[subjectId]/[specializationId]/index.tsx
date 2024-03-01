@@ -1,4 +1,4 @@
-import { LinkIcon, PencilIcon, PlusIcon, XIcon } from "@heroicons/react/solid";
+import { LinkIcon, PencilIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SearchCourseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -149,7 +149,7 @@ export default function SpecializationManagementPage() {
 				<div className="mb-8 flex flex-wrap gap-4">
 					<Link
 						className="btn-primary w-fit"
-						href={`/teaching/courses/create?specializationId=${specialization.specializationId}`}
+						href={`/teaching/courses/create?specializationId=${specialization.specializationId}&subjectId=${specialization.subjectId}`}
 					>
 						<PlusIcon className="icon h-5" />
 						<span>Neuen Kurs erstellen</span>
@@ -214,7 +214,7 @@ export default function SpecializationManagementPage() {
 												title="Aus Spezialisierung entfernen"
 												onClick={() => handleRemoveCourse(course)}
 											>
-												<XIcon className="h-5" />
+												<XMarkIcon className="h-5" />
 											</button>
 										</div>
 									</TableDataColumn>

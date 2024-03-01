@@ -12,7 +12,7 @@ import {
 } from "@self-learning/types";
 import { readFileSync } from "fs";
 import { join } from "path";
-import slugify from "slugify";
+import { slugify } from "@self-learning/util/common";
 
 const prisma = new PrismaClient();
 

@@ -16,7 +16,8 @@ describe("evaluateMultipleChoice", () => {
 		hints: [],
 		statement: "Test Question",
 		withCertainty: false,
-		answers: []
+		answers: [],
+		questionStep: 0
 	};
 
 	const defaultAnswers: MultipleChoice["answer"] = {
