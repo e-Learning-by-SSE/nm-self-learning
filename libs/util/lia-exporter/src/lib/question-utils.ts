@@ -21,32 +21,25 @@ export function convertQuizzes(
 	for (const [index, question] of quiz.questions.entries()) {
 		switch (question.type) {
 			case "multiple-choice": {
-				convertedQuizzes.push(
-					convertMultipleChoice({ question: question, markdownify: markdownify })
-				);
+				convertedQuizzes.push(convertMultipleChoice({ question, markdownify }));
 				break;
 			}
 			case "exact": {
-				convertedQuizzes.push(
-					convertExactQuiz({ question: question, markdownify: markdownify })
-				);
+				convertedQuizzes.push(convertExactQuiz({ question, markdownify }));
 				break;
 			}
 			case "text": {
-				// As we have no "correct" answer for this, we just use a text input which cannot be wrong.
-				convertedQuizzes.push(
-					convertTextQuiz({ question: question, markdownify: markdownify })
-				);
+				convertedQuizzes.push(convertTextQuiz({ question, markdownify }));
 				break;
 			}
 			case "cloze":
 				{
 					convertedQuizzes.push(
 						convertClozeAnswerBlock({
-							question: question,
-							markdownify: markdownify,
+							question,
+							markdownify,
 							onUnsupportedItem,
-							index: index
+							index
 						})
 					);
 				}
@@ -54,10 +47,10 @@ export function convertQuizzes(
 			case "programming":
 				{
 					const result = convertProgrammingQuiz({
-						question: question,
-						markdownify: markdownify,
-						onUnsupportedItem: onUnsupportedItem,
-						index: index
+						question,
+						markdownify,
+						onUnsupportedItem,
+						index
 					});
 					convertedQuizzes.push(result.question);
 					programmingTaskWithHints = programmingTaskWithHints || result.hintError;
@@ -96,7 +89,7 @@ function convertTextQuiz({
 	return markdownify(
 		question.statement +
 			"\n\n" +
-			`- [[Freitext]]\n` +
+			"- [[Freitext]]\n" +
 			addHints(question.hints) +
 			`<script>\nlet input = "@input".trim()\ninput != ""</script>\n`
 	);
@@ -155,18 +148,16 @@ function convertProgrammingQuiz({
 	onUnsupportedItem: (report: MissedElement) => void;
 	index: number;
 }): { question: string; hintError: boolean; solutionError: boolean } {
-	let code = `\`\`\`${question.language}\n`;
-	if (question.custom.mode == "standalone") {
+	const codeBlockStartSequence = "```";
+	let code = codeBlockStartSequence + question.language + "\n";
+	if (question.custom.mode === "standalone") {
 		code += "\n\n";
 	} else {
 		code += question.custom.solutionTemplate; //provide the starting point for the solution
 	}
-	code += "\n```\n";
-	if (
-		//Only make code executable when the code is javascript or typescript
-		question.language == `javascript`
-	) {
-		code += `<script>@input</script>\n`;
+	code += "\n" + codeBlockStartSequence + "\n";
+	if (question.language === `javascript`) {
+		code += "<script>@input</script>\n";
 	} else {
 		onUnsupportedItem({
 			type: "programming",
@@ -176,7 +167,6 @@ function convertProgrammingQuiz({
 			language: question.language
 		});
 	}
-	markdownify(question.statement + "\n\n" + code);
 	return {
 		question: markdownify(question.statement + "\n\n" + code),
 		hintError: question.hints.length > 0,
@@ -238,13 +228,13 @@ export function addTextQuizOptionScript(
 ) {
 	let script = `<script>\nlet input = "@input".trim()\n`;
 	for (const [i, answer] of acceptedAnswers.entries()) {
-		if (i == acceptedAnswers.length - 1) {
+		if (i === acceptedAnswers.length - 1) {
 			script += `input == "${answer.value}"\n`;
 		} else {
 			script += `input == "${answer.value}" ||`;
 		}
 	}
-	script += `</script>\n`;
+	script += "</script>\n";
 	return script;
 }
 
@@ -265,36 +255,36 @@ function getAllClozeAnswerBlocks(
 	}[] = [];
 	const chars = [...text];
 	let curlyBracketsCount = 0; //indicator/ counter for {
-	let index = 0; //the index where the { is found
-	let indexEnd = 0; //the index where the last closing } is found
+	let indexStartAnswerBlock = 0; //the index where the { is found
+	let indexEndAnswerBlock = 0; //the index where the last closing } is found
 	let foundEndOfBlock = false; //used to indicate that a cloze answer is fully found and allows the conversion to start
 	let foundStartOfBlock = false;
 
 	for (let i = 0; i < chars.length; i++) {
-		if (chars[i] == `{`) {
+		if (chars[i] === "{") {
 			curlyBracketsCount++;
 			if (!foundStartOfBlock) {
 				foundStartOfBlock = startOfAnswerBlock.test(text.substring(i, i + 5)); //i+5 as this is our tolerance for correct syntax
 				if (foundStartOfBlock) {
-					index = i;
+					indexStartAnswerBlock = i;
 					curlyBracketsCount = 1;
 				}
 			}
 		}
 
-		if (chars[i] == `}`) {
+		if (chars[i] === "}") {
 			curlyBracketsCount--;
-			if (curlyBracketsCount == 0 && foundStartOfBlock) {
+			if (curlyBracketsCount === 0 && foundStartOfBlock) {
 				foundEndOfBlock = true;
 				foundStartOfBlock = false;
 			}
 		}
 		if (foundEndOfBlock) {
-			indexEnd = i + 1;
+			indexEndAnswerBlock = i + 1;
 			matches.push({
-				indexStartAnswerBlock: index,
-				indexEndAnswerBlock: indexEnd,
-				answerBlock: text.substring(index, indexEnd)
+				indexStartAnswerBlock: indexStartAnswerBlock,
+				indexEndAnswerBlock: indexEndAnswerBlock,
+				answerBlock: text.substring(indexStartAnswerBlock, indexEndAnswerBlock)
 			});
 			foundEndOfBlock = false;
 		}
@@ -323,12 +313,12 @@ function transformClozeAnswerBlock(
 	const transformedAnswer = transformMultipleChoiceAnswerBlock(
 		transformMultipleAnswerTextBlock(
 			answerBlock
-				.replace(removeSelfLearAnswerStructure, ``)
-				.replace(`{`, `[[`)
-				.replace(removeClosingCurlyBracesOfAnswer, `]]`),
+				.replace(removeSelfLearAnswerStructure, "")
+				.replace("{", "[[")
+				.replace(removeClosingCurlyBracesOfAnswer, "]]"),
 			conversionError
 		)
-	).replace(/,/g, `|`);
+	).replace(/,/g, "|");
 	console.log(transformedAnswer);
 	return { indexStartAnswerBlock, indexEndAnswerBlock, transformedAnswer };
 }
@@ -354,7 +344,7 @@ function transformMultipleAnswerTextBlock(
 			transformedAnswer.substring(
 				0,
 				transformedAnswer.indexOf(tMatch[0]) + tMatch[0].length - 1
-			) + `]]`;
+			) + "]]";
 		conversionError();
 	}
 	return transformedAnswer;
@@ -385,11 +375,11 @@ function transformMultipleChoiceAnswerBlock(transformedAnswer: string): string {
 				const end = start + match.length;
 				transformedAnswer = (
 					transformedAnswer.slice(0, start) +
-					`(` +
+					"(" +
 					transformedAnswer.slice(start, end) +
-					`)` +
+					")" +
 					transformedAnswer.slice(end)
-				).replace(removeTheSelfLearnCorrectAnswerMarker, ``); //get rid of the # of the current answer;
+				).replace(removeTheSelfLearnCorrectAnswerMarker, ""); //get rid of the # of the current answer;
 			}
 		}
 	}
