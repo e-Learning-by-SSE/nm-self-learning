@@ -153,7 +153,7 @@ describe("convertClozeChoice", () => {
 
 		const expectedOutput = `Das ist eine [[ Textantwort]]. Das ist ein Textfeld [[ Antwort]] mit zwei richtigen Möglichkeiten.
 		Das ist ein Single-Choice Feld mit [[(eins)| zwei]] Antwortmöglichkeiten, aus denen ausgewählt werden muss. Falsche Antworten werden mit einem # gekennzeichnet.
-		LaTeX kann verwendet werden, um mathematische Formeln und Symbole darzustellen. Zum Beispiel: $$V_{sphere} = \frac{4}{3}\pi r^3$$. Es kann auch in Single-Choice Feldern benutzt werden: [[(eins)| $$V_{sphere} = \frac{4}{3}\pi r^3$$]]`;
+		LaTeX kann verwendet werden, um mathematische Formeln und Symbole darzustellen. Zum Beispiel: $$V_{sphere} = \\frac{4}{3}\\pi r^3$$. Es kann auch in Single-Choice Feldern benutzt werden: [[(eins)| $$V_{sphere} = \\frac{4}{3}\\pi r^3$$]]`;
 
 		const result = convertClozeAnswerBlock({
 			question,
