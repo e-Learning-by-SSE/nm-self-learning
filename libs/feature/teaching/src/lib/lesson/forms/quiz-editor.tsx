@@ -1,4 +1,3 @@
-import { PlusIcon } from "@heroicons/react/outline";
 import {
 	INITIAL_QUESTION_CONFIGURATION_FUNCTIONS,
 	QUESTION_TYPE_DISPLAY_NAMES,
@@ -7,8 +6,10 @@ import {
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
+	AddButton,
+	AddDropDownButton,
+	DeleteButton,
 	Divider,
-	DropdownButton,
 	RemovableTab,
 	SectionHeader,
 	Tabs
@@ -50,7 +51,7 @@ export function useQuizEditorForm() {
 	}
 
 	function removeQuestion(index: number) {
-		const confirm = window.confirm("Frage entfernen?");
+		const confirm = window.confirm("Aufgabe entfernen?");
 
 		if (confirm) {
 			remove(index);
@@ -90,48 +91,28 @@ export function QuizEditor() {
 	return (
 		<section className="flex flex-col gap-8">
 			<SectionHeader
-				title="Lernkontrolle"
-				subtitle="Fragen, die Studierenden nach Bearbeitung der Lernheit angezeigt werden sollen.
+				title="Aufgaben"
+				subtitle="Aufgaben, die Studierenden nach Bearbeitung der Lernheit angezeigt werden sollen.
 					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lernheit
 					erfolgreich abzuschließen."
+				button={
+					<AddDropDownButton lable={"Aufgabe Hinzufügen"}>
+						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+							<AddButton
+								onAdd={() => appendQuestion(type as QuestionType["type"])}
+								size={"w-full"}
+								key={type as QuestionType["type"]}
+							>
+								<span>
+									{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
+								</span>
+							</AddButton>
+						))}
+					</AddDropDownButton>
+				}
 			/>
 
 			<QuizConfigForm />
-
-			<DropdownButton title="Options" lable={"test"}>
-				<a
-					href="#"
-					className="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white"
-				>
-					Option 1
-				</a>
-				<a
-					href="#"
-					className="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white"
-				>
-					Option 2
-				</a>
-				<a
-					href="#"
-					className="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white"
-				>
-					Option 3
-				</a>
-			</DropdownButton>
-
-			<div className="flex flex-wrap gap-4 text-sm">
-				{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
-					<button
-						key={type}
-						type="button"
-						className="btn-primary w-fit"
-						onClick={() => appendQuestion(type as QuestionType["type"])}
-					>
-						<PlusIcon className="icon h-5" />
-						<span>{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}</span>
-					</button>
-				))}
-			</div>
 
 			{questionIndex >= 0 && (
 				<Reorder.Group values={quiz} onReorder={setQuiz} axis="x" className="w-full">
@@ -341,10 +322,10 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 		<section className="flex flex-col gap-4">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
-				<button type="button" className="btn-primary w-fit items-center" onClick={addHint}>
-					<PlusIcon className="h-5" />
+
+				<AddButton onAdd={addHint} title={"Hinweis Hinzufügen"}>
 					<span>Hinweis hinzufügen</span>
-				</button>
+				</AddButton>
 			</div>
 
 			<p className="text-sm text-light">
@@ -357,13 +338,11 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 					key={hint.hintId}
 					className="flex flex-col gap-4 rounded-lg border border-yellow-500 bg-yellow-100  p-4"
 				>
-					<button
-						type="button"
-						className="self-end text-xs text-red-500"
-						onClick={() => removeHint(hintIndex)}
-					>
-						Entfernen
-					</button>
+					<DeleteButton
+						onDelete={() => removeHint(hintIndex)}
+						additionalClassNames={"self-end"}
+						title={"Hinweis Entfernen"}
+					/>
 
 					<Controller
 						control={control}

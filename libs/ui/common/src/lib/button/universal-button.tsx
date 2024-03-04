@@ -8,28 +8,31 @@ export function UniversalButton({
 	hover,
 	focus,
 	size,
+	additionalClassNames,
 	children
 }: {
-	onClick: () => void;
+	onClick: (event?: React.MouseEvent<HTMLButtonElement>) => void; // Allow onClick to optionally accept a MouseEvent
 	title?: string;
 	border?: string;
 	backgroundColor?: string;
 	hover?: string;
 	focus?: string;
 	size?: string;
+	additionalClassNames?: string;
 	children: ReactNode;
 }) {
 	return (
 		<button
 			type="button"
 			className={`inline-flex items-center justify-center rounded-md
-			${border ? border : "border-1 border-gray-150 border"}
-			${backgroundColor ? backgroundColor : "bg-white"}
-			${size ? size : "px-4 py-2"}
-			${hover ? hover : "hover:bg-gray-100"}
-			${focus ? focus : "focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"}
-			text-base font-medium text-white `}
-			onClick={() => onClick()}
+			 ${border || "border-1 border-gray-150 border"}
+			 ${backgroundColor || "bg-white"}
+			 ${size || "px-4 py-2"}
+			 ${hover || "hover:bg-gray-100"}
+			 ${focus || "focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"}
+			 ${additionalClassNames || ""}
+			 font-medium text-white `}
+			onClick={event => onClick(event)} // Pass the event to onClick
 			title={title}
 		>
 			{children}

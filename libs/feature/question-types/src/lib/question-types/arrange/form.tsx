@@ -1,4 +1,3 @@
-import { PlusIcon } from "@heroicons/react/solid";
 import { LabeledField, MarkdownField, MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -99,14 +98,13 @@ export default function ArrangeForm({ index }: { index: number }) {
 
 	return (
 		<div className="flex flex-col gap-8">
-			<button
-				type="button"
-				className="btn-primary w-fit"
-				onClick={() => setAddCategoryDialog(true)}
-			>
-				<PlusIcon className="icon h-5" />
+			{/*<button type="button" className="btn-primary w-fit" onClick={}>*/}
+			{/*	<PlusIcon className="icon h-5" />*/}
+			{/*</button>*/}
+
+			<AddButton onAdd={() => setAddCategoryDialog(true)} additionalClassNames={"w-fit"}>
 				<span>Kategorie hinzufügen</span>
-			</button>
+			</AddButton>
 
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}

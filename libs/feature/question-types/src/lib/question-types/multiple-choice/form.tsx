@@ -1,10 +1,9 @@
-import { PlusIcon } from "@heroicons/react/solid";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { MultipleChoiceQuestion } from "./schema";
-import { DeleteButton } from "@self-learning/ui/common";
+import { AddButton, DeleteButton } from "@self-learning/ui/common";
 
 export default function MultipleChoiceForm({
 	index
@@ -43,14 +42,9 @@ export default function MultipleChoiceForm({
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
 
-				<button
-					type="button"
-					className="btn-primary h-fit w-fit items-center"
-					onClick={addAnswer}
-				>
-					<PlusIcon className="h-5" />
+				<AddButton onAdd={addAnswer} title={"Antwort Hinzufügen"}>
 					<span>Antwort hinzufügen</span>
-				</button>
+				</AddButton>
 			</div>
 
 			{answers.map((answer, answerIndex) => (
