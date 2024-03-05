@@ -1,4 +1,6 @@
 import z from "zod";
+import { SkillResolved } from "@self-learning/api";
+
 
 //zod scheme
 export const skillCreationFormSchema = z.object({
@@ -27,3 +29,15 @@ export const skillRepositorySchema = skillRepositoryCreationSchema.extend({
 });
 
 export type SkillRepositoryModel = z.infer<typeof skillRepositorySchema>;
+
+export const createSkillFormModelFromSkillResolved = (skill: SkillResolved): SkillFormModel => {
+	return {
+		name: skill.name,
+		description: skill.description,
+		children: skill.children.map(child => child.id),
+		id: skill.id,
+		repositoryId: skill.repository.id,
+		parents: skill.parents.map(parent => parent.id)
+	};
+};
+

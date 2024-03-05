@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { Paginated } from "@self-learning/util/common";
 import Link from "next/link";
 import { useMemo } from "react";

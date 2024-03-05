@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
-import slugify from "slugify";
+import { slugify } from "@self-learning/util/common";
 import { LabeledField } from "./labeled-field";
 
 export function Textfield(props: JSX.IntrinsicElements["input"] & { label: string }) {

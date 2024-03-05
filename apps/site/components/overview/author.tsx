@@ -1,4 +1,4 @@
-import { CogIcon, PencilIcon, PlusIcon } from "@heroicons/react/solid";
+import { CogIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import {

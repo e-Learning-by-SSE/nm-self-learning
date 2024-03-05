@@ -1,4 +1,4 @@
-import { RefreshIcon } from "@heroicons/react/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import type { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
@@ -173,7 +173,7 @@ function CheckResult({
 			) : completionState === "failed" ? (
 				<button className="btn bg-red-500" onClick={reload}>
 					<span>Erneut probieren</span>
-					<RefreshIcon className="h-5" />
+					<ArrowPathIcon className="h-5" />
 				</button>
 			) : (
 				// eslint-disable-next-line react/jsx-no-useless-fragment

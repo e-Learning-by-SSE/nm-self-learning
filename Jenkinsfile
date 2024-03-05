@@ -8,6 +8,7 @@ pipeline {
         API_VERSION = packageJson.getVersion() // package.json must be in root level in order for this to work
         NX_BASE='master'
         NX_HEAD='HEAD'
+        NPM_TOKEN = credentials('GitHub-NPM')
     }
 
     options {
@@ -33,13 +34,14 @@ pipeline {
         stage("NodeJS Build") {
             agent {
                 docker {
-                    image 'node:18-bullseye'
+                    image 'node:20-bullseye'
                     reuseNode true
                     args '--tmpfs /.cache -v $HOME/.npm:/.npm'
                 }
             }
             steps {
                 sh 'git fetch origin master:master'
+                sh 'cp .npmrc.example .npmrc'
                 sh 'npm ci --force'
                 sh 'cp -f .env.example .env'
                 echo "TagBuild: ${buildingTag()}"
@@ -61,7 +63,8 @@ pipeline {
             }
             steps {
                 script {
-                    withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ]).insideSidecar('node:18-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                    withPostgres([ dbUser: env.POSTGRES_USER,  dbPassword: env.POSTGRES_PASSWORD,  dbName: env.POSTGRES_DB ])
+                            .insideSidecar('node:20-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                         sh 'npm run prisma db push'
                         if (env.BRANCH_NAME =='master') { 
                             sh 'npm run test'
@@ -80,6 +83,7 @@ pipeline {
                 ssedocker {
                     create {
                         target "${env.TARGET_PREFIX}:latest"
+                        args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
                     }
                     publish {
                         tag "${env.API_VERSION}"
@@ -93,7 +97,10 @@ pipeline {
             }
             steps {
                 ssedocker {
-                    create { target "${env.TARGET_PREFIX}:unstable" }
+                    create {
+                       target "${env.TARGET_PREFIX}:unstable"
+                       args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
+                    }
                     publish {}
                 }
             }
@@ -103,16 +110,22 @@ pipeline {
                 }
             }
         }
-        stage('Docker Publish PB') {
+        stage('Docker Publish Pull Requests') {
             environment {
                 VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"
             }
             when {
-                expression { env.BRANCH_NAME.startsWith("pb_") }
+                anyOf {
+                    expression { env.BRANCH_NAME.endsWith("_pb") }
+                    changeRequest() // pull requests
+                }
             }
             steps {
                 ssedocker {
-                    create { target "${env.TARGET_PREFIX}:${env.VERSION}" }
+                    create { 
+                        target "${env.TARGET_PREFIX}:${env.VERSION}"
+                        args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
+                    }
                     publish {}
                 }
             }

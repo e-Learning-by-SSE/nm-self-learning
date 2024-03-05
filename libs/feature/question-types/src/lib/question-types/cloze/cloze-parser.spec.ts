@@ -1,4 +1,4 @@
-import { insertPlaceholder, parseCloze, parseNextGap } from "./cloze-parser";
+import { insertPlaceholder, parseCloze } from "./cloze-parser";
 
 describe("Cloze Parser", () => {
 	describe("parseCloze", () => {
@@ -32,35 +32,32 @@ describe("Cloze Parser", () => {
 			);
 			expect(gaps).toHaveLength(2);
 		});
-	});
 
-	describe("parseNextGap", () => {
-		it.each([
-			["{C: [#a, b]}"],
-			["{C: [a, #b]}"],
-			["{C: [a]}"],
-			["{T: [Gap]}"],
-			["{T: [Eins, Zwei]}"],
-			["{T: [Word with spaces]}"]
-		])("%s", text => {
-			const gap = parseNextGap(text);
-			expect(gap).not.toBeNull();
+		it("Two lines", () => {
+			const gaps = parseCloze(
+				"This is the {C: [#a, b]} first sentence.\nThis is the {C: [c, #d]} second sentence."
+			);
+			// Is the same as inline snapshot above only exported as a file
+			expect (gaps).toMatchSnapshot();
+			
 		});
 
-		it("With text before", () => {
-			const gap = parseNextGap("Text before {C: [#a, b]}");
-			expect(gap).not.toBeNull();
+		it("Two lines but with whitespace in the first", () => {
+			const gaps = parseCloze(
+				"  \n This is the {C: [c, #d]} second sentence."
+			);
+			// Is the same as inline snapshot above only exported as a file
+			expect (gaps).toMatchSnapshot();
 		});
 
-		it("With text after", () => {
-			const gap = parseNextGap("{C: [#a, b]} Text after");
-			expect(gap).not.toBeNull();
+		it('should handle latex correctly', () => {
+			const text = "{T: [$$latex1$$, #$$latex2$$]}";
+			const result = parseCloze(text);
+			// Is the same as inline snapshot above only exported as a file
+			expect(result).toMatchSnapshot();
 		});
 
-		it("With surrounding text", () => {
-			const gap = parseNextGap("Text before {C: [#a, b]} Text after");
-			expect(gap).not.toBeNull();
-		});
+
 	});
 
 	describe("insertPlaceholder", () => {
