@@ -1,4 +1,4 @@
-import { AddButton, DeleteButton } from "@self-learning/ui/common";
+import { AddButton, TransparentDeleteButton } from "@self-learning/ui/common";
 import { SelectSkillDialog } from "./select-skill-dialog";
 import { useState } from "react";
 import { SkillFormModel } from "@self-learning/types";
@@ -140,8 +140,9 @@ function InlineRemoveButton({
 				>
 					{label}
 				</button>
-
-				<DeleteButton onDelete={onRemove}></DeleteButton>
+				<div className={"px-2 py-2"}>
+					<TransparentDeleteButton onDelete={onRemove} />
+				</div>
 			</div>
 		</div>
 	);

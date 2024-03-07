@@ -1,5 +1,5 @@
 import { ImageOrPlaceholder } from "../image/image-placeholder";
-import { DeleteButton } from "@self-learning/ui/common";
+import { TransparentDeleteButton } from "@self-learning/ui/common";
 
 export function Chip({
 	children,
@@ -22,14 +22,15 @@ export function Chip({
 			)}
 
 			<span className="flex w-full flex-col px-4">{children}</span>
-
-			{onRemove && (
-				<DeleteButton
-					onDelete={onRemove}
-					data-testid={"remove"}
-					title="Author Entfernen"
-				></DeleteButton>
-			)}
+			<div className={"px-2"}>
+				{onRemove && (
+					<TransparentDeleteButton
+						onDelete={onRemove}
+						data-testid={"remove"}
+						title="Author Entfernen"
+					/>
+				)}
+			</div>
 		</li>
 	);
 }

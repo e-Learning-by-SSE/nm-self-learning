@@ -1,6 +1,7 @@
 import { TrashIcon } from "@heroicons/react/outline";
 import React, { ReactNode } from "react";
 import { UniversalButton } from "./universal-button";
+import { XIcon } from "@heroicons/react/solid";
 
 export function DeleteButton({
 	onDelete,
@@ -46,16 +47,12 @@ export function TransparentDeleteButton({
 			title={title ? title : "Entfernen"}
 			backgroundColor={"bg-transparent"}
 			border={"rounded-md border border-transparent"}
-			focus={"focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"}
+			focus={" "}
 			hover={" "}
 			size={" "}
 			additionalClassNames={additionalClassNames}
 		>
-			{children ? (
-				children
-			) : (
-				<TrashIcon className="h-5 w-5 text-gray-600 hover:text-red-600" />
-			)}
+			{children || <XIcon className="h-5 w-5 text-gray-600 hover:text-red-600" />}
 		</UniversalButton>
 	);
 }
