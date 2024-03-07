@@ -4,6 +4,7 @@ import { paginate, Paginated, paginationSchema } from "@self-learning/util/commo
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, t } from "../trpc";
+import { userSchema } from "@self-learning/types";
 
 export const adminRouter = t.router({
 	findUsers: adminProcedure
@@ -40,43 +41,37 @@ export const adminRouter = t.router({
 
 			return { result, totalCount, page, pageSize } satisfies Paginated<unknown>;
 		}),
-	getUsers: adminProcedure
+	getUser: adminProcedure.input(z.string()).query(async ({ input }) => {
+		return database.user.findUniqueOrThrow({
+			where: { name: input },
+			select: {
+				id: true,
+				name: true,
+				displayName: true,
+				email: true,
+				emailVerified: true,
+				role: true,
+				image: true,
+				author: true,
+				student: true
+			}
+		});
+	}),
+	updateUser: adminProcedure
 		.input(
-			paginationSchema.extend({
-				title: z.string().optional()
+			z.object({
+				username: z.string(),
+				user: userSchema
 			})
 		)
-		.query(async ({ input }) => {
-			const page = input.page;
-			const pageSize = 15;
+		.mutation(async ({ input }) => {
+			const { username, user } = input;
+			const updated = await database.user.update({
+				where: { name: username },
+				data: user
+			});
 
-			const where: Prisma.UserWhereInput = {
-				name: input.title
-					? {
-							contains: input.title,
-							mode: "insensitive"
-					  }
-					: undefined
-			};
-
-			const [result, totalCount] = await database.$transaction([
-				database.user.findMany({
-					where,
-					select: {
-						name: true,
-						email: true,
-						role: true,
-						image: true
-					},
-					orderBy: {
-						name: "asc"
-					},
-					...paginate(pageSize, page)
-				}),
-				database.user.count({ where })
-			]);
-
-			return { result, totalCount, page, pageSize } satisfies Paginated<unknown>;
+			return updated;
 		}),
 	promoteToAuthor: adminProcedure
 		.input(

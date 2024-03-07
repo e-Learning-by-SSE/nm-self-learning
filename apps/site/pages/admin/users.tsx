@@ -7,19 +7,21 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
+import { EditUserDialog } from "@self-learning/admin";
 
 export default function UsersPage() {
 	useRequiredSession();
 	const router = useRouter();
 	const { title = "", page = 1 } = router.query;
+	const [openEditDialog, setOpenEditDialog] = useState<string | null>(null);
 
-	const { data: users, isLoading } = trpc.admin.getUsers.useQuery(
+	const { data: users, isLoading } = trpc.admin.findUsers.useQuery(
 		{
 			page: Number(page),
-			title: title as string
+			name: title as string
 		},
 		{
 			staleTime: 10_000,
@@ -78,7 +80,7 @@ export default function UsersPage() {
 										</TableDataColumn>
 										<TableDataColumn>
 											<div className="flex flex-wrap justify-end gap-4">
-												<button className="btn-stroked" onClick={() => {}}>
+												<button className="btn-stroked" onClick={() => setOpenEditDialog(name)}>
 													Editieren
 												</button>
 											</div>
@@ -91,6 +93,7 @@ export default function UsersPage() {
 				{!isLoading && users && (
 					<Paginator pagination={users} url={`${router.route}?title=${title}`} />
 				)}
+				{openEditDialog && (<EditUserDialog username={openEditDialog} onClose={() => setOpenEditDialog(null)} />)}
 			</CenteredSection>
 		</AdminGuard>
 	);
