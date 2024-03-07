@@ -35,15 +35,16 @@ const students = [
 	}
 ];
 
+const defaultLicense: Prisma.LicenseUncheckedCreateInput = {
+	licenseId: 0,
+	name: "Uni Hi Intern",
+	licenseText:
+		"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
+	oerCompatible: false,
+	selectable: true
+};
+
 const license: Prisma.LicenseCreateManyInput[] = [
-	{
-		licenseId: 0,
-		name: "Uni Hi Intern",
-		licenseText:
-			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
-		oerCompatible: false,
-		selectable: true
-	},
 	{
 		name: "CC BY 4.0",
 		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
@@ -535,6 +536,11 @@ const completedLessons: Prisma.CompletedLessonCreateManyInput[] = extractLessonI
 		username: students[0].username,
 		createdAt: subHours(Date.now(), index * 4)
 	}));
+
+export const defaultLicenseIDPromise = (async () => {
+	const defaultLicenseID = (await prisma.license.create({ data: defaultLicense })).licenseId;
+	return defaultLicenseID;
+})();
 
 export async function seedDemos(): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", "Seeding Demo Data:");
