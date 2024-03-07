@@ -12,6 +12,7 @@ import {
 	Divider,
 	EditButton,
 	OnDialogCloseFn,
+	SectionHeader,
 	showToast
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
@@ -101,10 +102,17 @@ export default function ArrangeForm({ index }: { index: number }) {
 			{/*<button type="button" className="btn-primary w-fit" onClick={}>*/}
 			{/*	<PlusIcon className="icon h-5" />*/}
 			{/*</button>*/}
-
-			<AddButton onAdd={() => setAddCategoryDialog(true)} additionalClassNames={"w-fit"}>
-				<span>Kategorie hinzufügen</span>
-			</AddButton>
+			<SectionHeader
+				title={"Kategorien"}
+				button={
+					<AddButton
+						onAdd={() => setAddCategoryDialog(true)}
+						additionalClassNames={"w-fit"}
+					>
+						<span>Kategorie hinzufügen</span>
+					</AddButton>
+				}
+			/>
 
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
