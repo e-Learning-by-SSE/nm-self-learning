@@ -13,7 +13,8 @@ import {
 	EditButton,
 	OnDialogCloseFn,
 	SectionHeader,
-	showToast
+	showToast,
+	TransparentDeleteButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
 
@@ -147,7 +148,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 											<ul
 												ref={provided.innerRef}
 												{...provided.droppableProps}
-												className="flex h-full min-h-[128px] flex-col gap-4 rounded-lg bg-gray-100 p-4"
+												className="grid h-full min-h-[128px] auto-rows-auto grid-cols-2 gap-4 rounded-lg bg-gray-100 p-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 											>
 												{items.map((item, index) => (
 													<Draggable
@@ -160,7 +161,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 																ref={provided.innerRef}
 																{...provided.draggableProps}
 																{...provided.dragHandleProps}
-																className="prose prose-emerald flex h-fit w-fit max-w-[50ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
+																className="prose prose-emerald flex h-fit w-fit max-w-[40ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
 															>
 																<div className="flex gap-2">
 																	<EditButton
@@ -173,7 +174,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 																		title={"Editieren"}
 																	/>
 
-																	<DeleteButton
+																	<TransparentDeleteButton
 																		onDelete={() =>
 																			onDeleteItem(
 																				containerId,
@@ -185,7 +186,6 @@ export default function ArrangeForm({ index }: { index: number }) {
 																</div>
 
 																<Divider />
-
 																<MarkdownViewer
 																	content={item.content}
 																/>
