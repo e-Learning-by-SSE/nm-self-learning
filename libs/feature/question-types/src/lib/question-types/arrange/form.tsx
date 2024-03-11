@@ -114,7 +114,6 @@ export default function ArrangeForm({ index }: { index: number }) {
 					</AddButton>
 				}
 			/>
-
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
 
@@ -148,50 +147,16 @@ export default function ArrangeForm({ index }: { index: number }) {
 											<ul
 												ref={provided.innerRef}
 												{...provided.droppableProps}
-												className="grid h-full min-h-[128px] auto-rows-auto grid-cols-2 gap-4 rounded-lg bg-gray-100 p-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+												className="min-h-64 flex h-full grid-cols-2 gap-4 overflow-y-hidden rounded-lg bg-gray-100 p-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 											>
 												{items.map((item, index) => (
-													<Draggable
-														key={item.id}
-														draggableId={item.id}
+													<DraggableContent
+														item={item}
 														index={index}
-													>
-														{provided => (
-															<li
-																ref={provided.innerRef}
-																{...provided.draggableProps}
-																{...provided.dragHandleProps}
-																className="prose prose-emerald flex h-fit w-fit max-w-[40ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
-															>
-																<div className="flex gap-2">
-																	<EditButton
-																		onEdit={() =>
-																			setEditItemDialog({
-																				containerId,
-																				item
-																			})
-																		}
-																		title={"Editieren"}
-																	/>
-
-																	<TransparentDeleteButton
-																		onDelete={() =>
-																			onDeleteItem(
-																				containerId,
-																				item.id
-																			)
-																		}
-																		title="Löschen"
-																	/>
-																</div>
-
-																<Divider />
-																<MarkdownViewer
-																	content={item.content}
-																/>
-															</li>
-														)}
-													</Draggable>
+														onDeleteItem={onDeleteItem}
+														setEditItemDialog={setEditItemDialog}
+														containerId={containerId}
+													/>
 												))}
 												{provided.placeholder}
 											</ul>
@@ -204,6 +169,53 @@ export default function ArrangeForm({ index }: { index: number }) {
 				</ul>
 			</DragDropContext>
 		</div>
+	);
+}
+
+function DraggableContent({
+	item,
+	index,
+	setEditItemDialog,
+	containerId,
+	onDeleteItem
+}: {
+	item: ArrangeItem;
+	index: number;
+	setEditItemDialog: (value: { item?: ArrangeItem; containerId: string } | null) => void;
+	containerId: string;
+	onDeleteItem: (containerId: string, itemId: string) => void;
+}) {
+	return (
+		<Draggable key={item.id} draggableId={item.id} index={index}>
+			{provided => (
+				<li
+					ref={provided.innerRef}
+					{...provided.draggableProps}
+					{...provided.dragHandleProps}
+					className="prose prose-emerald flex h-fit w-fit max-w-[40ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
+				>
+					<div className="flex gap-2">
+						<EditButton
+							onEdit={() =>
+								setEditItemDialog({
+									containerId,
+									item
+								})
+							}
+							title={"Editieren"}
+						/>
+
+						<TransparentDeleteButton
+							onDelete={() => onDeleteItem(containerId, item.id)}
+							title="Löschen"
+						/>
+					</div>
+
+					<Divider />
+					<MarkdownViewer content={item.content} />
+				</li>
+			)}
+		</Draggable>
 	);
 }
 
