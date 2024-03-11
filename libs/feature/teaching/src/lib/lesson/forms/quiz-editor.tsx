@@ -99,6 +99,7 @@ export function QuizEditor() {
 					<AddDropDownButton lable={"Aufgabe Hinzufügen"}>
 						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 							<AddButton
+								title={"Aufgabe Hinzufügen"}
 								onAdd={() => appendQuestion(type as QuestionType["type"])}
 								size={"w-full"}
 								key={type as QuestionType["type"]}

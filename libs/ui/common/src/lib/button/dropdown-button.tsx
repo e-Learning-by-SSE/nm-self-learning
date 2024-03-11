@@ -1,20 +1,17 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/solid";
-import { UniversalButton } from "./universal-button";
 
 export function DropdownButton({
 	title,
 	backgroundColor,
 	chevronColor,
 	hover,
-	focus,
 	children
 }: {
 	title: string;
-	backgroundColor?: string;
-	chevronColor?: string;
-	hover?: string;
-	focus?: string;
+	backgroundColor: string;
+	chevronColor: string;
+	hover: string;
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -22,32 +19,29 @@ export function DropdownButton({
 	const withoutFirst = childrenArray.slice(1);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		function handleClickOutside(event: MouseEvent) {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-				setIsOpen(false);
-			}
+	function handleClickOutside(event: MouseEvent) {
+		if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+			setIsOpen(false);
 		}
+	}
 
+	useEffect(() => {
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, [dropdownRef]);
+	}, []);
 
 	return (
 		<div className="relative" ref={dropdownRef}>
 			<div className={"inline-flex items-center justify-center"}>
-				<UniversalButton
+				<button
+					type="button"
 					onClick={event => {
 						event?.stopPropagation();
 						setIsOpen(!isOpen);
 					}}
 					title={title}
-					size={"px-4 py-2"}
-					backgroundColor={backgroundColor}
-					hover={hover}
-					focus={focus}
+					className={`${backgroundColor} ${hover}`}
 				>
-					{/*First Child Prop is used to Display the Button Text*/}
 					{isOpen ? (
 						<ChevronUpIcon className={`h-5 w-5 ${chevronColor ? chevronColor : ""}`} />
 					) : (
@@ -55,8 +49,9 @@ export function DropdownButton({
 							className={`h-5 w-5 ${chevronColor ? chevronColor : ""}`}
 						/>
 					)}
+					{/*First Child Prop is used to Display the Button Text*/}
 					{childrenArray[0]}
-				</UniversalButton>
+				</button>
 			</div>
 			{isOpen && (
 				<div

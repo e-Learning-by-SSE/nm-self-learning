@@ -3,7 +3,7 @@ import { EditorField } from "@self-learning/ui/forms";
 import { useMemo, useState } from "react";
 import { useFormContext, UseFormReturn } from "react-hook-form";
 import { ZodSchema } from "zod";
-import { UniversalButton } from "@self-learning/ui/common";
+import { DefaultButton } from "@self-learning/ui/common";
 
 export function JsonEditorDialog<T>({
 	onClose,
@@ -131,11 +131,11 @@ export function OpenAsJsonButton({
 	const { isJsonEditorOpen, openJsonEditor, onCloseJsonEditor } = useJsonEditor(form);
 
 	return (
-		<UniversalButton onClick={openJsonEditor}>
+		<DefaultButton onClick={openJsonEditor}>
 			<span className={"text-gray-600"}>Als JSON bearbeiten</span>
 			{isJsonEditorOpen && (
 				<JsonEditorDialog onClose={onCloseJsonEditor} validationSchema={validationSchema} />
 			)}
-		</UniversalButton>
+		</DefaultButton>
 	);
 }

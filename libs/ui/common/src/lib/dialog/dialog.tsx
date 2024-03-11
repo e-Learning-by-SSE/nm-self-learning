@@ -1,6 +1,6 @@
 import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { CSSProperties, ReactNode } from "react";
-import { UniversalButton } from "../button/universal-button";
+import { DefaultButton } from "../button/default-button";
 
 export type OnDialogCloseFn<T> = (result?: T) => void;
 
@@ -94,9 +94,9 @@ export function DialogActions({
 }) {
 	return (
 		<div className="mt-8 flex justify-end gap-2">
-			<UniversalButton onClick={() => onClose(undefined)}>
+			<DefaultButton onClick={() => onClose(undefined)}>
 				<span className={"text-gray-600"}>Abbrechen</span>
-			</UniversalButton>
+			</DefaultButton>
 			{children}
 		</div>
 	);

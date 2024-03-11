@@ -3,8 +3,8 @@ import { useRequiredSession } from "@self-learning/ui/layouts";
 import {
 	LessonEditor,
 	LessonFormModel,
-	onLessonCreatorClosed,
-	onLessonEditorClosed
+	onLessonCreatorSubmit,
+	onLessonEditorSubmit
 } from "@self-learning/teaching";
 import { trpc } from "@self-learning/api-client";
 import React from "react";
@@ -17,7 +17,7 @@ export function CreateLessonDialog({
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
-		await onLessonCreatorClosed(
+		await onLessonCreatorSubmit(
 			() => {
 				setCreateLessonDialogOpen(false);
 			},
@@ -38,7 +38,7 @@ export function EditLessonDialog({
 }) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		await onLessonEditorClosed(
+		await onLessonEditorSubmit(
 			() => {
 				setLessonEditorDialog(false);
 			},
@@ -106,7 +106,7 @@ function LessonEditorDialog({
 					Im separaten Editor öffnen
 				</a>
 			</div>
-			<LessonEditor onClose={onClose} initialLesson={initialLesson} />
+			<LessonEditor onSubmit={onClose} initialLesson={initialLesson} />
 		</Dialog>
 	);
 }

@@ -1,5 +1,5 @@
 import { ImageOrPlaceholder } from "../image/image-placeholder";
-import { TransparentDeleteButton } from "@self-learning/ui/common";
+import { TransparentDeleteButton } from "../button/delete-button";
 
 export function Chip({
 	children,

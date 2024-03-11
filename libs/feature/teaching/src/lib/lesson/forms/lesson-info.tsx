@@ -14,7 +14,7 @@ import { SkillForm } from "./skills-form";
 import { lessonSchema } from "@self-learning/types";
 import { OpenAsJsonButton } from "../../json-editor-dialog";
 import { LabeledCheckbox } from "../../../../../../ui/forms/src/lib/labeled-checkbox";
-import { UniversalButton } from "@self-learning/ui/common";
+import { DefaultButton } from "@self-learning/ui/common";
 
 export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	const form = useFormContext<LessonFormModel>();
@@ -62,9 +62,9 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 							/>
 						}
 						button={
-							<UniversalButton onClick={slugifyField} title={"Generiere Slug"}>
+							<DefaultButton onClick={slugifyField} title={"Generiere Slug"}>
 								<span className={"text-gray-600"}>Generieren</span>
-							</UniversalButton>
+							</DefaultButton>
 						}
 					/>
 					<FieldHint>

@@ -1,6 +1,5 @@
 import React, { ReactNode } from "react";
 import { PlusIcon } from "@heroicons/react/solid";
-import { UniversalButton } from "./universal-button";
 import { DropdownButton } from "./dropdown-button";
 
 export function AddButton({
@@ -11,21 +10,19 @@ export function AddButton({
 	children
 }: {
 	onAdd: () => void;
-	title?: string;
+	title: string;
 	size?: string;
 	additionalClassNames?: string;
 	children?: ReactNode;
 }) {
 	return (
-		<UniversalButton
+		<button
+			type="button"
 			onClick={onAdd}
-			title={title ? title : "Hinzufügen"}
-			backgroundColor={"btn-primary"}
-			border={"rounded-md border border-transparent"}
-			focus={"focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"}
-			hover={"hover:bg-emerald-700"}
-			size={size || "px-4 py-2"}
-			additionalClassNames={additionalClassNames}
+			title={title || "Hinzufügen"}
+			className={`btn-primary rounded-md border border-transparent hover:bg-emerald-700 ${
+				size ? size : "px-4 py-2"
+			} ${additionalClassNames}`}
 		>
 			{children ? (
 				<div className="flex items-center space-x-2">
@@ -35,17 +32,16 @@ export function AddButton({
 			) : (
 				<PlusIcon className="h-5 w-5" />
 			)}
-		</UniversalButton>
+		</button>
 	);
 }
 
 export function AddDropDownButton({ lable, children }: { lable: string; children: ReactNode }) {
 	return (
 		<DropdownButton
-			title="Options"
+			title="Aufgabentyp hinzufügen"
 			backgroundColor={"btn-primary"}
-			focus={"focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"}
-			hover={"hover:bg-secondary"}
+			hover={"hover:bg-emerald-700"}
 			chevronColor={"text-white"}
 		>
 			<span className={"text-white"}>{lable}</span>

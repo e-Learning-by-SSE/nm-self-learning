@@ -1,5 +1,5 @@
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
-import { LessonEditor, LessonFormModel, onLessonCreatorClosed } from "@self-learning/teaching";
+import { LessonEditor, LessonFormModel, onLessonCreatorSubmit } from "@self-learning/teaching";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 
@@ -15,7 +15,7 @@ export default function CreateLessonPage() {
 	}
 
 	async function handleCreateClose(lesson?: LessonFormModel) {
-		await onLessonCreatorClosed(
+		await onLessonCreatorSubmit(
 			() => {
 				router.push("/overview");
 			},
@@ -24,5 +24,5 @@ export default function CreateLessonPage() {
 		);
 	}
 
-	return <LessonEditor onClose={handleCreateClose} />;
+	return <LessonEditor onSubmit={handleCreateClose} />;
 }

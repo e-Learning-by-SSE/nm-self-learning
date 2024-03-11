@@ -9,7 +9,7 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 
-export async function onLessonCreatorClosed(
+export async function onLessonCreatorSubmit(
 	onClose: () => void,
 	createLessonAsync: (lesson: LessonFormModel) => Promise<{
 		title: string;
@@ -18,7 +18,6 @@ export async function onLessonCreatorClosed(
 ) {
 	try {
 		if (lesson) {
-			console.log("Creating lesson...", lesson);
 			const result = await createLessonAsync(lesson);
 			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
 		}
@@ -33,7 +32,7 @@ export async function onLessonCreatorClosed(
 	}
 }
 
-export async function onLessonEditorClosed(
+export async function onLessonEditorSubmit(
 	onClose: () => void,
 	editLessonAsync: (lesson: {
 		lesson: LessonFormModel;
@@ -64,10 +63,10 @@ export async function onLessonEditorClosed(
 }
 
 export function LessonEditor({
-	onClose,
+	onSubmit,
 	initialLesson
 }: {
-	onClose: OnDialogCloseFn<LessonFormModel>;
+	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
 	const session = useRequiredSession();
@@ -86,7 +85,7 @@ export function LessonEditor({
 		<FormProvider {...form}>
 			<form
 				id="lessonform"
-				onSubmit={form.handleSubmit(onClose, console.log)}
+				onSubmit={form.handleSubmit(onSubmit, console.log)}
 				className="flex h-full flex-col overflow-hidden"
 			>
 				<div className="flex h-full flex-col gap-4 overflow-hidden">
@@ -110,7 +109,7 @@ export function LessonEditor({
 					</div>
 				</div>
 
-				<DialogActions onClose={onClose}>
+				<DialogActions onClose={onSubmit}>
 					<button type="submit" className="btn-primary">
 						Speichern
 					</button>

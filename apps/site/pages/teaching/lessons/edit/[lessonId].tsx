@@ -1,7 +1,7 @@
 import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
-import { LessonEditor, LessonFormModel, onLessonEditorClosed } from "@self-learning/teaching";
+import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
@@ -102,7 +102,7 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		await onLessonEditorClosed(
+		await onLessonEditorSubmit(
 			() => {
 				router.push("/overview");
 			},
@@ -111,5 +111,5 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		);
 	};
 
-	return <LessonEditor initialLesson={lesson} onClose={handleEditClose} />;
+	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} />;
 }
