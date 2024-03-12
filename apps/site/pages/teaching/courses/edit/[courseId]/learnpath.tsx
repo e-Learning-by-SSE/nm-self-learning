@@ -1,5 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
-import { SkillSelectDialog } from "libs/feature/teaching/src/lib/course/course-learnpath-editor/skill-select-dialog";
+import { Fragment, useState } from "react";
 import "reactflow/dist/style.css";
 import {
 	IconButton,
@@ -9,7 +8,7 @@ import {
 	TableHeaderColumn,
 	Tabs
 } from "@self-learning/ui/common";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/solid"; // TODO which version is it?
+import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/solid";
 import {
 	LessonSelector,
 	LessonSummary
@@ -18,88 +17,13 @@ import GraphEditor, {
 	convertToGraph,
 	convertToLearnpath
 } from "libs/ui/forms/src/lib/graph-editor";
+import { findCycles } from "@e-learning-by-sse/nm-skill-lib";
+import { SelectSkillDialog } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-dialog";
+import { Mesh, SkillFormModel } from "@self-learning/types";
 
 // ---------- Globals ------------------------------------------------
-export interface Mesh {
-	requiredSkills: any[];
-	lesson: LessonSummary;
-	gainedSkills: any[];
-}
-
+const respositoryId = "1";
 const tabNames = ["Konfigurierte Lerneinheiten", "Verlauf"];
-
-// ---------- Dummy Data ------------------------------------------
-// TODO remove later
-const l1: LessonSummary = { title: "Lesson 1", lessonId: "", slug: "" };
-const l2a: LessonSummary = { title: "Lesson 2a", lessonId: "", slug: "" };
-const l2b: LessonSummary = { title: "Lesson 2b", lessonId: "", slug: "" };
-const l3a: LessonSummary = { title: "Lesson 3a", lessonId: "", slug: "" };
-const l3b: LessonSummary = { title: "Lesson 3b", lessonId: "", slug: "" };
-const l4: LessonSummary = { title: "Lesson 4", lessonId: "", slug: "" };
-const l5: LessonSummary = { title: "Lesson 5", lessonId: "", slug: "" };
-
-const dummy_meshes: Mesh[] = [
-	{
-		requiredSkills: [],
-		lesson: l1,
-		gainedSkills: ["skill-1"]
-	},
-	{
-		requiredSkills: ["skill-1"],
-		lesson: l2a,
-		gainedSkills: []
-	},
-	{
-		requiredSkills: ["skill-1"],
-		lesson: l2b,
-		gainedSkills: ["skill-2"]
-	},
-	{
-		requiredSkills: ["skill-2"],
-		lesson: l3a,
-		gainedSkills: ["skill-3"]
-	},
-	{
-		requiredSkills: ["skill-2"],
-		lesson: l3b,
-		gainedSkills: ["skill-3"]
-	},
-	{
-		requiredSkills: ["skill-3"],
-		lesson: l4,
-		gainedSkills: ["skill-4"]
-	},
-	{
-		requiredSkills: ["skill-4"],
-		lesson: l5,
-		gainedSkills: ["skill-5"]
-	}
-];
-
-const dummy_learnpath: Mesh[] = [
-	{
-		requiredSkills: [],
-		lesson: l1,
-		gainedSkills: ["skill-1"]
-	},
-	{
-		requiredSkills: ["skill-1"],
-		lesson: l2b,
-		gainedSkills: ["skill-2"]
-	},
-	{
-		requiredSkills: ["skill-2"],
-		lesson: l3a,
-		gainedSkills: ["skill-3"]
-	},
-	{
-		requiredSkills: ["skill-4"],
-		lesson: l5,
-		gainedSkills: ["skill-5"]
-	}
-];
-
-// ---------- Functions ---------------------------------------------------------------
 
 function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
 	const temp = meshes.filter(elemt => elemt.lesson.title === mesh.lesson.title);
@@ -110,13 +34,27 @@ function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
 	}
 }
 
-// ---------- Components ---------------------------------------------------------------
+export default function LearnpathEditor({
+	repoId,
+	teachingGoals
+}: {
+	repoId: string;
+	teachingGoals: SkillFormModel[];
+}) {
+	const initMeshes: Mesh[] = [];
+	const initMesh: Mesh = {
+		requiredSkills: [],
+		lesson: { title: "", lessonId: "", slug: "" },
+		gainedSkills: []
+	};
+	const initLearnpath: Mesh[] = [];
 
-export default function LearnpathEditor() {
-	const [meshes, setMeshes] = useState(dummy_meshes);
-	const [currentMesh, setCurrentMesh] = useState(dummy_meshes[2]);
-	const [graph, setGraph] = useState(convertToGraph(meshes));
-	const [learnpath, setLearnpath] = useState(convertToLearnpath(dummy_learnpath));
+	const [meshes, setMeshes] = useState(initMeshes);
+	const [displayedMesh, setDisplayedMesh] = useState(initMesh);
+	const [learnpath, setLearnpath] = useState(convertToLearnpath(initLearnpath));
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+	const graph = convertToGraph(meshes);
 
 	const addMesh = (mesh: Mesh) => {
 		const updatedMeshes = [...meshes];
@@ -131,11 +69,6 @@ export default function LearnpathEditor() {
 		setMeshes(updatedMeshes);
 	};
 
-	useEffect(() => {
-		const updatedGraph = convertToGraph(meshes);
-		setGraph(updatedGraph);
-	}, [meshes]);
-
 	const removeMesh = (meshToRemove: Mesh) => {
 		const updatedMeshes = meshes.filter(
 			mesh => mesh.lesson.title !== meshToRemove.lesson.title
@@ -144,11 +77,8 @@ export default function LearnpathEditor() {
 	};
 
 	const editMesh = (mesh: Mesh) => {
-		setCurrentMesh(mesh);
+		setDisplayedMesh(mesh);
 	};
-
-	// Learnpath Sidebar
-	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 	const toggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen);
@@ -165,9 +95,9 @@ export default function LearnpathEditor() {
 					<h1 className="text-2xl">Lerneinheiten verknüpfen</h1>
 					<div className="">
 						<SkillLessonLinker
-							onSkillLessonLinkerClick={addMesh}
-							changeCurrentMesh={editMesh}
-							currentMesh={currentMesh}
+							onClick={addMesh}
+							changeDisplayedMesh={editMesh}
+							displayedMesh={displayedMesh}
 						/>
 					</div>
 				</div>
@@ -239,79 +169,74 @@ export default function LearnpathEditor() {
 }
 
 function SkillLessonLinker({
-	onSkillLessonLinkerClick: onSkillLessonLinkerClick,
-	changeCurrentMesh: changeCurrentMesh,
-	currentMesh
+	onClick: submitMesh,
+	changeDisplayedMesh: changeCurrentMesh,
+	displayedMesh: displayedMesh
 }: {
-	onSkillLessonLinkerClick: (mesh: Mesh) => void;
-	changeCurrentMesh: (mesh: Mesh) => void;
-	currentMesh: Mesh;
+	onClick: (mesh: Mesh) => void;
+	changeDisplayedMesh: (mesh: Mesh) => void;
+	displayedMesh: Mesh;
 }) {
-	const [openSkillSelectDialog, setOpenSkillSelectDialog] = useState(false);
+	const [requiredSkillSelectorOpen, setRequiredSkillSelectorOpen] = useState(false);
+	const [gainedSkillSelectorOpen, setGainedSkillSelectorOpen] = useState(false);
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 
 	function handleSubmit() {
 		const mesh: Mesh = {
-			requiredSkills: currentMesh.requiredSkills,
-			lesson: currentMesh.lesson,
-			gainedSkills: currentMesh.gainedSkills
+			requiredSkills: displayedMesh.requiredSkills,
+			lesson: displayedMesh.lesson,
+			gainedSkills: displayedMesh.gainedSkills
 		};
-		onSkillLessonLinkerClick(mesh);
+		submitMesh(mesh);
 	}
 
-	function handleSkillSelectDialogClose(result?: any) {
-		console.log("handle in SLL");
+	function handleRequiredSkillSelectorClose(result?: SkillFormModel[]) {
 		if (result) {
 			const mesh: Mesh = {
-				requiredSkills: currentMesh.requiredSkills,
-				lesson: currentMesh.lesson,
-				gainedSkills: currentMesh.gainedSkills
+				requiredSkills: displayedMesh.requiredSkills,
+				lesson: displayedMesh.lesson,
+				gainedSkills: displayedMesh.gainedSkills
 			};
-			if (result.currentRequiredSkill) {
-				const newSkillsArr: any[] = [result.currentRequiredSkill];
-				mesh.requiredSkills = newSkillsArr;
-			}
-			if (result.currentGainedSkill) {
-				const newSkillsArr: any[] = [result.currentGainedSkill];
-				mesh.gainedSkills = newSkillsArr;
-			}
+			mesh.requiredSkills = result;
 			changeCurrentMesh(mesh);
 		}
-		setOpenSkillSelectDialog(false);
+		setRequiredSkillSelectorOpen(false);
+	}
+
+	function handleGainedSkillSelectorClose(result?: SkillFormModel[]) {
+		if (result) {
+			const mesh: Mesh = {
+				requiredSkills: displayedMesh.requiredSkills,
+				lesson: displayedMesh.lesson,
+				gainedSkills: displayedMesh.gainedSkills
+			};
+			mesh.gainedSkills = result;
+			changeCurrentMesh(mesh);
+		}
+		setGainedSkillSelectorOpen(false);
 	}
 
 	function onCloseLessonSelector(lesson?: LessonSummary) {
-		setLessonSelectorOpen(false);
-
 		if (lesson) {
 			const mesh: Mesh = {
-				requiredSkills: currentMesh.requiredSkills,
+				requiredSkills: displayedMesh.requiredSkills,
 				lesson: lesson,
-				gainedSkills: currentMesh.gainedSkills
+				gainedSkills: displayedMesh.gainedSkills
 			};
 			changeCurrentMesh(mesh);
 		}
+		setLessonSelectorOpen(false);
 	}
 
 	return (
 		<>
-			<div className="grid max-w-[1100px] flex-col space-x-3 border bg-white p-2 xl:grid-cols-[320px_320px_320px] ">
-				{/**
-				<Selector
-					title={"Voraussetzung"}
-					btnText={"Hinzufügen"}
-					isDialogOpen={openSkillSelectDialog}
-					valueToDisplay={currentMesh.requiredSkills[0]}
-					selectorType={<SkillSelectDialog onClose={handleSkillSelectDialogClose} />}
-					handleDialogClose={handleSkillSelectDialogClose}
-				/>
-				*/}
-				<div className="">
+			<div className="grid max-w-[1100px] flex-col space-x-3 border bg-white p-2 xl:grid-cols-[320px_320px_320px]">
+				<div>
 					<div className="flex justify-between">
 						<h1 className="text-1xl">Voraussetzung</h1>
 						<IconButton
 							type="button"
-							onClick={() => setOpenSkillSelectDialog(true)}
+							onClick={() => setRequiredSkillSelectorOpen(true)}
 							title="Hinzufügen"
 							text="Hinzufügen"
 							icon={<PlusIcon className="h-4" />}
@@ -319,16 +244,23 @@ function SkillLessonLinker({
 						/>
 					</div>
 					<div className="pt-2">
-						<p className="textfield min-w-[200px] border">
-							{currentMesh.requiredSkills[0]}
-						</p>
+						<div className="textfield min-w-[200px] border">
+							{displayedMesh.requiredSkills.map(
+								(skill: SkillFormModel, inx: number) => (
+									<p key={inx}>{skill.name}</p>
+								)
+							)}
+						</div>
 					</div>
-					{openSkillSelectDialog && (
-						<SkillSelectDialog onClose={handleSkillSelectDialogClose} />
+					{requiredSkillSelectorOpen && (
+						<SelectSkillDialog
+							repositoryId={respositoryId}
+							onClose={handleRequiredSkillSelectorClose}
+						/>
 					)}
 				</div>
 
-				<div className="">
+				<div>
 					<div className="flex justify-between">
 						<h1 className="text-1xl">Lerneinheit</h1>
 						<button
@@ -341,7 +273,7 @@ function SkillLessonLinker({
 					</div>
 					<div className="pt-2">
 						<p className="textfield min-w-[200px] border">
-							{currentMesh.lesson.title}{" "}
+							{displayedMesh.lesson.title}
 						</p>
 					</div>
 				</div>
@@ -349,13 +281,12 @@ function SkillLessonLinker({
 					<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 				)}
 
-				<div className="">
+				<div>
 					<div className="flex justify-between">
 						<h1 className="text-1xl">Lernziel</h1>
 						<IconButton
 							type="button"
-							data-testid="author-add"
-							onClick={() => setOpenSkillSelectDialog(true)}
+							onClick={() => setGainedSkillSelectorOpen(true)}
 							title="Hinzufügen"
 							text="Hinzufügen"
 							icon={<PlusIcon className="h-4" />}
@@ -363,11 +294,21 @@ function SkillLessonLinker({
 						/>
 					</div>
 					<div className="pt-2">
-						<p className="textfield min-w-[200px] border">
-							{currentMesh.gainedSkills[0]}
-						</p>
+						<div className="textfield min-w-[200px] border">
+							{displayedMesh.gainedSkills.map(
+								(skill: SkillFormModel, inx: number) => (
+									<p key={inx}>{skill.name}</p>
+								)
+							)}
+						</div>
 					</div>
 				</div>
+				{gainedSkillSelectorOpen && (
+					<SelectSkillDialog
+						repositoryId={respositoryId}
+						onClose={handleGainedSkillSelectorClose}
+					/>
+				)}
 			</div>
 			<div className="flex justify-end">
 				<button
@@ -399,8 +340,7 @@ function LearnpathEditorLogs({
 		onEditClick(mesh);
 	};
 
-	const index = 0;
-	const [selectedIndex, setSelectedIndex] = useState(index);
+	const [selectedIndex, setSelectedIndex] = useState(0);
 
 	function handleChange(index: number) {
 		setSelectedIndex(index);
@@ -438,16 +378,20 @@ function LearnpathEditorLogs({
 								</TableDataColumn>
 								<TableDataColumn>
 									<div className="flex flex-wrap gap-4">
-										{mesh.requiredSkills.map((skill: string, inx: number) => (
-											<p key={inx}>{skill}</p>
-										))}
+										{mesh.requiredSkills.map(
+											(skill: SkillFormModel, inx: number) => (
+												<p key={inx}>{skill.name}</p>
+											)
+										)}
 									</div>
 								</TableDataColumn>
 								<TableDataColumn>
 									<div className="flex flex-wrap gap-4">
-										{mesh.gainedSkills.map((skill: string, inx: number) => (
-											<p key={inx}>{skill}</p>
-										))}
+										{mesh.gainedSkills.map(
+											(skill: SkillFormModel, inx: number) => (
+												<p key={inx}>{skill.name}</p>
+											)
+										)}
 									</div>
 								</TableDataColumn>
 								<TableDataColumn>
@@ -487,56 +431,3 @@ function LearnpathEditorLogs({
 		</>
 	);
 }
-
-/* TODO: remove or integrate
-
-function Selector({
-	title,
-	btnText,
-	valueToDisplay,
-	selectorType,
-	isDialogOpen,
-	handleDialogClose: handleSkillSelectDialogClose
-}: {
-	title: string;
-	btnText: string;
-	valueToDisplay: string;
-	selectorType: ReactNode;
-	isDialogOpen: boolean;
-	handleDialogClose: (result: any) => void;
-}) {
-	const [openSelectDialog, setOpenSelectDialog] = useState(false);
-	function handleCloseDialog(result: any) {
-		setOpenSelectDialog(false);
-		handleSkillSelectDialogClose(result);
-	}
-
-	function handleOnGetValue() {
-		console.log("ojlasdkf");
-	}
-
-	return (
-		<>
-			<div className="">
-				<div className="flex justify-between">
-					<h1 className="text-1xl">{title}</h1>
-					<IconButton
-						type="button"
-						onClick={() => (isDialogOpen = true)}
-						title={btnText}
-						text={btnText}
-						icon={<PlusIcon className="h-4" />}
-						className="btn-primary"
-					/>
-				</div>
-				<div className="">
-					<p className="textfield min-w-[200px] border">{valueToDisplay}</p>
-				</div>
-				{openSelectDialog && <SkillSelectDialog onClose={handleCloseDialog} />}
-				{isDialogOpen && selectorType}
-			</div>
-		</>
-	);
-}
-
-*/
