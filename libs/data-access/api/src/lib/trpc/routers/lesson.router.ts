@@ -15,8 +15,26 @@ export const lessonRouter = t.router({
 						username: true
 					}
 				},
-				requirements: { select: { id: true, name: true } },
-				teachingGoals: { select: { id: true, name: true } }
+				requirements: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						repositoryId: true,
+						parents: true
+					}
+				},
+				teachingGoals: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						repositoryId: true,
+						parents: true
+					}
+				}
 			}
 		});
 	}),
