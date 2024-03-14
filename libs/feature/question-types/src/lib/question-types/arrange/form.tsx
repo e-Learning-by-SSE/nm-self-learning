@@ -107,6 +107,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 				title={"Kategorien"}
 				button={
 					<AddButton
+						title={"Kategorie Hinzufügen"}
 						onAdd={() => setAddCategoryDialog(true)}
 						additionalClassNames={"w-fit"}
 					>

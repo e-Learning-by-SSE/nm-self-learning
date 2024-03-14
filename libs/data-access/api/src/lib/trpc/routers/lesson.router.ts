@@ -14,7 +14,9 @@ export const lessonRouter = t.router({
 					select: {
 						username: true
 					}
-				}
+				},
+				requirements: { select: { id: true, name: true } },
+				teachingGoals: { select: { id: true, name: true } }
 			}
 		});
 	}),

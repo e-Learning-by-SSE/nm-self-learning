@@ -80,7 +80,7 @@ export function LessonEditor({
 		},
 		resolver: zodResolver(lessonSchema)
 	});
-
+	console.log(initialLesson);
 	return (
 		<FormProvider {...form}>
 			<form
