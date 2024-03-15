@@ -21,48 +21,45 @@ function QuestionLink({
 function ReportItem({ path, missedItem }: { path: string; missedItem: MissedElement }) {
 	switch (missedItem.type) {
 		case "programming":
-			switch (missedItem.cause) {
-				case "unsupportedLanguage":
-					return (
-						<>
-							<QuestionLink path={path} index={missedItem.index}>
-								Programmieraufgabe {missedItem.index}
-							</QuestionLink>{" "}
-							konnte nicht ausführbar gemacht werden, da für{" "}
-							<span className="font-mono">{missedItem.language}</span> keine
-							Laufzeitumgebung zur Verfügung steht.
-						</>
-					);
+			if (missedItem.cause === "unsupportedLanguage") {
+				return (
+					<>
+						<QuestionLink path={path} index={missedItem.index}>
+							Programmieraufgabe {missedItem.index}
+						</QuestionLink>{" "}
+						konnte nicht ausführbar gemacht werden, da für{" "}
+						<span className="font-mono">{missedItem.language}</span> keine
+						Laufzeitumgebung zur Verfügung steht.
+					</>
+				);
 			}
 			break;
 		case "programmingUnspecific":
-			switch (missedItem.cause) {
-				case "unsupportedSolution":
-					return (
-						<>
-							Für Programmieraufgaben können keine automatische Überprüfung der Lösung
-							exportiert werden.
-						</>
-					);
-				case "hintsUnsupported":
-					return <>Für Programmieraufgaben können keine Hints erstellt werden.</>;
+			if (missedItem.cause === "unsupportedSolution") {
+				return (
+					<>
+						Für Programmieraufgaben können keine automatische Überprüfung der Lösung
+						exportiert werden.
+					</>
+				);
+			} else if (missedItem.cause === "hintsUnsupported") {
+				return <>Für Programmieraufgaben können keine Hints erstellt werden.</>;
 			}
 			break;
 		case "clozeText":
-			switch (missedItem.cause) {
-				case "unsupportedAnswerType":
-					return (
-						<>
-							Für den{" "}
-							<QuestionLink path={path} index={missedItem.index}>
-								Lückentext {missedItem.index}
-							</QuestionLink>{" "}
-							konnten eine oder mehrere Lücken nicht korrekt exportiert werden. Es ist
-							nicht möglich Lücken mit mehreren Antworten zu exportieren, diese Lücken
-							werden als Einzelantwort behandelt. Die korrekte Antwort entspricht
-							dabei der ersten Antwort alle Möglichen.
-						</>
-					);
+			if (missedItem.cause === "unsupportedAnswerType") {
+				return (
+					<>
+						Für den{" "}
+						<QuestionLink path={path} index={missedItem.index}>
+							Lückentext {missedItem.index}
+						</QuestionLink>{" "}
+						konnten eine oder mehrere Lücken nicht korrekt exportiert werden. Es ist
+						nicht möglich Lücken mit mehreren Antworten zu exportieren, diese Lücken
+						werden als Einzelantwort behandelt. Die korrekte Antwort entspricht dabei
+						der ersten Antwort alle Möglichen.
+					</>
+				);
 			}
 			break;
 		case "article": {
@@ -73,11 +70,12 @@ function ReportItem({ path, missedItem }: { path: string; missedItem: MissedElem
 			return (
 				<>
 					`Der Artikel konnte nicht vollständig exportiert werden, da ${element}: $
-					{missedItem.cause.join(", ")})`
+					{missedItem.cause.join(", ")}`
 				</>
 			);
 		}
 	}
+	return <>Unbekannter Fehler</>;
 }
 
 export function IncompleteExportSynopsis({
