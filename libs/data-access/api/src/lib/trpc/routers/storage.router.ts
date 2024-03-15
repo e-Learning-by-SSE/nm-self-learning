@@ -126,7 +126,6 @@ export const storageRouter = t.router({
 			url += `/${minioConfig.bucketName}`;
 		}
 
-		console.log("MiniIO URL:", url);
 		return url;
 	})
 });
