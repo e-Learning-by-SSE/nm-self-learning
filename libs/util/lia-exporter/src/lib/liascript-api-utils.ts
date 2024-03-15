@@ -148,7 +148,6 @@ export function markdownify(
 		} else if (removeLineNumbers && line.startsWith("```") && line.length > 3) {
 			// Removes unsupported line numbers from code blocks
 			// Actually, this removes everything after the first space (language spec)
-			let addToI = 0; //IF there is need to add a line for the highlighting, we need to skip i by one to not go infinite
 			const index = line.indexOf(" ");
 			if (index > 0) {
 				if (line.includes("showLineNumbers")) {
@@ -174,43 +173,40 @@ export function markdownify(
 						});
 						highlightComment += '" -->';
 						lines.splice(i, 0, highlightComment);
-						addToI++; // if we added something make fix the position of i
+						i++; // if we added something make fix the position of i
 					}
 				} else {
 					errorCause.push("Unsupported Code Style");
 				}
-				i += addToI;
 				lines[i] = line.slice(0, index);
 			}
 		}
-
-		// Close all remaining levels
-		while (levels.length > 1) {
-			levels.pop();
-			lines.push(`</${htmlTag}>\n`);
-		}
-
-		const markdownStr = lines.join("\n").trim();
-
-		if (storageUrls) {
-			const { text, resources } = removeStorageUrls(markdownStr, {
-				storageUrls,
-				storageDestination
-			});
-			return { markdown: text, resources };
-		}
-		if (errorCause.length > 0) {
-			onUnsupportedItem({
-				type: "article",
-				id: "id",
-				cause: errorCause
-			});
-		}
-
-		const resources: MediaFileReplacement[] = [];
-		return { markdown: markdownStr, resources };
 	}
-	return { markdown: "", resources: [] }; //Added instead of the error that there is nothing returned
+	// Close all remaining levels
+	while (levels.length > 1) {
+		levels.pop();
+		lines.push(`</${htmlTag}>\n`);
+	}
+
+	const markdownStr = lines.join("\n").trim();
+
+	if (storageUrls) {
+		const { text, resources } = removeStorageUrls(markdownStr, {
+			storageUrls,
+			storageDestination
+		});
+		return { markdown: text, resources };
+	}
+	if (errorCause.length > 0) {
+		onUnsupportedItem({
+			type: "article",
+			id: "id",
+			cause: errorCause
+		});
+	}
+
+	const resources: MediaFileReplacement[] = [];
+	return { markdown: markdownStr, resources };
 }
 
 /**

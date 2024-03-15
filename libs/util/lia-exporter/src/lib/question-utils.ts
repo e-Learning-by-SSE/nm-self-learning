@@ -19,7 +19,6 @@ export function convertQuizzes(
 	let programmingTaskWithHints = false;
 
 	for (const [index, question] of quiz.questions.entries()) {
-		console.log("question", question);
 		switch (question.type) {
 			case "multiple-choice": {
 				convertedQuizzes.push(convertMultipleChoice({ question, markdownify }));
@@ -320,7 +319,6 @@ function transformClozeAnswerBlock(
 			conversionError
 		)
 	).replace(/,/g, "|");
-	console.log(transformedAnswer);
 	return { indexStartAnswerBlock, indexEndAnswerBlock, transformedAnswer };
 }
 
