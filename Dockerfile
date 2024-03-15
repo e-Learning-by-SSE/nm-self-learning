@@ -17,10 +17,6 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json ./
-COPY .npmrc.example .npmrc
-RUN sed -i "s/\${NPM_TOKEN}/${NPM_TOKEN}/g" .npmrc
-RUN npm install
-RUN rm .npmrc
 
 #RUN addgroup --system --gid 1001 nodejs
 #RUN adduser --system --uid 1001 nextjs
