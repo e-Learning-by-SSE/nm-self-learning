@@ -23,7 +23,8 @@ import JSZip from "jszip";
 import { downloadWithProgress, getFileSize } from "./network-utils";
 /**
  * Generates a zip file (markdown file + media files)that can be imported into LiaScript.
- * @param param0 The course to export
+ * @param course The course to export (collection of lessons, data like title, ...)
+ * @param lessons The NanoModules of the course (the media, quizzes, and data like title, description, ...)
  * @param signal An abort signal to allow aborting the download by the user. Created via AbortController.
  * @param onProgress A callback to inform about the progress (in percent: 0 .. 100)
  * @param onInfo A callback to inform about the current action (e.g. which file is currently downloaded)
