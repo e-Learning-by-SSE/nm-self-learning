@@ -100,7 +100,7 @@ export function CourseEditor({
 					onClose={() => {
 						setViewExportDialog(false);
 					}}
-				></ExportCourseDialog>
+				/>
 			)}
 		</div>
 	);
