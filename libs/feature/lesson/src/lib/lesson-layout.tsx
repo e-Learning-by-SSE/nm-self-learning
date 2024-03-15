@@ -7,7 +7,7 @@ import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
 import { useMemo } from "react";
-import { LessonContent, getLesson } from "./lesson-utils";
+import { LessonContent, getLesson } from "./lesson-data-access";
 
 export type LessonLayoutProps = {
 	lesson: LessonContent;
