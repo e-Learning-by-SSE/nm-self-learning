@@ -191,13 +191,24 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	const lessonsMap = convertLessonsToMap(lessons);
 
 	if (options.addTitlePage) {
-		addTitlePage();
+		sections.push(addTitlePage());
 	}
 
 	for (const chapter of course.content as CourseChapter[]) {
 		// Chapters are collections of lessons.
 		const baseIndent = options.addTitlePage ? 2 : 1;
-		addSection(chapter, baseIndent);
+		sections.push(addSection(chapter, baseIndent));
+
+		chapter.content.forEach(entry => {
+			const lesson = lessonsMap.get(entry.lessonId);
+			if (lesson) {
+				const lessonIndent = baseIndent < 6 ? ((baseIndent + 1) as IndentationLevels) : 6;
+
+				sections.push(addLessonOverviewPage(lesson, lessonIndent));
+
+				addLesson(lesson, lessonIndent);
+			}
+		});
 	}
 
 	const markdown = await liaScriptExport(json);
@@ -297,7 +308,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 				);
 			}
 		}
-		sections.push(section);
+		return section;
 	}
 
 	function addSection(chapter: CourseChapter, indent: IndentationLevels) {
@@ -312,28 +323,10 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			section.body.push(description);
 		}
 
-		sections.push(section);
-
-		chapter.content.forEach(entry => {
-			const lesson = lessonsMap.get(entry.lessonId);
-			if (lesson) {
-				const lessonIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
-				addLesson(lesson, lessonIndent);
-			}
-		});
+		return section;
 	}
 
-	function addLesson(lesson: LessonExport, indent: IndentationLevels) {
-		// List of potentially incomplete exported elements
-		const incompleteExport: IncompleteNanoModuleExport = {
-			nanomodule: {
-				name: lesson.title,
-				id: lesson.lessonId,
-				slug: lesson.slug
-			},
-			missedElements: []
-		};
-
+	function addLessonOverviewPage(lesson: LessonExport, indent: IndentationLevels) {
 		const nm = {
 			title: lesson.title,
 			indent: indent,
@@ -348,10 +341,23 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		lesson.description && nm.body.push(markdownify(lesson.description));
 		lesson.selfRegulatedQuestion &&
 			nm.body.push(markdownify(`**Aktivierungsfrage:** ${lesson.selfRegulatedQuestion}`));
-		sections.push(nm);
+		return nm;
+	}
+
+	function addLesson(lesson: LessonExport, indent: IndentationLevels) {
+		// List of potentially incomplete exported elements
+		const incompleteExport: IncompleteNanoModuleExport = {
+			nanomodule: {
+				name: lesson.title,
+				id: lesson.lessonId,
+				slug: lesson.slug
+			},
+			missedElements: []
+		};
 
 		// Convert content, which may contain: video, article, pdf, link to external web page
 		const lessonContent = lesson.content as LessonContent;
+
 		const video = findContentType("video", lessonContent);
 		if (video.content) {
 			const videoIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
