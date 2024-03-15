@@ -2,7 +2,7 @@ import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common"
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { CourseFormModel } from "./course-form-model";
 import { IncompleteNanoModuleExport, exportCourseArchive } from "@self-learning/lia-exporter";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { trpc } from "@self-learning/api-client";
 import { IncompleteExportSynopsis } from "./incomplete-export-synopsis";
 
@@ -18,7 +18,6 @@ export function ExportCourseDialog({
 	const [title, setTitle] = useState(`Exportiere: ${course.title}`);
 
 	const { data, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
-	const { data: minioUrl, isLoading: isLoadingUrl } = trpc.storage.getStorageUrl.useQuery();
 
 	const [generated, setGenerated] = useState(false);
 	const [exportResult, setExportResult] = useState<Blob>(new Blob());
@@ -27,6 +26,14 @@ export function ExportCourseDialog({
 	const [progress, setProgress] = useState(0);
 	const [lblClose, setCloseLabel] = useState("Abbrechen");
 	const abortController = useRef(new AbortController());
+
+	// Optional public env variable that indicates were the storage is located
+	const minioUrl = process.env["NEXT_PUBLIC_MINIO_PUBLIC_URL"];
+	const storagesToInclude = useMemo(() => {
+		const storagesToInclude = ["https://staging.sse.uni-hildesheim.de:9006/upload/"];
+		minioUrl && storagesToInclude.push(minioUrl);
+		return storagesToInclude;
+	}, [minioUrl]);
 
 	// This effect triggers the download after the content was generated
 	useEffect(() => {
@@ -55,7 +62,7 @@ export function ExportCourseDialog({
 
 	// This effect will trigger the content generation after the data was loaded completely
 	useEffect(() => {
-		if (data && !isLoading && minioUrl && !isLoadingUrl) {
+		if (data && !isLoading) {
 			const convert = async () => {
 				try {
 					const { zipArchive, incompleteExportedItems } = await exportCourseArchive(
@@ -64,10 +71,7 @@ export function ExportCourseDialog({
 						setProgress,
 						setMessage,
 						{
-							storagesToInclude: [
-								minioUrl,
-								"https://staging.sse.uni-hildesheim.de:9006/upload/"
-							]
+							storagesToInclude
 						}
 					);
 					if (zipArchive) {
@@ -93,7 +97,7 @@ export function ExportCourseDialog({
 
 			convert();
 		}
-	}, [data, isLoading, minioUrl, isLoadingUrl, course.title]);
+	}, [data, isLoading, course.title, storagesToInclude]);
 
 	if (!open) return null;
 	return (
