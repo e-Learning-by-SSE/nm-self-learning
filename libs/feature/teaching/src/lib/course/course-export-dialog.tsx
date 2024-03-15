@@ -19,8 +19,7 @@ export function ExportCourseDialog({
 
 	const { data, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
 
-	const [generated, setGenerated] = useState(false);
-	const [exportResult, setExportResult] = useState<Blob>(new Blob());
+	const [exportResult, setExportResult] = useState<Blob | null>(null);
 	const [errorReport, setErrorReport] = useState<IncompleteNanoModuleExport[]>([]);
 
 	const [progress, setProgress] = useState(0);
@@ -37,7 +36,7 @@ export function ExportCourseDialog({
 
 	// This effect triggers the download after the content was generated
 	useEffect(() => {
-		if (generated) {
+		if (exportResult) {
 			try {
 				const blob = new Blob([exportResult], { type: "blob" });
 				const downloadUrl = window.URL.createObjectURL(blob);
@@ -58,7 +57,7 @@ export function ExportCourseDialog({
 				setMessage(`Error: ${error}`);
 			}
 		}
-	}, [exportResult, open, course, generated, onClose, errorReport]);
+	}, [exportResult, open, course, onClose, errorReport]);
 
 	// This effect will trigger the content generation after the data was loaded completely
 	useEffect(() => {
@@ -77,7 +76,6 @@ export function ExportCourseDialog({
 					if (zipArchive) {
 						setExportResult(zipArchive);
 					}
-					setGenerated(true);
 					if (incompleteExportedItems.length > 0) {
 						const element =
 							incompleteExportedItems.length > 1 ? "einige Elemente" : "ein Element";
