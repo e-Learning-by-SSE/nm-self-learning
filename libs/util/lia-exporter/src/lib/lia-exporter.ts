@@ -19,7 +19,7 @@ import {
 	MissedElement
 } from "./types";
 import { convertQuizzes } from "./question-utils";
-import JSZip = require("jszip");
+import * as JSZip from "JSZip";
 import { downloadWithProgress, getFileSize } from "./network-utils";
 /**
  * Generates a zip file (markdown file + media files)that can be imported into LiaScript.
