@@ -15,7 +15,8 @@ const selectStatement = {
 			name: true,
 			url: true,
 			logoUrl: true,
-			licenseText: true
+			licenseText: true,
+			oerCompatible: true
 		}
 	},
 	lessonType: true,
