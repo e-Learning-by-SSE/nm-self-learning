@@ -209,22 +209,19 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	 * @returns A relative URL or the input URL if it does not point to our storage.
 	 */
 	function relativizeUrl(url?: string) {
-		if (url) {
-			if (options.storagesToInclude && options.storagesToInclude.length > 0) {
-				for (const storageUrl of options.storagesToInclude) {
-					if (url.startsWith(storageUrl)) {
-						const source = url;
-						url = url.replace(storageUrl, options.storageDestination ?? "");
-						mediaFiles.push({ source, destination: url });
-						break;
-					}
+		if (!url) return "";
+
+		if (options.storagesToInclude && options.storagesToInclude.length > 0) {
+			for (const storageUrl of options.storagesToInclude) {
+				if (url.startsWith(storageUrl)) {
+					const source = url;
+					url = url.replace(storageUrl, options.storageDestination ?? "");
+					mediaFiles.push({ source, destination: url });
+					break;
 				}
 			}
-
-			return url;
 		}
-
-		return "";
+		return url;
 	}
 
 	/**
