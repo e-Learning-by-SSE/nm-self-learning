@@ -49,20 +49,19 @@ function ReportItem({ path, missedItem }: { path: string; missedItem: MissedElem
 			}
 			break;
 		case "clozeText":
-			switch (missedItem.cause) {
-				case "unsupportedAnswerType":
-					return (
-						<>
-							Für den{" "}
-							<QuestionLink path={path} index={missedItem.index}>
-								Lückentext {missedItem.index}
-							</QuestionLink>{" "}
-							konnten eine oder mehrere Lücken nicht korrekt exportiert werden. Es ist
-							nicht möglich Lücken mit mehreren Antworten zu exportieren, diese Lücken
-							werden als Einzelantwort behandelt. Die korrekte Antwort entspricht
-							dabei der ersten Antwort alle Möglichen.
-						</>
-					);
+			if (missedItem.cause === "unsupportedAnswerType") {
+				return (
+					<>
+						Für den{" "}
+						<QuestionLink path={path} index={missedItem.index}>
+							Lückentext {missedItem.index}
+						</QuestionLink>{" "}
+						konnten eine oder mehrere Lücken nicht korrekt exportiert werden. Es ist
+						nicht möglich Lücken mit mehreren Antworten zu exportieren, diese Lücken
+						werden als Einzelantwort behandelt. Die korrekte Antwort entspricht dabei
+						der ersten Antwort alle Möglichen.
+					</>
+				);
 			}
 			break;
 		case "article": {
