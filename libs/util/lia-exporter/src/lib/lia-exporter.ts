@@ -5,7 +5,8 @@ import {
 	liaScriptExport,
 	IndentationLevels,
 	selectNarrator,
-	removeStorageUrls
+	removeStorageUrls,
+	parseIndent
 } from "./liascript-api-utils";
 import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
@@ -202,7 +203,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		chapter.content.forEach(entry => {
 			const lesson = lessonsMap.get(entry.lessonId);
 			if (lesson) {
-				const lessonIndent = baseIndent < 6 ? ((baseIndent + 1) as IndentationLevels) : 6;
+				const lessonIndent = parseIndent(baseIndent + 1);
 
 				sections.push(addLessonOverviewPage(lesson, lessonIndent));
 
