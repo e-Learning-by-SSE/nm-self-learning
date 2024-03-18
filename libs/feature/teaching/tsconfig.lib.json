@@ -19,5 +19,12 @@
 		"**/*.spec.jsx",
 		"**/*.test.jsx"
 	],
-	"include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "../../../index.d.ts"]
+	"include": [
+		"**/*.js",
+		"**/*.jsx",
+		"**/*.ts",
+		"**/*.tsx",
+		"../../../index.d.ts",
+		"../../ui/common/src/lib/collapsible/collapsible-box.tsx"
+	]
 }

@@ -1,6 +1,8 @@
+import { DialogWithReactNodeTitle, CollapsibleBox } from "@self-learning/ui/common";
+import { CenteredContainer } from "@self-learning/ui/layouts";
 import { IncompleteNanoModuleExport, MissedElement } from "@self-learning/lia-exporter";
 import Link from "next/link";
-import { CourseFormModel } from "./course-form-model";
+import { CourseFormModel } from "../course-form-model";
 
 function QuestionLink({
 	path,
@@ -78,33 +80,72 @@ function ReportItem({ path, missedItem }: { path: string; missedItem: MissedElem
 	return <>Unbekannter Fehler</>;
 }
 
-export function IncompleteExportSynopsis({
+/**
+ * Creates a section title for a incomplete nanomodule export
+ * @param slug The slug referring (link) to the course
+ * @param item The report of the incomplete nanomodule export
+ * @returns A section title including a link to visit the nanomodule, which can be used as title for a collapsible box
+ */
+function SectionTitle({ slug, item }: { slug: string; item: IncompleteNanoModuleExport }) {
+	return (
+		<div className="flex">
+			<Link href={`/courses/${slug}/${item.nanomodule.slug}`} target="_blank">
+				<div className="mt-2 mb-2 text-lg text-secondary">{item.nanomodule.name}</div>
+			</Link>
+			<p className="ml-2 mt-2 mb-2 text-lg font-normal">{`(${item.missedElements.length} unvollständige Elemente)`}</p>
+		</div>
+	);
+}
+
+export function ErrorReportDialog({
 	report,
-	course
+	course,
+	onClose
 }: {
 	report: IncompleteNanoModuleExport[];
 	course: CourseFormModel;
+	onClose: () => void;
 }) {
-	return (
-		<div>
-			{report.map(item => (
-				<div>
-					<Link href={`/courses/${course.slug}/${item.nanomodule.slug}`} target="_blank">
-						<h2 className="mb-2 mt-2 text-lg">{`${item.nanomodule.name} (${item.nanomodule.id})`}</h2>
-					</Link>
+	const element = report.length > 1 ? "Einige Elemente werden" : "Ein Element wird";
 
-					<ul className="ml-4 list-disc space-y-1">
-						{item.missedElements.map(missed => (
-							<li>
-								<ReportItem
-									missedItem={missed}
-									path={`/courses/${course.slug}/${item.nanomodule.slug}`}
-								/>
-							</li>
-						))}
-					</ul>
+	return (
+		<CenteredContainer>
+			<DialogWithReactNodeTitle
+				style={{ height: "80vh", width: "80vw", overflow: "auto" }}
+				title={`${course.title} erfolgreich exportiert`}
+				onClose={onClose}
+			>
+				<div className="mt-[-1rem] mb-4">{`${element} nicht vollständig in LiaScript unterstützt:`}</div>
+				<div className="scroll flex-grow overflow-auto">
+					{report.map(item => (
+						<div className="mb-2">
+							<CollapsibleBox title={<SectionTitle slug={course.slug} item={item} />}>
+								<ul className="ml-4 list-disc space-y-1">
+									{item.missedElements.map(missed => (
+										<li>
+											<ReportItem
+												missedItem={missed}
+												path={`/courses/${course.slug}/${item.nanomodule.slug}`}
+											/>
+										</li>
+									))}
+								</ul>
+							</CollapsibleBox>
+						</div>
+					))}
 				</div>
-			))}
-		</div>
+				<div className="mt-2 grid justify-items-end">
+					<button
+						className="btn-primary"
+						type="button"
+						onClick={() => {
+							onClose();
+						}}
+					>
+						Schließen
+					</button>
+				</div>
+			</DialogWithReactNodeTitle>
+		</CenteredContainer>
 	);
 }

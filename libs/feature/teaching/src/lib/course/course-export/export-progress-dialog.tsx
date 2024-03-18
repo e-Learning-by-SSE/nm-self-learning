@@ -1,26 +1,26 @@
 import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { CourseFormModel } from "./course-form-model";
+import { CourseFormModel } from "../course-form-model";
 import { IncompleteNanoModuleExport, exportCourseArchive } from "@self-learning/lia-exporter";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { trpc } from "@self-learning/api-client";
-import { IncompleteExportSynopsis } from "./incomplete-export-synopsis";
 
-export function ExportCourseDialog({
+export function ExportCourseProgressDialog({
 	course,
-	onClose
+	onClose,
+	onFinish,
+	onError
 }: {
 	course: CourseFormModel;
 	onClose: () => void;
+	onFinish: () => void;
+	onError: (report: IncompleteNanoModuleExport[]) => void;
 }) {
-	const [open, setOpen] = useState(true);
+	const title = `Exportiere: ${course.title}`;
 	const [message, setMessage] = useState(`Export: ${course.title}`);
-	const [title, setTitle] = useState(`Exportiere: ${course.title}`);
 
 	const { data, isLoading } = trpc.course.fullExport.useQuery({ slug: course.slug });
-
 	const [exportResult, setExportResult] = useState<Blob | null>(null);
-	const [errorReport, setErrorReport] = useState<IncompleteNanoModuleExport[]>([]);
 
 	const [progress, setProgress] = useState(0);
 	const abortController = useRef(new AbortController());
@@ -50,16 +50,13 @@ export function ExportCourseDialog({
 			try {
 				const blob = new Blob([exportResult], { type: "blob" });
 				startBrowserDownload(blob, `${course.title}.zip`);
-				if (errorReport.length === 0) {
-					setOpen(false);
-					onClose();
-				}
+				onFinish();
 			} catch (error) {
 				// Display error message to user
 				setMessage(`Error: ${error}`);
 			}
 		}
-	}, [exportResult, open, course, onClose, errorReport]);
+	}, [exportResult, course, onFinish]);
 
 	// This effect will trigger the content generation after the data was loaded completely
 	useEffect(() => {
@@ -79,13 +76,7 @@ export function ExportCourseDialog({
 						setExportResult(zipArchive);
 					}
 					if (incompleteExportedItems.length > 0) {
-						const element =
-							incompleteExportedItems.length > 1 ? "einige Elemente" : "ein Element";
-						setTitle(`${course.title} erfolgreich exportiert`);
-						setMessage(
-							`Für ${element} wurde der Export nicht vollständig unterstützt.`
-						);
-						setErrorReport(incompleteExportedItems);
+						onError(incompleteExportedItems);
 					}
 				} catch (error) {
 					// Display error message to user
@@ -95,26 +86,19 @@ export function ExportCourseDialog({
 
 			convert();
 		}
-	}, [data, isLoading, course.title, storagesToInclude]);
+	}, [data, isLoading, storagesToInclude, onError]);
 
-	const hasError = message.startsWith("Error") || errorReport.length > 0;
+	const closeLabel = message.startsWith("Error") ? "Schließen" : "Abbrechen";
 
-	if (!open) return null;
 	return (
 		<CenteredContainer>
 			<DialogWithReactNodeTitle
 				style={{ height: "30vh", width: "60vw", overflow: "auto" }}
 				title={title}
-				onClose={() => {
-					abortController.current.abort();
-					setOpen(false);
-					onClose();
-				}}
+				// Prevent closing the dialog by clicking on the backdrop
+				onClose={() => {}}
 			>
 				{progress < 100 && <ProgressBar progress={progress} />}
-				{errorReport.length > 0 && (
-					<IncompleteExportSynopsis report={errorReport} course={course} />
-				)}
 				<div className="overlay">{message}</div>
 				<div className="grid justify-items-end">
 					<button
@@ -122,11 +106,10 @@ export function ExportCourseDialog({
 						type="button"
 						onClick={() => {
 							abortController.current.abort();
-							setOpen(false);
 							onClose();
 						}}
 					>
-						{hasError ? "Schließen" : "Abbrechen"}
+						{closeLabel}
 					</button>
 				</div>
 			</DialogWithReactNodeTitle>
