@@ -231,7 +231,6 @@ export function selectNarrator(options: NonNullable<ExportOptions>) {
 		case "en":
 			return options.narrator == "female" ? "US English Female" : "US English Male";
 		default:
-			// Default value, if unspecified: German platform + female speaker
 			return "Deutsch Female";
 	}
 }
