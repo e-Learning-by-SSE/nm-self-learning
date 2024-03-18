@@ -5,7 +5,17 @@ import { MissedElement } from "./types";
 /**
  * Allowed indentation levels for LiaScript sections.
  */
-export type IndentationLevels = 1 | 2 | 3 | 4 | 5 | 6;
+const indentationLevels = [1, 2, 3, 4, 5, 6] as const; // dont export this
+export const maxIndentationLevel = Math.max(...indentationLevels);
+export type IndentationLevels = typeof indentationLevels[number];
+export function parseIndent(indent: number) {
+	return isSupportedIndentationLevel(indent)
+		? (indent as IndentationLevels)
+		: (maxIndentationLevel as IndentationLevels);
+}
+export function isSupportedIndentationLevel(value: number): value is IndentationLevels {
+	return value >= 1 && value < maxIndentationLevel;
+}
 
 export type LiaScriptSection = {
 	title: string;
