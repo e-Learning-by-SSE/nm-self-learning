@@ -5,6 +5,33 @@ import Link from "next/link";
 import { CourseFormModel } from "../course-form-model";
 
 /**
+ * Generates a Link to the quiz with the given index in a uniform format.
+ * @param courseUrlPath The URL of the exported course (used as prefix to generate links)
+ * @param quizIndex The index of the quiz within all quizzes of the course (0-based)
+ * @param questionType The type of the question (e.g. "Programmieraufgabe", "Lückentext")
+ * @returns a Link component that opens the quiz in a new window.
+ */
+function QuestionLink({
+	courseUrlPath,
+	quizIndex,
+	questionType
+}: {
+	courseUrlPath: string;
+	quizIndex: number;
+	questionType: string;
+}) {
+	return (
+		<Link
+			className="text-secondary"
+			href={`${courseUrlPath}/quiz?index=${quizIndex}`}
+			target="_blank"
+		>
+			{questionType} {quizIndex + 1}
+		</Link>
+	);
+}
+
+/**
  * Generates a report per missed element in a nanomodule export.
  * If possible this will create links for incomplete exported elements to
  * simplify a possible review.
@@ -26,9 +53,11 @@ function ErrorMessageForReportItem({
 			if (missedItem.cause === "unsupportedLanguage") {
 				return (
 					<>
-						<Link href={urlForQuiz(missedItem.index)} target="_blank">
-							Programmieraufgabe {missedItem.index}
-						</Link>{" "}
+						<QuestionLink
+							courseUrlPath={courseUrlPath}
+							quizIndex={missedItem.index}
+							questionType="Programmieraufgabe"
+						/>{" "}
 						konnte nicht ausführbar gemacht werden, da für{" "}
 						<span className="font-mono">{missedItem.language}</span> keine
 						Laufzeitumgebung zur Verfügung steht.
@@ -40,7 +69,7 @@ function ErrorMessageForReportItem({
 			if (missedItem.cause === "unsupportedSolution") {
 				return (
 					<>
-						Für Programmieraufgaben können keine automatische Überprüfung der Lösung
+						Für Programmieraufgaben können keine automatisierte Eingabeüberprüfungen
 						exportiert werden.
 					</>
 				);
@@ -53,9 +82,11 @@ function ErrorMessageForReportItem({
 				return (
 					<>
 						Für den{" "}
-						<Link href={urlForQuiz(missedItem.index)} target="_blank">
-							Lückentext {missedItem.index}
-						</Link>{" "}
+						<QuestionLink
+							courseUrlPath={courseUrlPath}
+							quizIndex={missedItem.index}
+							questionType="Lückentext"
+						/>{" "}
 						konnten eine oder mehrere Lücken nicht korrekt exportiert werden. Es ist
 						nicht möglich Lücken mit mehreren Antworten zu exportieren, diese Lücken
 						werden als Einzelantwort behandelt. Die korrekte Antwort entspricht dabei
