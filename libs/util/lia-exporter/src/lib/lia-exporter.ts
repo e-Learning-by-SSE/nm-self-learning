@@ -506,9 +506,8 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
  */
 function convertLessonsToMap(lessons: LessonExport[]) {
 	const lessonsMap = new Map<string, LessonExport>();
-	for (const lesson of lessons) {
-		console.log(">>Adding a lesson to map?", lesson.title);
+	lessons.forEach(lesson => {
 		lessonsMap.set(lesson.lessonId, lesson);
-	}
+	});
 	return lessonsMap;
 }
