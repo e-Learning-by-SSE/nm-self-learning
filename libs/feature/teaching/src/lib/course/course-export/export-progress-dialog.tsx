@@ -2,8 +2,13 @@ import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common"
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { CourseFormModel } from "../course-form-model";
 import { IncompleteNanoModuleExport, exportCourseArchive } from "@self-learning/lia-exporter";
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import { trpc } from "@self-learning/api-client";
+
+// Optional public env variable that indicates were the storage is located
+const minioUrl = process.env["NEXT_PUBLIC_MINIO_PUBLIC_URL"];
+const storagesToInclude = ["https://staging.sse.uni-hildesheim.de:9006/upload/"];
+minioUrl && storagesToInclude.push(minioUrl);
 
 export function ExportCourseProgressDialog({
 	course,
@@ -24,14 +29,6 @@ export function ExportCourseProgressDialog({
 
 	const [progress, setProgress] = useState(0);
 	const abortController = useRef(new AbortController());
-
-	// Optional public env variable that indicates were the storage is located
-	const minioUrl = process.env["NEXT_PUBLIC_MINIO_PUBLIC_URL"];
-	const storagesToInclude = useMemo(() => {
-		const storagesToInclude = ["https://staging.sse.uni-hildesheim.de:9006/upload/"];
-		minioUrl && storagesToInclude.push(minioUrl);
-		return storagesToInclude;
-	}, [minioUrl]);
 
 	const startBrowserDownload = (blob: Blob, filename: string) => {
 		const downloadUrl = window.URL.createObjectURL(blob);
@@ -86,7 +83,7 @@ export function ExportCourseProgressDialog({
 
 			convert();
 		}
-	}, [data, isLoading, storagesToInclude, onError]);
+	}, [data, isLoading, onError]);
 
 	const closeLabel = message.startsWith("Error") ? "Schließen" : "Abbrechen";
 
