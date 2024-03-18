@@ -55,15 +55,7 @@ export async function exportCourseArchive(
 	// Download all media files located on our storage server
 
 	// Compute the total size of all media files
-	let downloadSize = 0;
-	const sizePerFile = new Map<string, number>();
-	for (const mediaFile of mediaFiles) {
-		const size = await getFileSize(mediaFile.source);
-		downloadSize += size;
-		sizePerFile.set(mediaFile.source, size);
-	}
-	// Zipping takes also some time, we roughly estimate 10% overheads for this
-	const totalSize = 1.1 * downloadSize;
+	const { sizePerFile, totalSize, downloadSize } = await computeEstimatedDownloadSize(mediaFiles);
 
 	// Download all media files, add them to the zip archive, and report progress
 	let alreadyLoaded = 0;
@@ -114,6 +106,37 @@ export async function exportCourseArchive(
 	} else {
 		throw new Error("Download aborted");
 	}
+}
+
+/**
+ * Computes the estimated total download size in Byte.
+ * Required to compute the progress in percent.
+ * Will also add additional overheads for zipping.
+ * @param mediaFiles The media files to download
+ * @returns sizePerFile A map of the estimated file sizes (in Byte) for each media file
+ * @returns totalSize The estimated total download size (in Byte) including overheads for zipping
+ * @returns downloadSize The estimated total download size (in Byte) excluding overheads for zipping.
+ *
+ * @example
+ * Use the following code to indicate that download is completed, but not zipped yet:
+ * ```
+ * (downloadSize / totalSize) * 100
+ * ```
+ */
+async function computeEstimatedDownloadSize(mediaFiles: MediaFileReplacement[]) {
+	// Sie of all downloads in Bytes
+	let downloadSize = 0;
+	const sizePerFile = new Map<string, number>();
+	for (const mediaFile of mediaFiles) {
+		const size = await getFileSize(mediaFile.source);
+		downloadSize += size;
+		sizePerFile.set(mediaFile.source, size);
+	}
+
+	// Zipping takes also some time, we roughly estimate 10% overheads for this
+	const totalSize = 1.1 * downloadSize;
+
+	return { sizePerFile, totalSize, downloadSize };
 }
 
 /**
