@@ -36,7 +36,7 @@ import { downloadWithProgress, getFileSize } from "./network-utils";
 export async function exportCourseArchive(
 	{ course, lessons }: CourseWithLessons,
 	signal: AbortSignal,
-	onProgress?: (progress: number) => void,
+	onProgress?: (percent: number) => void,
 	onInfo?: (msg: string) => void,
 	exportOptions?: ExportOptions
 ) {
