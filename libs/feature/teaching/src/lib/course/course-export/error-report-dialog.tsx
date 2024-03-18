@@ -4,31 +4,31 @@ import { IncompleteNanoModuleExport, MissedElement } from "@self-learning/lia-ex
 import Link from "next/link";
 import { CourseFormModel } from "../course-form-model";
 
-function QuestionLink({
-	path,
-	index,
-	children
+/**
+ * Generates a report per missed element in a nanomodule export.
+ * If possible this will create links for incomplete exported elements to
+ * simplify a possible review.
+ * @param courseUrlPath The URL of the exported course (used as prefix to generate links)
+ * @param missedItem The missed element of the report
+ * @returns A React component to display the report
+ */
+function ReportItem({
+	courseUrlPath,
+	missedItem
 }: {
-	path: string;
-	index: number;
-	children: React.ReactNode;
+	courseUrlPath: string;
+	missedItem: MissedElement;
 }) {
-	return (
-		<Link href={`${path}/quiz?index=${index}`} target="_blank">
-			{children}
-		</Link>
-	);
-}
+	const urlForQuiz = (quizIndex: number) => `${courseUrlPath}/quiz?index=${quizIndex}`;
 
-function ReportItem({ path, missedItem }: { path: string; missedItem: MissedElement }) {
 	switch (missedItem.type) {
 		case "programming":
 			if (missedItem.cause === "unsupportedLanguage") {
 				return (
 					<>
-						<QuestionLink path={path} index={missedItem.index}>
+						<Link href={urlForQuiz(missedItem.index)} target="_blank">
 							Programmieraufgabe {missedItem.index}
-						</QuestionLink>{" "}
+						</Link>{" "}
 						konnte nicht ausführbar gemacht werden, da für{" "}
 						<span className="font-mono">{missedItem.language}</span> keine
 						Laufzeitumgebung zur Verfügung steht.
@@ -53,9 +53,9 @@ function ReportItem({ path, missedItem }: { path: string; missedItem: MissedElem
 				return (
 					<>
 						Für den{" "}
-						<QuestionLink path={path} index={missedItem.index}>
+						<Link href={urlForQuiz(missedItem.index)} target="_blank">
 							Lückentext {missedItem.index}
-						</QuestionLink>{" "}
+						</Link>{" "}
 						konnten eine oder mehrere Lücken nicht korrekt exportiert werden. Es ist
 						nicht möglich Lücken mit mehreren Antworten zu exportieren, diese Lücken
 						werden als Einzelantwort behandelt. Die korrekte Antwort entspricht dabei
@@ -96,7 +96,13 @@ function SectionTitle({ slug, item }: { slug: string; item: IncompleteNanoModule
 		</div>
 	);
 }
-
+/**
+ * Generates a dialog to display a report of incomplete nanomodule exports.
+ * @param report The report of incomplete nanomodule exports (should not be empty)
+ * @param course The course which was exported
+ * @param onClose The callback to close the dialog (allows closing the dialog by clicking on the backdrop)
+ * @returns The dialog to display the report (component)
+ */
 export function ErrorReportDialog({
 	report,
 	course,
@@ -125,7 +131,7 @@ export function ErrorReportDialog({
 										<li>
 											<ReportItem
 												missedItem={missed}
-												path={`/courses/${course.slug}/${item.nanomodule.slug}`}
+												courseUrlPath={`/courses/${course.slug}/${item.nanomodule.slug}`}
 											/>
 										</li>
 									))}
