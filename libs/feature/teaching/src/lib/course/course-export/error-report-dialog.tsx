@@ -46,8 +46,6 @@ function ErrorMessageForReportItem({
 	courseUrlPath: string;
 	missedItem: MissedElement;
 }) {
-	const urlForQuiz = (quizIndex: number) => `${courseUrlPath}/quiz?index=${quizIndex}`;
-
 	switch (missedItem.type) {
 		case "programming":
 			if (missedItem.cause === "unsupportedLanguage") {
