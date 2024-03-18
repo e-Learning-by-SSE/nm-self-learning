@@ -1,6 +1,13 @@
 import liascriptify from "@liascript/markdownify";
-import { ExportOptions, MediaFileReplacement } from "./types";
-import { MissedElement } from "./types";
+import { ExportOptions, MissedElement } from "./lia-exporter";
+
+/**
+ * Used to make absolute paths to media files on our storage server relative.
+ */
+export type MediaFileReplacement = {
+	source: string;
+	destination: string;
+};
 
 /**
  * Allowed indentation levels for LiaScript sections.

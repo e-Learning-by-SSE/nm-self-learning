@@ -1,6 +1,6 @@
+import { MissedElement } from "./lia-exporter";
 import { toPlainText } from "./liascript-api-utils";
 import { Quiz } from "@self-learning/quiz";
-import { MissedElement } from "./types";
 
 /**
  * Converts all quizzes of a Nano-Module into LiaScript format.

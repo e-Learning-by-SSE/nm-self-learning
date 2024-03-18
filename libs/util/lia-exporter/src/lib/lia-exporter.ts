@@ -6,22 +6,28 @@ import {
 	IndentationLevels,
 	selectNarrator,
 	removeStorageUrls,
-	parseIndent
+	parseIndent,
+	MediaFileReplacement
 } from "./liascript-api-utils";
 import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 
 import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
-import {
-	ExportOptions,
-	IncompleteNanoModuleExport,
-	MediaFileReplacement,
-	MissedElement
-} from "./types";
 import { convertQuizzes } from "./question-utils";
 import JSZip from "jszip";
 import { downloadWithProgress, getFileSize } from "./network-utils";
+
+export type ExportOptions = {
+	addTitlePage?: boolean;
+	language?: "en" | "de";
+	narrator?: "female" | "male";
+	considerTopics?: boolean;
+	exportMailAddresses?: boolean;
+	storagesToInclude?: string[];
+	storageDestination?: string;
+};
+
 /**
  * Generates a zip file (markdown file + media files)that can be imported into LiaScript.
  * @param course The course to export (collection of lessons, data like title, ...)
@@ -153,6 +159,51 @@ export async function exportCourseMarkdown(
 
 	return markdown;
 }
+
+export type IncompleteNanoModuleExport = {
+	nanomodule: {
+		name: string;
+		id: string;
+		slug: string;
+	};
+	missedElements: MissedElement[];
+};
+
+/**
+ * List of unsupported items (w.r.t reporting).
+ * Extend this list if necessary.
+ */
+export type MissedElement =
+	| IncompleteArticle
+	| IncompleteProgrammingTask
+	| IncompleteClozeText
+	| IncompleteGeneralProgrammingTask;
+
+export type IncompleteArticle = {
+	type: "article";
+	id: string;
+	cause: string[];
+};
+
+export type IncompleteProgrammingTask = {
+	type: "programming";
+	id: string;
+	index: number;
+	cause: "unsupportedLanguage";
+	language: string;
+};
+
+export type IncompleteGeneralProgrammingTask = {
+	type: "programmingUnspecific";
+	cause: "unsupportedSolution" | "hintsUnsupported";
+};
+
+export type IncompleteClozeText = {
+	type: "clozeText";
+	id: string;
+	index: number;
+	cause: "unsupportedAnswerType";
+};
 
 /**
  * Generates a markdown file that can be imported into LiaScript together with a list of extracted media files stored on our own storage.
