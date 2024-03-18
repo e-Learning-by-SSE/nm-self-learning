@@ -10,6 +10,22 @@ const minioUrl = process.env["NEXT_PUBLIC_MINIO_PUBLIC_URL"];
 const storagesToInclude = ["https://staging.sse.uni-hildesheim.de:9006/upload/"];
 minioUrl && storagesToInclude.push(minioUrl);
 
+/**
+ * Initiates the download of the given blob as a zip archive with the given filename.
+ * @param blob The content (binary data) of the zip archive
+ * @param filename The destination name. The file extension should be .zip
+ */
+function startBrowserDownload(blob: Blob, filename: string) {
+	const downloadUrl = window.URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = downloadUrl;
+	a.download = filename;
+	document.body.appendChild(a);
+	a.click();
+	window.URL.revokeObjectURL(downloadUrl);
+	document.body.removeChild(a);
+}
+
 export function ExportCourseProgressDialog({
 	course,
 	onClose,
@@ -29,17 +45,6 @@ export function ExportCourseProgressDialog({
 
 	const [progress, setProgress] = useState(0);
 	const abortController = useRef(new AbortController());
-
-	const startBrowserDownload = (blob: Blob, filename: string) => {
-		const downloadUrl = window.URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = downloadUrl;
-		a.download = filename;
-		document.body.appendChild(a);
-		a.click();
-		window.URL.revokeObjectURL(downloadUrl);
-		document.body.removeChild(a);
-	};
 
 	// This effect triggers the download after the content was generated
 	useEffect(() => {
