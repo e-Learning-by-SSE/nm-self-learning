@@ -23,7 +23,6 @@ export function ExportCourseDialog({
 	const [errorReport, setErrorReport] = useState<IncompleteNanoModuleExport[]>([]);
 
 	const [progress, setProgress] = useState(0);
-	const [lblClose, setCloseLabel] = useState("Abbrechen");
 	const abortController = useRef(new AbortController());
 
 	// Optional public env variable that indicates were the storage is located
@@ -34,26 +33,29 @@ export function ExportCourseDialog({
 		return storagesToInclude;
 	}, [minioUrl]);
 
+	const startBrowserDownload = (blob: Blob, filename: string) => {
+		const downloadUrl = window.URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = downloadUrl;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		window.URL.revokeObjectURL(downloadUrl);
+		document.body.removeChild(a);
+	};
+
 	// This effect triggers the download after the content was generated
 	useEffect(() => {
 		if (exportResult) {
 			try {
 				const blob = new Blob([exportResult], { type: "blob" });
-				const downloadUrl = window.URL.createObjectURL(blob);
-				const a = document.createElement("a");
-				a.href = downloadUrl;
-				a.download = `${course.title}.zip`;
-				document.body.appendChild(a);
-				a.click();
-				window.URL.revokeObjectURL(downloadUrl);
-				document.body.removeChild(a);
+				startBrowserDownload(blob, `${course.title}.zip`);
 				if (errorReport.length === 0) {
 					setOpen(false);
 					onClose();
 				}
 			} catch (error) {
 				// Display error message to user
-				setCloseLabel("Schließen");
 				setMessage(`Error: ${error}`);
 			}
 		}
@@ -84,11 +86,9 @@ export function ExportCourseDialog({
 							`Für ${element} wurde der Export nicht vollständig unterstützt.`
 						);
 						setErrorReport(incompleteExportedItems);
-						setCloseLabel("Schließen");
 					}
 				} catch (error) {
 					// Display error message to user
-					setCloseLabel("Schließen");
 					setMessage(`Error: ${error}`);
 				}
 			};
@@ -96,6 +96,8 @@ export function ExportCourseDialog({
 			convert();
 		}
 	}, [data, isLoading, course.title, storagesToInclude]);
+
+	const hasError = message.startsWith("Error") || errorReport.length > 0;
 
 	if (!open) return null;
 	return (
@@ -124,7 +126,7 @@ export function ExportCourseDialog({
 							onClose();
 						}}
 					>
-						{lblClose}
+						{hasError ? "Schließen" : "Abbrechen"}
 					</button>
 				</div>
 			</DialogWithReactNodeTitle>
