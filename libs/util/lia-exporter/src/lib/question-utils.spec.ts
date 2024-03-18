@@ -5,8 +5,8 @@ import {
 	convertClozeAnswerBlock
 } from "./question-utils";
 import { Quiz } from "@self-learning/quiz";
-import { markdownify as markdownifyDelegate } from "./liascript-api-utils";
-import { MediaFileReplacement, MissedElement } from "./types";
+import { markdownify as markdownifyDelegate, MediaFileReplacement } from "./liascript-api-utils";
+import { MissedElement } from "./lia-exporter";
 
 //Preparing the test methods and types!
 type QuestionTypeText = Quiz["questions"][0] & { type: "text" };
