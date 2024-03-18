@@ -12,7 +12,7 @@ import { CourseFormModel } from "../course-form-model";
  * @param missedItem The missed element of the report
  * @returns A React component to display the report
  */
-function ReportItem({
+function ErrorMessageForReportItem({
 	courseUrlPath,
 	missedItem
 }: {
@@ -129,7 +129,7 @@ export function ErrorReportDialog({
 								<ul className="ml-4 list-disc space-y-1">
 									{item.missedElements.map(missed => (
 										<li>
-											<ReportItem
+											<ErrorMessageForReportItem
 												missedItem={missed}
 												courseUrlPath={`/courses/${course.slug}/${item.nanomodule.slug}`}
 											/>
