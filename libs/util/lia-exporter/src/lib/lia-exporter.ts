@@ -445,7 +445,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 		const video = findContentType("video", lessonContent);
 		if (video.content) {
-			const videoIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+			const videoIndent = parseIndent(indent + 1);
 			const videoUrl = relativizeUrl(video.content.value.url);
 			const videoPart = {
 				title: "Video",
@@ -458,7 +458,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 		const article = findContentType("article", lessonContent);
 		if (article.content) {
-			const articleIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+			const articleIndent = parseIndent(indent + 1);
 			const articleUrl = markdownify(article.content.value.content);
 			const articlePart = {
 				title: "Artikel",
@@ -471,7 +471,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 		const pdf = findContentType("pdf", lessonContent);
 		if (pdf.content) {
-			const pdfIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
+			const pdfIndent = parseIndent(indent + 1);
 			const pdfUrl = relativizeUrl(pdf.content.value.url);
 			const pdfPart = {
 				title: "PDF",
