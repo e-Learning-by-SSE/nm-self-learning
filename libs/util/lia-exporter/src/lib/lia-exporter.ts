@@ -13,7 +13,14 @@ import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
 import { LessonContent as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 
-import { CourseChapter, LessonContent, findContentType } from "@self-learning/types";
+import {
+	CourseChapter,
+	LessonContent,
+	findContentType,
+	LessonContentMediaType,
+	getContentTypeDisplayName,
+	LessonContentType
+} from "@self-learning/types";
 import { convertQuizzes } from "./question-utils";
 import JSZip from "jszip";
 import { downloadWithProgress, getFileSize } from "./network-utils";
@@ -290,7 +297,25 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 				json.sections.push(addLessonOverviewPage(lesson, lessonIndent));
 
-				addLesson(lesson, lessonIndent);
+				const mediaType = ["video", "article", "pdf"];
+				mediaType.forEach(type => {
+					const contentBlock = findContentType(
+						type as LessonContentMediaType,
+						lesson.content as LessonContent
+					);
+					if (contentBlock.content) {
+						json.sections.push(
+							addLessonContent(
+								contentBlock.content as LessonContentType,
+								lessonIndent,
+								type as LessonContentMediaType
+							)
+						);
+					}
+				});
+				if (lesson.quiz) {
+					json.sections.push(addLessonQuizzes(lesson, lessonIndent));
+				}
 			}
 		});
 	}
@@ -429,8 +454,34 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		return nm;
 	}
 
-	function addLesson(lesson: LessonExport, indent: IndentationLevels) {
-		// List of potentially incomplete exported elements
+	function addLessonContent(
+		contentBlock: LessonContentType,
+		indent: IndentationLevels,
+		contType: LessonContentMediaType
+	) {
+		const newIndent = parseIndent(indent + 1);
+
+		return {
+			title: getContentTypeDisplayName(contType),
+			indent: newIndent,
+			body: [
+				contType === "video"
+					? `!?[Video](${handleLessonMediaUrl(contentBlock)})`
+					: handleLessonMediaUrl(contentBlock)
+			]
+		};
+	}
+
+	function handleLessonMediaUrl(contentBlockContent: LessonContentType) {
+		if (contentBlockContent.type === "pdf" || contentBlockContent.type === "video") {
+			return relativizeUrl(contentBlockContent.value.url);
+		} else if (contentBlockContent.type === "article") {
+			return markdownify(contentBlockContent.value.content);
+		}
+		return "";
+	}
+
+	function addLessonQuizzes(lesson: LessonExport, indent: IndentationLevels) {
 		const incompleteExport: IncompleteNanoModuleExport = {
 			nanomodule: {
 				name: lesson.title,
@@ -440,68 +491,26 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			missedElements: []
 		};
 
-		// Convert content, which may contain: video, article, pdf, link to external web page
-		const lessonContent = lesson.content as LessonContent;
+		const reporter = (report: MissedElement) => {
+			incompleteExport.missedElements.push(report);
+		};
+		//shall enable the usage of the reporter in the needed calls without affecting the convertQuizzes method
+		const markdownifyForQuestions = (input: string) => {
+			return markdownifyModifiedReport(input, reporter);
+		};
 
-		const video = findContentType("video", lessonContent);
-		if (video.content) {
-			const videoUrl = relativizeUrl(video.content.value.url);
-			const videoPart = {
-				title: "Video",
-				indent: parseIndent(indent + 1),
-				body: [`!?[Video](${videoUrl})`]
-			};
-
-			json.sections.push(videoPart);
-		}
-
-		const article = findContentType("article", lessonContent);
-		if (article.content) {
-			const articleUrl = markdownify(article.content.value.content);
-			const articlePart = {
-				title: "Artikel",
-				indent: parseIndent(indent + 1),
-				body: [articleUrl]
-			};
-
-			json.sections.push(articlePart);
-		}
-
-		const pdf = findContentType("pdf", lessonContent);
-		if (pdf.content) {
-			const pdfUrl = relativizeUrl(pdf.content.value.url);
-			const pdfPart = {
-				title: "PDF",
-				indent: parseIndent(indent + 1),
-				body: [pdfUrl]
-			};
-
-			json.sections.push(pdfPart);
-		}
-
-		// Add quizzes
-		if (lesson.quiz) {
-			const reporter = (report: MissedElement) => {
-				incompleteExport.missedElements.push(report);
-			};
-			//shall enable the usage of the reporter in the needed calls without affecting the convertQuizzes method
-			const markdownifyForQuestions = (input: string) => {
-				return markdownifyModifiedReport(input, reporter);
-			};
-
-			const quizPart = {
-				title: "Lernzielkontrolle",
-				indent: parseIndent(indent + 1),
-				body: convertQuizzes(lesson.quiz as Quiz, markdownifyForQuestions, reporter)
-			};
-
-			json.sections.push(quizPart);
-		}
+		const quizPart = {
+			title: "Lernzielkontrolle",
+			indent: parseIndent(indent + 1),
+			body: convertQuizzes(lesson.quiz as Quiz, markdownifyForQuestions, reporter)
+		};
 
 		// Add missing elements to the export if there are any
 		if (incompleteExport.missedElements.length > 0) {
 			incompleteExportedItems.push(incompleteExport);
 		}
+
+		return quizPart;
 	}
 }
 
