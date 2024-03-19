@@ -254,8 +254,8 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	const incompleteExportedItems: IncompleteNanoModuleExport[] = [];
 
 	const json: ExportFormat = {
-		// The list of supported items are documented here:
-		// https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md#176
+		// The list of supported properties are documented here:
+		// https://github.com/LiaScript/docs/blob/master/README.md#2-basic-macros
 		meta: {
 			title: course.title,
 			author: course.authors.map(author => author.displayName).join(", "),
