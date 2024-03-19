@@ -349,6 +349,9 @@ function transformMultipleAnswerTextBlock(
 				0,
 				transformedAnswer.indexOf(tMatch[0]) + tMatch[0].length - 1
 			) + "]]";
+
+		// Cloze with alternative answers detected, but not supported by LiaScript
+		// Return first answer and create report that item could not completely exported (MissingElement)
 		conversionError();
 	}
 	return transformedAnswer;
