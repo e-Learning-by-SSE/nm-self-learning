@@ -93,6 +93,19 @@ function ErrorMessageForReportItem({
 				);
 			}
 			break;
+		case "unknownQuestionType":
+			return (
+				<>
+					<QuestionLink
+						courseUrlPath={courseUrlPath}
+						quizIndex={missedItem.index}
+						questionType="Frage"
+					/>{" "}
+					konnte nicht exportiert werden, da der Fragetyp{" "}
+					<span className="font-mono">{missedItem.questionType}</span> nicht unterstützt
+					wird.
+				</>
+			);
 		case "article": {
 			const element =
 				missedItem.cause.length > 1
@@ -119,9 +132,9 @@ function SectionTitle({ slug, item }: { slug: string; item: IncompleteNanoModule
 	return (
 		<div className="flex">
 			<Link href={`/courses/${slug}/${item.nanomodule.slug}`} target="_blank">
-				<div className="mt-2 mb-2 text-lg text-secondary">{item.nanomodule.name}</div>
+				<div className="text-lg text-secondary">{item.nanomodule.name}</div>
 			</Link>
-			<p className="ml-2 mt-2 mb-2 text-lg font-normal">{`(${item.missedElements.length} unvollständige Elemente)`}</p>
+			<p className="ml-2 text-lg font-normal">{`(${item.missedElements.length} unvollständige Elemente)`}</p>
 		</div>
 	);
 }

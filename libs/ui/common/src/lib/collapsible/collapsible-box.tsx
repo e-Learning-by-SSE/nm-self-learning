@@ -3,7 +3,7 @@ import { useState } from "react";
 const ArrowSvG = ({ isOpen }: { isOpen: boolean }) => (
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
-		className={`ml-2 mr-2 h-6 w-6 transform ${isOpen ? "-rotate-90" : "rotate-0"}`}
+		className={`ml-2 mr-2 h-6 w-6 transform ${isOpen ? "rotate-0" : "-rotate-90"}`}
 		fill="none"
 		viewBox="0 0 24 24"
 		stroke="currentColor"

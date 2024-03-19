@@ -177,7 +177,8 @@ export type MissedElement =
 	| IncompleteArticle
 	| IncompleteProgrammingTask
 	| IncompleteClozeText
-	| IncompleteGeneralProgrammingTask;
+	| IncompleteGeneralProgrammingTask
+	| UnknownQuestionType;
 
 export type IncompleteArticle = {
 	type: "article";
@@ -203,6 +204,13 @@ export type IncompleteClozeText = {
 	id: string;
 	index: number;
 	cause: "unsupportedAnswerType";
+};
+
+export type UnknownQuestionType = {
+	type: "unknownQuestionType";
+	id: string;
+	index: number;
+	questionType: string;
 };
 
 /**

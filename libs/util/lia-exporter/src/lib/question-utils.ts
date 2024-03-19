@@ -59,7 +59,12 @@ export function convertQuizzes(
 				}
 				break;
 			default:
-				console.log(`Unknown question type: ${question.type}`);
+				onUnsupportedItem({
+					type: "unknownQuestionType",
+					index,
+					id: question.questionId,
+					questionType: question.type
+				});
 				break;
 		}
 	}
