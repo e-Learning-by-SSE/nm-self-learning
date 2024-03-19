@@ -186,7 +186,7 @@ export function convertProgrammingQuiz({
  * @param questionStatement The question text
  * @param questionClozeText The gap text making up the question
  * @param convertedQuizzes The list to store all converted quizzes
- * @param markdownify the method to fit the text into the liascript markdown
+ * @param markdownify the method to fit the text into the LiaScript markdown
  * @param onUnsupportedItem Method to collect the errors of unsupported structures.
  */
 export function convertClozeAnswerBlock({
@@ -250,14 +250,14 @@ export function addTextQuizOptionScript(
  */
 const startOfAnswerBlock = RegExp(/\{\s*[TC]\s*:\s*.*?\s*/); // searches start of answer option block
 
-function getAllClozeAnswerBlocks(
-	text: string
-): { indexStartAnswerBlock: number; indexEndAnswerBlock: number; answerBlock: string }[] {
-	const matches: {
-		indexStartAnswerBlock: number;
-		indexEndAnswerBlock: number;
-		answerBlock: string;
-	}[] = [];
+type ClozeAnswerBlock = {
+	indexStartAnswerBlock: number;
+	indexEndAnswerBlock: number;
+	answerBlock: string;
+};
+
+function getAllClozeAnswerBlocks(text: string): ClozeAnswerBlock[] {
+	const matches: ClozeAnswerBlock[] = [];
 	const chars = [...text];
 	let curlyBracketsCount = 0; //indicator/ counter for {
 	let indexStartAnswerBlock = 0; //the index where the { is found
@@ -308,13 +308,9 @@ const removeClosingCurlyBracesOfAnswer = /}(?=[^}]*$)/; //Removes only the last 
  */
 
 function transformClozeAnswerBlock(
-	{
-		indexStartAnswerBlock,
-		indexEndAnswerBlock,
-		answerBlock
-	}: { indexStartAnswerBlock: number; indexEndAnswerBlock: number; answerBlock: string },
+	{ indexStartAnswerBlock, indexEndAnswerBlock, answerBlock }: ClozeAnswerBlock,
 	conversionError: () => void
-): { indexStartAnswerBlock: number; indexEndAnswerBlock: number; transformedAnswer: string } {
+): ClozeAnswerBlock {
 	const transformedAnswer = transformMultipleChoiceAnswerBlock(
 		transformMultipleAnswerTextBlock(
 			answerBlock
@@ -324,7 +320,7 @@ function transformClozeAnswerBlock(
 			conversionError
 		)
 	).replace(/,/g, "|");
-	return { indexStartAnswerBlock, indexEndAnswerBlock, transformedAnswer };
+	return { indexStartAnswerBlock, indexEndAnswerBlock, answerBlock: transformedAnswer };
 }
 
 const identifyGapsWithMultipleCorrectAnswers = /\[\[\s*T:\s*([^,]+,)(?=.*\])/; //catches our gaps with multiple correct answers
@@ -405,19 +401,13 @@ export function addClozeQuiz(text: string, conversionError: () => void): string 
 
 	return getAllClozeAnswerBlocks(text)
 		.map(match => transformClozeAnswerBlock(match, conversionError))
-		.reduce(
-			(
-				transformedText,
-				{ indexStartAnswerBlock, indexEndAnswerBlock, transformedAnswer }
-			) => {
-				//The replacement NEEDS to be done before the offset is updated! It is meant to fix the new char positions in the string AFTER changing the answer blocks with new length
-				const temp =
-					transformedText.slice(0, indexStartAnswerBlock + offset) +
-					transformedAnswer +
-					transformedText.slice(indexEndAnswerBlock + offset);
-				offset += transformedAnswer.length - (indexEndAnswerBlock - indexStartAnswerBlock);
-				return temp;
-			},
-			text
-		);
+		.reduce((transformedText, { indexStartAnswerBlock, indexEndAnswerBlock, answerBlock }) => {
+			//The replacement NEEDS to be done before the offset is updated! It is meant to fix the new char positions in the string AFTER changing the answer blocks with new length
+			const temp =
+				transformedText.slice(0, indexStartAnswerBlock + offset) +
+				answerBlock +
+				transformedText.slice(indexEndAnswerBlock + offset);
+			offset += answerBlock.length - (indexEndAnswerBlock - indexStartAnswerBlock);
+			return temp;
+		}, text);
 }

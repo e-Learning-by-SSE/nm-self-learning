@@ -102,18 +102,19 @@ input == "2"
 		it("Valid MC; 2 Hints; Answers -> Success", () => {
 			const question: QuestionTypeMultiple = {
 				type: "multiple-choice",
-				statement:
-					"# How was your day?\nLorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure! Fugiat, optio!",
+				statement: "# How was your day?\nA description text related to the question.",
 				questionId: "multipleId",
 				withCertainty: true,
 				questionStep: 1,
 				hints: [
 					{
 						hintId: "abc",
-						content:
-							"Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero laudantium sequi illo, veritatis labore culpa, eligendi, quod consequatur autem ad dolorem explicabo quos alias harum fuga sapiente reiciendis. Incidunt, voluptates."
+						content: "The first hint."
 					},
-					{ hintId: "def", content: "# Lorem ipsum dolor \n- Eins\n- Zwei" }
+					{
+						hintId: "def",
+						content: "# Another hint with formatted text \n- Eins\n- Zwei"
+					}
 				],
 				answers: [
 					{ content: "Very Good", answerId: "answerId", isCorrect: true },
@@ -126,14 +127,14 @@ input == "2"
 			const expectedOutput = `<section>
 
 # How was your day?
-Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias doloribus assumenda aspernatur in maxime numquam. Sint quas nobis voluptatum nemo consequatur aperiam ea sit eveniet, perferendis iure! Fugiat, optio!
+A description text related to the question.
 
 - [[x]] Very Good
 - [[x]] Good
 - [[ ]] Bad
 - [[ ]] Very Bad
-[[?]] Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero laudantium sequi illo, veritatis labore culpa, eligendi, quod consequatur autem ad dolorem explicabo quos alias harum fuga sapiente reiciendis. Incidunt, voluptates.
-[[?]] Lorem ipsum dolor: - Eins - Zwei
+[[?]] The first hint.
+[[?]] Another hint with formatted text: - Eins - Zwei
 </section>`;
 
 			const result = convertMultipleChoice({ question, markdownify });
