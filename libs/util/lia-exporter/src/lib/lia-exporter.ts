@@ -270,26 +270,25 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 		},
 		sections: []
 	};
-	const sections = json.sections;
 
 	// The lessons of the course, accessible by their ID
 	const lessonsMap = convertLessonsToMap(lessons);
 
 	if (options.addTitlePage) {
-		sections.push(addTitlePage());
+		json.sections.push(addTitlePage());
 	}
 
 	for (const chapter of course.content as CourseChapter[]) {
 		// Chapters are collections of lessons.
 		const baseIndent = options.addTitlePage ? 2 : 1;
-		sections.push(addSection(chapter, baseIndent));
+		json.sections.push(addSection(chapter, baseIndent));
 
 		chapter.content.forEach(entry => {
 			const lesson = lessonsMap.get(entry.lessonId);
 			if (lesson) {
 				const lessonIndent = parseIndent(baseIndent + 1);
 
-				sections.push(addLessonOverviewPage(lesson, lessonIndent));
+				json.sections.push(addLessonOverviewPage(lesson, lessonIndent));
 
 				addLesson(lesson, lessonIndent);
 			}
@@ -454,7 +453,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 				body: [`!?[Video](${videoUrl})`]
 			};
 
-			sections.push(videoPart);
+			json.sections.push(videoPart);
 		}
 
 		const article = findContentType("article", lessonContent);
@@ -467,7 +466,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 				body: [articleUrl]
 			};
 
-			sections.push(articlePart);
+			json.sections.push(articlePart);
 		}
 
 		const pdf = findContentType("pdf", lessonContent);
@@ -480,7 +479,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 				body: [pdfUrl]
 			};
 
-			sections.push(pdfPart);
+			json.sections.push(pdfPart);
 		}
 
 		// Add quizzes
@@ -500,7 +499,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 				body: convertQuizzes(lesson.quiz as Quiz, markdownifyForQuestions, reporter)
 			};
 
-			sections.push(quizPart);
+			json.sections.push(quizPart);
 		}
 
 		// Add missing elements to the export if there are any
