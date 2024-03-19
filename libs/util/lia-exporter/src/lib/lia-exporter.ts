@@ -445,11 +445,10 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 		const video = findContentType("video", lessonContent);
 		if (video.content) {
-			const videoIndent = parseIndent(indent + 1);
 			const videoUrl = relativizeUrl(video.content.value.url);
 			const videoPart = {
 				title: "Video",
-				indent: videoIndent,
+				indent: parseIndent(indent + 1),
 				body: [`!?[Video](${videoUrl})`]
 			};
 
@@ -458,11 +457,10 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 		const article = findContentType("article", lessonContent);
 		if (article.content) {
-			const articleIndent = parseIndent(indent + 1);
 			const articleUrl = markdownify(article.content.value.content);
 			const articlePart = {
 				title: "Artikel",
-				indent: articleIndent,
+				indent: parseIndent(indent + 1),
 				body: [articleUrl]
 			};
 
@@ -471,11 +469,10 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 		const pdf = findContentType("pdf", lessonContent);
 		if (pdf.content) {
-			const pdfIndent = parseIndent(indent + 1);
 			const pdfUrl = relativizeUrl(pdf.content.value.url);
 			const pdfPart = {
 				title: "PDF",
-				indent: pdfIndent,
+				indent: parseIndent(indent + 1),
 				body: [pdfUrl]
 			};
 
@@ -492,10 +489,9 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 				return markdownifyModifiedReport(input, reporter);
 			};
 
-			const quizIndent = indent < 6 ? ((indent + 1) as IndentationLevels) : 6;
 			const quizPart = {
 				title: "Lernzielkontrolle",
-				indent: quizIndent,
+				indent: parseIndent(indent + 1),
 				body: convertQuizzes(lesson.quiz as Quiz, markdownifyForQuestions, reporter)
 			};
 
