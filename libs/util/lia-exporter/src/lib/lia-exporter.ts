@@ -51,7 +51,7 @@ export async function exportCourseArchive(
 		...exportOptions
 	};
 	// Generate markdown file and create a zip archive with this file
-	const { markdown, mediaFiles, incompleteExportedItems } = await exportCourse(
+	const { markdown, exportCandidates, incompleteExportedItems } = await exportCourse(
 		{ course, lessons },
 		options
 	);
@@ -61,11 +61,13 @@ export async function exportCourseArchive(
 	// Download all media files located on our storage server
 
 	// Compute the total size of all media files
-	const { sizePerFile, totalSize, downloadSize } = await computeEstimatedDownloadSize(mediaFiles);
+	const { sizePerFile, totalSize, downloadSize } = await computeEstimatedDownloadSize(
+		exportCandidates
+	);
 
 	// Download all media files, add them to the zip archive, and report progress
 	let alreadyLoaded = 0;
-	for (const mediaFile of mediaFiles) {
+	for (const mediaFile of exportCandidates) {
 		const estimatedFileSize = sizePerFile.get(mediaFile.source);
 		onInfo && onInfo(`Downloade: ${mediaFile.source}`);
 
@@ -118,7 +120,7 @@ export async function exportCourseArchive(
  * Computes the estimated total download size in Byte.
  * Required to compute the progress in percent.
  * Will also add additional overheads for zipping.
- * @param mediaFiles The media files to download
+ * @param exportCandidates The media files to download
  * @returns sizePerFile A map of the estimated file sizes (in Byte) for each media file
  * @returns totalSize The estimated total download size (in Byte) including overheads for zipping
  * @returns downloadSize The estimated total download size (in Byte) excluding overheads for zipping.
@@ -129,11 +131,11 @@ export async function exportCourseArchive(
  * (downloadSize / totalSize) * 100
  * ```
  */
-async function computeEstimatedDownloadSize(mediaFiles: MediaFileReplacement[]) {
+async function computeEstimatedDownloadSize(exportCandidates: MediaFileReplacement[]) {
 	// Sie of all downloads in Bytes
 	let downloadSize = 0;
 	const sizePerFile = new Map<string, number>();
-	for (const mediaFile of mediaFiles) {
+	for (const mediaFile of exportCandidates) {
 		const size = await getFileSize(mediaFile.source);
 		downloadSize += size;
 		sizePerFile.set(mediaFile.source, size);
@@ -234,7 +236,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	};
 
 	// List of media files, which were stored on our storage ans shall be exported (downloaded) as well
-	const mediaFiles: MediaFileReplacement[] = [];
+	const exportCandidates: MediaFileReplacement[] = [];
 
 	// The JSON object that is used as input for the LiaScript API
 	let courseDescription: string | undefined;
@@ -244,7 +246,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			storageDestination: options.storageDestination
 		});
 		courseDescription = text;
-		mediaFiles.push(...resources);
+		exportCandidates.push(...resources);
 	}
 
 	// Stores the list of items which could not exported completely
@@ -295,7 +297,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	}
 
 	const markdown = await liaScriptExport(json);
-	return { markdown, mediaFiles, incompleteExportedItems };
+	return { markdown, exportCandidates, incompleteExportedItems };
 
 	/**
 	 * Checks if a given (optional) URL points to a file on our storage.
@@ -311,7 +313,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 				if (url.startsWith(storageUrl)) {
 					const source = url;
 					url = url.replace(storageUrl, options.storageDestination ?? "");
-					mediaFiles.push({ source, destination: url });
+					exportCandidates.push({ source, destination: url });
 					break;
 				}
 			}
@@ -335,7 +337,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 			storageUrls: options.storagesToInclude,
 			storageDestination: options.storageDestination
 		});
-		mediaFiles.push(...resources);
+		exportCandidates.push(...resources);
 
 		return markdown;
 	}
