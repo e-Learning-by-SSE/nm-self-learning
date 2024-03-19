@@ -300,7 +300,7 @@ const removeSelfLearAnswerStructure = /(?<!\\)([\]|[])/g; //Our cloze quizzes us
 const removeClosingCurlyBracesOfAnswer = /}(?=[^}]*$)/; //Removes only the last curly braces of the answer and stops looking ahead, replaces it with ]]
 
 /**
- * The method transforms the cloze answers for a given array. First it replaces the starting and ending curly braces with [[ and ]]
+ * The method transforms the cloze answers for a given array.
  *
  * @param param0 This is a triplet of the start index, the end index and the answer block itself. Only the text will be transformed.
  * @param conversionError In case we encounter un convertible answer blocks we propagate the error
