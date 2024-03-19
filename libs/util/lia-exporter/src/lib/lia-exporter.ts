@@ -308,17 +308,18 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 	function relativizeUrl(url?: string) {
 		if (!url) return "";
 
+		let relativeUrl = url;
 		if (options.storagesToInclude && options.storagesToInclude.length > 0) {
 			for (const storageUrl of options.storagesToInclude) {
-				if (url.startsWith(storageUrl)) {
-					const source = url;
-					url = url.replace(storageUrl, options.storageDestination ?? "");
-					exportCandidates.push({ source, destination: url });
+				if (relativeUrl.startsWith(storageUrl)) {
+					const source = relativeUrl;
+					relativeUrl = relativeUrl.replace(storageUrl, options.storageDestination ?? "");
+					exportCandidates.push({ source, destination: relativeUrl });
 					break;
 				}
 			}
 		}
-		return url;
+		return relativeUrl;
 	}
 
 	/**
