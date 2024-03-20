@@ -17,13 +17,80 @@ import GraphEditor, {
 	convertToGraph,
 	convertToLearnpath
 } from "libs/ui/forms/src/lib/graph-editor";
-import { findCycles } from "@e-learning-by-sse/nm-skill-lib";
+import { LearningUnit, Skill, getPath } from "@e-learning-by-sse/nm-skill-lib";
 import { SelectSkillDialog } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-dialog";
 import { Mesh, SkillFormModel } from "@self-learning/types";
+import { trpc } from "@self-learning/api-client";
 
 // ---------- Globals ------------------------------------------------
-const respositoryId = "1";
+const repositoryId = "1";
 const tabNames = ["Konfigurierte Lerneinheiten", "Verlauf"];
+
+// -------- dummy data ---------
+const s1: SkillFormModel = {
+	id: "1",
+	name: "s1",
+	repositoryId: "1",
+	description: "",
+	parents: [],
+	children: []
+};
+const s2: SkillFormModel = {
+	id: "2",
+	name: "s2",
+	repositoryId: "1",
+	description: "",
+	parents: [],
+	children: []
+};
+const s3: SkillFormModel = {
+	id: "3",
+	name: "s3",
+	repositoryId: "1",
+	description: "",
+	parents: [],
+	children: []
+};
+const s4: SkillFormModel = {
+	id: "4",
+	name: "s4",
+	repositoryId: "1",
+	description: "",
+	parents: [],
+	children: []
+};
+
+const l1: LearningUnit = {
+	id: "l1",
+	requiredSkills: [],
+	teachingGoals: [{ ...s1, nestedSkills: s1.children }],
+	suggestedSkills: []
+};
+const l2: LearningUnit = {
+	id: "l2",
+	requiredSkills: [{ ...s1, nestedSkills: s1.children }],
+	teachingGoals: [{ ...s3, nestedSkills: s3.children }],
+	suggestedSkills: []
+};
+const l3: LearningUnit = {
+	id: "l3",
+	requiredSkills: [{ ...s2, nestedSkills: s2.children }],
+	teachingGoals: [{ ...s3, nestedSkills: s3.children }],
+	suggestedSkills: []
+};
+
+function getLearnpath() {
+	const mySkills = [s1, s2, s3];
+	const skills: Skill[] = Array.from(mySkills.values()).map(skill => ({
+		...skill,
+		nestedSkills: []
+	}));
+
+	const goal: Skill[] = [{ ...s3, nestedSkills: s3.children }];
+	const learningUnits: LearningUnit[] = [l1, l2, l3];
+	const learnpath = getPath({ skills, goal, learningUnits });
+	console.log("LEARNPATH: ", learnpath);
+}
 
 function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
 	const temp = meshes.filter(elemt => elemt.lesson.title === mesh.lesson.title);
@@ -53,6 +120,9 @@ export default function LearnpathEditor({
 	const [displayedMesh, setDisplayedMesh] = useState(initMesh);
 	const [learnpath, setLearnpath] = useState(convertToLearnpath(initLearnpath));
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+	// TODO remove
+	getLearnpath();
 
 	const graph = convertToGraph(meshes);
 
@@ -254,7 +324,7 @@ function SkillLessonLinker({
 					</div>
 					{requiredSkillSelectorOpen && (
 						<SelectSkillDialog
-							repositoryId={respositoryId}
+							repositoryId={repositoryId}
 							onClose={handleRequiredSkillSelectorClose}
 						/>
 					)}
@@ -305,7 +375,7 @@ function SkillLessonLinker({
 				</div>
 				{gainedSkillSelectorOpen && (
 					<SelectSkillDialog
-						repositoryId={respositoryId}
+						repositoryId={repositoryId}
 						onClose={handleGainedSkillSelectorClose}
 					/>
 				)}
