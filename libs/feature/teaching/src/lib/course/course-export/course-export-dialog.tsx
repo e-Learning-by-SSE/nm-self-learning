@@ -1,7 +1,7 @@
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { CourseFormModel } from "../course-form-model";
 import { IncompleteNanoModuleExport } from "@self-learning/lia-exporter";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ErrorReportDialog } from "./error-report-dialog";
 import { ExportCourseProgressDialog } from "./export-progress-dialog";
 
@@ -29,7 +29,6 @@ export function ExportCourseDialog({
 	if (userClosed) return null;
 	return (
 		<CenteredContainer>
-			{/* The export progress dialog is shown until the export is finishedbd */}
 			{!isFinished && (
 				<ExportCourseProgressDialog
 					course={course}
