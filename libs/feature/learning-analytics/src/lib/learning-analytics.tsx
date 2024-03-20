@@ -1,5 +1,9 @@
-import { ResolvedValue } from "@self-learning/types";
+import { trpc } from "@self-learning/api-client";
 import { format, parseISO } from "date-fns";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { LessonLayoutProps } from "@self-learning/lesson";
+import { ResolvedValue } from "@self-learning/types";
 
 export enum LearningAnalyticsMetric {
 	preferredLearningTime,
@@ -130,7 +134,7 @@ export function saveEnds() {
 		window.localStorage.setItem("la_videoInfo", JSON.stringify(lAVideoInfo));
 	}
 	if (lAQuizInfo && lAQuizInfo.start !== "" && lAQuizInfo.end === "") {
-		lAQuizInfo.start = new Date() + "";
+		lAQuizInfo.end = new Date() + "";
 		window.localStorage.setItem("la_quizInfo", JSON.stringify(lAQuizInfo));
 	}
 }
@@ -147,7 +151,7 @@ export function saveLA() {
 	const lAQuizInfo = getQuizInfo();
 	const lAMediaType = getMediaType();
 	let data = null;
-	if (lALessonInfo != null && lALessonInfo?.id !== "" && laSession.id > -1) {
+	if (lALessonInfo != null && lALessonInfo?.id !== "" && laSession?.id > -1) {
 		resetLA();
 		data = {
 			sessionId: laSession.id,
@@ -160,8 +164,8 @@ export function saveLA() {
 			numberCorrectAnswers: lAQuizInfo ? lAQuizInfo.right : null,
 			numberIncorrectAnswers: lAQuizInfo ? lAQuizInfo.wrong : null,
 			numberOfUsedHints: lAQuizInfo ? lAQuizInfo.hint : null,
-			numberOfChangesMediaType: lAMediaType ? lAMediaType.numberOfChangesMediaType : null,
-			preferredMediaType: lAMediaType ? lAMediaType.preferredMediaType : null,
+			numberOfChangesMediaType: lAMediaType ? lAMediaType.numberOfChangesMediaType : 0,
+			preferredMediaType: lAMediaType ? lAMediaType.preferredMediaType : "video",
 			videoStart: lAVideoInfo ? new Date(lAVideoInfo.start).toISOString() : null,
 			videoEnd: lAVideoInfo ? new Date(lAVideoInfo.end).toISOString() : null,
 			videoBreaks: lAVideoInfo ? lAVideoInfo.stops : null,
@@ -524,7 +528,6 @@ export function getPreferredLearningTime(lASession: LearningAnalyticsType) {
 }
 
 function getHighestValue(map: Map<any, any>) {
-	//Array.from(hours).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0]
 	return Array.from(map.entries()).reduce((a, b) => (a[1] < b[1] ? b : a))[0];
 }
 /**
@@ -683,7 +686,7 @@ export function getVideoSpeed(lASession: LearningAnalyticsType) {
 	lASession.forEach(session => {
 		if (session?.learningAnalytics) {
 			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.start && learningAnalytics?.end) {
+				if (learningAnalytics?.start && learningAnalytics?.videoSpeed != null) {
 					if (videoSpeeds.has(learningAnalytics.videoSpeed))
 						videoSpeeds.set(
 							learningAnalytics.videoSpeed,
@@ -704,7 +707,6 @@ export function getVideoSpeed(lASession: LearningAnalyticsType) {
  */
 export function getDataForVideoSpeed(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
-	let count = 0;
 	let videoSpeeds = new Map();
 	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
 	let sessionStart = lastsession;
@@ -712,17 +714,15 @@ export function getDataForVideoSpeed(lASession: LearningAnalyticsType) {
 		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
 		if (sessionStart !== lastsession) {
 			if (videoSpeeds.size > 0) {
-				count = count + 1;
 				out.data.push(getHighestValue(videoSpeeds));
 				out.labels.push(lastsession);
 				videoSpeeds = new Map();
-				count = 0;
 				lastsession = sessionStart;
 			}
 		}
 		if (session?.learningAnalytics) {
 			session.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics.start) {
+				if (learningAnalytics.start && learningAnalytics.videoSpeed != null) {
 					if (videoSpeeds.has(learningAnalytics.videoSpeed))
 						videoSpeeds.set(
 							learningAnalytics.videoSpeed,
@@ -734,7 +734,6 @@ export function getDataForVideoSpeed(lASession: LearningAnalyticsType) {
 		}
 	});
 	if (videoSpeeds.size > 0) {
-		count = count + 1;
 		out.data.push(getHighestValue(videoSpeeds));
 		out.labels.push(sessionStart);
 	}
@@ -1321,4 +1320,145 @@ export function getMetrics(lASession: LearningAnalyticsType) {
 	];
 
 	return metric;
+}
+
+export function LearningAnalyticsSession() {
+	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
+	const { mutateAsync: setEndOfSession } = trpc.learningAnalytics.setEndOfSession.useMutation();
+	const { mutateAsync: createLearningAnalytics } =
+		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+
+	// Learning Analytics: Session handling
+	useEffect(() => {
+		const handleClose = () => {
+			const laSession = JSON.parse(localStorage.getItem("la_session") + "");
+			if (laSession && laSession !== "" && laSession.start) {
+				laSession.end = "" + new Date();
+				window.localStorage.setItem("la_session", JSON.stringify(laSession));
+			}
+		};
+
+		window.addEventListener("unload", handleClose, false);
+		return () => {
+			window.removeEventListener("unload", handleClose);
+		};
+	}, [createLearningAnalytics, setEndOfSession]);
+
+	useEffect(() => {
+		const setData = async () => {
+			const data = saveLA();
+			if (data) {
+				try {
+					await createLearningAnalytics(data);
+					const date = new Date();
+					const isoDateTime = new Date(
+						date.getTime() - date.getTimezoneOffset() * 60000
+					).toISOString();
+					await setEndOfSession({ end: isoDateTime, id: data.sessionId });
+				} catch (e) {
+					resetLASession();
+				}
+			}
+			resetLASession();
+		};
+		const createNewLASession = async () => {
+			window.localStorage.setItem(
+				"la_session",
+				JSON.stringify({ start: "" + new Date(), end: "", id: "" })
+			);
+			const id = await createLASession();
+			window.localStorage.setItem(
+				"la_session",
+				JSON.stringify({ start: "" + new Date(), end: "", id: id.id })
+			);
+		};
+		const laSession = JSON.parse(localStorage.getItem("la_session") + "");
+		const start = laSession
+			? format(parseISO(new Date(laSession.start).toISOString()), "dd.MM.yyyy")
+			: "";
+		const today = format(parseISO(new Date().toISOString()), "dd.MM.yyyy");
+
+		if (!(laSession && laSession !== "")) {
+			createNewLASession();
+		} else if (laSession.start !== "" && laSession.end !== "" && start !== today) {
+			setData();
+		}
+	}, [createLASession, createLearningAnalytics, setEndOfSession]);
+
+	return null;
+}
+
+export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
+	// Learning Analytics: navigate from page
+	const router = useRouter();
+	const { mutateAsync: createLearningAnalytics } =
+		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+
+	useEffect(() => {
+		const saveData = async () => {
+			const data = saveLA();
+			if (data) {
+				try {
+					await createLearningAnalytics(data);
+				} catch (e) {}
+			}
+		};
+		const navigateFromPage = (url: string) => {
+			if (!url.includes(lesson.slug)) {
+				saveEnds();
+				saveData();
+			}
+			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
+			if (lALessonInfo && lALessonInfo !== "") {
+				lALessonInfo.end = "" + new Date();
+				window.localStorage.setItem("la_lessonInfo", JSON.stringify(lALessonInfo));
+			}
+		};
+		router.events.on("routeChangeStart", navigateFromPage);
+		return () => {
+			router.events.off("routeChangeStart", navigateFromPage);
+		};
+	}, [createLearningAnalytics, lesson.slug, router.events]);
+
+	// Learning Analytics: init or save lesson info
+	useEffect(() => {
+		const saveData = async () => {
+			const data = saveLA();
+			if (data) {
+				try {
+					await createLearningAnalytics(data);
+				} catch (e) {}
+			}
+		};
+		if (window !== undefined) {
+			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
+			if (lALessonInfo && lALessonInfo !== "") {
+				if (lALessonInfo.lessonId !== lesson.lessonId) {
+					saveData();
+					window.localStorage.setItem(
+						"la_lessonInfo",
+						JSON.stringify({
+							lessonId: lesson.lessonId,
+							courseId: course.courseId,
+							start: "" + new Date(),
+							end: "",
+							source: document.referrer
+						})
+					);
+				}
+			} else {
+				window.localStorage.setItem(
+					"la_lessonInfo",
+					JSON.stringify({
+						lessonId: lesson.lessonId,
+						courseId: course.courseId,
+						start: "" + new Date(),
+						end: "",
+						source: document.referrer
+					})
+				);
+			}
+		}
+	}, [course.courseId, createLearningAnalytics, lesson.lessonId]);
+	return null;
 }

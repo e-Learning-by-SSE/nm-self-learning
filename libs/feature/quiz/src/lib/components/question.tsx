@@ -151,11 +151,13 @@ function CheckResult({
 	const { mutateAsync: createLearningAnalytics } =
 		trpc.learningAnalytics.createLearningAnalytics.useMutation();
 
-	function saveQuizBeforeReload() {
+	async function saveQuizBeforeReload() {
 		saveEnds();
 		const data = saveLA();
 		if (data) {
-			createLearningAnalytics(data);
+			try {
+				await createLearningAnalytics(data);
+			} catch (e) {}
 		}
 		reload();
 	}

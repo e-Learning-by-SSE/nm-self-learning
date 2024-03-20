@@ -2,7 +2,7 @@ import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { saveEnds, saveLA } from "@self-learning/learning-analytics";
+import { LearningAnalyticsLesson } from "@self-learning/learning-analytics";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -117,72 +117,12 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
-	// Learning Analytics: navigate from page
-	const router = useRouter();
-	const { mutateAsync: createLearningAnalytics } =
-		trpc.learningAnalytics.createLearningAnalytics.useMutation();
-
-	useEffect(() => {
-		const navigateFromPage = (url: string) => {
-			if (!url.includes(lesson.slug)) {
-				saveEnds();
-				const data = saveLA();
-				if (data) {
-					createLearningAnalytics(data);
-				}
-			}
-			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
-			if (lALessonInfo && lALessonInfo != "") {
-				lALessonInfo.end = "" + new Date();
-				window.localStorage.setItem("la_lessonInfo", JSON.stringify(lALessonInfo));
-			}
-		};
-		router.events.on("routeChangeStart", navigateFromPage);
-		return () => {
-			router.events.off("routeChangeStart", navigateFromPage);
-		};
-	}, [createLearningAnalytics, lesson.slug, router.events]);
-
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
-
-	// Learning Analytics: init or save lesson info
-	useEffect(() => {
-		if (window !== undefined) {
-			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
-			if (lALessonInfo && lALessonInfo != "") {
-				if (lALessonInfo.lessonId != lesson.lessonId) {
-					const data = saveLA();
-					if (data) {
-						createLearningAnalytics(data);
-					}
-					window.localStorage.setItem(
-						"la_lessonInfo",
-						JSON.stringify({
-							lessonId: lesson.lessonId,
-							courseId: course.courseId,
-							start: "" + new Date(),
-							end: ""
-						})
-					);
-				}
-			} else {
-				window.localStorage.setItem(
-					"la_lessonInfo",
-					JSON.stringify({
-						lessonId: lesson.lessonId,
-						courseId: course.courseId,
-						start: "" + new Date(),
-						end: ""
-					})
-				);
-			}
-		}
-	}, [course.courseId, createLearningAnalytics, lesson.lessonId]);
 
 	if (showDialog && markdown.preQuestion) {
 		return (
@@ -225,6 +165,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					<PdfViewer url={pdf.value.url} />
 				</div>
 			)}
+			<LearningAnalyticsLesson lesson={lesson} course={course} />
 		</article>
 	);
 }

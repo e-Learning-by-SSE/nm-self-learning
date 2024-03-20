@@ -14,9 +14,7 @@ import "katex/dist/katex.css";
 import { useEffect } from "react";
 import { init } from "@socialgouv/matomo-next";
 import PlausibleProvider from "next-plausible";
-import { trpc } from "@self-learning/api-client";
-import { format, parseISO } from "date-fns";
-import { resetLASession, saveLA } from "@self-learning/learning-analytics";
+import { LearningAnalyticsSession } from "@self-learning/learning-analytics";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -49,12 +47,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		  (Component as any).getLayout(Component, pageProps)
 		: null;
-
-	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
-	const { mutateAsync: setEndOfSession } = trpc.learningAnalytics.setEndOfSession.useMutation();
-	const { mutateAsync: createLearningAnalytics } =
-		trpc.learningAnalytics.createLearningAnalytics.useMutation();
-
 	useEffect(() => {
 		const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
 		const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
@@ -62,64 +54,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
 		}
 	}, []);
-
-	// Learning Analytics: Session handling
-	useEffect(() => {
-		const handleClose = () => {
-			const laSession = JSON.parse(localStorage.getItem("la_session") + "");
-			if (laSession && laSession !== "" && laSession.start) {
-				laSession.end = "" + new Date();
-				window.localStorage.setItem("la_session", JSON.stringify(laSession));
-			}
-		};
-
-		window.addEventListener("unload", handleClose, false);
-		return () => {
-			window.removeEventListener("unload", handleClose);
-		};
-	}, [createLearningAnalytics, setEndOfSession]);
-
-	useEffect(() => {
-		const setData = async () => {
-			const data = saveLA();
-			if (data) {
-				try {
-					await createLearningAnalytics(data);
-					const date = new Date();
-					const isoDateTime = new Date(
-						date.getTime() - date.getTimezoneOffset() * 60000
-					).toISOString();
-					await setEndOfSession({ end: isoDateTime, id: data.sessionId });
-				} catch (e) {
-					resetLASession();
-				}
-			}
-			resetLASession();
-		};
-		const createNewLASession = async () => {
-			window.localStorage.setItem(
-				"la_session",
-				JSON.stringify({ start: "" + new Date(), end: "", id: "" })
-			);
-			const id = await createLASession();
-			window.localStorage.setItem(
-				"la_session",
-				JSON.stringify({ start: "" + new Date(), end: "", id: id.id })
-			);
-		};
-		const laSession = JSON.parse(localStorage.getItem("la_session") + "");
-		const start = laSession
-			? format(parseISO(new Date(laSession.start).toISOString()), "dd.MM.yyyy")
-			: "";
-		const today = format(parseISO(new Date().toISOString()), "dd.MM.yyyy");
-		console.log(start + " - " + today);
-		if (!(laSession && laSession !== "")) {
-			createNewLASession();
-		} else if (laSession.start != "" && laSession.end != "" && start != today) {
-			setData();
-		}
-	}, [createLASession, createLearningAnalytics, setEndOfSession]);
-
 	return (
 		<PlausibleProvider
 			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
@@ -142,6 +76,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<Footer />
 				{/* <ReactQueryDevtools position="bottom-right" /> */}
 			</SessionProvider>
+			<LearningAnalyticsSession />
 		</PlausibleProvider>
 	);
 }
