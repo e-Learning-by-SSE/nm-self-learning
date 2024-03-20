@@ -22,15 +22,14 @@ export function ExportCourseDialog({
 	 */
 	const [userClosed, setUserClosed] = useState(false);
 
-	useEffect(() => {
-		if (userClosed || (isFinished && errorReport.length === 0)) {
-			onClose();
-		}
-	}, [userClosed, isFinished, errorReport, onClose]);
+	if (userClosed || (isFinished && errorReport.length === 0)) {
+		onClose();
+	}
 
 	if (userClosed) return null;
 	return (
 		<CenteredContainer>
+			{/* The export progress dialog is shown until the export is finishedbd */}
 			{!isFinished && (
 				<ExportCourseProgressDialog
 					course={course}
