@@ -14,7 +14,8 @@ export enum LearningAnalyticsMetric {
 	preferredMediaType,
 	anzQuizPerWeek,
 	answers,
-	hints
+	hints,
+	videoStops
 }
 export type LearningAnalyticsMetricType = ResolvedValue<typeof getMetrics>;
 
@@ -53,7 +54,10 @@ export function getMetricName(metric: LearningAnalyticsMetric) {
 			result = "Präferierte Videogeschwindigkeit";
 			break;
 		case LearningAnalyticsMetric.hints:
-			result = "Benötigte Hinweise pro Lernkontrolle.";
+			result = "Benötigte Hinweise pro Lernkontrolle";
+			break;
+		case LearningAnalyticsMetric.videoStops:
+			result = "Durchschnittliche Anzahl an Pausen pro abgespielten Video";
 			break;
 	}
 	return result;
@@ -356,6 +360,9 @@ export function getLineChartData(
 		case LearningAnalyticsMetric.hints:
 			result = getDataForHints(lASession);
 			break;
+		case LearningAnalyticsMetric.videoStops:
+			result = getDataForVideoStops(lASession);
+			break;
 	}
 	return result;
 }
@@ -609,6 +616,14 @@ export function getDuration(lASession: LearningAnalyticsType) {
 							60000;
 					count = count + 1;
 				}
+				if (learningAnalytics?.quizStart && learningAnalytics?.quizEnd) {
+					duration =
+						duration +
+						(new Date(learningAnalytics.quizEnd).getTime() -
+							new Date(learningAnalytics.quizStart).getTime()) /
+							60000;
+					count = count + 1;
+				}
 			});
 		}
 	});
@@ -643,6 +658,14 @@ export function getDataForDuration(lASession: LearningAnalyticsType) {
 						(new Date(learningAnalytics.end).getTime() -
 							new Date(learningAnalytics.start).getTime()) /
 						60000;
+					count = count + 1;
+				}
+				if (learningAnalytics?.quizStart && learningAnalytics?.quizEnd) {
+					duration =
+						duration +
+						(new Date(learningAnalytics.quizEnd).getTime() -
+							new Date(learningAnalytics.quizStart).getTime()) /
+							60000;
 					count = count + 1;
 				}
 			});
@@ -1274,6 +1297,85 @@ export function getDataForHints(lASession: LearningAnalyticsType) {
 }
 
 /**
+ * getVideoStops()
+ * Returns the average number of stops per video.
+ *
+ * lASession: learning analytic session data
+ */
+export function getVideoStops(lASession: LearningAnalyticsType) {
+	let stops = 0;
+	let count = 0;
+	lASession.forEach(session => {
+		if (session?.learningAnalytics) {
+			session?.learningAnalytics.forEach(learningAnalytics => {
+				if (learningAnalytics?.videoBreaks && learningAnalytics.videoBreaks != null) {
+					stops = stops + learningAnalytics.videoBreaks;
+					count = count + 1;
+				}
+			});
+		}
+	});
+	return count > 0 ? Math.round((stops / count) * 10) / 10 : 0;
+}
+
+/**
+ * getDataForVideoStops()
+ * Returns the average number of stops of a video for a day. The result is data for a line chart.
+ *
+ * lASession: learning analytic session data
+ */
+export function getDataForVideoStops(lASession: LearningAnalyticsType) {
+	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
+	let stops = 0;
+	let count = 0;
+	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
+	let sessionStart = lastsession;
+	lASession.forEach(session => {
+		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
+		if (sessionStart !== lastsession) {
+			out.data.push(count > 0 ? Math.round((stops / count) * 10) / 10 : 0);
+			out.labels.push(lastsession);
+			lastsession = sessionStart;
+			stops = 0;
+			count = 0;
+		}
+		if (session?.learningAnalytics) {
+			session?.learningAnalytics.forEach(learningAnalytics => {
+				if (learningAnalytics?.videoBreaks && learningAnalytics.videoBreaks != null) {
+					stops = stops + learningAnalytics.videoBreaks;
+					count = count + 1;
+				}
+			});
+		}
+	});
+	out.data.push(count > 0 ? Math.round((stops / count) * 10) / 10 : 0);
+	out.labels.push(sessionStart);
+	let data = null;
+	if (out)
+		data = {
+			labels: out.labels,
+			datasets: [
+				{
+					label: getMetricName(LearningAnalyticsMetric.videoStops),
+					fill: false,
+					backgroundColor: "rgba(75,192,192,0.4)",
+					pointBorderColor: "rgba(75,192,192,1)",
+					pointBackgroundColor: "#fff",
+					pointBorderWidth: 1,
+					pointHoverRadius: 5,
+					pointHoverBackgroundColor: "rgba(75,192,192,1)",
+					pointHoverBorderColor: "rgba(220,220,220,1)",
+					pointHoverBorderWidth: 2,
+					pointRadius: 1,
+					pointHitRadius: 10,
+					data: out.data
+				}
+			]
+		};
+	return data;
+}
+
+/**
  * getMetric()
  * Returns all metrics and the collected or calculated values for the specific metrics.
  *
@@ -1296,6 +1398,10 @@ export function getMetrics(lASession: LearningAnalyticsType) {
 		{
 			metric: LearningAnalyticsMetric.videoDuration,
 			value: getVideoDuration(lASession)
+		},
+		{
+			metric: LearningAnalyticsMetric.videoStops,
+			value: getVideoStops(lASession)
 		},
 		{
 			metric: LearningAnalyticsMetric.mediaTypeChanges,
