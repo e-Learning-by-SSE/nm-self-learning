@@ -1,5 +1,9 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { faker } from "@faker-js/faker";
+import { courses as psychologyCourses } from "../psychology/psychology-example";
+import { courses as javaCourses } from "../demo/java-example";
+import { didacticCourses, mathCourses } from "../math/math-example";
+import { Course } from "../seed-functions";
 
 faker.seed(1);
 
@@ -25,20 +29,31 @@ for (let i = 0; i < 40; i++) {
 	const mediaType = ["video", "article", "pdf", "iframe"];
 	const videoSpeed = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 
-	const courses = [
+	type LearningAnalyticsCourse = {
+		id: string;
+		lessons: string[];
+	};
+
+	const courses: LearningAnalyticsCourse[] = [
 		{
 			id: "z97e0mlj",
-			lessons: [
-				"dej5nxdc",
-				"dej5nxdc",
-				"qirqw5xo",
-				"u1rspwv0",
-				"9889nrxg",
-				"swz1nr14",
-				"gvdbzl6y"
-			]
+			lessons: ["dej5nxdc", "qirqw5xo", "u1rspwv0", "9889nrxg", "swz1nr14", "gvdbzl6y"]
 		}
 	];
+
+	const addCourses = (seedCourses: Course[]) => {
+		seedCourses.forEach(course => {
+			const content = course.data.content as any as { content: { lessonId: string }[] }[];
+			courses.push({
+				id: course.data.courseId,
+				lessons: content
+					.map(chapter => chapter.content.map(lesson => lesson.lessonId))
+					.flat()
+			});
+		});
+	};
+
+	addCourses([...psychologyCourses, ...javaCourses, ...didacticCourses, ...mathCourses]);
 
 	for (let j = 0; j < Math.floor(Math.random() * 6) + 2; j++) {
 		const courseIndex = Math.floor(Math.random() * courses.length);

@@ -184,7 +184,6 @@ async function seed(): Promise<void> {
 	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
 		faker.seed(1);
 		await seedDemos();
-		await seedLearningAnalytics();
 	}
 
 	await prisma.subject.createMany({ data: subjects });
@@ -195,6 +194,9 @@ async function seed(): Promise<void> {
 	await psychologyExample();
 	await mathExample();
 
+	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
+		await seedLearningAnalytics();
+	}
 	console.log(`\nSeed command took ${Date.now() - start}ms`);
 }
 

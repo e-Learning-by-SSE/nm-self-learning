@@ -256,7 +256,7 @@ export function read(file: string) {
 	return readFileSync(join(__dirname, file), "utf-8");
 }
 
-type Course = {
+export type Course = {
 	data: Prisma.CourseCreateManyInput;
 	specializationId: string;
 };
