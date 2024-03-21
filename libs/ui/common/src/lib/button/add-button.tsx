@@ -36,7 +36,7 @@ export function AddButton({
 	);
 }
 
-export function AddDropDownButton({ lable, children }: { lable: string; children: ReactNode }) {
+export function AddDropDownButton({ label, children }: { label: string; children: ReactNode }) {
 	return (
 		<DropdownButton
 			title="Aufgabentyp hinzufügen"
@@ -44,7 +44,7 @@ export function AddDropDownButton({ lable, children }: { lable: string; children
 			hover={"hover:bg-emerald-700"}
 			chevronColor={"text-white"}
 		>
-			<span className={"text-white"}>{lable}</span>
+			<span className={"text-white"}>{label}</span>
 			{children}
 		</DropdownButton>
 	);

@@ -96,7 +96,7 @@ export function QuizEditor() {
 					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lernheit
 					erfolgreich abzuschließen."
 				button={
-					<AddDropDownButton lable={"Aufgabe Hinzufügen"}>
+					<AddDropDownButton label={"Aufgabe Hinzufügen"}>
 						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 							<AddButton
 								title={"Aufgabe Hinzufügen"}
