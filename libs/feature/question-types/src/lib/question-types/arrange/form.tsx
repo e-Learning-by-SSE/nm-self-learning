@@ -118,7 +118,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
 			<DragDropContext onDragEnd={onDragEnd}>
-				<ul className="grid w-full grid-cols-2 gap-4">
+				<ul className="grid w-full gap-4 sm:grid-cols-1 md:grid-cols-2">
 					{Object.entries(items).map(([containerId, items]) => (
 						// eslint-disable-next-line react/jsx-no-useless-fragment
 						<Fragment key={containerId}>
