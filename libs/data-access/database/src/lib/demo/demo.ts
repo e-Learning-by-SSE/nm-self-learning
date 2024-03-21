@@ -35,8 +35,7 @@ const students = [
 	}
 ];
 
-const defaultLicense: Prisma.LicenseUncheckedCreateInput = {
-	licenseId: 0,
+export const defaultLicense: Prisma.LicenseUncheckedCreateInput = {
 	name: "Uni Hi Intern",
 	licenseText:
 		"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
@@ -537,14 +536,13 @@ const completedLessons: Prisma.CompletedLessonCreateManyInput[] = extractLessonI
 		createdAt: subHours(Date.now(), index * 4)
 	}));
 
-export const defaultLicenseIDPromise = (async () => {
-	const defaultLicenseID = (await prisma.license.create({ data: defaultLicense })).licenseId;
-	return defaultLicenseID;
-})();
+
+export let defaultLicenseID = 0;
 
 export async function seedDemos(): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", "Seeding Demo Data:");
 
+	defaultLicenseID = (await prisma.license.create({ data: defaultLicense })).licenseId;
 	await prisma.license.createMany({ data: license });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Licenses");
 

@@ -1,4 +1,3 @@
-import { defaultLicenseIDPromise } from "./demo/demo"
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient, LessonType } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
@@ -274,13 +273,14 @@ export async function seedCaseStudy(
 	await prisma.course.createMany({ data: courseData });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
-	const defaultLicense = await defaultLicenseIDPromise;
+	const module = await import ("./demo/demo");
+	const defaultLicense = module.defaultLicenseID;
 
 	await prisma.lesson.createMany({
 		data: chapters.flatMap(chapter =>
 			chapter.content.map(lesson => ({
 				...lesson,
-				licenseId: lesson.licenseId ?? defaultLicense
+				licenseId: defaultLicense
 			}))
 		)
 	});
