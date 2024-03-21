@@ -33,5 +33,45 @@
 	"quiz_failed_text_1": "Du hast leider zu viele Fragen falsch beantwortet, um die Lerneinheit",
 	"quiz_failed_text_2": "abzuschließen.",
 	"try_again": "Erneut probieren",
-	"add_to_learning_plan": "Zum Lernplan hinzufügen"
+	"add_to_learning_plan": "Zum Lernplan hinzufügen",
+
+	"author_added": "Autor hinzugefügt",
+	"add_author_error": "Autor konnte nicht hinzugefügt werden.",
+	"add_author": "Autor hinzufügen",
+	"authors": "Autoren",
+	"search_for_author": "Suche nach Autor",
+	"edit": "Editieren",
+
+	"courses": "Kurse",
+	"add_course": "Kurs hinzufügen",
+	"search_for_title": "Suche nach Titel",
+	"title": "Titel",
+	"by": "von",
+	"lesson": "Lerneinheiten",
+	"license": "Lizenzen",
+	"name": "Name",
+	"not_defined": "Nicht Definiert",
+	"yes": "Ja",
+	"no": "Nein",
+	"subjects": "Fachgebiete",
+	"add": "Hinzufügen",
+
+	"add_license": "Lizenz hinzufügen",
+	"search_for_license": "Suche nach Lizenz",
+
+	"management": "Verwaltung",
+	"manage_lessons": "Lerneinheiten verwalten",
+	"manage_courses": "Kurse verwalten",
+	"manage_subjects": "Fachgebiete verwalten",
+	"manage_authors": "Autoren verwalten",
+	"manage_licenses": "Lizenzen verwalten",
+
+	"add_lesson": "Lerneinheit hinzufügen",
+	"preview": "Preview",
+	"license_url": "Url der Lizenzwebseite:",
+	"license_description": "Lizenzbeschreibung:",
+	"choosable": "Auswählbar",
+	"compatible": "OER - Kompatible:",
+
+	"hallo": "hallo"
 }

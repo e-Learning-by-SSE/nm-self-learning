@@ -33,5 +33,45 @@
 	"quiz_failed_text_1": "Unfortunately you have too many wrong answers to finish the learning unit",
 	"quiz_failed_text_2": "",
 	"try_again": "Try again",
-	"add_to_learning_plan": "Add to learning plan"
+	"add_to_learning_plan": "Add to learning plan",
+
+	"author_added": "Author added",
+	"add_author_error": "Author could not be added.",
+	"add_author": "Add Author",
+	"authors": "Author",
+	"search_for_author": "Search for Author",
+	"edit": "Edit",
+
+	"courses": "Courses",
+	"add_course": "Add Course",
+	"search_for_title": "Search for Title",
+	"title": "Title",
+	"by": "by",
+	"lesson": "Lessons",
+	"license": "Licenses",
+	"name": "Name",
+	"not_defined": "Not defined",
+	"yes": "Yes",
+	"no": "No",
+	"subjects": "Subjects",
+	"add": "Add",
+
+	"add_license": "Add License",
+	"search_for_license": "Search for License",
+
+	"management": "Management",
+	"manage_lessons": "Manage Lessons",
+	"manage_courses": "Manage Courses",
+	"manage_subjects": "Manage Subjects",
+	"manage_authors": "Manage Authors",
+	"manage_licenses": "Manage Licenses",
+
+	"add_lesson": "Add Lesson",
+	"preview": "Preview",
+	"license_url": "License Website URL:",
+	"license_description": "License description:",
+	"choosable": "Choosable",
+	"compatible": "OER - Compatible:",
+
+	"hallo": "hallo"
 }
