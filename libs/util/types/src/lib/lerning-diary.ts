@@ -74,6 +74,19 @@ export function getUSerSpecificName(type: StrategyType) {
 	return result;
 }
 
+type StrategieTypeOption = {
+	value: StrategyType;
+	label: string;
+};
+
+export function getStrategyNames() {
+	const result: StrategieTypeOption[] = [];
+	Object.values(StrategyType).forEach(type => {
+		result.push({ value: type, label: getStrategyNameByType(type) });
+	});
+	return result;
+}
+
 export function getStrategyNameByType(type: StrategyType) {
 	let result = "Strategie Auswählen";
 	switch (type) {

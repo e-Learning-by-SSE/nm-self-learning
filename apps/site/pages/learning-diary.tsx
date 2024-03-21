@@ -20,7 +20,7 @@ import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import { Tab } from "@headlessui/react";
-import { GoalType, Lesson, LocationType, StrategyType } from "@prisma/client";
+import { GoalType, LearningStrategy, Lesson, LocationType, StrategyType } from "@prisma/client";
 import {
 	EntryEditor,
 	EntryFormModel,
@@ -41,6 +41,7 @@ import { useRouter } from "next/router";
 
 import { Star } from "libs/ui/common/src/lib/rating/star-rating";
 import { PencilIcon } from "@heroicons/react/solid";
+import { map } from "@trpc/server/observable";
 
 type CompletedLesson = ResolvedValue<typeof getCompletedLessonsThisWeek>[0];
 type LearningGoal = ResolvedValue<typeof getGoals>[0];
@@ -541,8 +542,8 @@ function StrategyOverviews() {
 				<Table
 					head={
 						<>
-							<TableHeaderColumn>Strategy</TableHeaderColumn>
-							<TableHeaderColumn>Vertrauensbewertung (avg):</TableHeaderColumn>
+							<TableHeaderColumn>Strategie</TableHeaderColumn>
+							<TableHeaderColumn>Hilfreich (avg):</TableHeaderColumn>
 							<TableHeaderColumn>Summe der Nutzungen</TableHeaderColumn>
 						</>
 					}
@@ -690,68 +691,22 @@ function EntriesSection({
 				<hr />
 			</div>
 			<ul className="mb-4 flex flex-col gap-2 text-sm">
-				{entries.map(({ id, title, completedLesson, lesson, createdAt }) => (
-					<EntriesList
-						key={id}
-						title={title}
-						id={id}
-						lesson={lesson}
-						completedLesson={completedLesson}
-						createdAt={createdAt}
-						selectEntry={selectEntry}
-						selectedEntry={selectedEntry}
-					/>
-				))}
+				{entries.map(
+					({ id, title, completedLesson, lesson, createdAt, learningStrategies }) => (
+						<EntriesList
+							key={id}
+							title={title}
+							id={id}
+							lesson={lesson}
+							completedLesson={completedLesson}
+							createdAt={createdAt}
+							selectEntry={selectEntry}
+							selectedEntry={selectedEntry}
+							learningStrategies={learningStrategies}
+						/>
+					)
+				)}
 			</ul>
-		</section>
-	);
-}
-function EntriesSectionPage({
-	selectEntry,
-	title,
-	subtitle,
-	selectedEntry,
-	page
-}: Readonly<{
-	selectEntry: SelectEntryFunction;
-	title: string;
-	subtitle: (amount: ReactElement) => ReactElement;
-	selectedEntry: string;
-	page: number | string | string[];
-}>) {
-	const date = new Date();
-	date.setDate(date.getDate() - 2);
-	const { data } = trpc.learningDiary.findManyEntries.useQuery(
-		{ date: date.toISOString(), page: Number(page) },
-		{
-			staleTime: 120000,
-			keepPreviousData: true
-		}
-	);
-	return (
-		<section className="flex flex-col gap-2">
-			<div className="flex flex-col gap-1">
-				<span className="font-semibold">{title}</span>
-				<span className="text-xs text-light">
-					{subtitle(<span className="font-semibold">{data?.result.length}</span>)}
-				</span>
-				<hr />
-			</div>
-			<ul className="mb-4 flex flex-col gap-2 text-sm">
-				{data?.result.map(({ id, title, completedLesson, lesson, createdAt }) => (
-					<EntriesList
-						key={id}
-						title={title}
-						id={id}
-						lesson={JSON.parse(JSON.stringify(lesson))}
-						completedLesson={JSON.parse(JSON.stringify(completedLesson))}
-						createdAt={JSON.parse(JSON.stringify(createdAt))}
-						selectEntry={selectEntry}
-						selectedEntry={selectedEntry}
-					/>
-				))}
-			</ul>
-			{data?.result && <Paginator pagination={data} url={`/learning-diary?`} />}
 		</section>
 	);
 }
@@ -761,6 +716,7 @@ function EntriesList({
 	title,
 	completedLesson,
 	lesson,
+	learningStrategies,
 	createdAt,
 	selectedEntry,
 	selectEntry
@@ -769,6 +725,7 @@ function EntriesList({
 	title: string;
 	completedLesson: CompletedLesson | null;
 	lesson: Lesson | null;
+	learningStrategies: LearningStrategy[];
 	createdAt: Date;
 	selectedEntry: string;
 	selectEntry: SelectEntryFunction;
@@ -795,9 +752,8 @@ function EntriesList({
 			" Uhr)";
 	} else {
 		info =
-			"Eintrag vom " +
 			format(parseISO(new Date(createdAt).toISOString()), "dd/MM/yyyy (HH:mm") +
-			"Uhr)";
+			"Uhr) Dauer: 35 Min\n";
 	}
 	let className = "w-full cursor-pointer hover:bg-emerald-500 hover:text-white";
 	if (id == selectedEntry) {
@@ -809,10 +765,17 @@ function EntriesList({
 				<button className={className} onClick={() => selectEntry(id)}>
 					<div className="mx-auto mt-2 mb-2 flex w-full max-w-md flex-col items-start">
 						<div className="flex w-full max-w-md flex-row justify-between">
-							<span className="text-start text-base font-semibold">{title}</span>{" "}
+							<span className="text-start text-base font-semibold">
+								Objectorientierte Programmierung mit Java
+							</span>{" "}
 							{isCompletedLessons && <CheckIcon className="h-5 w-5" />}
 						</div>
 						<span className="text-start text-xs">{info}</span>
+						{learningStrategies.map(({ id, type }) => (
+							<span key={id} className="text-start text-xs">
+								{getStrategyNameByType(type)}
+							</span>
+						))}
 					</div>
 				</button>
 			</div>
@@ -994,6 +957,12 @@ function Entry({
 	const { data: diaryEntry } = trpc.learningDiary.getEntryForEdit.useQuery({
 		entryId: selectedEntry
 	});
+	const today1 = new Date();
+	today1.setMinutes(today1.getMinutes() - 45);
+
+	const today2 = new Date();
+	today2.setMinutes(today1.getMinutes() - 15);
+
 	return (
 		<div className="flex flex-col">
 			<div className="flex justify-between">
@@ -1008,14 +977,12 @@ function Entry({
 				</button>
 			</div>
 
-			<div className="flex flex-row items-center">
-				<div className="mx-auto flex w-full flex-row justify-between gap-2">
-					<div className="flex flex-col">
-						<span className="text-sm font-semibold">Titel:</span>
-						<span>{diaryEntry?.title}</span>
-					</div>
+			<div className="mb-2 flex flex-row">
+				<div className="mx-auto flex w-full flex-row  gap-4">
+					<span className="text-sm font-semibold"> Kurs: </span>
+					<span className="text-light">Objectorientierte Programmierung mit Java</span>
 				</div>
-				<div className="flex flex-col">
+				<div className="mx-auto flex w-full flex-row  gap-4">
 					<span className="text-sm font-semibold"> Ort: </span>
 					<span className="text-light">
 						{diaryEntry?.location === LocationType.USERSPECIFIC
@@ -1027,93 +994,156 @@ function Entry({
 				</div>
 			</div>
 
-			<div className="mt-3 flex flex-col">
-				{diaryEntry?.lesson && (
-					<div className="flex flex-col">
-						<span className="text-sm font-semibold">Lerneinheit:</span>
-						<span className="text-sm font-medium hover:text-secondary">
-							{diaryEntry?.lesson?.title}
-						</span>
-					</div>
-				)}
-				<span className="mt-5 text-sm font-semibold">Dauer (inMinuten):</span>
-				<span className="mb-5">{diaryEntry?.duration}</span>
-			</div>
-			<SectionHeader title="Verwendete Lernstrategie:" />
-			<Table
-				head={
-					<>
-						<TableHeaderColumn>Strategie</TableHeaderColumn>
-						<TableHeaderColumn>Vertrauensbewertung:</TableHeaderColumn>
-					</>
-				}
-			>
-				{diaryEntry?.learningStrategies.map(strategy => (
-					<tr key={strategy.type}>
+			<div className="mt-5 flex flex-col">
+				<Table
+					head={
+						<>
+							<TableHeaderColumn>Lerneinheit</TableHeaderColumn>
+							<TableHeaderColumn>Start</TableHeaderColumn>
+							<TableHeaderColumn>Dauer (in Minuten)</TableHeaderColumn>
+							<TableHeaderColumn>Video Dauer (in Minuten)</TableHeaderColumn>
+							<TableHeaderColumn>Video Stopps</TableHeaderColumn>
+							<TableHeaderColumn>
+								<div title="Richtige Antworten/ Falsche Antworten/ Hinweise">
+									Quiz (R/F/H)
+								</div>
+							</TableHeaderColumn>
+						</>
+					}
+				>
+					<tr key={1}>
+						<TableDataColumn>
+							<span className="text-light">Einleitung & Motivation</span>
+						</TableDataColumn>
 						<TableDataColumn>
 							<span className="text-light">
-								{isUserSpecific(strategy.type)
-									? getUSerSpecificName(strategy.type) + strategy.notes
-									: getStrategyNameByType(strategy.type)}
+								{format(parseISO(today1.toISOString()), "dd/MM/yyyy (HH:mm") +
+									"Uhr)"}
 							</span>
 						</TableDataColumn>
 						<TableDataColumn>
-							<div
-								key={strategy.type}
-								className="form-control flex flex-row place-items-center"
-							>
-								{[1, 2, 3, 4, 5].map(value => (
-									<Star key={value} filled={value <= strategy.confidenceRating} />
-								))}
-							</div>
+							<span className="text-light">20</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">2</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">3</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">(5/3/1)</span>
 						</TableDataColumn>
 					</tr>
-				))}
-			</Table>
+					<tr key={2}>
+						<TableDataColumn>
+							<span className="text-light">Installation des JDKs</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">
+								{format(parseISO(today2.toISOString()), "dd/MM/yyyy (HH:mm") +
+									"Uhr)"}
+							</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">15</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">0,5</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">1</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">-</span>
+						</TableDataColumn>
+					</tr>
+				</Table>
+			</div>
+
+			<div className="mt-5">
+				<SectionHeader title="Verwendete Lernstrategie:" />
+				<Table
+					head={
+						<>
+							<TableHeaderColumn>Strategie</TableHeaderColumn>
+							<TableHeaderColumn>Hilfreich:</TableHeaderColumn>
+						</>
+					}
+				>
+					{diaryEntry?.learningStrategies.map(strategy => (
+						<tr key={strategy.type}>
+							<TableDataColumn>
+								<span className="text-light">
+									{isUserSpecific(strategy.type)
+										? getUSerSpecificName(strategy.type) + strategy.notes
+										: getStrategyNameByType(strategy.type)}
+								</span>
+							</TableDataColumn>
+							<TableDataColumn>
+								<div
+									key={strategy.type}
+									className="form-control flex flex-row place-items-center"
+								>
+									{[1, 2, 3, 4, 5].map(value => (
+										<Star
+											key={value}
+											filled={value <= strategy.confidenceRating}
+										/>
+									))}
+								</div>
+							</TableDataColumn>
+						</tr>
+					))}
+				</Table>
+			</div>
 			<div className="mt-5 flex flex-col">
 				<SectionHeader
 					title="Notizen"
 					subtitle="Ausführliche Beschreibung der Ablenkungen und Bemühungen während der Lernsession (Optional)."
 				/>
-				<div className="flex flex-col ">
-					<span className="mt-5 text-sm font-semibold">Ablenkungen:</span>
-					<div
-						key={"distractions"}
-						className="form-control flex flex-row place-items-center"
-					>
-						{[1, 2, 3, 4, 5].map(value => (
-							<Star
-								key={value}
-								filled={
-									value <=
-									(diaryEntry
-										? diaryEntry.distractions
-											? diaryEntry?.distractions
-											: 0
-										: 0)
-								}
-							/>
-						))}
+
+				<div className="mb-2 flex flex-row items-center">
+					<div className="mx-auto flex w-full flex-row justify-between gap-4">
+						<span className="mt-5 text-sm font-semibold">Ablenkungen:</span>
+						<div
+							key={"distractions"}
+							className="form-control flex flex-row place-items-center"
+						>
+							{[1, 2, 3, 4, 5].map(value => (
+								<Star
+									key={value}
+									filled={
+										value <=
+										(diaryEntry
+											? diaryEntry.distractions
+												? diaryEntry.distractions
+												: 0
+											: 0)
+									}
+								/>
+							))}
+						</div>
 					</div>
-					<span className="mt-5 text-sm font-semibold">Bemühungen:</span>
+				</div>
+				<div className="mb-2 flex flex-row items-center">
+					<div className="mx-auto flex w-full flex-row justify-between gap-4">
+						<span className="mt-5 text-sm font-semibold">Bemühungen:</span>
+					</div>
 					<div key={"effort"} className="form-control flex flex-row place-items-center">
 						{[1, 2, 3, 4, 5].map(value => (
 							<Star
 								key={value}
 								filled={
 									value <=
-									(diaryEntry
-										? diaryEntry.efforts
-											? diaryEntry?.efforts
-											: 0
-										: 0)
+									(diaryEntry ? (diaryEntry.efforts ? diaryEntry.efforts : 0) : 0)
 								}
 							/>
 						))}
 					</div>
-					<span className="mt-5 text-sm font-semibold">Sonstige Notizen</span>
-					<span>{diaryEntry?.notes}</span>
 				</div>
+
+				<span className="mt-5 text-sm font-semibold">Sonstige Notizen</span>
+				<span>{diaryEntry?.notes}</span>
 			</div>
 		</div>
 	);
@@ -1294,7 +1324,7 @@ export default function LearningDiary(props: Readonly<LearningDiaryProps>) {
 				}
 			>
 				<div className="mx-auto flex w-full  max-w-full flex-row justify-between gap-4">
-					<div className="flex w-full flex-col gap-5 p-4">
+					<div className="width:800px flex w-full flex-col gap-5 p-4">
 						{isEditing ? (
 							<EntryWithEditor
 								selectEntry={selectEntry}

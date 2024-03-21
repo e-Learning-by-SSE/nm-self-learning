@@ -5,9 +5,16 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { useEffect, useState } from "react";
 import { LocationType, StrategyType } from "@prisma/client";
 import { XIcon, PlusIcon } from "@heroicons/react/solid";
-import { getLocationNameByType, getStrategyNameByType, isUserSpecific } from "@self-learning/types";
+import {
+	getLocationNameByType,
+	getStrategyNameByType,
+	getStrategyNames,
+	isUserSpecific
+} from "@self-learning/types";
 import { StarRating } from "libs/ui/common/src/lib/rating/star-rating";
-import { SectionHeader } from "@self-learning/ui/common";
+import { SectionHeader, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import Select from "react-select";
+import { format, parseISO } from "date-fns";
 
 export type Lessons = { id: string; name: string };
 
@@ -86,49 +93,91 @@ export function EntryTopForm({
 		register,
 		formState: { errors }
 	} = form;
+	const today1 = new Date();
+	today1.setMinutes(today1.getMinutes() - 45);
+
+	const today2 = new Date();
+	today2.setMinutes(today1.getMinutes() - 15);
 
 	return (
 		<div className="flex flex-col gap-5">
 			<SectionHeader title="Lernsession" subtitle="Beschreibung der Lernsession." />
 
-			<div className="mb-2 flex flex-row items-center">
-				<div className="mx-auto flex w-full flex-row justify-between gap-4">
-					<LabeledField label="Titel:" error={errors.title?.message}>
-						<input
-							{...register("title")}
-							className="textfield"
-							type="text"
-							placeholder="Des neuen Tagebucheintrags"
-						/>
-					</LabeledField>
+			<div className="mb-2 flex flex-row">
+				<div className="mx-auto flex w-full flex-row  gap-4">
+					<span className="text-sm font-semibold"> Kurs: </span>
+					<span className="text-light">Objectorientierte Programmierung mit Java</span>
 				</div>
-				<span className="ml-5">
-					<LabeledField label="Ort: ">
-						<ListBoxLocation form={form} />
-					</LabeledField>
-				</span>
+				<div className="mx-auto flex w-full flex-row gap-4">
+					<span className="text-sm font-semibold"> Ort: </span>
+					<ListBoxLocation form={form} />
+				</div>
 			</div>
 
-			<div className="flex flex-col gap-5 border-black">
-				<LabeledField label="Lerneinheit:">
-					<select {...register("lessonId")}>
-						<option value={""} hidden>
-							Bitte wählen...
-						</option>
-						{lessons.map(lesson => (
-							<option key={lesson.id} value={lesson.id}>
-								{lesson.name}
-							</option>
-						))}
-					</select>
-				</LabeledField>
-				<LabeledField label="Dauer (in Minuten):" error={errors.duration?.message}>
-					<input
-						{...register("duration", { valueAsNumber: true })}
-						type="text"
-						className="textfield"
-					/>
-				</LabeledField>
+			<div className="mt-5 flex flex-col">
+				<Table
+					head={
+						<>
+							<TableHeaderColumn>Lerneinheit</TableHeaderColumn>
+							<TableHeaderColumn>Start</TableHeaderColumn>
+							<TableHeaderColumn>Dauer (in Minuten)</TableHeaderColumn>
+							<TableHeaderColumn>Video Dauer (in Minuten)</TableHeaderColumn>
+							<TableHeaderColumn>Video Stopps</TableHeaderColumn>
+							<TableHeaderColumn>
+								<div title="Richtige Antworten/ Falsche Antworten/ Hinweise">
+									Quiz (R/F/H)
+								</div>
+							</TableHeaderColumn>
+						</>
+					}
+				>
+					<tr key={1}>
+						<TableDataColumn>
+							<span className="text-light">Einleitung & Motivation</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">
+								{format(parseISO(today1.toISOString()), "dd/MM/yyyy (HH:mm") +
+									"Uhr)"}
+							</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">20</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">2</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">3</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">(5/3/1)</span>
+						</TableDataColumn>
+					</tr>
+					<tr key={2}>
+						<TableDataColumn>
+							<span className="text-light">Installation des JDKs</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">
+								{format(parseISO(today2.toISOString()), "dd/MM/yyyy (HH:mm") +
+									"Uhr)"}
+							</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">15</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">0,5</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">1</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<span className="text-light">-</span>
+						</TableDataColumn>
+					</tr>
+				</Table>
 			</div>
 		</div>
 	);
@@ -149,7 +198,7 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 			<div className="flex flex-col gap-5 border-black">
 				<div className="mb-2 flex flex-row items-center">
 					<div className="mx-auto flex w-full flex-row justify-between gap-4">
-						<span>Ablenkungen:</span>
+						<span className="text-sm font-semibold">Ablenkungen:</span>
 					</div>
 					<span className="ml-5">
 						<Controller
@@ -166,7 +215,7 @@ export function EntryNotesForm({ form }: Readonly<{ form: UseFormReturn<EntryFor
 				</div>
 				<div className="mb-2 flex flex-row items-center">
 					<div className="mx-auto flex w-full flex-row justify-between gap-4">
-						<span>Bemühungen:</span>
+						<span className="text-sm font-semibold">Bemühungen:</span>
 					</div>
 					<span className="ml-5">
 						<Controller
@@ -207,7 +256,7 @@ export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<Entr
 					onClick={() =>
 						append({
 							confidenceRating: 0,
-							type: StrategyType.REPEATING_ACTIVATIONQUESTION,
+							type: StrategyType.REPEATING_PREKNOWLEDGEACTIVATION,
 							notes: ""
 						})
 					}
@@ -219,7 +268,7 @@ export function EntryStrategieForm({ form }: Readonly<{ form: UseFormReturn<Entr
 					<span className="mx-auto flex w-full flex-row justify-between text-sm font-semibold">
 						Strategie:
 					</span>
-					<span className="text-sm font-semibold">Vertrauensbewertung:</span>
+					<span className="text-sm font-semibold">Hilfreich:</span>
 				</div>
 				{fields.map((field, number) => {
 					return (
@@ -261,30 +310,33 @@ const ListBoxStrategy = ({
 	index: number;
 	form: UseFormReturn<EntryFormModel>;
 }) => {
-	const { register, getValues } = form;
+	const { register, getValues, control } = form;
 	const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(
-		StrategyType.REPEATING_ACTIVATIONQUESTION
+		StrategyType.REPEATING_PREKNOWLEDGEACTIVATION
 	);
 	useEffect(() => {
 		setSelectedStrategy(getValues(`learningStrategies.${index}.type`));
 	}, [getValues, index]);
 	return (
 		<div className="gab-2 flex flex-col">
-			<select
-				{...register(`learningStrategies.${index}.type`)}
-				onChange={e => {
-					setSelectedStrategy(e.target.value as StrategyType);
-				}}
-			>
-				<option value={""} hidden>
-					Bitte wählen...
-				</option>
-				{Object.values(StrategyType).map(type => (
-					<option key={type} value={type}>
-						{getStrategyNameByType(type)}
-					</option>
-				))}
-			</select>
+			<Controller
+				name={`learningStrategies.${index}.type`}
+				control={control}
+				render={({ field: { onChange, value } }) => (
+					<div style={{ width: "500px" }}>
+						<Select
+							isSearchable={true}
+							defaultValue={{ label: getStrategyNameByType(value), value: value }}
+							onChange={e => {
+								setSelectedStrategy(e?.value as StrategyType);
+								onChange(e?.value as StrategyType);
+							}}
+							options={getStrategyNames()}
+						/>
+					</div>
+				)}
+			/>
+
 			{isUserSpecific(selectedStrategy) && (
 				<input
 					type="text"

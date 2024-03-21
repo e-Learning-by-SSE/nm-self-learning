@@ -53,6 +53,7 @@
 		"react-is": "18.2.0",
 		"react-markdown": "^8.0.4",
 		"react-player": "^2.10.1",
+		"react-select": "^5.8.0",
 		"regenerator-runtime": "0.13.7",
 		"rehype-citation": "^0.4.0",
 		"rehype-external-links": "^2.0.1",
