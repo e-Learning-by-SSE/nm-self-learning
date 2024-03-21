@@ -42,9 +42,8 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 					onAdd={() => setOpenAddDialog(true)}
 					title="Autor Hinzufügen"
 					data-testid="author-add"
-				>
-					<span>Hinzufügen</span>
-				</AddButton>
+					label={<span>Hinzufügen</span>}
+				/>
 			</Form.SidebarSectionTitle>
 
 			{authors.length === 0 ? (

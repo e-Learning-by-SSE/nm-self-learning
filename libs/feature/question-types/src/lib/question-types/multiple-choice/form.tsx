@@ -42,9 +42,11 @@ export default function MultipleChoiceForm({
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
 
-				<AddButton onAdd={addAnswer} title={"Antwort Hinzufügen"}>
-					<span>Antwort hinzufügen</span>
-				</AddButton>
+				<AddButton
+					onAdd={addAnswer}
+					title={"Antwort Hinzufügen"}
+					label={<span>Antwort hinzufügen</span>}
+				/>
 			</div>
 
 			{answers.map((answer, answerIndex) => (
@@ -68,7 +70,10 @@ export default function MultipleChoiceForm({
 							Diese Antwort ist korrekt.
 						</label>
 
-						<DeleteButton onDelete={() => removeAnswer(answerIndex)} />
+						<DeleteButton
+							onDelete={() => removeAnswer(answerIndex)}
+							title={"Antwort entfernen"}
+						/>
 					</div>
 
 					<Controller

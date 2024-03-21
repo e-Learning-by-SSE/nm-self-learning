@@ -37,9 +37,12 @@ export default function ExactForm({
 				<div className="flex items-center gap-4">
 					<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
 
-					<AddButton onAdd={addAnswer} additionalClassNames={" h-fit w-fit items-center"}>
-						<span>Antwort hinzufügen</span>
-					</AddButton>
+					<AddButton
+						onAdd={addAnswer}
+						title={"Antwort hinzufügen"}
+						additionalClassNames={" h-fit w-fit items-center"}
+						label={<span>Antwort hinzufügen</span>}
+					/>
 				</div>
 
 				<span className="flex items-center gap-4">
@@ -69,7 +72,10 @@ export default function ExactForm({
 								autoComplete="off"
 							/>
 
-							<DeleteButton onDelete={() => removeAnswer(acceptedAnswerIndex)} />
+							<DeleteButton
+								onDelete={() => removeAnswer(acceptedAnswerIndex)}
+								title={"Antwort entfernen"}
+							/>
 						</div>
 					))}
 				</div>

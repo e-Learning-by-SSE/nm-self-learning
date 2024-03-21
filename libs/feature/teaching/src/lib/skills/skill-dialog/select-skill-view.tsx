@@ -27,9 +27,8 @@ export function LabeledFieldSelectSkillsView({
 					onAdd={() => setSelectSkillModal(true)}
 					title={"Hinzufügen"}
 					data-testid="BenoetigteSkills-add"
-				>
-					<span>Hinzufügen</span>
-				</AddButton>
+					label={<span>Hinzufügen</span>}
+				/>
 			}
 		>
 			<SkillManagementComponent
@@ -63,9 +62,8 @@ export function SelectSkillsView({
 				onAdd={() => setSelectSkillModal(true)}
 				title={"Hinzufügen"}
 				data-testid="BenoetigteSkills-add"
-			>
-				<span>Hinzufügen</span>
-			</AddButton>
+				label={<span>Hinzufügen</span>}
+			/>
 			<SkillManagementComponent
 				skills={skills}
 				setSelectSkillModal={setSelectSkillModal}
@@ -141,7 +139,7 @@ function InlineRemoveButton({
 					{label}
 				</button>
 				<div className={"px-2 py-2"}>
-					<TransparentDeleteButton onDelete={onRemove} />
+					<TransparentDeleteButton onDelete={onRemove} title={"Skill entfernen"} />
 				</div>
 			</div>
 		</div>

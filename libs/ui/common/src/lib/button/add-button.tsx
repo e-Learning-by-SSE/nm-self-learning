@@ -6,14 +6,14 @@ export function AddButton({
 	onAdd,
 	title,
 	size,
-	additionalClassNames,
-	children
+	label,
+	additionalClassNames
 }: {
 	onAdd: () => void;
 	title: string;
 	size?: string;
+	label?: ReactNode;
 	additionalClassNames?: string;
-	children?: ReactNode;
 }) {
 	return (
 		<button
@@ -24,10 +24,10 @@ export function AddButton({
 				size ? size : "px-4 py-2"
 			} ${additionalClassNames}`}
 		>
-			{children ? (
+			{label ? (
 				<div className="flex items-center space-x-2">
 					<PlusIcon className="h-5 w-5" />
-					<div>{children}</div>
+					<div>{label}</div>
 				</div>
 			) : (
 				<PlusIcon className="h-5 w-5" />

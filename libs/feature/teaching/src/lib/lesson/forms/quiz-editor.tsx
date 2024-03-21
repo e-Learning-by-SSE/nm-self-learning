@@ -103,11 +103,12 @@ export function QuizEditor() {
 								onAdd={() => appendQuestion(type as QuestionType["type"])}
 								size={"w-full"}
 								key={type as QuestionType["type"]}
-							>
-								<span>
-									{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
-								</span>
-							</AddButton>
+								label={
+									<span>
+										{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
+									</span>
+								}
+							/>
 						))}
 					</AddDropDownButton>
 				}
@@ -324,9 +325,11 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
 
-				<AddButton onAdd={addHint} title={"Hinweis Hinzufügen"}>
-					<span>Hinweis hinzufügen</span>
-				</AddButton>
+				<AddButton
+					onAdd={addHint}
+					title={"Hinweis Hinzufügen"}
+					label={<span>Hinweis hinzufügen</span>}
+				/>
 			</div>
 
 			<p className="text-sm text-light">
