@@ -93,7 +93,7 @@ export function LessonEditor({
 						<Tab>Lerneinheit</Tab>
 						<Tab>Lernkontrolle</Tab>
 					</Tabs>
-					<div className="playlist-scroll flex h-full flex-col gap-4 overflow-auto">
+					<div className="flex h-full overflow-y-auto overflow-x-hidden">
 						{selectedTab === 0 && (
 							<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
 								<LessonInfoEditor lesson={initialLesson} />

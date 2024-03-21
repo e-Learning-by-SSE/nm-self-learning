@@ -99,7 +99,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 	console.log(items);
 
 	return (
-		<div className="flex flex-col gap-8">
+		<div className="flex flex-col gap-8 pr-4">
 			{/*<button type="button" className="btn-primary w-fit" onClick={}>*/}
 			{/*	<PlusIcon className="icon h-5" />*/}
 			{/*</button>*/}
@@ -117,16 +117,15 @@ export default function ArrangeForm({ index }: { index: number }) {
 			/>
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
-
 			<DragDropContext onDragEnd={onDragEnd}>
-				<ul className="grid auto-cols-fr grid-flow-col gap-4">
+				<ul className="grid w-full grid-cols-2 gap-4">
 					{Object.entries(items).map(([containerId, items]) => (
 						// eslint-disable-next-line react/jsx-no-useless-fragment
 						<Fragment key={containerId}>
 							{containerId === "_init" ? null : (
 								<li
 									key={containerId}
-									className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-gray-200 p-4"
+									className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4"
 								>
 									<span className="flex items-center justify-between gap-4 font-semibold">
 										<span>{containerId}</span>
@@ -148,7 +147,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 											<ul
 												ref={provided.innerRef}
 												{...provided.droppableProps}
-												className="min-h-64 flex h-full grid-cols-2 gap-4 overflow-y-hidden rounded-lg bg-gray-100 p-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+												className="flex h-full min-h-[128px] flex-col gap-4 rounded-lg bg-gray-100 p-4"
 											>
 												{items.map((item, index) => (
 													<DraggableContent
@@ -193,9 +192,9 @@ function DraggableContent({
 					ref={provided.innerRef}
 					{...provided.draggableProps}
 					{...provided.dragHandleProps}
-					className="prose prose-emerald flex h-fit w-fit max-w-[40ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
+					className="prose prose-emerald flex h-fit w-fit flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
 				>
-					<div className="flex gap-2">
+					<div className="flex justify-end gap-2">
 						<EditButton
 							onEdit={() =>
 								setEditItemDialog({
