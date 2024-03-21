@@ -3,9 +3,9 @@ import type { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
 	EVALUATION_FUNCTIONS,
+	QUESTION_TYPE_DISPLAY_NAMES,
 	QuestionAnswerRenderer,
 	QuestionType,
-	QUESTION_TYPE_DISPLAY_NAMES,
 	useQuestion
 } from "@self-learning/question-types";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
@@ -15,6 +15,7 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
+import { setJsonCookie } from "../../../../../util/common/src/lib/cookieUtils";
 
 export function Question({
 	question,
@@ -50,10 +51,23 @@ export function Question({
 	function setAnswer(v: any) {
 		const value = typeof v === "function" ? v(answer) : v;
 
-		setAnswers(prev => ({
-			...prev,
-			[question.questionId]: value
-		}));
+		setAnswers(prev => {
+			const updatedAnswers = {
+				...prev,
+				[question.questionId]: value
+			};
+
+			setJsonCookie(
+				`quiz_answers_save`,
+				{
+					answers: updatedAnswers,
+					lessonSlug: lesson.slug
+				},
+				1
+			);
+
+			return updatedAnswers;
+		});
 	}
 
 	function setEvaluation(e: any) {
@@ -96,7 +110,7 @@ export function Question({
 								className="btn-stroked h-fit"
 								onClick={() => setEvaluation(null)}
 							>
-								Reset
+								Reset{" "}
 							</button>
 							<CheckResult
 								setEvaluation={setEvaluation}
@@ -149,9 +163,6 @@ function CheckResult({
 	function checkResult() {
 		console.log("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
-		console.log("question", question);
-		console.log("answer", answer);
-		console.log("evaluation", evaluation);
 		setEvaluation(evaluation);
 	}
 
