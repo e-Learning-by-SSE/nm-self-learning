@@ -279,9 +279,8 @@ function QuestionTab(props: {
 					<CheckCircleIconOutline className="h-5 text-gray-400" />
 				</QuestionTabIcon>
 			)}
-			<span data-testid="questionTab">
-				{t("question")} {props.index + 1}
-			</span>
+			//TODO AUFGAEB ZU TASK ÜBERSETZEN
+			<span data-testid="questionTab">{t("question")} {props.index + 1}</span>
 		</span>
 	);
 }

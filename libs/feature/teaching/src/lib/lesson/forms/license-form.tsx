@@ -42,7 +42,7 @@ function LicenseSelector({ licenses }: { licenses: License[] }) {
 
 	return (
 		<select
-			className="textfield w-64 rounded-lg px-8"
+			className="textfield"
 			value={currentValue ?? getDefaultLicense()}
 			// target.value is a number as string
 			// + operator converts the number: https://www.techiediaries.com/javascript/convert-string-number-array-react-hooks-vuejs/

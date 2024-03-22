@@ -1,9 +1,9 @@
-import { PlusIcon } from "@heroicons/react/solid";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { MultipleChoiceQuestion } from "./schema";
+import { AddButton, DeleteButton } from "@self-learning/ui/common";
 
 export default function MultipleChoiceForm({
 	index
@@ -42,14 +42,11 @@ export default function MultipleChoiceForm({
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
 
-				<button
-					type="button"
-					className="btn-primary h-fit w-fit items-center"
-					onClick={addAnswer}
-				>
-					<PlusIcon className="h-5" />
-					<span>Antwort hinzufügen</span>
-				</button>
+				<AddButton
+					onAdd={addAnswer}
+					title={"Antwort Hinzufügen"}
+					label={<span>Antwort hinzufügen</span>}
+				/>
 			</div>
 
 			{answers.map((answer, answerIndex) => (
@@ -72,13 +69,11 @@ export default function MultipleChoiceForm({
 							/>
 							Diese Antwort ist korrekt.
 						</label>
-						<button
-							type="button"
-							className="absolute top-2 right-2 text-xs text-red-500"
-							onClick={() => removeAnswer(answerIndex)}
-						>
-							Entfernen
-						</button>
+
+						<DeleteButton
+							onDelete={() => removeAnswer(answerIndex)}
+							title={"Antwort entfernen"}
+						/>
 					</div>
 
 					<Controller

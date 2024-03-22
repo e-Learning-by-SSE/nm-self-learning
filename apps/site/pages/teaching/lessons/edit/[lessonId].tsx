@@ -1,12 +1,11 @@
 import { authOptions } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
-import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
+import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
-import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
+import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
 
@@ -33,6 +32,8 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 			quiz: true,
 			imgUrl: true,
 			licenseId: true,
+			requirements: true,
+			teachingGoals: true,
 			authors: true,
 			lessonType: true,
 			selfRegulatedQuestion: true
@@ -75,6 +76,16 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 		imgUrl: lesson.imgUrl,
 		authors: lesson.authors.map(a => ({ username: a.username })),
 		licenseId: lesson.licenseId,
+		requirements: lesson.requirements.map(r => ({
+			...r,
+			children: [],
+			parents: []
+		})),
+		teachingGoals: lesson.teachingGoals.map(t => ({
+			...t,
+			children: [],
+			parents: []
+		})),
 		// Need type casting because JsonArray from prisma causes error
 		content: (lesson.content ?? []) as LessonContent,
 		quiz: lesson.quiz as Quiz,
@@ -89,31 +100,17 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
 	const { t } = useTranslation();
+	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
-	const { mutateAsync: updateLesson } = trpc.lesson.edit.useMutation();
+	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
+		await onLessonEditorSubmit(
+			() => {
+				router.push("/overview");
+			},
+			editLessonAsync,
+			updatedLesson
+		);
+	};
 
-	async function onConfirm(updatedLesson: LessonFormModel) {
-		try {
-			const result = await updateLesson({
-				lesson: updatedLesson,
-				lessonId: lesson.lessonId as string
-			});
-
-			showToast({
-				type: "success",
-				title: t("changed_success"),
-				subtitle: result.title
-			});
-
-			router.replace(router.asPath, undefined, { scroll: false });
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: t("error"),
-				subtitle: t("saved_unit_error")
-			});
-		}
-	}
-
-	return <LessonEditor lesson={lesson} onConfirm={onConfirm} />;
+	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} />;
 }

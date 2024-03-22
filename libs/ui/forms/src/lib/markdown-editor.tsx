@@ -1,6 +1,5 @@
-import { PencilIcon } from "@heroicons/react/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
+import { Dialog, DialogActions, EditButton, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
@@ -24,16 +23,13 @@ export function MarkdownField({
 	return (
 		<div className={inline ? "flex flex-col gap-1" : ""}>
 			{!inline && (
-				<div className="flex items-end justify-between">
-					<span className="text-sm font-semibold">{label ?? "Markdown"}</span>
-					<button
-						type="button"
-						className="btn-stroked w-fit self-end"
-						onClick={() => setOpenEditor(true)}
+				<div className="mb-2 flex items-end justify-end">
+					<EditButton
+						onEdit={() => setOpenEditor(true)}
+						title={"Beschreibung bearbeiten"}
 					>
-						<PencilIcon className="icon" />
-						<span>Bearbeiten</span>
-					</button>
+						<span className={"text-gray-600"}>Bearbeiten</span>
+					</EditButton>
 				</div>
 			)}
 

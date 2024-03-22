@@ -14,6 +14,26 @@ export const lessonRouter = t.router({
 					select: {
 						username: true
 					}
+				},
+				requirements: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						repositoryId: true,
+						parents: true
+					}
+				},
+				teachingGoals: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						repositoryId: true,
+						parents: true
+					}
 				}
 			}
 		});
@@ -54,6 +74,12 @@ export const lessonRouter = t.router({
 					connect: input.authors.map(a => ({ username: a.username }))
 				},
 				licenseId: input.licenseId,
+				requirements: {
+					connect: input.requirements.map(r => ({ id: r.id }))
+				},
+				teachingGoals: {
+					connect: input.teachingGoals.map(r => ({ id: r.id }))
+				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
@@ -88,6 +114,12 @@ export const lessonRouter = t.router({
 						set: input.lesson.authors.map(a => ({ username: a.username }))
 					},
 					licenseId: input.lesson.licenseId,
+					requirements: {
+						set: input.lesson.requirements.map(r => ({ id: r.id }))
+					},
+					teachingGoals: {
+						set: input.lesson.teachingGoals.map(r => ({ id: r.id }))
+					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},
 				select: {

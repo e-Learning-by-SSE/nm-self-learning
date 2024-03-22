@@ -1,4 +1,4 @@
-import { PlusIcon, ChevronDownIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/solid";
 import { trpc } from "@self-learning/api-client";
 import { Paginator, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
@@ -7,8 +7,6 @@ import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Fragment } from "react";
-import { Menu, Transition } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
 
 export default function LessonManagementPage() {

@@ -1,31 +1,24 @@
-import { PencilIcon, PlusIcon, TrashIcon, XIcon } from "@heroicons/react/solid";
-import {
-	LabeledField,
-	MarkdownEditorDialog,
-	MarkdownField,
-	MarkdownViewer
-} from "@self-learning/ui/forms";
+import { LabeledField, MarkdownField, MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ArrangeItem, ArrangeQuestion } from "./schema";
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
 import {
+	AddButton,
+	DeleteButton,
 	Dialog,
 	DialogActions,
 	Divider,
+	EditButton,
 	OnDialogCloseFn,
-	showToast
+	SectionHeader,
+	showToast,
+	TransparentDeleteButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
 
-export default function ArrangeForm({
-	index,
-	question
-}: {
-	index: number;
-	question: ArrangeQuestion;
-}) {
+export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
 	const items = watch(`quiz.questions.${index}.items`);
 	const [addCategoryDialog, setAddCategoryDialog] = useState(false);
@@ -106,49 +99,45 @@ export default function ArrangeForm({
 	console.log(items);
 
 	return (
-		<div className="flex flex-col gap-8">
-			<button
-				type="button"
-				className="btn-primary w-fit"
-				onClick={() => setAddCategoryDialog(true)}
-			>
-				<PlusIcon className="icon h-5" />
-				<span>Kategorie hinzufügen</span>
-			</button>
-
+		<div className="flex flex-col gap-8 pr-4">
+			{/*<button type="button" className="btn-primary w-fit" onClick={}>*/}
+			{/*	<PlusIcon className="icon h-5" />*/}
+			{/*</button>*/}
+			<SectionHeader
+				title={"Kategorien"}
+				button={
+					<AddButton
+						title={"Kategorie Hinzufügen"}
+						onAdd={() => setAddCategoryDialog(true)}
+						additionalClassNames={"w-fit"}
+						label={<span>Kategorie hinzufügen</span>}
+					/>
+				}
+			/>
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
-
 			<DragDropContext onDragEnd={onDragEnd}>
-				<ul className="grid auto-cols-fr grid-flow-col gap-4">
+				<ul className="grid w-full gap-4 sm:grid-cols-1 md:grid-cols-2">
 					{Object.entries(items).map(([containerId, items]) => (
 						// eslint-disable-next-line react/jsx-no-useless-fragment
 						<Fragment key={containerId}>
 							{containerId === "_init" ? null : (
 								<li
 									key={containerId}
-									className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-gray-200 p-4"
+									className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4"
 								>
 									<span className="flex items-center justify-between gap-4 font-semibold">
 										<span>{containerId}</span>
 										<div className="flex gap-2">
-											<button
-												type="button"
-												className="rounded-full bg-secondary p-2 hover:bg-emerald-600"
-												title="Element hinzufügen"
-												onClick={() => setEditItemDialog({ containerId })}
-											>
-												<PlusIcon className="h-5 text-white" />
-											</button>
+											<AddButton
+												onAdd={() => setEditItemDialog({ containerId })}
+												title={"Element hinzufügen"}
+											/>
 
-											<button
-												type="button"
-												className="rounded-full p-2 hover:bg-red-50"
-												title="Kategorie entfernen"
-												onClick={() => onDeleteContainer(containerId)}
-											>
-												<XIcon className="h-5 text-red-500" />
-											</button>
+											<DeleteButton
+												onDelete={() => onDeleteContainer(containerId)}
+												title={"Kategorie entfernen"}
+											/>
 										</div>
 									</span>
 
@@ -160,56 +149,13 @@ export default function ArrangeForm({
 												className="flex h-full min-h-[128px] flex-col gap-4 rounded-lg bg-gray-100 p-4"
 											>
 												{items.map((item, index) => (
-													<Draggable
-														key={item.id}
-														draggableId={item.id}
+													<DraggableContent
+														item={item}
 														index={index}
-													>
-														{provided => (
-															<li
-																ref={provided.innerRef}
-																{...provided.draggableProps}
-																{...provided.dragHandleProps}
-																className="prose prose-emerald flex h-fit w-fit max-w-[50ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
-															>
-																<div className="flex gap-2">
-																	<button
-																		type="button"
-																		className="rounded-full p-2 hover:bg-gray-100"
-																		title="Editieren"
-																		onClick={() =>
-																			setEditItemDialog({
-																				containerId,
-																				item
-																			})
-																		}
-																	>
-																		<PencilIcon className="h-5 text-gray-400" />
-																	</button>
-
-																	<button
-																		type="button"
-																		className="rounded-full p-2 hover:bg-red-50"
-																		title="Löschen"
-																		onClick={() =>
-																			onDeleteItem(
-																				containerId,
-																				item.id
-																			)
-																		}
-																	>
-																		<XIcon className="h-5 text-red-500" />
-																	</button>
-																</div>
-
-																<Divider />
-
-																<MarkdownViewer
-																	content={item.content}
-																/>
-															</li>
-														)}
-													</Draggable>
+														onDeleteItem={onDeleteItem}
+														setEditItemDialog={setEditItemDialog}
+														containerId={containerId}
+													/>
 												))}
 												{provided.placeholder}
 											</ul>
@@ -222,6 +168,53 @@ export default function ArrangeForm({
 				</ul>
 			</DragDropContext>
 		</div>
+	);
+}
+
+function DraggableContent({
+	item,
+	index,
+	setEditItemDialog,
+	containerId,
+	onDeleteItem
+}: {
+	item: ArrangeItem;
+	index: number;
+	setEditItemDialog: (value: { item?: ArrangeItem; containerId: string } | null) => void;
+	containerId: string;
+	onDeleteItem: (containerId: string, itemId: string) => void;
+}) {
+	return (
+		<Draggable key={item.id} draggableId={item.id} index={index}>
+			{provided => (
+				<li
+					ref={provided.innerRef}
+					{...provided.draggableProps}
+					{...provided.dragHandleProps}
+					className="prose prose-emerald flex h-fit w-fit flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
+				>
+					<div className="flex justify-end gap-2">
+						<EditButton
+							onEdit={() =>
+								setEditItemDialog({
+									containerId,
+									item
+								})
+							}
+							title={"Editieren"}
+						/>
+
+						<TransparentDeleteButton
+							onDelete={() => onDeleteItem(containerId, item.id)}
+							title="Löschen"
+						/>
+					</div>
+
+					<Divider />
+					<MarkdownViewer content={item.content} />
+				</li>
+			)}
+		</Draggable>
 	);
 }
 

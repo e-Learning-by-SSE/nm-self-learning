@@ -46,6 +46,7 @@ model User {
   sessions       Session[]
   student        Student?
   uploadedAssets UploadedAssets[]
+  skillRepositories SkillRepository[]
 }
 
 model VerificationToken {
@@ -188,7 +189,9 @@ model Lesson {
   license      License? @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
   licenseId    Int?
   lessonType              LessonType        @default(TRADITIONAL)
-  selfRegulatedQuestion   String? // Question to ask the student before the lesson starts
+  selfRegulatedQuestion   String?
+  requirements Skill[] @relation("requirements")
+  teachingGoals Skill[] @relation("teachingGoals")
 }
 
 model CompletedLesson {
@@ -270,4 +273,31 @@ model License {
     selectable        Boolean @default(true)
     // Back reference required by Prisma -> Provides overview about usage
     lessons           Lesson[]
+}
+
+model SkillRepository {
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  skills        Skill[]
+  ownerId       String
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerId, name])
+  @@map("skill-repositories")
+}
+
+model Skill {
+  id                  String  @id @default(cuid())
+  name                String
+  description         String?
+  repositoryId        String
+  repository          SkillRepository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  children            Skill[] @relation("parent")
+  parents             Skill[] @relation("parent")
+  goalsOf             Lesson[]      @relation("teachingGoals")
+  requirementsOf      Lesson[]      @relation("requirements")
+
+  @@unique([repositoryId, name])
+  @@map("skills")
 }
