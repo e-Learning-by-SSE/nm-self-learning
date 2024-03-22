@@ -8,6 +8,7 @@ import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -87,6 +88,7 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 };
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
+	const { t } = useTranslation();
 	const router = useRouter();
 	const { mutateAsync: updateLesson } = trpc.lesson.edit.useMutation();
 
@@ -99,7 +101,7 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 
 			showToast({
 				type: "success",
-				title: "Änderungen gespeichert!",
+				title: t("changed_success"),
 				subtitle: result.title
 			});
 
@@ -107,9 +109,8 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		} catch (error) {
 			showToast({
 				type: "error",
-				title: "Fehler",
-				subtitle:
-					"Das Speichern der Lerneinheit ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
+				title: t("error"),
+				subtitle: t("saved_unit_error")
 			});
 		}
 	}

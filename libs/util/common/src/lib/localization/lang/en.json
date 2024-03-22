@@ -53,8 +53,23 @@
 	"not_defined": "Not defined",
 	"yes": "Yes",
 	"no": "No",
-	"subjects": "Subjects",
 	"add": "Add",
+	"no_content": "No Content",
+	"missing_url_error": "Error: Missing URL",
+	"error": "Error",
+	"unit": "Unit",
+	"units": "Units",
+	"no_content_text": "Nothing to see here",
+	"question": "Question",
+	"admins": "Administrators",
+	"admin": "Administrator",
+	"subject": "Subject",
+	"subjects": "Subjects",
+	"create": "Create",
+	"save": "Save",
+	"infos": "Information",
+	"infos_for_specialization": "Information about this specialization.",
+	"generate": "Generate",
 
 	"add_license": "Add License",
 	"search_for_license": "Search for License",
@@ -72,6 +87,29 @@
 	"license_description": "License description:",
 	"choosable": "Choosable",
 	"compatible": "OER - Compatible:",
+
+	"specializations": "Specializations",
+	"specialization": "Specialization",
+
+	"course_unauthorized": "You must be an author in order to create a course",
+	"unit_unauthorized": "You must be an author in order to create a unit",
+	"changed_success": "Saved changes!",
+	"created_unit_success": "Created Unit!",
+	"created_subject": "Created Subject",
+	"subject_created_subtitle": "The Subject '{{title}}' has been created.",
+
+	"create_unit_error_1": "The Unit could not be created. At least one element must be contained.",
+	"create_unit_error_2": "The Unit could not be created. See the console for more information.",
+	"saved_unit_error": "An error ocurred while saving the unit. See the console for more information.",
+	"unauthorized_subject_error": "Subjects can only be created by administrators.",
+
+	"admins_for_subject": "administrators for subjects",
+	"specialization_for_subject": "specialization for subject",
+
+	"subject_updated": "Subject updated",
+	"subject_updated_subtitle": "The subject {{title}} has been updated",
+	"specialization_created": "Created Specialization",
+	"new_specialization": "New Specialization",
 
 	"hallo": "hallo"
 }

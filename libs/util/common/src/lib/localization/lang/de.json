@@ -53,8 +53,23 @@
 	"not_defined": "Nicht Definiert",
 	"yes": "Ja",
 	"no": "Nein",
-	"subjects": "Fachgebiete",
 	"add": "Hinzufügen",
+	"no_content": "Kein Inhalt",
+	"missing_url_error": "Error: Fehlende URL",
+	"error": "Fehler",
+	"unit": "Lerneinheit",
+	"units": "Lerneinheiten",
+	"no_content_text": "Leider gibt es hier noch keine Inhalte",
+	"question": "Frage",
+	"admins": "Administratoren",
+	"admin": "Administrator",
+	"subject": "Fachgebiet",
+	"subjects": "Fachgebiete",
+	"create": "Erstellen",
+	"save": "Speichern",
+	"infos": "Informationen",
+	"infos_for_specialization": "Informationen über diese Spezialisierung.",
+	"generate": "Generieren",
 
 	"add_license": "Lizenz hinzufügen",
 	"search_for_license": "Suche nach Lizenz",
@@ -72,6 +87,29 @@
 	"license_description": "Lizenzbeschreibung:",
 	"choosable": "Auswählbar",
 	"compatible": "OER - Kompatible:",
+
+	"specializations": "Spezialisierungen",
+	"specialization": "Spezialisierung",
+
+	"course_unauthorized": "Um einen Kurs zu erstellen, musst du ein Autor sein.",
+	"unit_unauthorized": "Um eine Lerneinheit zu erstellen, musst du ein Autor sein.",
+	"changed_success": "Änderung gespeichert!",
+	"created_unit_success": "Lerneinheit erstellt!",
+	"created_subject": "Fachgebiet erstellt!",
+	"subject_created_subtitle": "Das Fachgebiet '{{title}}' wurde erstellt.",
+
+	"create_unit_error_1": "Die Lerneinheit konnte nicht erstellt werden. Es muss mindestens ein Inhaltselement vorhanden sein.",
+	"create_unit_error_2": "Die Lerneinheit konnte nicht erstellt werden. Siehe Konsole für mehr Informationen.",
+	"saved_unit_error": "Das Speichern der Lerneinheit ist fehlgeschlagen. Siehe Konsole für mehr Informationen.",
+	"unauthorized_subject_error": "Fachgebiete können nur von Administratoren erstellt werden.",
+
+	"admins_for_subject": "Administratoren für Fachgebiet",
+	"specialization_for_subject": "Spezialisierung für Fachgebiet",
+
+	"subject_updated": "Fachgebiet aktualisiert",
+	"subject_updated_subtitle": "Das Fachgebiet {{title}} wurde aktualisiert.",
+	"specialization_created": "Spezialisierung erstellt",
+	"new_specialization": "Neue Spezialsierung",
 
 	"hallo": "hallo"
 }

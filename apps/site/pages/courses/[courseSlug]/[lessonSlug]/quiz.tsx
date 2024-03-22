@@ -258,6 +258,7 @@ function QuestionTab(props: {
 }) {
 	const isCorrect = props.evaluation?.isCorrect === true;
 	const isIncorrect = props.evaluation?.isCorrect === false;
+	const { t } = useTranslation();
 
 	{
 		props.isMultiStep && <CheckCircleIcon className="h-5 text-secondary" />;
@@ -278,7 +279,9 @@ function QuestionTab(props: {
 					<CheckCircleIconOutline className="h-5 text-gray-400" />
 				</QuestionTabIcon>
 			)}
-			<span data-testid="questionTab">Frage {props.index + 1}</span>
+			<span data-testid="questionTab">
+				{t("question")} {props.index + 1}
+			</span>
 		</span>
 	);
 }

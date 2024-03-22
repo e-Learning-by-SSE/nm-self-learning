@@ -15,9 +15,11 @@ import { TRPCClientError } from "@trpc/client";
 import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 export default function SpecializationPage() {
 	useRequiredSession();
+	const { t } = useTranslation();
 	const router = useRouter();
 
 	const { subjectId } = router.query;
@@ -32,13 +34,17 @@ export default function SpecializationPage() {
 				data: specFromForm
 			});
 
-			showToast({ type: "success", title: "Spezialisierung erstellt", subtitle: spec.title });
+			showToast({
+				type: "success",
+				title: t("specialization_created"),
+				subtitle: spec.title
+			});
 			router.push(`/teaching/subjects/${subjectId}/${spec.specializationId}/edit`);
 		} catch (error) {
 			console.error(error);
 
 			if (error instanceof TRPCClientError) {
-				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				showToast({ type: "error", title: t("error"), subtitle: error.message });
 			}
 		}
 	};
@@ -75,6 +81,7 @@ export function SpecializationEditor({
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const cardImgUrl = form.watch("cardImgUrl");
 	const imgUrlBanner = form.watch("imgUrlBanner");
+	const { t } = useTranslation();
 
 	const {
 		register,
@@ -89,15 +96,15 @@ export function SpecializationEditor({
 						<>
 							<div>
 								<span className="font-semibold text-secondary">
-									Spezialisierung{" "}
+									{t("specialization")}{" "}
 									{initialSpecialization.specializationId === ""
-										? "erstellen"
-										: "speichern"}
+										? t("create")
+										: t("save")}
 								</span>
 
 								<h1 className="text-2xl">
 									{initialSpecialization.specializationId === ""
-										? "Neue Spezialisierung"
+										? t("new_specialization")
 										: initialSpecialization.title}
 								</h1>
 							</div>
@@ -106,14 +113,14 @@ export function SpecializationEditor({
 
 							<button className="btn-primary w-full" type="submit">
 								{initialSpecialization.specializationId === ""
-									? "Erstellen"
-									: "Speichern"}
+									? t("create")
+									: t("save")}
 							</button>
 
 							<Form.SidebarSection>
 								<Form.SidebarSectionTitle
-									title="Informationen"
-									subtitle="Informationen über diese Spezialisierung."
+									title={t("infos")}
+									subtitle={t("infos_for_specialization")}
 								></Form.SidebarSectionTitle>
 								<div className="flex flex-col gap-4">
 									<LabeledField label="Titel" error={errors.title?.message}>
@@ -140,7 +147,7 @@ export function SpecializationEditor({
 													className="btn-stroked"
 													onClick={slugifyField}
 												>
-													Generieren
+													{t("generate")}
 												</button>
 											}
 										/>

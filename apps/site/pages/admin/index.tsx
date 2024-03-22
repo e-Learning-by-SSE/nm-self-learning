@@ -45,7 +45,7 @@ export default function AdminPage() {
 				<Card
 					href="/admin/licenses"
 					imageElement={<PersonalInformationSvg />}
-					title={t("manage_licens")}
+					title={t("manage_licenses")}
 				/>
 			</div>
 		</CenteredSection>
