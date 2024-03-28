@@ -88,33 +88,81 @@ export function LessonEditor({
 				onSubmit={form.handleSubmit(onSubmit, console.log)}
 				className="flex h-full flex-col overflow-hidden"
 			>
-				<div className="flex h-full flex-col gap-4 overflow-hidden">
-					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-						<Tab>Lerneinheit</Tab>
-						<Tab>Lernkontrolle</Tab>
-					</Tabs>
-					<div className="flex h-full overflow-y-auto overflow-x-hidden">
-						{selectedTab === 0 && (
-							<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-								<LessonInfoEditor lesson={initialLesson} />
-								<LessonContentEditor />
-							</div>
-						)}
-						{selectedTab === 1 && (
-							<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-								<LessonInfoEditor lesson={initialLesson} />
-								<QuizEditor />
-							</div>
-						)}
-					</div>
+				<div className="flex h-full overflow-y-auto overflow-x-hidden">
+					{selectedTab === 0 && (
+						<FirstTabContent
+							initialLesson={initialLesson}
+							selectedTab={selectedTab}
+							setSelectedTab={setSelectedTab}
+						/>
+					)}
+					{selectedTab === 1 && (
+						<SecondTabContent
+							initialLesson={initialLesson}
+							selectedTab={selectedTab}
+							setSelectedTab={setSelectedTab}
+						></SecondTabContent>
+					)}
 				</div>
 
-				<DialogActions onClose={onSubmit}>
-					<button type="submit" className="btn-primary">
-						Speichern
-					</button>
-				</DialogActions>
+				<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end">
+					<div className="relative pr-3 pb-5">
+						<DialogActions onClose={onSubmit}>
+							<button type="submit" className="btn-primary">
+								Speichern
+							</button>
+						</DialogActions>
+					</div>
+				</div>
 			</form>
 		</FormProvider>
+	);
+}
+
+function FirstTabContent({
+	initialLesson,
+	selectedTab,
+	setSelectedTab
+}: {
+	initialLesson?: LessonFormModel;
+	selectedTab: number;
+	setSelectedTab: (v: number) => void;
+}) {
+	return (
+		<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
+			<LessonInfoEditor lesson={initialLesson} />
+
+			<div>
+				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+					<Tab>Lerninhalt</Tab>
+					<Tab>Lernkontrolle</Tab>
+				</Tabs>
+				<LessonContentEditor />
+			</div>
+		</div>
+	);
+}
+
+function SecondTabContent({
+	initialLesson,
+	selectedTab,
+	setSelectedTab
+}: {
+	initialLesson?: LessonFormModel;
+	selectedTab: number;
+	setSelectedTab: (v: number) => void;
+}) {
+	return (
+		<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
+			<LessonInfoEditor lesson={initialLesson} />
+
+			<div>
+				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+					<Tab>Lerninhalt</Tab>
+					<Tab>Lernkontrolle</Tab>
+				</Tabs>
+				<QuizEditor />
+			</div>
+		</div>
 	);
 }
