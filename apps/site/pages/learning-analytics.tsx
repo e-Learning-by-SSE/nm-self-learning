@@ -30,11 +30,9 @@ type LearningAnalyticsProps = {
 export type LearningAnalyticsType = ResolvedValue<typeof getLASession>;
 
 /**
- * getLASession()
- * fetch learning analytic data from database
- *
- * username: username of the current user
- *
+ * Fetch learning analytic data from database
+ * @param username The username of the current user
+ * @returns The learning analytic data of the user
  */
 async function getLASession(username: string) {
 	return await database.lASession.findMany({
@@ -72,9 +70,9 @@ async function getLASession(username: string) {
 }
 
 /**
- * getServerSideProps()
  * Checks if the current user is login and prepares learning analytic session data for the page.
- *
+ * @param ctx The context of the current request
+ * @returns The learning analytic session data of the current user
  */
 export const getServerSideProps: GetServerSideProps<LearningAnalyticsProps> = async ctx => {
 	const session = await getServerSession(ctx.req, ctx.res, authOptions);
@@ -90,11 +88,9 @@ export const getServerSideProps: GetServerSideProps<LearningAnalyticsProps> = as
 };
 
 /**
- * getCourses()
- * returns all course titles, which are included in the learning analytic data.
- *
- * lASession: learning analytic session data
- *
+ * Returns all course titles, which are included in the learning analytic data.
+ * @param lASession Learning analytic session data
+ * @returns all course titles, which are included in the learning analytic data.
  */
 export function getCourses(lASession: ResolvedValue<typeof getLASession>) {
 	const courses = [{ value: "Alle", label: "Alle" }];
@@ -155,12 +151,10 @@ export function filterCourseLASession(
 }
 
 /**
- * filterLASessionByLesson()
- * filters the learning analytics by lesson title
- *
- * lASession: 	learning analytic session data
- * lesson: 		selected lesson title for filtering
- *
+ * Filters the learning analytics by lesson title
+ * @param lASession Learning analytic session data
+ * @param lesson The title of the lesson for filtering, or "Alle" for no filtering
+ * @returns Learning analytic session data which are filtered by the lesson title
  */
 export function filterLASessionByLesson(
 	lASession: ResolvedValue<typeof getLASession>,
@@ -175,14 +169,6 @@ export function filterLASessionByLesson(
 }
 
 /**
- * filterLASessionByDate()
- * filters the learning analytics by date
- *
- * lASession: 	learning analytic session data
- * days: 		number of days, which a included after filtering
- *
- */
-/**
  * Filters the learning analytics by date
  * @param lASession Learning analytic session data
  * @param days Number of days, which a included after filtering
@@ -191,11 +177,10 @@ export function filterLASessionByLesson(
 export function filterLASessionByDate(lASession: ResolvedValue<typeof getLASession>, days: number) {
 	let lASessionFilterByTime: ResolvedValue<typeof getLASession> = lASession;
 	if (days > -1) {
-		lASessionFilterByTime = lASession.filter(
-			item =>
-				new Date(item.start).setHours(0, 0, 0, 0) >
-				new Date(new Date().valueOf() - 1000 * 60 * 60 * 24 * days).setHours(0, 0, 0, 0)
-		);
+		const firstDateOfRange = new Date();
+		firstDateOfRange.setDate(new Date().getDate() - days);
+		firstDateOfRange.setHours(0, 0, 0, 0);
+		lASessionFilterByTime = lASession.filter(item => item.start >= firstDateOfRange);
 	}
 	return lASessionFilterByTime;
 }
