@@ -1,7 +1,6 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { intervalToDuration } from "date-fns";
 
 export const learningAnalyticsRouter = t.router({
 	createSession: authProcedure.mutation(async ({ ctx }) => {

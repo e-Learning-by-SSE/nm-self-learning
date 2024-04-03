@@ -1,5 +1,5 @@
 import { Tab as HeadlessTab } from "@headlessui/react";
-import { XIcon } from "@heroicons/react/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Fragment, ReactNode } from "react";
 
 export function Tabs({
@@ -65,7 +65,7 @@ export function RemovableTab({
 					onClick={onRemove}
 					className="rounded-full pb-[3px] hover:bg-red-50 hover:text-red-500"
 				>
-					<XIcon className="h-4" />
+					<XMarkIcon className="h-4" />
 				</button>
 			</span>
 		</Tab>

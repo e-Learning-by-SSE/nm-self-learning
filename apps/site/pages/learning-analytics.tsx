@@ -115,11 +115,9 @@ export function getCourses(lASession: ResolvedValue<typeof getLASession>) {
 }
 
 /**
- * getLessons()
- * returns all lesson titles, which are included in the learning analytic data.
- *
- * lASession: learning analytic session data
- *
+ * Returns all lesson titles, which are included in the learning analytic data.
+ * @param lASession learning analytic session data
+ * @returns All lesson titles, which are included in the learning analytic data
  */
 export function getLessons(lASession: ResolvedValue<typeof getLASession>) {
 	const lessons = [{ value: "Alle", label: "Alle" }];
@@ -140,12 +138,9 @@ export function getLessons(lASession: ResolvedValue<typeof getLASession>) {
 }
 
 /**
- * filterLASessionByCourse()
- * filters the learning analytics by course title
- *
- * lASession: 	learning analytic session data
- * course: 		selected course title for filtering
- *
+ * Filters the learning analytics by course title
+ * @param lASession Learning analytic session data
+ * @param course Selected course title for filtering
  */
 export function filterCourseLASession(
 	lASession: ResolvedValue<typeof getLASession>,
@@ -186,6 +181,12 @@ export function filterLASessionByLesson(
  * lASession: 	learning analytic session data
  * days: 		number of days, which a included after filtering
  *
+ */
+/**
+ * Filters the learning analytics by date
+ * @param lASession Learning analytic session data
+ * @param days Number of days, which a included after filtering
+ * @returns Learning analytic session data which are not older than the specified days
  */
 export function filterLASessionByDate(lASession: ResolvedValue<typeof getLASession>, days: number) {
 	let lASessionFilterByTime: ResolvedValue<typeof getLASession> = lASession;

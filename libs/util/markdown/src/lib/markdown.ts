@@ -1,5 +1,6 @@
 import { serialize } from "next-mdx-remote/serialize";
 import rehypeExternalLinks from "rehype-external-links";
+import { invalidLanguageFilter } from "./invalid-language-filter";
 // Rehype packages
 import rehypeKatex from "rehype-katex";
 import rehypePrismPlus from "rehype-prism-plus";
@@ -11,6 +12,7 @@ import { Pluggable } from "unified";
 export const remarkPlugins = [remarkGfm, remarkMath];
 export const rehypePlugins = [
 	rehypeKatex,
+	invalidLanguageFilter,
 	rehypePrismPlus,
 	[rehypeExternalLinks, { target: "_blank" }] as Pluggable
 ];

@@ -177,6 +177,7 @@ async function seed(): Promise<void> {
 	await prisma.enrollment.deleteMany();
 	await prisma.lesson.deleteMany();
 	await prisma.license.deleteMany();
+	await prisma.skill.deleteMany();
 	await prisma.lASession.deleteMany();
 
 	console.log("😅 Seeding...");

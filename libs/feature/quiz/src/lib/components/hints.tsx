@@ -1,4 +1,4 @@
-import { LightBulbIcon } from "@heroicons/react/outline";
+import { LightBulbIcon } from "@heroicons/react/24/outline";
 import { useQuestion } from "@self-learning/question-types";
 import { Divider } from "@self-learning/ui/common";
 import { MarkdownContainer } from "@self-learning/ui/layouts";

@@ -59,6 +59,8 @@ export default function CreateLessonPage() {
 				licenseId: null,
 				quiz: { questions: [], config: null },
 				content: [],
+				requirements: [],
+				teachingGoals: [],
 				authors: [{ username: authorUsername ?? "" }],
 				lessonType: LessonType.TRADITIONAL,
 				selfRegulatedQuestion: null

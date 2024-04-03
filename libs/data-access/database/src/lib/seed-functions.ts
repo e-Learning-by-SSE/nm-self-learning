@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient, LessonType } from "@prisma/client";
+import { LessonType, Prisma, PrismaClient } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
@@ -12,7 +12,8 @@ import {
 } from "@self-learning/types";
 import { readFileSync } from "fs";
 import { join } from "path";
-import slugify from "slugify";
+import { slugify } from "@self-learning/util/common";
+import { defaultLicence } from "./demo/license";
 
 const prisma = new PrismaClient();
 
@@ -273,11 +274,20 @@ export async function seedCaseStudy(
 	await prisma.course.createMany({ data: courseData });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
+	const license = await prisma.license.findFirst({
+		where: {
+			name: defaultLicence.name
+		},
+		select: {
+			licenseId: true
+		}
+	});
+
 	await prisma.lesson.createMany({
 		data: chapters.flatMap(chapter =>
 			chapter.content.map(lesson => ({
 				...lesson,
-				licenseId: lesson.licenseId ?? 0
+				licenseId: license ? license.licenseId : 0
 			}))
 		)
 	});

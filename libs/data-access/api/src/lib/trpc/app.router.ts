@@ -8,11 +8,12 @@ import { learningDiaryRouter } from "./routers/learning-diary.router";
 import { lessonRouter } from "./routers/lesson.router";
 import { licenseRouter } from "./routers/license.router";
 import { meRouter } from "./routers/me.router";
-import { programmingRouter } from "./routers/programming";
+import { programmingRouter } from "./routers/programming"
+import { skillRouter } from "./routers/skill.router";
 import { specializationRouter } from "./routers/specialization.router";
 import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
-import { learningAnalyticsRouter } from "./routers/learningAnalytics.router";
+import { learningAnalyticsRouter } from "./routers/learning-analytics.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -28,6 +29,7 @@ export const appRouter = t.router({
 	specialization: specializationRouter,
 	subject: subjectRouter,
 	programming: programmingRouter,
+	skill: skillRouter,
 	learningAnalytics: learningAnalyticsRouter
 });
 
