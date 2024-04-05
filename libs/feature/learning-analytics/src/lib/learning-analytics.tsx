@@ -3,7 +3,7 @@ import { format, parseISO } from "date-fns";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { LessonLayoutProps } from "@self-learning/lesson";
-import { ResolvedValue } from "@self-learning/types";
+import { Defined, ResolvedValue } from "@self-learning/types";
 
 export enum LearningAnalyticsMetric {
 	preferredLearningTime,
@@ -18,6 +18,11 @@ export enum LearningAnalyticsMetric {
 	videoStops
 }
 export type LearningAnalyticsMetricType = ResolvedValue<typeof getMetrics>;
+type KeysOfType<T, TProp> = { [P in keyof T]: T[P] extends TProp ? P : never }[keyof T];
+
+export function notNull<T>(val: T | null): val is T {
+	return val != null;
+}
 
 /**
  * getMetricName()
@@ -66,24 +71,26 @@ export function getMetricName(metric: LearningAnalyticsMetric) {
 export type LearningAnalyticsType = {
 	start: Date;
 	end: Date | null;
-	learningAnalytics: {
-		start: Date | null;
-		end: Date | null;
-		sessionId: number;
-		lessonId: string | null;
-		quizStart: Date | null;
-		quizEnd: Date | null;
-		numberCorrectAnswers: number | null;
-		numberIncorrectAnswers: number | null;
-		numberOfUsedHints: number | null;
-		numberOfChangesMediaType: number | null;
-		preferredMediaType: string | null;
-		videoStart: Date | null;
-		videoEnd: Date | null;
-		videoBreaks: number | null;
-		videoSpeed: number | null;
-	}[];
+	learningAnalytics: SessionType[];
 }[];
+
+type SessionType = {
+	start: Date | null;
+	end: Date | null;
+	sessionId: number;
+	lessonId: string | null;
+	quizStart: Date | null;
+	quizEnd: Date | null;
+	numberCorrectAnswers: number | null;
+	numberIncorrectAnswers: number | null;
+	numberOfUsedHints: number | null;
+	numberOfChangesMediaType: number | null;
+	preferredMediaType: string | null;
+	videoStart: Date | null;
+	videoEnd: Date | null;
+	videoBreaks: number | null;
+	videoSpeed: number | null;
+};
 
 /**
  * getSessionInfo()
@@ -519,7 +526,7 @@ function getDayTimeByHour(hour: number) {
 export function getPreferredLearningTime(lASession: LearningAnalyticsType) {
 	const learningTimes = new Map();
 	lASession.forEach(session => {
-		if (session?.learningAnalytics)
+		if (session.learningAnalytics)
 			session.learningAnalytics.forEach(learningAnalytics => {
 				if (learningAnalytics.start && learningAnalytics.end) {
 					const hour = format(parseISO(new Date(session.start).toISOString()), "HH");
@@ -705,7 +712,7 @@ export function getDataForDuration(lASession: LearningAnalyticsType) {
  * lASession: learning analytic session data
  */
 export function getVideoSpeed(lASession: LearningAnalyticsType) {
-	const videoSpeeds = new Map();
+	const videoSpeeds = new Map<number, number>();
 	lASession.forEach(session => {
 		if (session?.learningAnalytics) {
 			session?.learningAnalytics.forEach(learningAnalytics => {
@@ -713,7 +720,7 @@ export function getVideoSpeed(lASession: LearningAnalyticsType) {
 					if (videoSpeeds.has(learningAnalytics.videoSpeed))
 						videoSpeeds.set(
 							learningAnalytics.videoSpeed,
-							videoSpeeds.get(learningAnalytics.videoSpeed) + 1
+							(videoSpeeds.get(learningAnalytics.videoSpeed) ?? 0) + 1
 						);
 					else videoSpeeds.set(learningAnalytics.videoSpeed, 1);
 				}
@@ -870,28 +877,6 @@ export function getDataForVideoDuration(lASession: LearningAnalyticsType) {
 }
 
 /**
- * getMediaChanges()
- * Returns the average number of media changes in min per day. The result is data for a line chart.
- *
- * lASession: learning analytic session data
- */
-export function getMediaChanges(lASession: LearningAnalyticsType) {
-	let mediaChanges = 0;
-	let count = 0;
-	lASession.forEach(session => {
-		if (session?.learningAnalytics) {
-			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.numberOfChangesMediaType != null) {
-					mediaChanges = mediaChanges + learningAnalytics.numberOfChangesMediaType;
-					count = count + 1;
-				}
-			});
-		}
-	});
-	return count > 0 ? Math.round((mediaChanges / count) * 10) / 10 : 0;
-}
-
-/**
  * getDataMediaChangesDuration()
  * Returns the average number of media changes per day. The result is data for a line chart.
  *
@@ -955,17 +940,22 @@ export function getDataForMediaChanges(lASession: LearningAnalyticsType) {
  * lASession: learning analytic session data
  */
 export function getPreferredMediaType(lASession: LearningAnalyticsType) {
-	const mediaTypes = new Map();
+	const mediaTypes = new Map<string, number>();
 	lASession.forEach(session => {
 		if (session?.learningAnalytics) {
 			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.start && learningAnalytics?.end) {
-					if (mediaTypes.has(learningAnalytics.preferredMediaType))
-						mediaTypes.set(
-							learningAnalytics.preferredMediaType,
-							mediaTypes.get(learningAnalytics.preferredMediaType) + 1
-						);
-					else mediaTypes.set(learningAnalytics.preferredMediaType, 1);
+				if (learningAnalytics.preferredMediaType != null) {
+					if (learningAnalytics?.start && learningAnalytics?.end) {
+						if (
+							learningAnalytics.preferredMediaType &&
+							mediaTypes.has(learningAnalytics.preferredMediaType)
+						)
+							mediaTypes.set(
+								learningAnalytics.preferredMediaType,
+								(mediaTypes.get(learningAnalytics.preferredMediaType) ?? 0) + 1
+							);
+						else mediaTypes.set(learningAnalytics.preferredMediaType, 1);
+					}
 				}
 			});
 		}
@@ -1218,25 +1208,30 @@ export function getDataForAnswers(lASession: LearningAnalyticsType) {
 }
 
 /**
- * getHints()
- * Returns the average number of hints.
- *
- * lASession: learning analytic session data
+ * Metric that computes the average uses of a numeric property per session, e.g.,
+ * how many hints were used per session.
+ * @param lASession The learning analytic session data
+ * @param property a numeric property a session to compute the average for
+ * @returns uses / session
  */
-export function getHints(lASession: LearningAnalyticsType) {
-	let hints = 0;
-	let count = 0;
-	lASession.forEach(session => {
-		if (session?.learningAnalytics) {
-			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics.numberOfUsedHints != null) {
-					hints = hints + learningAnalytics.numberOfUsedHints;
-					count = count + 1;
-				}
-			});
-		}
-	});
-	return count > 0 ? Math.round((hints / count) * 10) / 10 : 0;
+export function averageUsesPerSession(
+	lASession: LearningAnalyticsType,
+	property: KeysOfType<SessionType, number | null>
+) {
+	let nUses = 0;
+	let nSessions = 0;
+	lASession
+		.flatMap(session => session.learningAnalytics)
+		.forEach(learningAnalytics => {
+			const value = learningAnalytics[property];
+			if (value) {
+				nUses = nUses + value;
+				nSessions = nSessions + 1;
+			}
+		});
+
+	//TODO SE: @ Fabian Kneer: Please explain why * 10 / 10
+	return nSessions > 0 ? Math.round((nUses / nSessions) * 10) / 10 : 0;
 }
 
 /**
@@ -1294,28 +1289,6 @@ export function getDataForHints(lASession: LearningAnalyticsType) {
 			]
 		};
 	return data;
-}
-
-/**
- * getVideoStops()
- * Returns the average number of stops per video.
- *
- * lASession: learning analytic session data
- */
-export function getVideoStops(lASession: LearningAnalyticsType) {
-	let stops = 0;
-	let count = 0;
-	lASession.forEach(session => {
-		if (session?.learningAnalytics) {
-			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.videoBreaks && learningAnalytics.videoBreaks != null) {
-					stops = stops + learningAnalytics.videoBreaks;
-					count = count + 1;
-				}
-			});
-		}
-	});
-	return count > 0 ? Math.round((stops / count) * 10) / 10 : 0;
 }
 
 /**
@@ -1401,11 +1374,11 @@ export function getMetrics(lASession: LearningAnalyticsType) {
 		},
 		{
 			metric: LearningAnalyticsMetric.videoStops,
-			value: getVideoStops(lASession)
+			value: averageUsesPerSession(lASession, "videoBreaks")
 		},
 		{
 			metric: LearningAnalyticsMetric.mediaTypeChanges,
-			value: getMediaChanges(lASession)
+			value: averageUsesPerSession(lASession, "numberOfChangesMediaType")
 		},
 		{
 			metric: LearningAnalyticsMetric.preferredMediaType,
@@ -1421,7 +1394,7 @@ export function getMetrics(lASession: LearningAnalyticsType) {
 		},
 		{
 			metric: LearningAnalyticsMetric.hints,
-			value: getHints(lASession)
+			value: averageUsesPerSession(lASession, "numberOfUsedHints")
 		}
 	];
 

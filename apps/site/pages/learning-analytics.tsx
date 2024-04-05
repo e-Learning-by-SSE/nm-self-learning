@@ -19,12 +19,13 @@ import {
 	getLineChartData,
 	getMetricName,
 	getMetrics,
-	getOptions
+	getOptions,
+	notNull
 } from "@self-learning/learning-analytics";
 import { useState } from "react";
 
 type LearningAnalyticsProps = {
-	lASession: ResolvedValue<typeof getLASession>;
+	lASession: LearningAnalyticsType;
 };
 
 export type LearningAnalyticsType = ResolvedValue<typeof getLASession>;
@@ -82,88 +83,48 @@ export const getServerSideProps: GetServerSideProps<LearningAnalyticsProps> = as
 	const lASession = JSON.parse(JSON.stringify(await getLASession(session.user.name)));
 	return {
 		props: {
-			lASession: lASession as ResolvedValue<typeof getLASession>
+			lASession: lASession as LearningAnalyticsType
 		}
 	};
 };
 
 /**
- * Returns all course titles, which are included in the learning analytic data.
+ * Returns all course/lesson titles, for which learning analytics data is available for the current user.
  * @param lASession Learning analytic session data
- * @returns all course titles, which are included in the learning analytic data.
+ * @param entry "course" for course titles, "lesson" for lesson titles
+ * @returns all course/lesson titles, which are included in the learning analytic data.
  */
-export function getCourses(lASession: ResolvedValue<typeof getLASession>) {
-	const courses = [{ value: "Alle", label: "Alle" }];
+function identifyParticipation(lASession: LearningAnalyticsType, entry: "course" | "lesson") {
+	const result = [{ value: "Alle", label: "Alle" }];
 	lASession.forEach(session => {
-		session.learningAnalytics.forEach(learningAnalytic => {
-			if (learningAnalytic.course?.title)
-				if (
-					courses.findIndex(item => item.value === learningAnalytic.course?.title) === -1
-				) {
-					courses.push({
-						value: learningAnalytic.course?.title,
-						label: learningAnalytic.course?.title
-					});
+		session.learningAnalytics
+			.map(learningAnalytic => learningAnalytic[entry])
+			.filter(notNull)
+			.map(entry => entry.title)
+			.forEach(title => {
+				if (!result.find(item => item.value === title)) {
+					result.push({ value: title, label: title });
 				}
-		});
+			});
 	});
-	return courses;
+	return result;
 }
 
 /**
- * Returns all lesson titles, which are included in the learning analytic data.
- * @param lASession learning analytic session data
- * @returns All lesson titles, which are included in the learning analytic data
- */
-export function getLessons(lASession: ResolvedValue<typeof getLASession>) {
-	const lessons = [{ value: "Alle", label: "Alle" }];
-	lASession.forEach(session => {
-		session.learningAnalytics.forEach(learningAnalytic => {
-			if (learningAnalytic.lesson?.title)
-				if (
-					lessons.findIndex(item => item.value === learningAnalytic.lesson?.title) === -1
-				) {
-					lessons.push({
-						value: learningAnalytic.lesson?.title,
-						label: learningAnalytic.lesson.title
-					});
-				}
-		});
-	});
-	return lessons;
-}
-
-/**
- * Filters the learning analytics by course title
+ * Filters the learning analytics by course/lesson title and keeps only the filtered data.
  * @param lASession Learning analytic session data
- * @param course Selected course title for filtering
+ * @param value The selected entries to filter for, "Alle" for no filtering
+ * @param entry "course" for course titles, "lesson" for lesson titles
  */
-export function filterCourseLASession(
-	lASession: ResolvedValue<typeof getLASession>,
-	course: string
+function filterLaSession(
+	lASession: LearningAnalyticsType,
+	value: string,
+	entry: "course" | "lesson"
 ) {
-	if (course != "Alle")
+	if (value != "Alle")
 		lASession.forEach(session => {
 			session.learningAnalytics = session.learningAnalytics.filter(
-				item => item.course?.title === course
-			);
-		});
-}
-
-/**
- * Filters the learning analytics by lesson title
- * @param lASession Learning analytic session data
- * @param lesson The title of the lesson for filtering, or "Alle" for no filtering
- * @returns Learning analytic session data which are filtered by the lesson title
- */
-export function filterLASessionByLesson(
-	lASession: ResolvedValue<typeof getLASession>,
-	lesson: string
-) {
-	if (lesson != "Alle")
-		lASession.forEach(session => {
-			session.learningAnalytics = session.learningAnalytics.filter(
-				item => item.lesson?.title === lesson
+				item => item[entry]?.title === value
 			);
 		});
 }
@@ -174,8 +135,8 @@ export function filterLASessionByLesson(
  * @param days Number of days, which a included after filtering
  * @returns Learning analytic session data which are not older than the specified days
  */
-export function filterLASessionByDate(lASession: ResolvedValue<typeof getLASession>, days: number) {
-	let lASessionFilterByTime: ResolvedValue<typeof getLASession> = lASession;
+export function filterLASessionByDate(lASession: LearningAnalyticsType, days: number) {
+	let lASessionFilterByTime: LearningAnalyticsType = lASession;
 	if (days > -1) {
 		const firstDateOfRange = new Date();
 		firstDateOfRange.setDate(new Date().getDate() - days);
@@ -199,9 +160,9 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 
 	const lASessionFilterByTime = filterLASessionByDate(props.lASession, selectedTime);
 	const lASessionFilteredByCourse = JSON.parse(JSON.stringify(lASessionFilterByTime));
-	filterCourseLASession(lASessionFilteredByCourse, selectedCourse);
+	filterLaSession(lASessionFilteredByCourse, selectedCourse, "course");
 	const lASessionFilteredByLesson = JSON.parse(JSON.stringify(lASessionFilteredByCourse));
-	filterLASessionByLesson(lASessionFilteredByLesson, selectedLesson);
+	filterLaSession(lASessionFilteredByLesson, selectedLesson, "lesson");
 	return (
 		<CenteredSection className="bg-gray-50">
 			<h1 className="mb-16 text-5xl">Statistik</h1>
@@ -227,7 +188,7 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 									setSelectedCourse(e?.value as string);
 									setSelectedLesson("Alle");
 								}}
-								options={getCourses(props.lASession)}
+								options={identifyParticipation(props.lASession, "course")}
 							/>
 						</div>
 					</span>
@@ -247,7 +208,7 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 								onChange={e => {
 									setSelectedLesson(e?.value as string);
 								}}
-								options={getLessons(lASessionFilteredByCourse)}
+								options={identifyParticipation(lASessionFilteredByCourse, "lesson")}
 							/>
 						</div>
 					</span>
@@ -291,7 +252,7 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 function Statistic({
 	lASession
 }: Readonly<{
-	lASession: ResolvedValue<typeof getLASession>;
+	lASession: LearningAnalyticsType;
 }>) {
 	const metrics = getMetrics(lASession);
 	const [selectedMetric, setSelectedMetric] = useState(
