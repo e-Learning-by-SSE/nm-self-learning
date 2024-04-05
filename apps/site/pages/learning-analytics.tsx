@@ -1,10 +1,10 @@
 import { authOptions } from "@self-learning/api";
 import { database } from "@self-learning/database";
-import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
-import { ReactComponent as VoidSvg } from "../svg/void.svg";
 import Select from "react-select";
+import { LabeledField } from "@self-learning/ui/forms";
 
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
@@ -12,10 +12,9 @@ import "chartjs-adapter-date-fns";
 
 ChartJS.register(...registerables);
 
-import { SectionHeader } from "@self-learning/ui/common";
+import { Divider } from "@self-learning/ui/common";
 import { ResolvedValue } from "@self-learning/types";
 import {
-	LearningAnalyticsMetric,
 	getLineChartData,
 	getMetricName,
 	getMetrics,
@@ -163,22 +162,24 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 	filterLaSession(lASessionFilteredByCourse, selectedCourse, "course");
 	const lASessionFilteredByLesson = JSON.parse(JSON.stringify(lASessionFilteredByCourse));
 	filterLaSession(lASessionFilteredByLesson, selectedLesson, "lesson");
+
+	const metrics = getMetrics(lASessionFilteredByLesson);
+	const [selectedMetric, setSelectedMetric] = useState(metrics[0]);
+	const data = getLineChartData(lASessionFilteredByLesson, selectedMetric.metric);
+	const options = getOptions(lASessionFilteredByLesson, selectedMetric.metric);
+
 	return (
-		<CenteredSection className="bg-gray-50">
-			<h1 className="mb-16 text-5xl">Statistik</h1>
-			<div className="flex flex-col">
-				<div className="flex justify-between">
-					<SectionHeader
-						title="Lernsession"
-						subtitle="Auswahl der Filter für die Statistik."
-					/>
-				</div>
-				<div className="mb-2 flex flex-row items-center">
-					<div className="mx-auto flex w-full flex-row justify-between gap-4">
-						<span>Kurs:</span>
-					</div>
-					<span className="ml-5">
-						<div style={{ width: "500px" }}>
+		<div className="bg-gray-50">
+			<SidebarEditorLayout
+				sidebar={
+					<>
+						<span className="text-2xl font-semibold text-secondary">
+							Auswahl der Lernstatistiken
+						</span>
+						<p className="heading text-2xl">Lernsession</p>
+						<p>Auswahlfilter für die Statistik.</p>
+
+						<LabeledField label="Kurs">
 							<Select
 								id={"courseFilter"}
 								instanceId={"courseFilter"}
@@ -190,15 +191,9 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 								}}
 								options={identifyParticipation(props.lASession, "course")}
 							/>
-						</div>
-					</span>
-				</div>
-				<div className="mb-2 flex flex-row items-center">
-					<div className="mx-auto flex w-full flex-row justify-between gap-4">
-						<span>Lerneinheit:</span>
-					</div>
-					<span className="ml-5">
-						<div style={{ width: "500px" }}>
+						</LabeledField>
+
+						<LabeledField label="Lerneinheit">
 							<Select
 								id={"lessonFilter"}
 								instanceId={"lessonFilter"}
@@ -210,136 +205,47 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 								}}
 								options={identifyParticipation(lASessionFilteredByCourse, "lesson")}
 							/>
-						</div>
-					</span>
-				</div>
-				<div className="mb-2 flex flex-row items-center">
-					<div className="<mx-auto gap-4> flex w-full flex-row justify-between">
-						<span>Zeitspanne:</span>
-					</div>
-					<span className="ml-5">
-						<div style={{ width: "500px" }}>
-							<Select
-								id={"timeFilter"}
-								instanceId={"timeFilter"}
-								isSearchable={true}
-								defaultValue={{ value: -1, label: "Gesamter Zeitraum" }}
-								onChange={e => {
-									setSelectedTime(e?.value as number);
-								}}
-								options={[
-									{ value: -1, label: "Gesamter Zeitraum" },
-									{ value: 30, label: "30 Tage" },
-									{ value: 7, label: "7 Tage" }
-								]}
-							/>
-						</div>
-					</span>
-				</div>
-			</div>
-			<Statistic lASession={lASessionFilteredByLesson} />
-		</CenteredSection>
-	);
-}
+						</LabeledField>
 
-/**
- * LearningAnalytics()
- * Shows the metrics as ItemCardGrid and for the selected metric a line graph (react-chartjs-2) representing the metric values per day
- *
- * lASession: 	learning analytic session data
- *
- */
-function Statistic({
-	lASession
-}: Readonly<{
-	lASession: LearningAnalyticsType;
-}>) {
-	const metrics = getMetrics(lASession);
-	const [selectedMetric, setSelectedMetric] = useState(
-		LearningAnalyticsMetric.preferredLearningTime
-	);
-	const data = getLineChartData(lASession, selectedMetric);
-	const options = getOptions(lASession, selectedMetric);
-
-	return (
-		<div className="flex flex-col">
-			<div className="flex justify-between">
-				<SectionHeader
-					title="Metriken"
-					subtitle="Auswahl der Metrik für die graphische Darstellung der Statistik."
-				/>
-			</div>
-			<div className="bg-gray-50 pb-32">
-				<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
-					{metrics.length > 0 ? (
-						<ItemCardGrid>
-							{metrics.map(metric => (
-								<MetricCard
-									key={metric.metric}
-									metric={metric.metric}
-									metricValue={metric.value}
-									selectMetric={setSelectedMetric}
-									selectedMetric={selectedMetric}
-								/>
-							))}
-						</ItemCardGrid>
-					) : (
-						<div className="grid gap-16 pt-16">
-							<span className="mx-auto font-semibold">
-								Leider gibt es hier noch keine Inhalte.
-							</span>
-							<div className="mx-auto w-full max-w-md ">
-								<VoidSvg />
-							</div>
-						</div>
-					)}
-				</div>
-			</div>
-			{data && options == null && <Line data={data} />}
-			{data && options && <Line data={data} options={options} />}
+						<LabeledField label="Zeitspanne"></LabeledField>
+						<Select
+							id={"timeFilter"}
+							instanceId={"timeFilter"}
+							isSearchable={true}
+							defaultValue={{ value: -1, label: "Gesamter Zeitraum" }}
+							onChange={e => {
+								setSelectedTime(e?.value as number);
+							}}
+							options={[
+								{ value: -1, label: "Gesamter Zeitraum" },
+								{ value: 30, label: "30 Tage" },
+								{ value: 7, label: "7 Tage" }
+							]}
+						/>
+						<Divider />
+						<p className="heading text-2xl">Metriken</p>
+						{metrics.map(metric => (
+							<button
+								key={metric.metric}
+								onClick={() => setSelectedMetric(metric)}
+								className={`p-2 hover:text-gray-500 ${
+									metric === selectedMetric ? "text-secondary" : ""
+								}`}
+							>
+								<p className="... text-left">{getMetricName(metric.metric)}</p>
+							</button>
+						))}
+					</>
+				}
+			>
+				<h1 className="text-5xl">Statistik</h1>
+				<span className="text-xl">
+					<span className="font-bold">{getMetricName(selectedMetric.metric)}:</span>
+					{` ${selectedMetric.value}`}
+				</span>
+				{data && options == null && <Line data={data} />}
+				{data && options && <Line data={data} options={options} />}
+			</SidebarEditorLayout>
 		</div>
-	);
-}
-
-/**
- * MetricCard()
- * Shows the metrics value and name
- *
- * metric: 			metric that is shown on the card
- * metricValue:		value of a metric
- * selectMetric:	function to set the current selected metric
- * selectedMetric:	current selected metric
- *
- */
-
-function MetricCard({
-	metric,
-	metricValue,
-	selectMetric,
-	selectedMetric
-}: Readonly<{
-	metric: LearningAnalyticsMetric;
-	metricValue: string | number;
-	selectMetric: (metric: LearningAnalyticsMetric) => void;
-	selectedMetric: LearningAnalyticsMetric;
-}>) {
-	let className = "flex h-full flex-col justify-between gap-4 rounded-b-lg p-4 ";
-	if (selectedMetric === metric) {
-		className = className + " bg-emerald-500";
-	}
-
-	return (
-		<button onClick={() => selectMetric(metric)}>
-			<div className="glass relative flex h-full w-full flex-col rounded-lg transition-transform hover:scale-105 hover:bg-emerald-500 hover:shadow-lg">
-				<div className={className}>
-					<div className="flex flex-col items-center gap-4">
-						<h2 className="text-2xl">{metricValue}</h2>
-						<div className="items-center gap-4 text-center">
-							<span>{getMetricName(metric)}</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		</button>
 	);
 }
