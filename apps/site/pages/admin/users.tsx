@@ -100,7 +100,7 @@ export default function UsersPage() {
 }
 
 function RoleLabel({ role }: { role: string }) {
-	if (role === "USER") return;
+	if (role === "USER") return null;
 
 	let roleColor = "bg-secondary";
 

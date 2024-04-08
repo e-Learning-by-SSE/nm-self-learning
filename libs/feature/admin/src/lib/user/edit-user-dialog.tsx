@@ -125,6 +125,12 @@ function UserData() {
 	const errors = formState.errors;
 	const height = window.innerHeight * 0.6;
 
+	const isValidDate = (date: Date | null | undefined) => {
+		if (!date) return false;
+		if (date === null) return false;
+		return date instanceof Date && !isNaN(date.getTime());
+	};
+
 	return (
 		<div className="overflow-y-auto overflow-x-hidden p-2" style={{ maxHeight: height }}>
 			<h2 className="mb-4 text-2xl">Daten</h2>
@@ -156,11 +162,18 @@ function UserData() {
 						))}
 					</select>
 				</LabeledField>
-				<LabeledField label="Email Verified" error={errors.emailVerified?.message}>
+				<LabeledField label="Email Verified Date" error={errors.emailVerified?.message}>
 					<input
 						className="textfield"
-						type={"text"}
-						{...register("emailVerified", { required: false })}
+						type={"date"}
+						value={
+							isValidDate(watch("emailVerified"))
+								? watch("emailVerified")?.toISOString().slice(0, 10)
+								: ""
+						}
+						onChange={v => {
+							setValue("emailVerified", new Date(v.target.value));
+						}}
 					/>
 				</LabeledField>
 				<LabeledField label="Bild" error={errors.image?.message}>
@@ -197,7 +210,7 @@ function UserData() {
 	);
 }
 
-function ActionButtons({username} : {username: string}) {
+function ActionButtons({ username }: { username: string }) {
 	const { mutateAsync: deleteUserAndDependentData } =
 		trpc.admin.deleteUserAndDependentData.useMutation();
 	const [deleteData, setDeleteData] = useState(false);
@@ -206,7 +219,7 @@ function ActionButtons({username} : {username: string}) {
 		if (confirm("Wirklich alle Daten löschen?")) {
 			setDeleteData(true);
 			deleteUserAndDependentData(username)
-				.then((result) => {
+				.then(result => {
 					showToast({
 						type: "success",
 						title: "Daten gelöscht!",
@@ -236,7 +249,7 @@ function ActionButtons({username} : {username: string}) {
 		>
 			{deleteData ? (
 				<>
-					 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"/>
+					<div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white" />
 					Deleting...
 				</>
 			) : (
