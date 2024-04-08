@@ -24,5 +24,5 @@ export default function CreateLessonPage() {
 		);
 	}
 
-	return <LessonEditor onSubmit={handleCreateClose} />;
+	return <LessonEditor onSubmit={handleCreateClose} isFullScreen={true} />;
 }

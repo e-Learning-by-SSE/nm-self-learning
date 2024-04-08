@@ -93,7 +93,7 @@ export function DialogActions({
 	children?: React.ReactNode;
 }) {
 	return (
-		<div className="mt-8 flex justify-end gap-2">
+		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
 			<DefaultButton onClick={() => onClose(undefined)}>
 				<span className={"text-gray-600"}>Abbrechen</span>
 			</DefaultButton>

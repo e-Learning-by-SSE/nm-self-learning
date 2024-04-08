@@ -64,10 +64,12 @@ export async function onLessonEditorSubmit(
 
 export function LessonEditor({
 	onSubmit,
-	initialLesson
+	initialLesson,
+	isFullScreen
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
+	isFullScreen: boolean;
 }) {
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -105,10 +107,14 @@ export function LessonEditor({
 					)}
 				</div>
 
-				<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end">
-					<div className="relative pr-3 pb-5">
+				<div
+					className={`${
+						isFullScreen ? "fixed" : ""
+					} pointer-events-none bottom-0 flex w-full items-end justify-end`}
+				>
+					<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
 						<DialogActions onClose={onSubmit}>
-							<button type="submit" className="btn-primary">
+							<button type="submit" className="btn-primary pointer-events-auto">
 								Speichern
 							</button>
 						</DialogActions>

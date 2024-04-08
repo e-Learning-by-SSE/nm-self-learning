@@ -111,5 +111,5 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		);
 	};
 
-	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} />;
+	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />;
 }
