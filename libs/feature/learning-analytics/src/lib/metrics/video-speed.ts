@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { defaultChartOption, getHighestValue } from "../auxillary";
+import { defaultChartOption, maxKey } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 const METRIC_NAME = "Bevorzugte Videogeschwindigkeit";
@@ -43,7 +43,7 @@ function getDataForVideoSpeed(lASession: LearningAnalyticsType) {
 		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
 		if (sessionStart !== lastsession) {
 			if (videoSpeeds.size > 0) {
-				out.data.push(getHighestValue(videoSpeeds));
+				out.data.push(maxKey(videoSpeeds));
 				out.labels.push(lastsession);
 				videoSpeeds = new Map();
 				lastsession = sessionStart;
@@ -63,7 +63,7 @@ function getDataForVideoSpeed(lASession: LearningAnalyticsType) {
 		}
 	});
 	if (videoSpeeds.size > 0) {
-		out.data.push(getHighestValue(videoSpeeds));
+		out.data.push(maxKey(videoSpeeds));
 		out.labels.push(sessionStart);
 	}
 	const data = {

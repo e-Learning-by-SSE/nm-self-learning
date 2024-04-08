@@ -1,6 +1,7 @@
 import { format, parseISO } from "date-fns";
-import { defaultChartOption } from "../auxillary";
+import { defaultChartOption, isLessonContentMediaType, maxKey } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
+import { getContentTypeDisplayName } from "@self-learning/types";
 
 const METRIC_NAME = "Bevorzugter Medientyp";
 
@@ -31,7 +32,14 @@ function getPreferredMediaType(lASession: LearningAnalyticsType) {
 			});
 		}
 	});
-	return Array.from(mediaTypes).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0];
+
+	const preferredMediaType = maxKey(mediaTypes);
+	if (isLessonContentMediaType(preferredMediaType)) {
+		// Translation in Types package
+		return getContentTypeDisplayName(preferredMediaType);
+	} else {
+		return preferredMediaType;
+	}
 }
 
 /**
@@ -120,7 +128,7 @@ function getDataForPreferredMediaType(lASession: LearningAnalyticsType) {
 				data: out.pdf
 			},
 			{
-				label: "iFrame",
+				label: "Webseite",
 				fill: false,
 				backgroundColor: "#ef5675",
 				borderColor: "#ef5675",

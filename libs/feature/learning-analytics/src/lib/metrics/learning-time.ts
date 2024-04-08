@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns";
 import { MetricType } from "./metrics";
 import { ChartOptions } from "chart.js";
-import { getHighestValue } from "../auxillary";
+import { maxKey } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 const METRIC_NAME = "Präferierte Lernzeit";
@@ -12,9 +12,9 @@ const learningTimeOptions: ChartOptions<"line"> = {
 			type: "time",
 			time: {
 				parser: "dd.MM.yyyy",
-				unit: "day"
-			},
-			max: format(parseISO(new Date().toISOString()), "dd.MM.yyyy")
+				unit: "day",
+				tooltipFormat: "dd.MM.yyyy"
+			}
 		},
 		y: {
 			min: 0,
@@ -82,7 +82,7 @@ function getDataForPreferredLearningTime(lASession: LearningAnalyticsType) {
 		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
 		if (sessionStart !== lastsession) {
 			if (hours.size > 0) {
-				out.data.push(getHighestValue(hours));
+				out.data.push(maxKey(hours));
 				out.labels.push(lastsession);
 				lastsession = sessionStart;
 				hours = new Map();
@@ -99,7 +99,7 @@ function getDataForPreferredLearningTime(lASession: LearningAnalyticsType) {
 		}
 	});
 	if (hours.size > 0) {
-		out.data.push(getHighestValue(hours));
+		out.data.push(maxKey(hours));
 		out.labels.push(sessionStart);
 	}
 	const data = {

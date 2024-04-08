@@ -158,10 +158,8 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 	filterLaSession(lASessionFilteredByLesson, selectedLesson, "lesson");
 
 	const [selectedMetric, setSelectedMetric] = useState(METRICS[0]);
-	// const data = getLineChartData(lASessionFilteredByLesson, selectedMetric.metric);
 	const data = selectedMetric.data(lASessionFilteredByLesson);
 	const options = selectedMetric.options;
-	// const options = getOptions(lASessionFilteredByLesson, selectedMetric.metric);
 
 	return (
 		<div className="bg-gray-50">

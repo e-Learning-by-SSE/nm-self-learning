@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { defaultChartOption } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
@@ -59,10 +59,10 @@ function plotAnswersPerDay(lASession: LearningAnalyticsType) {
 	let incorrect = 0;
 	let countCorrect = 0;
 	let countIncorrect = 0;
-	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
+	let lastsession = format(new Date(lASession[0].start), "dd.MM.yyyy");
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
+		sessionStart = format(new Date(session.start), "dd.MM.yyyy");
 		if (sessionStart !== lastsession) {
 			dataPoints.correct.push(avg(correct, countCorrect, 1));
 			dataPoints.incorrect.push(avg(incorrect, countIncorrect, 1));

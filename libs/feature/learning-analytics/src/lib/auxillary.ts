@@ -1,6 +1,6 @@
 import { ChartOptions } from "chart.js";
-import { format, parseISO } from "date-fns";
 import { LearningAnalyticsType, SessionType } from "./learning-analytics";
+import { LessonContentMediaType } from "@self-learning/types";
 
 export const defaultChartOption: ChartOptions<"line"> = {
 	scales: {
@@ -8,19 +8,19 @@ export const defaultChartOption: ChartOptions<"line"> = {
 			type: "time",
 			time: {
 				parser: "dd.MM.yyyy",
-				unit: "day"
-			},
-			max: format(parseISO(new Date().toISOString()), "dd.MM.yyyy")
+				unit: "day",
+				tooltipFormat: "dd.MM.yyyy"
+			}
 		},
 		y: {}
 	}
 };
 
-export function getHighestValue(map: Map<any, any>) {
-	return Array.from(map.entries()).reduce((a, b) => (a[1] < b[1] ? b : a))[0];
-}
-
 type KeysOfType<T, TProp> = { [P in keyof T]: T[P] extends TProp ? P : never }[keyof T];
+
+export function isLessonContentMediaType(value: string): value is LessonContentMediaType {
+	return ["video", "article", "pdf", "iframe"].includes(value);
+}
 
 /**
  * Metric that computes the average uses of a numeric property per session, e.g.,
@@ -47,4 +47,13 @@ export function averageUsesPerSession(
 
 	//TODO SE: @ Fabian Kneer: Please explain why * 10 / 10
 	return nSessions > 0 ? "" + Math.round((nUses / nSessions) * 10) / 10 : "0";
+}
+
+/**
+ * Returns the key with the highest value in a map.
+ * @param map A map that stores numbers (e.g., occurrences per key)
+ * @returns The key with the highest value.
+ */
+export function maxKey<T>(map: Map<T, number>) {
+	return Array.from(map).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0];
 }
