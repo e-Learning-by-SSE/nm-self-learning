@@ -14,13 +14,7 @@ ChartJS.register(...registerables);
 
 import { Divider } from "@self-learning/ui/common";
 import { ResolvedValue } from "@self-learning/types";
-import {
-	getLineChartData,
-	getMetricName,
-	getMetrics,
-	getOptions,
-	notNull
-} from "@self-learning/learning-analytics";
+import { METRICS, notNull } from "@self-learning/learning-analytics";
 import { useState } from "react";
 
 type LearningAnalyticsProps = {
@@ -163,10 +157,11 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 	const lASessionFilteredByLesson = JSON.parse(JSON.stringify(lASessionFilteredByCourse));
 	filterLaSession(lASessionFilteredByLesson, selectedLesson, "lesson");
 
-	const metrics = getMetrics(lASessionFilteredByLesson);
-	const [selectedMetric, setSelectedMetric] = useState(metrics[0]);
-	const data = getLineChartData(lASessionFilteredByLesson, selectedMetric.metric);
-	const options = getOptions(lASessionFilteredByLesson, selectedMetric.metric);
+	const [selectedMetric, setSelectedMetric] = useState(METRICS[0]);
+	// const data = getLineChartData(lASessionFilteredByLesson, selectedMetric.metric);
+	const data = selectedMetric.data(lASessionFilteredByLesson);
+	const options = selectedMetric.options;
+	// const options = getOptions(lASessionFilteredByLesson, selectedMetric.metric);
 
 	return (
 		<div className="bg-gray-50">
@@ -224,7 +219,7 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 						/>
 						<Divider />
 						<p className="heading text-2xl">Metriken</p>
-						{metrics.map(metric => (
+						{METRICS.map(metric => (
 							<button
 								key={metric.metric}
 								onClick={() => setSelectedMetric(metric)}
@@ -232,7 +227,7 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 									metric === selectedMetric ? "text-secondary" : ""
 								}`}
 							>
-								<p className="... text-left">{getMetricName(metric.metric)}</p>
+								<p className="... text-left">{metric.name}</p>
 							</button>
 						))}
 					</>
@@ -240,11 +235,11 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 			>
 				<h1 className="text-5xl">Statistik</h1>
 				<span className="text-xl">
-					<span className="font-bold">{getMetricName(selectedMetric.metric)}:</span>
-					{` ${selectedMetric.value}`}
+					<span className="font-bold">{selectedMetric.name}:</span>
+					{` ${selectedMetric.summary(lASessionFilteredByLesson)}`}
 				</span>
 				{data && options == null && <Line data={data} />}
-				{data && options && <Line data={data} options={options} />}
+				{data && options && <Line data={data} options={selectedMetric.options} />}
 			</SidebarEditorLayout>
 		</div>
 	);
