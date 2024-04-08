@@ -96,7 +96,7 @@ function getDataForPreferredMediaType(lASession: LearningAnalyticsType) {
 		labels: labels,
 		datasets: [
 			{
-				label: "Video",
+				label: getContentTypeDisplayName("video"),
 				fill: false,
 				backgroundColor: "#003f5c",
 				borderColor: "#003f5c",
@@ -112,7 +112,7 @@ function getDataForPreferredMediaType(lASession: LearningAnalyticsType) {
 				data: out.video
 			},
 			{
-				label: "PDF",
+				label: getContentTypeDisplayName("pdf"),
 				fill: false,
 				backgroundColor: "#7a5195",
 				borderColor: "#7a5195",
@@ -128,7 +128,7 @@ function getDataForPreferredMediaType(lASession: LearningAnalyticsType) {
 				data: out.pdf
 			},
 			{
-				label: "Webseite",
+				label: getContentTypeDisplayName("iframe"),
 				fill: false,
 				backgroundColor: "#ef5675",
 				borderColor: "#ef5675",
@@ -144,7 +144,7 @@ function getDataForPreferredMediaType(lASession: LearningAnalyticsType) {
 				data: out.iframe
 			},
 			{
-				label: "Artikel",
+				label: getContentTypeDisplayName("article"),
 				fill: false,
 				backgroundColor: "#ffa600",
 				borderColor: "#ffa600",
