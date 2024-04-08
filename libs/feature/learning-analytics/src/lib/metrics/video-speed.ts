@@ -37,10 +37,10 @@ function computeSummary(lASession: LearningAnalyticsType) {
 function getDataForVideoSpeed(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
 	let videoSpeeds = new Map();
-	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
+	let lastsession = format(new Date(lASession[0].start), "dd.MM.yyyy");
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
+		sessionStart = format(new Date(session.start), "dd.MM.yyyy");
 		if (sessionStart !== lastsession) {
 			if (videoSpeeds.size > 0) {
 				out.data.push(maxKey(videoSpeeds));

@@ -134,7 +134,7 @@ export function filterLASessionByDate(lASession: LearningAnalyticsType, days: nu
 		const firstDateOfRange = new Date();
 		firstDateOfRange.setDate(new Date().getDate() - days);
 		firstDateOfRange.setHours(0, 0, 0, 0);
-		lASessionFilterByTime = lASession.filter(item => item.start >= firstDateOfRange);
+		lASessionFilterByTime = lASession.filter(item => new Date(item.start) >= firstDateOfRange);
 	}
 	return lASessionFilterByTime;
 }
