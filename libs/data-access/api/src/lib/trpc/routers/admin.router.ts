@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, t } from "../trpc";
 import { userSchema } from "@self-learning/types";
+import { deleteUserAndDependentData } from "@self-learning/admin";
 
 export const adminRouter = t.router({
 	findUsers: adminProcedure
@@ -56,6 +57,24 @@ export const adminRouter = t.router({
 				student: true
 			}
 		});
+	}),
+	deleteUserAndDependentData: adminProcedure.input(z.string()).mutation(async ({ input }) => {
+		const username = input;
+		const deletedEntities: {
+			entityType: string;
+			entityId?: string;
+			count?: number;
+		}[] = [];
+
+		await deleteUserAndDependentData(username, deletedEntities, database);
+	
+		const result = {
+			action: "deleted",
+			details: deletedEntities,
+			message: `User '${username}' and dependent data deleted successfully.`
+		};
+	
+		return result;
 	}),
 	updateUser: adminProcedure
 		.input(
