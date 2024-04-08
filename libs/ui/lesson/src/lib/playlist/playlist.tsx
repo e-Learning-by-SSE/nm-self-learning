@@ -33,6 +33,7 @@ type PlaylistProps = {
 		lessonId: string;
 		slug: string;
 		title: string;
+		meta: LessonMeta;
 	};
 	content: PlaylistContent;
 	course: {
@@ -240,13 +241,16 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 				</span>
 			</span>
 			<span className="flex justify-between">
-				<Link
-					href={`/courses/${course.slug}/${lesson.slug}/quiz`}
-					className="btn-primary text-sm"
-					data-testid="quizLink"
-				>
-					Lernkontrolle
-				</Link>
+				{lesson.meta.hasQuiz && (
+					<Link
+						href={`/courses/${course.slug}/${lesson.slug}/quiz`}
+						className="btn-primary text-sm"
+						data-testid="quizLink"
+					>
+						Lernkontrolle
+					</Link>
+				)}
+
 				<span className="flex gap-2">
 					<button
 						onClick={() => previous && navigateToLesson(previous)}
