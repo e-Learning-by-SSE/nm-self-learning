@@ -270,19 +270,29 @@ function CourseHeader({
 						</ul>
 					</div>
 
-					{isEnrolled && (
-						<Link
-							href={`/courses/${course.slug}/${nextLessonSlug}`}
-							className="btn-primary"
-						>
-							<span>
-								{completion?.courseCompletion.completedLessonCount === 0
-									? "Starten"
-									: "Fortfahren"}
-							</span>
-							<PlayIcon className="h-5" />
-						</Link>
-					)}
+					{isEnrolled &&
+						((completion?.courseCompletion.completedLessonCount ?? 0) >=
+						content[0].content.length ? (
+							<Link
+								href={`/courses/${course.slug}/${content[0].content[0].slug}`}
+								className="btn-primary"
+							>
+								<span>Öffnen</span>
+								<PlayIcon className="h-5" />
+							</Link>
+						) : (
+							<Link
+								href={`/courses/${course.slug}/${nextLessonSlug}`}
+								className="btn-primary"
+							>
+								<span>
+									{(completion?.courseCompletion.completedLessonCount ?? 0) === 0
+										? "Starten"
+										: "Fortfahren"}
+								</span>
+								<PlayIcon className="h-5" />
+							</Link>
+						))}
 
 					{!isEnrolled && (
 						<button
