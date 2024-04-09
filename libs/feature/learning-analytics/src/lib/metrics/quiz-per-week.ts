@@ -1,16 +1,17 @@
-import { format, parseISO } from "date-fns";
-import { DEFAULT_LINE_CHART_OPTIONS } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
+/**
+ * The displayname of the metric (may be translated to support i18n).
+ */
 const METRIC_NAME = "Lernkontrollen pro Tag";
 
 /**
- * getWeekYear()
- * Calculates the week number of a data.
- *
- * date: a date
+ * Part of the summary to convert a date to the week number and year.
+ * @param date The date to convert
+ * @returns The number of the year: 1 - 52
  */
-function getWeekYear(date: Date) {
+function convertToWeekOfYear(date: Date) {
 	const currentDate = new Date(date);
 
 	const d = new Date(
@@ -27,12 +28,11 @@ function getWeekYear(date: Date) {
 }
 
 /**
- * getQuizPerWeek()
- * Calculates the average quizzes per weak.
- *
- * lASession: learning analytic session data
+ * Generates a summary that prints the average quizzes per week.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns A summary in form of: x.x
  */
-function getQuizPerWeek(lASession: LearningAnalyticsType) {
+function summary(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; date: string[] } = { data: [], date: [] };
 	let count = 0;
 	let lastsession = lASession[0].start;
@@ -42,7 +42,7 @@ function getQuizPerWeek(lASession: LearningAnalyticsType) {
 		sessionStart = session.start;
 		if (sessionStart !== lastsession) {
 			out.data.push(count);
-			out.date.push(getWeekYear(lastsession));
+			out.date.push(convertToWeekOfYear(lastsession));
 			lastsession = sessionStart;
 			count = 0;
 		}
@@ -55,7 +55,7 @@ function getQuizPerWeek(lASession: LearningAnalyticsType) {
 		}
 	});
 	out.data.push(count);
-	out.date.push(getWeekYear(sessionStart));
+	out.date.push(convertToWeekOfYear(sessionStart));
 
 	let sum = 0;
 	const avgWeeks: number[] = [];
@@ -79,18 +79,17 @@ function getQuizPerWeek(lASession: LearningAnalyticsType) {
 }
 
 /**
- * getDataQuizPerWeek()
- * Collects the quizzes per day as data for a line chart
- *
- * lASession: learning analytic session data
+ * Generates the Line Chart data for the quizzes per day.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns  Line Chart data for the quizzes per day
  */
-export function getDataQuizPerWeek(lASession: LearningAnalyticsType) {
+export function plotQuizPerWeek(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
 	let count = 0;
-	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
+	let lastsession = formatDate(lASession[0].start);
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
+		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
 			out.data.push(count);
 			out.labels.push(lastsession);
@@ -135,7 +134,7 @@ export function getDataQuizPerWeek(lASession: LearningAnalyticsType) {
 export const QUIZ_PER_WEEK_METRIC = {
 	metric: "Quiz per Week",
 	name: METRIC_NAME,
-	summary: getQuizPerWeek,
-	data: getDataQuizPerWeek,
+	summary: summary,
+	data: plotQuizPerWeek,
 	options: DEFAULT_LINE_CHART_OPTIONS
 };

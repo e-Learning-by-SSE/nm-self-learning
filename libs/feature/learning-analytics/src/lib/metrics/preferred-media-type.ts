@@ -1,17 +1,23 @@
-import { format, parseISO } from "date-fns";
-import { DEFAULT_LINE_CHART_OPTIONS, isLessonContentMediaType, maxKey } from "../auxillary";
+import {
+	DEFAULT_LINE_CHART_OPTIONS,
+	formatDate,
+	isLessonContentMediaType,
+	maxKey
+} from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 import { getContentTypeDisplayName } from "@self-learning/types";
 
+/**
+ * The displayname of the metric (may be translated to support i18n).
+ */
 const METRIC_NAME = "Bevorzugter Medientyp";
 
 /**
- * getPreferredMediaType()
- * Returns the preferred media type.
- *
- * lASession: learning analytic session data
+ * Generates a summary that prints the preferred media type.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns A summary in form of: Video | PDF | Externe Webseite | Artikel | ...
  */
-function getPreferredMediaType(lASession: LearningAnalyticsType) {
+function summary(lASession: LearningAnalyticsType) {
 	const mediaTypes = new Map<string, number>();
 	lASession.forEach(session => {
 		if (session?.learningAnalytics) {
@@ -43,12 +49,11 @@ function getPreferredMediaType(lASession: LearningAnalyticsType) {
 }
 
 /**
- * getDataMediaChangesDuration()
- * Returns the average learning duration in min for a day. The result is data for a line chart.
- *
- * lASession: learning analytic session data
+ * Generates the Line Chart data for the used media types per day.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns  Line Chart data for the used media types per day.
  */
-function getDataForPreferredMediaType(lASession: LearningAnalyticsType) {
+function plotPreferredMediaType(lASession: LearningAnalyticsType) {
 	const out: { video: number[]; pdf: number[]; article: number[]; iframe: number[] } = {
 		video: [],
 		article: [],
@@ -56,12 +61,12 @@ function getDataForPreferredMediaType(lASession: LearningAnalyticsType) {
 		pdf: []
 	};
 	const labels: string[] = [];
-	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
+	let lastsession = formatDate(lASession[0].start);
 	let sessionStart = lastsession;
 	let mediaTypes = new Map();
 	lASession.forEach(session => {
 		if (session?.learningAnalytics) {
-			sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
+			sessionStart = formatDate(session.start);
 			if (sessionStart !== lastsession) {
 				if (mediaTypes.size > 0) {
 					out.video.push(mediaTypes.get("video") ? mediaTypes.get("video") : 0);
@@ -167,7 +172,7 @@ function getDataForPreferredMediaType(lASession: LearningAnalyticsType) {
 export const PREFERRED_MEDIA_TYPE_METRIC = {
 	metric: "Preferred Media Type",
 	name: METRIC_NAME,
-	summary: getPreferredMediaType,
-	data: getDataForPreferredMediaType,
+	summary: summary,
+	data: plotPreferredMediaType,
 	options: DEFAULT_LINE_CHART_OPTIONS
 };

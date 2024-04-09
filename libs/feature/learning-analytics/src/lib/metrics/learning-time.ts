@@ -1,21 +1,20 @@
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { MetricType } from "./metrics";
 import { ChartOptions } from "chart.js";
-import { maxKey } from "../auxillary";
+import { X_AXIS_FORMAT, formatDate, maxKey } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
+/**
+ * The displayname of the metric (may be translated to support i18n).
+ */
 const METRIC_NAME = "Präferierte Lernzeit";
 
+/**
+ * Time axis format (Y-axis range is 0-24 hours).
+ */
 const learningTimeOptions: ChartOptions<"line"> = {
 	scales: {
-		x: {
-			type: "time",
-			time: {
-				parser: "dd.MM.yyyy",
-				unit: "day",
-				tooltipFormat: "dd.MM.yyyy"
-			}
-		},
+		x: X_AXIS_FORMAT,
 		y: {
 			min: 0,
 			max: 24,
@@ -28,18 +27,17 @@ const learningTimeOptions: ChartOptions<"line"> = {
 };
 
 /**
- * getPreferredLearningTime()
- * Returns the preferred learning time.
- *
- * lASession: learning analytic session data
+ * Generates a summary that prints the preferred learning time (Morgens 5-12 Uhr, Nachmittags 12-17 Uhr, Abends 17-21 Uhr, Nachts 21-5 Uhr).
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns A summary in form of: Morgens | Nachmittags | Abends | Nachts
  */
-function getPreferredLearningTime(lASession: LearningAnalyticsType) {
+function summary(lASession: LearningAnalyticsType) {
 	const learningTimes = new Map();
 	lASession.forEach(session => {
 		if (session.learningAnalytics)
 			session.learningAnalytics.forEach(learningAnalytics => {
 				if (learningAnalytics.start && learningAnalytics.end) {
-					const hour = format(parseISO(new Date(session.start).toISOString()), "HH");
+					const hour = format(new Date(session.start), "HH");
 					if (learningTimes.has(hour))
 						learningTimes.set(hour, learningTimes.get(hour) + 1);
 					else learningTimes.set(hour, 1);
@@ -48,16 +46,15 @@ function getPreferredLearningTime(lASession: LearningAnalyticsType) {
 	});
 	const maxHour = Array.from(learningTimes).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0];
 
-	return getDayTimeByHour(maxHour);
+	return convertToTimeOfDay(maxHour);
 }
 
 /**
- * getDayTimeByHour()
- * Returns the day time (Morgens 5-12 Uhr, Nachmittags 12-17 Uhr, Abends 17-21 Uhr, Nachts 21-5 Uhr) based on the hour.
- *
- * hour: hour, which need to be checked
+ * Part of the summary to map a preferred learning time to Morgens | Nachmittags | Abends | Nachts
+ * @param hour The preferred hour of learning
+ * @returns Morgens | Nachmittags | Abends | Nachts
  */
-function getDayTimeByHour(hour: number) {
+function convertToTimeOfDay(hour: number) {
 	let result = "Keine Daten vorhanden";
 	if (hour >= 5 && hour < 12) result = "Morgens";
 	else if (hour >= 12 && hour < 17) result = "Nachmittags";
@@ -67,19 +64,18 @@ function getDayTimeByHour(hour: number) {
 }
 
 /**
- * getDataForPreferredLearningTime()
- * Returns the preferred learning time as hour for a day. The result is the data for a line chart diagram.
- *
- * lASession: learning analytic session data
+ * Generates the Line Chart data for the preferred learning time as hour for a day.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns  Line Chart data for the preferred learning time as hour for a day.
  */
-function getDataForPreferredLearningTime(lASession: LearningAnalyticsType) {
+function plotPreferredLearningTime(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
 
 	let hours = new Map();
-	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
+	let lastsession = formatDate(lASession[0].start);
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
+		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
 			if (hours.size > 0) {
 				out.data.push(maxKey(hours));
@@ -91,7 +87,7 @@ function getDataForPreferredLearningTime(lASession: LearningAnalyticsType) {
 		if (session?.learningAnalytics) {
 			session.learningAnalytics.forEach(learningAnalytics => {
 				if (learningAnalytics.start) {
-					const hour = format(parseISO(new Date(session.start).toISOString()), "HH");
+					const hour = format(new Date(session.start), "HH");
 					if (hours.has(hour)) hours.set(hour, hours.get(hour) + 1);
 					else hours.set(hour, 1);
 				}
@@ -128,7 +124,7 @@ function getDataForPreferredLearningTime(lASession: LearningAnalyticsType) {
 export const PREFERRED_LEARNING_TIME_METRIC: MetricType = {
 	metric: "preferredLearningTime",
 	name: METRIC_NAME,
-	summary: getPreferredLearningTime,
-	data: getDataForPreferredLearningTime,
+	summary: summary,
+	data: plotPreferredLearningTime,
 	options: learningTimeOptions
 };

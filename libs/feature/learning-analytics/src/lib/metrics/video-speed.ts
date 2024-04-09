@@ -1,15 +1,17 @@
-import { format, parseISO } from "date-fns";
-import { DEFAULT_LINE_CHART_OPTIONS, maxKey } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, formatDate, maxKey } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
+/**
+ * The displayname of the metric (may be translated to support i18n).
+ */
 const METRIC_NAME = "Bevorzugte Videogeschwindigkeit";
 
 /**
  * Computes the average video speed.
  * @param lASession The analyzed learning session (can be filtered before)
- * @returns The average video speed
+ * @returns The average video speed: x.x
  */
-function computeSummary(lASession: LearningAnalyticsType) {
+function summary(lASession: LearningAnalyticsType) {
 	const videoSpeeds = new Map<number, number>();
 	lASession.forEach(session => {
 		if (session?.learningAnalytics) {
@@ -29,18 +31,17 @@ function computeSummary(lASession: LearningAnalyticsType) {
 }
 
 /**
- * getDataForVideoSpeed()
- * Returns the preferred video speed for a day. The result is data for a line chart.
- *
- * lASession: learning analytic session data
+ * Generates the Line Chart data for the preferred video speed per day.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns Line Chart data for the preferred video speed per day
  */
-function getDataForVideoSpeed(lASession: LearningAnalyticsType) {
+function plotPreferredVideoSpeed(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
 	let videoSpeeds = new Map();
-	let lastsession = format(new Date(lASession[0].start), "dd.MM.yyyy");
+	let lastsession = formatDate(lASession[0].start);
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(new Date(session.start), "dd.MM.yyyy");
+		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
 			if (videoSpeeds.size > 0) {
 				out.data.push(maxKey(videoSpeeds));
@@ -92,7 +93,7 @@ function getDataForVideoSpeed(lASession: LearningAnalyticsType) {
 export const VIDEO_SPEED_METRIC = {
 	metric: "Video Speed",
 	name: METRIC_NAME,
-	summary: computeSummary,
-	data: getDataForVideoSpeed,
+	summary: summary,
+	data: plotPreferredVideoSpeed,
 	options: DEFAULT_LINE_CHART_OPTIONS
 };

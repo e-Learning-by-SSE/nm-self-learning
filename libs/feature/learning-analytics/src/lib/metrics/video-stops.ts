@@ -1,20 +1,24 @@
-import { format } from "date-fns";
-import { averageUsesPerSession, DEFAULT_LINE_CHART_OPTIONS } from "../auxillary";
+import { averageUsesPerSession, DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
+/**
+ * The displayname of the metric (may be translated to support i18n).
+ */
 const METRIC_NAME = "Durchschnittliche Anzahl an Videostopps pro Tag";
 
 /**
- * Plots a line chart that shows the average number of video stops per day.
+ * Generates the Line Chart data for the average number of video stops per day.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns  Line Chart data for the average number of video stops per day
  */
 function plotVideoStops(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
 	let stops = 0;
 	let count = 0;
-	let lastsession = format(new Date(lASession[0].start), "dd.MM.yyyy");
+	let lastsession = formatDate(lASession[0].start);
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(new Date(session.start), "dd.MM.yyyy");
+		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
 			out.data.push(count > 0 ? Math.round((stops / count) * 10) / 10 : 0);
 			out.labels.push(lastsession);
