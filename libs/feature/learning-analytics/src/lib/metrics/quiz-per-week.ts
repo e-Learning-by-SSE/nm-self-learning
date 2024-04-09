@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { defaultChartOption } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 const METRIC_NAME = "Lernkontrollen pro Tag";
@@ -137,5 +137,5 @@ export const QUIZ_PER_WEEK_METRIC = {
 	name: METRIC_NAME,
 	summary: getQuizPerWeek,
 	data: getDataQuizPerWeek,
-	options: defaultChartOption
+	options: DEFAULT_LINE_CHART_OPTIONS
 };

@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { defaultChartOption, maxKey } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, maxKey } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 const METRIC_NAME = "Bevorzugte Videogeschwindigkeit";
@@ -94,5 +94,5 @@ export const VIDEO_SPEED_METRIC = {
 	name: METRIC_NAME,
 	summary: computeSummary,
 	data: getDataForVideoSpeed,
-	options: defaultChartOption
+	options: DEFAULT_LINE_CHART_OPTIONS
 };

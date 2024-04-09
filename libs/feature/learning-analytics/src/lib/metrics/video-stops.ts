@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { averageUsesPerSession, defaultChartOption } from "../auxillary";
+import { averageUsesPerSession, DEFAULT_LINE_CHART_OPTIONS } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 const METRIC_NAME = "Durchschnittliche Anzahl an Videostopps pro Tag";
@@ -63,5 +63,5 @@ export const VIDEO_STOPS_METRIC = {
 	name: METRIC_NAME,
 	summary: (lASession: LearningAnalyticsType) => averageUsesPerSession(lASession, "videoBreaks"),
 	data: plotVideoStops,
-	options: defaultChartOption
+	options: DEFAULT_LINE_CHART_OPTIONS
 };

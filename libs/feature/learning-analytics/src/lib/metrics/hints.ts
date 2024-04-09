@@ -1,23 +1,24 @@
-import { format, parseISO } from "date-fns";
-import { averageUsesPerSession, defaultChartOption } from "../auxillary";
+import { averageUsesPerSession, DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
+/**
+ * The displayname of the metric (may be translated to support i18n).
+ */
 const METRIC_NAME = "Durchschnittliche Anzahl an Hinweisen pro Tag";
 
 /**
- * getDataForHints()
- * Returns the average number of hints per day. The result is data for a line chart.
- *
- * lASession: learning analytic session data
+ * Generates the Line Chart data for the used hints per day.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns  Line Chart data for the used hints per day.
  */
-function getDataForHints(lASession: LearningAnalyticsType) {
+function plotHintsPerDay(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
 	let hints = 0;
 	let count = 0;
-	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
+	let lastsession = formatDate(lASession[0].start);
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
+		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
 			out.data.push(count > 0 ? Math.round((hints / count) * 10) / 10 : 0);
 			out.labels.push(lastsession);
@@ -66,6 +67,6 @@ export const HINTS_METRIC = {
 	name: METRIC_NAME,
 	summary: (lASession: LearningAnalyticsType) =>
 		averageUsesPerSession(lASession, "numberOfUsedHints"),
-	data: getDataForHints,
-	options: defaultChartOption
+	data: plotHintsPerDay,
+	options: DEFAULT_LINE_CHART_OPTIONS
 };

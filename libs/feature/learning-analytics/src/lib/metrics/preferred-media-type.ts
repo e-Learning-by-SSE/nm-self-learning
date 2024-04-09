@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { defaultChartOption, isLessonContentMediaType, maxKey } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, isLessonContentMediaType, maxKey } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 import { getContentTypeDisplayName } from "@self-learning/types";
 
@@ -169,5 +169,5 @@ export const PREFERRED_MEDIA_TYPE_METRIC = {
 	name: METRIC_NAME,
 	summary: getPreferredMediaType,
 	data: getDataForPreferredMediaType,
-	options: defaultChartOption
+	options: DEFAULT_LINE_CHART_OPTIONS
 };

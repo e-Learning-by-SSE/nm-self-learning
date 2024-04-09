@@ -1,16 +1,17 @@
-import { format, parseISO } from "date-fns";
-import { defaultChartOption } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
+/**
+ * The displayname of the metric (may be translated to support i18n).
+ */
 const METRIC_NAME = "Durchschnittliche Lernzeit pro Tag";
 
 /**
- * getDuration()
- * Returns the average learning duration in min.
- *
- * lASession: learning analytic session data
+ * Generates a summary that prints the average learning duration in min.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns A summary in form of: x.x min
  */
-function getDuration(lASession: LearningAnalyticsType) {
+function summary(lASession: LearningAnalyticsType) {
 	let duration = 0;
 	let count = 0;
 	lASession.forEach(session => {
@@ -39,19 +40,18 @@ function getDuration(lASession: LearningAnalyticsType) {
 }
 
 /**
- * getDataForDuration()
- * Returns the average learning duration in min for a day. The result is data for a line chart.
- *
- * lASession: learning analytic session data
+ * Generates the Line Chart data for learning duration per day.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns  Line Chart data for the learning duration per day.
  */
-function getDataForDuration(lASession: LearningAnalyticsType) {
+function plotDurationPerDay(lASession: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
 	let count = 0;
 	let duration = 0;
-	let lastsession = format(parseISO(new Date(lASession[0].start).toISOString()), "dd.MM.yyyy");
+	let lastsession = formatDate(lASession[0].start);
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(parseISO(new Date(session.start).toISOString()), "dd.MM.yyyy");
+		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
 			out.data.push(count > 0 ? Math.round((duration / count) * 10) / 10 : 0);
 			out.labels.push(lastsession);
@@ -109,7 +109,7 @@ function getDataForDuration(lASession: LearningAnalyticsType) {
 export const DURATION_METRIC = {
 	metric: "Duration",
 	name: METRIC_NAME,
-	summary: getDuration,
-	data: getDataForDuration,
-	options: defaultChartOption
+	summary: summary,
+	data: plotDurationPerDay,
+	options: DEFAULT_LINE_CHART_OPTIONS
 };

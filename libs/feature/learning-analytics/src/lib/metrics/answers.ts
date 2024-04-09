@@ -1,19 +1,15 @@
-import { format } from "date-fns";
-import { defaultChartOption } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
+/**
+ * The displayname of the metric (may be translated to support i18n).
+ */
 const METRIC_NAME = "Durchschnittliche Anzahl an richtigen und falschen Antworten";
 
 /**
- * getAnswers()
- * Returns the average number of right and wrong numbers of answers.
- *
- * lASession: learning analytic session data
- */
-/**
  * Generates a summary that prints how many questions were answered correctly/incorrectly on average.
  * @param lASession The (filtered) session for which the summary is computed for.
- * @returns A summary in form of Correct: x.x, Incorrect: y.y
+ * @returns A summary in form of: Richtig: x.x, Falsch: y.y
  */
 function summary(lASession: LearningAnalyticsType) {
 	let correct = 0;
@@ -47,10 +43,9 @@ function avg(sum: number, count: number, digits: number) {
 }
 
 /**
- * getDataForAnswers()
- * Returns the average number of right and wrong numbers of answers per day. The result is data for a line chart.
- *
- * lASession: learning analytic session data
+ * Generates the Line Chart data for the average number of right and wrong numbers of answers per day.
+ * @param lASession The (filtered) session for which the summary is computed for.
+ * @returns  Line Chart data for the average number of right and wrong numbers of answers per day.
  */
 function plotAnswersPerDay(lASession: LearningAnalyticsType) {
 	const dataPoints: { correct: number[]; incorrect: number[] } = { correct: [], incorrect: [] };
@@ -59,10 +54,10 @@ function plotAnswersPerDay(lASession: LearningAnalyticsType) {
 	let incorrect = 0;
 	let countCorrect = 0;
 	let countIncorrect = 0;
-	let lastsession = format(new Date(lASession[0].start), "dd.MM.yyyy");
+	let lastsession = formatDate(lASession[0].start);
 	let sessionStart = lastsession;
 	lASession.forEach(session => {
-		sessionStart = format(new Date(session.start), "dd.MM.yyyy");
+		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
 			dataPoints.correct.push(avg(correct, countCorrect, 1));
 			dataPoints.incorrect.push(avg(incorrect, countIncorrect, 1));
@@ -136,5 +131,5 @@ export const ANSWERS_METRIC = {
 	name: METRIC_NAME,
 	summary: summary,
 	data: plotAnswersPerDay,
-	options: defaultChartOption
+	options: DEFAULT_LINE_CHART_OPTIONS
 };

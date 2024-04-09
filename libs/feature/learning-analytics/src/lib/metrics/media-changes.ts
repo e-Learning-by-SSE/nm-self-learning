@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { averageUsesPerSession, defaultChartOption } from "../auxillary";
+import { averageUsesPerSession, DEFAULT_LINE_CHART_OPTIONS } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 const METRIC_NAME = "Durchschnittliche Anzahl an Medienwechsel pro Tag";
@@ -67,5 +67,5 @@ export const MEDIA_CHANGES_METRIC = {
 	summary: (lASession: LearningAnalyticsType) =>
 		averageUsesPerSession(lASession, "numberOfChangesMediaType"),
 	data: getDataForMediaChanges,
-	options: defaultChartOption
+	options: DEFAULT_LINE_CHART_OPTIONS
 };

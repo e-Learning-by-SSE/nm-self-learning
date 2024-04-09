@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { defaultChartOption } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 const METRIC_NAME = "Durchschnittliche Videodauer pro Tag";
@@ -95,5 +95,5 @@ export const VIDEO_DURATION_METRIC = {
 	name: METRIC_NAME,
 	summary: getVideoDuration,
 	data: getDataForVideoDuration,
-	options: defaultChartOption
+	options: DEFAULT_LINE_CHART_OPTIONS
 };
