@@ -23,6 +23,7 @@ import { useRouter } from "next/router";
 import { ComponentProps, useState } from "react";
 import { ReactComponent as VoidSvg } from "../../svg/void.svg";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
+import { useTranslation } from "react-i18next";
 
 const EditAuthorDialog = dynamic(
 	() => import("@self-learning/teaching").then(m => m.EditAuthorDialog),
@@ -96,6 +97,7 @@ export default function AuthorOverview({ author }: Props) {
 	const [openEditDialog, setOpenEditDialog] = useState(false);
 	const { mutateAsync: updateAuthor } = trpc.author.updateSelf.useMutation();
 	const router = useRouter();
+	const { t } = useTranslation();
 
 	const onEditDialogClose: ComponentProps<
 		typeof EditAuthorDialog
@@ -107,15 +109,15 @@ export default function AuthorOverview({ author }: Props) {
 				await updateAuthor(editedAuthor);
 				showToast({
 					type: "success",
-					title: "Informationen aktualisiert",
-					subtitle: "Bitte führe einen erneuten Login durch."
+					title: t("infos_updated"),
+					subtitle: t("re-login_ask")
 				});
 				router.replace(router.asPath);
 			} catch (error) {
 				console.error(error);
 
 				if (error instanceof TRPCClientError) {
-					showToast({ type: "error", title: "Fehler", subtitle: error.message });
+					showToast({ type: "error", title: t("error"), subtitle: error.message });
 				}
 			}
 		}
@@ -159,8 +161,8 @@ export default function AuthorOverview({ author }: Props) {
 
 						<section>
 							<SectionHeader
-								title="Fachgebiete"
-								subtitle="Administrator in den folgenden Fachgebieten:"
+								title={t("subjects")}
+								subtitle={t("admin_in_subjects")}
 							/>
 
 							<ul className="flex flex-wrap gap-4">
@@ -184,8 +186,8 @@ export default function AuthorOverview({ author }: Props) {
 						<Divider />
 						<section>
 							<SectionHeader
-								title="Spezialisierungen"
-								subtitle="Administrator in den folgenden Spezialisierungen:"
+								title={t("specializations")}
+								subtitle={t("admin_in_specializations")}
 							/>
 
 							<ul className="flex flex-wrap gap-4">
@@ -211,14 +213,11 @@ export default function AuthorOverview({ author }: Props) {
 
 				<section>
 					<div className="flex justify-between gap-4">
-						<SectionHeader
-							title="Meine Kurse"
-							subtitle="Autor in den folgenden Kursen:"
-						/>
+						<SectionHeader title={t("my_courses")} subtitle={t("author_in_courses")} />
 
 						<Link href="/teaching/courses/create" className="btn-primary h-fit w-fit">
 							<PlusIcon className="icon" />
-							<span>Neuen Kurs erstellen</span>
+							<span>{t("create_course")}</span>
 						</Link>
 					</div>
 

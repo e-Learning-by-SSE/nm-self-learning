@@ -86,7 +86,7 @@ function LicenseTable({
 				<>
 					<TableHeaderColumn></TableHeaderColumn>
 					<TableHeaderColumn>{t("name")}</TableHeaderColumn>
-					<TableHeaderColumn>Eigenschaften TODO ÜBERSETZEN</TableHeaderColumn>
+					<TableHeaderColumn>{t("properties")}</TableHeaderColumn>
 					<TableHeaderColumn></TableHeaderColumn>
 				</>
 			}
@@ -166,7 +166,7 @@ function LicenseFeatureIcons({
 				</Tooltip>
 			)}
 			{!selectable && (
-				<Tooltip title="Lizenz ist nicht in neuen Lerneinheiten auswählbar. ÜBERSETZEN">
+				<Tooltip title={t("license_not_choosable")}>
 					<BanIcon className="icon h-5" />
 				</Tooltip>
 			)}

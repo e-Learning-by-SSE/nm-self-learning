@@ -70,6 +70,9 @@
 	"infos": "Informationen",
 	"infos_for_specialization": "Informationen über diese Spezialisierung.",
 	"generate": "Generieren",
+	"properties": "Eigenschaften",
+	"task": "Aufgabe",
+	"missing_content": "Leider gibt es hier noch keine Inhalte.",
 
 	"add_license": "Lizenz hinzufügen",
 	"search_for_license": "Suche nach Lizenz",
@@ -110,6 +113,16 @@
 	"subject_updated_subtitle": "Das Fachgebiet {{title}} wurde aktualisiert.",
 	"specialization_created": "Spezialisierung erstellt",
 	"new_specialization": "Neue Spezialsierung",
+
+	"license_not_choosable": "Lizenz ist nicht in neuen Lerneinheiten auswählbar.",
+	"infos_updated": "Informationen wurden aktualisiert",
+	"re-login_ask": "Bitte führe einen erneuten Login durch.",
+	"admin_in_subjects": "Administrator in den folgenden Fachgebieten:",
+	"admin_in_specializations": "Administrator in den folgenden Spezialisierungen:",
+	"author_in_courses": "Autor in den folgenden Kursen:",
+
+	"my_courses": "Meine Kurse",
+	"create_course": "Neuen Kurs erstellen",
 
 	"hallo": "hallo"
 }

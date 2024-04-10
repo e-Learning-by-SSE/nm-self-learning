@@ -70,6 +70,9 @@
 	"infos": "Information",
 	"infos_for_specialization": "Information about this specialization.",
 	"generate": "Generate",
+	"properties": "Properties",
+	"task": "Task",
+	"missing_content": "No content here yet",
 
 	"add_license": "Add License",
 	"search_for_license": "Search for License",
@@ -110,6 +113,16 @@
 	"subject_updated_subtitle": "The subject {{title}} has been updated",
 	"specialization_created": "Created Specialization",
 	"new_specialization": "New Specialization",
+
+	"license_not_choosable": "Can't choose license in this unit.",
+	"infos_updated": "Information updated",
+	"re-login_ask": "Please Login again",
+	"admin_in_subjects": "Administrator in following subjects:",
+	"admin_in_specializations": "Administrator in following specializations ",
+	"author_in_courses": "Author in following courses:",
+
+	"my_courses": "My Courses",
+	"create_course": "Create new course",
 
 	"hallo": "hallo"
 }
