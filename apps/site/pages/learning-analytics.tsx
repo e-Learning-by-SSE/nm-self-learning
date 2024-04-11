@@ -101,7 +101,9 @@ export default function Page() {
 
 	if (isLoading) {
 		return (
-			<div className="bg-gray-50">
+			// TODO SE: LoadingBox has background of 100, rest has 50
+			// Try to make it more harmonious (LoadingBox needs to be changed in the UI lib)
+			<div className="bg-gray-100">
 				<LoadingBox />;
 			</div>
 		);
