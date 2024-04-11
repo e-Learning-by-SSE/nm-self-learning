@@ -63,8 +63,8 @@
 		"react-markdown": "^8.0.4",
 		"react-player": "^2.10.1",
 		"react-popper": "^2.3.0",
-		"refractor": "^4.8.1",
 		"react-select": "^5.8.0",
+		"refractor": "^4.8.1",
 		"regenerator-runtime": "0.13.7",
 		"rehype-citation": "^0.4.0",
 		"rehype-external-links": "^2.0.1",
@@ -74,6 +74,7 @@
 		"remark-gfm": "^3.0.1",
 		"remark-math": "^5.1.1",
 		"sharp": "^0.30.6",
+		"superjson": "^2.2.1",
 		"tslib": "^2.3.0",
 		"zod": "^3.21.4"
 	},

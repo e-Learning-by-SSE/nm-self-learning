@@ -1,6 +1,7 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
+import { ResolvedValue } from "@self-learning/types";
 
 export const learningAnalyticsRouter = t.router({
 	createSession: authProcedure.mutation(async ({ ctx }) => {
@@ -84,6 +85,9 @@ export const learningAnalyticsRouter = t.router({
 
 			return entry;
 		}),
+	loadLearningAnalytics: authProcedure.query(async ({ ctx }) => {
+		return await getLASession(ctx.user.name);
+	}),
 	updateLearningAnalytics: authProcedure
 		.input(
 			z.object({
@@ -134,3 +138,45 @@ export const learningAnalyticsRouter = t.router({
 			return lAEntry;
 		})
 });
+
+export type LearningAnalyticsType = ResolvedValue<typeof getLASession>;
+
+/**
+ * Fetch learning analytic data from database
+ * @param username The username of the current user
+ * @returns The learning analytic data of the user
+ */
+async function getLASession(username: string) {
+	return await database.lASession.findMany({
+		where: { username: username },
+		orderBy: {
+			start: "asc"
+		},
+		select: {
+			start: true,
+			end: true,
+			learningAnalytics: {
+				select: {
+					sessionId: true,
+					lessonId: true,
+					lesson: true,
+					courseId: true,
+					course: true,
+					start: true,
+					end: true,
+					quizStart: true,
+					quizEnd: true,
+					numberCorrectAnswers: true,
+					numberIncorrectAnswers: true,
+					numberOfUsedHints: true,
+					numberOfChangesMediaType: true,
+					preferredMediaType: true,
+					videoStart: true,
+					videoEnd: true,
+					videoBreaks: true,
+					videoSpeed: true
+				}
+			}
+		}
+	});
+}

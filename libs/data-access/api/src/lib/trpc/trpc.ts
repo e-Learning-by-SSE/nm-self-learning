@@ -2,9 +2,11 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { Session, unstable_getServerSession } from "next-auth";
 import { authOptions } from "../auth";
+import superjson from "superjson";
 
-
-export const t = initTRPC.context<Context>().create();
+export const t = initTRPC.context<Context>().create({
+	transformer: superjson
+});
 
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
 	if (!ctx?.user) {
@@ -31,7 +33,7 @@ const isAuthorMiddleware = t.middleware(async ({ ctx, next }) => {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
 
-	if(ctx.user.isAuthor !== true) {
+	if (ctx.user.isAuthor !== true) {
 		throw new TRPCError({ code: "FORBIDDEN", message: "Requires 'AUTHOR' role." });
 	}
 

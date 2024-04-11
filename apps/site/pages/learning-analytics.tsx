@@ -1,10 +1,10 @@
-import { authOptions } from "@self-learning/api";
-import { database } from "@self-learning/database";
+import { LearningAnalyticsType, authOptions } from "@self-learning/api";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import Select from "react-select";
 import { LabeledField } from "@self-learning/ui/forms";
+import { trpc } from "@self-learning/api-client";
 
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
@@ -12,74 +12,31 @@ import "chartjs-adapter-date-fns";
 
 ChartJS.register(...registerables);
 
-import { Divider } from "@self-learning/ui/common";
-import { ResolvedValue } from "@self-learning/types";
+import { Divider, LoadingBox } from "@self-learning/ui/common";
 import { METRICS, notNull } from "@self-learning/learning-analytics";
 import { useState } from "react";
 
-type LearningAnalyticsProps = {
-	lASession: LearningAnalyticsType;
-};
+// type LearningAnalyticsProps = {
+// 	lASession: LearningAnalyticsType;
+// };
 
-export type LearningAnalyticsType = ResolvedValue<typeof getLASession>;
-
-/**
- * Fetch learning analytic data from database
- * @param username The username of the current user
- * @returns The learning analytic data of the user
- */
-async function getLASession(username: string) {
-	return await database.lASession.findMany({
-		where: { username: username },
-		orderBy: {
-			start: "asc"
-		},
-		select: {
-			start: true,
-			end: true,
-			learningAnalytics: {
-				select: {
-					sessionId: true,
-					lessonId: true,
-					lesson: true,
-					courseId: true,
-					course: true,
-					start: true,
-					end: true,
-					quizStart: true,
-					quizEnd: true,
-					numberCorrectAnswers: true,
-					numberIncorrectAnswers: true,
-					numberOfUsedHints: true,
-					numberOfChangesMediaType: true,
-					preferredMediaType: true,
-					videoStart: true,
-					videoEnd: true,
-					videoBreaks: true,
-					videoSpeed: true
-				}
-			}
-		}
-	});
-}
-
-/**
- * Checks if the current user is login and prepares learning analytic session data for the page.
- * @param ctx The context of the current request
- * @returns The learning analytic session data of the current user
- */
-export const getServerSideProps: GetServerSideProps<LearningAnalyticsProps> = async ctx => {
-	const session = await getServerSession(ctx.req, ctx.res, authOptions);
-	if (!session?.user?.name) {
-		return { redirect: { destination: "/login?callbackUrl=learning-diary", permanent: false } };
-	}
-	const lASession = JSON.parse(JSON.stringify(await getLASession(session.user.name)));
-	return {
-		props: {
-			lASession: lASession as LearningAnalyticsType
-		}
-	};
-};
+// /**
+//  * Checks if the current user is login and prepares learning analytic session data for the page.
+//  * @param ctx The context of the current request
+//  * @returns The learning analytic session data of the current user
+//  */
+// export const getServerSideProps: GetServerSideProps<LearningAnalyticsProps> = async ctx => {
+// 	const session = await getServerSession(ctx.req, ctx.res, authOptions);
+// 	if (!session?.user?.name) {
+// 		return { redirect: { destination: "/login?callbackUrl=learning-diary", permanent: false } };
+// 	}
+// 	const lASession = JSON.parse(JSON.stringify(await getLASession(session.user.name)));
+// 	return {
+// 		props: {
+// 			lASession: lASession as LearningAnalyticsType
+// 		}
+// 	};
+// };
 
 /**
  * Returns all course/lesson titles, for which learning analytics data is available for the current user.
@@ -139,6 +96,25 @@ export function filterLASessionByDate(lASession: LearningAnalyticsType, days: nu
 	return lASessionFilterByTime;
 }
 
+export default function Page() {
+	const { data: lASession, isLoading } = trpc.learningAnalytics.loadLearningAnalytics.useQuery();
+
+	if (isLoading) {
+		return (
+			<div className="bg-gray-50">
+				<LoadingBox />;
+			</div>
+		);
+	} else if (lASession) {
+		return <LearningAnalytics lASession={lASession} />;
+	}
+
+	return (
+		<div className="bg-gray-50">
+			<p>Keine Daten vorhanden</p>
+		</div>
+	);
+}
 /**
  * LearningAnalytics()
  * Main component of the learning analytics: includes filtering options and the Statistic component
@@ -146,12 +122,12 @@ export function filterLASessionByDate(lASession: LearningAnalyticsType, days: nu
  * props: 	learning analytic session data
  *
  */
-export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps>) {
+function LearningAnalytics({ lASession }: { lASession: LearningAnalyticsType }) {
 	const [selectedCourse, setSelectedCourse] = useState("Alle");
 	const [selectedLesson, setSelectedLesson] = useState("Alle");
 	const [selectedTime, setSelectedTime] = useState(-1);
 
-	const lASessionFilterByTime = filterLASessionByDate(props.lASession, selectedTime);
+	const lASessionFilterByTime = filterLASessionByDate(lASession, selectedTime);
 	const lASessionFilteredByCourse = JSON.parse(JSON.stringify(lASessionFilterByTime));
 	filterLaSession(lASessionFilteredByCourse, selectedCourse, "course");
 	const lASessionFilteredByLesson = JSON.parse(JSON.stringify(lASessionFilteredByCourse));
@@ -182,7 +158,7 @@ export default function LearningAnalytics(props: Readonly<LearningAnalyticsProps
 									setSelectedCourse(e?.value as string);
 									setSelectedLesson("Alle");
 								}}
-								options={identifyParticipation(props.lASession, "course")}
+								options={identifyParticipation(lASession, "course")}
 							/>
 						</LabeledField>
 
