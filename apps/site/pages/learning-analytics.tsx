@@ -3,6 +3,8 @@ import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import Select from "react-select";
 import { LabeledField } from "@self-learning/ui/forms";
 import { trpc } from "@self-learning/api-client";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
@@ -10,9 +12,10 @@ import "chartjs-adapter-date-fns";
 
 ChartJS.register(...registerables);
 
-import { Divider, LoadingCircle } from "@self-learning/ui/common";
+import { Divider, LoadingCircle, showToast } from "@self-learning/ui/common";
 import { METRICS, notNull } from "@self-learning/learning-analytics";
 import { useState } from "react";
+import { format, set } from "date-fns";
 
 /**
  * Returns all course/lesson titles, for which learning analytics data is available for the current user.
@@ -58,17 +61,28 @@ function filterLaSession(
 /**
  * Filters the learning analytics by date
  * @param lASession Learning analytic session data
- * @param days Number of days, which a included after filtering
- * @returns Learning analytic session data which are not older than the specified days
+ * @param startDate The first date to consider or null if no start date is specified
+ * @param endDate The last date to consider or null if no end date is specified
+ * @returns The filtered learning analytic session data
  */
-export function filterLASessionByDate(lASession: LearningAnalyticsType, days: number) {
-	let lASessionFilterByTime: LearningAnalyticsType = lASession;
-	if (days > -1) {
-		const firstDateOfRange = new Date();
-		firstDateOfRange.setDate(new Date().getDate() - days);
-		firstDateOfRange.setHours(0, 0, 0, 0);
-		lASessionFilterByTime = lASession.filter(item => new Date(item.start) >= firstDateOfRange);
+function filterSessionByDate(
+	lASession: LearningAnalyticsType,
+	startDate: Date | null,
+	endDate: Date | null
+) {
+	let lASessionFilterByTime = lASession;
+
+	if (startDate) {
+		lASessionFilterByTime = lASessionFilterByTime.filter(
+			item => new Date(item.start) >= startDate
+		);
 	}
+	if (endDate) {
+		lASessionFilterByTime = lASessionFilterByTime.filter(
+			item => new Date(item.start) <= endDate
+		);
+	}
+
 	return lASessionFilterByTime;
 }
 
@@ -105,9 +119,14 @@ export default function Page() {
 function LearningAnalytics({ lASession }: { lASession: LearningAnalyticsType }) {
 	const [selectedCourse, setSelectedCourse] = useState("Alle");
 	const [selectedLesson, setSelectedLesson] = useState("Alle");
-	const [selectedTime, setSelectedTime] = useState(-1);
 
-	const lASessionFilterByTime = filterLASessionByDate(lASession, selectedTime);
+	// Selection of optional first and last date for the time filter
+	const firstDate = Math.min(...lASession.map(item => new Date(item.start).getTime()));
+	const lastDate = Math.max(...lASession.map(item => new Date(item.start).getTime()));
+	const [startDate, setStartDate] = useState<Date | null>(new Date(firstDate));
+	const [endDate, setEndDate] = useState<Date | null>(new Date(lastDate));
+
+	const lASessionFilterByTime = filterSessionByDate(lASession, startDate, endDate);
 	const lASessionFilteredByCourse = JSON.parse(JSON.stringify(lASessionFilterByTime));
 	filterLaSession(lASessionFilteredByCourse, selectedCourse, "course");
 	const lASessionFilteredByLesson = JSON.parse(JSON.stringify(lASessionFilteredByCourse));
@@ -156,21 +175,48 @@ function LearningAnalytics({ lASession }: { lASession: LearningAnalyticsType }) 
 							/>
 						</LabeledField>
 
-						<LabeledField label="Zeitspanne"></LabeledField>
-						<Select
-							id={"timeFilter"}
-							instanceId={"timeFilter"}
-							isSearchable={true}
-							defaultValue={{ value: -1, label: "Gesamter Zeitraum" }}
-							onChange={e => {
-								setSelectedTime(e?.value as number);
-							}}
-							options={[
-								{ value: -1, label: "Gesamter Zeitraum" },
-								{ value: 30, label: "30 Tage" },
-								{ value: 7, label: "7 Tage" }
-							]}
-						/>
+						<LabeledField label="Zeitspanne (optional)">
+							<div className="flex">
+								<div className="w-1/2 pr-2">
+									<DatePicker
+										selected={startDate}
+										onChange={setStartDate}
+										selectsStart
+										startDate={startDate}
+										endDate={endDate}
+										maxDate={endDate}
+										showIcon
+										isClearable
+										closeOnScroll={true}
+										dateFormat="dd.MM.yyyy"
+										className="w-full"
+										placeholderText={`Startdatum (${format(
+											firstDate,
+											"dd.MM.yyyy"
+										)})`}
+									/>
+								</div>
+								<div className="w-1/2 pl-2">
+									<DatePicker
+										selected={endDate}
+										onChange={setEndDate}
+										selectsEnd
+										startDate={startDate}
+										endDate={endDate}
+										minDate={startDate}
+										showIcon
+										isClearable={true}
+										closeOnScroll={true}
+										dateFormat="dd.MM.yyyy"
+										className="w-full"
+										placeholderText={`Enddatum (${format(
+											lastDate,
+											"dd.MM.yyyy"
+										)})`}
+									/>
+								</div>
+							</div>
+						</LabeledField>
 						<Divider />
 						<p className="heading text-2xl">Metriken</p>
 						{METRICS.map(metric => (
