@@ -364,11 +364,7 @@ function AssetPickerDialog({
 											</TableDataColumn>
 											<TableDataColumn>{asset.fileType}</TableDataColumn>
 											<TableDataColumn>
-												<span
-													title={parseISO(
-														asset.createdAt
-													).toLocaleString()}
-												>
+												<span title={asset.createdAt.toLocaleString()}>
 													{formatDateAgo(asset.createdAt)}
 												</span>
 											</TableDataColumn>
