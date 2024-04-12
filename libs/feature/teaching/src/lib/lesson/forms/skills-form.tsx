@@ -81,6 +81,7 @@ export default function SkillForm() {
 								addSkills(skill, selectSkillModal.id);
 							}}
 							repositoryId={selectedRepository.id}
+							skillsResolved={false}
 						/>
 					)}
 				</>

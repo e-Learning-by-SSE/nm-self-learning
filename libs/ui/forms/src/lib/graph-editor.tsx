@@ -150,37 +150,29 @@ function applyDagreLayout(graph: ReactFlowGraph, direction: string) {
 	return { nodes: nodes, edges: edges };
 }
 
-function applySimpleTopToBottomLayout(graph: ReactFlowGraph) {
-	const rawNodes = graph.nodes;
-	let i = 0;
-	for (const node of rawNodes) {
-		node.position.y = i;
-		node.position.x = xAxisStartPosition;
-		i += yAxisDistance;
-	}
-	return graph;
-}
-
-export function convertToGraph(meshes: Mesh[]) {
+export function convertToGraph(meshes: Mesh[], isLearnpath:boolean) {
 	if (meshes.length > 0) {
 		const graphWithoutLayout = generateGraph(meshes, Position.Left, Position.Right);
-		const graph = applyDagreLayout(graphWithoutLayout, "LR");
-		return graph;
+		if(isLearnpath) {
+			return applyDagreLayout(graphWithoutLayout, "TB")
+		} else {
+			return applyDagreLayout(graphWithoutLayout, "LR");
+		}
 	} else {
 		return { nodes: [], edges: [] };
 	}
 }
-
+/*
 export function convertToLearnpath(meshes: Mesh[]) {
 	if (meshes.length > 0) {
 		const graphWithoutLayout = generateGraph(meshes, Position.Top, Position.Bottom);
-		const graph = applySimpleTopToBottomLayout(graphWithoutLayout);
+		const graph = applyDagreLayout(graphWithoutLayout, "TB");
 		return graph;
 	} else {
 		return { nodes: [], edges: [] };
 	}
 }
-
+*/
 export default function GraphEditor({
 	graph,
 	height,

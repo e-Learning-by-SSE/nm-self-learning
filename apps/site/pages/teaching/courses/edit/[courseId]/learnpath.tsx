@@ -14,8 +14,7 @@ import {
 	LessonSummary
 } from "libs/feature/teaching/src/lib/course/course-content-editor/dialogs/lesson-selector";
 import GraphEditor, {
-	convertToGraph,
-	convertToLearnpath
+	convertToGraph
 } from "libs/ui/forms/src/lib/graph-editor";
 import { LearningUnit, Skill, getPath } from "@e-learning-by-sse/nm-skill-lib";
 import { SelectSkillDialog } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-dialog";
@@ -23,73 +22,67 @@ import { Mesh, SkillFormModel } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 
 // ---------- Globals ------------------------------------------------
-const repositoryId = "1";
+const repositoryId = "1"; // TODO where do we get it from?
 const tabNames = ["Konfigurierte Lerneinheiten", "Verlauf"];
 
 // -------- dummy data ---------
-const s1: SkillFormModel = {
-	id: "1",
-	name: "s1",
+// TODO: remove later
+const controlStruc:SkillFormModel = {
+	id: "1009",
+	name: "Control Structures",
 	repositoryId: "1",
-	description: "",
+	description: "if, switch case, loops",
 	parents: [],
-	children: []
-};
-const s2: SkillFormModel = {
-	id: "2",
-	name: "s2",
-	repositoryId: "1",
-	description: "",
-	parents: [],
-	children: []
-};
-const s3: SkillFormModel = {
-	id: "3",
-	name: "s3",
-	repositoryId: "1",
-	description: "",
-	parents: [],
-	children: []
-};
-const s4: SkillFormModel = {
-	id: "4",
-	name: "s4",
-	repositoryId: "1",
-	description: "",
-	parents: [],
-	children: []
-};
+	children: ['1006', '1008']
+}
 
-const l1: LearningUnit = {
-	id: "l1",
-	requiredSkills: [],
-	teachingGoals: [{ ...s1, nestedSkills: s1.children }],
-	suggestedSkills: []
-};
-const l2: LearningUnit = {
-	id: "l2",
-	requiredSkills: [{ ...s1, nestedSkills: s1.children }],
-	teachingGoals: [{ ...s3, nestedSkills: s3.children }],
-	suggestedSkills: []
-};
-const l3: LearningUnit = {
-	id: "l3",
-	requiredSkills: [{ ...s2, nestedSkills: s2.children }],
-	teachingGoals: [{ ...s3, nestedSkills: s3.children }],
-	suggestedSkills: []
-};
-
-function getLearnpath() {
-	const mySkills = [s1, s2, s3];
-	const skills: Skill[] = Array.from(mySkills.values()).map(skill => ({
+function convertSkillFormModelToSkill(skills:SkillFormModel[]) {
+	const result: Skill[] = Array.from(skills.values()).map(skill => ({
 		...skill,
 		nestedSkills: []
 	}));
+	return result
+}
 
-	const goal: Skill[] = [{ ...s3, nestedSkills: s3.children }];
-	const learningUnits: LearningUnit[] = [l1, l2, l3];
-	const learnpath = getPath({ skills, goal, learningUnits });
-	console.log("LEARNPATH: ", learnpath);
+function getSkills(repositoryId:string) {
+	let result: Skill[] = []
+	const {data: skills} = trpc.skill.getSkillsFromRepository.useQuery({
+		repoId: repositoryId
+	});
+	if (skills) {
+		result = convertSkillFormModelToSkill(skills)
+	}
+	return result
+}
+
+function convertMeshesToLearningUnits(meshes:Mesh[]) {
+	const learningUnits:LearningUnit[] = Array.from(meshes.values()).map(lesson => ({
+		id: lesson.lesson.lessonId,
+		requiredSkills: convertSkillFormModelToSkill(lesson.requiredSkills),
+		teachingGoals: convertSkillFormModelToSkill(lesson.gainedSkills),
+		suggestedSkills: []
+	}))
+	return learningUnits
+}
+
+function convertLearnpathToMeshes(learnpath:any[], meshes:Mesh[]) {
+	const lessonIds = learnpath.map(lesson => lesson.id)
+	return meshes.filter(mesh => lessonIds.includes(mesh.lesson.lessonId))
+}
+
+function generateLearnpathFromMeshes(teachingGoals:SkillFormModel[], repositoryId:string, meshes:Mesh[]) {
+	let result:any[] = []
+
+	const skills = getSkills(repositoryId)
+	const goals: Skill[] = convertSkillFormModelToSkill(teachingGoals)
+	const learningUnits: LearningUnit[] = convertMeshesToLearningUnits(meshes)
+
+	const learnpath = getPath({ skills, goal: goals, learningUnits });
+
+	if(learnpath) {
+		result = convertLearnpathToMeshes(learnpath.path, meshes)
+	}
+	return convertToGraph(result, true)
 }
 
 function isLessonInMeshes(mesh: Mesh, meshes: Mesh[]) {
@@ -108,23 +101,21 @@ export default function LearnpathEditor({
 	repoId: string;
 	teachingGoals: SkillFormModel[];
 }) {
-	const initMeshes: Mesh[] = [];
+
+	teachingGoals = [controlStruc] // TODO remove later
+	const initMeshes: Mesh[] = []
 	const initMesh: Mesh = {
 		requiredSkills: [],
 		lesson: { title: "", lessonId: "", slug: "" },
 		gainedSkills: []
 	};
-	const initLearnpath: Mesh[] = [];
 
 	const [meshes, setMeshes] = useState(initMeshes);
 	const [displayedMesh, setDisplayedMesh] = useState(initMesh);
-	const [learnpath, setLearnpath] = useState(convertToLearnpath(initLearnpath));
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-	// TODO remove
-	getLearnpath();
-
-	const graph = convertToGraph(meshes);
+	const graph = convertToGraph(meshes, false);
+	const learnpath = generateLearnpathFromMeshes(teachingGoals, repositoryId, meshes)
 
 	const addMesh = (mesh: Mesh) => {
 		const updatedMeshes = [...meshes];
@@ -157,7 +148,14 @@ export default function LearnpathEditor({
 	return (
 		<>
 			<div className=" bg-gray-50  p-4">
-				<h1 className="text-3xl"></h1>
+				<div className="textfield min-w-[200px] border">
+					<div className="font-bold">Lernziele:</div>
+					{teachingGoals && teachingGoals.map(
+						(skill: SkillFormModel, inx: number) => (
+							<p key={inx}>{skill.name}</p>
+						)
+					)}
+				</div>
 			</div>
 
 			<div className="mt-2 grid grid-rows-3 bg-gray-50 xl:grid-rows-[200px_470px_600px]">
@@ -221,8 +219,9 @@ export default function LearnpathEditor({
 								</button>
 							</div>
 							<div className="w-200 pl-4">
-								<h1 className="m-2 mb-5 px-2 text-2xl">Lernpfad</h1>
-
+								<div className="my-10 py-10">
+									<h1 className="text-2xl">Lernpfad</h1>
+								</div>
 								<GraphEditor
 									graph={learnpath}
 									height={900}
@@ -326,6 +325,7 @@ function SkillLessonLinker({
 						<SelectSkillDialog
 							repositoryId={repositoryId}
 							onClose={handleRequiredSkillSelectorClose}
+							skillsResolved={true}
 						/>
 					)}
 				</div>
@@ -377,6 +377,7 @@ function SkillLessonLinker({
 					<SelectSkillDialog
 						repositoryId={repositoryId}
 						onClose={handleGainedSkillSelectorClose}
+						skillsResolved={true}
 					/>
 				)}
 			</div>
