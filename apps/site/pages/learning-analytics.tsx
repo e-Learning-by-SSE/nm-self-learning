@@ -1,7 +1,5 @@
-import { LearningAnalyticsType, authOptions } from "@self-learning/api";
+import { LearningAnalyticsType } from "@self-learning/api";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { GetServerSideProps } from "next";
-import { getServerSession } from "next-auth";
 import Select from "react-select";
 import { LabeledField } from "@self-learning/ui/forms";
 import { trpc } from "@self-learning/api-client";
@@ -12,31 +10,9 @@ import "chartjs-adapter-date-fns";
 
 ChartJS.register(...registerables);
 
-import { Divider, LoadingBox } from "@self-learning/ui/common";
+import { Divider, LoadingCircle } from "@self-learning/ui/common";
 import { METRICS, notNull } from "@self-learning/learning-analytics";
 import { useState } from "react";
-
-// type LearningAnalyticsProps = {
-// 	lASession: LearningAnalyticsType;
-// };
-
-// /**
-//  * Checks if the current user is login and prepares learning analytic session data for the page.
-//  * @param ctx The context of the current request
-//  * @returns The learning analytic session data of the current user
-//  */
-// export const getServerSideProps: GetServerSideProps<LearningAnalyticsProps> = async ctx => {
-// 	const session = await getServerSession(ctx.req, ctx.res, authOptions);
-// 	if (!session?.user?.name) {
-// 		return { redirect: { destination: "/login?callbackUrl=learning-diary", permanent: false } };
-// 	}
-// 	const lASession = JSON.parse(JSON.stringify(await getLASession(session.user.name)));
-// 	return {
-// 		props: {
-// 			lASession: lASession as LearningAnalyticsType
-// 		}
-// 	};
-// };
 
 /**
  * Returns all course/lesson titles, for which learning analytics data is available for the current user.
@@ -100,11 +76,12 @@ export default function Page() {
 	const { data: lASession, isLoading } = trpc.learningAnalytics.loadLearningAnalytics.useQuery();
 
 	if (isLoading) {
+		// Loading screen, circle centered based on: https://stackoverflow.com/a/55174568
 		return (
-			// TODO SE: LoadingBox has background of 100, rest has 50
-			// Try to make it more harmonious (LoadingBox needs to be changed in the UI lib)
-			<div className="bg-gray-100">
-				<LoadingBox />;
+			<div className="flex h-screen bg-gray-50">
+				<div className="m-auto">
+					<LoadingCircle />
+				</div>
 			</div>
 		);
 	} else if (lASession) {
@@ -117,6 +94,7 @@ export default function Page() {
 		</div>
 	);
 }
+
 /**
  * LearningAnalytics()
  * Main component of the learning analytics: includes filtering options and the Statistic component
