@@ -5,17 +5,18 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { trpc } from "@self-learning/api-client";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { CalendarDaysIcon } from "@heroicons/react/24/solid";
+
+import { Divider, LoadingCircle } from "@self-learning/ui/common";
+import { METRICS, notNull } from "@self-learning/learning-analytics";
+import { useState } from "react";
+import { format } from "date-fns";
 
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
 
 ChartJS.register(...registerables);
-
-import { Divider, LoadingCircle, showToast } from "@self-learning/ui/common";
-import { METRICS, notNull } from "@self-learning/learning-analytics";
-import { useState } from "react";
-import { format, set } from "date-fns";
 
 /**
  * Returns all course/lesson titles, for which learning analytics data is available for the current user.
@@ -186,10 +187,11 @@ function LearningAnalytics({ lASession }: { lASession: LearningAnalyticsType }) 
 										endDate={endDate}
 										maxDate={endDate}
 										showIcon
+										icon={<CalendarDaysIcon />}
 										isClearable
 										closeOnScroll={true}
 										dateFormat="dd.MM.yyyy"
-										className="w-full"
+										className="w-full rounded-md border-gray-300"
 										placeholderText={`Startdatum (${format(
 											firstDate,
 											"dd.MM.yyyy"
@@ -205,10 +207,11 @@ function LearningAnalytics({ lASession }: { lASession: LearningAnalyticsType }) 
 										endDate={endDate}
 										minDate={startDate}
 										showIcon
+										icon={<CalendarDaysIcon />}
 										isClearable={true}
 										closeOnScroll={true}
 										dateFormat="dd.MM.yyyy"
-										className="w-full"
+										className="w-full rounded-md border-gray-300"
 										placeholderText={`Enddatum (${format(
 											lastDate,
 											"dd.MM.yyyy"

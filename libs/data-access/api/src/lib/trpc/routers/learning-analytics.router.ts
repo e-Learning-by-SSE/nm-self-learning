@@ -147,6 +147,11 @@ export type LearningAnalyticsType = ResolvedValue<typeof getLASession>;
  * @returns The learning analytic data of the user
  */
 async function getLASession(username: string) {
+	/*
+	 * Very critical: Minimize included data.
+	 * By omitting data from course and lesson we can reduce the size of a query
+	 * on the sample data from 1.05MB to 0.09MB.
+	 */
 	return await database.lASession.findMany({
 		where: { username: username },
 		orderBy: {
@@ -159,9 +164,17 @@ async function getLASession(username: string) {
 				select: {
 					sessionId: true,
 					lessonId: true,
-					lesson: true,
+					lesson: {
+						select: {
+							title: true
+						}
+					},
 					courseId: true,
-					course: true,
+					course: {
+						select: {
+							title: true
+						}
+					},
 					start: true,
 					end: true,
 					quizStart: true,
