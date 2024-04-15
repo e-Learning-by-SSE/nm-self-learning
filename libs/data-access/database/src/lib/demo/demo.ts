@@ -16,6 +16,8 @@ import { getRandomId, slugify } from "@self-learning/util/common";
 
 import { javaExample } from "./java-example";
 import { Quiz } from "@self-learning/quiz";
+import { javaSkillSeed } from "./java-skills";
+import { license } from "./license";
 
 faker.seed(1);
 
@@ -31,42 +33,6 @@ const students = [
 		displayName: "Ronald Weasley",
 		username: "weasley",
 		image: "https://i.pinimg.com/474x/d7/80/52/d7805247faaf18ef746e6d2e7d7c646a.jpg"
-	}
-];
-
-const license: Prisma.LicenseCreateManyInput[] = [
-	{
-		licenseId: 0,
-		name: "Uni Hi Intern",
-		licenseText:
-			"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
-		oerCompatible: false,
-		selectable: true
-	},
-	{
-		licenseId: 1,
-		name: "CC BY 4.0",
-		url: "https://creativecommons.org/licenses/by/4.0/deed.de",
-		logoUrl: "http://i.creativecommons.org/l/by/3.0/88x31.png",
-		oerCompatible: true,
-		selectable: true,
-		defaultSuggestion: true
-	},
-	{
-		licenseId: 2,
-		name: "CC BY SA 4.0",
-		url: "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
-		logoUrl: "http://i.creativecommons.org/l/by-sa/3.0/88x31.png",
-		oerCompatible: true,
-		selectable: true
-	},
-	{
-		licenseId: 3,
-		name: "CC0 1.0",
-		url: "https://creativecommons.org/publicdomain/zero/1.0/deed.de",
-		logoUrl: "http://i.creativecommons.org/p/zero/1.0/88x31.png",
-		oerCompatible: true,
-		selectable: true
 	}
 ];
 
@@ -585,6 +551,7 @@ export async function seedDemos(): Promise<void> {
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
+	await javaSkillSeed();
 	await javaExample();
 }
 

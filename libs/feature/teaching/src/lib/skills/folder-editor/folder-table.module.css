@@ -1,0 +1,14 @@
+.folder-line {
+	position: relative;
+	padding-left: calc(var(--depth) * 0.5rem);
+	background: repeating-linear-gradient(
+		to right,
+		transparent,
+		transparent 4px,
+		#a19f9f34 4px,
+		#a19f9f34 6px
+	);
+	background-size: calc(var(--depth) * 0.5rem) 100%;
+	background-repeat: no-repeat;
+	background-position: 1rem 0;
+}
