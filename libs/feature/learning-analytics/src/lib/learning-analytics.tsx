@@ -1,8 +1,8 @@
 import { trpc } from "@self-learning/api-client";
-import { format, parseISO } from "date-fns";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { LessonLayoutProps } from "@self-learning/lesson";
+import { formatDate } from "./auxillary";
 
 export function notNull<T>(val: T | null): val is T {
 	return val != null;
@@ -33,18 +33,6 @@ export type SessionType = {
 };
 
 /**
- * getSessionInfo()
- * returns the learning analytic session infos, which are stored in the local storage.
- *
- */
-export function getSessionInfo() {
-	let lASession = JSON.parse(localStorage.getItem("la_session") + "");
-	if (!(lASession && lASession !== "")) {
-		lASession = { start: null, end: null, sessionId: null };
-	}
-	return lASession;
-}
-/**
  * getLessonsInfo()
  * returns the learning analytic lesson infos, which are stored in the local storage.
  *
@@ -68,9 +56,9 @@ export function getLessonsInfo() {
 }
 
 /**
- * saveEnds()
- * Checks if ends of all leaning analytic data is set, if not sets the current date.
- *
+ * When saving a session, the end time of consumed learning content & quizzes will be saved.
+ * This will check if the end times are specified or can be loaded from the local storage, i.e.,
+ * after the user has closed the website and started a new session at a later time.
  */
 export function saveEnds() {
 	const lALessonInfo = getLessonsInfo();
@@ -153,9 +141,14 @@ export function getQuizInfo() {
 }
 
 /**
- * getMediaType()
- * returns the learning analytic preferred media type, which is stored in the local storage.
+ * Computes the preferred media type and the number media type changes.
  *
+ * Preferred media type: This is computed based on the maximum amount of
+ * content changes (not duration) of a specific media type.
+ * A changes would required to implement distinct timer hooks and local
+ * storage items for each media type.
+ *
+ * Number of changes media type: The sum of all media type changes.
  */
 export function getMediaType() {
 	let lANumberOfChangesMediaTypeSum: number | null = 0;
@@ -215,13 +208,30 @@ export async function resetLA() {
 	window.localStorage.removeItem("la_quizInfo");
 }
 
-export function LearningAnalyticsSession() {
+/**
+ * Enables the recording of Learning Analytics Sessions for the whole application.
+ * Session Handling: Ensures that on all sides learning analytics can be recorded and saved.
+ *
+ * Records the current session in the local storage after leaving/closing the website and will
+ * copy locally saved sessions when re-entering the website. This procedure is chosen, as all
+ * hooks are disabled and saving of incomplete data cannot be guaranteed after the "leaving the site"
+ * event was triggered.
+ *
+ * Each session has an unique ID to ensure that sessions are not mixed when the user changes its browser,
+ * e.g., when leaving switching from PC to mobile device. Incomplete sessions may only get lost,
+ * when the user cleared his locally storage.
+ *
+ * @returns An empty component (no rendering, but session handling)
+ */
+export function LearningAnalyticsProvider() {
 	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
 	const { mutateAsync: setEndOfSession } = trpc.learningAnalytics.setEndOfSession.useMutation();
 	const { mutateAsync: createLearningAnalytics } =
 		trpc.learningAnalytics.createLearningAnalytics.useMutation();
 
 	// Learning Analytics: Session handling
+	// Sets the end of the session in the local storage after leaving the website
+	// This data will be copied to the database after re-entering the website.
 	useEffect(() => {
 		const handleClose = () => {
 			const laSession = JSON.parse(localStorage.getItem("la_session") + "");
@@ -237,6 +247,7 @@ export function LearningAnalyticsSession() {
 		};
 	}, [createLearningAnalytics, setEndOfSession]);
 
+	// Creates a new session and saves a previously started session if there is an incomplete one.
 	useEffect(() => {
 		const setData = async () => {
 			const data = saveLA();
@@ -249,9 +260,11 @@ export function LearningAnalyticsSession() {
 					).toISOString();
 					await setEndOfSession({ end: isoDateTime, id: data.sessionId });
 				} catch (e) {
+					// TODO SE: @ Fabian: Please clarify why the session is reset and not a new one is created
 					resetLASession();
 				}
 			}
+			// TODO SE: @ Fabian: Please clarify why the session is reset and not a new one is created
 			resetLASession();
 		};
 		const createNewLASession = async () => {
@@ -266,14 +279,14 @@ export function LearningAnalyticsSession() {
 			);
 		};
 		const laSession = JSON.parse(localStorage.getItem("la_session") + "");
-		const start = laSession
-			? format(parseISO(new Date(laSession.start).toISOString()), "dd.MM.yyyy")
-			: "";
-		const today = format(parseISO(new Date().toISOString()), "dd.MM.yyyy");
+		const start = laSession ? formatDate(laSession.start) : "";
+		const today = formatDate(new Date());
 
 		if (!(laSession && laSession !== "")) {
 			createNewLASession();
 		} else if (laSession.start !== "" && laSession.end !== "" && start !== today) {
+			// Stores the previous session if exists and starts a new one
+			// TODO SE: @ Fabian: Please clarify why the session is reset and not a new one is created
 			setData();
 		}
 	}, [createLASession, createLearningAnalytics, setEndOfSession]);
@@ -281,12 +294,21 @@ export function LearningAnalyticsSession() {
 	return null;
 }
 
+/**
+ * When the user ends a lesson / moves to another one / quits a lesson / ... the learning analytics for the current
+ * lesson will be recorded and saved to the database (because website is still running).
+ *
+ * @param lesson The currently displayed lesson
+ * @param course The currently displayed course
+ * @returns An empty component (no rendering, but session handling)
+ */
 export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 	// Learning Analytics: navigate from page
 	const router = useRouter();
 	const { mutateAsync: createLearningAnalytics } =
 		trpc.learningAnalytics.createLearningAnalytics.useMutation();
 
+	// Stores the data of the current session when leaving a lesson
 	useEffect(() => {
 		const saveData = async () => {
 			const data = saveLA();

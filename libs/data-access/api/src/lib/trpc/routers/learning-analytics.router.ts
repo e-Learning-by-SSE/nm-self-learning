@@ -166,13 +166,15 @@ async function getLASession(username: string) {
 					lessonId: true,
 					lesson: {
 						select: {
-							title: true
+							title: true,
+							slug: true
 						}
 					},
 					courseId: true,
 					course: {
 						select: {
-							title: true
+							title: true,
+							slug: true
 						}
 					},
 					start: true,

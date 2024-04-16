@@ -14,7 +14,7 @@ import "katex/dist/katex.css";
 import { useEffect } from "react";
 import { init } from "@socialgouv/matomo-next";
 import PlausibleProvider from "next-plausible";
-import { LearningAnalyticsSession } from "@self-learning/learning-analytics";
+import { LearningAnalyticsProvider } from "@self-learning/learning-analytics";
 import superjson from "superjson";
 
 export default withTRPC<AppRouter>({
@@ -78,7 +78,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<Footer />
 				{/* <ReactQueryDevtools position="bottom-right" /> */}
 			</SessionProvider>
-			<LearningAnalyticsSession />
+			<LearningAnalyticsProvider />
 		</PlausibleProvider>
 	);
 }
