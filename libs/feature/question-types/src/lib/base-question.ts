@@ -3,6 +3,8 @@ import { z } from "zod";
 
 export const baseQuestionSchema = z.object({
 	questionId: z.string(),
+	// Optional cognitive level as specified by Bloom, must be between 1-6 if specified
+	cognitiveLevel: z.number().int().min(1).max(6).optional(),
 	type: z.string(),
 	statement: z.string(),
 	withCertainty: z.boolean(),

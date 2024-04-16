@@ -6,7 +6,7 @@ import {
 	QUESTION_TYPE_DISPLAY_NAMES
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
-import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
+import { Divider, RemovableTab, SectionHeader, Tabs, Tooltip } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
@@ -193,6 +193,7 @@ function QuizConfigForm() {
 						<li>Alle Fragen müssen korrekt beantwortet werden</li>
 						<li>Lösungen werden nach falscher Beantwortung nicht angezeigt</li>
 						<li>Unbegrenzte Verwendung von Hinweisen</li>
+						<li>Es werden immer alle hinterlegte Fragen angezeigt</li>
 					</ul>
 				) : (
 					<div className="flex flex-col gap-4 text-sm">
@@ -237,6 +238,17 @@ function QuizConfigForm() {
 								defaultValue={0}
 							/>
 						</LabeledField>
+
+						<Tooltip title="Optionale Angabe wie viele Fragen (pro Fragetyp) angezeigt werden sollen. Feld leer lassen, wenn alle Fragen angezeigt werden sollen.">
+							<LabeledField label="Anzahl angezeigter Fragen beschränken">
+								<input
+									{...register("quiz.config.maxQuestionsPerType")}
+									type={"number"}
+									className="textfield w-fit"
+									defaultValue={undefined}
+								/>
+							</LabeledField>
+						</Tooltip>
 					</div>
 				)}
 			</div>
@@ -271,6 +283,27 @@ function BaseQuestionForm({
 						<MarkdownField content={field.value} setValue={field.onChange} />
 					)}
 				/>
+
+				<LabeledField label="Kognitiver Level (optional)">
+					<Controller
+						key={currentQuestion.questionId}
+						control={control}
+						name={`quiz.questions.${index}.cognitiveLevel`}
+						render={({ field }) => (
+							<select value={field.value} onChange={field.onChange}>
+								<option value={undefined} className="italic">
+									Keine Angabe
+								</option>
+								<option value={1}>Erinnern</option>
+								<option value={2}>Verstehen</option>
+								<option value={3}>Anwenden</option>
+								<option value={4}>Analysieren</option>
+								<option value={5}>Bewerten</option>
+								<option value={6}>Erschaffen</option>
+							</select>
+						)}
+					/>
+				</LabeledField>
 
 				<Divider />
 

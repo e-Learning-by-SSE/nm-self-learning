@@ -23,7 +23,17 @@ export const configSchema = z.object({
 	 *  If `true`, students will be shown the correct answer to incorrectly answered questions.
 	 * @default false
 	 */
-	showSolution: z.boolean()
+	showSolution: z.boolean(),
+
+	/**
+	 * Optional max. number of questions that should be presented to the student, if specified.
+	 * This may be used to pool alternative questions and will also consider questions of
+	 * various cognitive levels, i.e., if there are alternative questions per level specified
+	 * questions of each level will be selected.
+	 * Won't be applied if unspecified.
+	 * @default undefined
+	 */
+	maxQuestionsPerType: z.number().int().positive().optional()
 });
 
 export const quizSchema = z.object({
