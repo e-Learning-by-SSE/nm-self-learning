@@ -56,7 +56,7 @@ export function isLessonContentMediaType(value: string): value is LessonContentM
  * how many hints were used per session.
  * @param lASession The learning analytic session data
  * @param property a numeric property a session to compute the average for
- * @returns uses / session
+ * @returns uses / session as string with 1 decimal place
  */
 export function averageUsesPerSession(
 	lASession: LearningAnalyticsType,
@@ -74,8 +74,29 @@ export function averageUsesPerSession(
 			}
 		});
 
-	//TODO SE: @ Fabian Kneer: Please explain why * 10 / 10
-	return nSessions > 0 ? "" + Math.round((nUses / nSessions) * 10) / 10 : "0";
+	return nSessions > 0 ? (nUses / nSessions).toFixed(1) : "0";
+}
+
+/**
+ * Metric that computes the preferred value for a property.
+ * @param lASession The analyzed learning session (can be filtered before)
+ * @returns The preferred video speed: x.x
+ */
+export function preferredValuePerSession(
+	lASession: LearningAnalyticsType,
+	property: KeysOfType<SessionType, number | string | null>
+) {
+	const values = new Map<string, number>();
+	lASession
+		.flatMap(session => session.learningAnalytics)
+		.forEach(learningAnalytics => {
+			const value = learningAnalytics[property];
+			if (value)
+				if (values.has(String(value)))
+					values.set(String(value), (values.get(String(value)) ?? 0) + 1);
+				else values.set(String(value), 1);
+		});
+	return String(maxKey(values));
 }
 
 /**
@@ -86,6 +107,17 @@ export function averageUsesPerSession(
 export function maxKey<T>(map: Map<T, number>) {
 	if (map.size > 0) return Array.from(map).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0];
 	else return "Keine Daten vorhanden";
+}
+
+/**
+ * Returns the avg.
+ * @param sum The sum of all values.
+ * @param count The number of values.
+ * @param digits The number of decimal places.
+ * @returns The avg.
+ */
+export function avg(sum: number, count: number, digits: number) {
+	return count > 0 ? (Math.round((sum / count) * 10 * digits) / 10) * digits : 0;
 }
 
 /**

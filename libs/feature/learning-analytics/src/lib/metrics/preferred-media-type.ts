@@ -2,7 +2,8 @@ import {
 	DEFAULT_LINE_CHART_OPTIONS,
 	formatDate,
 	isLessonContentMediaType,
-	maxKey
+	maxKey,
+	preferredValuePerSession
 } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 import { getContentTypeDisplayName } from "@self-learning/types";
@@ -11,42 +12,6 @@ import { getContentTypeDisplayName } from "@self-learning/types";
  * The displayname of the metric (may be translated to support i18n).
  */
 const METRIC_NAME = "Bevorzugter Medientyp";
-
-/**
- * Generates a summary that prints the preferred media type.
- * @param lASession The (filtered) session for which the summary is computed for.
- * @returns A summary in form of: Video | PDF | Externe Webseite | Artikel | ...
- */
-function summary(lASession: LearningAnalyticsType) {
-	const mediaTypes = new Map<string, number>();
-	lASession.forEach(session => {
-		if (session?.learningAnalytics) {
-			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics.preferredMediaType != null) {
-					if (learningAnalytics?.start && learningAnalytics?.end) {
-						if (
-							learningAnalytics.preferredMediaType &&
-							mediaTypes.has(learningAnalytics.preferredMediaType)
-						)
-							mediaTypes.set(
-								learningAnalytics.preferredMediaType,
-								(mediaTypes.get(learningAnalytics.preferredMediaType) ?? 0) + 1
-							);
-						else mediaTypes.set(learningAnalytics.preferredMediaType, 1);
-					}
-				}
-			});
-		}
-	});
-
-	const preferredMediaType = maxKey(mediaTypes);
-	if (isLessonContentMediaType(preferredMediaType)) {
-		// Translation in Types package
-		return getContentTypeDisplayName(preferredMediaType);
-	} else {
-		return preferredMediaType;
-	}
-}
 
 /**
  * Generates the Line Chart data for the used media types per day.
@@ -172,7 +137,8 @@ function plotPreferredMediaType(lASession: LearningAnalyticsType) {
 export const PREFERRED_MEDIA_TYPE_METRIC = {
 	metric: "Preferred Media Type",
 	name: METRIC_NAME,
-	summary: summary,
+	summary: (lASession: LearningAnalyticsType) =>
+		preferredValuePerSession(lASession, "preferredMediaType"),
 	data: plotPreferredMediaType,
 	options: DEFAULT_LINE_CHART_OPTIONS
 };

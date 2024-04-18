@@ -1,34 +1,15 @@
-import { DEFAULT_LINE_CHART_OPTIONS, formatDate, maxKey } from "../auxillary";
+import {
+	DEFAULT_LINE_CHART_OPTIONS,
+	formatDate,
+	maxKey,
+	preferredValuePerSession
+} from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 /**
  * The displayname of the metric (may be translated to support i18n).
  */
 const METRIC_NAME = "Bevorzugte Videogeschwindigkeit";
-
-/**
- * Computes the average video speed.
- * @param lASession The analyzed learning session (can be filtered before)
- * @returns The average video speed: x.x
- */
-function summary(lASession: LearningAnalyticsType) {
-	const videoSpeeds = new Map<number, number>();
-	lASession.forEach(session => {
-		if (session?.learningAnalytics) {
-			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.start && learningAnalytics?.videoSpeed != null) {
-					if (videoSpeeds.has(learningAnalytics.videoSpeed))
-						videoSpeeds.set(
-							learningAnalytics.videoSpeed,
-							(videoSpeeds.get(learningAnalytics.videoSpeed) ?? 0) + 1
-						);
-					else videoSpeeds.set(learningAnalytics.videoSpeed, 1);
-				}
-			});
-		}
-	});
-	return String(maxKey(videoSpeeds));
-}
 
 /**
  * Generates the Line Chart data for the preferred video speed per day.
@@ -93,7 +74,8 @@ function plotPreferredVideoSpeed(lASession: LearningAnalyticsType) {
 export const VIDEO_SPEED_METRIC = {
 	metric: "Video Speed",
 	name: METRIC_NAME,
-	summary: summary,
+	summary: (lASession: LearningAnalyticsType) =>
+		preferredValuePerSession(lASession, "videoSpeed"),
 	data: plotPreferredVideoSpeed,
 	options: DEFAULT_LINE_CHART_OPTIONS
 };

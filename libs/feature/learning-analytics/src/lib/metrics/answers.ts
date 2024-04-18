@@ -1,4 +1,4 @@
-import { DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, avg, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 /**
@@ -32,14 +32,10 @@ function summary(lASession: LearningAnalyticsType) {
 	});
 	return (
 		"Richtig: " +
-		(countCorrect > 0 ? Math.round((correct / countCorrect) * 10) / 10 : 0) +
+		(countCorrect > 0 ? (correct / countCorrect).toFixed(1) : "0") +
 		"\nFalsch: " +
-		(countIncorrect > 0 ? Math.round((incorrect / countIncorrect) * 10) / 10 : 0)
+		(countIncorrect > 0 ? (incorrect / countIncorrect).toFixed(1) : "0")
 	);
-}
-
-function avg(sum: number, count: number, digits: number) {
-	return count > 0 ? (Math.round((sum / count) * 10 * digits) / 10) * digits : 0;
 }
 
 /**

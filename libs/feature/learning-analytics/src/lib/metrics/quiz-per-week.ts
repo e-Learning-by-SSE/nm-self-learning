@@ -1,4 +1,4 @@
-import { DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, avg, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 /**
@@ -63,19 +63,19 @@ function summary(lASession: LearningAnalyticsType) {
 	// Calculates the average per week based on the week number and year of a date
 	for (let i = 0; i < out.data.length - 1; i++) {
 		if (out.date[i] !== out.date[i + 1]) {
-			avgWeeks.push(Math.round(((sum + out.data[i]) / 7) * 10) / 10);
+			avgWeeks.push(avg(sum + out.data[i], 7, 1));
 			sum = 0;
 		} else {
 			sum = sum + out.data[i];
 		}
 	}
-	avgWeeks.push(Math.round(((sum + out.data[out.data.length - 1]) / 7) * 10) / 10);
+	avgWeeks.push(avg(sum + out.data[out.data.length - 1], 7, 1));
 	sum = 0;
 	// Summe all average per week values and return the calculated average per week value
 	avgWeeks.forEach(element => {
 		sum = sum + element;
 	});
-	return avgWeeks.length > 0 ? "" + Math.round((sum / avgWeeks.length) * 10) / 10 : "0";
+	return avgWeeks.length > 0 ? (sum / avgWeeks.length).toFixed(1) : "0";
 }
 
 /**

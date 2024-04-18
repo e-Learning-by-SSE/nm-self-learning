@@ -1,4 +1,4 @@
-import { DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, avg, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 /**
@@ -28,7 +28,7 @@ function summary(lASession: LearningAnalyticsType) {
 			});
 		}
 	});
-	return (count > 0 ? Math.round((duration / count) * 10) / 10 : 0) + " min";
+	return (count > 0 ? (duration / count).toFixed(1) : "0") + " min";
 }
 
 /**
@@ -45,7 +45,7 @@ function plotVideoDuration(lASession: LearningAnalyticsType) {
 	lASession.forEach(session => {
 		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
-			out.data.push(count > 0 ? Math.round((duration / count) * 10) / 10 : 0);
+			out.data.push(avg(duration, count, 1));
 			out.labels.push(lastsession);
 			lastsession = sessionStart;
 			duration = 0;
@@ -63,7 +63,7 @@ function plotVideoDuration(lASession: LearningAnalyticsType) {
 			});
 		}
 	});
-	out.data.push(count > 0 ? Math.round((duration / count) * 10) / 10 : 0);
+	out.data.push(avg(duration, count, 1));
 	out.labels.push(sessionStart);
 	let data = null;
 	if (out)

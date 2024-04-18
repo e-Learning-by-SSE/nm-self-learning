@@ -1,4 +1,4 @@
-import { averageUsesPerSession, DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
+import { averageUsesPerSession, avg, DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
 /**
@@ -20,7 +20,7 @@ function plotHintsPerDay(lASession: LearningAnalyticsType) {
 	lASession.forEach(session => {
 		sessionStart = formatDate(session.start);
 		if (sessionStart !== lastsession) {
-			out.data.push(count > 0 ? Math.round((hints / count) * 10) / 10 : 0);
+			out.data.push(avg(hints, count, 1));
 			out.labels.push(lastsession);
 			lastsession = sessionStart;
 			hints = 0;
@@ -35,7 +35,7 @@ function plotHintsPerDay(lASession: LearningAnalyticsType) {
 			});
 		}
 	});
-	out.data.push(count > 0 ? Math.round((hints / count) * 10) / 10 : 0);
+	out.data.push(avg(hints, count, 1));
 	out.labels.push(sessionStart);
 	let data = null;
 	if (out)
