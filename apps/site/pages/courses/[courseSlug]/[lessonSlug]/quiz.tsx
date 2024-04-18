@@ -87,6 +87,31 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	// const hasPrevious = nextIndex > 1;
 	// const hasNext = nextIndex < questions.length;
 
+	const filteredQuestions = questions;
+	// if (config?.maxQuestionsPerType) {
+	// 	const indicesToKeep = new Set<number>();
+
+	// 	const occurrences = new Map<number | "unspecified", number[]>();
+	// 	questions.forEach((q, index) => {
+	// 		const cognitiveLevel = q.cognitiveLevel ?? "unspecified";
+	// 		const positions = occurrences.get(cognitiveLevel) ?? [];
+	// 		occurrences.set(cognitiveLevel, [...positions, index]);
+	// 	});
+
+	// 	// Iterate over all keys of the map
+	// 	const maxElements = config.maxQuestionsPerType;
+	// 	occurrences.forEach((positions, _cognitiveLevel) => {
+	// 		while (positions.length > maxElements) {
+	// 			const randomIndex = Math.floor(Math.random() * positions.length);
+	// 			positions.splice(randomIndex, 1);
+	// 		}
+	// 		positions.forEach(index => indicesToKeep.add(index));
+	// 	});
+
+	// 	console.debug(`Quiz of ${lesson.title}: Filtered questions to ${indicesToKeep}.`);
+	// 	filteredQuestions = questions.filter((_question, index) => indicesToKeep.has(index));
+	// }
+
 	const goToNextQuestion = useCallback(() => {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true
@@ -112,18 +137,18 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	useEffect(() => {
 		const indexNumber = Number(index);
 
-		if (Number.isFinite(indexNumber) && indexNumber < questions.length) {
-			setCurrentQuestion(questions[indexNumber]);
+		if (Number.isFinite(indexNumber) && indexNumber < filteredQuestions.length) {
+			setCurrentQuestion(filteredQuestions[indexNumber]);
 			setNextIndex(Number(index) + 1);
 		} else {
-			setCurrentQuestion(questions[0]);
+			setCurrentQuestion(filteredQuestions[0]);
 			setNextIndex(1);
 		}
-	}, [index, questions]);
+	}, [index, filteredQuestions]);
 
 	return (
 		<QuizProvider
-			questions={questions}
+			questions={filteredQuestions}
 			config={config ?? defaultQuizConfig}
 			goToNextQuestion={goToNextQuestion}
 			reload={router.reload}
@@ -135,14 +160,14 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						course={course}
 						currentIndex={nextIndex - 1}
 						goToQuestion={goToQuestion}
-						questions={questions}
+						questions={filteredQuestions}
 					/>
 					<Question
 						key={currentQuestion.questionId}
 						question={currentQuestion}
 						markdown={markdown}
 						lesson={lesson}
-						isLastQuestion={quiz.questions.length === Number(index) + 1}
+						isLastQuestion={filteredQuestions.length === Number(index) + 1}
 					/>
 					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
