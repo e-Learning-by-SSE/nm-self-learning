@@ -27,7 +27,7 @@ function summary(lASession: LearningAnalyticsType) {
 			});
 		}
 	});
-	return maxKey(videoSpeeds);
+	return String(maxKey(videoSpeeds));
 }
 
 /**
