@@ -28,7 +28,11 @@ export const learningAnalyticsRouter = t.router({
 			console.log("[learningAnalyticsRouter.updateSession]: id ", entry.id, entry.end);
 			return entry;
 		}),
-
+	deleteSessions: authProcedure.mutation(async ({ ctx }) => {
+		return await database.lASession.deleteMany({
+			where: { username: ctx.user.name }
+		});
+	}),
 	createLearningAnalytics: authProcedure
 		.input(
 			z.object({

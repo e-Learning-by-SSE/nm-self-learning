@@ -1,8 +1,11 @@
 import { trpc } from "@self-learning/api-client";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
+import router, { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { formatDate } from "./auxillary";
+import { Switch } from "@headlessui/react";
+import { ButtonActions, SimpleDialogXL, showToast } from "@self-learning/ui/common";
+import { TRPCClientError } from "@trpc/client";
 
 export function notNull<T>(val: T | null): val is T {
 	return val != null;
@@ -228,6 +231,7 @@ export function LearningAnalyticsProvider() {
 	const { mutateAsync: setEndOfSession } = trpc.learningAnalytics.setEndOfSession.useMutation();
 	const { mutateAsync: createLearningAnalytics } =
 		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+	const { data: systemAnalytics } = trpc.me.systemAnalyticsAgreement.useQuery();
 
 	// Learning Analytics: Session handling
 	// Sets the end of the session in the local storage after leaving the website
@@ -245,7 +249,7 @@ export function LearningAnalyticsProvider() {
 		return () => {
 			window.removeEventListener("unload", handleClose);
 		};
-	}, [createLearningAnalytics, setEndOfSession]);
+	}, []);
 
 	// Creates a new session and saves a previously started session if there is an incomplete one.
 	useEffect(() => {
@@ -281,15 +285,21 @@ export function LearningAnalyticsProvider() {
 		const laSession = JSON.parse(localStorage.getItem("la_session") + "");
 		const start = laSession ? formatDate(laSession.start) : "";
 		const today = formatDate(new Date());
-
-		if (!(laSession && laSession !== "")) {
-			createNewLASession();
-		} else if (laSession.start !== "" && laSession.end !== "" && start !== today) {
-			// Stores the previous session if exists and starts a new one
-			// TODO SE: @ Fabian: Please clarify why the session is reset and not a new one is created
-			setData();
+		if (systemAnalytics?.systemAnalyticsAgreement) {
+			if (!(laSession && laSession !== "")) {
+				createNewLASession();
+			} else if (laSession.start !== "" && laSession.end !== "" && start !== today) {
+				// Stores the previous session if exists and starts a new one
+				// TODO SE: @ Fabian: Please clarify why the session is reset and not a new one is created
+				setData();
+			}
 		}
-	}, [createLASession, createLearningAnalytics, setEndOfSession]);
+	}, [
+		createLASession,
+		createLearningAnalytics,
+		setEndOfSession,
+		systemAnalytics?.systemAnalyticsAgreement
+	]);
 
 	return null;
 }
@@ -307,15 +317,17 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 	const router = useRouter();
 	const { mutateAsync: createLearningAnalytics } =
 		trpc.learningAnalytics.createLearningAnalytics.useMutation();
-
+	const { data: systemAnalytics } = trpc.me.systemAnalyticsAgreement.useQuery();
 	// Stores the data of the current session when leaving a lesson
 	useEffect(() => {
 		const saveData = async () => {
-			const data = saveLA();
-			if (data) {
-				try {
-					await createLearningAnalytics(data);
-				} catch (e) {}
+			if (systemAnalytics?.systemAnalyticsAgreement) {
+				const data = saveLA();
+				if (data) {
+					try {
+						await createLearningAnalytics(data);
+					} catch (e) {}
+				}
 			}
 		};
 		const navigateFromPage = (url: string) => {
@@ -333,16 +345,23 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 		return () => {
 			router.events.off("routeChangeStart", navigateFromPage);
 		};
-	}, [createLearningAnalytics, lesson.slug, router.events]);
+	}, [
+		createLearningAnalytics,
+		lesson.slug,
+		router.events,
+		systemAnalytics?.systemAnalyticsAgreement
+	]);
 
 	// Learning Analytics: init or save lesson info
 	useEffect(() => {
 		const saveData = async () => {
-			const data = saveLA();
-			if (data) {
-				try {
-					await createLearningAnalytics(data);
-				} catch (e) {}
+			if (systemAnalytics?.systemAnalyticsAgreement) {
+				const data = saveLA();
+				if (data) {
+					try {
+						await createLearningAnalytics(data);
+					} catch (e) {}
+				}
 			}
 		};
 		if (window !== undefined) {
@@ -374,6 +393,137 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 				);
 			}
 		}
-	}, [course.courseId, createLearningAnalytics, lesson.lessonId]);
+	}, [
+		course.courseId,
+		createLearningAnalytics,
+		lesson.lessonId,
+		systemAnalytics?.systemAnalyticsAgreement
+	]);
 	return null;
+}
+
+/**
+ * Component for managing the opt-in for learning analytics. It contains two dialogs for the consent to either save
+ * all information required for learning analytics or to delete all entries in the database for the active user.
+ *
+ * @returns A headlessui switch component with two dialogs
+ */
+export function SystemAnalyticsAgreementToggle() {
+	const { mutateAsync: updateStudent } =
+		trpc.me.updateStudentSystemAnalyticsAgreement.useMutation();
+	const { mutateAsync: deleteLearningAnalytics } =
+		trpc.learningAnalytics.deleteSessions.useMutation();
+	const { data: systemAnalytics } = trpc.me.systemAnalyticsAgreement.useQuery();
+	const [enabled, setEnabled] = useState(false);
+	const [enabledDialog, setEnabledDialog] = useState(false);
+
+	// fetch initial value for the switch component from the database
+	useEffect(() => {
+		if (systemAnalytics) setEnabled(systemAnalytics.systemAnalyticsAgreement);
+	}, [systemAnalytics]);
+
+	// enables the dialogs
+	function toggleDialog(enabled: boolean) {
+		setEnabled(enabled);
+		setEnabledDialog(true);
+	}
+
+	/**
+	 * Evaluation of the user's decision to activate the learning analysis and update
+	 * the user information in the database.
+	 *
+	 * @param action dialog result for enable the learning analytics (Cancel | OK)
+	 */
+	async function agreeToSystemAnalytics(action: ButtonActions) {
+		if (action === ButtonActions.CANCEL) {
+			setEnabled(false);
+		} else {
+			try {
+				const updated = await updateStudent({ agreement: true });
+				showToast({
+					type: "success",
+					title: "Zustimmung für die Nutzung der Lernstatistik",
+					subtitle: updated.name
+				});
+				setEnabled(true);
+				router.replace(router.asPath);
+			} catch (error) {
+				console.error(error);
+				if (error instanceof TRPCClientError) {
+					showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				}
+			}
+		}
+		setEnabledDialog(false);
+	}
+
+	/**
+	 * Evaluate the user's decision to deactivate the learning analysis and update the user information
+	 * and delete all corresponding entries from the learning analysis in the database.
+	 *
+	 * @param action dialog result for the deactivation of learning analytics (Cancel | OK)
+	 */
+	async function disagreeToSystemAnalytics(action: ButtonActions) {
+		if (action === ButtonActions.CANCEL) {
+			setEnabled(true);
+		} else {
+			try {
+				await deleteLearningAnalytics();
+				resetLASession();
+				const updated = await updateStudent({ agreement: false });
+				showToast({
+					type: "success",
+					title: "Nutzung der Lernstatistik deaktiviert",
+					subtitle: updated.name
+				});
+				setEnabled(false);
+				router.replace(router.asPath);
+			} catch (error) {
+				console.error(error);
+
+				if (error instanceof TRPCClientError) {
+					showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				}
+			}
+		}
+		setEnabledDialog(false);
+	}
+	//TODO SE: Update information on the dialogs (e.g. suitable data protection notice)
+	return (
+		<div>
+			<Switch
+				checked={enabled}
+				onChange={toggleDialog}
+				className={`${
+					enabled ? "bg-blue-600" : "bg-gray-200"
+				} relative inline-flex h-6 w-11 items-center rounded-full`}
+			>
+				<span className="sr-only">Enable notifications</span>
+				<span
+					className={`${
+						enabled ? "translate-x-6" : "translate-x-1"
+					} inline-block h-4 w-4 transform rounded-full bg-white transition`}
+				/>
+			</Switch>
+			{enabled && enabledDialog && (
+				<SimpleDialogXL name={"Lernstatistiken"} onClose={agreeToSystemAnalytics}>
+					<span>
+						Wir möchten Sie bitten, uns Ihre Einwilligung zur Speicherung und
+						Verarbeitung Ihrer personenbezogenen Daten zu erteilen. Diese Daten umfassen
+						Information über Ihr Lernverhalten. Nach Ihrer Bestätigung können sie auf
+						Ihre persönliche Lernstatistik zugreifen.
+					</span>
+				</SimpleDialogXL>
+			)}
+			{!enabled && enabledDialog && (
+				<SimpleDialogXL name={"Lernstatistiken"} onClose={disagreeToSystemAnalytics}>
+					<span>
+						Durch die Deaktivierung der Lernstatistik werden alle gespeicherten Daten
+						von Ihnen gelöscht. Sind Sie sicher, das Sie die Lernstatistiken
+						deaktivieren wollen?
+					</span>
+				</SimpleDialogXL>
+			)}
+		</div>
+	);
 }

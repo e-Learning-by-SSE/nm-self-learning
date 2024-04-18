@@ -47,6 +47,7 @@ model User {
   student        Student?
   uploadedAssets UploadedAssets[]
   skillRepositories SkillRepository[]
+  systemAnalyticsAgreement Boolean   @default(false)
 }
 
 model VerificationToken {

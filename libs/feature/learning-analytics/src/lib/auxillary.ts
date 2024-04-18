@@ -84,7 +84,8 @@ export function averageUsesPerSession(
  * @returns The key with the highest value.
  */
 export function maxKey<T>(map: Map<T, number>) {
-	return Array.from(map).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0];
+	if (map.size > 0) return Array.from(map).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0];
+	else return "Keine Daten vorhanden";
 }
 
 /**

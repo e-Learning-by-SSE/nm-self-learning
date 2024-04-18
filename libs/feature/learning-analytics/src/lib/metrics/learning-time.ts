@@ -44,7 +44,7 @@ function summary(lASession: LearningAnalyticsType) {
 				}
 			});
 	});
-	const maxHour = Array.from(learningTimes).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0];
+	const maxHour = maxKey(learningTimes);
 
 	return convertToTimeOfDay(maxHour);
 }

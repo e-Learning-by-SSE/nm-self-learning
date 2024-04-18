@@ -21,6 +21,7 @@ import { trpc } from "@self-learning/api-client";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { SystemAnalyticsAgreementToggle } from "@self-learning/learning-analytics";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -115,41 +116,46 @@ export default function StudentOverview({ student }: Props) {
 	return (
 		<CenteredSection className="bg-gray-50 pb-32">
 			<div className="flex flex-col gap-10">
-				<section className="flex items-center">
-					<ImageOrPlaceholder
-						src={student.user.image ?? undefined}
-						className="h-24 w-24 rounded-lg object-cover"
-					/>
-					<div className="flex flex-col gap-4 pl-8 pr-4">
-						<h1 className="text-6xl">{student.user.displayName}</h1>
-						<span>
-							Du hast bereits{" "}
-							<span className="mx-1 font-semibold text-secondary">
-								{student._count.completedLessons}
-							</span>{" "}
-							{student._count.completedLessons === 1
-								? "Lerneinheit"
-								: "Lerneinheiten"}{" "}
-							abgeschlossen.
-						</span>
-					</div>
-
-					<button
-						className="self-start rounded-full p-2 hover:bg-gray-100"
-						title="Bearbeiten"
-						onClick={() => setEditStudentDialog(true)}
-					>
-						<CogIcon className="h-5 text-gray-400" />
-					</button>
-
-					{editStudentDialog && (
-						<EditStudentDialog
-							student={{ user: { displayName: student.user.displayName } }}
-							onClose={onEditStudentClose}
+				<div className="flex items-start justify-between">
+					<section className="flex items-center">
+						<ImageOrPlaceholder
+							src={student.user.image ?? undefined}
+							className="h-24 w-24 rounded-lg object-cover"
 						/>
-					)}
-				</section>
+						<div className="flex flex-col gap-4 pl-8 pr-4">
+							<h1 className="text-6xl">{student.user.displayName}</h1>
+							<span>
+								Du hast bereits{" "}
+								<span className="mx-1 font-semibold text-secondary">
+									{student._count.completedLessons}
+								</span>{" "}
+								{student._count.completedLessons === 1
+									? "Lerneinheit"
+									: "Lerneinheiten"}{" "}
+								abgeschlossen.
+							</span>
+						</div>
 
+						<button
+							className="self-start rounded-full p-2 hover:bg-gray-100"
+							title="Bearbeiten"
+							onClick={() => setEditStudentDialog(true)}
+						>
+							<CogIcon className="h-5 text-gray-400" />
+						</button>
+
+						{editStudentDialog && (
+							<EditStudentDialog
+								student={{ user: { displayName: student.user.displayName } }}
+								onClose={onEditStudentClose}
+							/>
+						)}
+					</section>
+					<div className="flex flex-row p-2">
+						<span className="mr-2">Lernstatistiken</span>
+						<SystemAnalyticsAgreementToggle />
+					</div>
+				</div>
 				<Divider />
 
 				<section>

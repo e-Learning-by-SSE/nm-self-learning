@@ -12,6 +12,7 @@ import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { SearchBar } from "./search-bar";
+import { trpc } from "@self-learning/api-client";
 
 export function Navbar() {
 	const session = useSession();
@@ -136,6 +137,7 @@ export function NavbarDropdownMenu({
 	avatarUrl?: string | null;
 	signOut: () => void;
 }) {
+	const { data: systemAnalytics } = trpc.me.systemAnalyticsAgreement.useQuery();
 	return (
 		<Menu as="div" className="relative ml-1 xl:ml-3">
 			<div>
@@ -178,19 +180,21 @@ export function NavbarDropdownMenu({
 							</Link>
 						)}
 					</Menu.Item>
-					<Menu.Item as="div" className="p-1">
-						{({ active }) => (
-							<Link
-								href="/learning-analytics"
-								className={`${
-									active ? "bg-emerald-500 text-white" : ""
-								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
-							>
-								<UserIcon className="h-5" />
-								<span>Lernstatistik</span>
-							</Link>
-						)}
-					</Menu.Item>
+					{systemAnalytics?.systemAnalyticsAgreement && (
+						<Menu.Item as="div" className="p-1">
+							{({ active }) => (
+								<Link
+									href="/learning-analytics"
+									className={`${
+										active ? "bg-emerald-500 text-white" : ""
+									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+								>
+									<UserIcon className="h-5" />
+									<span>Lernstatistik</span>
+								</Link>
+							)}
+						</Menu.Item>
+					)}
 					<Menu.Item as="div" className="p-1">
 						{({ active }) => (
 							<button

@@ -27,7 +27,7 @@ function summary(lASession: LearningAnalyticsType) {
 			});
 		}
 	});
-	return "" + Array.from(videoSpeeds).sort((a, b) => (a[1] > b[1] ? -1 : 1))[0][0];
+	return maxKey(videoSpeeds);
 }
 
 /**
