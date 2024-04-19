@@ -5,6 +5,7 @@ import { UNARY_METRICS } from "./metrics";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
 
@@ -66,15 +67,22 @@ function plotMediaChanges(lASession: LearningAnalyticsType) {
  * @param lASession The (filtered) session for which the metric is computed for.
  * @returns The component to display the metric "Media Changes".
  */
-export function MediaChanges({ lASession }: { lASession: LearningAnalyticsType }) {
+export function MediaChanges({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
 	const graphData = plotMediaChanges(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["MediaChanges"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast du `}
-				<span className="italic">
+				<span className={style}>
 					{averageUsesPerSession(lASession, "numberOfChangesMediaType")}
 				</span>
 				{` Mal pro Sitzung das bevorzugte Medium gewechselt.`}

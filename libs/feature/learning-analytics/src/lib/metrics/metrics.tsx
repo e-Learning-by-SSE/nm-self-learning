@@ -50,7 +50,7 @@ export function UnaryMetric({
 	// Order does not matter, but all metrics must be covered.
 	switch (metric) {
 		case "PreferredLearningTime":
-			return <PreferredLearningTime lASession={lASession} />;
+			return <PreferredLearningTime lASession={lASession} emphasisStyle="font-bold" />;
 		case "Duration":
 			return <Duration lASession={lASession} emphasisStyle="font-bold" />;
 		case "VideoSpeed":
@@ -60,7 +60,7 @@ export function UnaryMetric({
 		case "VideoStops":
 			return <VideoStops lASession={lASession} />;
 		case "MediaChanges":
-			return <MediaChanges lASession={lASession} />;
+			return <MediaChanges lASession={lASession} emphasisStyle="font-bold" />;
 		case "PreferredMediaType":
 			return <PreferredMediaType lASession={lASession} />;
 		case "QuizPerWeek":

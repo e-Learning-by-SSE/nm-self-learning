@@ -6,6 +6,7 @@ import { LearningAnalyticsType } from "../learning-analytics";
 import { Chart as ChartJS, registerables, ChartOptions } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
 
@@ -126,15 +127,22 @@ function plotPreferredLearningTime(lASession: LearningAnalyticsType) {
  * @param lASession The (filtered) session for which the metric is computed for.
  * @returns The component to display the metric "Preferred Learning Time".
  */
-export function PreferredLearningTime({ lASession }: { lASession: LearningAnalyticsType }) {
+export function PreferredLearningTime({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
 	const graphData = plotPreferredLearningTime(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["PreferredLearningTime"]}</h1>
 			<span className="text-xl">
 				{`Bevorzugt hast du `}
-				<span className="italic">{summary(lASession)}</span>
+				<span className={style}>{summary(lASession)}</span>
 				{` gelernt.`}
 			</span>
 			<Line data={graphData} options={learningTimeOptions} />
