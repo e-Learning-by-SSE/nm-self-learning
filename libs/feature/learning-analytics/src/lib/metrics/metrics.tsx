@@ -9,6 +9,7 @@ import { Hints } from "./hints";
 import { QuizPerWeek } from "./quiz-per-week";
 import { VideoStops } from "./video-stops";
 import { Duration } from "./duration";
+import { Quiz } from "./quiz";
 
 /**
  * Stores all available unary metrics.
@@ -26,7 +27,8 @@ export const UNARY_METRICS = {
 	PreferredMediaType: "Bevorzugter Medientyp",
 	QuizPerWeek: "Durchschnittliche Anzahl Lernzielkontrollen",
 	Answers: "Durchschnittliche Anzahl an Antworten",
-	Hints: "Durchschnittliche Anzahl an Hilfestellungen"
+	Hints: "Durchschnittliche Anzahl an Hilfestellungen",
+	Quiz: "Durchschnittliche Anzahl an Antworten und Hilfestellungen"
 };
 
 /**
@@ -69,6 +71,8 @@ export function UnaryMetric({
 			return <Answers lASession={lASession} emphasisStyle="font-bold" />;
 		case "Hints":
 			return <Hints lASession={lASession} emphasisStyle="font-bold" />;
+		case "Quiz":
+			return <Quiz lASession={lASession} emphasisStyle="font-bold" />;
 		default:
 			return (
 				<>
