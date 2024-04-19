@@ -5,6 +5,7 @@ import { UNARY_METRICS } from "./metrics";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
 
@@ -66,15 +67,22 @@ function plotHintsPerDay(lASession: LearningAnalyticsType) {
  * @param lASession The (filtered) session for which the metric is computed for.
  * @returns The component to display the metric "Used Hints per Day".
  */
-export function Hints({ lASession }: { lASession: LearningAnalyticsType }) {
+export function Hints({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
 	const graphData = plotHintsPerDay(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["Hints"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast `}
-				<span className="italic">
+				<span className={style}>
 					{averageUsesPerSession(lASession, "numberOfUsedHints")}
 				</span>
 				{` Hilfestellungen pro Einheit benötigt.`}

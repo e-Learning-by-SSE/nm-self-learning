@@ -52,7 +52,7 @@ export function UnaryMetric({
 		case "PreferredLearningTime":
 			return <PreferredLearningTime lASession={lASession} />;
 		case "Duration":
-			return <Duration lASession={lASession} />;
+			return <Duration lASession={lASession} emphasisStyle="font-bold" />;
 		case "VideoSpeed":
 			return <VideoSpeed lASession={lASession} />;
 		case "VideoDuration":
@@ -68,7 +68,7 @@ export function UnaryMetric({
 		case "Answers":
 			return <Answers lASession={lASession} emphasisStyle="font-bold" />;
 		case "Hints":
-			return <Hints lASession={lASession} />;
+			return <Hints lASession={lASession} emphasisStyle="font-bold" />;
 		default:
 			return (
 				<>

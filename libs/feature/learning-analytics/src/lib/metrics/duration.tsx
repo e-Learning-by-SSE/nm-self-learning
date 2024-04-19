@@ -5,6 +5,7 @@ import { UNARY_METRICS } from "./metrics";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
 
@@ -110,15 +111,22 @@ function plotDurationPerDay(lASession: LearningAnalyticsType) {
  * @param lASession The (filtered) session for which the metric is computed for.
  * @returns The component to display the metric "Learning Duration".
  */
-export function Duration({ lASession }: { lASession: LearningAnalyticsType }) {
+export function Duration({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
 	const graphData = plotDurationPerDay(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["Duration"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast du `}
-				<span className="italic">{summary(lASession)}</span>
+				<span className={style}>{summary(lASession)}</span>
 				{` pro Tag gelernt.`}
 			</span>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />
