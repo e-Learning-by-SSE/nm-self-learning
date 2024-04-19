@@ -5,6 +5,7 @@ import { UNARY_METRICS } from "./metrics";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
 
@@ -64,17 +65,25 @@ function plotVideoStops(lASession: LearningAnalyticsType) {
 /**
  * Component to display the metric "Video Stops" in the Learning Analytics Dashboard.
  * @param lASession The (filtered) session for which the metric is computed for.
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
  * @returns The component to display the metric "Video Stops".
  */
-export function VideoStops({ lASession }: { lASession: LearningAnalyticsType }) {
+export function VideoStops({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
 	const graphData = plotVideoStops(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["VideoStops"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast pro Sitzung `}
-				<span className="italic">{averageUsesPerSession(lASession, "videoBreaks")}</span>
+				<span className={style}>{averageUsesPerSession(lASession, "videoBreaks")}</span>
 				{` Mal das Video pausiert.`}
 			</span>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />

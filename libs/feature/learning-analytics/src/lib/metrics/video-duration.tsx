@@ -5,6 +5,7 @@ import { UNARY_METRICS } from "./metrics";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
 
@@ -92,17 +93,25 @@ function plotVideoDuration(lASession: LearningAnalyticsType) {
 /**
  * Component to display the metric "Video Duration" in the Learning Analytics Dashboard.
  * @param lASession The (filtered) session for which the metric is computed for.
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
  * @returns The component to display the metric "Video Duration".
  */
-export function VideoDuration({ lASession }: { lASession: LearningAnalyticsType }) {
+export function VideoDuration({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
 	const graphData = plotVideoDuration(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["VideoDuration"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast pro Tag `}
-				<span className="italic">{summary(lASession)}</span>
+				<span className={style}>{summary(lASession)}</span>
 				{` Lernvideos angeschaut.`}
 			</span>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />

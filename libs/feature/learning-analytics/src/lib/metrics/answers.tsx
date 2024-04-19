@@ -122,7 +122,7 @@ function plotAnswersPerDay(lASession: LearningAnalyticsType) {
 /**
  * Component to display the metric "Answers" in the Learning Analytics Dashboard.
  * @param lASession The (filtered) session for which the metric is computed for.
- * @param emphasisStyle How to emphasize the summary
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
  * @returns The component to display the metric "Answers".
  */
 export function Answers({

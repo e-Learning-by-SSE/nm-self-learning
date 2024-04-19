@@ -125,6 +125,7 @@ function plotPreferredLearningTime(lASession: LearningAnalyticsType) {
 /**
  * Component to display the metric "Preferred Learning Time" in the Learning Analytics Dashboard.
  * @param lASession The (filtered) session for which the metric is computed for.
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
  * @returns The component to display the metric "Preferred Learning Time".
  */
 export function PreferredLearningTime({
