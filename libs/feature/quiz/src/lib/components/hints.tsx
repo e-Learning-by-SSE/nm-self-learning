@@ -6,6 +6,12 @@ import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
 import { useQuiz } from "./quiz-context";
 import { useEffect } from "react";
+import {
+	QuizInfoType,
+	StorageKeys,
+	loadFromStorage,
+	saveToStorage
+} from "@self-learning/learning-analytics";
 
 export function Hints() {
 	const { config, usedHints, setUsedHints } = useQuiz();
@@ -23,12 +29,11 @@ export function Hints() {
 	//Learning Analytics: get number of correct and incorrect answers
 	useEffect(() => {
 		if (window !== undefined) {
-			const quizInfo = JSON.parse(localStorage.getItem("la_quizInfo") + "");
-			if (quizInfo && quizInfo !== "") {
-				quizInfo.hint = usedHintsTotal;
-				window.localStorage.setItem("la_quizInfo", JSON.stringify(quizInfo));
+			const quizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+			if (quizInfo) {
+				quizInfo.numberOfUsedHints = usedHintsTotal;
+				saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, quizInfo);
 			}
-			localStorage.getItem("la_quizInfo");
 		}
 	}, [usedHintsTotal]);
 

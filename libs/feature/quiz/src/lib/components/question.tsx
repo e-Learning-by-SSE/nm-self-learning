@@ -15,7 +15,17 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
-import { saveEnds, saveLA } from "@self-learning/learning-analytics";
+import {
+	QuizInfoType,
+	SessionInfoType,
+	StorageKeys,
+	checkUndefined,
+	loadFromStorage,
+	parseDateToISOString,
+	saveEnds,
+	saveLA,
+	saveToStorage
+} from "@self-learning/learning-analytics";
 import { trpc } from "@self-learning/api-client";
 
 export function Question({
@@ -150,14 +160,35 @@ function CheckResult({
 	//Learning Analytics: save quiz
 	const { mutateAsync: createLearningAnalytics } =
 		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
 
 	async function saveQuizBeforeReload() {
-		saveEnds();
+		const lQuizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+		if (lQuizInfo?.quizStart != null) {
+			lQuizInfo.quizEnd = new Date();
+			saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, lQuizInfo);
+		}
 		const data = saveLA();
 		if (data) {
 			try {
-				await createLearningAnalytics(data);
-			} catch (e) {}
+				if (data.sessionId < 0) {
+					const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LALesson);
+					if (laSession) {
+						const session = await createLASession({
+							start: new Date(laSession.start).toISOString(),
+							end: parseDateToISOString(laSession?.end)
+						});
+						laSession.id = session.id;
+						saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);
+						data.sessionId = session.id;
+						await createLearningAnalytics(data);
+					}
+				} else {
+					await createLearningAnalytics(data);
+				}
+			} catch (e) {
+				console.log("Error saving learning analytics from Quiz.", e);
+			}
 		}
 		reload();
 	}
@@ -170,18 +201,16 @@ function CheckResult({
 		console.log("evaluation", evaluation);
 
 		//Learning Analytics: get number of correct and incorrect answers
-		if (window !== undefined) {
-			const quizInfo = JSON.parse(localStorage.getItem("la_quizInfo") + "");
-			if (quizInfo && quizInfo !== "") {
-				if (evaluation.isCorrect) {
-					quizInfo.right++;
-				} else {
-					quizInfo.wrong++;
-				}
-				window.localStorage.setItem("la_quizInfo", JSON.stringify(quizInfo));
+		const quizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+		if (quizInfo?.numberCorrectAnswers != null && quizInfo?.numberIncorrectAnswers != null) {
+			if (evaluation.isCorrect) {
+				quizInfo.numberCorrectAnswers++;
+			} else {
+				quizInfo.numberIncorrectAnswers++;
 			}
-			localStorage.getItem("la_quizInfo");
+			saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, quizInfo);
 		}
+
 		setEvaluation(evaluation);
 	}
 

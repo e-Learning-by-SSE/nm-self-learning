@@ -2,7 +2,14 @@ import { CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { LearningAnalyticsLesson } from "@self-learning/learning-analytics";
+import {
+	LearningAnalyticsLesson,
+	MediaTypeChangesInfoType,
+	StorageKeys,
+	addMediaTypeChanges,
+	loadFromStorage,
+	saveToStorage
+} from "@self-learning/learning-analytics";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -321,59 +328,18 @@ function MediaTypeSelector({
 	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();
 
-	// Learning Analytics: number of changes of the media type and preferred media type
-	const [numberOfChangesMediaType, setNumberOfChangesMediaType] = useState({
-		video: preferredMediaType == "video" ? 1 : 0,
-		article: preferredMediaType == "article" ? 1 : 0,
-		pdf: preferredMediaType == "pdf" ? 1 : 0,
-		iframe: preferredMediaType == "iframe" ? 1 : 0
-	});
-
+	//Learning Analytics
 	useEffect(() => {
-		const numberOfChanges = JSON.parse(
-			window.localStorage.getItem("la_numberOfChangesMediaType") + ""
-		);
-		if (numberOfChanges && numberOfChanges != "") {
-			setNumberOfChangesMediaType(numberOfChanges);
-		}
+		const mediaTypeChanges = loadFromStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType);
+		if (mediaTypeChanges == null)
+			saveToStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType, {
+				video: 0,
+				pdf: 0,
+				article: 0,
+				iframe: 0
+			});
 	}, []);
-
-	function addNumberOfChangesMediaType(type: string) {
-		if (typeof window !== "undefined") {
-			switch (type) {
-				case "pdf":
-					setNumberOfChangesMediaType(numberOfChangesMediaType => ({
-						...numberOfChangesMediaType,
-						pdf: numberOfChangesMediaType.pdf + 1
-					}));
-					break;
-				case "iframe":
-					setNumberOfChangesMediaType(numberOfChangesMediaType => ({
-						...numberOfChangesMediaType,
-						iframe: numberOfChangesMediaType.iframe + 1
-					}));
-					break;
-				case "video":
-					setNumberOfChangesMediaType(numberOfChangesMediaType => ({
-						...numberOfChangesMediaType,
-						video: numberOfChangesMediaType.video + 1
-					}));
-					break;
-				case "article":
-					setNumberOfChangesMediaType(numberOfChangesMediaType => ({
-						...numberOfChangesMediaType,
-						article: numberOfChangesMediaType.article + 1
-					}));
-					break;
-			}
-
-			window.localStorage.setItem(
-				"la_numberOfChangesMediaType",
-				JSON.stringify(numberOfChangesMediaType)
-			);
-		}
-	}
-	// Learning Analytics: end
+	//Learning Analytics end
 
 	function changeMediaType(index: number) {
 		const type = lessonContent[index].type;
@@ -383,7 +349,7 @@ function MediaTypeSelector({
 		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
 			shallow: true
 		});
-		addNumberOfChangesMediaType(type);
+		addMediaTypeChanges(type); //Learning Analytics
 		setSelectedIndex(index);
 	}
 

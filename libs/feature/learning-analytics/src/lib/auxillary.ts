@@ -39,7 +39,7 @@ export const DEFAULT_LINE_CHART_OPTIONS: ChartOptions<"line"> = {
 /**
  * Auxillary to force that only keys of a specific type may be passed as parameter to a function.
  */
-type KeysOfType<T, TProp> = { [P in keyof T]: T[P] extends TProp ? P : never }[keyof T];
+export type KeysOfType<T, TProp> = { [P in keyof T]: T[P] extends TProp ? P : never }[keyof T];
 
 /**
  * Type Guard to check if a string is a supported LessonContentMediaType to map them back
