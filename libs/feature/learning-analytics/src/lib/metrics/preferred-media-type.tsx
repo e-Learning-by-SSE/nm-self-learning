@@ -1,14 +1,39 @@
-import { DEFAULT_LINE_CHART_OPTIONS, formatDate, preferredValuePerSession } from "../auxillary";
+import {
+	DEFAULT_LINE_CHART_OPTIONS,
+	X_AXIS_FORMAT,
+	formatDate,
+	isLessonContentMediaType,
+	preferredValuePerSession
+} from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 import { getContentTypeDisplayName } from "@self-learning/types";
 import { UNARY_METRICS } from "./metrics";
 
 import { Chart as ChartJS, registerables } from "chart.js";
-import { Line } from "react-chartjs-2";
+import { Bar, Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
 import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
+
+function createDataSeries(data: number[], label: string, color: string) {
+	return {
+		label: isLessonContentMediaType(label) ? getContentTypeDisplayName(label) : label,
+		fill: false,
+		backgroundColor: color,
+		borderColor: color,
+		pointBorderColor: color,
+		pointBackgroundColor: "#fff",
+		pointBorderWidth: 1,
+		pointHoverRadius: 5,
+		pointHoverBackgroundColor: color,
+		pointHoverBorderColor: "rgba(220,220,220,1)",
+		pointHoverBorderWidth: 2,
+		pointRadius: 1,
+		pointHitRadius: 10,
+		data: data
+	};
+}
 
 /**
  * Generates the Line Chart data for the used media types per day.
@@ -62,70 +87,14 @@ function plotPreferredMediaType(lASession: LearningAnalyticsType) {
 	const data = {
 		labels: labels,
 		datasets: [
-			{
-				label: getContentTypeDisplayName("video"),
-				fill: false,
-				backgroundColor: "#003f5c",
-				borderColor: "#003f5c",
-				pointBorderColor: "#003f5c",
-				pointBackgroundColor: "#fff",
-				pointBorderWidth: 1,
-				pointHoverRadius: 5,
-				pointHoverBackgroundColor: "#003f5c",
-				pointHoverBorderColor: "rgba(220,220,220,1)",
-				pointHoverBorderWidth: 2,
-				pointRadius: 1,
-				pointHitRadius: 10,
-				data: out.video
-			},
-			{
-				label: getContentTypeDisplayName("pdf"),
-				fill: false,
-				backgroundColor: "#7a5195",
-				borderColor: "#7a5195",
-				pointBorderColor: "#7a5195",
-				pointBackgroundColor: "#fff",
-				pointBorderWidth: 1,
-				pointHoverRadius: 5,
-				pointHoverBackgroundColor: "#7a5195",
-				pointHoverBorderColor: "rgba(220,220,220,1)",
-				pointHoverBorderWidth: 2,
-				pointRadius: 1,
-				pointHitRadius: 10,
-				data: out.pdf
-			},
-			{
-				label: getContentTypeDisplayName("iframe"),
-				fill: false,
-				backgroundColor: "#ef5675",
-				borderColor: "#ef5675",
-				pointBorderColor: "#ef5675",
-				pointBackgroundColor: "#fff",
-				pointBorderWidth: 1,
-				pointHoverRadius: 5,
-				pointHoverBackgroundColor: "#ef5675",
-				pointHoverBorderColor: "rgba(220,220,220,1)",
-				pointHoverBorderWidth: 2,
-				pointRadius: 1,
-				pointHitRadius: 10,
-				data: out.iframe
-			},
-			{
-				label: getContentTypeDisplayName("article"),
-				fill: false,
-				backgroundColor: "#ffa600",
-				borderColor: "#ffa600",
-				pointBorderColor: "#ffa600",
-				pointBackgroundColor: "#fff",
-				pointBorderWidth: 1,
-				pointHoverRadius: 5,
-				pointHoverBackgroundColor: "#ffa600",
-				pointHoverBorderColor: "rgba(220,220,220,1)",
-				pointHoverBorderWidth: 2,
-				pointRadius: 1,
-				pointHitRadius: 10,
-				data: out.article
-			}
+			// #003f5c
+			createDataSeries(out.video, "video", "#5b9bd5"),
+			// #ffa600"
+			createDataSeries(out.article, "article", "#0dbb7f"),
+			// #7a5195
+			createDataSeries(out.pdf, "pdf", "#f1f69e"),
+			// #ef5675
+			createDataSeries(out.iframe, "iframe", "#f13d57")
 		]
 	};
 	return data;
@@ -146,18 +115,64 @@ export function PreferredMediaType({
 }) {
 	const graphData = plotPreferredMediaType(lASession);
 	const style = emphasisStyle ? emphasisStyle : "";
+	const preferredMediaType = preferredValuePerSession(lASession, "preferredMediaType");
+	const mediaName = isLessonContentMediaType(preferredMediaType)
+		? getContentTypeDisplayName(preferredMediaType)
+		: preferredMediaType;
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["PreferredMediaType"]}</h1>
 			<span className="text-xl">
 				{`Du bevorzugst `}
-				<span className={style}>
-					{preferredValuePerSession(lASession, "preferredMediaType")}
-				</span>
+				<span className={style}>{mediaName}</span>
 				{`.`}
 			</span>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />
+		</>
+	);
+}
+
+/**
+ * Component to display the metric "Preferred Media Type" in the Learning Analytics Dashboard.
+ * @param lASession The (filtered) session for which the metric is computed for.
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
+ * @returns The component to display the metric "Preferred Media Type".
+ */
+export function PreferredMediaTypeStacked({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
+	const graphData = plotPreferredMediaType(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
+
+	const preferredMediaType = preferredValuePerSession(lASession, "preferredMediaType");
+	const mediaName = isLessonContentMediaType(preferredMediaType)
+		? getContentTypeDisplayName(preferredMediaType)
+		: preferredMediaType;
+
+	const options = {
+		scales: {
+			x: {
+				...X_AXIS_FORMAT,
+				stacked: true
+			},
+			y: { stacked: true }
+		}
+	};
+
+	return (
+		<>
+			<h1 className="text-5xl">{UNARY_METRICS["PreferredMediaType"]}</h1>
+			<span className="text-xl">
+				{`Du bevorzugst `}
+				<span className={style}>{mediaName}</span>
+				{`.`}
+			</span>
+			<Bar data={graphData} options={options} />
 		</>
 	);
 }

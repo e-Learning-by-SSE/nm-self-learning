@@ -2,7 +2,7 @@ import { PreferredLearningTime } from "./learning-time";
 import { VideoSpeed } from "./video-speed";
 import { VideoDuration } from "./video-duration";
 import { MediaChanges } from "./media-changes";
-import { PreferredMediaType } from "./preferred-media-type";
+import { PreferredMediaTypeStacked } from "./preferred-media-type";
 import { Answers } from "./answers";
 import { LearningAnalyticsType } from "../learning-analytics";
 import { Hints } from "./hints";
@@ -62,7 +62,7 @@ export function UnaryMetric({
 		case "MediaChanges":
 			return <MediaChanges lASession={lASession} emphasisStyle="font-bold" />;
 		case "PreferredMediaType":
-			return <PreferredMediaType lASession={lASession} emphasisStyle="font-bold" />;
+			return <PreferredMediaTypeStacked lASession={lASession} emphasisStyle="font-bold" />;
 		case "QuizPerWeek":
 			return <QuizPerWeek lASession={lASession} emphasisStyle="font-bold" />;
 		case "Answers":
