@@ -1,6 +1,5 @@
 import { ChartOptions, ChartTypeRegistry, ScaleOptionsByType } from "chart.js";
-import { LearningAnalyticsType, SessionType } from "./learning-analytics";
-import { LessonContentMediaType } from "@self-learning/types";
+import { LessonContentMediaType, LearningAnalyticsType, SessionType } from "@self-learning/types";
 import { DeepPartial } from "chart.js/dist/types/utils";
 import { format } from "date-fns";
 

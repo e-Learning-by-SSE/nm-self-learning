@@ -4,7 +4,7 @@ import { VideoDuration } from "./video-duration";
 import { MediaChanges } from "./media-changes";
 import { PreferredMediaType } from "./preferred-media-type";
 import { Answers } from "./answers";
-import { LearningAnalyticsType } from "../learning-analytics";
+import { LearningAnalyticsType } from "@self-learning/types";
 import { Hints } from "./hints";
 import { QuizPerWeek } from "./quiz-per-week";
 import { VideoStops } from "./video-stops";

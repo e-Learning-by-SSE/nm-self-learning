@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { UNARY_METRICS } from "./metrics";
 import { X_AXIS_FORMAT, formatDate, maxKey } from "../auxillary";
-import { LearningAnalyticsType } from "../learning-analytics";
+import { LearningAnalyticsType } from "@self-learning/types";
 
 import { Chart as ChartJS, registerables, ChartOptions } from "chart.js";
 import { Line } from "react-chartjs-2";

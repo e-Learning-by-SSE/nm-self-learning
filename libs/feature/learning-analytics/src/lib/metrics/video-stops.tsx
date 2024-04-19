@@ -1,5 +1,5 @@
 import { averageUsesPerSession, avg, DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
-import { LearningAnalyticsType } from "../learning-analytics";
+import { LearningAnalyticsType } from "@self-learning/types";
 import { UNARY_METRICS } from "./metrics";
 
 import { Chart as ChartJS, registerables } from "chart.js";

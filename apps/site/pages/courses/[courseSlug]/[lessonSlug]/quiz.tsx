@@ -4,16 +4,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
-import { trpc } from "@self-learning/api-client";
 import { useMarkAsCompleted } from "@self-learning/completion";
-import {
-	QuizInfoType,
-	StorageKeys,
-	loadFromStorage,
-	saveEnds,
-	saveLA,
-	saveToStorage
-} from "@self-learning/learning-analytics";
+import { loadFromStorage, saveToStorage } from "@self-learning/learning-analytics";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -23,6 +15,7 @@ import {
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
+import { QuizInfoType, StorageKeys } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";

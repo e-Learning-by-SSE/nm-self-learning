@@ -4,8 +4,6 @@ import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
 	LearningAnalyticsLesson,
-	MediaTypeChangesInfoType,
-	StorageKeys,
 	addMediaTypeChanges,
 	loadFromStorage,
 	saveToStorage
@@ -22,7 +20,9 @@ import {
 	getContentTypeDisplayName,
 	includesMediaType,
 	LessonContent,
-	LessonMeta
+	LessonMeta,
+	MediaTypeChangesInfoType,
+	StorageKeys
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";

@@ -6,12 +6,8 @@ import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
 import { useQuiz } from "./quiz-context";
 import { useEffect } from "react";
-import {
-	QuizInfoType,
-	StorageKeys,
-	loadFromStorage,
-	saveToStorage
-} from "@self-learning/learning-analytics";
+import { loadFromStorage, saveToStorage } from "@self-learning/learning-analytics";
+import { QuizInfoType, StorageKeys } from "@self-learning/types";
 
 export function Hints() {
 	const { config, usedHints, setUsedHints } = useQuiz();

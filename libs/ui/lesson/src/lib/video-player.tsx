@@ -1,14 +1,11 @@
 import { trpc } from "@self-learning/api-client";
 import {
-	SessionInfoType,
-	StorageKeys,
-	VideoInfoType,
-	checkUndefined,
 	loadFromStorage,
 	parseDateToISOString,
 	saveLA,
 	saveToStorage
 } from "@self-learning/learning-analytics";
+import { VideoInfoType, StorageKeys, SessionInfoType } from "@self-learning/types";
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 

@@ -16,17 +16,13 @@ import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
 import {
-	QuizInfoType,
-	SessionInfoType,
-	StorageKeys,
-	checkUndefined,
 	loadFromStorage,
 	parseDateToISOString,
-	saveEnds,
 	saveLA,
 	saveToStorage
 } from "@self-learning/learning-analytics";
 import { trpc } from "@self-learning/api-client";
+import { QuizInfoType, StorageKeys, SessionInfoType } from "@self-learning/types";
 
 export function Question({
 	question,
