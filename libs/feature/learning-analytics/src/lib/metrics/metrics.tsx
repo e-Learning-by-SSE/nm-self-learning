@@ -62,7 +62,7 @@ export function UnaryMetric({
 		case "MediaChanges":
 			return <MediaChanges lASession={lASession} emphasisStyle="font-bold" />;
 		case "PreferredMediaType":
-			return <PreferredMediaType lASession={lASession} />;
+			return <PreferredMediaType lASession={lASession} emphasisStyle="font-bold" />;
 		case "QuizPerWeek":
 			return <QuizPerWeek lASession={lASession} />;
 		case "Answers":
