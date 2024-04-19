@@ -1,15 +1,17 @@
 import { DEFAULT_LINE_CHART_OPTIONS, avg, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
+import { UNARY_METRICS } from "./metrics";
 
-/**
- * The displayname of the metric (may be translated to support i18n).
- */
-const METRIC_NAME = "Durchschnittliche Videodauer pro Tag";
+import { Chart as ChartJS, registerables } from "chart.js";
+import { Line } from "react-chartjs-2";
+import "chartjs-adapter-date-fns";
+
+ChartJS.register(...registerables);
 
 /**
  * Generates a summary that prints the average video duration in min.
  * @param lASession The (filtered) session for which the summary is computed for.
- * @returns A summary in form of: x.x min
+ * @returns A summary in form of: x.x Minuten
  */
 function summary(lASession: LearningAnalyticsType) {
 	let duration = 0;
@@ -28,7 +30,7 @@ function summary(lASession: LearningAnalyticsType) {
 			});
 		}
 	});
-	return (count > 0 ? (duration / count).toFixed(1) : "0") + " min";
+	return (count > 0 ? (duration / count).toFixed(1) : "0") + " Minuten";
 }
 
 /**
@@ -65,35 +67,45 @@ function plotVideoDuration(lASession: LearningAnalyticsType) {
 	});
 	out.data.push(avg(duration, count, 1));
 	out.labels.push(sessionStart);
-	let data = null;
-	if (out)
-		data = {
-			labels: out.labels,
-			datasets: [
-				{
-					label: METRIC_NAME,
-					fill: false,
-					backgroundColor: "rgba(75,192,192,0.4)",
-					pointBorderColor: "rgba(75,192,192,1)",
-					pointBackgroundColor: "#fff",
-					pointBorderWidth: 1,
-					pointHoverRadius: 5,
-					pointHoverBackgroundColor: "rgba(75,192,192,1)",
-					pointHoverBorderColor: "rgba(220,220,220,1)",
-					pointHoverBorderWidth: 2,
-					pointRadius: 1,
-					pointHitRadius: 10,
-					data: out.data
-				}
-			]
-		};
-	return data;
+	return {
+		labels: out.labels,
+		datasets: [
+			{
+				label: UNARY_METRICS["VideoDuration"],
+				fill: false,
+				backgroundColor: "rgba(75,192,192,0.4)",
+				pointBorderColor: "rgba(75,192,192,1)",
+				pointBackgroundColor: "#fff",
+				pointBorderWidth: 1,
+				pointHoverRadius: 5,
+				pointHoverBackgroundColor: "rgba(75,192,192,1)",
+				pointHoverBorderColor: "rgba(220,220,220,1)",
+				pointHoverBorderWidth: 2,
+				pointRadius: 1,
+				pointHitRadius: 10,
+				data: out.data
+			}
+		]
+	};
 }
 
-export const VIDEO_DURATION_METRIC = {
-	metric: "Video Duration",
-	name: METRIC_NAME,
-	summary: summary,
-	data: plotVideoDuration,
-	options: DEFAULT_LINE_CHART_OPTIONS
-};
+/**
+ * Component to display the metric "Video Duration" in the Learning Analytics Dashboard.
+ * @param lASession The (filtered) session for which the metric is computed for.
+ * @returns The component to display the metric "Video Duration".
+ */
+export function VideoDuration({ lASession }: { lASession: LearningAnalyticsType }) {
+	const graphData = plotVideoDuration(lASession);
+
+	return (
+		<>
+			<h1 className="text-5xl">{UNARY_METRICS["VideoDuration"]}</h1>
+			<span className="text-xl">
+				{`Durchschnittlich hast pro Tag `}
+				<span className="italic">{summary(lASession)}</span>
+				{` Lernvideos angeschaut.`}
+			</span>
+			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />
+		</>
+	);
+}

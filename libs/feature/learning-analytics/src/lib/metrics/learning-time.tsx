@@ -1,13 +1,13 @@
 import { format } from "date-fns";
-import { MetricType } from "./metrics";
-import { ChartOptions } from "chart.js";
+import { UNARY_METRICS } from "./metrics";
 import { X_AXIS_FORMAT, formatDate, maxKey } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 
-/**
- * The displayname of the metric (may be translated to support i18n).
- */
-const METRIC_NAME = "Präferierte Lernzeit";
+import { Chart as ChartJS, registerables, ChartOptions } from "chart.js";
+import { Line } from "react-chartjs-2";
+import "chartjs-adapter-date-fns";
+
+ChartJS.register(...registerables);
 
 /**
  * Time axis format (Y-axis range is 0-24 hours).
@@ -102,7 +102,7 @@ function plotPreferredLearningTime(lASession: LearningAnalyticsType) {
 		labels: out.labels,
 		datasets: [
 			{
-				label: METRIC_NAME,
+				label: UNARY_METRICS["PreferredLearningTime"],
 				fill: false,
 				backgroundColor: "rgba(75,192,192,0.4)",
 				pointBorderColor: "rgba(75,192,192,1)",
@@ -121,10 +121,23 @@ function plotPreferredLearningTime(lASession: LearningAnalyticsType) {
 	return data;
 }
 
-export const PREFERRED_LEARNING_TIME_METRIC: MetricType = {
-	metric: "preferredLearningTime",
-	name: METRIC_NAME,
-	summary: summary,
-	data: plotPreferredLearningTime,
-	options: learningTimeOptions
-};
+/**
+ * Component to display the metric "Preferred Learning Time" in the Learning Analytics Dashboard.
+ * @param lASession The (filtered) session for which the metric is computed for.
+ * @returns The component to display the metric "Preferred Learning Time".
+ */
+export function PreferredLearningTime({ lASession }: { lASession: LearningAnalyticsType }) {
+	const graphData = plotPreferredLearningTime(lASession);
+
+	return (
+		<>
+			<h1 className="text-5xl">{UNARY_METRICS["PreferredLearningTime"]}</h1>
+			<span className="text-xl">
+				{`Bevorzugt hast du `}
+				<span className="italic">{summary(lASession)}</span>
+				{` gelernt.`}
+			</span>
+			<Line data={graphData} options={learningTimeOptions} />
+		</>
+	);
+}

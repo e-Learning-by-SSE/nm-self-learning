@@ -8,12 +8,11 @@ import "react-datepicker/dist/react-datepicker.css";
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 
 import { Divider, LoadingCircle } from "@self-learning/ui/common";
-import { METRICS, notNull } from "@self-learning/learning-analytics";
+import { UNARY_METRICS, UnaryMetric, notNull } from "@self-learning/learning-analytics";
 import { useState } from "react";
 import { format } from "date-fns";
 
 import { Chart as ChartJS, registerables } from "chart.js";
-import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
 
 ChartJS.register(...registerables);
@@ -133,9 +132,9 @@ function LearningAnalytics({ lASession }: { lASession: LearningAnalyticsType }) 
 	const lASessionFilteredByLesson = JSON.parse(JSON.stringify(lASessionFilteredByCourse));
 	filterLaSession(lASessionFilteredByLesson, selectedLesson, "lesson");
 
-	const [selectedMetric, setSelectedMetric] = useState(METRICS[0]);
-	const data = selectedMetric.data(lASessionFilteredByLesson);
-	const options = selectedMetric.options;
+	const [selectedMetric, setSelectedMetric] = useState(Object.keys(UNARY_METRICS)[0]);
+	// const data = selectedMetric.data(lASessionFilteredByLesson);
+	// const options = selectedMetric.options;
 
 	return (
 		<div className="bg-gray-50">
@@ -222,27 +221,26 @@ function LearningAnalytics({ lASession }: { lASession: LearningAnalyticsType }) 
 						</LabeledField>
 						<Divider />
 						<p className="heading text-2xl">Metriken</p>
-						{METRICS.map(metric => (
+						{Object.keys(UNARY_METRICS).map(metric => (
 							<button
-								key={metric.metric}
+								key={metric}
 								onClick={() => setSelectedMetric(metric)}
 								className={`p-2 hover:text-gray-500 ${
 									metric === selectedMetric ? "text-secondary" : ""
 								}`}
 							>
-								<p className="... text-left">{metric.name}</p>
+								<p className="... text-left">
+									{UNARY_METRICS[metric as UnaryMetric]}
+								</p>
 							</button>
 						))}
 					</>
 				}
 			>
-				<h1 className="text-5xl">Statistik</h1>
-				<span className="text-xl">
-					<span className="font-bold">{selectedMetric.name}:</span>
-					{` ${selectedMetric.summary(lASessionFilteredByLesson)}`}
-				</span>
-				{data && options == null && <Line data={data} />}
-				{data && options && <Line data={data} options={selectedMetric.options} />}
+				<UnaryMetric
+					lASession={lASessionFilteredByLesson}
+					metric={selectedMetric as UnaryMetric}
+				/>
 			</SidebarEditorLayout>
 		</div>
 	);

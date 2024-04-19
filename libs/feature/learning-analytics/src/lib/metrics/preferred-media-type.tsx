@@ -1,17 +1,13 @@
-import {
-	DEFAULT_LINE_CHART_OPTIONS,
-	formatDate,
-	isLessonContentMediaType,
-	maxKey,
-	preferredValuePerSession
-} from "../auxillary";
+import { DEFAULT_LINE_CHART_OPTIONS, formatDate, preferredValuePerSession } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
 import { getContentTypeDisplayName } from "@self-learning/types";
+import { UNARY_METRICS } from "./metrics";
 
-/**
- * The displayname of the metric (may be translated to support i18n).
- */
-const METRIC_NAME = "Bevorzugter Medientyp";
+import { Chart as ChartJS, registerables } from "chart.js";
+import { Line } from "react-chartjs-2";
+import "chartjs-adapter-date-fns";
+
+ChartJS.register(...registerables);
 
 /**
  * Generates the Line Chart data for the used media types per day.
@@ -134,11 +130,25 @@ function plotPreferredMediaType(lASession: LearningAnalyticsType) {
 	return data;
 }
 
-export const PREFERRED_MEDIA_TYPE_METRIC = {
-	metric: "Preferred Media Type",
-	name: METRIC_NAME,
-	summary: (lASession: LearningAnalyticsType) =>
-		preferredValuePerSession(lASession, "preferredMediaType"),
-	data: plotPreferredMediaType,
-	options: DEFAULT_LINE_CHART_OPTIONS
-};
+/**
+ * Component to display the metric "Preferred Media Type" in the Learning Analytics Dashboard.
+ * @param lASession The (filtered) session for which the metric is computed for.
+ * @returns The component to display the metric "Preferred Media Type".
+ */
+export function PreferredMediaType({ lASession }: { lASession: LearningAnalyticsType }) {
+	const graphData = plotPreferredMediaType(lASession);
+
+	return (
+		<>
+			<h1 className="text-5xl">{UNARY_METRICS["PreferredMediaType"]}</h1>
+			<span className="text-xl">
+				{`Du bevorzugst `}
+				<span className="italic">
+					{preferredValuePerSession(lASession, "preferredMediaType")}
+				</span>
+				{`.`}
+			</span>
+			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />
+		</>
+	);
+}

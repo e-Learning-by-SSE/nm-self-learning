@@ -5,11 +5,13 @@ import {
 	preferredValuePerSession
 } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
+import { UNARY_METRICS } from "./metrics";
 
-/**
- * The displayname of the metric (may be translated to support i18n).
- */
-const METRIC_NAME = "Bevorzugte Videogeschwindigkeit";
+import { Chart as ChartJS, registerables } from "chart.js";
+import { Line } from "react-chartjs-2";
+import "chartjs-adapter-date-fns";
+
+ChartJS.register(...registerables);
 
 /**
  * Generates the Line Chart data for the preferred video speed per day.
@@ -52,7 +54,7 @@ function plotPreferredVideoSpeed(lASession: LearningAnalyticsType) {
 		labels: out.labels,
 		datasets: [
 			{
-				label: METRIC_NAME,
+				label: UNARY_METRICS["VideoSpeed"],
 				fill: false,
 				backgroundColor: "rgba(75,192,192,0.4)",
 				pointBorderColor: "rgba(75,192,192,1)",
@@ -71,11 +73,23 @@ function plotPreferredVideoSpeed(lASession: LearningAnalyticsType) {
 	return data;
 }
 
-export const VIDEO_SPEED_METRIC = {
-	metric: "Video Speed",
-	name: METRIC_NAME,
-	summary: (lASession: LearningAnalyticsType) =>
-		preferredValuePerSession(lASession, "videoSpeed"),
-	data: plotPreferredVideoSpeed,
-	options: DEFAULT_LINE_CHART_OPTIONS
-};
+/**
+ * Component to display the metric "Video Speed" in the Learning Analytics Dashboard.
+ * @param lASession The (filtered) session for which the metric is computed for.
+ * @returns The component to display the metric "Video Speed".
+ */
+export function VideoSpeed({ lASession }: { lASession: LearningAnalyticsType }) {
+	const graphData = plotPreferredVideoSpeed(lASession);
+
+	return (
+		<>
+			<h1 className="text-5xl">{UNARY_METRICS["VideoSpeed"]}</h1>
+			<span className="text-xl">
+				{`Durchschnittlich hast du Videos mit `}
+				<span className="italic">{preferredValuePerSession(lASession, "videoSpeed")}</span>
+				{`-facher Geschwindigkeit Videos angeschaut.`}
+			</span>
+			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />
+		</>
+	);
+}

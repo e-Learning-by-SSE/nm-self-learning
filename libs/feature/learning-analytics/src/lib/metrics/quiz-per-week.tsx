@@ -1,10 +1,12 @@
 import { DEFAULT_LINE_CHART_OPTIONS, avg, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
+import { UNARY_METRICS } from "./metrics";
 
-/**
- * The displayname of the metric (may be translated to support i18n).
- */
-const METRIC_NAME = "Lernkontrollen pro Tag";
+import { Chart as ChartJS, registerables } from "chart.js";
+import { Line } from "react-chartjs-2";
+import "chartjs-adapter-date-fns";
+
+ChartJS.register(...registerables);
 
 /**
  * Part of the summary to convert a date to the week number and year.
@@ -106,35 +108,45 @@ export function plotQuizPerWeek(lASession: LearningAnalyticsType) {
 	});
 	out.data.push(count);
 	out.labels.push(sessionStart);
-	let data = null;
-	if (out)
-		data = {
-			labels: out.labels,
-			datasets: [
-				{
-					label: METRIC_NAME,
-					fill: false,
-					backgroundColor: "rgba(75,192,192,0.4)",
-					pointBorderColor: "rgba(75,192,192,1)",
-					pointBackgroundColor: "#fff",
-					pointBorderWidth: 1,
-					pointHoverRadius: 5,
-					pointHoverBackgroundColor: "rgba(75,192,192,1)",
-					pointHoverBorderColor: "rgba(220,220,220,1)",
-					pointHoverBorderWidth: 2,
-					pointRadius: 1,
-					pointHitRadius: 10,
-					data: out.data
-				}
-			]
-		};
-	return data;
+	return {
+		labels: out.labels,
+		datasets: [
+			{
+				label: UNARY_METRICS["QuizPerWeek"],
+				fill: false,
+				backgroundColor: "rgba(75,192,192,0.4)",
+				pointBorderColor: "rgba(75,192,192,1)",
+				pointBackgroundColor: "#fff",
+				pointBorderWidth: 1,
+				pointHoverRadius: 5,
+				pointHoverBackgroundColor: "rgba(75,192,192,1)",
+				pointHoverBorderColor: "rgba(220,220,220,1)",
+				pointHoverBorderWidth: 2,
+				pointRadius: 1,
+				pointHitRadius: 10,
+				data: out.data
+			}
+		]
+	};
 }
 
-export const QUIZ_PER_WEEK_METRIC = {
-	metric: "Quiz per Week",
-	name: METRIC_NAME,
-	summary: summary,
-	data: plotQuizPerWeek,
-	options: DEFAULT_LINE_CHART_OPTIONS
-};
+/**
+ * Component to display the metric "Quiz per Day" in the Learning Analytics Dashboard.
+ * @param lASession The (filtered) session for which the metric is computed for.
+ * @returns The component to display the metric "Quiz per Day".
+ */
+export function QuizPerWeek({ lASession }: { lASession: LearningAnalyticsType }) {
+	const graphData = plotQuizPerWeek(lASession);
+
+	return (
+		<>
+			<h1 className="text-5xl">{UNARY_METRICS["QuizPerWeek"]}</h1>
+			<span className="text-xl">
+				{`Durchschnittlich hast pro Sitzung `}
+				<span className="italic">{summary(lASession)}</span>
+				{` Lernzielkontrollen bearbeitet.`}
+			</span>
+			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />
+		</>
+	);
+}

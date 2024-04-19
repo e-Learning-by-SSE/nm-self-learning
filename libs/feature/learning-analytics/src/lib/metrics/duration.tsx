@@ -1,10 +1,12 @@
 import { DEFAULT_LINE_CHART_OPTIONS, avg, formatDate } from "../auxillary";
 import { LearningAnalyticsType } from "../learning-analytics";
+import { UNARY_METRICS } from "./metrics";
 
-/**
- * The displayname of the metric (may be translated to support i18n).
- */
-const METRIC_NAME = "Durchschnittliche Lernzeit pro Tag";
+import { Chart as ChartJS, registerables } from "chart.js";
+import { Line } from "react-chartjs-2";
+import "chartjs-adapter-date-fns";
+
+ChartJS.register(...registerables);
 
 /**
  * Generates a summary that prints the average learning duration in min.
@@ -81,35 +83,45 @@ function plotDurationPerDay(lASession: LearningAnalyticsType) {
 	});
 	out.data.push(avg(duration, count, 1));
 	out.labels.push(sessionStart);
-	let data = null;
-	if (out)
-		data = {
-			labels: out.labels,
-			datasets: [
-				{
-					label: METRIC_NAME,
-					fill: false,
-					backgroundColor: "rgba(75,192,192,0.4)",
-					pointBorderColor: "rgba(75,192,192,1)",
-					pointBackgroundColor: "#fff",
-					pointBorderWidth: 1,
-					pointHoverRadius: 5,
-					pointHoverBackgroundColor: "rgba(75,192,192,1)",
-					pointHoverBorderColor: "rgba(220,220,220,1)",
-					pointHoverBorderWidth: 2,
-					pointRadius: 1,
-					pointHitRadius: 10,
-					data: out.data
-				}
-			]
-		};
-	return data;
+	return {
+		labels: out.labels,
+		datasets: [
+			{
+				label: UNARY_METRICS["Duration"],
+				fill: false,
+				backgroundColor: "rgba(75,192,192,0.4)",
+				pointBorderColor: "rgba(75,192,192,1)",
+				pointBackgroundColor: "#fff",
+				pointBorderWidth: 1,
+				pointHoverRadius: 5,
+				pointHoverBackgroundColor: "rgba(75,192,192,1)",
+				pointHoverBorderColor: "rgba(220,220,220,1)",
+				pointHoverBorderWidth: 2,
+				pointRadius: 1,
+				pointHitRadius: 10,
+				data: out.data
+			}
+		]
+	};
 }
 
-export const DURATION_METRIC = {
-	metric: "Duration",
-	name: METRIC_NAME,
-	summary: summary,
-	data: plotDurationPerDay,
-	options: DEFAULT_LINE_CHART_OPTIONS
-};
+/**
+ * Component to display the metric "Learning Duration" in the Learning Analytics Dashboard.
+ * @param lASession The (filtered) session for which the metric is computed for.
+ * @returns The component to display the metric "Learning Duration".
+ */
+export function Duration({ lASession }: { lASession: LearningAnalyticsType }) {
+	const graphData = plotDurationPerDay(lASession);
+
+	return (
+		<>
+			<h1 className="text-5xl">{UNARY_METRICS["Duration"]}</h1>
+			<span className="text-xl">
+				{`Durchschnittlich hast du `}
+				<span className="italic">{summary(lASession)}</span>
+				{` pro Tag gelernt.`}
+			</span>
+			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />
+		</>
+	);
+}
