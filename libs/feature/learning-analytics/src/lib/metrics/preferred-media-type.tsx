@@ -6,6 +6,7 @@ import { UNARY_METRICS } from "./metrics";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
 
@@ -133,17 +134,25 @@ function plotPreferredMediaType(lASession: LearningAnalyticsType) {
 /**
  * Component to display the metric "Preferred Media Type" in the Learning Analytics Dashboard.
  * @param lASession The (filtered) session for which the metric is computed for.
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
  * @returns The component to display the metric "Preferred Media Type".
  */
-export function PreferredMediaType({ lASession }: { lASession: LearningAnalyticsType }) {
+export function PreferredMediaType({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
 	const graphData = plotPreferredMediaType(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["PreferredMediaType"]}</h1>
 			<span className="text-xl">
 				{`Du bevorzugst `}
-				<span className="italic">
+				<span className={style}>
 					{preferredValuePerSession(lASession, "preferredMediaType")}
 				</span>
 				{`.`}

@@ -65,6 +65,7 @@ function plotHintsPerDay(lASession: LearningAnalyticsType) {
 /**
  * Component to display the metric "Used Hints per Day" in the Learning Analytics Dashboard.
  * @param lASession The (filtered) session for which the metric is computed for.
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
  * @returns The component to display the metric "Used Hints per Day".
  */
 export function Hints({

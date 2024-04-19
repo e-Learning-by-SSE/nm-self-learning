@@ -10,6 +10,7 @@ import { UNARY_METRICS } from "./metrics";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
+import { HTMLAttributes } from "react";
 
 ChartJS.register(...registerables);
 
@@ -76,17 +77,25 @@ function plotPreferredVideoSpeed(lASession: LearningAnalyticsType) {
 /**
  * Component to display the metric "Video Speed" in the Learning Analytics Dashboard.
  * @param lASession The (filtered) session for which the metric is computed for.
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
  * @returns The component to display the metric "Video Speed".
  */
-export function VideoSpeed({ lASession }: { lASession: LearningAnalyticsType }) {
+export function VideoSpeed({
+	lASession,
+	emphasisStyle
+}: {
+	lASession: LearningAnalyticsType;
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+}) {
 	const graphData = plotPreferredVideoSpeed(lASession);
+	const style = emphasisStyle ? emphasisStyle : "";
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["VideoSpeed"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast du Videos mit `}
-				<span className="italic">{preferredValuePerSession(lASession, "videoSpeed")}</span>
+				<span className={style}>{preferredValuePerSession(lASession, "videoSpeed")}</span>
 				{`-facher Geschwindigkeit Videos angeschaut.`}
 			</span>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />

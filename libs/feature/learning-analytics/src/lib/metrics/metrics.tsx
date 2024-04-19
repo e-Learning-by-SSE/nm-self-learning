@@ -54,17 +54,17 @@ export function UnaryMetric({
 		case "Duration":
 			return <Duration lASession={lASession} emphasisStyle="font-bold" />;
 		case "VideoSpeed":
-			return <VideoSpeed lASession={lASession} />;
+			return <VideoSpeed lASession={lASession} emphasisStyle="font-bold" />;
 		case "VideoDuration":
-			return <VideoDuration lASession={lASession} />;
+			return <VideoDuration lASession={lASession} emphasisStyle="font-bold" />;
 		case "VideoStops":
-			return <VideoStops lASession={lASession} />;
+			return <VideoStops lASession={lASession} emphasisStyle="font-bold" />;
 		case "MediaChanges":
 			return <MediaChanges lASession={lASession} emphasisStyle="font-bold" />;
 		case "PreferredMediaType":
-			return <PreferredMediaType lASession={lASession} />;
+			return <PreferredMediaType lASession={lASession} emphasisStyle="font-bold" />;
 		case "QuizPerWeek":
-			return <QuizPerWeek lASession={lASession} />;
+			return <QuizPerWeek lASession={lASession} emphasisStyle="font-bold" />;
 		case "Answers":
 			return <Answers lASession={lASession} emphasisStyle="font-bold" />;
 		case "Hints":
@@ -75,7 +75,7 @@ export function UnaryMetric({
 					<h1 className="text-5xl">Fehler</h1>
 					<span className="text-xl">
 						{`Unbekannte Metrik ausgewählt: `}
-						<span className="italic">{UNARY_METRICS[metric]}</span>
+						<span className="font-bold">{UNARY_METRICS[metric]}</span>
 						{`.`}
 					</span>
 				</>
