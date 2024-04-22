@@ -9,8 +9,8 @@ import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 
 import { Divider, LoadingCircle } from "@self-learning/ui/common";
 import { UNARY_METRICS, UnaryMetric, notNull } from "@self-learning/learning-analytics";
-import { useState } from "react";
-import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { format, set } from "date-fns";
 
 import { Chart as ChartJS, registerables } from "chart.js";
 import "chartjs-adapter-date-fns";
@@ -106,6 +106,79 @@ export default function Page() {
 		<div className="bg-gray-50">
 			<p>Keine Daten vorhanden</p>
 		</div>
+	);
+}
+
+/**
+ * Responsive design for the metric selection.
+ * @param selectedMetric The current metric selection
+ * @param setSelectedMetric The function to set the metric selection
+ * @returns The metric selection component (dropdown on smaller devices, buttons on larger devices)
+ */
+function MetricSelector({
+	selectedMetric,
+	setSelectedMetric
+}: {
+	selectedMetric: string;
+	setSelectedMetric: (metric: string) => void;
+}) {
+	// Detection of Screen Size
+	const [isMobile, setIsMobile] = useState(false);
+
+	useEffect(() => {
+		function handleResize() {
+			//TODO SE: When does the layout change? Tis happens at 1280, but do we have a variable for this?
+			setIsMobile(window.innerWidth < 1280);
+		}
+
+		window.addEventListener("resize", handleResize);
+		handleResize();
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
+	// DropDown metric selection on smaller devices / window
+	if (isMobile) {
+		const values = Object.keys(UNARY_METRICS).map(metric => ({
+			value: metric,
+			label: UNARY_METRICS[metric as UnaryMetric]
+		}));
+		const defaultValue = values.findIndex(value => value.value === selectedMetric);
+
+		return (
+			<>
+				<p className="heading text-2xl">Metriken</p>
+				<Select
+					id={"metricSelection"}
+					instanceId={"metricSelection"}
+					isSearchable={true}
+					defaultValue={values[defaultValue]}
+					onChange={e => {
+						setSelectedMetric(e?.value as UnaryMetric);
+					}}
+					options={values}
+				/>
+			</>
+		);
+	}
+
+	return (
+		<>
+			<p className="heading text-2xl">Metriken</p>
+			{Object.keys(UNARY_METRICS).map(metric => (
+				<button
+					key={metric}
+					onClick={() => setSelectedMetric(metric)}
+					className={`p-2 hover:text-gray-500 ${
+						metric === selectedMetric ? "text-secondary" : ""
+					}`}
+				>
+					<p className="... text-left">{UNARY_METRICS[metric as UnaryMetric]}</p>
+				</button>
+			))}
+		</>
 	);
 }
 
@@ -220,20 +293,10 @@ function LearningAnalytics({ lASession }: { lASession: LearningAnalyticsType }) 
 							</div>
 						</LabeledField>
 						<Divider />
-						<p className="heading text-2xl">Metriken</p>
-						{Object.keys(UNARY_METRICS).map(metric => (
-							<button
-								key={metric}
-								onClick={() => setSelectedMetric(metric)}
-								className={`p-2 hover:text-gray-500 ${
-									metric === selectedMetric ? "text-secondary" : ""
-								}`}
-							>
-								<p className="... text-left">
-									{UNARY_METRICS[metric as UnaryMetric]}
-								</p>
-							</button>
-						))}
+						<MetricSelector
+							selectedMetric={selectedMetric}
+							setSelectedMetric={setSelectedMetric}
+						/>
 					</>
 				}
 			>

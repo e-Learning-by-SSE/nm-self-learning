@@ -101,6 +101,37 @@ function plotPreferredMediaType(lASession: LearningAnalyticsType) {
 }
 
 /**
+ * Creates a consistent skeleton for the metric "Preferred Media Type".
+ * @param mediaName The media type which is preferred by the user.
+ * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
+ * @param children The chart to display the metric.
+ * @returns The component to display the chart and the summary.
+ */
+function PreferredMediaTypeLayout({
+	mediaName,
+	emphasisStyle,
+	children
+}: {
+	emphasisStyle?: HTMLAttributes<"span">["className"];
+	mediaName: string;
+	children: React.ReactNode;
+}) {
+	const style = emphasisStyle ? emphasisStyle : "";
+
+	return (
+		<>
+			<h1 className="text-5xl">{UNARY_METRICS["PreferredMediaType"]}</h1>
+			<span className="text-xl">
+				{`Du bevorzugst `}
+				<span className={style}>{mediaName}</span>
+				{`.`}
+			</span>
+			{children}
+		</>
+	);
+}
+
+/**
  * Component to display the metric "Preferred Media Type" in the Learning Analytics Dashboard.
  * @param lASession The (filtered) session for which the metric is computed for.
  * @param emphasisStyle className to emphasize the summary (e.g. font-bold or italic).
@@ -114,22 +145,15 @@ export function PreferredMediaType({
 	emphasisStyle?: HTMLAttributes<"span">["className"];
 }) {
 	const graphData = plotPreferredMediaType(lASession);
-	const style = emphasisStyle ? emphasisStyle : "";
 	const preferredMediaType = preferredValuePerSession(lASession, "preferredMediaType");
 	const mediaName = isLessonContentMediaType(preferredMediaType)
 		? getContentTypeDisplayName(preferredMediaType)
 		: preferredMediaType;
 
 	return (
-		<>
-			<h1 className="text-5xl">{UNARY_METRICS["PreferredMediaType"]}</h1>
-			<span className="text-xl">
-				{`Du bevorzugst `}
-				<span className={style}>{mediaName}</span>
-				{`.`}
-			</span>
+		<PreferredMediaTypeLayout mediaName={mediaName} emphasisStyle={emphasisStyle}>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />
-		</>
+		</PreferredMediaTypeLayout>
 	);
 }
 
@@ -147,7 +171,6 @@ export function PreferredMediaTypeStacked({
 	emphasisStyle?: HTMLAttributes<"span">["className"];
 }) {
 	const graphData = plotPreferredMediaType(lASession);
-	const style = emphasisStyle ? emphasisStyle : "";
 
 	const preferredMediaType = preferredValuePerSession(lASession, "preferredMediaType");
 	const mediaName = isLessonContentMediaType(preferredMediaType)
@@ -165,14 +188,8 @@ export function PreferredMediaTypeStacked({
 	};
 
 	return (
-		<>
-			<h1 className="text-5xl">{UNARY_METRICS["PreferredMediaType"]}</h1>
-			<span className="text-xl">
-				{`Du bevorzugst `}
-				<span className={style}>{mediaName}</span>
-				{`.`}
-			</span>
+		<PreferredMediaTypeLayout mediaName={mediaName} emphasisStyle={emphasisStyle}>
 			<Bar data={graphData} options={options} />
-		</>
+		</PreferredMediaTypeLayout>
 	);
 }
