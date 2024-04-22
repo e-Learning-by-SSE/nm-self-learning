@@ -2,60 +2,47 @@ import { trpc } from "@self-learning/api-client";
 import router, { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { LessonLayoutProps } from "@self-learning/lesson";
-import { formatDate } from "./auxillary";
+import { KeysOfType } from "./auxillary";
 import { Switch } from "@headlessui/react";
 import { ButtonActions, SimpleDialogXL, showToast } from "@self-learning/ui/common";
 import { TRPCClientError } from "@trpc/client";
+import {
+	LessonInfoType,
+	MediaTypeChangesInfoType,
+	MediaTypeInfoType,
+	QuizInfoType,
+	SessionInfoType,
+	StorageKeys,
+	VideoInfoType
+} from "@self-learning/types";
 
 export function notNull<T>(val: T | null): val is T {
 	return val != null;
 }
 
-export type LearningAnalyticsType = {
-	start: Date;
-	end: Date | null;
-	learningAnalytics: SessionType[];
-}[];
-
-export type SessionType = {
-	start: Date | null;
-	end: Date | null;
-	sessionId: number;
-	lessonId: string | null;
-	quizStart: Date | null;
-	quizEnd: Date | null;
-	numberCorrectAnswers: number | null;
-	numberIncorrectAnswers: number | null;
-	numberOfUsedHints: number | null;
-	numberOfChangesMediaType: number | null;
-	preferredMediaType: string | null;
-	videoStart: Date | null;
-	videoEnd: Date | null;
-	videoBreaks: number | null;
-	videoSpeed: number | null;
-};
-
-/**
- * getLessonsInfo()
- * returns the learning analytic lesson infos, which are stored in the local storage.
- *
- */
-export function getLessonsInfo() {
-	const timestamp = new Date();
-	let lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
-	if (lALessonInfo && lALessonInfo !== "") {
-		if (lALessonInfo.lessonId && lALessonInfo.lessonId !== "") {
-			if (lALessonInfo.start !== "" && lALessonInfo.end === "") {
-				lALessonInfo.end = timestamp;
-			} else if (lALessonInfo.start === "") {
-				lALessonInfo.start = null;
-				lALessonInfo.end = null;
-			}
-		}
-	} else {
-		lALessonInfo = null;
+export function loadFromStorage<T>(key: StorageKeys): T | null {
+	const rawData = localStorage.getItem(key);
+	let data: T | null = null;
+	if (rawData) {
+		data = JSON.parse(rawData) as T;
 	}
-	return lALessonInfo;
+	return data;
+}
+
+export function saveToStorage<T>(key: StorageKeys, data: T) {
+	window.localStorage.setItem(key, JSON.stringify(data));
+}
+
+export function addMediaTypeChanges(property: KeysOfType<MediaTypeChangesInfoType, number | null>) {
+	const mediaTypeChanges = loadFromStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType);
+	if (mediaTypeChanges) {
+		if (mediaTypeChanges[property]) {
+			mediaTypeChanges[property]++;
+		} else {
+			mediaTypeChanges[property] = 1;
+		}
+		saveToStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType, mediaTypeChanges);
+	}
 }
 
 /**
@@ -64,83 +51,97 @@ export function getLessonsInfo() {
  * after the user has closed the website and started a new session at a later time.
  */
 export function saveEnds() {
-	const lALessonInfo = getLessonsInfo();
-	const lAVideoInfo = getVideoInfo();
-	const lAQuizInfo = getQuizInfo();
-	if (lALessonInfo && lALessonInfo.start !== "" && lALessonInfo.end === "") {
-		lALessonInfo.end = new Date() + "";
-		window.localStorage.setItem("la_lessonInfo", JSON.stringify(lALessonInfo));
+	const lASession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
+	const lALessonInfo = loadFromStorage<LessonInfoType>(StorageKeys.LALesson);
+	const lAVideoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
+	const lAQuizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+
+	const endDates = [
+		lASession?.end ? new Date(lASession.end).getTime() : 0,
+		lALessonInfo?.end ? new Date(lALessonInfo.end).getTime() : 0,
+		lAVideoInfo?.videoEnd ? new Date(lAVideoInfo.videoEnd).getTime() : 0,
+		lAQuizInfo?.quizEnd ? new Date(lAQuizInfo.quizEnd).getTime() : 0
+	];
+
+	const maxDate = new Date(Math.max(...endDates));
+
+	if (lALessonInfo?.start != null && lALessonInfo.end == null) {
+		lALessonInfo.end = maxDate;
+		saveToStorage<LessonInfoType>(StorageKeys.LALesson, lALessonInfo);
 	}
-	if (lAVideoInfo && lAVideoInfo.start !== "" && lAVideoInfo.end === "") {
-		lAVideoInfo.end = new Date() + "";
-		window.localStorage.setItem("la_videoInfo", JSON.stringify(lAVideoInfo));
+	if (lAVideoInfo?.videoStart != null && lAVideoInfo.videoEnd == null) {
+		lAVideoInfo.videoEnd = maxDate;
+		saveToStorage<VideoInfoType>(StorageKeys.LAVideo, lAVideoInfo);
 	}
-	if (lAQuizInfo && lAQuizInfo.start !== "" && lAQuizInfo.end === "") {
-		lAQuizInfo.end = new Date() + "";
-		window.localStorage.setItem("la_quizInfo", JSON.stringify(lAQuizInfo));
+	if (lAQuizInfo?.quizStart != null && lAQuizInfo.quizEnd == null) {
+		lAQuizInfo.quizEnd = maxDate;
+		saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, lAQuizInfo);
 	}
 }
 
 /**
- * saveLA()
  * Saves all learning analytic data from the local storage in the database.
  *
+ * @return The new entry for the learning analytics that was saved in the database.
  */
 export function saveLA() {
-	const laSession = JSON.parse(localStorage.getItem("la_session") + "");
-	const lALessonInfo = getLessonsInfo();
-	const lAVideoInfo = getVideoInfo();
-	const lAQuizInfo = getQuizInfo();
+	saveEnds();
+	const lASession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
+	const lALessonInfo = loadFromStorage<LessonInfoType>(StorageKeys.LALesson);
+	const lAVideoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
+	const lAQuizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
 	const lAMediaType = getMediaType();
 	let data = null;
-	if (lALessonInfo != null && lALessonInfo?.id !== "" && laSession?.id > -1) {
+	if (
+		lALessonInfo?.lessonId != null &&
+		lALessonInfo?.courseId != null &&
+		lASession?.start != null
+	) {
 		resetLA();
+		console.log(lAQuizInfo);
 		data = {
-			sessionId: laSession.id,
+			sessionId: lASession.id ? lASession.id : -1,
 			lessonId: lALessonInfo.lessonId,
 			courseId: lALessonInfo.courseId,
-			start: new Date(lALessonInfo.start).toISOString(),
-			end: new Date(lALessonInfo.end).toISOString(),
-			quizStart: lAQuizInfo ? new Date(lAQuizInfo.start).toISOString() : null,
-			quizEnd: lAQuizInfo ? new Date(lAQuizInfo.end).toISOString() : null,
-			numberCorrectAnswers: lAQuizInfo ? lAQuizInfo.right : null,
-			numberIncorrectAnswers: lAQuizInfo ? lAQuizInfo.wrong : null,
-			numberOfUsedHints: lAQuizInfo ? lAQuizInfo.hint : null,
-			numberOfChangesMediaType: lAMediaType ? lAMediaType.numberOfChangesMediaType : 0,
-			preferredMediaType: lAMediaType ? lAMediaType.preferredMediaType : "video",
-			videoStart: lAVideoInfo ? new Date(lAVideoInfo.start).toISOString() : null,
-			videoEnd: lAVideoInfo ? new Date(lAVideoInfo.end).toISOString() : null,
-			videoBreaks: lAVideoInfo ? lAVideoInfo.stops : null,
-			videoSpeed: lAVideoInfo ? lAVideoInfo.speed : null
+			start: parseDateToISOString(lALessonInfo?.start),
+			end: parseDateToISOString(lALessonInfo?.end),
+			quizStart: parseDateToISOString(lAQuizInfo?.quizStart),
+			quizEnd: parseDateToISOString(lAQuizInfo?.quizEnd),
+			numberCorrectAnswers: checkUndefined<number>(lAQuizInfo?.numberCorrectAnswers),
+			numberIncorrectAnswers: checkUndefined<number>(lAQuizInfo?.numberIncorrectAnswers),
+			numberOfUsedHints: checkUndefined<number>(lAQuizInfo?.numberOfUsedHints),
+			numberOfChangesMediaType: lAMediaType.numberOfChangesMediaType,
+			preferredMediaType: lAMediaType?.preferredMediaType,
+			videoStart: parseDateToISOString(lAVideoInfo?.videoStart),
+			videoEnd: parseDateToISOString(lAVideoInfo?.videoEnd),
+			videoBreaks: checkUndefined<number>(lAVideoInfo?.videoBreaks),
+			videoSpeed: checkUndefined<number>(lAVideoInfo?.videoSpeed)
 		};
+		console.log(data);
 	}
 	return data;
 }
 
 /**
- * getVideoInfo()
- * returns the learning analytic video infos, which are stored in the local storage.
+ * 	Checks if an object is undefined.
  *
+ * @param data object that will be checked for undefined.
+ * @returns null for undefined objects or the object itself.
  */
-export function getVideoInfo() {
-	let lAVideoInfo = JSON.parse(localStorage.getItem("la_videoInfo") + "");
-	if (lAVideoInfo && lAVideoInfo.start === "") {
-		lAVideoInfo = null;
-	}
-	return lAVideoInfo;
+export function checkUndefined<T>(data: T | null | undefined): T | null {
+	if (data === undefined) return null;
+	else return data;
 }
 
 /**
- * getQuizInfo()
- * returns the learning analytic quiz infos, which are stored in the local storage.
+ * 	Checks if a date is undefined or null or parse it to ISOString.
  *
+ * @param data date that will be checked for undefined.
+ * @returns null for undefined objects or a date ISOString.
  */
-export function getQuizInfo() {
-	let lAQuizInfo = JSON.parse(localStorage.getItem("la_quizInfo") + "");
-	if (lAQuizInfo && lAQuizInfo.start === "") {
-		lAQuizInfo = null;
-	}
-	return lAQuizInfo;
+export function parseDateToISOString(data: Date | null | undefined): string | null {
+	if (data === undefined || data == null) return null;
+	else return new Date(data).toISOString();
 }
 
 /**
@@ -151,16 +152,18 @@ export function getQuizInfo() {
  * A changes would required to implement distinct timer hooks and local
  * storage items for each media type.
  *
- * Number of changes media type: The sum of all media type changes.
+ * @return Number of changes media type: The sum of all media type changes.
  */
-export function getMediaType() {
-	let lANumberOfChangesMediaTypeSum: number | null = 0;
-	let lAPreferredMediaType: string | null = "video";
-	const lANumberOfChangesMediaType = JSON.parse(
-		localStorage.getItem("la_numberOfChangesMediaType") + ""
+export function getMediaType(): MediaTypeInfoType {
+	const lAMediaTypeInfo: MediaTypeInfoType = {
+		numberOfChangesMediaType: null,
+		preferredMediaType: null
+	};
+	const lANumberOfChangesMediaType = loadFromStorage<MediaTypeChangesInfoType>(
+		StorageKeys.LAMediaType
 	);
-	if (lANumberOfChangesMediaType && lANumberOfChangesMediaType !== "") {
-		lANumberOfChangesMediaTypeSum =
+	if (lANumberOfChangesMediaType) {
+		lAMediaTypeInfo.numberOfChangesMediaType =
 			lANumberOfChangesMediaType.video +
 			lANumberOfChangesMediaType.pdf +
 			lANumberOfChangesMediaType.iframe +
@@ -168,47 +171,39 @@ export function getMediaType() {
 		let max = lANumberOfChangesMediaType.video;
 		if (lANumberOfChangesMediaType.article > max) {
 			max = lANumberOfChangesMediaType.article;
-			lAPreferredMediaType = "article";
+			lAMediaTypeInfo.preferredMediaType = "article";
 		}
 		if (lANumberOfChangesMediaType.pdf > max) {
 			max = lANumberOfChangesMediaType.pdf;
-			lAPreferredMediaType = "pdf";
+			lAMediaTypeInfo.preferredMediaType = "pdf";
 		}
 		if (lANumberOfChangesMediaType.iframe > max) {
-			lAPreferredMediaType = "iframe";
+			lAMediaTypeInfo.preferredMediaType = "iframe";
 		}
-	} else {
-		lAPreferredMediaType = null;
-		lANumberOfChangesMediaTypeSum = null;
 	}
-	return {
-		preferredMediaType: lAPreferredMediaType,
-		numberOfChangesMediaType: lANumberOfChangesMediaTypeSum
-	};
+	return lAMediaTypeInfo;
 }
 
 /**
- * resetLASession()
  * Clears the local storage from all learning analytic data.
  *
  */
 export async function resetLASession() {
-	window.localStorage.removeItem("la_session");
-	window.localStorage.removeItem("la_lessonInfo");
-	window.localStorage.removeItem("la_videoInfo");
-	window.localStorage.removeItem("la_numberOfChangesMediaType");
-	window.localStorage.removeItem("la_quizInfo");
+	window.localStorage.removeItem(StorageKeys.LASession);
+	window.localStorage.removeItem(StorageKeys.LALesson);
+	window.localStorage.removeItem(StorageKeys.LAVideo);
+	window.localStorage.removeItem(StorageKeys.LAMediaType);
+	window.localStorage.removeItem(StorageKeys.LAQuiz);
 }
 
 /**
- * resetLASession()
  * Clears the local storage from video, media changes and quiz learning analytic data.
  *
  */
 export async function resetLA() {
-	window.localStorage.removeItem("la_videoInfo");
-	window.localStorage.removeItem("la_numberOfChangesMediaType");
-	window.localStorage.removeItem("la_quizInfo");
+	window.localStorage.removeItem(StorageKeys.LAVideo);
+	window.localStorage.removeItem(StorageKeys.LAMediaType);
+	window.localStorage.removeItem(StorageKeys.LAQuiz);
 }
 
 /**
@@ -238,60 +233,93 @@ export function LearningAnalyticsProvider() {
 	// This data will be copied to the database after re-entering the website.
 	useEffect(() => {
 		const handleClose = () => {
-			const laSession = JSON.parse(localStorage.getItem("la_session") + "");
-			if (laSession && laSession !== "" && laSession.start) {
-				laSession.end = "" + new Date();
-				window.localStorage.setItem("la_session", JSON.stringify(laSession));
+			const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
+			if (laSession?.start) {
+				laSession.end = new Date();
+				saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);
 			}
 		};
-
-		window.addEventListener("unload", handleClose, false);
+		// Events from different browser desktop and mobile https://stackoverflow.com/questions/61351103/jquery-detect-mobile-browser-close-event
+		// Chrome (desktop) - change tab, close tab, close browser
+		// Safari (desktop) - refresh, close tab, close browser
+		// Firefox (desktop) - close browser
+		window.addEventListener("beforeunload", handleClose, false);
+		// Chrome (mobile) - refresh, navigate away
+		// Safari (desktop) - navigate away
+		// Safari (mobile) - refresh, navigate away
+		// Firefox (mobile) - refresh, navigate away
+		window.addEventListener("pagehide", handleClose, false);
+		// Chrome (desktop) - refresh, navigate away
+		// Chrome (mobile) - background mode
+		// Safari (desktop) - change tab
+		// Safari (mobile) - background mode
+		// Firefox (desktop) - refresh, navigate away, change tab, close tab
+		// Firefox (mobile) - background mode
+		window.addEventListener(
+			"visibilitychange",
+			() => {
+				if (document.visibilityState === "hidden") handleClose();
+			},
+			false
+		);
 		return () => {
-			window.removeEventListener("unload", handleClose);
+			window.removeEventListener("beforeunload", handleClose);
+			window.removeEventListener("pagehide", handleClose);
+			window.removeEventListener("visibilitychange", handleClose);
 		};
 	}, []);
 
 	// Creates a new session and saves a previously started session if there is an incomplete one.
 	useEffect(() => {
-		const setData = async () => {
+		const saveData = async () => {
 			const data = saveLA();
 			if (data) {
 				try {
-					await createLearningAnalytics(data);
-					const date = new Date();
-					const isoDateTime = new Date(
-						date.getTime() - date.getTimezoneOffset() * 60000
-					).toISOString();
-					await setEndOfSession({ end: isoDateTime, id: data.sessionId });
-				} catch (e) {
-					// TODO SE: @ Fabian: Please clarify why the session is reset and not a new one is created
-					resetLASession();
-				}
+					const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
+					// Checks if a session is available
+					if (laSession) {
+						if (laSession.end == null) {
+							laSession.end = new Date();
+						}
+						// Checks if the session is in the database
+						if (data.sessionId < 0) {
+							const session = await createLASession({
+								start: new Date(laSession.start).toISOString(),
+								end: new Date(laSession.end).toISOString()
+							});
+							data.sessionId = session.id;
+						}
+						// Saves last learning Analytics and end date of a session
+						await createLearningAnalytics(data);
+						await setEndOfSession({
+							end: new Date(laSession.end).toISOString(),
+							id: data.sessionId
+						});
+					}
+				} catch (e) {}
 			}
-			// TODO SE: @ Fabian: Please clarify why the session is reset and not a new one is created
 			resetLASession();
+			createNewLASession();
 		};
+
 		const createNewLASession = async () => {
-			window.localStorage.setItem(
-				"la_session",
-				JSON.stringify({ start: "" + new Date(), end: "", id: "" })
-			);
-			const id = await createLASession();
-			window.localStorage.setItem(
-				"la_session",
-				JSON.stringify({ start: "" + new Date(), end: "", id: id.id })
-			);
+			saveToStorage<SessionInfoType>(StorageKeys.LASession, {
+				start: new Date(),
+				end: null,
+				id: null
+			});
 		};
-		const laSession = JSON.parse(localStorage.getItem("la_session") + "");
-		const start = laSession ? formatDate(laSession.start) : "";
-		const today = formatDate(new Date());
+
 		if (systemAnalytics?.systemAnalyticsAgreement) {
-			if (!(laSession && laSession !== "")) {
+			const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
+			if (!laSession) {
 				createNewLASession();
-			} else if (laSession.start !== "" && laSession.end !== "" && start !== today) {
+			} else if (laSession.start !== null && laSession.end !== null) {
+				const end = laSession.end;
+				const now = new Date();
+				now.setMinutes(new Date().getMinutes() - 30);
 				// Stores the previous session if exists and starts a new one
-				// TODO SE: @ Fabian: Please clarify why the session is reset and not a new one is created
-				setData();
+				if (now > end) saveData();
 			}
 		}
 	}, [
@@ -318,6 +346,7 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 	const { mutateAsync: createLearningAnalytics } =
 		trpc.learningAnalytics.createLearningAnalytics.useMutation();
 	const { data: systemAnalytics } = trpc.me.systemAnalyticsAgreement.useQuery();
+	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
 	// Stores the data of the current session when leaving a lesson
 	useEffect(() => {
 		const saveData = async () => {
@@ -325,20 +354,37 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 				const data = saveLA();
 				if (data) {
 					try {
-						await createLearningAnalytics(data);
+						// Checks if the session is not in the database id < 0
+						if (data.sessionId < 0) {
+							const laSession = loadFromStorage<SessionInfoType>(
+								StorageKeys.LALesson
+							);
+							// Creates new Session in the database if session data is available
+							if (laSession) {
+								const session = await createLASession({
+									start: new Date(laSession.start).toISOString(),
+									end: parseDateToISOString(laSession?.end)
+								});
+								laSession.id = session.id;
+								saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);
+								data.sessionId = session.id;
+								await createLearningAnalytics(data);
+							}
+						} else {
+							await createLearningAnalytics(data);
+						}
 					} catch (e) {}
 				}
 			}
 		};
 		const navigateFromPage = (url: string) => {
-			if (!url.includes(lesson.slug)) {
-				saveEnds();
-				saveData();
+			const lALessonInfo = loadFromStorage<LessonInfoType>(StorageKeys.LALesson);
+			if (lALessonInfo?.start != null) {
+				lALessonInfo.end = new Date();
+				saveToStorage<LessonInfoType>(StorageKeys.LALesson, lALessonInfo);
 			}
-			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
-			if (lALessonInfo && lALessonInfo !== "") {
-				lALessonInfo.end = "" + new Date();
-				window.localStorage.setItem("la_lessonInfo", JSON.stringify(lALessonInfo));
+			if (!url.includes(lesson.slug)) {
+				saveData();
 			}
 		};
 		router.events.on("routeChangeStart", navigateFromPage);
@@ -346,6 +392,7 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 			router.events.off("routeChangeStart", navigateFromPage);
 		};
 	}, [
+		createLASession,
 		createLearningAnalytics,
 		lesson.slug,
 		router.events,
@@ -365,33 +412,18 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 			}
 		};
 		if (window !== undefined) {
-			const lALessonInfo = JSON.parse(localStorage.getItem("la_lessonInfo") + "");
-			if (lALessonInfo && lALessonInfo !== "") {
+			const lALessonInfo = loadFromStorage<LessonInfoType>(StorageKeys.LALesson);
+			if (lALessonInfo?.start != null) {
 				if (lALessonInfo.lessonId !== lesson.lessonId) {
 					saveData();
-					window.localStorage.setItem(
-						"la_lessonInfo",
-						JSON.stringify({
-							lessonId: lesson.lessonId,
-							courseId: course.courseId,
-							start: "" + new Date(),
-							end: "",
-							source: document.referrer
-						})
-					);
 				}
-			} else {
-				window.localStorage.setItem(
-					"la_lessonInfo",
-					JSON.stringify({
-						lessonId: lesson.lessonId,
-						courseId: course.courseId,
-						start: "" + new Date(),
-						end: "",
-						source: document.referrer
-					})
-				);
 			}
+			saveToStorage<LessonInfoType>(StorageKeys.LALesson, {
+				lessonId: lesson.lessonId,
+				courseId: course.courseId,
+				start: new Date(),
+				end: null
+			});
 		}
 	}, [
 		course.courseId,
@@ -473,7 +505,7 @@ export function SystemAnalyticsAgreementToggle() {
 				const updated = await updateStudent({ agreement: false });
 				showToast({
 					type: "success",
-					title: "Nutzung der Lernstatistik deaktiviert",
+					title: "Nutzung der Lernstatistik deaktivieren",
 					subtitle: updated.name
 				});
 				setEnabled(false);

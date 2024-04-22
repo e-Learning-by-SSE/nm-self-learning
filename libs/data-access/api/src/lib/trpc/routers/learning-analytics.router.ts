@@ -4,14 +4,23 @@ import { authProcedure, t } from "../trpc";
 import { ResolvedValue } from "@self-learning/types";
 
 export const learningAnalyticsRouter = t.router({
-	createSession: authProcedure.mutation(async ({ ctx }) => {
-		return database.lASession.create({
-			data: {
-				username: ctx.user.name
-			},
-			select: { id: true }
-		});
-	}),
+	createSession: authProcedure
+		.input(
+			z.object({
+				start: z.string().datetime(),
+				end: z.string().datetime().nullable()
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			return database.lASession.create({
+				data: {
+					username: ctx.user.name,
+					start: input.start,
+					end: input.end
+				},
+				select: { id: true }
+			});
+		}),
 	setEndOfSession: authProcedure
 		.input(
 			z.object({

@@ -1,6 +1,5 @@
 import { ChartOptions, ChartTypeRegistry, ScaleOptionsByType } from "chart.js";
-import { LearningAnalyticsType, SessionType } from "./learning-analytics";
-import { LessonContentMediaType } from "@self-learning/types";
+import { LessonContentMediaType, LearningAnalyticsType, SessionType } from "@self-learning/types";
 import { DeepPartial } from "chart.js/dist/types/utils";
 import { format } from "date-fns";
 
@@ -27,6 +26,23 @@ export const X_AXIS_FORMAT: DeepPartial<ScaleOptionsByType<ChartTypeRegistry["li
 };
 
 /**
+ * Chart options to define the default X-axis format for the stacked bar chart:
+ * - Unit: days
+ * - Tooltip format: dd.MM.yyyy
+ */
+export const X_AXIS_FORMAT_STACKED: DeepPartial<
+	ScaleOptionsByType<ChartTypeRegistry["line"]["scales"]>
+> = {
+	type: "time",
+	time: {
+		parser: "dd.MM.yyyy",
+		unit: "day",
+		tooltipFormat: "dd.MM.yyyy"
+	},
+	stacked: true
+};
+
+/**
  * Default line chart options that should be used for a corporate design among the metrics,
  * unless further options needed.
  */
@@ -36,10 +52,22 @@ export const DEFAULT_LINE_CHART_OPTIONS: ChartOptions<"line"> = {
 		y: {}
 	}
 };
+
+/**
+ * Default line chart options that should be used for a corporate design among the metrics,
+ * unless further options needed.
+ */
+export const DEFAULT_BAR_CHART_OPTIONS: ChartOptions<"bar"> = {
+	scales: {
+		x: X_AXIS_FORMAT_STACKED,
+		y: { stacked: true }
+	}
+};
+
 /**
  * Auxillary to force that only keys of a specific type may be passed as parameter to a function.
  */
-type KeysOfType<T, TProp> = { [P in keyof T]: T[P] extends TProp ? P : never }[keyof T];
+export type KeysOfType<T, TProp> = { [P in keyof T]: T[P] extends TProp ? P : never }[keyof T];
 
 /**
  * Type Guard to check if a string is a supported LessonContentMediaType to map them back

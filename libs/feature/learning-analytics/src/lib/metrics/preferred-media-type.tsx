@@ -5,7 +5,7 @@ import {
 	isLessonContentMediaType,
 	preferredValuePerSession
 } from "../auxillary";
-import { LearningAnalyticsType } from "../learning-analytics";
+import { LearningAnalyticsType } from "@self-learning/types";
 import { getContentTypeDisplayName } from "@self-learning/types";
 import { UNARY_METRICS } from "./metrics";
 

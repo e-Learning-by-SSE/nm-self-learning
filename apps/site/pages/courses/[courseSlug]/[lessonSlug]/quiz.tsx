@@ -4,9 +4,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
-import { trpc } from "@self-learning/api-client";
 import { useMarkAsCompleted } from "@self-learning/completion";
-import { saveEnds, saveLA } from "@self-learning/learning-analytics";
+import { loadFromStorage, saveToStorage } from "@self-learning/learning-analytics";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -16,6 +15,7 @@ import {
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
+import { QuizInfoType, StorageKeys } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
@@ -90,37 +90,18 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	// const hasNext = nextIndex < questions.length;
 
 	//Learning Analytics: init or save quiz info
-	const { mutateAsync: createLearningAnalytics } =
-		trpc.learningAnalytics.createLearningAnalytics.useMutation();
-
 	useEffect(() => {
-		const navigateFromPage = (url: string) => {
-			if (!url.includes("quiz")) {
-				const quizInfo = JSON.parse(localStorage.getItem("la_quizInfo") + "");
-				if (quizInfo && quizInfo != "") {
-					quizInfo.end = "" + new Date();
-					window.localStorage.setItem("la_quizInfo", JSON.stringify(quizInfo));
-					saveEnds();
-					const data = saveLA();
-					if (data) createLearningAnalytics(data);
-				}
-			}
-		};
-		router.events.on("routeChangeStart", navigateFromPage);
-		return () => {
-			router.events.off("routeChangeStart", navigateFromPage);
-		};
-	}, [createLearningAnalytics, router.events]);
-
-	useEffect(() => {
-		const quizInfos = JSON.parse(localStorage.getItem("la_quizInfo") + "");
-		if (!(quizInfos && quizInfos !== "")) {
-			window.localStorage.setItem(
-				"la_quizInfo",
-				JSON.stringify({ start: "" + new Date(), end: "", right: 0, wrong: 0, hint: 0 })
-			);
+		const quizInfos = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+		if (!quizInfos) {
+			saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, {
+				quizStart: new Date(),
+				quizEnd: null,
+				numberCorrectAnswers: 0,
+				numberIncorrectAnswers: 0,
+				numberOfUsedHints: 0
+			});
 		}
-	}, [createLearningAnalytics]);
+	}, []);
 
 	const goToNextQuestion = useCallback(() => {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {

@@ -1,61 +1,88 @@
 import { trpc } from "@self-learning/api-client";
-import { getVideoInfo, saveLA } from "@self-learning/learning-analytics";
+import {
+	loadFromStorage,
+	parseDateToISOString,
+	saveLA,
+	saveToStorage
+} from "@self-learning/learning-analytics";
+import { VideoInfoType, StorageKeys, SessionInfoType } from "@self-learning/types";
 import dynamic from "next/dynamic";
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 	//Learning Analytics: init or save video info
-
 	const { mutateAsync: createLearningAnalytics } =
 		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
+
 	useEffect(() => {
-		const videoInfos = JSON.parse(localStorage.getItem("la_videoInfo") + "");
-		if (videoInfos && videoInfos !== "") {
-		} else {
-			window.localStorage.setItem(
-				"la_videoInfo",
-				JSON.stringify({ stops: 1, speed: 1, start: "", end: "" })
-			);
-		}
+		const videoInfos = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
+		if (videoInfos == null)
+			saveToStorage<VideoInfoType>(StorageKeys.LAVideo, {
+				videoStart: null,
+				videoEnd: null,
+				videoBreaks: 0,
+				videoSpeed: 1
+			});
 	}, []);
 
-	function onStart() {
-		const videoInfo = getVideoInfo();
-		if (videoInfo && videoInfo.start !== "") {
+	async function onStart() {
+		const videoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
+		if (videoInfo) {
 			const data = saveLA();
 			if (data) {
-				createLearningAnalytics(data);
+				try {
+					if (data.sessionId < 0) {
+						const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LALesson);
+						if (laSession) {
+							const session = await createLASession({
+								start: new Date(laSession.start).toISOString(),
+								end: parseDateToISOString(laSession?.end)
+							});
+							laSession.id = session.id;
+							saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);
+							data.sessionId = session.id;
+							await createLearningAnalytics(data);
+						}
+					} else {
+						await createLearningAnalytics(data);
+					}
+				} catch (e) {
+					console.log("Error saving learning analytics from VideoPlayer.", e);
+				}
 			}
 		}
-		window.localStorage.setItem(
-			"la_videoInfo",
-			JSON.stringify({ stops: 1, speed: 1, start: "" + new Date(), end: "" })
-		);
+		saveToStorage<VideoInfoType>(StorageKeys.LAVideo, {
+			videoStart: new Date(),
+			videoEnd: null,
+			videoBreaks: 0,
+			videoSpeed: 1
+		});
 	}
 
 	function onPause() {
-		const videoInfo = getVideoInfo();
-		if (videoInfo) {
-			videoInfo.stops++;
-			window.localStorage.setItem("la_videoInfo", JSON.stringify(videoInfo));
+		const videoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
+		if (videoInfo?.videoBreaks != null) {
+			videoInfo.videoBreaks++;
+			saveToStorage<VideoInfoType>(StorageKeys.LAVideo, videoInfo);
 		}
 	}
 
 	function onEnded() {
-		const videoInfo = getVideoInfo();
+		const videoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
 		if (videoInfo) {
-			videoInfo.end = "" + new Date();
-			window.localStorage.setItem("la_videoInfo", JSON.stringify(videoInfo));
+			videoInfo.videoEnd = new Date();
+			saveToStorage<VideoInfoType>(StorageKeys.LAVideo, videoInfo);
 		}
 	}
 
 	function onPlaybackRateChange(e: any) {
-		const videoInfo = getVideoInfo();
-		if (videoInfo) {
-			videoInfo.speed = e;
-			window.localStorage.setItem("la_videoInfo", JSON.stringify(videoInfo));
+		const videoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
+		if (videoInfo?.videoSpeed != null) {
+			videoInfo.videoSpeed = e;
+			saveToStorage<VideoInfoType>(StorageKeys.LAVideo, videoInfo);
 		}
 	}
 	//Learning Analytics: end

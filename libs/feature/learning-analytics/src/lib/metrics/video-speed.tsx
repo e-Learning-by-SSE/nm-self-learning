@@ -4,7 +4,7 @@ import {
 	maxKey,
 	preferredValuePerSession
 } from "../auxillary";
-import { LearningAnalyticsType } from "../learning-analytics";
+import { LearningAnalyticsType } from "@self-learning/types";
 import { UNARY_METRICS } from "./metrics";
 
 import { Chart as ChartJS, registerables } from "chart.js";
