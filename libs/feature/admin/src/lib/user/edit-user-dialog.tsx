@@ -1,4 +1,4 @@
-import { TrashIcon } from "@heroicons/react/solid";
+import { TrashIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User, UserRole } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
