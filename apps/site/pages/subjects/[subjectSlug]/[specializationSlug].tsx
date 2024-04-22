@@ -107,7 +107,7 @@ function CourseCard({
 				imgUrl={course.imgUrl}
 				title={course.title}
 				subtitle={course.subtitle}
-				badge={<ImageCardBadge text="Lernkurs" className="bg-emerald-500" />}
+				badge={<ImageCardBadge text={t("course")} className="bg-emerald-500" />}
 				footer={
 					<span className="flex items-center gap-3 text-sm font-semibold text-emerald-500">
 						<PuzzleIcon className="h-5" />
