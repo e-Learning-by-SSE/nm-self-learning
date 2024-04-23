@@ -87,14 +87,12 @@ function plotPreferredMediaType(lASession: LearningAnalyticsType) {
 	const data = {
 		labels: labels,
 		datasets: [
-			// #003f5c
-			createDataSeries(out.video, "video", "#5b9bd5"),
-			// #ffa600"
-			createDataSeries(out.article, "article", "#0dbb7f"),
-			// #7a5195
-			createDataSeries(out.pdf, "pdf", "#f1f69e"),
-			// #ef5675
-			createDataSeries(out.iframe, "iframe", "#f13d57")
+			// Deep blue from https://www.canva.com/colors/color-palettes/the-deep-blue/: 0c2d48, 145da0, 2e8bc0, b1d4e0
+			// A colorful summer from https://www.canva.com/colors/color-palettes/a-colorful-summer/: bed7d8, e151af, 2bb8b3, fed43f
+			createDataSeries(out.video, "video", "#1F2635"),
+			createDataSeries(out.article, "article", "#2e8bc0"),
+			createDataSeries(out.pdf, "pdf", "#e151af"),
+			createDataSeries(out.iframe, "iframe", "#fed43f")
 		]
 	};
 	return data;
