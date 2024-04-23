@@ -15,6 +15,14 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
+import {
+	loadFromStorage,
+	parseDateToISOString,
+	saveLA,
+	saveToStorage
+} from "@self-learning/learning-analytics";
+import { trpc } from "@self-learning/api-client";
+import { QuizInfoType, StorageKeys, SessionInfoType } from "@self-learning/types";
 
 export function Question({
 	question,
@@ -145,6 +153,41 @@ function CheckResult({
 	// We only use "multiple-choice" to get better types ... works for all question types
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
 	const { completionState, reload } = useQuiz();
+	//Learning Analytics: save quiz
+	const { mutateAsync: createLearningAnalytics } =
+		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
+
+	async function saveQuizBeforeReload() {
+		const lQuizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+		if (lQuizInfo?.quizStart != null) {
+			lQuizInfo.quizEnd = new Date();
+			saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, lQuizInfo);
+		}
+		const data = saveLA();
+		if (data) {
+			try {
+				if (data.sessionId < 0) {
+					const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LALesson);
+					if (laSession) {
+						const session = await createLASession({
+							start: new Date(laSession.start).toISOString(),
+							end: parseDateToISOString(laSession?.end)
+						});
+						laSession.id = session.id;
+						saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);
+						data.sessionId = session.id;
+						await createLearningAnalytics(data);
+					}
+				} else {
+					await createLearningAnalytics(data);
+				}
+			} catch (e) {
+				console.log("Error saving learning analytics from Quiz.", e);
+			}
+		}
+		reload();
+	}
 
 	function checkResult() {
 		console.log("checking...");
@@ -152,6 +195,18 @@ function CheckResult({
 		console.log("question", question);
 		console.log("answer", answer);
 		console.log("evaluation", evaluation);
+
+		//Learning Analytics: get number of correct and incorrect answers
+		const quizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+		if (quizInfo?.numberCorrectAnswers != null && quizInfo?.numberIncorrectAnswers != null) {
+			if (evaluation.isCorrect) {
+				quizInfo.numberCorrectAnswers++;
+			} else {
+				quizInfo.numberIncorrectAnswers++;
+			}
+			saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, quizInfo);
+		}
+
 		setEvaluation(evaluation);
 	}
 
@@ -171,7 +226,7 @@ function CheckResult({
 					{canGoToNextQuestion ? "Nächste Frage" : "Überprüfen"}
 				</button>
 			) : completionState === "failed" ? (
-				<button className="btn bg-red-500" onClick={reload}>
+				<button className="btn bg-red-500" onClick={saveQuizBeforeReload}>
 					<span>Erneut probieren</span>
 					<ArrowPathIcon className="h-5" />
 				</button>

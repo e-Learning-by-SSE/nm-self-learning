@@ -4,3 +4,4 @@ export * from "./lib/auth";
 
 // TODO maybe find a better place for those types
 export type { SkillResolved, SkillUnresolved } from "./lib/trpc/routers/skill.router";
+export type { LearningAnalyticsType } from "./lib/trpc/routers/learning-analytics.router";

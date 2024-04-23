@@ -5,8 +5,8 @@ import * as DidacticsOfGeometry from "./DidacticsOfGeometry";
 const didacticChapters = [DidacticsOfGeometry.chapters].flat();
 const mathChapters = [Analysis.chapters].flat();
 
-const didacticCourses = [DidacticsOfGeometry.course];
-const mathCourses = [Analysis.course];
+export const didacticCourses = [DidacticsOfGeometry.course];
+export const mathCourses = [Analysis.course];
 
 const authors = [
 	createAuthor(

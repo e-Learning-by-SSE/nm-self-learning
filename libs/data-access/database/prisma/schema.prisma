@@ -47,6 +47,7 @@ model User {
   student        Student?
   uploadedAssets UploadedAssets[]
   skillRepositories SkillRepository[]
+  systemAnalyticsAgreement Boolean   @default(false)
 }
 
 model VerificationToken {
@@ -150,6 +151,7 @@ model Course {
   enrollments     Enrollment[]
   authors         Author[]          @relation("AuthorToCourse")
   specializations Specialization[]  @relation("CourseToSpecialization")
+  learninAnalytics    LearningAnalytics[]
 }
 
 model Enrollment {
@@ -192,6 +194,7 @@ model Lesson {
   selfRegulatedQuestion   String?
   requirements Skill[] @relation("requirements")
   teachingGoals Skill[] @relation("teachingGoals")
+  learninAnalytics    LearningAnalytics[] 
 }
 
 model CompletedLesson {
@@ -275,18 +278,6 @@ model License {
     lessons           Lesson[]
 }
 
-model SkillRepository {
-  id            String        @id @default(cuid())
-  name          String
-  description   String?
-  skills        Skill[]
-  ownerId       String
-  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-
-  @@unique([ownerId, name])
-  @@map("skill-repositories")
-}
-
 model Skill {
   id                  String  @id @default(cuid())
   name                String
@@ -300,4 +291,50 @@ model Skill {
 
   @@unique([repositoryId, name])
   @@map("skills")
+}
+
+model SkillRepository {
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  skills        Skill[]
+  ownerId       String
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerId, name])
+  @@map("skill-repositories")
+}
+
+
+
+model LASession {
+  id                  Int     @id @default(autoincrement())
+  start               DateTime @default(now())
+  end                 DateTime? 
+  username            String
+  learningAnalytics    LearningAnalytics[]
+}
+
+model LearningAnalytics {
+  id                  Int     @id @default(autoincrement())
+  session             LASession @relation(fields:[sessionId], references: [id], onDelete: Cascade)
+  sessionId           Int
+  courseId            String?
+  course              Course?   @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+  lesson              Lesson?   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+  lessonId            String?
+  start               DateTime?
+  end                 DateTime?
+  quizStart           DateTime?
+	quizEnd             DateTime?
+	numberCorrectAnswers      Int?
+	numberIncorrectAnswers    Int?
+  numberOfUsedHints         Int?
+	numberOfChangesMediaType  Int?
+	preferredMediaType  String?
+	videoBreaks         Int?
+	videoStart          DateTime?
+	videoEnd            DateTime?
+	videoSpeed          Float?
+	videoCalculatedSpeed      Float?
 }

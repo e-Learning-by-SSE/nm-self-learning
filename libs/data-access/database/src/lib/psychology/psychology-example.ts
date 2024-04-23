@@ -18,7 +18,7 @@ const chapters = [
 	FundamentalsOfConsciousness.chapters
 ].flat();
 
-const courses = [
+export const courses = [
 	FundamentalsOfPerception.course,
 	PerceptionOfHearing.course,
 	PerceptionOfVision.course,

@@ -3,6 +3,12 @@ import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
+	LearningAnalyticsLesson,
+	addMediaTypeChanges,
+	loadFromStorage,
+	saveToStorage
+} from "@self-learning/learning-analytics";
+import {
 	getStaticPropsForLayout,
 	LessonLayout,
 	LessonLayoutProps,
@@ -14,7 +20,9 @@ import {
 	getContentTypeDisplayName,
 	includesMediaType,
 	LessonContent,
-	LessonMeta
+	LessonMeta,
+	MediaTypeChangesInfoType,
+	StorageKeys
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
@@ -162,6 +170,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					<PdfViewer url={pdf.value.url} />
 				</div>
 			)}
+			<LearningAnalyticsLesson lesson={lesson} course={course} />
 		</article>
 	);
 }
@@ -319,6 +328,19 @@ function MediaTypeSelector({
 	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();
 
+	//Learning Analytics
+	useEffect(() => {
+		const mediaTypeChanges = loadFromStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType);
+		if (mediaTypeChanges == null)
+			saveToStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType, {
+				video: 0,
+				pdf: 0,
+				article: 0,
+				iframe: 0
+			});
+	}, []);
+	//Learning Analytics end
+
 	function changeMediaType(index: number) {
 		const type = lessonContent[index].type;
 
@@ -327,7 +349,7 @@ function MediaTypeSelector({
 		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
 			shallow: true
 		});
-
+		addMediaTypeChanges(type); //Learning Analytics
 		setSelectedIndex(index);
 	}
 

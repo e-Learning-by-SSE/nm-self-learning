@@ -140,7 +140,7 @@ const chapters = [
 	}
 ];
 
-const courses = [
+export const courses = [
 	createCourse(
 		"informatik",
 		"softwareentwicklung",

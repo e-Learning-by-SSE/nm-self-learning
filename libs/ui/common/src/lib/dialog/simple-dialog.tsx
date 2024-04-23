@@ -51,3 +51,45 @@ export function SimpleDialog({
 		</CenteredContainer>
 	);
 }
+
+export function SimpleDialogXL({
+	children,
+	name,
+	onClose
+}: {
+	children: React.ReactNode;
+	name: string;
+	onClose: (action: ButtonActions) => void;
+}) {
+	const [open, setOpen] = useState(true);
+
+	const onDialogClose = (type?: ButtonActions) => {
+		setOpen(false);
+		onClose(type ?? ButtonActions.CANCEL);
+	};
+
+	if (!open) return null;
+	return (
+		<CenteredContainer>
+			<Dialog
+				style={{ minWidth: 624, maxHeight: "80vh", overflow: "auto" }}
+				title={name}
+				onClose={() => {
+					onDialogClose();
+				}}
+			>
+				<CenteredContainer>{children}</CenteredContainer>
+				<div className="mt-auto">
+					<DialogActions onClose={onDialogClose}>
+						<button
+							className="btn-primary"
+							onClick={() => onDialogClose(ButtonActions.OK)}
+						>
+							OK
+						</button>
+					</DialogActions>
+				</div>
+			</Dialog>
+		</CenteredContainer>
+	);
+}

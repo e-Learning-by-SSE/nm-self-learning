@@ -5,6 +5,9 @@ import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
 import { useQuiz } from "./quiz-context";
+import { useEffect } from "react";
+import { loadFromStorage, saveToStorage } from "@self-learning/learning-analytics";
+import { QuizInfoType, StorageKeys } from "@self-learning/types";
 
 export function Hints() {
 	const { config, usedHints, setUsedHints } = useQuiz();
@@ -18,6 +21,17 @@ export function Hints() {
 		(sum, arr) => sum + arr.length,
 		0
 	);
+
+	//Learning Analytics: get number of correct and incorrect answers
+	useEffect(() => {
+		if (window !== undefined) {
+			const quizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+			if (quizInfo) {
+				quizInfo.numberOfUsedHints = usedHintsTotal;
+				saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, quizInfo);
+			}
+		}
+	}, [usedHintsTotal]);
 
 	const hintsRemainingTotal =
 		Math.min(config.hints.maxHints, totalNumberOfHints) - usedHintsTotal;

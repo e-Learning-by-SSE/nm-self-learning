@@ -1,4 +1,4 @@
-import type { AppRouter } from "@self-learning/api";
+import { type AppRouter } from "@self-learning/api";
 import { Navbar, Footer, MessagePortal } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
@@ -14,6 +14,8 @@ import "katex/dist/katex.css";
 import { useEffect } from "react";
 import { init } from "@socialgouv/matomo-next";
 import PlausibleProvider from "next-plausible";
+import { LearningAnalyticsProvider } from "@self-learning/learning-analytics";
+import superjson from "superjson";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -28,6 +30,7 @@ export default withTRPC<AppRouter>({
 					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`
 				})
 			],
+			transformer: superjson,
 			queryClientConfig: {
 				defaultOptions: {
 					queries: {
@@ -46,7 +49,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		  (Component as any).getLayout(Component, pageProps)
 		: null;
-
 	useEffect(() => {
 		const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
 		const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
@@ -54,7 +56,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
 		}
 	}, []);
-
 	return (
 		<PlausibleProvider
 			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
@@ -77,6 +78,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<Footer />
 				{/* <ReactQueryDevtools position="bottom-right" /> */}
 			</SessionProvider>
+			<LearningAnalyticsProvider />
 		</PlausibleProvider>
 	);
 }

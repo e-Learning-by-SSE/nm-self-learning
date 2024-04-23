@@ -47,5 +47,34 @@ export const meRouter = t.router({
 
 			console.log("[meRouter.updateStudent] Student updated", updated);
 			return updated;
-		})
+		}),
+	updateStudentSystemAnalyticsAgreement: authProcedure
+		.input(
+			z.object({
+				agreement: z.boolean()
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const updated = await database.user.update({
+				where: { name: ctx.user.name },
+				data: {
+					systemAnalyticsAgreement: input.agreement
+				},
+				select: {
+					name: true,
+					systemAnalyticsAgreement: true
+				}
+			});
+
+			console.log("[meRouter.updateStudent] Student updated", updated);
+			return updated;
+		}),
+	systemAnalyticsAgreement: authProcedure.query(({ ctx }) => {
+		return database.user.findUnique({
+			where: { name: ctx.user.name },
+			select: {
+				systemAnalyticsAgreement: true
+			}
+		});
+	})
 });

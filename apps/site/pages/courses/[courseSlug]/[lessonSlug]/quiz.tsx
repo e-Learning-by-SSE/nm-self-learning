@@ -5,6 +5,7 @@ import {
 import { CheckCircleIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
+import { loadFromStorage, saveToStorage } from "@self-learning/learning-analytics";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -14,6 +15,7 @@ import {
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
+import { QuizInfoType, StorageKeys } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
@@ -86,6 +88,20 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	const [nextIndex, setNextIndex] = useState(1);
 	// const hasPrevious = nextIndex > 1;
 	// const hasNext = nextIndex < questions.length;
+
+	//Learning Analytics: init or save quiz info
+	useEffect(() => {
+		const quizInfos = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+		if (!quizInfos) {
+			saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, {
+				quizStart: new Date(),
+				quizEnd: null,
+				numberCorrectAnswers: 0,
+				numberIncorrectAnswers: 0,
+				numberOfUsedHints: 0
+			});
+		}
+	}, []);
 
 	const goToNextQuestion = useCallback(() => {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
