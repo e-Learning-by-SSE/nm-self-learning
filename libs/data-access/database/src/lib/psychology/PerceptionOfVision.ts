@@ -1,5 +1,11 @@
 import { LessonType } from "@prisma/client";
-import { createCourse, createLesson, createMultipleChoice, createTextQuestion, createVideo } from "../seed-functions";
+import {
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo
+} from "../seed-functions";
 
 export const chapters = [
 	{
@@ -507,888 +513,923 @@ export const chapters = [
 			),
 
 			createLesson(
-				"Physiologische Basis der Farbwahrnehmung und die Zweistufentheorie",
-				"Aktivierungsfrage: Was besagt die Gegenfarbentheorie?",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 104ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 397)],
-				[
-					createMultipleChoice({
-						question:
-							"Aus welchen Farben werden alle wahrgenommen Farbtöne laut Drei-Farben-Theorie zusammengesetzt?",
-						answers: [
-							{
-								content: "Antwort A",
-								isCorrect: false
-							},
-							{
-								content: "Antwort B",
-								isCorrect: false
-							},
-							{
-								content: "Antwort C",
-								isCorrect: false
-							},
-							{
-								content: "Antwort D",
-								isCorrect: true
-							}
+				{
+					title: "Physiologische Basis der Farbwahrnehmung und die Zweistufentheorie",
+					subtitle: "Aktivierungsfrage: Was besagt die Gegenfarbentheorie?",
+					description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 104ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+					content: [createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 397)],
+					questions: [
+						createMultipleChoice({
+							question:
+								"Aus welchen Farben werden alle wahrgenommen Farbtöne laut Drei-Farben-Theorie zusammengesetzt?",
+							answers: [
+								{
+									content: "Antwort A",
+									isCorrect: false
+								},
+								{
+									content: "Antwort B",
+									isCorrect: false
+								},
+								{
+									content: "Antwort C",
+									isCorrect: false
+								},
+								{
+									content: "Antwort D",
+									isCorrect: true
+								}
+							],
+							hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+						})
+					]
+				}
+			)
+		]
+	},
+	{
+		title: "Räumliche Tiefe und Objektgröße",
+		description:
+			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
+		content:
+			[
+				createLesson(
+					{
+						title: "Monokulare Tiefenhinweise",
+						subtitle: "Aktivierungsfrage: Wie funktioniert Tiefenwahrnehmung und räumliches Sehen?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 105ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=l8fiFM3gnGg", 398)],
+						questions: [
+							createMultipleChoice({
+								question: "Wie funktioniert Tiefenwahrnehmung und räumliches Sehen?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Binokulare Tiefenhinweise",
+						subtitle: "Aktivierungsfrage: Was versteht man unter Querdisparation?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 107ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=kKqQqNW2K0g", 399)],
+						questions: [
+							createMultipleChoice({
+								question: "Was versteht man unter Querdisparation?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Zufallsstereogramme und binokulare Neurone",
+						subtitle: "Aktivierungsfrage zu. Zufallsstereogramme und binokulare Neurone",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 108ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 400)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Zufallsstereogramme und binokulare Neurone?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				)
+			]
+
+	},
+	{
+		title: "Wahrnehmungskonstanzen",
+		description:
+			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
+		content:
+			[
+				createLesson(
+					{
+						title: "Helligkeitskonstanz",
+						subtitle: "Aktivierungsfrage zu: Helligkeitskonstanz",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 111ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=Jxh2a0el9kA", 401)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu Helligkeitskonstanz?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+				createLesson(
+					{
+						title: "Farbkonstanz",
+						subtitle: "Aktivierungsfrage zu: Farbkonstanz?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 113ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=kKqQqNW2K0g", 402)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu Farbkonstanz?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Größenkonstanz",
+						subtitle: "Aktivierungsfrage zu: Größenkonstanz?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 108ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 403)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Größenkonstanz?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+				createLesson(
+					{
+						title: "Form- und Lokationskonstanz",
+						subtitle: "Aktivierungsfrage zu: Form- und Lokationskonstanz?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 108ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 404)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Form- und Lokationskonstanz?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				)
+			]
+	},
+	{
+		title: "Geometrisch-optische Täuschungen",
+		description:
+			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
+		content:
+			[
+				createLesson(
+					{
+						title: "Ponzo-Täuschung",
+						subtitle: "Aktivierungsfrage zu: Ponzo-Täuschung",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 118ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=qdJ8ZT34wBk", 405)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu Ponzo-Täuschung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+				createLesson(
+					{
+						title: "Ames`sche Raum",
+						subtitle: "Aktivierungsfrage zu: Ames`sche Raum?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 120ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=hCV2Ba5wrcs", 406)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu Ames`sche Raum?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Müller-Lyer`sche Täuschung",
+						subtitle: "Aktivierungsfrage zu: Müller-Lyer`sche Täuschung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 121ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 407)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Müller-Lyer`sche Täuschung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+				createLesson(
+					{
+						title: "Zöllner`sche Täuschung",
+						subtitle: "Aktivierungsfrage zu: Zöllner`sche Täuschung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 122ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=nYbK2DHVh5U", 408)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Zöllner`sche Täuschung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Poggendorf`sche Täuschung",
+						subtitle: "Aktivierungsfrage zu: Poggendorf`sche Täuschung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 122ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=nYbK2DHVh5U", 409)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Poggendorf`sche Täuschung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+				createLesson(
+					{
+						title: "Der wahrnehmungsökologische Ansatz",
+						subtitle: "Aktivierungsfrage zu: Der wahrnehmungsökologische Ansatz?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 123ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 410)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Der wahrnehmungsökologische Ansatz?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				)
+			]
+	},
+	{
+		title: "Organisationsprinzipien und Objekterkennen",
+		description:
+			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
+		content:
+			[
+				createLesson(
+					{
+						title: "Figur-Grund-Trennung und Gestaltprinzipien",
+						subtitle: "Aktivierungsfrage: Welches Gestaltgesetz bewirkt, dass Sie hier (Bild einfügen) ein Rechteck und ein Dreieck sehen?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 124ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=qdJ8ZT34wBk", 411)],
+						questions: [
+							createMultipleChoice({
+								question:
+									"Welches Gestaltgesetz bewirkt, dass Sie hier (Bild einfügen) ein Rechteck und ein Dreieck sehen?",
+								answers: [
+									{
+										content: "Gesetz der Ähnlichkeit",
+										isCorrect: false
+									},
+									{
+										content: "Gesetz der Nähe",
+										isCorrect: false
+									},
+									{
+										content: "Gesetz der Prägnanz",
+										isCorrect: true
+									},
+									{
+										content: "Gesetz der guten Fortsetzung",
+										isCorrect: false
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							}),
+
+							createMultipleChoice({
+								question:
+									"Welche Organisationsprinzipien stecken hinter den sog. „Gestaltgesetzen“?",
+								answers: [
+									{
+										content: "Gesetz der Prägnanz",
+										isCorrect: true
+									},
+									{
+										content: "Gesetz der Nähe",
+										isCorrect: true
+									},
+									{
+										content: "Gesetz der kleinsten Wirkung",
+										isCorrect: false
+									},
+									{
+										content: "Gesetz der Farbe",
+										isCorrect: false
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Perzept und Wahrnehmungserwartung",
+						subtitle: "Aktivierungsfrage zu: Perzept und Wahrnehmungserwartung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 126ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=hCV2Ba5wrcs", 412)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu Perzept und Wahrnehmungserwartung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Späte Prozesse der Objekterkennung",
+						subtitle: "Aktivierungsfrage zu: Späte Prozesse der Objekterkennung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 130ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 413)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Späte Prozesse der Objekterkennung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Konnektionistische Netzwerke",
+						subtitle: "Aktivierungsfrage zu: Konnektionistische Netzwerke?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 131ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=nYbK2DHVh5U", 414)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Konnektionistische Netzwerke?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Erkennung natürlicher Objekte",
+						subtitle: "Aktivierungsfrage zu: Erkennung natürlicher Objekte?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 133ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=nYbK2DHVh5U", 415)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Erkennung natürlicher Objekte?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				)
+			]
+	},
+	{
+		title: "Bewegungswahrnehmung",
+		description:
+			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
+		content:
+			[
+				createLesson(
+					{
+						title: "Stroboskopische oder Scheinbewegung",
+						subtitle: "Aktivierungsfrage zu: Stroboskopische oder Scheinbewegung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 137ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=qdJ8ZT34wBk", 416)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Stroboskopische oder Scheinbewegung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Induzierte Bewegung",
+						subtitle: "Aktivierungsfrage zu: Induzierte Bewegung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 138ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=hCV2Ba5wrcs", 417)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu Induzierte Bewegung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Reale Bewegung",
+						subtitle: "Selbstregulierter Kurs zum Thema 'Reale Bewegung'",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 139ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 418)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Reale Bewegung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							}),
+							createMultipleChoice({
+								question: "Zweite Frage zu: Reale Bewegung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
 						],
-						hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-					})
-				]
-			);
+						licenseId: null, // licenseID
+						lessonType: LessonType.SELF_REGULATED,
+						selfRegulatedQuestion: "Frage zu: Reale Bewegung?"
+					}
+				)
+			]
+	},
+	{
+		title: "Wahrnehmungslernen",
+		description:
+			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
+		content:
+			[
+				createLesson(
+					{
+						title: "Sensible Phasen der Wahrnehmungsentwicklung",
+						subtitle: "Aktivierungsfrage zu: Sensible Phasen der Wahrnehmungsentwicklung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 144ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=qdJ8ZT34wBk", 419)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu: Sensible Phasen der Wahrnehmungsentwicklung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: "Eigenbewegung als Bedingung der Tiefenwahrnehmung",
+						subtitle: "Aktivierungsfrage zu: Eigenbewegung als Bedingung der Tiefenwahrnehmung?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 148ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=hCV2Ba5wrcs", 420)],
+						questions: [
+							createMultipleChoice({
+								question: "Frage zu Eigenbewegung als Bedingung der Tiefenwahrnehmung?",
+								answers: [
+									{
+										content: "Antwort A",
+										isCorrect: false
+									},
+									{
+										content: "Antwort B",
+										isCorrect: false
+									},
+									{
+										content: "Antwort C",
+										isCorrect: false
+									},
+									{
+										content: "Antwort D",
+										isCorrect: true
+									}
+								],
+								hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+							})
+						]
+					}
+				),
+
+				createLesson(
+					{
+						title: " Wahrnehmungs-Reaktions-Kopplungen (Auslösemechanismen)",
+						subtitle: "Aktivierungsfrage zu:  Wahrnehmungs-Reaktions-Kopplungen (Auslösemechanismen)?",
+						description: "**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 148ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+						content: [createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 421)],
+						questions: [
+							createMultipleChoice({
+									question:
+										"Frage zu:  Wahrnehmungs-Reaktions-Kopplungen (Auslösemechanismen)?",
+									answers: [
+										{
+											content: "Antwort A",
+											isCorrect: false
+										},
+										{
+											content: "Antwort B",
+											isCorrect: false
+										},
+										{
+											content: "Antwort C",
+											isCorrect: false
+										},
+										{
+											content: "Antwort D",
+											isCorrect: true
+										}
+									],
+									hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
+								}
+							)
+						]
+					}
+				)
+			]
+	}
 ];
-},
-{
-	"Räumliche Tiefe und Objektgröße",
-		description;
-:
-	"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
-		content;
-:
-	[
-		createLesson(
-			"Monokulare Tiefenhinweise",
-			"Aktivierungsfrage: Wie funktioniert Tiefenwahrnehmung und räumliches Sehen?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 105ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=l8fiFM3gnGg", 398)],
-			[
-				createMultipleChoice({
-					question: "Wie funktioniert Tiefenwahrnehmung und räumliches Sehen?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Binokulare Tiefenhinweise",
-			"Aktivierungsfrage: Was versteht man unter Querdisparation?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 107ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=kKqQqNW2K0g", 399)],
-			[
-				createMultipleChoice({
-					question: "Was versteht man unter Querdisparation?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Zufallsstereogramme und binokulare Neurone",
-			"Aktivierungsfrage zu. Zufallsstereogramme und binokulare Neurone",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 108ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 400)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Zufallsstereogramme und binokulare Neurone?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		)
-	];
-}
-,
-{
-	"Wahrnehmungskonstanzen",
-		description;
-:
-	"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
-		content;
-:
-	[
-		createLesson(
-			"Helligkeitskonstanz",
-			"Aktivierungsfrage zu: Helligkeitskonstanz",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 111ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=Jxh2a0el9kA", 401)],
-			[
-				createMultipleChoice({
-					question: "Frage zu Helligkeitskonstanz?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-		createLesson(
-			"Farbkonstanz",
-			"Aktivierungsfrage zu: Farbkonstanz?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 113ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=kKqQqNW2K0g", 402)],
-			[
-				createMultipleChoice({
-					question: "Frage zu Farbkonstanz?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Größenkonstanz",
-			"Aktivierungsfrage zu: Größenkonstanz?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 108ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 403)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Größenkonstanz?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-		createLesson(
-			"Form- und Lokationskonstanz",
-			"Aktivierungsfrage zu: Form- und Lokationskonstanz?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 108ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 404)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Form- und Lokationskonstanz?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		)
-	];
-}
-,
-{
-	"Geometrisch-optische Täuschungen",
-		description;
-:
-	"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
-		content;
-:
-	[
-		createLesson(
-			"Ponzo-Täuschung",
-			"Aktivierungsfrage zu: Ponzo-Täuschung",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 118ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=qdJ8ZT34wBk", 405)],
-			[
-				createMultipleChoice({
-					question: "Frage zu Ponzo-Täuschung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-		createLesson(
-			"Ames`sche Raum",
-			"Aktivierungsfrage zu: Ames`sche Raum?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 120ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=hCV2Ba5wrcs", 406)],
-			[
-				createMultipleChoice({
-					question: "Frage zu Ames`sche Raum?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Müller-Lyer`sche Täuschung",
-			"Aktivierungsfrage zu: Müller-Lyer`sche Täuschung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 121ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 407)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Müller-Lyer`sche Täuschung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-		createLesson(
-			"Zöllner`sche Täuschung",
-			"Aktivierungsfrage zu: Zöllner`sche Täuschung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 122ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=nYbK2DHVh5U", 408)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Zöllner`sche Täuschung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Poggendorf`sche Täuschung",
-			"Aktivierungsfrage zu: Poggendorf`sche Täuschung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 122ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=nYbK2DHVh5U", 409)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Poggendorf`sche Täuschung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-		createLesson(
-			"Der wahrnehmungsökologische Ansatz",
-			"Aktivierungsfrage zu: Der wahrnehmungsökologische Ansatz?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 123ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=rRr7RdCHtUI", 410)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Der wahrnehmungsökologische Ansatz?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		)
-	];
-}
-,
-{
-	"Organisationsprinzipien und Objekterkennen",
-		description;
-:
-	"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
-		content;
-:
-	[
-		createLesson(
-			"Figur-Grund-Trennung und Gestaltprinzipien",
-			"Aktivierungsfrage: Welches Gestaltgesetz bewirkt, dass Sie hier (Bild einfügen) ein Rechteck und ein Dreieck sehen?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 124ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=qdJ8ZT34wBk", 411)],
-			[
-				createMultipleChoice({
-					question:
-						"Welches Gestaltgesetz bewirkt, dass Sie hier (Bild einfügen) ein Rechteck und ein Dreieck sehen?",
-					answers: [
-						{
-							content: "Gesetz der Ähnlichkeit",
-							isCorrect: false
-						},
-						{
-							content: "Gesetz der Nähe",
-							isCorrect: false
-						},
-						{
-							content: "Gesetz der Prägnanz",
-							isCorrect: true
-						},
-						{
-							content: "Gesetz der guten Fortsetzung",
-							isCorrect: false
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				}),
-
-				createMultipleChoice({
-					question:
-						"Welche Organisationsprinzipien stecken hinter den sog. „Gestaltgesetzen“?",
-					answers: [
-						{
-							content: "Gesetz der Prägnanz",
-							isCorrect: true
-						},
-						{
-							content: "Gesetz der Nähe",
-							isCorrect: true
-						},
-						{
-							content: "Gesetz der kleinsten Wirkung",
-							isCorrect: false
-						},
-						{
-							content: "Gesetz der Farbe",
-							isCorrect: false
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Perzept und Wahrnehmungserwartung",
-			"Aktivierungsfrage zu: Perzept und Wahrnehmungserwartung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 126ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=hCV2Ba5wrcs", 412)],
-			[
-				createMultipleChoice({
-					question: "Frage zu Perzept und Wahrnehmungserwartung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Späte Prozesse der Objekterkennung",
-			"Aktivierungsfrage zu: Späte Prozesse der Objekterkennung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 130ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 413)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Späte Prozesse der Objekterkennung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Konnektionistische Netzwerke",
-			"Aktivierungsfrage zu: Konnektionistische Netzwerke?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 131ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=nYbK2DHVh5U", 414)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Konnektionistische Netzwerke?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Erkennung natürlicher Objekte",
-			"Aktivierungsfrage zu: Erkennung natürlicher Objekte?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 133ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=nYbK2DHVh5U", 415)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Erkennung natürlicher Objekte?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		)
-	];
-}
-,
-{
-	"Bewegungswahrnehmung",
-		description;
-:
-	"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
-		content;
-:
-	[
-		createLesson(
-			"Stroboskopische oder Scheinbewegung",
-			"Aktivierungsfrage zu: Stroboskopische oder Scheinbewegung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 137ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=qdJ8ZT34wBk", 416)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Stroboskopische oder Scheinbewegung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Induzierte Bewegung",
-			"Aktivierungsfrage zu: Induzierte Bewegung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 138ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=hCV2Ba5wrcs", 417)],
-			[
-				createMultipleChoice({
-					question: "Frage zu Induzierte Bewegung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Reale Bewegung",
-			"Selbstregulierter Kurs zum Thema 'Reale Bewegung'",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 139ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 418)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Reale Bewegung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				}),
-				createMultipleChoice({
-					question: "Zweite Frage zu: Reale Bewegung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			],
-			null, // licenseID
-			LessonType.SELF_REGULATED,
-			"Frage zu: Reale Bewegung?"
-		)
-	];
-}
-,
-{
-	"Wahrnehmungslernen",
-		description;
-:
-	"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
-		content;
-:
-	[
-		createLesson(
-			"Sensible Phasen der Wahrnehmungsentwicklung",
-			"Aktivierungsfrage zu: Sensible Phasen der Wahrnehmungsentwicklung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 144ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=qdJ8ZT34wBk", 419)],
-			[
-				createMultipleChoice({
-					question: "Frage zu: Sensible Phasen der Wahrnehmungsentwicklung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			"Eigenbewegung als Bedingung der Tiefenwahrnehmung",
-			"Aktivierungsfrage zu: Eigenbewegung als Bedingung der Tiefenwahrnehmung?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 148ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=hCV2Ba5wrcs", 420)],
-			[
-				createMultipleChoice({
-					question: "Frage zu Eigenbewegung als Bedingung der Tiefenwahrnehmung?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		),
-
-		createLesson(
-			" Wahrnehmungs-Reaktions-Kopplungen (Auslösemechanismen)",
-			"Aktivierungsfrage zu:  Wahrnehmungs-Reaktions-Kopplungen (Auslösemechanismen)?",
-			"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 148ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-			[createVideo("https://www.youtube.com/watch?v=OCs_Ja4Xj8o", 421)],
-			[
-				createMultipleChoice({
-					question:
-						"Frage zu:  Wahrnehmungs-Reaktions-Kopplungen (Auslösemechanismen)?",
-					answers: [
-						{
-							content: "Antwort A",
-							isCorrect: false
-						},
-						{
-							content: "Antwort B",
-							isCorrect: false
-						},
-						{
-							content: "Antwort C",
-							isCorrect: false
-						},
-						{
-							content: "Antwort D",
-							isCorrect: true
-						}
-					],
-					hints: ["Optional: Hinweis 1", "Hinweis 2", "Hinweis n"]
-				})
-			]
-		)
-	];
-}
-]
 
 
 export const course = createCourse(
