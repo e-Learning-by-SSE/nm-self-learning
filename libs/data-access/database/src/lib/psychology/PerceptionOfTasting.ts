@@ -12,14 +12,15 @@ export const chapters = [
 		description:
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
-			createLesson(
-				"Aufbau und Funktion der Zunge",
-				"Aktivierungsfrage: Was ist der Ausgangspunkt der Geschmackswahrnehmung?",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 450)],
-				[
+			createLesson({
+				title: "Aufbau und Funktion der Zunge",
+				subtitle: "Aktivierungsfrage: Was ist der Ausgangspunkt der Geschmackswahrnehmung?",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 450)],
+				questions: [
 					createTextQuestion(
-						"Sequenzielle Frage: Was ist der Ausgangspunkt der Geschmackswahrnehmung? Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
+						"Sequenzielle Frage: Was ist der Ausgangspunkt der Geschmackswahrnehmung? Bitte begründen Sie kurz, ckdwieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
@@ -38,9 +39,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Was ist der Ausgangspunkt der Geschmackswahrnehmung?",
-						[
+					createMultipleChoice({
+						question: "Was ist der Ausgangspunkt der Geschmackswahrnehmung?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: true
@@ -58,16 +59,18 @@ export const chapters = [
 								isCorrect: false
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			),
-			createLesson(
-				"Spezifika des Schmeckens",
-				"Aktivierungsfrage: Welche unterschiedlichen Geschmacksempfindungen gibt es?",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**W33 - 34führende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			}),
+			createLesson({
+				title: "Spezifika des Schmeckens",
+				subtitle:
+					"Aktivierungsfrage: Welche unterschiedlichen Geschmacksempfindungen gibt es?",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**W33 - 34führende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Frage: Welche unterschiedlichen Geschmacksempfindungen gibt es? Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nsüß und salzig\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -88,9 +91,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Welche unterschiedlichen Geschmacksempfindungen gibt es?",
-						[
+					createMultipleChoice({
+						question: "Welche unterschiedlichen Geschmacksempfindungen gibt es?",
+						answers: [
 							{
 								content: "süß und salzig",
 								isCorrect: true
@@ -108,10 +111,10 @@ export const chapters = [
 								isCorrect: false
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			)
+			})
 		]
 	},
 	{
@@ -119,12 +122,13 @@ export const chapters = [
 		description:
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
-			createLesson(
-				"Gustatorik und Gedächtnis",
-				"Aktivierungsfrage zu Gustatorik und Gedächtnis ",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			createLesson({
+				title: "Gustatorik und Gedächtnis",
+				subtitle: "Aktivierungsfrage zu Gustatorik und Gedächtnis ",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zu: Gustatorik und Gedächtnis Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -145,9 +149,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zu Gustatorik und Gedächtnis?",
-						[
+					createMultipleChoice({
+						question: "Frage zu Gustatorik und Gedächtnis?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -165,16 +169,17 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			),
-			createLesson(
-				"Besonderheiten der neuronalen Verschaltung beim Schmecken",
-				"Aktivierungsfrage zur neuronalen Verschaltung beim Schmecken",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			}),
+			createLesson({
+				title: "Besonderheiten der neuronalen Verschaltung beim Schmecken",
+				subtitle: "Aktivierungsfrage zur neuronalen Verschaltung beim Schmecken",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zur neuronalen Verschaltung beim Schmecken Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -195,9 +200,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zur neuronalen Verschaltung beim Schmecken?",
-						[
+					createMultipleChoice({
+						question: "Frage zur neuronalen Verschaltung beim Schmecken?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -215,10 +220,10 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			)
+			})
 		]
 	},
 	{
@@ -226,12 +231,13 @@ export const chapters = [
 		description:
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
-			createLesson(
-				"Nucleus Tractus Solitarii",
-				"Aktivierungsfrage zu: Nucleus Tractus Solitarii?",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			createLesson({
+				title: "Nucleus Tractus Solitarii",
+				subtitle: "Aktivierungsfrage zu: Nucleus Tractus Solitarii?",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zu: Nucleus Tractus Solitarii Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -252,9 +258,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zu Nucleus Tractus Solitarii?",
-						[
+					createMultipleChoice({
+						question: "Frage zu Nucleus Tractus Solitarii?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -272,16 +278,17 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			),
-			createLesson(
-				"Gustatorischer Cortex ",
-				"Aktivierungsfrage zu: Gustatorischer Cortex?",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			}),
+			createLesson({
+				title: "Gustatorischer Cortex ",
+				subtitle: "Aktivierungsfrage zu: Gustatorischer Cortex?",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zu: Gustatorischer Cortex Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -302,9 +309,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zu Gustatorischer Cortex?",
-						[
+					createMultipleChoice({
+						question: "Frage zu Gustatorischer Cortex?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -322,10 +329,10 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			)
+			})
 		]
 	},
 	{
@@ -333,12 +340,14 @@ export const chapters = [
 		description:
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
-			createLesson(
-				"Prinzipien der gustatorischen Wahrnehmung - Textur",
-				"Aktivierungsfrage zu: Prinzipien der gustatorischen Wahrnehmung - Textur",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			createLesson({
+				title: "Prinzipien der gustatorischen Wahrnehmung - Textur",
+				subtitle:
+					"Aktivierungsfrage zu: Prinzipien der gustatorischen Wahrnehmung - Textur",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zu: Prinzipien der gustatorischen Wahrnehmung - Textur Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -359,9 +368,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zu Prinzipien der gustatorischen Wahrnehmung - Textur?",
-						[
+					createMultipleChoice({
+						question: "Frage zu Prinzipien der gustatorischen Wahrnehmung - Textur?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -379,16 +388,18 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			),
-			createLesson(
-				"Prinzipien der gustatorischen Wahrnehmung - Geräusche",
-				"Aktivierungsfrage zu: Prinzipien der gustatorischen Wahrnehmung - Geräusche",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			}),
+			createLesson({
+				title: "Prinzipien der gustatorischen Wahrnehmung - Geräusche",
+				subtitle:
+					"Aktivierungsfrage zu: Prinzipien der gustatorischen Wahrnehmung - Geräusche",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zu: Prinzipien der gustatorischen Wahrnehmung - Geräusche Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -409,9 +420,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zu Prinzipien der gustatorischen Wahrnehmung - Geräusche?",
-						[
+					createMultipleChoice({
+						question: "Frage zu Prinzipien der gustatorischen Wahrnehmung - Geräusche?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -429,10 +440,10 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			)
+			})
 		]
 	},
 	{
@@ -440,12 +451,14 @@ export const chapters = [
 		description:
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
-			createLesson(
-				" Zusammenhang zwischen Gustatorik und Hunger/Appetit ",
-				"Aktivierungsfrage zu: Zusammenhang zwischen Gustatorik und Hunger/Appetit?",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			createLesson({
+				title: " Zusammenhang zwischen Gustatorik und Hunger/Appetit ",
+				subtitle:
+					"Aktivierungsfrage zu: Zusammenhang zwischen Gustatorik und Hunger/Appetit?",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zu: Zusammenhang zwischen Gustatorik und Hunger/Appetit Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -466,9 +479,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zu Zusammenhang zwischen Gustatorik und Hunger/Appetit?",
-						[
+					createMultipleChoice({
+						question: "Frage zu Zusammenhang zwischen Gustatorik und Hunger/Appetit?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -486,16 +499,17 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			),
-			createLesson(
-				"Zusammenhang zwischen Schmecken und Sehen",
-				"Aktivierungsfrage zu: Zusammenhang zwischen Schmecken und Sehen",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			}),
+			createLesson({
+				title: "Zusammenhang zwischen Schmecken und Sehen",
+				subtitle: "Aktivierungsfrage zu: Zusammenhang zwischen Schmecken und Sehen",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zu: Zusammenhang zwischen Schmecken und Sehen Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -516,9 +530,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zu Zusammenhang zwischen Schmecken und Sehen?",
-						[
+					createMultipleChoice({
+						question: "Frage zu Zusammenhang zwischen Schmecken und Sehen?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -536,16 +550,17 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			),
-			createLesson(
-				"Der Proust-Effekt oder auch Madeleine-Effekt",
-				"Aktivierungsfrage zu: Der Proust-Effekt oder auch Madeleine-Effekt",
-				"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
-				[createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
-				[
+			}),
+			createLesson({
+				title: "Der Proust-Effekt oder auch Madeleine-Effekt",
+				subtitle: "Aktivierungsfrage zu: Der Proust-Effekt oder auch Madeleine-Effekt",
+				description:
+					"**Basisliteratur**:  \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 170ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**:  \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 354)],
+				questions: [
 					createTextQuestion(
 						"Sequenzielle Fragen zu: Der Proust-Effekt oder auch Madeleine-Effekt Bitte begründen Sie kurz, wieso Sie meinen, dass die folgende Antwort richtig oder falsch ist.\r\nAntwort A\r\n",
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
@@ -566,9 +581,9 @@ export const chapters = [
 						["Akzeptierte Antwort 1", "Akzeptierte Antwort 2", "Akzeptierte Antwort n"],
 						["Optional: Hinweis 1", "Optional: Hinweis 2", "Optional: Hinweis n"]
 					),
-					createMultipleChoice(
-						"Frage zu Der Proust-Effekt oder auch Madeleine-Effekt?",
-						[
+					createMultipleChoice({
+						question: "Frage zu Der Proust-Effekt oder auch Madeleine-Effekt?",
+						answers: [
 							{
 								content: "Antwort A",
 								isCorrect: false
@@ -586,10 +601,10 @@ export const chapters = [
 								isCorrect: true
 							}
 						],
-						["Hinweis 1", "Hinweis 2", "Hinweis n"]
-					)
+						hints: ["Hinweis 1", "Hinweis 2", "Hinweis n"]
+					})
 				]
-			)
+			})
 		]
 	}
 ];
