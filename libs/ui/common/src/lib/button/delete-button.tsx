@@ -1,6 +1,6 @@
-import { TrashIcon } from "@heroicons/react/outline";
+import { TrashIcon } from "@heroicons/react/24/outline";
 import React, { ReactNode } from "react";
-import { XIcon } from "@heroicons/react/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 export function DeleteButton({
 	onDelete,
@@ -43,7 +43,7 @@ export function TransparentDeleteButton({
 			title={title}
 			className={`rounded-md border border-transparent bg-transparent ${additionalClassNames}`}
 		>
-			{label || <XIcon className="h-5 w-5 text-gray-600 hover:text-red-600" />}
+			{label || <XMarkIcon className="h-5 w-5 text-gray-600 hover:text-red-600" />}
 		</button>
 	);
 }

@@ -162,52 +162,10 @@ export default function ArrangeForm({ index }: { index: number }) {
 													<DraggableContent
 														item={item}
 														index={index}
-													>
-														{provided => (
-															<li
-																ref={provided.innerRef}
-																{...provided.draggableProps}
-																{...provided.dragHandleProps}
-																className="prose prose-emerald flex h-fit w-fit max-w-[50ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
-															>
-																<div className="flex gap-2">
-																	<button
-																		type="button"
-																		className="rounded-full p-2 hover:bg-gray-100"
-																		title="Editieren"
-																		onClick={() =>
-																			setEditItemDialog({
-																				containerId,
-																				item
-																			})
-																		}
-																	>
-																		<PencilIcon className="h-5 text-gray-400" />
-																	</button>
-
-																	<button
-																		type="button"
-																		className="rounded-full p-2 hover:bg-red-50"
-																		title="Löschen"
-																		onClick={() =>
-																			onDeleteItem(
-																				containerId,
-																				item.id
-																			)
-																		}
-																	>
-																		<XMarkIcon className="h-5 text-red-500" />
-																	</button>
-																</div>
-
-																<Divider />
-
-																<MarkdownViewer
-																	content={item.content}
-																/>
-															</li>
-														)}
-													</Draggable>
+														onDeleteItem={onDeleteItem}
+														setEditItemDialog={setEditItemDialog}
+														containerId={containerId}
+													/>
 												))}
 												{provided.placeholder}
 											</ul>

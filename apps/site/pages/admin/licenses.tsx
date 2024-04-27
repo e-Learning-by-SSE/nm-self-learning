@@ -16,7 +16,6 @@ import { Fragment, useMemo, useState } from "react";
 import { License } from "@self-learning/types";
 import Link from "next/link";
 import { ShareIcon } from "@heroicons/react/24/outline";
-import Tooltip from "../../../../libs/ui/common/src/lib/tooltip/tooltips";
 import { useTranslation } from "react-i18next";
 
 export default function LicensesPage() {

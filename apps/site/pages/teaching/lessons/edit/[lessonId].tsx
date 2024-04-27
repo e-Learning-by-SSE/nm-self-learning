@@ -8,6 +8,7 @@ import { unstable_getServerSession } from "next-auth";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
+import { trpc } from "@self-learning/api-client";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -99,7 +100,6 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 };
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
-	const { t } = useTranslation();
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
