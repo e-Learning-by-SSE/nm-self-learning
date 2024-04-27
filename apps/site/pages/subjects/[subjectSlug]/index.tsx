@@ -1,4 +1,4 @@
-import { CollectionIcon } from "@heroicons/react/solid";
+import { Square3Stack3DIcon } from "@heroicons/react/24/solid";
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
@@ -105,7 +105,7 @@ function SpecializationCard({
 				badge={<ImageCardBadge text={t("specialization")} className="bg-purple-500" />}
 				footer={
 					<span className="flex items-center gap-3 text-sm font-semibold text-emerald-500">
-						<CollectionIcon className="h-5" />
+						<Square3Stack3DIcon className="h-5" />
 						<span>
 							{specialization._count.courses}{" "}
 							{specialization._count.courses === 1 ? t("course") : t("courses")}

@@ -1,4 +1,4 @@
-import { PuzzleIcon } from "@heroicons/react/solid";
+import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { database } from "@self-learning/database";
 import { CourseMeta, Defined, ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
@@ -110,7 +110,7 @@ function CourseCard({
 				badge={<ImageCardBadge text={t("course")} className="bg-emerald-500" />}
 				footer={
 					<span className="flex items-center gap-3 text-sm font-semibold text-emerald-500">
-						<PuzzleIcon className="h-5" />
+						<PuzzlePieceIcon className="h-5" />
 						<span>
 							{meta.lessonCount} {meta.lessonCount === 1 ? t("unit") : t("units")}
 						</span>

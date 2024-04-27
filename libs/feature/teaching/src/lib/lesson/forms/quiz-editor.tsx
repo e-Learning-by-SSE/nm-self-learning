@@ -92,8 +92,8 @@ export function QuizEditor() {
 		<section className="flex flex-col gap-8">
 			<SectionHeader
 				title="Aufgaben"
-				subtitle="Aufgaben, die Studierenden nach Bearbeitung der Lernheit angezeigt werden sollen.
-					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lernheit
+				subtitle="Aufgaben, die Studierenden nach Bearbeitung der Lerneinheit angezeigt werden sollen.
+					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lerneinheit
 					erfolgreich abzuschließen."
 				button={
 					<AddDropDownButton label={"Aufgabe Hinzufügen"}>

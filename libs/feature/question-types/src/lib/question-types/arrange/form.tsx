@@ -1,4 +1,10 @@
-import { LabeledField, MarkdownField, MarkdownViewer } from "@self-learning/ui/forms";
+import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+	LabeledField,
+	MarkdownEditorDialog,
+	MarkdownField,
+	MarkdownViewer
+} from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
@@ -134,10 +140,14 @@ export default function ArrangeForm({ index }: { index: number }) {
 												title={"Element hinzufügen"}
 											/>
 
-											<DeleteButton
-												onDelete={() => onDeleteContainer(containerId)}
-												title={"Kategorie entfernen"}
-											/>
+											<button
+												type="button"
+												className="rounded-full p-2 hover:bg-red-50"
+												title="Kategorie entfernen"
+												onClick={() => onDeleteContainer(containerId)}
+											>
+												<XMarkIcon className="h-5 text-red-500" />
+											</button>
 										</div>
 									</span>
 
@@ -152,10 +162,52 @@ export default function ArrangeForm({ index }: { index: number }) {
 													<DraggableContent
 														item={item}
 														index={index}
-														onDeleteItem={onDeleteItem}
-														setEditItemDialog={setEditItemDialog}
-														containerId={containerId}
-													/>
+													>
+														{provided => (
+															<li
+																ref={provided.innerRef}
+																{...provided.draggableProps}
+																{...provided.dragHandleProps}
+																className="prose prose-emerald flex h-fit w-fit max-w-[50ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
+															>
+																<div className="flex gap-2">
+																	<button
+																		type="button"
+																		className="rounded-full p-2 hover:bg-gray-100"
+																		title="Editieren"
+																		onClick={() =>
+																			setEditItemDialog({
+																				containerId,
+																				item
+																			})
+																		}
+																	>
+																		<PencilIcon className="h-5 text-gray-400" />
+																	</button>
+
+																	<button
+																		type="button"
+																		className="rounded-full p-2 hover:bg-red-50"
+																		title="Löschen"
+																		onClick={() =>
+																			onDeleteItem(
+																				containerId,
+																				item.id
+																			)
+																		}
+																	>
+																		<XMarkIcon className="h-5 text-red-500" />
+																	</button>
+																</div>
+
+																<Divider />
+
+																<MarkdownViewer
+																	content={item.content}
+																/>
+															</li>
+														)}
+													</Draggable>
 												))}
 												{provided.placeholder}
 											</ul>

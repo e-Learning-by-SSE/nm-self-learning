@@ -8,8 +8,8 @@ import { SkillResolved } from "@self-learning/api";
 import { SkillDeleteOption } from "./skill-taskbar";
 import { showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
-import { XIcon } from "@heroicons/react/solid";
 import { SkillSelectHandler } from "./skill-display";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 export function SelectedSkillsInfoForm({
 	skills,
@@ -111,7 +111,7 @@ export function SkillInfoForm({
 							title="Ansicht ohne Veränderungen schließen"
 							onClick={resetEditTarget}
 						>
-							<XIcon className="h-5" />
+							<XMarkIcon className="h-5" />
 						</button>
 					</div>
 					<div className="flex flex-col gap-4 border-b-2 border-light-border">

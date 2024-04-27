@@ -4,6 +4,8 @@ import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import { updateAuthorAsAdmin } from "@self-learning/admin";
 import { editAuthorSchema } from "@self-learning/teaching";
+import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
+import { Prisma } from "@prisma/client";
 
 export const authorRouter = t.router({
 	getByUsername: authProcedure.input(z.object({ username: z.string() })).query(({ input }) => {
@@ -96,6 +98,27 @@ export const authorRouter = t.router({
 				}
 			});
 		}),
+	findMany: authProcedure
+		.input(
+			paginationSchema.extend({
+				username: z.string().optional(),
+				displayName: z.string().optional()
+			})
+		)
+		.query(async ({ input: { username, page, displayName } }) => {
+			const pageSize = 15;
+			const { authors, count } = await findAuthor({
+				username,
+				displayName,
+				...paginate(pageSize, page)
+			});
+			return {
+				result: authors,
+				totalCount: count,
+				page,
+				pageSize
+			} satisfies Paginated<unknown>;
+		}),
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	updateAsAdmin: adminProcedure
 		.input(
@@ -134,3 +157,43 @@ export const authorRouter = t.router({
 		return updated;
 	})
 });
+
+export async function findAuthor({
+	username,
+	displayName,
+	skip,
+	take
+}: {
+	username?: string;
+	displayName?: string;
+	skip?: number;
+	take?: number;
+}) {
+	const where: Prisma.AuthorWhereInput = {
+		username:
+			typeof username === "string" && username.length > 0
+				? { contains: username, mode: "insensitive" }
+				: undefined,
+		displayName:
+			typeof displayName === "string" && displayName.length > 0
+				? { contains: displayName, mode: "insensitive" }
+				: undefined
+	};
+
+	const [authors, count] = await database.$transaction([
+		database.author.findMany({
+			select: {
+				username: true,
+				displayName: true,
+				slug: true,
+				imgUrl: true
+			},
+			where,
+			take,
+			skip
+		}),
+		database.author.count({ where })
+	]);
+
+	return { authors, count };
+}

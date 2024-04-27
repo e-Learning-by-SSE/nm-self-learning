@@ -1,4 +1,4 @@
-import { MenuIcon } from "@heroicons/react/outline";
+import { Bars4Icon } from "@heroicons/react/24/outline";
 import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 import { DefaultSidebar } from "./sidebar";
 
@@ -21,7 +21,7 @@ export function SidebarLayout({ children }: PropsWithChildren<unknown>) {
 			) : (
 				// Sidebar is closed
 				<button onClick={() => setOpen(true)} className="fixed top-4 left-4">
-					<MenuIcon height="24" />
+					<Bars4Icon height="24" />
 				</button>
 			)}
 

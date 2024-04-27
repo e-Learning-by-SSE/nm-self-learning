@@ -6,8 +6,8 @@ import {
 	LinkIcon,
 	PencilIcon,
 	PlusIcon,
-	XIcon
-} from "@heroicons/react/solid";
+	XMarkIcon
+} from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
@@ -177,7 +177,7 @@ function LessonNode({
 					title="Entfernen"
 					onClick={onRemove}
 				>
-					<XIcon className="h-4 " />
+					<XMarkIcon className="h-4 " />
 				</button>
 			</div>
 		</span>

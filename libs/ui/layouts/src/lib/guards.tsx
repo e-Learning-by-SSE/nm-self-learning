@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from "@heroicons/react/solid";
+import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { CenteredSection } from "./containers/centered-section";

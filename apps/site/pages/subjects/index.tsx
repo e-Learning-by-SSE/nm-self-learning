@@ -1,4 +1,4 @@
-import { SparklesIcon } from "@heroicons/react/solid";
+import { SparklesIcon } from "@heroicons/react/24/solid";
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard } from "@self-learning/ui/common";
