@@ -125,5 +125,11 @@
 	"my_courses": "My Courses",
 	"create_course": "Create new course",
 
+	"overview": "Overview",
+	"admin_area": "Admin-Area",
+
+	"open_menu": "Open Menu",
+	"search": "Search",
+
 	"hallo": "hallo"
 }
