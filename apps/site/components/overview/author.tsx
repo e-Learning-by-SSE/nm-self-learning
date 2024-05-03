@@ -227,7 +227,7 @@ export default function AuthorOverview({ author }: Props) {
 								<div className="h-32 w-32">
 									<VoidSvg />
 								</div>
-								<p className="text-light">Du hast noch keine Kurse erstellt.</p>
+								<p className="text-light">{t("no_course_created")}</p>
 							</div>
 						) : (
 							author.courses.map(course => (
@@ -260,7 +260,7 @@ export default function AuthorOverview({ author }: Props) {
 											className="btn-stroked h-fit w-fit"
 										>
 											<PencilIcon className="icon" />
-											<span>Bearbeiten</span>
+											<span>{t("edit")}</span>
 										</Link>
 									</div>
 								</li>
@@ -274,13 +274,13 @@ export default function AuthorOverview({ author }: Props) {
 				<section>
 					<div className="flex justify-between gap-4">
 						<SectionHeader
-							title="Meine Lerneinheiten"
-							subtitle="Autor der folgenden Lerneinheiten:"
+							title={t("my_learning_units")}
+							subtitle={t("author_in_units")}
 						/>
 
 						<Link href="/teaching/lessons/create" className="btn-primary h-fit w-fit">
 							<PlusIcon className="icon" />
-							<span>Neuen Lerneinheit erstellen</span>
+							<span>{t("create_unit")}</span>
 						</Link>
 					</div>
 
@@ -290,13 +290,10 @@ export default function AuthorOverview({ author }: Props) {
 				<Divider />
 				<section>
 					<div className="flex justify-between gap-4">
-						<SectionHeader
-							title="Skillkarten"
-							subtitle="Besitzer der folgenden Repositories"
-						/>
+						<SectionHeader title={t("skillcard")} subtitle={t("repo_owner")} />
 						<Link href="skills/repository/create" className="btn-primary h-fit w-fit">
 							<PlusIcon className="icon h-5" />
-							<span>Skillkarten anlegen</span>
+							<span>{t("creating_skillcard")}</span>
 						</Link>
 					</div>
 					<SkillRepositoryOverview />
@@ -308,6 +305,7 @@ export default function AuthorOverview({ author }: Props) {
 
 function Lessons({ authorName }: { authorName: string }) {
 	const router = useRouter();
+	const { t } = useTranslation();
 	const { title = "", page = 1 } = router.query;
 
 	const { data: lessons } = trpc.lesson.findMany.useQuery(
@@ -329,7 +327,7 @@ function Lessons({ authorName }: { authorName: string }) {
 			) : (
 				<>
 					<SearchField
-						placeholder="Suche nach Lerneinheit"
+						placeholder={t("search_for_unit")}
 						value={title}
 						onChange={e => {
 							router.push(
@@ -348,8 +346,8 @@ function Lessons({ authorName }: { authorName: string }) {
 					<Table
 						head={
 							<>
-								<TableHeaderColumn>Titel</TableHeaderColumn>
-								<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
+								<TableHeaderColumn>{t("title")}</TableHeaderColumn>
+								<TableHeaderColumn>{t("last_change")}</TableHeaderColumn>
 							</>
 						}
 					>
