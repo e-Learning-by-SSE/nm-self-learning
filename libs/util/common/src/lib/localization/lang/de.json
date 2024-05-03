@@ -74,6 +74,7 @@
 	"properties": "Eigenschaften",
 	"task": "Aufgabe",
 	"missing_content": "Leider gibt es hier noch keine Inhalte.",
+	"no_course_created": "Du hast noch keine Kurse erstellt",
 
 	"add_license": "Lizenz hinzufügen",
 	"search_for_license": "Suche nach Lizenz",
@@ -124,6 +125,17 @@
 
 	"my_courses": "Meine Kurse",
 	"create_course": "Neuen Kurs erstellen",
+	"my_learning_units": "Meine Lerneinheiten",
+	"author_in_units": "Autor der folgenden Lerneinheiten:",
+	"create_unit": "Neue Lerneinheit erstellen",
+	"creating_skillcard": "Skillkarten anlegen",
+	"skillcard": "Skillkarte",
+	"repo_owner": "Besitzer der folgenden Repositories",
+	"search_for_unit": "Suche nach Lerneinheit",
+
+	"show": "Zeige",
+	"results_1": "Ergebnissen",
+	"out_of": "von",
 
 	"hallo": "hallo"
 }

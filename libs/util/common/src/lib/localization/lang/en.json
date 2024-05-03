@@ -74,6 +74,7 @@
 	"properties": "Properties",
 	"task": "Task",
 	"missing_content": "No content here yet",
+	"no_course_created": "You have not created any courses yet",
 
 	"add_license": "Add License",
 	"search_for_license": "Search for License",
@@ -124,6 +125,17 @@
 
 	"my_courses": "My Courses",
 	"create_course": "Create new course",
+	"my_learning_units": "My Units",
+	"author_in_units": "Author in the following Units:",
+	"create_unit": "Create new Unit",
+	"creating_skillcard": "Create Skillcard",
+	"skillcard": "Skillcard",
+	"repo_owner": "Owner in the following Repositories",
+	"search_for_unit": "Search for Unit",
+
+	"show": "Show",
+	"results_1": "results",
+	"out_of": "out of",
 
 	"hallo": "hallo"
 }
