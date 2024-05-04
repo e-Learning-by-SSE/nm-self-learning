@@ -12,11 +12,13 @@ import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { useTranslation } from "react-i18next";
 
 export function SkillRepositoryOverview() {
 	useRequiredSession();
 
 	const [displayName, setDisplayName] = useState("");
+	const { t } = useTranslation();
 
 	const { data: skillTrees, isLoading } = trpc.skill.getRepositoriesByUser.useQuery();
 
@@ -33,7 +35,7 @@ export function SkillRepositoryOverview() {
 		<AuthorGuard>
 			<div className="flex min-h-[300px] flex-col">
 				<SearchField
-					placeholder="Suche nach Skill-Trees"
+					placeholder={t("skill_tree_search")}
 					onChange={e => {
 						setDisplayName(e.target.value);
 					}}
@@ -77,7 +79,7 @@ export function SkillRepositoryOverview() {
 									<TableDataColumn>
 										<div className="flex flex-wrap gap-4">
 											<span className="text-sm font-medium hover:text-secondary">
-												Keine Skill Repositories vorhanden
+												{t("no_skill_repository")}
 											</span>
 										</div>
 									</TableDataColumn>
@@ -95,12 +97,13 @@ export function SkillRepositoryOverview() {
 }
 
 function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
+	const { t } = useTranslation();
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
 			<Link href={`/skills/repository/${repositoryId}`}>
 				<button type="button" className="btn-stroked w-fit self-end">
 					<PencilIcon className="icon" />
-					<span>Bearbeiten</span>
+					<span>{t("edit")}</span>
 				</button>
 			</Link>
 			<RepositoryDeleteOption repositoryId={repositoryId} />

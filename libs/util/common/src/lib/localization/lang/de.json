@@ -142,6 +142,8 @@
 
 	"open_menu": "Menü öffnen",
 	"search": "Suche",
+	"skill_tree_search": "Suche nach Skill-Tree",
+	"no_skill_repository": "Keine Skill Repositories vorhanden",
 
 	"hallo": "hallo"
 }
