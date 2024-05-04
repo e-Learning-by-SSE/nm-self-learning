@@ -127,6 +127,7 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 	const handleCancel = () => {
 		setShowConfirmation(false);
 	};
+	const { t } = useTranslation();
 
 	return (
 		<>
@@ -140,10 +141,10 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 			</button>
 			{showConfirmation && (
 				<Dialog title={"Löschen"} onClose={handleCancel}>
-					Möchten Sie dieses Repository wirklich löschen?
+					{t("delete_repo_message")}
 					<DialogActions onClose={handleCancel}>
 						<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
-							Löschen
+							{t("delete")}
 						</button>
 					</DialogActions>
 				</Dialog>

@@ -144,6 +144,8 @@
 	"search": "Suche",
 	"skill_tree_search": "Suche nach Skill-Tree",
 	"no_skill_repository": "Keine Skill Repositories vorhanden",
+	"delete_repo_message": "Möchten Sie dieses Repository wirklich löschen?",
+	"delete": "Löschen",
 
 	"hallo": "hallo"
 }
