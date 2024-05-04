@@ -140,7 +140,7 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 				</div>
 			</button>
 			{showConfirmation && (
-				<Dialog title={"Löschen"} onClose={handleCancel}>
+				<Dialog title={t("delete")} onClose={handleCancel}>
 					{t("delete_repo_message")}
 					<DialogActions onClose={handleCancel}>
 						<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>

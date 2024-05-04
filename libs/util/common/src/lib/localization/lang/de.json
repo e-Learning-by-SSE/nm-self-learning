@@ -146,6 +146,7 @@
 	"no_skill_repository": "Keine Skill Repositories vorhanden",
 	"delete_repo_message": "Möchten Sie dieses Repository wirklich löschen?",
 	"delete": "Löschen",
+	"cancel": "Abbrechen",
 
 	"hallo": "hallo"
 }

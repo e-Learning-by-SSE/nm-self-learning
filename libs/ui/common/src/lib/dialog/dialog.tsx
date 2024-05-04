@@ -1,6 +1,7 @@
 import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { CSSProperties, ReactNode } from "react";
 import { DefaultButton } from "../button/default-button";
+import { useTranslation } from "react-i18next";
 
 export type OnDialogCloseFn<T> = (result?: T) => void;
 
@@ -92,10 +93,11 @@ export function DialogActions({
 	/** Should include the call to action button.  */
 	children?: React.ReactNode;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className="mt-8 flex justify-end gap-2">
 			<DefaultButton onClick={() => onClose(undefined)}>
-				<span className={"text-gray-600"}>Abbrechen</span>
+				<span className={"text-gray-600"}>{t("cancel")}</span>
 			</DefaultButton>
 			{children}
 		</div>
