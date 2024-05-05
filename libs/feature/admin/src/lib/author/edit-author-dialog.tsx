@@ -101,11 +101,13 @@ function AuthorForm({
 					<Permissions />
 				</div>
 
-				<DialogActions onClose={onClose}>
-					<button className="btn-primary" type="submit">
-						Speichern
-					</button>
-				</DialogActions>
+				<div className="absolute bottom-10 right-10">
+					<DialogActions onClose={onClose}>
+						<button className="btn-primary" type="submit">
+							Speichern
+						</button>
+					</DialogActions>
+				</div>
 			</form>
 		</FormProvider>
 	);
