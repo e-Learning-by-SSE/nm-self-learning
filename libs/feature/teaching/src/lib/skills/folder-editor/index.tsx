@@ -68,7 +68,9 @@ export function SkillFolderEditor({
 					/>
 				}
 			>
-				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles} />}
+				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles} 
+					skillDisplayData={skillDisplayData} 
+				updateSkillDisplay={updateSkillDisplay} />}
 				<SkillFolderTable
 					repository={repository}
 					skillDisplayData={skillDisplayData}

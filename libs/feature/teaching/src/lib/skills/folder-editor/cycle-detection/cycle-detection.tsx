@@ -1,9 +1,59 @@
 import { SkillFormModel } from "@self-learning/types";
 import { Alert, SimpleDialog } from "@self-learning/ui/common";
 import { useState } from "react";
+import { CycleComponents } from "./cycle-components";
+import { OptionalVisualizationWithRequiredId, SkillFolderVisualization } from "../skill-display";
 
-export function ShowCyclesDialog({ cycleParticipants }: { cycleParticipants: SkillFormModel[] }) {
+export function ShowCyclesDialog({
+	cycleParticipants,
+	updateSkillDisplay,
+	skillDisplayData
+}: {
+	cycleParticipants: SkillFormModel[];
+	updateSkillDisplay: (displayUpdate: OptionalVisualizationWithRequiredId[] | null) => void;
+	skillDisplayData: Map<string, SkillFolderVisualization>;
+}) {
 	const [openExplanation, setShowDialog] = useState<boolean>(false);
+
+	const onClick = (selectedCycleParticipant: SkillFormModel) => {
+		// eslint-disable-next-line no-restricted-globals
+		confirm("Möchten Sie die betroffenen Skills anzeigen?");
+
+		const updates: OptionalVisualizationWithRequiredId[] = [];
+
+		skillDisplayData.forEach((value) => {
+			updates.push(
+				{
+					...value,
+					isSelected: false,
+					isExpanded: false
+				}
+			);
+		});
+
+		cycleParticipants.forEach((cycle, index) => {
+			if(cycle.id === selectedCycleParticipant.id) return; // Skip the selected participant
+	
+			updates.push({
+				id: cycle.id,
+				isSelected: false,
+				isExpanded: true,
+				isCycleMember: index !== 0,
+				hasNestedCycleMembers: index === 0 
+			});
+		});
+
+		updates.push(
+			{
+				id: selectedCycleParticipant.id,
+				isSelected: true,
+				isExpanded: true
+			}
+		);
+
+		updateSkillDisplay(updates);
+		setShowDialog(false);
+	};
 
 	if (cycleParticipants.length > 0) {
 		return (
@@ -33,9 +83,10 @@ export function ShowCyclesDialog({ cycleParticipants }: { cycleParticipants: Ski
 				{openExplanation && (
 					<SimpleDialog
 						name={"Zyklen - Darstellung"}
+						size="md"
 						onClose={() => setShowDialog(false)}
 					>
-						<CycleComponents cycles={cycleParticipants} />
+						<CycleComponents cycles={cycleParticipants} onClick={onClick} />
 					</SimpleDialog>
 				)}
 			</>
@@ -43,20 +94,6 @@ export function ShowCyclesDialog({ cycleParticipants }: { cycleParticipants: Ski
 	}
 
 	return null;
-}
-// TODO darstellung optimieren
-function CycleComponents<S extends { name: string }>({ cycles }: { cycles: S[] }) {
-	return (
-		<>
-			{cycles.map((cycle, index) => {
-				return (
-					<button key={index} className="m-5 rounded-md bg-gray-200 p-5">
-						{cycle.name}
-					</button>
-				);
-			})}
-		</>
-	);
 }
 
 export type SkillProps = { repoId: string; skills: SkillFormModel[] };
