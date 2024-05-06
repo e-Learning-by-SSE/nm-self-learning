@@ -1,11 +1,11 @@
 /* eslint-disable quotes */
-import {faker} from "@faker-js/faker";
-import {PrismaClient} from "@prisma/client";
-import {mathExample} from "./math/math-example";
-import {psychologyExample} from "./psychology/psychology-example";
-import {seedDemos} from "./demo/demo";
-import {subjects} from "./seedSubjects";
-import {softwareentwicklungDemoSpecialization} from "./seedSpecializations";
+import { faker } from "@faker-js/faker";
+import { PrismaClient } from "@prisma/client";
+import { mathExample } from "./math/math-example";
+import { psychologyExample } from "./psychology/psychology-example";
+import { seedDemos } from "./demo/demo";
+import { subjects } from "./seedSubjects";
+import { softwareentwicklungDemoSpecialization, specializations } from "./seedSpecializations";
 
 const prisma = new PrismaClient();
 
@@ -30,10 +30,10 @@ async function seed(): Promise<void> {
 		await seedDemos();
 	}
 
-	await prisma.subject.createMany({data: subjects});
+	await prisma.subject.createMany({ data: subjects });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 
-	await prisma.specialization.createMany({data: softwareentwicklungDemoSpecialization});
+	await prisma.specialization.createMany({ data: specializations });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Specialities");
 
 	await psychologyExample();

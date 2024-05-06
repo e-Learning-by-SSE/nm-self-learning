@@ -1979,12 +1979,12 @@ export const chapters = [
 		]
 	}
 ];
-export const course = createCourse(
-	"psychologie",
-	"bewusstsein",
-	"Bewusstsein",
-	null,
-	"Beim **Bewusstsein** geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Bewusstsein erläutert werden und mit Hilfe welcher Experimente die Bewusstseinsphänomene erforscht werden können. \n ## Die Studierenden sind in der Lage ... \r\n * die Definitionen von **Bewusstsein** zu erinnern; \r\n * die verschiedenen die verschiedenen Bewusstseinszustände zu erinnern; \r\n * Experimente zur Erforschung von Bewusstseinsphänomenen zu kennen und nachzuvollziehen und Replikationen mit Hilfestellung selbst durchzuführen",
-	"https://get.pxhere.com/photo/woman-texture-floor-window-glass-wall-female-thinking-pattern-green-color-drive-think-tile-face-art-design-psychology-head-symmetry-mosaic-psyche-shape-awareness-thoughts-perception-personality-flooring-subconscious-mind-unconscious-thought-process-psychologist-1192085.jpg",
+export const course = createCourse({
+	subjectId: "psychologie",
+	specializationId: "bewusstsein",
+	title: "Bewusstsein",
+	description:
+		"Beim **Bewusstsein** geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Bewusstsein erläutert werden und mit Hilfe welcher Experimente die Bewusstseinsphänomene erforscht werden können. \n ## Die Studierenden sind in der Lage ... \r\n * die Definitionen von **Bewusstsein** zu erinnern; \r\n * die verschiedenen die verschiedenen Bewusstseinszustände zu erinnern; \r\n * Experimente zur Erforschung von Bewusstseinsphänomenen zu kennen und nachzuvollziehen und Replikationen mit Hilfestellung selbst durchzuführen",
+	imgUrl: "https://get.pxhere.com/photo/woman-texture-floor-window-glass-wall-female-thinking-pattern-green-color-drive-think-tile-face-art-design-psychology-head-symmetry-mosaic-psyche-shape-awareness-thoughts-perception-personality-flooring-subconscious-mind-unconscious-thought-process-psychologist-1192085.jpg",
 	chapters
-);
+});

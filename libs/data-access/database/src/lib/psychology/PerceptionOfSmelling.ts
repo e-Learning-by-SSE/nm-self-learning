@@ -556,12 +556,12 @@ export const chapters = [
 	}
 ];
 
-export const course = createCourse(
-	"psychologie",
-	"wahrnehmung",
-	"Das Wahrnehmungssystem zum Riechen",
-	null,
-	"Hierbei geht es um die biologischen und die neurophysiologischen/-anatomischen Grundlagen der Signalverarbeitung, den Spezifika und Prinzipien des **Riechens** sowie um Beispiele für die olfaktorische Wahrnehmung.",
-	" https://static.spektrum.de/fm/912/Riechen_pixabay546103_MarionF-CC0.jpg?width=2000&auto=webp",
+export const course = createCourse({
+	subjectId: "psychologie",
+	specializationId: "wahrnehmung",
+	title: "Das Wahrnehmungssystem zum Riechen",
+	description:
+		"Hierbei geht es um die biologischen und die neurophysiologischen/-anatomischen Grundlagen der Signalverarbeitung, den Spezifika und Prinzipien des **Riechens** sowie um Beispiele für die olfaktorische Wahrnehmung.",
+	imgUrl: "https://static.spektrum.de/fm/912/Riechen_pixabay546103_MarionF-CC0.jpg?width=2000&auto=webp",
 	chapters
-);
+});

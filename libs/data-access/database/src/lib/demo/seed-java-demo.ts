@@ -9,7 +9,7 @@ import {
 	read,
 	seedCaseStudy
 } from "../seed-functions";
-import {seedJavaDemoSkills} from "./seed-java-demo-skills";
+import { seedJavaDemoSkills } from "./seed-java-demo-skills";
 
 const chapters = [
 	{
@@ -152,15 +152,16 @@ const chapters = [
 ];
 
 const courses = [
-	createCourse(
-		"informatik",
-		"softwareentwicklung",
-		"Objectorientierte Programmierung mit Java",
-		"Einführung in die Welt von Java",
-		"## Lernziele\r\n* Einrichtung der Arbeitsumgebung\r\n* Imperative Programmierung\r\n* Objektorientierte Programmierung\r\n\r\nEs werden keine Informatik- / Programierkentnisse vorausgesetzt",
-		"https://cdn.iconscout.com/icon/free/png-512/java-43-569305.png",
+	createCourse({
+		subjectId: "informatik",
+		specializationId: "softwareentwicklung",
+		title: "Objectorientierte Programmierung mit Java",
+		subtitle: "Einführung in die Welt von Java",
+		description:
+			"## Lernziele\r\n* Einrichtung der Arbeitsumgebung\r\n* Imperative Programmierung\r\n* Objektorientierte Programmierung\r\n\r\nEs werden keine Informatik- / Programierkentnisse vorausgesetzt",
+		imgUrl: "https://cdn.iconscout.com/icon/free/png-512/java-43-569305.png",
 		chapters
-	)
+	})
 ];
 
 const authors = [

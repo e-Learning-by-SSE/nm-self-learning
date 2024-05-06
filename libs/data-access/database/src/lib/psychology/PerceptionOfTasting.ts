@@ -609,12 +609,11 @@ export const chapters = [
 	}
 ];
 
-export const course = createCourse(
-	"psychologie",
-	"wahrnehmung",
-	"Das Wahrnehmungssystem zum Schmecken",
-	null,
-	"Hierbei geht es um die biologischen und die neurophysiologischen/-anatomischen Grundlagen der Signalverarbeitung, den Spezifika und Prinzipien des **Schmeckens** sowie um Beispiele für die gustatorische Wahrnehmung.",
-	"",
+export const course = createCourse({
+	subjectId: "psychologie",
+	specializationId: "wahrnehmung",
+	title: "Das Wahrnehmungssystem zum Schmecken",
+	description:
+		"Hierbei geht es um die biologischen und die neurophysiologischen/-anatomischen Grundlagen der Signalverarbeitung, den Spezifika und Prinzipien des **Schmeckens** sowie um Beispiele für die gustatorische Wahrnehmung.",
 	chapters
-);
+});

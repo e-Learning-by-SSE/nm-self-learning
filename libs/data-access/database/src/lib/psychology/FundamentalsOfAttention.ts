@@ -1,4 +1,10 @@
-import {createCourse, createLesson, createMultipleChoice, createTextQuestion, createVideo} from "../seed-functions";
+import {
+	createCourse,
+	createLesson,
+	createMultipleChoice,
+	createTextQuestion,
+	createVideo
+} from "../seed-functions";
 // const courses = [
 // 	createCourse(
 // 		subjectRouter
@@ -1112,8 +1118,9 @@ export const chapters = [
 			createLesson({
 				title: 'Aufmerksamkeit und "Umschalten zwischen Aufgaben" - der Stroop-Effekt',
 				subtitle:
-					"Aktivierungsfrage zu Aufmerksamkeit und \"Umschalten zwischen Aufgaben\" - der Stroop-Effekt?",
-				description: "**Basisliteratur**: \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 198ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**: \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
+					'Aktivierungsfrage zu Aufmerksamkeit und "Umschalten zwischen Aufgaben" - der Stroop-Effekt?',
+				description:
+					"**Basisliteratur**: \r\nBecker-Carus, C. & Wendt, M. (2017). *Allgemeine Psychologie. Eine Einführung* (Seite 198ff). Berlin: Springer.\r\n\r\n**Weiterführende Literatur**: \r\nMüsseler, J. & Rieger, M. (Hg.) (2016). *Allgemeine Psychologie* (3. Aufl.). Berlin, Heidelberg: Springer.  \r\nSpada, H. (Hg.) (2006). *Lehrbuch allgemeine Psychologie* (3., vollst. überarb. und erw. Aufl.). Bern: Huber.",
 				content: [createVideo("https://www.youtube.com/watch?v=nIA5Fy2RljU", 451)],
 				questions: [
 					createTextQuestion(
@@ -1138,7 +1145,7 @@ export const chapters = [
 					),
 					createMultipleChoice({
 						question:
-							"Frage zu Aufmerksamkeit und \"Umschalten zwischen Aufgaben\" - der Stroop-Effekt?",
+							'F"Frage zu Aufmerksamkeit und "Umschalten zwischen Aufgaben" - der Stroop-Effekt?"	',
 						answers: [
 							{
 								content: "Antwort A",
@@ -1475,14 +1482,12 @@ export const chapters = [
 	}
 ];
 
-export const course = createCourse(
-	//"3",
-	//"3",
-	"psychologie",
-	"aufmerksamkeit",
-	"Aufmerksamkeit",
-	null,
-	"Bei der **Aufmerksamkeit** geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Aufmerksamkeit erläutert werden und mit Hilfe welcher Experimente die Aufmerksamkeitsphänomene erforscht werden können. \n## Die Studierenden sind in der Lage ... \r\n* die verschiedenen Funktionen von Aufmerksamkeit zu verstehen; \r\n* Experimente zur Erforschung von Aufmerksamkeitsphänomenen zu kennen und nachzuvollziehen und Replikationen mit Hilfestellung selbst durchzuführen; \r\n* Theorien zu Aufmerksamkeit zu verstehen und zu vergleichen.\r\n\r\n Es werden keine Grundkenntnisse vorausgesetzt",
-	"https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg",
+export const course = createCourse({
+	subjectId: "psychologie",
+	specializationId: "aufmerksamkeit",
+	title: "Aufmerksamkeit",
+	description:
+		"Bei der **Aufmerksamkeit** geht es darum die psychologische Definition von einem alltagspsychologischen Verständnis abzugrenzen. Dabei sollen die verschiedenen Funktionen von Aufmerksamkeit erläutert werden und mit Hilfe welcher Experimente die Aufmerksamkeitsphänomene erforscht werden können. \n## Die Studierenden sind in der Lage ... \r\n* die verschiedenen Funktionen von Aufmerksamkeit zu verstehen; \r\n* Experimente zur Erforschung von Aufmerksamkeitsphänomenen zu kennen und nachzuvollziehen und Replikationen mit Hilfestellung selbst durchzuführen; \r\n* Theorien zu Aufmerksamkeit zu verstehen und zu vergleichen.\r\n\r\n Es werden keine Grundkenntnisse vorausgesetzt",
+	imgUrl: "https://pixnio.com/free-images/2019/06/08/2019-06-08-09-44-18-1200x800.jpg",
 	chapters
-);
+});

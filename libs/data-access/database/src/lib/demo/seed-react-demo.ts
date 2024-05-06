@@ -1,11 +1,11 @@
-import {QuizContent} from "@self-learning/question-types";
-import {getRandomId} from "@self-learning/util/common";
-import {faker} from "@faker-js/faker";
-import {Prisma, PrismaClient} from "@prisma/client";
-import {createLessonWithRandomContentAndDemoQuestions, createUsers} from "../seed-functions";
-import {createCourseContent, createCourseMeta, extractLessonIds} from "@self-learning/types";
-import {subHours} from "date-fns";
-import {defaultLicence, defaultLicenceId} from "../license";
+import { QuizContent } from "@self-learning/question-types";
+import { getRandomId } from "@self-learning/util/common";
+import { faker } from "@faker-js/faker";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
+import { createCourseContent, createCourseMeta, extractLessonIds } from "@self-learning/types";
+import { subHours } from "date-fns";
+import { defaultLicenceId } from "../license";
 
 faker.seed(1);
 
@@ -90,7 +90,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 			mode: "standalone",
 			expectedOutput: "Hello World",
 			solutionTemplate:
-				"public class Solution {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println(\"Hello World\");\n\t}\n}"
+				'public class Solution {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println("Hello World");\n\t}\n}'
 		},
 		language: "java",
 		statement:
@@ -114,7 +114,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		custom: {
 			mode: "callable",
 			mainFile:
-				"import java.util.Arrays;\n\npublic class Main {\n\tpublic static void main(String[] args) {\n\t\tint[][] testCases = new int[][] {\n\t\t\tnew int[] { 1, 1 },\n\t\t\tnew int[] { 1, 2, 3, 4, 5 },\n\t\t\tnew int[] { 7 },\n\t\t\tnew int[] { }\n\t\t};\n\n\t\tfor (int[] testCase : testCases) {\n\t\t\tSystem.out.println(\"### TEST\");\n\t\t\tSystem.out.println(Arrays.toString(testCase));\n\t\t\tSystem.out.println(\"### EXPECTED\");\n\t\t\tSystem.out.println(sumExpected(testCase));\n\t\t\tSystem.out.println(\"### ACTUAL\");\n\t\t\tSystem.out.println(new Solution().sum(testCase));\n\t\t}\n\t}\n\n\tprivate static int sumExpected(int[] numbers) {\n\tint sum = 0;\n\t\tfor (int number : numbers) {\n\t\t\tsum += number;\n\t\t}\n\t\treturn sum;\n\t}\n}\n",
+				'import java.util.Arrays;\n\npublic class Main {\n\tpublic static void main(String[] args) {\n\t\tint[][] testCases = new int[][] {\n\t\t\tnew int[] { 1, 1 },\n\t\t\tnew int[] { 1, 2, 3, 4, 5 },\n\t\t\tnew int[] { 7 },\n\t\t\tnew int[] { }\n\t\t};\n\n\t\tfor (int[] testCase : testCases) {\n\t\t\tSystem.out.println("### TEST");\n\t\t\tSystem.out.println(Arrays.toString(testCase));\n\t\t\tSystem.out.println("### EXPECTED");\n\t\t\tSystem.out.println(sumExpected(testCase));\n\t\t\tSystem.out.println("### ACTUAL");\n\t\t\tSystem.out.println(new Solution().sum(testCase));\n\t\t}\n\t}\n\n\tprivate static int sumExpected(int[] numbers) {\n\tint sum = 0;\n\t\tfor (int number : numbers) {\n\t\t\tsum += number;\n\t\t}\n\t\treturn sum;\n\t}\n}\n',
 			solutionTemplate:
 				"public class Solution {\n\tpublic int sum(int[] numbers) {\n\t\tif (numbers.length == 0) {\n\t\t\treturn -1; // Produce failing test case\n\t\t}\n\n\tint sum = 0;\n\t\tfor (int number : numbers) {\n\t\t\tsum += number;\n\t\t}\n\t\treturn sum;\n\t}\n}"
 		},
@@ -139,7 +139,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		custom: {
 			mode: "standalone",
 			expectedOutput: "Hello World",
-			solutionTemplate: "console.log(\"Hello world\");"
+			solutionTemplate: 'console.log("Hello world");'
 		},
 		language: "typescript",
 		statement: "# Hello World in TypeScript\r\n\r\nKappa",
@@ -161,7 +161,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		custom: {
 			mode: "callable",
 			mainFile:
-				"import { sum } from \"./Solution\";\r\n\r\nconst testCases = [\r\n\t[1, 1],\r\n\t[1, 2, 3, 4, 5],\r\n\t[7],\r\n\t[],\r\n];\r\n\r\nfunction sumExpected(numbers: number[]): number {\r\n\treturn numbers.reduce((a, b) => a + b, 0);\r\n}\r\n\r\nfor (const testCase of testCases) {\r\n\tconsole.log(\"### TEST ###\");\r\n\tconsole.log(testCase);\r\n\r\n\tconsole.log(\"### EXPECTED ###\");\r\n\tconsole.log(sumExpected(testCase));\r\n\r\n\tconsole.log(\"### ACTUAL ###\")\r\n\tconsole.log(sum(testCase));\r\n}\r\n",
+				'import { sum } from "./Solution";\r\n\r\nconst testCases = [\r\n\t[1, 1],\r\n\t[1, 2, 3, 4, 5],\r\n\t[7],\r\n\t[],\r\n];\r\n\r\nfunction sumExpected(numbers: number[]): number {\r\n\treturn numbers.reduce((a, b) => a + b, 0);\r\n}\r\n\r\nfor (const testCase of testCases) {\r\n\tconsole.log("### TEST ###");\r\n\tconsole.log(testCase);\r\n\r\n\tconsole.log("### EXPECTED ###");\r\n\tconsole.log(sumExpected(testCase));\r\n\r\n\tconsole.log("### ACTUAL ###")\r\n\tconsole.log(sum(testCase));\r\n}\r\n',
 			solutionTemplate:
 				"export function sum(numbers: number[]): number {\r\n\t// DEINE LÖSUNG\r\n\treturn 0;\r\n}"
 		},
@@ -346,7 +346,6 @@ const reactLessons = [
 	}
 ];
 
-
 export const reactCourses: Prisma.CourseCreateManyInput[] = [
 	{
 		courseId: faker.random.alphaNumeric(8),
@@ -362,7 +361,7 @@ export const reactCourses: Prisma.CourseCreateManyInput[] = [
 			reactLessons.map(chapter => ({
 				title: chapter.title,
 				description: chapter.description,
-				content: chapter.content.map(lesson => ({lessonId: lesson.lessonId}))
+				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
 			}))
 		),
 		meta: {}
@@ -401,7 +400,7 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 					}
 				},
 				lessons: {
-					connect: extractLessonIds(reactLessons).map(lessonId => ({lessonId}))
+					connect: extractLessonIds(reactLessons).map(lessonId => ({ lessonId }))
 				},
 				specializationAdmin: {
 					create: {
@@ -530,10 +529,8 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 }));
 
 export async function seedReactDemo() {
-	await prisma.course.createMany({data: reactCourses});
+	await prisma.course.createMany({ data: reactCourses });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
-
-	console.log("licenseID",  await defaultLicenceId());
 
 	const licenceId = await defaultLicenceId();
 
@@ -541,7 +538,7 @@ export async function seedReactDemo() {
 		data: reactLessons.flatMap(chapter =>
 			chapter.content.map(lesson => ({
 				...lesson,
-				licenseId: lesson.licenseId ?? licenceId
+				licenseId: licenceId
 			}))
 		)
 	});
@@ -551,27 +548,27 @@ export async function seedReactDemo() {
 	await createUsers(users);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
 
-	await prisma.enrollment.createMany({data: enrollments});
+	await prisma.enrollment.createMany({ data: enrollments });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Enrollments");
 
-	await prisma.completedLesson.createMany({data: completedReactLessons});
+	await prisma.completedLesson.createMany({ data: completedReactLessons });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Completed Lessons");
 
-	await prisma.learningDiary.createMany({data: learningDiaries});
+	await prisma.learningDiary.createMany({ data: learningDiaries });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "LearningDiaries");
 
 	await prisma.specialization.update({
-		where: {specializationId: "softwareentwicklung"},
+		where: { specializationId: "softwareentwicklung" },
 		data: {
 			courses: {
-				connect: reactCourses.map(course => ({courseId: course.courseId}))
+				connect: reactCourses.map(course => ({ courseId: course.courseId }))
 			}
 		}
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
 
 	for (const author of reactAuthors) {
-		await prisma.user.create({data: author});
+		await prisma.user.create({ data: author });
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 }

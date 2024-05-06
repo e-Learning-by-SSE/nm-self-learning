@@ -1140,12 +1140,12 @@ export const chapters = [
 	ch_ErlebenMessbarMachen
 ];
 
-export const course = createCourse(
-	"psychologie",
-	"wahrnehmung",
-	"Grundlagen der Wahrnehmung",
-	null,
-	"Zu den Grundlagen der Wahrnehmung gehört bspw. der Konstruktionsprozess der Wahrnehmung - vom Reiz bis zur neuronalen Verarbeitung - und mit welchen theoretischen Ansätzen und Gesetzen diese erklärt werden können. Zu den Wahrnehmungssystemen gehören die Systeme rund um das Sehen, das Hören, das Schmecken, das Riechen und das Fühlen.",
-	"https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
+export const course = createCourse({
+	subjectId: "psychologie",
+	specializationId: "wahrnehmung",
+	title: "Grundlagen der Wahrnehmung",
+	description:
+		"Zu den Grundlagen der Wahrnehmung gehört bspw. der Konstruktionsprozess der Wahrnehmung - vom Reiz bis zur neuronalen Verarbeitung - und mit welchen theoretischen Ansätzen und Gesetzen diese erklärt werden können. Zu den Wahrnehmungssystemen gehören die Systeme rund um das Sehen, das Hören, das Schmecken, das Riechen und das Fühlen.",
+	imgUrl: "https://www.publicdomainpictures.net/pictures/280000/velka/optical-illusion-1542409604zVu.jpg",
 	chapters
-);
+});

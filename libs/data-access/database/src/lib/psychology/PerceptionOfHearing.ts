@@ -777,12 +777,12 @@ export const chapters = [
 	}
 ];
 
-export const course = createCourse(
-	"psychologie",
-	"wahrnehmung",
-	"Das Wahrnehmungssystem zum Hören",
-	null,
-	"Hierbei geht es um die biologischen und die neurophysiologischen/-anatomischen Grundlagen der Signalverarbeitung, den Spezifika und Prinzipien des Hörens sowie um Beispiele für die auditive Wahrnehmung.",
-	"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/%C3%84u%C3%9Feres_Ohr_-_Mittelohr_-_Innenohr.jpg/769px-%C3%84u%C3%9Feres_Ohr_-_Mittelohr_-_Innenohr.jpg?20211029082610",
+export const course = createCourse({
+	subjectId: "psychologie",
+	specializationId: "wahrnehmung",
+	title: "Das Wahrnehmungssystem zum Hören",
+	description:
+		"Hierbei geht es um die biologischen und die neurophysiologischen/-anatomischen Grundlagen der Signalverarbeitung, den Spezifika und Prinzipien des Hörens sowie um Beispiele für die auditive Wahrnehmung.",
+	imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/%C3%84u%C3%9Feres_Ohr_-_Mittelohr_-_Innenohr.jpg/769px-%C3%84u%C3%9Feres_Ohr_-_Mittelohr_-_Innenohr.jpg?20211029082610",
 	chapters
-);
+});
