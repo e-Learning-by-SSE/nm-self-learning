@@ -1,5 +1,8 @@
-import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
-import { CheckCircleIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import {
+	CheckCircleIcon as CheckCircleIconOutline,
+	XCircleIcon
+} from "@heroicons/react/24/outline";
+import { CheckCircleIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
@@ -399,7 +402,7 @@ function QuizFailedDialog({
 			<DialogActions onClose={onClose}>
 				<button className="btn-primary" onClick={reload}>
 					<span>Erneut probieren</span>
-					<RefreshIcon className="h-5 shrink-0" />
+					<ArrowPathIcon className="h-5 shrink-0" />
 				</button>
 			</DialogActions>
 		</Dialog>

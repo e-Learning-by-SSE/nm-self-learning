@@ -4,7 +4,7 @@ import {
 	ChevronDownIcon,
 	ChevronLeftIcon,
 	PlayIcon
-} from "@heroicons/react/solid";
+} from "@heroicons/react/24/solid";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { Divider } from "@self-learning/ui/common";
 import { motion } from "framer-motion";

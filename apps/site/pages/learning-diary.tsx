@@ -1,4 +1,4 @@
-import { ArrowCircleRightIcon } from "@heroicons/react/outline";
+import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { authOptions } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
@@ -123,7 +123,7 @@ export default function LearningDiary({ completedLessons, goals }: LearningDiary
 				<section className="flex justify-end">
 					<button className="flex flex-col items-end gap-2 text-sm text-light">
 						<span className="font-medium">Vorherige Woche anzeigen</span>
-						<ArrowCircleRightIcon className="h-6" />
+						<ArrowRightCircleIcon className="h-6" />
 					</button>
 				</section>
 			</section>

@@ -1,10 +1,10 @@
 import {
 	CheckCircleIcon,
-	ExclamationIcon,
+	ExclamationTriangleIcon,
 	InformationCircleIcon,
 	XCircleIcon
-} from "@heroicons/react/outline";
-import { XIcon } from "@heroicons/react/solid";
+} from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 
 type ToastProps = {
@@ -26,7 +26,7 @@ export function Toast({ id, title, subtitle, type }: ToastProps & { id: string }
 			{type === "success" && <CheckCircleIcon className="h-6 text-green-500" />}
 			{type === "error" && <XCircleIcon className="h-6 text-red-500" />}
 			{type === "info" && <InformationCircleIcon className="h-6 text-blue-500" />}
-			{type === "warning" && <ExclamationIcon className="h-6 text-orange-500" />}
+			{type === "warning" && <ExclamationTriangleIcon className="h-6 text-orange-500" />}
 			<div className="flex flex-col gap-1">
 				<span className="text-sm font-semibold">{title}</span>
 				<span className="text-sm text-light">{subtitle}</span>
@@ -36,7 +36,7 @@ export function Toast({ id, title, subtitle, type }: ToastProps & { id: string }
 				onClick={() => toast.remove(id)}
 				className="rounded-full hover:bg-gray-100"
 			>
-				<XIcon className="h-5 text-slate-400" />
+				<XMarkIcon className="h-5 text-slate-400" />
 			</button>
 		</div>
 	);
