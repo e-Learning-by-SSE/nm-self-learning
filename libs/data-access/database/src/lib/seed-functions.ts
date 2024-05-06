@@ -14,13 +14,15 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { slugify } from "@self-learning/util/common";
 import { defaultLicence } from "./license";
-import { reactDemoQuestions } from "./demo/seed-react-demo";
 
 const prisma = new PrismaClient();
 
 const adminName = "dumbledore";
 
-export function createLessonWithRandomContentAndDemoQuestions(title: string) {
+export function createLessonWithRandomContentAndDemoQuestions({ title, questions }: {
+	title: string,
+	questions: QuizContent
+}) {
 	const content = [
 		{
 			type: "video",
@@ -47,21 +49,21 @@ export function createLessonWithRandomContentAndDemoQuestions(title: string) {
 		subtitle: faker.lorem.paragraph(1),
 		description: faker.lorem.paragraphs(3),
 		content,
-		questions: reactDemoQuestions,
+		questions,
 		licenseId: defaultLicence.licenseId
 	});
 }
 
 export function createLesson({
-	title,
-	subtitle,
-	description,
-	content,
-	questions,
-	licenseId,
-	lessonType,
-	selfRegulatedQuestion
-}: {
+								 title,
+								 subtitle,
+								 description,
+								 content,
+								 questions,
+								 licenseId,
+								 lessonType,
+								 selfRegulatedQuestion
+							 }: {
 	title: string;
 	subtitle: string | null;
 	description: string | null;
@@ -100,12 +102,12 @@ type Lessons = {
 }[];
 
 export function createAuthor({
-	userName,
-	name,
-	imgUrl,
-	lessons,
-	courses
-}: {
+								 userName,
+								 name,
+								 imgUrl,
+								 lessons,
+								 courses
+							 }: {
 	userName: string;
 	name: string;
 	imgUrl: string;
@@ -191,10 +193,10 @@ export function createCourse(
 }
 
 export function createMultipleChoice({
-	question,
-	answers,
-	hints
-}: {
+										 question,
+										 answers,
+										 hints
+									 }: {
 	question: string;
 	answers: {
 		content: string;
