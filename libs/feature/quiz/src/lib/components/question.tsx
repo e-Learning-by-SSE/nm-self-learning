@@ -15,7 +15,9 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
-import { setJsonCookie } from "../../../../../util/common/src/lib/cookieUtils";
+import { useCookies } from "react-cookie";
+
+export type QuizSavedAnswers = { answers: any; lessonSlug: string };
 
 export function Question({
 	question,
@@ -48,6 +50,8 @@ export function Question({
 			? 2
 			: 1;
 
+	const [_, setCookie] = useCookies(["quiz_answers_save"]);
+
 	function setAnswer(v: any) {
 		const value = typeof v === "function" ? v(answer) : v;
 
@@ -56,16 +60,11 @@ export function Question({
 				...prev,
 				[question.questionId]: value
 			};
-
-			setJsonCookie(
-				`quiz_answers_save`,
-				{
-					answers: updatedAnswers,
-					lessonSlug: lesson.slug
-				},
-				1
-			);
-
+			const cookieContent: QuizSavedAnswers = {
+				answers: updatedAnswers,
+				lessonSlug: lesson.slug
+			};
+			setCookie(`quiz_answers_save`, JSON.stringify(cookieContent), { path: "/" });
 			return updatedAnswers;
 		});
 	}
@@ -110,7 +109,7 @@ export function Question({
 								className="btn-stroked h-fit"
 								onClick={() => setEvaluation(null)}
 							>
-								Reset{" "}
+								Reset
 							</button>
 							<CheckResult
 								setEvaluation={setEvaluation}

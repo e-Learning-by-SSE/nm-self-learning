@@ -7,7 +7,8 @@ import {
 import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
 import { QuizConfig } from "../quiz";
 import { useRouter } from "next/router";
-import { SavedAnswersContext } from "../../../../../../apps/site/pages/courses/[courseSlug]/[lessonSlug]/quiz";
+import { useCookies } from "react-cookie";
+import { QuizSavedAnswers } from "./question";
 
 type QuizCompletionState = "in-progress" | "completed" | "failed";
 
@@ -59,18 +60,17 @@ export function QuizProvider({
 	reload: () => void;
 	children: React.ReactNode;
 }) {
-	const answerData = useContext(SavedAnswersContext);
-	const quizAnswers = answerData.answers;
-	const quizLessonSlug = answerData.lessonSlug;
+	const [cookies] = useCookies(["quiz_answers_save"]);
+
+	const { answers: quizAnswers, lessonSlug: quizLessonSlug }: QuizSavedAnswers = cookies[
+		"quiz_answers_save"
+	] || { answers: null, lessonSlug: null };
+
 	const router = useRouter();
 	const [answers, setAnswers] = useState(() => {
 		const ans: QuizContextValue["answers"] = {};
 
-		if (
-			quizAnswers !== null &&
-			quizAnswers !== undefined &&
-			router.asPath.endsWith(quizLessonSlug + "/quiz")
-		) {
+		if (quizAnswers && quizAnswers && router.asPath.endsWith(quizLessonSlug + "/quiz")) {
 			return quizAnswers as typeof ans;
 		}
 

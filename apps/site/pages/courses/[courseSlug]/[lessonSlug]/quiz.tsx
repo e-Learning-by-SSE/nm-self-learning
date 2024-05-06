@@ -22,8 +22,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
-	answers: any;
-	lessonSlug: string;
+
 	markdown: {
 		questionsMd: MdLookup;
 		answersMd: MdLookup;
@@ -31,24 +30,15 @@ type QuestionProps = LessonLayoutProps & {
 	};
 };
 
-export const SavedAnswersContext = React.createContext<SavedAnswersContextType>({
-	answers: {},
-	lessonSlug: ""
-});
-
-export type SavedAnswersContextType = {
-	answers: any;
-	lessonSlug: string;
-};
 export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params, req }) => {
 	const parentProps = await getStaticPropsForLayout(params);
 
-	const cookieData = req.cookies["quiz_answers_save"]
-		? JSON.parse(req.cookies["quiz_answers_save"])
-		: null;
+	// const cookieData = req.cookies["quiz_answers_save"]
+	// 	? JSON.parse(req.cookies["quiz_answers_save"])
+	// 	: null;
 
-	const answers = cookieData?.answers ?? null;
-	const lessonSlug = cookieData?.lessonSlug ?? null;
+	// const answers = cookieData?.answers ?? null;
+	// const lessonSlug = cookieData?.lessonSlug ?? null;
 
 	if ("notFound" in parentProps) return { notFound: true };
 
@@ -86,8 +76,6 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 		props: {
 			...parentProps,
 			quiz,
-			answers,
-			lessonSlug,
 			markdown: {
 				questionsMd,
 				answersMd,
@@ -97,14 +85,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	};
 };
 
-export default function QuestionsPage({
-	course,
-	lesson,
-	quiz,
-	markdown,
-	answers,
-	lessonSlug
-}: QuestionProps) {
+export default function QuestionsPage({ course, lesson, quiz, markdown }: QuestionProps) {
 	const { questions, config } = quiz;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
@@ -147,34 +128,32 @@ export default function QuestionsPage({
 	}, [index, questions]);
 
 	return (
-		<SavedAnswersContext.Provider value={{ answers: answers, lessonSlug: lessonSlug }}>
-			<QuizProvider
-				questions={questions}
-				config={config ?? defaultQuizConfig}
-				goToNextQuestion={goToNextQuestion}
-				reload={router.reload}
-			>
+		<QuizProvider
+			questions={questions}
+			config={config ?? defaultQuizConfig}
+			goToNextQuestion={goToNextQuestion}
+			reload={router.reload}
+		>
+			<div className="flex w-full flex-col gap-4">
 				<div className="flex w-full flex-col gap-4">
-					<div className="flex w-full flex-col gap-4">
-						<QuizHeader
-							lesson={lesson}
-							course={course}
-							currentIndex={nextIndex - 1}
-							goToQuestion={goToQuestion}
-							questions={questions}
-						/>
-						<Question
-							key={currentQuestion.questionId}
-							question={currentQuestion}
-							markdown={markdown}
-							lesson={lesson}
-							isLastQuestion={quiz.questions.length === Number(index) + 1}
-						/>
-						<QuizCompletionSubscriber lesson={lesson} course={course} />
-					</div>
+					<QuizHeader
+						lesson={lesson}
+						course={course}
+						currentIndex={nextIndex - 1}
+						goToQuestion={goToQuestion}
+						questions={questions}
+					/>
+					<Question
+						key={currentQuestion.questionId}
+						question={currentQuestion}
+						markdown={markdown}
+						lesson={lesson}
+						isLastQuestion={quiz.questions.length === Number(index) + 1}
+					/>
+					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
-			</QuizProvider>
-		</SavedAnswersContext.Provider>
+			</div>
+		</QuizProvider>
 	);
 }
 

@@ -122,7 +122,7 @@ export function LessonLayout(
 				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
 					<PlaylistArea {...pageProps} />
 					<div className="w-full pt-8 pb-16">
-						<Component {...pageProps} />{" "}
+						<Component {...pageProps} />
 					</div>
 				</div>
 			</div>
