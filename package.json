@@ -52,6 +52,7 @@
     "next-mdx-remote": "^4.2.0",
     "next-plausible": "^3.7.2",
     "react": "18.2.0",
+    "react-cookie": "^7.1.4",
     "react-dnd": "^16.0.1",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.40.0",
@@ -136,4 +137,3 @@
     "url-loader": "^3.0.0"
   }
 }
-

@@ -3,9 +3,9 @@ import type { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
 	EVALUATION_FUNCTIONS,
+	QUESTION_TYPE_DISPLAY_NAMES,
 	QuestionAnswerRenderer,
 	QuestionType,
-	QUESTION_TYPE_DISPLAY_NAMES,
 	useQuestion
 } from "@self-learning/question-types";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
@@ -15,6 +15,9 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
+import { useCookies } from "react-cookie";
+
+export type QuizSavedAnswers = { answers: any; lessonSlug: string };
 
 export function Question({
 	question,
@@ -47,13 +50,23 @@ export function Question({
 			? 2
 			: 1;
 
+	const [_, setCookie] = useCookies(["quiz_answers_save"]);
+
 	function setAnswer(v: any) {
 		const value = typeof v === "function" ? v(answer) : v;
 
-		setAnswers(prev => ({
-			...prev,
-			[question.questionId]: value
-		}));
+		setAnswers(prev => {
+			const updatedAnswers = {
+				...prev,
+				[question.questionId]: value
+			};
+			const cookieContent: QuizSavedAnswers = {
+				answers: updatedAnswers,
+				lessonSlug: lesson.slug
+			};
+			setCookie(`quiz_answers_save`, JSON.stringify(cookieContent), { path: "/" });
+			return updatedAnswers;
+		});
 	}
 
 	function setEvaluation(e: any) {
@@ -149,9 +162,6 @@ function CheckResult({
 	function checkResult() {
 		console.log("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
-		console.log("question", question);
-		console.log("answer", answer);
-		console.log("evaluation", evaluation);
 		setEvaluation(evaluation);
 	}
 
