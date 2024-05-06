@@ -1,4 +1,5 @@
-import { Prisma } from "@prisma/client";
+import {PrismaClient, Prisma} from '@prisma/client';
+import {number} from "zod";
 
 export const license: Prisma.LicenseCreateManyInput[] = [
 	{
@@ -33,3 +34,17 @@ export const license: Prisma.LicenseCreateManyInput[] = [
 ];
 
 export const defaultLicence = license[0];
+
+export async function defaultLicenceId(): Promise<number> {
+    const prisma = new PrismaClient();
+
+    try {
+        const licenseName = defaultLicence.name;
+        const license = await prisma.license.findFirst({
+            where: { name: licenseName }
+        });
+		return license?.licenseId ?? 0;
+    } finally {
+        await prisma.$disconnect();
+    }
+}

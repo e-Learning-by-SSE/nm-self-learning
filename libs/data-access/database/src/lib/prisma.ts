@@ -4,7 +4,7 @@
 // Learn more: https://pris.ly/d/help/next-js-best-practices
 // https://github.com/prisma/prisma/issues/6219
 
-import { PrismaClient } from "@prisma/client";
+import {PrismaClient} from "@prisma/client";
 
 declare global {
 	namespace NodeJS {

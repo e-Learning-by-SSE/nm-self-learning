@@ -1,4 +1,4 @@
-import { LessonType } from "@prisma/client";
+import {LessonType} from "@prisma/client";
 import {
 	createCourse,
 	createLesson,

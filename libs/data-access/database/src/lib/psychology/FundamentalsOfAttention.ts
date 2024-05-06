@@ -1,4 +1,4 @@
-import { createCourse, createLesson, createMultipleChoice, createTextQuestion, createVideo } from "../seed-functions";
+import {createCourse, createLesson, createMultipleChoice, createTextQuestion, createVideo} from "../seed-functions";
 // const courses = [
 // 	createCourse(
 // 		subjectRouter

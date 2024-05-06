@@ -1,11 +1,11 @@
-import { QuizContent } from "@self-learning/question-types";
-import { getRandomId } from "@self-learning/util/common";
-import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
-import { createCourseContent, createCourseMeta, extractLessonIds } from "@self-learning/types";
-import { subHours } from "date-fns";
-import { defaultLicence } from "../license";
+import {QuizContent} from "@self-learning/question-types";
+import {getRandomId} from "@self-learning/util/common";
+import {faker} from "@faker-js/faker";
+import {Prisma, PrismaClient} from "@prisma/client";
+import {createLessonWithRandomContentAndDemoQuestions, createUsers} from "../seed-functions";
+import {createCourseContent, createCourseMeta, extractLessonIds} from "@self-learning/types";
+import {subHours} from "date-fns";
+import {defaultLicence, defaultLicenceId} from "../license";
 
 faker.seed(1);
 
@@ -362,7 +362,7 @@ export const reactCourses: Prisma.CourseCreateManyInput[] = [
 			reactLessons.map(chapter => ({
 				title: chapter.title,
 				description: chapter.description,
-				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
+				content: chapter.content.map(lesson => ({lessonId: lesson.lessonId}))
 			}))
 		),
 		meta: {}
@@ -401,7 +401,7 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 					}
 				},
 				lessons: {
-					connect: extractLessonIds(reactLessons).map(lessonId => ({ lessonId }))
+					connect: extractLessonIds(reactLessons).map(lessonId => ({lessonId}))
 				},
 				specializationAdmin: {
 					create: {
@@ -530,45 +530,48 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 }));
 
 export async function seedReactDemo() {
-	await prisma.course.createMany({ data: reactCourses });
+	await prisma.course.createMany({data: reactCourses});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
-	console.log("licenseID", defaultLicence.licenseId);
+	console.log("licenseID",  await defaultLicenceId());
+
+	const licenceId = await defaultLicenceId();
 
 	await prisma.lesson.createMany({
 		data: reactLessons.flatMap(chapter =>
 			chapter.content.map(lesson => ({
 				...lesson,
-				licenseId: lesson.licenseId ?? defaultLicence.licenseId
+				licenseId: lesson.licenseId ?? licenceId
 			}))
 		)
 	});
+
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
 	await createUsers(users);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
 
-	await prisma.enrollment.createMany({ data: enrollments });
+	await prisma.enrollment.createMany({data: enrollments});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Enrollments");
 
-	await prisma.completedLesson.createMany({ data: completedReactLessons });
+	await prisma.completedLesson.createMany({data: completedReactLessons});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Completed Lessons");
 
-	await prisma.learningDiary.createMany({ data: learningDiaries });
+	await prisma.learningDiary.createMany({data: learningDiaries});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "LearningDiaries");
 
 	await prisma.specialization.update({
-		where: { specializationId: "softwareentwicklung" },
+		where: {specializationId: "softwareentwicklung"},
 		data: {
 			courses: {
-				connect: reactCourses.map(course => ({ courseId: course.courseId }))
+				connect: reactCourses.map(course => ({courseId: course.courseId}))
 			}
 		}
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
 
 	for (const author of reactAuthors) {
-		await prisma.user.create({ data: author });
+		await prisma.user.create({data: author});
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 }

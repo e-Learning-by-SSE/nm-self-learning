@@ -1,6 +1,6 @@
-import { Prisma } from "@prisma/client";
-import { createSpecialization } from "./seed-functions";
-import { faker } from "@faker-js/faker";
+import {Prisma} from "@prisma/client";
+import {createSpecialization} from "./seed-functions";
+import {faker} from "@faker-js/faker";
 
 export const specializations: Prisma.SpecializationCreateManyInput[] = [
 	createSpecialization(
