@@ -22,7 +22,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
-
 	markdown: {
 		questionsMd: MdLookup;
 		answersMd: MdLookup;
@@ -30,15 +29,8 @@ type QuestionProps = LessonLayoutProps & {
 	};
 };
 
-export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params, req }) => {
+export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params }) => {
 	const parentProps = await getStaticPropsForLayout(params);
-
-	// const cookieData = req.cookies["quiz_answers_save"]
-	// 	? JSON.parse(req.cookies["quiz_answers_save"])
-	// 	: null;
-
-	// const answers = cookieData?.answers ?? null;
-	// const lessonSlug = cookieData?.lessonSlug ?? null;
 
 	if ("notFound" in parentProps) return { notFound: true };
 
