@@ -47,7 +47,7 @@ export function SkillRepositoryOverview() {
 					<Table
 						head={
 							<>
-								<TableHeaderColumn>Name</TableHeaderColumn>
+								<TableHeaderColumn>{t("name")}</TableHeaderColumn>
 								<TableHeaderColumn></TableHeaderColumn>
 							</>
 						}

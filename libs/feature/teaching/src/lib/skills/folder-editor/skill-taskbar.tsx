@@ -11,7 +11,8 @@ import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
 import { Skill } from "@prisma/client";
-
+import { useTranslation } from "react-i18next";
+//Übersetzen
 const withErrorHandling = async (fn: () => Promise<void>) => {
 	try {
 		await fn();
@@ -43,9 +44,10 @@ export function AddChildButton({
 	handleSelection: SkillSelectHandler;
 	skillDefaults?: Partial<Skill>;
 }) {
+	const { t } = useTranslation();
 	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
 	const newSkill = {
-		name: `${parentSkill.children.length + 1}. Kind - ${parentSkill.name}`,
+		name: `${parentSkill.children.length + 1}. ${t("child")} - ${parentSkill.name}`,
 		description: "Add here",
 		children: [],
 		parents: [parentSkill.id],
@@ -77,7 +79,7 @@ export function AddChildButton({
 
 	return (
 		<button
-			title="Neuen Skill in dieser Skillgruppe anlegen"
+			title={t("create_skill_group")}
 			className="hover:text-secondary"
 			onClick={handleAddSkill}
 		>
@@ -95,6 +97,7 @@ export function SkillDeleteOption({
 	className?: string;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 }) {
+	const { t } = useTranslation();
 	const { mutateAsync: deleteSkills } = trpc.skill.deleteSkills.useMutation();
 
 	const onClose = async () => {
@@ -107,7 +110,7 @@ export function SkillDeleteOption({
 	const handleDelete = () => {
 		dispatchDialog(
 			<SimpleDialog
-				name="Warnung"
+				name={t("warning")}
 				onClose={async (type: ButtonActions) => {
 					if (type === ButtonActions.CANCEL) {
 						freeDialog("simpleDialog");
@@ -117,8 +120,9 @@ export function SkillDeleteOption({
 					freeDialog("simpleDialog");
 				}}
 			>
-				{skillIds.length > 1 ? "Sollen die Skills " : "Soll der Skill"} wirklich gelöscht
-				werden?
+				{skillIds.length > 1
+					? t("skill_delete_message_single")
+					: t("skill_delete_message_plural")}
 			</SimpleDialog>,
 			"simpleDialog"
 		);
@@ -148,13 +152,16 @@ export function NewSkillButton({
 	onSuccess?: (skill: Skill) => void | Promise<void>;
 	skillDefaults?: Partial<Skill>;
 }) {
+	const { t } = useTranslation();
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 
 	const date = new Date();
 	const formattedDate = date.toLocaleDateString("de-DE");
 
 	const newSkill = {
-		name: `Skill vom ${formattedDate}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+		name: `${t(
+			"skill_from"
+		)} ${formattedDate}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
 		description: "Add here",
 		children: [],
 		...skillDefaults
@@ -169,7 +176,7 @@ export function NewSkillButton({
 	return (
 		<button className="btn-primary" onClick={onCreateSkill}>
 			<PlusIcon className="icon h-5" />
-			<span>Skill hinzufügen</span>
+			<span>{t("add_skill")}</span>
 		</button>
 	);
 }
