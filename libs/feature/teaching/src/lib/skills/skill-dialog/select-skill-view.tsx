@@ -47,7 +47,6 @@ export function SelectSkillsView({
 						onAddSkill(skill);
 					}}
 					repositoryId={repoId}
-					skillsResolved={false}
 				/>
 			)}
 		</div>

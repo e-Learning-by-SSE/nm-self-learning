@@ -1,6 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { createLessonMeta, lessonSchema } from "@self-learning/types";
+import {
+	SkillFormModel,
+	createLessonMeta,
+	lessonSchema,
+	skillFormSchema
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
@@ -45,6 +50,17 @@ export const lessonRouter = t.router({
 				pageSize
 			} satisfies Paginated<unknown>;
 		}),
+	findManyWithSkills: authProcedure.query(() => {
+		return database.lesson.findMany({
+			select: {
+				lessonId: true,
+				title: true,
+				slug: true,
+				requirements: true,
+				teachingGoals: true
+			}
+		});
+	}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
 		const createdLesson = await database.lesson.create({
 			data: {
@@ -111,8 +127,40 @@ export const lessonRouter = t.router({
 
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;
+		}),
+	updateSkills: authProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				requirements: z.array(skillFormSchema),
+				teachingGoals: z.array(skillFormSchema)
+			})
+		)
+		.mutation(async ({ input }) => {
+			return await database.lesson.update({
+				where: { lessonId: input.id },
+				data: {
+					requirements: {
+						set: getSkillsIds(input.requirements)
+					},
+					teachingGoals: {
+						set: getSkillsIds(input.teachingGoals)
+					}
+				}
+			});
 		})
 });
+
+// TODO this is workaround
+// Typescript wants to have skillFormSchema with all attributes,
+// Prisma wants only ids :(
+function getSkillsIds(skills: SkillFormModel[]) {
+	const result = [];
+	for (const skill of skills) {
+		result.push({ id: skill.id });
+	}
+	return result;
+}
 
 export async function findLessons({
 	title,

@@ -2,6 +2,7 @@ import type { EnrollmentStatus } from "@prisma/client";
 import { z } from "zod";
 import { SkillFormModel } from "./skill";
 import { LessonSummary } from "libs/feature/teaching/src/lib/course/course-content-editor/dialogs/lesson-selector";
+import { LessonFormModel } from "@self-learning/teaching";
 
 export type Completion = {
 	/** Number of lessons in this chapter (includes nested chapters). */
@@ -87,6 +88,6 @@ export function createCourseContent(content: CourseContent): CourseContent {
 
 export type Mesh = {
 	requiredSkills: SkillFormModel[];
-	lesson: LessonSummary;
+	lesson: { lessonId: string; title: string };
 	gainedSkills: SkillFormModel[];
 };

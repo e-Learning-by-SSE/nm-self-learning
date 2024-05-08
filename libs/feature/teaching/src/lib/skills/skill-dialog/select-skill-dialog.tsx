@@ -5,28 +5,18 @@ import { trpc } from "@self-learning/api-client";
 import { memo, useEffect, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
 
+
+
 export function SelectSkillDialog({
 	onClose,
 	repositoryId,
-	skillsResolved
 }: {
 	onClose: OnDialogCloseFn<SkillFormModel[]>;
 	repositoryId: string;
-	skillsResolved: boolean;
 }) {
-	return <SkillModal onClose={onClose} repositoryId={repositoryId} skillsResolved={skillsResolved}/>;
-}
-
-function SkillModal({
-	onClose,
-	repositoryId,
-	skillsResolved
-}: {
-	onClose: OnDialogCloseFn<SkillFormModel[]>;
-	repositoryId: string;
-	skillsResolved: boolean;
-}) {
-	const { data: skills, isLoading } = getSkills(repositoryId, skillsResolved)
+	const { data: skills, isLoading } = trpc.skill.getSkillsFromRepository.useQuery({
+		repoId: repositoryId
+	});
 	return (
 		<Dialog onClose={() => onClose(undefined)} title={"Füge die Skills hinzu"}>
 			{isLoading ? (
@@ -44,18 +34,6 @@ function SkillModal({
 			)}
 		</Dialog>
 	);
-}
-
-function getSkills(repositoryId:string, skillsResolved:boolean) {
-	if (skillsResolved) {
-		return trpc.skill.getSkillsFromRepository.useQuery({
-			repoId: repositoryId
-		});
-	} else {
-		return trpc.skill.getUnresolvedSkillsFromRepo.useQuery({
-			repoId: repositoryId
-		});
-	}
 }
 
 function SelectSkillForm({
