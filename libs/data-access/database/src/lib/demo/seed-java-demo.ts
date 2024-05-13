@@ -9,7 +9,7 @@ import {
 	read,
 	seedCaseStudy
 } from "../seed-functions";
-import { seedJavaDemoSkills } from "./seed-java-demo-skills";
+import {seedJavaDemoSkills} from "./seed-java-demo-skills";
 
 const chapters = [
 	{
@@ -52,10 +52,11 @@ const chapters = [
 				subtitle: null,
 				description: "Download und Installation des JDKs",
 				content: [
-					createArticle(
-						"# Installation des JDKs\r\n1. Gehen Sie auf <https://adoptopenjdk.net/>\r\n1. Wählen Sie sich dort das JDK aus, wir verwenden __OpenJDK 16 (Latest)__ in Verbindung mit __HotSpot__\r\n1. Installieren sie diese und aktivieren Sie den Haken, dass die __Java_HOME__ Variable angepasst werden soll",
-						20
-					)
+					createArticle({
+						mdContent:
+							"# Installation des JDKs\r\n1. Gehen Sie auf <https://adoptopenjdk.net/>\r\n1. Wählen Sie sich dort das JDK aus, wir verwenden __OpenJDK 16 (Latest)__ in Verbindung mit __HotSpot__\r\n1. Installieren sie diese und aktivieren Sie den Haken, dass die __Java_HOME__ Variable angepasst werden soll",
+						estimatedDuration: 20
+					})
 				],
 				questions: [
 					createTextQuestion('Wofür steht "JDK"?', [

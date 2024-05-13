@@ -128,8 +128,10 @@ const ch_Groessen = {
 			description: "Herleitung Flächenformel",
 			content: [
 				createArticle(
-					"#Geplante Lerneinheit\r\nHier ist ein Video zur Herleitung der Flächenformel geplant",
-					10
+					{
+						mdContent: "#Geplante Lerneinheit\r\nHier ist ein Video zur Herleitung der Flächenformel geplant",
+						estimatedDuration: 10
+					}
 				)
 			],
 			questions: [

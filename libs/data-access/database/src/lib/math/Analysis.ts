@@ -17,9 +17,11 @@ export const chapters = [
 				subtitle: "Konvergenz",
 				description: "",
 				content: [
-					createPdf(
-						"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Folgen_Kapitel.pdf",
-						1260
+					createPdf({
+							url:
+								"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Folgen_Kapitel.pdf",
+							estimatedDuration: 1260
+						}
 					)
 				],
 				questions: [

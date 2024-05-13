@@ -1,7 +1,7 @@
-import { faker } from "@faker-js/faker";
-import { LessonType, Prisma, PrismaClient } from "@prisma/client";
-import { QuestionType, QuizContent } from "@self-learning/question-types";
-import { Quiz } from "@self-learning/quiz";
+import {faker} from "@faker-js/faker";
+import {LessonType, Prisma, PrismaClient} from "@prisma/client";
+import {QuestionType, QuizContent} from "@self-learning/question-types";
+import {Quiz} from "@self-learning/quiz";
 import {
 	createCourseContent,
 	createCourseMeta,
@@ -10,10 +10,10 @@ import {
 	LessonContent,
 	LessonContentType
 } from "@self-learning/types";
-import { readFileSync } from "fs";
-import { join } from "path";
-import { slugify } from "@self-learning/util/common";
-import { defaultLicence } from "./license";
+import {readFileSync} from "fs";
+import {join} from "path";
+import {slugify} from "@self-learning/util/common";
+import {defaultLicence} from "./license";
 
 const prisma = new PrismaClient();
 
@@ -79,7 +79,7 @@ export function createLesson({
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
 		lessonId: faker.datatype.uuid(),
-		slug: slugify(faker.random.alphaNumeric(8) + title, { lower: true, strict: true }),
+		slug: slugify(faker.random.alphaNumeric(8) + title, {lower: true, strict: true}),
 		subtitle: subtitle,
 		description: description,
 		content: content,
@@ -117,7 +117,7 @@ export function createAuthor({
 	lessons: Lessons;
 	courses: Course[];
 }): Prisma.UserCreateInput {
-	const slug = slugify(name, { lower: true, strict: true });
+	const slug = slugify(name, {lower: true, strict: true});
 	return {
 		name: userName,
 		displayName: name,
@@ -136,10 +136,10 @@ export function createAuthor({
 				slug: slug,
 				imgUrl: imgUrl,
 				courses: {
-					connect: courses.map(course => ({ courseId: course.data.courseId }))
+					connect: courses.map(course => ({courseId: course.data.courseId}))
 				},
 				lessons: {
-					connect: extractLessonIds(lessons).map(lessonId => ({ lessonId }))
+					connect: extractLessonIds(lessons).map(lessonId => ({lessonId}))
 				},
 				teams: {
 					create: []
@@ -176,7 +176,7 @@ export function createCourse({
 	const course = {
 		courseId: faker.random.alphaNumeric(8),
 		title: title,
-		slug: slugify(title, { lower: true, strict: true }),
+		slug: slugify(title, {lower: true, strict: true}),
 		subtitle: subtitle ?? "",
 		description: description,
 		imgUrl: imgUrl,
@@ -187,7 +187,7 @@ export function createCourse({
 			chapters.map(chapter => ({
 				title: chapter.title,
 				description: chapter.description,
-				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
+				content: chapter.content.map(lesson => ({lessonId: lesson.lessonId}))
 			}))
 		),
 		meta: {}
@@ -272,7 +272,10 @@ export function createVideo(url: string, duration: number): LessonContentType {
 	};
 }
 
-export function createArticle(mdContent: string, estimatedDuration = 300): LessonContentType {
+export function createArticle({mdContent, estimatedDuration = 300}: {
+	mdContent: string,
+	estimatedDuration: number
+}): LessonContentType {
 	return {
 		type: "article",
 		value: {
@@ -284,7 +287,7 @@ export function createArticle(mdContent: string, estimatedDuration = 300): Lesso
 	};
 }
 
-export function createPdf(url: string, estimatedDuration: number): LessonContentType {
+export function createPdf({url, estimatedDuration}: { url: string, estimatedDuration: number }): LessonContentType {
 	return {
 		type: "pdf",
 		value: {
@@ -296,14 +299,22 @@ export function createPdf(url: string, estimatedDuration: number): LessonContent
 	};
 }
 
-export function createSpecialization(
+export function createSpecialization({
+	subjectId,
+	specializationId,
+	title,
+	subtitle,
+	imgUrlBanner,
+	cardImgUrl
+}: {
 	subjectId: string,
 	specializationId: string,
 	title: string,
 	subtitle: string,
-	imgUrlBanner: string | null,
-	cardImgUrl: string | null
-): Prisma.SpecializationCreateManyInput {
+	imgUrlBanner?: string,
+	cardImgUrl?: string
+}):
+	Prisma.SpecializationCreateManyInput {
 	return {
 		specializationId: specializationId,
 		subjectId: subjectId,
@@ -336,7 +347,7 @@ export async function seedCaseStudy(
 	console.log("\x1b[94m%s\x1b[0m", name + " Example:");
 
 	const courseData: Prisma.CourseCreateManyInput[] = courses.map(c => c.data);
-	await prisma.course.createMany({ data: courseData });
+	await prisma.course.createMany({data: courseData});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
 	const license = await prisma.license.findFirst({
@@ -370,10 +381,10 @@ export async function seedCaseStudy(
 		);
 
 		await prisma.specialization.update({
-			where: { specializationId: id },
+			where: {specializationId: id},
 			data: {
 				courses: {
-					connect: coursesOfSpec.map(c => ({ courseId: c.data.courseId }))
+					connect: coursesOfSpec.map(c => ({courseId: c.data.courseId}))
 				}
 			}
 		});
@@ -382,7 +393,7 @@ export async function seedCaseStudy(
 
 	if (authors) {
 		for (const author of authors) {
-			await prisma.user.create({ data: author });
+			await prisma.user.create({data: author});
 		}
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 	}
@@ -400,7 +411,7 @@ export async function createUsers(users: Prisma.UserCreateInput[]): Promise<void
 
 export async function getAdminUser() {
 	return await prisma.user.findFirst({
-		where: { name: adminName }
+		where: {name: adminName}
 	});
 }
 
@@ -435,7 +446,7 @@ export type SkillGroup = {
 export async function createSkillGroups(skillGroups: SkillGroup[], repository: Repository) {
 	// Need to preserve ordering and wait to be finished before creating the next one!
 	for (const skill of skillGroups) {
-		const nested = skill.children?.map(i => ({ id: i }));
+		const nested = skill.children?.map(i => ({id: i}));
 
 		await prisma.skill.create({
 			data: {
