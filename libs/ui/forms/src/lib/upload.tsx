@@ -21,6 +21,7 @@ import { parseISO } from "date-fns";
 import { ReactElement, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
+import { useTranslation } from "react-i18next";
 
 type MediaType = "image" | "video" | "pdf";
 
@@ -123,7 +124,7 @@ export function Upload({
 					);
 				}
 			}
-
+			//Übersetzen
 			console.error("Upload Error:", error);
 			showToast({
 				type: "error",
@@ -134,6 +135,7 @@ export function Upload({
 		}
 	}
 
+	const { t } = useTranslation();
 	return (
 		<div className="relative flex flex-col gap-4">
 			{viewProgressDialog && <UploadProgressDialog name={fileName} progress={progress} />}
@@ -141,10 +143,10 @@ export function Upload({
 			<div className="flex gap-1">
 				<label className="btn-primary w-full" htmlFor={id}>
 					{mediaType === "video"
-						? "Video hochladen"
+						? t("upload_video")
 						: mediaType === "image"
-						? "Bild hochladen"
-						: "Datei hochladen"}
+						? t("upload_image")
+						: t("upload_file")}
 				</label>
 
 				{!hideAssetPicker && (
@@ -221,13 +223,14 @@ export function AssetPickerButton({
 	mediaType,
 	copyToClipboard
 }: Parameters<typeof AssetPickerDialog>[0]) {
+	const { t } = useTranslation();
 	const [showAssetPicker, setShowAssetPicker] = useState(false);
 
 	return (
 		<button
 			type="button"
 			className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
-			title="Aus hochgeladenen Dateien auswählen"
+			title={t("pick_from_uploaded_files")}
 			onClick={() => setShowAssetPicker(true)}
 		>
 			<CloudArrowDownIcon className="h-5" />
@@ -259,6 +262,7 @@ function AssetPickerDialog({
 	/** If `true`, choosing an assets will copy its URL to the clipboard. */
 	copyToClipboard?: boolean;
 }) {
+	const { t } = useTranslation();
 	const [page, setPage] = useState(1);
 	const [filter, setFilter] = useState("");
 	const { data } = trpc.storage.getMyAssets.useQuery(
@@ -289,7 +293,7 @@ function AssetPickerDialog({
 
 	return (
 		<Dialog
-			title="Hochgeladene Dateien"
+			title={t("files_uploaded")}
 			onClose={onClose}
 			className="max-h-[80vh] w-[80vw] overflow-auto 2xl:w-[60vw]"
 		>
@@ -311,7 +315,7 @@ function AssetPickerDialog({
 					</div>
 
 					<SearchField
-						placeholder="Suche nach Datei..."
+						placeholder={t("search_for_files")}
 						value={filter}
 						onChange={e => setFilter(e.target.value)}
 					/>
@@ -321,7 +325,7 @@ function AssetPickerDialog({
 						{!data ? (
 							<LoadingBox height={256} />
 						) : filteredAssets.length === 0 ? (
-							<span className="text-sm text-light">Keine Dateien gefunden.</span>
+							<span className="text-sm text-light">{t("no_file_found")}</span>
 						) : (
 							<>
 								<Table
@@ -329,9 +333,9 @@ function AssetPickerDialog({
 										<>
 											<TableHeaderColumn></TableHeaderColumn>
 											<TableHeaderColumn>Preview</TableHeaderColumn>
-											<TableHeaderColumn>Datei</TableHeaderColumn>
-											<TableHeaderColumn>Typ</TableHeaderColumn>
-											<TableHeaderColumn>Datum</TableHeaderColumn>
+											<TableHeaderColumn>{t("file")}</TableHeaderColumn>
+											<TableHeaderColumn>{t("type")}</TableHeaderColumn>
+											<TableHeaderColumn>{t("date")}</TableHeaderColumn>
 											<TableHeaderColumn></TableHeaderColumn>
 										</>
 									}
@@ -383,7 +387,7 @@ function AssetPickerDialog({
 																);
 																showToast({
 																	type: "info",
-																	title: "In Zwischenablage kopiert",
+																	title: t("copied_to_clipboard"),
 																	subtitle: asset.publicUrl
 																});
 															}
@@ -392,8 +396,8 @@ function AssetPickerDialog({
 														}}
 													>
 														{copyToClipboard
-															? "URL in Zwischenablage kopieren"
-															: "Auswählen"}
+															? t("url_to_clipboard")
+															: t("choose")}
 													</button>
 												</div>
 											</TableDataColumn>
@@ -415,9 +419,10 @@ function AssetPickerDialog({
 
 function AssetOptionsMenu({ asset }: { asset: Asset }) {
 	const { mutateAsync: removeFromStorageServer } = trpc.storage.removeMyAsset.useMutation();
+	const { t } = useTranslation();
 
 	async function onDelete() {
-		const confirmed = window.confirm(`Datei "${asset.fileName}" wirklich löschen?`);
+		const confirmed = window.confirm(t("confirm_file_deletion", asset.fileName));
 		if (!confirmed) return;
 
 		try {
@@ -425,7 +430,7 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 
 			showToast({
 				type: "success",
-				title: "Datei erfolgreich gelöscht",
+				title: t("file_deleted"),
 				subtitle: asset.fileName
 			});
 		} catch (error) {
@@ -434,13 +439,13 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 			if (error instanceof TRPCClientError) {
 				showToast({
 					type: "error",
-					title: "Datei konnte nicht gelöscht werden",
+					title: t("file_not_deleted"),
 					subtitle: error.message
 				});
 			}
 		}
 	}
-
+	//Übersetzen??
 	return (
 		<Menu as="div" className="relative flex">
 			<Menu.Button className="rounded-full p-2 hover:bg-gray-50">
@@ -468,7 +473,7 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2`}
 						>
 							<TrashIcon className="h-5" />
-							<span>Löschen</span>
+							<span>{t("delete")}</span>
 						</button>
 					)}
 				</Menu.Item>

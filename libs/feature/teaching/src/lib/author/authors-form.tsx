@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "../course/course-form-model";
 import { AddAuthorDialog } from "./add-author-dialog";
+import { useTranslation } from "react-i18next";
 
 export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; emptyString: string }) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -30,19 +31,20 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 		}
 		setOpenAddDialog(false);
 	};
-
+	//Übersetzen
 	function handleRemove(index: number) {
 		window.confirm("Autor entfernen?") && remove(index);
 	}
 
+	const { t } = useTranslation();
 	return (
 		<Form.SidebarSection>
-			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle}>
+			<Form.SidebarSectionTitle title={t("authors")} subtitle={subtitle}>
 				<AddButton
 					onAdd={() => setOpenAddDialog(true)}
-					title="Autor Hinzufügen"
+					title={t("add_author")}
 					data-testid="author-add"
-					label={<span>Hinzufügen</span>}
+					label={<span>{t("add")}</span>}
 				/>
 			</Form.SidebarSectionTitle>
 

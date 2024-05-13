@@ -56,7 +56,7 @@ export function CourseContentForm() {
 		}
 		setOpenNewChapterDialog(false);
 	}
-
+	//Übersetzen
 	function onRemoveChapter(index: number) {
 		const confirmed = window.confirm(
 			`Kapitel "${content[index].title}" wirklich entfernen? Hinweis: Enthaltene Lerneinheiten werden nicht gelöscht.`

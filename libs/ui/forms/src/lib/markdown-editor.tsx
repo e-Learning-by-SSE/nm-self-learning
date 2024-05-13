@@ -4,6 +4,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
+import { useTranslation } from "react-i18next";
 
 export function MarkdownField({
 	content,
@@ -18,17 +19,15 @@ export function MarkdownField({
 	inline?: boolean;
 	placeholder?: string;
 }) {
+	const { t } = useTranslation();
 	const [openEditor, setOpenEditor] = useState(false);
 
 	return (
 		<div className={inline ? "flex flex-col gap-1" : ""}>
 			{!inline && (
 				<div className="mb-2 flex items-end justify-end">
-					<EditButton
-						onEdit={() => setOpenEditor(true)}
-						title={"Beschreibung bearbeiten"}
-					>
-						<span className={"text-gray-600"}>Bearbeiten</span>
+					<EditButton onEdit={() => setOpenEditor(true)} title={t("edit_description")}>
+						<span className={"text-gray-600"}>{t("edit")}</span>
 					</EditButton>
 				</div>
 			)}
@@ -81,12 +80,13 @@ export function MarkdownEditorDialog({
 	initialValue: string;
 	onClose: OnDialogCloseFn<string>;
 }) {
+	const { t } = useTranslation();
 	const [value, setValue] = useState(initialValue);
 
 	return (
 		<Dialog
 			style={{ height: "85vh", width: "85vw" }}
-			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
+			onClose={() => window.confirm(t("continue_without_changes")) && onClose(undefined)}
 			title={title}
 		>
 			<div className="grid h-full grid-cols-2 items-start gap-8 overflow-hidden pt-4">
@@ -128,7 +128,7 @@ export function MarkdownEditorDialog({
 
 			<DialogActions onClose={onClose}>
 				<button type="button" className="btn-primary" onClick={() => onClose(value)}>
-					Übernehmen
+					{t("save")}
 				</button>
 			</DialogActions>
 		</Dialog>

@@ -7,6 +7,7 @@ import {
 } from "@self-learning/ui/common";
 import { InputWithButton, LabeledField, Upload, useSlugify } from "@self-learning/ui/forms";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 export const editAuthorSchema = z.object({
@@ -24,6 +25,7 @@ export function EditAuthorDialog({
 	author: Author;
 	onClose: OnDialogCloseFn<Author>;
 }) {
+	const { t } = useTranslation();
 	const form = useForm({
 		defaultValues: author,
 		resolver: zodResolver(editAuthorSchema)
@@ -69,7 +71,7 @@ export function EditAuthorDialog({
 									className="btn-stroked"
 									onClick={slugifyField}
 								>
-									Generieren
+									{t("generate")}
 								</button>
 							}
 						/>
@@ -99,7 +101,7 @@ export function EditAuthorDialog({
 					></Controller>
 				</div>
 				<DialogActions onClose={onClose}>
-					<button className="btn-primary">Speichern</button>
+					<button className="btn-primary">{t("save")}</button>
 				</DialogActions>
 			</form>
 		</Dialog>
