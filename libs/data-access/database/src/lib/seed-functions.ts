@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 import {faker} from "@faker-js/faker";
 import {LessonType, Prisma, PrismaClient} from "@prisma/client";
 import {QuestionType, QuizContent} from "@self-learning/question-types";
@@ -7,7 +8,7 @@ import {
 	createCourseMeta,
 	createLessonMeta,
 	extractLessonIds,
-	LessonContent,
+	LessonContent,/* eslint-disable quotes */
 	LessonContentType
 } from "@self-learning/types";
 import {readFileSync} from "fs";
