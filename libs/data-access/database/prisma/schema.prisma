@@ -34,18 +34,18 @@ model Session {
 }
 
 model User {
-  id             String           @id @default(cuid())
-  name           String           @unique
-  displayName    String
-  email          String?          @unique
-  emailVerified  DateTime?
-  image          String?
-  role           UserRole         @default(USER)
-  accounts       Account[]
-  author         Author?
-  sessions       Session[]
-  student        Student?
-  uploadedAssets UploadedAssets[]
+  id                String            @id @default(cuid())
+  name              String            @unique
+  displayName       String
+  email             String?           @unique
+  emailVerified     DateTime?
+  image             String?
+  role              UserRole          @default(USER)
+  accounts          Account[]
+  author            Author?
+  sessions          Session[]
+  student           Student?
+  uploadedAssets    UploadedAssets[]
   skillRepositories SkillRepository[]
 }
 
@@ -167,31 +167,31 @@ model Enrollment {
 }
 
 enum LessonType {
-    TRADITIONAL
-    SELF_REGULATED
+  TRADITIONAL
+  SELF_REGULATED
 }
 
 model Lesson {
-  lessonId     String            @id
-  slug         String            @unique
-  title        String
-  subtitle     String?
-  description  String?
-  imgUrl       String?
-  content      Json
-  quiz         Json?
-  meta         Json
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  completions  CompletedLesson[]
-  quizAttempts QuizAttempt[]
-  authors      Author[]          @relation("AuthorToLesson")
-  license      License? @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
-  licenseId    Int?
-  lessonType              LessonType        @default(TRADITIONAL)
-  selfRegulatedQuestion   String?
-  requirements Skill[] @relation("requirements")
-  teachingGoals Skill[] @relation("teachingGoals")
+  lessonId              String            @id
+  slug                  String            @unique
+  title                 String
+  subtitle              String?
+  description           String?
+  imgUrl                String?
+  content               Json
+  quiz                  Json?
+  meta                  Json
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  completions           CompletedLesson[]
+  quizAttempts          QuizAttempt[]
+  authors               Author[]          @relation("AuthorToLesson")
+  license               License?          @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
+  licenseId             Int?
+  lessonType            LessonType        @default(TRADITIONAL)
+  selfRegulatedQuestion String?
+  requirements          Skill[]           @relation("requirements")
+  teachingGoals         Skill[]           @relation("teachingGoals")
 }
 
 model CompletedLesson {
@@ -261,43 +261,50 @@ enum EnrollmentStatus {
 }
 
 model License {
-    licenseId         Int     @id @default(autoincrement())
-    name              String
-    url               String?
-    licenseText       String?
-    logoUrl           String?
-    oerCompatible     Boolean @default(false)
-    // Specifies whether the license is default suggestion (only one should be true, otherwise the first one is used)
-    defaultSuggestion Boolean @default(false)
-    // Specifies whether the license can be chosen by normal users or by admins only
-    selectable        Boolean @default(true)
-    // Back reference required by Prisma -> Provides overview about usage
-    lessons           Lesson[]
+  licenseId         Int      @id @default(autoincrement())
+  name              String
+  url               String?
+  licenseText       String?
+  logoUrl           String?
+  oerCompatible     Boolean  @default(false)
+  // Specifies whether the license is default suggestion (only one should be true, otherwise the first one is used)
+  defaultSuggestion Boolean  @default(false)
+  // Specifies whether the license can be chosen by normal users or by admins only
+  selectable        Boolean  @default(true)
+  // Back reference required by Prisma -> Provides overview about usage
+  lessons           Lesson[]
 }
 
 model SkillRepository {
-  id            String        @id @default(cuid())
-  name          String
-  description   String?
-  skills        Skill[]
-  ownerId       String
-  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  skills      Skill[]
+  ownerId     String
+  owner       User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@unique([ownerId, name])
   @@map("skill-repositories")
 }
 
 model Skill {
-  id                  String  @id @default(cuid())
-  name                String
-  description         String?
-  repositoryId        String
-  repository          SkillRepository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
-  children            Skill[] @relation("parent")
-  parents             Skill[] @relation("parent")
-  goalsOf             Lesson[]      @relation("teachingGoals")
-  requirementsOf      Lesson[]      @relation("requirements")
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  repositoryId   String
+  repository     SkillRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  children       Skill[]         @relation("parent")
+  parents        Skill[]         @relation("parent")
+  goalsOf        Lesson[]        @relation("teachingGoals")
+  requirementsOf Lesson[]        @relation("requirements")
 
   @@unique([repositoryId, name])
   @@map("skills")
+}
+
+model LessonPool {
+  id            String   @id @default(cuid())
+  courseId      String
+  teachingGoals String[]
+  lessons       String[]
 }
