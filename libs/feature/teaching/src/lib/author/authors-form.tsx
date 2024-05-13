@@ -7,8 +7,11 @@ import { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "../course/course-form-model";
 import { AddAuthorDialog } from "./add-author-dialog";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 
 export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; emptyString: string }) {
+	const session = useRequiredSession();
+	const isAdminUser = session.data?.user.role === "ADMIN"
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 	const { control } = useFormContext<{ authors: CourseFormModel["authors"] }>();
 	const {
@@ -57,7 +60,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 						<Author
 							key={username}
 							username={username}
-							onRemove={authors.length >= 2 ? () => handleRemove(index) : undefined}
+							onRemove={authors.length >= 2 || isAdminUser ? () => handleRemove(index) : undefined}
 						/>
 					))}
 				</ul>
