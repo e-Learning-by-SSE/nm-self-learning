@@ -38,7 +38,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 
 	return (
 		<Form.SidebarSection>
-			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle} />
+			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle}/>
 
 			<IconButton
 				type="button"
@@ -46,7 +46,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 				onClick={() => setOpenAddDialog(true)}
 				title="Hinzufügen"
 				text="Hinzufügen"
-				icon={<PlusIcon className="h-5" />}
+				icon={<PlusIcon className="h-5"/>}
 			/>
 
 			{authors.length === 0 ? (
@@ -57,18 +57,18 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 						<Author
 							key={username}
 							username={username}
-							onRemove={() => handleRemove(index)}
+							onRemove={authors.length >= 2 ? () => handleRemove(index) : undefined}
 						/>
 					))}
 				</ul>
 			)}
 
-			{openAddDialog && <AddAuthorDialog open={openAddDialog} onClose={handleAdd} />}
+			{openAddDialog && <AddAuthorDialog open={openAddDialog} onClose={handleAdd}/>}
 		</Form.SidebarSection>
 	);
 }
 
-function Author({ username, onRemove }: { username: string; onRemove: () => void }) {
+function Author({ username, onRemove }: { username: string; onRemove: (() => void) | undefined }) {
 	const { data: author } = trpc.author.getByUsername.useQuery({ username });
 
 	if (!author) {
