@@ -96,12 +96,12 @@ function AuthorForm({
 					<OpenAsJsonButton form={form} validationSchema={authorSchema} />
 				</div>
 
-				<div className="grid gap-8 overflow-y-auto xl:grid-cols-[400px_600px] xl:overflow-y-hidden">
+				<div className="grid gap-8 overflow-y-auto xl:grid-cols-[400px_600px] xl:overflow-y-auto">
 					<AuthorData />
 					<Permissions />
 				</div>
 
-				<div className="absolute bottom-10 right-10">
+				<div className="absolute bottom-10 right-10 xl:right-14">
 					<DialogActions onClose={onClose}>
 						<button className="btn-primary" type="submit">
 							Speichern
