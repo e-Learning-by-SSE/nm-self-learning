@@ -22,12 +22,9 @@ import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SystemAnalyticsAgreementToggle } from "@self-learning/learning-analytics";
+import { ResolvedValue } from "@self-learning/types";
 
-type Student = Awaited<ReturnType<typeof getStudent>>;
-
-type Props = {
-	student: Student;
-};
+type Student = ResolvedValue<typeof getStudent>;
 
 export function getStudent(username: string) {
 	return database.student.findUniqueOrThrow({
@@ -84,7 +81,7 @@ export function getStudent(username: string) {
 	});
 }
 
-export default function StudentOverview({ student }: Props) {
+export default function StudentOverview({ student }: { student: Student }) {
 	const [editStudentDialog, setEditStudentDialog] = useState(false);
 	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
 	const router = useRouter();
