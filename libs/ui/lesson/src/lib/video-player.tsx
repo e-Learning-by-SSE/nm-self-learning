@@ -1,10 +1,5 @@
 import { trpc } from "@self-learning/api-client";
-import {
-	loadFromStorage,
-	parseDateToISOString,
-	saveLA,
-	saveToStorage
-} from "@self-learning/learning-analytics";
+import { loadFromStorage, saveLA, saveToStorage } from "@self-learning/learning-analytics";
 import { VideoInfoType, StorageKeys, SessionInfoType } from "@self-learning/types";
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
@@ -39,7 +34,7 @@ export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 						if (laSession) {
 							const session = await createLASession({
 								start: new Date(laSession.start).toISOString(),
-								end: parseDateToISOString(laSession?.end)
+								end: laSession?.end?.toISOString()
 							});
 							laSession.id = session.id;
 							saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);

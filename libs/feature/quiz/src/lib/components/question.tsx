@@ -15,12 +15,7 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
-import {
-	loadFromStorage,
-	parseDateToISOString,
-	saveLA,
-	saveToStorage
-} from "@self-learning/learning-analytics";
+import { loadFromStorage, saveLA, saveToStorage } from "@self-learning/learning-analytics";
 import { trpc } from "@self-learning/api-client";
 import { QuizInfoType, StorageKeys, SessionInfoType } from "@self-learning/types";
 
@@ -171,8 +166,8 @@ function CheckResult({
 					const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LALesson);
 					if (laSession) {
 						const session = await createLASession({
-							start: new Date(laSession.start).toISOString(),
-							end: parseDateToISOString(laSession?.end)
+							start: laSession.start.toISOString(),
+							end: laSession?.end?.toISOString()
 						});
 						laSession.id = session.id;
 						saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);

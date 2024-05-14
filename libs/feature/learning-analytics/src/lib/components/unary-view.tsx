@@ -7,9 +7,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 
 import { Divider } from "@self-learning/ui/common";
-import { UNARY_METRICS, UnaryMetric, notNull } from "../..";
+import { UNARY_METRICS, UnaryMetric } from "../..";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { isTruthy } from "@self-learning/util/common";
 
 /**
  * Returns all course/lesson titles, for which learning analytics data is available for the current user.
@@ -22,7 +23,7 @@ function identifyParticipation(lASession: LearningAnalyticsType, entry: "course"
 	lASession.forEach(session => {
 		session.learningAnalytics
 			.map(learningAnalytic => learningAnalytic[entry])
-			.filter(notNull)
+			.filter(isTruthy)
 			.map(entry => entry.title)
 			.forEach(title => {
 				if (!result.find(item => item.value === title)) {
