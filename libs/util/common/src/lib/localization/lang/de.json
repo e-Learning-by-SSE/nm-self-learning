@@ -211,7 +211,6 @@
 	"continue_without_changes": "Änderungen verwerfen?",
 	"delete_author_ask": "Autor entfernen?",
 	"edit_as_json": "Als JSON bearbeiten",
-	"saved": " gespeichert!",
 
 	"license_saved": "Lizenz wurde erfolgreich gespeichert",
 	"license_not_saved": "Lizenz konnte nicht gespeichert werden!",
@@ -231,6 +230,13 @@
 	"standard_license": "Standardlizenz",
 	"standard_license_tooltip": "Eine Standardlizenz wird für alle neuen Lerneinheiten vorgeschlagen. Alle Lerneinheiten ohne zugeordnete Lizenz erhalten ebenfalls die Standardlizenz. Es kann nur eine Standardlizenz geben.",
 	"search_for_user": "Suche nach Nutzer",
+	"course_content_subtitle": "Der Inhalt des Kurses",
+	"add_chapter": "Kapitel hinzufügen",
+	"up": "nach oben",
+	"down": "Nach unten",
+	"learn_check": "Lernkontrolle",
+	"connect_lesson": "Lerneinheit verknüpfen",
+	"confirm": "Bestätigen",
 
 	"hallo": "hallo"
 }

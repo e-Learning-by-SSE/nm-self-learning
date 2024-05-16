@@ -185,7 +185,7 @@
 	"edit_course": "Edit Course",
 	"course_authors": "Authors from this course",
 	"no_course_authors": "There are no authors for this course yet",
-	"detailed_course_description": "Detailed Description about this course. Supports Markdown",
+	"detailed_course_description": "Detailed Description about this course. Supports Markdown.",
 	"course_info": "Information about this course",
 	"new_unit": "New Learning-Unit",
 	"new_unit_slug": "new-learning-unit",
@@ -230,6 +230,13 @@
 	"standard_license": "Standard license",
 	"standard_license_tooltip": "A standard license will be recommended for every new unit and assigned to every unit without any license. There can only be 1 standard unit.",
 	"search_for_user": "Search for user",
+	"course_content_subtitle": "Content from this course",
+	"add_chapter": "Add Chapter",
+	"up": "up",
+	"down": "down",
+	"learn_check": "Learning check",
+	"connect_lesson": "Connect lesson",
+	"confirm": "Confirm",
 
 	"hallo": "hallo"
 }

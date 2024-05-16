@@ -142,7 +142,7 @@ export default function AuthorOverview({ author }: Props) {
 							</Link>
 							<button
 								className="h-fit w-fit rounded-full p-2 hover:bg-gray-200"
-								title="Bearbeiten"
+								title={t("edit")}
 								onClick={() => setOpenEditDialog(true)}
 							>
 								<CogIcon className="h-5 justify-self-start text-gray-400" />

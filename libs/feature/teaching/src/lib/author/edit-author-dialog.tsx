@@ -45,7 +45,7 @@ export function EditAuthorDialog({
 				})}
 			>
 				<div className="flex flex-col gap-4">
-					<LabeledField label="Name" error={errors.displayName?.message}>
+					<LabeledField label={t("name")} error={errors.displayName?.message}>
 						<input
 							{...form.register("displayName")}
 							type="text"
@@ -81,7 +81,7 @@ export function EditAuthorDialog({
 						control={form.control}
 						name="imgUrl"
 						render={({ field }) => (
-							<LabeledField label="Bild" error={errors.imgUrl?.message}>
+							<LabeledField label={t("image")} error={errors.imgUrl?.message}>
 								<div className="flex w-full gap-4">
 									<div className="flex w-full flex-col gap-2">
 										<Upload

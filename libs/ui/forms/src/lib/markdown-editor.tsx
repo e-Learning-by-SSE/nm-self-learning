@@ -58,7 +58,7 @@ export function MarkdownField({
 			{openEditor && (
 				<MarkdownEditorDialog
 					initialValue={content ?? ""}
-					title="Bearbeiten"
+					title={t("edit")}
 					onClose={changes => {
 						setOpenEditor(false);
 						if (changes !== undefined) {

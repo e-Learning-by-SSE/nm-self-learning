@@ -17,6 +17,7 @@ import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
 import { useCourseContentForm } from "./use-content-form";
 import { CreateLessonDialog, EditLessonDialog } from "./dialogs/lesson-editor-dialog";
+import { useTranslation } from "react-i18next";
 
 type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
 
@@ -37,6 +38,7 @@ type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
  * )
  */
 export function CourseContentForm() {
+	const { t } = useTranslation();
 	const {
 		content,
 		updateChapter,
@@ -82,7 +84,7 @@ export function CourseContentForm() {
 
 	return (
 		<section>
-			<SectionHeader title="Inhalt" subtitle="Der Inhalt des Kurses." />
+			<SectionHeader title={t("content")} subtitle={t("course_content_subtitle")} />
 
 			<ul className="flex flex-col gap-12">
 				{content.map((chapter, index) => (
@@ -106,7 +108,7 @@ export function CourseContentForm() {
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
 				<PlusIcon className="mr-2 h-5" />
-				<span>Kapitel hinzufügen</span>
+				<span>{t("add_chapter")}</span>
 			</button>
 
 			{openNewChapterDialog && <ChapterDialog onClose={handleAddChapterDialogClose} />}
@@ -123,6 +125,7 @@ function LessonNode({
 	moveLesson: UseCourseContentForm["moveLesson"];
 	onRemove: () => void;
 }) {
+	const { t } = useTranslation();
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
 
@@ -132,7 +135,7 @@ function LessonNode({
 				<div className="flex gap-4">
 					<button
 						type="button"
-						title="Nach oben"
+						title={t("up")}
 						className="rounded p-1 hover:bg-gray-200"
 						onClick={() => moveLesson(lesson.lessonId, "up")}
 					>
@@ -140,7 +143,7 @@ function LessonNode({
 					</button>
 					<button
 						type="button"
-						title="Nach unten"
+						title={t("down")}
 						className="rounded p-1 hover:bg-gray-200"
 						onClick={() => moveLesson(lesson.lessonId, "down")}
 					>
@@ -167,14 +170,14 @@ function LessonNode({
 			<div className="flex gap-4">
 				{(data?.meta as LessonMeta)?.hasQuiz && (
 					<span className="rounded-full bg-secondary px-3 py-[2px] text-xs font-medium text-white">
-						Lernkontrolle
+						{t("learn_check")}
 					</span>
 				)}
 
 				<button
 					type="button"
 					className="text-gray-400 hover:text-red-500"
-					title="Entfernen"
+					title={t("remove")}
 					onClick={onRemove}
 				>
 					<XMarkIcon className="h-4 " />
@@ -203,6 +206,7 @@ function ChapterNode({
 	onRemove: () => void;
 	removeLesson: UseCourseContentForm["removeLesson"];
 }) {
+	const { t } = useTranslation();
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const [editChapterDialogOpen, setEditChapterDialogOpen] = useState(false);
@@ -268,7 +272,7 @@ function ChapterNode({
 						<div className="flex gap-4">
 							<button
 								type="button"
-								title="Nach oben"
+								title={t("up")}
 								className="rounded p-1 hover:bg-gray-300"
 								onClick={() => moveChapter(index, "up")}
 							>
@@ -276,7 +280,7 @@ function ChapterNode({
 							</button>
 							<button
 								type="button"
-								title="Nach unten"
+								title={t("down")}
 								className="rounded p-1 hover:bg-gray-300"
 								onClick={() => moveChapter(index, "down")}
 							>
@@ -288,7 +292,7 @@ function ChapterNode({
 								onClick={() => setEditChapterDialogOpen(true)}
 							>
 								<PencilIcon className="icon" />
-								<span>Editieren</span>
+								<span>{t("edit")}</span>
 							</button>
 						</div>
 
@@ -299,7 +303,7 @@ function ChapterNode({
 								onClick={() => setCreateLessonDialogOpen(true)}
 							>
 								<PlusIcon className="icon" />
-								<span>Neue Lerneinheit erstellen</span>
+								<span>{t("create_unit")}</span>
 							</button>
 
 							<button
@@ -308,12 +312,12 @@ function ChapterNode({
 								onClick={() => setLessonSelectorOpen(true)}
 							>
 								<LinkIcon className="icon" />
-								<span>Lerneinheit verknüpfen</span>
+								<span>{t("connect_lesson")}</span>
 							</button>
 						</div>
 
 						<button type="button" className="btn-stroked" onClick={onRemove}>
-							<span>Entfernen</span>
+							<span>{t("remove")}</span>
 						</button>
 					</div>
 				</>
