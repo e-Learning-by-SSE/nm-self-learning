@@ -212,5 +212,23 @@
 	"delete_author_ask": "Delete Author?",
 	"edit_as_json": "Edit as JSON",
 
+	"license_saved": "License successfully saved!",
+	"license_not_saved": "License not saved!",
+	"license_not_saved_text": "There was an error while saving the license. Please see the console for more information.",
+	"license_not_found": "License not found!",
+	"license_not_found_text": "The license could not be found. Please create a new one",
+	"license_created": "Lizenz erstellt!",
+	"license_not_created": "License not created",
+	"license_not_created_text": "There was an error while creating the license. Please see the console for more information.",
+	"new_license": "New license",
+	"license_image_url": "License ImageUrl",
+	"license_text": "License Text",
+	"options": "Options",
+	"tooltip_choosable": "Decides wether the license can be used for new units. Existing assignment still remains.",
+	"export_allowed": "Export allowed",
+	"export_allowed_tooltip": "Decides wether the LiaScript-Exportfunktion can be used in units with this license.",
+	"standard_license": "Standard license",
+	"standard_license_tooltip": "A standard license will be recommended for every new unit and assigned to every unit without any license. There can only be 1 standard unit.",
+
 	"hallo": "hallo"
 }

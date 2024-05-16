@@ -211,6 +211,25 @@
 	"continue_without_changes": "Änderungen verwerfen?",
 	"delete_author_ask": "Autor entfernen?",
 	"edit_as_json": "Als JSON bearbeiten",
+	"saved": " gespeichert!",
+
+	"license_saved": "Lizenz wurde erfolgreich gespeichert",
+	"license_not_saved": "Lizenz konnte nicht gespeichert werden!",
+	"license_not_saved_text": "Das Speichern der Lizenz ist fehlgeschlagen. Siehe Konsole für mehr Informationen.",
+	"license_not_found": "Lizenz nicht gefunden!",
+	"license_not_found_text": "Die Lizenz konnte nicht gefunden werden. Erstellen Sie eine neue.",
+	"license_created": "Lizenz erstellt!",
+	"license_not_created": " konnte nicht erstellt werden",
+	"license_not_created_text": "Das Erstellen der Lizenz ist fehlgeschlagen. Siehe Konsole für mehr Informationen.",
+	"new_license": "Neue Lizenz",
+	"license_image_url": "Lizenz ImageUrl",
+	"license_text": "Lizenz Text",
+	"options": "Optionen",
+	"tooltip_choosable": "Entscheidet ob die Lizenz für neue Lerneinheiten ausgewählt werden kann. Bestehende Zuordnungen bleiben bestehen",
+	"export_allowed": "Export erlaubt",
+	"export_allowed_tooltip": "Entscheidet ob die LiaScript-Exportfunktion bei Lerneinheiten mit dieser Lizenz verwendet werden kann.",
+	"standard_license": "Standardlizenz",
+	"standard_license_tooltip": "Eine Standardlizenz wird für alle neuen Lerneinheiten vorgeschlagen. Alle Lerneinheiten ohne zugeordnete Lizenz erhalten ebenfalls die Standardlizenz. Es kann nur eine Standardlizenz geben.",
 
 	"hallo": "hallo"
 }
