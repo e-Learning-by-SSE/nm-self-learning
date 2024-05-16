@@ -229,6 +229,7 @@
 	"export_allowed_tooltip": "Decides wether the LiaScript-Exportfunktion can be used in units with this license.",
 	"standard_license": "Standard license",
 	"standard_license_tooltip": "A standard license will be recommended for every new unit and assigned to every unit without any license. There can only be 1 standard unit.",
+	"search_for_user": "Search for user",
 
 	"hallo": "hallo"
 }

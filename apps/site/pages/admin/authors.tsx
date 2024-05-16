@@ -54,7 +54,7 @@ export default function AuthorsPage() {
 				if (error instanceof TRPCClientError) {
 					showToast({
 						type: "error",
-						title: "Fehler",
+						title: t("error"),
 						subtitle: t("add_author_error")
 					});
 				}
@@ -92,7 +92,7 @@ export default function AuthorsPage() {
 						head={
 							<>
 								<TableHeaderColumn></TableHeaderColumn>
-								<TableHeaderColumn>Name</TableHeaderColumn>
+								<TableHeaderColumn>{t("name")}</TableHeaderColumn>
 								<TableHeaderColumn></TableHeaderColumn>
 							</>
 						}

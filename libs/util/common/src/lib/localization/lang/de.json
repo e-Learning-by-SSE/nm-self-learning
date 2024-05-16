@@ -87,7 +87,7 @@
 	"manage_licenses": "Lizenzen verwalten",
 
 	"add_lesson": "Lerneinheit hinzufügen",
-	"preview": "Preview",
+	"preview": "Vorschau",
 	"license_url": "Url der Lizenzwebseite:",
 	"license_description": "Lizenzbeschreibung:",
 	"choosable": "Auswählbar",
@@ -230,6 +230,7 @@
 	"export_allowed_tooltip": "Entscheidet ob die LiaScript-Exportfunktion bei Lerneinheiten mit dieser Lizenz verwendet werden kann.",
 	"standard_license": "Standardlizenz",
 	"standard_license_tooltip": "Eine Standardlizenz wird für alle neuen Lerneinheiten vorgeschlagen. Alle Lerneinheiten ohne zugeordnete Lizenz erhalten ebenfalls die Standardlizenz. Es kann nur eine Standardlizenz geben.",
+	"search_for_user": "Suche nach Nutzer",
 
 	"hallo": "hallo"
 }

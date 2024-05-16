@@ -126,13 +126,13 @@ function AuthorData() {
 		<section className="flex flex-col rounded-lg border border-light-border p-4">
 			<h2 className="mb-4 text-2xl">{t("data")}</h2>
 			<div className="flex flex-col gap-4">
-				<LabeledField label="Name" error={errors.displayName?.message}>
+				<LabeledField label={t("name")} error={errors.displayName?.message}>
 					<input className="textfield" type={"text"} {...register("displayName")} />
 				</LabeledField>
 				<LabeledField label="Slug" error={errors.slug?.message}>
 					<input className="textfield" type={"text"} {...register("slug")} />
 				</LabeledField>
-				<LabeledField label="Bild" error={errors.imgUrl?.message}>
+				<LabeledField label={t("image")} error={errors.imgUrl?.message}>
 					<div className="flex w-full gap-4">
 						<div className="flex w-full flex-col gap-2">
 							<input
