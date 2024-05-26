@@ -21,7 +21,6 @@ import {
 	includesMediaType,
 	LessonContent,
 	LessonMeta,
-	MediaTypeChangesInfoType,
 	StorageKeys
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
@@ -330,9 +329,9 @@ function MediaTypeSelector({
 
 	//Learning Analytics
 	useEffect(() => {
-		const mediaTypeChanges = loadFromStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType);
+		const mediaTypeChanges = loadFromStorage("la_mediaType");
 		if (mediaTypeChanges == null)
-			saveToStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType, {
+			saveToStorage("la_mediaType", {
 				video: 0,
 				pdf: 0,
 				article: 0,

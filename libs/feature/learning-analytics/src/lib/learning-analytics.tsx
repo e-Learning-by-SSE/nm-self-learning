@@ -1,47 +1,75 @@
 import { trpc } from "@self-learning/api-client";
 import router, { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { KeysOfType } from "./auxillary";
 import { Switch } from "@headlessui/react";
 import { ButtonActions, SimpleDialogXL, showToast } from "@self-learning/ui/common";
 import { TRPCClientError } from "@trpc/client";
 import {
+	LearningPeriodType,
 	LessonInfoType,
 	MediaTypeChangesInfoType,
 	MediaTypeInfoType,
 	QuizInfoType,
-	SessionInfoType,
 	StorageKeys,
+	StorageTypeMap,
 	VideoInfoType
 } from "@self-learning/types";
+import { isTruthy } from "@self-learning/util/common";
 
-export function notNull<T>(val: T | null): val is T {
-	return val != null;
-}
-
-export function loadFromStorage<T>(key: StorageKeys): T | null {
+export function loadFromStorage<K extends keyof StorageTypeMap>(key: K): StorageTypeMap[K] | null {
 	const rawData = localStorage.getItem(key);
-	let data: T | null = null;
 	if (rawData) {
-		data = JSON.parse(rawData) as T;
+		return JSON.parse(rawData) as StorageTypeMap[K];
 	}
-	return data;
+	return null;
 }
 
-export function saveToStorage<T>(key: StorageKeys, data: T) {
+export function saveToStorage<K extends StorageKeys>(key: K, data: StorageTypeMap[K]): void {
 	window.localStorage.setItem(key, JSON.stringify(data));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isLessonInfoType(data: any): data is LessonInfoType {
+	return (data as LessonInfoType).lessonStart !== undefined;
+}
+type ExcludeKey<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+type StorageTypeMapWithoutLearningPeriod = ExcludeKey<StorageTypeMap, "la_period">;
+
+export function useActivityStorage() {
+	const { mutateAsync: createLearningPeriod } = trpc.learningPeriod.create.useMutation();
+
+	const storeActivity = useCallback(
+		async <K extends keyof StorageTypeMapWithoutLearningPeriod>(
+			key: K,
+			data: StorageTypeMapWithoutLearningPeriod[K]
+		) => {
+			let learningPeriod = loadFromStorage("la_period");
+			if (!learningPeriod || !learningPeriod.id) {
+				const start = isLessonInfoType(data) ? data.lessonStart : new Date();
+				const lp = await createLearningPeriod({ start });
+				learningPeriod = { ...lp, end: lp.end ?? undefined };
+				saveToStorage("la_period", learningPeriod);
+			}
+			return learningPeriod.id;
+		},
+		[createLearningPeriod]
+	);
+
+	return storeActivity;
+}
+
 export function addMediaTypeChanges(property: KeysOfType<MediaTypeChangesInfoType, number | null>) {
-	const mediaTypeChanges = loadFromStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType);
+	const key = "la_mediaType";
+	const mediaTypeChanges = loadFromStorage(key);
 	if (mediaTypeChanges) {
 		if (mediaTypeChanges[property]) {
 			mediaTypeChanges[property]++;
 		} else {
 			mediaTypeChanges[property] = 1;
 		}
-		saveToStorage<MediaTypeChangesInfoType>(StorageKeys.LAMediaType, mediaTypeChanges);
+		saveToStorage(key, mediaTypeChanges);
 	}
 }
 
@@ -50,98 +78,80 @@ export function addMediaTypeChanges(property: KeysOfType<MediaTypeChangesInfoTyp
  * This will check if the end times are specified or can be loaded from the local storage, i.e.,
  * after the user has closed the website and started a new session at a later time.
  */
-export function saveEnds() {
-	const lASession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
-	const lALessonInfo = loadFromStorage<LessonInfoType>(StorageKeys.LALesson);
-	const lAVideoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
-	const lAQuizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+function commitEndTimestampsToStorage() {
+	const learningPeriod = loadFromStorage("la_period");
+	const lALessonInfo = loadFromStorage("la_lessonInfo");
+	const lAVideoInfo = loadFromStorage("la_videoInfo");
+	const lAQuizInfo = loadFromStorage("la_quizInfo");
 
 	const endDates = [
-		lASession?.end ? new Date(lASession.end).getTime() : 0,
-		lALessonInfo?.end ? new Date(lALessonInfo.end).getTime() : 0,
-		lAVideoInfo?.videoEnd ? new Date(lAVideoInfo.videoEnd).getTime() : 0,
-		lAQuizInfo?.quizEnd ? new Date(lAQuizInfo.quizEnd).getTime() : 0
+		learningPeriod?.end,
+		lALessonInfo?.lessonEnd,
+		lAVideoInfo?.videoEnd,
+		lAQuizInfo?.quizEnd
 	];
+	const latestDate = endDates
+		.filter(isTruthy)
+		.reduce((current, latest) => (current > latest ? current : latest));
 
-	const maxDate = new Date(Math.max(...endDates));
-
-	if (lALessonInfo?.start != null && lALessonInfo.end == null) {
-		lALessonInfo.end = maxDate;
-		saveToStorage<LessonInfoType>(StorageKeys.LALesson, lALessonInfo);
+	if (lALessonInfo?.lessonStart != null && lALessonInfo.lessonEnd == null) {
+		lALessonInfo.lessonEnd = latestDate;
+		saveToStorage("la_lessonInfo", lALessonInfo);
 	}
 	if (lAVideoInfo?.videoStart != null && lAVideoInfo.videoEnd == null) {
-		lAVideoInfo.videoEnd = maxDate;
-		saveToStorage<VideoInfoType>(StorageKeys.LAVideo, lAVideoInfo);
+		lAVideoInfo.videoEnd = latestDate;
+		saveToStorage("la_videoInfo", lAVideoInfo);
 	}
 	if (lAQuizInfo?.quizStart != null && lAQuizInfo.quizEnd == null) {
-		lAQuizInfo.quizEnd = maxDate;
-		saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, lAQuizInfo);
+		lAQuizInfo.quizEnd = latestDate;
+		saveToStorage("la_quizInfo", lAQuizInfo);
 	}
 }
 
 /**
  * Saves all learning analytic data from the local storage in the database.
  *
- * @return The new entry for the learning analytics that was saved in the database.
+ * @return The new entry for the learning analytics that extracted from the local storage. Content is no longer present in local storage
  */
-export function saveLA() {
-	saveEnds();
-	const lASession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
-	const lALessonInfo = loadFromStorage<LessonInfoType>(StorageKeys.LALesson);
-	const lAVideoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
-	const lAQuizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
-	const lAMediaType = getMediaType();
-	let data = null;
-	if (
-		lALessonInfo?.lessonId != null &&
-		lALessonInfo?.courseId != null &&
-		lASession?.start != null
-	) {
-		resetLA();
-		console.log(lAQuizInfo);
-		data = {
-			sessionId: lASession.id ? lASession.id : -1,
-			lessonId: lALessonInfo.lessonId,
-			courseId: lALessonInfo.courseId,
-			start: parseDateToISOString(lALessonInfo?.start),
-			end: parseDateToISOString(lALessonInfo?.end),
-			quizStart: parseDateToISOString(lAQuizInfo?.quizStart),
-			quizEnd: parseDateToISOString(lAQuizInfo?.quizEnd),
-			numberCorrectAnswers: checkUndefined<number>(lAQuizInfo?.numberCorrectAnswers),
-			numberIncorrectAnswers: checkUndefined<number>(lAQuizInfo?.numberIncorrectAnswers),
-			numberOfUsedHints: checkUndefined<number>(lAQuizInfo?.numberOfUsedHints),
-			numberOfChangesMediaType: lAMediaType.numberOfChangesMediaType,
-			preferredMediaType: lAMediaType?.preferredMediaType,
-			videoStart: parseDateToISOString(lAVideoInfo?.videoStart),
-			videoEnd: parseDateToISOString(lAVideoInfo?.videoEnd),
-			videoBreaks: checkUndefined<number>(lAVideoInfo?.videoBreaks),
-			videoSpeed: checkUndefined<number>(lAVideoInfo?.videoSpeed)
-		};
-		console.log(data);
+export function gatherLearningActivity() {
+	commitEndTimestampsToStorage();
+	const data = retrieveFullAnalyticsFromStorage();
+	if (data.lessonInfo && data.lessonInfo.lessonId && data.lessonInfo.courseId) {
+		removeLearningActivityStore();
+		console.debug(data);
 	}
 	return data;
 }
 
-/**
- * 	Checks if an object is undefined.
- *
- * @param data object that will be checked for undefined.
- * @returns null for undefined objects or the object itself.
- */
-export function checkUndefined<T>(data: T | null | undefined): T | null {
-	if (data === undefined) return null;
-	else return data;
+export function retrieveFullAnalyticsFromStorage() {
+	const learningPeriod = loadFromStorage("la_period");
+	const lessonInfo = loadFromStorage("la_lessonInfo");
+	const videoInfo = loadFromStorage("la_videoInfo");
+	const quizInfo = loadFromStorage("la_quizInfo");
+	const mediaTypeInfo = getMediaType();
+	return { learningPeriod, lessonInfo, videoInfo, quizInfo, mediaTypeInfo };
 }
 
-/**
- * 	Checks if a date is undefined or null or parse it to ISOString.
- *
- * @param data date that will be checked for undefined.
- * @returns null for undefined objects or a date ISOString.
- */
-export function parseDateToISOString(data: Date | null | undefined): string | null {
-	if (data === undefined || data == null) return null;
-	else return new Date(data).toISOString();
+export function toLa({
+	learningPeriod,
+	lessonInfo,
+	videoInfo,
+	quizInfo,
+	mediaTypeInfo
+}: {
+	learningPeriod: LearningPeriodType;
+	lessonInfo: LessonInfoType;
+	videoInfo: VideoInfoType;
+	quizInfo: QuizInfoType;
+	mediaTypeInfo: MediaTypeChangesInfoType;
+}) {
+	return {
+		periodId: learningPeriod.id,
+		...lessonInfo,
+		...videoInfo,
+		...quizInfo,
+		...mediaTypeInfo
+	};
 }
 
 /**
@@ -159,9 +169,7 @@ export function getMediaType(): MediaTypeInfoType {
 		numberOfChangesMediaType: null,
 		preferredMediaType: null
 	};
-	const lANumberOfChangesMediaType = loadFromStorage<MediaTypeChangesInfoType>(
-		StorageKeys.LAMediaType
-	);
+	const lANumberOfChangesMediaType = loadFromStorage("la_mediaType");
 	if (lANumberOfChangesMediaType) {
 		lAMediaTypeInfo.numberOfChangesMediaType =
 			lANumberOfChangesMediaType.video +
@@ -188,22 +196,20 @@ export function getMediaType(): MediaTypeInfoType {
  * Clears the local storage from all learning analytic data.
  *
  */
-export async function resetLASession() {
-	window.localStorage.removeItem(StorageKeys.LASession);
-	window.localStorage.removeItem(StorageKeys.LALesson);
-	window.localStorage.removeItem(StorageKeys.LAVideo);
-	window.localStorage.removeItem(StorageKeys.LAMediaType);
-	window.localStorage.removeItem(StorageKeys.LAQuiz);
+export async function removeLearningPeriodStore() {
+	window.localStorage.removeItem("la_sessionInfo");
+	window.localStorage.removeItem("la_lessonInfo");
+	removeLearningActivityStore();
 }
 
 /**
  * Clears the local storage from video, media changes and quiz learning analytic data.
  *
  */
-export async function resetLA() {
-	window.localStorage.removeItem(StorageKeys.LAVideo);
-	window.localStorage.removeItem(StorageKeys.LAMediaType);
-	window.localStorage.removeItem(StorageKeys.LAQuiz);
+export async function removeLearningActivityStore() {
+	window.localStorage.removeItem("la_videoInfo");
+	window.localStorage.removeItem("la_quizInfo");
+	window.localStorage.removeItem("la_mediaType");
 }
 
 /**
@@ -222,10 +228,9 @@ export async function resetLA() {
  * @returns An empty component (no rendering, but session handling)
  */
 export function LearningAnalyticsProvider() {
-	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
-	const { mutateAsync: setEndOfSession } = trpc.learningAnalytics.setEndOfSession.useMutation();
-	const { mutateAsync: createLearningAnalytics } =
-		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+	const { mutateAsync: createLearningPeriod } = trpc.learningPeriod.create.useMutation();
+	const { mutateAsync: updateLearningPeriod } = trpc.learningPeriod.update.useMutation();
+	const { mutateAsync: createLearningActivity } = trpc.learningActivity.create.useMutation();
 	const { data: systemAnalytics } = trpc.me.systemAnalyticsAgreement.useQuery();
 
 	// Learning Analytics: Session handling
@@ -233,10 +238,10 @@ export function LearningAnalyticsProvider() {
 	// This data will be copied to the database after re-entering the website.
 	useEffect(() => {
 		const handleClose = () => {
-			const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
-			if (laSession?.start) {
-				laSession.end = new Date();
-				saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);
+			const learningPeriod = loadFromStorage("la_period");
+			if (learningPeriod?.start) {
+				learningPeriod.end = new Date();
+				saveToStorage("la_period", learningPeriod);
 			}
 		};
 		// Events from different browser desktop and mobile https://stackoverflow.com/questions/61351103/jquery-detect-mobile-browser-close-event
@@ -270,64 +275,56 @@ export function LearningAnalyticsProvider() {
 	}, []);
 
 	// Creates a new session and saves a previously started session if there is an incomplete one.
-	useEffect(() => {
-		const saveData = async () => {
-			const data = saveLA();
-			if (data) {
-				try {
-					const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
-					// Checks if a session is available
-					if (laSession) {
-						if (laSession.end == null) {
-							laSession.end = new Date();
-						}
-						// Checks if the session is in the database
-						if (data.sessionId < 0) {
-							const session = await createLASession({
-								start: new Date(laSession.start).toISOString(),
-								end: new Date(laSession.end).toISOString()
-							});
-							data.sessionId = session.id;
-						}
-						// Saves last learning Analytics and end date of a session
-						await createLearningAnalytics(data);
-						await setEndOfSession({
-							end: new Date(laSession.end).toISOString(),
-							id: data.sessionId
-						});
-					}
-				} catch (e) {}
-			}
-			resetLASession();
-			createNewLASession();
-		};
+	const saveData = async () => {
+		// if (data) {
+		// 	try {
+		// 		if (!data.laSessionId) {
+		// 			const session = await createLASession({
+		// 				...data,
+		// 				start: data.start ?? new Date()
+		// 			});
+		// 			data.laSessionId = session.id;
+		// 		}
 
-		const createNewLASession = async () => {
-			saveToStorage<SessionInfoType>(StorageKeys.LASession, {
-				start: new Date(),
-				end: null,
-				id: null
-			});
-		};
-
-		if (systemAnalytics?.systemAnalyticsAgreement) {
-			const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LASession);
-			if (!laSession) {
-				createNewLASession();
-			} else if (laSession.start !== null && laSession.end !== null) {
-				const end = laSession.end;
-				const now = new Date();
-				now.setMinutes(new Date().getMinutes() - 30);
-				// Stores the previous session if exists and starts a new one
-				if (now > end) saveData();
-			}
+		// 		await createLearningAnalytics({ ...data, start: date.start ?? new Date() });
+		// 		await setEndOfSession({ ...data, end: data.end ?? new Date() });
+		// 	} catch (e) {}
+		// }
+		const data = gatherLearningActivity();
+		if (data) {
+			try {
+				const test = toLa(data);
+				const analytics = await createLearningActivity();
+				await updateLearningPeriod({
+					id: analytics.periodId,
+					end: data.lessonInfo?.lessonEnd ?? new Date() // warum wird hier die ganze lernperiode beendet?
+				});
+			} catch (e) {}
 		}
-	}, [
-		createLASession,
-		createLearningAnalytics,
-		setEndOfSession,
-		systemAnalytics?.systemAnalyticsAgreement
-	]);
+		removeLearningPeriodStore();
+		createNewLASession();
+	};
+
+	const createNewLASession = async () => {
+		saveToStorage("la_period", {
+			start: new Date(),
+			end: null,
+			id: null
+		});
+	};
+
+	if (systemAnalytics?.systemAnalyticsAgreement) {
+		const laSession = loadFromStorage("la_period");
+		if (!laSession) {
+			createNewLASession();
+		} else if (laSession.start !== null && laSession.end !== null) {
+			const end = laSession.end;
+			const now = new Date();
+			now.setMinutes(new Date().getMinutes() - 30);
+			// Stores the previous session if exists and starts a new one
+			if (now > end) saveData();
+		}
+	}
 
 	return null;
 }
@@ -343,45 +340,35 @@ export function LearningAnalyticsProvider() {
 export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 	// Learning Analytics: navigate from page
 	const router = useRouter();
-	const { mutateAsync: createLearningAnalytics } =
-		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+	const { mutateAsync: createLearningActivity } = trpc.learningActivity.create.useMutation();
 	const { data: systemAnalytics } = trpc.me.systemAnalyticsAgreement.useQuery();
-	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
+	const { mutateAsync: createLearningPeriod } = trpc.learningPeriod.create.useMutation();
 	// Stores the data of the current session when leaving a lesson
 	useEffect(() => {
 		const saveData = async () => {
 			if (systemAnalytics?.systemAnalyticsAgreement) {
-				const data = saveLA();
+				const data = gatherLearningActivity();
 				if (data) {
 					try {
-						// Checks if the session is not in the database id < 0
-						if (data.sessionId < 0) {
-							const laSession = loadFromStorage<SessionInfoType>(
-								StorageKeys.LALesson
-							);
+						if (!data.learningPeriod?.id) {
+							const laSession = loadFromStorage("la_period");
 							// Creates new Session in the database if session data is available
 							if (laSession) {
-								const session = await createLASession({
-									start: new Date(laSession.start).toISOString(),
-									end: parseDateToISOString(laSession?.end)
+								const session = await createLearningPeriod({
+									start: data.lessonInfo?.lessonStart ?? new Date()
 								});
-								laSession.id = session.id;
-								saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);
-								data.sessionId = session.id;
-								await createLearningAnalytics(data);
 							}
-						} else {
-							await createLearningAnalytics(data);
+							await createLearningActivity(data);
 						}
 					} catch (e) {}
 				}
 			}
 		};
 		const navigateFromPage = (url: string) => {
-			const lALessonInfo = loadFromStorage<LessonInfoType>(StorageKeys.LALesson);
-			if (lALessonInfo?.start != null) {
-				lALessonInfo.end = new Date();
-				saveToStorage<LessonInfoType>(StorageKeys.LALesson, lALessonInfo);
+			const lALessonInfo = loadFromStorage("la_lessonInfo");
+			if (lALessonInfo?.lessonStart != null) {
+				lALessonInfo.lessonEnd = new Date();
+				saveToStorage("la_lessonInfo", lALessonInfo);
 			}
 			if (!url.includes(lesson.slug)) {
 				saveData();
@@ -392,8 +379,8 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 			router.events.off("routeChangeStart", navigateFromPage);
 		};
 	}, [
-		createLASession,
-		createLearningAnalytics,
+		createLearningPeriod,
+		createLearningActivity,
 		lesson.slug,
 		router.events,
 		systemAnalytics?.systemAnalyticsAgreement
@@ -403,31 +390,31 @@ export function LearningAnalyticsLesson({ lesson, course }: LessonLayoutProps) {
 	useEffect(() => {
 		const saveData = async () => {
 			if (systemAnalytics?.systemAnalyticsAgreement) {
-				const data = saveLA();
+				const data = gatherLearningActivity();
 				if (data) {
 					try {
-						await createLearningAnalytics(data);
+						await createLearningActivity(data);
 					} catch (e) {}
 				}
 			}
 		};
 		if (window !== undefined) {
-			const lALessonInfo = loadFromStorage<LessonInfoType>(StorageKeys.LALesson);
-			if (lALessonInfo?.start != null) {
+			const lALessonInfo = loadFromStorage("la_lessonInfo");
+			if (lALessonInfo?.lessonStart != null) {
 				if (lALessonInfo.lessonId !== lesson.lessonId) {
 					saveData();
 				}
 			}
-			saveToStorage<LessonInfoType>(StorageKeys.LALesson, {
+			saveToStorage("la_lessonInfo", {
 				lessonId: lesson.lessonId,
 				courseId: course.courseId,
-				start: new Date(),
-				end: null
+				lessonStart: new Date(),
+				lessonEnd: null
 			});
 		}
 	}, [
 		course.courseId,
-		createLearningAnalytics,
+		createLearningActivity,
 		lesson.lessonId,
 		systemAnalytics?.systemAnalyticsAgreement
 	]);
@@ -501,7 +488,7 @@ export function SystemAnalyticsAgreementToggle() {
 		} else {
 			try {
 				await deleteLearningAnalytics();
-				resetLASession();
+				removeLearningPeriodStore();
 				const updated = await updateStudent({ agreement: false });
 				showToast({
 					type: "success",

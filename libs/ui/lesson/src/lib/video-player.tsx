@@ -1,6 +1,9 @@
 import { trpc } from "@self-learning/api-client";
-import { loadFromStorage, saveLA, saveToStorage } from "@self-learning/learning-analytics";
-import { VideoInfoType, StorageKeys, SessionInfoType } from "@self-learning/types";
+import {
+	loadFromStorage,
+	gatherLearningActivity,
+	saveToStorage
+} from "@self-learning/learning-analytics";
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 
@@ -8,14 +11,13 @@ const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 	//Learning Analytics: init or save video info
-	const { mutateAsync: createLearningAnalytics } =
-		trpc.learningAnalytics.createLearningAnalytics.useMutation();
+	const { mutateAsync: createLearningAnalytics } = trpc.learningAnalytics.create.useMutation();
 	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
 
 	useEffect(() => {
-		const videoInfos = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
-		if (videoInfos == null)
-			saveToStorage<VideoInfoType>(StorageKeys.LAVideo, {
+		const videoInfos = loadFromStorage("la_videoInfo");
+		if (!videoInfos)
+			saveToStorage("la_videoInfo", {
 				videoStart: null,
 				videoEnd: null,
 				videoBreaks: 0,
@@ -24,20 +26,20 @@ export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 	}, []);
 
 	async function onStart() {
-		const videoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
+		const videoInfo = loadFromStorage("la_videoInfo");
 		if (videoInfo) {
-			const data = saveLA();
+			const data = gatherLearningActivity();
 			if (data) {
 				try {
-					if (data.sessionId < 0) {
-						const laSession = loadFromStorage<SessionInfoType>(StorageKeys.LALesson);
+					if (data.id) {
+						const laSession = loadFromStorage("la_lessonInfo");
 						if (laSession) {
 							const session = await createLASession({
-								start: new Date(laSession.start).toISOString(),
-								end: laSession?.end?.toISOString()
+								start: new Date(laSession.lessonStart).toISOString(),
+								end: laSession?.lessonEnd?.toISOString() ?? null
 							});
 							laSession.id = session.id;
-							saveToStorage<SessionInfoType>(StorageKeys.LASession, laSession);
+							saveToStorage("la_sessionInfo", laSession);
 							data.sessionId = session.id;
 							await createLearningAnalytics(data);
 						}
@@ -49,7 +51,7 @@ export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 				}
 			}
 		}
-		saveToStorage<VideoInfoType>(StorageKeys.LAVideo, {
+		saveToStorage("la_videoInfo", {
 			videoStart: new Date(),
 			videoEnd: null,
 			videoBreaks: 0,
@@ -58,26 +60,26 @@ export function VideoPlayer({ url }: Readonly<{ url: string }>) {
 	}
 
 	function onPause() {
-		const videoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
-		if (videoInfo?.videoBreaks != null) {
+		const videoInfo = loadFromStorage("la_videoInfo");
+		if (videoInfo?.videoBreaks) {
 			videoInfo.videoBreaks++;
-			saveToStorage<VideoInfoType>(StorageKeys.LAVideo, videoInfo);
+			saveToStorage("la_videoInfo", videoInfo);
 		}
 	}
 
 	function onEnded() {
-		const videoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
+		const videoInfo = loadFromStorage("la_videoInfo");
 		if (videoInfo) {
 			videoInfo.videoEnd = new Date();
-			saveToStorage<VideoInfoType>(StorageKeys.LAVideo, videoInfo);
+			saveToStorage("la_videoInfo", videoInfo);
 		}
 	}
 
-	function onPlaybackRateChange(e: any) {
-		const videoInfo = loadFromStorage<VideoInfoType>(StorageKeys.LAVideo);
-		if (videoInfo?.videoSpeed != null) {
+	function onPlaybackRateChange(e: number) {
+		const videoInfo = loadFromStorage("la_videoInfo");
+		if (videoInfo?.videoSpeed) {
 			videoInfo.videoSpeed = e;
-			saveToStorage<VideoInfoType>(StorageKeys.LAVideo, videoInfo);
+			saveToStorage("la_videoInfo", videoInfo);
 		}
 	}
 	//Learning Analytics: end

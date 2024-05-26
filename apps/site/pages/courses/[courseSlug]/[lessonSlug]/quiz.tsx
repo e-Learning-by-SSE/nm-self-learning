@@ -91,9 +91,9 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 
 	//Learning Analytics: init or save quiz info
 	useEffect(() => {
-		const quizInfos = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+		const quizInfos = loadFromStorage("la_quizInfo");
 		if (!quizInfos) {
-			saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, {
+			saveToStorage("la_quizInfo", {
 				quizStart: new Date(),
 				quizEnd: null,
 				numberCorrectAnswers: 0,

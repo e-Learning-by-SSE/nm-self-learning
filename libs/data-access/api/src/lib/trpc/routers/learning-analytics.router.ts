@@ -1,35 +1,35 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { ResolvedValue } from "@self-learning/types";
+import { ResolvedValue, analyticsSchema, makeAllFieldsNullish } from "@self-learning/types";
 
-export const learningAnalyticsRouter = t.router({
-	createSession: authProcedure
+export const learningPeriodRouter = t.router({
+	create: authProcedure
 		.input(
 			z.object({
-				start: z.string().datetime(),
-				end: z.string().datetime().nullable()
+				start: z.date(),
+				end: z.date().optional()
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
-			return database.lASession.create({
+			return await database.learningPeriod.create({
 				data: {
 					username: ctx.user.name,
 					start: input.start,
 					end: input.end
 				},
-				select: { id: true }
+				select: { id: true, start: true, end: true }
 			});
 		}),
-	setEndOfSession: authProcedure
+	update: authProcedure
 		.input(
 			z.object({
-				id: z.number(),
-				end: z.string().datetime()
+				id: z.string(),
+				end: z.date()
 			})
 		)
 		.mutation(async ({ input }) => {
-			const entry = await database.lASession.update({
+			const entry = await database.learningPeriod.update({
 				where: { id: input.id },
 				data: { end: input.end },
 				select: { id: true, end: true }
@@ -37,135 +37,82 @@ export const learningAnalyticsRouter = t.router({
 			console.log("[learningAnalyticsRouter.updateSession]: id ", entry.id, entry.end);
 			return entry;
 		}),
-	deleteSessions: authProcedure.mutation(async ({ ctx }) => {
-		return await database.lASession.deleteMany({
+	delete: authProcedure.mutation(async ({ ctx }) => {
+		return await database.learningPeriod.deleteMany({
 			where: { username: ctx.user.name }
 		});
-	}),
-	createLearningAnalytics: authProcedure
+	})
+});
+
+export const learningActivityRouter = t.router({
+	create: authProcedure
 		.input(
-			z.object({
-				lessonId: z.string(),
-				courseId: z.string(),
-				sessionId: z.number(),
-				start: z.string().datetime().nullable(),
-				end: z.string().datetime().nullable(),
-				quizStart: z.string().datetime().nullable(),
-				quizEnd: z.string().datetime().nullable(),
-				numberCorrectAnswers: z.number().nullable(),
-				numberIncorrectAnswers: z.number().nullable(),
-				numberOfUsedHints: z.number().nullable(),
-				numberOfChangesMediaType: z.number().nullable(),
-				preferredMediaType: z.string().nullable(),
-				videoBreaks: z.number().nullable(),
-				videoStart: z.string().datetime().nullable(),
-				videoEnd: z.string().datetime().nullable(),
-				videoSpeed: z.number().nullable()
-				//videoCalculatedSpeed: z.number()
+			makeAllFieldsNullish(analyticsSchema).extend({
+				lessonId: z.string().uuid(),
+				periodId: z.string().uuid().optional(),
+				lessonStart: z.date()
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
-			const entry = await database.learningAnalytics.create({
-				data: {
-					sessionId: input.sessionId,
-					lessonId: input.lessonId,
-					courseId: input.courseId,
-					start: input.start,
-					end: input.end,
-					quizStart: input.quizStart,
-					quizEnd: input.quizEnd,
-					numberCorrectAnswers: input.numberCorrectAnswers,
-					numberIncorrectAnswers: input.numberIncorrectAnswers,
-					numberOfUsedHints: input.numberOfUsedHints,
-					numberOfChangesMediaType: input.numberOfChangesMediaType,
-					preferredMediaType: input.preferredMediaType,
-					videoBreaks: input.videoBreaks,
-					videoSpeed: input.videoSpeed,
-					//videoCalculatedSpeed: input.videoCalculatedSpeed,
-					videoStart: input.videoStart,
-					videoEnd: input.videoEnd
-				},
-				select: { id: true }
-			});
-
-			console.log(
-				"[learningAnalyticsRouter.createLearningAnalytics]: Entry created by",
-				ctx.user.name,
-				{
-					id: entry.id
+			return database.$transaction(async _ => {
+				if (!input.periodId) {
+					const learningPeriod = await database.learningPeriod.create({
+						data: {
+							username: ctx.user.name,
+							start: input.lessonStart ?? new Date()
+						},
+						select: { id: true, start: true, end: true }
+					});
+					input.periodId = learningPeriod.id;
 				}
-			);
-
-			return entry;
+				const entry = await database.learningActivity.create({
+					data: { ...input, periodId: input.periodId },
+					select: { id: true, lessonId: true, periodId: true }
+				});
+				console.debug(
+					"[learningAnalyticsRouter.createLearningAnalytics]: Entry created by",
+					ctx.user.name,
+					{
+						id: entry.id
+					}
+				);
+				return entry;
+			});
 		}),
-	loadLearningAnalytics: authProcedure.query(async ({ ctx }) => {
-		return await getLASession(ctx.user.name);
+	findUserSpecific: authProcedure.query(async ({ ctx }) => {
+		return await getLearningActivities(ctx.user.name);
 	}),
-	updateLearningAnalytics: authProcedure
-		.input(
-			z.object({
-				id: z.number(),
-				end: z.string().datetime(),
-				quizStart: z.string().datetime(),
-				quizEnd: z.string().datetime(),
-				numberCorrectAnswers: z.number(),
-				numberIncorrectAnswers: z.number(),
-				numberOfUsedHints: z.number(),
-				numberOfChangesMediaType: z.number(),
-				preferredMediaType: z.string(),
-				videoBreaks: z.number(),
-				videoStart: z.string().datetime(),
-				videoEnd: z.string().datetime(),
-				videoSpeed: z.number(),
-				videoCalculatedSpeed: z.number()
-			})
-		)
+	update: authProcedure
+		.input(makeAllFieldsNullish(analyticsSchema).extend({ id: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) => {
-			const lAEntry = await database.learningAnalytics.update({
+			const lAEntry = await database.learningActivity.update({
 				where: { id: input.id },
-				data: {
-					end: input.end,
-					quizStart: input.quizStart,
-					quizEnd: input.quizEnd,
-					numberCorrectAnswers: input.numberCorrectAnswers,
-					numberIncorrectAnswers: input.numberIncorrectAnswers,
-					numberOfUsedHints: input.numberOfUsedHints,
-					numberOfChangesMediaType: input.numberOfChangesMediaType,
-					preferredMediaType: input.preferredMediaType,
-					videoBreaks: input.videoBreaks,
-					videoSpeed: input.videoSpeed,
-					videoCalculatedSpeed: input.videoCalculatedSpeed,
-					videoStart: input.videoStart,
-					videoEnd: input.videoEnd
-				}
+				data: { ...input }
 			});
 
-			console.log(
+			console.debug(
 				"[LearningAnalyticsRouter.updateLearningAnalytics]: Entry updated by",
 				ctx.user.name,
-				{
-					lAEntry
-				}
+				{ lAEntry }
 			);
-
 			return lAEntry;
 		})
 });
 
-export type LearningAnalyticsType = ResolvedValue<typeof getLASession>;
+export type LearningAnalyticsType = ResolvedValue<typeof getLearningActivities>;
 
 /**
  * Fetch learning analytic data from database
  * @param username The username of the current user
  * @returns The learning analytic data of the user
  */
-async function getLASession(username: string) {
+async function getLearningActivities(username: string) {
 	/*
 	 * Very critical: Minimize included data.
 	 * By omitting data from course and lesson we can reduce the size of a query
 	 * on the sample data from 1.05MB to 0.09MB.
 	 */
-	return await database.lASession.findMany({
+	return await database.learningPeriod.findMany({
 		where: { username: username },
 		orderBy: {
 			start: "asc"
@@ -173,9 +120,9 @@ async function getLASession(username: string) {
 		select: {
 			start: true,
 			end: true,
-			learningAnalytics: {
+			activities: {
 				select: {
-					sessionId: true,
+					periodId: true,
 					lessonId: true,
 					lesson: {
 						select: {
@@ -190,8 +137,8 @@ async function getLASession(username: string) {
 							slug: true
 						}
 					},
-					start: true,
-					end: true,
+					lessonStart: true,
+					lessonEnd: true,
 					quizStart: true,
 					quizEnd: true,
 					numberCorrectAnswers: true,

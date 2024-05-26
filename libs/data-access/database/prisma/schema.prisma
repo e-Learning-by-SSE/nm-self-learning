@@ -151,7 +151,7 @@ model Course {
   enrollments     Enrollment[]
   authors         Author[]          @relation("AuthorToCourse")
   specializations Specialization[]  @relation("CourseToSpecialization")
-  learninAnalytics    LearningAnalytics[]
+  learninAnalytics    LearningActivity[]
 }
 
 model Enrollment {
@@ -194,7 +194,7 @@ model Lesson {
   selfRegulatedQuestion   String?
   requirements Skill[] @relation("requirements")
   teachingGoals Skill[] @relation("teachingGoals")
-  learninAnalytics    LearningAnalytics[] 
+  learninAnalytics    LearningActivity[] 
 }
 
 model CompletedLesson {
@@ -307,24 +307,25 @@ model SkillRepository {
 
 
 
-model LASession {
-  id                  Int     @id @default(autoincrement())
+model LearningPeriod {
+  id                  String     @id @default(cuid())
   start               DateTime @default(now())
   end                 DateTime? 
   username            String
-  learningAnalytics    LearningAnalytics[]
+  activities    LearningActivity[]
+	@@map("LearningPeriod")
 }
 
-model LearningAnalytics {
-  id                  Int     @id @default(autoincrement())
-  session             LASession @relation(fields:[sessionId], references: [id], onDelete: Cascade)
-  sessionId           Int
+model LearningActivity {
+  id                  String     @id @default(cuid())
+  learningPeriod             LearningPeriod @relation(fields:[periodId], references: [id], onDelete: Cascade)
+  periodId           String @map("periodId")
   courseId            String?
   course              Course?   @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
   lesson              Lesson?   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
   lessonId            String?
-  start               DateTime?
-  end                 DateTime?
+  lessonStart               DateTime?
+  lessonEnd                 DateTime?
   quizStart           DateTime?
 	quizEnd             DateTime?
 	numberCorrectAnswers      Int?
@@ -337,4 +338,5 @@ model LearningAnalytics {
 	videoEnd            DateTime?
 	videoSpeed          Float?
 	videoCalculatedSpeed      Float?
+	@@map("LearningAnalytics")
 }

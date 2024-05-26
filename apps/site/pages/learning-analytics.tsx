@@ -11,7 +11,7 @@ import { UnaryLearningAnalyticsDashboard } from "@self-learning/learning-analyti
  * @returns The learning analytics page
  */
 export default function Page() {
-	const { data: lASession, isLoading } = trpc.learningAnalytics.loadLearningAnalytics.useQuery();
+	const { data: lASession, isLoading } = trpc.learningAnalytics.findUserSpecific.useQuery();
 
 	if (isLoading) {
 		// Loading screen, circle centered based on: https://stackoverflow.com/a/55174568

@@ -25,10 +25,10 @@ export function Hints() {
 	//Learning Analytics: get number of correct and incorrect answers
 	useEffect(() => {
 		if (window !== undefined) {
-			const quizInfo = loadFromStorage<QuizInfoType>(StorageKeys.LAQuiz);
+			const quizInfo = loadFromStorage("la_quizInfo");
 			if (quizInfo) {
 				quizInfo.numberOfUsedHints = usedHintsTotal;
-				saveToStorage<QuizInfoType>(StorageKeys.LAQuiz, quizInfo);
+				saveToStorage("la_quizInfo", quizInfo);
 			}
 		}
 	}, [usedHintsTotal]);
