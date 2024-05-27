@@ -11,6 +11,7 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { LessonType } from "@prisma/client";
+import { useRouter } from "next/router";
 
 export function LessonEditor({
 	lesson,
@@ -26,6 +27,7 @@ export function LessonEditor({
 	});
 
 	const [selectedLessonType, setLessonType] = useState(lesson.lessonType);
+	const router = useRouter();
 
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
@@ -42,9 +44,23 @@ export function LessonEditor({
 		}
 	}, [lesson]);
 
+	function redirectToPreview() {
+		console.log("redirect");
+		const currentLessonValues = form.getValues();
+		const serializedData = JSON.stringify(currentLessonValues);
+
+		router.push({
+			pathname: "/teaching/lessons/preview",
+			query: { data: serializedData, origin: window.location.pathname }
+		});
+	}
+
 	return (
 		<div className="bg-gray-50">
 			<FormProvider {...form}>
+				<button className="btn-primary" onClick={redirectToPreview}>
+					Vorschau
+				</button>
 				<form
 					onSubmit={form.handleSubmit(
 						data => {
