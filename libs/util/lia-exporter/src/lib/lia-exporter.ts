@@ -97,7 +97,7 @@ export async function exportCourseArchive(
 		zip.file(mediaFile.destination, blob);
 	}
 
-	// 100 % of download completed, but not zipped yet
+	// 100 % of download completed, but not zipped yet, don't forget to add 10% for zipping
 	onProgress && onProgress((downloadSize / totalSize) * 100);
 
 	// Callback used to report progress of zipping
