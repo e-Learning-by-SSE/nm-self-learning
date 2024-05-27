@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";

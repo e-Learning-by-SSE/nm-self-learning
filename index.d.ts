@@ -29,6 +29,7 @@ declare module "next-auth" {
 	 */
 	interface Session {
 		user: {
+			id: string;
 			name: string;
 			role: "USER" | "ADMIN";
 			isAuthor: boolean;

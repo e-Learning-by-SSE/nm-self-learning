@@ -16,7 +16,7 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { CogIcon } from "@heroicons/react/solid";
+import { CogIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";

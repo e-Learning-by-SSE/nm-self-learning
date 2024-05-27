@@ -1,5 +1,8 @@
-import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
-import { CheckCircleIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import {
+	CheckCircleIcon as CheckCircleIconOutline,
+	XCircleIcon
+} from "@heroicons/react/24/outline";
+import { CheckCircleIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
@@ -15,7 +18,7 @@ import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learnin
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -32,7 +35,6 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	if ("notFound" in parentProps) return { notFound: true };
 
 	const quiz = parentProps.lesson.quiz as Quiz | null;
-
 	if (!quiz) return { notFound: true };
 
 	const questionsMd: MdLookup = {};
@@ -89,7 +91,6 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 			shallow: true
 		});
 	}, [nextIndex, course.slug, lesson.slug, router]);
-
 	// function goToPreviousQuestion() {
 	// 	router.push(
 	// 		`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
@@ -372,7 +373,7 @@ function QuizFailedDialog({
 			<DialogActions onClose={onClose}>
 				<button className="btn-primary" onClick={reload}>
 					<span>Erneut probieren</span>
-					<RefreshIcon className="h-5 shrink-0" />
+					<ArrowPathIcon className="h-5 shrink-0" />
 				</button>
 			</DialogActions>
 		</Dialog>

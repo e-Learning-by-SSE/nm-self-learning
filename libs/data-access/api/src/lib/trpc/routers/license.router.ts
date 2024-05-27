@@ -36,12 +36,6 @@ export const licenseRouter = t.router({
 					defaultSuggestion: input.license.defaultSuggestion
 				}
 			});
-
-			console.log("License updated: ", {
-				licenseId: input.licenseId,
-				license: input.license
-			});
-
 			return updated;
 		}),
 	createAsAdmin: adminProcedure
