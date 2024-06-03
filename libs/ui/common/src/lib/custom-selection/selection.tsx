@@ -1,5 +1,5 @@
 import { Menu, Transition } from "@headlessui/react";
-import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/solid";
+import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/24/solid";
 import React, { Fragment, useState } from "react";
 
 export function Selection({

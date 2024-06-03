@@ -1,4 +1,4 @@
-import { BadgeCheckIcon, BanIcon, PlusIcon } from "@heroicons/react/solid";
+import { CheckBadgeIcon, NoSymbolIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { CreateLicenseDialog, EditLicenseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -7,15 +7,15 @@ import {
 	LoadingBox,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	Tooltip
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useMemo, useState } from "react";
 import { License } from "@self-learning/types";
 import Link from "next/link";
-import { ShareIcon } from "@heroicons/react/outline";
-import Tooltip from "../../../../libs/ui/common/src/lib/tooltip/tooltips";
+import { ShareIcon } from "@heroicons/react/24/outline";
 
 export default function LicensesPage() {
 	useRequiredSession();
@@ -152,7 +152,7 @@ function LicenseFeatureIcons({
 		<>
 			{defaultSuggestion && (
 				<Tooltip title="Standard Lizenz">
-					<BadgeCheckIcon className="icon h-5" />
+					<CheckBadgeIcon className="icon h-5" />
 				</Tooltip>
 			)}
 			{oerCompatible && (
@@ -162,7 +162,7 @@ function LicenseFeatureIcons({
 			)}
 			{!selectable && (
 				<Tooltip title="Lizenz ist nicht in neuen Lerneinheiten auswählbar.">
-					<BanIcon className="icon h-5" />
+					<NoSymbolIcon className="icon h-5" />
 				</Tooltip>
 			)}
 		</>

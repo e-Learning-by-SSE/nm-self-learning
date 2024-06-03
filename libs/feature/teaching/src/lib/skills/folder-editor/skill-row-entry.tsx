@@ -4,10 +4,10 @@ import {
 	ChevronDownIcon,
 	ChevronRightIcon,
 	FolderIcon,
-	RefreshIcon,
+	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon
-} from "@heroicons/react/solid";
-import { PencilIcon, PuzzleIcon } from "@heroicons/react/outline";
+} from "@heroicons/react/24/solid";
+import { PencilIcon, PuzzlePieceIcon } from "@heroicons/react/24/outline";
 import { AddChildButton, SkillDeleteOption } from "./skill-taskbar";
 import styles from "./folder-table.module.css";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
@@ -148,11 +148,13 @@ function SkillRow({
 								</>
 							) : (
 								<div className="ml-6">
-									<PuzzleIcon className="icon h-5 text-lg" />
+									<PuzzlePieceIcon className="icon h-5 text-lg" />
 								</div>
 							)}
 						</div>
-						{cycleError && <RefreshIcon className="icon h-5 text-lg text-red-500" />}
+						{cycleError && (
+							<ArrowPathRoundedSquareIcon className="icon h-5 text-lg text-red-500" />
+						)}
 						{cycleWarning && (
 							<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 						)}

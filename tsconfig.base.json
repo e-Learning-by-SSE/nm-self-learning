@@ -15,6 +15,8 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
+			"@self-learning/ui/notifications": ["libs/ui/notifications/src/index.ts"],
+			"@self-learning/ui/notifications/server": ["libs/ui/notifications/src/server.ts"],
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/api-client": ["libs/data-access/api-client/src/index.ts"],
@@ -23,6 +25,7 @@
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],
 			"@self-learning/enrollment": ["libs/feature/enrollment/src/index.ts"],
 			"@self-learning/lesson": ["libs/feature/lesson/src/index.ts"],
+			"@self-learning/lia-exporter": ["libs/util/lia-exporter/src/index.ts"],
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
 			"@self-learning/question-types": ["libs/feature/question-types/src/index.ts"],
 			"@self-learning/quiz": ["libs/feature/quiz/src/index.ts"],

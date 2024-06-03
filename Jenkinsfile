@@ -82,7 +82,10 @@ pipeline {
             }
             steps {
                 ssedocker {
-                    create { target "${env.TARGET_PREFIX}:unstable" }
+                    create {
+                       target "${env.TARGET_PREFIX}:unstable"
+                       args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
+                    }
                     publish {}
                 }
             }
@@ -92,7 +95,7 @@ pipeline {
                 }
             }
         }
-        stage('Docker Publish PB') {
+        stage('Docker Publish Pull Requests') {
             environment {
                 VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"
             }
@@ -104,7 +107,10 @@ pipeline {
             }
             steps {
                 ssedocker {
-                    create { target "${env.TARGET_PREFIX}:${env.VERSION}" }
+                    create { 
+                        target "${env.TARGET_PREFIX}:${env.VERSION}"
+                        args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
+                    }
                     publish {}
                 }
             }

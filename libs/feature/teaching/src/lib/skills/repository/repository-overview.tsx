@@ -11,7 +11,7 @@ import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
-import { PencilIcon, TrashIcon } from "@heroicons/react/solid";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export function SkillRepositoryOverview() {
 	useRequiredSession();

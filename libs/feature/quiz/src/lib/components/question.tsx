@@ -1,11 +1,12 @@
-import { RefreshIcon } from "@heroicons/react/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import type { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
+	BaseEvaluation,
 	EVALUATION_FUNCTIONS,
+	QUESTION_TYPE_DISPLAY_NAMES,
 	QuestionAnswerRenderer,
 	QuestionType,
-	QUESTION_TYPE_DISPLAY_NAMES,
 	useQuestion
 } from "@self-learning/question-types";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
@@ -15,12 +16,14 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
+import { useCookies } from "react-cookie";
+
+export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
 export function Question({
 	question,
 	markdown,
-	lesson,
-	isLastQuestion
+	lesson
 }: {
 	question: QuestionType;
 	markdown: {
@@ -29,7 +32,6 @@ export function Question({
 		hintsMd: MdLookupArray;
 	};
 	lesson: LessonLayoutProps["lesson"];
-	isLastQuestion: boolean;
 }) {
 	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } =
 		useQuiz();
@@ -47,16 +49,26 @@ export function Question({
 			? 2
 			: 1;
 
-	function setAnswer(v: any) {
+	const [_, setCookie] = useCookies(["quiz_answers_save"]);
+
+	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
 
-		setAnswers(prev => ({
-			...prev,
-			[question.questionId]: value
-		}));
+		setAnswers(prev => {
+			const updatedAnswers = {
+				...prev,
+				[question.questionId]: value
+			};
+			const cookieContent: QuizSavedAnswers = {
+				answers: updatedAnswers,
+				lessonSlug: lesson.slug
+			};
+			setCookie(`quiz_answers_save`, JSON.stringify(cookieContent), { path: "/" });
+			return updatedAnswers;
+		});
 	}
 
-	function setEvaluation(e: any) {
+	function setEvaluation(e: BaseEvaluation | null) {
 		setCurrentStep(
 			question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED
 				? 2
@@ -102,7 +114,6 @@ export function Question({
 								setEvaluation={setEvaluation}
 								nextQuestionStep={nextQuestionStep}
 								isLastQuestionStep={currentStep === totalSteps}
-								isLastQuestion={isLastQuestion}
 							/>
 						</div>
 					</div>
@@ -134,24 +145,19 @@ export function Question({
 function CheckResult({
 	setEvaluation,
 	nextQuestionStep,
-	isLastQuestionStep,
-	isLastQuestion
+	isLastQuestionStep
 }: {
 	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
 	nextQuestionStep: () => void;
 	isLastQuestionStep: boolean;
-	isLastQuestion: boolean;
 }) {
 	// We only use "multiple-choice" to get better types ... works for all question types
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
 	const { completionState, reload } = useQuiz();
 
 	function checkResult() {
-		console.log("checking...");
+		console.debug("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
-		console.log("question", question);
-		console.log("answer", answer);
-		console.log("evaluation", evaluation);
 		setEvaluation(evaluation);
 	}
 
@@ -161,25 +167,26 @@ function CheckResult({
 
 	const canGoToNextQuestion = currentEvaluation || !isLastQuestionStep;
 
-	return (
-		<>
-			{completionState === "in-progress" ? (
-				<button
-					className="btn-primary"
-					onClick={canGoToNextQuestion ? nextQuestionStep : checkResult}
-				>
-					{canGoToNextQuestion ? "Nächste Frage" : "Überprüfen"}
-				</button>
-			) : completionState === "failed" ? (
-				<button className="btn bg-red-500" onClick={reload}>
-					<span>Erneut probieren</span>
-					<RefreshIcon className="h-5" />
-				</button>
-			) : (
-				// eslint-disable-next-line react/jsx-no-useless-fragment
-				<></>
-			)}
-			{/* {eslint-disable-next-line react/jsx-no-useless-fragment} */}
-		</>
+	const renderInProgressButton = () => (
+		<button
+			className="btn-primary"
+			onClick={canGoToNextQuestion ? nextQuestionStep : checkResult}
+		>
+			{canGoToNextQuestion ? "Nächste Frage" : "Überprüfen"}
+		</button>
 	);
+
+	const renderFailedButton = () => (
+		<button className="btn bg-red-500" onClick={reload}>
+			<span>Erneut probieren</span>
+			<ArrowPathIcon className="h-5" />
+		</button>
+	);
+
+	const returnButton = {
+		"in-progress": renderInProgressButton(),
+		failed: renderFailedButton(),
+		completed: null
+	};
+	return returnButton[completionState];
 }

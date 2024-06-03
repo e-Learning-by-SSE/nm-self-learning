@@ -1,4 +1,4 @@
-import { CheckCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons/react/solid";
+import { CheckCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { TRPCClientError } from "@trpc/client";

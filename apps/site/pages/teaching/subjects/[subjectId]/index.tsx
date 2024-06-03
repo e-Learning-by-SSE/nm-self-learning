@@ -1,4 +1,4 @@
-import { PencilIcon, PlusIcon, UserGroupIcon } from "@heroicons/react/solid";
+import { PencilIcon, PlusIcon, UserGroupIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { SpecializationPermissionsDialog } from "@self-learning/teaching";
 import { AuthorChip, ImageOrPlaceholder, SectionHeader } from "@self-learning/ui/common";

@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
+	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
@@ -100,6 +101,25 @@ export const courseRouter = t.router({
 
 		return { content, lessonMap };
 	}),
+	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
+		const fullExport = await getFullCourseExport(input.slug);
+
+		// Check if content is generally allowed to be exported
+		const isOERCompatible = fullExport.lessons.every(
+			lesson => lesson.license?.oerCompatible !== false
+		);
+
+		// OER-compatible or ADMIN / AUTHOR of the course
+		if (!isOERCompatible && !(await authorizedUserForExport(ctx.user, input.slug))) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Content is neither OER-compatible nor is the user an author of the course. Export not allowed."
+			});
+		}
+
+		return fullExport;
+	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
 		if (!canCreate(ctx.user)) {
 			throw new TRPCError({
@@ -176,6 +196,48 @@ async function canEditCourse(user: UserFromSession, courseId: string): Promise<b
 	});
 
 	if (beforeUpdate.authors.some(author => author.username === user.name)) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Guard (pre-check) that checks if a user is allowed to export a course based on its role.
+ * These are:
+ * - ADMIN: always allowed
+ * - AUTHOR: allowed if the user is an author of the course
+ *
+ * Further, users of other roles may also export a course, if all content is public (OER-compatible).
+ * However, this is not checked here, as this requires the full course data and, thus, is done during the export.
+ * @param user The user which requests the export
+ * @param slug The course to export (by slug)
+ * @returns true if the user is allowed to export the course, false requires to check all licenses
+ */
+async function authorizedUserForExport(
+	user: UserFromSession | undefined,
+	slug: string
+): Promise<boolean> {
+	if (!user) {
+		return false;
+	}
+
+	if (user.role === "ADMIN") {
+		return true;
+	}
+
+	const beforeExport = await database.course.findUniqueOrThrow({
+		where: { slug },
+		select: {
+			authors: {
+				select: {
+					username: true
+				}
+			}
+		}
+	});
+
+	if (beforeExport.authors.some(author => author.username === user.name)) {
 		return true;
 	}
 

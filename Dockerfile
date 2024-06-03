@@ -1,5 +1,10 @@
+ARG NPM_TOKEN 
+
 # Base image
 FROM node:20-alpine3.18 as build
+
+ARG NPM_TOKEN 
+ENV NPM_TOKEN=${NPM_TOKEN}
 
 # Missing packages
 # * Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
@@ -11,12 +16,9 @@ WORKDIR /app
  
 
 # Install dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-
 COPY package.json package-lock.json ./
-# Install app dependencies
-ARG NPM_TOKEN 
-RUN mv .npmrc.example .npmrc
+COPY .npmrc.example .npmrc
+RUN sed -i "s/\${NPM_TOKEN}/${NPM_TOKEN}/g" .npmrc
 RUN npm install
 RUN rm .npmrc
 

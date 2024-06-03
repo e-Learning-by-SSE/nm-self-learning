@@ -1,4 +1,4 @@
-import { CheckCircleIcon, PlayIcon } from "@heroicons/react/solid";
+import { CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
@@ -232,6 +232,7 @@ function DefaultLicenseLabel() {
 		name: "Keine Lizenz verfügbar",
 		logoUrl: "",
 		url: "",
+		oerCompatible: false,
 		licenseText:
 			"*Für diese Lektion ist keine Lizenz verfügbar. Bei Nachfragen, wenden Sie sich an den Autor*"
 	};

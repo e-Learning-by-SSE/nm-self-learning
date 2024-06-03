@@ -6,8 +6,8 @@ import {
 	showToast,
 	SimpleDialog
 } from "@self-learning/ui/common";
-import { PlusIcon, TrashIcon } from "@heroicons/react/solid";
-import { FolderAddIcon } from "@heroicons/react/outline";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
 import { Skill } from "@prisma/client";
@@ -81,7 +81,7 @@ export function AddChildButton({
 			className="hover:text-secondary"
 			onClick={handleAddSkill}
 		>
-			<FolderAddIcon className="icon h-5 text-lg" style={{ cursor: "pointer" }} />
+			<FolderPlusIcon className="icon h-5 text-lg" style={{ cursor: "pointer" }} />
 		</button>
 	);
 }

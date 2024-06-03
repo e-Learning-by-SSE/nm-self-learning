@@ -1,3 +1,4 @@
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 import { TransparentDeleteButton } from "../button/delete-button";
 
