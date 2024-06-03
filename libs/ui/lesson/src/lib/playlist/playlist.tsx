@@ -241,14 +241,18 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 				</span>
 			</span>
 			<span className="flex justify-between">
+
 				{lesson.meta.hasQuiz && (
-					<Link
-						href={`/courses/${course.slug}/${lesson.slug}/quiz`}
-						className="btn-primary text-sm"
-						data-testid="quizLink"
-					>
-						Lernkontrolle
-					</Link>
+
+				<Link
+					href={`/courses/${course.slug}/${lesson.slug}${
+						router.pathname.endsWith("quiz") ? "" : "/quiz"
+					}`}
+					className="btn-primary text-sm"
+					data-testid="quizLink"
+				>
+					{router.pathname.endsWith("quiz") ? "Zum Lernhinhalt" : "Zur Lernkontrolle"}
+				</Link>
 				)}
 
 				<span className="flex gap-2">

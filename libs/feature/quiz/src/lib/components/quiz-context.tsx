@@ -6,6 +6,9 @@ import {
 } from "@self-learning/question-types";
 import { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
 import { QuizConfig } from "../quiz";
+import { useRouter } from "next/router";
+import { useCookies } from "react-cookie";
+import { QuizSavedAnswers } from "./question";
 
 type QuizCompletionState = "in-progress" | "completed" | "failed";
 
@@ -57,16 +60,27 @@ export function QuizProvider({
 	reload: () => void;
 	children: React.ReactNode;
 }) {
+	const [cookies] = useCookies(["quiz_answers_save"]);
+
+	const { answers: quizAnswers, lessonSlug: quizLessonSlug }: QuizSavedAnswers = cookies[
+		"quiz_answers_save"
+	] || { answers: null, lessonSlug: null };
+
+	const router = useRouter();
 	const [answers, setAnswers] = useState(() => {
 		const ans: QuizContextValue["answers"] = {};
+
+		if (quizAnswers && quizAnswers && router.asPath.endsWith(quizLessonSlug + "/quiz")) {
+			return quizAnswers as typeof ans;
+		}
 
 		for (const q of questions) {
 			ans[q.questionId] = {
 				type: q.type,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				value: INITIAL_ANSWER_VALUE_FUNCTIONS[q.type](q as any)
 			};
 		}
-
 		return ans;
 	});
 
@@ -76,7 +90,6 @@ export function QuizProvider({
 		for (const q of questions) {
 			evals[q.questionId] = null;
 		}
-
 		return evals;
 	});
 
@@ -87,7 +100,7 @@ export function QuizProvider({
 			return "in-progress";
 		}
 
-		if (allEvaluations.every(e => e && e.isCorrect === true)) {
+		if (allEvaluations.every(e => e && e.isCorrect)) {
 			return "completed";
 		}
 
