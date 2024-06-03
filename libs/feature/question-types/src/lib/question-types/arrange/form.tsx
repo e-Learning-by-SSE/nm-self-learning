@@ -1,4 +1,3 @@
-import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { LabeledField, MarkdownField, MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";

@@ -1,5 +1,5 @@
 import React from "react";
-import { PencilIcon } from "@heroicons/react/solid";
+import { PencilIcon } from "@heroicons/react/24/solid";
 import { DefaultButton } from "./default-button";
 
 export function EditButton({

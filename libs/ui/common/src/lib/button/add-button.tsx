@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { PlusIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { DropdownButton } from "./dropdown-button";
 
 export function AddButton({
