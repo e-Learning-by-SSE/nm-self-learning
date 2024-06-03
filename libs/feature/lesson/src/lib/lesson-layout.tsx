@@ -112,7 +112,7 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 				<Playlist
 					content={playlistContent}
 					course={course}
-					lesson={lesson}
+					lesson={{ ...lesson, meta: lesson.meta as LessonMeta }}
 					completion={completion}
 				/>
 			) : (
