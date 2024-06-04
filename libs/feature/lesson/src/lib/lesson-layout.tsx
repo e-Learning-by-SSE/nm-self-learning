@@ -7,9 +7,10 @@ import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
 import { useMemo } from "react";
+import { LessonContent, getLesson } from "./lesson-data-access";
 
 export type LessonLayoutProps = {
-	lesson: ResolvedValue<typeof getLesson>;
+	lesson: LessonContent;
 	course: ResolvedValue<typeof getCourse>;
 };
 
@@ -22,39 +23,6 @@ function getCourse(slug: string) {
 			courseId: true,
 			title: true,
 			slug: true
-		}
-	});
-}
-
-async function getLesson(slug: string) {
-	return database.lesson.findUnique({
-		where: { slug },
-		select: {
-			lessonId: true,
-			slug: true,
-			title: true,
-			subtitle: true,
-			description: true,
-			content: true,
-			quiz: true,
-			meta: true,
-			license: {
-				select: {
-					name: true,
-					url: true,
-					logoUrl: true,
-					licenseText: true
-				}
-			},
-			lessonType: true,
-			selfRegulatedQuestion: true,
-			authors: {
-				select: {
-					displayName: true,
-					slug: true,
-					imgUrl: true
-				}
-			}
 		}
 	});
 }
@@ -144,7 +112,7 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 				<Playlist
 					content={playlistContent}
 					course={course}
-					lesson={lesson}
+					lesson={{ ...lesson, meta: lesson.meta as LessonMeta }}
 					completion={completion}
 				/>
 			) : (
