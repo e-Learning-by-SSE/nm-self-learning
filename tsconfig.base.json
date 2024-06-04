@@ -25,6 +25,7 @@
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],
 			"@self-learning/enrollment": ["libs/feature/enrollment/src/index.ts"],
 			"@self-learning/lesson": ["libs/feature/lesson/src/index.ts"],
+			"@self-learning/lia-exporter": ["libs/util/lia-exporter/src/index.ts"],
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
 			"@self-learning/question-types": ["libs/feature/question-types/src/index.ts"],
 			"@self-learning/quiz": ["libs/feature/quiz/src/index.ts"],

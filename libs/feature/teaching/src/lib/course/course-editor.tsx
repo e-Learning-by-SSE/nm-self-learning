@@ -9,6 +9,8 @@ import { OpenAsJsonButton } from "../json-editor-dialog";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
+import { useState } from "react";
+import { ExportCourseDialog } from "./course-export/course-export-dialog";
 
 export function CourseEditor({
 	course,
@@ -23,6 +25,8 @@ export function CourseEditor({
 		defaultValues: { ...course },
 		resolver: zodResolver(courseFormSchema)
 	});
+
+	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
 		<div className="bg-gray-50">
@@ -63,9 +67,18 @@ export function CourseEditor({
 
 								<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
 
-								<button className="btn-primary w-full" type="submit">
-									{isNew ? "Erstellen" : "Speichern"}
-								</button>
+								<div className="flex space-x-2">
+									<button className="btn-primary w-full" type="submit">
+										{isNew ? "Erstellen" : "Speichern"}
+									</button>
+									<button
+										className="btn-primary w-full text-right"
+										type="button"
+										onClick={() => setViewExportDialog(true)}
+									>
+										Export
+									</button>
+								</div>
 
 								<CourseInfoForm />
 								<AuthorsForm
@@ -80,6 +93,15 @@ export function CourseEditor({
 					</SidebarEditorLayout>
 				</form>
 			</FormProvider>
+
+			{viewExportDialog && (
+				<ExportCourseDialog
+					course={course}
+					onClose={() => {
+						setViewExportDialog(false);
+					}}
+				/>
+			)}
 		</div>
 	);
 }
