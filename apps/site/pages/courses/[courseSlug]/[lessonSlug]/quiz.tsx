@@ -18,7 +18,7 @@ import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learnin
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type QuestionProps = LessonLayoutProps & {
@@ -36,7 +36,6 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	if ("notFound" in parentProps) return { notFound: true };
 
 	const quiz = parentProps.lesson.quiz as Quiz | null;
-
 	if (!quiz) return { notFound: true };
 
 	const questionsMd: MdLookup = {};
@@ -93,7 +92,6 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 			shallow: true
 		});
 	}, [nextIndex, course.slug, lesson.slug, router]);
-
 	// function goToPreviousQuestion() {
 	// 	router.push(
 	// 		`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
@@ -143,7 +141,6 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						question={currentQuestion}
 						markdown={markdown}
 						lesson={lesson}
-						isLastQuestion={quiz.questions.length === Number(index) + 1}
 					/>
 					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>

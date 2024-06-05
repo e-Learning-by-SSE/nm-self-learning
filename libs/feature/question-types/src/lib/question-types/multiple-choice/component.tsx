@@ -40,8 +40,7 @@ export default function MultipleChoiceAnswer({
 								...old,
 								value: {
 									...old.value,
-									[option.answerId]:
-										old.value[option.answerId] === true ? false : true
+									[option.answerId]: old.value[option.answerId] !== true
 								}
 							}));
 						}}

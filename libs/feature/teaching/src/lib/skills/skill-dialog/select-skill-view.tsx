@@ -57,7 +57,7 @@ export function SelectSkillsView({
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	repoId: string;
 }) {
-	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
+	const [selectSkillModal, setSelectSkillModal] = useState(false);
 	const { t } = useTranslation();
 
 	return (
