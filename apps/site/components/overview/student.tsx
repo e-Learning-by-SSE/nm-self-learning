@@ -30,7 +30,7 @@ type Props = {
 
 export function getStudent(username: string) {
 	return database.student.findUniqueOrThrow({
-		where: { username },
+		where: { userId },
 		select: {
 			_count: {
 				select: {

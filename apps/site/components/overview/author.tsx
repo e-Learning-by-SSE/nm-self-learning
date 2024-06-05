@@ -31,7 +31,7 @@ const EditAuthorDialog = dynamic(
 
 export function getAuthor(username: string) {
 	return database.author.findUniqueOrThrow({
-		where: { username },
+		where: { userId },
 		select: {
 			slug: true,
 			displayName: true,
