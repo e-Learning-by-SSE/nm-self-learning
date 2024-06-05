@@ -106,7 +106,7 @@ function LessonEditorDialog({
 					Im separaten Editor öffnen
 				</a>
 			</div>
-			<LessonEditor onSubmit={onClose} initialLesson={initialLesson} />
+			<LessonEditor onSubmit={onClose} initialLesson={initialLesson} isFullScreen={false} />
 		</Dialog>
 	);
 }

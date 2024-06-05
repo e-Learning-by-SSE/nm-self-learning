@@ -138,14 +138,10 @@ export default function ArrangeForm({ index }: { index: number }) {
 												title={t("add_element")}
 											/>
 
-											<button
-												type="button"
-												className="rounded-full p-2 hover:bg-red-50"
-												title={t("delete_element")}
-												onClick={() => onDeleteContainer(containerId)}
-											>
-												<XMarkIcon className="h-5 text-red-500" />
-											</button>
+											<DeleteButton
+												onDelete={() => onDeleteContainer(containerId)}
+												title={"übersetzen"}
+											/>
 										</div>
 									</span>
 

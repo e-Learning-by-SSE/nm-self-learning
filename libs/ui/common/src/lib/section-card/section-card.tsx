@@ -41,7 +41,7 @@ export function SectionHeader({
 			<div className="flex items-center gap-4">
 				<h2 className="flex-grow text-4xl">{title}</h2>
 
-				{button && <div className="mr-4">{button}</div>}
+				{button && <div className="mr-0.5">{button}</div>}
 			</div>
 			{subtitle && <p className="mt-2 text-light">{subtitle}</p>}{" "}
 		</div>
