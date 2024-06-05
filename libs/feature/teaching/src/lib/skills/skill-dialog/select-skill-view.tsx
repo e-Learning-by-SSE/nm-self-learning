@@ -3,6 +3,8 @@ import { SelectSkillDialog } from "./select-skill-dialog";
 import { useState } from "react";
 import { SkillFormModel } from "@self-learning/types";
 import { LabeledField } from "@self-learning/ui/forms";
+import { useTranslation } from "react-i18next";
+import { t } from "i18next";
 
 export function LabeledFieldSelectSkillsView({
 	skills,
@@ -18,6 +20,7 @@ export function LabeledFieldSelectSkillsView({
 	lable: string;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
+	const { t } = useTranslation();
 
 	return (
 		<LabeledField
@@ -25,9 +28,9 @@ export function LabeledFieldSelectSkillsView({
 			button={
 				<AddButton
 					onAdd={() => setSelectSkillModal(true)}
-					title={"Hinzufügen"}
-					data-testid="BenoetigteSkills-add"
-					label={<span>Hinzufügen</span>}
+					title={t("add")}
+					data-testid={t("needed_skills")}
+					label={<span>{t("add")}</span>}
 				/>
 			}
 		>
@@ -55,14 +58,15 @@ export function SelectSkillsView({
 	repoId: string;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
+	const { t } = useTranslation();
 
 	return (
 		<>
 			<AddButton
 				onAdd={() => setSelectSkillModal(true)}
-				title={"Hinzufügen"}
-				data-testid="BenoetigteSkills-add"
-				label={<span>Hinzufügen</span>}
+				title={t("add")}
+				data-testid={t("needed_skills")}
+				label={<span>{t("add")}</span>}
 			/>
 			<SkillManagementComponent
 				skills={skills}
@@ -91,10 +95,11 @@ function SkillManagementComponent({
 	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 	selectSkillModal: boolean;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className="flex flex-col">
 			{skills.length === 0 && (
-				<div className="mt-3 text-sm text-gray-500">Keine Skills vorhanden</div>
+				<div className="mt-3 text-sm text-gray-500">{t("no_skills_available")}</div>
 			)}
 			<div className="mt-3 max-h-40 overflow-auto">
 				{skills.map((skill, index) => (
@@ -128,6 +133,7 @@ function InlineRemoveButton({
 	onRemove: () => void;
 	onClick: () => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className="inline-block">
 			<div className="flex items-center rounded-lg border border-light-border bg-white text-sm">
@@ -139,7 +145,7 @@ function InlineRemoveButton({
 					{label}
 				</button>
 				<div className={"px-2 py-2"}>
-					<TransparentDeleteButton onDelete={onRemove} title={"Skill entfernen"} />
+					<TransparentDeleteButton onDelete={onRemove} title={t("delete_skill")} />
 				</div>
 			</div>
 		</div>

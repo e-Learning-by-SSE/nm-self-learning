@@ -15,9 +15,11 @@ import { lessonSchema } from "@self-learning/types";
 import { OpenAsJsonButton } from "../../json-editor-dialog";
 import { LabeledCheckbox } from "../../../../../../ui/forms/src/lib/labeled-checkbox";
 import { DefaultButton } from "@self-learning/ui/common";
+import { useTranslation } from "react-i18next";
 
 export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	const form = useFormContext<LessonFormModel>();
+	const { t } = useTranslation();
 	const {
 		register,
 		control,
@@ -29,15 +31,12 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	return (
 		<Form.SidebarSection>
 			<div>
-				<span className="font-semibold text-secondary">Lerneinheit editieren</span>
+				<span className="font-semibold text-secondary">{t("edit_lesson")}</span>
 
 				<h1 className="text-2xl">{lesson?.title}</h1>
 			</div>
 
-			<Form.SidebarSectionTitle
-				title="Daten"
-				subtitle="Informationen über diese Lerneinheit"
-			/>
+			<Form.SidebarSectionTitle title={t("data")} subtitle={t("lesson_info")} />
 			<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
 
 			<div className="flex flex-col gap-4">

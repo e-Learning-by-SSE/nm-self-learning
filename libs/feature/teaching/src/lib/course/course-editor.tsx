@@ -89,6 +89,7 @@ export function CourseEditor({
 
 function CourseDescriptionForm() {
 	const { control } = useFormContext<{ description: CourseFormModel["description"] }>();
+	const { t } = useTranslation();
 
 	return (
 		<section>

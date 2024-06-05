@@ -96,6 +96,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 		setContentTabIndex(content.length); // Select the newly created tab
 	}
 
+	//Übersetzen
 	const removeContent = useCallback(
 		(index: number) => {
 			const confirmed = window.confirm("Inhalt entfernen ?");

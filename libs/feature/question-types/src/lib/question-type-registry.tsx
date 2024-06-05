@@ -42,7 +42,9 @@ import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
 import { LessonLayoutProps } from "@self-learning/lesson";
+import { useTranslation } from "react-i18next";
 
+//Übersetzen
 const ProgrammingAnswer = dynamic(() => import("./question-types/programming/component"), {
 	ssr: false
 });

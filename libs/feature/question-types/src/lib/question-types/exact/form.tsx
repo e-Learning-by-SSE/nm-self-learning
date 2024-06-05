@@ -4,6 +4,7 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ExactQuestion } from "./schema";
 import { AddButton, DeleteButton } from "@self-learning/ui/common";
+import { useTranslation } from "react-i18next";
 
 export default function ExactForm({
 	index
@@ -11,6 +12,7 @@ export default function ExactForm({
 	question: { type: ExactQuestion["type"] };
 	index: number;
 }) {
+	const { t } = useTranslation();
 	const { control, register } = useFormContext<QuestionTypeForm<ExactQuestion>>();
 	const {
 		fields: acceptedAnswers,
@@ -36,13 +38,15 @@ export default function ExactForm({
 		<section className="flex flex-col gap-8">
 			<div className="flex flex-col gap-2">
 				<div className="flex items-center gap-4">
-					<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
+					<h5 className="text-2xl font-semibold tracking-tight">
+						{t("accepted_answers")}
+					</h5>
 
 					<AddButton
 						onAdd={addAnswer}
-						title={"Antwort hinzufügen"}
+						title={t("add_answer")}
 						additionalClassNames={" h-fit w-fit items-center"}
-						label={<span>Antwort hinzufügen</span>}
+						label={<span>{t("add_answer")}</span>}
 					/>
 				</div>
 
@@ -54,7 +58,7 @@ export default function ExactForm({
 						{...register(`quiz.questions.${index}.caseSensitive`)}
 					/>
 					<label className="select-none text-sm" htmlFor="caseSensitive">
-						Groß-/Kleinschreibung berücksichtigen
+						{t("care_for_caps")}
 					</label>
 				</span>
 			</div>
@@ -69,13 +73,13 @@ export default function ExactForm({
 								{...register(
 									`quiz.questions.${index}.acceptedAnswers.${acceptedAnswerIndex}.value`
 								)}
-								placeholder="Antwort"
+								placeholder={t("answer")}
 								autoComplete="off"
 							/>
 
 							<DeleteButton
 								onDelete={() => removeAnswer(acceptedAnswerIndex)}
-								title={"Antwort entfernen"}
+								title={t("delete_answer")}
 							/>
 						</div>
 					))}

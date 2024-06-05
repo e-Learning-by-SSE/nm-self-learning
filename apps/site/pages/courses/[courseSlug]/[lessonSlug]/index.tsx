@@ -36,16 +36,8 @@ export type LessonProps = LessonLayoutProps & {
 	};
 };
 
-export function Trickster() {
-	const { t } = useTranslation();
-	return {
-		t
-	};
-}
-
 export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
 	const props = await getStaticPropsForLayout(params);
-	const { t } = Trickster();
 
 	if ("notFound" in props) return { notFound: true };
 
@@ -68,15 +60,16 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	const { content: article } = findContentType("article", lesson.content as LessonContent);
 
 	if (article) {
-		mdArticle = await compileMarkdown(article.value.content ?? t("no_content"));
+		mdArticle = await compileMarkdown(article.value.content ?? "übersetzen");
 
 		// Remove article content to avoid duplication
 		article.value.content = "(replaced)";
 	}
 
 	// TODO change to check if the lesson is self requlated
+	//übersetzen
 	if (lesson.lessonType === LessonType.SELF_REGULATED) {
-		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? t("no_content"));
+		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Übersetzen");
 	}
 
 	return {
@@ -123,7 +116,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 }
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
-	const { t } = Trickster();
+	const { t } = useTranslation();
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);

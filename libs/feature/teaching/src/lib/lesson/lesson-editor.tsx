@@ -8,7 +8,9 @@ import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
+import { useTranslation } from "react-i18next";
 
+//Übersetzen
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
 	createLessonAsync: (lesson: LessonFormModel) => Promise<{

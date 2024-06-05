@@ -23,8 +23,10 @@ import {
 	TransparentDeleteButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
+import { useTranslation } from "react-i18next";
 
 export default function ArrangeForm({ index }: { index: number }) {
+	const { t } = useTranslation();
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
 	const items = watch(`quiz.questions.${index}.items`);
 	const [addCategoryDialog, setAddCategoryDialog] = useState(false);
@@ -52,7 +54,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 		if (!title || title.length === 0) return;
 
 		if (items[title]) {
-			showToast({ type: "warning", title: "Kategorie exisitert bereits", subtitle: title });
+			showToast({ type: "warning", title: t("category_existing"), subtitle: title });
 			return;
 		}
 
@@ -82,7 +84,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 	};
 
 	function onDeleteItem(containerId: string, itemId: string): void {
-		if (window.confirm("Element wirklich entfernen?")) {
+		if (window.confirm(t("delete_element_ask"))) {
 			setValue(`quiz.questions.${index}.items`, {
 				...items,
 				[containerId]: items[containerId].filter(i => i.id !== itemId)
@@ -91,11 +93,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 	}
 
 	function onDeleteContainer(containerId: string): void {
-		if (
-			window.confirm(
-				"Kategorie wirklich entfernen? Alle enthaltenen Elemente werden ebenfalls gelöscht."
-			)
-		) {
+		if (window.confirm(t("confirm_delete"))) {
 			const value = { ...items };
 			delete value[containerId];
 			setValue(`quiz.questions.${index}.items`, value);
@@ -110,13 +108,13 @@ export default function ArrangeForm({ index }: { index: number }) {
 			{/*	<PlusIcon className="icon h-5" />*/}
 			{/*</button>*/}
 			<SectionHeader
-				title={"Kategorien"}
+				title={t("catergory")}
 				button={
 					<AddButton
-						title={"Kategorie Hinzufügen"}
+						title={t("add_category")}
 						onAdd={() => setAddCategoryDialog(true)}
 						additionalClassNames={"w-fit"}
-						label={<span>Kategorie hinzufügen</span>}
+						label={<span>{t("add_category")}</span>}
 					/>
 				}
 			/>
@@ -137,13 +135,13 @@ export default function ArrangeForm({ index }: { index: number }) {
 										<div className="flex gap-2">
 											<AddButton
 												onAdd={() => setEditItemDialog({ containerId })}
-												title={"Element hinzufügen"}
+												title={t("add_element")}
 											/>
 
 											<button
 												type="button"
 												className="rounded-full p-2 hover:bg-red-50"
-												title="Kategorie entfernen"
+												title={t("delete_element")}
 												onClick={() => onDeleteContainer(containerId)}
 											>
 												<XMarkIcon className="h-5 text-red-500" />
@@ -194,6 +192,7 @@ function DraggableContent({
 	containerId: string;
 	onDeleteItem: (containerId: string, itemId: string) => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<Draggable key={item.id} draggableId={item.id} index={index}>
 			{provided => (
@@ -211,12 +210,12 @@ function DraggableContent({
 									item
 								})
 							}
-							title={"Editieren"}
+							title={t("edit")}
 						/>
 
 						<TransparentDeleteButton
 							onDelete={() => onDeleteItem(containerId, item.id)}
-							title="Löschen"
+							title={t("delete")}
 						/>
 					</div>
 
@@ -230,9 +229,10 @@ function DraggableContent({
 
 function AddCategoryDialog({ onClose }: { onClose: OnDialogCloseFn<string> }) {
 	const [title, setTitle] = useState("");
+	const { t } = useTranslation();
 
 	return (
-		<Dialog title="Kategorie hinzufügen" onClose={onClose}>
+		<Dialog title={t("add_category")} onClose={onClose}>
 			<LabeledField label="Titel">
 				<input
 					type="text"
@@ -255,7 +255,7 @@ function AddCategoryDialog({ onClose }: { onClose: OnDialogCloseFn<string> }) {
 					onClick={() => onClose(title.trim())}
 					disabled={title.length === 0}
 				>
-					Hinzufügen
+					{t("add")}
 				</button>
 			</DialogActions>
 		</Dialog>
@@ -270,9 +270,10 @@ function EditItemDialog({
 	onClose: OnDialogCloseFn<ArrangeItem>;
 }) {
 	const [content, setContent] = useState(item?.content ?? "");
+	const { t } = useTranslation();
 
 	return (
-		<Dialog className="w-[80vw]" title={item ? "Bearbeiten" : "Hinzufügen"} onClose={onClose}>
+		<Dialog className="w-[80vw]" title={item ? t("edit") : t("add")} onClose={onClose}>
 			<MarkdownField content={content} setValue={setContent as any} />
 
 			<DialogActions onClose={onClose}>
@@ -286,7 +287,7 @@ function EditItemDialog({
 						})
 					}
 				>
-					{item ? "Übernehmen" : "Hinzufügen"}
+					{item ? t("adopt") : t("add")}
 				</button>
 			</DialogActions>
 		</Dialog>
