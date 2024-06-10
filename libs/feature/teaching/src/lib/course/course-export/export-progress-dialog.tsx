@@ -1,4 +1,4 @@
-import { DialogWithReactNodeTitle, UploadProgressBar } from "@self-learning/ui/common";
+import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { CourseFormModel } from "../course-form-model";
 import { IncompleteNanoModuleExport, exportCourseArchive } from "@self-learning/lia-exporter";
@@ -100,7 +100,7 @@ export function ExportCourseProgressDialog({
 				// Prevent closing the dialog by clicking on the backdrop
 				onClose={() => {}}
 			>
-				{progress < 100 && <UploadProgressBar progress={progress} />}
+				{progress < 100 && <ProgressBar completionPercentage={progress} />}
 				<div className="overlay">{message}</div>
 				<div className="grid justify-items-end">
 					<button
