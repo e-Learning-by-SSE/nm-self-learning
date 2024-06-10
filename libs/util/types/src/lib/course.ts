@@ -23,6 +23,7 @@ export type CourseEnrollment = {
 	completedAt: Date | null;
 	status: EnrollmentStatus;
 	course: {
+		imgUrl: string | null;
 		title: string;
 		slug: string;
 	};

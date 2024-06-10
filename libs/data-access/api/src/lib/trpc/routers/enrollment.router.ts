@@ -43,7 +43,8 @@ export async function getEnrollmentsOfUser(username: string): Promise<CourseEnro
 			course: {
 				select: {
 					title: true,
-					slug: true
+					slug: true,
+					imgUrl: true
 				}
 			}
 		}

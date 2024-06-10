@@ -36,10 +36,10 @@ export const courseRouter = t.router({
 						: undefined,
 				specializations: input.specializationId
 					? {
-							some: {
-								specializationId: input.specializationId
-							}
-					  }
+						some: {
+							specializationId: input.specializationId
+						}
+					}
 					: undefined
 			};
 
@@ -178,98 +178,6 @@ export const courseRouter = t.router({
 
 			console.log("[courseRouter.edit]: Course updated by", ctx.user.name, updated);
 			return updated;
-		}),
-
-	getCoursesWithCompletions: authProcedure
-		.input(z.object({ username: z.string() }))
-		.query(async ({ input }) => {
-			const { username } = input;
-
-			const enrollments = await database.enrollment.findMany({
-				where: {
-					username: username
-				},
-				include: {
-					course: {
-						include: {
-							completions: {
-								where: { username: username }
-							}
-						}
-					}
-				}
-			});
-
-			const coursesWithCompletions: CourseCompletion[] = [];
-
-			for (const enrollment of enrollments) {
-				const course = enrollment.course;
-				const totalLessons = await database.lesson.count({
-					where: {
-						completions: {
-							some: {
-								courseId: course.courseId
-							}
-						}
-					}
-				});
-				const completedLessons = await database.lesson.count({
-					where: {
-						completions: {
-							some: {
-								courseId: course.courseId,
-								username: username
-							}
-						}
-					}
-				});
-				const completionPercentage = (completedLessons / totalLessons) * 100;
-
-				const completedLessonsMap: CompletedLessonsMap = {};
-				const lessons = await database.lesson.findMany({
-					where: {
-						completions: {
-							some: {
-								courseId: course.courseId,
-								username: username
-							}
-						}
-					},
-					select: {
-						lessonId: true,
-						slug: true,
-						title: true,
-						completions: {
-							where: { username: username },
-							select: { createdAt: true }
-						}
-					}
-				});
-
-				for (const lesson of lessons) {
-					const lessonId = lesson.lessonId;
-					completedLessonsMap[lessonId] = {
-						slug: lesson.slug,
-						title: lesson.title,
-						dateIso:
-							lesson.completions.length > 0
-								? lesson.completions[0].createdAt.toISOString()
-								: ""
-					};
-				}
-
-				coursesWithCompletions.push({
-					courseCompletion: {
-						lessonCount: totalLessons,
-						completedLessonCount: completedLessons,
-						completionPercentage
-					},
-					chapterCompletion: [], // Assuming chapter completion can be computed similarly
-					completedLessons: completedLessonsMap
-				});
-			}
-
-			return coursesWithCompletions;
 		})
 });
 
