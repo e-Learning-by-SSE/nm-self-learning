@@ -1,4 +1,4 @@
-import type { EnrollmentStatus } from "@prisma/client";
+import type { Author, EnrollmentStatus } from "@prisma/client";
 import { z } from "zod";
 import { ResolvedValue } from "./common";
 import { getAuthor } from "../../../../../apps/site/components/overview/author";
@@ -21,14 +21,29 @@ export type CourseCompletion = {
 	completedLessons: CompletedLessonsMap;
 };
 
+export type EnrollmentWithDetails = {
+	completedAt: string | null;
+	status: EnrollmentStatus;
+	lastProgressUpdate: string;
+	course: {
+		title: string;
+		slug: string;
+		imgUrl: string | null;
+		authors: { displayName: string }[];
+	};
+	completions: {
+		courseCompletion: {
+			completionPercentage: number;
+		};
+	};
+};
+
 export type CourseEnrollment = {
 	completedAt: Date | null;
 	status: EnrollmentStatus;
 	course: {
 		title: string;
 		slug: string;
-		imgUrl: string | null;
-		authors: ResolvedValue<typeof getAuthor>[];
 	};
 };
 

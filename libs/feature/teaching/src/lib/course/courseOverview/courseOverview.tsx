@@ -1,48 +1,30 @@
 import React from "react";
-import { CourseEnrollment } from "@self-learning/types";
 import { ProgressBar } from "@self-learning/ui/common";
 import { PlayIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
+import { EnrollmentWithDetails } from "@self-learning/types";
 
-export function CourseOverview({
-	enrollments
-}: {
-	enrollments:
-		| (CourseEnrollment & {
-				completions: { courseCompletion: { completionPercentage: number } };
-		  })[]
-		| null;
-}) {
+export function CourseOverview({ enrollments }: { enrollments: EnrollmentWithDetails[] | null }) {
 	if (!enrollments) {
 		return <p>No enrollments found</p>;
 	}
 
-	console.log(enrollments);
-
 	const inProgress = enrollments.filter(
 		enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
 	);
-	const completet = enrollments.filter(
+	const complete = enrollments.filter(
 		enrollment => enrollment.completions.courseCompletion.completionPercentage >= 100
 	);
 
 	return (
 		<div>
 			<EnrollmentOverview enrollments={inProgress} />
-			<EnrollmentOverview enrollments={completet} />
+			<EnrollmentOverview enrollments={complete} />
 		</div>
 	);
 }
 
-function EnrollmentOverview({
-	enrollments
-}: {
-	enrollments:
-		| (CourseEnrollment & {
-				completions: { courseCompletion: { completionPercentage: number } };
-		  })[]
-		| null;
-}) {
+function EnrollmentOverview({ enrollments }: { enrollments: EnrollmentWithDetails[] | null }) {
 	if (!enrollments) {
 		return <p>No enrollments found</p>;
 	}

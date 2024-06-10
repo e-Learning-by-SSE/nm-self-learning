@@ -1,20 +1,10 @@
-import React from "react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import { CourseCompletion, CourseEnrollment } from "@self-learning/types";
-import { getEnrollmentsOfUser } from "../../../../libs/data-access/api/src/lib/trpc/routers/enrollment.router";
-import { getCourseCompletionOfStudent } from "@self-learning/completion";
 import { CourseOverview } from "../../../../libs/feature/teaching/src/lib/course/courseOverview/courseOverview";
+import { EnrollmentWithDetails } from "@self-learning/types";
+import { getEnrollmentsOfUserWithCourseDetails } from "../../../../libs/data-access/api/src/lib/trpc/routers/enrollment.router";
 
-export default function Start({
-	enrollments
-}: {
-	enrollments:
-		| (CourseEnrollment & {
-				completions: { courseCompletion: { completionPercentage: number } };
-		  })[]
-		| null;
-}) {
+export default function Start({ enrollments }: { enrollments: EnrollmentWithDetails[] | null }) {
 	return <CourseOverview enrollments={enrollments} />;
 }
 
@@ -33,24 +23,11 @@ export const getServerSideProps: GetServerSideProps = async context => {
 	const username = session.user.name;
 
 	try {
-		const enrollments = await getEnrollmentsOfUser(username);
-		const enrollmentsWithCompletions = await Promise.all(
-			enrollments.map(async enrollment => {
-				const completions = await getCourseCompletionOfStudent(
-					enrollment.course.slug,
-					username
-				);
-
-				return {
-					...enrollment,
-					completions
-				};
-			})
-		);
+		const enrollments = await getEnrollmentsOfUserWithCourseDetails(username);
 
 		return {
 			props: {
-				enrollments: enrollmentsWithCompletions
+				enrollments
 			}
 		};
 	} catch (error) {
