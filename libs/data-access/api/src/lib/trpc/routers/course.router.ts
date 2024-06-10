@@ -6,13 +6,7 @@ import {
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
-import {
-	CompletedLessonsMap,
-	CourseCompletion,
-	CourseContent,
-	extractLessonIds,
-	LessonMeta
-} from "@self-learning/types";
+import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -36,10 +30,10 @@ export const courseRouter = t.router({
 						: undefined,
 				specializations: input.specializationId
 					? {
-						some: {
-							specializationId: input.specializationId
-						}
-					}
+							some: {
+								specializationId: input.specializationId
+							}
+					  }
 					: undefined
 			};
 

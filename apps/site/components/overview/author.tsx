@@ -143,11 +143,11 @@ export default function AuthorOverview({ author }: Props) {
 								title="Bearbeiten"
 								onClick={() => setOpenEditDialog(true)}
 							>
-								<CogIcon className="h-5 justify-self-start text-gray-400"/>
+								<CogIcon className="h-5 justify-self-start text-gray-400" />
 							</button>
 
 							{openEditDialog && (
-								<EditAuthorDialog author={author} onClose={onEditDialogClose}/>
+								<EditAuthorDialog author={author} onClose={onEditDialogClose} />
 							)}
 						</div>
 					</div>
@@ -155,7 +155,7 @@ export default function AuthorOverview({ author }: Props) {
 
 				{author.subjectAdmin.length > 0 && (
 					<>
-						<Divider/>
+						<Divider />
 
 						<section>
 							<SectionHeader
@@ -181,7 +181,7 @@ export default function AuthorOverview({ author }: Props) {
 
 				{author.specializationAdmin.length > 0 && (
 					<>
-						<Divider/>
+						<Divider />
 						<section>
 							<SectionHeader
 								title="Spezialisierungen"
@@ -207,7 +207,7 @@ export default function AuthorOverview({ author }: Props) {
 					</>
 				)}
 
-				<Divider/>
+				<Divider />
 
 				<section>
 					<div className="flex justify-between gap-4">
@@ -217,7 +217,7 @@ export default function AuthorOverview({ author }: Props) {
 						/>
 
 						<Link href="/teaching/courses/create" className="btn-primary h-fit w-fit">
-							<PlusIcon className="icon"/>
+							<PlusIcon className="icon" />
 							<span>Neuen Kurs erstellen</span>
 						</Link>
 					</div>
@@ -226,7 +226,7 @@ export default function AuthorOverview({ author }: Props) {
 						{author.courses.length === 0 ? (
 							<div className="mx-auto flex items-center gap-8">
 								<div className="h-32 w-32">
-									<VoidSvg/>
+									<VoidSvg />
 								</div>
 								<p className="text-light">Du hast noch keine Kurse erstellt.</p>
 							</div>
@@ -260,7 +260,7 @@ export default function AuthorOverview({ author }: Props) {
 											href={`/teaching/courses/edit/${course.courseId}`}
 											className="btn-stroked h-fit w-fit"
 										>
-											<PencilIcon className="icon"/>
+											<PencilIcon className="icon" />
 											<span>Bearbeiten</span>
 										</Link>
 									</div>
@@ -270,7 +270,7 @@ export default function AuthorOverview({ author }: Props) {
 					</ul>
 				</section>
 
-				<Divider/>
+				<Divider />
 
 				<section>
 					<div className="flex justify-between gap-4">
@@ -280,15 +280,15 @@ export default function AuthorOverview({ author }: Props) {
 						/>
 
 						<Link href="/teaching/lessons/create" className="btn-primary h-fit w-fit">
-							<PlusIcon className="icon"/>
+							<PlusIcon className="icon" />
 							<span>Neuen Lerneinheit erstellen</span>
 						</Link>
 					</div>
 
-					{authorName && <Lessons authorName={authorName}/>}
+					{authorName && <Lessons authorName={authorName} />}
 				</section>
 
-				<Divider/>
+				<Divider />
 				<section>
 					<div className="flex justify-between gap-4">
 						<SectionHeader
@@ -296,11 +296,11 @@ export default function AuthorOverview({ author }: Props) {
 							subtitle="Besitzer der folgenden Repositories"
 						/>
 						<Link href="skills/repository/create" className="btn-primary h-fit w-fit">
-							<PlusIcon className="icon h-5"/>
+							<PlusIcon className="icon h-5" />
 							<span>Skillkarten anlegen</span>
 						</Link>
 					</div>
-					<SkillRepositoryOverview/>
+					<SkillRepositoryOverview />
 				</section>
 			</div>
 		</CenteredSection>
@@ -326,7 +326,7 @@ function Lessons({ authorName }: { authorName: string }) {
 	return (
 		<div className="flex min-h-[200px] flex-col">
 			{!lessons ? (
-				<LoadingBox/>
+				<LoadingBox />
 			) : (
 				<>
 					<SearchField
@@ -373,7 +373,7 @@ function Lessons({ authorName }: { authorName: string }) {
 						))}
 					</Table>
 
-					<Paginator pagination={lessons} url={`${router.route}?title=${title}`}/>
+					<Paginator pagination={lessons} url={`${router.route}?title=${title}`} />
 				</>
 			)}
 		</div>

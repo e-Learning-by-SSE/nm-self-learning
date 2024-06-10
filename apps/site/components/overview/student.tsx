@@ -139,7 +139,7 @@ export default function StudentOverview({ student }: Props) {
 						title="Bearbeiten"
 						onClick={() => setEditStudentDialog(true)}
 					>
-						<CogIcon className="h-5 text-gray-400"/>
+						<CogIcon className="h-5 text-gray-400" />
 					</button>
 
 					{editStudentDialog && (
@@ -150,18 +150,18 @@ export default function StudentOverview({ student }: Props) {
 					)}
 				</section>
 
-				<Divider/>
+				<Divider />
 
 				<section>
-					<SectionHeader title="Kürzlich abgeschlossene Lerneinheiten"/>
-					<Activity completedLessons={student.completedLessons}/>
+					<SectionHeader title="Kürzlich abgeschlossene Lerneinheiten" />
+					<Activity completedLessons={student.completedLessons} />
 				</section>
 
-				<Divider/>
+				<Divider />
 
 				<section>
-					<SectionHeader title="Meine Kurse"/>
-					<Enrollments enrollments={student.enrollments}/>
+					<SectionHeader title="Meine Kurse" />
+					<Enrollments enrollments={student.enrollments} />
 				</section>
 			</div>
 		</CenteredSection>
@@ -248,7 +248,7 @@ function Enrollments({ enrollments }: { enrollments: Student["enrollments"] }) {
 										<></>
 									)
 								}
-								footer={<ProgressFooter progress={enrollment.progress}/>}
+								footer={<ProgressFooter progress={enrollment.progress} />}
 							/>
 						</Link>
 					))}
