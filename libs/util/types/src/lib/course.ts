@@ -1,5 +1,7 @@
 import type { EnrollmentStatus } from "@prisma/client";
 import { z } from "zod";
+import { ResolvedValue } from "./common";
+import { getAuthor } from "../../../../../apps/site/components/overview/author";
 
 export type Completion = {
 	/** Number of lessons in this chapter (includes nested chapters). */
@@ -23,9 +25,10 @@ export type CourseEnrollment = {
 	completedAt: Date | null;
 	status: EnrollmentStatus;
 	course: {
-		imgUrl: string | null;
 		title: string;
 		slug: string;
+		imgUrl: string | null;
+		authors: ResolvedValue<typeof getAuthor>[];
 	};
 };
 

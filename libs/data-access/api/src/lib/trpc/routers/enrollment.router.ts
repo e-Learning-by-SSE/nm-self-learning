@@ -44,7 +44,8 @@ export async function getEnrollmentsOfUser(username: string): Promise<CourseEnro
 				select: {
 					title: true,
 					slug: true,
-					imgUrl: true
+					imgUrl: true,
+					authors: true
 				}
 			}
 		}

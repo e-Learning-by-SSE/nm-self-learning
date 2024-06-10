@@ -1,4 +1,4 @@
-import { DialogWithReactNodeTitle, ProgressBar, UploadProgressBar } from "@self-learning/ui/common";
+import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 
 /**
@@ -18,7 +18,7 @@ export function UploadProgressDialog({ name, progress }: { name: string; progres
 				// This makes the dialog modal (i.e. the user cannot click outside of the dialog to close it)
 				onClose={() => {}}
 			>
-				<UploadProgressBar progress={progress} />
+				<ProgressBar completionPercentage={progress} />
 			</DialogWithReactNodeTitle>
 		</CenteredContainer>
 	);
