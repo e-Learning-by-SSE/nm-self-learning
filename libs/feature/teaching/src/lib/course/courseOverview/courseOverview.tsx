@@ -25,6 +25,7 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentWithDet
 					selectedTab={selectedTab}
 					setSelectedTab={setSelectedTab}
 					enrollments={inProgress}
+					notFoundMessage={"Derzeit ist kein Kurs angefangen."}
 				/>
 			)}
 			{selectedTab === 1 && (
@@ -32,19 +33,26 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentWithDet
 					selectedTab={selectedTab}
 					setSelectedTab={setSelectedTab}
 					enrollments={complete}
+					notFoundMessage={"Derzeit ist kein Kurs abgeschlossen."}
 				/>
 			)}
 		</div>
 	);
 }
 
-function EnrollmentOverview({ enrollments }: { enrollments: EnrollmentWithDetails[] | null }) {
+function EnrollmentOverview({
+	enrollments,
+	notFoundMessage
+}: {
+	enrollments: EnrollmentWithDetails[] | null;
+	notFoundMessage: string;
+}) {
 	if (!enrollments) {
-		return <p>No enrollments found</p>;
+		return <p>Keine Kurse Gefunden.</p>;
 	}
 
 	return (
-		<div className={"pt-4"}>
+		<div>
 			{enrollments.length > 0 ? (
 				<ul className="space-y-4">
 					{enrollments.map((enrollment, index) => (
@@ -102,7 +110,7 @@ function EnrollmentOverview({ enrollments }: { enrollments: EnrollmentWithDetail
 					))}
 				</ul>
 			) : (
-				<p>No enrollments found</p>
+				<p className="text-center">{notFoundMessage}</p>
 			)}
 		</div>
 	);
@@ -111,11 +119,13 @@ function EnrollmentOverview({ enrollments }: { enrollments: EnrollmentWithDetail
 function TabContent({
 	selectedTab,
 	setSelectedTab,
-	enrollments
+	enrollments,
+	notFoundMessage
 }: {
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
 	enrollments: EnrollmentWithDetails[] | null;
+	notFoundMessage: string;
 }) {
 	return (
 		<div className="xl:grid-cols grid h-full gap-8">
@@ -125,7 +135,10 @@ function TabContent({
 					<Tab>Abgeschlossen</Tab>
 				</Tabs>
 				<div className={"pt-4"}>
-					<EnrollmentOverview enrollments={enrollments} />
+					<EnrollmentOverview
+						enrollments={enrollments}
+						notFoundMessage={notFoundMessage}
+					/>
 				</div>
 			</div>
 		</div>

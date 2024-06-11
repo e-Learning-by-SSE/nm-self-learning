@@ -1,8 +1,8 @@
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import { CourseOverview } from "../../../../libs/feature/teaching/src/lib/course/courseOverview/courseOverview";
 import { EnrollmentWithDetails } from "@self-learning/types";
-import { getEnrollmentsOfUserWithCourseDetails } from "../../../../libs/data-access/api/src/lib/trpc/routers/enrollment.router";
+import { CourseOverview } from "@self-learning/teaching";
+import { getEnrollmentsOfUserWithCourseDetails } from "@self-learning/api";
 
 export default function Start({ enrollments }: { enrollments: EnrollmentWithDetails[] | null }) {
 	return <CourseOverview enrollments={enrollments} />;
