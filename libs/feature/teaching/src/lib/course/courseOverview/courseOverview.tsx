@@ -1,10 +1,12 @@
-import React from "react";
-import { ProgressBar } from "@self-learning/ui/common";
-import { PlayIcon } from "@heroicons/react/24/solid";
+import React, { useState } from "react";
+import { ProgressBar, Tab, Tabs } from "@self-learning/ui/common";
 import Link from "next/link";
 import { EnrollmentWithDetails } from "@self-learning/types";
+import { PlayIcon } from "@heroicons/react/24/solid";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentWithDetails[] | null }) {
+	const [selectedTab, setSelectedTab] = useState(0);
+
 	if (!enrollments) {
 		return <p>No enrollments found</p>;
 	}
@@ -17,9 +19,21 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentWithDet
 	);
 
 	return (
-		<div>
-			<EnrollmentOverview enrollments={inProgress} />
-			<EnrollmentOverview enrollments={complete} />
+		<div className="py-2 px-4">
+			{selectedTab === 0 && (
+				<TabContent
+					selectedTab={selectedTab}
+					setSelectedTab={setSelectedTab}
+					enrollments={inProgress}
+				/>
+			)}
+			{selectedTab === 1 && (
+				<TabContent
+					selectedTab={selectedTab}
+					setSelectedTab={setSelectedTab}
+					enrollments={complete}
+				/>
+			)}
 		</div>
 	);
 }
@@ -30,7 +44,7 @@ function EnrollmentOverview({ enrollments }: { enrollments: EnrollmentWithDetail
 	}
 
 	return (
-		<div className="p-10">
+		<div className={"pt-4"}>
 			{enrollments.length > 0 ? (
 				<ul className="space-y-4">
 					{enrollments.map((enrollment, index) => (
@@ -90,6 +104,30 @@ function EnrollmentOverview({ enrollments }: { enrollments: EnrollmentWithDetail
 			) : (
 				<p>No enrollments found</p>
 			)}
+		</div>
+	);
+}
+
+function TabContent({
+	selectedTab,
+	setSelectedTab,
+	enrollments
+}: {
+	selectedTab: number;
+	setSelectedTab: (v: number) => void;
+	enrollments: EnrollmentWithDetails[] | null;
+}) {
+	return (
+		<div className="xl:grid-cols grid h-full gap-8">
+			<div>
+				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+					<Tab>In Bearbeitung</Tab>
+					<Tab>Abgeschlossen</Tab>
+				</Tabs>
+				<div className={"pt-4"}>
+					<EnrollmentOverview enrollments={enrollments} />
+				</div>
+			</div>
 		</div>
 	);
 }
