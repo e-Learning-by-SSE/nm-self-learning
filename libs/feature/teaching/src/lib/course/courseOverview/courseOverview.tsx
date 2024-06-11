@@ -86,7 +86,6 @@ function EnrollmentOverview({
 													<Link
 														href={`/courses/${enrollment.course.slug}/`}
 														className="btn-primary flex items-center justify-between rounded-md bg-green-500 px-4 py-2 text-white hover:bg-emerald-600"
-														data-testid="quizLink"
 														style={{ maxWidth: "40%" }}
 													>
 														<span>Fortfahren</span>
