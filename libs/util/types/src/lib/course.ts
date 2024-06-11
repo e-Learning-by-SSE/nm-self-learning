@@ -1,7 +1,5 @@
-import type { Author, EnrollmentStatus } from "@prisma/client";
+import type { EnrollmentStatus } from "@prisma/client";
 import { z } from "zod";
-import { ResolvedValue } from "./common";
-import { getAuthor } from "../../../../../apps/site/components/overview/author";
 
 export type Completion = {
 	/** Number of lessons in this chapter (includes nested chapters). */
