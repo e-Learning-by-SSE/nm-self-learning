@@ -1,17 +1,64 @@
-import { useRouter } from "next/router";
+import { LessonLayout } from "libs/feature/lesson/src/lib/lesson-layout";
+import Lesson from "apps/site/pages/courses/[courseSlug]/[lessonSlug]";
+import { LessonType } from "@prisma/client";
+import { useEffect, useState } from "react";
+import { GetServerSideProps } from "next";
+import { trpc } from "@self-learning/api-client";
+
+function getEmptyMarkdown() {
+	return {
+		article: null,
+		description: null,
+		preQuestion: null,
+		subtitle: null
+	};
+}
+
+function getPlaceholderCourse() {
+	return {
+		courseId: "empty-course",
+		title: "Platzhalter-Kurs",
+		slug: "empty-course"
+	};
+}
+
+function getLesson(data: string | string[] | undefined) {
+	let lessonTitle = "Platzhalter-Lerneinheit";
+	if (data) {
+		if (typeof data === "string") {
+			lessonTitle = data;
+		} else {
+			lessonTitle = data[0];
+		}
+	}
+
+	return {
+		lessonType: LessonType.TRADITIONAL,
+		quiz: null,
+		meta: { hasQuiz: false, mediaTypes: {} },
+		content: [],
+		title: lessonTitle,
+		slug: "",
+		description: "",
+		lessonId: "",
+		subtitle: "",
+		authors: [],
+		selfRegulatedQuestion: "",
+		license: { name: "", url: "", logoUrl: "", licenseText: "" }
+	};
+}
 
 export default function LessonPreview() {
-	const router = useRouter();
-	const { data, origin } = router.query;
+	const [lesson, setLesson] = useState(getLesson(undefined));
 
-	let lesson = null;
-	try {
-		lesson = data ? JSON.parse(data as string) : null;
-	} catch (error) {
-		console.error("parsing error", error);
-	}
-	console.log("lesson: ", lesson);
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const storedData = localStorage.getItem("lessonInEditing");
+			storedData ? setLesson(JSON.parse(storedData)) : setLesson(getLesson(undefined));
+		}
+	}, []);
 
+	/* TODO "back" btn
 	function redirectBackToEditor() {
 		let originPathname = "/";
 
@@ -25,15 +72,18 @@ export default function LessonPreview() {
 
 		router.push(originPathname);
 	}
+	*/
 
-	return (
-		<>
-			<div>
-				<button className="btn-primary" onClick={redirectBackToEditor}>
-					Zurück zum Editor
-				</button>
-				<p>Lesson title: {lesson?.title}</p>
-			</div>
-		</>
-	);
+	return <Lesson lesson={lesson} course={getPlaceholderCourse()} markdown={getEmptyMarkdown()} />;
 }
+
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+	return {
+		props: {
+			...{ lesson: getLesson(query.data), course: getPlaceholderCourse() },
+			markdown: getEmptyMarkdown()
+		}
+	};
+};
+
+LessonPreview.getLayout = LessonLayout;

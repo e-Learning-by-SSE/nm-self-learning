@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { lessonSchema } from "@self-learning/types";
+import { lessonSchema, createLessonMeta } from "@self-learning/types";
 import { SectionHeader, showToast } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
@@ -45,13 +45,15 @@ export function LessonEditor({
 	}, [lesson]);
 
 	function redirectToPreview() {
-		console.log("redirect");
 		const currentLessonValues = form.getValues();
-		const serializedData = JSON.stringify(currentLessonValues);
+		const lessonMeta = createLessonMeta(currentLessonValues);
+		const currentLessonValuesWithMeta = { ...currentLessonValues, meta: lessonMeta };
+		const serializedData = JSON.stringify(currentLessonValuesWithMeta);
+		localStorage.setItem("lessonInEditing", serializedData);
 
 		router.push({
 			pathname: "/teaching/lessons/preview",
-			query: { data: serializedData, origin: window.location.pathname }
+			query: { data: currentLessonValues.title }
 		});
 	}
 
