@@ -19,7 +19,7 @@ export type CourseCompletion = {
 	completedLessons: CompletedLessonsMap;
 };
 
-export type EnrollmentWithDetails = {
+export type EnrollmentDetails = {
 	completedAt: string | null;
 	status: EnrollmentStatus;
 	lastProgressUpdate: string;

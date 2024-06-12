@@ -1,13 +1,13 @@
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import { EnrollmentWithDetails } from "@self-learning/types";
-import { getEnrollmentsOfUserWithCourseDetails } from "@self-learning/api";
+import { EnrollmentDetails } from "@self-learning/types";
+import { getEnrollmentDetails } from "@self-learning/api";
 import React, { useState } from "react";
 import Link from "next/link";
 import { PlayIcon } from "@heroicons/react/24/solid";
 import { ProgressBar, Tab, Tabs } from "@self-learning/ui/common";
 
-export function CourseOverview({ enrollments }: { enrollments: EnrollmentWithDetails[] | null }) {
+export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
 
 	if (!enrollments) {
@@ -47,7 +47,7 @@ function EnrollmentOverview({
 	enrollments,
 	notFoundMessage
 }: {
-	enrollments: EnrollmentWithDetails[] | null;
+	enrollments: EnrollmentDetails[] | null;
 	notFoundMessage: string;
 }) {
 	if (!enrollments) {
@@ -126,7 +126,7 @@ function TabContent({
 }: {
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
-	enrollments: EnrollmentWithDetails[] | null;
+	enrollments: EnrollmentDetails[] | null;
 	notFoundMessage: string;
 }) {
 	return (
@@ -162,7 +162,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
 	const username = session.user.name;
 
 	try {
-		const enrollments = await getEnrollmentsOfUserWithCourseDetails(username);
+		const enrollments = await getEnrollmentDetails(username);
 
 		return {
 			props: {
