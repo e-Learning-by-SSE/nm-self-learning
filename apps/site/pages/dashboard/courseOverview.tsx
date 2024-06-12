@@ -132,7 +132,7 @@ function TabContent({
 	return (
 		<div className="xl:grid-cols grid h-full gap-8">
 			<div>
-				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+				<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
 					<Tab>In Bearbeitung</Tab>
 					<Tab>Abgeschlossen</Tab>
 				</Tabs>
