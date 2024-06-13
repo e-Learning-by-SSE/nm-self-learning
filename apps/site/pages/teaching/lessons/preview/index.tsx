@@ -44,7 +44,7 @@ function getLesson(data: string | string[] | undefined) {
 		subtitle: "",
 		authors: [],
 		selfRegulatedQuestion: "",
-		license: { name: "", url: "", logoUrl: "", licenseText: "" }
+		license: { name: "", url: "", logoUrl: "", licenseText: "", oerCompatible: true }
 	};
 }
 
