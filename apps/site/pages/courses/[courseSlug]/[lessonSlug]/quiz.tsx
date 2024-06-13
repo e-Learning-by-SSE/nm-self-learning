@@ -140,7 +140,6 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						question={currentQuestion}
 						markdown={markdown}
 						lesson={lesson}
-						isLastQuestion={quiz.questions.length === Number(index) + 1}
 					/>
 					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>

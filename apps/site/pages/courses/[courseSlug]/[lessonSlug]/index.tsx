@@ -235,6 +235,7 @@ function DefaultLicenseLabel() {
 		name: "Keine Lizenz verfügbar",
 		logoUrl: "",
 		url: "",
+		oerCompatible: false,
 		licenseText:
 			"*Für diese Lektion ist keine Lizenz verfügbar. Bei Nachfragen, wenden Sie sich an den Autor*"
 	};
