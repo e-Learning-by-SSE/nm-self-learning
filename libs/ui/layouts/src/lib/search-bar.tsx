@@ -1,11 +1,11 @@
 import { FaceFrownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Transition } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import { SearchSection } from "./search-section";
 
-function SearchInput({
+export function SearchInput({
 	searchQuery,
 	setSearchQuery
 }: {
@@ -131,6 +131,25 @@ export function SearchBar() {
 						</div>
 					)}
 				</Transition>
+			</div>
+		</div>
+	);
+}
+
+export function UniversalSearchBar({
+	searchQuery,
+	setSearchQuery
+}: {
+	searchQuery: string;
+	setSearchQuery: (value: string) => void;
+}) {
+	return (
+		<div className="hidden flex-1 items-center justify-center px-2 lg:ml-6 lg:flex lg:justify-end">
+			<div className="relative w-full max-w-lg lg:max-w-xs">
+				<label htmlFor="search" className="sr-only">
+					Suche
+				</label>
+				<SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 			</div>
 		</div>
 	);

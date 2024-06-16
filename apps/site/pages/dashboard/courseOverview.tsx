@@ -2,24 +2,40 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { EnrollmentDetails } from "@self-learning/types";
 import { getEnrollmentDetails } from "@self-learning/api";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { PlayIcon } from "@heroicons/react/24/solid";
 import { ProgressBar, Tab, Tabs } from "@self-learning/ui/common";
+import { UniversalSearchBar } from "../../../../libs/ui/layouts/src/lib/search-bar";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
 
+	const [searchQuery, setSearchQuery] = useState("");
+	const [filteredEnrollments, setFilteredEnrollments] = useState<EnrollmentDetails[]>([]);
+	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
+	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
+
+	useEffect(() => {
+		if (enrollments) {
+			const filtered = filterEnrollments(enrollments, searchQuery);
+			setFilteredEnrollments(filtered);
+
+			const inProgress = filtered.filter(
+				enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
+			);
+			const complete = filtered.filter(
+				enrollment => enrollment.completions.courseCompletion.completionPercentage >= 100
+			);
+
+			setInProgress(inProgress);
+			setComplete(complete);
+		}
+	}, [searchQuery, enrollments]);
+
 	if (!enrollments) {
 		return <p>No enrollments found</p>;
 	}
-
-	const inProgress = enrollments.filter(
-		enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
-	);
-	const complete = enrollments.filter(
-		enrollment => enrollment.completions.courseCompletion.completionPercentage >= 100
-	);
 
 	return (
 		<div className="py-2 px-4">
@@ -39,6 +55,8 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 					notFoundMessage={"Derzeit ist kein Kurs abgeschlossen."}
 				/>
 			)}
+
+			<UniversalSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 		</div>
 	);
 }
@@ -150,6 +168,26 @@ function TabContent({
 		</div>
 	);
 }
+
+const filterEnrollments = (
+	enrollments: EnrollmentDetails[],
+	searchQuery: string
+): EnrollmentDetails[] => {
+	if (!searchQuery) return enrollments;
+
+	const lowercasedQuery = searchQuery.toLowerCase();
+
+	return enrollments.filter(enrollment => {
+		const { title, slug, authors } = enrollment.course;
+		const authorNames = authors.map(author => author.displayName.toLowerCase());
+
+		return (
+			title.toLowerCase().includes(lowercasedQuery) ||
+			slug.toLowerCase().includes(lowercasedQuery) ||
+			authorNames.some(name => name.includes(lowercasedQuery))
+		);
+	});
+};
 
 export const getServerSideProps: GetServerSideProps = async context => {
 	const session = await getSession(context);
