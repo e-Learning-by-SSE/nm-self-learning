@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { PlayIcon } from "@heroicons/react/24/solid";
 import { ProgressBar, Tab, Tabs } from "@self-learning/ui/common";
-import { UniversalSearchBar } from "../../../../libs/ui/layouts/src/lib/search-bar";
+import { UniversalSearchBar } from "@self-learning/ui/layouts";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
