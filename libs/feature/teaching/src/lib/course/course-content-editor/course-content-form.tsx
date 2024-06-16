@@ -58,11 +58,8 @@ export function CourseContentForm() {
 		}
 		setOpenNewChapterDialog(false);
 	}
-	//Übersetzen
 	function onRemoveChapter(index: number) {
-		const confirmed = window.confirm(
-			`Kapitel "${content[index].title}" wirklich entfernen? Hinweis: Enthaltene Lerneinheiten werden nicht gelöscht.`
-		);
+		const confirmed = window.confirm(t("confirm_chapter_deletion", content[index].title));
 
 		if (confirmed) {
 			removeChapter(index);
@@ -73,9 +70,7 @@ export function CourseContentForm() {
 		chapterIndex,
 		lessonId: string
 	) => {
-		const confirmed = window.confirm(
-			"Lerneinheit wirklich entfernen? Hinweis: Die Lerneinheit wird nur aus dem Kapitel entfernt und nicht gelöscht."
-		);
+		const confirmed = window.confirm(t("confirm_lesson_deletion"));
 
 		if (confirmed) {
 			removeLesson(chapterIndex, lessonId);

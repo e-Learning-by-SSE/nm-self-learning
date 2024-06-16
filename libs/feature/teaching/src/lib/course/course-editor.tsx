@@ -12,7 +12,6 @@ import { CourseInfoForm } from "./course-info-form";
 import { useState } from "react";
 import { ExportCourseDialog } from "./course-export/course-export-dialog";
 import { useTranslation } from "react-i18next";
-import { t } from "i18next";
 
 export function CourseEditor({
 	course,

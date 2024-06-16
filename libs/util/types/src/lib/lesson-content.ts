@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 
 export const videoSchema = z.object({
 	type: z.literal("video"),
@@ -47,6 +48,7 @@ export const lessonContentSchema = z.discriminatedUnion("type", [
 	iframeSchema
 ]);
 
+//Übersetzen
 export function getContentTypeDisplayName(contentType: LessonContentMediaType): string {
 	const names: { [contentType in LessonContentMediaType]: string } = {
 		video: "Video",

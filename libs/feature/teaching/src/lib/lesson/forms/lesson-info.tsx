@@ -40,12 +40,12 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 			<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
 
 			<div className="flex flex-col gap-4">
-				<LabeledField label="Titel" error={errors.title?.message}>
+				<LabeledField label={t("title")} error={errors.title?.message}>
 					<input
 						{...register("title")}
 						type="text"
 						className="textfield"
-						placeholder="Die Neue Lerneinheit"
+						placeholder={t("new_lesson")}
 						onBlur={slugifyIfEmpty}
 					/>
 				</LabeledField>
@@ -55,23 +55,28 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 						input={
 							<input
 								className="textfield"
-								placeholder="die-neue-lerneinheit"
+								placeholder={t("new_lesson_slug")}
 								type={"text"}
 								{...register("slug")}
 							/>
 						}
 						button={
 							<DefaultButton onClick={slugifyField} title={"Generiere Slug"}>
-								<span className={"text-gray-600"}>Generieren</span>
+								<span className={"text-gray-600"}>{t("generate")}</span>
 							</DefaultButton>
 						}
 					/>
 					<FieldHint>
-						Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig sein.
+						{t("lesson_slug_URL_text_1")} <strong>slug</strong>{" "}
+						{t("lesson_slug_URL_text_2")}
 					</FieldHint>
 				</LabeledField>
 
-				<LabeledField label="Untertitel" error={errors.subtitle?.message} optional={true}>
+				<LabeledField
+					label={t("subtitle")}
+					error={errors.subtitle?.message}
+					optional={true}
+				>
 					<Controller
 						control={control}
 						name="subtitle"
@@ -80,14 +85,14 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 								content={field.value as string}
 								setValue={field.onChange}
 								inline={true}
-								placeholder="1-2 Sätze über diese Lerneinheit."
+								placeholder={t("lesson_description_sentences")}
 							/>
 						)}
 					></Controller>
 				</LabeledField>
 
 				<LabeledField
-					label={"Beschreibung"}
+					label={t("description")}
 					error={errors.description?.message}
 					optional={true}
 				>
@@ -99,14 +104,14 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 								content={field.value as string}
 								setValue={field.onChange}
 								inline={true}
-								placeholder={"1-2 Sätze welche diese Lerneinheit beschreibt."}
+								placeholder={t("lesson_description_sentences")}
 							></MarkdownField>
 						)}
 					></Controller>
 				</LabeledField>
 
 				<LabeledField
-					label={"Selbstreguliertes Lernen"}
+					label={t("self_regulated_learning")}
 					error={errors.selfRegulatedQuestion?.message}
 					optional={false}
 				>
@@ -115,7 +120,7 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 						name={"lessonType"}
 						render={({ field }) => (
 							<LabeledCheckbox
-								label={"Aktivierungsfrage und sequenzielles Prüfen:"}
+								label={t("active_question_and_sequential_check")}
 								checked={field.value === "SELF_REGULATED"}
 								onChange={e => {
 									field.onChange(
@@ -128,8 +133,8 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 				</LabeledField>
 
 				<AuthorsForm
-					subtitle="Autoren dieser Lerneinheit."
-					emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
+					subtitle={t("authors_from_lesson")}
+					emptyString={t("lesson_missing_authors")}
 				/>
 
 				<LicenseForm />

@@ -16,6 +16,7 @@ import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
 import { LessonFormModel } from "@self-learning/teaching";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
+import { useTranslation } from "react-i18next";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -47,7 +48,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 		name: "content",
 		control
 	});
-
+	const { t } = useTranslation();
 	const [contentTabIndex, setContentTabIndex] = useState<number | undefined>(
 		content.length > 0 ? 0 : undefined
 	);
@@ -96,10 +97,9 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 		setContentTabIndex(content.length); // Select the newly created tab
 	}
 
-	//Übersetzen
 	const removeContent = useCallback(
 		(index: number) => {
-			const confirmed = window.confirm("Inhalt entfernen ?");
+			const confirmed = window.confirm(t("confirm_remove_content"));
 
 			if (confirmed) {
 				remove(index);
@@ -122,6 +122,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 const contentTypes: LessonContentMediaType[] = ["video", "article", "pdf", "iframe"];
 
 export function LessonContentEditor() {
+	const { t } = useTranslation();
 	const { control } = useFormContext<{ content: LessonContent }>();
 	const {
 		content,
@@ -138,12 +139,7 @@ export function LessonContentEditor() {
 			<div className="mb-8">
 				<LessonDescriptionForm />
 			</div>
-			<SectionHeader
-				title="Inhalt"
-				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
-					angelegt werden, kann der Student selber entscheiden, welches Medium angezeigt
-					werden soll."
-			/>
+			<SectionHeader title={t("content")} subtitle={t("content_subtitle_text")} />
 
 			<div className="flex gap-4 text-sm">
 				{contentTypes.map(contentType => (
@@ -181,7 +177,7 @@ export function LessonContentEditor() {
 				<RenderContentType index={contentTabIndex} content={content[contentTabIndex]} />
 			) : (
 				<div className="rounded-lg border border-light-border bg-white py-80 text-center text-light">
-					Diese Lerneinheit hat noch keinen Inhalt.
+					{t("lesson_missing_content")}
 				</div>
 			)}
 		</section>
@@ -197,6 +193,7 @@ function AddButton({
 	addContent: (t: LessonContentMediaType) => void;
 	disabled: boolean;
 }) {
+	const { t } = useTranslation();
 	return (
 		<button
 			type="button"
@@ -205,7 +202,9 @@ function AddButton({
 			disabled={disabled}
 		>
 			<PlusIcon className="icon h-5" />
-			<span>{getContentTypeDisplayName(contentType)} hinzufügen</span>
+			<span>
+				{t("add_lesson_content", { content: getContentTypeDisplayName(contentType) })}
+			</span>
 		</button>
 	);
 }
@@ -236,13 +235,11 @@ function RenderContentType({ index, content }: { index: number; content: LessonC
 
 function LessonDescriptionForm() {
 	const { control } = useFormContext<LessonFormModel>();
+	const { t } = useTranslation();
 
 	return (
 		<section>
-			<SectionHeader
-				title="Beschreibung"
-				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
-			/>
+			<SectionHeader title={t("description")} subtitle={t("lesson_description_subtitle")} />
 			<Form.MarkdownWithPreviewContainer>
 				<Controller
 					control={control}

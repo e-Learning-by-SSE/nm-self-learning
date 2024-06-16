@@ -182,6 +182,7 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
  * Object containing the display name of each question type.
  * This name is shown to users to indicate the question type.
  */
+//übersetzen
 export const QUESTION_TYPE_DISPLAY_NAMES: {
 	[QType in QuestionType["type"]]: string;
 } = {

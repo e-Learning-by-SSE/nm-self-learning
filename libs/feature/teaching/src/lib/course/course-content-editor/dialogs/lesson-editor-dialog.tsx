@@ -8,6 +8,7 @@ import {
 } from "@self-learning/teaching";
 import { trpc } from "@self-learning/api-client";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export function CreateLessonDialog({
 	setCreateLessonDialogOpen
@@ -85,10 +86,11 @@ function LessonEditorDialog({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
+	const { t } = useTranslation();
 	return (
 		<Dialog
-			title={!initialLesson ? "Neue Lernheit erstellen" : "Lerneinheit anpassen"}
-			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
+			title={!initialLesson ? t("create_new_lesson") : t("edit_lesson")}
+			onClose={() => window.confirm(t("confirm_no_changes")) && onClose(undefined)}
 			style={{ height: "80vh", width: "80vw" }}
 		>
 			<div className="absolute right-8 top-8 flex gap-4">
@@ -101,9 +103,9 @@ function LessonEditorDialog({
 							? `/teaching/lessons/edit/${initialLesson?.lessonId}`
 							: `/teaching/lessons/create`
 					}
-					title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
+					title={t("open_formular_in_new_tab")}
 				>
-					Im separaten Editor öffnen
+					{t("open_separated_editor")}
 				</a>
 			</div>
 			<LessonEditor onSubmit={onClose} initialLesson={initialLesson} isFullScreen={false} />
@@ -118,22 +120,21 @@ function NoPermissionToEditComponent({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
+	const { t } = useTranslation();
 	if (!initialLesson) return <></>;
 
 	return (
-		<Dialog title="Nicht erlaubt" onClose={onClose}>
+		<Dialog title={t("not_allowed")} onClose={onClose}>
 			<div className="flex flex-col gap-8">
-				<p className="text-light">
-					Du hast keine Berechtigung, diese Lerneinheit zu bearbeiten:
-				</p>
+				<p className="text-light">{t("edit_lesson_denied")}</p>
 
 				<div className="flex flex-col">
-					<span className="font-semibold">Titel:</span>
+					<span className="font-semibold">{t("title")}:</span>
 					<span className="font-semibold text-secondary">{initialLesson.title}</span>
 				</div>
 
 				<div>
-					<span className="font-semibold">Autoren:</span>
+					<span className="font-semibold">{"authors"}:</span>
 
 					<ul className="flex flex-col">
 						{initialLesson.authors.map(a => (

@@ -17,8 +17,10 @@ import {
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
+import { t } from "i18next";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 type QuizForm = { quiz: Quiz };
 
@@ -51,7 +53,7 @@ export function useQuizEditorForm() {
 	}
 
 	function removeQuestion(index: number) {
-		const confirm = window.confirm("Aufgabe entfernen?");
+		const confirm = window.confirm(t("remove_task"));
 
 		if (confirm) {
 			remove(index);
@@ -77,6 +79,7 @@ export function useQuizEditorForm() {
 }
 
 export function QuizEditor() {
+	const { t } = useTranslation();
 	const {
 		control,
 		quiz,
@@ -91,15 +94,13 @@ export function QuizEditor() {
 	return (
 		<section className="flex flex-col gap-8">
 			<SectionHeader
-				title="Aufgaben"
-				subtitle="Aufgaben, die Studierenden nach Bearbeitung der Lerneinheit angezeigt werden sollen.
-					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lerneinheit
-					erfolgreich abzuschließen."
+				title={t("tasks")}
+				subtitle={t("tasks_subtitle")}
 				button={
-					<AddDropDownButton label={"Aufgabe Hinzufügen"}>
+					<AddDropDownButton label={t("add_task")}>
 						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 							<AddButton
-								title={"Aufgabe Hinzufügen"}
+								title={t("add_task")}
 								onAdd={() => appendQuestion(type as QuestionType["type"])}
 								size={"w-full"}
 								key={type as QuestionType["type"]}
@@ -131,7 +132,9 @@ export function QuizEditor() {
 										<span className="text-xs font-normal">
 											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
 										</span>
-										<span>Aufgabe {index + 1}</span>
+										<span>
+											{t("task")} {index + 1}
+										</span>
 									</div>
 								</RemovableTab>
 							</Reorder.Item>
@@ -156,6 +159,7 @@ export function QuizEditor() {
 
 function QuizConfigForm() {
 	const { control, register, setValue } = useQuizEditorForm();
+	const { t } = useTranslation();
 
 	const config = useWatch({
 		control,
@@ -194,15 +198,15 @@ function QuizConfigForm() {
 						onChange={e => (e.target.checked ? resetToDefault() : initCustomConfig())}
 					/>
 					<label htmlFor="customConfig" className="select-none text-sm">
-						Standard-Konfiguration verwenden
+						{t("default_configuration")}
 					</label>
 				</span>
 
 				{!config ? (
 					<ul className="list-inside list-disc text-sm text-light">
-						<li>Alle Fragen müssen korrekt beantwortet werden</li>
-						<li>Lösungen werden nach falscher Beantwortung nicht angezeigt</li>
-						<li>Unbegrenzte Verwendung von Hinweisen</li>
+						<li>{t("all_questions_rights")}</li>
+						<li>{t("solution_not_shown")}</li>
+						<li>{t("unlimited_hints")}</li>
 					</ul>
 				) : (
 					<div className="flex flex-col gap-4 text-sm">
@@ -214,7 +218,7 @@ function QuizConfigForm() {
 								className="checkbox"
 							></input>
 							<label htmlFor="showSolutions" className="select-none">
-								Lösungen anzeigen
+								{t("show_solution")}
 							</label>
 						</span>
 
@@ -226,11 +230,11 @@ function QuizConfigForm() {
 								className="checkbox"
 							></input>
 							<label htmlFor="hintsEnabled" className="select-none">
-								Hinweise aktivieren
+								{t("hints_enabled")}
 							</label>
 						</span>
 
-						<LabeledField label="Max. erlaubte Hinweise">
+						<LabeledField label={t("max_hints")}>
 							<input
 								{...register("quiz.config.hints.maxHints")}
 								type={"number"}
@@ -239,7 +243,7 @@ function QuizConfigForm() {
 							/>
 						</LabeledField>
 
-						<LabeledField label="Max. erlaubte falsche Antworten">
+						<LabeledField label={t("max_wrong_answers")}>
 							<input
 								{...register("quiz.config.maxErrors")}
 								type={"number"}
@@ -265,12 +269,15 @@ function BaseQuestionForm({
 	control: Control<QuizForm, unknown>;
 	children: React.ReactNode;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className="">
 			<span className="font-semibold text-secondary">
 				{QUESTION_TYPE_DISPLAY_NAMES[currentQuestion.type]}
 			</span>
-			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">Aufgabe {index + 1}</h5>
+			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">
+				{t("task")} {index + 1}
+			</h5>
 
 			<div className="flex flex-col gap-12">
 				<Controller
@@ -314,7 +321,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 	}
 
 	function removeHint(hintIndex: number) {
-		const confirmed = window.confirm("Hinweis entfernen?");
+		const confirmed = window.confirm(t("remove_hint"));
 		if (confirmed) {
 			remove(hintIndex);
 		}
@@ -323,19 +330,16 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 	return (
 		<section className="flex flex-col gap-4">
 			<div className="flex items-center gap-4">
-				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
+				<h5 className="text-2xl font-semibold tracking-tight">{t("hints")}</h5>
 
 				<AddButton
 					onAdd={addHint}
-					title={"Hinweis Hinzufügen"}
-					label={<span>Hinweis hinzufügen</span>}
+					title={t("add_hint")}
+					label={<span>{t("add_hint")}</span>}
 				/>
 			</div>
 
-			<p className="text-sm text-light">
-				Studierende können die angegebenen Hinweise nutzen, wenn sie Probleme beim
-				Beantworten einer Frage haben.
-			</p>
+			<p className="text-sm text-light">{t("hint_text")}</p>
 
 			{hints.map((hint, hintIndex) => (
 				<div
@@ -345,7 +349,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 					<DeleteButton
 						onDelete={() => removeHint(hintIndex)}
 						additionalClassNames={"self-end"}
-						title={"Hinweis Entfernen"}
+						title={t("remove_hint")}
 					/>
 
 					<Controller

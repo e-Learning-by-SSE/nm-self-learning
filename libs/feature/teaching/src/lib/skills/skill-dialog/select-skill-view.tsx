@@ -4,7 +4,6 @@ import { useState } from "react";
 import { SkillFormModel } from "@self-learning/types";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useTranslation } from "react-i18next";
-import { t } from "i18next";
 
 export function LabeledFieldSelectSkillsView({
 	skills,

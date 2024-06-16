@@ -9,6 +9,7 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { useTranslation } from "react-i18next";
+import { t } from "i18next";
 
 //Übersetzen
 export async function onLessonCreatorSubmit(
@@ -73,6 +74,7 @@ export function LessonEditor({
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
 }) {
+	const { t } = useTranslation();
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
 	const form = useForm<LessonFormModel>({
@@ -117,7 +119,7 @@ export function LessonEditor({
 					<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
 						<DialogActions onClose={onSubmit}>
 							<button type="submit" className="btn-primary pointer-events-auto">
-								Speichern
+								{t("save")}
 							</button>
 						</DialogActions>
 					</div>
@@ -136,14 +138,15 @@ function FirstTabContent({
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
 			<LessonInfoEditor lesson={initialLesson} />
 
 			<div>
 				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-					<Tab>Lerninhalt</Tab>
-					<Tab>Lernkontrolle</Tab>
+					<Tab>{t("lesson_content")}</Tab>
+					<Tab>{t("lesson_check")}</Tab>
 				</Tabs>
 				<LessonContentEditor />
 			</div>
@@ -166,8 +169,8 @@ function SecondTabContent({
 
 			<div>
 				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-					<Tab>Lerninhalt</Tab>
-					<Tab>Lernkontrolle</Tab>
+					<Tab>{t("lesson_content")}</Tab>
+					<Tab>{t("lesson_check")}</Tab>
 				</Tabs>
 				<QuizEditor />
 			</div>
