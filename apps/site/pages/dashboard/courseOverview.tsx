@@ -63,40 +63,44 @@ function EnrollmentOverview({
 							key={index}
 							className="flex flex-col space-y-2 rounded-lg bg-white p-4 shadow-md md:flex-row md:space-y-0 md:space-x-4"
 						>
-							{enrollment.course.imgUrl && (
+							{enrollment.course.imgUrl ? (
 								<img
 									src={enrollment.course.imgUrl}
 									alt={enrollment.course.title}
-									className="h-24 w-full rounded-t-lg object-cover md:h-auto md:w-24"
+									className="h-auto w-full rounded-lg object-cover md:h-24 md:w-24"
 								/>
+							) : (
+								<div className="flex h-auto w-full items-center justify-center rounded-lg bg-white md:h-24 md:w-24">
+									<span className="text-gray-500">Kein Bild Verfügbar</span>
+								</div>
 							)}
 							<div className="flex flex-grow flex-col space-y-1">
 								<table className="w-full">
 									<tbody>
-									<tr>
-										<td className="w-3/5">
-											<div>
-												<h2 className="text-lg font-bold text-gray-900">
-													{enrollment.course.title}
-												</h2>
-												<span className="text-sm text-gray-600">
+										<tr>
+											<td className="w-3/5">
+												<div>
+													<h2 className="text-lg font-bold text-gray-900">
+														{enrollment.course.title}
+													</h2>
+													<span className="text-sm text-gray-600">
 														{enrollment.course.authors[0].displayName}
 													</span>
-											</div>
-										</td>
-										<td className="w-2/5">
-											<div className="flex justify-end">
-												<Link
-													href={`/courses/${enrollment.course.slug}/`}
-													className="btn-primary flex items-center justify-between rounded-md bg-green-500 px-4 py-2 text-white hover:bg-emerald-600"
-													style={{ maxWidth: "40%" }}
-												>
-													<span>Fortfahren</span>
-													<PlayIcon className="h-6 w-6"/>
-												</Link>
-											</div>
-										</td>
-									</tr>
+												</div>
+											</td>
+											<td className="w-2/5">
+												<div className="flex justify-end">
+													<Link
+														href={`/courses/${enrollment.course.slug}/`}
+														className="btn-primary flex items-center justify-center rounded-md bg-green-500 px-2 py-2 text-white hover:bg-emerald-600"
+														style={{ maxWidth: "100%" }}
+													>
+														<span className="truncate">Fortfahren</span>
+														<PlayIcon className="ml-2 h-6 w-6" />
+													</Link>
+												</div>
+											</td>
+										</tr>
 									</tbody>
 								</table>
 								<div className="mt-2">
