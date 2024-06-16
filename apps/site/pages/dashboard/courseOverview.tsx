@@ -12,14 +12,32 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 	const [selectedTab, setSelectedTab] = useState(0);
 
 	const [searchQuery, setSearchQuery] = useState("");
-	const [filteredEnrollments, setFilteredEnrollments] = useState<EnrollmentDetails[]>([]);
 	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
 	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
 
 	useEffect(() => {
+		const filterEnrollments = (
+			enrollments: EnrollmentDetails[],
+			searchQuery: string
+		): EnrollmentDetails[] => {
+			if (!searchQuery) return enrollments;
+
+			const lowercasedQuery = searchQuery.toLowerCase();
+
+			return enrollments.filter(enrollment => {
+				const { title, slug, authors } = enrollment.course;
+				const authorNames = authors.map(author => author.displayName.toLowerCase());
+
+				return (
+					title.toLowerCase().includes(lowercasedQuery) ||
+					slug.toLowerCase().includes(lowercasedQuery) ||
+					authorNames.some(name => name.includes(lowercasedQuery))
+				);
+			});
+		};
+
 		if (enrollments) {
 			const filtered = filterEnrollments(enrollments, searchQuery);
-			setFilteredEnrollments(filtered);
 
 			const inProgress = filtered.filter(
 				enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
@@ -38,25 +56,29 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 	}
 
 	return (
-		<div className="py-2 px-4">
-			{selectedTab === 0 && (
-				<TabContent
-					selectedTab={selectedTab}
-					setSelectedTab={setSelectedTab}
-					enrollments={inProgress}
-					notFoundMessage={"Derzeit ist kein Kurs angefangen."}
-				/>
-			)}
-			{selectedTab === 1 && (
-				<TabContent
-					selectedTab={selectedTab}
-					setSelectedTab={setSelectedTab}
-					enrollments={complete}
-					notFoundMessage={"Derzeit ist kein Kurs abgeschlossen."}
-				/>
-			)}
-
-			<UniversalSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+		<div className="h-screen overflow-hidden">
+			<div className="h-full py-2 px-4">
+				{selectedTab === 0 && (
+					<TabContent
+						selectedTab={selectedTab}
+						setSelectedTab={setSelectedTab}
+						enrollments={inProgress}
+						notFoundMessage={"Derzeit ist kein Kurs angefangen."}
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+					/>
+				)}
+				{selectedTab === 1 && (
+					<TabContent
+						selectedTab={selectedTab}
+						setSelectedTab={setSelectedTab}
+						enrollments={complete}
+						notFoundMessage={"Derzeit ist kein Kurs abgeschlossen."}
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+					/>
+				)}
+			</div>
 		</div>
 	);
 }
@@ -134,7 +156,9 @@ function EnrollmentOverview({
 					))}
 				</ul>
 			) : (
-				<p className="text-center">{notFoundMessage}</p>
+				<div className={"py-2 px-4"}>
+					<p className="text-center">{notFoundMessage}</p>
+				</div>
 			)}
 		</div>
 	);
@@ -144,50 +168,40 @@ function TabContent({
 	selectedTab,
 	setSelectedTab,
 	enrollments,
-	notFoundMessage
+	notFoundMessage,
+	searchQuery,
+	setSearchQuery
 }: {
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
 	enrollments: EnrollmentDetails[] | null;
 	notFoundMessage: string;
+	searchQuery: string;
+	setSearchQuery: (v: string) => void;
 }) {
 	return (
-		<div className="xl:grid-cols grid h-full gap-8">
-			<div>
-				<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
-					<Tab>In Bearbeitung</Tab>
-					<Tab>Abgeschlossen</Tab>
-				</Tabs>
-				<div className={"pt-4"}>
-					<EnrollmentOverview
-						enrollments={enrollments}
-						notFoundMessage={notFoundMessage}
+		<div className="flex h-full flex-col">
+			<div className="flex items-center justify-between border-b border-gray-300 pb-2">
+				<div className="flex">
+					<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
+						<Tab>In Bearbeitung</Tab>
+						<Tab>Abgeschlossen</Tab>
+					</Tabs>
+				</div>
+				<div className="end flex">
+					<UniversalSearchBar
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+						placeHolder={"Kurse durchsuchen..."}
 					/>
 				</div>
+			</div>
+			<div className="flex-1 overflow-y-auto pt-4">
+				<EnrollmentOverview enrollments={enrollments} notFoundMessage={notFoundMessage} />
 			</div>
 		</div>
 	);
 }
-
-const filterEnrollments = (
-	enrollments: EnrollmentDetails[],
-	searchQuery: string
-): EnrollmentDetails[] => {
-	if (!searchQuery) return enrollments;
-
-	const lowercasedQuery = searchQuery.toLowerCase();
-
-	return enrollments.filter(enrollment => {
-		const { title, slug, authors } = enrollment.course;
-		const authorNames = authors.map(author => author.displayName.toLowerCase());
-
-		return (
-			title.toLowerCase().includes(lowercasedQuery) ||
-			slug.toLowerCase().includes(lowercasedQuery) ||
-			authorNames.some(name => name.includes(lowercasedQuery))
-		);
-	});
-};
 
 export const getServerSideProps: GetServerSideProps = async context => {
 	const session = await getSession(context);
