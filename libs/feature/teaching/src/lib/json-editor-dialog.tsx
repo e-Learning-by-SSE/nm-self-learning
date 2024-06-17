@@ -12,12 +12,22 @@ export function JsonEditorDialog<T>({
 	onClose: (value: T | undefined) => void;
 }) {
 	const { getValues } = useFormContext();
-	const [value, setValue] = useState(JSON.stringify(getValues()));
+	const [jsonValue, setJsonValue] = useState(JSON.stringify(getValues()));
+	const [initialJsonValue] = useState(JSON.stringify(getValues()));
 	const [error, setError] = useState<string | null>(null);
+
+	function handleOutsideClick(): (value: boolean) => void {
+		return () => {
+			if (initialJsonValue !== JSON.stringify(JSON.parse(jsonValue))) {
+				window.confirm("Änderungen verwerfen?");
+			}
+			onClose(undefined);
+		};
+	}
 
 	function closeWithReturn() {
 		try {
-			const parsedJson = JSON.parse(value);
+			const parsedJson = JSON.parse(jsonValue);
 
 			if (validationSchema) {
 				const validation = validationSchema.safeParse(parsedJson);
@@ -35,11 +45,7 @@ export function JsonEditorDialog<T>({
 	}
 
 	return (
-		<Dialog
-			open={true}
-			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
-			className="relative z-50"
-		>
+		<Dialog open={true} onClose={handleOutsideClick()} className="relative z-50">
 			{/* The backdrop, rendered as a fixed sibling to the panel container */}
 			<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
@@ -61,9 +67,9 @@ export function JsonEditorDialog<T>({
 
 						<EditorField
 							language="json"
-							value={value}
+							value={jsonValue}
 							height="60vh"
-							onChange={value => setValue(value ?? "{}")}
+							onChange={value => setJsonValue(value ?? "{}")}
 						/>
 
 						<div className="mt-8 flex gap-4">
