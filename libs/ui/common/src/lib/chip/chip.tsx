@@ -1,5 +1,6 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
+import { TransparentDeleteButton } from "../button/delete-button";
 
 export function Chip({
 	children,
@@ -22,17 +23,15 @@ export function Chip({
 			)}
 
 			<span className="flex w-full flex-col px-4">{children}</span>
-
-			{onRemove && (
-				<button
-					type="button"
-					data-testid="remove"
-					className="mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500"
-					onClick={onRemove}
-				>
-					<XMarkIcon className="h-3" />
-				</button>
-			)}
+			<div className={"px-2"}>
+				{onRemove && (
+					<TransparentDeleteButton
+						onDelete={onRemove}
+						data-testid={"remove"}
+						title="Author Entfernen"
+					/>
+				)}
+			</div>
 		</li>
 	);
 }

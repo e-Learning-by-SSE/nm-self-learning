@@ -1,5 +1,6 @@
 import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { CSSProperties, ReactNode } from "react";
+import { DefaultButton } from "../button/default-button";
 
 export type OnDialogCloseFn<T> = (result?: T) => void;
 
@@ -92,15 +93,10 @@ export function DialogActions({
 	children?: React.ReactNode;
 }) {
 	return (
-		<div className="mt-8 flex justify-end gap-2">
-			<button
-				type="button"
-				tabIndex={-1}
-				className="btn-stroked"
-				onClick={() => onClose(undefined)}
-			>
-				Abbrechen
-			</button>
+		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
+			<DefaultButton onClick={() => onClose(undefined)}>
+				<span className={"text-gray-600"}>Abbrechen</span>
+			</DefaultButton>
 			{children}
 		</div>
 	);
