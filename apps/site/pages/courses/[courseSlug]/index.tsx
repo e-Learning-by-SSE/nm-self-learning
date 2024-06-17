@@ -215,6 +215,8 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
+	const firstLessonFromChapter = content[0].content[0];
+	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
@@ -272,13 +274,17 @@ function CourseHeader({
 
 					{isEnrolled && (
 						<Link
-							href={`/courses/${course.slug}/${nextLessonSlug}`}
+							href={`/courses/${course.slug}/${
+								nextLessonSlug ?? firstLessonFromChapter.slug
+							}`}
 							className="btn-primary"
 						>
 							<span>
-								{completion?.courseCompletion.completedLessonCount === 0
-									? "Starten"
-									: "Fortfahren"}
+								{nextLessonSlug
+									? lessonCompletionCount === 0
+										? "Starten"
+										: "Fortfahren"
+									: "Öffnen"}
 							</span>
 							<PlayIcon className="h-5" />
 						</Link>
