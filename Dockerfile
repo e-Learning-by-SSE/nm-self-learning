@@ -1,7 +1,7 @@
 ARG NPM_TOKEN 
 
 # Base image
-FROM node:20-alpine3.18 as build
+FROM node:20-alpine3.16 as build
 
 ARG NPM_TOKEN 
 ENV NPM_TOKEN=${NPM_TOKEN}
@@ -36,7 +36,7 @@ RUN npm run prisma generate
 # RUN chown nextjs:nodejs -R node_modules/.prisma
 
 # Multistage build: Keep only result instead of all intermediate layers
-FROM node:20-alpine3.18
+FROM node:20-alpine3.16
 COPY --from=build /app /app
 
 WORKDIR /app
