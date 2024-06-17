@@ -152,8 +152,8 @@ export function UniversalSearchBar({
 	placeHolder: string;
 }) {
 	return (
-		<div className="flex flex-1 items-center justify-end px-2">
-			<div className="relative w-full max-w-lg lg:max-w-xs">
+		<div className="flex flex-1 items-center">
+			<div className="relative w-full">
 				<label htmlFor="search" className="sr-only">
 					Suche
 				</label>

@@ -5,7 +5,14 @@ import { getEnrollmentDetails } from "@self-learning/api";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { PlayIcon } from "@heroicons/react/24/solid";
-import { ProgressBar, Tab, Tabs } from "@self-learning/ui/common";
+import {
+	ProgressBar,
+	Tab,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn,
+	Tabs
+} from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
@@ -56,8 +63,8 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 	}
 
 	return (
-		<div className="h-screen overflow-hidden">
-			<div className="h-full py-2 px-4">
+		<div className="flex h-screen justify-center overflow-hidden">
+			<div className="h-full w-full p-2 lg:w-4/5 lg:p-8">
 				{selectedTab === 0 && (
 					<TabContent
 						selectedTab={selectedTab}
@@ -188,16 +195,75 @@ function TabContent({
 						<Tab>Abgeschlossen</Tab>
 					</Tabs>
 				</div>
-				<div className="end flex">
-					<UniversalSearchBar
-						searchQuery={searchQuery}
-						setSearchQuery={setSearchQuery}
-						placeHolder={"Kurse durchsuchen..."}
-					/>
-				</div>
+			</div>
+			<div className="w-full pt-2">
+				<UniversalSearchBar
+					searchQuery={searchQuery}
+					setSearchQuery={setSearchQuery}
+					placeHolder={"Kurse durchsuchen..."}
+				/>
 			</div>
 			<div className="flex-1 overflow-y-auto pt-4">
-				<EnrollmentOverview enrollments={enrollments} notFoundMessage={notFoundMessage} />
+				<Table
+					head={
+						<>
+							<TableHeaderColumn>Kurs</TableHeaderColumn>
+							<TableHeaderColumn>Autor</TableHeaderColumn>
+							<TableHeaderColumn>Status</TableHeaderColumn>
+						</>
+					}
+				>
+					{enrollments?.length ? (
+						enrollments.map((enrollment, index) => (
+							<tr key={index}>
+								<TableDataColumn>
+									<div className="flex items-center space-x-4">
+										{enrollment.course.imgUrl ? (
+											<img
+												src={enrollment.course.imgUrl}
+												alt={enrollment.course.title}
+												className="h-12 w-12 rounded-lg object-cover"
+											/>
+										) : (
+											<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+												<span className="text-gray-500">Kein Bild</span>
+											</div>
+										)}
+										<div>
+											<Link
+												href={`/courses/${enrollment.course.slug}/`}
+												className="flex items-center justify-center px-2 py-2 text-gray-800 hover:text-secondary"
+											>
+												<span className="truncate">
+													{enrollment.course.title}
+												</span>
+											</Link>
+										</div>
+									</div>
+								</TableDataColumn>
+								<TableDataColumn>
+									<span className="text-sm text-gray-600">
+										{enrollment.course.authors[0].displayName}
+									</span>
+								</TableDataColumn>
+								<TableDataColumn>
+									<ProgressBar
+										completionPercentage={
+											enrollment.completions.courseCompletion
+												.completionPercentage
+										}
+									/>
+								</TableDataColumn>
+							</tr>
+						))
+					) : (
+						<tr>
+							<td colSpan={3} className="py-4 text-center text-sm text-gray-500">
+								{notFoundMessage}
+							</td>
+						</tr>
+					)}
+				</Table>
 			</div>
 		</div>
 	);
