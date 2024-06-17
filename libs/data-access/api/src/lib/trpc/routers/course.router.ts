@@ -30,10 +30,10 @@ export const courseRouter = t.router({
 						: undefined,
 				specializations: input.specializationId
 					? {
-							some: {
-								specializationId: input.specializationId
-							}
-					  }
+						some: {
+							specializationId: input.specializationId
+						}
+					}
 					: undefined
 			};
 
@@ -127,6 +127,11 @@ export const courseRouter = t.router({
 				message:
 					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
 			});
+		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+			});
 		}
 
 		const courseForDb = mapCourseFormToInsert(input, getRandomId());
@@ -155,6 +160,11 @@ export const courseRouter = t.router({
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message: "Editing a course requires either: admin role | author of course"
+				});
+			} else if (input.course.authors.length <= 0 && ctx.user.role != "ADMIN") {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
 				});
 			}
 
