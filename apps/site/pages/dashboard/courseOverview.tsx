@@ -1,12 +1,12 @@
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import { EnrollmentDetails } from "@self-learning/types";
-import { getEnrollmentDetails } from "@self-learning/api";
 import React, { useEffect, useState } from "react";
+import { EnrollmentDetails } from "@self-learning/types";
 import Link from "next/link";
 import { ProgressBar, SortableTable, Tab, Tabs } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import Image from "next/image";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
+import { getEnrollmentDetails } from "@self-learning/api";
 
 function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -51,7 +51,7 @@ function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | nu
 	}, [searchQuery, enrollments]);
 
 	if (!enrollments) {
-		return <p>No enrollments found</p>;
+		return <p>Keine Kurse</p>;
 	}
 
 	return (
@@ -65,6 +65,40 @@ function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | nu
 		/>
 	);
 }
+
+export const getServerSideProps: GetServerSideProps = async context => {
+	const session = await getSession(context);
+
+	if (!session || !session.user) {
+		return {
+			redirect: {
+				destination: "/api/auth/signin",
+				permanent: false
+			}
+		};
+	}
+
+	const username = session.user.name;
+
+	try {
+		const enrollments = await getEnrollmentDetails(username);
+
+		return {
+			props: {
+				enrollments
+			}
+		};
+	} catch (error) {
+		console.error("Error fetching enrollments:", error);
+		return {
+			props: {
+				enrollments: null
+			}
+		};
+	}
+};
+
+export default CourseOverview;
 
 export function ControlledCourseOverview({
 	selectedTab,
@@ -168,37 +202,3 @@ export function ControlledCourseOverview({
 		</div>
 	);
 }
-
-export const getServerSideProps: GetServerSideProps = async context => {
-	const session = await getSession(context);
-
-	if (!session || !session.user) {
-		return {
-			redirect: {
-				destination: "/api/auth/signin",
-				permanent: false
-			}
-		};
-	}
-
-	const username = session.user.name;
-
-	try {
-		const enrollments = await getEnrollmentDetails(username);
-
-		return {
-			props: {
-				enrollments
-			}
-		};
-	} catch (error) {
-		console.error("Error fetching enrollments:", error);
-		return {
-			props: {
-				enrollments: null
-			}
-		};
-	}
-};
-
-export default CourseOverview;
