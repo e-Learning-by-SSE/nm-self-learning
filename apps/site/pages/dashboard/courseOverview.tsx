@@ -4,15 +4,7 @@ import { EnrollmentDetails } from "@self-learning/types";
 import { getEnrollmentDetails } from "@self-learning/api";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { PlayIcon } from "@heroicons/react/24/solid";
-import {
-	ProgressBar,
-	Tab,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn,
-	Tabs
-} from "@self-learning/ui/common";
+import { ProgressBar, SortableTable, Tab, Tabs } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
@@ -90,87 +82,6 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 	);
 }
 
-function EnrollmentOverview({
-	enrollments,
-	notFoundMessage
-}: {
-	enrollments: EnrollmentDetails[] | null;
-	notFoundMessage: string;
-}) {
-	if (!enrollments) {
-		return <p>Keine Kurse Gefunden.</p>;
-	}
-
-	return (
-		<div>
-			{enrollments.length > 0 ? (
-				<ul className="space-y-4">
-					{enrollments.map((enrollment, index) => (
-						<li
-							key={index}
-							className="flex flex-col space-y-2 rounded-lg bg-white p-4 shadow-md md:flex-row md:space-y-0 md:space-x-4"
-						>
-							{enrollment.course.imgUrl ? (
-								<img
-									src={enrollment.course.imgUrl}
-									alt={enrollment.course.title}
-									className="h-auto w-full rounded-lg object-cover md:h-24 md:w-24"
-								/>
-							) : (
-								<div className="flex h-auto w-full items-center justify-center rounded-lg bg-white md:h-24 md:w-24">
-									<span className="text-gray-500">Kein Bild Verfügbar</span>
-								</div>
-							)}
-							<div className="flex flex-grow flex-col space-y-1">
-								<table className="w-full">
-									<tbody>
-										<tr>
-											<td className="w-3/5">
-												<div>
-													<h2 className="text-lg font-bold text-gray-900">
-														{enrollment.course.title}
-													</h2>
-													<span className="text-sm text-gray-600">
-														{enrollment.course.authors[0].displayName}
-													</span>
-												</div>
-											</td>
-											<td className="w-2/5">
-												<div className="flex justify-end">
-													<Link
-														href={`/courses/${enrollment.course.slug}/`}
-														className="btn-primary flex items-center justify-center rounded-md bg-green-500 px-2 py-2 text-white hover:bg-emerald-600"
-														style={{ maxWidth: "100%" }}
-													>
-														<span className="truncate">Fortfahren</span>
-														<PlayIcon className="ml-2 h-6 w-6" />
-													</Link>
-												</div>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-								<div className="mt-2">
-									<ProgressBar
-										completionPercentage={
-											enrollment.completions.courseCompletion
-												.completionPercentage
-										}
-									/>
-								</div>
-							</div>
-						</li>
-					))}
-				</ul>
-			) : (
-				<div className={"py-2 px-4"}>
-					<p className="text-center">{notFoundMessage}</p>
-				</div>
-			)}
-		</div>
-	);
-}
-
 function TabContent({
 	selectedTab,
 	setSelectedTab,
@@ -186,6 +97,58 @@ function TabContent({
 	searchQuery: string;
 	setSearchQuery: (v: string) => void;
 }) {
+	const columns = [
+		{ key: "courseTitle", label: "Title" },
+		{ key: "author", label: "Autor" },
+		{ key: "progress", label: "Fortschritt" }
+	];
+
+	const data = enrollments?.map(enrollment => ({
+		courseTitle: {
+			component: (
+				<Link href={`/courses/${enrollment.course.slug}/`} className="block">
+					<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
+						{enrollment.course.imgUrl ? (
+							<img
+								src={enrollment.course.imgUrl}
+								alt={enrollment.course.title}
+								className="h-12 w-12 rounded-lg object-cover"
+							/>
+						) : (
+							<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+								<span className="text-gray-500">Kein Bild</span>
+							</div>
+						)}
+						<div>
+							<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+								<span className="truncate">{enrollment.course.title}</span>
+							</span>
+						</div>
+					</div>
+				</Link>
+			),
+			sortValue: enrollment.course.title
+		},
+		author: {
+			component: (
+				<span className="text-sm text-gray-600">
+					{enrollment.course.authors[0].displayName}
+				</span>
+			),
+			sortValue: enrollment.course.authors[0].displayName
+		},
+		progress: {
+			component: (
+				<ProgressBar
+					completionPercentage={
+						enrollment.completions.courseCompletion.completionPercentage
+					}
+				/>
+			),
+			sortValue: enrollment.completions.courseCompletion.completionPercentage
+		}
+	}));
+
 	return (
 		<div className="flex h-full flex-col">
 			<div className="flex items-center justify-between border-b border-gray-300 pb-2">
@@ -196,7 +159,7 @@ function TabContent({
 					</Tabs>
 				</div>
 			</div>
-			<div className="w-full pt-2">
+			<div className="pt-2">
 				<UniversalSearchBar
 					searchQuery={searchQuery}
 					setSearchQuery={setSearchQuery}
@@ -204,66 +167,11 @@ function TabContent({
 				/>
 			</div>
 			<div className="flex-1 overflow-y-auto pt-4">
-				<Table
-					head={
-						<>
-							<TableHeaderColumn>Kurs</TableHeaderColumn>
-							<TableHeaderColumn>Autor</TableHeaderColumn>
-							<TableHeaderColumn>Status</TableHeaderColumn>
-						</>
-					}
-				>
-					{enrollments?.length ? (
-						enrollments.map((enrollment, index) => (
-							<tr key={index}>
-								<TableDataColumn>
-									<div className="flex items-center space-x-4">
-										{enrollment.course.imgUrl ? (
-											<img
-												src={enrollment.course.imgUrl}
-												alt={enrollment.course.title}
-												className="h-12 w-12 rounded-lg object-cover"
-											/>
-										) : (
-											<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-												<span className="text-gray-500">Kein Bild</span>
-											</div>
-										)}
-										<div>
-											<Link
-												href={`/courses/${enrollment.course.slug}/`}
-												className="flex items-center justify-center px-2 py-2 text-gray-800 hover:text-secondary"
-											>
-												<span className="truncate">
-													{enrollment.course.title}
-												</span>
-											</Link>
-										</div>
-									</div>
-								</TableDataColumn>
-								<TableDataColumn>
-									<span className="text-sm text-gray-600">
-										{enrollment.course.authors[0].displayName}
-									</span>
-								</TableDataColumn>
-								<TableDataColumn>
-									<ProgressBar
-										completionPercentage={
-											enrollment.completions.courseCompletion
-												.completionPercentage
-										}
-									/>
-								</TableDataColumn>
-							</tr>
-						))
-					) : (
-						<tr>
-							<td colSpan={3} className="py-4 text-center text-sm text-gray-500">
-								{notFoundMessage}
-							</td>
-						</tr>
-					)}
-				</Table>
+				{data && data.length > 0 ? (
+					<SortableTable data={data} columns={columns} />
+				) : (
+					<p className="py-4 text-center">{notFoundMessage}</p>
+				)}
 			</div>
 		</div>
 	);
