@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ProgressBar, SortableTable, Tab, Tabs } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
+import Image from "next/image";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -109,9 +110,11 @@ function TabContent({
 				<Link href={`/courses/${enrollment.course.slug}/`} className="block">
 					<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
 						{enrollment.course.imgUrl ? (
-							<img
+							<Image
 								src={enrollment.course.imgUrl}
 								alt={enrollment.course.title}
+								width={48}
+								height={48}
 								className="h-12 w-12 rounded-lg object-cover"
 							/>
 						) : (
