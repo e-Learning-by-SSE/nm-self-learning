@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
 import { EnrollmentDetails } from "@self-learning/types";
+import { getEnrollmentDetails } from "@self-learning/api";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ProgressBar, SortableTable, Tab, Tabs } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import Image from "next/image";
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import { getEnrollmentDetails } from "@self-learning/api";
 
 function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -176,28 +176,30 @@ export function ControlledCourseOverview({
 	}));
 
 	return (
-		<div className="flex h-full flex-col">
-			<div className="flex items-center justify-between border-b border-gray-300 pb-2">
-				<div className="flex">
-					<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
-						<Tab>In Bearbeitung</Tab>
-						<Tab>Abgeschlossen</Tab>
-					</Tabs>
+		<div className="flex h-screen justify-center">
+			<div className="h-full w-full p-2 lg:w-4/5 lg:p-8">
+				<div className="flex items-center justify-between border-b border-gray-300 pb-2">
+					<div className="flex">
+						<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
+							<Tab>In Bearbeitung</Tab>
+							<Tab>Abgeschlossen</Tab>
+						</Tabs>
+					</div>
 				</div>
-			</div>
-			<div className="pt-2">
-				<UniversalSearchBar
-					searchQuery={searchQuery}
-					setSearchQuery={setSearchQuery}
-					placeHolder={"Kurse durchsuchen..."}
-				/>
-			</div>
-			<div className="flex-1 overflow-y-auto pt-4">
-				{data.length > 0 ? (
-					<SortableTable data={data} columns={columns} />
-				) : (
-					<p className="py-4 text-center">{notFoundMessage}</p>
-				)}
+				<div className="pt-2">
+					<UniversalSearchBar
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+						placeHolder={"Kurse durchsuchen..."}
+					/>
+				</div>
+				<div className="flex-1 overflow-y-auto pt-4">
+					{data.length > 0 ? (
+						<SortableTable data={data} columns={columns} />
+					) : (
+						<p className="py-4 text-center">{notFoundMessage}</p>
+					)}
+				</div>
 			</div>
 		</div>
 	);
