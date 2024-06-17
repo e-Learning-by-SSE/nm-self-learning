@@ -8,9 +8,8 @@ import { ProgressBar, SortableTable, Tab, Tabs } from "@self-learning/ui/common"
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import Image from "next/image";
 
-export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
+function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
-
 	const [searchQuery, setSearchQuery] = useState("");
 	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
 	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
@@ -56,55 +55,45 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 	}
 
 	return (
-		<div className="flex h-screen justify-center overflow-hidden">
-			<div className="h-full w-full p-2 lg:w-4/5 lg:p-8">
-				{selectedTab === 0 && (
-					<TabContent
-						selectedTab={selectedTab}
-						setSelectedTab={setSelectedTab}
-						enrollments={inProgress}
-						notFoundMessage={"Derzeit ist kein Kurs angefangen."}
-						searchQuery={searchQuery}
-						setSearchQuery={setSearchQuery}
-					/>
-				)}
-				{selectedTab === 1 && (
-					<TabContent
-						selectedTab={selectedTab}
-						setSelectedTab={setSelectedTab}
-						enrollments={complete}
-						notFoundMessage={"Derzeit ist kein Kurs abgeschlossen."}
-						searchQuery={searchQuery}
-						setSearchQuery={setSearchQuery}
-					/>
-				)}
-			</div>
-		</div>
+		<ControlledCourseOverview
+			selectedTab={selectedTab}
+			setSelectedTab={setSelectedTab}
+			inProgress={inProgress}
+			complete={complete}
+			searchQuery={searchQuery}
+			setSearchQuery={setSearchQuery}
+		/>
 	);
 }
 
-function TabContent({
+export function ControlledCourseOverview({
 	selectedTab,
 	setSelectedTab,
-	enrollments,
-	notFoundMessage,
+	inProgress,
+	complete,
 	searchQuery,
 	setSearchQuery
 }: {
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
-	enrollments: EnrollmentDetails[] | null;
-	notFoundMessage: string;
+	inProgress: EnrollmentDetails[];
+	complete: EnrollmentDetails[];
 	searchQuery: string;
 	setSearchQuery: (v: string) => void;
 }) {
+	const enrollments = selectedTab === 0 ? inProgress : complete;
+	const notFoundMessage =
+		selectedTab === 0
+			? "Derzeit ist kein Kurs angefangen."
+			: "Derzeit ist kein Kurs abgeschlossen.";
+
 	const columns = [
 		{ key: "courseTitle", label: "Title" },
 		{ key: "author", label: "Autor" },
 		{ key: "progress", label: "Fortschritt" }
 	];
 
-	const data = enrollments?.map(enrollment => ({
+	const data = enrollments.map(enrollment => ({
 		courseTitle: {
 			component: (
 				<Link href={`/courses/${enrollment.course.slug}/`} className="block">
@@ -115,7 +104,7 @@ function TabContent({
 								alt={enrollment.course.title}
 								width={48}
 								height={48}
-								className="h-12 w-12 rounded-lg object-cover"
+								className="rounded-lg object-cover"
 							/>
 						) : (
 							<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
@@ -170,7 +159,7 @@ function TabContent({
 				/>
 			</div>
 			<div className="flex-1 overflow-y-auto pt-4">
-				{data && data.length > 0 ? (
+				{data.length > 0 ? (
 					<SortableTable data={data} columns={columns} />
 				) : (
 					<p className="py-4 text-center">{notFoundMessage}</p>
