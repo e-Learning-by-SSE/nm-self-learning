@@ -27,7 +27,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 				return;
 			}
 
-			append({ username: result.username });
+			append(result);
 		}
 		setOpenAddDialog(false);
 	};
@@ -48,7 +48,6 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 				text="Hinzufügen"
 				icon={<PlusIcon className="h-5" />}
 			/>
-
 			{authors.length === 0 ? (
 				<p className="text-sm text-light">{emptyString}</p>
 			) : (
@@ -62,7 +61,6 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 					))}
 				</ul>
 			)}
-
 			{openAddDialog && <AddAuthorDialog open={openAddDialog} onClose={handleAdd} />}
 		</Form.SidebarSection>
 	);

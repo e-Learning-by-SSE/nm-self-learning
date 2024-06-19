@@ -3,7 +3,9 @@ import Lesson from "apps/site/pages/courses/[courseSlug]/[lessonSlug]";
 import { LessonType } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { GetServerSideProps } from "next";
-import { trpc } from "@self-learning/api-client";
+import React from "react";
+import { CompiledMarkdown } from "../../../../../../../libs/util/markdown/src";
+import { LessonLayoutProps } from "@self-learning/lesson";
 
 function getEmptyMarkdown() {
 	return {
@@ -24,6 +26,7 @@ function getPlaceholderCourse() {
 
 function getLesson(data: string | string[] | undefined) {
 	let lessonTitle = "Platzhalter-Lerneinheit";
+
 	if (data) {
 		if (typeof data === "string") {
 			lessonTitle = data;
@@ -77,10 +80,21 @@ export default function LessonPreview() {
 	return <Lesson lesson={lesson} course={getPlaceholderCourse()} markdown={getEmptyMarkdown()} />;
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+export type LessonProps = LessonLayoutProps & {
+	markdown: {
+		description: CompiledMarkdown | null;
+		article: CompiledMarkdown | null;
+		preQuestion: CompiledMarkdown | null;
+		subtitle: CompiledMarkdown | null;
+	};
+};
+export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
+	console.log("Lesson, params", params);
+
+	const lessonSlug = params?.["lessonSlug"] as string;
 	return {
 		props: {
-			...{ lesson: getLesson(query.data), course: getPlaceholderCourse() },
+			...{ lesson: getLesson(lessonSlug), course: getPlaceholderCourse() },
 			markdown: getEmptyMarkdown()
 		}
 	};

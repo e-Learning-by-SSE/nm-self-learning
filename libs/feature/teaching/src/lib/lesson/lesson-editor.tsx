@@ -50,10 +50,12 @@ export function LessonEditor({
 		const currentLessonValuesWithMeta = { ...currentLessonValues, meta: lessonMeta };
 		const serializedData = JSON.stringify(currentLessonValuesWithMeta);
 		localStorage.setItem("lessonInEditing", serializedData);
+		const lessonSlug = currentLessonValues.slug;
+		const courseId = "placeholder";
 
 		router.push({
-			pathname: "/teaching/lessons/preview",
-			query: { data: currentLessonValues.title }
+			pathname: `/teaching/preview/${courseId}/${lessonSlug}`,
+			query: { data: [currentLessonValues.title, "empty-course"] }
 		});
 	}
 
