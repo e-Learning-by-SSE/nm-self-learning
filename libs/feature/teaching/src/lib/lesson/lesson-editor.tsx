@@ -50,12 +50,14 @@ export function LessonEditor({
 		const currentLessonValuesWithMeta = { ...currentLessonValues, meta: lessonMeta };
 		const serializedData = JSON.stringify(currentLessonValuesWithMeta);
 		localStorage.setItem("lessonInEditing", serializedData);
-		const lessonSlug = currentLessonValues.slug;
-		const courseId = "placeholder";
+
+		const courseId = router.query["courseId"] ? router.query["courseId"] : "placeholder";
+		const lessonId = currentLessonValues.lessonId;
+		const lessonTitle = currentLessonValues.title;
 
 		router.push({
-			pathname: `/teaching/preview/${courseId}/${lessonSlug}`,
-			query: { data: [currentLessonValues.title, "empty-course"] }
+			pathname: `/teaching/preview/${courseId}/${lessonId}`,
+			query: { lessonTitle }
 		});
 	}
 

@@ -1,4 +1,4 @@
-import { LessonLayout } from "libs/feature/lesson/src/lib/lesson-layout";
+import { LessonLayout, getCourseById } from "libs/feature/lesson/src/lib/lesson-layout";
 import Lesson from "apps/site/pages/courses/[courseSlug]/[lessonSlug]";
 import { LessonType } from "@prisma/client";
 import { useEffect, useState } from "react";
@@ -18,20 +18,21 @@ function getEmptyMarkdown() {
 
 function getPlaceholderCourse() {
 	return {
-		courseId: "empty-course",
+		courseId: "placeholder",
 		title: "Platzhalter-Kurs",
-		slug: "empty-course"
+		slug: "placeholder"
 	};
 }
 
-function getLesson(data: string | string[] | undefined) {
-	let lessonTitle = "Platzhalter-Lerneinheit";
+function getLesson(title: string | string[] | undefined, id: string | undefined) {
+	const lessonId = id ? id : "";
 
-	if (data) {
-		if (typeof data === "string") {
-			lessonTitle = data;
+	let lessonTitle = "Platzhalter-Lerneinheit";
+	if (title) {
+		if (typeof title === "string") {
+			lessonTitle = title;
 		} else {
-			lessonTitle = data[0];
+			lessonTitle = title[0];
 		}
 	}
 
@@ -43,7 +44,7 @@ function getLesson(data: string | string[] | undefined) {
 		title: lessonTitle,
 		slug: "",
 		description: "",
-		lessonId: "",
+		lessonId: lessonId,
 		subtitle: "",
 		authors: [],
 		selfRegulatedQuestion: "",
@@ -52,12 +53,12 @@ function getLesson(data: string | string[] | undefined) {
 }
 
 export default function LessonPreview() {
-	const [lesson, setLesson] = useState(getLesson(undefined));
+	const [lesson, setLesson] = useState(getLesson(undefined, ""));
 
 	useEffect(() => {
 		if (typeof window !== "undefined") {
 			const storedData = localStorage.getItem("lessonInEditing");
-			storedData ? setLesson(JSON.parse(storedData)) : setLesson(getLesson(undefined));
+			storedData ? setLesson(JSON.parse(storedData)) : setLesson(getLesson(undefined, ""));
 		}
 	}, []);
 
@@ -88,13 +89,34 @@ export type LessonProps = LessonLayoutProps & {
 		subtitle: CompiledMarkdown | null;
 	};
 };
-export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
-	console.log("Lesson, params", params);
 
-	const lessonSlug = params?.["lessonSlug"] as string;
+function getValueFromQuery(value: string[] | string | undefined) {
+	let result = "";
+
+	if (typeof value === "string") {
+		result = value;
+	} else if (Array.isArray(value) && value.length > 0) {
+		result = value[0];
+	}
+	return result;
+}
+
+export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ query }) => {
+	console.log("# query", query);
+	const lessonId = query.lessonId ? getValueFromQuery(query.lessonId) : "";
+	const lessonTitle = query.lessonTitle ? getValueFromQuery(query.lessonTitle) : "";
+	const courseId = query.courseId ? getValueFromQuery(query.courseId) : "placeholder";
+
+	let course = await getCourseById(courseId);
+	if (!course) {
+		course = getPlaceholderCourse();
+	}
+
+	const props = { lesson: getLesson(lessonTitle, lessonId), course: course };
+
 	return {
 		props: {
-			...{ lesson: getLesson(lessonSlug), course: getPlaceholderCourse() },
+			...props,
 			markdown: getEmptyMarkdown()
 		}
 	};
