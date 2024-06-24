@@ -27,7 +27,7 @@ export function EditUserDialog({
 	return (
 		<Dialog onClose={() => onClose(undefined)} title={user?.displayName ?? username}>
 			{isLoading ? (
-				<LoadingBox /> /* TODO: better loading box from marcel */
+				<LoadingBox />
 			) : (
 				<>
 					{user && (
@@ -96,7 +96,7 @@ function UserForm({
 					<OpenAsJsonButton form={form} validationSchema={userSchema} />
 				</div>
 
-				<div className="grid gap-4 xl:grid-cols-[1fr_300px]">
+				<div className="grid gap-4 overflow-y-auto pb-12 xl:grid-cols-[1fr_300px] xl:overflow-y-hidden">
 					<div className="rounded-lg border border-light-border p-6 xl:row-span-3">
 						<UserData />
 					</div>
@@ -132,7 +132,10 @@ function UserData() {
 	};
 
 	return (
-		<div className="overflow-y-auto overflow-x-hidden p-2" style={{ maxHeight: height }}>
+		<div
+			className="overflow-x-hidden overflow-y-hidden p-2 xl:overflow-y-auto"
+			style={{ maxHeight: height }}
+		>
 			<h2 className="mb-4 text-2xl">Daten</h2>
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Name" error={errors.displayName?.message}>
@@ -146,12 +149,10 @@ function UserData() {
 				</LabeledField>
 				<LabeledField label="Role" error={errors.role?.message}>
 					<select
+						title="Role"
 						value={watch("role")}
 						onChange={v => {
-							setValue(
-								"role",
-								v.target.value as UserRole
-							); /*TODO Ask Marcel about this*/
+							setValue("role", v.target.value as UserRole);
 						}}
 						className="textfield w-64 rounded-lg px-8"
 					>
