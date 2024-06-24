@@ -1,4 +1,4 @@
-import { DeletedEntities, deleteUserAndDependentData } from "./delete-user";
+import { DeletedEntities, deleteUserCascade } from "./delete-user";
 import { database } from "@self-learning/database";
 
 describe('deleteUserAndDependentData Integration Test', () => {
@@ -66,7 +66,7 @@ describe('deleteUserAndDependentData Integration Test', () => {
     });
   
     it('should delete the user and all dependent data', async () => {
-        await deleteUserAndDependentData(testUsername, deletedEntities, database);
+        await deleteUserCascade(testUsername, deletedEntities, database);
 
     const user = await database.user.findUnique({
       where: { name: testUsername },
