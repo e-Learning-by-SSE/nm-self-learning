@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { CourseEnrollment, EnrollmentDetails } from "@self-learning/types";
+import { CourseEnrollment } from "@self-learning/types";
 import { AlreadyExists } from "@self-learning/util/http";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
@@ -35,9 +35,7 @@ export const enrollmentRouter = t.router({
 		})
 });
 
-export async function getEnrollmentDetails(
-	username: string
-): Promise<EnrollmentDetails[]> {
+export async function getEnrollmentDetails(username: string) {
 	const enrollments = await database.enrollment.findMany({
 		where: { username },
 		select: {
@@ -60,7 +58,7 @@ export async function getEnrollmentDetails(
 	});
 
 	const enrollmentsWithDetails = await Promise.all(
-		enrollments.map(async enrollment => {
+		enrollments.map(async (enrollment) => {
 			const completions = await getCourseCompletionOfStudent(
 				enrollment.course.slug,
 				username
@@ -80,8 +78,9 @@ export async function getEnrollmentDetails(
 			new Date(b.lastProgressUpdate).getTime() - new Date(a.lastProgressUpdate).getTime()
 	);
 
-	return enrollmentsWithDetails as EnrollmentDetails[];
+	return enrollmentsWithDetails;
 }
+
 
 export async function getEnrollmentsOfUser(username: string): Promise<CourseEnrollment[]> {
 	const enrollments = await database.enrollment.findMany({

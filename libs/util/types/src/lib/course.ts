@@ -19,23 +19,6 @@ export type CourseCompletion = {
 	completedLessons: CompletedLessonsMap;
 };
 
-export type EnrollmentDetails = {
-	completedAt: string | null;
-	status: EnrollmentStatus;
-	lastProgressUpdate: string;
-	course: {
-		title: string;
-		slug: string;
-		imgUrl: string | null;
-		authors: { displayName: string }[];
-	};
-	completions: {
-		courseCompletion: {
-			completionPercentage: number;
-		};
-	};
-};
-
 export type CourseEnrollment = {
 	completedAt: Date | null;
 	status: EnrollmentStatus;
