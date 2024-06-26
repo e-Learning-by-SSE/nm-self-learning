@@ -21,11 +21,11 @@ export function GoalEditorDialog({
 	const { mutateAsync: createSubGoal } = trpc.learningGoal.createSubGoal.useMutation();
 	const { mutateAsync: createGoal } = trpc.learningGoal.createGoal.useMutation();
 	const { mutateAsync: createGoalFromSubGoal } =
-		trpc.learningGoal.crrateGoalFromSubGoal.useMutation();
+		trpc.learningGoal.createGoalFromSubGoal.useMutation();
 	const [description, setDescription] = useState(goal?.description ?? subGoal?.description ?? "");
 	const [learningGoalId, setLearningGoalId] = useState(subGoal?.learningGoalId ?? "");
 
-	const title = goal || subGoal ? "Lernziel editieren" : "Lernziel definieren";
+	const title = goal || subGoal ? "Lernziel bearbeiten" : "Lernziel erstellen";
 
 	function save() {
 		if (description.length > 0) {

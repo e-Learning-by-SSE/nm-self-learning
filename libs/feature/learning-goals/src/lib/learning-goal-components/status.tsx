@@ -1,3 +1,4 @@
+import { LockClosedIcon, LockOpenIcon } from "@heroicons/react/24/solid";
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningGoal, LearningSubGoal } from "@self-learning/types";
@@ -84,30 +85,37 @@ export function GoalStatus({
 		return result;
 	}
 
+	const disable =
+		(goal && status == "COMPLETED") || (goal && !areSubGoalsCompleted()) || !editable;
 	return (
-		<div className="flex flex-col items-center">
+		<div className="relative flex flex-col items-center">
 			<button
 				className={newClassName}
 				onClick={handleClickInside}
-				disabled={
-					(goal && status == "COMPLETED") ||
-					(goal && !areSubGoalsCompleted()) ||
-					!editable
+				disabled={disable}
+				title={
+					disable ? "Feinziele müssen Bearbeitet sein" : "Bearbeitungsstatus bearbeiten"
 				}
-			/>
+			>
+				{disable && <LockClosedIcon className="ml-3 h-4" />}
+				{!disable && goal && <LockOpenIcon className="ml-3 h-4" />}
+			</button>
 			{showDialog && (
-				<div className="fixed z-50" ref={myRef}>
+				<div className="absolute z-50 flex flex-row" ref={myRef}>
 					<button
 						className="h-5 w-10 rounded-md border-gray-400 bg-red-300"
 						onClick={() => onChange("INACTIVE")}
+						title="Nicht bearbeitet"
 					/>
 					<button
 						className="h-5 w-10 rounded-md border-gray-400 bg-orange-300"
 						onClick={() => onChange("ACTIVE")}
+						title="Teilweise bearbeitet"
 					/>
 					<button
 						className="h-5 w-10 rounded-md border-gray-400 bg-green-300"
 						onClick={() => onChange("COMPLETED")}
+						title="Bearbeitet"
 					/>
 				</div>
 			)}

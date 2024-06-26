@@ -38,10 +38,16 @@ export const learningGoalRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			const priority = await database.learningSubGoal.aggregate({
+				where: { learningGoalId: input.learningGoalId },
+				_max: { priority: true }
+			});
+
 			const created = await database.learningSubGoal.create({
 				data: {
 					description: input.description,
-					learningGoalId: input.learningGoalId
+					learningGoalId: input.learningGoalId,
+					priority: (priority._max.priority ?? 0) + 1
 				},
 				select: {
 					description: true,
@@ -146,6 +152,7 @@ export const learningGoalRouter = t.router({
 					select: {
 						id: true,
 						description: true,
+						status: true,
 						lastProgressUpdate: true
 					}
 				});
@@ -158,6 +165,7 @@ export const learningGoalRouter = t.router({
 					select: {
 						id: true,
 						description: true,
+						status: true,
 						lastProgressUpdate: true
 					}
 				});
@@ -166,9 +174,9 @@ export const learningGoalRouter = t.router({
 			console.log(
 				"[learningGoalRouter.editSubGoalStatus]: SubGoal updated by",
 				ctx.user.name,
-				" Subgoal: ",
+				"SubGoal: ",
 				updated,
-				" Goal: ",
+				"Goal: ",
 				updatedGoal
 			);
 			return updated;
@@ -218,7 +226,35 @@ export const learningGoalRouter = t.router({
 			);
 			return updatedSubGoal;
 		}),
-	crrateGoalFromSubGoal: authProcedure
+	editSubGoalPriority: authProcedure
+		.input(
+			z.object({
+				subGoalId: z.string(),
+				priority: z.number()
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const updatedSubGoal = await database.learningSubGoal.update({
+				where: { id: input.subGoalId },
+				data: {
+					priority: input.priority
+				},
+				select: {
+					id: true,
+					description: true,
+					priority: true
+				}
+			});
+
+			console.log(
+				"[learningGoalRouter.editSubGoalPriority]: SubGoal updated by",
+				ctx.user.name,
+				" SubGoal: ",
+				updatedSubGoal
+			);
+			return updatedSubGoal;
+		}),
+	createGoalFromSubGoal: authProcedure
 		.input(
 			z.object({
 				subGoalId: z.string(),
