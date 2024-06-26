@@ -63,6 +63,7 @@ model Student {
   completedLessons CompletedLesson[]
   enrollments      Enrollment[]
   learningDiary    LearningDiary?
+  learningGoals    LearningGoal[]
   quizAttempts     QuizAttempt[]
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -300,4 +301,32 @@ model Skill {
 
   @@unique([repositoryId, name])
   @@map("skills")
+}
+
+model LearningGoal {
+  id                 String  @id @default(cuid())
+  description        String
+  status             LearningGoalStatus @default(value:INACTIVE)
+  createdAt          DateTime         @default(now())
+  lastProgressUpdate DateTime?        
+  username           String
+  student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
+  learningSubGoals   LearningSubGoal[]
+}
+
+model LearningSubGoal{
+  id                 String  @id @default(cuid())
+  description        String
+  status             LearningGoalStatus @default(value:INACTIVE)
+  createdAt          DateTime         @default(now())
+  lastProgressUpdate DateTime?        
+  priority           Int              @default(autoincrement())
+  learningGoalId     String
+  learningGoal       LearningGoal     @relation(fields:[learningGoalId], references: [id],onDelete: Cascade)
+}
+
+enum LearningGoalStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETED
 }
