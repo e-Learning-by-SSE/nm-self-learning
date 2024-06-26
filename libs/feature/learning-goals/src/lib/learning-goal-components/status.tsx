@@ -1,15 +1,16 @@
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningGoal, LearningSubGoal } from "@self-learning/types";
-import { showToast } from "@self-learning/ui/common";
 import { useEffect, useRef, useState } from "react";
 
 export function GoalStatus({
 	goal,
-	subGoal
+	subGoal,
+	editable
 }: Readonly<{
 	goal?: LearningGoal;
 	subGoal?: LearningSubGoal;
+	editable: boolean;
 }>) {
 	const { mutateAsync: editSubGoal } = trpc.learningGoal.editSubGoalStatus.useMutation();
 	const { mutateAsync: editGoal } = trpc.learningGoal.editGoalStatus.useMutation();
@@ -88,7 +89,11 @@ export function GoalStatus({
 			<button
 				className={newClassName}
 				onClick={handleClickInside}
-				disabled={(goal && status == "COMPLETED") || (goal && !areSubGoalsCompleted())}
+				disabled={
+					(goal && status == "COMPLETED") ||
+					(goal && !areSubGoalsCompleted()) ||
+					!editable
+				}
 			/>
 			{showDialog && (
 				<div className="fixed z-50" ref={myRef}>

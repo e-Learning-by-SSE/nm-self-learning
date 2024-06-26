@@ -41,7 +41,7 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 					<SectionHeader title="Lernziele" />
 					<button className="btn-primary" onClick={() => setOpenAddDialog(true)}>
 						<PlusIcon className="icon h-5" />
-						<span>Ziel hinzufügen</span>
+						<span>Lernziel hinzufügen</span>
 					</button>
 				</div>
 
@@ -52,6 +52,7 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 							setSelectedTab={setSelectedTab}
 							goals={inProgress}
 							notFoundMessage={"Derzeit ist kein Ziel erstellt worden."}
+							editable={true}
 						/>
 					)}
 					{selectedTab === 1 && (
@@ -60,6 +61,7 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 							setSelectedTab={setSelectedTab}
 							goals={complete}
 							notFoundMessage={"Derzeit ist kein Ziel abgeschlossen."}
+							editable={false}
 						/>
 					)}
 				</div>
@@ -72,10 +74,12 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 
 function GoalsOverview({
 	goals,
-	notFoundMessage
+	notFoundMessage,
+	editable
 }: Readonly<{
 	goals: LearningGoalType | null;
 	notFoundMessage: string;
+	editable: boolean;
 }>) {
 	if (!goals) {
 		return <p>Keine Ziele Gefunden.</p>;
@@ -86,7 +90,7 @@ function GoalsOverview({
 			{goals.length > 0 ? (
 				<ul className="space-y-4">
 					{goals.map(goal => (
-						<GoalTable key={goal.id} goal={goal} />
+						<GoalTable key={goal.id} goal={goal} editable={editable} />
 					))}
 				</ul>
 			) : (
@@ -100,12 +104,14 @@ function TabContent({
 	selectedTab,
 	setSelectedTab,
 	goals,
-	notFoundMessage
+	notFoundMessage,
+	editable
 }: Readonly<{
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
 	goals: LearningGoalType | null;
 	notFoundMessage: string;
+	editable: boolean;
 }>) {
 	return (
 		<div className="xl:grid-cols grid h-full gap-8">
@@ -115,7 +121,11 @@ function TabContent({
 					<Tab>Abgeschlossen</Tab>
 				</Tabs>
 				<div className={"pt-4"}>
-					<GoalsOverview goals={goals} notFoundMessage={notFoundMessage} />
+					<GoalsOverview
+						goals={goals}
+						notFoundMessage={notFoundMessage}
+						editable={editable}
+					/>
 				</div>
 			</div>
 		</div>
@@ -123,13 +133,15 @@ function TabContent({
 }
 
 function GoalTable({
-	goal
+	goal,
+	editable
 }: Readonly<{
 	goal: LearningGoal;
+	editable: boolean;
 }>) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
-	if (goal) {
+	if (goal && goal.status != "COMPLETED") {
 		const index = goal.learningSubGoals.findIndex(
 			goal => goal.status == "INACTIVE" || goal.status == "ACTIVE"
 		);
@@ -155,7 +167,7 @@ function GoalTable({
 							<td className="w-3/5">
 								<div className="group flex flex-row">
 									<div className="font-bold">{goal.description}</div>
-									{goal.status != "COMPLETED" && (
+									{goal.status != "COMPLETED" && editable && (
 										<div className="invisible group-hover:visible">
 											<QuickEditButton
 												onClick={() => setOpenAddDialog(true)}
@@ -171,12 +183,12 @@ function GoalTable({
 							</td>
 							<td className="w-2/5">
 								<div className="flex justify-end">
-									<GoalStatus goal={goal} />
+									<GoalStatus goal={goal} editable={editable} />
 								</div>
 							</td>
 						</tr>
 						{goal.learningSubGoals.map(subGoal => (
-							<SubGoalRow key={subGoal.id} subGoal={subGoal} />
+							<SubGoalRow key={subGoal.id} subGoal={subGoal} editable={editable} />
 						))}
 					</tbody>
 				</table>
@@ -190,9 +202,11 @@ function GoalTable({
 }
 
 function SubGoalRow({
-	subGoal
+	subGoal,
+	editable
 }: Readonly<{
 	subGoal: LearningSubGoal;
+	editable: boolean;
 }>) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 	return (
@@ -200,14 +214,16 @@ function SubGoalRow({
 			<td className="w-3/5">
 				<div className="group flex flex-row">
 					<div className="ml-5">{subGoal.description}</div>
-					<div className="invisible group-hover:visible">
-						<QuickEditButton onClick={() => setOpenAddDialog(true)} />
-						<GoalDeleteOption
-							goalId={subGoal.id}
-							isSubGoal={true}
-							className="px-2 hover:text-secondary"
-						/>
-					</div>
+					{editable && (
+						<div className="invisible group-hover:visible">
+							<QuickEditButton onClick={() => setOpenAddDialog(true)} />
+							<GoalDeleteOption
+								goalId={subGoal.id}
+								isSubGoal={true}
+								className="px-2 hover:text-secondary"
+							/>
+						</div>
+					)}
 					{openAddDialog && (
 						<GoalEditorDialog
 							subGoal={subGoal}
@@ -218,7 +234,7 @@ function SubGoalRow({
 			</td>
 			<td className="w-2/5">
 				<div className="flex justify-end">
-					<GoalStatus subGoal={subGoal} />
+					<GoalStatus subGoal={subGoal} editable={editable} />
 				</div>
 			</td>
 		</tr>
