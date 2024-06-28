@@ -3,7 +3,8 @@ import {
 	ArrowLeftOnRectangleIcon,
 	UserIcon,
 	Bars4Icon,
-	XMarkIcon
+	XMarkIcon,
+	WrenchIcon
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
@@ -175,6 +176,19 @@ export function NavbarDropdownMenu({
 							>
 								<UserIcon className="h-5" />
 								<span>Übersicht</span>
+							</Link>
+						)}
+					</Menu.Item>
+					<Menu.Item as="div" className="p-1">
+						{({ active }) => (
+							<Link
+								href="/user-settings"
+								className={`${
+									active ? "bg-emerald-500 text-white" : ""
+								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+							>
+								<WrenchIcon className="h-5" />
+								<span>Einstellungen</span>
 							</Link>
 						)}
 					</Menu.Item>
