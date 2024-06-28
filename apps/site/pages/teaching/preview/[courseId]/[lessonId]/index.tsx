@@ -1,11 +1,13 @@
 import { LessonLayout, getCourseById } from "libs/feature/lesson/src/lib/lesson-layout";
 import Lesson from "apps/site/pages/courses/[courseSlug]/[lessonSlug]";
 import { LessonType } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GetServerSideProps } from "next";
 import React from "react";
-import { CompiledMarkdown } from "../../../../../../../libs/util/markdown/src";
 import { LessonLayoutProps } from "@self-learning/lesson";
+import { MDXRemoteSerializeResult } from "next-mdx-remote";
+import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
+import { LessonContent, findContentType } from "@self-learning/types";
 
 function getEmptyMarkdown() {
 	return {
@@ -52,15 +54,68 @@ function getLesson(title: string | string[] | undefined, id: string | undefined)
 	};
 }
 
+type MarkdownContent = {
+	description: MDXRemoteSerializeResult | null;
+	subtitle: MDXRemoteSerializeResult | null;
+	article: MDXRemoteSerializeResult | null;
+	preQuestion: MDXRemoteSerializeResult | null;
+};
+
 export default function LessonPreview() {
 	const [lesson, setLesson] = useState(getLesson(undefined, ""));
+	const [markdown, setMarkdown] = useState<MarkdownContent>(getEmptyMarkdown());
+
+	console.log("Preview, lesson", lesson);
+	const lessonRef = useRef(lesson); // store the previous lesson state
 
 	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const storedData = localStorage.getItem("lessonInEditing");
-			storedData ? setLesson(JSON.parse(storedData)) : setLesson(getLesson(undefined, ""));
-		}
+		const fetchLessonData = async () => {
+			if (typeof window !== "undefined") {
+				const storedData = localStorage.getItem("lessonInEditing");
+				const lessonData = storedData ? JSON.parse(storedData) : getLesson(undefined, "");
+				setLesson(lessonData);
+			}
+		};
+
+		fetchLessonData();
 	}, []);
+
+	useEffect(() => {
+		const compileMarkdownData = async () => {
+			if (lesson === lessonRef.current) {
+				return;
+			}
+
+			const mdDescription = lesson.description
+				? await compileMarkdown(lesson.description)
+				: null;
+
+			const mdSubtitle = lesson.subtitle ? await compileMarkdown(lesson.subtitle) : null;
+
+			const { content: article } = findContentType(
+				"article",
+				lesson.content as LessonContent
+			);
+			const mdArticle = article ? await compileMarkdown(article.value.content) : null;
+
+			setMarkdown({
+				description: mdDescription,
+				subtitle: mdSubtitle,
+				article: mdArticle,
+				preQuestion: null
+			});
+
+			console.log("Preview, UE, markdown", {
+				description: mdDescription,
+				subtitle: mdSubtitle,
+				article: mdArticle
+			});
+
+			lessonRef.current = lesson;
+		};
+
+		compileMarkdownData();
+	}, [lesson]);
 
 	/* TODO "back" btn
 	function redirectBackToEditor() {
@@ -78,7 +133,14 @@ export default function LessonPreview() {
 	}
 	*/
 
-	return <Lesson lesson={lesson} course={getPlaceholderCourse()} markdown={getEmptyMarkdown()} />;
+	return (
+		<Lesson
+			lesson={lesson}
+			course={getPlaceholderCourse()}
+			markdown={markdown}
+			isPreview={true}
+		/>
+	);
 }
 
 export type LessonProps = LessonLayoutProps & {
@@ -102,7 +164,6 @@ function getValueFromQuery(value: string[] | string | undefined) {
 }
 
 export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ query }) => {
-	console.log("# query", query);
 	const lessonId = query.lessonId ? getValueFromQuery(query.lessonId) : "";
 	const lessonTitle = query.lessonTitle ? getValueFromQuery(query.lessonTitle) : "";
 	const courseId = query.courseId ? getValueFromQuery(query.courseId) : "placeholder";

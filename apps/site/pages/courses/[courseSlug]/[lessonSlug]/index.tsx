@@ -33,6 +33,7 @@ export type LessonProps = LessonLayoutProps & {
 		preQuestion: CompiledMarkdown | null;
 		subtitle: CompiledMarkdown | null;
 	};
+	isPreview?: boolean;
 };
 
 export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
@@ -116,7 +117,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	return preferredMediaType;
 }
 
-export default function Lesson({ lesson, course, markdown }: LessonProps) {
+export default function Lesson({ lesson, course, markdown, isPreview }: LessonProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
@@ -152,6 +153,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 				course={course}
 				mdDescription={markdown.description}
 				mdSubtitle={markdown.subtitle}
+				isPreview={isPreview}
 			/>
 
 			{preferredMediaType === "article" && markdown.article && (
@@ -175,12 +177,14 @@ function LessonHeader({
 	course,
 	lesson,
 	mdDescription,
-	mdSubtitle
+	mdSubtitle,
+	isPreview
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 	mdDescription?: CompiledMarkdown | null;
 	mdSubtitle?: CompiledMarkdown | null;
+	isPreview?: boolean;
 }) {
 	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
 
@@ -215,7 +219,7 @@ function LessonHeader({
 					</span>
 
 					<div className="pt-4">
-						<MediaTypeSelector lesson={lesson} course={course} />
+						<MediaTypeSelector lesson={lesson} course={course} isPreview={isPreview} />
 					</div>
 				</div>
 			</div>
@@ -311,10 +315,12 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 
 function MediaTypeSelector({
 	lesson,
-	course
+	course,
+	isPreview
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
+	isPreview?: boolean;
 }) {
 	const lessonContent = lesson.content as LessonContent;
 	// If no content is specified at this time, use video as default (and don't s´display anything)
@@ -327,8 +333,12 @@ function MediaTypeSelector({
 		const type = lessonContent[index].type;
 
 		window.localStorage.setItem("preferredMediaType", type);
+		let path = `/courses/${course.slug}/${lesson.slug}?type=${type}`;
 
-		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
+		if (isPreview) {
+			path = `/teaching/preview/${course.slug}/${lesson.slug}`;
+		}
+		router.push(path, undefined, {
 			shallow: true
 		});
 
