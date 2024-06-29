@@ -12,20 +12,21 @@ import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
 import { Skill } from "@prisma/client";
 import { useTranslation } from "react-i18next";
-//Übersetzen
+import i18next from "i18next";
+
 const withErrorHandling = async (fn: () => Promise<void>) => {
 	try {
 		await fn();
 		showToast({
 			type: "success",
-			title: "Aktion erfolgreich!",
+			title: i18next.t("action_success"),
 			subtitle: ""
 		});
 	} catch (error) {
 		if (error instanceof Error) {
 			showToast({
 				type: "error",
-				title: "Ihre Aktion konnte nicht durchgeführt werden",
+				title: i18next.t("action_error"),
 				subtitle: error.message ?? ""
 			});
 		}

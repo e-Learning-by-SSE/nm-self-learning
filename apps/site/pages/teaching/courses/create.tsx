@@ -25,7 +25,7 @@ export default function CreateCoursePage() {
 				courseId: courseId
 			});
 
-			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
+			showToast({ type: "success", title: t("course_created"), subtitle: title });
 			router.push(`/courses/${slug}`);
 		} catch (error) {
 			console.error(error);

@@ -49,6 +49,7 @@ export function Upload({
 	const [viewProgressDialog, setViewProgressDialog] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [fileName, setFileName] = useState("");
+	const { t } = useTranslation();
 
 	const accept = useMemo(() => {
 		const mediaTypes = {
@@ -128,18 +129,15 @@ export function Upload({
 					);
 				}
 			}
-			//Übersetzen
 			console.error("Upload Error:", error);
 			showToast({
 				type: "error",
-				title: "Upload fehlgeschlagen",
-				subtitle:
-					"Upload fehlgeschlagen. Wenn der Fehler länger bestehen bleibt, kontaktieren Sie bitte einen Administrator."
+				title: t("upload_error_title"),
+				subtitle: t("upload_error_subtitle")
 			});
 		}
 	}
 
-	const { t } = useTranslation();
 	return (
 		<div className="relative flex flex-col gap-4">
 			{viewProgressDialog && <UploadProgressDialog name={fileName} progress={progress} />}
@@ -451,7 +449,6 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 			}
 		}
 	}
-	//Übersetzen??
 	return (
 		<Menu as="div" className="relative flex">
 			<Menu.Button className="rounded-full p-2 hover:bg-gray-50">

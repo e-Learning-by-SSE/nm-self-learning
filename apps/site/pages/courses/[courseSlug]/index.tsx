@@ -283,8 +283,8 @@ function CourseHeader({
 						>
 							<span>
 								{completion?.courseCompletion.completedLessonCount === 0
-									? "Starten"
-									: "Fortfahren"}
+									? t("start")
+									: t("Continue")}
 							</span>
 							<PlayIcon className="h-5" />
 						</Link>

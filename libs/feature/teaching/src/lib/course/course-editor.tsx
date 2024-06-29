@@ -29,7 +29,6 @@ export function CourseEditor({
 	});
 
 	const [viewExportDialog, setViewExportDialog] = useState(false);
-	//übersetzen
 	return (
 		<div className="bg-gray-50">
 			<FormProvider {...form}>

@@ -123,7 +123,7 @@ export function SpecializationEditor({
 									subtitle={t("infos_for_specialization")}
 								></Form.SidebarSectionTitle>
 								<div className="flex flex-col gap-4">
-									<LabeledField label="Titel" error={errors.title?.message}>
+									<LabeledField label={t("title")} error={errors.title?.message}>
 										<input
 											className="textfield"
 											type={"text"}
@@ -152,13 +152,13 @@ export function SpecializationEditor({
 											}
 										/>
 										<FieldHint>
-											Der <strong>slug</strong> wird in der URL angezeigt.
-											Muss einzigartig sein.
+											{t("show_slug_text_1")} <strong>slug</strong>{" "}
+											{t("show_slug_text_2")}
 										</FieldHint>
 									</LabeledField>
 
 									<LabeledField
-										label="Untertitel"
+										label={t("subtitle")}
 										error={errors.subtitle?.message}
 									>
 										<textarea
@@ -166,9 +166,7 @@ export function SpecializationEditor({
 											{...register("subtitle")}
 											rows={16}
 										/>
-										<FieldHint>
-											Beschreibung dieser Spezialisierung in 2-3 Sätzen.
-										</FieldHint>
+										<FieldHint>{t("specialization_description")}</FieldHint>
 									</LabeledField>
 								</div>
 							</Form.SidebarSection>
@@ -177,8 +175,8 @@ export function SpecializationEditor({
 				>
 					<section>
 						<SectionHeader
-							title="Bild (Banner)"
-							subtitle="Bild, das als Banner am Seitenbeginn angezeigt wird."
+							title={t("image_banner_title")}
+							subtitle={t("image_banner_subtitle")}
 						/>
 
 						<Upload
@@ -195,8 +193,8 @@ export function SpecializationEditor({
 
 					<section className="w-fit">
 						<SectionHeader
-							title="Bild (Karte)"
-							subtitle="Bild das auf Karten angezeigt wird."
+							title={t("image_card_title")}
+							subtitle={t("image_card_subtitle")}
 						/>
 
 						<Upload

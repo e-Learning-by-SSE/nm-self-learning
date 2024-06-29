@@ -7,7 +7,6 @@ import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
-import { useTranslation } from "react-i18next";
 import { trpc } from "@self-learning/api-client";
 
 type EditLessonProps = {

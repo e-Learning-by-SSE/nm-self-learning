@@ -1,6 +1,7 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 import { TransparentDeleteButton } from "../button/delete-button";
+import { useTranslation } from "react-i18next";
 
 export function Chip({
 	children,
@@ -13,6 +14,7 @@ export function Chip({
 	displayImage: boolean;
 	imgUrl?: string | null;
 }) {
+	const { t } = useTranslation();
 	return (
 		<li className="flex items-center rounded-lg border border-light-border bg-white text-sm">
 			{displayImage && (
@@ -28,7 +30,7 @@ export function Chip({
 					<TransparentDeleteButton
 						onDelete={onRemove}
 						data-testid={"remove"}
-						title="Author Entfernen"
+						title={t("remove_author")}
 					/>
 				)}
 			</div>

@@ -14,6 +14,7 @@ i18next
 		},
 		lng: "de", // Default language
 		fallbackLng: "de",
+		preload: ["de", "en"],
 		interpolation: {
 			escapeValue: false
 		}

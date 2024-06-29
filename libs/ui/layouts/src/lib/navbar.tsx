@@ -138,11 +138,12 @@ export function NavbarDropdownMenu({
 	avatarUrl?: string | null;
 	signOut: () => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<Menu as="div" className="relative ml-1 xl:ml-3">
 			<div>
 				<Menu.Button className="flex items-center gap-1 rounded-full text-sm">
-					<span className="sr-only">Nutzermenü Öffnen</span>
+					<span className="sr-only">{t("open_user_menu")}</span>
 					{avatarUrl ? (
 						<img
 							className="h-[42px] w-[42px] rounded-full object-cover object-top"
@@ -176,7 +177,7 @@ export function NavbarDropdownMenu({
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
 								<UserIcon className="h-5" />
-								<span>Übersicht</span>
+								<span>{t("overview")}</span>
 							</Link>
 						)}
 					</Menu.Item>
@@ -189,7 +190,7 @@ export function NavbarDropdownMenu({
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
 								<ArrowLeftOnRectangleIcon className="h-5" />
-								<span>Logout</span>
+								<span>{t("logout")}</span>
 							</button>
 						)}
 					</Menu.Item>

@@ -21,6 +21,7 @@ import { t } from "i18next";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 
 type QuizForm = { quiz: Quiz };
 
@@ -98,7 +99,7 @@ export function QuizEditor() {
 				subtitle={t("tasks_subtitle")}
 				button={
 					<AddDropDownButton label={t("add_task")}>
-						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES()).map(type => (
 							<AddButton
 								title={t("add_task")}
 								onAdd={() => appendQuestion(type as QuestionType["type"])}
@@ -106,7 +107,11 @@ export function QuizEditor() {
 								key={type as QuestionType["type"]}
 								label={
 									<span>
-										{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
+										{
+											QUESTION_TYPE_DISPLAY_NAMES()[
+												type as QuestionType["type"]
+											]
+										}
 									</span>
 								}
 							/>
@@ -130,7 +135,7 @@ export function QuizEditor() {
 								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
 									<div className="flex flex-col">
 										<span className="text-xs font-normal">
-											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
+											{QUESTION_TYPE_DISPLAY_NAMES()[value.type]}
 										</span>
 										<span>
 											{t("task")} {index + 1}
@@ -273,7 +278,7 @@ function BaseQuestionForm({
 	return (
 		<div className="">
 			<span className="font-semibold text-secondary">
-				{QUESTION_TYPE_DISPLAY_NAMES[currentQuestion.type]}
+				{QUESTION_TYPE_DISPLAY_NAMES()[currentQuestion.type]}
 			</span>
 			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">
 				{t("task")} {index + 1}

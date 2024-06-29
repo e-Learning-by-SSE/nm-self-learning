@@ -7,6 +7,7 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "../course/course-form-model";
 import { AddAuthorDialog } from "./add-author-dialog";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 
 export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; emptyString: string }) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -31,9 +32,9 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 		}
 		setOpenAddDialog(false);
 	};
-	//Übersetzen
+
 	function handleRemove(index: number) {
-		window.confirm("Autor entfernen?") && remove(index);
+		window.confirm(i18next.t("remove_author")) && remove(index);
 	}
 
 	const { t } = useTranslation();

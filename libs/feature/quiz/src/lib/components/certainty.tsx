@@ -1,3 +1,4 @@
+import i18next from "i18next";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -38,21 +39,20 @@ function useCertainty(initialCertainty: number) {
 }
 
 function mapCertainty(certainty: number): string {
-	//Übersetzen
 	if (certainty < 25) {
-		return "certainty<25";
+		return i18next.t("certainty<25");
 	}
 	if (certainty < 50) {
-		return "leicht unsicher";
+		return i18next.t("certainty_50");
 	}
 	if (certainty < 75) {
-		return "leicht sicher";
+		return i18next.t("certainty_75");
 	}
 	if (certainty < 100) {
-		return "sehr sicher";
+		return i18next.t("certainty_100");
 	}
 	if (certainty >= 100) {
-		return "absolut sicher";
+		return i18next.t("certainty_complete");
 	}
 
 	return "";

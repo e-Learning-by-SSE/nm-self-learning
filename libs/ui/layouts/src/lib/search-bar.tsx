@@ -36,12 +36,13 @@ function SearchInput({
 }
 
 function NoResults() {
+	const { t } = useTranslation();
 	return (
 		<div className="px-4 py-8 text-center text-sm sm:px-8">
 			<FaceFrownIcon className="mx-auto h-7 w-7 text-gray-400" />
-			<p className="mt-4 font-semibold text-gray-900">Nichts hier</p>
-			<p className="mt-2 text-gray-500">Leider konnten wir nichts finden was</p>
-			<p className="text-gray-500">deiner Suchanfrage entspricht</p>
+			<p className="mt-4 font-semibold text-gray-900">{t("nothing_here")}</p>
+			<p className="mt-2 text-gray-500">{t("search_bar_not_found_text_1")}</p>
+			<p className="text-gray-500">{t("search_bar_not_found_text_2")}</p>
 		</div>
 	);
 }
@@ -54,6 +55,7 @@ function SearchResults({
 	resetSearchQuery: () => void;
 }) {
 	const session = useSession();
+	const { t } = useTranslation();
 	const user = session.data?.user;
 	const search = { title: searchQuery, page: 1 };
 	const isUserAdmin = user?.role === "ADMIN";
@@ -76,7 +78,7 @@ function SearchResults({
 			{!hasResults && <NoResults />}
 			{courses && (
 				<SearchSection
-					title="Kurse"
+					title={t("courses")}
 					results={courses.result}
 					baseLink="courses"
 					onClick={resetSearchQuery}
@@ -84,7 +86,7 @@ function SearchResults({
 			)}
 			{lessons && isUserAdmin && (
 				<SearchSection
-					title="Lerneinheiten"
+					title={t("lessons")}
 					results={lessons.result}
 					baseLink="teaching/lessons/edit"
 					onClick={resetSearchQuery}
@@ -93,7 +95,7 @@ function SearchResults({
 
 			{authorResults && (
 				<SearchSection
-					title="Autoren"
+					title={t("authors")}
 					results={authorResults}
 					baseLink="authors"
 					onClick={resetSearchQuery}

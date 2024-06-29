@@ -9,9 +9,8 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { useTranslation } from "react-i18next";
-import { t } from "i18next";
+import i18next from "i18next";
 
-//Übersetzen
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
 	createLessonAsync: (lesson: LessonFormModel) => Promise<{
@@ -22,15 +21,19 @@ export async function onLessonCreatorSubmit(
 	try {
 		if (lesson) {
 			const result = await createLessonAsync(lesson);
-			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
+			showToast({
+				type: "success",
+				title: i18next.t("lesson_created"),
+				subtitle: result.title
+			});
 		}
 		onClose();
 	} catch (error) {
 		console.error(error);
 		showToast({
 			type: "error",
-			title: "Fehler",
-			subtitle: "Lerneinheit konnte nicht erstellt werden."
+			title: i18next.t("error"),
+			subtitle: i18next.t("lesson_editor_lesson_not_created")
 		});
 	}
 }
@@ -51,7 +54,7 @@ export async function onLessonEditorSubmit(
 			});
 			showToast({
 				type: "success",
-				title: "Lerneinheit gespeichert!",
+				title: i18next.t("lesson_editor_lesson_saved"),
 				subtitle: result.title
 			});
 		}
@@ -59,8 +62,8 @@ export async function onLessonEditorSubmit(
 	} catch (error) {
 		showToast({
 			type: "error",
-			title: "Fehler",
-			subtitle: "Die Lernheit konnte nicht gespeichert werden."
+			title: i18next.t("error"),
+			subtitle: i18next.t("lesson_editor_lesson_not_saved")
 		});
 	}
 }
@@ -163,6 +166,7 @@ function SecondTabContent({
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
 			<LessonInfoEditor lesson={initialLesson} />

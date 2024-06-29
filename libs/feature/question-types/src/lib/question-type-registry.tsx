@@ -42,9 +42,9 @@ import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
 import { LessonLayoutProps } from "@self-learning/lesson";
+import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 
-//Übersetzen
 const ProgrammingAnswer = dynamic(() => import("./question-types/programming/component"), {
 	ssr: false
 });
@@ -183,16 +183,20 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
  * This name is shown to users to indicate the question type.
  */
 //übersetzen
-export const QUESTION_TYPE_DISPLAY_NAMES: {
-	[QType in QuestionType["type"]]: string;
-} = {
-	"multiple-choice": "Multiple-Choice",
-	exact: "Exakte Antwort",
-	text: "Freitext",
-	programming: "Programmierung",
-	cloze: "Lückentext",
-	arrange: "Ordnen"
-};
+export function QUESTION_TYPE_DISPLAY_NAMES() {
+	const { t } = useTranslation();
+	const QTDN: {
+		[QType in QuestionType["type"]]: string;
+	} = {
+		"multiple-choice": "Multiple-Choice",
+		exact: t("exact"),
+		text: t("text"),
+		programming: t("programming"),
+		cloze: t("cloze"),
+		arrange: t("arrange")
+	};
+	return QTDN;
+}
 
 /**
  * Component that renders the appropriate answer component for a given question type.

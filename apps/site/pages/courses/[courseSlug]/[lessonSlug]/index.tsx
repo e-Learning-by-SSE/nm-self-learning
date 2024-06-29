@@ -26,6 +26,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
+import { t } from "i18next";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -60,16 +62,15 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	const { content: article } = findContentType("article", lesson.content as LessonContent);
 
 	if (article) {
-		mdArticle = await compileMarkdown(article.value.content ?? "übersetzen");
+		mdArticle = await compileMarkdown(article.value.content ?? i18next.t("no_content"));
 
 		// Remove article content to avoid duplication
 		article.value.content = "(replaced)";
 	}
 
 	// TODO change to check if the lesson is self requlated
-	//übersetzen
 	if (lesson.lessonType === LessonType.SELF_REGULATED) {
-		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Übersetzen");
+		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? i18next.t("no_content"));
 	}
 
 	return {
@@ -232,14 +233,14 @@ function LessonHeader({
 }
 
 function DefaultLicenseLabel() {
+	const { t } = useTranslation();
 	const { data, isLoading } = trpc.licenseRouter.getDefault.useQuery();
 	const fallbackLicense = {
-		name: "Keine Lizenz verfügbar",
+		name: t("missing_license"),
 		logoUrl: "",
 		url: "",
 		oerCompatible: false,
-		licenseText:
-			"*Für diese Lektion ist keine Lizenz verfügbar. Bei Nachfragen, wenden Sie sich an den Autor*"
+		licenseText: t("missing_license_text")
 	};
 	if (!isLoading && !data) {
 		console.log("No default license found");
@@ -250,7 +251,7 @@ function DefaultLicenseLabel() {
 
 function LicenseLabel({ license }: { license: NonNullable<LessonProps["lesson"]["license"]> }) {
 	return (
-		<LabeledField label="Lizenz">
+		<LabeledField label={t("license")}>
 			<LicenseChip
 				name={license.name}
 				imgUrl={license.logoUrl ?? undefined}
