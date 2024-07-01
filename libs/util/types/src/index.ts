@@ -9,4 +9,3 @@ export * from "./lib/license";
 export * from "./lib/specialization";
 export * from "./lib/subject";
 export * from "./lib/skill";
-export * from "./lib/enrollment"
