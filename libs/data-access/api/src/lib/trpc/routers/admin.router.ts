@@ -4,6 +4,8 @@ import { paginate, Paginated, paginationSchema } from "@self-learning/util/commo
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, t } from "../trpc";
+import { userSchema } from "@self-learning/types";
+import { deleteUserCascade } from "@self-learning/admin";
 
 export const adminRouter = t.router({
 	findUsers: adminProcedure
@@ -39,6 +41,56 @@ export const adminRouter = t.router({
 			]);
 
 			return { result, totalCount, page, pageSize } satisfies Paginated<unknown>;
+		}),
+	getUser: adminProcedure.input(z.string()).query(async ({ input }) => {
+		return database.user.findUniqueOrThrow({
+			where: { name: input },
+			select: {
+				id: true,
+				name: true,
+				displayName: true,
+				email: true,
+				emailVerified: true,
+				role: true,
+				image: true,
+				author: true,
+				student: true
+			}
+		});
+	}),
+	deleteUserAndDependentData: adminProcedure.input(z.string()).mutation(async ({ input }) => {
+		const username = input;
+		const deletedEntities: {
+			entityType: string;
+			entityId?: string;
+			count?: number;
+		}[] = [];
+
+		await deleteUserCascade(username, deletedEntities, database);
+
+		const result = {
+			action: "deleted",
+			details: deletedEntities,
+			message: `User '${username}' and dependent data deleted successfully.`
+		};
+
+		return result;
+	}),
+	updateUser: adminProcedure
+		.input(
+			z.object({
+				username: z.string(),
+				user: userSchema
+			})
+		)
+		.mutation(async ({ input }) => {
+			const { username, user } = input;
+			const updated = await database.user.update({
+				where: { name: username },
+				data: user
+			});
+
+			return updated;
 		}),
 	promoteToAuthor: adminProcedure
 		.input(
