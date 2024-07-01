@@ -174,7 +174,7 @@
 	"skill_delete_message_single": "Do you really want to delete this skill",
 	"skill_delete_message_plural": "Do you really want to delete these skills?",
 	"skill_from": "Skill from",
-	"skill_cycle_warning_message": "Warnung: In Ihrer Modellierung der Lernziele ist ein Zyklusvorhanden. Aufgrund dessen kann der Algorithmus keinengültigen Lernpfad mit den im Zyklus beteiligten Lernzielenfinden. Die angegebenen Pfadziele sind nicht erreichbar undkönnen nur privat gespeichert werden. Die betroffenen Skillskönnen durch Klicken auf diesen Text angezeigt werden.",
+	"skill_cycle_warning_message": "Warning: In Ihrer Modellierung der Lernziele ist ein Zyklusvorhanden. Aufgrund dessen kann der Algorithmus keinengültigen Lernpfad mit den im Zyklus beteiligten Lernzielenfinden. Die angegebenen Pfadziele sind nicht erreichbar undkönnen nur privat gespeichert werden. Die betroffenen Skillskönnen durch Klicken auf diesen Text angezeigt werden.",
 	"cycle_representation": "Cycle - Representation",
 	"show_more": "Show more",
 
@@ -485,6 +485,9 @@
 	"hint": "Hint",
 	"hints": "Hints",
 	"no_hints_remaining": "There are no hints available for this Learn-Check.",
+
+	"courses_assigned_to_specialization": "Courses, which are assigned to a specialization",
+	"course_removed": "Course removed",
 
 	"hallo": "hallo"
 }

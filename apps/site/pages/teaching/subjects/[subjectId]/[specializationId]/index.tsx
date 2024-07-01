@@ -148,8 +148,8 @@ export default function SpecializationManagementPage() {
 
 			<CenteredContainerXL>
 				<SectionHeader
-					title="Kurse"
-					subtitle="Kurse, die dieser Spezialisierung zugeordnet sind."
+					title={t("courses")}
+					subtitle={t("courses_assigned_to_specialization")}
 				/>
 
 				<div className="mb-8 flex flex-wrap gap-4">

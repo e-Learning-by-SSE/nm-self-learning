@@ -486,5 +486,8 @@
 	"hints": "Hinweise",
 	"no_hints_remaining": "Du hast keine Hinweise für diese Lernkontrolle zur Verfügung.",
 
+	"courses_assigned_to_specialization": "Kurse, die dieser Spezialisierung zugeordnet sind.",
+	"course_removed": "Kurs entfernt",
+
 	"hallo": "hallo"
 }
