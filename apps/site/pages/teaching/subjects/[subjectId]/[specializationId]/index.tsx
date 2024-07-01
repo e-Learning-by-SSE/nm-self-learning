@@ -133,7 +133,7 @@ export default function SpecializationManagementPage() {
 			<TopicHeader
 				imgUrlBanner={specialization.imgUrlBanner}
 				parentLink="/subjects"
-				parentTitle={t("subjcet")}
+				parentTitle={t("subject")}
 				title={specialization.title}
 				subtitle={specialization.subtitle}
 			>
