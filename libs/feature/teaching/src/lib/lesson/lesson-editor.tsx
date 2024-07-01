@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { lessonSchema } from "@self-learning/types";
+import { lessonSchema, createLessonMeta } from "@self-learning/types";
 import { SectionHeader, showToast } from "@self-learning/ui/common";
 import { Form, MarkdownField } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
@@ -11,6 +11,7 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { LessonType } from "@prisma/client";
+import { useRouter } from "next/router";
 
 export function LessonEditor({
 	lesson,
@@ -26,6 +27,7 @@ export function LessonEditor({
 	});
 
 	const [selectedLessonType, setLessonType] = useState(lesson.lessonType);
+	const router = useRouter();
 
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
@@ -42,9 +44,29 @@ export function LessonEditor({
 		}
 	}, [lesson]);
 
+	function redirectToPreview() {
+		const currentLessonValues = form.getValues();
+		const lessonMeta = createLessonMeta(currentLessonValues);
+		const currentLessonValuesWithMeta = { ...currentLessonValues, meta: lessonMeta };
+		const serializedData = JSON.stringify(currentLessonValuesWithMeta);
+		localStorage.setItem("lessonInEditing", serializedData);
+
+		const courseId = router.query["courseId"] ? router.query["courseId"] : "placeholder";
+		const lessonId = currentLessonValues.lessonId;
+		const lessonTitle = currentLessonValues.title;
+
+		router.push({
+			pathname: `/teaching/preview/${courseId}/${lessonId}`,
+			query: { lessonTitle }
+		});
+	}
+
 	return (
 		<div className="bg-gray-50">
 			<FormProvider {...form}>
+				<button className="btn-primary" onClick={redirectToPreview}>
+					Vorschau
+				</button>
 				<form
 					onSubmit={form.handleSubmit(
 						data => {

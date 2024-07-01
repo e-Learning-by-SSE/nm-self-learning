@@ -74,7 +74,7 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 		subtitle: lesson.subtitle,
 		description: lesson.description,
 		imgUrl: lesson.imgUrl,
-		authors: lesson.authors.map(a => ({ username: a.username })),
+		authors: lesson.authors,
 		licenseId: lesson.licenseId,
 		requirements: lesson.requirements.map(r => ({
 			...r,
