@@ -1,4 +1,4 @@
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import { Prisma } from "@prisma/client";
 import { testApiHandler } from "next-test-api-route-handler";
 import { z } from "zod";
 import { apiHandler } from "./api-handler";
@@ -114,7 +114,7 @@ Object {
 		return testApiHandler({
 			handler: (req, res) =>
 				apiHandler(req, res, "GET", async () => {
-					throw new PrismaClientKnownRequestError("Error from Prisma", {
+					throw new Prisma.PrismaClientKnownRequestError("Error from Prisma", {
 						code: "P2002",
 						clientVersion: "4.7.1",
 						meta: {
