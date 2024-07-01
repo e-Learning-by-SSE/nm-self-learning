@@ -197,7 +197,7 @@ function LessonHeader({
 							<span className="font-semibold text-secondary">{chapterName}</span>
 							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
-						<LessonControls course={course} lesson={lesson} />
+						<LessonControls course={course} lesson={lesson} isPreview={isPreview} />
 					</span>
 					{mdSubtitle && (
 						<MarkdownContainer className="mt-2 text-light">
@@ -265,21 +265,31 @@ function LicenseLabel({ license }: { license: NonNullable<LessonProps["lesson"][
 
 function LessonControls({
 	course,
-	lesson
+	lesson,
+	isPreview
 }: {
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
+	isPreview?: boolean;
 }) {
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
 	const completion = useCourseCompletion(course.slug);
 	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 
+	const router = useRouter();
+	const { courseId } = router.query;
+
+	let path = `/courses/${course.slug}/${lesson.slug}/quiz`;
+	if (isPreview) {
+		path = `/teaching/preview/${courseId}/${lesson.lessonId}/quiz?title=${lesson.title}`;
+	}
+
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			{hasQuiz && (
 				<Link
-					href={`/courses/${course.slug}/${lesson.slug}/quiz`}
+					href={path}
 					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					data-testid="quizLink"
 				>
@@ -328,6 +338,7 @@ function MediaTypeSelector({
 	const { index } = findContentType(preferredMediaType, lessonContent);
 	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();
+	const { courseId } = router.query;
 
 	function changeMediaType(index: number) {
 		const type = lessonContent[index].type;
@@ -336,7 +347,7 @@ function MediaTypeSelector({
 		let path = `/courses/${course.slug}/${lesson.slug}?type=${type}`;
 
 		if (isPreview) {
-			path = `/teaching/preview/${course.slug}/${lesson.slug}`;
+			path = `/teaching/preview/${courseId}/${lesson.slug}`;
 		}
 		router.push(path, undefined, {
 			shallow: true

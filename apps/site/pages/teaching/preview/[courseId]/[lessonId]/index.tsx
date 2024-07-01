@@ -9,7 +9,7 @@ import { MDXRemoteSerializeResult } from "next-mdx-remote";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { LessonContent, findContentType } from "@self-learning/types";
 
-function getEmptyMarkdown() {
+export function getEmptyMarkdown() {
 	return {
 		article: null,
 		description: null,
@@ -18,7 +18,7 @@ function getEmptyMarkdown() {
 	};
 }
 
-function getPlaceholderCourse() {
+export function getPlaceholderCourse() {
 	return {
 		courseId: "placeholder",
 		title: "Platzhalter-Kurs",
@@ -26,7 +26,7 @@ function getPlaceholderCourse() {
 	};
 }
 
-function getLesson(title: string | string[] | undefined, id: string | undefined) {
+export function getPlaceholderLesson(title: string | string[] | undefined, id: string | undefined) {
 	const lessonId = id ? id : "";
 
 	let lessonTitle = "Platzhalter-Lerneinheit";
@@ -62,17 +62,18 @@ type MarkdownContent = {
 };
 
 export default function LessonPreview() {
-	const [lesson, setLesson] = useState(getLesson(undefined, ""));
+	const [lesson, setLesson] = useState(getPlaceholderLesson(undefined, ""));
 	const [markdown, setMarkdown] = useState<MarkdownContent>(getEmptyMarkdown());
 
-	console.log("Preview, lesson", lesson);
 	const lessonRef = useRef(lesson); // store the previous lesson state
 
 	useEffect(() => {
 		const fetchLessonData = async () => {
 			if (typeof window !== "undefined") {
 				const storedData = localStorage.getItem("lessonInEditing");
-				const lessonData = storedData ? JSON.parse(storedData) : getLesson(undefined, "");
+				const lessonData = storedData
+					? JSON.parse(storedData)
+					: getPlaceholderLesson(undefined, "");
 				setLesson(lessonData);
 			}
 		};
@@ -104,13 +105,6 @@ export default function LessonPreview() {
 				article: mdArticle,
 				preQuestion: null
 			});
-
-			console.log("Preview, UE, markdown", {
-				description: mdDescription,
-				subtitle: mdSubtitle,
-				article: mdArticle
-			});
-
 			lessonRef.current = lesson;
 		};
 
@@ -142,8 +136,7 @@ export default function LessonPreview() {
 		/>
 	);
 }
-
-export type LessonProps = LessonLayoutProps & {
+type LessonProps = LessonLayoutProps & {
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
@@ -152,7 +145,7 @@ export type LessonProps = LessonLayoutProps & {
 	};
 };
 
-function getValueFromQuery(value: string[] | string | undefined) {
+export function getValueFromQuery(value: string[] | string | undefined) {
 	let result = "";
 
 	if (typeof value === "string") {
@@ -173,7 +166,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ quer
 		course = getPlaceholderCourse();
 	}
 
-	const props = { lesson: getLesson(lessonTitle, lessonId), course: course };
+	const props = { lesson: getPlaceholderLesson(lessonTitle, lessonId), course: course };
 
 	return {
 		props: {
