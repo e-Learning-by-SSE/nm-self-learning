@@ -248,7 +248,6 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							</span>
 						</TableDataColumn>
 						<TableDataColumn key={"progress"}>
-							{" "}
 							<ProgressBar
 								completionPercentage={
 									enrollment.completions.courseCompletion.completionPercentage
