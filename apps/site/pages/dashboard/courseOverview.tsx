@@ -274,14 +274,10 @@ export const getServerSideProps: GetServerSideProps = async context => {
 		};
 	}
 
-	const username = session.user.name;
-
 	try {
-		const enrollments = await getEnrollmentDetails(username);
-
 		return {
 			props: {
-				enrollments
+				enrollments: await getEnrollmentDetails(session.user.name)
 			}
 		};
 	} catch (error) {
