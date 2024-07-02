@@ -6,6 +6,7 @@ import { getSession } from "next-auth/react";
 import { ProgressBar, Tab, Table, TableDataColumn, Tabs } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
+import { formatDateAgo } from "@self-learning/util/common";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -161,6 +162,12 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				b.completions.courseCompletion.completionPercentage -
 				a.completions.courseCompletion.completionPercentage
+		},
+		{
+			key: "update",
+			label: "Letzte Bearbeitung",
+			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
+				new Date(b.lastProgressUpdate).getTime() - new Date(a.lastProgressUpdate).getTime()
 		}
 	];
 
@@ -253,6 +260,9 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 									enrollment.completions.courseCompletion.completionPercentage
 								}
 							/>
+						</TableDataColumn>
+						<TableDataColumn>
+							{formatDateAgo(enrollment.lastProgressUpdate)}
 						</TableDataColumn>
 					</tr>
 				))}

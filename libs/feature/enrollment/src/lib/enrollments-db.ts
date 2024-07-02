@@ -7,6 +7,7 @@ export async function getEnrollmentDetails(username: string) {
 	const enrollments = await database.enrollment.findMany({
 		where: { username },
 		select: {
+			lastProgressUpdate: true,
 			course: {
 				select: {
 					title: true,
@@ -31,6 +32,7 @@ export async function getEnrollmentDetails(username: string) {
 
 			return {
 				...enrollment,
+				lastProgressUpdate: enrollment.lastProgressUpdate.toISOString(),
 				completions
 			};
 		})
