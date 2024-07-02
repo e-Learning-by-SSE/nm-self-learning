@@ -1,10 +1,10 @@
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { getSession } from "next-auth/react";
 import { ProgressBar, Tab, Table, TableDataColumn, Tabs } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
-import Image from "next/image";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
