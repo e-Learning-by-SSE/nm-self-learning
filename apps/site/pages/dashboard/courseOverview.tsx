@@ -159,8 +159,8 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 			key: "progress",
 			label: "Fortschritt",
 			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
-				a.completions.courseCompletion.completionPercentage -
-				b.completions.courseCompletion.completionPercentage
+				b.completions.courseCompletion.completionPercentage -
+				a.completions.courseCompletion.completionPercentage
 		}
 	];
 

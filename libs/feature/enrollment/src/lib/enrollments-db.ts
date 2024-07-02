@@ -7,9 +7,9 @@ export async function getEnrollmentDetails(username: string) {
 	const enrollments = await database.enrollment.findMany({
 		where: { username },
 		select: {
-			completedAt: true,
-			status: true,
-			lastProgressUpdate: true,
+			completedAt: false,
+			status: false,
+			lastProgressUpdate: false,
 			course: {
 				select: {
 					title: true,
@@ -34,16 +34,9 @@ export async function getEnrollmentDetails(username: string) {
 
 			return {
 				...enrollment,
-				completedAt: enrollment.completedAt ? enrollment.completedAt.toISOString() : null,
-				lastProgressUpdate: enrollment.lastProgressUpdate.toISOString(),
 				completions
 			};
 		})
-	);
-
-	enrollmentsWithDetails.sort(
-		(a, b) =>
-			new Date(b.lastProgressUpdate).getTime() - new Date(a.lastProgressUpdate).getTime()
 	);
 
 	return enrollmentsWithDetails;
