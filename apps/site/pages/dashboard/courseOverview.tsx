@@ -1,123 +1,90 @@
-import { PlayIcon } from "@heroicons/react/24/solid";
-import { getEnrollmentDetails } from "@self-learning/enrollment";
-import { ResolvedValue } from "@self-learning/types";
-import { ProgressBar, Tab, Tabs } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import Image from "next/image";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
-
-export type EnrollmentDetails = ResolvedValue<typeof getEnrollmentDetails>[number];
+import { ProgressBar, Tab, Table, TableDataColumn, Tabs } from "@self-learning/ui/common";
+import { UniversalSearchBar } from "@self-learning/ui/layouts";
+import Image from "next/image";
+import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 
 export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
+	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
+	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
+	const [searchQuery, setSearchQuery] = useState("");
 
-	enrollments?.filter(e => e);
+	useEffect(() => {
+		const filterEnrollments = (
+			enrollments: EnrollmentDetails[],
+			searchQuery: string
+		): EnrollmentDetails[] => {
+			if (!searchQuery) return enrollments;
+
+			const lowercasedQuery = searchQuery.toLowerCase();
+
+			return enrollments.filter(enrollment => {
+				const { title, slug, authors } = enrollment.course;
+				const authorNames = authors.map(author => author.displayName.toLowerCase());
+
+				return (
+					title.toLowerCase().includes(lowercasedQuery) ||
+					slug.toLowerCase().includes(lowercasedQuery) ||
+					authorNames.some(name => name.includes(lowercasedQuery))
+				);
+			});
+		};
+
+		if (enrollments) {
+			const filtered = filterEnrollments(enrollments, searchQuery);
+
+			const inProgress = filtered.filter(
+				enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
+			);
+			const complete = filtered.filter(
+				enrollment => enrollment.completions.courseCompletion.completionPercentage >= 100
+			);
+
+			setInProgress(inProgress);
+			setComplete(complete);
+		}
+	}, [searchQuery, enrollments]);
+
 	if (!enrollments) {
 		return <p>No enrollments found</p>;
 	}
 
-	const inProgress = enrollments.filter(
-		enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
-	);
-	const complete = enrollments.filter(
-		enrollment => enrollment.completions.courseCompletion.completionPercentage >= 100
-	);
-
 	return (
-		<div className="py-2 px-4">
-			{selectedTab === 0 && (
-				<TabContent
-					selectedTab={selectedTab}
-					setSelectedTab={setSelectedTab}
-					enrollments={inProgress}
-					notFoundMessage={"Derzeit ist kein Kurs angefangen."}
-				/>
-			)}
-			{selectedTab === 1 && (
-				<TabContent
-					selectedTab={selectedTab}
-					setSelectedTab={setSelectedTab}
-					enrollments={complete}
-					notFoundMessage={"Derzeit ist kein Kurs abgeschlossen."}
-				/>
-			)}
-		</div>
-	);
-}
-
-function EnrollmentOverview({
-	enrollments,
-	notFoundMessage
-}: {
-	enrollments: EnrollmentDetails[] | null;
-	notFoundMessage: string;
-}) {
-	if (!enrollments) {
-		return <p>Keine Kurse Gefunden.</p>;
-	}
-
-	return (
-		<div>
-			{enrollments.length > 0 ? (
-				<ul className="space-y-4">
-					{enrollments.map((enrollment, index) => (
-						<li
-							key={index}
-							className="flex flex-col space-y-2 rounded-lg bg-white p-4 shadow-md md:flex-row md:space-y-0 md:space-x-4"
-						>
-							{enrollment.course.imgUrl && (
-								<Image
-									src={enrollment.course.imgUrl}
-									alt={enrollment.course.title}
-									className="h-24 w-full rounded-t-lg object-cover md:h-auto md:w-24"
-								/>
-							)}
-							<div className="flex flex-grow flex-col space-y-1">
-								<table className="w-full">
-									<tbody>
-										<tr>
-											<td className="w-3/5">
-												<div>
-													<h2 className="text-lg font-bold text-gray-900">
-														{enrollment.course.title}
-													</h2>
-													<span className="text-sm text-gray-600">
-														{enrollment.course.authors[0].displayName}
-													</span>
-												</div>
-											</td>
-											<td className="w-2/5">
-												<div className="flex justify-end">
-													<Link
-														href={`/courses/${enrollment.course.slug}/`}
-														className="btn-primary flex items-center justify-between rounded-md bg-green-500 px-4 py-2 text-white hover:bg-emerald-600"
-														style={{ maxWidth: "40%" }}
-													>
-														<span>Fortfahren</span>
-														<PlayIcon className="h-6 w-6" />
-													</Link>
-												</div>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-								<div className="mt-2">
-									<ProgressBar
-										completionPercentage={
-											enrollment.completions.courseCompletion
-												.completionPercentage
-										}
-									/>
-								</div>
-							</div>
-						</li>
-					))}
-				</ul>
-			) : (
-				<p className="text-center">{notFoundMessage}</p>
-			)}
+		<div className="flex h-screen justify-center overflow-hidden">
+			<div className="h-full w-full p-2 lg:w-4/5 lg:p-8">
+				{selectedTab === 0 && (
+					<TabContent
+						selectedTab={selectedTab}
+						setSelectedTab={setSelectedTab}
+						enrollments={inProgress}
+						notFoundMessage={
+							searchQuery == ""
+								? "Derzeit ist kein Kurs angefangen."
+								: "Derzeit ist zu dieser Suchanfrage kein Kurs angefangen."
+						}
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+					/>
+				)}
+				{selectedTab === 1 && (
+					<TabContent
+						selectedTab={selectedTab}
+						setSelectedTab={setSelectedTab}
+						enrollments={complete}
+						notFoundMessage={
+							searchQuery == ""
+								? "Derzeit ist kein Kurs abgeschlossen."
+								: "Derzeit ist zu dieser Suchanfrage kein Kurs abgeschlossen."
+						}
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+					/>
+				)}
+			</div>
 		</div>
 	);
 }
@@ -126,27 +93,171 @@ function TabContent({
 	selectedTab,
 	setSelectedTab,
 	enrollments,
-	notFoundMessage
+	notFoundMessage,
+	searchQuery,
+	setSearchQuery
 }: {
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
-	enrollments: EnrollmentDetails[] | null;
+	enrollments: EnrollmentDetails[];
 	notFoundMessage: string;
+	searchQuery: string;
+	setSearchQuery: (v: string) => void;
 }) {
 	return (
-		<div className="xl:grid-cols grid h-full gap-8">
-			<div>
-				<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
-					<Tab>In Bearbeitung</Tab>
-					<Tab>Abgeschlossen</Tab>
-				</Tabs>
-				<div className={"pt-4"}>
-					<EnrollmentOverview
-						enrollments={enrollments}
-						notFoundMessage={notFoundMessage}
-					/>
+		<div className="flex h-full flex-col">
+			<div className="flex items-center justify-between border-b border-gray-300 pb-2">
+				<div className="flex">
+					<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
+						<Tab>In Bearbeitung</Tab>
+						<Tab>Abgeschlossen</Tab>
+					</Tabs>
 				</div>
 			</div>
+			<div className="py-2">
+				<UniversalSearchBar
+					searchQuery={searchQuery}
+					setSearchQuery={setSearchQuery}
+					placeHolder={"Kurse durchsuchen..."}
+				/>
+			</div>
+
+			<div className="flex-1 overflow-y-auto">
+				{enrollments && enrollments.length > 0 ? (
+					<SortedTable enrollments={enrollments} />
+				) : (
+					<p className="py-4 text-center">{notFoundMessage}</p>
+				)}
+			</div>
+		</div>
+	);
+}
+
+function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
+	const [sortedColumn, setSortedColumn] = useState<{
+		key: string;
+		desc: boolean;
+	}>({
+		key: "title",
+		desc: true
+	});
+
+	const columns = [
+		{
+			key: "title",
+			label: "Title",
+			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
+				a.course.title.localeCompare(b.course.title)
+		},
+		{
+			key: "author",
+			label: "Autor",
+			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
+				a.course.authors[0].displayName.localeCompare(b.course.authors[0].displayName)
+		},
+		{
+			key: "progress",
+			label: "Fortschritt",
+			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
+				a.completions.courseCompletion.completionPercentage -
+				b.completions.courseCompletion.completionPercentage
+		}
+	];
+
+	function sortEnrollments() {
+		const sortingFunction = columns.filter(column => column.key == sortedColumn.key)[0]
+			.sortingFunction;
+		enrollments.sort(sortingFunction);
+
+		if (!sortedColumn.desc) {
+			enrollments.reverse();
+		}
+	}
+
+	useEffect(() => {
+		sortEnrollments();
+	}, [sortedColumn, enrollments]);
+
+	sortEnrollments();
+
+	return (
+		<div className={"p"}>
+			<Table
+				head={
+					<>
+						{columns.map(column => (
+							<th
+								className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+								key={column.key}
+								onClick={() =>
+									setSortedColumn({
+										key: column.key,
+										desc:
+											sortedColumn.key == column.key
+												? !sortedColumn.desc
+												: true
+									})
+								}
+							>
+								<div className="flex justify-between">
+									<span>{column.label}</span>
+									{sortedColumn && sortedColumn.key === column.key ? (
+										<span className="justify-end">
+											{sortedColumn.desc ? "▼" : "▲"}
+										</span>
+									) : (
+										<span className="invisible justify-end">▲</span>
+									)}
+								</div>
+							</th>
+						))}
+					</>
+				}
+			>
+				{enrollments.map(enrollment => (
+					<tr key={enrollment.course.slug}>
+						<TableDataColumn key={"title"}>
+							<Link href={`/courses/${enrollment.course.slug}/`} className="block">
+								<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
+									{enrollment.course.imgUrl ? (
+										<Image
+											src={enrollment.course.imgUrl}
+											alt={enrollment.course.title}
+											className="h-12 w-12 rounded-lg object-cover"
+											width={48}
+											height={48}
+										/>
+									) : (
+										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+											<span className="text-gray-500">Kein Bild</span>
+										</div>
+									)}
+									<div>
+										<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+											<span className="truncate">
+												{enrollment.course.title}
+											</span>
+										</span>
+									</div>
+								</div>
+							</Link>
+						</TableDataColumn>
+						<TableDataColumn key={"author"}>
+							<span className="text-sm text-gray-600">
+								{enrollment.course.authors[0].displayName}
+							</span>
+						</TableDataColumn>
+						<TableDataColumn key={"progress"}>
+							{" "}
+							<ProgressBar
+								completionPercentage={
+									enrollment.completions.courseCompletion.completionPercentage
+								}
+							/>
+						</TableDataColumn>
+					</tr>
+				))}
+			</Table>
 		</div>
 	);
 }
@@ -182,3 +293,5 @@ export const getServerSideProps: GetServerSideProps = async context => {
 		};
 	}
 };
+
+export default CourseOverview;

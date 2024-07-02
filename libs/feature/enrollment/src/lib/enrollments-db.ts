@@ -1,6 +1,6 @@
 import { getCourseCompletionOfStudent } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseEnrollment } from "@self-learning/types";
+import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
 import { AlreadyExists } from "@self-learning/util/http";
 
 export async function getEnrollmentDetails(username: string) {
@@ -49,8 +49,12 @@ export async function getEnrollmentDetails(username: string) {
 	return enrollmentsWithDetails;
 }
 
+type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
+
+export type EnrollmentDetails = ArrayElement<Awaited<ResolvedValue<typeof getEnrollmentDetails>>>;
+
 export async function getEnrollmentsOfUser(username: string): Promise<CourseEnrollment[]> {
-	const enrollments = await database.enrollment.findMany({
+	return await database.enrollment.findMany({
 		where: { username },
 		select: {
 			completedAt: true,
@@ -63,8 +67,6 @@ export async function getEnrollmentsOfUser(username: string): Promise<CourseEnro
 			}
 		}
 	});
-
-	return enrollments;
 }
 
 export async function enrollUser({ courseId, username }: { courseId: string; username: string }) {
