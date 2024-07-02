@@ -1,3 +1,5 @@
+import React from "react";
+
 export function Table({ head, children }: { head: React.ReactElement; children: React.ReactNode }) {
 	return (
 		<div className="overflow-auto rounded-lg border-x border-b border-light-border bg-white">

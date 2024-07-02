@@ -96,7 +96,7 @@ export const courseRouter = t.router({
 		} = {};
 
 		for (const lesson of lessons) {
-			lessonMap[lesson.lessonId] = lesson as typeof lessons[0] & { meta: LessonMeta };
+			lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
 		}
 
 		return { content, lessonMap };

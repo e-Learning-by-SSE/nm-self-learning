@@ -6,7 +6,7 @@ import {
 	PlayIcon
 } from "@heroicons/react/24/solid";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
-import { Divider } from "@self-learning/ui/common";
+import { Divider, ProgressBar } from "@self-learning/ui/common";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -174,21 +174,8 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 					{extractLessonIds(content).length} Lerneinheiten abgeschlossen
 				</span>
 			</div>
-			<span className="relative h-5 w-full rounded-lg bg-gray-200">
-				<motion.span
-					className="absolute left-0 h-5 rounded-lg bg-secondary"
-					initial={{ width: 0 }}
-					animate={{ width: `${completionPercentage}%` }}
-					transition={{ type: "tween" }}
-				></motion.span>
-				<span
-					className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
-						completionPercentage === 0 ? "text-secondary" : "text-white"
-					}`}
-				>
-					{completionPercentage}%
-				</span>
-			</span>
+
+			<ProgressBar completionPercentage={completionPercentage} />
 
 			<Divider />
 
@@ -241,18 +228,16 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 				</span>
 			</span>
 			<span className="flex justify-between">
-
 				{lesson.meta.hasQuiz && (
-
-				<Link
-					href={`/courses/${course.slug}/${lesson.slug}${
-						router.pathname.endsWith("quiz") ? "" : "/quiz"
-					}`}
-					className="btn-primary text-sm"
-					data-testid="quizLink"
-				>
-					{router.pathname.endsWith("quiz") ? "Zum Lernhinhalt" : "Zur Lernkontrolle"}
-				</Link>
+					<Link
+						href={`/courses/${course.slug}/${lesson.slug}${
+							router.pathname.endsWith("quiz") ? "" : "/quiz"
+						}`}
+						className="btn-primary text-sm"
+						data-testid="quizLink"
+					>
+						{router.pathname.endsWith("quiz") ? "Zum Lernhinhalt" : "Zur Lernkontrolle"}
+					</Link>
 				)}
 
 				<span className="flex gap-2">
