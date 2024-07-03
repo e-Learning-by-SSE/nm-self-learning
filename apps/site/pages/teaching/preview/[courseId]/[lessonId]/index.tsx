@@ -8,6 +8,7 @@ import { LessonLayoutProps } from "@self-learning/lesson";
 import { MDXRemoteSerializeResult } from "next-mdx-remote";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { LessonContent, findContentType } from "@self-learning/types";
+import { useRouter } from "next/router";
 
 export function getEmptyMarkdown() {
 	return {
@@ -66,6 +67,7 @@ export default function LessonPreview() {
 	const [markdown, setMarkdown] = useState<MarkdownContent>(getEmptyMarkdown());
 
 	const lessonRef = useRef(lesson); // store the previous lesson state
+	const router = useRouter();
 
 	useEffect(() => {
 		const fetchLessonData = async () => {
@@ -111,29 +113,29 @@ export default function LessonPreview() {
 		compileMarkdownData();
 	}, [lesson]);
 
-	/* TODO "back" btn
 	function redirectBackToEditor() {
-		let originPathname = "/";
-
-		if (Array.isArray(origin)) {
-			originPathname = origin[0];
+		let path = `/teaching/lessons/edit/${lesson.lessonId}?fromPreview=${true}`;
+		if (lesson.lessonId === "") {
+			path = `/teaching/lessons/create?fromPreview=${true}`;
 		}
 
-		if (typeof origin === "string") {
-			originPathname = origin;
-		}
-
-		router.push(originPathname);
+		router.push(path);
 	}
-	*/
 
 	return (
-		<Lesson
-			lesson={lesson}
-			course={getPlaceholderCourse()}
-			markdown={markdown}
-			isPreview={true}
-		/>
+		<>
+			<div>
+				<button className="btn-primary m-3" onClick={redirectBackToEditor}>
+					Zurück zum Editor
+				</button>
+			</div>
+			<Lesson
+				lesson={lesson}
+				course={getPlaceholderCourse()}
+				markdown={markdown}
+				isPreview={true}
+			/>
+		</>
 	);
 }
 type LessonProps = LessonLayoutProps & {

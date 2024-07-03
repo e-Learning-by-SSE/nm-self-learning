@@ -29,6 +29,8 @@ export function LessonEditor({
 	const [selectedLessonType, setLessonType] = useState(lesson.lessonType);
 	const router = useRouter();
 
+	const [isFromPreview, setIsFromPreview] = useState(false);
+
 	useEffect(() => {
 		// Log an error, if given lesson data does not match the form's expected schema
 		// Only validate when the lesson is not new, because otherwise the form is empty
@@ -44,6 +46,17 @@ export function LessonEditor({
 		}
 	}, [lesson]);
 
+	useEffect(() => {
+		if (router.isReady) {
+			const dataFromPreview = router.query["fromPreview"];
+			const isFromPreviewBool = dataFromPreview === "true";
+			setIsFromPreview(isFromPreviewBool);
+		}
+	}, [router.isReady, router.query]);
+
+	//console.log("LessonEditor, lesson ", lesson);
+	//console.log("LessonEditor, data from preview", isFromPreview);
+
 	function redirectToPreview() {
 		const currentLessonValues = form.getValues();
 		const lessonMeta = createLessonMeta(currentLessonValues);
@@ -52,7 +65,9 @@ export function LessonEditor({
 		localStorage.setItem("lessonInEditing", serializedData);
 
 		const courseId = router.query["courseId"] ? router.query["courseId"] : "placeholder";
-		const lessonId = currentLessonValues.lessonId;
+		const lessonId = currentLessonValues.lessonId
+			? currentLessonValues.lessonId
+			: "placeholder";
 		const lessonTitle = currentLessonValues.title;
 
 		router.push({
@@ -64,7 +79,7 @@ export function LessonEditor({
 	return (
 		<div className="bg-gray-50">
 			<FormProvider {...form}>
-				<button className="btn-primary" onClick={redirectToPreview}>
+				<button className="btn-primary m-3" onClick={redirectToPreview}>
 					Vorschau
 				</button>
 				<form
@@ -102,8 +117,14 @@ export function LessonEditor({
 								<button className="btn-primary w-full" type="submit">
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
-
-								<LessonInfoEditor setLessonType={setLessonType} />
+								{isFromPreview ? (
+									<LessonInfoEditor
+										setLessonType={setLessonType}
+										lessonInEditing={lesson}
+									/>
+								) : (
+									<LessonInfoEditor setLessonType={setLessonType} />
+								)}
 							</>
 						}
 					>

@@ -3,10 +3,19 @@ import { trpc } from "@self-learning/api-client";
 import { IconButton, ImageChip, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "../course/course-form-model";
 import { AddAuthorDialog } from "./add-author-dialog";
+import { useRouter } from "next/router";
+
+interface Author {
+	username: string;
+	id?: string;
+	displayName?: string;
+	imgUrl?: string;
+	slug?: string;
+}
 
 export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; emptyString: string }) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -14,11 +23,43 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 	const {
 		fields: authors,
 		append,
-		remove
+		remove,
+		replace
 	} = useFieldArray({
 		control,
 		name: "authors"
 	});
+
+	const router = useRouter();
+	const { query } = router;
+	const initAuthors: Author[] = [];
+	const [authorsFromPreview, setAuthorsFromPreview] = useState(initAuthors);
+	useEffect(() => {
+		if (query["fromPreview"] === "true") {
+			if (typeof window !== "undefined") {
+				const storedData = localStorage.getItem("lessonInEditing");
+				if (storedData) {
+					const lessonData = JSON.parse(storedData);
+					const authorsFromData: Author[] = lessonData.authors || [];
+					if (authorsFromData.length !== 0) {
+						setAuthorsFromPreview(authorsFromData);
+					}
+				}
+			}
+		}
+	}, [query]);
+
+	useEffect(() => {
+		if (query["fromPreview"] === "true") {
+			authorsFromPreview.forEach((author: Author) => {
+				const isAuthorAlreadyAdded = authors.some(a => a.username === author.username);
+				if (!isAuthorAlreadyAdded) {
+					replace(authorsFromPreview);
+				}
+				console.log("authors", authors);
+			});
+		}
+	}, [authorsFromPreview]);
 
 	const handleAdd: OnDialogCloseFn<CourseFormModel["authors"][0]> = result => {
 		if (result) {
