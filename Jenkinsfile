@@ -67,7 +67,7 @@ pipeline {
                     discoverReferenceBuild()
                     recordCoverage qualityGates: [[metric: 'LINE', threshold: 1.0], [metric: 'BRANCH', threshold: 1.0]], 
                         tools: [[parser: 'COBERTURA', pattern: 'output/test/coverage/cobertura-coverage.xml'], [parser: 'JUNIT', pattern: 'output/test/junit*.xml'],
-                        sourceDirectories: [[path: 'libs'], [path: 'apps/site/pages'], [path: 'apps/site/components']])]
+                        sourceDirectories: [[path: 'libs'], [path: 'apps/site/pages'], [path: 'apps/site/components']]
                 }
             }
         }
