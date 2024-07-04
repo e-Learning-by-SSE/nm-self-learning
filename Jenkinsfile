@@ -59,7 +59,16 @@ pipeline {
                     }
                 }
             }
+            post {
+                success {
+                    // Test Results
+                    junit 'output/test/junit*.xml'
+                    // Coverage
+                    recordCoverage qualityGates: [[metric: 'LINE', threshold: 75.0], [metric: 'BRANCH', threshold: 60.0]], tools: [[parser: 'COBERTURA', pattern: 'output/test/coverage/cobertura-coverage.xml'], [parser: 'JUNIT', pattern: 'output/test/junit*.xml']]
+                }
+            }
         }
+
         stage('Publish Tagged Release') {
             when {
                 buildingTag()
