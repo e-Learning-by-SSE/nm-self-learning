@@ -15,5 +15,5 @@ module.exports = {
 	 */
 	snapshotFormat: { escapeString: true, printBasicPrototype: true },
 	collectCoverageFrom: ["**/*.(t|j)s", "**/*.(t|j)sx"],
-	coverageReporters: ["cobertura", "text"]
+	coverageReporters: ["cobertura", "text", "html"]
 };
