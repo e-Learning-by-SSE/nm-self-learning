@@ -1,4 +1,7 @@
 # Self Learning
+
+![Build Status](https://jenkins-2.sse.uni-hildesheim.de/buildStatus/icon?job=Teaching_nm-self-learn/master/)
+
 ## Development
 
 If you want to develop and contribute to this project, please consider reading one of these guides:
