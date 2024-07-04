@@ -1,6 +1,7 @@
 # Self Learning
 
 ![Build Status](https://jenkins-2.sse.uni-hildesheim.de/buildStatus/icon?job=Teaching_nm-self-learn/master/)
+![Tests](https://jenkins-2.sse.uni-hildesheim.de/buildStatus/icon?job=Teaching_nm-self-learn/master&subject=Tests&status=${numberOfTest})
 
 ## Development
 
