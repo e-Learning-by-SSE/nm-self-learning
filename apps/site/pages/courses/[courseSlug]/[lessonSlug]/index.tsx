@@ -282,7 +282,9 @@ function LessonControls({
 
 	let path = `/courses/${course.slug}/${lesson.slug}/quiz`;
 	if (isPreview) {
-		path = `/teaching/preview/${courseId}/${lesson.lessonId}/quiz?title=${lesson.title}`;
+		const courseIdPart = courseId ? courseId : "placeholder";
+		const lessonIdPart = lesson.lessonId ? lesson.lessonId : "placeholder";
+		path = `/teaching/preview/${courseIdPart}/${lessonIdPart}/quiz?title=${lesson.title}`;
 	}
 
 	return (
