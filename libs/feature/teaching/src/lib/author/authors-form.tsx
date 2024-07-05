@@ -32,8 +32,8 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 
 	const router = useRouter();
 	const { query } = router;
-	const initAuthors: Author[] = [];
-	const [authorsFromPreview, setAuthorsFromPreview] = useState(initAuthors);
+	const [authorsFromPreview, setAuthorsFromPreview] = useState<Author[]>([]);
+
 	useEffect(() => {
 		if (query["fromPreview"] === "true") {
 			if (typeof window !== "undefined") {
@@ -51,13 +51,16 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 
 	useEffect(() => {
 		if (query["fromPreview"] === "true") {
-			authorsFromPreview.forEach((author: Author) => {
-				const isAuthorAlreadyAdded = authors.some(a => a.username === author.username);
-				if (!isAuthorAlreadyAdded) {
-					replace(authorsFromPreview);
-				}
-				console.log("authors", authors);
-			});
+			if (authorsFromPreview.length === 0) {
+				replace([]);
+			} else {
+				authorsFromPreview.forEach((author: Author) => {
+					const isAuthorAlreadyAdded = authors.some(a => a.username === author.username);
+					if (!isAuthorAlreadyAdded) {
+						replace(authorsFromPreview);
+					}
+				});
+			}
 		}
 	}, [authorsFromPreview]);
 
