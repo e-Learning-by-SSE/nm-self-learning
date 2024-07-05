@@ -142,7 +142,30 @@ export function LessonEditor({
 }
 
 function LessonDescriptionForm() {
-	const { control } = useFormContext<LessonFormModel>();
+	const { control, setValue } = useFormContext<LessonFormModel>();
+
+	const router = useRouter();
+	const { query } = router;
+	const [descriptionFromPreview, setDescriptionFromPreview] = useState("");
+
+	useEffect(() => {
+		if (query["fromPreview"] === "true") {
+			if (typeof window !== "undefined") {
+				const storedData = localStorage.getItem("lessonInEditing");
+				if (storedData) {
+					const lessonData = JSON.parse(storedData);
+					const description = lessonData.description ? lessonData.description : "";
+					setDescriptionFromPreview(description);
+				}
+			}
+		}
+	}, [query]);
+
+	useEffect(() => {
+		if (query["fromPreview"] === "true") {
+			setValue("description", descriptionFromPreview);
+		}
+	}, [descriptionFromPreview]);
 
 	return (
 		<section>
