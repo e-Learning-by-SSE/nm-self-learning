@@ -1,92 +1,72 @@
-import React, { useState } from "react";
-import DropDown from "./dropdown";
-import { i18n } from "@self-learning/util/common";
-import { useEffect } from "react";
+import React, { Fragment } from "react";
+import { Menu } from "@headlessui/react";
+import { useTranslation } from "react-i18next";
+import { Transition } from "@headlessui/react";
 
-const langList = [
-	["Deutsch", "English"],
-	["de", "en"],
-	["\u{1F1E9}\u{1F1EA}", "\u{1F1EC}\u{1F1E7}"]
-];
-const getLangEquivalent = (lang: string) => {
-	if (langList[0].includes(lang)) {
-		const shortLangIndex = langList[0].indexOf(lang);
-		return langList[1][shortLangIndex];
-	} else {
-		const longLangIndex = langList[1].indexOf(lang);
-		return langList[0][longLangIndex];
-	}
-};
-const LangMenu: React.FC = (): JSX.Element => {
-	const [showDropDown, setShowDropDown] = useState<boolean>(false);
-	const [selectLang, setSelectLang] = useState<string>("");
-	const langs = () => {
-		return langList;
+export function TranslationButton() {
+	const { i18n } = useTranslation();
+	const selectedLang = i18n.language;
+	const langdic = {
+		en: ["English", "\u{1F1EC}\u{1F1E7}"],
+		de: ["Deutsch", "\u{1F1E9}\u{1F1EA}"]
 	};
-
-	/**
-	 * Toggle the drop down menu
-	 */
-	const toggleDropDown = () => {
-		setShowDropDown(!showDropDown);
-	};
-
-	/**
-	 * Hide the drop down menu if click occurs
-	 * outside of the drop-down element.
-	 *
-	 * @param event  The mouse event
-	 */
-	const dismissHandler = (event: React.FocusEvent<HTMLButtonElement>): void => {
-		if (event.currentTarget === event.target) {
-			setShowDropDown(false);
-		}
-	};
-
-	/**
-	 * Callback function to consume the
-	 * language from the child component
-	 *
-	 * @param lang  The selected language
-	 */
-	const langSelection = (lang: string): void => {
-		setSelectLang(lang);
-		Changer(lang);
-	};
-	useEffect(() => {
-		const localLang = localStorage.getItem("lang");
-		if (localLang == null) {
-			i18n.changeLanguage("en");
-		} else {
-			i18n.changeLanguage(localLang);
-			setSelectLang(getLangEquivalent(localLang));
-		}
-	}, []);
-
 	return (
-		<button
-			onClick={(): void => toggleDropDown()}
-			onBlur={(e: React.FocusEvent<HTMLButtonElement>): void => dismissHandler(e)}
-		>
-			<p className={showDropDown ? "text-secondary" : "hover:text-secondary"}>
-				{selectLang ? selectLang : "English"}
-			</p>
-			{showDropDown && (
-				<DropDown
-					langs={langs()}
-					showDropDown={false}
-					toggleDropDown={(): void => toggleDropDown()}
-					langSelection={langSelection}
-				/>
-			)}
-		</button>
+		<Menu>
+			<div>
+				<Menu.Button className="flex items-center gap-1 rounded-full">
+					<p className="hover:text-secondary">{langdic[selectedLang][0]}</p>
+				</Menu.Button>
+			</div>
+			<Transition
+				as={Fragment}
+				enter="transition ease-out duration-100"
+				enterFrom="transform opacity-0 scale-95"
+				enterTo="transform opacity-100 scale-100"
+				leave="transition ease-in duration-75"
+				leaveFrom="transform opacity-100 scale-100"
+				leaveTo="transform opacity-0 scale-95"
+			>
+				<Menu.Items
+					style={{
+						position: "absolute",
+						bottom: "23px",
+						minWidth: "10px",
+						zIndex: "10"
+					}}
+					className="absolute rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+				>
+					{Object.keys(langdic).map((lang: string, index: number): JSX.Element => {
+						return (
+							<div
+								style={{
+									margin: "3px"
+								}}
+								key={index}
+								onClick={(): void => {
+									i18n.changeLanguage(lang);
+								}}
+							>
+								<Menu.Item as="div">
+									{({ active }) => (
+										<button
+											className={`${
+												active ? "bg-emerald-500 text-white" : ""
+											} flex w-full items-center rounded-md px-1`}
+										>
+											<div style={{ minWidth: "70px" }}>
+												<p>{langdic[lang][0]}</p>
+											</div>
+											<span role="img" aria-label="Flagge">
+												{langdic[lang][1]}
+											</span>
+										</button>
+									)}
+								</Menu.Item>
+							</div>
+						);
+					})}
+				</Menu.Items>
+			</Transition>
+		</Menu>
 	);
-};
-
-export default LangMenu;
-
-function Changer(lang: string) {
-	lang = getLangEquivalent(lang);
-	i18n.changeLanguage(lang);
-	localStorage.setItem("lang", lang);
 }

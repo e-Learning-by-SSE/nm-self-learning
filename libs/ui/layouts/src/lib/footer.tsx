@@ -1,6 +1,6 @@
 import { LinkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import LangMenu from "./menu";
+import { TranslationButton } from "./menu";
 
 function FooterElement({
 	href,
@@ -54,7 +54,7 @@ export function Footer() {
 						position: "relative"
 					}}
 				>
-					<LangMenu />
+					<TranslationButton />
 				</div>
 			</div>
 		</footer>

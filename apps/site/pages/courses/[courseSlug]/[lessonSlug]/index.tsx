@@ -26,7 +26,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import i18next from "i18next";
 import { t } from "i18next";
 
 export type LessonProps = LessonLayoutProps & {
@@ -62,7 +61,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 	const { content: article } = findContentType("article", lesson.content as LessonContent);
 
 	if (article) {
-		mdArticle = await compileMarkdown(article.value.content ?? i18next.t("no_content"));
+		mdArticle = await compileMarkdown(article.value.content ?? t("no_content"));
 
 		// Remove article content to avoid duplication
 		article.value.content = "(replaced)";
@@ -70,7 +69,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ para
 
 	// TODO change to check if the lesson is self requlated
 	if (lesson.lessonType === LessonType.SELF_REGULATED) {
-		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? i18next.t("no_content"));
+		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? t("no_content"));
 	}
 
 	return {
