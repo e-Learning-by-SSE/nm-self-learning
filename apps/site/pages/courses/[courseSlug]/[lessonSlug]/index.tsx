@@ -249,6 +249,7 @@ function DefaultLicenseLabel() {
 }
 
 function LicenseLabel({ license }: { license: NonNullable<LessonProps["lesson"]["license"]> }) {
+	const { t } = useTranslation();
 	return (
 		<LabeledField label={t("license")}>
 			<LicenseChip
