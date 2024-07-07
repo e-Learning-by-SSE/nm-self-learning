@@ -5,6 +5,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
+import { editor } from "monaco-editor";
 
 export function MarkdownField({
 	content,
@@ -86,6 +87,11 @@ export function MarkdownEditorDialog({
 	onClose: OnDialogCloseFn<string>;
 }) {
 	const [value, setValue] = useState(initialValue);
+	const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null);
+
+	const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
+		setEditorInstance(editor);
+	};
 
 	return (
 		<Dialog
@@ -96,9 +102,13 @@ export function MarkdownEditorDialog({
 			<div className="grid h-full grid-cols-2 items-start gap-8 overflow-hidden pt-4">
 				<div className="flex h-full w-full flex-col gap-2">
 					<label className="text-sm font-semibold">Markdown</label>
+					{editorInstance && <EditorQuickActions
+						editor={editorInstance}
+					/>}
 					<EditorField
 						language="markdown"
 						onChange={setValue as any}
+						onMount={handleEditorDidMount}
 						value={value}
 						height={"100%"}
 					/>
@@ -116,15 +126,15 @@ export function MarkdownEditorDialog({
 							/>
 						</div>
 					</span>
-					<div className="relative flex h-full w-full grow overflow-auto border border-light-border bg-white p-4">
+					<div className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
-								<ReactMarkdown
-									linkTarget="_blank"
-									remarkPlugins={remarkPlugins}
-									rehypePlugins={rehypePlugins}
-								>
-									{value ?? ""}
-								</ReactMarkdown>
+							<ReactMarkdown
+								linkTarget="_blank"
+								remarkPlugins={remarkPlugins}
+								rehypePlugins={rehypePlugins}
+							>
+								{value ?? ""}
+							</ReactMarkdown>
 						</div>
 					</div>
 				</div>
@@ -136,6 +146,132 @@ export function MarkdownEditorDialog({
 				</button>
 			</DialogActions>
 		</Dialog>
+	);
+}
+
+function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }) {
+	const [selectedHeader, setSelectedHeader] = useState("H1");
+	const [selectedLanguage, setSelectedLanguage] = useState("javascript");
+
+	const applyMarkdownFormat = (
+		formatType: "BOLD" | "ITALIC" | "ORDEREDLIST" | "UNORDEREDLIST" | "HEADER" | "LANGUAGE"
+	) => {
+		if(!editor) return;
+		const selection = editor.getSelection();
+		if (selection === null) return;
+		const selectedText = editor.getModel()?.getValueInRange(selection);
+
+		let formattedText = "";
+
+		switch (formatType) {
+			case "BOLD":
+				formattedText = `**${selectedText?.trim()}**`;
+				break;
+			case "ITALIC":
+				formattedText = `*${selectedText?.trim()}*`;
+				break;
+			case "UNORDEREDLIST":
+				formattedText = `- ${selectedText?.trim()}`;
+				break;
+			case "ORDEREDLIST":
+				formattedText = `1. ${selectedText?.trim()}`;
+				break;
+			case "HEADER":
+				formattedText = `${"#".repeat(
+					parseInt(selectedHeader[1])
+				)} ${selectedText?.trim()}`;
+				break;
+			case "LANGUAGE":
+				formattedText = `\`\`\`${selectedLanguage}\n${selectedText?.trim()}\n\`\`\``;
+				break;
+			default:
+				break;
+		}
+
+		editor.executeEdits("", [
+			{
+				range: selection,
+				text: formattedText,
+				forceMoveMarkers: true
+			}
+		]);
+	};
+
+	return (
+		<div className="mb-2 flex flex-col bg-gray-200 p-2 rounded-xl">
+			<div className="flex gap-1">
+				<button
+					type="button"
+					className="btn-stroked"
+					onClick={() => applyMarkdownFormat("BOLD")}
+				>
+					<strong>B</strong>
+				</button>
+				<button
+					type="button"
+					className="btn-stroked"
+					onClick={() => applyMarkdownFormat("ITALIC")}
+				>
+					<em>I</em>
+				</button>
+				<button
+					type="button"
+					className="btn-stroked"
+					onClick={() => applyMarkdownFormat("UNORDEREDLIST")}
+				>
+					UL
+				</button>
+				<button
+					type="button"
+					className="btn-stroked"
+					onClick={() => applyMarkdownFormat("ORDEREDLIST")}
+				>
+					OL
+				</button>
+				<select
+					title="Header"
+					className="btn-stroked"
+					value={selectedHeader}
+					onChange={e => setSelectedHeader(e.target.value)}
+				>
+					<option value="H1">H1</option>
+					<option value="H2">H2</option>
+					<option value="H3">H3</option>
+					<option value="H4">H4</option>
+					<option value="H5">H5</option>
+				</select>
+				<button
+					type="button"
+					className="btn-stroked"
+					onClick={() => applyMarkdownFormat("HEADER")}
+				>
+					Add Header
+				</button>
+			</div>
+			<div className="mt-2 flex gap-2 p-0">
+				<select
+				title="Language"
+					className="btn-stroked"
+					value={selectedLanguage}
+					onChange={e => setSelectedLanguage(e.target.value)}
+				>
+					<option value="javascript">JavaScript</option>
+					<option value="python">Python</option>
+					<option value="java">Java</option>
+					<option value="csharp">C#</option>
+					<option value="ruby">Ruby</option>
+					<option value="go">Go</option>
+					<option value="php">PHP</option>
+				</select>
+				<button
+					type="button"
+					className="btn-stroked"
+					onClick={() => applyMarkdownFormat("LANGUAGE")}
+				>
+					Add Code Block
+				</button>
+			</div>
+		</div>
 	);
 }
 
