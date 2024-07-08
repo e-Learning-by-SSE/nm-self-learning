@@ -4,6 +4,14 @@ import { trpc } from "@self-learning/api-client";
 import { LearningGoal, LearningSubGoal } from "@self-learning/types";
 import { useEffect, useRef, useState } from "react";
 
+/**
+ * Component to display and change the status of a learning goal or sub-goal. Shows the status and on click opens the three option for a status.
+ *
+ * @param goal Learning goal data
+ * @param subGoal Learning sub-goal data
+ * @param editable Indicator if a status can be edited.
+ * @returns
+ */
 export function GoalStatus({
 	goal,
 	subGoal,
@@ -22,7 +30,7 @@ export function GoalStatus({
 	const [initialRender, setInitialRender] = useState(true);
 
 	const myRef = useRef<HTMLInputElement>(null);
-
+	// Handling clicks outside of the three status options and close the option area.
 	const handleClickOutside = (e: { target: any }) => {
 		if (myRef.current && !myRef.current.contains(e.target)) {
 			setShowDialog(false);
@@ -30,7 +38,7 @@ export function GoalStatus({
 	};
 
 	const handleClickInside = () => setShowDialog(true);
-
+	// Hook that managed the mousedown eventListener for handling clicks outside of the status options.
 	useEffect(() => {
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -48,6 +56,9 @@ export function GoalStatus({
 			newClassName += " bg-red-300";
 	}
 
+	/**
+	 * Hook for changing the status of a goal or sub-goal.
+	 */
 	useEffect(() => {
 		if (initialRender) {
 			setInitialRender(false);
@@ -67,11 +78,21 @@ export function GoalStatus({
 		}
 	}, [status]);
 
+	/**
+	 * Function on change of a goal or sub-goal status. Close the three options
+	 *
+	 * @param pStatus Selected new status value
+	 */
 	function onChange(pStatus: LearningGoalStatus) {
 		setStatus(pStatus);
 		setShowDialog(false);
 	}
 
+	/**
+	 * Checks if all sub-goals of a learning goal are completed.
+	 *
+	 * @returns true every sub-goal completed, false sub-goal with status inactive or active
+	 */
 	function areSubGoalsCompleted() {
 		let result = false;
 		if (goal) {

@@ -22,12 +22,20 @@ import { PencilIcon } from "@heroicons/react/24/outline";
 
 export default LearningGoals;
 
+/**
+ * Component for displaying learning goals. It contains dialogs for creating and editing of learning goals and sub-goals (Grob-/ Feinziel).
+ * For every goal the status is displayed and all sub-goals.
+ *
+ * @param goals Learning goal data
+ * @returns A component to display learning goals
+ */
+
 export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null }>) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
 	if (!goals) {
-		return <p>No goals found</p>;
+		return <p>Keine Ziele gefunden</p>;
 	}
 
 	const inProgress = goals.filter(
@@ -73,6 +81,14 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 	);
 }
 
+/** Component for the Overview of goals. Contains a row for every learning goal of the learning goal data.
+ *
+ * @param goals Learning goals data
+ * @param notFoundMessage Message if data does not contain any goals
+ * @param editable Shows whether a goal can be edited
+ * @returns Component to display the all goals
+ */
+
 function GoalsOverview({
 	goals,
 	notFoundMessage,
@@ -91,7 +107,7 @@ function GoalsOverview({
 			{goals.length > 0 ? (
 				<ul className="space-y-4">
 					{goals.map(goal => (
-						<GoalTable key={goal.id} goal={goal} editable={editable} goals={goals} />
+						<GoalRow key={goal.id} goal={goal} editable={editable} goals={goals} />
 					))}
 				</ul>
 			) : (
@@ -101,6 +117,17 @@ function GoalsOverview({
 	);
 }
 
+
+/**
+ * Component to display the content of a tab.  
+ * 
+ * @param selectedTab Current selected tab
+ * @param setSelectedTab Function to set the current selected tab
+ * @param goals Learning goals data
+ * @param notFoundMessage Message if data does not contain any goals
+ * @param editable Shows whether a goal can be edited
+ * @returns 
+ */
 function TabContent({
 	selectedTab,
 	setSelectedTab,
@@ -133,7 +160,15 @@ function TabContent({
 	);
 }
 
-function GoalTable({
+/**
+ * Component to display a row for a learning goal with separate rows for each sub goal.  
+ * 
+ * @param goal Learning goal data for the row
+ * @param goals Learning goals data
+ * @param editable Shows whether a goal can be edited
+ * @returns 
+ */
+function GoalRow({
 	goal,
 	editable,
 	goals
@@ -158,59 +193,53 @@ function GoalTable({
 	}
 
 	return (
-		<li
-			key={goal.id}
-			//flex flex-col space-y-2 rounded-lg bg-white p-4 shadow-md md:flex-row md:space-y-0 md:space-x-4
-			className="flex flex-col gap-2 rounded-lg bg-gray-100 p-4"
-		>
-			<div className="flex flex-grow flex-col space-y-1">
-				<table className="w-full">
-					<tbody>
-						<tr className="w-full">
-							<td className="w-3/5">
-								<div className="group flex flex-row">
-									<div className="mb-2 text-xl font-semibold">
-										{goal.description}
-									</div>
-									{goal.status != "COMPLETED" && editable && (
-										<div className="invisible flex flex-row group-hover:visible">
-											<QuickEditButton
-												onClick={() => setOpenAddDialog(true)}
-											/>
-											<GoalDeleteOption
-												goalId={goal.id}
-												isSubGoal={false}
-												className="px-2 hover:text-secondary"
-											/>
-										</div>
-									)}
-								</div>
-							</td>
-							<td className="w-2/5">
-								<div className="flex justify-end px-4 py-2">
-									<GoalStatus goal={goal} editable={editable} />
-								</div>
-							</td>
-						</tr>
-						{goal.learningSubGoals.map(subGoal => (
-							<SubGoalRow
-								key={subGoal.id}
-								subGoal={subGoal}
-								editable={editable}
-								goals={goals}
-							/>
-						))}
-					</tbody>
-				</table>
-				{openAddDialog && (
-					<GoalEditorDialog goal={goal} onClose={() => setOpenAddDialog(false)} />
-				)}
-				<Divider />
-			</div>
-		</li>
+		<section>
+			<li className="flex flex-col gap-2 rounded-lg bg-gray-100 p-4">
+				<div className="flex w-full flex-row justify-between">
+					<div className="group flex flex-row">
+						<div className="mb-2 text-xl font-semibold">{goal.description}</div>
+						{goal.status != "COMPLETED" && editable && (
+							<div className="invisible flex flex-row group-hover:visible">
+								<QuickEditButton onClick={() => setOpenAddDialog(true)} />
+								<GoalDeleteOption
+									goalId={goal.id}
+									isSubGoal={false}
+									className="px-2 hover:text-secondary"
+								/>
+							</div>
+						)}
+					</div>
+					<div className="mr-4 flex justify-end">
+						<GoalStatus goal={goal} editable={editable} />
+					</div>
+				</div>
+				<ul className="flex flex-col gap-1">
+					{goal.learningSubGoals.map(subGoal => (
+						<SubGoalRow
+							key={subGoal.id}
+							subGoal={subGoal}
+							editable={editable}
+							goals={goals}
+						/>
+					))}
+				</ul>
+			</li>
+			{openAddDialog && (
+				<GoalEditorDialog goal={goal} onClose={() => setOpenAddDialog(false)} />
+			)}
+		</section>
 	);
 }
 
+
+/**
+ * Component to display a row for a learning sub-goal. Contains a dialog for editing sub-goals. Buttons to change the priority (up or down).
+ * 
+ * @param subGoal Learning sub-goal data for the row
+ * @param goals Learning goals data
+ * @param editable Shows whether a goal can be edited
+ * @returns 
+ */
 function SubGoalRow({
 	subGoal,
 	editable,
@@ -224,8 +253,16 @@ function SubGoalRow({
 	const { mutateAsync: editSubGoalPriority } =
 		trpc.learningGoal.editSubGoalPriority.useMutation();
 
+	/**
+	 * function to move a sub-goal up or down.
+	 * 
+	 * @param subGoal Sub-goal data
+	 * @param direction Direction of the move "up" or "down"
+	 * @param subGoals All sub-goals data of the parent goal
+	 */
 	function moveSubGoal(subGoal: LearningSubGoal, direction: string, subGoals: LearningSubGoal[]) {
 		let found;
+		// If up identify the goal with the next higher priority and switch priorities.
 		if (direction == "up") {
 			subGoals.sort((a, b) => (a.priority > b.priority ? -1 : 1));
 			found = subGoals.find(goal => {
@@ -235,6 +272,7 @@ function SubGoalRow({
 				editSubGoalPriority({ priority: found.priority, subGoalId: subGoal.id });
 				editSubGoalPriority({ priority: subGoal.priority, subGoalId: found.id });
 			}
+		// If down identify the goal with the next lower priority and switch priorities.
 		} else if (direction == "down") {
 			subGoals.sort((a, b) => (a.priority < b.priority ? -1 : 1));
 			found = subGoals.find(goal => {
@@ -256,59 +294,70 @@ function SubGoalRow({
 		).priority;
 
 	return (
-		<tr key={subGoal.id} className="w-full ">
-			<td className="mb-2 w-3/5 gap-4 rounded-lg bg-white p-1 px-4 py-1">
-				<div className="group flex flex-row">
-					<div className="flex gap-4">
-						<button
-							type="button"
-							title="Nach oben"
-							className="rounded p-1 hover:bg-gray-200"
-							onClick={() => moveSubGoal(subGoal, "up", result[0].learningSubGoals)}
-							hidden={subGoal.priority == 1 || !editable}
-						>
-							<ArrowUpIcon className="h-3" />
-						</button>
-						{(subGoal.priority == 1 || !editable) && <div className="p-2.5" />}
-						<button
-							type="button"
-							title="Nach unten"
-							className="rounded p-1 hover:bg-gray-200"
-							onClick={() => moveSubGoal(subGoal, "down", result[0].learningSubGoals)}
-							hidden={subGoal.priority == max || !editable}
-						>
-							<ArrowDownIcon className="h-3" />
-						</button>
-						{(subGoal.priority == max || !editable) && <div className="p-2.5" />}
-					</div>
-					<div className="ml-5">{subGoal.description}</div>
-					{editable && (
-						<div className="invisible group-hover:visible">
-							<QuickEditButton onClick={() => setOpenAddDialog(true)} />
-							<GoalDeleteOption
-								goalId={subGoal.id}
-								isSubGoal={true}
-								className="px-2 hover:text-secondary"
-							/>
+		<span className="flex w-full justify-between gap-4 rounded-lg bg-white px-4 py-2">
+			<div className="flex w-full gap-8">
+				<div className="flex w-full flex-row justify-between">
+					<div className="group flex flex-row">
+						<div className="flex gap-4">
+							<button
+								type="button"
+								title="Nach oben"
+								className="rounded p-1 hover:bg-gray-200"
+								onClick={() =>
+									moveSubGoal(subGoal, "up", result[0].learningSubGoals)
+								}
+								hidden={subGoal.priority == 1 || !editable}
+							>
+								<ArrowUpIcon className="h-3" />
+							</button>
+							{(subGoal.priority == 1 || !editable) && <div className="p-2.5" />}
+							<button
+								type="button"
+								title="Nach unten"
+								className="rounded p-1 hover:bg-gray-200"
+								onClick={() =>
+									moveSubGoal(subGoal, "down", result[0].learningSubGoals)
+								}
+								hidden={subGoal.priority == max || !editable}
+							>
+								<ArrowDownIcon className="h-3" />
+							</button>
+							{(subGoal.priority == max || !editable) && <div className="p-2.5" />}
 						</div>
-					)}
-					{openAddDialog && (
-						<GoalEditorDialog
-							subGoal={subGoal}
-							onClose={() => setOpenAddDialog(false)}
-						/>
-					)}
+						<div className="ml-2 flex flex-row">
+							<span>{subGoal.description}</span>
+
+							{editable && (
+								<div className="invisible group-hover:visible">
+									<QuickEditButton onClick={() => setOpenAddDialog(true)} />
+									<GoalDeleteOption
+										goalId={subGoal.id}
+										isSubGoal={true}
+										className="px-2 hover:text-secondary"
+									/>
+								</div>
+							)}
+						</div>
+					</div>
+					<div className="flex justify-end">
+						<GoalStatus subGoal={subGoal} editable={editable} />
+					</div>
 				</div>
-			</td>
-			<td className="mb-2 w-2/5 gap-4 rounded-lg bg-white p-1 px-4 py-1">
-				<div className="flex justify-end">
-					<GoalStatus subGoal={subGoal} editable={editable} />
-				</div>
-			</td>
-		</tr>
+			</div>
+			{openAddDialog && (
+				<GoalEditorDialog subGoal={subGoal} onClose={() => setOpenAddDialog(false)} />
+			)}
+		</span>
 	);
 }
 
+
+/**
+ * Component to open the editor for a learning goal.
+ * 
+ * @param onClick Function performed if the button was clicked.  
+ * @returns A Button with a pencil icon.
+ */
 function QuickEditButton({ onClick }: Readonly<{ onClick: () => void }>) {
 	return (
 		<button title="Bearbeiten" className="px-2 hover:text-secondary" onClick={onClick}>
@@ -316,6 +365,17 @@ function QuickEditButton({ onClick }: Readonly<{ onClick: () => void }>) {
 		</button>
 	);
 }
+
+
+/**
+ * Component to handle deletion of a learning goal. Contains a warning dialog. 
+ * 
+ * @param goalId ID of a goal.
+ * @param className ClassName string for the component styling (optional)
+ * @param isSubGoal Distinction between learning goal and sub-goal.
+ * @param onDeleteSuccess Function that is executed when a goal has been successfully deleted   
+ * @returns 
+ */
 
 export function GoalDeleteOption({
 	goalId,
@@ -338,6 +398,9 @@ export function GoalDeleteOption({
 		});
 	};
 
+	/**
+	 * Handle for deleting a goal. Show a simple Dialog with a warning.
+	 */
 	const handleDelete = () => {
 		dispatchDialog(
 			<SimpleDialog
@@ -372,6 +435,11 @@ export function GoalDeleteOption({
 	);
 }
 
+/**
+ * Error handling and notification if a goal has been successfully deleted. 
+ * 
+ * @param fn 
+ */
 const withErrorHandling = async (fn: () => Promise<void>) => {
 	try {
 		await fn();

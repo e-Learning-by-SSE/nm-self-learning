@@ -6,6 +6,14 @@ import { Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 
+/**
+ * Component to display an editor dialog for a learning goal or sub-goal.
+ *
+ * @param goal Learning goal data
+ * @param subGoal Sub-goal data
+ * @param onClose Function that is executed after closing the dialog
+ * @returns
+ */
 export function GoalEditorDialog({
 	goal,
 	subGoal,
@@ -25,8 +33,13 @@ export function GoalEditorDialog({
 	const [description, setDescription] = useState(goal?.description ?? subGoal?.description ?? "");
 	const [learningGoalId, setLearningGoalId] = useState(subGoal?.learningGoalId ?? "");
 
+	// Different label for creating or editing of a goal or sub-goal
 	const title = goal || subGoal ? "Lernziel bearbeiten" : "Lernziel erstellen";
 
+	/**
+	 * Function for saving a goal or sub-goal. Contains a textarea for describing a learning goal and a combobox to select the parent goal.
+	 * The combobox is only displayed for new learning goals or sub-goals.
+	 */
 	function save() {
 		if (description.length > 0) {
 			const goalId = goal?.id ?? "";
@@ -34,17 +47,24 @@ export function GoalEditorDialog({
 
 			const date = new Date();
 			const lastProgressUpdate = date.toISOString();
+
 			if (goalId != "") {
+				// Learning goal was edited
 				editGoal({ description, lastProgressUpdate, goalId });
 			} else if (subGoalId != "") {
+				// Learning sub-goal was edited
 				if (learningGoalId == "") {
+					// a Sub-goal was edited and converted to a learning goal.
 					createGoalFromSubGoal({ description, subGoalId });
 				} else {
+					// a Sub-goal was edited
 					editSubGoal({ description, lastProgressUpdate, learningGoalId, subGoalId });
 				}
 			} else if (learningGoalId == "") {
+				// a new learning goal was created
 				createGoal({ description });
 			} else {
+				// a new sub-goal was created and added to the parent goal "learningGoalId"
 				createSubGoal({ description, learningGoalId });
 			}
 		}
@@ -112,6 +132,14 @@ export function GoalEditorDialog({
 	}
 }
 
+/**
+ * Combobox component for selecting the parent learning goal of a sub-goal. If nothing is selected a new learning goal will be created
+ *
+ * @param goals Learning goal data
+ * @param pSelectedGoal Current selected goal for editing a sub-goal
+ * @param onChange Function executed on change of the selected entry
+ * @returns Combobox with all inprogress learning goals
+ */
 function MyCombobox({
 	goals,
 	pSelectedGoal,

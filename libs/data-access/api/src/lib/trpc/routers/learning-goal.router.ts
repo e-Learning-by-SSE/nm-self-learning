@@ -5,6 +5,7 @@ import { z } from "zod";
 import { LearningGoalStatus } from "@prisma/client";
 
 export const learningGoalRouter = t.router({
+	// returns all learning goals of a user.
 	loadLearningGoal: authProcedure.query(async ({ ctx }) => {
 		return await getLearningGoals(ctx.user.name);
 	}),
@@ -128,6 +129,7 @@ export const learningGoalRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			// updates status of a sub-goal
 			const updated = await database.learningSubGoal.update({
 				where: { id: input.subGoalId },
 				data: {
@@ -141,6 +143,7 @@ export const learningGoalRouter = t.router({
 					lastProgressUpdate: true
 				}
 			});
+			// updates the "lastProgressUpdate" of the parent and the status if the new status is "Active".
 			let updatedGoal;
 			if (input.status == LearningGoalStatus.ACTIVE) {
 				updatedGoal = await database.learningGoal.update({
@@ -191,6 +194,7 @@ export const learningGoalRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			// update sub-goal
 			const updatedSubGoal = await database.learningSubGoal.update({
 				where: { id: input.subGoalId },
 				data: {
@@ -204,6 +208,7 @@ export const learningGoalRouter = t.router({
 					lastProgressUpdate: true
 				}
 			});
+			// update lastProgressUpdate of parent goal
 			const updatedGoal = await database.learningGoal.update({
 				where: { id: input.learningGoalId },
 				data: {
@@ -262,6 +267,7 @@ export const learningGoalRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			// create new learning goal
 			const created = await database.learningGoal.create({
 				data: {
 					description: input.description,
@@ -273,6 +279,7 @@ export const learningGoalRouter = t.router({
 					createdAt: true
 				}
 			});
+			// delete old sub-goal
 			const deleted = await database.learningSubGoal.delete({
 				where: { id: input.subGoalId }
 			});
