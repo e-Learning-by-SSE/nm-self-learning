@@ -102,9 +102,7 @@ export function MarkdownEditorDialog({
 			<div className="grid h-full grid-cols-2 items-start gap-8 overflow-hidden pt-4">
 				<div className="flex h-full w-full flex-col gap-2">
 					<label className="text-sm font-semibold">Markdown</label>
-					{editorInstance && <EditorQuickActions
-						editor={editorInstance}
-					/>}
+					{editorInstance && <EditorQuickActions editor={editorInstance} />}
 					<EditorField
 						language="markdown"
 						onChange={setValue as any}
@@ -156,7 +154,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 	const applyMarkdownFormat = (
 		formatType: "BOLD" | "ITALIC" | "ORDEREDLIST" | "UNORDEREDLIST" | "HEADER" | "LANGUAGE"
 	) => {
-		if(!editor) return;
+		if (!editor) return;
 		const selection = editor.getSelection();
 		if (selection === null) return;
 		const selectedText = editor.getModel()?.getValueInRange(selection);
@@ -198,9 +196,10 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 	};
 
 	return (
-		<div className="mb-2 flex flex-col bg-gray-200 p-2 rounded-xl">
+		<div className="mb-2 flex flex-col rounded-xl bg-gray-200 p-2">
 			<div className="flex gap-1">
 				<button
+					title="Bold"
 					type="button"
 					className="btn-stroked"
 					onClick={() => applyMarkdownFormat("BOLD")}
@@ -208,6 +207,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 					<strong>B</strong>
 				</button>
 				<button
+					title="Italic"
 					type="button"
 					className="btn-stroked"
 					onClick={() => applyMarkdownFormat("ITALIC")}
@@ -215,6 +215,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 					<em>I</em>
 				</button>
 				<button
+					title="Ungeordnete Liste"
 					type="button"
 					className="btn-stroked"
 					onClick={() => applyMarkdownFormat("UNORDEREDLIST")}
@@ -222,6 +223,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 					UL
 				</button>
 				<button
+					title="Geordnete Liste"
 					type="button"
 					className="btn-stroked"
 					onClick={() => applyMarkdownFormat("ORDEREDLIST")}
@@ -250,7 +252,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 			</div>
 			<div className="mt-2 flex gap-2 p-0">
 				<select
-				title="Language"
+					title="Language"
 					className="btn-stroked"
 					value={selectedLanguage}
 					onChange={e => setSelectedLanguage(e.target.value)}
