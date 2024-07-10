@@ -14,6 +14,10 @@ module.exports = {
 	 * More info: https://jestjs.io/docs/upgrading-to-jest29#snapshot-format
 	 */
 	snapshotFormat: { escapeString: true, printBasicPrototype: true },
-	collectCoverageFrom: ["**/*.(t|j)s", "**/*.(t|j)sx"],
+	collectCoverageFrom: [
+		"src/**/*.{js,jsx,ts,tsx}",
+		"libs/**/*.{js,jsx,ts,tsx}",
+		"!<rootDir>/node_modules/"
+	],
 	coverageReporters: ["cobertura", "text", "html"]
 };
