@@ -69,7 +69,7 @@ export function SkillFolderTable({
 								/>
 							</th>
 							<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
-							<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>
+							{/*<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>*/}
 						</>
 					}
 				>

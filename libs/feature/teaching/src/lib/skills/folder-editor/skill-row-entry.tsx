@@ -161,7 +161,7 @@ function SkillRow({
 						<span className={`${skill.isSelected ? "text-secondary" : ""}`}>
 							{skill.displayName ?? skill.skill.name}
 						</span>
-						<span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span>
+						{/*<span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span>*/}
 					</div>
 					<div className="invisible  group-hover:visible">
 						<QuickEditButton onClick={() => handleSelection(skill.id)} skill={skill} />
@@ -177,7 +177,7 @@ function SkillRow({
 					</div>
 				</div>
 			</TableDataColumn>
-			<TableDataColumn>{"nicht vorhanden"}</TableDataColumn>
+			{/*<TableDataColumn>{"nicht vorhanden"}</TableDataColumn>*/}
 		</tr>
 	);
 }
