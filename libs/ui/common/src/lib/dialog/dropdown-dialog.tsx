@@ -1,5 +1,5 @@
 import { Combobox, Dialog as HeadlessDialog } from "@headlessui/react";
-import { SearchIcon } from "@heroicons/react/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { OnDialogCloseFn } from "./dialog";
 
 export function Dialog<TResult>({
@@ -43,7 +43,7 @@ export function SearchInput({
 }) {
 	return (
 		<span className="flex items-center border-b border-b-light-border py-1 px-4">
-			<SearchIcon className="h-6 px-2 text-light" />
+			<MagnifyingGlassIcon className="h-6 px-2 text-light" />
 			<Combobox.Input
 				className="w-full border-none focus:ring-0"
 				placeholder={placeholder}

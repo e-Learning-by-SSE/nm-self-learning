@@ -2,13 +2,16 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database } from "@self-learning/database";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
-import { NextAuthOptions } from "next-auth";
+import { NextAuthOptions, User } from "next-auth";
 import { Adapter } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import jwt_decode from "jwt-decode";
 import { useSession } from "next-auth/react";
+import { GetServerSidePropsContext, PreviewData } from "next";
+import { ParsedUrlQuery } from "querystring";
+import { getSession } from "next-auth/react";
 
 type KeyCloakClaims = {
 	realm_access?: {
@@ -53,6 +56,7 @@ function mailToUsername(mail: string): string {
 	}
 	return mail;
 }
+
 export const testingExportMailToUsername = mailToUsername;
 
 const customPrismaAdapter: Adapter = {
@@ -222,6 +226,7 @@ export const authOptions: NextAuthOptions = {
 			let userFromDb = await database.user.findUniqueOrThrow({
 				where: { name: username },
 				select: {
+					id: true,
 					role: true,
 					image: true,
 					author: { select: { username: true } }
@@ -234,6 +239,7 @@ export const authOptions: NextAuthOptions = {
 					where: { name: username },
 					data: { role: "USER" },
 					select: {
+						id: true,
 						role: true,
 						image: true,
 						author: { select: { username: true } }
@@ -245,6 +251,7 @@ export const authOptions: NextAuthOptions = {
 					where: { name: username },
 					data: { role: "ADMIN" },
 					select: {
+						id: true,
 						role: true,
 						image: true,
 						author: { select: { username: true } }
@@ -253,6 +260,7 @@ export const authOptions: NextAuthOptions = {
 			}
 
 			session.user = {
+				id: userFromDb.id,
 				name: username,
 				role: userFromDb.role,
 				isAuthor: !!userFromDb.author,
@@ -274,4 +282,13 @@ export function isUserAuthenticatedInSession() {
 		return true;
 	}
 	return false;
+}
+
+export async function getAuthenticatedUser(
+	ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>
+): Promise<User | undefined> {
+	const session = await getSession(ctx);
+	if (!session) return;
+	if (!session.user) return;
+	return session.user;
 }

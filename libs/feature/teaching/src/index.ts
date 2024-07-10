@@ -6,3 +6,6 @@ export * from "./lib/course/course-form-model";
 export * from "./lib/subject/subject-editor";
 export * from "./lib/subject/permissions-dialog";
 export * from "./lib/lesson/forms/license-form";
+export * from "./lib/skills/repository/repository-overview";
+export * from "./lib/skills/folder-editor";
+export * from "./lib/course/full-course-export";

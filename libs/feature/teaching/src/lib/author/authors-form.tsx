@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { IconButton, ImageChip, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";

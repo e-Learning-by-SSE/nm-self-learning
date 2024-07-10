@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 
-import { PlayIcon, PlusCircleIcon } from "@heroicons/react/solid";
+import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";

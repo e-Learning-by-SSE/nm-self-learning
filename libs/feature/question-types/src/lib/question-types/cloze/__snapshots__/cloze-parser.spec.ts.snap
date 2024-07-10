@@ -1,0 +1,76 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Cloze Parser parseCloze Two lines 1`] = `
+Array [
+  Object {
+    "endIndex": 23,
+    "startIndex": 12,
+    "type": "C",
+    "values": Array [
+      Object {
+        "isCorrect": false,
+        "text": "a",
+      },
+      Object {
+        "isCorrect": true,
+        "text": "b",
+      },
+    ],
+  },
+  Object {
+    "endIndex": 64,
+    "startIndex": 53,
+    "type": "C",
+    "values": Array [
+      Object {
+        "isCorrect": true,
+        "text": "c",
+      },
+      Object {
+        "isCorrect": false,
+        "text": "d",
+      },
+    ],
+  },
+]
+`;
+
+exports[`Cloze Parser parseCloze Two lines but with whitespace in the first 1`] = `
+Array [
+  Object {
+    "endIndex": 27,
+    "startIndex": 16,
+    "type": "C",
+    "values": Array [
+      Object {
+        "isCorrect": true,
+        "text": "c",
+      },
+      Object {
+        "isCorrect": false,
+        "text": "d",
+      },
+    ],
+  },
+]
+`;
+
+exports[`Cloze Parser parseCloze should handle latex correctly 1`] = `
+Array [
+  Object {
+    "endIndex": 29,
+    "startIndex": 0,
+    "type": "T",
+    "values": Array [
+      Object {
+        "isCorrect": true,
+        "text": "$$latex1$$",
+      },
+      Object {
+        "isCorrect": false,
+        "text": "$$latex2$$",
+      },
+    ],
+  },
+]
+`;

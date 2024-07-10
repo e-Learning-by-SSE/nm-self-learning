@@ -1,5 +1,8 @@
-import { CheckCircleIcon as CheckCircleIconOutline, XCircleIcon } from "@heroicons/react/outline";
-import { CheckCircleIcon, PlayIcon, RefreshIcon } from "@heroicons/react/solid";
+import {
+	CheckCircleIcon as CheckCircleIconOutline,
+	XCircleIcon
+} from "@heroicons/react/24/outline";
+import { CheckCircleIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
@@ -17,7 +20,7 @@ import { isUserAuthenticatedInSession } from "libs/data-access/api/src/lib/auth"
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -34,7 +37,6 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	if ("notFound" in parentProps) return { notFound: true };
 
 	const quiz = parentProps.lesson.quiz as Quiz | null;
-
 	if (!quiz) return { notFound: true };
 
 	const questionsMd: MdLookup = {};
@@ -91,7 +93,6 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 			shallow: true
 		});
 	}, [nextIndex, course.slug, lesson.slug, router]);
-
 	// function goToPreviousQuestion() {
 	// 	router.push(
 	// 		`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
@@ -134,23 +135,20 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 				reload={router.reload}
 			>
 				<div className="flex w-full flex-col gap-4">
-					<div className="flex w-full flex-col gap-4">
-						<QuizHeader
-							lesson={lesson}
-							course={course}
-							currentIndex={nextIndex - 1}
-							goToQuestion={goToQuestion}
-							questions={questions}
-						/>
-						<Question
-							key={currentQuestion.questionId}
-							question={currentQuestion}
-							markdown={markdown}
-							lesson={lesson}
-							isLastQuestion={quiz.questions.length === Number(index) + 1}
-						/>
-						<QuizCompletionSubscriber lesson={lesson} course={course} />
-					</div>
+					<QuizHeader
+						lesson={lesson}
+						course={course}
+						currentIndex={nextIndex - 1}
+						goToQuestion={goToQuestion}
+						questions={questions}
+					/>
+					<Question
+						key={currentQuestion.questionId}
+						question={currentQuestion}
+						markdown={markdown}
+						lesson={lesson}
+					/>
+					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
 			</QuizProvider>
 		</AuthorizedGuard>
@@ -381,7 +379,7 @@ function QuizFailedDialog({
 			<DialogActions onClose={onClose}>
 				<button className="btn-primary" onClick={reload}>
 					<span>Erneut probieren</span>
-					<RefreshIcon className="h-5 shrink-0" />
+					<ArrowPathIcon className="h-5 shrink-0" />
 				</button>
 			</DialogActions>
 		</Dialog>
