@@ -54,9 +54,6 @@ export function LessonEditor({
 		}
 	}, [router.isReady, router.query]);
 
-	//console.log("LessonEditor, lesson ", lesson);
-	//console.log("LessonEditor, data from preview", isFromPreview);
-
 	function redirectToPreview() {
 		const currentLessonValues = form.getValues();
 		const lessonMeta = createLessonMeta(currentLessonValues);
@@ -79,9 +76,6 @@ export function LessonEditor({
 	return (
 		<div className="bg-gray-50">
 			<FormProvider {...form}>
-				<button className="btn-primary m-3" onClick={redirectToPreview}>
-					Vorschau
-				</button>
 				<form
 					onSubmit={form.handleSubmit(
 						data => {
@@ -113,6 +107,13 @@ export function LessonEditor({
 								</div>
 
 								<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+								<button
+									className="btn-stroked"
+									onClick={redirectToPreview}
+									type="button"
+								>
+									Vorschau
+								</button>
 
 								<button className="btn-primary w-full" type="submit">
 									{isNew ? "Erstellen" : "Speichern"}

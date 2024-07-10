@@ -125,7 +125,7 @@ export default function LessonPreview() {
 	return (
 		<>
 			<div>
-				<button className="btn-primary m-3" onClick={redirectBackToEditor}>
+				<button className="btn-stroked my-2 w-full" onClick={redirectBackToEditor}>
 					Zurück zum Editor
 				</button>
 			</div>
