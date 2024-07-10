@@ -9,7 +9,7 @@
 		"build:affected": "nx affected:build --parallel",
 		"test": "env TZ='Europe/Berlin' jest --runInBand",
 		"test:affected": "env TZ='Europe/Berlin' nx affected:test --parallel=3 --runInBand",
-		"test:jenkins": "env TZ='Europe/Berlin' JEST_JUNIT_OUTPUT_FILE=output/test/junit.xml jest --watchAll --runInBand --reporters=default --reporters=jest-junit --coverage --coverageDirectory=output/test/coverage",
+		"test:jenkins": "env TZ='Europe/Berlin' JEST_JUNIT_OUTPUT_FILE=output/test/junit.xml jest --runInBand --reporters=default --reporters=jest-junit --coverage --coverageDirectory=output/test/coverage",
 		"cypress": "cypress open --project=apps/site-e2e",
 		"prettier:check": "prettier --check **/*",
 		"prettier:write": "prettier --write '{apps,libs}/**/*.{ts,tsx}'",
