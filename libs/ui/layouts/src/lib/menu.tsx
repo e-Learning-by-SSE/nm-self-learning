@@ -1,20 +1,31 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { Menu } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
 import { Transition } from "@headlessui/react";
 
 export function TranslationButton() {
 	const { i18n } = useTranslation();
-	const selectedLang = i18n.language;
+	const [selectedLang, setSelectedLang] = useState<string>("");
 	const langdic = {
 		en: ["English", "\u{1F1EC}\u{1F1E7}"],
-		de: ["Deutsch", "\u{1F1E9}\u{1F1EA}"]
+		de: ["Deutsch", "\u{1F1E9}\u{1F1EA}"] //{langdic[selectedLang][0]}
 	};
+	useEffect(() => {
+		const localLang = localStorage.getItem("lang");
+		if (localLang == null) {
+			i18n.changeLanguage("en");
+		} else {
+			i18n.changeLanguage(localLang);
+			setSelectedLang(localLang);
+		}
+	}, [i18n]);
 	return (
 		<Menu>
 			<div>
 				<Menu.Button className="flex items-center gap-1 rounded-full">
-					<p className="hover:text-secondary">{langdic[selectedLang][0]}</p>
+					<p className="hover:text-secondary">
+						{selectedLang ? langdic[selectedLang][0] : "English"}
+					</p>
 				</Menu.Button>
 			</div>
 			<Transition
@@ -44,6 +55,8 @@ export function TranslationButton() {
 								key={index}
 								onClick={(): void => {
 									i18n.changeLanguage(lang);
+									setSelectedLang(lang);
+									localStorage.setItem("lang", lang);
 								}}
 							>
 								<Menu.Item as="div">
