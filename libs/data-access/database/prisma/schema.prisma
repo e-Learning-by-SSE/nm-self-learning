@@ -58,13 +58,16 @@ model VerificationToken {
 }
 
 model Student {
-  userId           String            @unique
-  username         String            @id
-  completedLessons CompletedLesson[]
-  enrollments      Enrollment[]
-  learningDiary    LearningDiary?
-  quizAttempts     QuizAttempt[]
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           			String            @unique
+  username         			String            @id
+  completedLessons 			CompletedLesson[]
+  enrollments      			Enrollment[]
+  learningDiary    			LearningDiary?
+  customLearningLocations 	LearningLocation[]
+  learningDiaryEntrys		LearningDiaryEntry[]
+  quizAttempts     			QuizAttempt[]
+  user             			User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  learningTechniques 		LearningTechnique[]
 }
 
 model Author {
@@ -150,6 +153,7 @@ model Course {
   enrollments     Enrollment[]
   authors         Author[]          @relation("AuthorToCourse")
   specializations Specialization[]  @relation("CourseToSpecialization")
+  learningDiaryEntries LearningDiaryEntry[]
 }
 
 model Enrollment {
@@ -301,3 +305,81 @@ model Skill {
   @@unique([repositoryId, name])
   @@map("skills")
 }
+
+model LearningDiaryEntry {
+  id                      		String               				@id @default(uuid())
+  semesterId              		String
+  semester                		Semester            				@relation(fields: [semesterId], references: [id], onDelete: NoAction)
+  studentName			  		String
+  student						Student 							@relation(fields: [studentName], references: [username], onDelete: NoAction)
+  courseId                		String
+  course                  		Course              				@relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+  notes                   		String
+  date                    		DateTime
+  start                   		DateTime
+  end                     		DateTime
+  distractionLevel        		Int
+  learningLocationId      		String
+  learningLocation        		LearningLocation    				@relation(fields: [learningLocationId], references: [id], onDelete: NoAction)
+  learningGoals 		  		LearningGoal[]
+  learningTechniqueEvaluation 	LearningTechniqueEvaluation[]
+}
+
+model LearningLocation {
+	id					String 			 			@id @default(uuid())
+	name				String
+	defaultLocation		Boolean						@default(false)
+	creatorName			String?
+	creator				Student?					@relation(fields: [creatorName], references: [username], onDelete: Cascade)
+	learningDiaryEntry 	LearningDiaryEntry[]
+}
+
+model LearningStrategie {
+  id                      			String               				@id @default(uuid())
+  name 					  			String
+  learningTechniqueEvaluations 		LearningTechniqueEvaluation[]
+}
+
+model LearningTechnique {
+	id									String 			 					@id @default(uuid())
+	name 								String
+	creatorId 							String?
+	creator								Student? 							@relation(fields: [creatorId], references: [username], onDelete: NoAction)
+	learningTechniqueEvaluations 		LearningTechniqueEvaluation[]
+}
+
+model LearningTechniqueEvaluation {
+	id						String 			 			@id @default(uuid())
+	score					Int
+	learningStrategieId 	String
+	learningStrategie		LearningStrategie 			@relation(fields: [learningStrategieId], references: [id], onDelete: NoAction)
+	learningTechniqueId		String
+	learningTechnique		LearningTechnique			@relation(fields: [learningTechniqueId], references: [id], onDelete: NoAction)
+	learningDiaryEntryId 	String
+	learningDiaryEntry		LearningDiaryEntry			@relation(fields: [learningDiaryEntryId], references: [id], onDelete: NoAction)
+}
+
+enum LearningProgeress {
+    NOT_STARTED
+    STARTED
+	FINISHED
+}
+
+model LearningGoal {
+	id							String 			 	@id @default(uuid())
+	learningDiaryEntryId		String
+	learningDiaryEntry			LearningDiaryEntry 	@relation(fields: [learningDiaryEntryId], references: [id], onDelete: NoAction)
+	parentGoalId				String?
+	parentGoal 					LearningGoal? 		@relation("ParentGoal",fields: [parentGoalId], references: [id], onDelete: NoAction)
+	childGoals					LearningGoal[] 		@relation("ParentGoal")
+}
+
+model Semester {
+	id 					String  					@id @default(uuid())
+	start 				DateTime
+	end 				DateTime
+	name 				String
+	learningDiaryEntry 	LearningDiaryEntry[]
+}
+
+
