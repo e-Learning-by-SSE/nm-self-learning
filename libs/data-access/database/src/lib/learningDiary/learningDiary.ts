@@ -1,0 +1,180 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function generateLearningDiaryDemoData() {
+	console.log("\x1b[94m%s\x1b[0m", "Learning Diary" + " Example:");
+
+	try {
+		// Ensure the student "Dumbledore" exists in the database
+		const student = await prisma.student.findUnique({
+			where: { username: "dumbledore" }
+		});
+
+		if (!student) {
+			console.error('Student "Dumbledore" not found.');
+			return;
+		}
+
+		// Ensure the course exists (or create a new one if none exists)
+		let course = await prisma.course.findFirst();
+
+		if (!course) {
+			console.log("No courses found in the database, creating a demo course.");
+			course = await prisma.course.create({
+				data: {
+					courseId: "test-course-id",
+					slug: "test-course",
+					title: "Test Course",
+					subtitle: "Demo Course for Testing",
+					content: {},
+					meta: {},
+					createdAt: new Date(),
+					updatedAt: new Date()
+				}
+			});
+		}
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Semester");
+		const semesterWinter2023 = await prisma.semester.create({
+			data: {
+				id: "semester-winter-2023",
+				start: new Date("2023-10-01"),
+				end: new Date("2024-03-31"),
+				name: "Wintersemester 2023/24"
+			}
+		});
+
+		const semesterSommer2024 = await prisma.semester.create({
+			data: {
+				id: "semester-sommer-2024",
+				start: new Date("2024-04-01"),
+				end: new Date("2024-09-30"),
+				name: "Sommersemester 2024"
+			}
+		});
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Locations");
+		const location1 = await prisma.learningLocation.create({
+			data: {
+				id: "location-library",
+				name: "Library",
+				defaultLocation: true,
+				creatorName: student.username
+			}
+		});
+
+		const location2 = await prisma.learningLocation.create({
+			data: {
+				id: "location-cafe",
+				name: "Cafe",
+				defaultLocation: false,
+				creatorName: student.username
+			}
+		});
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Strategies");
+		const strategy1 = await prisma.learningStrategie.create({
+			data: {
+				id: "strategy-pomodoro",
+				name: "Pomodoro Technique"
+			}
+		});
+
+		const strategy2 = await prisma.learningStrategie.create({
+			data: {
+				id: "strategy-mindmapping",
+				name: "Mind Mapping"
+			}
+		});
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Techniques");
+		const technique1 = await prisma.learningTechnique.create({
+			data: {
+				id: "technique-active-recall",
+				name: "Active Recall",
+				creatorId: student.username
+			}
+		});
+
+		const technique2 = await prisma.learningTechnique.create({
+			data: {
+				id: "technique-spaced-repetition",
+				name: "Spaced Repetition",
+				creatorId: student.username
+			}
+		});
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Diary Entry");
+		const diaryEntry = await prisma.learningDiaryEntry.create({
+			data: {
+				id: "diary-entry-advanced-spells",
+				semesterId: semesterWinter2023.id,
+				studentName: student.username,
+				courseSlug: course.slug, // Use the retrieved course slug
+				notes: "Studied advanced spells",
+				date: new Date(),
+				start: new Date(),
+				end: new Date(),
+				distractionLevel: 2,
+				learningLocationId: location1.id
+			}
+		});
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Technique Evaluations");
+		const evaluation1 = await prisma.learningTechniqueEvaluation.create({
+			data: {
+				id: "evaluation1",
+				score: 8,
+				learningStrategieId: strategy1.id,
+				learningTechniqueId: technique1.id,
+				learningDiaryEntryId: diaryEntry.id
+			}
+		});
+
+		const evaluation2 = await prisma.learningTechniqueEvaluation.create({
+			data: {
+				id: "evaluation2",
+				score: 7,
+				learningStrategieId: strategy2.id,
+				learningTechniqueId: technique2.id,
+				learningDiaryEntryId: diaryEntry.id
+			}
+		});
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Goals");
+		const goal1 = await prisma.learningGoal.create({
+			data: {
+				id: "goal1",
+				learningDiaryEntryId: diaryEntry.id
+			}
+		});
+
+		const subGoal1 = await prisma.learningGoal.create({
+			data: {
+				id: "subgoal1",
+				learningDiaryEntryId: diaryEntry.id,
+				parentGoalId: goal1.id
+			}
+		});
+
+		const subGoal2 = await prisma.learningGoal.create({
+			data: {
+				id: "subgoal2",
+				learningDiaryEntryId: diaryEntry.id,
+				parentGoalId: goal1.id
+			}
+		});
+
+		const goal2 = await prisma.learningGoal.create({
+			data: {
+				id: "goal2",
+				learningDiaryEntryId: diaryEntry.id
+			}
+		});
+	} catch (error) {
+		console.error("Error generating demo data:", error);
+	} finally {
+		await prisma.$disconnect();
+	}
+}

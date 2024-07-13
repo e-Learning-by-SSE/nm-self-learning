@@ -6,6 +6,7 @@ import { mathExample } from "./math/math-example";
 import { psychologyExample } from "./psychology/psychology-example";
 import { createSpecialization } from "./seed-functions";
 import { seedDemos } from "./demo/demo";
+import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
 
 const prisma = new PrismaClient();
 
@@ -118,7 +119,7 @@ const specializations: Prisma.SpecializationCreateManyInput[] = [
 		"mathematik",
 		"didaktik-der-geometrie",
 		"Didaktik der Geometrie",
-		"Didaktik der Geometrie: geometrische Begriffsbildung, Figuren und Körper, Maße und Größen, Beweisen und Argumentieren im Geometrieunterricht, geometrisches Problemlösen, Konstruieren, dynamische Geometriesysteme im Mathematikunterricht, Anwendungen der Geometrie samt ihren didaktischen Theorien kennen und schulbezogen anwenden können; Lern-, Lehr- und Übungsumgebungen sowie Prüfungsanlässe mit geometrischen Bezügen beurteilen, gestalten und variieren",
+		"Didaktik degenerateLearningDiararyDemoDatar Geometrie: geometrische Begriffsbildung, Figuren und Körper, Maße und Größen, Beweisen und Argumentieren im Geometrieunterricht, geometrisches Problemlösen, Konstruieren, dynamische Geometriesysteme im Mathematikunterricht, Anwendungen der Geometrie samt ihren didaktischen Theorien kennen und schulbezogen anwenden können; Lern-, Lehr- und Übungsumgebungen sowie Prüfungsanlässe mit geometrischen Bezügen beurteilen, gestalten und variieren",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_der_Geometrie.png",
 		"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/Didaktik_der_Geometrie.png"
 	),
@@ -177,7 +178,14 @@ async function seed(): Promise<void> {
 	await prisma.lesson.deleteMany();
 	await prisma.license.deleteMany();
 	await prisma.skill.deleteMany();
-
+	await prisma.learningGoal.deleteMany();
+	await prisma.learningTechniqueEvaluation.deleteMany();
+	await prisma.learningTechnique.deleteMany();
+	await prisma.learningStrategie.deleteMany();
+	await prisma.learningLocation.deleteMany();
+	await prisma.learningDiaryEntry.deleteMany();
+	await prisma.learningDiary.deleteMany();
+	await prisma.semester.deleteMany();
 	console.log("😅 Seeding...");
 
 	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
@@ -192,6 +200,7 @@ async function seed(): Promise<void> {
 
 	await psychologyExample();
 	await mathExample();
+	await generateLearningDiaryDemoData();
 
 	console.log(`\nSeed command took ${Date.now() - start}ms`);
 }
