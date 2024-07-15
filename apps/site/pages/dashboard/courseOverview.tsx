@@ -194,7 +194,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 					<>
 						{columns.map(column => (
 							<th
-								className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+								className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
 								key={column.key}
 								onClick={() =>
 									setSortedColumn({
