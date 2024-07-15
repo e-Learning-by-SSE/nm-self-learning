@@ -146,7 +146,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 	const columns = [
 		{
 			key: "title",
-			label: "Title",
+			label: "Titel",
 			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				a.course.title.localeCompare(b.course.title)
 		},
