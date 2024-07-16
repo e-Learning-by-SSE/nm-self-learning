@@ -217,10 +217,10 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
-	const isAuthenticated = isUserAuthenticatedInSession();
+	const enrollOrRedirect = isUserAuthenticatedInSession();
 
 	function handleClick() {
-		if (isAuthenticated) {
+		if (enrollOrRedirect) {
 			const courseId = course.courseId;
 			enroll({ courseId });
 		} else {

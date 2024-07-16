@@ -278,10 +278,7 @@ export const authOptions: NextAuthOptions = {
 
 export function isUserAuthenticatedInSession() {
 	const userStatus = useSession().status;
-	if (userStatus === "authenticated") {
-		return true;
-	}
-	return false;
+	return userStatus === "authenticated";
 }
 
 export async function getAuthenticatedUser(
