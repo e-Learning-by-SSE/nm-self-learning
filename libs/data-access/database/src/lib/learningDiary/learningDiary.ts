@@ -2,6 +2,18 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+function getRandomDuration() {
+	const minDuration = 12 * 60 * 60 * 1000 + 5 * 60 * 1000; // 12 hours and 5 minutes in milliseconds
+	const maxDuration = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+	return Math.floor(Math.random() * (maxDuration - minDuration + 1)) + minDuration;
+}
+
+function generateRandomDate() {
+	const startDate = new Date();
+	startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 30));
+	return startDate;
+}
+
 export async function generateLearningDiaryDemoData() {
 	console.log("\x1b[94m%s\x1b[0m", "Learning Diary" + " Example:");
 
@@ -16,23 +28,14 @@ export async function generateLearningDiaryDemoData() {
 			return;
 		}
 
-		// Ensure the course exists (or create a new one if none exists)
-		let course = await prisma.course.findFirst();
+		// Query the first 10 courses
+		const courses = await prisma.course.findMany({
+			take: 10
+		});
 
-		if (!course) {
-			console.log("No courses found in the database, creating a demo course.");
-			course = await prisma.course.create({
-				data: {
-					courseId: "test-course-id",
-					slug: "test-course",
-					title: "Test Course",
-					subtitle: "Demo Course for Testing",
-					content: {},
-					meta: {},
-					createdAt: new Date(),
-					updatedAt: new Date()
-				}
-			});
+		if (courses.length === 0) {
+			console.error("No courses found.");
+			return;
 		}
 
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Semester");
@@ -111,7 +114,7 @@ export async function generateLearningDiaryDemoData() {
 				id: "diary-entry-advanced-spells",
 				semesterId: semesterWinter2023.id,
 				studentName: student.username,
-				courseSlug: course.slug, // Use the retrieved course slug
+				courseSlug: courses[0].slug, // Use the retrieved course slug
 				notes: "Studied advanced spells",
 				date: new Date(),
 				start: new Date(),
@@ -172,6 +175,55 @@ export async function generateLearningDiaryDemoData() {
 				learningDiaryEntryId: diaryEntry.id
 			}
 		});
+
+		// Add 10 more learning diary entries with varying start and end dates
+		const additionalEntries = [];
+
+		for (let i = 1; i <= 10; i++) {
+			const startDate = generateRandomDate();
+			const duration = getRandomDuration();
+			const endDate = new Date(startDate.getTime() + duration);
+
+			additionalEntries.push({
+				id: `entry${i}`,
+				notes: `Entry ${i} notes`,
+				date: startDate,
+				start: startDate,
+				end: endDate,
+				courseSlug: courses[i % courses.length].slug // Cycle through the courses
+			});
+		}
+
+		// Ensure at least one entry goes over two days
+		const startDate = generateRandomDate();
+		const endDate = new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000 + 1); // 2 days and 1 millisecond
+		additionalEntries[0] = {
+			id: "entry-over-two-days",
+			notes: "Entry over two days",
+			date: startDate,
+			start: startDate,
+			end: endDate,
+			courseSlug: courses[0].slug // Use the first course for this special entry
+		};
+
+		for (const entry of additionalEntries) {
+			await prisma.learningDiaryEntry.create({
+				data: {
+					id: entry.id,
+					semesterId: semesterWinter2023.id,
+					studentName: student.username,
+					courseSlug: entry.courseSlug,
+					notes: entry.notes,
+					date: entry.date,
+					start: entry.start,
+					end: entry.end,
+					distractionLevel: 2,
+					learningLocationId: location1.id
+				}
+			});
+		}
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Additional Learning Diary Entries");
 	} catch (error) {
 		console.error("Error generating demo data:", error);
 	} finally {
