@@ -1,7 +1,7 @@
 import { getAuthenticatedUser } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Card, ImageCard, ImageCardBadge, ImageOrPlaceholder } from "@self-learning/ui/common";
-import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
+import { CenteredSection } from "@self-learning/ui/layouts";
 import { formatDateAgo } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
@@ -107,7 +107,7 @@ function DashboardPage(props: Props) {
 					</div>
 				</div>
 
-				<div className="grid grid-cols-2 gap-8 pt-10">
+				<div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pt-10">
 					<Card
 						href="/dashboard/courseOverview"
 						imageElement={<span>Belegte Kurse</span>}
@@ -116,7 +116,7 @@ function DashboardPage(props: Props) {
 
 					<Card
 						href="/admin/courses"
-						imageElement={<span>Lernstatistik</span>}
+						imageElement={<span>Kurse verwalten</span>}
 						title="Kurse verwalten"
 					/>
 
@@ -207,6 +207,9 @@ function ProgressFooter({ progress }: { progress: number }) {
 }
 
 function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enrollments"][0] }) {
+	if(!lastEnrollment) {
+		return <span className="text-sm text-light">Du bist momentan in keinem Kurs eingeschrieben.</span>;
+	}
 	return (
 		<div>
 			{lastEnrollment && lastEnrollment.course && (
