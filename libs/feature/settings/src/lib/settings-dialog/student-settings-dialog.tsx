@@ -5,36 +5,35 @@ import { StudentSettings } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 
 export function StudentSettingsDialog({
-    initialSettings,
-    onClose
+	initialSettings,
+	onClose
 }: {
-    initialSettings?: StudentSettings;
-    onClose: OnDialogCloseFn<void>;
+	initialSettings?: StudentSettings;
+	onClose: OnDialogCloseFn<void>;
 }) {
-	const [settings, setSettings] = useState(initialSettings ?? {
-		learningStatistics: false,
-		hasLearningDiary: false
-	
-	});
+	const [settings, setSettings] = useState(
+		initialSettings ?? {
+			learningStatistics: false,
+			hasLearningDiary: false
+		}
+	);
 	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
 
-
-
 	const onSave = async () => {
-        try {
-            await updateSettings({
-                settings
-            });
-        } catch (error) {
-            if (error instanceof Error) {
-                showToast({
-                    type: "error",
-                    title: "Aktuelle Einstellungen konnten nicht gespeichert werden!",
-                    subtitle: error.message ?? ""
-                });
-            }
-        }
-        onClose();
+		try {
+			await updateSettings({
+				settings
+			});
+		} catch (error) {
+			if (error instanceof Error) {
+				showToast({
+					type: "error",
+					title: "Aktuelle Einstellungen konnten nicht gespeichert werden!",
+					subtitle: error.message ?? ""
+				});
+			}
+		}
+		onClose();
 	};
 
 	const onChange = (checkbox: string, value: boolean) => {
@@ -43,14 +42,14 @@ export function StudentSettingsDialog({
 
 	return (
 		<Dialog
-			style={{ height: "50vh", width: "60vw"}}
+			style={{ height: "50vh", width: "60vw" }}
 			title={"Einstellungen"}
 			onClose={() => {}}
 		>
 			<div className="overflow-x-auto p-5">
 				<StudentSettingsForm {...settings} onChange={onChange} />
 			</div>
-			<div className="pt-5"/>
+			<div className="pt-5" />
 			<div className="absolute right-4 bottom-5">
 				<DialogActions onClose={onClose}>
 					<button className="btn-primary" onClick={onSave}>

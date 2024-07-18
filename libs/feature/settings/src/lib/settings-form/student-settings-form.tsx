@@ -1,3 +1,5 @@
+import { Toggle } from "@self-learning/ui/common";
+
 export function StudentSettingsForm({
 	learningStatistics,
 	hasLearningDiary,
@@ -7,26 +9,17 @@ export function StudentSettingsForm({
 	hasLearningDiary: boolean;
 	onChange: (checkbox: string, value: boolean) => void;
 }) {
-
-	const onCheckboxChange = (checkbox: string, value: boolean) => {
-		onChange(checkbox, value);
-	};
-
 	return (
 		<div>
 			<h2 className="mt-4 text-lg font-bold">Lernen</h2>
 			<div className="mt-6 flex items-center gap-2">
-				<input
-					type={"checkbox"}
-					className="checkbox"
-					id="learningStatistics"
-					name="learningStatistics"
-					checked={learningStatistics}
-					onChange={e => {
-						onCheckboxChange("learningStatistics", e.target.checked);
+				<Toggle
+					value={learningStatistics}
+					onChange={value => {
+						onChange("learningStatistics", value);
 					}}
+					label="Lernstatistiken"
 				/>
-				<label htmlFor="learningStatistics">Lernstatistiken</label>
 			</div>
 			<section className="mt-5 rounded-lg bg-white p-3.5">
 				<span className="mt-5 h-32 w-full" title="Check this for learning statistics">
@@ -41,17 +34,13 @@ export function StudentSettingsForm({
 				</span>
 			</section>
 			<div className="mt-4 flex items-center gap-2">
-				<input
-					type={"checkbox"}
-					className="checkbox"
-					id="learningDiary"
-					name="learningDiary"
-					checked={hasLearningDiary}
-					onChange={e => {
-						onCheckboxChange("hasLearningDiary", e.target.checked);
+				<Toggle
+					value={hasLearningDiary}
+					onChange={value => {
+						onChange("hasLearningDiary", value);
 					}}
+					label="Lerntagebuch"
 				/>
-				<label htmlFor="learningDiary">Lerntagebuch</label>
 			</div>
 			<section className="mt-5 rounded-lg bg-white p-3.5">
 				<span className="mt-5 h-32 w-full" title="Check this for learningdiary">

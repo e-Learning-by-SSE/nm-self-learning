@@ -3,7 +3,7 @@ import { StudentSettings } from "@self-learning/types";
 import { StudentSettingsForm } from "@self-learning/settings";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { database } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
@@ -53,7 +53,7 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 	const [settings, setSettings] = useState(initialSettings);
 	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
 
-	const onSave = async () => {
+	const onSave = useCallback(async () => {
 		try {
 			await updateSettings({
 				settings
@@ -67,21 +67,22 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 				});
 			}
 		}
+	}, [settings, updateSettings]);
+
+	const onChange = async (checkbox: string, value: boolean) => {
+		setSettings({ ...settings, [checkbox]: value });
+		onSave();
 	};
 
-	const onChange = (checkbox: string, value: boolean) => {
-		setSettings({ ...settings, [checkbox]: value });
-	};
+	
+    useEffect(() => {
+            onSave();
+    }, [onSave, settings]);
 
 	return (
 		<>
 			<h1 className="text-2xl font-bold">Einstellungen</h1>
 			<StudentSettingsForm {...settings} onChange={onChange} />
-			<div className="mt-4 flex justify-end gap-2">
-				<button className="btn-primary" onClick={onSave}>
-					Speichern
-				</button>
-			</div>
 		</>
 	);
 }
