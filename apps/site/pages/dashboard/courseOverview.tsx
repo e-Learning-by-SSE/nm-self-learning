@@ -137,56 +137,55 @@ function TabContent({
 function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 	const [sortedColumn, setSortedColumn] = useState<{
 		key: string;
-		desc: boolean;
+		descendingOrder: boolean;
 	}>({
 		key: "title",
-		desc: true
+		descendingOrder: true
 	});
 
-	const columns = [
+	type Column = {
+		key: string;
+		label: string;
+		sortingFunction: (a, b) => number;
+	};
+	const columns: Column[] = [
 		{
 			key: "title",
 			label: "Titel",
-			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
-				a.course.title.localeCompare(b.course.title)
+			sortingFunction: (a, b) => a.course.title.localeCompare(b.course.title)
 		},
 		{
 			key: "author",
 			label: "Autor",
-			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
+			sortingFunction: (a, b) =>
 				a.course.authors[0].displayName.localeCompare(b.course.authors[0].displayName)
 		},
 		{
 			key: "progress",
 			label: "Fortschritt",
-			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
+			sortingFunction: (a, b) =>
 				b.completions.courseCompletion.completionPercentage -
 				a.completions.courseCompletion.completionPercentage
 		},
 		{
 			key: "update",
 			label: "Letzte Bearbeitung",
-			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
+			sortingFunction: (a, b) =>
 				new Date(b.lastProgressUpdate).getTime() - new Date(a.lastProgressUpdate).getTime()
 		}
 	];
 
-	function sortEnrollments() {
-		const sortingFunction = columns.filter(column => column.key == sortedColumn.key)[0]
-			.sortingFunction;
-		enrollments.sort(sortingFunction);
-
-		if (!sortedColumn.desc) {
-			enrollments.reverse();
+	function getSortingFunction(): Column["sortingFunction"] {
+		let sortingFunction = columns.find(
+			column => column.key === sortedColumn.key
+		)?.sortingFunction;
+		sortingFunction = sortingFunction || columns[0].sortingFunction;
+		if (sortedColumn.descendingOrder) {
+			return (a, b) => -sortingFunction(a, b);
+		} else {
+			return sortingFunction;
 		}
 	}
-
-	useEffect(() => {
-		sortEnrollments();
-	}, [sortedColumn, enrollments]);
-
-	sortEnrollments();
-
 	return (
 		<div className={"p"}>
 			<Table
@@ -199,9 +198,9 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 								onClick={() =>
 									setSortedColumn({
 										key: column.key,
-										desc:
+										descendingOrder:
 											sortedColumn.key == column.key
-												? !sortedColumn.desc
+												? !sortedColumn.descendingOrder
 												: true
 									})
 								}
@@ -210,7 +209,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 									<span>{column.label}</span>
 									{sortedColumn && sortedColumn.key === column.key ? (
 										<span className="justify-end">
-											{sortedColumn.desc ? "▼" : "▲"}
+											{sortedColumn.descendingOrder ? "▼" : "▲"}
 										</span>
 									) : (
 										<span className="invisible justify-end">▲</span>
@@ -221,51 +220,57 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 					</>
 				}
 			>
-				{enrollments.map(enrollment => (
-					<tr key={enrollment.course.slug}>
-						<TableDataColumn key={"title"}>
-							<Link href={`/courses/${enrollment.course.slug}/`} className="block">
-								<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
-									{enrollment.course.imgUrl ? (
-										<Image
-											src={enrollment.course.imgUrl}
-											alt={enrollment.course.title}
-											className="h-12 w-12 rounded-lg object-cover"
-											width={48}
-											height={48}
-										/>
-									) : (
-										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-											<span className="text-gray-500">Kein Bild</span>
-										</div>
-									)}
-									<div>
-										<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
-											<span className="truncate">
-												{enrollment.course.title}
+				{enrollments
+					.slice()
+					.sort(getSortingFunction())
+					.map(enrollment => (
+						<tr key={enrollment.course.slug}>
+							<TableDataColumn key={"title"}>
+								<Link
+									href={`/courses/${enrollment.course.slug}/`}
+									className="block"
+								>
+									<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
+										{enrollment.course.imgUrl ? (
+											<Image
+												src={enrollment.course.imgUrl}
+												alt={enrollment.course.title}
+												className="h-12 w-12 rounded-lg object-cover"
+												width={48}
+												height={48}
+											/>
+										) : (
+											<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+												<span className="text-gray-500">Kein Bild</span>
+											</div>
+										)}
+										<div>
+											<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+												<span className="truncate">
+													{enrollment.course.title}
+												</span>
 											</span>
-										</span>
+										</div>
 									</div>
-								</div>
-							</Link>
-						</TableDataColumn>
-						<TableDataColumn key={"author"}>
-							<span className="text-sm text-gray-600">
-								{enrollment.course.authors[0].displayName}
-							</span>
-						</TableDataColumn>
-						<TableDataColumn key={"progress"}>
-							<ProgressBar
-								completionPercentage={
-									enrollment.completions.courseCompletion.completionPercentage
-								}
-							/>
-						</TableDataColumn>
-						<TableDataColumn>
-							{formatDateAgo(enrollment.lastProgressUpdate)}
-						</TableDataColumn>
-					</tr>
-				))}
+								</Link>
+							</TableDataColumn>
+							<TableDataColumn key={"author"}>
+								<span className="text-sm text-gray-600">
+									{enrollment.course.authors[0].displayName}
+								</span>
+							</TableDataColumn>
+							<TableDataColumn key={"progress"}>
+								<ProgressBar
+									completionPercentage={
+										enrollment.completions.courseCompletion.completionPercentage
+									}
+								/>
+							</TableDataColumn>
+							<TableDataColumn>
+								{formatDateAgo(enrollment.lastProgressUpdate)}
+							</TableDataColumn>
+						</tr>
+					))}
 			</Table>
 		</div>
 	);
