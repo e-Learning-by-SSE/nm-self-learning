@@ -19,5 +19,10 @@ module.exports = {
 		"libs/**/*.{js,jsx,ts,tsx}",
 		"!<rootDir>/node_modules/"
 	],
-	coverageReporters: ["cobertura", "text", "html"]
+	coverageReporters: ["cobertura", "text", "html"],
+	coverageDirectory: "output/test/coverage",
+	reporters: [
+		"default",
+		["jest-junit", { outputDirectory: "output/test", outputName: "junit.xml" }]
+	]
 };
