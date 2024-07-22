@@ -8,7 +8,7 @@ import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import { formatDateAgo } from "@self-learning/util/common";
 
-export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
+function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
 	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
