@@ -189,92 +189,87 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 	}
 
 	return (
-		<div className={"p"}>
-			<Table
-				head={
-					<>
-						{columns.map(column => (
-							<th
-								className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
-								key={column.key}
-								onClick={() =>
-									setSortedColumn({
-										key: column.key,
-										descendingOrder:
-											sortedColumn.key == column.key
-												? !sortedColumn.descendingOrder
-												: true
-									})
-								}
-							>
-								<div className="">
-									<span>{column.label}</span>
-									{sortedColumn && sortedColumn.key === column.key ? (
-										<span className="">
-											{sortedColumn.descendingOrder ? " ▼" : " ▲"}
-										</span>
-									) : (
-										<span className="invisible"> ▲</span>
-									)}
-								</div>
-							</th>
-						))}
-					</>
-				}
-			>
-				{enrollments
-					.slice()
-					.sort(getSortingFunction())
-					.map(enrollment => (
-						<tr key={enrollment.course.slug}>
-							<TableDataColumn key={"title"}>
-								<Link
-									href={`/courses/${enrollment.course.slug}/`}
-									className="block"
-								>
-									<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
-										{enrollment.course.imgUrl ? (
-											<Image
-												src={enrollment.course.imgUrl}
-												alt={enrollment.course.title}
-												className="h-12 w-12 rounded-lg object-cover"
-												width={48}
-												height={48}
-											/>
-										) : (
-											<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-												<span className="text-gray-500">Kein Bild</span>
-											</div>
-										)}
-										<div>
-											<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
-												<span className="truncate">
-													{enrollment.course.title}
-												</span>
-											</span>
-										</div>
-									</div>
-								</Link>
-							</TableDataColumn>
-							<TableDataColumn key={"author"}>
-								<span className="text-sm text-gray-600">
-									{enrollment.course.authors[0].displayName}
-								</span>
-							</TableDataColumn>
-							<TableDataColumn key={"progress"}>
-								<ProgressBar
-									completionPercentage={
-										enrollment.completions.courseCompletion.completionPercentage
-									}
-								/>
-							</TableDataColumn>
-							<TableDataColumn>
-								{formatDateAgo(enrollment.lastProgressUpdate)}
-							</TableDataColumn>
-						</tr>
+		<Table
+			head={
+				<>
+					{columns.map(column => (
+						<th
+							className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+							key={column.key}
+							onClick={() =>
+								setSortedColumn({
+									key: column.key,
+									descendingOrder:
+										sortedColumn.key == column.key
+											? !sortedColumn.descendingOrder
+											: true
+								})
+							}
+						>
+							<div className="">
+								<span>{column.label}</span>
+								{sortedColumn && sortedColumn.key === column.key ? (
+									<span className="">
+										{sortedColumn.descendingOrder ? " ▼" : " ▲"}
+									</span>
+								) : (
+									<span className="invisible"> ▲</span>
+								)}
+							</div>
+						</th>
 					))}
-			</Table>
-		</div>
+				</>
+			}
+		>
+			{enrollments
+				.slice()
+				.sort(getSortingFunction())
+				.map(enrollment => (
+					<tr key={enrollment.course.slug}>
+						<TableDataColumn key={"title"}>
+							<Link href={`/courses/${enrollment.course.slug}/`} className="block">
+								<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
+									{enrollment.course.imgUrl ? (
+										<Image
+											src={enrollment.course.imgUrl}
+											alt={enrollment.course.title}
+											className="h-12 w-12 rounded-lg object-cover"
+											width={48}
+											height={48}
+										/>
+									) : (
+										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+											<span className="text-gray-500">Kein Bild</span>
+										</div>
+									)}
+									<div>
+										<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+											<span className="truncate">
+												{enrollment.course.title}
+											</span>
+										</span>
+									</div>
+								</div>
+							</Link>
+						</TableDataColumn>
+						<TableDataColumn key={"author"}>
+							<span className="text-sm text-gray-600">
+								{enrollment.course.authors[0].displayName}
+							</span>
+						</TableDataColumn>
+						<TableDataColumn key={"progress"}>
+							<ProgressBar
+								completionPercentage={
+									enrollment.completions.courseCompletion.completionPercentage
+								}
+							/>
+						</TableDataColumn>
+						<TableDataColumn>
+							{formatDateAgo(enrollment.lastProgressUpdate)}
+						</TableDataColumn>
+					</tr>
+				))}
+		</Table>
 	);
 }
 
