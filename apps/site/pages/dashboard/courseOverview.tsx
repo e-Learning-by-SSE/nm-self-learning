@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { getSession } from "next-auth/react";
 import { ProgressBar, Tab, Table, TableDataColumn, Tabs } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
@@ -34,7 +34,7 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 		});
 	};
 
-	useEffect(() => {
+	useMemo(() => {
 		if (enrollments) {
 			const filtered = filterEnrollments(enrollments, searchQuery);
 
@@ -49,10 +49,6 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 			setComplete(complete);
 		}
 	}, [searchQuery, enrollments]);
-
-	if (!enrollments) {
-		return <p>No enrollments found</p>;
-	}
 
 	return (
 		<div className="flex h-screen justify-center overflow-hidden">
