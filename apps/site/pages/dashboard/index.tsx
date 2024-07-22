@@ -97,7 +97,8 @@ function DashboardPage(props: Props) {
 			<CenteredSection>
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
-						<h2 className="mb-4 text-xl">Letzter Kurs</h2>
+					
+							<h2 className="mb-4 text-xl">Letzter Kurs</h2>
 						<LastCourseProgress lastEnrollment={props.student.enrollments[0]} />
 					</div>
 
@@ -107,7 +108,7 @@ function DashboardPage(props: Props) {
 					</div>
 				</div>
 
-				<div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pt-10">
+				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
 					<Card
 						href="/dashboard/courseOverview"
 						imageElement={<span>Belegte Kurse</span>}
@@ -207,8 +208,17 @@ function ProgressFooter({ progress }: { progress: number }) {
 }
 
 function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enrollments"][0] }) {
-	if(!lastEnrollment) {
-		return <span className="text-sm text-light">Du bist momentan in keinem Kurs eingeschrieben.</span>;
+	if (!lastEnrollment) {
+		return (
+			<div>
+			<span className="text-sm text-light">
+				Du bist momentan in keinem Kurs eingeschrieben.
+			</span>
+			<Link href="/subjects" className="text-sm ml-1 text-light underline hover:text-secondary">
+			Leg los
+		</Link>
+		</div>
+		);
 	}
 	return (
 		<div>
