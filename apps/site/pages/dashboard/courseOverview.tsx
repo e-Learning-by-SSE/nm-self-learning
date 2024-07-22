@@ -14,27 +14,27 @@ export function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails
 	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 
+	const filterEnrollments = (
+		enrollments: EnrollmentDetails[],
+		searchQuery: string
+	): EnrollmentDetails[] => {
+		if (!searchQuery) return enrollments;
+
+		const lowercasedQuery = searchQuery.toLowerCase();
+
+		return enrollments.filter(enrollment => {
+			const { title, slug, authors } = enrollment.course;
+			const authorNames = authors.map(author => author.displayName.toLowerCase());
+
+			return (
+				title.toLowerCase().includes(lowercasedQuery) ||
+				slug.toLowerCase().includes(lowercasedQuery) ||
+				authorNames.some(name => name.includes(lowercasedQuery))
+			);
+		});
+	};
+
 	useEffect(() => {
-		const filterEnrollments = (
-			enrollments: EnrollmentDetails[],
-			searchQuery: string
-		): EnrollmentDetails[] => {
-			if (!searchQuery) return enrollments;
-
-			const lowercasedQuery = searchQuery.toLowerCase();
-
-			return enrollments.filter(enrollment => {
-				const { title, slug, authors } = enrollment.course;
-				const authorNames = authors.map(author => author.displayName.toLowerCase());
-
-				return (
-					title.toLowerCase().includes(lowercasedQuery) ||
-					slug.toLowerCase().includes(lowercasedQuery) ||
-					authorNames.some(name => name.includes(lowercasedQuery))
-				);
-			});
-		};
-
 		if (enrollments) {
 			const filtered = filterEnrollments(enrollments, searchQuery);
 
