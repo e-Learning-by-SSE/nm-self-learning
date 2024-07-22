@@ -176,7 +176,6 @@ export async function generateLearningDiaryDemoData() {
 			}
 		});
 
-		// Add 10 more learning diary entries with varying start and end dates
 		const additionalEntries = [];
 
 		for (let i = 1; i <= 10; i++) {
@@ -190,7 +189,7 @@ export async function generateLearningDiaryDemoData() {
 				date: startDate,
 				start: startDate,
 				end: endDate,
-				courseSlug: courses[i % courses.length].slug // Cycle through the courses
+				courseSlug: courses[i % courses.length].slug
 			});
 		}
 
@@ -203,11 +202,11 @@ export async function generateLearningDiaryDemoData() {
 			date: startDate,
 			start: startDate,
 			end: endDate,
-			courseSlug: courses[0].slug // Use the first course for this special entry
+			courseSlug: courses[0].slug
 		};
 
 		for (const entry of additionalEntries) {
-			await prisma.learningDiaryEntry.create({
+			const createdEntry = await prisma.learningDiaryEntry.create({
 				data: {
 					id: entry.id,
 					semesterId: semesterWinter2023.id,
@@ -219,6 +218,17 @@ export async function generateLearningDiaryDemoData() {
 					end: entry.end,
 					distractionLevel: 2,
 					learningLocationId: location1.id
+				}
+			});
+
+			// Ensure each diary entry has at least one learning technique evaluation
+			await prisma.learningTechniqueEvaluation.create({
+				data: {
+					id: `evaluation-${entry.id}`,
+					score: Math.floor(Math.random() * 10) + 1,
+					learningStrategieId: strategy1.id,
+					learningTechniqueId: technique1.id,
+					learningDiaryEntryId: createdEntry.id
 				}
 			});
 		}

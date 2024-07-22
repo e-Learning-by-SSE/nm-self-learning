@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { TableDataColumn } from "@self-learning/ui/common";
 import { formatMillisecondToString } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
+import { ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import {
 	getLearningDiaryEntriesOverview,
 	LearningDiaryEntriesOverview
@@ -39,7 +39,7 @@ function SortedTable({
 	learningDiaryEntries: LearningDiaryEntriesOverview[];
 }) {
 	const [sortedColumn, setSortedColumn] = useState<{ key: string; desc: boolean }>({
-		key: "course",
+		key: "number",
 		desc: true
 	});
 
@@ -80,6 +80,51 @@ function SortedTable({
 					label: "Dauer",
 					sortingFunction: (a, b) => a.duration - b.duration,
 					isDisplayed: true
+				}
+			],
+			[
+				"learningLocation",
+				{
+					key: "learningLocation",
+					label: "Lernort",
+					sortingFunction: (a, b) =>
+						a.learningLocation.name.localeCompare(b.learningLocation.name),
+					isDisplayed: false
+				}
+			],
+			[
+				"learningStrategie",
+				{
+					key: "learningStrategie",
+					label: "Lernstrategie",
+					sortingFunction: (a, b) => {
+						const strategieA = a.learningTechniqueEvaluation
+							.map(evaluation => evaluation.learningStrategie.name)
+							.join(", ");
+						const strategieB = b.learningTechniqueEvaluation
+							.map(evaluation => evaluation.learningStrategie.name)
+							.join(", ");
+						return strategieA.localeCompare(strategieB);
+					},
+					isDisplayed: false
+				}
+			],
+			[
+				"learningTechnique",
+				{
+					key: "learningTechnique",
+					label: "Lerntechnik",
+					sortingFunction: (a, b) => {
+						const techniquesA = a.learningTechniqueEvaluation
+							.map(evaluation => evaluation.learningTechnique.name)
+							.join(", ");
+						const techniquesB = b.learningTechniqueEvaluation
+							.map(evaluation => evaluation.learningTechnique.name)
+							.join(", ");
+
+						return techniquesA.localeCompare(techniquesB);
+					},
+					isDisplayed: false
 				}
 			]
 		])
@@ -126,14 +171,14 @@ function SortedTable({
 											})
 										}
 									>
-										<div className="flex justify-between">
+										<div className="">
 											<span>{column.label}</span>
 											{sortedColumn && sortedColumn.key === column.key ? (
-												<span className="justify-end">
-													{sortedColumn.desc ? "▼" : "▲"}
+												<span className="">
+													{sortedColumn.desc ? " ▼" : " ▲"}
 												</span>
 											) : (
-												<span className="invisible justify-end">▲</span>
+												<span className="invisible"> ▲</span>
 											)}
 										</div>
 									</th>
@@ -150,7 +195,7 @@ function SortedTable({
 								}}
 							>
 								<div className="flex justify-between">
-									<ChevronDownIcon className="h-5 w-5 stroke-current stroke-2 text-black" />
+									<ChevronDoubleDownIcon className="h-5 w-5 stroke-current stroke-2 text-black" />
 								</div>
 								{chevronMenu && (
 									<DropdownMenu
@@ -170,6 +215,7 @@ function SortedTable({
 									.map(column => (
 										<TableDataColumn key={column.key}>
 											{column.key === "number" && learningDiaryEntry.number}
+
 											{column.key === "course" && (
 												<Link
 													href={`/courses/${learningDiaryEntry.course.slug}/`}
@@ -184,11 +230,32 @@ function SortedTable({
 													</div>
 												</Link>
 											)}
+
 											{column.key === "date" && learningDiaryEntry.date}
+
 											{column.key === "duration" &&
 												formatMillisecondToString(
 													learningDiaryEntry.duration
 												)}
+
+											{column.key === "learningLocation" &&
+												learningDiaryEntry.learningLocation.name}
+
+											{column.key === "learningStrategie" &&
+												learningDiaryEntry.learningTechniqueEvaluation
+													.map(
+														evaluation =>
+															evaluation.learningStrategie.name
+													)
+													.join(", ")}
+
+											{column.key === "learningTechnique" &&
+												learningDiaryEntry.learningTechniqueEvaluation
+													.map(
+														evaluation =>
+															evaluation.learningTechnique.name
+													)
+													.join(", ")}
 										</TableDataColumn>
 									))}
 							</tr>
@@ -233,7 +300,7 @@ function DropdownMenu({
 						type="checkbox"
 						checked={column.isDisplayed}
 						onChange={() => handleCheckboxChange(column.key)}
-						className="form-checkbox"
+						className="form-checkbox rounded text-secondary"
 					/>
 					<label className="text-gray-700">{column.label}</label>
 				</div>
