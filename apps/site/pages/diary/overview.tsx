@@ -38,9 +38,9 @@ function SortedTable({
 }: {
 	learningDiaryEntries: LearningDiaryEntriesOverview[];
 }) {
-	const [sortedColumn, setSortedColumn] = useState<{ key: string; desc: boolean }>({
+	const [sortedColumn, setSortedColumn] = useState<{ key: string; descendingOrder: boolean }>({
 		key: "number",
-		desc: true
+		descendingOrder: true
 	});
 
 	const [chevronMenu, setChevronMenu] = useState<boolean>(false);
@@ -130,24 +130,26 @@ function SortedTable({
 		])
 	);
 
-	function sortDiaryEntries() {
-		const column = columns.get(sortedColumn.key);
+	function getSortingFunction(): Column["sortingFunction"] {
+		let sortingFunction = columns.get(sortedColumn.key)?.sortingFunction;
+		sortingFunction = sortingFunction || columns.values().next().value.sortingFunction;
 
-		if (!column) {
-			return;
-		}
-
-		learningDiaryEntries.sort(column.sortingFunction);
-		if (!sortedColumn.desc) {
-			learningDiaryEntries.reverse();
+		if (sortedColumn.descendingOrder) {
+			return (a, b) => {
+				if (sortingFunction) {
+					return -sortingFunction(a, b);
+				}
+				return 0; // Fallback in case sortingFunction is undefined
+			};
+		} else {
+			return (a, b) => {
+				if (sortingFunction) {
+					return sortingFunction(a, b);
+				}
+				return 0; // Fallback in case sortingFunction is undefined
+			};
 		}
 	}
-
-	useEffect(() => {
-		sortDiaryEntries();
-	}, [sortedColumn, columns, learningDiaryEntries]);
-
-	sortDiaryEntries();
 
 	return (
 		<div className={"p-5"}>
@@ -164,9 +166,9 @@ function SortedTable({
 										onClick={() =>
 											setSortedColumn({
 												key: column.key,
-												desc:
+												descendingOrder:
 													sortedColumn.key === column.key
-														? !sortedColumn.desc
+														? !sortedColumn.descendingOrder
 														: true
 											})
 										}
@@ -175,7 +177,7 @@ function SortedTable({
 											<span>{column.label}</span>
 											{sortedColumn && sortedColumn.key === column.key ? (
 												<span className="">
-													{sortedColumn.desc ? " ▼" : " ▲"}
+													{sortedColumn.descendingOrder ? " ▼" : " ▲"}
 												</span>
 											) : (
 												<span className="invisible"> ▲</span>
@@ -208,58 +210,65 @@ function SortedTable({
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-light-border">
-						{learningDiaryEntries.map(learningDiaryEntry => (
-							<tr key={learningDiaryEntry.id}>
-								{[...columns.values()]
-									.filter(column => column.isDisplayed)
-									.map(column => (
-										<TableDataColumn key={column.key}>
-											{column.key === "number" && learningDiaryEntry.number}
+						{learningDiaryEntries
+							.slice()
+							.sort(getSortingFunction())
+							.map(learningDiaryEntry => (
+								<tr key={learningDiaryEntry.id}>
+									{[...columns.values()]
+										.filter(column => column.isDisplayed)
+										.map(column => (
+											<TableDataColumn key={column.key}>
+												{column.key === "number" &&
+													learningDiaryEntry.number}
 
-											{column.key === "course" && (
-												<Link
-													href={`/courses/${learningDiaryEntry.course.slug}/`}
-													className="block"
-												>
-													<div>
-														<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
-															<span className="truncate">
-																{learningDiaryEntry.course.title}
+												{column.key === "course" && (
+													<Link
+														href={`/courses/${learningDiaryEntry.course.slug}/`}
+														className="block"
+													>
+														<div>
+															<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+																<span className="truncate">
+																	{
+																		learningDiaryEntry.course
+																			.title
+																	}
+																</span>
 															</span>
-														</span>
-													</div>
-												</Link>
-											)}
-
-											{column.key === "date" && learningDiaryEntry.date}
-
-											{column.key === "duration" &&
-												formatMillisecondToString(
-													learningDiaryEntry.duration
+														</div>
+													</Link>
 												)}
 
-											{column.key === "learningLocation" &&
-												learningDiaryEntry.learningLocation.name}
+												{column.key === "date" && learningDiaryEntry.date}
 
-											{column.key === "learningStrategie" &&
-												learningDiaryEntry.learningTechniqueEvaluation
-													.map(
-														evaluation =>
-															evaluation.learningStrategie.name
-													)
-													.join(", ")}
+												{column.key === "duration" &&
+													formatMillisecondToString(
+														learningDiaryEntry.duration
+													)}
 
-											{column.key === "learningTechnique" &&
-												learningDiaryEntry.learningTechniqueEvaluation
-													.map(
-														evaluation =>
-															evaluation.learningTechnique.name
-													)
-													.join(", ")}
-										</TableDataColumn>
-									))}
-							</tr>
-						))}
+												{column.key === "learningLocation" &&
+													learningDiaryEntry.learningLocation.name}
+
+												{column.key === "learningStrategie" &&
+													learningDiaryEntry.learningTechniqueEvaluation
+														.map(
+															evaluation =>
+																evaluation.learningStrategie.name
+														)
+														.join(", ")}
+
+												{column.key === "learningTechnique" &&
+													learningDiaryEntry.learningTechniqueEvaluation
+														.map(
+															evaluation =>
+																evaluation.learningTechnique.name
+														)
+														.join(", ")}
+											</TableDataColumn>
+										))}
+								</tr>
+							))}
 					</tbody>
 				</table>
 			</div>
