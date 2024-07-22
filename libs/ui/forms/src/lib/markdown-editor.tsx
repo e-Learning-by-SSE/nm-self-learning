@@ -151,6 +151,22 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 	const [selectedHeader, setSelectedHeader] = useState("H1");
 	const [selectedLanguage, setSelectedLanguage] = useState("javascript");
 
+	const createList = (type: "ordered" | "unordered", selectedText: string) => {
+		let formattedList = "";
+		if (type === "ordered") {
+			formattedList = selectedText
+				?.split("\n")
+				.map((line, i) => `${i + 1}. ${line}`)
+				.join("\n");
+		} else {
+			formattedList = selectedText
+				?.split("\n")
+				.map(line => `- ${line}`)
+				.join("\n");
+		}
+		return formattedList;
+	};
+
 	const applyMarkdownFormat = (
 		formatType: "BOLD" | "ITALIC" | "ORDEREDLIST" | "UNORDEREDLIST" | "HEADER" | "LANGUAGE"
 	) => {
@@ -158,6 +174,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 		const selection = editor.getSelection();
 		if (selection === null) return;
 		const selectedText = editor.getModel()?.getValueInRange(selection);
+		if (!selectedText) return;
 
 		let formattedText = "";
 
@@ -169,10 +186,10 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 				formattedText = `*${selectedText?.trim()}*`;
 				break;
 			case "UNORDEREDLIST":
-				formattedText = `- ${selectedText?.trim()}`;
+				formattedText = createList("unordered", selectedText?.trim());
 				break;
 			case "ORDEREDLIST":
-				formattedText = `1. ${selectedText?.trim()}`;
+				formattedText = createList("ordered", selectedText?.trim());
 				break;
 			case "HEADER":
 				formattedText = `${"#".repeat(
