@@ -186,6 +186,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 			return sortingFunction;
 		}
 	}
+
 	return (
 		<div className={"p"}>
 			<Table
@@ -205,14 +206,14 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 									})
 								}
 							>
-								<div className="flex justify-between">
+								<div className="">
 									<span>{column.label}</span>
 									{sortedColumn && sortedColumn.key === column.key ? (
-										<span className="justify-end">
-											{sortedColumn.descendingOrder ? "▼" : "▲"}
+										<span className="">
+											{sortedColumn.descendingOrder ? " ▼" : " ▲"}
 										</span>
 									) : (
-										<span className="invisible justify-end">▲</span>
+										<span className="invisible"> ▲</span>
 									)}
 								</div>
 							</th>
