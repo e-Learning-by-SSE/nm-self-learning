@@ -180,9 +180,13 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 		let sortingFunction = columns.find(
 			column => column.key === sortedColumn.key
 		)?.sortingFunction;
-		sortingFunction = sortingFunction || columns[0].sortingFunction;
+
+		if (!sortingFunction) {
+			return (sortingFunction = (a: EnrollmentDetails, b: EnrollmentDetails) => 0);
+		}
+
 		if (sortedColumn.descendingOrder) {
-			return (a, b) => -sortingFunction(a, b);
+			return (a: EnrollmentDetails, b: EnrollmentDetails) => -sortingFunction!(a, b);
 		} else {
 			return sortingFunction;
 		}
