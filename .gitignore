@@ -9,6 +9,7 @@
 /dist
 /tmp
 /out-tsc
+/output
 
 # dependencies
 /node_modules
