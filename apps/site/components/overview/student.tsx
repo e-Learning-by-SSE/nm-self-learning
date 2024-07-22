@@ -64,7 +64,7 @@ export function getStudent(username: string) {
 					}
 				}
 			},
-			learningDiaryEntries: {
+			enrollments: {
 				orderBy: { createdAt: "desc" },
 				select: {
 					progress: true,
