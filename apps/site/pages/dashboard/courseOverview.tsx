@@ -146,31 +146,32 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 	type Column = {
 		key: string;
 		label: string;
-		sortingFunction: (a, b) => number;
+		sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) => number;
 	};
 	const columns: Column[] = [
 		{
 			key: "title",
 			label: "Titel",
-			sortingFunction: (a, b) => a.course.title.localeCompare(b.course.title)
+			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
+				a.course.title.localeCompare(b.course.title)
 		},
 		{
 			key: "author",
 			label: "Autor",
-			sortingFunction: (a, b) =>
+			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				a.course.authors[0].displayName.localeCompare(b.course.authors[0].displayName)
 		},
 		{
 			key: "progress",
 			label: "Fortschritt",
-			sortingFunction: (a, b) =>
+			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				b.completions.courseCompletion.completionPercentage -
 				a.completions.courseCompletion.completionPercentage
 		},
 		{
 			key: "update",
 			label: "Letzte Bearbeitung",
-			sortingFunction: (a, b) =>
+			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				new Date(b.lastProgressUpdate).getTime() - new Date(a.lastProgressUpdate).getTime()
 		}
 	];
