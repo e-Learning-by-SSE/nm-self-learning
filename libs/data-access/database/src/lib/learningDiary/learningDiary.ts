@@ -104,7 +104,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "technique-spaced-repetition",
 				name: "Spaced Repetition",
-				creatorId: student.username
+				creatorName: student.username
 			}
 		});
 
