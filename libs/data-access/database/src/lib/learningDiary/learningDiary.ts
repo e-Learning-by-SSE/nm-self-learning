@@ -96,7 +96,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "technique-active-recall",
 				name: "Active Recall",
-				creatorId: student.username
+				defaultTechnique: true
 			}
 		});
 

@@ -345,6 +345,7 @@ model LearningTechnique {
 	name 								String
 	creatorId 							String?
 	creator								Student? 							@relation(fields: [creatorId], references: [username], onDelete: Cascade)
+	defaultTechnique					Boolean								@default(false)
 	learningTechniqueEvaluations 		LearningTechniqueEvaluation[]
 }
 
