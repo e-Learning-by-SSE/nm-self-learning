@@ -2,6 +2,12 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+enum LearningProgress {
+	NOT_STARTED = "NOT_STARTED",
+	STARTED = "STARTED",
+	FINISHED = "FINISHED"
+}
+
 function getRandomDuration() {
 	const minDuration = 12 * 60 * 60 * 1000 + 5 * 60 * 1000; // 12 hours and 5 minutes in milliseconds
 	const maxDuration = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
@@ -146,9 +152,12 @@ export async function generateLearningDiaryDemoData() {
 		});
 
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Goals");
+
 		const goal1 = await prisma.learningGoal.create({
 			data: {
 				id: "goal1",
+				name: "Goal 1",
+				progress: LearningProgress.NOT_STARTED,
 				learningDiaryEntryId: diaryEntry.id
 			}
 		});
@@ -156,6 +165,8 @@ export async function generateLearningDiaryDemoData() {
 		const subGoal1 = await prisma.learningGoal.create({
 			data: {
 				id: "subgoal1",
+				name: "Subgoal 1",
+				progress: LearningProgress.STARTED,
 				learningDiaryEntryId: diaryEntry.id,
 				parentGoalId: goal1.id
 			}
@@ -164,6 +175,8 @@ export async function generateLearningDiaryDemoData() {
 		const subGoal2 = await prisma.learningGoal.create({
 			data: {
 				id: "subgoal2",
+				name: "Subgoal 2",
+				progress: LearningProgress.FINISHED,
 				learningDiaryEntryId: diaryEntry.id,
 				parentGoalId: goal1.id
 			}
@@ -172,6 +185,8 @@ export async function generateLearningDiaryDemoData() {
 		const goal2 = await prisma.learningGoal.create({
 			data: {
 				id: "goal2",
+				name: "Goal 2",
+				progress: LearningProgress.NOT_STARTED,
 				learningDiaryEntryId: diaryEntry.id
 			}
 		});

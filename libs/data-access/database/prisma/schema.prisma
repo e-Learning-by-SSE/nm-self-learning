@@ -368,6 +368,8 @@ enum LearningProgeress {
 
 model LearningGoal {
 	id							String 			 	@id @default(uuid())
+	name						String
+	progress					LearningProgeress   @default(NOT_STARTED)
 	learningDiaryEntryId		String
 	learningDiaryEntry			LearningDiaryEntry 	@relation(fields: [learningDiaryEntryId], references: [id], onDelete: Cascade)
 	parentGoalId				String?
