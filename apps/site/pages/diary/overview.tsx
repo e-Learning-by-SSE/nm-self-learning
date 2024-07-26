@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { TableDataColumn } from "@self-learning/ui/common";
 import { formatMillisecondToString } from "@self-learning/util/common";
@@ -22,6 +22,8 @@ export function LearningDiaryOverview({
 }: {
 	learningDiaryEntries: LearningDiaryEntriesOverview[] | null;
 }) {
+	console.log(learningDiaryEntries);
+
 	if (!learningDiaryEntries) {
 		return <p>No Learning Diary Entries found</p>;
 	}
@@ -87,8 +89,13 @@ function SortedTable({
 				{
 					key: "learningLocation",
 					label: "Lernort",
-					sortingFunction: (a, b) =>
-						a.learningLocation.name.localeCompare(b.learningLocation.name),
+					sortingFunction: (a, b) => {
+						if (a.learningLocation && b.learningLocation) {
+							return a.learningLocation.name.localeCompare(b.learningLocation.name);
+						} else {
+							return 0;
+						}
+					},
 					isDisplayed: false
 				}
 			],
@@ -99,10 +106,10 @@ function SortedTable({
 					label: "Lernstrategie",
 					sortingFunction: (a, b) => {
 						const strategieA = a.learningTechniqueEvaluation
-							.map(evaluation => evaluation.learningStrategie.name)
+							.map(evaluation => evaluation.learningTechnique.learningStrategie.name)
 							.join(", ");
 						const strategieB = b.learningTechniqueEvaluation
-							.map(evaluation => evaluation.learningStrategie.name)
+							.map(evaluation => evaluation.learningTechnique.learningStrategie.name)
 							.join(", ");
 						return strategieA.localeCompare(strategieB);
 					},
@@ -139,14 +146,14 @@ function SortedTable({
 				if (sortingFunction) {
 					return -sortingFunction(a, b);
 				}
-				return 0; // Fallback in case sortingFunction is undefined
+				return 0;
 			};
 		} else {
 			return (a, b) => {
 				if (sortingFunction) {
 					return sortingFunction(a, b);
 				}
-				return 0; // Fallback in case sortingFunction is undefined
+				return 0;
 			};
 		}
 	}
@@ -248,13 +255,18 @@ function SortedTable({
 													)}
 
 												{column.key === "learningLocation" &&
-													learningDiaryEntry.learningLocation.name}
+													learningDiaryEntry.learningLocation?.name}
 
 												{column.key === "learningStrategie" &&
 													learningDiaryEntry.learningTechniqueEvaluation
 														.map(
 															evaluation =>
-																evaluation.learningStrategie.name
+																evaluation.learningTechnique
+																	.learningStrategie.name
+														)
+														.filter(
+															(value, index, self) =>
+																self.indexOf(value) === index
 														)
 														.join(", ")}
 

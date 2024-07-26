@@ -20,6 +20,10 @@ function generateRandomDate() {
 	return startDate;
 }
 
+function getRandomEffortLevel() {
+	return Math.floor(Math.random() * 5) + 1;
+}
+
 export async function generateLearningDiaryDemoData() {
 	console.log("\x1b[94m%s\x1b[0m", "Learning Diary" + " Example:");
 
@@ -68,6 +72,8 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "location-library",
 				name: "Library",
+				iconURL:
+					"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRulMHCJFMvJ0RzVR_gNwnZQoUDf2vCc7sdcw&s",
 				defaultLocation: true,
 				creatorName: student.username
 			}
@@ -77,6 +83,18 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "location-cafe",
 				name: "Cafe",
+				iconURL:
+					"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAyTCpAxP0hsJJ1wR1ZqjENDDTmcJakYPe2A&s",
+				defaultLocation: false,
+				creatorName: student.username
+			}
+		});
+
+		const location3 = await prisma.learningLocation.create({
+			data: {
+				id: "location-home",
+				name: "Home",
+				iconURL: "https://example.com/icons/home.png",
 				defaultLocation: false,
 				creatorName: student.username
 			}
@@ -102,7 +120,8 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "technique-active-recall",
 				name: "Active Recall",
-				defaultTechnique: true
+				defaultTechnique: true,
+				learningStrategieId: strategy1.id
 			}
 		});
 
@@ -110,7 +129,8 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "technique-spaced-repetition",
 				name: "Spaced Repetition",
-				creatorName: student.username
+				creatorName: student.username,
+				learningStrategieId: strategy2.id
 			}
 		});
 
@@ -126,6 +146,7 @@ export async function generateLearningDiaryDemoData() {
 				start: new Date(),
 				end: new Date(),
 				distractionLevel: 2,
+				effortLevel: getRandomEffortLevel(),
 				learningLocationId: location1.id
 			}
 		});
@@ -135,7 +156,6 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "evaluation1",
 				score: 8,
-				learningStrategieId: strategy1.id,
 				learningTechniqueId: technique1.id,
 				learningDiaryEntryId: diaryEntry.id
 			}
@@ -145,7 +165,6 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "evaluation2",
 				score: 7,
-				learningStrategieId: strategy2.id,
 				learningTechniqueId: technique2.id,
 				learningDiaryEntryId: diaryEntry.id
 			}
@@ -232,6 +251,7 @@ export async function generateLearningDiaryDemoData() {
 					start: entry.start,
 					end: entry.end,
 					distractionLevel: 2,
+					effortLevel: getRandomEffortLevel(),
 					learningLocationId: location1.id
 				}
 			});
@@ -241,7 +261,6 @@ export async function generateLearningDiaryDemoData() {
 				data: {
 					id: `evaluation-${entry.id}`,
 					score: Math.floor(Math.random() * 10) + 1,
-					learningStrategieId: strategy1.id,
 					learningTechniqueId: technique1.id,
 					learningDiaryEntryId: createdEntry.id
 				}

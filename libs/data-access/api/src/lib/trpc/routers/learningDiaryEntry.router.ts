@@ -14,8 +14,12 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 			learningLocation: { select: { name: true } },
 			learningTechniqueEvaluation: {
 				select: {
-					learningStrategie: { select: { name: true } },
-					learningTechnique: { select: { name: true } }
+					learningTechnique: {
+						select: {
+							name: true,
+							learningStrategie: { select: { name: true } }
+						}
+					}
 				}
 			}
 		}
