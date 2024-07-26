@@ -10,7 +10,7 @@ import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/type
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, t, UserFromSession } from "../trpc";
+import { authProcedure, isCourseAuthorProcedure, t, UserFromSession } from "../trpc";
 
 export const courseRouter = t.router({
 	findMany: t.procedure
@@ -30,10 +30,10 @@ export const courseRouter = t.router({
 						: undefined,
 				specializations: input.specializationId
 					? {
-						some: {
-							specializationId: input.specializationId
-						}
-					}
+							some: {
+								specializationId: input.specializationId
+							}
+					  }
 					: undefined
 			};
 
@@ -96,7 +96,7 @@ export const courseRouter = t.router({
 		} = {};
 
 		for (const lesson of lessons) {
-			lessonMap[lesson.lessonId] = lesson as typeof lessons[0] & { meta: LessonMeta };
+			lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
 		}
 
 		return { content, lessonMap };
@@ -130,7 +130,8 @@ export const courseRouter = t.router({
 		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
-				message: "Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+				message:
+					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
 			});
 		}
 
@@ -164,7 +165,8 @@ export const courseRouter = t.router({
 			} else if (input.course.authors.length <= 0 && ctx.user.role != "ADMIN") {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+					message:
+						"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
 				});
 			}
 
@@ -182,6 +184,26 @@ export const courseRouter = t.router({
 
 			console.log("[courseRouter.edit]: Course updated by", ctx.user.name, updated);
 			return updated;
+		}),
+	editSubtitle: isCourseAuthorProcedure
+		.input(z.object({ courseId: z.string(), extra: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const updatedCourse = await database.course.update({
+				where: { courseId: input.courseId },
+				data: { subtitle: input.extra },
+				select: {
+					title: true,
+					slug: true,
+					courseId: true,
+					subtitle: true
+				}
+			});
+			console.log(
+				"[courseRouter.changeTitle]: Course subtitle changed by",
+				ctx.user?.name,
+				updatedCourse
+			);
+			return updatedCourse;
 		})
 });
 
