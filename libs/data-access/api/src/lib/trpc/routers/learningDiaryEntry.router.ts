@@ -10,6 +10,7 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 			date: true,
 			start: true,
 			end: true,
+			scope: true,
 			course: { select: { title: true, slug: true } },
 			learningLocation: { select: { name: true } },
 			learningTechniqueEvaluation: {
@@ -28,6 +29,8 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 	learningDiaryEntries = learningDiaryEntries
 		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 		.reverse();
+
+	console.log(learningDiaryEntries);
 
 	const result = learningDiaryEntries.map((entry, index) => {
 		return {

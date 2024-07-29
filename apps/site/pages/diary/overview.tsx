@@ -133,6 +133,15 @@ function SortedTable({
 					},
 					isDisplayed: false
 				}
+			],
+			[
+				"scope",
+				{
+					key: "scope",
+					label: "Umfang",
+					sortingFunction: (a, b) => a.scope - b.scope,
+					isDisplayed: false
+				}
 			]
 		])
 	);
@@ -277,6 +286,8 @@ function SortedTable({
 																evaluation.learningTechnique.name
 														)
 														.join(", ")}
+
+												{column.key === "scope" && learningDiaryEntry.scope}
 											</TableDataColumn>
 										))}
 								</tr>
