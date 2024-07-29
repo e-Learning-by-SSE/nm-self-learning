@@ -318,6 +318,7 @@ model LearningDiaryEntry {
   date                    		DateTime
   start                   		DateTime
   end                     		DateTime
+  scope							Int
   distractionLevel        		Int?
   effortLevel					Int?
   learningLocationId      		String?

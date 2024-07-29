@@ -24,6 +24,10 @@ function getRandomEffortLevel() {
 	return Math.floor(Math.random() * 5) + 1;
 }
 
+function getRandomScope() {
+	return Math.floor(Math.random() * 10) + 1;
+}
+
 export async function generateLearningDiaryDemoData() {
 	console.log("\x1b[94m%s\x1b[0m", "Learning Diary" + " Example:");
 
@@ -147,6 +151,7 @@ export async function generateLearningDiaryDemoData() {
 				end: new Date(),
 				distractionLevel: 2,
 				effortLevel: getRandomEffortLevel(),
+				scope: getRandomScope(),
 				learningLocationId: location1.id
 			}
 		});
@@ -223,7 +228,8 @@ export async function generateLearningDiaryDemoData() {
 				date: startDate,
 				start: startDate,
 				end: endDate,
-				courseSlug: courses[i % courses.length].slug
+				courseSlug: courses[i % courses.length].slug,
+				scope: getRandomScope()
 			});
 		}
 
@@ -236,7 +242,8 @@ export async function generateLearningDiaryDemoData() {
 			date: startDate,
 			start: startDate,
 			end: endDate,
-			courseSlug: courses[0].slug
+			courseSlug: courses[0].slug,
+			scope: getRandomScope()
 		};
 
 		for (const entry of additionalEntries) {
@@ -252,6 +259,7 @@ export async function generateLearningDiaryDemoData() {
 					end: entry.end,
 					distractionLevel: 2,
 					effortLevel: getRandomEffortLevel(),
+					scope: entry.scope,
 					learningLocationId: location1.id
 				}
 			});
