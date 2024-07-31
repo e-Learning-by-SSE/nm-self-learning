@@ -149,7 +149,7 @@ export const courseRouter = t.router({
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
 		return created;
 	}),
-	edit: authProcedure
+	edit: isCourseAuthorProcedure
 		.input(
 			z.object({
 				courseId: z.string(),
@@ -157,19 +157,6 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (!canEditCourse(ctx.user, input.courseId)) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Editing a course requires either: admin role | author of course"
-				});
-			} else if (input.course.authors.length <= 0 && ctx.user.role != "ADMIN") {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message:
-						"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
-				});
-			}
-
 			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId);
 
 			const updated = await database.course.update({
@@ -182,56 +169,13 @@ export const courseRouter = t.router({
 				}
 			});
 
-			console.log("[courseRouter.edit]: Course updated by", ctx.user.name, updated);
+			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
 			return updated;
-		}),
-	editSubtitle: isCourseAuthorProcedure
-		.input(z.object({ courseId: z.string(), extra: z.string() }))
-		.mutation(async ({ input, ctx }) => {
-			const updatedCourse = await database.course.update({
-				where: { courseId: input.courseId },
-				data: { subtitle: input.extra },
-				select: {
-					title: true,
-					slug: true,
-					courseId: true,
-					subtitle: true
-				}
-			});
-			console.log(
-				"[courseRouter.changeTitle]: Course subtitle changed by",
-				ctx.user?.name,
-				updatedCourse
-			);
-			return updatedCourse;
 		})
 });
 
 function canCreate(user: UserFromSession): boolean {
 	return user.role === "ADMIN" || user.isAuthor;
-}
-
-async function canEditCourse(user: UserFromSession, courseId: string): Promise<boolean> {
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const beforeUpdate = await database.course.findUniqueOrThrow({
-		where: { courseId },
-		select: {
-			authors: {
-				select: {
-					username: true
-				}
-			}
-		}
-	});
-
-	if (beforeUpdate.authors.some(author => author.username === user.name)) {
-		return true;
-	}
-
-	return false;
 }
 
 /**
