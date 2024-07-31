@@ -1,3 +1,4 @@
+import { authOptions } from "@self-learning/api";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import {
 	CourseDataProvider,
@@ -6,10 +7,37 @@ import {
 	CourseModulView,
 	CoursePreview
 } from "@self-learning/ui/course";
+import { GetServerSideProps } from "next";
+import { unstable_getServerSession } from "next-auth";
 import { useState } from "react";
 
+export const getServerSideProps: GetServerSideProps = async ctx => {
+	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+
+	if (!session) {
+		return {
+			redirect: {
+				destination: "/login",
+				permanent: false
+			}
+		};
+	}
+
+	if (session.user.role !== "ADMIN" && !session.user.isAuthor) {
+		return {
+			redirect: {
+				destination: "/403",
+				permanent: false
+			}
+		};
+	}
+
+	return {
+		props: {}
+	};
+};
+
 export default function CourseCreationEditor() {
-	// TODO: limit access to this page
 	const tabs = ["1. BasicCourseInfo", "2. Skillview", "3. Modulview", "4. Preview"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
 
