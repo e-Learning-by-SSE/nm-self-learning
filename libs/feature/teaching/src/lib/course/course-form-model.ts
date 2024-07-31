@@ -64,3 +64,17 @@ export function mapCourseFormToUpdate(
 
 	return courseForDb;
 }
+
+export function createEmptyCourseFormModel() {
+	return {
+		courseId: null,
+		subjectId: null,
+		slug: "",
+		title: "",
+		subtitle: "",
+		description: null,
+		imgUrl: null,
+		authors: [],
+		content: []
+	} as CourseFormModel;
+}
