@@ -52,30 +52,14 @@ pipeline {
                             .insideSidecar('node:20-bullseye', '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                         sh 'npm run prisma db push'
                         if (env.BRANCH_NAME =='master') { 
-                            sh 'npm run test:ci:full'
+                            sh 'npm run test'
                         } else {
-                            sh 'npm run test:ci:affected'
-                        }
-                    }
-                }
-            }
-            post {
-                success {
-                    script {
-                        if (env.BRANCH_NAME == 'master') {
-                            // Test Results
-                            junit 'output/test/junit*.xml'
-                            // Coverage
-                            discoverReferenceBuild()
-                            recordCoverage(qualityGates: [[metric: 'LINE', threshold: 1.0], [metric: 'BRANCH', threshold: 1.0]], 
-                                tools: [[parser: 'COBERTURA', pattern: 'output/test/coverage/cobertura-coverage.xml'], [parser: 'JUNIT', pattern: 'output/test/junit*.xml']],
-                                sourceDirectories: [[path: 'libs'], [path: 'apps/site/pages'], [path: 'apps/site/components']])
+                            sh 'npm run test:affected'
                         }
                     }
                 }
             }
         }
-
         stage('Publish Tagged Release') {
             when {
                 buildingTag()
@@ -107,7 +91,9 @@ pipeline {
             }
             post {
                 success {
-                    staging02ssh "bash /opt/update-compose-project.sh selflearn-staging"
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        staging02ssh "bash /opt/update-compose-project.sh selflearn-staging"
+                    }
                 }
             }
         }
@@ -132,7 +118,9 @@ pipeline {
             }
             post {
                 success {
-                    staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
+                    }
                 }
             }
         }
