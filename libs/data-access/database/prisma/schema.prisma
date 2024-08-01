@@ -319,8 +319,8 @@ model LearningDiaryEntry {
   start                   		DateTime
   end                     		DateTime
   scope							Int
-  distractionLevel        		Int?
-  effortLevel					Int?
+  distractionLevel        		Int									@default(1)
+  effortLevel					Int									@default(1)
   learningLocationId      		String?
   learningLocation        		LearningLocation?    				@relation(fields: [learningLocationId], references: [id], onDelete: Cascade)
   learningGoals 		  		LearningGoal[]
