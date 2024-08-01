@@ -1,6 +1,7 @@
 import { database } from "@self-learning/database";
-import { ResolvedValue } from "@self-learning/types";
-import { formatDateToString } from "@self-learning/util/common";
+import { learningLocationSchema, ResolvedValue } from "@self-learning/types";
+import { formatDateToString, getRandomId } from "@self-learning/util/common";
+import { authProcedure, t } from "../trpc";
 
 export async function getLearningDiaryEntriesOverview({ username }: { username: string }) {
 	let learningDiaryEntries = await database.learningDiaryEntry.findMany({
@@ -53,3 +54,109 @@ type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
 export type LearningDiaryEntriesOverview = ArrayElement<
 	Awaited<ResolvedValue<typeof getLearningDiaryEntriesOverview>>
 >;
+
+export async function getLearningDiaryInformation({ username }: { username: string }) {
+	const learningLocations = await database.learningLocation.findMany({
+		where: { OR: [{ creatorName: username }, { defaultLocation: true }] },
+		select: { id: true, name: true, iconURL: true }
+	});
+
+	const learningTechniques = await database.learningTechnique.findMany({
+		where: { OR: [{ creatorName: username }, { defaultTechnique: true }] }
+	});
+
+	const learningStrategies = await database.learningStrategie.findMany({
+		select: {
+			id: true,
+			name: true,
+			learningTechnique: {
+				where: {
+					OR: [{ defaultTechnique: true }, { creatorName: username }]
+				},
+				select: {
+					id: true,
+					name: true
+				}
+			}
+		}
+	});
+
+	const learningDiaryEntries = await database.learningDiaryEntry.findMany({
+		where: { studentName: username },
+		select: {
+			id: true,
+			course: {
+				select: {
+					courseId: true,
+					slug: true,
+					title: true
+				}
+			},
+			notes: true,
+			date: true,
+			start: true,
+			end: true,
+			scope: true,
+			distractionLevel: true,
+			effortLevel: true,
+			learningLocation: {
+				select: {
+					id: true,
+					name: true,
+					iconURL: true
+				}
+			},
+			learningGoals: true,
+			learningTechniqueEvaluation: true
+		}
+	});
+
+	const result = learningDiaryEntries.map((entry, index) => {
+		return {
+			id: entry.id,
+			course: {
+				id: entry.course.courseId,
+				title: entry.course.title,
+				slug: entry.course.slug
+			},
+			date: formatDateToString(new Date(entry.date)),
+			number: index + 1,
+			scope: entry.scope,
+			duration: new Date(entry.end).getTime() - new Date(entry.start).getTime(),
+			distractionLvl: entry.distractionLevel,
+			effortLevel: entry.effortLevel,
+			learningLocation: entry.learningLocation,
+			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
+		};
+	});
+
+	return {
+		learningLocations,
+		learningTechniques,
+		learningStrategies,
+		learningDiaryEntries: result
+	};
+}
+
+export const learningLocationRouter = t.router({
+	create: authProcedure.input(learningLocationSchema).mutation(async ({ input, ctx }) => {
+		console.log(input.creatorName);
+
+		return await database.learningLocation.create({
+			data: {
+				id: input.id ?? undefined,
+				name: input.name,
+				iconURL: input.iconURL,
+				creatorName: input.creatorName,
+				defaultLocation: false
+			},
+			select: {
+				id: true,
+				name: true,
+				iconURL: true
+			}
+		});
+	})
+});
+
+export type LearningDiaryInformation = ResolvedValue<typeof getLearningDiaryInformation>;
