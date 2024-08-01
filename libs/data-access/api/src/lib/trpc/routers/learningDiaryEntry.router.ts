@@ -11,7 +11,7 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 			start: true,
 			end: true,
 			scope: true,
-			course: { select: { title: true, slug: true } },
+			course: { select: { title: true, slug: true, authors: true } },
 			learningLocation: { select: { name: true } },
 			learningTechniqueEvaluation: {
 				select: {

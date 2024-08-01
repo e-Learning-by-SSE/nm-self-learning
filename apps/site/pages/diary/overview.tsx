@@ -9,6 +9,7 @@ import {
 	getLearningDiaryEntriesOverview,
 	LearningDiaryEntriesOverview
 } from "../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
+import { UniversalSearchBar } from "../../../../libs/ui/layouts/src/lib/search-bar";
 
 interface Column {
 	key: string;
@@ -22,23 +23,39 @@ export function LearningDiaryOverview({
 }: {
 	learningDiaryEntries: LearningDiaryEntriesOverview[] | null;
 }) {
-	console.log(learningDiaryEntries);
+	const [searchQuarry, setSearchQuarry] = useState<string>("");
 
 	if (!learningDiaryEntries) {
 		return <p>No Learning Diary Entries found</p>;
 	}
 
 	return (
-		<div className="flex justify-center">
-			<SortedTable learningDiaryEntries={learningDiaryEntries}></SortedTable>
+		<div className="flex w-full justify-center">
+			<div className="w-3/5">
+				<div className="py-2">
+					<UniversalSearchBar
+						searchQuery={searchQuarry}
+						setSearchQuery={setSearchQuarry}
+						placeHolder={"Lerntagebucheinträge durchsuchen..."}
+					/>
+				</div>
+				<div className="py-2">
+					<SortedTable
+						learningDiaryEntries={learningDiaryEntries}
+						searchQuarry={searchQuarry}
+					/>
+				</div>
+			</div>
 		</div>
 	);
 }
 
 function SortedTable({
-	learningDiaryEntries
+	learningDiaryEntries,
+	searchQuarry
 }: {
 	learningDiaryEntries: LearningDiaryEntriesOverview[];
+	searchQuarry: string;
 }) {
 	const [sortedColumn, setSortedColumn] = useState<{ key: string; descendingOrder: boolean }>({
 		key: "number",
@@ -46,6 +63,7 @@ function SortedTable({
 	});
 
 	const [chevronMenu, setChevronMenu] = useState<boolean>(false);
+
 	const [columns, setColumns] = useState<Map<string, Column>>(
 		new Map([
 			[
@@ -146,6 +164,45 @@ function SortedTable({
 		])
 	);
 
+	function getFilterFunction(
+		learningDiaryEntry: LearningDiaryEntriesOverview,
+		query: string
+	): boolean {
+		if (query === "") {
+			return true;
+		}
+
+		const lowercasedQuery = query.toLowerCase();
+		const { title, slug, authors } = learningDiaryEntry.course;
+		const authorNames = authors.map(author => author.displayName.toLowerCase());
+		const evaluations = learningDiaryEntry.learningTechniqueEvaluation;
+
+		const techniqueNames = evaluations.map(evaluation =>
+			evaluation.learningTechnique.name.toLowerCase()
+		);
+		const strategieNames = evaluations.map(evaluation =>
+			evaluation.learningTechnique.name.toLowerCase()
+		);
+
+		return (
+			title.toLowerCase().includes(lowercasedQuery) ||
+			slug.toLowerCase().includes(lowercasedQuery) ||
+			authorNames.some(name => name.includes(lowercasedQuery)) ||
+			learningDiaryEntry.number.toString().toLowerCase().includes(lowercasedQuery) ||
+			learningDiaryEntry.date.toLowerCase().includes(lowercasedQuery) ||
+			learningDiaryEntry.start.toLowerCase().includes(lowercasedQuery) ||
+			learningDiaryEntry.end.toLowerCase().includes(lowercasedQuery) ||
+			(learningDiaryEntry.learningLocation?.name.toLowerCase().includes(lowercasedQuery) ??
+				false) ||
+			learningDiaryEntry.scope.toString().toLowerCase().includes(lowercasedQuery) ||
+			techniqueNames.some(techniqueName => techniqueName.includes(lowercasedQuery)) ||
+			strategieNames.some(strategieName => strategieName.includes(lowercasedQuery)) ||
+			formatMillisecondToString(learningDiaryEntry.duration)
+				.toLowerCase()
+				.includes(lowercasedQuery)
+		);
+	}
+
 	function getSortingFunction(): Column["sortingFunction"] {
 		let sortingFunction = columns.get(sortedColumn.key)?.sortingFunction;
 		sortingFunction = sortingFunction || columns.values().next().value.sortingFunction;
@@ -168,7 +225,7 @@ function SortedTable({
 	}
 
 	return (
-		<div className={"p-5"}>
+		<div>
 			<div className="overflow-y-auto rounded-lg border-x border-b border-light-border bg-white">
 				<table className="w-full table-auto">
 					<thead className="top-0 z-10 rounded-lg border-y border-light-border bg-gray-100">
@@ -228,6 +285,7 @@ function SortedTable({
 					<tbody className="divide-y divide-light-border">
 						{learningDiaryEntries
 							.slice()
+							.filter(entry => getFilterFunction(entry, searchQuarry))
 							.sort(getSortingFunction())
 							.map(learningDiaryEntry => (
 								<tr key={learningDiaryEntry.id}>
