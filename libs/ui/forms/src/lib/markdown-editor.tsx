@@ -47,11 +47,7 @@ export function MarkdownField({
 			>
 				<div className={"prose prose-emerald max-w-full" + (inline && " text-sm")}>
 					{content !== "" ? (
-						<ReactMarkdown
-							linkTarget="_blank"
-							remarkPlugins={remarkPlugins}
-							rehypePlugins={rehypePlugins}
-						>
+						<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
 							{content ?? ""}
 						</ReactMarkdown>
 					) : (
@@ -118,13 +114,12 @@ export function MarkdownEditorDialog({
 					</span>
 					<div className="relative flex h-full w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
-								<ReactMarkdown
-									linkTarget="_blank"
-									remarkPlugins={remarkPlugins}
-									rehypePlugins={rehypePlugins}
-								>
-									{value ?? ""}
-								</ReactMarkdown>
+							<ReactMarkdown
+								remarkPlugins={remarkPlugins}
+								rehypePlugins={rehypePlugins}
+							>
+								{value ?? ""}
+							</ReactMarkdown>
 						</div>
 					</div>
 				</div>
@@ -146,11 +141,7 @@ export function MarkdownEditorDialog({
  */
 export function MarkdownViewer({ content }: { content: string }) {
 	return (
-		<ReactMarkdown
-			linkTarget="_blank"
-			remarkPlugins={remarkPlugins}
-			rehypePlugins={rehypePlugins}
-		>
+		<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
 			{content ?? ""}
 		</ReactMarkdown>
 	);
