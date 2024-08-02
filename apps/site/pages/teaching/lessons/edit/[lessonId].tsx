@@ -6,7 +6,7 @@ import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { useRouter } from "next/router";
 
 type EditLessonProps = {
@@ -44,7 +44,7 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = async ctx
 		return { notFound: true };
 	}
 
-	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+	const session = await getServerSession(ctx.req, ctx.res, authOptions);
 
 	if (!session) {
 		return {

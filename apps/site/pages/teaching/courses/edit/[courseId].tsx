@@ -6,7 +6,7 @@ import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { useRouter } from "next/router";
 import { useRef } from "react";
 
@@ -46,7 +46,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ctx
 		};
 	}
 
-	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+	const session = await getServerSession(ctx.req, ctx.res, authOptions);
 
 	if (!session) {
 		return {
@@ -84,7 +84,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ctx
 		}
 	});
 
-	const lessonsById = new Map<string, typeof lessons[0]>();
+	const lessonsById = new Map<string, (typeof lessons)[0]>();
 
 	for (const lesson of lessons) {
 		lessonsById.set(lesson.lessonId, lesson);

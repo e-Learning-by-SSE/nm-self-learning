@@ -1,4 +1,4 @@
-import { Combobox } from "@headlessui/react";
+import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import {
 	DropdownDialog,
@@ -30,7 +30,7 @@ export function SearchCourseDialog({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onChange={onClose}>
+			<Combobox value={null} onClose={onClose}>
 				<DropdownDialog.SearchInput
 					filter={title}
 					setFilter={setTitle}
@@ -43,13 +43,13 @@ export function SearchCourseDialog({
 
 				<DropdownDialog.Options>
 					{courses?.result.map(course => (
-						<Combobox.Option value={course} key={course.courseId} as={Fragment}>
-							{({ active }) => (
+						<ComboboxOption value={course} key={course.courseId} as={Fragment}>
+							{({ focus }) => (
 								<button
 									type="button"
 									data-testid="course-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										active ? "bg-secondary text-white" : ""
+										focus ? "bg-secondary text-white" : ""
 									}`}
 								>
 									<ImageOrPlaceholder
@@ -60,7 +60,7 @@ export function SearchCourseDialog({
 										<span className="text-sm font-medium">{course.title}</span>
 										<span
 											className={`text-start text-xs ${
-												active ? "text-white" : "text-light"
+												focus ? "text-white" : "text-light"
 											}`}
 										>
 											{course.authors.map(a => a.displayName).join(", ")}
@@ -68,7 +68,7 @@ export function SearchCourseDialog({
 									</div>
 								</button>
 							)}
-						</Combobox.Option>
+						</ComboboxOption>
 					))}
 				</DropdownDialog.Options>
 			</Combobox>

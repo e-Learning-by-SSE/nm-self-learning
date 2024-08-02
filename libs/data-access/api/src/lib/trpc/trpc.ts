@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
-import { Session, unstable_getServerSession } from "next-auth";
+import { Session, getServerSession } from "next-auth";
 import { authOptions } from "../auth";
 import { z } from "zod";
 import { database } from "@self-learning/database";
@@ -90,7 +90,7 @@ export async function createTrpcContext({
 	req,
 	res
 }: trpcNext.CreateNextContextOptions): Promise<Context> {
-	const session = await unstable_getServerSession(req, res, authOptions);
+	const session = await getServerSession(req, res, authOptions);
 
 	if (!session) {
 		return {};

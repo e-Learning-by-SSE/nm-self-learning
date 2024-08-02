@@ -1,6 +1,6 @@
 import { authOptions } from "@self-learning/api";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 
 // Moved into /components folder, because there is no suitable library for this yet
 import AuthorOverview, { getAuthor } from "../../components/overview/author";
@@ -16,7 +16,7 @@ type Props =
 	| { type: "author"; author: Awaited<ReturnType<typeof getAuthor>> };
 
 export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
-	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+	const session = await getServerSession(ctx.req, ctx.res, authOptions);
 
 	if (!session) {
 		return {

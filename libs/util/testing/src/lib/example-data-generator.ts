@@ -68,7 +68,7 @@ export class ExampleDataGenerator {
 			"A Beginners Guide to React Outro"
 		].map(title => ({
 			title,
-			lessonId: faker.random.alphaNumeric(8),
+			lessonId: faker.string.alphanumeric(8),
 			slug: slugify(title, { lower: true, strict: true }),
 			subtitle: faker.lorem.paragraph(1),
 			description: faker.lorem.paragraphs(3),
@@ -79,7 +79,7 @@ export class ExampleDataGenerator {
 	getCourses(): Course[] {
 		return [
 			{
-				courseId: faker.random.alphaNumeric(8),
+				courseId: faker.string.alphanumeric(8),
 				title: "The Beginner's Guide to React",
 				slug: "the-beginners-guide-to-react",
 				subtitle: faker.lorem.paragraph(2),

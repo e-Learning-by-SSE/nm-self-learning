@@ -7,7 +7,7 @@ import { Adapter } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { GetServerSidePropsContext, PreviewData } from "next";
 import { ParsedUrlQuery } from "querystring";
 import { getSession } from "next-auth/react";
@@ -31,7 +31,7 @@ export const ADMIN_ROLE = "selflearn_admin";
 function hasAdminRole(access_token: string | undefined): Role {
 	// realm_access.roles is optional claim -> Check if claim exists
 	if (access_token) {
-		const claims = jwt_decode(access_token) as KeyCloakClaims;
+		const claims = jwtDecode(access_token) satisfies KeyCloakClaims;
 		const access_roles = claims["realm_access"];
 
 		if (access_roles) {

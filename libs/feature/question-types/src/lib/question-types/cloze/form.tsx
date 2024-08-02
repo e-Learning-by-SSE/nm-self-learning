@@ -48,11 +48,10 @@ export default function ClozeForm({ index }: { question: { type: Cloze["type"] }
 						{cloze.segments.map((segment, index) => (
 							<Fragment key={index}>
 								<ReactMarkdown
-									linkTarget="_blank"
 									remarkPlugins={remarkPlugins}
 									rehypePlugins={rehypePlugins}
 									components={{
-										p(props) {
+										p(props: React.ComponentProps<"p">) {
 											const { ...rest } = props;
 											return <span {...rest} />;
 										}

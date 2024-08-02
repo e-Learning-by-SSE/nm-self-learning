@@ -256,7 +256,7 @@ const mdContent = readFileSync(join(__dirname, "markdown-example.mdx"), "utf-8")
 function createLesson(title: string) {
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
-		lessonId: faker.random.alphaNumeric(8),
+		lessonId: faker.string.alphanumeric(8),
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: faker.lorem.paragraph(1),
 		description: faker.lorem.paragraphs(3),
@@ -364,7 +364,7 @@ const reactLessons = [
 
 const courses: Prisma.CourseCreateManyInput[] = [
 	{
-		courseId: faker.random.alphaNumeric(8),
+		courseId: faker.string.alphanumeric(8),
 		title: "The Beginner's Guide to React",
 		slug: "the-beginners-guide-to-react",
 		subtitle: faker.lorem.paragraph(2),
