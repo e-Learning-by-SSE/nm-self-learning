@@ -1,5 +1,4 @@
 import { visit } from "unist-util-visit";
-import { Plugin } from "unified";
 import { refractor } from "refractor";
 import { Node, Parent } from "unist";
 import { Element } from "hast";
@@ -29,7 +28,7 @@ function removeLanguage(node: Element) {
 	return classNameArray?.filter(item => !item.startsWith("language-"));
 }
 
-export function removeInvalidLanguage(node: Element, index: number, parent: Parent) {
+function removeInvalidLanguage(node: Element, index: number, parent: Parent) {
 	if (!isParentNode(parent) || !isElementNode(parent) || node.tagName !== "code") return;
 
 	const lang = getLanguage(node);
@@ -40,7 +39,7 @@ export function removeInvalidLanguage(node: Element, index: number, parent: Pare
 	}
 }
 
-export const invalidLanguageFilter: Plugin = function () {
+export const invalidLanguageFilter = function () {
 	return function (tree: Node) {
 		visit(tree, "element", removeInvalidLanguage);
 		return tree;
