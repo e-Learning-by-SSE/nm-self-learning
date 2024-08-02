@@ -117,15 +117,8 @@ export const storageRouter = t.router({
 
 /** Uses the `minio` SDK to request a presigned URL that users can upload files to. */
 function getPresignedUrl(filename: string): Promise<string> {
-	return new Promise((res, rej) => {
-		minioClient.presignedPutObject(minioConfig.bucketName, filename, (err, result) => {
-			if (err) {
-				console.error("Error getting presigned URL", err);
-				rej(err);
-			}
-			res(result);
-		});
-	});
+	return minioClient.presignedPutObject(minioConfig.bucketName, filename);
+	/*TODO Check expire date?) */
 }
 
 async function removeFile(objectName: string) {
@@ -152,12 +145,5 @@ async function removeFile(objectName: string) {
 
 /** Uses the `minio` SDK to remove a file. */
 function _removeFileFromStorageServer(filename: string): Promise<void> {
-	return new Promise((res, rej) => {
-		minioClient.removeObject(minioConfig.bucketName, filename, err => {
-			if (err) {
-				rej(err);
-			}
-			res();
-		});
-	});
+	return minioClient.removeObject(minioConfig.bucketName, filename);
 }
