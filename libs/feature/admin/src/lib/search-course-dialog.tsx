@@ -44,12 +44,12 @@ export function SearchCourseDialog({
 				<DropdownDialog.Options>
 					{courses?.result.map(course => (
 						<ComboboxOption value={course} key={course.courseId} as={Fragment}>
-							{({ active }) => (
+							{({ focus }) => (
 								<button
 									type="button"
 									data-testid="course-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										active ? "bg-secondary text-white" : ""
+										focus ? "bg-secondary text-white" : ""
 									}`}
 								>
 									<ImageOrPlaceholder
@@ -60,7 +60,7 @@ export function SearchCourseDialog({
 										<span className="text-sm font-medium">{course.title}</span>
 										<span
 											className={`text-start text-xs ${
-												active ? "text-white" : "text-light"
+												focus ? "text-white" : "text-light"
 											}`}
 										>
 											{course.authors.map(a => a.displayName).join(", ")}

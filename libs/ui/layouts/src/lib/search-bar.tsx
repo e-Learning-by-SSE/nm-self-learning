@@ -114,6 +114,7 @@ export function SearchBar() {
 				<SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
 				<Transition
+					as="div"
 					show={true}
 					enter="transition ease-out duration-100"
 					enterFrom="transform opacity-0 scale-95"

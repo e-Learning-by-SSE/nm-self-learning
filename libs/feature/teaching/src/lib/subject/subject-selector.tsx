@@ -55,11 +55,11 @@ export function SpecializationSelector({
 										key={spec.specializationId}
 										as={Fragment}
 									>
-										{({ active }) => (
+										{({ focus }) => (
 											<button
 												type="button"
 												className={`flex items-center gap-4 rounded pr-4 ${
-													active ? "bg-secondary text-white" : ""
+													focus ? "bg-secondary text-white" : ""
 												}`}
 											>
 												<ImageOrPlaceholder

@@ -36,17 +36,17 @@ export function LessonSelector({
 				<DropdownDialog.Options>
 					{data?.result.map(lesson => (
 						<ComboboxOption value={lesson} key={lesson.lessonId} as={Fragment}>
-							{({ active }) => (
+							{({ focus }) => (
 								<button
 									type="button"
 									className={`flex flex-col gap-1 rounded px-4 py-2 ${
-										active ? "bg-secondary text-white" : ""
+										focus ? "bg-secondary text-white" : ""
 									}`}
 								>
 									<span className="text-sm font-medium ">{lesson.title}</span>
 									<span
 										className={`text-xs font-normal ${
-											active ? "text-white" : "text-light"
+											focus ? "text-white" : "text-light"
 										}`}
 									>
 										von {lesson.authors.map(a => a.displayName).join(", ")}

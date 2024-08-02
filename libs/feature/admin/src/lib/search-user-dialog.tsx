@@ -45,12 +45,12 @@ export function SearchUserDialog({
 				<DropdownDialog.Options>
 					{users?.result.map(user => (
 						<ComboboxOption value={user.name} key={user.name} as={Fragment}>
-							{({ active }) => (
+							{({ focus }) => (
 								<button
 									type="button"
 									data-testid="author-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										active ? "bg-secondary text-white" : ""
+										focus ? "bg-secondary text-white" : ""
 									}`}
 								>
 									<ImageOrPlaceholder
@@ -61,7 +61,7 @@ export function SearchUserDialog({
 										<span className="text-sm font-medium">{user.name}</span>
 										<span
 											className={`text-start text-xs ${
-												active ? "text-white" : "text-light"
+												focus ? "text-white" : "text-light"
 											}`}
 										>
 											{user.email}
