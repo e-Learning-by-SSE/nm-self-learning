@@ -28,7 +28,7 @@ function removeLanguage(node: Element) {
 	return classNameArray?.filter(item => !item.startsWith("language-"));
 }
 
-function removeInvalidLanguage(node: Element, index: number, parent: Parent) {
+export function removeInvalidLanguage(node: Element, index: number, parent: Parent) {
 	if (!isParentNode(parent) || !isElementNode(parent) || node.tagName !== "code") return;
 
 	const lang = getLanguage(node);
