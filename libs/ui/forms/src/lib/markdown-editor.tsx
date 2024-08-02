@@ -1,11 +1,20 @@
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
-import { useState } from "react";
+import {
+	Dialog,
+	DialogActions,
+	DialogHandler,
+	dispatchDialog,
+	freeDialog,
+	OnDialogCloseFn,
+	SimpleDialog
+} from "@self-learning/ui/common";
+import { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
 import { editor } from "monaco-editor";
+import { ListBulletIcon, NumberedListIcon } from "@heroicons/react/24/outline";
 
 export function MarkdownField({
 	content,
@@ -148,8 +157,8 @@ export function MarkdownEditorDialog({
 }
 
 function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }) {
-	const [selectedHeader, setSelectedHeader] = useState("H1");
-	const [selectedLanguage, setSelectedLanguage] = useState("javascript");
+	const selectedHeader = useRef<string>("H1");
+	const selectedLanguage = useRef<string>("javascript");
 
 	const createList = (type: "ordered" | "unordered", selectedText: string) => {
 		let formattedList = "";
@@ -193,11 +202,11 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 				break;
 			case "HEADER":
 				formattedText = `${"#".repeat(
-					parseInt(selectedHeader[1])
+					parseInt(selectedHeader.current[1])
 				)} ${selectedText?.trim()}`;
 				break;
 			case "LANGUAGE":
-				formattedText = `\`\`\`${selectedLanguage}\n${selectedText?.trim()}\n\`\`\``;
+				formattedText = `\`\`\`${selectedLanguage.current}\n${selectedText?.trim()}\n\`\`\``;
 				break;
 			default:
 				break;
@@ -234,63 +243,135 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 				<button
 					title="Ungeordnete Liste"
 					type="button"
-					className="btn-stroked"
+					className="btn-stroked flex items-center justify-center"
 					onClick={() => applyMarkdownFormat("UNORDEREDLIST")}
 				>
-					UL
+					<ListBulletIcon className="icon h-5 w-5" />
 				</button>
 				<button
 					title="Geordnete Liste"
 					type="button"
-					className="btn-stroked"
+					className="btn-stroked flex items-center justify-center"
 					onClick={() => applyMarkdownFormat("ORDEREDLIST")}
 				>
-					OL
+					<NumberedListIcon className="icon h-5 w-5" />
 				</button>
+				<button
+					type="button"
+					className="btn-stroked"
+					onClick={() =>
+						dispatchDialog(
+							<EditorQuickActionsHeaderDialog
+								onChange={value => {
+									selectedHeader.current = value;
+									applyMarkdownFormat("HEADER");
+									freeDialog("QuickActionsHeaderAndCode");
+								}}
+							/>,
+							"QuickActionsHeaderAndCode"
+						)
+					}
+				>
+					Add Header
+				</button>
+				<button
+					type="button"
+					className="btn-stroked"
+					onClick={() =>
+						dispatchDialog(
+							<EditorQuickActionsCodeDialog
+								onChange={value => {
+									selectedLanguage.current = value;
+									applyMarkdownFormat("LANGUAGE");
+									freeDialog("QuickActionsHeaderAndCode");
+								}}
+							/>,
+							"QuickActionsHeaderAndCode"
+						)
+					}
+				>
+					{"< >"}
+				</button>
+			</div>
+			<DialogHandler id="QuickActionsHeaderAndCode" />
+		</div>
+	);
+}
+
+function EditorQuickActionsHeaderDialog({ onChange }: { onChange: (value: string) => void }) {
+	const headers = ["H1", "H2", "H3", "H4", "H5"];
+	const [selectedHeader, setSelectedHeader] = useState("H1");
+
+	return (
+		<SimpleDialog
+			name="Überschriften Auswahl"
+			onClose={value => {
+				freeDialog("QuickActionsHeaderAndCode");
+				if (value === "OK") {
+					onChange(selectedHeader);
+				}
+			}}
+		>
+			<span className="text-sm font-semibold">Wählen Sie eine Überschrift. </span>
+			<span className="text-sm font-semibold">
+				Je kleiner die Zahl desto größer die Überschrift
+			</span>
+			<div className="pb-5" />
+			<div className="flex gap-2">
 				<select
 					title="Header"
 					className="btn-stroked"
 					value={selectedHeader}
 					onChange={e => setSelectedHeader(e.target.value)}
 				>
-					<option value="H1">H1</option>
-					<option value="H2">H2</option>
-					<option value="H3">H3</option>
-					<option value="H4">H4</option>
-					<option value="H5">H5</option>
+					{headers.map(header => (
+						<option key={header} value={header}>
+							{header}
+						</option>
+					))}
 				</select>
-				<button
-					type="button"
-					className="btn-stroked"
-					onClick={() => applyMarkdownFormat("HEADER")}
-				>
-					Add Header
-				</button>
 			</div>
-			<div className="mt-2 flex gap-2 p-0">
-				<select
-					title="Language"
-					className="btn-stroked"
-					value={selectedLanguage}
-					onChange={e => setSelectedLanguage(e.target.value)}
-				>
-					<option value="javascript">JavaScript</option>
-					<option value="python">Python</option>
-					<option value="java">Java</option>
-					<option value="csharp">C#</option>
-					<option value="ruby">Ruby</option>
-					<option value="go">Go</option>
-					<option value="php">PHP</option>
-				</select>
-				<button
-					type="button"
-					className="btn-stroked"
-					onClick={() => applyMarkdownFormat("LANGUAGE")}
-				>
-					Add Code Block
-				</button>
-			</div>
-		</div>
+		</SimpleDialog>
+	);
+}
+
+function EditorQuickActionsCodeDialog({ onChange }: { onChange: (value: string) => void }) {
+	const languages = {
+		javascript: "JavaScript",
+		python: "Python",
+		java: "Java",
+		csharp: "C#",
+		ruby: "Ruby",
+		go: "Go",
+		php: "PHP"
+	};
+	const [selectedLanguage, setSelectedLanguage] = useState("javascript");
+
+	return (
+		<SimpleDialog
+			name="Sprachen Auswahl"
+			onClose={value => {
+				freeDialog("QuickActionsHeaderAndCode");
+				if (value === "OK") {
+					onChange(selectedLanguage);
+				}
+			}}
+		>
+			<span className="text-sm font-semibold">Wählen Sie eine Sprache</span>
+			<div className="pb-5" />
+			<select
+				title="Language"
+				className="btn-stroked"
+				value={selectedLanguage}
+				onChange={e => setSelectedLanguage(e.target.value)}
+			>
+				{Object.entries(languages).map(([key, value]) => (
+					<option key={value} value={key}>
+						{value}
+					</option>
+				))}
+			</select>
+		</SimpleDialog>
 	);
 }
 
