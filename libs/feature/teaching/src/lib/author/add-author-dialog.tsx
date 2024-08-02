@@ -33,7 +33,7 @@ export function AddAuthorDialog({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onChange={onClose}>
+			<Combobox value={null} onClose={onClose}>
 				<DropdownDialog.SearchInput
 					filter={filter}
 					setFilter={setFilter}

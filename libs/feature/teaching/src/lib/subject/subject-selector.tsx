@@ -1,4 +1,4 @@
-import { Combobox } from "@headlessui/react";
+import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import { DropdownDialog, ImageOrPlaceholder, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Fragment, useMemo, useState } from "react";
@@ -35,7 +35,7 @@ export function SpecializationSelector({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onChange={onClose}>
+			<Combobox value={null} onClose={onClose}>
 				<DropdownDialog.SearchInput
 					filter={filter}
 					setFilter={setFilter}
@@ -50,7 +50,7 @@ export function SpecializationSelector({
 							</span>
 							<ul className="flex flex-col divide-y divide-light-border">
 								{subject.specializations.map(spec => (
-									<Combobox.Option
+									<ComboboxOption
 										value={spec}
 										key={spec.specializationId}
 										as={Fragment}
@@ -71,7 +71,7 @@ export function SpecializationSelector({
 												</span>
 											</button>
 										)}
-									</Combobox.Option>
+									</ComboboxOption>
 								))}
 							</ul>
 						</div>
