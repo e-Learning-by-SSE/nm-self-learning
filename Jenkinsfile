@@ -75,7 +75,6 @@ pipeline {
                 }
             }
         }
-
         stage('Publish Tagged Release') {
             when {
                 buildingTag()
@@ -107,7 +106,9 @@ pipeline {
             }
             post {
                 success {
-                    staging02ssh "bash /opt/update-compose-project.sh selflearn-staging"
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        staging02ssh "bash /opt/update-compose-project.sh selflearn-staging"
+                    }
                 }
             }
         }
@@ -132,7 +133,9 @@ pipeline {
             }
             post {
                 success {
-                    staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
+                    }
                 }
             }
         }
