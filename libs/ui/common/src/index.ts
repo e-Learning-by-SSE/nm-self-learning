@@ -10,6 +10,7 @@ export * from "./lib/button/button";
 export * from "./lib/chip/image-chip";
 export * from "./lib/collapsible/collapsible-box";
 export * from "./lib/chip/text-chip";
+export * from "./lib/card/card";
 export * from "./lib/divider/divider";
 export * from "./lib/dialog/dialog";
 export * from "./lib/dialog/simple-dialog";
