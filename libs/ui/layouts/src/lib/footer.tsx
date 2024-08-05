@@ -24,12 +24,11 @@ function FooterElement({
 export function Footer() {
 	const { data: studentSettings, isLoading } = trpc.settings.getMySetting.useQuery();
 	const [studentSettingsDialogOpen, setStudentSettingsDialogOpen] = useState(true);
-	const session = useSession();
-	const user = session.data?.user;
+
 
 	const isFirstLogin = useMemo(
-		() => studentSettings === null && user?.role !== "ADMIN",
-		[studentSettings, user?.role]
+		() => studentSettings === null,
+		[studentSettings]
 	);
 
 	return (

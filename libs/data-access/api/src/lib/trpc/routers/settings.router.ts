@@ -5,7 +5,6 @@ import * as z from "zod";
 
 export const settingsRouter = t.router({
 	getMySetting: authProcedure.query(async ({ ctx }) => {
-		if (ctx.user.role === "ADMIN") return null;
 		return await database.studentSettings.findUnique({
 			where: {
 				username: ctx.user.name
