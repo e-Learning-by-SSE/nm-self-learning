@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import {
@@ -7,17 +7,32 @@ import {
 	LearningDiaryEntryResult
 } from "../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
 import { PencilIcon, StarIcon } from "@heroicons/react/24/solid";
-import { Dialog, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
+import { Dialog, showToast } from "@self-learning/ui/common";
 import Image from "next/image";
 import { trpc } from "@self-learning/api-client";
 import { formatMillisecondToString } from "@self-learning/util/common";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
+import { useForm, Controller, FormProvider, useFormContext } from "react-hook-form";
+
+interface EntrySwitcherProps {
+	maxLength: number;
+	setIndex: (index: number) => void;
+	currentIndex: number;
+}
+
+interface LearningDiaryEntryFormProps {
+	entry: LearningDiaryEntryResult;
+	learningDiaryInformation: LearningDiaryInformation;
+	onUpdate: (updatedEntry: LearningDiaryEntryResult) => void;
+}
+
+interface LearningDiaryEntryOverviewProps {
+	learningDiaryInformation: LearningDiaryInformation;
+}
 
 export default function LearningDiaryEntryOverview({
 	learningDiaryInformation
-}: {
-	learningDiaryInformation: LearningDiaryInformation;
-}) {
+}: LearningDiaryEntryOverviewProps) {
 	const [currentIndex, setCurrentIndex] = useState<number>(
 		learningDiaryInformation.learningDiaryEntries.length - 1
 	);
@@ -25,6 +40,12 @@ export default function LearningDiaryEntryOverview({
 	const [entries, setEntries] = useState<LearningDiaryEntryResult[]>(
 		learningDiaryInformation.learningDiaryEntries
 	);
+
+	const handleUpdateEntry = (updatedEntry: LearningDiaryEntryResult) => {
+		setEntries(prevEntries =>
+			prevEntries.map(entry => (entry.id === updatedEntry.id ? updatedEntry : entry))
+		);
+	};
 
 	return (
 		<div className="flex justify-center">
@@ -36,34 +57,22 @@ export default function LearningDiaryEntryOverview({
 						currentIndex={currentIndex}
 					/>
 				</div>
-				<LearningDiaryEntry
+				<LearningDiaryEntryForm
 					entry={entries[currentIndex]}
-					setEntries={setEntries}
 					learningDiaryInformation={learningDiaryInformation}
+					onUpdate={handleUpdateEntry}
 				/>
 			</div>
 		</div>
 	);
 }
 
-function EntrySwitcher({
-	maxLength,
-	setIndex,
-	currentIndex
-}: {
-	maxLength: number;
-	setIndex: (a: number) => void;
-	currentIndex: number;
-}) {
+function EntrySwitcher({ maxLength, setIndex, currentIndex }: EntrySwitcherProps) {
 	const handlePrev = () => {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-expect-error
 		setIndex(prevIndex => Math.max(prevIndex - 1, 0));
 	};
 
 	const handleNext = () => {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-expect-error
 		setIndex(prevIndex => Math.min(prevIndex + 1, maxLength - 1));
 	};
 
@@ -84,142 +93,165 @@ function EntrySwitcher({
 	);
 }
 
-function LearningDiaryEntry({
+function LearningDiaryEntryForm({
 	entry,
-	setEntries,
-	learningDiaryInformation
-}: {
-	entry: LearningDiaryEntryResult;
-	setEntries: (a: LearningDiaryEntryResult[]) => void;
-	learningDiaryInformation: LearningDiaryInformation;
-}) {
-	const [learningLocation, setLearningLocation] = useState<{
-		id: string | null;
-		name: string;
-		iconURL: string;
-	}>(entry.learningLocation);
+	learningDiaryInformation,
+	onUpdate
+}: LearningDiaryEntryFormProps) {
+	const methods = useForm({
+		defaultValues: {
+			learningLocation: entry.learningLocation,
+			effortLevel: entry.effortLevel,
+			distractionLevel: entry.distractionLevel,
+			notes: entry.notes
+		}
+	});
 
-	const [effortLevel, setEffortLevel] = useState<number | null>(entry.effortLevel);
-	const [distractionLevel, setDistractionLevel] = useState<number | null>(entry.distractionLevel);
-	const [notes, setNotes] = useState<string>(entry.notes);
+	const { handleSubmit, reset } = methods;
 
 	const { mutateAsync: updateLearningDiaryEntry } = trpc.learningDiaryEntry.update.useMutation();
 
-	useEffect(() => {
+	const onSubmit = async (data: any) => {
 		const updatedEntry: LearningDiaryEntryResult = {
 			...entry,
-			learningLocation,
-			effortLevel,
-			distractionLevel,
-			notes
+			...data
 		};
 
-		setEntries((prevEntries: LearningDiaryEntryResult[]) => {
-			const index = prevEntries.findIndex(e => e.id === entry.id);
-			const newEntries = [...prevEntries];
-			if (index !== -1) {
-				newEntries[index] = updatedEntry;
-			} else {
-				newEntries.push(updatedEntry);
-			}
-			return newEntries;
-		});
-
-		const result = updateLearningDiaryEntry({
+		await updateLearningDiaryEntry({
 			id: updatedEntry.id,
 			learningLocationId: updatedEntry.learningLocation.id,
-			effortLevel: effortLevel ?? 1,
-			distractionLevel: distractionLevel ?? 1,
-			notes: notes
+			effortLevel: updatedEntry.effortLevel ?? 1,
+			distractionLevel: updatedEntry.distractionLevel ?? 1,
+			notes: updatedEntry.notes
 		});
-	}, [learningLocation, effortLevel, distractionLevel, notes]);
 
-	useMemo(() => {
-		setLearningLocation(entry.learningLocation);
-		setEffortLevel(entry.effortLevel);
-		setDistractionLevel(entry.distractionLevel);
-		setNotes(entry.notes);
-	}, [entry]);
+		onUpdate(updatedEntry);
+		reset(data);
+	};
+
+	useEffect(() => {
+		reset({
+			learningLocation: entry.learningLocation,
+			effortLevel: entry.effortLevel,
+			distractionLevel: entry.distractionLevel,
+			notes: entry.notes
+		});
+	}, [entry, reset]);
+
 	return (
-		<div>
-			<div className="mb-4 flex justify-center">
-				<DefaultInformation learningDiaryEntry={entry} />
-			</div>
-			<div className="mb-4">
-				<LocationInputTile
-					learningLocations={learningDiaryInformation.learningLocations}
-					initialLearningLocation={learningLocation}
-					setLearningLocation={setLearningLocation}
-				/>
-			</div>
-			<div className={"mb-4"}>
-				<StarInputTile
-					name={"Bemühungen:"}
-					note={
-						"Bitte bewerte deine Bemühungen während der\n" +
-						"Lernsession. Bemühungen können ... sein. Mehr\n" +
-						"Sterne bedeutet du hast dich mehr bemüht."
-					}
-					initialRating={effortLevel}
-					setRating={setEffortLevel}
-				/>
-			</div>
-			<div className={"mb-4"}>
-				<StarInputTile
-					name={"Ablenkungen:"}
-					note={
-						"Bitte bewerte deine Ablenkungen während der\n" +
-						"Lernsession. Ablenkungen können z.B. eine hohe\n" +
-						"Geräuschkulisse, Unterbrechungen, Anrufe,\n" +
-						"Mitbewohner, etc. sein. Mehr Sterne zeigen eine\n" +
-						"größere Ablenkung an.\n"
-					}
-					initialRating={distractionLevel}
-					setRating={setDistractionLevel}
-				/>
-			</div>
-			<div className={"mb-4"}>
-				<MarkDownInputTile initialNote={notes} setNote={setNotes}  onSave={}/>
-			</div>
-		</div>
+		<FormProvider {...methods}>
+			<form onSubmit={handleSubmit(onSubmit)}>
+				<div className="mb-4 flex justify-center">
+					<DefaultInformation learningDiaryEntry={entry} />
+				</div>
+				<div className="mb-4">
+					<Controller
+						name="learningLocation"
+						control={methods.control}
+						render={({ field }) => (
+							<LocationInputTile
+								learningLocations={learningDiaryInformation.learningLocations}
+								initialLearningLocation={field.value}
+								setLearningLocation={field.onChange}
+								onSubmit={onSubmit}
+							/>
+						)}
+					/>
+				</div>
+				<div className={"mb-4"}>
+					<Controller
+						name="effortLevel"
+						control={methods.control}
+						render={({ field }) => (
+							<StarInputTile
+								name={"Bemühungen:"}
+								note={
+									"Bitte bewerte deine Bemühungen während der\n" +
+									"Lernsession. Bemühungen können ... sein. Mehr\n" +
+									"Sterne bedeutet du hast dich mehr bemüht."
+								}
+								initialRating={field.value}
+								setRating={field.onChange}
+								onSubmit={onSubmit}
+							/>
+						)}
+					/>
+				</div>
+				<div className={"mb-4"}>
+					<Controller
+						name="distractionLevel"
+						control={methods.control}
+						render={({ field }) => (
+							<StarInputTile
+								name={"Ablenkungen:"}
+								note={
+									"Bitte bewerte deine Ablenkungen während der\n" +
+									"Lernsession. Ablenkungen können z.B. eine hohe\n" +
+									"Geräuschkulisse, Unterbrechungen, Anrufe,\n" +
+									"Mitbewohner, etc. sein. Mehr Sterne zeigen eine\n" +
+									"größere Ablenkung an.\n"
+								}
+								initialRating={field.value}
+								setRating={field.onChange}
+								onSubmit={onSubmit}
+							/>
+						)}
+					/>
+				</div>
+				<div className={"mb-4"}>
+					<Controller
+						name="notes"
+						control={methods.control}
+						render={({ field }) => (
+							<MarkDownInputTile
+								initialNote={field.value}
+								setNote={field.onChange}
+								onSubmit={onSubmit}
+							/>
+						)}
+					/>
+				</div>
+			</form>
+		</FormProvider>
 	);
 }
 
 function MarkDownInputTile({
 	initialNote,
 	setNote,
-	onSave,
+	onSubmit
 }: {
 	initialNote: string;
-	setNote: (a: string) => void;
-	onSave () => void;
+	setNote: (note: string) => void;
+	onSubmit: (data: any) => Promise<void>;
 }) {
 	const [displayedNotes, setDisplayedNotes] = useState<string>(initialNote);
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+	const { trigger, handleSubmit } = useFormContext();
 
-	const onClose: OnDialogCloseFn<string> = newNote => {
-		if (newNote) {
+	const onClose = async (newNote?: string) => {
+		if (newNote !== undefined) {
 			setDisplayedNotes(newNote);
 			setNote(newNote);
-			onSave()
+			await handleSubmit(onSubmit)();
 		}
 		setDialogOpen(false);
 	};
 
-	useMemo(() => {
+	useEffect(() => {
 		setDisplayedNotes(initialNote);
 	}, [initialNote]);
 
 	return (
 		<div>
 			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"}>
-				<div>
-					{initialNote === "" ? (
-						<span>Bisher wurden noch keine Notizen erstellt.</span>
-					) : (
+				{initialNote === "" ? (
+					<span>Bisher wurden noch keine Notizen erstellt.</span>
+				) : (
+					<div className={"max-w-5xl truncate"}>
 						<MarkdownViewer content={displayedNotes} />
-					)}
-				</div>
+					</div>
+				)}
 			</Tile>
 			{dialogOpen && (
 				<MarkdownEditorDialog
@@ -268,34 +300,37 @@ function StarInputTile({
 	name,
 	note,
 	initialRating,
-	setRating
+	setRating,
+	onSubmit
 }: {
 	name: string;
 	note: string;
 	initialRating: number | null;
-	setRating: (a: number | null) => void;
+	setRating: (rating: number | null) => void;
+	onSubmit: (data: any) => Promise<void>;
 }) {
 	if (initialRating === null) {
 		initialRating = 1;
 	}
 
 	const [stars, setStars] = useState<number>(initialRating);
-
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+	const { handleSubmit } = useFormContext();
 
 	useEffect(() => {
 		setStars(initialRating ?? 1);
 	}, [initialRating]);
 
-	function onSave() {
+	const onSave = async () => {
 		setRating(stars);
+		await handleSubmit(onSubmit)();
 		onClose();
-	}
+	};
 
-	function onClose() {
+	const onClose = () => {
 		setDialogOpen(false);
 		setStars(initialRating ?? 1);
-	}
+	};
 
 	return (
 		<div>
@@ -346,8 +381,8 @@ function Tile({
 	onToggleEdit,
 	tileName
 }: {
-	children: ReactElement;
-	onToggleEdit: (a: boolean) => void;
+	children: React.ReactElement;
+	onToggleEdit: (open: boolean) => void;
 	tileName: string;
 }) {
 	return (
@@ -359,7 +394,6 @@ function Tile({
 					onClick={() => onToggleEdit(true)}
 				/>
 			</div>
-
 			<div className="flex h-full items-center justify-center">
 				{React.cloneElement(children, {
 					onClick: () => onToggleEdit(true),
@@ -373,17 +407,22 @@ function Tile({
 function LocationInputTile({
 	learningLocations,
 	initialLearningLocation,
-	setLearningLocation
+	setLearningLocation,
+	onSubmit
 }: {
 	learningLocations: { id: string; name: string; iconURL: string }[];
 	initialLearningLocation?: { id: string | null; name: string; iconURL: string } | null;
-	setLearningLocation: (a: { id: string | null; name: string; iconURL: string }) => void;
+	setLearningLocation: (location: { id: string | null; name: string; iconURL: string }) => void;
+	onSubmit: (data: any) => Promise<void>;
 }) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-	const [locationList, setLocationList] =
-		useState<{ id: string | null; name: string; iconURL: string }[]>(learningLocations);
-
-	//TODO selectedLocation wird nicht mehr benötigt und muss entfernt werden
+	const [locationList, setLocationList] = useState<
+		{
+			id: string | null;
+			name: string;
+			iconURL: string;
+		}[]
+	>(learningLocations);
 	const [selectedLocation, setSelectedLocation] = useState(initialLearningLocation);
 	const [tempLocation, setTempLocation] = useState<{
 		id: string | null;
@@ -392,57 +431,63 @@ function LocationInputTile({
 	} | null>({ name: "", iconURL: "", id: null });
 
 	const { mutateAsync: createLearningLocationAsync } = trpc.learningLocation.create.useMutation();
+	const { handleSubmit } = useFormContext();
 
 	const [newLocation, setNewLocation] = useState<{
 		id: string | null;
 		name: string;
 		iconURL: string;
-	}>({ name: "", iconURL: "", id: null });
+	}>({
+		name: "",
+		iconURL: "",
+		id: null
+	});
 
 	useEffect(() => {
 		setSelectedLocation(initialLearningLocation);
 	}, [initialLearningLocation]);
 
-	function onClose() {
+	const onClose = () => {
 		setDialogOpen(false);
 		setTempLocation({ name: "", iconURL: "", id: null });
 		setNewLocation({ name: "", iconURL: "", id: null });
-	}
+	};
 
-	async function onSave() {
+	const onSave = async () => {
 		if (tempLocation?.name !== "" && tempLocation) {
-			if (await handleCreateLocation()) {
+			const possibleExistingLocation = learningLocations.find(
+				location => location.name.toLowerCase() === newLocation.name.toLowerCase()
+			);
+
+			if (possibleExistingLocation != undefined) {
+				setSelectedLocation(possibleExistingLocation);
+				setLearningLocation(possibleExistingLocation);
+				await handleSubmit(onSubmit)();
 				onClose();
+				showToast({
+					type: "info",
+					title: "Dieser Lernort existiert bereits.",
+					subtitle:
+						"Der Lernort mit dem Namen " +
+						newLocation.name +
+						" existiert bereits, daher wurde der Existierende Lernort gewählt."
+				});
 			} else {
-				setSelectedLocation(tempLocation);
-				setLearningLocation(tempLocation);
+				if (await handleCreateLocation()) {
+					await handleSubmit(onSubmit)();
+					onClose();
+				} else {
+					setSelectedLocation(tempLocation);
+					setLearningLocation(tempLocation);
+					onClose();
+				}
 			}
 		} else {
 			onClose();
 		}
-	}
+	};
 
-	async function handleCreateLocation() {
-		const possibleExistingLocation = learningLocations.find(
-			location => location.name.toLowerCase() === newLocation.name.toLowerCase()
-		);
-
-		if (possibleExistingLocation != undefined) {
-			setSelectedLocation(possibleExistingLocation);
-			setLearningLocation(possibleExistingLocation);
-
-			showToast({
-				type: "info",
-				title: "Dieser Lernort existiert bereits.",
-				subtitle:
-					"Der Lernort mit dem Namen " +
-					newLocation.name +
-					" existiert bereits, daher wurde der Existierende Lernort gewählt."
-			});
-
-			return true;
-		}
-
+	const handleCreateLocation = async () => {
 		if (tempLocation?.name.toLowerCase() === newLocation.name.toLowerCase()) {
 			if (newLocation && newLocation.name !== "") {
 				try {
@@ -451,16 +496,16 @@ function LocationInputTile({
 					});
 					setSelectedLocation(result);
 					setLearningLocation(result);
-					setLocationList(prefLocations => [...prefLocations, result]);
+					setLocationList(prevLocations => [...prevLocations, result]);
 					showToast({
 						type: "success",
-						title: "Lernort Hinzugefügt",
+						title: "Lernort hinzugefügt",
 						subtitle:
 							"Der Lernort mit dem Namen: " +
 							newLocation.name +
 							" wurde erfolgreich hinzugefügt."
 					});
-
+					console.log("erstellt");
 					return true;
 				} catch (error) {
 					showToast({
@@ -469,15 +514,15 @@ function LocationInputTile({
 						subtitle:
 							"Lernort mit dem Namen " +
 							newLocation.name +
-							"konnte nicht hinzugefügt werden: "
+							" konnte nicht hinzugefügt werden: "
 					});
 					console.error("Error creating new location:", error);
 					return false;
 				}
 			}
 		}
-		return true;
-	}
+		return false;
+	};
 
 	return (
 		<Tile onToggleEdit={setDialogOpen} tileName={"Lernort"}>
@@ -565,7 +610,6 @@ function LocationInputTile({
 								<button onClick={onClose} className="btn-stroked hover:bg-gray-100">
 									Abbrechen
 								</button>
-								{/*TODO DISABLED funzt noch nicht wenn man das gleiche auswählt, außerdem wird on close das flasche angezeigt beim raus gehen*/}
 								<button
 									onClick={onSave}
 									className="btn-primary"
