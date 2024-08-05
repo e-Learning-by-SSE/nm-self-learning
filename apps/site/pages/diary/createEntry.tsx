@@ -7,10 +7,11 @@ import {
 	LearningDiaryEntryResult
 } from "../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
 import { PencilIcon, StarIcon } from "@heroicons/react/24/solid";
-import { Dialog, showToast } from "@self-learning/ui/common";
+import { Dialog, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import Image from "next/image";
 import { trpc } from "@self-learning/api-client";
 import { formatMillisecondToString } from "@self-learning/util/common";
+import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 
 export default function LearningDiaryEntryOverview({
 	learningDiaryInformation
@@ -39,102 +40,6 @@ export default function LearningDiaryEntryOverview({
 					entry={entries[currentIndex]}
 					setEntries={setEntries}
 					learningDiaryInformation={learningDiaryInformation}
-				/>
-			</div>
-		</div>
-	);
-}
-
-function LearningDiaryEntry({
-	entry,
-	setEntries,
-	learningDiaryInformation
-}: {
-	entry: LearningDiaryEntryResult;
-	setEntries: (a: LearningDiaryEntryResult[]) => void;
-	learningDiaryInformation: LearningDiaryInformation;
-}) {
-	const [learningLocation, setLearningLocation] = useState<{
-		id: string | null;
-		name: string;
-		iconURL: string;
-	}>(entry.learningLocation);
-
-	const [effortLevel, setEffortLevel] = useState<number | null>(entry.effortLevel);
-	const [distractionLevel, setDistractionLevel] = useState<number | null>(entry.distractionLevel);
-
-	const { mutateAsync: updateLearningDiaryEntry } = trpc.learningDiaryEntry.update.useMutation();
-
-	useEffect(() => {
-		const updatedEntry: LearningDiaryEntryResult = {
-			...entry,
-			learningLocation,
-			effortLevel,
-			distractionLevel
-		};
-
-		setEntries((prevEntries: LearningDiaryEntryResult[]) => {
-			const index = prevEntries.findIndex(e => e.id === entry.id);
-			const newEntries = [...prevEntries];
-			if (index !== -1) {
-				newEntries[index] = updatedEntry;
-			} else {
-				newEntries.push(updatedEntry);
-			}
-			return newEntries;
-		});
-
-		console.log(updatedEntry.learningLocation.id);
-
-		const result = updateLearningDiaryEntry({
-			id: updatedEntry.id,
-			learningLocationId: updatedEntry.learningLocation.id,
-			effortLevel: effortLevel ?? 1,
-			distractionLevel: distractionLevel ?? 1
-		});
-	}, [learningLocation, effortLevel, distractionLevel]);
-
-	useMemo(() => {
-		setLearningLocation(entry.learningLocation);
-		setEffortLevel(entry.effortLevel);
-		setDistractionLevel(entry.distractionLevel);
-	}, [entry]);
-	return (
-		<div>
-			<div className="mb-4 flex justify-center">
-				<DefaultInformation learningDiaryEntry={entry} />
-			</div>
-			<div className="mb-4">
-				<LocationInput
-					learningLocations={learningDiaryInformation.learningLocations}
-					initialLearningLocation={learningLocation}
-					setLearningLocation={setLearningLocation}
-				/>
-			</div>
-			<div className={"mb-4"}>
-				<StarInputDialog
-					name={"Bemühungen:"}
-					note={
-						"Bitte bewerte deine Bemühungen während der\n" +
-						"Lernsession. Bemühungen können ... sein. Mehr\n" +
-						"Sterne bedeutet du hast dich mehr bemüht."
-					}
-					initialRating={effortLevel}
-					setRating={setEffortLevel}
-				/>
-			</div>
-			<div className={"mb-4"}>
-				<StarInputDialog
-					name={"Ablenkungen:"}
-					note={
-						"Bitte bewerte deine Ablenkungen während der\n" +
-						"Lernsession. Ablenkungen können z.B. eine hohe\n" +
-						"Geräuschkulisse, Unterbrechungen, Anrufe,\n" +
-						"Mitbewohner, etc. sein. Mehr Sterne zeigen eine\n" +
-						"größere Ablenkung an.\n"
-					}
-					initialRating={distractionLevel}
-					setRating={setDistractionLevel}
 				/>
 			</div>
 		</div>
@@ -179,6 +84,154 @@ function EntrySwitcher({
 	);
 }
 
+function LearningDiaryEntry({
+	entry,
+	setEntries,
+	learningDiaryInformation
+}: {
+	entry: LearningDiaryEntryResult;
+	setEntries: (a: LearningDiaryEntryResult[]) => void;
+	learningDiaryInformation: LearningDiaryInformation;
+}) {
+	const [learningLocation, setLearningLocation] = useState<{
+		id: string | null;
+		name: string;
+		iconURL: string;
+	}>(entry.learningLocation);
+
+	const [effortLevel, setEffortLevel] = useState<number | null>(entry.effortLevel);
+	const [distractionLevel, setDistractionLevel] = useState<number | null>(entry.distractionLevel);
+	const [notes, setNotes] = useState<string>(entry.notes);
+
+	const { mutateAsync: updateLearningDiaryEntry } = trpc.learningDiaryEntry.update.useMutation();
+
+	useEffect(() => {
+		const updatedEntry: LearningDiaryEntryResult = {
+			...entry,
+			learningLocation,
+			effortLevel,
+			distractionLevel,
+			notes
+		};
+
+		setEntries((prevEntries: LearningDiaryEntryResult[]) => {
+			const index = prevEntries.findIndex(e => e.id === entry.id);
+			const newEntries = [...prevEntries];
+			if (index !== -1) {
+				newEntries[index] = updatedEntry;
+			} else {
+				newEntries.push(updatedEntry);
+			}
+			return newEntries;
+		});
+
+		const result = updateLearningDiaryEntry({
+			id: updatedEntry.id,
+			learningLocationId: updatedEntry.learningLocation.id,
+			effortLevel: effortLevel ?? 1,
+			distractionLevel: distractionLevel ?? 1,
+			notes: notes
+		});
+	}, [learningLocation, effortLevel, distractionLevel, notes]);
+
+	useMemo(() => {
+		setLearningLocation(entry.learningLocation);
+		setEffortLevel(entry.effortLevel);
+		setDistractionLevel(entry.distractionLevel);
+		setNotes(entry.notes);
+	}, [entry]);
+	return (
+		<div>
+			<div className="mb-4 flex justify-center">
+				<DefaultInformation learningDiaryEntry={entry} />
+			</div>
+			<div className="mb-4">
+				<LocationInputTile
+					learningLocations={learningDiaryInformation.learningLocations}
+					initialLearningLocation={learningLocation}
+					setLearningLocation={setLearningLocation}
+				/>
+			</div>
+			<div className={"mb-4"}>
+				<StarInputTile
+					name={"Bemühungen:"}
+					note={
+						"Bitte bewerte deine Bemühungen während der\n" +
+						"Lernsession. Bemühungen können ... sein. Mehr\n" +
+						"Sterne bedeutet du hast dich mehr bemüht."
+					}
+					initialRating={effortLevel}
+					setRating={setEffortLevel}
+				/>
+			</div>
+			<div className={"mb-4"}>
+				<StarInputTile
+					name={"Ablenkungen:"}
+					note={
+						"Bitte bewerte deine Ablenkungen während der\n" +
+						"Lernsession. Ablenkungen können z.B. eine hohe\n" +
+						"Geräuschkulisse, Unterbrechungen, Anrufe,\n" +
+						"Mitbewohner, etc. sein. Mehr Sterne zeigen eine\n" +
+						"größere Ablenkung an.\n"
+					}
+					initialRating={distractionLevel}
+					setRating={setDistractionLevel}
+				/>
+			</div>
+			<div className={"mb-4"}>
+				<MarkDownInputTile initialNote={notes} setNote={setNotes}  onSave={}/>
+			</div>
+		</div>
+	);
+}
+
+function MarkDownInputTile({
+	initialNote,
+	setNote,
+	onSave,
+}: {
+	initialNote: string;
+	setNote: (a: string) => void;
+	onSave () => void;
+}) {
+	const [displayedNotes, setDisplayedNotes] = useState<string>(initialNote);
+	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
+	const onClose: OnDialogCloseFn<string> = newNote => {
+		if (newNote) {
+			setDisplayedNotes(newNote);
+			setNote(newNote);
+			onSave()
+		}
+		setDialogOpen(false);
+	};
+
+	useMemo(() => {
+		setDisplayedNotes(initialNote);
+	}, [initialNote]);
+
+	return (
+		<div>
+			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"}>
+				<div>
+					{initialNote === "" ? (
+						<span>Bisher wurden noch keine Notizen erstellt.</span>
+					) : (
+						<MarkdownViewer content={displayedNotes} />
+					)}
+				</div>
+			</Tile>
+			{dialogOpen && (
+				<MarkdownEditorDialog
+					title={"Notizen"}
+					initialValue={displayedNotes}
+					onClose={onClose}
+				/>
+			)}
+		</div>
+	);
+}
+
 function DefaultInformation({
 	learningDiaryEntry
 }: {
@@ -211,7 +264,7 @@ function DefaultInformation({
 	);
 }
 
-function StarInputDialog({
+function StarInputTile({
 	name,
 	note,
 	initialRating,
@@ -317,7 +370,7 @@ function Tile({
 	);
 }
 
-function LocationInput({
+function LocationInputTile({
 	learningLocations,
 	initialLearningLocation,
 	setLearningLocation
@@ -329,6 +382,8 @@ function LocationInput({
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 	const [locationList, setLocationList] =
 		useState<{ id: string | null; name: string; iconURL: string }[]>(learningLocations);
+
+	//TODO selectedLocation wird nicht mehr benötigt und muss entfernt werden
 	const [selectedLocation, setSelectedLocation] = useState(initialLearningLocation);
 	const [tempLocation, setTempLocation] = useState<{
 		id: string | null;
