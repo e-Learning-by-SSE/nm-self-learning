@@ -135,6 +135,7 @@ function createLearningDiaryEntry(entry: any, index: number) {
 		date: formatDateToString(new Date(entry.date)),
 		number: index + 1,
 		scope: entry.scope,
+		notes: entry.notes,
 		duration: new Date(entry.end).getTime() - new Date(entry.start).getTime(),
 		distractionLevel: entry.distractionLevel,
 		effortLevel: entry.effortLevel,
