@@ -1,6 +1,10 @@
 import { database } from "@self-learning/database";
-import { learningLocationSchema, ResolvedValue } from "@self-learning/types";
-import { formatDateToString, getRandomId } from "@self-learning/util/common";
+import {
+	learningDiaryEntrySchema,
+	learningLocationSchema,
+	ResolvedValue
+} from "@self-learning/types";
+import { formatDateToString } from "@self-learning/util/common";
 import { authProcedure, t } from "../trpc";
 
 export async function getLearningDiaryEntriesOverview({ username }: { username: string }) {
@@ -108,27 +112,15 @@ export async function getLearningDiaryInformation({ username }: { username: stri
 			},
 			learningGoals: true,
 			learningTechniqueEvaluation: true
+		},
+		orderBy: {
+			date: "asc"
 		}
 	});
 
-	const result = learningDiaryEntries.map((entry, index) => {
-		return {
-			id: entry.id,
-			course: {
-				id: entry.course.courseId,
-				title: entry.course.title,
-				slug: entry.course.slug
-			},
-			date: formatDateToString(new Date(entry.date)),
-			number: index + 1,
-			scope: entry.scope,
-			duration: new Date(entry.end).getTime() - new Date(entry.start).getTime(),
-			distractionLvl: entry.distractionLevel,
-			effortLevel: entry.effortLevel,
-			learningLocation: entry.learningLocation,
-			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
-		};
-	});
+	const result = learningDiaryEntries.map((entry, index) =>
+		createLearningDiaryEntry(entry, index)
+	);
 
 	return {
 		learningLocations,
@@ -138,22 +130,128 @@ export async function getLearningDiaryInformation({ username }: { username: stri
 	};
 }
 
+function createLearningDiaryEntry(entry: any, index: number) {
+	return {
+		id: entry.id,
+		course: {
+			id: entry.course.courseId,
+			title: entry.course.title,
+			slug: entry.course.slug
+		},
+		date: formatDateToString(new Date(entry.date)),
+		number: index + 1,
+		scope: entry.scope,
+		duration: new Date(entry.end).getTime() - new Date(entry.start).getTime(),
+		distractionLevel: entry.distractionLevel,
+		effortLevel: entry.effortLevel,
+		learningLocation: entry.learningLocation,
+		learningTechniqueEvaluation: entry.learningTechniqueEvaluation
+	};
+}
+
+export type LearningDiaryEntryResult = ResolvedValue<typeof createLearningDiaryEntry>;
+
 export const learningLocationRouter = t.router({
 	create: authProcedure.input(learningLocationSchema).mutation(async ({ input, ctx }) => {
-		console.log(input.creatorName);
-
 		return await database.learningLocation.create({
 			data: {
 				id: input.id ?? undefined,
 				name: input.name,
 				iconURL: input.iconURL,
-				creatorName: input.creatorName,
+				creatorName: ctx.user.name,
 				defaultLocation: false
 			},
 			select: {
 				id: true,
 				name: true,
 				iconURL: true
+			}
+		});
+	})
+});
+
+export const learningDiaryEntryRouter = t.router({
+	create: authProcedure.input(learningDiaryEntrySchema).mutation(async ({ input, ctx }) => {
+		if (
+			!input.semesterId ||
+			!input.studentName ||
+			!input.courseSlug ||
+			!input.start ||
+			!input.end
+		) {
+			throw new Error("semesterId, studentName, and courseSlug must be defined");
+		}
+
+		return await database.learningDiaryEntry.create({
+			data: {
+				semesterId: input.semesterId,
+				studentName: input.studentName,
+				courseSlug: input.courseSlug,
+				notes: input.notes ?? "",
+				date: input.date ?? new Date(),
+				start: input.start,
+				end: input.end,
+				scope: input.scope ?? 0,
+				distractionLevel: input.distractionLevel ?? 1,
+				effortLevel: input.effortLevel ?? 1,
+				learningLocationId: input.learningLocationId ?? null
+			},
+			select: {
+				id: true,
+				semesterId: true,
+				studentName: true,
+				courseSlug: true,
+				notes: true,
+				date: true,
+				start: true,
+				end: true,
+				scope: true,
+				distractionLevel: true,
+				effortLevel: true,
+				learningLocationId: true
+			}
+		});
+	}),
+	update: authProcedure.input(learningDiaryEntrySchema).mutation(async ({ input, ctx }) => {
+		if (!input.id) {
+			throw new Error("id must be defined for update");
+		}
+
+		return await database.learningDiaryEntry.update({
+			where: {
+				id: input.id
+			},
+			data: {
+				notes: input.notes ?? "",
+				distractionLevel: input.distractionLevel ?? 1,
+				effortLevel: input.effortLevel ?? 1,
+				learningLocationId: input.learningLocationId ?? null
+			},
+			select: {
+				id: true,
+				course: {
+					select: {
+						courseId: true,
+						slug: true,
+						title: true
+					}
+				},
+				notes: true,
+				date: true,
+				start: true,
+				end: true,
+				scope: true,
+				distractionLevel: true,
+				effortLevel: true,
+				learningLocation: {
+					select: {
+						id: true,
+						name: true,
+						iconURL: true
+					}
+				},
+				learningGoals: true,
+				learningTechniqueEvaluation: true
 			}
 		});
 	})
