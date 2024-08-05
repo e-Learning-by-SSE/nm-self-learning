@@ -26,6 +26,8 @@ export const learningDiaryEntrySchema = z.object({
 	date: z.date().optional(),
 	start: z.date().optional(),
 	end: z.date().optional(),
+	scope: z.number().int().optional(),
+	effortLevel: z.number().int().optional(),
 	distractionLevel: z.number().int().optional(),
 	learningLocationId: z.string().optional(),
 	learningGoals: z.array(learningGoalSchema).optional(),
