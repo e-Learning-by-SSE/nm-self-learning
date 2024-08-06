@@ -100,7 +100,7 @@ function LearningDiaryEntryForm({
 }: LearningDiaryEntryFormProps) {
 	const methods = useForm({
 		defaultValues: {
-			learningLocation: entry.learningLocation,
+			learningLocation: learningDiaryInformation.learningLocations[0],
 			effortLevel: entry.effortLevel,
 			distractionLevel: entry.distractionLevel,
 			notes: entry.notes

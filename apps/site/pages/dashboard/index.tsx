@@ -97,8 +97,7 @@ function DashboardPage(props: Props) {
 			<CenteredSection>
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
-					
-							<h2 className="mb-4 text-xl">Letzter Kurs</h2>
+						<h2 className="mb-4 text-xl">Letzter Kurs</h2>
 						<LastCourseProgress lastEnrollment={props.student.enrollments[0]} />
 					</div>
 
@@ -116,21 +115,21 @@ function DashboardPage(props: Props) {
 					/>
 
 					<Card
-						href="/admin/courses"
-						imageElement={<span>Kurse verwalten</span>}
-						title="Kurse verwalten"
+						href="/diary/createEntry"
+						imageElement={<span>Lernstatistik</span>}
+						title="Lerntagebucheinträge verwalten"
 					/>
 
 					<Card
-						href="/admin/subjects"
+						href="/diary/overview"
 						imageElement={<span>Lerntagebuch</span>}
-						title="Fachgebiete verwalten"
+						title="Lerntagebuchübersicht einsehen"
 					/>
 
 					<Card
-						href="/admin/authors"
+						href="/learning-goals"
 						imageElement={<span>Lernziele</span>}
-						title="Autoren verwalten"
+						title="Lernziele verwalten"
 					/>
 				</div>
 			</CenteredSection>
@@ -211,13 +210,16 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 	if (!lastEnrollment) {
 		return (
 			<div>
-			<span className="text-sm text-light">
-				Du bist momentan in keinem Kurs eingeschrieben.
-			</span>
-			<Link href="/subjects" className="text-sm ml-1 text-light underline hover:text-secondary">
-			Leg los
-		</Link>
-		</div>
+				<span className="text-sm text-light">
+					Du bist momentan in keinem Kurs eingeschrieben.
+				</span>
+				<Link
+					href="/subjects"
+					className="ml-1 text-sm text-light underline hover:text-secondary"
+				>
+					Leg los
+				</Link>
+			</div>
 		);
 	}
 	return (

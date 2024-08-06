@@ -98,7 +98,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "location-home",
 				name: "Home",
-				iconURL: "https://example.com/icons/home.png",
+				iconURL: "https://cdn-icons-png.flaticon.com/512/25/25694.png",
 				defaultLocation: false,
 				creatorName: student.username
 			}
