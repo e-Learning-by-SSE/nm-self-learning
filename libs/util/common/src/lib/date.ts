@@ -24,3 +24,36 @@ export function formatDateAgo(date: Date | string | number) {
 		locale: de
 	});
 }
+
+export function formatMillisecondToString(ms: number): string {
+	const totalMinutes = Math.floor(ms / 60000);
+	const totalHours = Math.floor(totalMinutes / 60);
+	const days = Math.floor(totalHours / 24);
+	const hours = totalHours % 24;
+	const minutes = totalMinutes % 60;
+
+	let result = "";
+
+	if (days > 0) {
+		result += `${days} ${days > 1 ? "Tage" : "Tag"}`;
+	}
+
+	if (hours > 0) {
+		if (result) result += " und ";
+		result += `${hours} ${hours > 1 ? "Stunden" : "Stunde"}`;
+	}
+
+	if (minutes > 0) {
+		if (result) result += " und ";
+		result += `${minutes} ${minutes > 1 ? "Minuten" : "Minute"}`;
+	}
+
+	return result || "0 Minuten";
+}
+
+export function formatDateToString(date: Date): string {
+	const day = String(date.getDate()).padStart(2, "0");
+	const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+	const year = date.getFullYear();
+	return `${day}.${month}.${year}`;
+}
