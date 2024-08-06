@@ -15,6 +15,10 @@ import { specializationRouter } from "./routers/specialization.router";
 import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 import { settingsRouter } from "./routers/settings.router";
+import {
+	learningDiaryEntryRouter,
+	learningLocationRouter
+} from "./routers/learningDiaryEntry.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -24,6 +28,8 @@ export const appRouter = t.router({
 	enrollment: enrollmentRouter,
 	learningDiary: learningDiaryRouter,
 	learningGoal: learningGoalRouter,
+	learningLocation: learningLocationRouter,
+	learningDiaryEntry: learningDiaryEntryRouter,
 	lesson: lessonRouter,
 	licenseRouter: licenseRouter,
 	me: meRouter,
