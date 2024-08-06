@@ -110,7 +110,7 @@ export async function getLearningDiaryInformation({ username }: { username: stri
 					iconURL: true
 				}
 			},
-			learningGoals: true,
+			learningGoal: true,
 			learningTechniqueEvaluation: true
 		},
 		orderBy: {
@@ -251,7 +251,7 @@ export const learningDiaryEntryRouter = t.router({
 						iconURL: true
 					}
 				},
-				learningGoals: true,
+				learningGoal: true,
 				learningTechniqueEvaluation: true
 			}
 		});
