@@ -313,25 +313,25 @@ model Skill {
 }
 
 model LearningGoal {
-  id                 String  @id @default(cuid())
+  id                 String  			@id @default(cuid())
   description        String
   status             LearningGoalStatus @default(value:INACTIVE)
-  createdAt          DateTime         @default(now())
-  lastProgressUpdate DateTime?
+  createdAt          DateTime         	@default(now())
+  updateAt			 DateTime?		  	@updatedAt
   username           String
-  student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
+  student            Student          	@relation(fields: [username], references: [username], onDelete: Cascade)
   learningSubGoals   LearningSubGoal[]
 }
 
 model LearningSubGoal{
-  id                 String  @id @default(cuid())
+  id                 String  				@id @default(cuid())
   description        String
-  status             LearningGoalStatus @default(value:INACTIVE)
-  createdAt          DateTime         @default(now())
+  status             LearningGoalStatus 	@default(value:INACTIVE)
+  createdAt          DateTime         		@default(now())
   lastProgressUpdate DateTime?
-  priority           Int              @default(autoincrement())
+  priority           Int              		@default(autoincrement())
   learningGoalId     String
-  learningGoal       LearningGoal     @relation(fields:[learningGoalId], references: [id],onDelete: Cascade)
+  learningGoal       LearningGoal     		@relation(fields:[learningGoalId], references: [id],onDelete: Cascade)
 }
 
 enum LearningGoalStatus {

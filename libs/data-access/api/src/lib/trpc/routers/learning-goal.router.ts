@@ -68,21 +68,19 @@ export const learningGoalRouter = t.router({
 		.input(
 			z.object({
 				goalId: z.string(),
-				description: z.string(),
-				lastProgressUpdate: z.string().datetime()
+				description: z.string()
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updated = await database.learningGoal.update({
 				where: { id: input.goalId },
 				data: {
-					description: input.description,
-					lastProgressUpdate: input.lastProgressUpdate
+					description: input.description
 				},
 				select: {
 					id: true,
 					description: true,
-					lastProgressUpdate: true
+					updatedAt: true
 				}
 			});
 
@@ -93,7 +91,6 @@ export const learningGoalRouter = t.router({
 		.input(
 			z.object({
 				goalId: z.string(),
-				lastProgressUpdate: z.string().datetime(),
 				status: z.nativeEnum(LearningGoalStatus)
 			})
 		)
@@ -101,14 +98,13 @@ export const learningGoalRouter = t.router({
 			const updated = await database.learningGoal.update({
 				where: { id: input.goalId },
 				data: {
-					status: input.status,
-					lastProgressUpdate: input.lastProgressUpdate
+					status: input.status
 				},
 				select: {
 					id: true,
 					description: true,
 					status: true,
-					lastProgressUpdate: true
+					updatedAt: true
 				}
 			});
 
@@ -123,7 +119,6 @@ export const learningGoalRouter = t.router({
 		.input(
 			z.object({
 				subGoalId: z.string(),
-				lastProgressUpdate: z.string().datetime(),
 				status: z.nativeEnum(LearningGoalStatus),
 				learningGoalId: z.string()
 			})
@@ -133,14 +128,13 @@ export const learningGoalRouter = t.router({
 			const updated = await database.learningSubGoal.update({
 				where: { id: input.subGoalId },
 				data: {
-					status: input.status,
-					lastProgressUpdate: input.lastProgressUpdate
+					status: input.status
 				},
 				select: {
 					id: true,
 					description: true,
 					status: true,
-					lastProgressUpdate: true
+					updatedAt: true
 				}
 			});
 			// updates the "lastProgressUpdate" of the parent and the status if the new status is "Active".
@@ -149,27 +143,24 @@ export const learningGoalRouter = t.router({
 				updatedGoal = await database.learningGoal.update({
 					where: { id: input.learningGoalId },
 					data: {
-						lastProgressUpdate: input.lastProgressUpdate,
 						status: input.status
 					},
 					select: {
 						id: true,
 						description: true,
 						status: true,
-						lastProgressUpdate: true
+						updatedAt: true
 					}
 				});
 			} else {
 				updatedGoal = await database.learningGoal.update({
 					where: { id: input.learningGoalId },
-					data: {
-						lastProgressUpdate: input.lastProgressUpdate
-					},
+					data: {},
 					select: {
 						id: true,
 						description: true,
 						status: true,
-						lastProgressUpdate: true
+						updatedAt: true
 					}
 				});
 			}
@@ -189,8 +180,7 @@ export const learningGoalRouter = t.router({
 			z.object({
 				subGoalId: z.string(),
 				description: z.string(),
-				learningGoalId: z.string(),
-				lastProgressUpdate: z.string().datetime()
+				learningGoalId: z.string()
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -199,25 +189,22 @@ export const learningGoalRouter = t.router({
 				where: { id: input.subGoalId },
 				data: {
 					description: input.description,
-					lastProgressUpdate: input.lastProgressUpdate,
 					learningGoalId: input.learningGoalId
 				},
 				select: {
 					id: true,
 					description: true,
-					lastProgressUpdate: true
+					updatedAt: true
 				}
 			});
 			// update lastProgressUpdate of parent goal
 			const updatedGoal = await database.learningGoal.update({
 				where: { id: input.learningGoalId },
-				data: {
-					lastProgressUpdate: input.lastProgressUpdate
-				},
+				data: {},
 				select: {
 					id: true,
 					description: true,
-					lastProgressUpdate: true
+					updatedAt: true
 				}
 			});
 
@@ -339,12 +326,12 @@ async function getLearningGoals(username: string) {
 	return await database.learningGoal.findMany({
 		where: { username: username },
 		orderBy: {
-			lastProgressUpdate: { sort: "desc", nulls: "last" }
+			updatedAt: { sort: "desc", nulls: "last" }
 		},
 		select: {
 			id: true,
 			status: true,
-			lastProgressUpdate: true,
+			updatedAt: true,
 			description: true,
 			learningSubGoals: {
 				orderBy: {
