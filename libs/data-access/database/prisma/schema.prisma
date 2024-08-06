@@ -70,6 +70,14 @@ model Student {
   learningTechniques 		LearningTechnique[]
 }
 
+model StudentSettings {
+  username          String  @id
+  learningStatistics Boolean @default(false)
+  hasLearningDiary  Boolean  @default(false)
+  student           Student @relation(fields: [username], references: [username])
+}
+
+
 model Author {
   id                  Int                   @id @default(autoincrement())
   username            String                @unique
