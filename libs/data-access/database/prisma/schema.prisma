@@ -402,12 +402,6 @@ model LearningTechniqueEvaluation {
 	learningDiaryEntry		LearningDiaryEntry			@relation(fields: [learningDiaryEntryId], references: [id], onDelete: Cascade)
 }
 
-enum LearningProgeress {
-    NOT_STARTED
-    STARTED
-	FINISHED
-}
-
 model Semester {
 	id 					String  					@id @default(uuid())
 	start 				DateTime					@unique

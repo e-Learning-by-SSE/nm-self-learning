@@ -2,10 +2,10 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-enum LearningProgress {
-	NOT_STARTED = "NOT_STARTED",
-	STARTED = "STARTED",
-	FINISHED = "FINISHED"
+enum LearningGoalStatus {
+	ACTIVE = "ACTIVE",
+	INACTIVE = "INACTIVE",
+	COMPLETED = "COMPLETED"
 }
 
 function getRandomDuration() {
@@ -180,38 +180,46 @@ export async function generateLearningDiaryDemoData() {
 		const goal1 = await prisma.learningGoal.create({
 			data: {
 				id: "goal1",
-				name: "Goal 1",
-				progress: LearningProgress.NOT_STARTED,
-				learningDiaryEntryId: diaryEntry.id
+				description: "Complete the advanced spells course",
+				status: LearningGoalStatus.ACTIVE,
+				createdAt: new Date(),
+				lastProgressUpdate: new Date(),
+				student: { connect: { username: student.username } }
 			}
 		});
 
-		const subGoal1 = await prisma.learningGoal.create({
+		const subGoal1 = await prisma.learningSubGoal.create({
 			data: {
 				id: "subgoal1",
-				name: "Subgoal 1",
-				progress: LearningProgress.STARTED,
-				learningDiaryEntryId: diaryEntry.id,
-				parentGoalId: goal1.id
+				description: "Learn the basics of advanced spells",
+				status: LearningGoalStatus.ACTIVE,
+				createdAt: new Date(),
+				lastProgressUpdate: new Date(),
+				priority: 1,
+				learningGoal: { connect: { id: goal1.id } }
 			}
 		});
 
-		const subGoal2 = await prisma.learningGoal.create({
+		const subGoal2 = await prisma.learningSubGoal.create({
 			data: {
 				id: "subgoal2",
-				name: "Subgoal 2",
-				progress: LearningProgress.FINISHED,
-				learningDiaryEntryId: diaryEntry.id,
-				parentGoalId: goal1.id
+				description: "Master the advanced spells techniques",
+				status: LearningGoalStatus.COMPLETED,
+				createdAt: new Date(),
+				lastProgressUpdate: new Date(),
+				priority: 2,
+				learningGoal: { connect: { id: goal1.id } }
 			}
 		});
 
 		const goal2 = await prisma.learningGoal.create({
 			data: {
 				id: "goal2",
-				name: "Goal 2",
-				progress: LearningProgress.NOT_STARTED,
-				learningDiaryEntryId: diaryEntry.id
+				description: "Prepare for the final exams",
+				status: LearningGoalStatus.INACTIVE,
+				createdAt: new Date(),
+				lastProgressUpdate: new Date(),
+				student: { connect: { username: student.username } }
 			}
 		});
 
