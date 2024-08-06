@@ -169,13 +169,13 @@ export function NavbarDropdownMenu({
 					<Menu.Item as="div" className="p-1">
 						{({ active }) => (
 							<Link
-								href="/overview"
+								href="/dashboard"
 								className={`${
 									active ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
 								<UserIcon className="h-5" />
-								<span>Übersicht</span>
+								<span>Dashboard</span>
 							</Link>
 						)}
 					</Menu.Item>
