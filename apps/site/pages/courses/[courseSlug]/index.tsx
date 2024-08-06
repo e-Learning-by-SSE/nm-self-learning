@@ -21,6 +21,8 @@ import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { LessonType } from "@prisma/client";
+import { redirectToLogin } from "libs/ui/layouts/src/lib/redirect-to-login";
+import { isUserAuthenticatedInSession } from "libs/data-access/api/src/lib/auth";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -215,8 +217,20 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
+	const enrollOrRedirect = isUserAuthenticatedInSession();
+
+	function handleClick() {
+		if (enrollOrRedirect) {
+			const courseId = course.courseId;
+			enroll({ courseId });
+		} else {
+			redirectToLogin();
+		}
+	}
+
 	const firstLessonFromChapter = content[0].content[0];
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
+
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
@@ -291,10 +305,7 @@ function CourseHeader({
 					)}
 
 					{!isEnrolled && (
-						<button
-							className="btn-primary disabled:opacity-50"
-							onClick={() => enroll({ courseId: course.courseId })}
-						>
+						<button className="btn-primary disabled:opacity-50" onClick={handleClick}>
 							<span>Zum Lernplan hinzufügen</span>
 							<PlusCircleIcon className="h-5" />
 						</button>
@@ -346,6 +357,8 @@ function Lesson({
 	href: string;
 	isCompleted: boolean;
 }) {
+	const isAuthenticated = isUserAuthenticatedInSession();
+
 	return (
 		<Link
 			href={href}
@@ -357,7 +370,8 @@ function Lesson({
 				<span className="w-8 shrink-0 self-center font-medium text-secondary">
 					{lesson.lessonNr}
 				</span>
-				<span>{lesson.title}</span>
+				{isAuthenticated && <span>{lesson.title}</span>}
+				{!isAuthenticated && <span onClick={redirectToLogin}>{lesson.title}</span>}
 			</span>
 		</Link>
 	);

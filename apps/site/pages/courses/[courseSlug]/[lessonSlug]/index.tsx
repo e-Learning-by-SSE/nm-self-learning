@@ -18,13 +18,15 @@ import {
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { MarkdownContainer } from "@self-learning/ui/layouts";
+import { AuthorizedGuard, MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { GetServerSideProps } from "next";
+import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { isUserAuthenticatedInSession } from "libs/data-access/api/src/lib/auth";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -91,25 +93,28 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 		content.length > 0 ? content[0].type : null
 	);
 
-	if (content.length > 0) {
-		const availableMediaTypes = content.map(c => c.type);
+	useEffect(() => {
+		if (content.length > 0) {
+			const availableMediaTypes = content.map(c => c.type);
 
-		const { type: typeFromRoute } = router.query;
-		let typeFromStorage: string | null = null;
+			const { type: typeFromRoute } = router.query;
+			let typeFromStorage: string | null = null;
 
-		if (typeof window !== "undefined") {
-			typeFromStorage = window.localStorage.getItem("preferredMediaType");
+			if (typeof window !== "undefined") {
+				typeFromStorage = window.localStorage.getItem("preferredMediaType");
+			}
+
+			const { isIncluded, type } = includesMediaType(
+				availableMediaTypes,
+				(typeFromRoute as string) ?? typeFromStorage
+			);
+
+			if (isIncluded) {
+				setPreferredMediaType(type);
+			}
 		}
+	}, [content, router.query]);
 
-		const { isIncluded, type } = includesMediaType(
-			availableMediaTypes,
-			(typeFromRoute as string) ?? typeFromStorage
-		);
-
-		if (isIncluded) {
-			setPreferredMediaType(type);
-		}
-	}
 	return preferredMediaType;
 }
 
@@ -132,37 +137,44 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 		);
 	}
 
+	const isAuthenticated = isUserAuthenticatedInSession();
+
 	return (
-		<article className="flex flex-col gap-4">
-			{preferredMediaType === "video" && (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
-					{video?.value.url ? (
-						<VideoPlayer url={video.value.url} />
-					) : (
-						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
-					)}
-				</div>
-			)}
+		<AuthorizedGuard
+			condition={isAuthenticated}
+			error={"Zugriff nur für angemeldete Benutzer. Bitte loggen Sie sich ein."}
+		>
+			<article className="flex flex-col gap-4">
+				{preferredMediaType === "video" && (
+					<div className="aspect-video w-full xl:max-h-[75vh]">
+						{video?.value.url ? (
+							<VideoPlayer url={video.value.url} />
+						) : (
+							<div className="py-16 text-center text-red-500">Error: Missing URL</div>
+						)}
+					</div>
+				)}
 
-			<LessonHeader
-				lesson={lesson}
-				course={course}
-				mdDescription={markdown.description}
-				mdSubtitle={markdown.subtitle}
-			/>
+				<LessonHeader
+					lesson={lesson}
+					course={course}
+					mdDescription={markdown.description}
+					mdSubtitle={markdown.subtitle}
+				/>
 
-			{preferredMediaType === "article" && markdown.article && (
-				<MarkdownContainer className="mx-auto w-full pt-4">
-					<MDXRemote {...markdown.article} />
-				</MarkdownContainer>
-			)}
+				{preferredMediaType === "article" && markdown.article && (
+					<MarkdownContainer className="mx-auto w-full pt-4">
+						<MDXRemote {...markdown.article} />
+					</MarkdownContainer>
+				)}
 
-			{preferredMediaType === "pdf" && pdf?.value.url && (
-				<div className="h-[90vh] xl:h-[80vh]">
-					<PdfViewer url={pdf.value.url} />
-				</div>
-			)}
-		</article>
+				{preferredMediaType === "pdf" && pdf?.value.url && (
+					<div className="h-[90vh] xl:h-[80vh]">
+						<PdfViewer url={pdf.value.url} />
+					</div>
+				)}
+			</article>
+		</AuthorizedGuard>
 	);
 }
 

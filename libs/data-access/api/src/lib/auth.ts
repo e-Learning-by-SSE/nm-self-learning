@@ -8,6 +8,7 @@ import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import jwt_decode from "jwt-decode";
+import { useSession } from "next-auth/react";
 import { GetServerSidePropsContext, PreviewData } from "next";
 import { ParsedUrlQuery } from "querystring";
 import { getSession } from "next-auth/react";
@@ -274,6 +275,11 @@ export const authOptions: NextAuthOptions = {
 	},
 	providers: getProviders()
 };
+
+export function isUserAuthenticatedInSession() {
+	const userStatus = useSession().status;
+	return userStatus === "authenticated";
+}
 
 export async function getAuthenticatedUser(
 	ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>

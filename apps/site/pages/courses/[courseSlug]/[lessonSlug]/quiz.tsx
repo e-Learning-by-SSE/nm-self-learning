@@ -15,6 +15,8 @@ import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdow
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorizedGuard } from "@self-learning/ui/layouts";
+import { isUserAuthenticatedInSession } from "libs/data-access/api/src/lib/auth";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -119,14 +121,19 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 		}
 	}, [index, questions]);
 
+	const isAuthenticated = isUserAuthenticatedInSession();
+
 	return (
-		<QuizProvider
-			questions={questions}
-			config={config ?? defaultQuizConfig}
-			goToNextQuestion={goToNextQuestion}
-			reload={router.reload}
+		<AuthorizedGuard
+			condition={isAuthenticated}
+			error={"Zugriff nur für angemeldete Benutzer. Bitte loggen Sie sich ein."}
 		>
-			<div className="flex w-full flex-col gap-4">
+			<QuizProvider
+				questions={questions}
+				config={config ?? defaultQuizConfig}
+				goToNextQuestion={goToNextQuestion}
+				reload={router.reload}
+			>
 				<div className="flex w-full flex-col gap-4">
 					<QuizHeader
 						lesson={lesson}
@@ -143,8 +150,8 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 					/>
 					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
-			</div>
-		</QuizProvider>
+			</QuizProvider>
+		</AuthorizedGuard>
 	);
 }
 
