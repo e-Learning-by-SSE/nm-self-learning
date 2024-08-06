@@ -15,8 +15,6 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
-			"@self-learning/ui/notifications": ["libs/ui/notifications/src/index.ts"],
-			"@self-learning/ui/notifications/server": ["libs/ui/notifications/src/server.ts"],
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/api-client": ["libs/data-access/api-client/src/index.ts"],
@@ -30,17 +28,21 @@
 			"@self-learning/question-types": ["libs/feature/question-types/src/index.ts"],
 			"@self-learning/quiz": ["libs/feature/quiz/src/index.ts"],
 			"@self-learning/teaching": ["libs/feature/teaching/src/index.ts"],
+			"@self-learning/settings": ["libs/feature/settings/src/index.ts"],
 			"@self-learning/types": ["libs/util/types/src/index.ts"],
 			"@self-learning/ui/common": ["libs/ui/common/src/index.ts"],
 			"@self-learning/ui/course": ["libs/ui/course/src/index.ts"],
 			"@self-learning/ui/forms": ["libs/ui/forms/src/index.ts"],
 			"@self-learning/ui/layouts": ["libs/ui/layouts/src/index.ts"],
 			"@self-learning/ui/lesson": ["libs/ui/lesson/src/index.ts"],
+			"@self-learning/ui/notifications": ["libs/ui/notifications/src/index.ts"],
+			"@self-learning/ui/notifications/server": ["libs/ui/notifications/src/server.ts"],
 			"@self-learning/util/common": ["libs/util/common/src/index.ts"],
 			"@self-learning/util/http": ["libs/util/http/src/index.ts"],
 			"@self-learning/util/testing": ["libs/util/testing/src/index.ts"],
 			"@self-learning/util/validate": ["libs/util/validation/src/index.ts"],
-			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"]
+			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"],
+			"settings": ["libs/feature/settings/src/index.ts"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]

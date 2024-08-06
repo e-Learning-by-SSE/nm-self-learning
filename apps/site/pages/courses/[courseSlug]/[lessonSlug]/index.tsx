@@ -93,27 +93,31 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 		content.length > 0 ? content[0].type : null
 	);
 
-	if (content.length > 0) {
-		const availableMediaTypes = content.map(c => c.type);
+	useEffect(() => {
+		if (content.length > 0) {
+			const availableMediaTypes = content.map(c => c.type);
 
-		const { type: typeFromRoute } = router.query;
-		let typeFromStorage: string | null = null;
+			const { type: typeFromRoute } = router.query;
+			let typeFromStorage: string | null = null;
 
-		if (typeof window !== "undefined") {
-			typeFromStorage = window.localStorage.getItem("preferredMediaType");
+			if (typeof window !== "undefined") {
+				typeFromStorage = window.localStorage.getItem("preferredMediaType");
+			}
+
+			const { isIncluded, type } = includesMediaType(
+				availableMediaTypes,
+				(typeFromRoute as string) ?? typeFromStorage
+			);
+
+			if (isIncluded) {
+				setPreferredMediaType(type);
+			}
 		}
+	}, [content, router.query]);
 
-		const { isIncluded, type } = includesMediaType(
-			availableMediaTypes,
-			(typeFromRoute as string) ?? typeFromStorage
-		);
-
-		if (isIncluded) {
-			setPreferredMediaType(type);
-		}
-	}
 	return preferredMediaType;
 }
+
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
