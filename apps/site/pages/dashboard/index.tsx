@@ -1,10 +1,33 @@
+import { CogIcon } from "@heroicons/react/24/solid";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { getAuthenticatedUser } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { Card, ImageCard, ImageCardBadge, ImageOrPlaceholder } from "@self-learning/ui/common";
+import { StudentSettingsDialog } from "@self-learning/settings";
+import {
+	Card,
+	Dialog,
+	DialogActions,
+	DialogHandler,
+	dispatchDialog,
+	freeDialog,
+	ImageCard,
+	ImageCardBadge,
+	ImageOrPlaceholder,
+	OnDialogCloseFn,
+	showToast,
+	Toggle
+} from "@self-learning/ui/common";
+import { LabeledField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { formatDateAgo } from "@self-learning/util/common";
+import { TRPCClientError } from "@trpc/client";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -21,6 +44,7 @@ function getStudent(username: string) {
 					completedLessons: true
 				}
 			},
+			settings: true,
 			user: {
 				select: {
 					displayName: true,
@@ -49,7 +73,7 @@ function getStudent(username: string) {
 				}
 			},
 			enrollments: {
-				orderBy: { lastProgressUpdate: "desc" },
+				orderBy: { createdAt: "desc" },
 				select: {
 					progress: true,
 					status: true,
@@ -92,9 +116,78 @@ export default function Start(props: Props) {
 }
 
 function DashboardPage(props: Props) {
+	const [editStudentDialog, setEditStudentDialog] = useState(false);
+	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
+	const router = useRouter();
+
+	const onEditStudentClose: Parameters<
+		typeof EditStudentDialog
+	>[0]["onClose"] = async updated => {
+		setEditStudentDialog(false);
+
+		if (updated) {
+			try {
+				await updateStudent(updated);
+				showToast({
+					type: "success",
+					title: "Informationen aktualisiert",
+					subtitle: updated.user.displayName
+				});
+				router.replace(router.asPath);
+			} catch (error) {
+				console.error(error);
+
+				if (error instanceof TRPCClientError) {
+					showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				}
+			}
+		}
+	};
+
 	return (
 		<div className="bg-gray-50">
 			<CenteredSection>
+				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
+					<section className="flex items-center">
+						<ImageOrPlaceholder
+							src={props.student.user.image ?? undefined}
+							className="h-24 w-24 rounded-lg object-cover"
+						/>
+						<div className="flex flex-col gap-4 pl-8 pr-4">
+							<h1 className="text-6xl">{props.student.user.displayName}</h1>
+							<span>
+								Du hast bereits{" "}
+								<span className="mx-1 font-semibold text-secondary">
+									{props.student._count.completedLessons}
+								</span>{" "}
+								{props.student._count.completedLessons === 1
+									? "Lerneinheit"
+									: "Lerneinheiten"}{" "}
+								abgeschlossen.
+							</span>
+						</div>
+
+						<button
+							className="self-start rounded-full p-2 hover:bg-gray-100"
+							title="Bearbeiten"
+							onClick={() => setEditStudentDialog(true)}
+						>
+							<CogIcon className="h-5 text-gray-400" />
+						</button>
+
+						{editStudentDialog && (
+							<EditStudentDialog
+								student={{ user: { displayName: props.student.user.displayName } }}
+								onClose={onEditStudentClose}
+							/>
+						)}
+					</section>
+
+					<div className="mt-4 flex items-end gap-2">
+						<TagebuchToggle />
+					</div>
+				</div>
+
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
 						<h2 className="mb-4 text-xl">Letzter Kurs</h2>
@@ -133,7 +226,41 @@ function DashboardPage(props: Props) {
 					/>
 				</div>
 			</CenteredSection>
+			<DialogHandler id="studentSettingsDialogDashboard" />
 		</div>
+	);
+}
+
+function TagebuchToggle() {
+	const { data: studentSettings, isLoading, refetch } = trpc.settings.getMySetting.useQuery();
+	const hasLearningDiary = studentSettings?.hasLearningDiary || false;
+	const hasLearningStatistics = studentSettings?.learningStatistics || false;
+
+	return (
+		<>
+			{!isLoading && (
+				<Toggle
+					value={(hasLearningDiary && hasLearningStatistics)}
+					onChange={() => {
+						dispatchDialog(
+							<StudentSettingsDialog
+								initialSettings={{
+									hasLearningDiary: false,
+									learningStatistics: false,
+									...studentSettings
+								}}
+								onClose={() => {
+									refetch();
+									freeDialog("studentSettingsDialogDashboard");
+								}}
+							/>,
+							"studentSettingsDialogDashboard"
+						);
+					}}
+					label="Lerntagebuch"
+				/>
+			)}
+		</>
 	);
 }
 
@@ -249,5 +376,44 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 				</Link>
 			)}
 		</div>
+	);
+}
+
+const editStudentSchema = z.object({
+	user: z.object({ displayName: z.string().min(3).max(50) })
+});
+
+type EditStudent = z.infer<typeof editStudentSchema>;
+
+function EditStudentDialog({
+	student,
+	onClose
+}: {
+	student: EditStudent;
+	onClose: OnDialogCloseFn<EditStudent>;
+}) {
+	const form = useForm({
+		defaultValues: student,
+		resolver: zodResolver(editStudentSchema)
+	});
+
+	return (
+		<Dialog title={student.user.displayName} onClose={onClose}>
+			<form onSubmit={form.handleSubmit(onClose)}>
+				<LabeledField label="Name" error={form.formState.errors.user?.displayName?.message}>
+					<input
+						{...form.register("user.displayName")}
+						type="text"
+						className="textfield"
+					/>
+				</LabeledField>
+
+				<DialogActions onClose={onClose}>
+					<button className="btn-primary" disabled={!form.formState.isValid}>
+						Speichern
+					</button>
+				</DialogActions>
+			</form>
+		</Dialog>
 	);
 }
