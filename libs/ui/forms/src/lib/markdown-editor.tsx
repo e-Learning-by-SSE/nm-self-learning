@@ -1,13 +1,9 @@
-import { PencilIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import {
 	Dialog,
 	DialogActions,
-	DialogHandler,
-	dispatchDialog,
-	freeDialog,
 	OnDialogCloseFn,
-	SimpleDialog
 } from "@self-learning/ui/common";
 import { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -206,7 +202,9 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 				)} ${selectedText?.trim()}`;
 				break;
 			case "LANGUAGE":
-				formattedText = `\`\`\`${selectedLanguage.current}\n${selectedText?.trim()}\n\`\`\``;
+				formattedText = `\`\`\`${
+					selectedLanguage.current
+				}\n${selectedText?.trim()}\n\`\`\``;
 				break;
 			default:
 				break;
@@ -223,7 +221,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 
 	return (
 		<div className="mb-2 flex flex-col rounded-xl bg-gray-200 p-2">
-			<div className="flex gap-1">
+			<div className="flex flex-wrap gap-1">
 				<button
 					title="Bold"
 					type="button"
@@ -256,87 +254,62 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 				>
 					<NumberedListIcon className="icon h-5 w-5" />
 				</button>
-				<button
-					type="button"
-					className="btn-stroked"
-					onClick={() =>
-						dispatchDialog(
-							<EditorQuickActionsHeaderDialog
-								onChange={value => {
-									selectedHeader.current = value;
-									applyMarkdownFormat("HEADER");
-									freeDialog("QuickActionsHeaderAndCode");
-								}}
-							/>,
-							"QuickActionsHeaderAndCode"
-						)
-					}
-				>
-					Add Header
-				</button>
-				<button
-					type="button"
-					className="btn-stroked"
-					onClick={() =>
-						dispatchDialog(
-							<EditorQuickActionsCodeDialog
-								onChange={value => {
-									selectedLanguage.current = value;
-									applyMarkdownFormat("LANGUAGE");
-									freeDialog("QuickActionsHeaderAndCode");
-								}}
-							/>,
-							"QuickActionsHeaderAndCode"
-						)
-					}
-				>
-					{"< >"}
-				</button>
+
+				<EditorQuickActionsHeaderDropdown
+					onChange={value => {
+						selectedHeader.current = value;
+						applyMarkdownFormat("HEADER");
+					}}
+				/>
+
+				<EditorQuickActionsCodeDropdown
+					onChange={value => {
+						selectedLanguage.current = value;
+						applyMarkdownFormat("LANGUAGE");
+					}}
+				/>
 			</div>
-			<DialogHandler id="QuickActionsHeaderAndCode" />
 		</div>
 	);
 }
 
-function EditorQuickActionsHeaderDialog({ onChange }: { onChange: (value: string) => void }) {
+function EditorQuickActionsHeaderDropdown({ onChange }: { onChange: (value: string) => void }) {
 	const headers = ["H1", "H2", "H3", "H4", "H5"];
 	const [selectedHeader, setSelectedHeader] = useState("H1");
+	const [menuOpen, setMenuOpen] = useState(false);
+
+	const handleMenuSelect = (header: string) => {
+		setSelectedHeader(header);
+		onChange(header);
+		setMenuOpen(false);
+	};
 
 	return (
-		<SimpleDialog
-			name="Überschriften Auswahl"
-			onClose={value => {
-				freeDialog("QuickActionsHeaderAndCode");
-				if (value === "OK") {
-					onChange(selectedHeader);
-				}
-			}}
-		>
-			<span className="text-sm font-semibold">Wählen Sie eine Überschrift. </span>
-			<span className="text-sm font-semibold">
-				Je kleiner die Zahl desto größer die Überschrift
-			</span>
-			<div className="pb-5" />
-			<div className="flex gap-2">
-				<select
-					title="Header"
-					className="btn-stroked"
-					value={selectedHeader}
-					onChange={e => setSelectedHeader(e.target.value)}
-				>
+		<div className="relative inline-block">
+			<button type="button" className="btn-stroked flex items-center space-x-1 px-3 py-2" onClick={() => setMenuOpen(!menuOpen)}>
+				{selectedHeader}
+				<div className="ml-2" />
+				<ChevronDownIcon className="icon" />
+			</button>
+			{menuOpen && (
+				<div className="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
 					{headers.map(header => (
-						<option key={header} value={header}>
+						<button
+							key={header}
+							className="block w-full p-2 text-left hover:bg-gray-100"
+							onClick={() => handleMenuSelect(header)}
+						>
 							{header}
-						</option>
+						</button>
 					))}
-				</select>
-			</div>
-		</SimpleDialog>
+				</div>
+			)}
+		</div>
 	);
 }
 
-function EditorQuickActionsCodeDialog({ onChange }: { onChange: (value: string) => void }) {
-	const languages = {
+function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string) => void }) {
+	const languages: Record<string, string> = {
 		javascript: "JavaScript",
 		python: "Python",
 		java: "Java",
@@ -346,32 +319,35 @@ function EditorQuickActionsCodeDialog({ onChange }: { onChange: (value: string) 
 		php: "PHP"
 	};
 	const [selectedLanguage, setSelectedLanguage] = useState("javascript");
+	const [menuOpen, setMenuOpen] = useState(false);
+
+	const handleMenuSelect = (key: string) => {
+		setSelectedLanguage(key);
+		onChange(key);
+		setMenuOpen(false);
+	};
 
 	return (
-		<SimpleDialog
-			name="Sprachen Auswahl"
-			onClose={value => {
-				freeDialog("QuickActionsHeaderAndCode");
-				if (value === "OK") {
-					onChange(selectedLanguage);
-				}
-			}}
-		>
-			<span className="text-sm font-semibold">Wählen Sie eine Sprache</span>
-			<div className="pb-5" />
-			<select
-				title="Language"
-				className="btn-stroked"
-				value={selectedLanguage}
-				onChange={e => setSelectedLanguage(e.target.value)}
-			>
-				{Object.entries(languages).map(([key, value]) => (
-					<option key={value} value={key}>
-						{value}
-					</option>
-				))}
-			</select>
-		</SimpleDialog>
+		<div className="relative inline-block">
+			<button type="button" className="btn-stroked flex items-center space-x-1 px-3 py-2" onClick={() => setMenuOpen(!menuOpen)}>
+				{languages[selectedLanguage]}
+				<div className="ml-2" />
+				<ChevronDownIcon className="icon" />
+			</button>
+			{menuOpen && (
+				<div className="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
+					{Object.entries(languages).map(([key, value]) => (
+						<button
+							key={key}
+							className="block w-full p-2 text-left hover:bg-gray-100"
+							onClick={() => handleMenuSelect(key)}
+						>
+							{value}
+						</button>
+					))}
+				</div>
+			)}
+		</div>
 	);
 }
 
