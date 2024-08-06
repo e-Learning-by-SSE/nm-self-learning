@@ -42,6 +42,8 @@
 			"@self-learning/util/testing": ["libs/util/testing/src/index.ts"],
 			"@self-learning/util/validate": ["libs/util/validation/src/index.ts"],
 			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"],
+			"@self-learning/learning-goals": ["libs/feature/learning-goals/src/index.ts"]
+			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"],
 			"settings": ["libs/feature/settings/src/index.ts"]
 		}
 	},

@@ -5,3 +5,4 @@ export * from "./lib/trpc/routers/enrollment.router";
 
 // TODO maybe find a better place for those types
 export type { SkillResolved, SkillUnresolved } from "./lib/trpc/routers/skill.router";
+export type { LearningGoalType } from "./lib/trpc/routers/learning-goal.router";
