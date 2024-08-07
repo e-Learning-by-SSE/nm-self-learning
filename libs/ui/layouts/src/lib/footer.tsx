@@ -1,7 +1,6 @@
 import { LinkIcon } from "@heroicons/react/24/outline";
 import { trpc } from "@self-learning/api-client";
 import { StudentSettingsDialog } from "@self-learning/settings";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 

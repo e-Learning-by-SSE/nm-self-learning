@@ -255,6 +255,9 @@ export const learningDiaryEntryRouter = t.router({
 				learningTechniqueEvaluation: true
 			}
 		});
+	}),
+	getMeLearningDiaryEntries: authProcedure.query(async ({ ctx }) => {
+		return await getLearningDiaryEntriesOverview({ username: ctx.user.name });
 	})
 });
 

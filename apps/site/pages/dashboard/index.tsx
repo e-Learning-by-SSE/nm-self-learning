@@ -206,8 +206,17 @@ function DashboardPage(props: Props) {
 					</div>
 
 					<div className="rounded bg-white p-4 shadow">
-						<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
-						<Activity enrollments={props.student.enrollments} />
+						{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics ? (
+							<>
+								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
+								<LastLearningDiaryEntry />
+							</>
+						) : (
+							<>
+								<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
+								<Activity enrollments={props.student.enrollments} />
+							</>
+						)}
 					</div>
 				</div>
 
@@ -250,8 +259,6 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 	const hasLearningDiary = studentSettings?.hasLearningDiary || false;
 	const hasLearningStatistics = studentSettings?.learningStatistics || false;
 
-
-
 	return (
 		<>
 			{!isLoading && (
@@ -265,7 +272,7 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 									learningStatistics: false,
 									...studentSettings
 								}}
-								onClose={(value) => {
+								onClose={value => {
 									refetch();
 									onChange({
 										hasLearningDiary: value?.hasLearningDiary ?? false,
@@ -284,6 +291,49 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 	);
 }
 
+function LastLearningDiaryEntry() {
+	const { data: learningDiaryEntries, isLoading } =
+		trpc.learningDiaryEntry.getMeLearningDiaryEntries.useQuery();
+
+	return (
+		<>
+			{learningDiaryEntries && learningDiaryEntries.length == 0 ? (
+				<span className="text-sm text-light">
+					Du hast noch keinen Lerntagebucheintrag erstellt.
+				</span>
+			) : (
+				<>
+					{!isLoading && learningDiaryEntries && (
+						<ul className="flex flex-col gap-2">
+							{learningDiaryEntries.map((entry, index) => (
+								<Link
+									className="text-sm font-medium"
+									href={`/courses/${entry.course.slug}/`}
+									key={"course-" + index}
+								>
+									<li
+										className="hover: flex items-center rounded-lg border border-light-border 
+							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+									>
+										<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
+											<div className="flex flex-col gap-1">
+												{entry.course.title}
+											</div>
+											<span className="hidden text-sm text-light md:block">
+												{formatDateAgo(entry.date)}
+											</span>
+										</div>
+									</li>
+								</Link>
+							))}
+						</ul>
+					)}
+				</>
+			)}
+		</>
+	);
+}
+
 function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 	const notCompletedCourses = enrollments.filter(enrollment => enrollment.status === "ACTIVE");
 
@@ -297,31 +347,30 @@ function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 				<ul className="flex flex-col gap-2">
 					{notCompletedCourses.map((completion, index) => (
 						<Link
-						className="text-sm font-medium"
-						href={`/courses/${completion.course?.slug}`}
-						key={"course-" + index}
-					>
-						<li
-							className="flex items-center rounded-lg border border-light-border pl-3 
-							transition-transform hover:scale-105 hover:shadow-lg hover:bg-slate-100 hover:"
+							className="text-sm font-medium"
+							href={`/courses/${completion.course?.slug}`}
+							key={"course-" + index}
 						>
-							<ImageOrPlaceholder
-								src={completion.course?.imgUrl ?? undefined}
-								className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
-							/>
+							<li
+								className="hover: flex items-center rounded-lg border border-light-border 
+							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+							>
+								<ImageOrPlaceholder
+									src={completion.course?.imgUrl ?? undefined}
+									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
+								/>
 
-							<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-								<div className="flex flex-col gap-1">
+								<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
+									<div className="flex flex-col gap-1">
 										{completion.course?.title}
-							
+									</div>
+									<ProgressFooter progress={completion.progress} />
+									<span className="hidden text-sm text-light md:block">
+										{formatDateAgo(completion.lastProgressUpdate)}
+									</span>
 								</div>
-								<ProgressFooter progress={completion.progress} />
-								<span className="hidden text-sm text-light md:block">
-									{formatDateAgo(completion.lastProgressUpdate)}
-								</span>
-							</div>
-						</li>
-					</Link>
+							</li>
+						</Link>
 					))}
 				</ul>
 			)}
