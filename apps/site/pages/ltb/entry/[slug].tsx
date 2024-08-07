@@ -5,7 +5,7 @@ import {
 	getLearningDiaryInformation,
 	LearningDiaryInformation,
 	LearningDiaryEntryResult
-} from "../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
+} from "../../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
 import { PencilIcon, StarIcon } from "@heroicons/react/24/solid";
 import { Dialog, LoadingCircle, showToast } from "@self-learning/ui/common";
 import Image from "next/image";
@@ -30,16 +30,25 @@ interface LearningDiaryEntryFormProps {
 
 interface LearningDiaryEntryOverviewProps {
 	learningDiaryInformation: LearningDiaryInformation;
+	slug: string | null;
 }
 
 export default function LearningDiaryEntryOverview({
-	learningDiaryInformation
+	learningDiaryInformation,
+	slug
 }: LearningDiaryEntryOverviewProps) {
-	const [currentIndex, setCurrentIndex] = useState<number>(
-		learningDiaryInformation?.learningDiaryEntries?.length
-			? learningDiaryInformation.learningDiaryEntries.length - 1
-			: 0
-	);
+	const [currentIndex, setCurrentIndex] = useState<number>(() => {
+		const initialIndex =
+			slug && !isNaN(Number(slug))
+				? Number(slug) - 1
+				: learningDiaryInformation?.learningDiaryEntries?.length
+				? learningDiaryInformation.learningDiaryEntries.length - 1
+				: 0;
+		return initialIndex < 0 ? 0 : initialIndex;
+	});
+
+	console.log(currentIndex);
+
 	const [entries, setEntries] = useState<LearningDiaryEntryResult[]>(
 		learningDiaryInformation?.learningDiaryEntries ?? []
 	);
@@ -49,6 +58,13 @@ export default function LearningDiaryEntryOverview({
 			prevEntries.map(entry => (entry.id === updatedEntry.id ? updatedEntry : entry))
 		);
 	};
+
+	useEffect(() => {
+		if (slug && !isNaN(Number(slug))) {
+			const index = Number(slug) - 1;
+			setCurrentIndex(index < 0 ? 0 : index);
+		}
+	}, [slug]);
 
 	if (!entries || entries.length === 0) {
 		return <div>Kein Lerntagebucheinträge Gefunden.</div>;
@@ -825,20 +841,24 @@ export const getServerSideProps: GetServerSideProps = async context => {
 		};
 	}
 
+	const slug = context.params?.slug;
+
 	try {
 		const learningDiaryInformation = await getLearningDiaryInformation({
 			username: session.user.name
 		});
 		return {
 			props: {
-				learningDiaryInformation
+				learningDiaryInformation,
+				slug: slug || null
 			}
 		};
 	} catch (error) {
 		console.error("Error fetching Learning Diary Information:", error);
 		return {
 			props: {
-				learningDiaryInformation: null
+				learningDiaryInformation: null,
+				slug: null
 			}
 		};
 	}

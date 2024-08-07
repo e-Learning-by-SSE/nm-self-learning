@@ -230,13 +230,13 @@ function DashboardPage(props: Props) {
 								title="Lerneinheiten verwalten"
 							/>
 							<Card
-								href="/diary/createEntry"
+								href="/ltb/entry/0"
 								imageElement={<TutorialSvg />}
 								title="Lerntagebucheinträge verwalten"
 							/>
 
 							<Card
-								href="/diary/overview"
+								href="/ltb/"
 								imageElement={<TutorialSvg />}
 								title="Lerntagebuchübersicht einsehen"
 							/>
@@ -305,15 +305,15 @@ function LastLearningDiaryEntry() {
 			) : (
 				<>
 					{!isLoading && learningDiaryEntries && (
-						<ul className="flex flex-col gap-2 overflow-auto overflow-x-hidden max-h-80">
+						<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
 							{learningDiaryEntries.map((entry, index) => (
 								<Link
 									className="text-sm font-medium"
-									href={`/courses/${entry.course.slug}/`}
-									key={"course-" + index}
+									href={`/ltb/entry/${entry.number}/`}
+									key={entry.number}
 								>
 									<li
-										className="hover: flex items-center rounded-lg border border-light-border 
+										className="hover: flex items-center rounded-lg border border-light-border
 							p-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
 									>
 										<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
@@ -350,7 +350,7 @@ function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 					Du bist momentan in keinem Kurs eingeschrieben.
 				</span>
 			) : (
-				<ul className="flex flex-col gap-2 overflow-auto overflow-x-hidden max-h-80">
+				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
 					{notCompletedCourses.map((completion, index) => (
 						<Link
 							className="text-sm font-medium"
@@ -358,7 +358,7 @@ function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 							key={"course-" + index}
 						>
 							<li
-								className="hover: flex items-center rounded-lg border border-light-border 
+								className="hover: flex items-center rounded-lg border border-light-border
 							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
 							>
 								<ImageOrPlaceholder
