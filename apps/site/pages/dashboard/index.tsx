@@ -147,7 +147,7 @@ function DashboardPage(props: Props) {
 	return (
 		<div className="bg-gray-50">
 			<CenteredSection>
-				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
+				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-[2fr_1fr]">
 					<section className="flex items-center">
 						<ImageOrPlaceholder
 							src={props.student.user.image ?? undefined}
@@ -183,7 +183,7 @@ function DashboardPage(props: Props) {
 						)}
 					</section>
 
-					<div className="mt-4 flex items-end gap-2">
+					<div className="mt-4 flex items-end justify-self-end gap-2">
 						<TagebuchToggle />
 					</div>
 				</div>
