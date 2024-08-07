@@ -7,6 +7,7 @@ import {
 import { formatDateToString } from "@self-learning/util/common";
 import { authProcedure, t } from "../trpc";
 import { getLearningGoals } from "./learning-goal.router";
+import LearningGoals from "../../../../../../feature/learning-goals/src/lib/learning-goals";
 
 export async function getLearningDiaryEntriesOverview({ username }: { username: string }) {
 	let learningDiaryEntries = await database.learningDiaryEntry.findMany({
@@ -235,6 +236,8 @@ export const learningDiaryEntryRouter = t.router({
 			throw new Error("id must be defined for update");
 		}
 
+		console.log("input", input.learningGoal);
+
 		return await database.learningDiaryEntry.update({
 			where: {
 				id: input.id
@@ -243,7 +246,8 @@ export const learningDiaryEntryRouter = t.router({
 				notes: input.notes ?? "",
 				distractionLevel: input.distractionLevel ?? 1,
 				effortLevel: input.effortLevel ?? 1,
-				learningLocationId: input.learningLocationId ?? null
+				learningLocationId: input.learningLocationId ?? null,
+				learningGoal: { connect: input.learningGoal?.map(id => ({ id })) }
 			},
 			select: {
 				id: true,

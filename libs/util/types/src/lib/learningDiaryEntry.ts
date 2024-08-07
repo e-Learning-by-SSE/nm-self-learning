@@ -56,7 +56,7 @@ export const learningDiaryEntrySchema = z.object({
 	effortLevel: z.number().int().optional(),
 	distractionLevel: z.number().int().optional(),
 	learningLocationId: z.string().optional(),
-	learningGoal: z.array(learningGoalSchema).optional(),
+	learningGoal: z.array(z.string()).optional(),
 	learningTechniqueEvaluation: z.array(learningTechniqueEvaluationSchema).optional()
 });
 

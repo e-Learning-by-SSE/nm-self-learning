@@ -1,13 +1,13 @@
 import { LearningGoals } from "@self-learning/learning-goals";
 import { trpc } from "@self-learning/api-client";
 import { LoadingCircle } from "@self-learning/ui/common";
-
+import { LearningGoal } from "@self-learning/types";
 
 /**
  * LearningGoal()
- * 
- * Main component of the learning goals 
- * 
+ *
+ * Main component of the learning goals
+ *
  */
 export default function LearningGoal() {
 	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
@@ -22,8 +22,13 @@ export default function LearningGoal() {
 		);
 	} else if (learningGoals) {
 		// prisma Date string problem -> workaround JSON parse
-		return <LearningGoals goals={JSON.parse(JSON.stringify(learningGoals))} />;
+		return (
+			<LearningGoals
+				goals={JSON.parse(JSON.stringify(learningGoals))}
+				onEdit={(goal: LearningGoal) => {}}
+			/>
+		);
 	} else {
-		return <LearningGoals goals={null} />;
+		return <LearningGoals goals={null} onEdit={(goal: LearningGoal) => {}} />;
 	}
 }

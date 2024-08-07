@@ -125,13 +125,17 @@ function LearningDiaryEntryForm({
 			...data
 		};
 
+		console.log(updatedEntry);
+
 		await updateLearningDiaryEntry({
 			id: updatedEntry.id,
 			learningLocationId: updatedEntry.learningLocation.id,
 			effortLevel: updatedEntry.effortLevel ?? 1,
 			distractionLevel: updatedEntry.distractionLevel ?? 1,
 			notes: updatedEntry.notes,
-			learningGoal: updatedEntry.learningGoal
+			learningGoal: updatedEntry.learningGoal.map(goal => {
+				return goal.id;
+			})
 		});
 
 		onUpdate(updatedEntry);
@@ -253,13 +257,38 @@ function LearningGoalInputTile({
 
 	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
 
-	console.log(learningGoals);
-
 	const onClose = () => {
 		setDialogOpen(false);
 	};
 
-	function onSave() {}
+	function onSave() {
+		onClose();
+	}
+
+	function onEdit(editedGoal: LearningGoal) {
+		const getNewGoals = (prevGoals: LearningGoal[]) => {
+			// Check if the goal already exists in the previous goals array
+			const goalExists = prevGoals.some(goal => goal.id === editedGoal.id);
+
+			// If the goal does not exist, add it to the array
+			if (!goalExists) {
+				return [...prevGoals, editedGoal];
+			}
+
+			// If the goal exists, replace it in the array
+			return prevGoals.map(goal => (goal.id === editedGoal.id ? editedGoal : goal));
+		};
+
+		setEntryGoals(getNewGoals(entryGoals));
+
+		console.log();
+
+		handleSubmit(onSubmit)();
+
+		setEntryGoals(getNewGoals(entryGoals));
+	}
+
+	useEffect(() => {}, [entryGoals]);
 
 	return (
 		<div>
@@ -269,6 +298,7 @@ function LearningGoalInputTile({
 						goals={entryGoals}
 						notFoundMessage={"Es wurden noch keine Lernziele Festgelegt"}
 						editable={false}
+						onEdit={(goal: LearningGoal) => {}}
 					/>
 				</div>
 			</Tile>
@@ -290,8 +320,10 @@ function LearningGoalInputTile({
 								</div>
 							</div>
 							<div className={"flex justify-center py-4"}>
-								{learningGoals &&
-									learningGoals.map(goal => <div key={goal.id}></div>)}
+								<LearningGoals
+									goals={learningGoals}
+									onEdit={onEdit}
+								></LearningGoals>
 							</div>
 							<div className="mt-4 flex justify-end space-x-4">
 								<button onClick={onClose} className="btn-stroked hover:bg-gray-100">
@@ -479,7 +511,7 @@ function Tile({
 	tileName: string;
 }) {
 	return (
-		<div className="relative flex max-h-[200px] min-h-[200px] items-center justify-center rounded border bg-gray-100">
+		<div className="relative flex max-h-[200px] min-h-[200px] flex-col items-center justify-center rounded border bg-gray-100 p-4">
 			<div className="absolute top-2 left-2 text-gray-800">{tileName}</div>
 			<div className="absolute top-2 right-2">
 				<PencilIcon
@@ -487,10 +519,12 @@ function Tile({
 					onClick={() => onToggleEdit(true)}
 				/>
 			</div>
-			<div className="flex h-full items-center justify-center">
+			<div className="flex w-full flex-1 items-center justify-center overflow-y-auto">
 				{React.cloneElement(children, {
 					onClick: () => onToggleEdit(true),
-					className: `${children.props.className || ""} cursor-pointer`
+					className: `${
+						children.props.className || ""
+					} w-full flex flex-col justify-center items-center cursor-pointer`
 				})}
 			</div>
 		</div>
@@ -599,7 +633,6 @@ function LocationInputTile({
 							newLocation.name +
 							" wurde erfolgreich hinzugefügt."
 					});
-					console.log("erstellt");
 					return true;
 				} catch (error) {
 					showToast({

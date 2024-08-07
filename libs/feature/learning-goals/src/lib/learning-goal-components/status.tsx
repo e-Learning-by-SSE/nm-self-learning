@@ -67,14 +67,22 @@ export function GoalStatus({
 		} else {
 			const date = new Date();
 			const lastProgressUpdate = date.toISOString();
-			if (goal) {
+			if (!subGoal && goal) {
 				editGoal({ goalId: goal.id, lastProgressUpdate, status });
-			} else if (subGoal) {
+				onEdit({
+					...goal,
+					status: status
+				});
+			} else if (subGoal && goal) {
 				editSubGoal({
 					subGoalId: subGoal.id,
 					status,
 					learningGoalId: subGoal.learningGoalId,
 					lastProgressUpdate
+				});
+				onEdit({
+					...goal,
+					status: status
 				});
 			}
 		}
@@ -109,7 +117,12 @@ export function GoalStatus({
 	}
 
 	const disable =
-		(goal && status == "COMPLETED") || (goal && !areSubGoalsCompleted()) || !editable;
+		(goal && status == "COMPLETED") ||
+		(goal && !areSubGoalsCompleted() && !subGoal) ||
+		!editable;
+
+	console.log(goal?.id, goal && !areSubGoalsCompleted());
+
 	return (
 		<div className="relative flex flex-col items-center">
 			<button

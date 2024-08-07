@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
 	ButtonActions,
 	DialogHandler,
-	Divider,
 	SectionHeader,
 	SimpleDialog,
 	Tab,
@@ -30,7 +29,13 @@ export default LearningGoals;
  * @returns A component to display learning goals
  */
 
-export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null }>) {
+export function LearningGoals({
+	goals,
+	onEdit
+}: Readonly<{
+	goals: LearningGoal[] | null;
+	onEdit: (editedGoal: LearningGoal) => void;
+}>) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
@@ -44,7 +49,7 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 	const complete = goals.filter(goals => goals.status == "COMPLETED");
 
 	return (
-		<CenteredSection className="bg-gray-50 pb-32">
+		<CenteredSection className="overflow-y-auto bg-gray-50 pb-32">
 			<section>
 				<div className="flex items-center justify-between gap-4">
 					<SectionHeader title="Meine Lernziele" />
@@ -62,6 +67,7 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 							goals={inProgress}
 							notFoundMessage={"Derzeit ist kein Ziel erstellt worden."}
 							editable={true}
+							onEdit={onEdit}
 						/>
 					)}
 					{selectedTab === 1 && (
@@ -71,6 +77,7 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 							goals={complete}
 							notFoundMessage={"Derzeit ist kein Ziel abgeschlossen."}
 							editable={false}
+							onEdit={onEdit}
 						/>
 					)}
 				</div>
@@ -92,11 +99,13 @@ export function LearningGoals({ goals }: Readonly<{ goals: LearningGoal[] | null
 export function GoalsOverview({
 	goals,
 	notFoundMessage,
-	editable
+	editable,
+	onEdit
 }: Readonly<{
 	goals: LearningGoalType | null;
 	notFoundMessage: string;
 	editable: boolean;
+	onEdit: (editedGoal: LearningGoal) => void;
 }>) {
 	if (!goals) {
 		return <p>Keine Ziele Gefunden.</p>;
@@ -107,7 +116,13 @@ export function GoalsOverview({
 			{goals.length > 0 ? (
 				<ul className="space-y-4">
 					{goals.map(goal => (
-						<GoalRow key={goal.id} goal={goal} editable={editable} goals={goals} />
+						<GoalRow
+							onEdit={onEdit}
+							key={goal.id}
+							goal={goal}
+							editable={editable}
+							goals={goals}
+						/>
 					))}
 				</ul>
 			) : (
@@ -132,13 +147,15 @@ function TabContent({
 	setSelectedTab,
 	goals,
 	notFoundMessage,
-	editable
+	editable,
+	onEdit
 }: Readonly<{
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
 	goals: LearningGoalType | null;
 	notFoundMessage: string;
 	editable: boolean;
+	onEdit: (editedGoal: LearningGoal) => void;
 }>) {
 	return (
 		<div className="xl:grid-cols grid h-full gap-8">
@@ -152,6 +169,7 @@ function TabContent({
 						goals={goals}
 						notFoundMessage={notFoundMessage}
 						editable={editable}
+						onEdit={onEdit}
 					/>
 				</div>
 			</div>
@@ -170,11 +188,13 @@ function TabContent({
 function GoalRow({
 	goal,
 	editable,
-	goals
+	goals,
+	onEdit
 }: Readonly<{
 	goal: LearningGoal;
 	editable: boolean;
 	goals: LearningGoal[];
+	onEdit: (editedGoal: LearningGoal) => void;
 }>) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
@@ -209,7 +229,7 @@ function GoalRow({
 						)}
 					</div>
 					<div className="mr-4 flex justify-end">
-						<GoalStatus goal={goal} editable={editable} />
+						<GoalStatus goal={goal} editable={editable} onEdit={onEdit} />
 					</div>
 				</div>
 				<ul className="flex flex-col gap-1">
@@ -219,6 +239,8 @@ function GoalRow({
 							subGoal={subGoal}
 							editable={editable}
 							goals={goals}
+							goal={goal}
+							onEdit={onEdit}
 						/>
 					))}
 				</ul>
@@ -241,11 +263,15 @@ function GoalRow({
 function SubGoalRow({
 	subGoal,
 	editable,
-	goals
+	goals,
+	goal,
+	onEdit
 }: Readonly<{
 	subGoal: LearningSubGoal;
 	editable: boolean;
 	goals: LearningGoal[];
+	goal: LearningGoal;
+	onEdit: (editedGoal: LearningGoal) => void;
 }>) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 	const { mutateAsync: editSubGoalPriority } =
@@ -282,6 +308,7 @@ function SubGoalRow({
 			}
 		}
 	}
+
 	const result = goals.filter(goal => {
 		return goal.id === subGoal.learningGoalId;
 	});
@@ -338,7 +365,12 @@ function SubGoalRow({
 						</div>
 					</div>
 					<div className="flex justify-end">
-						<GoalStatus subGoal={subGoal} editable={editable} />
+						<GoalStatus
+							goal={goal}
+							onEdit={onEdit}
+							subGoal={subGoal}
+							editable={editable}
+						/>
 					</div>
 				</div>
 			</div>
