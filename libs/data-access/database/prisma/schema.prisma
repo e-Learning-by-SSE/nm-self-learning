@@ -317,15 +317,15 @@ model Skill {
 }
 
 model LearningGoal {
-  id                 String  @id @default(cuid())
-  description        String
-  status             LearningGoalStatus @default(value:INACTIVE)
-  createdAt          DateTime         @default(now())
-  lastProgressUpdate DateTime?
-  username           String
-  student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
-  learningSubGoals   LearningSubGoal[]
-  learningDiaryEntry LearningDiaryEntry[]
+  id                 	String  @id @default(cuid())
+  description        	String
+  status             	LearningGoalStatus @default(value:INACTIVE)
+  createdAt          	DateTime         @default(now())
+  lastProgressUpdate 	DateTime?
+  username           	String
+  student            	Student          @relation(fields: [username], references: [username], onDelete: Cascade)
+  learningSubGoals   	LearningSubGoal[]
+  learningDiaryEntry 	LearningDiaryEntry[]
 }
 
 model LearningSubGoal{

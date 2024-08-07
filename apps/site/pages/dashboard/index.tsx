@@ -26,10 +26,8 @@ import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { StudentSettings } from "@self-learning/types";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -79,7 +77,6 @@ function getStudent(username: string) {
 				select: {
 					progress: true,
 					status: true,
-					lastProgressUpdate: true,
 					course: {
 						select: {
 							slug: true,
@@ -120,10 +117,6 @@ export default function Start(props: Props) {
 
 function DashboardPage(props: Props) {
 	const [editStudentDialog, setEditStudentDialog] = useState(false);
-	const [studentSettings, setStudentSettings] = useState<StudentSettings>({
-		hasLearningDiary: props.student.settings?.hasLearningDiary ?? false,
-		learningStatistics: props.student.settings?.learningStatistics ?? false
-	});
 	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
 	const router = useRouter();
 
@@ -191,11 +184,7 @@ function DashboardPage(props: Props) {
 					</section>
 
 					<div className="mt-4 flex items-end gap-2 justify-self-end">
-						<TagebuchToggle
-							onChange={value => {
-								setStudentSettings(value);
-							}}
-						/>
+						<TagebuchToggle />
 					</div>
 				</div>
 
@@ -206,47 +195,35 @@ function DashboardPage(props: Props) {
 					</div>
 
 					<div className="rounded bg-white p-4 shadow">
-						{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics ? (
-							<>
-								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
-								<LastLearningDiaryEntry />
-							</>
-						) : (
-							<>
-								<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
-								<Activity enrollments={props.student.enrollments} />
-							</>
-						)}
+						<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
+						<Activity completedLessons={props.student.completedLessons} />
 					</div>
 				</div>
 
 				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
-					{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics && (
-						<>
-							<Card
-								href="/dashboard/courseOverview"
-								imageElement={<TutorialSvg />}
-								title="Lerneinheiten verwalten"
-							/>
-							<Card
-								href="/diary/createEntry"
-								imageElement={<TutorialSvg />}
-								title="Lerntagebucheinträge verwalten"
-							/>
+					<Card
+						href="/dashboard/courseOverview"
+						imageElement={<span>Belegte Kurse</span>}
+						title="Lerneinheiten verwalten"
+					/>
 
-							<Card
-								href="/diary/overview"
-								imageElement={<TutorialSvg />}
-								title="Lerntagebuchübersicht einsehen"
-							/>
+					<Card
+						href="/diary/createEntry"
+						imageElement={<span>Lernstatistik</span>}
+						title="Lerntagebucheinträge verwalten"
+					/>
 
-							<Card
-								href="/learning-goals"
-								imageElement={<TutorialSvg />}
-								title="Lernziele verwalten"
-							/>
-						</>
-					)}
+					<Card
+						href="/diary/overview"
+						imageElement={<span>Lerntagebuch</span>}
+						title="Lerntagebuchübersicht einsehen"
+					/>
+
+					<Card
+						href="/learning-goals"
+						imageElement={<span>Lernziele</span>}
+						title="Lernziele verwalten"
+					/>
 				</div>
 			</CenteredSection>
 			<DialogHandler id="studentSettingsDialogDashboard" />
@@ -254,7 +231,7 @@ function DashboardPage(props: Props) {
 	);
 }
 
-function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => void }) {
+function TagebuchToggle() {
 	const { data: studentSettings, isLoading, refetch } = trpc.settings.getMySetting.useQuery();
 	const hasLearningDiary = studentSettings?.hasLearningDiary || false;
 	const hasLearningStatistics = studentSettings?.learningStatistics || false;
@@ -272,12 +249,8 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 									learningStatistics: false,
 									...studentSettings
 								}}
-								onClose={value => {
+								onClose={() => {
 									refetch();
-									onChange({
-										hasLearningDiary: value?.hasLearningDiary ?? false,
-										learningStatistics: value?.learningStatistics ?? false
-									});
 									freeDialog("studentSettingsDialogDashboard");
 								}}
 							/>,
@@ -291,86 +264,50 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 	);
 }
 
-function LastLearningDiaryEntry() {
-	const { data: learningDiaryEntries, isLoading } =
-		trpc.learningDiaryEntry.getMeLearningDiaryEntries.useQuery();
-
+function Activity({ completedLessons }: { completedLessons: Student["completedLessons"] }) {
 	return (
 		<>
-			{learningDiaryEntries && learningDiaryEntries.length == 0 ? (
-				<span className="text-sm text-light">
-					Du hast noch keinen Lerntagebucheintrag erstellt.
-				</span>
-			) : (
-				<>
-					{!isLoading && learningDiaryEntries && (
-						<ul className="flex flex-col gap-2">
-							{learningDiaryEntries.map((entry, index) => (
-								<Link
-									className="text-sm font-medium"
-									href={`/courses/${entry.course.slug}/`}
-									key={"course-" + index}
-								>
-									<li
-										className="hover: flex items-center rounded-lg border border-light-border 
-							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
-									>
-										<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-											<div className="flex flex-col gap-1">
-												{entry.course.title}
-											</div>
-											<span className="hidden text-sm text-light md:block">
-												{formatDateAgo(entry.date)}
-											</span>
-										</div>
-									</li>
-								</Link>
-							))}
-						</ul>
-					)}
-				</>
-			)}
-		</>
-	);
-}
-
-function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
-	const notCompletedCourses = enrollments.filter(enrollment => enrollment.status === "ACTIVE");
-
-	return (
-		<>
-			{notCompletedCourses.length === 0 ? (
+			{completedLessons.length === 0 ? (
 				<span className="text-sm text-light">
 					Du bist momentan in keinem Kurs eingeschrieben.
 				</span>
 			) : (
 				<ul className="flex flex-col gap-2">
-					{notCompletedCourses.map((completion, index) => (
-						<Link
-							className="text-sm font-medium"
-							href={`/courses/${completion.course?.slug}`}
-							key={"course-" + index}
+					{completedLessons.map(lesson => (
+						<li
+							key={lesson.createdAt as unknown as string}
+							className="flex items-center rounded-lg border border-light-border"
 						>
-							<li
-								className="hover: flex items-center rounded-lg border border-light-border 
-							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
-							>
-								<ImageOrPlaceholder
-									src={completion.course?.imgUrl ?? undefined}
-									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
-								/>
+							<ImageOrPlaceholder
+								src={lesson.course?.imgUrl ?? undefined}
+								className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
+							/>
 
-								<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-									<div className="flex flex-col gap-1">
-										{completion.course?.title}
-									</div>
-									<ProgressFooter progress={completion.progress} />
-									<span className="hidden text-sm text-light md:block">
-										{formatDateAgo(completion.lastProgressUpdate)}
-									</span>
+							<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
+								<div className="flex flex-col gap-1">
+									<Link
+										className="text-sm font-medium hover:text-secondary"
+										href={`/courses/${lesson.course?.slug}/${lesson.lesson.slug}`}
+									>
+										{lesson.lesson.title}
+									</Link>
+									{lesson.course && (
+										<span className="text-xs text-light">
+											in{" "}
+											<Link
+												className="text-secondary hover:underline"
+												href={`/courses/${lesson.course.slug}`}
+											>
+												{lesson.course.title}
+											</Link>
+										</span>
+									)}
 								</div>
-							</li>
-						</Link>
+								<span className="hidden text-sm text-light md:block">
+									{formatDateAgo(lesson.createdAt)}
+								</span>
+							</div>
+						</li>
 					))}
 				</ul>
 			)}

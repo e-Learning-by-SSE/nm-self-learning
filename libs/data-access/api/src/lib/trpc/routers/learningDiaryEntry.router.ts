@@ -6,6 +6,7 @@ import {
 } from "@self-learning/types";
 import { formatDateToString } from "@self-learning/util/common";
 import { authProcedure, t } from "../trpc";
+import { getLearningGoals } from "./learning-goal.router";
 
 export async function getLearningDiaryEntriesOverview({ username }: { username: string }) {
 	let learningDiaryEntries = await database.learningDiaryEntry.findMany({
@@ -35,9 +36,7 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 		.reverse();
 
-	console.log(learningDiaryEntries);
-
-	const result = learningDiaryEntries.map((entry, index) => {
+	return learningDiaryEntries.map((entry, index) => {
 		return {
 			...entry,
 			date: formatDateToString(new Date(entry.date)),
@@ -49,8 +48,6 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
 		};
 	});
-
-	return result;
 }
 
 type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
@@ -110,7 +107,26 @@ export async function getLearningDiaryInformation({ username }: { username: stri
 					iconURL: true
 				}
 			},
-			learningGoal: true,
+			learningGoal: {
+				select: {
+					id: true,
+					status: true,
+					lastProgressUpdate: true,
+					description: true,
+					learningSubGoals: {
+						orderBy: {
+							priority: "asc"
+						},
+						select: {
+							id: true,
+							description: true,
+							priority: true,
+							status: true,
+							learningGoalId: true
+						}
+					}
+				}
+			},
 			learningTechniqueEvaluation: true
 		},
 		orderBy: {
@@ -145,6 +161,7 @@ function createLearningDiaryEntry(entry: any, index: number) {
 		duration: new Date(entry.end).getTime() - new Date(entry.start).getTime(),
 		distractionLevel: entry.distractionLevel,
 		effortLevel: entry.effortLevel,
+		learningGoal: JSON.parse(JSON.stringify(entry.learningGoal)),
 		learningLocation: entry.learningLocation,
 		learningTechniqueEvaluation: entry.learningTechniqueEvaluation
 	};
@@ -251,7 +268,26 @@ export const learningDiaryEntryRouter = t.router({
 						iconURL: true
 					}
 				},
-				learningGoal: true,
+				learningGoal: {
+					select: {
+						id: true,
+						status: true,
+						lastProgressUpdate: true,
+						description: true,
+						learningSubGoals: {
+							orderBy: {
+								priority: "asc"
+							},
+							select: {
+								id: true,
+								description: true,
+								priority: true,
+								status: true,
+								learningGoalId: true
+							}
+						}
+					}
+				},
 				learningTechniqueEvaluation: true
 			}
 		});

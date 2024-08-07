@@ -15,11 +15,13 @@ import { useEffect, useRef, useState } from "react";
 export function GoalStatus({
 	goal,
 	subGoal,
-	editable
+	editable,
+	onEdit
 }: Readonly<{
 	goal?: LearningGoal;
 	subGoal?: LearningSubGoal;
 	editable: boolean;
+	onEdit: (editedGoal: LearningGoal) => void;
 }>) {
 	const { mutateAsync: editSubGoal } = trpc.learningGoal.editSubGoalStatus.useMutation();
 	const { mutateAsync: editGoal } = trpc.learningGoal.editGoalStatus.useMutation();

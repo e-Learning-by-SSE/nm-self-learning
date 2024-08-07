@@ -7,12 +7,14 @@ import {
 	LearningDiaryEntryResult
 } from "../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
 import { PencilIcon, StarIcon } from "@heroicons/react/24/solid";
-import { Dialog, showToast } from "@self-learning/ui/common";
+import { Dialog, LoadingCircle, showToast } from "@self-learning/ui/common";
 import Image from "next/image";
 import { trpc } from "@self-learning/api-client";
 import { formatMillisecondToString } from "@self-learning/util/common";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { useForm, Controller, FormProvider, useFormContext } from "react-hook-form";
+import { LearningGoal } from "@self-learning/types";
+import { GoalsOverview, LearningGoals } from "@self-learning/learning-goals";
 
 interface EntrySwitcherProps {
 	maxLength: number;
@@ -34,11 +36,12 @@ export default function LearningDiaryEntryOverview({
 	learningDiaryInformation
 }: LearningDiaryEntryOverviewProps) {
 	const [currentIndex, setCurrentIndex] = useState<number>(
-		learningDiaryInformation.learningDiaryEntries.length - 1
+		learningDiaryInformation?.learningDiaryEntries?.length
+			? learningDiaryInformation.learningDiaryEntries.length - 1
+			: 0
 	);
-
 	const [entries, setEntries] = useState<LearningDiaryEntryResult[]>(
-		learningDiaryInformation.learningDiaryEntries
+		learningDiaryInformation?.learningDiaryEntries ?? []
 	);
 
 	const handleUpdateEntry = (updatedEntry: LearningDiaryEntryResult) => {
@@ -46,6 +49,10 @@ export default function LearningDiaryEntryOverview({
 			prevEntries.map(entry => (entry.id === updatedEntry.id ? updatedEntry : entry))
 		);
 	};
+
+	if (!entries || entries.length === 0) {
+		return <div>Kein Lerntagebucheinträge Gefunden.</div>;
+	}
 
 	return (
 		<div className="flex justify-center">
@@ -103,7 +110,8 @@ function LearningDiaryEntryForm({
 			learningLocation: learningDiaryInformation.learningLocations[0],
 			effortLevel: entry.effortLevel,
 			distractionLevel: entry.distractionLevel,
-			notes: entry.notes
+			notes: entry.notes,
+			learningGoal: entry.learningGoal
 		}
 	});
 
@@ -122,7 +130,8 @@ function LearningDiaryEntryForm({
 			learningLocationId: updatedEntry.learningLocation.id,
 			effortLevel: updatedEntry.effortLevel ?? 1,
 			distractionLevel: updatedEntry.distractionLevel ?? 1,
-			notes: updatedEntry.notes
+			notes: updatedEntry.notes,
+			learningGoal: updatedEntry.learningGoal
 		});
 
 		onUpdate(updatedEntry);
@@ -134,7 +143,8 @@ function LearningDiaryEntryForm({
 			learningLocation: entry.learningLocation,
 			effortLevel: entry.effortLevel,
 			distractionLevel: entry.distractionLevel,
-			notes: entry.notes
+			notes: entry.notes,
+			learningGoal: entry.learningGoal
 		});
 	}, [entry, reset]);
 
@@ -211,8 +221,91 @@ function LearningDiaryEntryForm({
 						)}
 					/>
 				</div>
+				<div className={"mb-4"}>
+					<Controller
+						name={"learningGoal"}
+						control={methods.control}
+						render={({ field }) => (
+							<LearningGoalInputTile
+								entryGoals={field.value}
+								setEntryGoals={field.onChange}
+								onSubmit={onSubmit}
+							/>
+						)}
+					/>
+				</div>
 			</form>
 		</FormProvider>
+	);
+}
+
+function LearningGoalInputTile({
+	entryGoals,
+	setEntryGoals,
+	onSubmit
+}: {
+	entryGoals: LearningGoal[];
+	setEntryGoals: (goals: LearningGoal[]) => void;
+	onSubmit: (data: any) => Promise<void>;
+}) {
+	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+	const { trigger, handleSubmit } = useFormContext();
+
+	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
+
+	console.log(learningGoals);
+
+	const onClose = () => {
+		setDialogOpen(false);
+	};
+
+	function onSave() {}
+
+	return (
+		<div>
+			<Tile onToggleEdit={setDialogOpen} tileName={"Lernziele"}>
+				<div>
+					<GoalsOverview
+						goals={entryGoals}
+						notFoundMessage={"Es wurden noch keine Lernziele Festgelegt"}
+						editable={false}
+					/>
+				</div>
+			</Tile>
+			{dialogOpen && isLoading ? (
+				<Dialog title="Lernziel Editor" onClose={onClose}>
+					<div className="flex h-screen bg-gray-50">
+						<div className="m-auto">
+							<LoadingCircle />
+						</div>
+					</div>
+				</Dialog>
+			) : (
+				dialogOpen && (
+					<Dialog title="Lernziel Editor" onClose={onClose}>
+						<div className={"overflow-y-auto"}>
+							<div className={"space-y-4"}>
+								<div className={"max-w-md py-2"}>
+									<span>{"Hier muss noch ein Text rein!!!!!!!!!!!!!!!"}</span>
+								</div>
+							</div>
+							<div className={"flex justify-center py-4"}>
+								{learningGoals &&
+									learningGoals.map(goal => <div key={goal.id}></div>)}
+							</div>
+							<div className="mt-4 flex justify-end space-x-4">
+								<button onClick={onClose} className="btn-stroked hover:bg-gray-100">
+									Abbrechen
+								</button>
+								<button onClick={onSave} className="btn-primary" disabled={false}>
+									Speichern
+								</button>
+							</div>
+						</div>
+					</Dialog>
+				)
+			)}
+		</div>
 	);
 }
 
@@ -479,6 +572,7 @@ function LocationInputTile({
 				} else {
 					setSelectedLocation(tempLocation);
 					setLearningLocation(tempLocation);
+					await handleSubmit(onSubmit)();
 					onClose();
 				}
 			}

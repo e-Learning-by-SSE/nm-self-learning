@@ -335,7 +335,7 @@ export type LearningGoalType = ResolvedValue<typeof getLearningGoals>;
  * @param username The username of the current user
  * @returns The learning goals of the user
  */
-async function getLearningGoals(username: string) {
+export async function getLearningGoals(username: string) {
 	return await database.learningGoal.findMany({
 		where: { username: username },
 		orderBy: {

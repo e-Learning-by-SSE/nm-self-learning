@@ -8,12 +8,38 @@ export const learningTechniqueEvaluationSchema = z.object({
 	learningDiaryEntryId: z.string().optional()
 });
 
+const learningGoalStatusSchema = z.enum(["ACTIVE", "INACTIVE", "COMPLETED"]);
+
 export const learningGoalSchema: z.ZodSchema = z.lazy(() =>
 	z.object({
 		id: z.string().optional(),
-		learningDiaryEntryId: z.string().uuid().optional(),
-		parentGoalId: z.string().nullable().optional(),
-		childGoals: z.array(z.lazy(() => learningGoalSchema)).optional()
+		description: z.string(),
+		status: learningGoalStatusSchema.optional().default("INACTIVE"),
+		createdAt: z.date().optional(),
+		lastProgressUpdate: z.date().nullable().optional(),
+		username: z.string(),
+		student: z
+			.object({
+				connect: z.object({
+					username: z.string()
+				})
+			})
+			.optional(),
+		learningSubGoals: z.array(z.lazy(() => learningSubGoalSchema)).optional(),
+		learningDiaryEntry: z.array(z.string()).optional()
+	})
+);
+
+export const learningSubGoalSchema: z.ZodSchema = z.lazy(() =>
+	z.object({
+		id: z.string().optional(),
+		description: z.string(),
+		status: learningGoalStatusSchema.optional().default("INACTIVE"),
+		createdAt: z.date().optional(),
+		lastProgressUpdate: z.date().nullable().optional(),
+		priority: z.number().optional(),
+		learningGoalId: z.string(),
+		learningGoal: z.lazy(() => learningGoalSchema).optional()
 	})
 );
 
@@ -30,7 +56,7 @@ export const learningDiaryEntrySchema = z.object({
 	effortLevel: z.number().int().optional(),
 	distractionLevel: z.number().int().optional(),
 	learningLocationId: z.string().optional(),
-	learningGoals: z.array(learningGoalSchema).optional(),
+	learningGoal: z.array(learningGoalSchema).optional(),
 	learningTechniqueEvaluation: z.array(learningTechniqueEvaluationSchema).optional()
 });
 
@@ -43,5 +69,4 @@ export const learningLocationSchema = z.object({
 });
 
 export type LearningTechniqueEvaluation = z.infer<typeof learningTechniqueEvaluationSchema>;
-export type LearningGoal = z.infer<typeof learningGoalSchema>;
 export type LearningDiaryEntry = z.infer<typeof learningDiaryEntrySchema>;
