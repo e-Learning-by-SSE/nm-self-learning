@@ -1,5 +1,6 @@
 import { LearningGoalStatus } from "@prisma/client";
 
+// unsued?
 export type LearningGoal = {
 	status: LearningGoalStatus;
 	lastProgressUpdate: Date | null;

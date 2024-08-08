@@ -32,21 +32,19 @@ export default LearningGoals;
 export function LearningGoals({
 	goals,
 	onEdit
-}: Readonly<{
-	goals: LearningGoal[] | null;
+}: {
+	goals: LearningGoalType;
 	onEdit: (editedGoal: LearningGoal) => void;
-}>) {
+}) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
-	if (!goals) {
+	if (goals.length === 0) {
 		return <p>Keine Ziele gefunden</p>;
 	}
 
-	const inProgress = goals.filter(
-		goals => goals.status == "INACTIVE" || goals.status == "ACTIVE"
-	);
-	const complete = goals.filter(goals => goals.status == "COMPLETED");
+	const inProgress = goals.filter(g => g.status == "INACTIVE" || g.status == "ACTIVE");
+	const complete = goals.filter(g => g.status == "COMPLETED");
 
 	return (
 		<CenteredSection className="overflow-y-auto bg-gray-50 pb-32">

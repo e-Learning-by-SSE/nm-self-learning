@@ -10,17 +10,12 @@ import { PencilIcon, StarIcon } from "@heroicons/react/24/solid";
 import { Dialog, LoadingCircle, showToast } from "@self-learning/ui/common";
 import Image from "next/image";
 import { trpc } from "@self-learning/api-client";
-import { formatMillisecondToString } from "@self-learning/util/common";
+import { formatMillisecondToString, isTruthy } from "@self-learning/util/common";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { useForm, Controller, FormProvider, useFormContext } from "react-hook-form";
 import { LearningGoal } from "@self-learning/types";
 import { GoalsOverview, LearningGoals } from "@self-learning/learning-goals";
-
-interface EntrySwitcherProps {
-	maxLength: number;
-	setIndex: (index: number) => void;
-	currentIndex: number;
-}
+import { LearningGoalType } from "@self-learning/api";
 
 interface LearningDiaryEntryFormProps {
 	entry: LearningDiaryEntryResult;
@@ -89,15 +84,19 @@ export default function LearningDiaryEntryOverview({
 		</div>
 	);
 }
+function EntrySwitcher({
+	maxLength,
+	setIndex,
+	currentIndex
+}: {
+	maxLength: number;
+	setIndex: React.Dispatch<React.SetStateAction<number>>;
+	currentIndex: number;
+}) {
+	const handlePrev = () => setIndex((prevIndex: number) => Math.max(prevIndex - 1, 0));
 
-function EntrySwitcher({ maxLength, setIndex, currentIndex }: EntrySwitcherProps) {
-	const handlePrev = () => {
-		setIndex(prevIndex => Math.max(prevIndex - 1, 0));
-	};
-
-	const handleNext = () => {
-		setIndex(prevIndex => Math.min(prevIndex + 1, maxLength - 1));
-	};
+	const handleNext = () =>
+		setIndex((prevIndex: number) => Math.min(prevIndex + 1, maxLength - 1));
 
 	return (
 		<div className="flex space-x-16">
@@ -149,9 +148,20 @@ function LearningDiaryEntryForm({
 			effortLevel: updatedEntry.effortLevel ?? 1,
 			distractionLevel: updatedEntry.distractionLevel ?? 1,
 			notes: updatedEntry.notes,
-			learningGoal: updatedEntry.learningGoal.map(goal => {
-				return goal.id;
-			})
+			learningGoal: updatedEntry.learningGoal
+				.map((goal: unknown) => {
+					if (
+						typeof goal === "object" &&
+						goal !== null &&
+						"id" in goal &&
+						typeof (goal as { id: unknown }).id === "string"
+					) {
+						return goal.id;
+					} else {
+						return null;
+					}
+				})
+				.filter(isTruthy)
 		});
 
 		onUpdate(updatedEntry);
@@ -264,7 +274,7 @@ function LearningGoalInputTile({
 	setEntryGoals,
 	onSubmit
 }: {
-	entryGoals: LearningGoal[];
+	entryGoals: LearningGoalType;
 	setEntryGoals: (goals: LearningGoal[]) => void;
 	onSubmit: (data: any) => Promise<void>;
 }) {
@@ -273,6 +283,10 @@ function LearningGoalInputTile({
 
 	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
 
+	const g: LearningGoalType | undefined = learningGoals?.map(goal => ({
+		...goal,
+		lastProgressUpdate: goal.lastProgressUpdate ? new Date(goal.lastProgressUpdate) : null
+	}));
 	const onClose = () => {
 		setDialogOpen(false);
 	};
@@ -336,10 +350,7 @@ function LearningGoalInputTile({
 								</div>
 							</div>
 							<div className={"flex justify-center py-4"}>
-								<LearningGoals
-									goals={learningGoals}
-									onEdit={onEdit}
-								></LearningGoals>
+								<LearningGoals goals={g ?? []} onEdit={onEdit}></LearningGoals>
 							</div>
 							<div className="mt-4 flex justify-end space-x-4">
 								<button onClick={onClose} className="btn-stroked hover:bg-gray-100">
