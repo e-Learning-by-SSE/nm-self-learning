@@ -202,7 +202,15 @@ function DashboardPage(props: Props) {
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
 						<h2 className="mb-4 text-xl">Letzter Kurs</h2>
-						<LastCourseProgress lastEnrollment={props.student.enrollments[0]} />
+						<LastCourseProgress
+							lastEnrollment={
+								props.student.enrollments.sort(
+									(a, b) =>
+										new Date(a.lastProgressUpdate).getTime() -
+										new Date(b.lastProgressUpdate).getTime()
+								)[0]
+							}
+						/>
 					</div>
 
 					<div className="rounded bg-white p-4 shadow">
@@ -227,7 +235,7 @@ function DashboardPage(props: Props) {
 							<Card
 								href="/dashboard/courseOverview"
 								imageElement={<TutorialSvg />}
-								title="Lerneinheiten verwalten"
+								title="Kursübersicht"
 							/>
 							<Card
 								href="/ltb/entry/0"

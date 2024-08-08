@@ -5,7 +5,7 @@ import {
 	getLearningDiaryInformation,
 	LearningDiaryInformation,
 	LearningDiaryEntryResult
-} from "../../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
+} from "../../../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
 import { PencilIcon, StarIcon } from "@heroicons/react/24/solid";
 import { Dialog, LoadingCircle, showToast } from "@self-learning/ui/common";
 import Image from "next/image";
@@ -585,10 +585,6 @@ function LocationInputTile({
 		iconURL: "",
 		id: null
 	});
-
-	useEffect(() => {
-		setSelectedLocation(initialLearningLocation);
-	}, [initialLearningLocation]);
 
 	const onClose = () => {
 		setDialogOpen(false);
