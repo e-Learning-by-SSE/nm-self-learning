@@ -45,6 +45,11 @@ export default function AdminPage() {
 					imageElement={<PersonalInformationSvg />}
 					title="Lizenzen verwalten"
 				/>
+				<Card
+					href="/admin/users"
+					imageElement={<PersonalInformationSvg />}
+					title="Nutzer:innen verwalten"
+				/>
 			</div>
 		</CenteredSection>
 	);
