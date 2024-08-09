@@ -1,5 +1,10 @@
 import { Prisma } from "@prisma/client";
-import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
+import {
+	authorsRelationSchema,
+	courseContentSchema,
+	createCourseMeta,
+	skillFormSchema
+} from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
@@ -15,7 +20,14 @@ export const courseFormSchema = z.object({
 	content: courseContentSchema
 });
 
+export const extendedCourseFormSchema = z.object({
+	course: courseFormSchema,
+	courseTeachingGoals: z.array(skillFormSchema),
+	courseRequirements: z.array(skillFormSchema)
+});
+
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
+export type ExtendedCourseFormModel = z.infer<typeof extendedCourseFormSchema>;
 
 export function mapCourseFormToInsert(
 	course: CourseFormModel,
@@ -64,8 +76,7 @@ export function mapCourseFormToUpdate(
 
 	return courseForDb;
 }
-
-export function createEmptyCourseFormModel() {
+export function createEmptyCourseFormModel(): CourseFormModel {
 	return {
 		courseId: null,
 		subjectId: null,
@@ -76,5 +87,14 @@ export function createEmptyCourseFormModel() {
 		imgUrl: null,
 		authors: [],
 		content: []
-	} as CourseFormModel;
+	};
+}
+
+export function createEmptyExtendedCourseFormModel(): ExtendedCourseFormModel {
+	const emptyCourse = createEmptyCourseFormModel();
+	return {
+		course: emptyCourse,
+		courseTeachingGoals: [],
+		courseRequirements: []
+	};
 }
