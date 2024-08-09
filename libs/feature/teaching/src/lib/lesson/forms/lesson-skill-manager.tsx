@@ -7,10 +7,90 @@ import { memo, useEffect, useState } from "react";
 import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
-import { MarkdownListboxMenu } from "@self-learning/markdown";
+import { SelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
+import { CourseFormModel, ExtendedCourseFormModel } from "../../course/course-form-model";
 
-type SkillModalIdentifier = "provides" | "requires";
+type SkillModalIdentifier = "teachingGoals" | "requirements";
+type CourseSkillModalIdentifier = "courseTeachingGoals" | "courseRequirements";
+
+export function CourseSkillForm() {
+	const { setValue, watch } = useFormContext<ExtendedCourseFormModel>();
+
+	const watchingSkills = {
+		courseRequirements: watch("courseRequirements"),
+		courseTeachingGoals: watch("courseTeachingGoals")
+	};
+
+	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
+	const [selectSkillModal, setSelectSkillModal] = useState<{
+		id: CourseSkillModalIdentifier;
+	} | null>(null);
+
+	const selectRepository = (id: SkillRepositoryModel) => {
+		setSelectedRepository(id);
+	};
+
+	const addSkills = (skill: SkillFormModel[] | undefined, id: CourseSkillModalIdentifier) => {
+		if (!skill) return;
+		skill = skill.map(skill => ({ ...skill, children: [], parents: [] }));
+		setValue(id, [...watchingSkills[id], ...skill]);
+	};
+
+	const deleteSkill = (skill: SkillFormModel, id: CourseSkillModalIdentifier) => {
+		setValue(
+			id,
+			watchingSkills[id].filter(s => s.id !== skill.id)
+		);
+	};
+
+	return (
+		<Form.SidebarSection>
+			<Form.SidebarSectionTitle
+				title="Skills bearbeiten"
+				subtitle="Ziele und Voraussetzungen dieses Kurses"
+			/>
+			<LinkedSkillRepositoryMemorized selectRepository={selectRepository} />
+			{selectedRepository && (
+				<>
+					<LabeledField label="Vermittelte Skills">
+						<SelectSkillsView
+							skills={watchingSkills["courseTeachingGoals"]}
+							onDeleteSkill={skill => {
+								deleteSkill(skill, "courseTeachingGoals");
+							}}
+							onAddSkill={skill => {
+								addSkills(skill, "courseTeachingGoals");
+							}}
+							repoId={selectedRepository.id}
+						/>
+					</LabeledField>
+					<LabeledField label="Benötigte Skills">
+						<SelectSkillsView
+							skills={watchingSkills["courseRequirements"]}
+							onDeleteSkill={skill => {
+								deleteSkill(skill, "courseRequirements");
+							}}
+							onAddSkill={skill => {
+								addSkills(skill, "courseRequirements");
+							}}
+							repoId={selectedRepository.id}
+						/>
+					</LabeledField>
+
+					{selectSkillModal && (
+						<SelectSkillDialog
+							onClose={skill => {
+								setSelectSkillModal(null);
+								addSkills(skill, selectSkillModal.id);
+							}}
+							repositoryId={selectedRepository.id}
+						/>
+					)}
+				</>
+			)}
+		</Form.SidebarSection>
+	);
+}
 
 /**
  * Area to add and remove skills to a lesson
