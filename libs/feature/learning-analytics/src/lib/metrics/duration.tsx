@@ -1,5 +1,5 @@
 import { DEFAULT_LINE_CHART_OPTIONS, avg, formatDate } from "../auxillary";
-import { LearningAnalyticsType } from "@self-learning/types";
+import { LearningAnalyticsType } from "@self-learning/api";
 import { UNARY_METRICS } from "./metrics";
 
 import { Chart as ChartJS, registerables } from "chart.js";
@@ -15,75 +15,59 @@ ChartJS.register(...registerables);
  * @returns A summary in form of: x.x min
  */
 function summary(lASession: LearningAnalyticsType) {
-	let duration = 0;
-	let count = 0;
-	lASession.forEach(session => {
-		if (session?.learningAnalytics) {
-			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.start && learningAnalytics?.end) {
-					duration =
-						duration +
-						(new Date(learningAnalytics.end).getTime() -
-							new Date(learningAnalytics.start).getTime()) /
-							60000;
-					count = count + 1;
-				}
-				if (learningAnalytics?.quizStart && learningAnalytics?.quizEnd) {
-					duration =
-						duration +
-						(new Date(learningAnalytics.quizEnd).getTime() -
-							new Date(learningAnalytics.quizStart).getTime()) /
-							60000;
-					count = count + 1;
-				}
-			});
+	return calculateAverageForSequence(lASession).averageDuration.toFixed(1) + " min";
+}
+
+function calculateAverageForSequence(lASession: LearningAnalyticsType) {
+	return lASession
+		.map(sequence => sequence.activities)
+		.map(calculateAverageDuration)
+		.reduce((acc, { averageDuration, sessionCount }) => {
+			acc.averageDuration += averageDuration;
+			acc.sessionCount += sessionCount;
+			return acc;
+		});
+}
+
+function calculateAverageDuration(activities: LearningAnalyticsType[number]["activities"]) {
+	let totalDuration = 0;
+	let sessionCount = 0;
+	const minutesInMilliseconds = 60000;
+	const calculateDurationInMinutes = (start: Date | string, end: Date | string) =>
+		(new Date(end).getTime() - new Date(start).getTime()) / minutesInMilliseconds;
+
+	const addDuration = ({ start, end }: { start: Date | string; end: Date | string }) => {
+		totalDuration += calculateDurationInMinutes(start, end);
+		sessionCount++;
+	};
+
+	activities.forEach(activity => {
+		const { quizStart, quizEnd, lessonStart, lessonEnd } = activity;
+		if (lessonStart && lessonEnd) {
+			addDuration({ start: lessonStart, end: lessonEnd });
+		}
+		if (quizStart && quizEnd) {
+			addDuration({ start: quizStart, end: quizEnd });
 		}
 	});
-	return (count > 0 ? (duration / count).toFixed(1) : "0") + " min";
+
+	const averageDuration = sessionCount > 0 ? totalDuration / sessionCount : 0;
+	return { averageDuration, sessionCount };
 }
 
 /**
  * Generates the Line Chart data for learning duration per day.
- * @param lASession The (filtered) session for which the summary is computed for.
+ * @param learningData The (filtered) session for which the summary is computed for.
  * @returns  Line Chart data for the learning duration per day.
  */
-function plotDurationPerDay(lASession: LearningAnalyticsType) {
+function plotDurationPerDay(learningData: LearningAnalyticsType) {
 	const out: { data: number[]; labels: string[] } = { data: [], labels: [] };
-	let count = 0;
-	let duration = 0;
-	let lastsession = formatDate(lASession[0].start);
-	let sessionStart = lastsession;
-	lASession.forEach(session => {
-		sessionStart = formatDate(session.start);
-		if (sessionStart !== lastsession) {
-			out.data.push(avg(duration, count, 1));
-			out.labels.push(lastsession);
-			lastsession = sessionStart;
-			count = 0;
-			duration = 0;
-		}
-		if (session?.learningAnalytics) {
-			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.start && learningAnalytics?.end) {
-					duration =
-						(new Date(learningAnalytics.end).getTime() -
-							new Date(learningAnalytics.start).getTime()) /
-						60000;
-					count = count + 1;
-				}
-				if (learningAnalytics?.quizStart && learningAnalytics?.quizEnd) {
-					duration =
-						duration +
-						(new Date(learningAnalytics.quizEnd).getTime() -
-							new Date(learningAnalytics.quizStart).getTime()) /
-							60000;
-					count = count + 1;
-				}
-			});
-		}
-	});
-	out.data.push(avg(duration, count, 1));
-	out.labels.push(sessionStart);
+	learningData
+		.map(({ start, activities }) => ({ start, ...calculateAverageDuration(activities) }))
+		.forEach(({ start, averageDuration, sessionCount }) => {
+			out.data.push(avg(averageDuration, sessionCount, 1));
+			out.labels.push(formatDate(start));
+		});
 	return {
 		labels: out.labels,
 		datasets: [

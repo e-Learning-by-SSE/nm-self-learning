@@ -5,7 +5,7 @@ import {
 	isLessonContentMediaType,
 	preferredValuePerSession
 } from "../auxillary";
-import { LearningAnalyticsType } from "@self-learning/types";
+import { LearningAnalyticsType } from "@self-learning/api";
 import { getContentTypeDisplayName } from "@self-learning/types";
 import { UNARY_METRICS } from "./metrics";
 
@@ -66,7 +66,7 @@ function plotPreferredMediaType(lASession: LearningAnalyticsType) {
 				}
 			}
 			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.start) {
+				if (learningAnalytics?.lessonStart) {
 					if (mediaTypes.has(learningAnalytics.preferredMediaType))
 						mediaTypes.set(
 							learningAnalytics.preferredMediaType,

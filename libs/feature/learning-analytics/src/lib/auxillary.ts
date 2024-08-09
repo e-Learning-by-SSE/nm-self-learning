@@ -1,7 +1,33 @@
 import { ChartOptions, ChartTypeRegistry, ScaleOptionsByType } from "chart.js";
-import { LessonContentMediaType, LearningAnalyticsType, SessionType } from "@self-learning/types";
+import { LearningActivity, LessonContentMediaType } from "@self-learning/types";
 import { DeepPartial } from "chart.js/dist/types/utils";
 import { format } from "date-fns";
+import { isTruthy } from "@self-learning/util/common";
+import { LearningAnalyticsType } from "@self-learning/api";
+
+/**
+ * The function computes the preferred media type and the number of media type changes based on the mediaChangeCount object.
+ *
+ * @param activity The activity to get the media type from
+ * @returns
+ */
+export function getMediaType(activity: LearningActivity) {
+	const { mediaChangeCount } = activity;
+	type MediaChangeCount = typeof mediaChangeCount;
+	const preferredMediaType = Object.keys(mediaChangeCount).reduce((maxKey, key) => {
+		return mediaChangeCount[key as keyof MediaChangeCount] >
+			mediaChangeCount[maxKey as keyof MediaChangeCount]
+			? key
+			: maxKey;
+	}, "video" as keyof MediaChangeCount);
+
+	const numberOfChangesMediaType = Object.values(mediaChangeCount).reduce(
+		(sum, value) => sum + value,
+		0
+	);
+
+	return { numberOfChangesMediaType, preferredMediaType };
+}
 
 /**
  * This file contains auxiliary functions and constants for the metrics,
@@ -80,50 +106,36 @@ export function isLessonContentMediaType(value: string): value is LessonContentM
 }
 
 /**
- * Metric that computes the average uses of a numeric property per session, e.g.,
- * how many hints were used per session.
- * @param lASession The learning analytic session data
- * @param property a numeric property a session to compute the average for
+ * Metric that computes the average uses of a numeric property.
+ *
+ * @param cumulate a list of learning activities to cumulate the average for
+ * @param property numeric prop of the learning activity to cumulate
  * @returns uses / session as string with 1 decimal place
  */
 export function averageUsesPerSession(
-	lASession: LearningAnalyticsType,
-	property: KeysOfType<SessionType, number | null>
+	cumulate: Activities,
+	property: KeysOfType<LearningActivity, number>
 ) {
-	let nUses = 0;
-	let nSessions = 0;
-	lASession
-		.flatMap(session => session.learningAnalytics)
-		.forEach(learningAnalytics => {
-			const value = learningAnalytics[property];
-			if (value) {
-				nUses = nUses + value;
-				nSessions = nSessions + 1;
-			}
-		});
-
-	return nSessions > 0 ? (nUses / nSessions).toFixed(1) : "0";
+	const sum = cumulate
+		.filter(isTruthy)
+		.reduce((acc, curr) => (curr[property] ? acc + curr[property] : acc), 0);
+	return cumulate.length > 0 ? (sum / cumulate.length).toFixed(1) : "0";
 }
 
-/**
- * Metric that computes the preferred value for a property.
- * @param lASession The analyzed learning session (can be filtered before)
- * @returns The preferred video speed: x.x
- */
-export function preferredValuePerSession(
-	lASession: LearningAnalyticsType,
-	property: KeysOfType<SessionType, number | string | null>
+type Activities = LearningAnalyticsType[number]["activities"];
+
+export function preferredValuePerSession( // change name
+	activities: Activities,
+	property: keyof Activities[number]
 ) {
 	const values = new Map<string, number>();
-	lASession
-		.flatMap(session => session.learningAnalytics)
-		.forEach(learningAnalytics => {
-			const value = learningAnalytics[property];
-			if (value)
-				if (values.has(String(value)))
-					values.set(String(value), (values.get(String(value)) ?? 0) + 1);
-				else values.set(String(value), 1);
-		});
+	activities.forEach(activity => {
+		const value = activity[property];
+		if (value)
+			if (values.has(String(value)))
+				values.set(String(value), (values.get(String(value)) ?? 0) + 1);
+			else values.set(String(value), 1);
+	});
 	return String(maxKey(values));
 }
 

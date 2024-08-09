@@ -42,11 +42,12 @@ import { z } from "zod";
 // export type Analytics = z.infer<typeof analyticsSchema>;
 
 export interface StorageTypeMap {
-	["la_period"]: LearningPeriodType;
-	["la_lessonInfo"]: LessonInfoType;
-	["la_videoInfo"]: VideoInfoType;
-	["la_quizInfo"]: QuizInfoType;
-	["la_mediaType"]: MediaTypeChangesInfoType;
+	["la_period"]: LearningSequence;
+	["la_activity"]: LearningActivity;
+	// ["la_lessonInfo"]: LessonInfoType;
+	// ["la_videoInfo"]: VideoInfoType;
+	// ["la_quizInfo"]: QuizInfoType;
+	// ["la_mediaType"]: MediaTypeChangesInfoType;
 }
 
 export type StorageKeys = keyof StorageTypeMap;
@@ -97,67 +98,67 @@ export type StorageKeys = keyof StorageTypeMap;
 // 	numberOfUsedHints: number | null;
 // };
 
-const learningPeriodSchema = z.object({
+const learningSequenceSchema = z.object({
 	start: z.date(),
 	id: z.string().uuid().optional(),
 	end: z.date().optional()
 });
-export type LearningPeriodType = z.infer<typeof learningPeriodSchema>;
+export type LearningSequence = z.infer<typeof learningSequenceSchema>;
 
-const lessonInfoSchema = z.object({
+// const learningAnalyticsSchema = z.array(
+// 	z.object({
+// 		start: z.date(),
+// 		end: z.date().nullable(),
+// 		learningAnalytics: z.array(learningSequenceSchema)
+// 	})
+// );
+// export type LearningAnalyticsType = z.infer<typeof learningAnalyticsSchema>;
+
+export const analyticsSchema = z.object({
 	lessonId: z.string().uuid(),
 	courseId: z.string().nullable(),
 	lessonStart: z.date(),
-	lessonEnd: z.date().nullable()
-});
-export type LessonInfoType = z.infer<typeof lessonInfoSchema>;
-
-const videoInfoSchema = z.object({
+	lessonEnd: z.date().nullable(),
 	videoStart: z.date(),
 	videoEnd: z.date().nullable(),
 	videoBreaks: z.number().nullable(),
-	videoSpeed: z.number().nullable()
-});
-export type VideoInfoType = z.infer<typeof videoInfoSchema>;
-
-const mediaTypeChangesInfoSchema = z.object({
-	video: z.number(),
-	article: z.number(),
-	iframe: z.number(),
-	pdf: z.number()
-});
-export type MediaTypeChangesInfoType = z.infer<typeof mediaTypeChangesInfoSchema>;
-
-const mediaTypeInfoSchema = z.object({
-	numberOfChangesMediaType: z.number().nullable(),
-	preferredMediaType: z.string().nullable()
-});
-export type MediaTypeInfoType = z.infer<typeof mediaTypeInfoSchema>;
-
-const quizInfoSchema = z.object({
+	videoSpeed: z.number().nullable(),
+	preferredMediaType: z.string().nullable(), // preferred? active choice? last choice? define raw data
 	quizStart: z.date(),
 	quizEnd: z.date().nullable(),
 	numberCorrectAnswers: z.number(),
 	numberIncorrectAnswers: z.number(),
-	numberOfUsedHints: z.number()
-});
-export type QuizInfoType = z.infer<typeof quizInfoSchema>;
-
-const learningAnalyticsSchema = z.array(
-	z.object({
-		start: z.date(),
-		end: z.date().nullable(),
-		learningAnalytics: z.array(learningPeriodSchema)
+	numberOfUsedHints: z.number(),
+	// mediaChangeCountVideo: z.number(),
+	// mediaChangeCountArticle: z.number(),
+	// mediaChangeCountIframe: z.number(),
+	// mediaChangeCountPdf: z.number()
+	mediaChangeCount: z.object({
+		video: z.number(),
+		article: z.number(),
+		iframe: z.number(),
+		pdf: z.number()
 	})
-);
-export type LearningAnalyticsType = z.infer<typeof learningAnalyticsSchema>;
-
-export const analyticsSchema = z.object({
-	...lessonInfoSchema.shape,
-	...videoInfoSchema.shape,
-	...mediaTypeChangesInfoSchema.shape,
-	...mediaTypeInfoSchema.shape,
-	...quizInfoSchema.shape
+	// quiz: z.object({
+	// 	start: z.date(),
+	// 	end: z.date().nullable(),
+	// 	correctAnswerCount: z.number(),
+	// 	incorrectAnswerCount: z.number(),
+	// 	usedHintCount: z.number()
+	// }),
+	// lesson: z.object({
+	// 	id: z.string().uuid(),
+	// 	title: z.string(),
+	// 	slug: z.string(),
+	// 	start: z.date(),
+	// 	end: z.date().nullable()
+	// }),
+	// video: z.object({
+	// 	start: z.date(),
+	// 	end: z.date().nullable(),
+	// 	break: z.number().nullable(),
+	// 	speed: z.number().nullable()
+	// })
 });
 
-export type FullAnalyticsType = z.infer<typeof analyticsSchema>;
+export type LearningActivity = z.infer<typeof analyticsSchema>;

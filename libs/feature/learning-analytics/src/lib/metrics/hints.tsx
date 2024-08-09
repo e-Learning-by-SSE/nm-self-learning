@@ -1,5 +1,5 @@
 import { averageUsesPerSession, avg, DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
-import { LearningAnalyticsType } from "@self-learning/types";
+import { LearningAnalyticsType } from "@self-learning/api";
 import { UNARY_METRICS } from "./metrics";
 
 import { Chart as ChartJS, registerables } from "chart.js";
@@ -69,22 +69,22 @@ function plotHintsPerDay(lASession: LearningAnalyticsType) {
  * @returns The component to display the metric "Used Hints per Day".
  */
 export function Hints({
-	lASession,
+	learningSequence,
 	emphasisStyle
 }: {
-	lASession: LearningAnalyticsType;
+	learningSequence: LearningAnalyticsType;
 	emphasisStyle?: HTMLAttributes<"span">["className"];
 }) {
-	const graphData = plotHintsPerDay(lASession);
+	const graphData = plotHintsPerDay(learningSequence);
 	const style = emphasisStyle ? emphasisStyle : "";
-
+	const activities = learningSequence.flatMap(session => session.learningAnalytics);
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["Hints"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast `}
 				<span className={style}>
-					{averageUsesPerSession(lASession, "numberOfUsedHints")}
+					{averageUsesPerSession(activities, "numberOfUsedHints")}
 				</span>
 				{` Hilfestellungen pro Einheit benötigt.`}
 			</span>

@@ -1,16 +1,11 @@
-import {
-	DEFAULT_BAR_CHART_OPTIONS,
-	DEFAULT_LINE_CHART_OPTIONS,
-	avg,
-	formatDate
-} from "../auxillary";
+import { DEFAULT_BAR_CHART_OPTIONS, avg, formatDate } from "../auxillary";
 import { UNARY_METRICS } from "./metrics";
 
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
 import { HTMLAttributes } from "react";
-import { LearningAnalyticsType } from "@self-learning/types";
+import { LearningAnalyticsType } from "@self-learning/api";
 
 ChartJS.register(...registerables);
 

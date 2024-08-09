@@ -4,7 +4,7 @@ import { VideoDuration } from "./video-duration";
 import { MediaChanges } from "./media-changes";
 import { PreferredMediaTypeStacked } from "./preferred-media-type";
 import { Answers } from "./answers";
-import { LearningAnalyticsType } from "@self-learning/types";
+import { LearningAnalyticsType } from "@self-learning/api";
 import { Hints } from "./hints";
 import { QuizPerWeek } from "./quiz-per-week";
 import { VideoStops } from "./video-stops";
@@ -70,7 +70,7 @@ export function UnaryMetric({
 		case "Answers":
 			return <Answers lASession={lASession} emphasisStyle="font-bold" />;
 		case "Hints":
-			return <Hints lASession={lASession} emphasisStyle="font-bold" />;
+			return <Hints learningSequence={lASession} emphasisStyle="font-bold" />;
 		case "Quiz":
 			return <Quiz lASession={lASession} emphasisStyle="font-bold" />;
 		default:

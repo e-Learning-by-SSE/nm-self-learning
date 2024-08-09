@@ -3,10 +3,8 @@ import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
-	LearningAnalyticsLesson,
-	addMediaTypeChanges,
-	loadFromStorage,
-	saveToStorage
+	recordMediaTypeChange,
+	useRecordLearningActivity
 } from "@self-learning/learning-analytics";
 import {
 	getStaticPropsForLayout,
@@ -20,8 +18,7 @@ import {
 	getContentTypeDisplayName,
 	includesMediaType,
 	LessonContent,
-	LessonMeta,
-	StorageKeys
+	LessonMeta
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
@@ -128,6 +125,8 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
+	useRecordLearningActivity({ lesson, course });
+
 	if (showDialog && markdown.preQuestion) {
 		return (
 			<article className="flex flex-col gap-4">
@@ -169,7 +168,6 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 					<PdfViewer url={pdf.value.url} />
 				</div>
 			)}
-			<LearningAnalyticsLesson lesson={lesson} course={course} />
 		</article>
 	);
 }
@@ -327,19 +325,6 @@ function MediaTypeSelector({
 	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();
 
-	//Learning Analytics
-	useEffect(() => {
-		const mediaTypeChanges = loadFromStorage("la_mediaType");
-		if (mediaTypeChanges == null)
-			saveToStorage("la_mediaType", {
-				video: 0,
-				pdf: 0,
-				article: 0,
-				iframe: 0
-			});
-	}, []);
-	//Learning Analytics end
-
 	function changeMediaType(index: number) {
 		const type = lessonContent[index].type;
 
@@ -348,7 +333,7 @@ function MediaTypeSelector({
 		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
 			shallow: true
 		});
-		addMediaTypeChanges(type); //Learning Analytics
+		recordMediaTypeChange(type);
 		setSelectedIndex(index);
 	}
 

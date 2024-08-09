@@ -14,7 +14,7 @@ import "katex/dist/katex.css";
 import { useEffect } from "react";
 import { init } from "@socialgouv/matomo-next";
 import PlausibleProvider from "next-plausible";
-import { LearningAnalyticsProvider } from "@self-learning/learning-analytics";
+import { useLearningAnalytics } from "@self-learning/learning-analytics";
 import superjson from "superjson";
 
 export default withTRPC<AppRouter>({
@@ -56,6 +56,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
 		}
 	}, []);
+	useLearningAnalytics();
 	return (
 		<PlausibleProvider
 			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
@@ -78,7 +79,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<Footer />
 				{/* <ReactQueryDevtools position="bottom-right" /> */}
 			</SessionProvider>
-			<LearningAnalyticsProvider />
 		</PlausibleProvider>
 	);
 }

@@ -1,11 +1,11 @@
 import { averageUsesPerSession, avg, DEFAULT_LINE_CHART_OPTIONS, formatDate } from "../auxillary";
-import { LearningAnalyticsType } from "@self-learning/types";
 import { UNARY_METRICS } from "./metrics";
 
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
 import { HTMLAttributes } from "react";
+import { LearningAnalyticsType } from "@self-learning/api";
 
 ChartJS.register(...registerables);
 

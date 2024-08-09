@@ -21,7 +21,7 @@ import {
 	saveToStorage
 } from "@self-learning/learning-analytics";
 import { trpc } from "@self-learning/api-client";
-import { QuizInfoType, StorageKeys, LearningPeriodType } from "@self-learning/types";
+import { QuizInfoType, StorageKeys, LearningSequence } from "@self-learning/types";
 
 export function Question({
 	question,

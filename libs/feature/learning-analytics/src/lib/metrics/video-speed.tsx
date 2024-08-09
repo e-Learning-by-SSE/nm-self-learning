@@ -4,13 +4,13 @@ import {
 	maxKey,
 	preferredValuePerSession
 } from "../auxillary";
-import { LearningAnalyticsType } from "@self-learning/types";
 import { UNARY_METRICS } from "./metrics";
 
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
 import { HTMLAttributes } from "react";
+import { LearningAnalyticsType } from "@self-learning/api";
 
 ChartJS.register(...registerables);
 
@@ -36,7 +36,7 @@ function plotPreferredVideoSpeed(lASession: LearningAnalyticsType) {
 		}
 		if (session?.learningAnalytics) {
 			session.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics.start && learningAnalytics.videoSpeed != null) {
+				if (learningAnalytics.lessonStart && learningAnalytics.videoSpeed != null) {
 					if (videoSpeeds.has(learningAnalytics.videoSpeed))
 						videoSpeeds.set(
 							learningAnalytics.videoSpeed,
@@ -90,12 +90,15 @@ export function VideoSpeed({
 	const graphData = plotPreferredVideoSpeed(lASession);
 	const style = emphasisStyle ? emphasisStyle : "";
 
+	const displayActivities = lASession.flatMap(s => s.activities);
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["VideoSpeed"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast du Videos mit `}
-				<span className={style}>{preferredValuePerSession(lASession, "videoSpeed")}</span>
+				<span className={style}>
+					{preferredValuePerSession(displayActivities, "videoSpeed")}
+				</span>
 				{`-facher Geschwindigkeit Videos angeschaut.`}
 			</span>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />

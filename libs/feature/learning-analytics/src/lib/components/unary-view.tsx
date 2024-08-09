@@ -5,7 +5,6 @@ import { LabeledField } from "@self-learning/ui/forms";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
-
 import { Divider } from "@self-learning/ui/common";
 import { UNARY_METRICS, UnaryMetric } from "../..";
 import { useEffect, useState } from "react";

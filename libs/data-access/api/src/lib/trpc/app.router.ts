@@ -13,7 +13,10 @@ import { skillRouter } from "./routers/skill.router";
 import { specializationRouter } from "./routers/specialization.router";
 import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
-import { learningActivityRouter, learningPeriodRouter } from "./routers/learning-analytics.router";
+import {
+	learningActivityRouter,
+	learningSequenceRouter
+} from "./routers/learning-analytics.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -31,7 +34,7 @@ export const appRouter = t.router({
 	programming: programmingRouter,
 	skill: skillRouter,
 	learningActivity: learningActivityRouter,
-	learningPeriod: learningPeriodRouter
+	learningSequence: learningSequenceRouter
 });
 
 // export type definition of API

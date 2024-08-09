@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { UNARY_METRICS } from "./metrics";
 import { X_AXIS_FORMAT, formatDate, maxKey } from "../auxillary";
-import { LearningAnalyticsType } from "@self-learning/types";
+import { LearningAnalyticsType } from "@self-learning/api";
 
 import { Chart as ChartJS, registerables, ChartOptions } from "chart.js";
 import { Line } from "react-chartjs-2";
@@ -37,8 +37,8 @@ function summary(lASession: LearningAnalyticsType) {
 	lASession.forEach(session => {
 		if (session.learningAnalytics)
 			session.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics.start && learningAnalytics.end) {
-					const hour = format(new Date(session.start), "HH");
+				if (learningAnalytics.lessonStart) {
+					const hour = format(new Date(learningAnalytics.lessonStart), "HH");
 					if (learningTimes.has(hour))
 						learningTimes.set(hour, learningTimes.get(hour) + 1);
 					else learningTimes.set(hour, 1);
@@ -87,8 +87,8 @@ function plotPreferredLearningTime(lASession: LearningAnalyticsType) {
 		}
 		if (session?.learningAnalytics) {
 			session.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics.start) {
-					const hour = format(new Date(session.start), "HH");
+				if (learningAnalytics.lessonStart) {
+					const hour = format(new Date(learningAnalytics.lessonStart), "HH");
 					if (hours.has(hour)) hours.set(hour, hours.get(hour) + 1);
 					else hours.set(hour, 1);
 				}

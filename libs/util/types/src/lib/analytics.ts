@@ -20,25 +20,25 @@ import { z } from "zod";
 // 	//videoCalculatedSpeed: z.number()
 // });
 
-export const analyticsSchema = z.object({
-	id: z.number(),
+// export const analyticsSchema = z.object({
+// 	id: z.number(),
 
-	sessionId: z.number(),
-	courseId: z.string(),
+// 	sessionId: z.number(),
+// 	courseId: z.string(),
 
-	end: z.string().datetime(),
-	quizStart: z.string().datetime(),
-	quizEnd: z.string().datetime(),
-	numberCorrectAnswers: z.number(),
-	numberIncorrectAnswers: z.number(),
-	numberOfUsedHints: z.number(),
-	numberOfChangesMediaType: z.number(),
-	preferredMediaType: z.string(),
-	videoBreaks: z.number(),
-	videoStart: z.string().datetime(),
-	videoEnd: z.string().datetime(),
-	videoSpeed: z.number(),
-	videoCalculatedSpeed: z.number().nullable()
-});
+// 	end: z.string().datetime(),
+// 	quizStart: z.string().datetime(),
+// 	quizEnd: z.string().datetime(),
+// 	numberCorrectAnswers: z.number(),
+// 	numberIncorrectAnswers: z.number(),
+// 	numberOfUsedHints: z.number(),
+// 	numberOfChangesMediaType: z.number(),
+// 	preferredMediaType: z.string(),
+// 	videoBreaks: z.number(),
+// 	videoStart: z.string().datetime(),
+// 	videoEnd: z.string().datetime(),
+// 	videoSpeed: z.number(),
+// 	videoCalculatedSpeed: z.number().nullable()
+// });
 
-export type Analytics = z.infer<typeof analyticsSchema>;
+// export type Analytics = z.infer<typeof analyticsSchema>;

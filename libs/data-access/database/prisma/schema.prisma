@@ -307,36 +307,49 @@ model SkillRepository {
 
 
 
-model LearningPeriod {
+model LearningSequence {
   id                  String     @id @default(cuid())
   start               DateTime @default(now())
   end                 DateTime? 
   username            String
   activities    LearningActivity[]
-	@@map("LearningPeriod")
+	@@map("learningSequence")
 }
 
 model LearningActivity {
   id                  String     @id @default(cuid())
-  learningPeriod             LearningPeriod @relation(fields:[periodId], references: [id], onDelete: Cascade)
-  periodId           String @map("periodId")
+  learningSequence             LearningSequence @relation(fields:[sequenceId], references: [id], onDelete: Cascade)
+  sequenceId           String @map("sequenceId")
   courseId            String?
   course              Course?   @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
-  lesson              Lesson?   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
-  lessonId            String?
+  lesson              Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+  lessonId            String
   lessonStart               DateTime?
   lessonEnd                 DateTime?
   quizStart           DateTime?
-	quizEnd             DateTime?
+	quizEnd             DateTime? 
 	numberCorrectAnswers      Int?
 	numberIncorrectAnswers    Int?
   numberOfUsedHints         Int?
-	numberOfChangesMediaType  Int?
+  mediaChangeCountVideo Int?
+	mediaChangeCountArticle Int?
+	mediaChangeCountIframe Int?
+	mediaChangeCountPdf Int?
 	preferredMediaType  String?
 	videoBreaks         Int?
 	videoStart          DateTime?
 	videoEnd            DateTime?
 	videoSpeed          Float?
 	videoCalculatedSpeed      Float?
-	@@map("LearningAnalytics")
+	@@map("LearningActivities")
 }
+
+model UserEventLog {
+    id              Int      @id @default(autoincrement())
+    category        String
+    action          String
+    label           String?
+    timestamp       DateTime @default(now())
+    userId          String
+    additionalData  Json?
+  }
