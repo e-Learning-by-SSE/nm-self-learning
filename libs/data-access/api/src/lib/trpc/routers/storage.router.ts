@@ -7,6 +7,11 @@ import { Client, ClientOptions } from "minio";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 
+/**
+ * Time in seconds after which the presigned URL expires.
+ */
+const uploadTimeOut = 60 * 60 * 4; // 7 hours
+
 export const minioConfig: ClientOptions & { bucketName: string; publicUrl?: string } = z
 	.object({
 		endPoint: z.string(),
@@ -34,18 +39,30 @@ export const storageRouter = t.router({
 				filename: z.string()
 			})
 		)
+		/**
+		 * Generates a presigned URL that allows the user to upload a file to the storage server.
+		 * @throws {TRPCError} if an error occurs while generating the presigned URL.
+		 */
 		.mutation(async ({ input }) => {
 			const randomizedFilename = `${getRandomId()}-${input.filename}`;
-			const presignedUrl = await getPresignedUrl(randomizedFilename);
+			try {
+				const presignedUrl = await getPresignedUrl(randomizedFilename);
 
-			// Presigned URL contains a temporary signature that allows the user to upload a file to the storage server.
-			// The URL is only valid for a short period of time.
-			// We need further the download URL
-			// Delete after character "?" because these are the parameters for the upload
-			// TODO: Requires public download option -> Implement download via presignedUrl
-			const downloadUrl = presignedUrl.slice(0, presignedUrl.indexOf("?"));
+				// Presigned URL contains a temporary signature that allows the user to upload a file to the storage server.
+				// The URL is only valid for a short period of time.
+				// We need further the download URL
+				// Delete after character "?" because these are the parameters for the upload
+				// TODO: Requires public download option -> Implement download via presignedUrl
+				const downloadUrl = presignedUrl.slice(0, presignedUrl.indexOf("?"));
 
-			return { presignedUrl, downloadUrl };
+				return { presignedUrl, downloadUrl };
+			} catch (error) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Error getting presigned URL",
+					cause: error
+				});
+			}
 		}),
 	removeFileAsAdmin: adminProcedure
 		.input(
@@ -117,8 +134,7 @@ export const storageRouter = t.router({
 
 /** Uses the `minio` SDK to request a presigned URL that users can upload files to. */
 function getPresignedUrl(filename: string): Promise<string> {
-	return minioClient.presignedPutObject(minioConfig.bucketName, filename);
-	/*TODO Check expire date?) */
+	return minioClient.presignedPutObject(minioConfig.bucketName, filename, uploadTimeOut);
 }
 
 async function removeFile(objectName: string) {
