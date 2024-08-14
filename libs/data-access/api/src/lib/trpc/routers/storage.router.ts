@@ -57,10 +57,14 @@ export const storageRouter = t.router({
 
 				return { presignedUrl, downloadUrl };
 			} catch (error) {
+				const errMsg: string =
+					error instanceof Error
+						? "Minio Access Error: " + (error.message as string)
+						: "Error getting presigned URL";
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
-					message: "Error getting presigned URL",
-					cause: error
+					message: errMsg,
+					cause: (error as Error).cause
 				});
 			}
 		}),
@@ -133,8 +137,26 @@ export const storageRouter = t.router({
 });
 
 /** Uses the `minio` SDK to request a presigned URL that users can upload files to. */
-function getPresignedUrl(filename: string): Promise<string> {
-	return minioClient.presignedPutObject(minioConfig.bucketName, filename, uploadTimeOut);
+async function getPresignedUrl(filename: string): Promise<string> {
+	try {
+		return await minioClient.presignedPutObject(
+			minioConfig.bucketName,
+			filename,
+			uploadTimeOut
+		);
+	} catch (error) {
+		const errMsg = (error as Error).message;
+		if (errMsg.startsWith("Unable to get bucket region for  ")) {
+			// Attempt to get a proper error message, default message is very misleading
+			await checkMinioServer();
+		}
+		// Default error message
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: `Minio Access Error: ${errMsg}`,
+			cause: (error as Error).cause
+		});
+	}
 }
 
 async function removeFile(objectName: string) {
@@ -162,4 +184,19 @@ async function removeFile(objectName: string) {
 /** Uses the `minio` SDK to remove a file. */
 function _removeFileFromStorageServer(filename: string): Promise<void> {
 	return minioClient.removeObject(minioConfig.bucketName, filename);
+}
+
+/**
+ * Checks if the Minio server is reachable and returns an error if not.
+ */
+async function checkMinioServer() {
+	try {
+		// Calls a function that requires few configuration (e.g., no access key, bucket, ...)
+		await minioClient.listBuckets();
+	} catch (error) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: `Minio Server not reachable at ${minioConfig.endPoint}:${minioConfig.port}`
+		});
+	}
 }
