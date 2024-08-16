@@ -1,4 +1,5 @@
 import { ExtendedCourseFormValues } from "@self-learning/teaching";
+<<<<<<< HEAD
 import { Controller, useFormContext } from "react-hook-form";
 import { memo, useEffect, useState } from "react";
 import {
@@ -36,6 +37,8 @@ export function CourseBasicInformation() {
 	import { CourseFormModel, ExtendedCourseFormModel } from "@self-learning/teaching";
 
 	/*=======
+=======
+>>>>>>> ae149add (change from nested data structure for FormProvider back to flat one)
 import { useFormContext } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { InputWithButton, LabeledField, useSlugify } from "@self-learning/ui/forms";
@@ -48,11 +51,15 @@ import { trpc } from "@self-learning/api-client";
 
 export function CourseBasicInformation() {
 <<<<<<< HEAD
+<<<<<<< HEAD
 	// TODO: should I not use extended version of course form model
 	// widen content type to prevent circular path error
 	const form = useFormContext<CourseFormModel & { content: unknown[] }>();
 >>>>>>> e2d21dcc (add basic version of all elements)
 */
+=======
+	const form = useFormContext<ExtendedCourseFormValues>();
+>>>>>>> ae149add (change from nested data structure for FormProvider back to flat one)
 
 	const {
 		register,
@@ -95,7 +102,6 @@ export function CourseBasicInformation() {
 }
 
 function Skills() {
-	//const form = useFormContext<ExtendedCourseFormModel & { content: unknown[] }>();
 	const form = useFormContext<ExtendedCourseFormValues>();
 	const {
 		register,
@@ -114,7 +120,7 @@ function BasicInfo() {
 		formState: { errors }
 	} = form;
 
-	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "course", "course");
+	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 
 	let { data: subjects } = trpc.subject.getAllSubjects.useQuery();
 	if (!subjects) {
@@ -127,31 +133,31 @@ function BasicInfo() {
 	}
 
 	const onSubjectChange = (subjectId: string) => {
-		setValue("course.subjectId", subjectId);
+		setValue("subjectId", subjectId);
 	};
 	const onSpecializationChange = (specializationId: string) => {
-		setValue("course.specializationId", specializationId);
+		setValue("specializationId", specializationId);
 	};
 
 	return (
 		<>
-			<LabeledField label="Titel" error={errors.course?.title?.message}>
+			<LabeledField label="Titel" error={errors.title?.message}>
 				<input
-					{...register("course.title")}
+					{...register("title")}
 					type="text"
 					className="textfield"
 					placeholder="Der neue Kurs"
 					onBlur={slugifyIfEmpty}
 				/>
 			</LabeledField>
-			<LabeledField label="Slug" error={errors.course?.slug?.message}>
+			<LabeledField label="Slug" error={errors.slug?.message}>
 				<InputWithButton
 					input={
 						<input
 							className="textfield"
 							placeholder="der-neue-Kurs"
 							type={"text"}
-							{...register("course.slug")}
+							{...register("slug")}
 						/>
 					}
 					button={
@@ -164,16 +170,16 @@ function BasicInfo() {
 
 			<LabeledField
 				label="Beschreibung (TODO: as markdown?)"
-				error={errors.course?.subtitle?.message}
+				error={errors.subtitle?.message}
 			>
-				<textarea {...register("course.description")} placeholder="" className="h-full" />
+				<textarea {...register("description")} placeholder="" className="h-full" />
 			</LabeledField>
 
-			<LabeledField label="Fachgebiet" error={errors.course?.subtitle?.message}>
+			<LabeledField label="Fachgebiet" error={errors.subtitle?.message}>
 				<SubjectDropDown subjects={subjects} onChange={onSubjectChange} />
 			</LabeledField>
 
-			<LabeledField label="Spezialisierung" error={errors.course?.subtitle?.message}>
+			<LabeledField label="Spezialisierung" error={errors.subtitle?.message}>
 				<SpecializationDropDown
 					specializations={specializations}
 					onChange={onSpecializationChange}
