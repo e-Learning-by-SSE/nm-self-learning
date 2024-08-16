@@ -27,6 +27,12 @@ export const extendedCourseFormSchema = z.object({
 	courseRequirements: z.array(skillFormSchema)
 });
 
+export type ExtendedCourseFormValues = {
+	course: CourseFormModel;
+	courseTeachingGoals: [];
+	courseRequirements: [];
+};
+
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
 export type ExtendedCourseFormModel = z.infer<typeof extendedCourseFormSchema>;
 
@@ -87,7 +93,8 @@ export function createEmptyCourseFormModel(): CourseFormModel {
 		description: null,
 		imgUrl: null,
 		authors: [],
-		content: []
+		content: [],
+		specializationId: null
 	};
 }
 
