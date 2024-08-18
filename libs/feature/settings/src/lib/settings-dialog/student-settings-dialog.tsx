@@ -4,12 +4,15 @@ import { Dialog, DialogActions, OnDialogCloseFn, showToast } from "@self-learnin
 import { StudentSettings } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 
+
+
+
 export function StudentSettingsDialog({
 	initialSettings,
 	onClose
 }: {
 	initialSettings?: StudentSettings;
-	onClose: OnDialogCloseFn<void>;
+	onClose: OnDialogCloseFn<StudentSettings>;
 }) {
 	const [settings, setSettings] = useState(
 		initialSettings ?? {
@@ -33,7 +36,7 @@ export function StudentSettingsDialog({
 				});
 			}
 		}
-		onClose();
+		onClose(settings);
 	};
 
 	const onChange = (checkbox: string, value: boolean) => {
