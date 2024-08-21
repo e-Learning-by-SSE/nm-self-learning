@@ -24,11 +24,6 @@ export function LearningDiaryOverview({
 		return <p>No Learning Diary Entries found</p>;
 	}
 
-	const date = new Date(2022, 5, 19);
-
-	console.log(date.getTime());
-	console.log(formatTimeIntervalToString(date.getTime()));
-
 	return (
 		<div className="flex w-full justify-center">
 			<div className="w-3/5">
