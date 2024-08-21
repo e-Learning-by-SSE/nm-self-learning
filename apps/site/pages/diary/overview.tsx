@@ -1,18 +1,17 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import { TableDataColumn } from "@self-learning/ui/common";
+import {
+	DropdownMenu,
+	findKeyByValue,
+	TableColumn,
+	TableDataColumn
+} from "@self-learning/ui/common";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { getLearningDiaryEntriesOverview, LearningDiaryEntriesOverview } from "@self-learning/api";
-
-interface Column {
-	label: string;
-	sortingFunction: (a: LearningDiaryEntriesOverview, b: LearningDiaryEntriesOverview) => number;
-	isDisplayed: boolean;
-}
 
 export function LearningDiaryOverview({
 	learningDiaryEntries
@@ -65,7 +64,7 @@ function SortedTable({
 
 	const [chevronMenu, setChevronMenu] = useState<boolean>(false);
 
-	const [columns, setColumns] = useState<Map<string, Column>>(
+	const [columns, setColumns] = useState<Map<string, TableColumn>>(
 		new Map([
 			[
 				"number",
@@ -189,14 +188,14 @@ function SortedTable({
 				false) ||
 			learningDiaryEntry.scope.toString().toLowerCase().includes(lowercasedQuery) ||
 			techniqueNames.some(techniqueName => techniqueName.includes(lowercasedQuery)) ||
-			strategieNames.some(strategieName => strategieName.includes(lowercasedQuery)) ||
+			strategieNames.some(strategyName => strategyName.includes(lowercasedQuery)) ||
 			formatTimeIntervalToString(learningDiaryEntry.duration)
 				.toLowerCase()
 				.includes(lowercasedQuery)
 		);
 	}
 
-	function getSortingFunction(): Column["sortingFunction"] {
+	function getSortingFunction(): TableColumn["sortingFunction"] {
 		let sortingFunction = columns.get(sortedColumn.key)?.sortingFunction;
 		sortingFunction = sortingFunction || columns.values().next().value.sortingFunction;
 
@@ -359,61 +358,6 @@ function SortedTable({
 			</div>
 		</div>
 	);
-}
-
-function DropdownMenu({
-	columns,
-	setColumns,
-	setChevronMenu
-}: {
-	columns: Map<string, Column>;
-	setColumns: React.Dispatch<React.SetStateAction<Map<string, Column>>>;
-	setChevronMenu: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
-	const handleCheckboxChange = (key: string) => {
-		setColumns(prevColumns => {
-			const newColumns = new Map(prevColumns);
-			const column = newColumns.get(key);
-			if (column) {
-				newColumns.set(key, { ...column, isDisplayed: !column.isDisplayed });
-			}
-			return newColumns;
-		});
-	};
-
-	return (
-		<div
-			className="absolute bg-white p-4 shadow-md"
-			onMouseLeave={() => {
-				setChevronMenu(false);
-			}}
-		>
-			{[...columns.values()].map(column => {
-				const columnKey = findKeyByValue(columns, column);
-
-				return (
-					<div key={columnKey} className="flex items-center space-x-2">
-						<input
-							type="checkbox"
-							checked={column.isDisplayed}
-							onChange={() => handleCheckboxChange(columnKey)}
-							className="form-checkbox rounded text-secondary"
-						/>
-						<label className="text-gray-700">{column.label}</label>
-					</div>
-				);
-			})}
-		</div>
-	);
-}
-
-function findKeyByValue(map: Map<string, Column>, targetValue: Column): string {
-	for (const [key, value] of map.entries()) {
-		if (value === targetValue) {
-			return key;
-		}
-	}
-	return "";
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
