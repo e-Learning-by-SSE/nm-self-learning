@@ -12,7 +12,6 @@ import {
 import { UniversalSearchBar } from "../../../../libs/ui/layouts/src/lib/search-bar";
 
 interface Column {
-	key: string;
 	label: string;
 	sortingFunction: (a: LearningDiaryEntriesOverview, b: LearningDiaryEntriesOverview) => number;
 	isDisplayed: boolean;
@@ -69,7 +68,6 @@ function SortedTable({
 			[
 				"number",
 				{
-					key: "number",
 					label: "Nr.",
 					sortingFunction: (a, b) => a.number - b.number,
 					isDisplayed: true
@@ -78,7 +76,6 @@ function SortedTable({
 			[
 				"course",
 				{
-					key: "course",
 					label: "Kurs",
 					sortingFunction: (a, b) => a.course.title.localeCompare(b.course.title),
 					isDisplayed: true
@@ -87,7 +84,6 @@ function SortedTable({
 			[
 				"date",
 				{
-					key: "date",
 					label: "Datum",
 					sortingFunction: (a, b) => a.date.localeCompare(b.date),
 					isDisplayed: true
@@ -96,7 +92,6 @@ function SortedTable({
 			[
 				"duration",
 				{
-					key: "duration",
 					label: "Dauer",
 					sortingFunction: (a, b) => a.duration - b.duration,
 					isDisplayed: true
@@ -105,7 +100,6 @@ function SortedTable({
 			[
 				"learningLocation",
 				{
-					key: "learningLocation",
 					label: "Lernort",
 					sortingFunction: (a, b) => {
 						if (a.learningLocation && b.learningLocation) {
@@ -120,7 +114,6 @@ function SortedTable({
 			[
 				"learningStrategie",
 				{
-					key: "learningStrategie",
 					label: "Lernstrategie",
 					sortingFunction: (a, b) => {
 						const strategieA = a.learningTechniqueEvaluation
@@ -137,7 +130,6 @@ function SortedTable({
 			[
 				"learningTechnique",
 				{
-					key: "learningTechnique",
 					label: "Lerntechnik",
 					sortingFunction: (a, b) => {
 						const techniquesA = a.learningTechniqueEvaluation
@@ -155,7 +147,6 @@ function SortedTable({
 			[
 				"scope",
 				{
-					key: "scope",
 					label: "Umfang",
 					sortingFunction: (a, b) => a.scope - b.scope,
 					isDisplayed: false
@@ -232,32 +223,36 @@ function SortedTable({
 						<tr>
 							{[...columns.values()]
 								.filter(column => column.isDisplayed)
-								.map(column => (
-									<th
-										className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
-										key={column.key}
-										onClick={() =>
-											setSortedColumn({
-												key: column.key,
-												descendingOrder:
-													sortedColumn.key === column.key
-														? !sortedColumn.descendingOrder
-														: true
-											})
-										}
-									>
-										<div className="">
-											<span>{column.label}</span>
-											{sortedColumn && sortedColumn.key === column.key ? (
-												<span className="">
-													{sortedColumn.descendingOrder ? " ▼" : " ▲"}
-												</span>
-											) : (
-												<span className="invisible"> ▲</span>
-											)}
-										</div>
-									</th>
-								))}
+								.map(column => {
+									const columnKey = findKeyByValue(columns, column);
+
+									return (
+										<th
+											className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+											key={columnKey}
+											onClick={() =>
+												setSortedColumn({
+													key: columnKey,
+													descendingOrder:
+														sortedColumn.key === columnKey
+															? !sortedColumn.descendingOrder
+															: true
+												})
+											}
+										>
+											<div className="">
+												<span>{column.label}</span>
+												{sortedColumn && sortedColumn.key === columnKey ? (
+													<span className="">
+														{sortedColumn.descendingOrder ? " ▼" : " ▲"}
+													</span>
+												) : (
+													<span className="invisible"> ▲</span>
+												)}
+											</div>
+										</th>
+									);
+								})}
 
 							<th
 								className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
@@ -291,63 +286,70 @@ function SortedTable({
 								<tr key={learningDiaryEntry.id}>
 									{[...columns.values()]
 										.filter(column => column.isDisplayed)
-										.map(column => (
-											<TableDataColumn key={column.key}>
-												{column.key === "number" &&
-													learningDiaryEntry.number}
+										.map(column => {
+											const columnKey = findKeyByValue(columns, column);
 
-												{column.key === "course" && (
-													<Link
-														href={`/courses/${learningDiaryEntry.course.slug}/`}
-														className="block"
-													>
-														<div>
-															<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
-																<span className="truncate">
-																	{
-																		learningDiaryEntry.course
-																			.title
-																	}
+											return (
+												<TableDataColumn key={column.label}>
+													{columnKey === "number" &&
+														learningDiaryEntry.number}
+
+													{columnKey === "course" && (
+														<Link
+															href={`/courses/${learningDiaryEntry.course.slug}/`}
+															className="block"
+														>
+															<div>
+																<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+																	<span className="truncate">
+																		{
+																			learningDiaryEntry
+																				.course.title
+																		}
+																	</span>
 																</span>
-															</span>
-														</div>
-													</Link>
-												)}
-
-												{column.key === "date" && learningDiaryEntry.date}
-
-												{column.key === "duration" &&
-													formatMillisecondToString(
-														learningDiaryEntry.duration
+															</div>
+														</Link>
 													)}
 
-												{column.key === "learningLocation" &&
-													learningDiaryEntry.learningLocation?.name}
+													{columnKey === "date" &&
+														learningDiaryEntry.date}
 
-												{column.key === "learningStrategie" &&
-													learningDiaryEntry.learningTechniqueEvaluation
-														.map(
-															evaluation =>
-																evaluation.learningTechnique
-																	.learningStrategie.name
-														)
-														.filter(
-															(value, index, self) =>
-																self.indexOf(value) === index
-														)
-														.join(", ")}
+													{columnKey === "duration" &&
+														formatMillisecondToString(
+															learningDiaryEntry.duration
+														)}
 
-												{column.key === "learningTechnique" &&
-													learningDiaryEntry.learningTechniqueEvaluation
-														.map(
-															evaluation =>
-																evaluation.learningTechnique.name
-														)
-														.join(", ")}
+													{columnKey === "learningLocation" &&
+														learningDiaryEntry.learningLocation?.name}
 
-												{column.key === "scope" && learningDiaryEntry.scope}
-											</TableDataColumn>
-										))}
+													{columnKey === "learningStrategie" &&
+														learningDiaryEntry.learningTechniqueEvaluation
+															.map(
+																evaluation =>
+																	evaluation.learningTechnique
+																		.learningStrategie.name
+															)
+															.filter(
+																(value, index, self) =>
+																	self.indexOf(value) === index
+															)
+															.join(", ")}
+
+													{columnKey === "learningTechnique" &&
+														learningDiaryEntry.learningTechniqueEvaluation
+															.map(
+																evaluation =>
+																	evaluation.learningTechnique
+																		.name
+															)
+															.join(", ")}
+
+													{columnKey === "scope" &&
+														learningDiaryEntry.scope}
+												</TableDataColumn>
+											);
+										})}
 								</tr>
 							))}
 					</tbody>
@@ -384,19 +386,32 @@ function DropdownMenu({
 				setChevronMenu(false);
 			}}
 		>
-			{[...columns.values()].map(column => (
-				<div key={column.key} className="flex items-center space-x-2">
-					<input
-						type="checkbox"
-						checked={column.isDisplayed}
-						onChange={() => handleCheckboxChange(column.key)}
-						className="form-checkbox rounded text-secondary"
-					/>
-					<label className="text-gray-700">{column.label}</label>
-				</div>
-			))}
+			{[...columns.values()].map(column => {
+				const columnKey = findKeyByValue(columns, column);
+
+				return (
+					<div key={columnKey} className="flex items-center space-x-2">
+						<input
+							type="checkbox"
+							checked={column.isDisplayed}
+							onChange={() => handleCheckboxChange(columnKey)}
+							className="form-checkbox rounded text-secondary"
+						/>
+						<label className="text-gray-700">{column.label}</label>
+					</div>
+				);
+			})}
 		</div>
 	);
+}
+
+function findKeyByValue(map: Map<string, Column>, targetValue: Column): string {
+	for (const [key, value] of map.entries()) {
+		if (value === targetValue) {
+			return key;
+		}
+	}
+	return "";
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
