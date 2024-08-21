@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { TableDataColumn } from "@self-learning/ui/common";
-import { formatMillisecondToString } from "@self-learning/util/common";
+import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
-import {
-	getLearningDiaryEntriesOverview,
-	LearningDiaryEntriesOverview
-} from "../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
-import { UniversalSearchBar } from "../../../../libs/ui/layouts/src/lib/search-bar";
+import { UniversalSearchBar } from "@self-learning/ui/layouts";
+import { getLearningDiaryEntriesOverview, LearningDiaryEntriesOverview } from "@self-learning/api";
 
 interface Column {
 	label: string;
@@ -27,6 +24,11 @@ export function LearningDiaryOverview({
 	if (!learningDiaryEntries) {
 		return <p>No Learning Diary Entries found</p>;
 	}
+
+	const date = new Date(2022, 5, 19);
+
+	console.log(date.getTime());
+	console.log(formatTimeIntervalToString(date.getTime()));
 
 	return (
 		<div className="flex w-full justify-center">
@@ -188,7 +190,7 @@ function SortedTable({
 			learningDiaryEntry.scope.toString().toLowerCase().includes(lowercasedQuery) ||
 			techniqueNames.some(techniqueName => techniqueName.includes(lowercasedQuery)) ||
 			strategieNames.some(strategieName => strategieName.includes(lowercasedQuery)) ||
-			formatMillisecondToString(learningDiaryEntry.duration)
+			formatTimeIntervalToString(learningDiaryEntry.duration)
 				.toLowerCase()
 				.includes(lowercasedQuery)
 		);
@@ -316,7 +318,7 @@ function SortedTable({
 														learningDiaryEntry.date}
 
 													{columnKey === "duration" &&
-														formatMillisecondToString(
+														formatTimeIntervalToString(
 															learningDiaryEntry.duration
 														)}
 

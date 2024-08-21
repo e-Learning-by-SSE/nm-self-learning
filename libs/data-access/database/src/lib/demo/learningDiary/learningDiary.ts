@@ -1,12 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, LearningProgeres } from "@prisma/client";
 
 const prisma = new PrismaClient();
-
-enum LearningProgress {
-	NOT_STARTED = "NOT_STARTED",
-	STARTED = "STARTED",
-	FINISHED = "FINISHED"
-}
 
 function getRandomDuration() {
 	const minDuration = 12 * 60 * 60 * 1000 + 5 * 60 * 1000; // 12 hours and 5 minutes in milliseconds
@@ -181,7 +175,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "goal1",
 				name: "Goal 1",
-				progress: LearningProgress.NOT_STARTED,
+				progress: LearningProgeres.NOT_STARTED,
 				learningDiaryEntryId: diaryEntry.id
 			}
 		});
@@ -190,7 +184,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "subgoal1",
 				name: "Subgoal 1",
-				progress: LearningProgress.STARTED,
+				progress: LearningProgeres.STARTED,
 				learningDiaryEntryId: diaryEntry.id,
 				parentGoalId: goal1.id
 			}
@@ -200,7 +194,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "subgoal2",
 				name: "Subgoal 2",
-				progress: LearningProgress.FINISHED,
+				progress: LearningProgeres.FINISHED,
 				learningDiaryEntryId: diaryEntry.id,
 				parentGoalId: goal1.id
 			}
@@ -210,7 +204,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "goal2",
 				name: "Goal 2",
-				progress: LearningProgress.NOT_STARTED,
+				progress: LearningProgeres.NOT_STARTED,
 				learningDiaryEntryId: diaryEntry.id
 			}
 		});

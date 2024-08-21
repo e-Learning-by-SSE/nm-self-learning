@@ -3,7 +3,7 @@ import { ResolvedValue } from "@self-learning/types";
 import { formatDateToString } from "@self-learning/util/common";
 
 export async function getLearningDiaryEntriesOverview({ username }: { username: string }) {
-	let learningDiaryEntries = await database.learningDiaryEntry.findMany({
+	const learningDiaryEntries = await database.learningDiaryEntry.findMany({
 		where: { studentName: username },
 		select: {
 			id: true,
@@ -23,14 +23,11 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 					}
 				}
 			}
+		},
+		orderBy: {
+			date: "asc"
 		}
 	});
-
-	learningDiaryEntries = learningDiaryEntries
-		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-		.reverse();
-
-	console.log(learningDiaryEntries);
 
 	const result = learningDiaryEntries.map((entry, index) => {
 		return {
@@ -48,8 +45,5 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 	return result;
 }
 
-type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
-
-export type LearningDiaryEntriesOverview = ArrayElement<
-	Awaited<ResolvedValue<typeof getLearningDiaryEntriesOverview>>
->;
+type Result = ResolvedValue<typeof getLearningDiaryEntriesOverview>;
+export type LearningDiaryEntriesOverview = Result[number];

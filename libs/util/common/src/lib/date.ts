@@ -25,7 +25,7 @@ export function formatDateAgo(date: Date | string | number) {
 	});
 }
 
-export function formatMillisecondToString(ms: number): string {
+export function formatTimeIntervalToString(ms: number): string {
 	const totalMinutes = Math.floor(ms / 60000);
 	const totalHours = Math.floor(totalMinutes / 60);
 	const days = Math.floor(totalHours / 24);
