@@ -6,7 +6,7 @@ import { mathExample } from "./math/math-example";
 import { psychologyExample } from "./psychology/psychology-example";
 import { createSpecialization } from "./seed-functions";
 import { seedDemos } from "./demo/demo";
-import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
+import { generateLearningDiaryDemoData } from "./demo/learningDiary/learningDiary";
 
 const prisma = new PrismaClient();
 
@@ -169,6 +169,7 @@ async function seed(): Promise<void> {
 	const start = Date.now();
 
 	console.log("Deleting previous records...");
+	await prisma.studentSettings.deleteMany();
 	await prisma.user.deleteMany();
 	await prisma.team.deleteMany();
 	await prisma.course.deleteMany();
@@ -200,7 +201,6 @@ async function seed(): Promise<void> {
 
 	await psychologyExample();
 	await mathExample();
-	await generateLearningDiaryDemoData();
 
 	console.log(`\nSeed command took ${Date.now() - start}ms`);
 }

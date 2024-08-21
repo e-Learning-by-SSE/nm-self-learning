@@ -18,6 +18,7 @@ import { javaExample } from "./java-example";
 import { Quiz } from "@self-learning/quiz";
 import { javaSkillSeed } from "./java-skills";
 import { license } from "./license";
+import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
 
 faker.seed(1);
 
@@ -550,6 +551,8 @@ export async function seedDemos(): Promise<void> {
 		await prisma.user.create({ data: author });
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
+
+	await generateLearningDiaryDemoData();
 
 	await javaSkillSeed();
 	await javaExample();

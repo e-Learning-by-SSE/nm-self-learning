@@ -10,3 +10,4 @@ export * from "./lib/specialization";
 export * from "./lib/subject";
 export * from "./lib/skill";
 export * from "./lib/learningDiaryEntry";
+export * from "./lib/student";
