@@ -69,6 +69,7 @@ model Student {
     quizAttempts            QuizAttempt[]
     user                    User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
     learningTechniques      LearningTechnique[]
+	learningTechniqueEvaluation	LearningTechniqueEvaluation[]
 }
 
 model StudentSettings {
@@ -369,6 +370,8 @@ model LearningTechniqueEvaluation {
     learningTechnique       LearningTechnique     @relation(fields: [learningTechniqueId], references: [id], onDelete: Cascade)
     learningDiaryEntryId    String
     learningDiaryEntry      LearningDiaryEntry    @relation(fields: [learningDiaryEntryId], references: [id], onDelete: Cascade)
+	creatorName         	String
+    creator              	Student               	  @relation(fields: [creatorName], references: [username], onDelete: Cascade)
 }
 
 enum LearningProgeres {

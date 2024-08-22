@@ -156,7 +156,8 @@ export async function generateLearningDiaryDemoData() {
 				id: "evaluation1",
 				score: 8,
 				learningTechniqueId: technique1.id,
-				learningDiaryEntryId: diaryEntry.id
+				learningDiaryEntryId: diaryEntry.id,
+				creatorName: student.username
 			}
 		});
 
@@ -165,7 +166,8 @@ export async function generateLearningDiaryDemoData() {
 				id: "evaluation2",
 				score: 7,
 				learningTechniqueId: technique2.id,
-				learningDiaryEntryId: diaryEntry.id
+				learningDiaryEntryId: diaryEntry.id,
+				creatorName: student.username
 			}
 		});
 
@@ -264,7 +266,8 @@ export async function generateLearningDiaryDemoData() {
 					id: `evaluation-${entry.id}`,
 					score: Math.floor(Math.random() * 10) + 1,
 					learningTechniqueId: technique1.id,
-					learningDiaryEntryId: createdEntry.id
+					learningDiaryEntryId: createdEntry.id,
+					creatorName: student.username
 				}
 			});
 		}
