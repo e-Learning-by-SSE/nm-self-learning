@@ -1,41 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
-import {
-	getLearningDiaryInformation,
-	LearningDiaryInformation,
-	LearningDiaryEntryResult
-} from "../../../../libs/data-access/api/src/lib/trpc/routers/learningDiaryEntry.router";
 import { PencilIcon, StarIcon } from "@heroicons/react/24/solid";
 import { Dialog, showToast } from "@self-learning/ui/common";
 import Image from "next/image";
 import { trpc } from "@self-learning/api-client";
-import { formatMillisecondToString } from "@self-learning/util/common";
+import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { useForm, Controller, FormProvider, useFormContext } from "react-hook-form";
-
-interface EntrySwitcherProps {
-	maxLength: number;
-	setIndex: (index: number) => void;
-	currentIndex: number;
-}
-
-interface LearningDiaryEntryFormProps {
-	entry: LearningDiaryEntryResult;
-	learningDiaryInformation: LearningDiaryInformation;
-	onUpdate: (updatedEntry: LearningDiaryEntryResult) => void;
-}
-
-interface LearningDiaryEntryOverviewProps {
-	learningDiaryInformation: LearningDiaryInformation;
-}
+import {
+	getLearningDiaryInformation,
+	LearningDiaryEntryResult,
+	LearningDiaryInformation
+} from "@self-learning/api";
 
 export default function LearningDiaryEntryOverview({
-	learningDiaryInformation
-}: LearningDiaryEntryOverviewProps) {
-	const [currentIndex, setCurrentIndex] = useState<number>(
-		learningDiaryInformation.learningDiaryEntries.length - 1
-	);
+	learningDiaryInformation,
+	slug
+}: {
+	learningDiaryInformation: LearningDiaryInformation;
+	slug: string | null;
+}) {
+	const [currentIndex, setCurrentIndex] = useState<number>(() => {
+		const initialIndex =
+			slug && !isNaN(Number(slug))
+				? Number(slug) - 1
+				: learningDiaryInformation?.learningDiaryEntries?.length
+				? learningDiaryInformation.learningDiaryEntries.length - 1
+				: 0;
+		return initialIndex < 0 ? 0 : initialIndex;
+	});
 
 	const [entries, setEntries] = useState<LearningDiaryEntryResult[]>(
 		learningDiaryInformation.learningDiaryEntries
@@ -67,12 +61,24 @@ export default function LearningDiaryEntryOverview({
 	);
 }
 
-function EntrySwitcher({ maxLength, setIndex, currentIndex }: EntrySwitcherProps) {
+function EntrySwitcher({
+	maxLength,
+	setIndex,
+	currentIndex
+}: {
+	maxLength: number;
+	setIndex: (index: number) => void;
+	currentIndex: number;
+}) {
 	const handlePrev = () => {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-expect-error
 		setIndex(prevIndex => Math.max(prevIndex - 1, 0));
 	};
 
 	const handleNext = () => {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-expect-error
 		setIndex(prevIndex => Math.min(prevIndex + 1, maxLength - 1));
 	};
 
@@ -97,7 +103,11 @@ function LearningDiaryEntryForm({
 	entry,
 	learningDiaryInformation,
 	onUpdate
-}: LearningDiaryEntryFormProps) {
+}: {
+	entry: LearningDiaryEntryResult;
+	learningDiaryInformation: LearningDiaryInformation;
+	onUpdate: (updatedEntry: LearningDiaryEntryResult) => void;
+}) {
 	const methods = useForm({
 		defaultValues: {
 			learningLocation: entry.learningLocation,
@@ -286,7 +296,7 @@ function DefaultInformation({
 			</div>
 			<div className="flex flex-shrink-0 flex-grow basis-2/6 flex-col">
 				<span className="font-semibold">Dauer:</span>
-				<span>{formatMillisecondToString(learningDiaryEntry.duration)}</span>
+				<span>{formatTimeIntervalToString(learningDiaryEntry.duration)}</span>
 			</div>
 			<div className="flex flex-shrink-0 flex-grow basis-1/6 flex-col">
 				<span className="font-semibold">Umfang:</span>
@@ -698,20 +708,24 @@ export const getServerSideProps: GetServerSideProps = async context => {
 		};
 	}
 
+	const slug = context.params?.slug;
+
 	try {
 		const learningDiaryInformation = await getLearningDiaryInformation({
 			username: session.user.name
 		});
 		return {
 			props: {
-				learningDiaryInformation
+				learningDiaryInformation,
+				slug: slug || null
 			}
 		};
 	} catch (error) {
 		console.error("Error fetching Learning Diary Information:", error);
 		return {
 			props: {
-				learningDiaryInformation: null
+				learningDiaryInformation: null,
+				slug: null
 			}
 		};
 	}
