@@ -316,24 +316,24 @@ model Skill {
 }
 
 model LearningDiaryEntry {
-    id                      String                @id @default(uuid())
-    semesterId              String
-    semester                Semester              @relation(fields: [semesterId], references: [id], onDelete: Cascade)
-    studentName             String
-    student                 Student               @relation(fields: [studentName], references: [username], onDelete: Cascade)
-    courseSlug              String
-    course                  Course                @relation(fields: [courseSlug], references: [slug], onDelete: Cascade)
-    notes                   String?
-    date                    DateTime
-    start                   DateTime
-    end                     DateTime
-    scope                   Int
-    distractionLevel        Int                   @default(1)
-    effortLevel             Int                   @default(1)
-    learningLocationId      String?
-    learningLocation        LearningLocation?     @relation(fields: [learningLocationId], references: [id], onDelete: Cascade)
-    learningGoals           LearningGoal[]
-    learningTechniqueEvaluation LearningTechniqueEvaluation[]
+  id                      		String               				@id @default(uuid())
+  semesterId              		String
+  semester                		Semester            				@relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  studentName			  		String
+  student						Student 							@relation(fields: [studentName], references: [username], onDelete: Cascade)
+  courseSlug               		String
+  course                  		Course              				@relation(fields: [courseSlug], references: [slug], onDelete: Cascade)
+  notes                   		String?
+  date                    		DateTime
+  start                   		DateTime
+  end                     		DateTime
+  scope							Int
+  distractionLevel        		Int									@default(1)
+  effortLevel					Int									@default(1)
+  learningLocationId      		String?
+  learningLocation        		LearningLocation?    				@relation(fields: [learningLocationId], references: [id], onDelete: Cascade)
+  learningGoals 		  		LearningGoal[]
+  learningTechniqueEvaluation 	LearningTechniqueEvaluation[]
 }
 
 model LearningLocation {

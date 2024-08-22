@@ -18,6 +18,7 @@ import {
 	learningLocationRouter
 } from "./routers/learningDiaryEntry.router";
 
+
 export const appRouter = t.router({
 	admin: adminRouter,
 	author: authorRouter,
