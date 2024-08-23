@@ -83,7 +83,12 @@ export function VideoStops({
 			<h1 className="text-5xl">{UNARY_METRICS["VideoStops"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast pro Sitzung `}
-				<span className={style}>{averageUsesPerSession(lASession, "videoBreaks")}</span>
+				<span className={style}>
+					{averageUsesPerSession(
+						lASession.flatMap(la => la.activities),
+						"videoBreaks"
+					)}
+				</span>
 				{` Mal das Video pausiert.`}
 			</span>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />

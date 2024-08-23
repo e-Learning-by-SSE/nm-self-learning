@@ -49,7 +49,8 @@ export const learningActivityRouter = t.router({
 	create: authProcedure
 		.input(
 			makeAllFieldsNullish(analyticsSchema).extend({
-				sequenceId: z.string().uuid().optional()
+				sequenceId: z.string().uuid().optional(),
+				lessonId: z.string(),
 			})
 		)
 		.mutation(async ({ ctx, input }) => {

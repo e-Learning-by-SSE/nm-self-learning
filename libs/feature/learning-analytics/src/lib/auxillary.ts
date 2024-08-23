@@ -6,6 +6,14 @@ import { isTruthy } from "@self-learning/util/common";
 import { LearningAnalyticsType } from "@self-learning/api";
 
 /**
+ * This file contains auxiliary functions and constants for the metrics,
+ * which should NOT be exported outside of the library.
+ * @package @self-learning/learning-analytics
+ * @author Fabian Kneer
+ * @author El-Sharkawy
+ */
+
+/**
  * The function computes the preferred media type and the number of media type changes based on the mediaChangeCount object.
  *
  * @param activity The activity to get the media type from
@@ -28,14 +36,6 @@ export function getMediaType(activity: LearningActivity) {
 
 	return { numberOfChangesMediaType, preferredMediaType };
 }
-
-/**
- * This file contains auxiliary functions and constants for the metrics,
- * which should NOT be exported outside of the library.
- * @package @self-learning/learning-analytics
- * @author Fabian Kneer
- * @author El-Sharkawy
- */
 
 /**
  * Chart options to define the default X-axis format for the line chart:
@@ -93,7 +93,9 @@ export const DEFAULT_BAR_CHART_OPTIONS: ChartOptions<"bar"> = {
 /**
  * Auxillary to force that only keys of a specific type may be passed as parameter to a function.
  */
-export type KeysOfType<T, TProp> = { [P in keyof T]: T[P] extends TProp ? P : never }[keyof T];
+export type KeysOfType<T, TProp> = {
+	[P in keyof T]: T[P] extends TProp ? P : never;
+}[keyof T];
 
 /**
  * Type Guard to check if a string is a supported LessonContentMediaType to map them back
@@ -112,9 +114,10 @@ export function isLessonContentMediaType(value: string): value is LessonContentM
  * @param property numeric prop of the learning activity to cumulate
  * @returns uses / session as string with 1 decimal place
  */
-export function averageUsesPerSession(
-	cumulate: Activities,
-	property: KeysOfType<LearningActivity, number>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function averageUsesPerSession<T extends { [key: string]: any }>(
+	cumulate: T[],
+	property: KeysOfType<T, number | null>
 ) {
 	const sum = cumulate
 		.filter(isTruthy)

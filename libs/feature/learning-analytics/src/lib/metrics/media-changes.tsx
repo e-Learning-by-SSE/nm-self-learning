@@ -29,10 +29,17 @@ function plotMediaChanges(lASession: LearningAnalyticsType) {
 			mediaChanges = 0;
 			count = 0;
 		}
-		if (session?.learningAnalytics) {
-			session?.learningAnalytics.forEach(learningAnalytics => {
-				if (learningAnalytics?.numberOfChangesMediaType != null) {
-					mediaChanges = mediaChanges + learningAnalytics.numberOfChangesMediaType;
+		if (session?.activities) {
+			session?.activities.forEach(activity => {
+				const noOfMediaChanges =
+					(activity?.mediaChangeCount.video ?? 0) +
+					(activity?.mediaChangeCount.article ?? 0) +
+					(activity?.mediaChangeCount.pdf ?? 0) +
+					(activity?.mediaChangeCount.iframe ?? 0);
+
+				// TODO SE: Check if minimal value is 1 instead of zero (for consuming at least one media without changing it)
+				if (noOfMediaChanges > 0) {
+					mediaChanges = noOfMediaChanges;
 					count = count + 1;
 				}
 			});
@@ -77,15 +84,19 @@ export function MediaChanges({
 }) {
 	const graphData = plotMediaChanges(lASession);
 	const style = emphasisStyle ? emphasisStyle : "";
+	const mediaChanges = lASession
+		.flatMap(la => la.activities)
+		.flatMap(activity => activity.mediaChangeCount)
+		.map(no => ({
+			mediaChanges: (no.video ?? 0) + (no.article ?? 0) + (no.iframe ?? 0) + (no.pdf ?? 0)
+		}));
 
 	return (
 		<>
 			<h1 className="text-5xl">{UNARY_METRICS["MediaChanges"]}</h1>
 			<span className="text-xl">
 				{`Durchschnittlich hast du `}
-				<span className={style}>
-					{averageUsesPerSession(lASession, "numberOfChangesMediaType")}
-				</span>
+				<span className={style}>{averageUsesPerSession(mediaChanges, "mediaChanges")}</span>
 				{` Mal pro Sitzung das bevorzugte Medium gewechselt.`}
 			</span>
 			<Line data={graphData} options={DEFAULT_LINE_CHART_OPTIONS} />

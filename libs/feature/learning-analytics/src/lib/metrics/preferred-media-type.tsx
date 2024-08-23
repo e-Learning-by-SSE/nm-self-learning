@@ -143,7 +143,10 @@ export function PreferredMediaType({
 	emphasisStyle?: HTMLAttributes<"span">["className"];
 }) {
 	const graphData = plotPreferredMediaType(lASession);
-	const preferredMediaType = preferredValuePerSession(lASession, "preferredMediaType");
+	const preferredMediaType = preferredValuePerSession(
+		lASession.flatMap(la => la.activities),
+		"preferredMediaType"
+	);
 	const mediaName = isLessonContentMediaType(preferredMediaType)
 		? getContentTypeDisplayName(preferredMediaType)
 		: preferredMediaType;
@@ -170,7 +173,10 @@ export function PreferredMediaTypeStacked({
 }) {
 	const graphData = plotPreferredMediaType(lASession);
 
-	const preferredMediaType = preferredValuePerSession(lASession, "preferredMediaType");
+	const preferredMediaType = preferredValuePerSession(
+		lASession.flatMap(la => la.activities),
+		"preferredMediaType"
+	);
 	const mediaName = isLessonContentMediaType(preferredMediaType)
 		? getContentTypeDisplayName(preferredMediaType)
 		: preferredMediaType;
