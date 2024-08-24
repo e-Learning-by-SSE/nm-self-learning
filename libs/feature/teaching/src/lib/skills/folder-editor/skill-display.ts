@@ -1,11 +1,16 @@
 import { findParentsOfCycledSkills } from "@e-learning-by-sse/nm-skill-lib";
-import { SkillFormModel } from "@self-learning/types";
+import { PartialWithRequired, SkillFormModel } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 
 export type SkillSelectHandler = OnDialogCloseFn<string>;
 
-export type OptionalVisualizationWithRequiredId = Pick<SkillFolderVisualization, "id"> &
-	Partial<Omit<SkillFolderVisualization, "id">>;
+// export type OptionalVisualizationWithRequiredId = Pick<SkillFolderVisualization, "id"> &
+// 	Partial<Omit<SkillFolderVisualization, "id">>;
+
+export type OptionalVisualizationWithRequiredId = PartialWithRequired<
+	SkillFolderVisualization,
+	"id"
+>;
 
 export type UpdateVisuals = (skills: OptionalVisualizationWithRequiredId[] | null) => void;
 

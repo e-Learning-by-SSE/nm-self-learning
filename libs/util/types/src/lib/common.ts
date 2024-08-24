@@ -30,3 +30,29 @@ export type ResolvedValue<Fn extends (...args: any) => unknown> = Exclude<
  *	};
  */
 export type Defined<T> = Exclude<T, undefined | null>;
+
+/**
+ * `PartialWithRequired` makes all properties in `T` optional except for those specified in `K`, which remain required.
+ *
+ * @template T - The original type.
+ * @template K - A union of keys from `T` that should be required.
+ *
+ * @example
+ * type LearningActivity = {
+ *   id: number;
+ *   course: string;
+ *   title: string;
+ * };
+ *
+ * type PartialLearningActivity = PartialWithRequired<LearningActivity, 'id' | 'course'>;
+ *
+ * // Valid: 'id' and 'course' are required
+ * const activity1: PartialLearningActivity = { id: 1, course: "Math" };
+ *
+ * // Also valid: additional properties are optional
+ * const activity2: PartialLearningActivity = { id: 1, course: "Math", title: "Lesson 1" };
+ *
+ * // Invalid: 'id' and 'course' are missing
+ * const activity3: PartialLearningActivity = { title: "Lesson 1" }; // Error
+ */
+export type PartialWithRequired<T, K extends keyof T> = Partial<T> & Pick<T, K>;
