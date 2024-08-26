@@ -5,7 +5,7 @@ import {
 import { CheckCircleIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
-import { loadFromStorage, saveToStorage } from "@self-learning/learning-analytics";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -15,7 +15,6 @@ import {
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
-import { QuizInfoType, StorageKeys } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
@@ -91,15 +90,15 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 
 	//Learning Analytics: init or save quiz info
 	useEffect(() => {
-		const quizInfos = loadFromStorage("la_quizInfo");
-		if (!quizInfos) {
-			saveToStorage("la_quizInfo", {
-				quizStart: new Date(),
-				quizEnd: null,
-				numberCorrectAnswers: 0,
-				numberIncorrectAnswers: 0,
-				numberOfUsedHints: 0
-			});
+		const activity = loadFromLocalStorage("la_activity");
+		if (activity && activity.quizStart == null) {
+			activity.quizStart = new Date();
+			activity.quizEnd = null;
+			activity.numberCorrectAnswers = 0;
+			activity.numberIncorrectAnswers = 0;
+			activity.numberOfUsedHints = 0;
+
+			saveToLocalStorage("la_activity", activity);
 		}
 	}, []);
 

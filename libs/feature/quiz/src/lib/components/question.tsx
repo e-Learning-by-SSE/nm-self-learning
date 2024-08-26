@@ -15,13 +15,9 @@ import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
-import {
-	loadFromStorage,
-	gatherLearningActivity,
-	saveToStorage
-} from "@self-learning/learning-analytics";
+import { gatherLearningActivity } from "@self-learning/learning-analytics";
 import { trpc } from "@self-learning/api-client";
-import { QuizInfoType, StorageKeys, LearningSequence } from "@self-learning/types";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 
 export function Question({
 	question,
@@ -153,27 +149,27 @@ function CheckResult({
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
 	const { completionState, reload } = useQuiz();
 	//Learning Analytics: save quiz
-	const { mutateAsync: createLearningAnalytics } = trpc.learningAnalytics.create.useMutation();
-	const { mutateAsync: createLASession } = trpc.learningAnalytics.createSession.useMutation();
+	const { mutateAsync: createLearningAnalytics } = trpc.learningActivity.create.useMutation();
+	const { mutateAsync: createLASession } = trpc.learningSequence.create.useMutation();
 
 	async function saveQuizBeforeReload() {
-		const lQuizInfo = loadFromStorage("la_quizInfo");
-		if (lQuizInfo?.quizStart != null) {
-			lQuizInfo.quizEnd = new Date();
-			saveToStorage("la_quizInfo", lQuizInfo);
+		const activity = loadFromLocalStorage("la_activity");
+		if (activity?.quizStart != null) {
+			activity.quizEnd = new Date();
+			saveToLocalStorage("la_activity", activity);
 		}
 		const data = gatherLearningActivity(); // ersetzen direkt mit 	storeSessionEndsToStorage();
 		if (data) {
 			try {
 				if (data.sessionId < 0) {
-					const laSession = loadFromStorage("la_lessonInfo");
+					const laSession = loadFromLocalStorage("la_sequence");
 					if (laSession) {
 						const session = await createLASession({
-							start: laSession.lessonStart.toISOString(),
-							end: laSession?.lessonEnd?.toISOString()
+							start: laSession.start,
+							end: laSession.end
 						});
 						laSession.id = session.id;
-						saveToStorage("la_sessionInfo", laSession);
+						saveToLocalStorage("la_sequence", laSession);
 						data.sessionId = session.id;
 						await createLearningAnalytics(data);
 					}
@@ -195,14 +191,14 @@ function CheckResult({
 		console.log("evaluation", evaluation);
 
 		//Learning Analytics: get number of correct and incorrect answers
-		const quizInfo = loadFromStorage("la_quizInfo");
-		if (quizInfo?.numberCorrectAnswers != null && quizInfo?.numberIncorrectAnswers != null) {
+		const activity = loadFromLocalStorage("la_activity");
+		if (activity?.numberCorrectAnswers != null && activity?.numberIncorrectAnswers != null) {
 			if (evaluation.isCorrect) {
-				quizInfo.numberCorrectAnswers++;
+				activity.numberCorrectAnswers++;
 			} else {
-				quizInfo.numberIncorrectAnswers++;
+				activity.numberIncorrectAnswers++;
 			}
-			saveToStorage("la_quizInfo", quizInfo);
+			saveToLocalStorage("la_activity", activity);
 		}
 
 		setEvaluation(evaluation);

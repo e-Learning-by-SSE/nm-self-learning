@@ -78,7 +78,7 @@ export function useLearningAnalytics() {
 		if (!sequence) {
 			saveToLocalStorage("la_sequence", { start: new Date() });
 		} else if (sequence.start && sequence.end) {
-			// old sequencem, save and replace
+			// old sequence, save and replace
 			const now = new Date();
 			const end = sequence.end ?? now;
 			now.setMinutes(new Date().getMinutes() - 30);

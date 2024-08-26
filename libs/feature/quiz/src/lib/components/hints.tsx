@@ -6,8 +6,7 @@ import { motion } from "framer-motion";
 import { MDXRemote } from "next-mdx-remote";
 import { useQuiz } from "./quiz-context";
 import { useEffect } from "react";
-import { loadFromStorage, saveToStorage } from "@self-learning/learning-analytics";
-import { QuizInfoType, StorageKeys } from "@self-learning/types";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 
 export function Hints() {
 	const { config, usedHints, setUsedHints } = useQuiz();
@@ -25,10 +24,10 @@ export function Hints() {
 	//Learning Analytics: get number of correct and incorrect answers
 	useEffect(() => {
 		if (window !== undefined) {
-			const quizInfo = loadFromStorage("la_quizInfo");
-			if (quizInfo) {
-				quizInfo.numberOfUsedHints = usedHintsTotal;
-				saveToStorage("la_quizInfo", quizInfo);
+			const activity = loadFromLocalStorage("la_activity");
+			if (activity) {
+				activity.numberOfUsedHints = usedHintsTotal;
+				saveToLocalStorage("la_activity", activity);
 			}
 		}
 	}, [usedHintsTotal]);
