@@ -1,16 +1,18 @@
 import { FaceFrownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Transition } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import { SearchSection } from "./search-section";
 
-function SearchInput({
+export function SearchInput({
 	searchQuery,
-	setSearchQuery
+	setSearchQuery,
+	placeHolder
 }: {
 	searchQuery: string;
 	setSearchQuery: (value: string) => void;
+	placeHolder: string;
 }) {
 	return (
 		<div className="relative">
@@ -22,7 +24,7 @@ function SearchInput({
 				id="search"
 				name="search"
 				className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-500 lg:text-sm lg:leading-6"
-				placeholder="Suchen..."
+				placeholder={placeHolder}
 				type="search"
 				value={searchQuery}
 				onChange={e => {
@@ -111,10 +113,13 @@ export function SearchBar() {
 				<label htmlFor="search" className="sr-only">
 					Suche
 				</label>
-				<SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+				<SearchInput
+					placeHolder={"Suchen..."}
+					searchQuery={searchQuery}
+					setSearchQuery={setSearchQuery}
+				/>
 
 				<Transition
-					as="div"
 					show={true}
 					enter="transition ease-out duration-100"
 					enterFrom="transform opacity-0 scale-95"
@@ -136,3 +141,29 @@ export function SearchBar() {
 		</div>
 	);
 }
+
+export function UniversalSearchBar({
+	searchQuery,
+	setSearchQuery,
+	placeHolder
+}: {
+	searchQuery: string;
+	setSearchQuery: (value: string) => void;
+	placeHolder: string;
+}) {
+	return (
+		<div className="flex flex-1 items-center">
+			<div className="relative w-full">
+				<label htmlFor="search" className="sr-only">
+					Suche
+				</label>
+				<SearchInput
+					placeHolder={placeHolder}
+					searchQuery={searchQuery}
+					setSearchQuery={setSearchQuery}
+				/>
+			</div>
+		</div>
+	);
+}
+

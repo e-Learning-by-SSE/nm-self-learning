@@ -4,6 +4,7 @@ import {
 	Bars4Icon,
 	XMarkIcon,
 	ArrowRightStartOnRectangleIcon
+	WrenchIcon
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
@@ -187,6 +188,19 @@ export function NavbarDropdownMenu({
 							>
 								<UserIcon className="h-5" />
 								<span>Übersicht</span>
+							</Link>
+						)}
+					</MenuItem>
+					<MenuItem as="div" className="p-1">
+						{({ focus }) => (
+							<Link
+								href="/user-settings"
+								className={`${
+									focus ? "bg-emerald-500 text-white" : ""
+								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+							>
+								<WrenchIcon className="h-5" />
+								<span>Einstellungen</span>
 							</Link>
 						)}
 					</MenuItem>
