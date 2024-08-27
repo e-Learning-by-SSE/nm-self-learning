@@ -31,7 +31,7 @@ RUN npm run prisma generate
 # RUN chown nextjs:nodejs -R node_modules/.prisma
 
 # Multistage build: Keep only result instead of all intermediate layers
-FROM node:alpine
+FROM node:21-alpine
 COPY --from=build /app /app
 
 WORKDIR /app
@@ -43,8 +43,6 @@ WORKDIR /app
 # * diffutils is needed for cmp (needed for entry-script)
 RUN apk add --no-cache libc6-compat bash postgresql-libs postgresql-client diffutils
 
-# Environment
-ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during build & runtime.
 ENV NEXT_TELEMETRY_DISABLED 1
 
