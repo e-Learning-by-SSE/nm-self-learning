@@ -1,6 +1,7 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
+import { findLessons } from "./lesson.router";
 
 export const meRouter = t.router({
 	permissions: authProcedure.query(({ ctx }) => {
@@ -24,6 +25,42 @@ export const meRouter = t.router({
 				}
 			}
 		});
+	}),
+	deleteMe: authProcedure.mutation(async ({ ctx }) => {
+		await database.user.delete({
+			where: { name: ctx.user.name }
+		});
+		return true;
+	}),
+	deleteMeAndAllData: authProcedure.mutation(async ({ ctx }) => {
+		await database.user.delete({
+			where: { name: ctx.user.name }
+		});
+
+		await database.lesson.deleteMany({
+			where: { authors: { some: { username: ctx.user.name } } }
+		});
+		await database.course.deleteMany({
+			where: { authors: { some: { username: ctx.user.name } } }
+		});
+		return true;
+	}),
+	getAllCreatedCourseAndLessons: authProcedure.query(async ({ ctx }) => {
+		const courses = await database.course.findMany({
+			where: {
+				authors: {
+					some: {
+						username: ctx.user.name
+					}
+				}
+			}
+		});
+
+		const lessons = await findLessons({
+			authorName: ctx.user.name
+		});
+
+		return { courses, lessons };
 	}),
 	updateStudent: authProcedure
 		.input(
