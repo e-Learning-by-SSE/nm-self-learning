@@ -3,7 +3,7 @@ import {
 	UserIcon,
 	Bars4Icon,
 	XMarkIcon,
-	ArrowRightStartOnRectangleIcon
+	ArrowRightStartOnRectangleIcon,
 	WrenchIcon
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
