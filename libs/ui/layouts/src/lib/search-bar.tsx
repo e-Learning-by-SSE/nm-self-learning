@@ -1,8 +1,8 @@
-import { FaceFrownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import React, { useState } from "react";
 import { Transition } from "@headlessui/react";
+import { FaceFrownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { SearchSection } from "./search-section";
 
 export function SearchInput({
@@ -121,6 +121,7 @@ export function SearchBar() {
 
 				<Transition
 					show={true}
+					as="div"
 					enter="transition ease-out duration-100"
 					enterFrom="transform opacity-0 scale-95"
 					enterTo="transform opacity-100 scale-100"
@@ -166,4 +167,3 @@ export function UniversalSearchBar({
 		</div>
 	);
 }
-
