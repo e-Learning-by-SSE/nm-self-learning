@@ -21,7 +21,7 @@ const nextConfig = {
 	},
 
 	basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "",
-	assetPrefix: process.env.NEXT_ASSET_PREFIX ?? "/",
+	assetPrefix: process.env.NEXT_ASSET_PREFIX,
 	trailingSlash: process.env.NEXT_TRAILING_SLASH ?? false,
 	reactStrictMode: process.env.NODE_ENV === "development",
 	productionBrowserSourceMaps: process.env.NODE_ENV === "development"

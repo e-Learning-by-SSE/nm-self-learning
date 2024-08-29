@@ -19,7 +19,6 @@ export * from "./lib/table/table";
 export * from "./lib/image/image-placeholder";
 export * from "./lib/image-card/image-card";
 export * from "./lib/loading/loading";
-export * from "./lib/menu/menu";
 export * from "./lib/paginator/paginator";
 export * from "./lib/section-card/section-card";
 export * from "./lib/tabs/tabs";
