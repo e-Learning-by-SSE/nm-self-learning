@@ -56,6 +56,7 @@ pipeline {
                         } else {
                             sh 'npm run test:ci:affected'
                         }
+                        sh 'npm run prisma:seed'
                     }
                 }
             }
