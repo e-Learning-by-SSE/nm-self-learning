@@ -63,7 +63,7 @@ model Student {
   completedLessons CompletedLesson[]
   enrollments      Enrollment[]
   learningDiary    LearningDiary?
-  settings         StudentSettings?
+  // settings         StudentSettings? // hotfix TODO remove
   quizAttempts     QuizAttempt[]
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -72,7 +72,7 @@ model StudentSettings {
   username          String  @id
   learningStatistics Boolean @default(false)
   hasLearningDiary  Boolean  @default(false)
-  student           Student @relation(fields: [username], references: [username])
+  // student           Student @relation(fields: [username], references: [username]) // hotfix TODO remove
 }
 
 
@@ -309,4 +309,14 @@ model Skill {
 
   @@unique([repositoryId, name])
   @@map("skills")
+}
+
+
+model EventLog {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  userId      String   
+  resourceId  String?
+  action      String
+  payload     Json?
 }

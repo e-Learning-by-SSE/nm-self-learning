@@ -30,3 +30,7 @@ export * from "./lib/toggle/toggle";
 export * from "./lib/tooltip/tooltips";
 export * from "./lib/timer/timer";
 export * from "./lib/progress-bar/progress-bar";
+
+// todo delete this
+export * from "./lib/events/something";
+export * from "./lib/events/events";
