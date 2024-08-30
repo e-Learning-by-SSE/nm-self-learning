@@ -1,6 +1,5 @@
 "use client";
 
-import { trpc } from "@self-learning/api-client";
 import { useEventLog } from "@self-learning/ui/common";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player/lazy";
@@ -14,7 +13,7 @@ function useHydrationFix() {
 	return { isClient };
 }
 
-export function VideoPlayer({ url, startAt = 0 }: Readonly<{ url: string; startAt: number }>) {
+export function VideoPlayer({ url, startAt = 0 }: Readonly<{ url: string; startAt?: number }>) {
 	const playerRef = useRef<ReactPlayer | null>(null);
 	const { isClient } = useHydrationFix();
 	const { newEvent } = useEventLog();
