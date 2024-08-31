@@ -34,3 +34,4 @@ export * from "./lib/progress-bar/progress-bar";
 // todo delete this
 export * from "./lib/events/something";
 export * from "./lib/events/events";
+export * from "./lib/events/video-duration";
