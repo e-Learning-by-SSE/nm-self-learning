@@ -2,7 +2,7 @@ import { userEventRouter } from "./eventlog.router";
 import { Context } from "../context";
 import { t } from "../trpc";
 import { createUserEvent, loadUserEvents } from "@self-learning/util/common";
-import { ActionPayloadTypesSchema } from "@self-learning/types";
+import { actionPayloadTypesSchema } from "@self-learning/types";
 
 jest.mock("@self-learning/util/common");
 
@@ -62,7 +62,7 @@ describe("userEventRouter create", () => {
 		const result = await caller.create(input); // could throw an error on validation fail
 		// also check manual validation
 
-		const schema = ActionPayloadTypesSchema.shape["COURSE_RESUME"];
+		const schema = actionPayloadTypesSchema.shape["COURSE_RESUME"];
 		expect(() => schema.parse(result.payload)).not.toThrow();
 	});
 	it("should not pass incorrect payloads", async () => {

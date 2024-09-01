@@ -1,6 +1,6 @@
 import {
 	ActionPayloadTypes,
-	ActionPayloadTypesSchema,
+	actionPayloadTypesSchema,
 	eventWhereSchema,
 	userEventSchema
 } from "@self-learning/types";
@@ -12,7 +12,7 @@ import { createUserEvent, loadUserEvents } from "@self-learning/util/common";
 export const userEventRouter = t.router({
 	create: authProcedure.input(userEventSchema).mutation(async ({ ctx, input }) => {
 		// Validate playload matches action
-		const schema = ActionPayloadTypesSchema.shape[input.action];
+		const schema = actionPayloadTypesSchema.shape[input.action];
 		schema.parse(input.payload);
 
 		return createUserEvent({

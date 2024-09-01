@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ActionPayloadTypesSchema = z.object({
+export const actionPayloadTypesSchema = z.object({
 	USER_LOGIN: z.undefined(),
 	USER_LOGOUT: z.undefined(),
 	COURSE_START: z.undefined(),
@@ -46,22 +46,22 @@ export const ActionPayloadTypesSchema = z.object({
 	})
 });
 
-export type ActionPayloadTypes = z.infer<typeof ActionPayloadTypesSchema>;
+export type ActionPayloadTypes = z.infer<typeof actionPayloadTypesSchema>;
 export type Actions = keyof ActionPayloadTypes;
 
 export const userEventSchema = z.object({
 	// id: z.number(),
 	// userId: z.string(),
-	action: z.enum(Object.keys(ActionPayloadTypesSchema.shape) as [Actions, ...Actions[]]),
+	action: z.enum(Object.keys(actionPayloadTypesSchema.shape) as [Actions, ...Actions[]]),
 	resourceId: z.string().optional(),
-	payload: z.union([z.never(), z.never(), ...Object.values(ActionPayloadTypesSchema.shape)])
+	payload: z.union([z.never(), z.never(), ...Object.values(actionPayloadTypesSchema.shape)])
 });
 
 export const eventWhereSchema = z.object({
 	start: z.date().optional(),
 	end: z.date().optional(),
 	action: z
-		.array(z.enum(Object.keys(ActionPayloadTypesSchema.shape) as [Actions, ...Actions[]]))
+		.array(z.enum(Object.keys(actionPayloadTypesSchema.shape) as [Actions, ...Actions[]]))
 		.optional(),
 	resourceId: z.string().optional()
 });
