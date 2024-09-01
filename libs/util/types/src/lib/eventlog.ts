@@ -1,4 +1,3 @@
-import { create } from "domain";
 import { z } from "zod";
 
 export const ActionPayloadTypesSchema = z.object({
@@ -58,14 +57,19 @@ export const userEventSchema = z.object({
 	payload: z.union([z.never(), z.never(), ...Object.values(ActionPayloadTypesSchema.shape)])
 });
 
-export const userEventLogArraySchema = z.array(
-	userEventSchema.extend({
-		id: z.string(),
-		userId: z.string(),
-		resourceId: z.string().nullable(),
-		createdAt: z.date()
-	})
-);
+export const eventWhereSchema = z.object({
+	start: z.date().optional(),
+	end: z.date().optional(),
+	action: z
+		.array(z.enum(Object.keys(ActionPayloadTypesSchema.shape) as [Actions, ...Actions[]]))
+		.optional(),
+	resourceId: z.string().optional()
+});
 
-export type UserEventArray = z.infer<typeof userEventLogArraySchema>;
-export type UserEvent = UserEventArray[number];
+export type EventWhereClause = z.input<typeof eventWhereSchema>;
+
+const eventLogQuerySchema = eventWhereSchema.extend({
+	userId: z.string()
+});
+
+export type EventLogQueryInput = z.input<typeof eventLogQuerySchema>;

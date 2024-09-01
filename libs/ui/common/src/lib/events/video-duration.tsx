@@ -1,10 +1,6 @@
-import {
-	Table,
-	TableDataColumn,
-	TableHeaderColumn,
-	useEventLogQuery
-} from "@self-learning/ui/common";
-import { UserEvent } from "@self-learning/types";
+import { trpc } from "@self-learning/api-client";
+import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import { UserEvent } from "@self-learning/util/common";
 
 /**
  * Adapted function to compute the week of the year.
@@ -75,7 +71,7 @@ function computeDuration(events: UserEvent[]) {
 }
 
 export function VideoDuration() {
-	const { data, isLoading } = useEventLogQuery({
+	const { data, isLoading } = trpc.events.get.useQuery({
 		action: [
 			"VIDEO_PLAY",
 			"VIDEO_PAUSE",

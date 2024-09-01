@@ -1,6 +1,6 @@
 "use client";
 
-import { useEventLog } from "@self-learning/ui/common";
+import { useEventLog } from "@self-learning/util/common";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player/lazy";
 

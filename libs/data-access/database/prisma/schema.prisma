@@ -313,10 +313,11 @@ model Skill {
 
 
 model EventLog {
-  id          String    @id @default(cuid())
+  id          Int    @id @default(autoincrement())
   createdAt   DateTime  @default(now())
   userId      String   
   resourceId  String?
   action      String
-  payload     Json?
+  payload     Json? 
+  // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
 }
