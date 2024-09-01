@@ -1,23 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { UserEvent } from "@self-learning/util/common";
-
-/**
- * Adapted function to compute the week of the year.
- * However, usually IsoWeek will start the week by Thursday, this function
- * starts a week by Monday.
- * @param date The date to compute the week
- * @returns year-week
- * @see https://weeknumber.com/how-to/javascript
- */
-function getWeek(date: Date): string {
-	const tempDate = new Date(date.getTime());
-	tempDate.setUTCHours(0, 0, 0, 0);
-	tempDate.setUTCDate(tempDate.getUTCDate() + 1 - (tempDate.getUTCDay() || 7));
-	const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
-	const weekNo = Math.ceil(((tempDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-	return `${tempDate.getUTCFullYear()}-W${weekNo.toString().padStart(2, "0")}`;
-}
+import { sumByDate, sumByWeek, UserEvent } from "@self-learning/util/common";
 
 function computeDuration(events: UserEvent[]) {
 	// Filter out cases where the user manually moves the slider
@@ -106,27 +89,9 @@ export function VideoDuration() {
 		return false;
 	});
 
-	const dailyData = filteredData.reduce(
-		(acc, event) => {
-			const date = event.createdAt.toISOString().split("T")[0]; // Extract the YYYY-MM-DD part
-			let previouslyWatched = acc[date] ?? 0;
-			previouslyWatched += event.totalWatchTime;
-			acc[date] = previouslyWatched;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	const dailyData = sumByDate(filteredData, "totalWatchTime");
 
-	const weeklyData = filteredData.reduce(
-		(acc, event) => {
-			const week = getWeek(event.createdAt);
-			let previouslyWatched = acc[week] ?? 0;
-			previouslyWatched += event.totalWatchTime;
-			acc[week] = previouslyWatched;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
 
 	Object.keys(dailyData).forEach(day => {
 		console.log(`${day}: ${dailyData[day]}`);
