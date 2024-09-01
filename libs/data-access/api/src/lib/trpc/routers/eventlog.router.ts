@@ -22,13 +22,13 @@ const whereSchema = z.object({
 	resourceId: z.string().optional()
 });
 
+export type EventWhereClause = z.input<typeof whereSchema>;
+
 const querySchema = whereSchema.extend({
 	userId: z.string()
 });
 
 type QueryInput = z.input<typeof querySchema>;
-
-export type UserEvent = ResolvedValue<typeof loadUserEvents>[number];
 
 // !!!! not for direct use; use useEventLog hook instead !!!!
 export const userEventRouter = t.router({

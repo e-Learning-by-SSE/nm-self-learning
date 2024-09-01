@@ -5,4 +5,4 @@ export * from "./lib/trpc/routers/enrollment.router";
 
 // TODO maybe find a better place for those types
 export type { SkillResolved, SkillUnresolved } from "./lib/trpc/routers/skill.router";
-export type { UserEvent } from "./lib/trpc/routers/eventlog.router";
+export type { EventWhereClause } from "./lib/trpc/routers/eventlog.router";

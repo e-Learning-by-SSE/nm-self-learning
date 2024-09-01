@@ -1,3 +1,4 @@
+import { create } from "domain";
 import { z } from "zod";
 
 export const ActionPayloadTypesSchema = z.object({
@@ -56,3 +57,15 @@ export const userEventSchema = z.object({
 	resourceId: z.string().optional(),
 	payload: z.union([z.never(), z.never(), ...Object.values(ActionPayloadTypesSchema.shape)])
 });
+
+export const userEventLogArraySchema = z.array(
+	userEventSchema.extend({
+		id: z.string(),
+		userId: z.string(),
+		resourceId: z.string().nullable(),
+		createdAt: z.date()
+	})
+);
+
+export type UserEventArray = z.infer<typeof userEventLogArraySchema>;
+export type UserEvent = UserEventArray[number];

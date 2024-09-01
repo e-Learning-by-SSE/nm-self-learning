@@ -1,5 +1,11 @@
 import { trpc } from "@self-learning/api-client";
-import { ActionPayloadTypes, Actions } from "@self-learning/types";
+import { EventWhereClause } from "@self-learning/api";
+import {
+	ActionPayloadTypes,
+	Actions,
+	userEventLogArraySchema,
+	UserEvent
+} from "@self-learning/types";
 
 export function useEventLog() {
 	const { mutateAsync } = trpc.events.create.useMutation();
@@ -13,4 +19,16 @@ export function useEventLog() {
 	}
 
 	return { newEvent };
+}
+
+export function useEventLogQuery(where?: EventWhereClause) {
+	const { data, isLoading } = trpc.events.get.useQuery(where ?? {});
+
+	let validatedData: UserEvent[] | undefined = undefined;
+	if (data) {
+		// userEventLogArraySchema.parse(data);
+		validatedData = data as unknown as UserEvent[];
+	}
+
+	return { data: validatedData, isLoading };
 }
