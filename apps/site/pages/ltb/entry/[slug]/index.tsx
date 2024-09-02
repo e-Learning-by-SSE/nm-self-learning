@@ -16,6 +16,9 @@ import {
 	LearningTechnique,
 	LearningTechniqueEvaluation
 } from "@self-learning/api";
+import { useRouter } from "next/router";
+
+//TODO green shadow wenn ausgefüllt
 
 export default function LearningDiaryEntryOverview({
 	learningDiaryInformation,
@@ -74,16 +77,21 @@ function EntrySwitcher({
 	setIndex: (index: number) => void;
 	currentIndex: number;
 }) {
+	const router = useRouter();
+
 	const handlePrev = () => {
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-expect-error
 		setIndex(prevIndex => Math.max(prevIndex - 1, 0));
+		window.history.pushState({}, "", "/ltb/entry/" + currentIndex);
 	};
 
 	const handleNext = () => {
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-expect-error
 		setIndex(prevIndex => Math.min(prevIndex + 1, maxLength - 1));
+
+		window.history.pushState({}, "", "/ltb/entry/" + currentIndex);
 	};
 
 	return (
