@@ -1,15 +1,6 @@
 {
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
-	"affected": { "defaultBase": "master" },
-	"tasksRunnerOptions": {
-		"default": {
-			"runner": "nx-cloud",
-			"options": {
-				"cacheableOperations": ["lint", "test", "e2e", "component-test"],
-				"accessToken": "ZjhkZTI2MmQtYjcwYi00YTllLWE4NDgtNGJjNWNiNDgxZjdkfHJlYWQtd3JpdGU="
-			}
-		}
-	},
+
 	"generators": {
 		"@nrwl/angular:application": {
 			"style": "css",
