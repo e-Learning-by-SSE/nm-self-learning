@@ -1,33 +1,24 @@
 import { CourseView, LessonView, VideoDuration } from "@self-learning/ui/common";
 import { useState } from "react";
 
-type Preview = "Videos" | "Courses" | "Lessons";
+const PreviewTypes = ["Videos", "Courses", "Lessons"];
 
 export default function Page() {
-	const [metricSelection, setMetricSelection] = useState<Preview>("Videos");
+	const [metricSelection, setMetricSelection] = useState("Videos");
 
 	return (
 		<div className="bg-gray-50">
-			<div className="flex space-x-4">
-				<button
-					className="bg-blue-500 text-white px-4 py-2 rounded"
-					onClick={e => setMetricSelection("Videos")}
-				>
-					Video Duration
-				</button>
-				<button
-					className="bg-green-500 text-white px-4 py-2 rounded"
-					onClick={e => setMetricSelection("Courses")}
-				>
-					Courses
-				</button>
-				<button
-					className="bg-sky-500 text-white px-4 py-2 rounded"
-					onClick={e => setMetricSelection("Lessons")}
-				>
-					Lessons
-				</button>
-			</div>
+			<select
+				className="px-4 py-2 rounded  bg-sky-50"
+				onChange={e => setMetricSelection(e.target.value)}
+				value={metricSelection}
+			>
+				{PreviewTypes.map(type => (
+					<option key={type} className="text-base font-sans" value={type}>
+						{type}
+					</option>
+				))}
+			</select>
 
 			{metricSelection === "Videos" ? <VideoDuration /> : null}
 			{metricSelection === "Courses" ? <CourseView /> : null}

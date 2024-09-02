@@ -47,3 +47,11 @@ export function sumByWeek<T extends Base>(data: T[], key: NumericProperty<T>) {
 		{} as Record<string, number>
 	);
 }
+
+export function msToHMS(ms: number) {
+	const seconds = Math.floor(ms / 1000);
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	const remainingSeconds = seconds % 60;
+	return `${hours}:${minutes}:${remainingSeconds}`;
+}

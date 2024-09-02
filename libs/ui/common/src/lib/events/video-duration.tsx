@@ -1,10 +1,10 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { sumByDate, sumByWeek, UserEvent } from "@self-learning/util/common";
+import { msToHMS, sumByDate, sumByWeek, UserEvent } from "@self-learning/util/common";
 import { useState } from "react";
 import { DailyPlot, WeeklyPlot } from "./unary-charts";
 
-type Preview = "Table" | "Daily" | "Weekly";
+const PreviewTypes = ["Table", "Daily", "Weekly"];
 
 function computeDuration(events: UserEvent[]) {
 	// Filter out cases where the user manually moves the slider
@@ -58,7 +58,7 @@ function computeDuration(events: UserEvent[]) {
 }
 
 export function VideoDuration() {
-	const [previewSelection, setPreviewSelection] = useState<Preview>("Table");
+	const [previewSelection, setPreviewSelection] = useState("Table");
 	const { data, isLoading } = trpc.events.get.useQuery({
 		action: [
 			"VIDEO_PLAY",
@@ -97,31 +97,35 @@ export function VideoDuration() {
 	const dailyData = sumByDate(filteredData, "totalWatchTime");
 
 	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
+	const dailyAverage = msToHMS(
+		Object.values(dailyData).reduce((acc, curr) => acc + curr, 0) /
+			Object.keys(dailyData).length
+	);
+	const weeklyAverage = msToHMS(
+		Object.values(weeklyData).reduce((acc, curr) => acc + curr, 0) /
+			Object.keys(weeklyData).length
+	);
 
 	return (
 		<>
-			<div className="bg-gray-50 pt-4">
-				<div className="flex space-x-4">
-					<button
-						className="bg-red-500 text-white px-4 py-2 rounded"
-						onClick={e => setPreviewSelection("Table")}
-					>
-						Table
-					</button>
-					<button
-						className="bg-pink-600 text-white px-4 py-2 rounded"
-						onClick={e => setPreviewSelection("Daily")}
-					>
-						Daily
-					</button>
-					<button
-						className="bg-amber-500 text-white px-4 py-2 rounded"
-						onClick={e => setPreviewSelection("Weekly")}
-					>
-						Weekly
-					</button>
-				</div>
-			</div>
+			<select
+				className="px-7 py-2 rounded  bg-rose-100"
+				onChange={e => setPreviewSelection(e.target.value)}
+				value={previewSelection}
+			>
+				{PreviewTypes.map(type => (
+					<option key={type} className="text-base font-sans" value={type}>
+						{type}
+					</option>
+				))}
+			</select>
+
+			<p>
+				Deine durchschnittliche Lernzeit beträgt{" "}
+				<span className="font-italic font-medium">{dailyAverage}</span> pro Tag, bzw.
+				wöchentlich lernst du{" "}
+				<span className="font-italic font-medium">{weeklyAverage}</span> auf der Plattform.
+			</p>
 
 			{previewSelection === "Table" ? (
 				<TableData
