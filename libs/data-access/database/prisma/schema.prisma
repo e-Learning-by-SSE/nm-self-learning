@@ -63,7 +63,7 @@ model Student {
   completedLessons CompletedLesson[]
   enrollments      Enrollment[]
   learningDiary    LearningDiary?
-  // settings         StudentSettings? // hotfix TODO remove
+  settings         StudentSettings?
   quizAttempts     QuizAttempt[]
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -72,7 +72,7 @@ model StudentSettings {
   username          String  @id
   learningStatistics Boolean @default(false)
   hasLearningDiary  Boolean  @default(false)
-  // student           Student @relation(fields: [username], references: [username]) // hotfix TODO remove
+  student           Student @relation(fields: [username], references: [username], onDelete: Cascade)
 }
 
 
