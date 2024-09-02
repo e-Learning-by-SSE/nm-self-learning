@@ -1,6 +1,10 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { sumByDate, sumByWeek, UserEvent } from "@self-learning/util/common";
+import { useState } from "react";
+import { DailyPlot, WeeklyPlot } from "./unary-charts";
+
+type Preview = "Table" | "Daily" | "Weekly";
 
 function computeDuration(events: UserEvent[]) {
 	// Filter out cases where the user manually moves the slider
@@ -54,6 +58,7 @@ function computeDuration(events: UserEvent[]) {
 }
 
 export function VideoDuration() {
+	const [previewSelection, setPreviewSelection] = useState<Preview>("Table");
 	const { data, isLoading } = trpc.events.get.useQuery({
 		action: [
 			"VIDEO_PLAY",
@@ -93,6 +98,62 @@ export function VideoDuration() {
 
 	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
 
+	return (
+		<>
+			<div className="bg-gray-50 pt-4">
+				<div className="flex space-x-4">
+					<button
+						className="bg-red-500 text-white px-4 py-2 rounded"
+						onClick={e => setPreviewSelection("Table")}
+					>
+						Table
+					</button>
+					<button
+						className="bg-pink-600 text-white px-4 py-2 rounded"
+						onClick={e => setPreviewSelection("Daily")}
+					>
+						Daily
+					</button>
+					<button
+						className="bg-amber-500 text-white px-4 py-2 rounded"
+						onClick={e => setPreviewSelection("Weekly")}
+					>
+						Weekly
+					</button>
+				</div>
+			</div>
+
+			{previewSelection === "Table" ? (
+				<TableData
+					computedData={computedData}
+					filteredData={filteredData}
+					dailyData={dailyData}
+					weeklyData={weeklyData}
+				/>
+			) : null}
+			{previewSelection === "Daily" ? (
+				<DailyPlot data={dailyData} label="Tägliche Lernzeit" />
+			) : null}
+			{previewSelection === "Weekly" ? (
+				<WeeklyPlot data={weeklyData} label="Wöchentliche Lernzeit" />
+			) : null}
+		</>
+	);
+}
+
+type TableDataProps = UserEvent & { totalWatchTime: number };
+
+function TableData({
+	computedData,
+	filteredData,
+	dailyData,
+	weeklyData
+}: {
+	computedData: TableDataProps[];
+	filteredData: TableDataProps[];
+	dailyData: Record<string, number>;
+	weeklyData: Record<string, number>;
+}) {
 	return (
 		<>
 			<h1 className="text-center text-3xl">Video Duration</h1>
