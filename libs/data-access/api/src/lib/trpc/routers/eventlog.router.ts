@@ -6,7 +6,7 @@ import {
 } from "@self-learning/types";
 import { authProcedure, t } from "../trpc";
 
-import { createUserEvent, loadUserEvents } from "@self-learning/util/common";
+import { createUserEvent, loadUserEvents } from "@self-learning/database";
 
 // !!!! not for direct use; use useEventLog hook instead !!!!
 export const userEventRouter = t.router({

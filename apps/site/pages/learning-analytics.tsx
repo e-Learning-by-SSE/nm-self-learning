@@ -1,4 +1,4 @@
-import { VideoDuration } from "@self-learning/ui/common";
+import { VideoDuration } from "@self-learning/analysis";
 export default function Page() {
 	return (
 		<div className="bg-gray-50">

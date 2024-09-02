@@ -1,8 +1,8 @@
 import { userEventRouter } from "./eventlog.router";
 import { Context } from "../context";
 import { t } from "../trpc";
-import { createUserEvent, loadUserEvents } from "@self-learning/util/common";
 import { actionPayloadTypesSchema } from "@self-learning/types";
+import { createUserEvent, loadUserEvents } from "@self-learning/database";
 
 jest.mock("@self-learning/util/common");
 
