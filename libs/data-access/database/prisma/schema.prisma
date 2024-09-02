@@ -72,7 +72,7 @@ model StudentSettings {
   username          String  @id
   learningStatistics Boolean @default(false)
   hasLearningDiary  Boolean  @default(false)
-  student           Student @relation(fields: [username], references: [username])
+  student           Student @relation(fields: [username], references: [username], onDelete: Cascade)
 }
 
 
@@ -290,7 +290,7 @@ model SkillRepository {
   description   String?
   skills        Skill[]
   ownerId       String
-  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner         User     @relation(fields: [ownerId], references: [id])
 
   @@unique([ownerId, name])
   @@map("skill-repositories")

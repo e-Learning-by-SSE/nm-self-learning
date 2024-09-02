@@ -2,6 +2,7 @@ import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { findLessons } from "./lesson.router";
+import { randomUUID } from "crypto";
 
 export const meRouter = t.router({
 	permissions: authProcedure.query(({ ctx }) => {
@@ -27,25 +28,17 @@ export const meRouter = t.router({
 		});
 	}),
 	deleteMe: authProcedure.mutation(async ({ ctx }) => {
-		await database.user.delete({
-			where: { name: ctx.user.name }
-		});
-		return true;
-	}),
-	deleteMeAndAllData: authProcedure.mutation(async ({ ctx }) => {
-		await database.user.delete({
+		const user = await database.user.findUnique({
 			where: { name: ctx.user.name }
 		});
 
-		await database.lesson.deleteMany({
-			where: { authors: { some: { username: ctx.user.name } } }
-		});
-		await database.course.deleteMany({
-			where: { authors: { some: { username: ctx.user.name } } }
-		});
-		return true;
-	}),
-	getAllCreatedCourseAndLessons: authProcedure.query(async ({ ctx }) => {
+		if (!user) {
+			return false;
+		}
+
+		const lessons = await findLessons({ authorName: ctx.user.name });
+		const lessonsIds = lessons.lessons.map(lesson => lesson.lessonId);
+
 		const courses = await database.course.findMany({
 			where: {
 				authors: {
@@ -55,12 +48,44 @@ export const meRouter = t.router({
 				}
 			}
 		});
+		const courseIds = courses.map(course => course.courseId);
 
-		const lessons = await findLessons({
-			authorName: ctx.user.name
+		const skills = await database.skillRepository.findMany({
+			where: {
+				ownerId: ctx.user.id
+			}
+		});
+		const skillsIds = skills.map(skill => skill.id);
+
+		const username = "anonymous" + randomUUID();
+
+		await database.user.create({
+			data: {
+				name: username,
+				displayName: user.displayName,
+				role: user.role,
+				author: {
+					create: {
+						displayName: user.displayName,
+						slug: username,
+						lessons: {
+							connect: lessonsIds.map(lessonId => ({ lessonId }))
+						},
+						courses: {
+							connect: courseIds.map(courseId => ({ courseId }))
+						}
+					}
+				},
+				skillRepositories: {
+					connect: skillsIds.map(id => ({ id }))
+				}
+			}
 		});
 
-		return { courses, lessons };
+		await database.user.delete({
+			where: { name: ctx.user.name }
+		});
+		return true;
 	}),
 	updateStudent: authProcedure
 		.input(

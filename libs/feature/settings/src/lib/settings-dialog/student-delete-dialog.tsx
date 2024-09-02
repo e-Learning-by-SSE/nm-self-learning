@@ -1,9 +1,10 @@
-import { Dialog, DialogActions } from "@self-learning/ui/common";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { Dialog, DialogActions, ImageOrPlaceholder } from "@self-learning/ui/common";
+import { CenteredContainer, useRequiredSession } from "@self-learning/ui/layouts";
 import { User } from "next-auth";
+import { ReactComponent as AuthorSvg } from "../../../../../../apps/site/svg/author.svg";
+import { ReactComponent as DiarySvg } from "../../../../../../apps/site/svg/diary.svg";
+import { ReactComponent as StatisticSvg } from "../../../../../../apps/site/svg/statistic.svg";
 import { useState } from "react";
-import { PersonalDataTooltip } from "../settings-form/student-delete-form";
-import { trpc } from "@self-learning/api-client";
 
 export function StudentDeleteDialog({
 	user,
@@ -73,6 +74,9 @@ export function StudentDeleteDialog({
 }
 
 export function StudentDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
+	const session = useRequiredSession();
+	const user = session.data?.user;
+	console.log("user", user);
 	return (
 		<CenteredContainer>
 			<Dialog
@@ -91,20 +95,115 @@ export function StudentDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
 				}}
 			>
 				<CenteredContainer>
-					<div>
-						<span>
-							Folgende Daten werden gelöscht: <br /> <br />
-							Account Informationen, Präferenzen und Einstellungen, sowie sämtliche
-							Daten die eng mit dem Account verknüpft sind.
-							<br />
-							<br />
-						</span>
-						<div className="rounded-lg border bg-slate-200 p-2">
-							<span>
-								<strong>Wichtig! </strong> <br /> Erstelle Kurse und Lerneinheiten
-								bleiben erhalten. Möchtest du diese löschen, klicke auf den Button
-								"Alle Daten löschen".
-							</span>
+					<div className="flex min-h-screen flex-col items-center space-y-6 bg-gray-50 p-6">
+						<h2 className="text-xl font-semibold text-gray-800">Was wird gelöscht?</h2>
+
+						<div className="relative flex w-full items-center">
+							<div className="flex w-full items-center">
+								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
+									<p className="text-gray-700">
+										<strong>
+											Nach dieser Aktion gibt es keine Rückschlüsse mehr auf
+											deinen Namen.
+										</strong>
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="h-10 border-l-2 border-gray-300"></div>
+
+						<div className="relative flex w-full items-center">
+							<div className="flex w-full items-center">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+									<ImageOrPlaceholder
+										src={user?.avatarUrl ?? undefined}
+										className="h-16 w-16 rounded-full object-cover"
+									/>
+								</div>
+								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
+									<p className="text-gray-600">
+										Folgende Daten werden gelöscht: Account Informationen,
+										Präferenzen und Einstellungen, sowie sämtliche Daten die eng
+										mit dem Account verknüpft sind.
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="h-10 border-l-2 border-gray-300"></div>
+
+						<div className="relative flex w-full items-center">
+							<div className="flex w-full items-center">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+									<DiarySvg className="h-16 w-16 rounded-full" />
+								</div>
+								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
+									<p className="text-gray-600">
+										Learntagebuch, sowie alle Lernfortschritte werden gelöscht.
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="h-10 border-l-2 border-gray-300"></div>
+
+						<div className="relative flex w-full items-center">
+							<div className="flex w-full items-center">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+								<StatisticSvg className="h-16 w-16 rounded-full" />
+								</div>
+								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
+									<p className="text-gray-600">Außerdem alle Statistiken</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="h-10 border-l-2 border-gray-300"></div>
+
+						<h2 className="text-xl font-semibold text-gray-800">
+							Was bleibt in der Plattform?
+						</h2>
+
+						<div className="relative flex w-full items-center">
+							<div className="flex w-full items-center">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+								<AuthorSvg className="h-16 w-16 rounded-full" />
+								</div>
+								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
+									<p className="text-gray-600">
+										Dein Autorenprofil bleibt bestehen.
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="h-10 border-l-2 border-gray-300"></div>
+
+						<div className="relative flex w-full items-center">
+							<div className="flex w-full items-center">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+									{/* Placeholder for Image or Icon */}
+								</div>
+								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
+									<p className="text-gray-600">
+										Sämtliche erstellen Kurse und Lerneinheiten bleiben
+										erhalten. Das beinhaltet auch erstellte Skillrepositories.
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="h-10 border-l-2 border-gray-300"></div>
+
+						<div className="relative flex w-full items-center">
+							<div className="flex-1 rounded-lg border bg-slate-200 p-4 shadow">
+								<span className="text-gray-700">
+									<strong>Wichtig! </strong> <br />
+									Erstellte Kurse und Lerneinheiten bleiben erhalten. Möchtest du
+									diese löschen, klicke auf den Button "Alle Daten löschen".
+								</span>
+							</div>
 						</div>
 					</div>
 				</CenteredContainer>
@@ -127,15 +226,14 @@ export function StudentDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
 }
 
 export function StudentAllDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
-	const { isLoading, data: coursesAndLessons } = trpc.me.getAllCreatedCourseAndLessons.useQuery();
 	return (
 		<CenteredContainer>
 			<Dialog
 				style={{
-					height: "60vh",
+					height: "25vh",
 					width: "35vw",
 					overflow: "auto",
-					minHeight: "200px",
+					minHeight: "100px",
 					minWidth: "300px"
 				}}
 				title={"Delete Student"}
@@ -148,31 +246,14 @@ export function StudentAllDeleteInfoDialog({ onClose }: { onClose?: () => void }
 				<CenteredContainer>
 					<div>
 						<div className="flex items-center">
-							<span>Folgende Daten werden gelöscht: Persönliche Daten</span>
-							<PersonalDataTooltip />
+							<span>
+								Es werden alle Daten inklusive der erstellen Kurse und Lerneinheiten
+								gelöscht
+								<br />
+								Wenden sie sich an den Systemadministrator um ihre gesamten Daten zu
+								löschen
+							</span>
 						</div>
-						Außerdem alle erstellten Kurse und Lerneinheiten:
-						{!isLoading && coursesAndLessons && (
-							<div className="mt-5">
-								<h2>Kurse</h2>
-								{coursesAndLessons.courses.length > 0 ? null : "Kein Kurs erstellt"}
-								<ul className="p-1 ml-5 mt-2 h-20 list-disc overflow-x-auto rounded-lg bg-slate-200">
-									{coursesAndLessons.courses.map(course => (
-										<li key={course.courseId}>{course.title}</li>
-									))}
-								</ul>
-								<div className="mt-5" />
-								<h2>Lerneinheiten</h2>
-								{coursesAndLessons.lessons.lessons.length > 0
-									? null
-									: "Keine Lerneinheit erstellt"}
-								<ul className="p-1 ml-5 mt-2 h-20 list-disc overflow-x-auto rounded-lg bg-gray-50">
-									{coursesAndLessons.lessons.lessons.map(lesson => (
-										<li key={lesson.lessonId}>{lesson.title}</li>
-									))}
-								</ul>
-							</div>
-						)}
 					</div>
 				</CenteredContainer>
 				<div className="mt-auto">

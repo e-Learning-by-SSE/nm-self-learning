@@ -17,7 +17,6 @@ import { redirectToLogin } from "libs/ui/layouts/src/lib/redirect-to-login";
 
 export function StudentDeleteForm() {
 	const { mutateAsync: deleteOnlyMe } = trpc.me.deleteMe.useMutation();
-	const { mutateAsync: deleteMeAndAllData } = trpc.me.deleteMeAndAllData.useMutation();
 	const session = useRequiredSession();
 	const user = session.data?.user;
 	if (!user) {
@@ -58,34 +57,6 @@ export function StudentDeleteForm() {
 
 	const afterAllDeleteInfoDialog = () => {
 		freeDialog("student-delete-form");
-		dispatchDialog(
-			<StudentDeleteDialog
-				user={{ ...user, id: "" }}
-				onClose={async accepted => {
-					if (accepted) {
-						try {
-							const success = await deleteMeAndAllData();
-							if (success) {
-								showToast({
-									type: "success",
-									title: "Account und Daten gelöscht",
-									subtitle: "Sie wurden erfolgreich abgemeldet."
-								});
-							}
-							redirectToLogin();
-						} catch (error) {
-							showToast({
-								type: "error",
-								title: "Account und Daten konnte nicht gelöscht werden",
-								subtitle: "Bitte versuchen Sie es erneut."
-							});
-						}
-					}
-					freeDialog("student-delete-form");
-				}}
-			/>,
-			"student-delete-form"
-		);
 	};
 
 	return (
