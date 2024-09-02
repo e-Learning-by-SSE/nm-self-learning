@@ -33,3 +33,5 @@ export * from "./lib/progress-bar/progress-bar";
 
 // todo delete this
 export * from "./lib/events/video-duration";
+export * from "./lib/events/course-learning";
+export * from "./lib/events/lesson-learning";

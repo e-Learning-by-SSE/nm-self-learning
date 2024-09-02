@@ -93,10 +93,6 @@ export function VideoDuration() {
 
 	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
 
-	Object.keys(dailyData).forEach(day => {
-		console.log(`${day}: ${dailyData[day]}`);
-	});
-
 	return (
 		<>
 			<h1 className="text-center text-3xl">Video Duration</h1>
