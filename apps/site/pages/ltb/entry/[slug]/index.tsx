@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
-import { PencilIcon, StarIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, StarIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { Dialog, showToast } from "@self-learning/ui/common";
 import Image from "next/image";
 import { trpc } from "@self-learning/api-client";
@@ -11,7 +11,10 @@ import { useForm, Controller, FormProvider, useFormContext } from "react-hook-fo
 import {
 	getLearningDiaryInformation,
 	LearningDiaryEntryResult,
-	LearningDiaryInformation
+	LearningDiaryInformation,
+	LearningStrategy,
+	LearningTechnique,
+	LearningTechniqueEvaluation
 } from "@self-learning/api";
 
 export default function LearningDiaryEntryOverview({
@@ -19,6 +22,7 @@ export default function LearningDiaryEntryOverview({
 	slug
 }: {
 	learningDiaryInformation: LearningDiaryInformation;
+	//TODO make slug change in url bar when cycling trough entries
 	slug: string | null;
 }) {
 	const [currentIndex, setCurrentIndex] = useState<number>(() => {
@@ -113,7 +117,8 @@ function LearningDiaryEntryForm({
 			learningLocation: entry.learningLocation,
 			effortLevel: entry.effortLevel,
 			distractionLevel: entry.distractionLevel,
-			notes: entry.notes
+			notes: entry.notes,
+			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
 		}
 	});
 
@@ -144,7 +149,8 @@ function LearningDiaryEntryForm({
 			learningLocation: entry.learningLocation,
 			effortLevel: entry.effortLevel,
 			distractionLevel: entry.distractionLevel,
-			notes: entry.notes
+			notes: entry.notes,
+			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
 		});
 	}, [entry, reset]);
 
@@ -221,8 +227,288 @@ function LearningDiaryEntryForm({
 						)}
 					/>
 				</div>
+				<div className={"mb-4"}>
+					<Controller
+						name="learningTechniqueEvaluation"
+						control={methods.control}
+						render={({ field }) => (
+							<LearningTechniqueEvaluationInput
+								onSubmit={onSubmit}
+								learningTechniqueEvaluations={field.value}
+								entryId={entry.id}
+								setEvaluations={field.onChange}
+								learningStrategies={learningDiaryInformation.learningStrategies}
+								learningTechniques={learningDiaryInformation.learningTechniques}
+							/>
+						)}
+					/>
+				</div>
 			</form>
 		</FormProvider>
+	);
+}
+
+function LearningTechniqueEvaluationInput({
+	learningTechniqueEvaluations,
+	learningStrategies,
+	learningTechniques,
+	entryId,
+	setEvaluations,
+	onSubmit
+}: {
+	learningTechniqueEvaluations: LearningTechniqueEvaluation[];
+	learningStrategies: LearningStrategy[];
+	learningTechniques: LearningTechnique[];
+	entryId: string;
+	setEvaluations: (evaluations: LearningTechniqueEvaluation[]) => void;
+	onSubmit: (data: any) => Promise<void>;
+}) {
+	const { mutateAsync: createLearningTechniqueEvaluation } =
+		trpc.learningTechniqueEvaluation.create.useMutation();
+
+	const { mutateAsync: deleteManyLearningTechniqueEvaluations } =
+		trpc.learningTechniqueEvaluation.deleteMany.useMutation();
+
+	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+	const [currentSelectedTechnique, setCurrentSelectedTechnique] = useState<{
+		score: number;
+		learningTechniqueId: string;
+	}>({
+		score: 1,
+		learningTechniqueId: ""
+	});
+
+	const [selectableTechniques, setSelectableTechniques] = useState<LearningStrategy[]>([]);
+
+	const [evaluationsToDelete, setEvaluationsToDelete] = useState<
+		{ evaluationID: string; techniqueId: string }[]
+	>([]);
+
+	const { handleSubmit } = useFormContext();
+
+	function onClose() {
+		setCurrentSelectedTechnique({ score: 1, learningTechniqueId: "" });
+		setSelectableTechniques([]);
+		setEvaluationsToDelete([]);
+		setDialogOpen(false);
+	}
+
+	async function onSave() {
+		try {
+			if (currentSelectedTechnique.learningTechniqueId !== "") {
+				const newEvaluation = await createLearningTechniqueEvaluation({
+					score: currentSelectedTechnique.score,
+					learningTechniqueId: currentSelectedTechnique.learningTechniqueId,
+					learningDiaryEntryId: entryId
+				});
+
+				const evaluationsWithoutNewEvaluation = learningTechniqueEvaluations.filter(
+					evaluation =>
+						evaluation.learningTechnique.id != newEvaluation.learningTechnique.id
+				);
+
+				setEvaluations([...evaluationsWithoutNewEvaluation, newEvaluation]);
+			}
+
+			if (evaluationsToDelete.length > 0) {
+				await deleteManyLearningTechniqueEvaluations(
+					evaluationsToDelete.map(i => i.evaluationID)
+				);
+
+				const techniqueIdsToRemove = evaluationsToDelete.map(i => i.techniqueId);
+
+				const evaluationsWithoutDeletions = learningTechniqueEvaluations.filter(
+					evaluation => !techniqueIdsToRemove.includes(evaluation.learningTechnique.id)
+				);
+
+				setEvaluations(evaluationsWithoutDeletions);
+				setEvaluationsToDelete([]);
+			}
+
+			await handleSubmit(onSubmit)();
+
+			onClose();
+		} catch (e) {
+			const errorMessage = e instanceof Error ? e.message : "An unexpected error occurred";
+
+			showToast({
+				type: "error",
+				title: "Error",
+				subtitle: errorMessage
+			});
+		}
+	}
+
+	function handleEvaluationToDelete(techniqueId: string) {
+		setEvaluationsToDelete(function (prevEvaluationsToDelete) {
+			const evaluation = learningTechniqueEvaluations.find(function (evaluation) {
+				return evaluation.learningTechnique.id === techniqueId;
+			});
+
+			if (evaluation) {
+				return [
+					...prevEvaluationsToDelete,
+					{
+						evaluationID: evaluation.id,
+						techniqueId: evaluation.learningTechnique.id
+					}
+				];
+			}
+
+			return prevEvaluationsToDelete;
+		});
+	}
+
+	return (
+		<div>
+			<Tile onToggleEdit={setDialogOpen} tileName={"Lernstrategie"}>
+				<div>
+					{learningTechniqueEvaluations && learningTechniqueEvaluations.length > 0 ? (
+						<table className="w-full">
+							<tbody>
+								{learningTechniqueEvaluations.map(evaluation => (
+									<tr key={evaluation.learningTechnique.id} className="">
+										<td className="w-1/2 py-2 pr-8 text-left">
+											{evaluation.learningTechnique.name}
+										</td>
+										<td className="w-1/2 py-2 pl-8 text-right">
+											<StarRatingDisplay rating={evaluation.score} />
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					) : (
+						<span>{"Noch keine Bewertung Hinterlegt."}</span>
+					)}
+				</div>
+			</Tile>
+			{dialogOpen && (
+				<Dialog title={"Lerntechniken Bewerten"} onClose={onClose}>
+					<div className="mx-auto w-full max-w-lg">
+						<label className="mb-1 block py-2 text-sm text-gray-700">Strategie</label>
+						<select
+							className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 shadow-sm"
+							defaultValue=""
+							onChange={event => {
+								setSelectableTechniques(
+									learningTechniques.filter(technique =>
+										technique.learningStrategie.id.localeCompare(
+											event.target.value
+										)
+									)
+								);
+								setCurrentSelectedTechnique({ score: 1, learningTechniqueId: "" });
+							}}
+						>
+							<option value="" hidden>
+								Bitte wählen eine Lernstrategie...
+							</option>
+							{learningStrategies.map(strat => (
+								<option key={strat.id} value={strat.id}>
+									{strat.name}
+								</option>
+							))}
+						</select>
+
+						<div className="h-64 py-4">
+							<label className="mb-1 block py-2 text-sm text-gray-700">Technik</label>
+							<div className="h-full overflow-y-auto rounded border border-gray-300 shadow-sm">
+								<div>
+									{selectableTechniques && selectableTechniques.length > 0 ? (
+										selectableTechniques.map(technique => {
+											return (
+												<div
+													key={technique.id}
+													className="flex w-full items-center rounded border-b border-gray-300 bg-white shadow-sm hover:bg-gray-100"
+												>
+													<button
+														className={`flex flex-grow items-center space-x-4 p-4`}
+														onClick={() => {
+															setCurrentSelectedTechnique({
+																score: 1,
+																learningTechniqueId: technique.id
+															});
+														}}
+													>
+														{technique.name}
+													</button>
+
+													{learningTechniqueEvaluations.some(
+														evaluatedTechnique =>
+															evaluatedTechnique.learningTechnique
+																.id === technique.id
+													) &&
+														!evaluationsToDelete.some(
+															deletionObject =>
+																deletionObject.techniqueId ===
+																technique.id
+														) && (
+															<button
+																onClick={() =>
+																	handleEvaluationToDelete(
+																		technique.id
+																	)
+																}
+																className="flex items-center justify-center px-4 text-red-500 hover:text-red-700"
+															>
+																<TrashIcon className="h-5 w-5" />
+															</button>
+														)}
+												</div>
+											);
+										})
+									) : (
+										<div className="flex flex-1 items-center justify-center p-4 text-gray-500">
+											Noch keine Lernstrategie Ausgewählt.
+										</div>
+									)}
+								</div>
+							</div>
+						</div>
+
+						<div className="mt-4 flex items-center py-4">
+							<label className="mb-1 text-sm text-gray-700">Bewertung</label>
+							<div className="flex flex-1 justify-end">
+								{currentSelectedTechnique.learningTechniqueId !== "" ? (
+									<StarRatingInput
+										name={"Bewertung"}
+										setSelectedStars={score => {
+											setCurrentSelectedTechnique({
+												score,
+												learningTechniqueId:
+													currentSelectedTechnique.learningTechniqueId
+											});
+										}}
+									/>
+								) : (
+									<StarRatingDisplay rating={0} />
+								)}
+							</div>
+						</div>
+
+						<div className="mt-4 flex justify-end space-x-4">
+							<button
+								onClick={onClose}
+								className="btn-stroked w-full max-w-lg hover:bg-gray-100"
+							>
+								Abbrechen
+							</button>
+							<button
+								onClick={onSave}
+								className="btn-primary w-full max-w-lg"
+								disabled={
+									currentSelectedTechnique.learningTechniqueId === "" &&
+									evaluationsToDelete.length === 0
+								}
+							>
+								Speichern
+							</button>
+						</div>
+					</div>
+				</Dialog>
+			)}
+		</div>
 	);
 }
 
@@ -404,7 +690,7 @@ function Tile({
 					onClick={() => onToggleEdit(true)}
 				/>
 			</div>
-			<div className="flex h-full items-center justify-center">
+			<div className="flex h-full items-center justify-center rounded-md border p-4 shadow-md hover:bg-gray-100">
 				{React.cloneElement(children, {
 					onClick: () => onToggleEdit(true),
 					className: `${children.props.className || ""} cursor-pointer`
@@ -538,7 +824,7 @@ function LocationInputTile({
 		<Tile onToggleEdit={setDialogOpen} tileName={"Lernort"}>
 			<div className="p-4">
 				{selectedLocation ? (
-					<div className="rounded-md border p-4 shadow-md hover:bg-gray-100">
+					<div>
 						<p>{selectedLocation.name}</p>
 
 						{selectedLocation.iconURL && selectedLocation.iconURL !== "" && (

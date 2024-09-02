@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import {
-	DropdownMenu,
+	TableDropdownMenu,
 	findKeyByValue,
 	TableColumn,
 	TableDataColumn
@@ -264,7 +264,7 @@ function SortedTable({
 									<ChevronDoubleDownIcon className="h-5 w-5 stroke-current stroke-2 text-black" />
 								</div>
 								{chevronMenu && (
-									<DropdownMenu
+									<TableDropdownMenu
 										columns={columns}
 										setColumns={setColumns}
 										setChevronMenu={setChevronMenu}

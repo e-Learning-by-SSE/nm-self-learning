@@ -3,9 +3,9 @@ import { z } from "zod";
 export const learningTechniqueEvaluationSchema = z.object({
 	id: z.string().optional(),
 	score: z.number().int().optional(),
-	learningStrategieId: z.string().optional(),
-	learningTechniqueId: z.string().optional(),
-	learningDiaryEntryId: z.string().optional()
+	learningTechniqueId: z.string(),
+	learningDiaryEntryId: z.string(),
+	creatorName: z.string().optional()
 });
 
 export const learningGoalSchema: z.ZodSchema = z.lazy(() =>
@@ -41,7 +41,3 @@ export const learningLocationSchema = z.object({
 	defaultLocation: z.boolean().default(false),
 	creatorName: z.string().optional().nullable()
 });
-
-export type LearningTechniqueEvaluation = z.infer<typeof learningTechniqueEvaluationSchema>;
-export type LearningGoal = z.infer<typeof learningGoalSchema>;
-export type LearningDiaryEntry = z.infer<typeof learningDiaryEntrySchema>;

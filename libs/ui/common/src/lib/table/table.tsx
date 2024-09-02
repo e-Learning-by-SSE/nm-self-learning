@@ -38,7 +38,7 @@ export interface TableColumn {
 	isDisplayed: boolean;
 }
 
-export function DropdownMenu({
+export function TableDropdownMenu({
 	columns,
 	setColumns,
 	setChevronMenu

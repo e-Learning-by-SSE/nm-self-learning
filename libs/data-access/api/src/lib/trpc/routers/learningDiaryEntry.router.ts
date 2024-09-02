@@ -2,10 +2,12 @@ import { database } from "@self-learning/database";
 import {
 	learningDiaryEntrySchema,
 	learningLocationSchema,
+	learningTechniqueEvaluationSchema,
 	ResolvedValue
 } from "@self-learning/types";
 import { formatDateToString } from "@self-learning/util/common";
 import { authProcedure, t } from "../trpc";
+import { TRPCError } from "@trpc/server";
 
 export async function getLearningDiaryEntriesOverview({ username }: { username: string }) {
 	const learningDiaryEntries = await database.learningDiaryEntry.findMany({
@@ -23,7 +25,7 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 					learningTechnique: {
 						select: {
 							name: true,
-							learningStrategie: { select: { name: true } }
+							learningStrategie: { select: { id: true, name: true } }
 						}
 					}
 				}
@@ -60,23 +62,16 @@ export async function getLearningDiaryInformation({ username }: { username: stri
 	});
 
 	const learningTechniques = await database.learningTechnique.findMany({
-		where: { OR: [{ creatorName: username }, { defaultTechnique: true }] }
-	});
-
-	const learningStrategies = await database.learningStrategie.findMany({
+		where: { OR: [{ creatorName: username }, { defaultTechnique: true }] },
 		select: {
 			id: true,
 			name: true,
-			learningTechnique: {
-				where: {
-					OR: [{ defaultTechnique: true }, { creatorName: username }]
-				},
-				select: {
-					id: true,
-					name: true
-				}
-			}
+			learningStrategie: { select: { id: true, name: true } }
 		}
+	});
+
+	const learningStrategies = await database.learningStrategie.findMany({
+		select: { id: true, name: true }
 	});
 
 	const learningDiaryEntries = await database.learningDiaryEntry.findMany({
@@ -105,7 +100,19 @@ export async function getLearningDiaryInformation({ username }: { username: stri
 				}
 			},
 			learningGoals: true,
-			learningTechniqueEvaluation: true
+			learningTechniqueEvaluation: {
+				select: {
+					id: true,
+					score: true,
+					learningTechnique: {
+						select: {
+							id: true,
+							name: true,
+							learningStrategie: { select: { id: true, name: true } }
+						}
+					}
+				}
+			}
 		},
 		orderBy: {
 			date: "asc"
@@ -160,6 +167,75 @@ export const learningLocationRouter = t.router({
 				id: true,
 				name: true,
 				iconURL: true
+			}
+		});
+	})
+});
+
+import { z } from "zod"; // Import zod for schema validation
+
+export const learningTechniqueEvaluationRouter = t.router({
+	create: authProcedure
+		.input(learningTechniqueEvaluationSchema)
+		.mutation(async ({ input, ctx }) => {
+			const existingEvaluation = await database.learningTechniqueEvaluation.findFirst({
+				where: {
+					learningTechniqueId: input.learningTechniqueId,
+					learningDiaryEntryId: input.learningDiaryEntryId
+				}
+			});
+
+			if (existingEvaluation) {
+				return await database.learningTechniqueEvaluation.update({
+					where: { id: existingEvaluation.id },
+					data: {
+						score: input.score || 0
+					},
+					select: {
+						score: true,
+						learningTechnique: {
+							select: {
+								id: true,
+								name: true,
+								learningStrategie: { select: { id: true, name: true } }
+							}
+						}
+					}
+				});
+			}
+
+			return await database.learningTechniqueEvaluation.create({
+				data: {
+					id: input.id ?? undefined,
+					score: input.score || 0,
+					learningTechniqueId: input.learningTechniqueId,
+					learningDiaryEntryId: input.learningDiaryEntryId,
+					creatorName: ctx.user.name
+				},
+				select: {
+					id: true,
+					score: true,
+					learningTechnique: {
+						select: {
+							id: true,
+							name: true,
+							learningStrategie: { select: { id: true, name: true } }
+						}
+					}
+				}
+			});
+		}),
+	deleteMany: authProcedure.input(z.array(z.string())).mutation(async ({ input, ctx }) => {
+		if (input.length === 0) {
+			throw new Error("At least one id must be provided for deletion");
+		}
+
+		return await database.learningTechniqueEvaluation.deleteMany({
+			where: {
+				creatorName: ctx.user.name,
+				id: {
+					in: input
+				}
 			}
 		});
 	})
@@ -253,3 +329,10 @@ export const learningDiaryEntryRouter = t.router({
 });
 
 export type LearningDiaryInformation = ResolvedValue<typeof getLearningDiaryInformation>;
+
+export type LearningTechniqueEvaluation =
+	LearningDiaryInformation["learningDiaryEntries"][number]["learningTechniqueEvaluation"][number];
+
+export type LearningStrategy = LearningDiaryInformation["learningStrategies"][number];
+
+export type LearningTechnique = LearningDiaryInformation["learningTechniques"][number];

@@ -505,6 +505,12 @@ const completedLessons: Prisma.CompletedLessonCreateManyInput[] = extractLessonI
 		createdAt: subHours(Date.now(), index * 4)
 	}));
 
+const studentSettings: Prisma.StudentSettingsCreateManyInput = {
+	username: "dumbledore",
+	learningStatistics: true,
+	hasLearningDiary: true
+};
+
 export async function seedDemos(): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", "Seeding Demo Data:");
 
@@ -551,6 +557,11 @@ export async function seedDemos(): Promise<void> {
 		await prisma.user.create({ data: author });
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
+
+	await prisma.studentSettings.createMany({
+		data: [studentSettings]
+	});
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Student Settings");
 
 	await generateLearningDiaryDemoData();
 
