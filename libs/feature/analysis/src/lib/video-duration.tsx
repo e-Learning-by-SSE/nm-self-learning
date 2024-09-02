@@ -1,7 +1,10 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import { msToHMS, sumByDate, sumByWeek } from "./aggregation-functions";
+import { useState } from "react";
+import { DailyPlot, WeeklyPlot } from "./unary-charts";
+const PreviewTypes = ["Table", "Daily", "Weekly"];
 import { UserEvent } from "@self-learning/database";
-import { getWeek } from "date-fns";
 
 function computeDuration(events: UserEvent[]) {
 	// Filter out cases where the user manually moves the slider
@@ -55,6 +58,7 @@ function computeDuration(events: UserEvent[]) {
 }
 
 export function VideoDuration() {
+	const [previewSelection, setPreviewSelection] = useState("Table");
 	const { data, isLoading } = trpc.events.get.useQuery({
 		action: [
 			"VIDEO_PLAY",
@@ -90,32 +94,70 @@ export function VideoDuration() {
 		return false;
 	});
 
-	const dailyData = filteredData.reduce(
-		(acc, event) => {
-			const date = event.createdAt.toISOString().split("T")[0]; // Extract the YYYY-MM-DD part
-			let previouslyWatched = acc[date] ?? 0;
-			previouslyWatched += event.totalWatchTime;
-			acc[date] = previouslyWatched;
-			return acc;
-		},
-		{} as Record<string, number>
+	const dailyData = sumByDate(filteredData, "totalWatchTime");
+
+	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
+	const dailyAverage = msToHMS(
+		Object.values(dailyData).reduce((acc, curr) => acc + curr, 0) /
+			Object.keys(dailyData).length
+	);
+	const weeklyAverage = msToHMS(
+		Object.values(weeklyData).reduce((acc, curr) => acc + curr, 0) /
+			Object.keys(weeklyData).length
 	);
 
-	const weeklyData = filteredData.reduce(
-		(acc, event) => {
-			const weekDisplayString = `${event.createdAt.getFullYear()}-W${getWeek(event.createdAt).toString().padStart(2, "0")}`;
-			let previouslyWatched = acc[weekDisplayString] ?? 0;
-			previouslyWatched += event.totalWatchTime;
-			acc[weekDisplayString] = previouslyWatched;
-			return acc;
-		},
-		{} as Record<string, number>
+	return (
+		<>
+			<select
+				className="px-7 py-2 rounded  bg-rose-100"
+				onChange={e => setPreviewSelection(e.target.value)}
+				value={previewSelection}
+			>
+				{PreviewTypes.map(type => (
+					<option key={type} className="text-base font-sans" value={type}>
+						{type}
+					</option>
+				))}
+			</select>
+
+			<p>
+				Deine durchschnittliche Lernzeit beträgt{" "}
+				<span className="font-italic font-medium">{dailyAverage}</span> pro Tag, bzw.
+				wöchentlich lernst du{" "}
+				<span className="font-italic font-medium">{weeklyAverage}</span> auf der Plattform.
+			</p>
+
+			{previewSelection === "Table" ? (
+				<TableData
+					computedData={computedData}
+					filteredData={filteredData}
+					dailyData={dailyData}
+					weeklyData={weeklyData}
+				/>
+			) : null}
+			{previewSelection === "Daily" ? (
+				<DailyPlot data={dailyData} label="Tägliche Lernzeit" />
+			) : null}
+			{previewSelection === "Weekly" ? (
+				<WeeklyPlot data={weeklyData} label="Wöchentliche Lernzeit" />
+			) : null}
+		</>
 	);
+}
 
-	Object.keys(dailyData).forEach(day => {
-		console.log(`${day}: ${dailyData[day]}`);
-	});
+type TableDataProps = UserEvent & { totalWatchTime: number };
 
+function TableData({
+	computedData,
+	filteredData,
+	dailyData,
+	weeklyData
+}: {
+	computedData: TableDataProps[];
+	filteredData: TableDataProps[];
+	dailyData: Record<string, number>;
+	weeklyData: Record<string, number>;
+}) {
 	return (
 		<>
 			<h1 className="text-center text-3xl">Video Duration</h1>
