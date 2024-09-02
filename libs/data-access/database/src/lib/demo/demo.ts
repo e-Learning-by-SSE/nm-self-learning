@@ -15,7 +15,6 @@ import {
 import { getRandomId, slugify } from "@self-learning/util/common";
 
 import { javaExample } from "./java-example";
-import { Quiz } from "@self-learning/quiz";
 import { javaSkillSeed } from "./java-skills";
 import { license } from "./license";
 
@@ -285,7 +284,7 @@ function createLesson(title: string) {
 		quiz: {
 			questions,
 			config: null
-		} satisfies Quiz,
+		},
 		meta: {}
 	};
 

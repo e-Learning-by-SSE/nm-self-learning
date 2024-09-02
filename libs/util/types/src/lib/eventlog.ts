@@ -19,8 +19,8 @@ export const actionPayloadTypesSchema = z.object({
 		type: z.string(),
 		hints: z.number(),
 		attempts: z.number(),
-		solved: z.boolean(),
-		timeSpentSeconds: z.number()
+		solved: z.boolean()
+		// timeSpentSeconds: z.number()
 	}),
 	LESSON_ASSESSMENT_START: z.undefined(),
 	VIDEO_PLAY: z.object({
