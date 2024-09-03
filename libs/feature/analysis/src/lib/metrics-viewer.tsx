@@ -44,16 +44,21 @@ export function MetricsViewer<T extends MetricData>({
 			<div className="relative w-full h-screen">
 				<Chart weeklyData={weeklyData} dailyData={dailyData} option={selectedOption} />
 
-				<select
-					className="absolute top-0 right-5 m-2 p-1 bg-white border border-gray-300 rounded shadow-md"
-					onChange={e => setOption(e.target.value as OptionsType)}
-				>
+				<div className="absolute top-0 right-5 m-2 p-1 rounded">
 					{options.map(option => (
-						<option key={option} value={option}>
+						<button
+							key={option}
+							onClick={() => setOption(option)}
+							className={`px-8 py-2 border rounded ${
+								selectedOption === option
+									? " bg-emerald-500 text-sm font-semibold text-white"
+									: "bg-gray-200 text-gray-600 text-sm font-semibold"
+							}`}
+						>
 							{option}
-						</option>
+						</button>
 					))}
-				</select>
+				</div>
 			</div>
 		</>
 	);
