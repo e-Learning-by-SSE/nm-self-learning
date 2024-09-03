@@ -45,7 +45,13 @@ export async function loadUserEvents(input: EventLogQueryInput) {
 	// 		payload: result.payload as ActionPayloadTypes[typeof a]
 	// 	};
 	// });
-	type Result = (typeof results)[0] & { payload: ActionPayloadTypes };
-	return results as Result[];
+	const results2 = results.map(e => ({
+		...e,
+		createdAt: e.createdAt.toISOString(),
+		payload: e.payload as ActionPayloadTypes
+	}));
+	// type Result = (typeof results2)[0] & { payload: ActionPayloadTypes };
+	type Result = (typeof results2)[0];
+	return results2 as Result[];
 }
 export type UserEvent = ResolvedValue<typeof loadUserEvents>[number];

@@ -1,6 +1,5 @@
 import { createTRPCNext } from "@trpc/next";
 import { AppRouter } from "@self-learning/api";
-import superjson from "superjson";
 
 function getBaseUrl() {
 	if (typeof window !== "undefined")
@@ -8,7 +7,7 @@ function getBaseUrl() {
 		return "";
 
 	// assume localhost
-	return `http://localhost:${process.env.PORT ?? 4200}`;
+	return `http://localhost:${process.env["PORT"] ?? 4200}`;
 }
 
 export const trpc = createTRPCNext<AppRouter>({
@@ -35,7 +34,6 @@ export const trpc = createTRPCNext<AppRouter>({
 		return {
 			links: [],
 			url: `${getBaseUrl()}/api/trpc`,
-			transformer: superjson,
 			queryClientConfig: {
 				defaultOptions: {
 					queries: {

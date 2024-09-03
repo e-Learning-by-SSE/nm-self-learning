@@ -1,10 +1,11 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { msToHMS, sumByDate, sumByWeek } from "./aggregation-functions";
+import { sumByDate, sumByWeek } from "./aggregation-functions";
 import { useState } from "react";
-import { DailyPlot, WeeklyPlot } from "./unary-charts";
-const PreviewTypes = ["Table", "Daily", "Weekly"];
 import { UserEvent } from "@self-learning/database";
+import { MetricsViewer } from "./metrics-viewer";
+
+const PreviewTypes = ["Table", "Chart"];
 
 function computeDuration(events: UserEvent[]) {
 	// Filter out cases where the user manually moves the slider
@@ -23,14 +24,14 @@ function computeDuration(events: UserEvent[]) {
 	let start: number | undefined = undefined;
 	const data = events.map(event => {
 		if (event.action === "VIDEO_PLAY" && event.payload) {
-			start = event.createdAt.getTime();
+			start = new Date(event.createdAt).getTime();
 		}
 		if (event.action === "VIDEO_JUMP" && event.payload) {
-			const payload = event.payload as Record<string, number>;
+			const payload = event.payload as unknown as Record<string, number>;
 			if (!start) {
 				return { ...event, totalWatchTime };
 			}
-			const watchTime = event.createdAt.getTime() - start;
+			const watchTime = new Date(event.createdAt).getTime() - start;
 			totalWatchTime += watchTime;
 			start = payload["videoLand"];
 			return { ...event, totalWatchTime };
@@ -39,7 +40,7 @@ function computeDuration(events: UserEvent[]) {
 			if (!start) {
 				return { ...event, totalWatchTime };
 			}
-			const watchTime = event.createdAt.getTime() - start;
+			const watchTime = new Date(event.createdAt).getTime() - start;
 			totalWatchTime += watchTime;
 			start = undefined;
 			return { ...event, totalWatchTime };
@@ -97,14 +98,6 @@ export function VideoDuration() {
 	const dailyData = sumByDate(filteredData, "totalWatchTime");
 
 	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
-	const dailyAverage = msToHMS(
-		Object.values(dailyData).reduce((acc, curr) => acc + curr, 0) /
-			Object.keys(dailyData).length
-	);
-	const weeklyAverage = msToHMS(
-		Object.values(weeklyData).reduce((acc, curr) => acc + curr, 0) /
-			Object.keys(weeklyData).length
-	);
 
 	return (
 		<>
@@ -120,13 +113,6 @@ export function VideoDuration() {
 				))}
 			</select>
 
-			<p>
-				Deine durchschnittliche Lernzeit beträgt{" "}
-				<span className="font-italic font-medium">{dailyAverage}</span> pro Tag, bzw.
-				wöchentlich lernst du{" "}
-				<span className="font-italic font-medium">{weeklyAverage}</span> auf der Plattform.
-			</p>
-
 			{previewSelection === "Table" ? (
 				<TableData
 					computedData={computedData}
@@ -135,11 +121,8 @@ export function VideoDuration() {
 					weeklyData={weeklyData}
 				/>
 			) : null}
-			{previewSelection === "Daily" ? (
-				<DailyPlot data={dailyData} label="Tägliche Lernzeit" />
-			) : null}
-			{previewSelection === "Weekly" ? (
-				<WeeklyPlot data={weeklyData} label="Wöchentliche Lernzeit" />
+			{previewSelection !== "Table" ? (
+				<MetricsViewer data={filteredData} metric="totalWatchTime" />
 			) : null}
 		</>
 	);

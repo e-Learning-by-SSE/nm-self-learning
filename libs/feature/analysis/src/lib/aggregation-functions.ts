@@ -1,9 +1,11 @@
-type NumericProperty<T> = {
+import { intervalToDuration } from "date-fns";
+
+export type NumericProperty<T> = {
 	[K in keyof T]: T[K] extends number ? K : never;
 }[keyof T];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Base = Record<string, any> & { createdAt: Date };
+export type MetricData = Record<string, any> & { createdAt: string };
 
 /**
  * Adapted function to compute the week of the year.
@@ -22,10 +24,10 @@ function getWeek(date: Date): string {
 	return `${tempDate.getUTCFullYear()}-W${weekNo.toString().padStart(2, "0")}`;
 }
 
-export function sumByDate<T extends Base>(data: T[], key: NumericProperty<T>) {
+export function sumByDate<T extends MetricData>(data: T[], key: NumericProperty<T>) {
 	return data.reduce(
 		(acc, event) => {
-			const date = event.createdAt.toISOString().split("T")[0]; // Extract the YYYY-MM-DD part
+			const date = new Date(event.createdAt).toISOString().split("T")[0]; // Extract the YYYY-MM-DD part
 			let prevValue = acc[date] ?? 0;
 			prevValue += event[key];
 			acc[date] = prevValue;
@@ -35,10 +37,10 @@ export function sumByDate<T extends Base>(data: T[], key: NumericProperty<T>) {
 	);
 }
 
-export function sumByWeek<T extends Base>(data: T[], key: NumericProperty<T>) {
+export function sumByWeek<T extends MetricData>(data: T[], key: NumericProperty<T>) {
 	return data.reduce(
 		(acc, event) => {
-			const week = getWeek(event.createdAt);
+			const week = getWeek(new Date(event.createdAt));
 			let prevValue = acc[week] ?? 0;
 			prevValue += event[key];
 			acc[week] = prevValue;
@@ -48,10 +50,7 @@ export function sumByWeek<T extends Base>(data: T[], key: NumericProperty<T>) {
 	);
 }
 
-export function msToHMS(ms: number) {
-	const seconds = Math.floor(ms / 1000);
-	const hours = Math.floor(seconds / 3600);
-	const minutes = Math.floor((seconds % 3600) / 60);
-	const remainingSeconds = seconds % 60;
-	return `${hours}:${minutes}:${remainingSeconds}`;
+export function toInterval(ms: number) {
+	const { hours, minutes, seconds } = intervalToDuration({ start: 0, end: ms });
+	return `${String(hours ?? 0).padStart(2, "0")}:${String(minutes ?? 0).padStart(2, "0")}:${String(seconds ?? 0).padStart(2, "0")}`;
 }
