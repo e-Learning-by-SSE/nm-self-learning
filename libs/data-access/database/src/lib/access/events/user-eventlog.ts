@@ -32,6 +32,9 @@ export async function loadUserEvents(input: EventLogQueryInput) {
 			},
 			action: actionWhereQuery,
 			resourceId: input.resourceId
+		},
+		orderBy: {
+			createdAt: "asc"
 		}
 	});
 	/*
