@@ -1,4 +1,4 @@
-import { intervalToDuration } from "date-fns";
+import { intervalToDuration, format } from "date-fns";
 
 export type NumericProperty<T> = {
 	[K in keyof T]: T[K] extends number ? K : never;
@@ -7,47 +7,45 @@ export type NumericProperty<T> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type MetricData = Record<string, any> & { createdAt: string };
 
-/**
- * Adapted function to compute the week of the year.
- * However, usually IsoWeek will start the week by Thursday, this function
- * starts a week by Monday.
- * @param date The date to compute the week
- * @returns year-week
- * @see https://weeknumber.com/how-to/javascript
- */
-function getWeek(date: Date): string {
-	const tempDate = new Date(date.getTime());
-	tempDate.setUTCHours(0, 0, 0, 0);
-	tempDate.setUTCDate(tempDate.getUTCDate() + 1 - (tempDate.getUTCDay() || 7));
-	const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
-	const weekNo = Math.ceil(((tempDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-	return `${tempDate.getUTCFullYear()}-W${weekNo.toString().padStart(2, "0")}`;
+function sumUpByFormat<T extends MetricData>(
+	data: T[],
+	key: NumericProperty<T>,
+	dateFormat: string
+) {
+	const groupedTotals = data.reduce(
+		(acc, event) => {
+			const grouped = format(new Date(event.createdAt), dateFormat);
+
+			// Initialize the grouped date key if it doesn't exist
+			if (!acc[grouped]) {
+				acc[grouped] = 0;
+			}
+
+			// Add the amount to the corresponding range
+			acc[grouped] += event[key];
+			return acc;
+		},
+		{} as Record<string, number>
+	);
+
+	// Convert the grouped totals object to an array of objects
+	return Object.keys(groupedTotals).map(group => ({
+		date: group,
+		value: groupedTotals[group]
+	}));
 }
 
 export function sumByDate<T extends MetricData>(data: T[], key: NumericProperty<T>) {
-	return data.reduce(
-		(acc, event) => {
-			const date = new Date(event.createdAt).toISOString().split("T")[0]; // Extract the YYYY-MM-DD part
-			let prevValue = acc[date] ?? 0;
-			prevValue += event[key];
-			acc[date] = prevValue;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	return sumUpByFormat(data, key, "yyyy-MM-dd");
 }
 
 export function sumByWeek<T extends MetricData>(data: T[], key: NumericProperty<T>) {
-	return data.reduce(
-		(acc, event) => {
-			const week = getWeek(new Date(event.createdAt));
-			let prevValue = acc[week] ?? 0;
-			prevValue += event[key];
-			acc[week] = prevValue;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	return sumUpByFormat(data, key, "yyyy-'W'II");
+}
+
+// Function to sum amounts by month
+export function sumByMonth<T extends MetricData>(data: T[], key: NumericProperty<T>) {
+	return sumUpByFormat(data, key, "yyyy-MM");
 }
 
 export function toInterval(ms: number) {

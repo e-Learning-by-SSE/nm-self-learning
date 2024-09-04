@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { sumByDate, sumByWeek } from "./aggregation-functions";
+import { sumByDate, sumByMonth, sumByWeek } from "./aggregation-functions";
 import { useState } from "react";
 import { UserEvent } from "@self-learning/database";
 import { MetricsViewer } from "./metrics-viewer";
@@ -98,8 +98,8 @@ export function VideoDuration() {
 	});
 
 	const dailyData = sumByDate(filteredData, "totalWatchTime");
-
 	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
+	const monthlyData = sumByMonth(filteredData, "totalWatchTime");
 
 	return (
 		<>
@@ -121,6 +121,7 @@ export function VideoDuration() {
 					filteredData={filteredData}
 					dailyData={dailyData}
 					weeklyData={weeklyData}
+					monthlyData={monthlyData}
 				/>
 			) : null}
 			{previewSelection !== "Table" ? (
@@ -136,12 +137,14 @@ function TableData({
 	computedData,
 	filteredData,
 	dailyData,
-	weeklyData
+	weeklyData,
+	monthlyData
 }: {
 	computedData: TableDataProps[];
 	filteredData: TableDataProps[];
-	dailyData: Record<string, number>;
-	weeklyData: Record<string, number>;
+	dailyData: { date: string; value: number }[];
+	weeklyData: { date: string; value: number }[];
+	monthlyData: { date: string; value: number }[];
 }) {
 	return (
 		<>
@@ -170,7 +173,7 @@ function TableData({
 				))}
 			</Table>
 
-			<h1 className="text-center text-3xl">Filtered Data</h1>
+			<h1 className="text-center text-3xl">Aggregierte Daten</h1>
 			<Table
 				head={
 					<>
@@ -195,7 +198,7 @@ function TableData({
 				))}
 			</Table>
 
-			<h1 className="text-center text-3xl">Daily Sums</h1>
+			<h1 className="text-center text-3xl">Tägliche Werte</h1>
 			<Table
 				head={
 					<>
@@ -204,15 +207,15 @@ function TableData({
 					</>
 				}
 			>
-				{Object.keys(dailyData).map(day => (
-					<tr key={day}>
-						<TableDataColumn>{day}</TableDataColumn>
-						<TableDataColumn>{(dailyData[day] / 1000).toFixed(2)}</TableDataColumn>
+				{dailyData.map(day => (
+					<tr key={day.date}>
+						<TableDataColumn>{day.date}</TableDataColumn>
+						<TableDataColumn>{(day.value / 1000).toFixed(2)}</TableDataColumn>
 					</tr>
 				))}
 			</Table>
 
-			<h1 className="text-center text-3xl">Weekly Sums</h1>
+			<h1 className="text-center text-3xl">Wöchentliche Werte</h1>
 			<Table
 				head={
 					<>
@@ -221,10 +224,27 @@ function TableData({
 					</>
 				}
 			>
-				{Object.keys(weeklyData).map(week => (
-					<tr key={week}>
-						<TableDataColumn>{week}</TableDataColumn>
-						<TableDataColumn>{(weeklyData[week] / 1000).toFixed(2)}</TableDataColumn>
+				{weeklyData.map(week => (
+					<tr key={week.date}>
+						<TableDataColumn>{week.date}</TableDataColumn>
+						<TableDataColumn>{(week.value / 1000).toFixed(2)}</TableDataColumn>
+					</tr>
+				))}
+			</Table>
+
+			<h1 className="text-center text-3xl">Monatliche Werte</h1>
+			<Table
+				head={
+					<>
+						<TableHeaderColumn>Monat</TableHeaderColumn>
+						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+					</>
+				}
+			>
+				{monthlyData.map(month => (
+					<tr key={month.date}>
+						<TableDataColumn>{month.date}</TableDataColumn>
+						<TableDataColumn>{(month.value / 1000).toFixed(2)}</TableDataColumn>
 					</tr>
 				))}
 			</Table>

@@ -3,12 +3,13 @@ import {
 	MetricData,
 	NumericProperty,
 	sumByDate,
+	sumByMonth,
 	sumByWeek,
 	toInterval
 } from "./aggregation-functions";
-import { DailyPlot, WeeklyPlot } from "./unary-charts";
+import { DailyPlot, MonthlyPlot, WeeklyPlot } from "./unary-charts";
 
-const options = ["Täglich", "Wöchentlich"] as const;
+const options = ["Täglich", "Wöchentlich", "Monatlich"] as const;
 type OptionsType = (typeof options)[number];
 
 export function MetricsViewer<T extends MetricData>({
@@ -23,13 +24,12 @@ export function MetricsViewer<T extends MetricData>({
 	// TODO refactor
 	const dailyData = sumByDate(data, metric);
 	const weeklyData = sumByWeek(data, metric);
+	const monthlyData = sumByMonth(data, metric);
 	const dailyAverage = toInterval(
-		Object.values(dailyData).reduce((acc, curr) => acc + curr, 0) /
-			Object.keys(dailyData).length
+		dailyData.reduce((acc, curr) => acc + curr.value, 0) / dailyData.length
 	);
 	const weeklyAverage = toInterval(
-		Object.values(weeklyData).reduce((acc, curr) => acc + curr, 0) /
-			Object.keys(weeklyData).length
+		weeklyData.reduce((acc, curr) => acc + curr.value, 0) / dailyData.length
 	);
 
 	return (
@@ -42,17 +42,22 @@ export function MetricsViewer<T extends MetricData>({
 			</p>
 
 			<div className="relative w-full h-screen">
-				<Chart weeklyData={weeklyData} dailyData={dailyData} option={selectedOption} />
+				<Chart
+					weeklyData={weeklyData}
+					dailyData={dailyData}
+					monthlyData={monthlyData}
+					option={selectedOption}
+				/>
 
-				<div className="absolute top-0 right-5 m-2 p-1 rounded">
+				<div className="absolute top-10 right-10 m-2 p-1 rounded">
 					{options.map(option => (
 						<button
 							key={option}
 							onClick={() => setOption(option)}
-							className={`px-8 py-2 border rounded ${
+							className={`px-8 py-2 border rounded text-xs font-semibold ${
 								selectedOption === option
-									? " bg-emerald-500 text-sm font-semibold text-white"
-									: "bg-gray-200 text-gray-600 text-sm font-semibold"
+									? " bg-emerald-500   text-white"
+									: "bg-gray-200 text-gray-600"
 							}`}
 						>
 							{option}
@@ -67,10 +72,12 @@ export function MetricsViewer<T extends MetricData>({
 function Chart({
 	dailyData,
 	weeklyData,
+	monthlyData,
 	option
 }: {
-	dailyData: Record<string, number>;
-	weeklyData: Record<string, number>;
+	dailyData: { date: string; value: number }[];
+	weeklyData: { date: string; value: number }[];
+	monthlyData: { date: string; value: number }[];
 	option: OptionsType;
 }) {
 	switch (option) {
@@ -78,6 +85,8 @@ function Chart({
 			return <DailyPlot data={dailyData} label="Tägliche Lernzeit" />;
 		case "Wöchentlich":
 			return <WeeklyPlot data={weeklyData} label="Wöchentliche Lernzeit" />;
+		case "Monatlich":
+			return <MonthlyPlot data={monthlyData} label="Monatliche Lernzeit" />;
 		default:
 			return <p>Fehler: Keine Analyse ausgewählt</p>;
 	}
