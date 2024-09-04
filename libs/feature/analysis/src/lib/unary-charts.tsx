@@ -196,7 +196,9 @@ export function MonthlyPlot({
 	const values: number[] = [];
 	const labels: string[] = [];
 	data.forEach(d => {
-		labels.push(new Date(d.date).toLocaleDateString("default", { month: "long" }));
+		labels.push(
+			new Date(d.date).toLocaleDateString("default", { month: "long", year: "2-digit" })
+		);
 		values.push(d.value);
 	});
 	const chartData = {

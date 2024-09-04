@@ -43,7 +43,7 @@ export function MetricsViewer<T extends MetricData>({
 				<span className="font-italic font-medium">{weeklyAverage}</span> auf der Plattform.
 			</p>
 
-			<div className="relative w-full h-screen">
+			<div className="relative w-full">
 				<Chart
 					weeklyData={weeklyData}
 					dailyData={dailyData}

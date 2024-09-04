@@ -244,6 +244,51 @@ const videoEvents: EventType[] = [
 		createdAt: "2024-09-01T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-4"
+	},
+	// Scenario 6: Some parts of the video watched with different speed
+	{
+		action: "VIDEO_OPENED",
+		createdAt: "2024-09-01T09:00:00.000Z",
+		payload: {
+			url: "http://example.com/video-5.mp4"
+		},
+		resourceId: "video-5"
+	},
+	{
+		action: "VIDEO_PLAY",
+		createdAt: "2024-09-01T09:00:01.000Z",
+		payload: {
+			videoCurrentTime: 0
+		},
+		resourceId: "video-5"
+	},
+	{
+		action: "VIDEO_SPEED",
+		createdAt: "2024-09-01T09:01:01.000Z",
+		payload: {
+			videoSpeed: 1.5 // After 1 minute
+		},
+		resourceId: "video-5"
+	},
+	{
+		action: "VIDEO_SPEED",
+		createdAt: "2024-09-01T09:02:01.000Z",
+		payload: {
+			videoSpeed: 1.25 // After 1 min (90sec playback)
+		},
+		resourceId: "video-5"
+	},
+	{
+		action: "VIDEO_STOP",
+		createdAt: "2024-09-01T09:03:01.000Z",
+		payload: undefined, // After 1 min (75sec playback)
+		resourceId: "video-5"
+	},
+	{
+		action: "VIDEO_END",
+		createdAt: "2024-09-01T09:03:01.000Z",
+		payload: undefined,
+		resourceId: "video-5"
 	}
 ];
 
