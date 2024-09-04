@@ -23,17 +23,15 @@ function computeDuration(events: UserEvent[]) {
 	let totalWatchTime = 0;
 	let start: number | undefined = undefined;
 	const data = events.map(event => {
-		if (event.action === "VIDEO_PLAY" && event.payload) {
+		if (event.action === "VIDEO_PLAY") {
 			start = new Date(event.createdAt).getTime();
 		}
-		if (event.action === "VIDEO_JUMP" && event.payload) {
-			const payload = event.payload as unknown as Record<string, number>;
-			if (!start) {
-				return { ...event, totalWatchTime };
+		if (event.action === "VIDEO_JUMP") {
+			if (start) {
+				const watchTime = new Date(event.createdAt).getTime() - start;
+				totalWatchTime += watchTime;
 			}
-			const watchTime = new Date(event.createdAt).getTime() - start;
-			totalWatchTime += watchTime;
-			start = payload["videoLand"];
+			start = new Date(event.createdAt).getTime();
 			return { ...event, totalWatchTime };
 		}
 		if (event.action === "VIDEO_PAUSE" || event.action === "VIDEO_STOP") {
@@ -47,6 +45,10 @@ function computeDuration(events: UserEvent[]) {
 		}
 		if (event.action === "VIDEO_END") {
 			// Reset computation
+			if (start) {
+				const watchTime = new Date(event.createdAt).getTime() - start;
+				totalWatchTime += watchTime;
+			}
 			const result = { ...event, totalWatchTime };
 			start = undefined;
 			totalWatchTime = 0;
