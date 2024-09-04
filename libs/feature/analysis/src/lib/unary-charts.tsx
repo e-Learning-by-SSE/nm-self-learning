@@ -1,5 +1,7 @@
-import { Chart as ChartJS, registerables } from "chart.js";
+import { Chart as ChartJS, ChartOptions, registerables } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
+import "chartjs-adapter-date-fns";
+import { toInterval } from "./aggregation-functions";
 ChartJS.register(...registerables);
 
 export function DailyPlot({
@@ -13,7 +15,7 @@ export function DailyPlot({
 	const labels: string[] = [];
 	data.forEach(d => {
 		labels.push(new Date(d.date).toLocaleDateString());
-		values.push(d.value / 1000);
+		values.push(d.value);
 	});
 	const chartData = {
 		labels,
@@ -35,7 +37,61 @@ export function DailyPlot({
 			}
 		]
 	};
-	return <Line data={chartData} />;
+
+	const dailyOptions: ChartOptions<"line"> = {
+		scales: {
+			x: {
+				type: "time",
+				time: {
+					parser: "dd.MM.yyyy",
+					unit: "day",
+					tooltipFormat: "dd.MM.yyyy"
+				},
+				stacked: true,
+				ticks: {
+					callback: function (value) {
+						return new Date(value).toLocaleDateString("default", {
+							day: "numeric",
+							month: "numeric",
+							year: "2-digit"
+						});
+					}
+				}
+			},
+			y: {
+				type: "timeseries",
+				time: {
+					parser: "HH:mm:ss",
+					unit: "millisecond"
+				},
+				title: {
+					display: true,
+					text: "Values"
+				},
+				suggestedMin: 0,
+				stacked: true,
+				ticks: {
+					callback: function (value) {
+						return toInterval(new Date(value).getTime());
+					}
+				}
+			}
+		},
+		// React-chartjs-2 uses by default chart.js 3.x, which is used here
+		// Tooltip format in y-axis section did not work (displayed always a leading 1: 01:xx:xx), therefore a callback is used
+		plugins: {
+			tooltip: {
+				callbacks: {
+					label: function (context) {
+						const value = context.parsed.y;
+						return toInterval(value);
+					}
+				}
+			}
+		}
+	};
+
+	return <Line data={chartData} options={dailyOptions} />;
 }
 
 function parseWeekYear(weekYearStr: string) {
@@ -58,6 +114,41 @@ function parseWeekYear(weekYearStr: string) {
 	return date;
 }
 
+const DEFAULT_INTERVAL_BASED_BAR_CHART_OPTIONS: ChartOptions<"bar"> = {
+	scales: {
+		y: {
+			type: "timeseries",
+			time: {
+				parser: "HH:mm:ss",
+				unit: "millisecond"
+			},
+			title: {
+				display: true,
+				text: "Values"
+			},
+			suggestedMin: 0,
+			stacked: true,
+			ticks: {
+				callback: function (value) {
+					return toInterval(new Date(value).getTime());
+				}
+			}
+		}
+	},
+	// React-chartjs-2 uses by default chart.js 3.x, which is used here
+	// Tooltip format in y-axis section did not work (displayed always a leading 1: 01:xx:xx), therefore a callback is used
+	plugins: {
+		tooltip: {
+			callbacks: {
+				label: function (context) {
+					const value = context.parsed.y;
+					return toInterval(value);
+				}
+			}
+		}
+	}
+};
+
 export function WeeklyPlot({
 	data,
 	label
@@ -69,7 +160,7 @@ export function WeeklyPlot({
 	const labels: string[] = [];
 	data.forEach(d => {
 		labels.push(parseWeekYear(d.date).toLocaleDateString());
-		values.push(d.value / 1000);
+		values.push(d.value);
 	});
 	const chartData = {
 		labels,
@@ -92,7 +183,7 @@ export function WeeklyPlot({
 		]
 	};
 
-	return <Bar data={chartData} />;
+	return <Bar data={chartData} options={DEFAULT_INTERVAL_BASED_BAR_CHART_OPTIONS} />;
 }
 
 export function MonthlyPlot({
@@ -106,7 +197,7 @@ export function MonthlyPlot({
 	const labels: string[] = [];
 	data.forEach(d => {
 		labels.push(new Date(d.date).toLocaleDateString("default", { month: "long" }));
-		values.push(d.value / 1000);
+		values.push(d.value);
 	});
 	const chartData = {
 		labels,
@@ -129,5 +220,5 @@ export function MonthlyPlot({
 		]
 	};
 
-	return <Bar data={chartData} />;
+	return <Bar data={chartData} options={DEFAULT_INTERVAL_BASED_BAR_CHART_OPTIONS} />;
 }

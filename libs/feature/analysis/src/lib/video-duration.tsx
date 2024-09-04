@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { sumByDate, sumByMonth, sumByWeek } from "./aggregation-functions";
+import { sumByDate, sumByMonth, sumByWeek, toInterval } from "./aggregation-functions";
 import { useState } from "react";
 import { UserEvent } from "@self-learning/database";
 import { MetricsViewer } from "./metrics-viewer";
@@ -125,7 +125,11 @@ export function VideoDuration() {
 				/>
 			) : null}
 			{previewSelection !== "Table" ? (
-				<MetricsViewer data={filteredData} metric="totalWatchTime" />
+				<MetricsViewer
+					data={filteredData}
+					metric="totalWatchTime"
+					valueFormatter={toInterval}
+				/>
 			) : null}
 		</>
 	);

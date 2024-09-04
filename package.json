@@ -43,6 +43,7 @@
 		"@trpc/react-query": "10.45.2",
 		"@trpc/server": "10.45.2",
 		"chart.js": "^4.4.4",
+		"chartjs-adapter-date-fns": "^3.0.0",
 		"core-js": "^3.37.1",
 		"date-fns": "^3.6.0",
 		"framer-motion": "^11.3.21",

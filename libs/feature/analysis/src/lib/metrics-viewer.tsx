@@ -4,8 +4,7 @@ import {
 	NumericProperty,
 	sumByDate,
 	sumByMonth,
-	sumByWeek,
-	toInterval
+	sumByWeek
 } from "./aggregation-functions";
 import { DailyPlot, MonthlyPlot, WeeklyPlot } from "./unary-charts";
 
@@ -14,10 +13,12 @@ type OptionsType = (typeof options)[number];
 
 export function MetricsViewer<T extends MetricData>({
 	data,
-	metric
+	metric,
+	valueFormatter
 }: {
 	data: T[];
 	metric: NumericProperty<T>;
+	valueFormatter?: (value: number) => string;
 }) {
 	const [selectedOption, setOption] = useState<OptionsType>("Täglich");
 
@@ -25,12 +26,13 @@ export function MetricsViewer<T extends MetricData>({
 	const dailyData = sumByDate(data, metric);
 	const weeklyData = sumByWeek(data, metric);
 	const monthlyData = sumByMonth(data, metric);
-	const dailyAverage = toInterval(
-		dailyData.reduce((acc, curr) => acc + curr.value, 0) / dailyData.length
-	);
-	const weeklyAverage = toInterval(
-		weeklyData.reduce((acc, curr) => acc + curr.value, 0) / dailyData.length
-	);
+	const dailyAverage = valueFormatter
+		? valueFormatter(dailyData.reduce((acc, curr) => acc + curr.value, 0) / dailyData.length)
+		: dailyData.reduce((acc, curr) => acc + curr.value, 0) / dailyData.length;
+
+	const weeklyAverage = valueFormatter
+		? valueFormatter(weeklyData.reduce((acc, curr) => acc + curr.value, 0) / weeklyData.length)
+		: weeklyData.reduce((acc, curr) => acc + curr.value, 0) / weeklyData.length;
 
 	return (
 		<>
