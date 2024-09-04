@@ -7,7 +7,13 @@ import { MetricsViewer } from "./metrics-viewer";
 
 const PreviewTypes = ["Table", "Chart"];
 
-function computeDuration(events: UserEvent[]) {
+type TableDataProps = UserEvent & {
+	totalWatchTime: number;
+	speed: number;
+	effectivelyWatched: number;
+};
+
+function computeDuration(events: UserEvent[]): TableDataProps[] {
 	// Filter out cases where the user manually moves the slider
 	events = events.filter((event, index) => {
 		if (event.action === "VIDEO_JUMP" && index < events.length - 1) {
@@ -22,6 +28,8 @@ function computeDuration(events: UserEvent[]) {
 
 	let totalWatchTime = 0;
 	let start: number | undefined = undefined;
+	let effectivelyWatched = 0;
+	let speed = 1;
 	const data = events.map(event => {
 		if (event.action === "VIDEO_PLAY") {
 			start = new Date(event.createdAt).getTime();
@@ -29,33 +37,50 @@ function computeDuration(events: UserEvent[]) {
 		if (event.action === "VIDEO_JUMP") {
 			if (start) {
 				const watchTime = new Date(event.createdAt).getTime() - start;
+				effectivelyWatched += watchTime * speed;
 				totalWatchTime += watchTime;
 			}
 			start = new Date(event.createdAt).getTime();
-			return { ...event, totalWatchTime };
+			return { ...event, totalWatchTime, speed, effectivelyWatched };
+		}
+		if (event.action === "VIDEO_SPEED") {
+			if (start) {
+				// Video was playing, continue to play
+				const watchTime = new Date(event.createdAt).getTime() - start;
+				effectivelyWatched += watchTime * speed;
+				totalWatchTime += watchTime;
+				start = new Date(event.createdAt).getTime();
+			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const payload = event.payload as Record<string, any>;
+			speed = payload["videoSpeed"];
+			return { ...event, totalWatchTime, speed, effectivelyWatched };
 		}
 		if (event.action === "VIDEO_PAUSE" || event.action === "VIDEO_STOP") {
 			if (!start) {
-				return { ...event, totalWatchTime };
+				return { ...event, totalWatchTime, speed, effectivelyWatched };
 			}
 			const watchTime = new Date(event.createdAt).getTime() - start;
+			effectivelyWatched += watchTime * speed;
 			totalWatchTime += watchTime;
 			start = undefined;
-			return { ...event, totalWatchTime };
+			return { ...event, totalWatchTime, speed, effectivelyWatched };
 		}
 		if (event.action === "VIDEO_END") {
 			// Reset computation
 			if (start) {
 				const watchTime = new Date(event.createdAt).getTime() - start;
 				totalWatchTime += watchTime;
+				effectivelyWatched += watchTime * speed;
 			}
-			const result = { ...event, totalWatchTime };
+			const result = { ...event, totalWatchTime, speed, effectivelyWatched };
 			start = undefined;
 			totalWatchTime = 0;
+			effectivelyWatched = 0;
 			return result;
 		}
 
-		return { ...event, totalWatchTime };
+		return { ...event, totalWatchTime, speed, effectivelyWatched };
 	});
 	return data;
 }
@@ -68,10 +93,8 @@ export function VideoDuration() {
 			"VIDEO_PAUSE",
 			"VIDEO_JUMP",
 			"VIDEO_STOP",
-			"VIDEO_END"
-			// "VIDEO_OPENED",
-			// "VIDEO_START",
-			// "VIDEO_RESOLUTION",
+			"VIDEO_END",
+			"VIDEO_SPEED"
 		]
 	});
 
@@ -135,8 +158,6 @@ export function VideoDuration() {
 	);
 }
 
-type TableDataProps = UserEvent & { totalWatchTime: number };
-
 function TableData({
 	computedData,
 	filteredData,
@@ -161,6 +182,8 @@ function TableData({
 						<TableHeaderColumn>ResourceID</TableHeaderColumn>
 						<TableHeaderColumn>PayLoad</TableHeaderColumn>
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>Speed</TableHeaderColumn>
+						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
 					</>
 				}
 			>
@@ -172,6 +195,10 @@ function TableData({
 						<TableDataColumn>{JSON.stringify(event.payload)}</TableDataColumn>
 						<TableDataColumn>
 							{(event.totalWatchTime / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{event.speed}</TableDataColumn>
+						<TableDataColumn>
+							{(event.effectivelyWatched / 1000).toFixed(2)}
 						</TableDataColumn>
 					</tr>
 				))}
@@ -186,6 +213,7 @@ function TableData({
 						<TableHeaderColumn>ResourceID</TableHeaderColumn>
 						<TableHeaderColumn>PayLoad</TableHeaderColumn>
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
 					</>
 				}
 			>
@@ -197,6 +225,9 @@ function TableData({
 						<TableDataColumn>{JSON.stringify(event.payload)}</TableDataColumn>
 						<TableDataColumn>
 							{(event.totalWatchTime / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>
+							{(event.effectivelyWatched / 1000).toFixed(2)}
 						</TableDataColumn>
 					</tr>
 				))}
