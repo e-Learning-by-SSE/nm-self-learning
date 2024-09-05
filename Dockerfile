@@ -2,7 +2,7 @@
 ARG NPM_TOKEN
 
 # Base image
-FROM node:alpine as build
+FROM node:22.6.0-alpine as build
 
 ARG NPM_TOKEN
 ENV NPM_TOKEN=${NPM_TOKEN}
