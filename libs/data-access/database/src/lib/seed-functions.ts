@@ -79,8 +79,8 @@ export function createLesson({
 }) {
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
-		lessonId: faker.datatype.uuid(),
-		slug: slugify(faker.random.alphaNumeric(8) + title, {lower: true, strict: true}),
+		lessonId: faker.string.uuid(),
+		slug: slugify(faker.string.alphanumeric(8) + title, { lower: true, strict: true }),
 		subtitle: subtitle,
 		description: description,
 		content: content,
@@ -175,7 +175,7 @@ export function createCourse({
 	chapters: Chapters;
 }): Course {
 	const course = {
-		courseId: faker.random.alphaNumeric(8),
+		courseId: faker.string.alphanumeric(8),
 		title: title,
 		slug: slugify(title, {lower: true, strict: true}),
 		subtitle: subtitle ?? "",
@@ -218,17 +218,17 @@ export function createMultipleChoice({
 }): QuestionType {
 	const hintsData =
 		hints?.map(h => ({
-			hintId: faker.random.alphaNumeric(8),
+			hintId: faker.string.alphanumeric(8),
 			content: h
 		})) ?? [];
 
 	return {
 		type: "multiple-choice",
-		questionId: faker.random.alphaNumeric(8),
+		questionId: faker.string.alphanumeric(8),
 		statement: question,
 		withCertainty: false,
 		answers: answers.map(answer => ({
-			answerId: faker.random.alphaNumeric(8),
+			answerId: faker.string.alphanumeric(8),
 			...answer
 		})),
 		questionStep: 1,
@@ -243,18 +243,18 @@ export function createTextQuestion(
 ): QuestionType {
 	const hintsData =
 		hints?.map(h => ({
-			hintId: faker.random.alphaNumeric(8),
+			hintId: faker.string.alphanumeric(8),
 			content: h
 		})) ?? [];
 
 	return {
 		type: "exact",
-		questionId: faker.random.alphaNumeric(8),
+		questionId: faker.string.alphanumeric(8),
 		statement: question,
 		withCertainty: false,
 		caseSensitive: false,
 		acceptedAnswers: answers.map(answer => ({
-			acceptedAnswerId: faker.random.alphaNumeric(8),
+			acceptedAnswerId: faker.string.alphanumeric(8),
 			value: answer
 		})),
 		hints: hintsData

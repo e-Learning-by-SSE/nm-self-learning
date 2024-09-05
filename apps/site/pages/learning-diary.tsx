@@ -7,7 +7,7 @@ import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { endOfWeek, format, isToday, isYesterday, parseISO, startOfWeek } from "date-fns";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { ReactElement, useRef } from "react";
 
@@ -23,7 +23,7 @@ type LearningDiaryProps = {
 };
 
 export const getServerSideProps: GetServerSideProps<LearningDiaryProps> = async ctx => {
-	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+	const session = await getServerSession(ctx.req, ctx.res, authOptions);
 
 	if (!session?.user?.name) {
 		return { redirect: { destination: "/login?callbackUrl=learning-diary", permanent: false } };

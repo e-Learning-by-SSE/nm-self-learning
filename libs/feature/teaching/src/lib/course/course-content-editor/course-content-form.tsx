@@ -416,6 +416,7 @@ function EditExistingLessonDialog({
 				// currently there is no license label in the UI so we don't need to set this; see sample implementation below
 				// licenseId: data.licenseId ?? trpc.licenseRouter.getDefault.useQuery().data?.licenseId ?? 0,
 				authors: data.authors.map(a => ({ username: a.username })),
+				// @ts-expect-error TODO @palfner-sse
 				content: (data.content ?? []) as LessonContent,
 				quiz: data.quiz as Quiz
 			}}
