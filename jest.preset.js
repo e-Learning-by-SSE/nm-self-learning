@@ -1,5 +1,5 @@
 const nxPreset = require("@nx/jest/preset").default;
-
+const esModules = ["superjson"].join("|");
 module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
@@ -24,5 +24,6 @@ module.exports = {
 	reporters: [
 		"default",
 		["jest-junit", { outputDirectory: "output/test", outputName: "junit.xml" }]
-	]
+	],
+	transformIgnorePatterns: [`/node_modules/(?!${esModules})`]
 };

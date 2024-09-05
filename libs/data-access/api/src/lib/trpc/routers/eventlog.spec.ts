@@ -4,7 +4,7 @@ import { t } from "../trpc";
 import { actionPayloadTypesSchema } from "@self-learning/types";
 import { createUserEvent, loadUserEvents } from "@self-learning/database";
 
-jest.mock("@self-learning/util/common");
+jest.mock("@self-learning/database");
 
 function prepare() {
 	const mockCreateUserEvent = createUserEvent as jest.MockedFunction<typeof createUserEvent>;
