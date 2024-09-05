@@ -60,7 +60,7 @@ pipeline {
                                 script {
                                     def lastSuccessBuild = currentBuild.previousSuccessfulBuild
                                     def lastSuccessSHA = lastSuccessBuild?.getEnvVars()['GIT_COMMIT']
-                                    sh "npx nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci"
+                                    sh "env TZ=${env.TZ} px nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci"
                                 }
                             }
                         }
@@ -97,7 +97,7 @@ pipeline {
                              .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                                 sh 'npm run prisma:seed'
                                 sh "npx nx-cloud record -- nx format:check"
-                                sh "npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-c"
+                                sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-c"
                             }
                         }
                         ssedocker {
