@@ -1,7 +1,7 @@
 @Library('web-service-helper-lib') _
 
 pipeline {
-    agent any
+    agent { label 'docker' }
     environment {
         NODE_DOCKER_IMAGE = 'node:21-bullseye'
         NX_BASE = 'master'
@@ -67,7 +67,6 @@ pipeline {
                         ssedocker {
                             create {
                                 target "${env.TARGET_PREFIX}:unstable"
-                                args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
                             }
                             publish {}
                         }
@@ -103,7 +102,6 @@ pipeline {
                         ssedocker {
                             create {
                                 target "${env.TARGET_PREFIX}:${env.VERSION}"
-                                args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
                             }
                             publish {}
                         }
@@ -126,7 +124,6 @@ pipeline {
                         ssedocker {
                             create {
                                 target "${env.TARGET_PREFIX}:latest"
-                                args "--build-arg NPM_TOKEN=${env.NPM_TOKEN}"
                             }
                             publish {
                                 tag "${env.API_VERSION}"
