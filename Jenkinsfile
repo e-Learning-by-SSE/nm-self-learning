@@ -10,6 +10,7 @@ pipeline {
         NX_BRANCH = env.BRANCH_NAME.replace('PR-', '')
 
         API_VERSION = packageJson.getVersion() // package.json must be in the root level in order for this to work
+        TZ = 'Europe/Berlin'
     }
 
     options {
