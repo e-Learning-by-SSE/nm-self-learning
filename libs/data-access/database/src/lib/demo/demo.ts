@@ -17,6 +17,7 @@ import { getRandomId, slugify } from "@self-learning/util/common";
 import { javaExample } from "./java-example";
 import { javaSkillSeed } from "./java-skills";
 import { license } from "./license";
+import { seedEvents } from "./event-seed";
 
 faker.seed(1);
 
@@ -552,6 +553,9 @@ export async function seedDemos(): Promise<void> {
 
 	await javaSkillSeed();
 	await javaExample();
+
+	await seedEvents();
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Events");
 }
 
 async function createUsers(): Promise<void> {

@@ -1,12 +1,19 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { msToHMS, sumByDate, sumByWeek } from "./aggregation-functions";
+import { sumByDate, sumByMonth, sumByWeek, toInterval } from "./aggregation-functions";
 import { useState } from "react";
-import { DailyPlot, WeeklyPlot } from "./unary-charts";
-const PreviewTypes = ["Table", "Daily", "Weekly"];
 import { UserEvent } from "@self-learning/database";
+import { MetricsViewer } from "./metrics-viewer";
 
-function computeDuration(events: UserEvent[]) {
+const PreviewTypes = ["Table", "Chart"];
+
+type TableDataProps = UserEvent & {
+	totalWatchTime: number;
+	speed: number;
+	effectivelyWatched: number;
+};
+
+function computeDuration(events: UserEvent[]): TableDataProps[] {
 	// Filter out cases where the user manually moves the slider
 	events = events.filter((event, index) => {
 		if (event.action === "VIDEO_JUMP" && index < events.length - 1) {
@@ -21,38 +28,59 @@ function computeDuration(events: UserEvent[]) {
 
 	let totalWatchTime = 0;
 	let start: number | undefined = undefined;
+	let effectivelyWatched = 0;
+	let speed = 1;
 	const data = events.map(event => {
-		if (event.action === "VIDEO_PLAY" && event.payload) {
-			start = event.createdAt.getTime();
+		if (event.action === "VIDEO_PLAY") {
+			start = new Date(event.createdAt).getTime();
 		}
-		if (event.action === "VIDEO_JUMP" && event.payload) {
-			const payload = event.payload as Record<string, number>;
-			if (!start) {
-				return { ...event, totalWatchTime };
+		if (event.action === "VIDEO_JUMP") {
+			if (start) {
+				const watchTime = new Date(event.createdAt).getTime() - start;
+				effectivelyWatched += watchTime * speed;
+				totalWatchTime += watchTime;
 			}
-			const watchTime = event.createdAt.getTime() - start;
-			totalWatchTime += watchTime;
-			start = payload["videoLand"];
-			return { ...event, totalWatchTime };
+			start = new Date(event.createdAt).getTime();
+			return { ...event, totalWatchTime, speed, effectivelyWatched };
+		}
+		if (event.action === "VIDEO_SPEED") {
+			if (start) {
+				// Video was playing, continue to play
+				const watchTime = new Date(event.createdAt).getTime() - start;
+				effectivelyWatched += watchTime * speed;
+				totalWatchTime += watchTime;
+				start = new Date(event.createdAt).getTime();
+			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const payload = event.payload as Record<string, any>;
+			speed = payload["videoSpeed"];
+			return { ...event, totalWatchTime, speed, effectivelyWatched };
 		}
 		if (event.action === "VIDEO_PAUSE" || event.action === "VIDEO_STOP") {
 			if (!start) {
-				return { ...event, totalWatchTime };
+				return { ...event, totalWatchTime, speed, effectivelyWatched };
 			}
-			const watchTime = event.createdAt.getTime() - start;
+			const watchTime = new Date(event.createdAt).getTime() - start;
+			effectivelyWatched += watchTime * speed;
 			totalWatchTime += watchTime;
 			start = undefined;
-			return { ...event, totalWatchTime };
+			return { ...event, totalWatchTime, speed, effectivelyWatched };
 		}
 		if (event.action === "VIDEO_END") {
 			// Reset computation
-			const result = { ...event, totalWatchTime };
+			if (start) {
+				const watchTime = new Date(event.createdAt).getTime() - start;
+				totalWatchTime += watchTime;
+				effectivelyWatched += watchTime * speed;
+			}
+			const result = { ...event, totalWatchTime, speed, effectivelyWatched };
 			start = undefined;
 			totalWatchTime = 0;
+			effectivelyWatched = 0;
 			return result;
 		}
 
-		return { ...event, totalWatchTime };
+		return { ...event, totalWatchTime, speed, effectivelyWatched };
 	});
 	return data;
 }
@@ -65,10 +93,8 @@ export function VideoDuration() {
 			"VIDEO_PAUSE",
 			"VIDEO_JUMP",
 			"VIDEO_STOP",
-			"VIDEO_END"
-			// "VIDEO_OPENED",
-			// "VIDEO_START",
-			// "VIDEO_RESOLUTION",
+			"VIDEO_END",
+			"VIDEO_SPEED"
 		]
 	});
 
@@ -95,16 +121,8 @@ export function VideoDuration() {
 	});
 
 	const dailyData = sumByDate(filteredData, "totalWatchTime");
-
 	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
-	const dailyAverage = msToHMS(
-		Object.values(dailyData).reduce((acc, curr) => acc + curr, 0) /
-			Object.keys(dailyData).length
-	);
-	const weeklyAverage = msToHMS(
-		Object.values(weeklyData).reduce((acc, curr) => acc + curr, 0) /
-			Object.keys(weeklyData).length
-	);
+	const monthlyData = sumByMonth(filteredData, "totalWatchTime");
 
 	return (
 		<>
@@ -120,43 +138,38 @@ export function VideoDuration() {
 				))}
 			</select>
 
-			<p>
-				Deine durchschnittliche Lernzeit beträgt{" "}
-				<span className="font-italic font-medium">{dailyAverage}</span> pro Tag, bzw.
-				wöchentlich lernst du{" "}
-				<span className="font-italic font-medium">{weeklyAverage}</span> auf der Plattform.
-			</p>
-
 			{previewSelection === "Table" ? (
 				<TableData
 					computedData={computedData}
 					filteredData={filteredData}
 					dailyData={dailyData}
 					weeklyData={weeklyData}
+					monthlyData={monthlyData}
 				/>
 			) : null}
-			{previewSelection === "Daily" ? (
-				<DailyPlot data={dailyData} label="Tägliche Lernzeit" />
-			) : null}
-			{previewSelection === "Weekly" ? (
-				<WeeklyPlot data={weeklyData} label="Wöchentliche Lernzeit" />
+			{previewSelection !== "Table" ? (
+				<MetricsViewer
+					data={filteredData}
+					metric="totalWatchTime"
+					valueFormatter={toInterval}
+				/>
 			) : null}
 		</>
 	);
 }
 
-type TableDataProps = UserEvent & { totalWatchTime: number };
-
 function TableData({
 	computedData,
 	filteredData,
 	dailyData,
-	weeklyData
+	weeklyData,
+	monthlyData
 }: {
 	computedData: TableDataProps[];
 	filteredData: TableDataProps[];
-	dailyData: Record<string, number>;
-	weeklyData: Record<string, number>;
+	dailyData: { date: string; value: number }[];
+	weeklyData: { date: string; value: number }[];
+	monthlyData: { date: string; value: number }[];
 }) {
 	return (
 		<>
@@ -169,6 +182,8 @@ function TableData({
 						<TableHeaderColumn>ResourceID</TableHeaderColumn>
 						<TableHeaderColumn>PayLoad</TableHeaderColumn>
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>Speed</TableHeaderColumn>
+						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
 					</>
 				}
 			>
@@ -181,11 +196,15 @@ function TableData({
 						<TableDataColumn>
 							{(event.totalWatchTime / 1000).toFixed(2)}
 						</TableDataColumn>
+						<TableDataColumn>{event.speed}</TableDataColumn>
+						<TableDataColumn>
+							{(event.effectivelyWatched / 1000).toFixed(2)}
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
 
-			<h1 className="text-center text-3xl">Filtered Data</h1>
+			<h1 className="text-center text-3xl">Aggregierte Daten</h1>
 			<Table
 				head={
 					<>
@@ -194,6 +213,7 @@ function TableData({
 						<TableHeaderColumn>ResourceID</TableHeaderColumn>
 						<TableHeaderColumn>PayLoad</TableHeaderColumn>
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
 					</>
 				}
 			>
@@ -206,11 +226,14 @@ function TableData({
 						<TableDataColumn>
 							{(event.totalWatchTime / 1000).toFixed(2)}
 						</TableDataColumn>
+						<TableDataColumn>
+							{(event.effectivelyWatched / 1000).toFixed(2)}
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
 
-			<h1 className="text-center text-3xl">Daily Sums</h1>
+			<h1 className="text-center text-3xl">Tägliche Werte</h1>
 			<Table
 				head={
 					<>
@@ -219,15 +242,15 @@ function TableData({
 					</>
 				}
 			>
-				{Object.keys(dailyData).map(day => (
-					<tr key={day}>
-						<TableDataColumn>{day}</TableDataColumn>
-						<TableDataColumn>{(dailyData[day] / 1000).toFixed(2)}</TableDataColumn>
+				{dailyData.map(day => (
+					<tr key={day.date}>
+						<TableDataColumn>{day.date}</TableDataColumn>
+						<TableDataColumn>{(day.value / 1000).toFixed(2)}</TableDataColumn>
 					</tr>
 				))}
 			</Table>
 
-			<h1 className="text-center text-3xl">Weekly Sums</h1>
+			<h1 className="text-center text-3xl">Wöchentliche Werte</h1>
 			<Table
 				head={
 					<>
@@ -236,10 +259,27 @@ function TableData({
 					</>
 				}
 			>
-				{Object.keys(weeklyData).map(week => (
-					<tr key={week}>
-						<TableDataColumn>{week}</TableDataColumn>
-						<TableDataColumn>{(weeklyData[week] / 1000).toFixed(2)}</TableDataColumn>
+				{weeklyData.map(week => (
+					<tr key={week.date}>
+						<TableDataColumn>{week.date}</TableDataColumn>
+						<TableDataColumn>{(week.value / 1000).toFixed(2)}</TableDataColumn>
+					</tr>
+				))}
+			</Table>
+
+			<h1 className="text-center text-3xl">Monatliche Werte</h1>
+			<Table
+				head={
+					<>
+						<TableHeaderColumn>Monat</TableHeaderColumn>
+						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+					</>
+				}
+			>
+				{monthlyData.map(month => (
+					<tr key={month.date}>
+						<TableDataColumn>{month.date}</TableDataColumn>
+						<TableDataColumn>{(month.value / 1000).toFixed(2)}</TableDataColumn>
 					</tr>
 				))}
 			</Table>
