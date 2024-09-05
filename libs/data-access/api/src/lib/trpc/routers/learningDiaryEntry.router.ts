@@ -296,7 +296,7 @@ export const learningDiaryEntryRouter = t.router({
 				notes: input.notes ?? "",
 				distractionLevel: input.distractionLevel ?? 1,
 				effortLevel: input.effortLevel ?? 1,
-				learningLocationId: input.learningLocationId ?? null
+				learningLocationId: input.learningLocationId ? input.learningLocationId : null
 			},
 			select: {
 				id: true,

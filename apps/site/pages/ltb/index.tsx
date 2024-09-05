@@ -13,6 +13,8 @@ import { ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { getLearningDiaryEntriesOverview, LearningDiaryEntriesOverview } from "@self-learning/api";
 
+//TODO - der link vom kurs + link vom eintrag
+
 export function LearningDiaryOverview({
 	learningDiaryEntries
 }: {

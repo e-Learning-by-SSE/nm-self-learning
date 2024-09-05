@@ -191,6 +191,22 @@ export async function generateLearningDiaryDemoData() {
 			}
 		});
 
+		const emtydiaryEntry = await prisma.learningDiaryEntry.create({
+			data: {
+				semesterId: semesterWinter2023.id,
+				studentName: student.username,
+				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				notes: "",
+				date: new Date("2023-11-15T10:00:00Z"),
+				start: new Date("2023-11-15T10:00:00Z"),
+				end: new Date("2023-11-15T11:00:00Z"),
+				distractionLevel: 0,
+				effortLevel: 0,
+				scope: 5,
+				learningLocationId: null
+			}
+		});
+
 		// Create Learning Technique Evaluations (hard-coded)
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Technique Evaluations");
 		const evaluation1 = await prisma.learningTechniqueEvaluation.create({

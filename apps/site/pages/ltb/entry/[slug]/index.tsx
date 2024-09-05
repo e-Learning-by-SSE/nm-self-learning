@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import { PencilIcon, StarIcon, TrashIcon } from "@heroicons/react/24/solid";
@@ -18,16 +18,15 @@ import {
 } from "@self-learning/api";
 import { useRouter } from "next/router";
 
-//TODO green shadow wenn ausgefüllt
-
 export default function LearningDiaryEntryOverview({
 	learningDiaryInformation,
 	slug
 }: {
 	learningDiaryInformation: LearningDiaryInformation;
-	//TODO make slug change in url bar when cycling trough entries
 	slug: string | null;
 }) {
+	const router = useRouter();
+
 	const [currentIndex, setCurrentIndex] = useState<number>(() => {
 		const initialIndex =
 			slug && !isNaN(Number(slug))
@@ -47,6 +46,10 @@ export default function LearningDiaryEntryOverview({
 			prevEntries.map(entry => (entry.id === updatedEntry.id ? updatedEntry : entry))
 		);
 	};
+
+	useEffect(() => {
+		window.history.pushState({}, "", "/ltb/entry/" + (currentIndex + 1));
+	}, [currentIndex]);
 
 	return (
 		<div className="flex justify-center">
@@ -77,21 +80,16 @@ function EntrySwitcher({
 	setIndex: (index: number) => void;
 	currentIndex: number;
 }) {
-	const router = useRouter();
-
 	const handlePrev = () => {
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-expect-error
 		setIndex(prevIndex => Math.max(prevIndex - 1, 0));
-		window.history.pushState({}, "", "/ltb/entry/" + currentIndex);
 	};
 
 	const handleNext = () => {
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-expect-error
 		setIndex(prevIndex => Math.min(prevIndex + 1, maxLength - 1));
-
-		window.history.pushState({}, "", "/ltb/entry/" + currentIndex);
 	};
 
 	return (
@@ -142,10 +140,10 @@ function LearningDiaryEntryForm({
 
 		await updateLearningDiaryEntry({
 			id: updatedEntry.id,
-			learningLocationId: updatedEntry.learningLocation.id,
-			effortLevel: updatedEntry.effortLevel ?? 1,
-			distractionLevel: updatedEntry.distractionLevel ?? 1,
-			notes: updatedEntry.notes
+			learningLocationId: updatedEntry.learningLocation?.id ?? "",
+			effortLevel: updatedEntry.effortLevel ?? 0,
+			distractionLevel: updatedEntry.distractionLevel ?? 0,
+			notes: updatedEntry.notes ?? ""
 		});
 
 		onUpdate(updatedEntry);
@@ -369,7 +367,11 @@ function LearningTechniqueEvaluationInput({
 
 	return (
 		<div>
-			<Tile onToggleEdit={setDialogOpen} tileName={"Lernstrategie"}>
+			<Tile
+				onToggleEdit={setDialogOpen}
+				tileName={"Lernstrategie"}
+				isFilled={learningTechniqueEvaluations && learningTechniqueEvaluations.length > 0}
+			>
 				<div>
 					{learningTechniqueEvaluations && learningTechniqueEvaluations.length > 0 ? (
 						<table className="w-full">
@@ -548,7 +550,7 @@ function MarkDownInputTile({
 
 	return (
 		<div>
-			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"}>
+			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"} isFilled={initialNote !== ""}>
 				{initialNote === "" ? (
 					<span>Bisher wurden noch keine Notizen erstellt.</span>
 				) : (
@@ -638,7 +640,7 @@ function StarInputTile({
 
 	return (
 		<div>
-			<Tile onToggleEdit={setDialogOpen} tileName={name}>
+			<Tile onToggleEdit={setDialogOpen} tileName={name} isFilled={initialRating >= 1}>
 				<div>
 					<StarRatingDisplay rating={initialRating} />
 					{dialogOpen && (
@@ -683,14 +685,20 @@ function StarInputTile({
 function Tile({
 	children,
 	onToggleEdit,
-	tileName
+	tileName,
+	isFilled
 }: {
 	children: React.ReactElement;
 	onToggleEdit: (open: boolean) => void;
 	tileName: string;
+	isFilled: boolean;
 }) {
 	return (
-		<div className="relative flex max-h-[200px] min-h-[200px] items-center justify-center rounded border bg-gray-100">
+		<div
+			className={`relative flex max-h-[200px] min-h-[200px] items-center justify-center rounded border ${
+				isFilled ? "bg-green-100" : "bg-gray-100"
+			}`}
+		>
 			<div className="absolute top-2 left-2 text-gray-800">{tileName}</div>
 			<div className="absolute top-2 right-2">
 				<PencilIcon
@@ -698,7 +706,11 @@ function Tile({
 					onClick={() => onToggleEdit(true)}
 				/>
 			</div>
-			<div className="flex h-full items-center justify-center rounded-md border p-4 shadow-md hover:bg-gray-100">
+			<div
+				className={`flex h-full items-center justify-center rounded-md border p-4 hover:bg-gray-100 ${
+					isFilled ? "shadow-secondary-color shadow-md" : "shadow-md"
+				}`}
+			>
 				{React.cloneElement(children, {
 					onClick: () => onToggleEdit(true),
 					className: `${children.props.className || ""} cursor-pointer`
@@ -809,7 +821,6 @@ function LocationInputTile({
 							newLocation.name +
 							" wurde erfolgreich hinzugefügt."
 					});
-					console.log("erstellt");
 					return true;
 				} catch (error) {
 					showToast({
@@ -829,7 +840,11 @@ function LocationInputTile({
 	};
 
 	return (
-		<Tile onToggleEdit={setDialogOpen} tileName={"Lernort"}>
+		<Tile
+			onToggleEdit={setDialogOpen}
+			tileName={"Lernort"}
+			isFilled={initialLearningLocation != null || initialLearningLocation != undefined}
+		>
 			<div className="p-4">
 				{selectedLocation ? (
 					<div>
