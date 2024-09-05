@@ -32,24 +32,24 @@ function computeDuration(events: UserEvent[]): TableDataProps[] {
 	let speed = 1;
 	const data = events.map(event => {
 		if (event.action === "VIDEO_PLAY") {
-			start = new Date(event.createdAt).getTime();
+			start = event.createdAt.getTime();
 		}
 		if (event.action === "VIDEO_JUMP") {
 			if (start) {
-				const watchTime = new Date(event.createdAt).getTime() - start;
+				const watchTime = event.createdAt.getTime() - start;
 				effectivelyWatched += watchTime * speed;
 				totalWatchTime += watchTime;
 			}
-			start = new Date(event.createdAt).getTime();
+			start = event.createdAt.getTime();
 			return { ...event, totalWatchTime, speed, effectivelyWatched };
 		}
 		if (event.action === "VIDEO_SPEED") {
 			if (start) {
 				// Video was playing, continue to play
-				const watchTime = new Date(event.createdAt).getTime() - start;
+				const watchTime = event.createdAt.getTime() - start;
 				effectivelyWatched += watchTime * speed;
 				totalWatchTime += watchTime;
-				start = new Date(event.createdAt).getTime();
+				start = event.createdAt.getTime();
 			}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const payload = event.payload as Record<string, any>;
@@ -60,7 +60,7 @@ function computeDuration(events: UserEvent[]): TableDataProps[] {
 			if (!start) {
 				return { ...event, totalWatchTime, speed, effectivelyWatched };
 			}
-			const watchTime = new Date(event.createdAt).getTime() - start;
+			const watchTime = event.createdAt.getTime() - start;
 			effectivelyWatched += watchTime * speed;
 			totalWatchTime += watchTime;
 			start = undefined;
@@ -69,7 +69,7 @@ function computeDuration(events: UserEvent[]): TableDataProps[] {
 		if (event.action === "VIDEO_END") {
 			// Reset computation
 			if (start) {
-				const watchTime = new Date(event.createdAt).getTime() - start;
+				const watchTime = event.createdAt.getTime() - start;
 				totalWatchTime += watchTime;
 				effectivelyWatched += watchTime * speed;
 			}

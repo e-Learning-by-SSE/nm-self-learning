@@ -5,7 +5,7 @@ export type NumericProperty<T> = {
 }[keyof T];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type MetricData = Record<string, any> & { createdAt: string };
+export type MetricData = Record<string, any> & { createdAt: Date };
 
 function sumUpByFormat<T extends MetricData>(
 	data: T[],
@@ -14,7 +14,7 @@ function sumUpByFormat<T extends MetricData>(
 ) {
 	const groupedTotals = data.reduce(
 		(acc, event) => {
-			const grouped = format(new Date(event.createdAt), dateFormat);
+			const grouped = format(event.createdAt, dateFormat);
 
 			// Initialize the grouped date key if it doesn't exist
 			if (!acc[grouped]) {
@@ -35,42 +35,42 @@ function sumUpByFormat<T extends MetricData>(
 	}));
 }
 
-function sumUpByFormat2<T extends MetricData>(
-	data: T[],
-	keys: NumericProperty<T>[],
-	dateFormat: string
-) {
-	// Reduce the data array to accumulate totals for each key, grouped by month
-	const groupedTotals = data.reduce(
-		(acc, event) => {
-			const month = format(new Date(event.createdAt), dateFormat); // Format the date as yyyy-MM
+// function sumUpByFormat2<T extends MetricData>(
+// 	data: T[],
+// 	keys: NumericProperty<T>[],
+// 	dateFormat: string
+// ) {
+// 	// Reduce the data array to accumulate totals for each key, grouped by month
+// 	const groupedTotals = data.reduce(
+// 		(acc, event) => {
+// 			const month = format(event.createdAt, dateFormat); // Format the date as yyyy-MM
 
-			// Initialize the object for the month if it doesn't exist
-			if (!acc[month]) {
-				acc[month] = {} as Record<NumericProperty<T>, number>;
+// 			// Initialize the object for the month if it doesn't exist
+// 			if (!acc[month]) {
+// 				acc[month] = {} as Record<NumericProperty<T>, number>;
 
-				// Initialize all keys for that month to 0
-				keys.forEach(key => {
-					acc[month]![key] = 0;
-				});
-			}
+// 				// Initialize all keys for that month to 0
+// 				keys.forEach(key => {
+// 					acc[month]![key] = 0;
+// 				});
+// 			}
 
-			// Sum up the values for each key for the current month
-			keys.forEach(key => {
-				acc[month]![key]! += event[key] as number; // Accumulate the numeric values
-			});
+// 			// Sum up the values for each key for the current month
+// 			keys.forEach(key => {
+// 				acc[month]![key]! += event[key] as number; // Accumulate the numeric values
+// 			});
 
-			return acc;
-		},
-		{} as Record<string, Record<NumericProperty<T>, number>>
-	); // Record for monthly totals
+// 			return acc;
+// 		},
+// 		{} as Record<string, Record<NumericProperty<T>, number>>
+// 	); // Record for monthly totals
 
-	// Convert the result into an array of objects for each month
-	return Object.keys(groupedTotals).map(month => ({
-		createdAt: month as string,
-		...groupedTotals[month]
-	}));
-}
+// 	// Convert the result into an array of objects for each month
+// 	return Object.keys(groupedTotals).map(month => ({
+// 		createdAt: month as string,
+// 		...groupedTotals[month]
+// 	}));
+// }
 
 export function sumByDate<T extends MetricData>(data: T[], key: NumericProperty<T>) {
 	return sumUpByFormat(data, key, "yyyy-MM-dd");

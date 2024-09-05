@@ -2,8 +2,11 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { database } from "@self-learning/database";
 import { Context } from "./context";
+import superjson from "superjson";
 
-export const t = initTRPC.context<Context>().create({});
+export const t = initTRPC.context<Context>().create({
+	transformer: superjson
+});
 
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
 	if (!ctx?.user) {
