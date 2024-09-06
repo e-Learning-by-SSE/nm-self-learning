@@ -289,6 +289,51 @@ const videoEvents: EventType[] = [
 		createdAt: "2024-09-01T09:03:01.000Z",
 		payload: undefined,
 		resourceId: "video-5"
+	},
+	// Scenario 7: Video watches with extreme speed
+	{
+		action: "VIDEO_OPENED",
+		createdAt: "2024-08-12T09:00:00.000Z",
+		payload: {
+			url: "http://example.com/video-6.mp4"
+		},
+		resourceId: "video-6"
+	},
+	{
+		action: "VIDEO_PLAY",
+		createdAt: "2024-08-12T09:00:01.000Z",
+		payload: {
+			videoCurrentTime: 0
+		},
+		resourceId: "video-6"
+	},
+	{
+		action: "VIDEO_SPEED",
+		createdAt: "2024-08-12T09:01:01.000Z",
+		payload: {
+			videoSpeed: 2.5 // After 1 minute
+		},
+		resourceId: "video-6"
+	},
+	{
+		action: "VIDEO_SPEED",
+		createdAt: "2024-08-12T09:02:01.000Z",
+		payload: {
+			videoSpeed: 0.1 // After 1 min (150sec playback)
+		},
+		resourceId: "video-6"
+	},
+	{
+		action: "VIDEO_STOP",
+		createdAt: "2024-08-12T09:03:01.000Z",
+		payload: undefined, // After 1 min (6sec playback)
+		resourceId: "video-6"
+	},
+	{
+		action: "VIDEO_END",
+		createdAt: "2024-08-12T09:03:01.000Z",
+		payload: undefined,
+		resourceId: "video-6"
 	}
 ];
 

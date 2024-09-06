@@ -1,89 +1,11 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { sumByDate, sumByMonth, sumByWeek, toInterval } from "./aggregation-functions";
+import { MetricData, sumByDate, sumByMonth, sumByWeek, toInterval } from "./aggregation-functions";
 import { useState } from "react";
-import { UserEvent } from "@self-learning/database";
 import { MetricsViewer } from "./metrics-viewer";
+import { computeDuration, MetricResult, MetricResultTemp } from "./metrics";
 
 const PreviewTypes = ["Table", "Chart"];
-
-type TableDataProps = UserEvent & {
-	totalWatchTime: number;
-	speed: number;
-	effectivelyWatched: number;
-};
-
-function computeDuration(events: UserEvent[]): TableDataProps[] {
-	// Filter out cases where the user manually moves the slider
-	events = events.filter((event, index) => {
-		if (event.action === "VIDEO_JUMP" && index < events.length - 1) {
-			const next = events[index + 1];
-			// SKIP Jump if next event is also a JUMP (user just moved the slider)
-			if (next.action === "VIDEO_JUMP") {
-				return false;
-			}
-		}
-		return true;
-	});
-
-	let totalWatchTime = 0;
-	let start: number | undefined = undefined;
-	let effectivelyWatched = 0;
-	let speed = 1;
-	const data = events.map(event => {
-		if (event.action === "VIDEO_PLAY") {
-			start = event.createdAt.getTime();
-		}
-		if (event.action === "VIDEO_JUMP") {
-			if (start) {
-				const watchTime = event.createdAt.getTime() - start;
-				effectivelyWatched += watchTime * speed;
-				totalWatchTime += watchTime;
-			}
-			start = event.createdAt.getTime();
-			return { ...event, totalWatchTime, speed, effectivelyWatched };
-		}
-		if (event.action === "VIDEO_SPEED") {
-			if (start) {
-				// Video was playing, continue to play
-				const watchTime = event.createdAt.getTime() - start;
-				effectivelyWatched += watchTime * speed;
-				totalWatchTime += watchTime;
-				start = event.createdAt.getTime();
-			}
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const payload = event.payload as Record<string, any>;
-			speed = payload["videoSpeed"];
-			return { ...event, totalWatchTime, speed, effectivelyWatched };
-		}
-		if (event.action === "VIDEO_PAUSE" || event.action === "VIDEO_STOP") {
-			if (!start) {
-				return { ...event, totalWatchTime, speed, effectivelyWatched };
-			}
-			const watchTime = event.createdAt.getTime() - start;
-			effectivelyWatched += watchTime * speed;
-			totalWatchTime += watchTime;
-			start = undefined;
-			return { ...event, totalWatchTime, speed, effectivelyWatched };
-		}
-		if (event.action === "VIDEO_END") {
-			// Reset computation
-			if (start) {
-				const watchTime = event.createdAt.getTime() - start;
-				totalWatchTime += watchTime;
-				effectivelyWatched += watchTime * speed;
-			}
-			const result = { ...event, totalWatchTime, speed, effectivelyWatched };
-			start = undefined;
-			totalWatchTime = 0;
-			effectivelyWatched = 0;
-			return result;
-		}
-
-		return { ...event, totalWatchTime, speed, effectivelyWatched };
-	});
-	return data;
-}
 
 export function VideoDuration() {
 	const [previewSelection, setPreviewSelection] = useState("Table");
@@ -105,24 +27,37 @@ export function VideoDuration() {
 	if (!data) {
 		return <div>No data</div>;
 	}
-	const computedData = computeDuration(data);
-	const filteredData = computedData.filter((event, index) => {
-		if (index < computedData.length - 1) {
-			const next = computedData[index + 1];
+	const computedData = computeDuration(data, [0.5, 0.75, 1, 1.5, 2]);
+
+	// TODO Refactor transformed should be the result of computeDuration, but hard to debug
+	const transformed = computedData.map(event => {
+		const { createdAt, totalWatchTime, speed, effectivelyWatched, watchedAtSpeed } = event;
+		const result: Record<string, number> = {
+			totalWatchTime,
+			speed,
+			effectivelyWatched,
+			...watchedAtSpeed
+		};
+		return { createdAt, values: result };
+	});
+
+	const filteredData = transformed.filter((event, index) => {
+		if (index < transformed.length - 1) {
+			const next = transformed[index + 1];
 			// Keep only if next one belongs to a new data series -> watch time is reset
-			if (next.totalWatchTime < event.totalWatchTime) {
+			if (next.values["totalWatchTime"] < event.values["totalWatchTime"]) {
 				return true;
 			}
 		}
-		if (index === computedData.length - 1) {
+		if (index === transformed.length - 1) {
 			return true;
 		}
 		return false;
 	});
 
-	const dailyData = sumByDate(filteredData, "totalWatchTime");
-	const weeklyData = sumByWeek(filteredData, "totalWatchTime");
-	const monthlyData = sumByMonth(filteredData, "totalWatchTime");
+	const dailyData = sumByDate(filteredData);
+	const weeklyData = sumByWeek(filteredData);
+	const monthlyData = sumByMonth(filteredData);
 
 	return (
 		<>
@@ -158,6 +93,7 @@ export function VideoDuration() {
 	);
 }
 
+// Only for development / debugging
 function TableData({
 	computedData,
 	filteredData,
@@ -165,11 +101,11 @@ function TableData({
 	weeklyData,
 	monthlyData
 }: {
-	computedData: TableDataProps[];
-	filteredData: TableDataProps[];
-	dailyData: { date: string; value: number }[];
-	weeklyData: { date: string; value: number }[];
-	monthlyData: { date: string; value: number }[];
+	computedData: MetricResultTemp[];
+	filteredData: MetricResult[];
+	dailyData: MetricResult[];
+	weeklyData: MetricResult[];
+	monthlyData: MetricResult[];
 }) {
 	return (
 		<>
@@ -184,6 +120,12 @@ function TableData({
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
 						<TableHeaderColumn>Speed</TableHeaderColumn>
 						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>≤ 0,5</TableHeaderColumn>
+						<TableHeaderColumn>0,75</TableHeaderColumn>
+						<TableHeaderColumn>1</TableHeaderColumn>
+						<TableHeaderColumn>1,5</TableHeaderColumn>
+						<TableHeaderColumn>≥ 2</TableHeaderColumn>
+						<TableHeaderColumn>Andere</TableHeaderColumn>
 					</>
 				}
 			>
@@ -200,34 +142,64 @@ function TableData({
 						<TableDataColumn>
 							{(event.effectivelyWatched / 1000).toFixed(2)}
 						</TableDataColumn>
+						<TableDataColumn>
+							{(event.watchedAtSpeed["0.5"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>
+							{(event.watchedAtSpeed["0.75"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>
+							{(event.watchedAtSpeed["1"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>
+							{(event.watchedAtSpeed["1.5"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>
+							{(event.watchedAtSpeed["2"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>
+							{(event.watchedAtSpeed["other"] / 1000).toFixed(2)}
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
 
-			<h1 className="text-center text-3xl">Aggregierte Daten</h1>
+			<h1 className="text-center text-3xl">Aggregierte Daten (pro Video)</h1>
 			<Table
 				head={
 					<>
 						<TableHeaderColumn>Date</TableHeaderColumn>
-						<TableHeaderColumn>Action</TableHeaderColumn>
-						<TableHeaderColumn>ResourceID</TableHeaderColumn>
-						<TableHeaderColumn>PayLoad</TableHeaderColumn>
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>Speed</TableHeaderColumn>
 						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>≤ 0,5</TableHeaderColumn>
+						<TableHeaderColumn>0,75</TableHeaderColumn>
+						<TableHeaderColumn>1</TableHeaderColumn>
+						<TableHeaderColumn>1,5</TableHeaderColumn>
+						<TableHeaderColumn>≥ 2</TableHeaderColumn>
+						<TableHeaderColumn>Andere</TableHeaderColumn>
 					</>
 				}
 			>
 				{filteredData.map(event => (
-					<tr key={event.id}>
+					<tr>
 						<TableDataColumn>{event.createdAt.toLocaleString()}</TableDataColumn>
-						<TableDataColumn>{event.action}</TableDataColumn>
-						<TableDataColumn>{event.resourceId}</TableDataColumn>
-						<TableDataColumn>{JSON.stringify(event.payload)}</TableDataColumn>
 						<TableDataColumn>
-							{(event.totalWatchTime / 1000).toFixed(2)}
+							{(event.values["totalWatchTime"] / 1000).toFixed(2)}
 						</TableDataColumn>
+						<TableDataColumn>{event.values["speed"]}</TableDataColumn>
 						<TableDataColumn>
-							{(event.effectivelyWatched / 1000).toFixed(2)}
+							{(event.values["effectivelyWatched"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{(event.values["0.5"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>
+							{(event.values["0.75"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{(event.values["1"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(event.values["1.5"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(event.values["2"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>
+							{(event.values["other"] / 1000).toFixed(2)}
 						</TableDataColumn>
 					</tr>
 				))}
@@ -239,13 +211,33 @@ function TableData({
 					<>
 						<TableHeaderColumn>Date</TableHeaderColumn>
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>Speed</TableHeaderColumn>
+						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>≤ 0,5</TableHeaderColumn>
+						<TableHeaderColumn>0,75</TableHeaderColumn>
+						<TableHeaderColumn>1</TableHeaderColumn>
+						<TableHeaderColumn>1,5</TableHeaderColumn>
+						<TableHeaderColumn>≥ 2</TableHeaderColumn>
+						<TableHeaderColumn>Andere</TableHeaderColumn>
 					</>
 				}
 			>
 				{dailyData.map(day => (
-					<tr key={day.date}>
-						<TableDataColumn>{day.date}</TableDataColumn>
-						<TableDataColumn>{(day.value / 1000).toFixed(2)}</TableDataColumn>
+					<tr>
+						<TableDataColumn>{day.createdAt.toLocaleString()}</TableDataColumn>
+						<TableDataColumn>
+							{(day.values["totalWatchTime"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{day.values["speed"]}</TableDataColumn>
+						<TableDataColumn>
+							{(day.values["effectivelyWatched"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{(day.values["0.5"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(day.values["0.75"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(day.values["1"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(day.values["1.5"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(day.values["2"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(day.values["other"] / 1000).toFixed(2)}</TableDataColumn>
 					</tr>
 				))}
 			</Table>
@@ -254,15 +246,37 @@ function TableData({
 			<Table
 				head={
 					<>
-						<TableHeaderColumn>Week</TableHeaderColumn>
+						<TableHeaderColumn>Date</TableHeaderColumn>
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>Speed</TableHeaderColumn>
+						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>≤ 0,5</TableHeaderColumn>
+						<TableHeaderColumn>0,75</TableHeaderColumn>
+						<TableHeaderColumn>1</TableHeaderColumn>
+						<TableHeaderColumn>1,5</TableHeaderColumn>
+						<TableHeaderColumn>≥ 2</TableHeaderColumn>
+						<TableHeaderColumn>Andere</TableHeaderColumn>
 					</>
 				}
 			>
 				{weeklyData.map(week => (
-					<tr key={week.date}>
-						<TableDataColumn>{week.date}</TableDataColumn>
-						<TableDataColumn>{(week.value / 1000).toFixed(2)}</TableDataColumn>
+					<tr>
+						<TableDataColumn>{week.createdAt.toLocaleString()}</TableDataColumn>
+						<TableDataColumn>
+							{(week.values["totalWatchTime"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{week.values["speed"]}</TableDataColumn>
+						<TableDataColumn>
+							{(week.values["effectivelyWatched"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{(week.values["0.5"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(week.values["0.75"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(week.values["1"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(week.values["1.5"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(week.values["2"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>
+							{(week.values["other"] / 1000).toFixed(2)}
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
@@ -271,15 +285,39 @@ function TableData({
 			<Table
 				head={
 					<>
-						<TableHeaderColumn>Monat</TableHeaderColumn>
+						<TableHeaderColumn>Date</TableHeaderColumn>
 						<TableHeaderColumn>WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>Speed</TableHeaderColumn>
+						<TableHeaderColumn>Eff. WatchTime</TableHeaderColumn>
+						<TableHeaderColumn>≤ 0,5</TableHeaderColumn>
+						<TableHeaderColumn>0,75</TableHeaderColumn>
+						<TableHeaderColumn>1</TableHeaderColumn>
+						<TableHeaderColumn>1,5</TableHeaderColumn>
+						<TableHeaderColumn>≥ 2</TableHeaderColumn>
+						<TableHeaderColumn>Andere</TableHeaderColumn>
 					</>
 				}
 			>
 				{monthlyData.map(month => (
-					<tr key={month.date}>
-						<TableDataColumn>{month.date}</TableDataColumn>
-						<TableDataColumn>{(month.value / 1000).toFixed(2)}</TableDataColumn>
+					<tr>
+						<TableDataColumn>{month.createdAt.toLocaleString()}</TableDataColumn>
+						<TableDataColumn>
+							{(month.values["totalWatchTime"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{month.values["speed"]}</TableDataColumn>
+						<TableDataColumn>
+							{(month.values["effectivelyWatched"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{(month.values["0.5"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>
+							{(month.values["0.75"] / 1000).toFixed(2)}
+						</TableDataColumn>
+						<TableDataColumn>{(month.values["1"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(month.values["1.5"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>{(month.values["2"] / 1000).toFixed(2)}</TableDataColumn>
+						<TableDataColumn>
+							{(month.values["other"] / 1000).toFixed(2)}
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>

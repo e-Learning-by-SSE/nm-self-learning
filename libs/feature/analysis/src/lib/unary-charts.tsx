@@ -2,20 +2,23 @@ import { Chart as ChartJS, ChartOptions, registerables } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
 import { toInterval } from "./aggregation-functions";
+import { MetricResult } from "./metrics";
 ChartJS.register(...registerables);
 
 export function DailyPlot({
 	data,
-	label
+	label,
+	metric
 }: {
-	data: { date: string; value: number }[];
+	data: MetricResult[];
 	label: string;
+	metric: string;
 }) {
 	const values: number[] = [];
 	const labels: string[] = [];
 	data.forEach(d => {
-		labels.push(new Date(d.date).toLocaleDateString());
-		values.push(d.value);
+		labels.push(new Date(d.createdAt).toLocaleDateString());
+		values.push(d.values[metric]);
 	});
 	const chartData = {
 		labels,
@@ -63,10 +66,6 @@ export function DailyPlot({
 				time: {
 					parser: "HH:mm:ss",
 					unit: "millisecond"
-				},
-				title: {
-					display: true,
-					text: "Values"
 				},
 				suggestedMin: 0,
 				stacked: true,
@@ -122,10 +121,6 @@ const DEFAULT_INTERVAL_BASED_BAR_CHART_OPTIONS: ChartOptions<"bar"> = {
 				parser: "HH:mm:ss",
 				unit: "millisecond"
 			},
-			title: {
-				display: true,
-				text: "Values"
-			},
 			suggestedMin: 0,
 			stacked: true,
 			ticks: {
@@ -151,16 +146,18 @@ const DEFAULT_INTERVAL_BASED_BAR_CHART_OPTIONS: ChartOptions<"bar"> = {
 
 export function WeeklyPlot({
 	data,
-	label
+	label,
+	metric
 }: {
-	data: { date: string; value: number }[];
+	data: MetricResult[];
 	label: string;
+	metric: string;
 }) {
 	const values: number[] = [];
 	const labels: string[] = [];
 	data.forEach(d => {
-		labels.push(parseWeekYear(d.date).toLocaleDateString());
-		values.push(d.value);
+		labels.push(d.createdAt.toLocaleDateString());
+		values.push(d.values[metric]);
 	});
 	const chartData = {
 		labels,
@@ -188,18 +185,20 @@ export function WeeklyPlot({
 
 export function MonthlyPlot({
 	data,
-	label
+	label,
+	metric
 }: {
-	data: { date: string; value: number }[];
+	data: MetricResult[];
 	label: string;
+	metric: string;
 }) {
 	const values: number[] = [];
 	const labels: string[] = [];
 	data.forEach(d => {
 		labels.push(
-			new Date(d.date).toLocaleDateString("default", { month: "long", year: "2-digit" })
+			new Date(d.createdAt).toLocaleDateString("default", { month: "long", year: "2-digit" })
 		);
-		values.push(d.value);
+		values.push(d.values[metric]);
 	});
 	const chartData = {
 		labels,

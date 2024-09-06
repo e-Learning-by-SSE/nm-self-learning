@@ -1,38 +1,37 @@
 import { useState } from "react";
-import {
-	MetricData,
-	NumericProperty,
-	sumByDate,
-	sumByMonth,
-	sumByWeek
-} from "./aggregation-functions";
+import { sumByDate, sumByMonth, sumByWeek } from "./aggregation-functions";
 import { DailyPlot, MonthlyPlot, WeeklyPlot } from "./unary-charts";
+import { MetricResult } from "./metrics/types";
 
 const options = ["Täglich", "Wöchentlich", "Monatlich"] as const;
 type OptionsType = (typeof options)[number];
 
-export function MetricsViewer<T extends MetricData>({
+export function MetricsViewer({
 	data,
 	metric,
 	valueFormatter
 }: {
-	data: T[];
-	metric: NumericProperty<T>;
+	data: MetricResult[];
+	metric: string;
 	valueFormatter?: (value: number) => string;
 }) {
 	const [selectedOption, setOption] = useState<OptionsType>("Täglich");
 
 	// TODO refactor
-	const dailyData = sumByDate(data, metric);
-	const weeklyData = sumByWeek(data, metric);
-	const monthlyData = sumByMonth(data, metric);
+	const dailyData = sumByDate(data);
+	const weeklyData = sumByWeek(data);
+	const monthlyData = sumByMonth(data);
+	const dailyAverageValue =
+		dailyData.reduce((acc, curr) => acc + curr.values[metric], 0) / dailyData.length;
 	const dailyAverage = valueFormatter
-		? valueFormatter(dailyData.reduce((acc, curr) => acc + curr.value, 0) / dailyData.length)
-		: dailyData.reduce((acc, curr) => acc + curr.value, 0) / dailyData.length;
+		? valueFormatter(dailyAverageValue)
+		: dailyAverageValue.toString();
 
+	const weeklyAverageValue =
+		weeklyData.reduce((acc, curr) => acc + curr.values[metric], 0) / weeklyData.length;
 	const weeklyAverage = valueFormatter
-		? valueFormatter(weeklyData.reduce((acc, curr) => acc + curr.value, 0) / weeklyData.length)
-		: weeklyData.reduce((acc, curr) => acc + curr.value, 0) / weeklyData.length;
+		? valueFormatter(weeklyAverageValue)
+		: weeklyAverageValue.toString();
 
 	return (
 		<>
@@ -48,6 +47,7 @@ export function MetricsViewer<T extends MetricData>({
 					weeklyData={weeklyData}
 					dailyData={dailyData}
 					monthlyData={monthlyData}
+					metric={metric}
 					option={selectedOption}
 				/>
 
@@ -75,20 +75,22 @@ function Chart({
 	dailyData,
 	weeklyData,
 	monthlyData,
+	metric,
 	option
 }: {
-	dailyData: { date: string; value: number }[];
-	weeklyData: { date: string; value: number }[];
-	monthlyData: { date: string; value: number }[];
+	dailyData: MetricResult[];
+	weeklyData: MetricResult[];
+	monthlyData: MetricResult[];
+	metric: string;
 	option: OptionsType;
 }) {
 	switch (option) {
 		case "Täglich":
-			return <DailyPlot data={dailyData} label="Tägliche Lernzeit" />;
+			return <DailyPlot data={dailyData} label="Tägliche Lernzeit" metric={metric} />;
 		case "Wöchentlich":
-			return <WeeklyPlot data={weeklyData} label="Wöchentliche Lernzeit" />;
+			return <WeeklyPlot data={weeklyData} label="Wöchentliche Lernzeit" metric={metric} />;
 		case "Monatlich":
-			return <MonthlyPlot data={monthlyData} label="Monatliche Lernzeit" />;
+			return <MonthlyPlot data={monthlyData} label="Monatliche Lernzeit" metric={metric} />;
 		default:
 			return <p>Fehler: Keine Analyse ausgewählt</p>;
 	}

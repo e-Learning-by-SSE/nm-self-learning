@@ -1,4 +1,5 @@
-import { intervalToDuration, format } from "date-fns";
+import { intervalToDuration, format, parse } from "date-fns";
+import { MetricResult } from "./metrics";
 
 export type NumericProperty<T> = {
 	[K in keyof T]: T[K] extends number ? K : never;
@@ -7,82 +8,75 @@ export type NumericProperty<T> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type MetricData = Record<string, any> & { createdAt: Date };
 
-function sumUpByFormat<T extends MetricData>(
-	data: T[],
-	key: NumericProperty<T>,
-	dateFormat: string
-) {
-	const groupedTotals = data.reduce(
-		(acc, event) => {
-			const grouped = format(event.createdAt, dateFormat);
-
-			// Initialize the grouped date key if it doesn't exist
-			if (!acc[grouped]) {
-				acc[grouped] = 0;
-			}
-
-			// Add the amount to the corresponding range
-			acc[grouped] += event[key];
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
-	// Convert the grouped totals object to an array of objects
-	return Object.keys(groupedTotals).map(group => ({
-		date: group,
-		value: groupedTotals[group]
-	}));
-}
-
-// function sumUpByFormat2<T extends MetricData>(
+// function sumUpByFormat<T extends MetricData>(
 // 	data: T[],
-// 	keys: NumericProperty<T>[],
+// 	key: NumericProperty<T>,
 // 	dateFormat: string
 // ) {
-// 	// Reduce the data array to accumulate totals for each key, grouped by month
 // 	const groupedTotals = data.reduce(
 // 		(acc, event) => {
-// 			const month = format(event.createdAt, dateFormat); // Format the date as yyyy-MM
+// 			const grouped = format(event.createdAt, dateFormat);
 
-// 			// Initialize the object for the month if it doesn't exist
-// 			if (!acc[month]) {
-// 				acc[month] = {} as Record<NumericProperty<T>, number>;
-
-// 				// Initialize all keys for that month to 0
-// 				keys.forEach(key => {
-// 					acc[month]![key] = 0;
-// 				});
+// 			// Initialize the grouped date key if it doesn't exist
+// 			if (!acc[grouped]) {
+// 				acc[grouped] = 0;
 // 			}
 
-// 			// Sum up the values for each key for the current month
-// 			keys.forEach(key => {
-// 				acc[month]![key]! += event[key] as number; // Accumulate the numeric values
-// 			});
-
+// 			// Add the amount to the corresponding range
+// 			acc[grouped] += event[key];
 // 			return acc;
 // 		},
-// 		{} as Record<string, Record<NumericProperty<T>, number>>
-// 	); // Record for monthly totals
+// 		{} as Record<string, number>
+// 	);
 
-// 	// Convert the result into an array of objects for each month
-// 	return Object.keys(groupedTotals).map(month => ({
-// 		createdAt: month as string,
-// 		...groupedTotals[month]
+// 	// Convert the grouped totals object to an array of objects
+// 	return Object.keys(groupedTotals).map(group => ({
+// 		date: group,
+// 		value: groupedTotals[group]
 // 	}));
 // }
 
-export function sumByDate<T extends MetricData>(data: T[], key: NumericProperty<T>) {
-	return sumUpByFormat(data, key, "yyyy-MM-dd");
+function sumUpByFormatMultiple(data: MetricResult[], dateFormat: string) {
+	const groupedTotals: Record<string, MetricResult> = {};
+
+	data.forEach(event => {
+		const grouped = format(event.createdAt, dateFormat);
+
+		// Initialize the grouped date key if it doesn't exist
+		if (!groupedTotals[grouped]) {
+			groupedTotals[grouped] = {
+				createdAt: parse(grouped, dateFormat, new Date()),
+				values: {}
+			};
+		}
+
+		// Add the amount to the corresponding range
+		Object.keys(event.values).forEach(key => {
+			if (key !== "createdAt") {
+				if (!groupedTotals[grouped].values[key]) {
+					groupedTotals[grouped].values[key] = 0;
+				}
+				groupedTotals[grouped].values[key] += event.values[key];
+			}
+		});
+	});
+
+	return Object.values(groupedTotals);
 }
 
-export function sumByWeek<T extends MetricData>(data: T[], key: NumericProperty<T>) {
-	return sumUpByFormat(data, key, "yyyy-'W'II");
+export function sumByDate(data: MetricResult[]) {
+	return sumUpByFormatMultiple(data, "yyyy-MM-dd");
+}
+
+export function sumByWeek(data: MetricResult[]) {
+	// RRRR: ISO year (the year associated with the ISO week number)
+	// II: ISO week number
+	return sumUpByFormatMultiple(data, "RRRR-'W'II");
 }
 
 // Function to sum amounts by month
-export function sumByMonth<T extends MetricData>(data: T[], key: NumericProperty<T>) {
-	return sumUpByFormat(data, key, "yyyy-MM");
+export function sumByMonth(data: MetricResult[]) {
+	return sumUpByFormatMultiple(data, "yyyy-MM");
 }
 
 export function toInterval(ms: number) {
