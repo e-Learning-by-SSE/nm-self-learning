@@ -178,11 +178,11 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 		)?.sortingFunction;
 
 		if (!sortingFunction) {
-			return (sortingFunction = (a: EnrollmentDetails, b: EnrollmentDetails) => 0);
+			return (sortingFunction = (_: EnrollmentDetails, __: EnrollmentDetails) => 0);
 		}
 
 		if (sortedColumn.descendingOrder) {
-			return (a: EnrollmentDetails, b: EnrollmentDetails) => -sortingFunction!(a, b);
+			return (a: EnrollmentDetails, b: EnrollmentDetails) => -sortingFunction(a, b);
 		} else {
 			return sortingFunction;
 		}
