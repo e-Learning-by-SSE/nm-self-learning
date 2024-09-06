@@ -2,6 +2,28 @@
 
 pipeline {
     agent { label 'docker' }
+    parameters {
+        booleanParam(
+            name: 'FULL_BUILD',
+            defaultValue: false,
+            description: 'Perform a full build without using any caches. This may take longer but ensures a clean build.'
+        )
+        booleanParam(
+            name: 'RELEASE',
+            defaultValue: false,
+            description: 'Indicate if this build should be treated as a release. If true, the container image will be uploaded.'
+        )
+        choice(
+            name: 'RELEASE_IMAGE_TAG',
+            choices: ['NONE', 'UNSTABLE', 'LATEST', 'TESTING'],
+            description: 'Select the Docker tag to be used for the release image. Choose NONE if not releasing.'
+        )
+        string(
+            name: 'RELEASE_API_VERSION',
+            defaultValue: '',
+            description: 'Manually specify a tag for the Docker image. This tag will be preferred over the package version if set. Only used in case RELEASE is true'
+        )
+    }
     environment {
         NODE_DOCKER_IMAGE = 'node:21-bullseye'
         NX_BASE = 'master'
@@ -47,14 +69,19 @@ pipeline {
                 stage('Master') {
                     agent { label 'jq' }
                     when {
-                        branch 'master'
+                        allOf {
+                            branch 'master'
+                            expression {
+                                return !params.FULL_BUILD
+                            }
+                        }
                     }
                     steps {
                         script {
                             def projectName = env.JOB_NAME.split('/')[0]
                             def branchJobName = env.JOB_NAME.split('/')[1]
                             def jobUrl = "${env.JENKINS_URL}job/${projectName}/job/${branchJobName}/lastSuccessfulBuild/git-2/api/json" // be aware /git/ is the git data of the jenkins library
-                            def lastSuccessSHA = sh(
+                            lastSuccessSHA = sh(
                                 script: "curl ${jobUrl} | jq '.lastBuiltRevision.SHA1'",
                                 returnStdout: true
                             ).trim()
@@ -86,7 +113,12 @@ pipeline {
 
                 stage('PR') {
                     when {
-                        changeRequest()
+                        allOf {
+                            changeRequest()
+                            expression {
+                                return !params.FULL_BUILD
+                            }
+                        }
                     }
                     environment {
                         VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"
@@ -100,7 +132,7 @@ pipeline {
                              .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                                 sh 'npm run prisma:seed'
                                 sh "npx nx-cloud record -- nx format:check"
-                                sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-c"
+                                sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-ci"
                             }
                         }
                         ssedocker {
@@ -120,18 +152,44 @@ pipeline {
                         }
                     }
                 }
-
-                stage('Release Tag') {
+                stage('Full build') {
                     when {
-                        buildingTag()
+                        anyOf {
+                            buildingTag()
+                            expression {
+                                return params.FULL_BUILD
+                            }
+                        }
                     }
                     steps {
-                        ssedocker {
-                            create {
-                                target "${env.TARGET_PREFIX}:latest"
+                        script {
+                            withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
+                             .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                                sh 'npm run prisma:seed'
+                                sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
+                                // sh "env TZ=${env.TZ} npx nx run-many --target=e2e-ci --all
                             }
-                            publish {
-                                tag "${env.API_VERSION}"
+                            if (params.RELEASE) {
+                                def apiVersion = ''
+                                if (params.RELEASE_API_VERSION == '') {
+                                    apiVersion = "${env.API_VERSION}"
+                                } else {
+                                    apiVersion = "${params.RELEASE_API_VERSION}"
+                                }
+                                def releaseTag = ''
+                                if (params.RELEASE_IMAGE_TAG == 'NONE') {
+                                    releaseTag = "${apiVersion}" 
+                                } else {
+                                    releaseTag = "${params.RELEASE_IMAGE_TAG}"
+                                }
+                                ssedocker {
+                                    create {
+                                        target "${env.TARGET_PREFIX}:${apiVersion}"
+                                    }
+                                    publish {
+                                        tag "${releaseTag}"
+                                    }
+                                }
                             }
                         }
                     }
