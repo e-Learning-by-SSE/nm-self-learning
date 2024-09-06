@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player/lazy";
 
 function useHydrationFix() {
-	// hydration error workaround https://github.com/cookpete/react-player/issues/1474#issuecomment-1484028123
+	// hydration error workaround https://github.com/cookpete/react-player/issues/1474#issuecomment-1484028123 :)
 	const [isClient, setIsClient] = useState(false);
 	useEffect(() => {
 		setIsClient(true);
