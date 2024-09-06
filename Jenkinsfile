@@ -84,9 +84,11 @@ pipeline {
                     }
                 }
 
-                stage('PR') {
+                stage('Branch') {
                     when {
-                        changeRequest()
+                        not {
+                            branch 'master'
+                        }
                     }
                     environment {
                         VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"
@@ -103,20 +105,24 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-c"
                             }
                         }
+                    }
+                }
+
+                stage('Deploy PR Demo') {
+                    when {
+                        changeRequest() // open PR
+                    }
+                    steps {
                         ssedocker {
                             create {
                                 target "${env.TARGET_PREFIX}:${env.VERSION}"
                             }
                         }
-                    }
-                    post {
-                        success {
-                            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                                sshagent(['STM-SSH-DEMO']) {
-                                    sh "docker save ${env.TARGET_PREFIX}:${env.VERSION} | ssh -o StrictHostKeyChecking=no -l jenkins 147.172.178.45 'docker load'"
-                                }
-                                staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            sshagent(['STM-SSH-DEMO']) {
+                                sh "docker save ${env.TARGET_PREFIX}:${env.VERSION} | ssh -o StrictHostKeyChecking=no -l jenkins 147.172.178.45 'docker load'"
                             }
+                            staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
                         }
                     }
                 }
