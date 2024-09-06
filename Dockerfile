@@ -1,28 +1,11 @@
+FROM node:22.6.0-alpine as build
 
-ARG NPM_TOKEN
-
-# Base image
-FROM node:alpine as build
-
-ARG NPM_TOKEN
-ENV NPM_TOKEN=${NPM_TOKEN}
-
-# Create app directory
 WORKDIR /app
-
-# Install dependencies
-COPY package.json package-lock.json ./
-COPY .npmrc.example .npmrc
-RUN sed -i "s/\${NPM_TOKEN}/${NPM_TOKEN}/g" .npmrc
-RUN npm install
-RUN rm .npmrc
 
 #RUN addgroup --system --gid 1001 nodejs
 #RUN adduser --system --uid 1001 nextjs
 
-# Bundle app source
 COPY . ./
-# Use example as default configuration
 RUN mv .env.example .env
 
 # Generate Prisma client

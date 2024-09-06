@@ -20,7 +20,8 @@ describe("/teaching/lessons/edit - Lesson Editor", () => {
 	});
 
 	it("Update Title -> Save -> Title is updated", () => {
-		cy.get("input[name=title]").clear({ force: true }).type("Updated Title");
+		cy.get("input[name=title]").clear({ force: true });
+		cy.get("input[name=title]").type("Updated Title");
 		cy.get("button[type=submit]").first().click({ force: true });
 		cy.get("h1").should("contain", "Updated Title");
 	});
