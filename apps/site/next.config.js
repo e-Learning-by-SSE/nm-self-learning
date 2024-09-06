@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { composePlugins, withNx } = require("@nx/next");
+const { withNx } = require("@nx/next");
 const { withPlausibleProxy } = require("next-plausible");
 
 /**
