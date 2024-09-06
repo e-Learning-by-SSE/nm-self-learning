@@ -103,12 +103,14 @@ pipeline {
                             create {
                                 target "${env.TARGET_PREFIX}:${env.VERSION}"
                             }
-                            publish {}
                         }
                     }
                     post {
                         success {
-                            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                                sshagent(['STM-SSH-DEMO']) {
+                                    sh "docker save ${env.TARGET_PREFIX}:${env.VERSION} | ssh -o StrictHostKeyChecking=no -l jenkins 147.172.178.45 'docker load'"
+                                }
                                 staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
                             }
                         }
@@ -119,7 +121,6 @@ pipeline {
                     when {
                         buildingTag()
                     }
-
                     steps {
                         ssedocker {
                             create {
