@@ -193,7 +193,7 @@ function QuizConfigForm() {
 						},
 						maxErrors: 0,
 						showSolution: false
-				  }
+					}
 		);
 	}
 
