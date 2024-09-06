@@ -29,7 +29,7 @@ pipeline {
                 NPM_TOKEN = credentials('GitHub-NPM')
             }
             steps {
-                sh 'git fetch origin master:master' // for nx affected
+                sh 'git fetch --no-tags --force --progress origin master:master' // for nx affected
                 sh 'cp -f .npmrc.example .npmrc'
                 sh 'cp -f .env.example .env'
                 sh 'npm ci --force' // force for permission errors
@@ -45,24 +45,28 @@ pipeline {
             }
             parallel {
                 stage('Master') {
+                    agent { label 'jq' }
                     when {
                         branch 'master'
                     }
                     steps {
-                        // This line enables distribution
-                        // The "--stop-agents-after" is optional, but allows idle agents to shut down once the "e2e-ci" targets have been requested
-                        // sh "npx nx-cloud start-ci-run --distribute-on='3 linux-medium-js' --stop-agents-after='e2e-ci'"
                         script {
+                            def projectName = env.JOB_NAME.split('/')[0]
+                            def branchJobName = env.JOB_NAME.split('/')[1]
+                            def jobUrl = "${env.JENKINS_URL}job/${projectName}/job/${branchJobName}/lastSuccessfulBuild/git-2/api/json" // be aware /git/ is the git data of the jenkins library
+                            def lastSuccessSHA = sh(
+                                script: "curl ${jobUrl} | jq '.lastBuiltRevision.SHA1'",
+                                returnStdout: true
+                            ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
-                                sh 'npm run prisma:seed'
-                                sh "npx nx-cloud record -- nx format:check"
-                                script {
-                                    def lastSuccessBuild = currentBuild.previousSuccessfulBuild
-                                    def lastSuccessSHA = lastSuccessBuild?.getEnvVars()['GIT_COMMIT']
-                                    sh "env TZ=${env.TZ} px nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci"
+                                    sh 'npm run prisma:seed'
+                                    sh "npx nx-cloud record -- nx format:check"
+                                    // This line enables distribution
+                                    // The "--stop-agents-after" is optional, but allows idle agents to shut down once the "e2e-ci" targets have been requested
+                                    // sh "npx nx-cloud start-ci-run --distribute-on='3 linux-medium-js' --stop-agents-after='e2e-ci'"
+                                    sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci"
                                 }
-                            }
                         }
                         ssedocker {
                             create {
