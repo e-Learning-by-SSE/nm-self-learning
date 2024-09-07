@@ -1,3 +1,4 @@
+import { trpc } from "@self-learning/api-client";
 import {
 	DialogHandler,
 	dispatchDialog,
@@ -6,14 +7,12 @@ import {
 	showToast,
 	Tooltip
 } from "@self-learning/ui/common";
-import { useRequiredSession } from "@self-learning/ui/layouts";
+import { redirectToLogin, useRequiredSession } from "@self-learning/ui/layouts";
 import {
 	StudentAllDeleteInfoDialog,
 	StudentDeleteDialog,
 	StudentDeleteInfoDialog
 } from "../settings-dialog/student-delete-dialog";
-import { trpc } from "@self-learning/api-client";
-import { redirectToLogin } from "libs/ui/layouts/src/lib/redirect-to-login";
 
 export function StudentDeleteForm() {
 	const { mutateAsync: deleteOnlyMe } = trpc.me.deleteMe.useMutation();

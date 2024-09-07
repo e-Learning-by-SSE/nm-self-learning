@@ -28,64 +28,70 @@ export const meRouter = t.router({
 		});
 	}),
 	deleteMe: authProcedure.mutation(async ({ ctx }) => {
-		const user = await database.user.findUnique({
-			where: { name: ctx.user.name }
-		});
-
-		if (!user) {
-			return false;
-		}
-
-		const lessons = await findLessons({ authorName: ctx.user.name });
-		const lessonsIds = lessons.lessons.map(lesson => lesson.lessonId);
-
-		const courses = await database.course.findMany({
-			where: {
-				authors: {
-					some: {
-						username: ctx.user.name
-					}
-				}
+		const result = await database.$transaction(async (prisma) => {
+			
+			const user = await prisma.user.findUnique({
+				where: { name: ctx.user.name }
+			});
+		
+			if (!user) {
+				return false;
 			}
-		});
-		const courseIds = courses.map(course => course.courseId);
-
-		const skills = await database.skillRepository.findMany({
-			where: {
-				ownerId: ctx.user.id
-			}
-		});
-		const skillsIds = skills.map(skill => skill.id);
-
-		const username = "anonymous" + randomUUID();
-
-		await database.user.create({
-			data: {
-				name: username,
-				displayName: user.displayName,
-				role: user.role,
-				author: {
-					create: {
-						displayName: user.displayName,
-						slug: username,
-						lessons: {
-							connect: lessonsIds.map(lessonId => ({ lessonId }))
-						},
-						courses: {
-							connect: courseIds.map(courseId => ({ courseId }))
+		
+			const lessons = await findLessons({ authorName: ctx.user.name });
+			const lessonsIds = lessons.lessons.map(lesson => lesson.lessonId);
+		
+			const courses = await prisma.course.findMany({
+				where: {
+					authors: {
+						some: {
+							username: ctx.user.name
 						}
 					}
-				},
-				skillRepositories: {
-					connect: skillsIds.map(id => ({ id }))
 				}
-			}
+			});
+			const courseIds = courses.map(course => course.courseId);
+		
+			const skills = await prisma.skillRepository.findMany({
+				where: {
+					ownerId: ctx.user.id
+				}
+			});
+			const skillsIds = skills.map(skill => skill.id);
+		
+			const username = "anonymous" + randomUUID();
+	
+			await prisma.user.create({
+				data: {
+					name: username,
+					displayName: user.displayName,
+					role: user.role,
+					author: {
+						create: {
+							displayName: user.displayName,
+							slug: username,
+							lessons: {
+								connect: lessonsIds.map(lessonId => ({ lessonId }))
+							},
+							courses: {
+								connect: courseIds.map(courseId => ({ courseId }))
+							}
+						}
+					},
+					skillRepositories: {
+						connect: skillsIds.map(id => ({ id }))
+					}
+				}
+			});
+		
+			await prisma.user.delete({
+				where: { name: ctx.user.name }
+			});
+		
+			return true;
 		});
 
-		await database.user.delete({
-			where: { name: ctx.user.name }
-		});
-		return true;
+		return result;
 	}),
 	updateStudent: authProcedure
 		.input(
