@@ -8,7 +8,7 @@ import { database } from "@self-learning/database";
 import { Prisma } from "@prisma/client";
 
 export function createUserEvent<K extends Actions>(event: {
-	userId: string;
+	username: string;
 	action: K;
 	resourceId?: string;
 	payload: ActionPayloadTypes[K];
@@ -25,7 +25,7 @@ export async function loadUserEvents(input: EventLogQueryInput) {
 
 	const results = await database.eventLog.findMany({
 		where: {
-			userId: input.userId,
+			username: input.username,
 			createdAt: {
 				gte: input.start,
 				lte: input.end

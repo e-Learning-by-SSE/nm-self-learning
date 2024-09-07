@@ -315,7 +315,7 @@ model Skill {
 model EventLog {
   id          Int    @id @default(autoincrement())
   createdAt   DateTime  @default(now())
-  userId      String   
+  username    String   
   resourceId  String?
   action      String
   payload     Json? 

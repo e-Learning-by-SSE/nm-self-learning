@@ -3,6 +3,7 @@ import { z } from "zod";
 export const actionPayloadTypesSchema = z.object({
 	USER_LOGIN: z.undefined(),
 	USER_LOGOUT: z.undefined(),
+	COURSE_ENROLL: z.undefined(),
 	COURSE_START: z.undefined(),
 	COURSE_STOP: z.undefined(),
 	COURSE_COMPLETE: z.undefined(),
@@ -14,7 +15,7 @@ export const actionPayloadTypesSchema = z.object({
 	LESSON_RESUME: z.undefined(),
 	LESSON_RESTART: z.undefined(),
 	LESSON_COMPLETE: z.undefined(),
-	LESSON_ASSESSMENT_SUBMISSION: z.object({
+	LESSON_QUIZ_SUBMISSION: z.object({
 		index: z.number(),
 		type: z.string(),
 		hints: z.number(),
@@ -22,7 +23,10 @@ export const actionPayloadTypesSchema = z.object({
 		solved: z.boolean()
 		// timeSpentSeconds: z.number()
 	}),
-	LESSON_ASSESSMENT_START: z.undefined(),
+	LESSON_QUIZ_START: z.object({
+		index: z.number(),
+		type: z.string()
+	}),
 	VIDEO_PLAY: z.object({
 		videoCurrentTime: z.number()
 	}),
@@ -51,7 +55,7 @@ export type Actions = keyof ActionPayloadTypes;
 
 export const userEventSchema = z.object({
 	// id: z.number(),
-	// userId: z.string(),
+	// username: z.string(),
 	action: z.enum(Object.keys(actionPayloadTypesSchema.shape) as [Actions, ...Actions[]]),
 	resourceId: z.string().optional(),
 	payload: z.union([z.never(), z.never(), ...Object.values(actionPayloadTypesSchema.shape)])
@@ -69,7 +73,7 @@ export const eventWhereSchema = z.object({
 export type EventWhereClause = z.input<typeof eventWhereSchema>;
 
 const eventLogQuerySchema = eventWhereSchema.extend({
-	userId: z.string()
+	username: z.string()
 });
 
 export type EventLogQueryInput = z.input<typeof eventLogQuerySchema>;

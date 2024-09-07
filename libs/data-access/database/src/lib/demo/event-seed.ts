@@ -338,27 +338,25 @@ const videoEvents: EventType[] = [
 ];
 
 async function seedVideoEvents() {
-	const userIds = await prisma.user.findMany({
+	const usernames = await prisma.user.findMany({
 		select: {
-			id: true
+			name: true
 		}
 	});
 
-	userIds
-		.map(id => id.id)
-		.forEach(async id => {
-			videoEvents.forEach(async event => {
-				await prisma.eventLog.create({
-					data: {
-						userId: id,
-						action: event.action,
-						createdAt: new Date(event.createdAt),
-						payload: event.payload,
-						resourceId: event.resourceId
-					}
-				});
+	usernames.forEach(async ({ name }) => {
+		videoEvents.forEach(async event => {
+			await prisma.eventLog.create({
+				data: {
+					username: name,
+					action: event.action,
+					createdAt: new Date(event.createdAt),
+					payload: event.payload,
+					resourceId: event.resourceId
+				}
 			});
 		});
+	});
 }
 
 export async function seedEvents() {
