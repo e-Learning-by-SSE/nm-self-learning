@@ -1,9 +1,7 @@
 import { Dialog, DialogActions, ImageOrPlaceholder } from "@self-learning/ui/common";
 import { CenteredContainer, useRequiredSession } from "@self-learning/ui/layouts";
+import { AuthorSvg, DiarySvg, StatisticSvg } from "@self-learning/ui/static";
 import { User } from "next-auth";
-import { ReactComponent as AuthorSvg } from "../../../../../../apps/site/svg/author.svg";
-import { ReactComponent as DiarySvg } from "../../../../../../apps/site/svg/diary.svg";
-import { ReactComponent as StatisticSvg } from "../../../../../../apps/site/svg/statistic.svg";
 import { useState } from "react";
 
 export function StudentDeleteDialog({

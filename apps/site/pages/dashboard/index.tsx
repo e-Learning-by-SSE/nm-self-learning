@@ -26,10 +26,10 @@ import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { StudentSettings } from "@self-learning/types";
+import { TutorialSvg } from "@self-learning/ui/static";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
