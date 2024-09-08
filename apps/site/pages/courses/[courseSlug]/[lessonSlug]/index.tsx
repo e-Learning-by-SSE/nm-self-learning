@@ -137,7 +137,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
 					{video?.value.url ? (
-						<VideoPlayer url={video.value.url} />
+						<VideoPlayer parentLessonId={lesson.lessonId} url={video.value.url} />
 					) : (
 						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
 					)}

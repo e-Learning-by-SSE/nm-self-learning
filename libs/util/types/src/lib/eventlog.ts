@@ -27,22 +27,22 @@ export const actionPayloadTypesSchema = z.object({
 		index: z.number(),
 		type: z.string()
 	}),
-	VIDEO_PLAY: z.object({
+	LESSON_VIDEO_PLAY: z.object({
 		videoCurrentTime: z.number()
 	}),
-	VIDEO_PAUSE: z.object({
+	LESSON_VIDEO_PAUSE: z.object({
 		videoCurrentTime: z.number()
 	}),
-	VIDEO_END: z.undefined(),
-	VIDEO_JUMP: z.object({
+	LESSON_VIDEO_END: z.undefined(),
+	LESSON_VIDEO_JUMP: z.object({
 		videoJump: z.number(),
 		videoLand: z.number()
 	}),
-	VIDEO_OPENED: z.object({ url: z.string() }),
-	VIDEO_SPEED: z.object({ videoSpeed: z.number() }),
-	VIDEO_RESOLUTION: z.object({ resolution: z.string() }), // TODO
-	VIDEO_START: z.undefined(),
-	VIDEO_STOP: z.undefined(),
+	LESSON_VIDEO_OPENED: z.object({ url: z.string() }),
+	LESSON_VIDEO_SPEED: z.object({ videoSpeed: z.number() }),
+	LESSON_VIDEO_RESOLUTION: z.object({ resolution: z.string() }), // TODO
+	LESSON_VIDEO_START: z.undefined(),
+	LESSON_VIDEO_STOP: z.undefined(),
 	// VIDEO_REPLAY: z.undefined(),
 	ERROR: z.object({
 		error: z.string(),

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEventLog } from "@self-learning/util/common";
+import { Actions } from "@self-learning/types";
+import { useEventLog, NewEventInput } from "@self-learning/util/common";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player/lazy";
 
@@ -13,16 +14,29 @@ function useHydrationFix() {
 	return { isClient };
 }
 
-export function VideoPlayer({ url, startAt = 0 }: Readonly<{ url: string; startAt?: number }>) {
+export function VideoPlayer({
+	url,
+	startAt = 0,
+	parentLessonId
+}: Readonly<{ url: string; startAt?: number; parentLessonId?: string }>) {
 	const playerRef = useRef<ReactPlayer | null>(null);
 	const { isClient } = useHydrationFix();
-	const { newEvent } = useEventLog();
+	const { newEvent: writeEvent } = useEventLog();
 	const [isReady, setIsReady] = useState(false);
 
+	const newEvent = useCallback(
+		async <K extends Actions>(event: NewEventInput<K>) => {
+			// when parentLessonId is not provided, the player is probably not in a lesson during learning
+			// (probably inside an editor) so we don't need to write events
+			if (parentLessonId) {
+				await writeEvent({ ...event, resourceId: parentLessonId });
+			}
+		},
+		[parentLessonId, writeEvent]
+	);
 	async function onStart() {
 		await newEvent({
-			action: "VIDEO_START",
-			resourceId: undefined /*TODO*/,
+			action: "LESSON_VIDEO_START",
 			payload: undefined
 		});
 	}
@@ -33,34 +47,37 @@ export function VideoPlayer({ url, startAt = 0 }: Readonly<{ url: string; startA
 				playerRef?.current?.seekTo(startAt, "seconds");
 			}
 			setIsReady(true);
-			newEvent({ action: "VIDEO_OPENED", resourceId: undefined /*TODO*/, payload: { url } });
+			newEvent({
+				action: "LESSON_VIDEO_OPENED",
+				payload: { url }
+			});
 		}
 	}, [isReady, startAt, newEvent, url]);
 
 	function onPlay() {
 		newEvent({
-			action: "VIDEO_PLAY",
-			resourceId: undefined /*TODO*/,
+			action: "LESSON_VIDEO_PLAY",
 			payload: { videoCurrentTime: playerRef?.current?.getCurrentTime() ?? 0 }
 		});
 	}
 	function onPause() {
 		// this is fired even when the video ends or on seeking
 		newEvent({
-			action: "VIDEO_PAUSE",
-			resourceId: undefined /*TODO*/,
+			action: "LESSON_VIDEO_PAUSE",
 			payload: { videoCurrentTime: playerRef?.current?.getCurrentTime() ?? 0 }
 		});
 	}
 
 	function onEnded() {
-		newEvent({ action: "VIDEO_END", resourceId: undefined /*TODO*/, payload: undefined });
+		newEvent({
+			action: "LESSON_VIDEO_END",
+			payload: undefined
+		});
 	}
 
 	function onPlaybackRateChange(videoSpeed: number) {
 		newEvent({
-			action: "VIDEO_SPEED",
-			resourceId: undefined /*TODO*/,
+			action: "LESSON_VIDEO_SPEED",
 			payload: { videoSpeed }
 		});
 	}
@@ -68,8 +85,7 @@ export function VideoPlayer({ url, startAt = 0 }: Readonly<{ url: string; startA
 	function onSeek(seconds: number) {
 		if (startAt === playerRef?.current?.getCurrentTime()) return;
 		newEvent({
-			action: "VIDEO_JUMP",
-			resourceId: undefined /*TODO*/,
+			action: "LESSON_VIDEO_JUMP",
 			payload: {
 				videoJump: 0,
 				videoLand: seconds
@@ -79,6 +95,7 @@ export function VideoPlayer({ url, startAt = 0 }: Readonly<{ url: string; startA
 	if (!isClient) return <p>The video player cannot render on the server side</p>;
 	return (
 		<ReactPlayer
+			data-testid="video-player"
 			url={url}
 			ref={playerRef}
 			height="100%"
