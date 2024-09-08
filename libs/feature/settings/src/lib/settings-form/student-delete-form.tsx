@@ -113,34 +113,22 @@ export function StudentDeleteForm() {
 	);
 }
 
-const personalDataDeletionInfo = [
-	"profile information",
-	"account settings",
-	"saved preferences",
-	"skill repositorys"
-];
-
-const allDataDeletionInfo = [...personalDataDeletionInfo, "created courses", "created lessons"];
-
-function generateDeletionTooltip(deletionInfo: string[]): string {
-	return `This will delete the following: ${deletionInfo.join(", ")}.`;
-}
 
 export function PersonalDataTooltip() {
-	const personalDataTitle = generateDeletionTooltip(personalDataDeletionInfo);
 
 	return (
-		<Tooltip title={personalDataTitle}>
+		<Tooltip title={"This will delete the following:" +  
+		"profile information, account settings, saved preferences"}>
 			<QuestionMarkTooltip tooltipText="Here you can delete your personal data." />
 		</Tooltip>
 	);
 }
 
 function AllDataTooltip() {
-	const allDataTitle = generateDeletionTooltip(allDataDeletionInfo);
 
 	return (
-		<Tooltip title={allDataTitle}>
+		<Tooltip title={"This will delete the following:" +  
+		"profile information, account settings, saved preferences, skill repositorys, created courses, created lessons"}>
 			<QuestionMarkTooltip tooltipText="Here you can delete all your data." />
 		</Tooltip>
 	);
