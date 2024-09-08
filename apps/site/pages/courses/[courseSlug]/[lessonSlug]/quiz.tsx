@@ -15,7 +15,6 @@ import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdow
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
-import { useEventLog } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -142,12 +141,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						markdown={markdown}
 						lesson={lesson}
 					/>
-					<QuizCompletionSubscriber
-						lesson={lesson}
-						course={course}
-						question={currentQuestion}
-						// question={questions}
-					/>
+					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
 			</div>
 		</QuizProvider>
@@ -157,48 +151,20 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 /** Component that listens to the `completionState` and marks lesson as completed, when quiz is `completed`. */
 function QuizCompletionSubscriber({
 	lesson,
-	course,
-	question
+	course
 }: {
 	lesson: QuestionProps["lesson"];
 	course: QuestionProps["course"];
-	question: QuizContent[number];
 }) {
-	const { completionState, usedHints, answers } = useQuiz();
+	const { completionState } = useQuiz();
 	const unsubscribeRef = useRef(false);
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
-	const { newEvent } = useEventLog();
 
 	useEffect(() => {
-		if (!unsubscribeRef.current) {
-			if (completionState === "completed") {
-				unsubscribeRef.current = true;
-				console.log("QuizCompletionSubscriber: Marking as completed");
-				markAsCompleted();
-				// newEvent({
-				// 	action: "LESSON_QUIZ_SUBMISSION",
-				// 	payload: {
-				// 		index: 0,
-				// 		type: question.type,
-				// 		hints: usedHints[question.questionId]?.length ?? 0,
-				// 		attempts: 1,
-				// 		solved: false
-				// 	}
-				// });
-			} else if (completionState === "failed") {
-				unsubscribeRef.current = true;
-			} else if (completionState === "in-progress") {
-				// newEvent({
-				// 	action: "LESSON_QUIZ_START",
-				// 	payload: {
-				// 		index: 0,
-				// 		type: question.type,
-				// 		hints: usedHints[question.questionId]?.length ?? 0,
-				// 		attempts: 1,
-				// 		solved: false
-				// 	}
-				// });
-			}
+		if (!unsubscribeRef.current && completionState === "completed") {
+			unsubscribeRef.current = true;
+			console.log("QuizCompletionSubscriber: Marking as completed");
+			markAsCompleted();
 		}
 	}, [completionState, markAsCompleted]);
 
