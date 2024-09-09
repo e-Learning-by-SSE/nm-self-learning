@@ -20,6 +20,7 @@ import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
+import { useEventLog } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
@@ -118,6 +119,16 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
+
+	const { newEvent } = useEventLog();
+	useEffect(() => {
+		newEvent({
+			action: "LESSON_OPEN",
+			resourceId: lesson.lessonId,
+			courseId: course.courseId,
+			payload: undefined
+		});
+	}, [newEvent, lesson.lessonId, course.courseId]);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
