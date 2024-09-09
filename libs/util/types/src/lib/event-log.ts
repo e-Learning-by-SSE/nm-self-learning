@@ -16,7 +16,7 @@ export const actionPayloadTypesSchema = z.object({
 	LESSON_RESTART: z.undefined(),
 	LESSON_COMPLETE: z.undefined(),
 	LESSON_QUIZ_SUBMISSION: z.object({
-		index: z.number(),
+		index: z.string(),
 		type: z.string(),
 		hintsUsed: z.array(z.string()),
 		attempts: z.number(),
