@@ -1,5 +1,5 @@
-import {PrismaClient} from "@prisma/client";
-import {createRepositories, createSkillGroups, createSkills} from "../seed-functions";
+import { PrismaClient } from "@prisma/client";
+import { createRepositories, createSkillGroups, createSkills } from "../seed-functions";
 
 const prisma = new PrismaClient();
 
@@ -124,7 +124,7 @@ const skills = [
 		name: "Foundations of Loops",
 		description: "Explains general use of Loops"
 	},
-	{id: "26", name: "For-Loop", description: "For-Loop"},
+	{ id: "26", name: "For-Loop", description: "For-Loop" },
 	{
 		id: "27",
 		name: "While-Loop",
