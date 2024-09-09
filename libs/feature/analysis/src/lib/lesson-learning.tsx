@@ -4,8 +4,8 @@ import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/com
 export function LessonView() {
 	const { data, isLoading } = trpc.events.get.useQuery({
 		action: [
-			"LESSON_ASSESSMENT_START",
-			"LESSON_ASSESSMENT_SUBMISSION",
+			"LESSON_QUIZ_START",
+			"LESSON_QUIZ_SUBMISSION",
 			"LESSON_COMPLETE",
 			"LESSON_RESTART",
 			"LESSON_START",

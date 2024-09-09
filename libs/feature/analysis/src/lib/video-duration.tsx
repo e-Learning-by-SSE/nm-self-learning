@@ -11,12 +11,12 @@ export function VideoDuration() {
 	const [previewSelection, setPreviewSelection] = useState("Table");
 	const { data, isLoading } = trpc.events.get.useQuery({
 		action: [
-			"VIDEO_PLAY",
-			"VIDEO_PAUSE",
-			"VIDEO_JUMP",
-			"VIDEO_STOP",
-			"VIDEO_END",
-			"VIDEO_SPEED"
+			"LESSON_VIDEO_PLAY",
+			"LESSON_VIDEO_PAUSE",
+			"LESSON_VIDEO_JUMP",
+			"LESSON_VIDEO_STOP",
+			"LESSON_VIDEO_END",
+			"LESSON_VIDEO_SPEED"
 		]
 	});
 
