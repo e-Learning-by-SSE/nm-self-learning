@@ -109,7 +109,6 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 		});
 	}
 
-
 	useEffect(() => {
 		const indexNumber = Number(index);
 
@@ -144,7 +143,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						markdown={markdown}
 						lesson={lesson}
 					/>
-					<QuizCompletionSubscriber lesson={lesson} course={course}/>
+					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
 			</div>
 		</QuizProvider>
@@ -195,7 +194,7 @@ function QuizHeader({
 	const failureDialogOpenedRef = useRef(false);
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 	const [showFailureDialog, setShowFailureDialog] = useState(false);
-	const { newEvent: writeEvent } = useEventLog();
+	const { newEvent } = useEventLog();
 
 	if (!successDialogOpenedRef.current && completionState === "completed") {
 		successDialogOpenedRef.current = true;
@@ -208,12 +207,12 @@ function QuizHeader({
 	}
 
 	useEffect(() => {
-		writeEvent({
+		newEvent({
 			action: "LESSON_QUIZ_START",
 			resourceId: lesson.lessonId,
 			payload: { index: 0, type: questions[0].type }
 		});
-	}, [questions]);
+	}, [questions, lesson.lessonId, newEvent]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -228,7 +227,7 @@ function QuizHeader({
 				{questions.map((question, index) => (
 					<div
 						onClick={() => {
-							writeEvent({
+							newEvent({
 								action: "LESSON_QUIZ_START",
 								resourceId: lesson.lessonId,
 								payload: { index, type: question.type }
@@ -282,22 +281,22 @@ function QuestionTab(props: {
 	const isIncorrect = props.evaluation?.isCorrect === false;
 
 	{
-		props.isMultiStep && <CheckCircleIcon className="h-5 text-secondary"/>;
+		props.isMultiStep && <CheckCircleIcon className="h-5 text-secondary" />;
 	}
 
 	return (
 		<span className="flex items-center gap-4">
 			{isCorrect ? (
 				<QuestionTabIcon isMultiStep={props.isMultiStep}>
-					<CheckCircleIcon className="h-5 text-secondary"/>
+					<CheckCircleIcon className="h-5 text-secondary" />
 				</QuestionTabIcon>
 			) : isIncorrect ? (
 				<QuestionTabIcon isMultiStep={props.isMultiStep}>
-					<XCircleIcon className="h-5 text-red-500"/>
+					<XCircleIcon className="h-5 text-red-500" />
 				</QuestionTabIcon>
 			) : (
 				<QuestionTabIcon isMultiStep={props.isMultiStep}>
-					<CheckCircleIconOutline className="h-5 text-gray-400"/>
+					<CheckCircleIconOutline className="h-5 text-gray-400" />
 				</QuestionTabIcon>
 			)}
 			<span data-testid="questionTab">Frage {props.index + 1}</span>
@@ -345,8 +344,7 @@ function QuizCompletionDialog({
 				{nextLesson ? (
 					<div className="flex flex-col">
 						<p>Die nächste Lerneinheit ist ...</p>
-						<span
-							className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
+						<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
 							{nextLesson.title}
 						</span>
 					</div>
@@ -366,7 +364,7 @@ function QuizCompletionDialog({
 						className="btn-primary"
 					>
 						<span>Zur nächsten Lerneinheit</span>
-						<PlayIcon className="h-5 shrink-0"/>
+						<PlayIcon className="h-5 shrink-0" />
 					</Link>
 				)}
 			</DialogActions>
@@ -396,7 +394,7 @@ function QuizFailedDialog({
 			<DialogActions onClose={onClose}>
 				<button className="btn-primary" onClick={reload}>
 					<span>Erneut probieren</span>
-					<ArrowPathIcon className="h-5 shrink-0"/>
+					<ArrowPathIcon className="h-5 shrink-0" />
 				</button>
 			</DialogActions>
 		</Dialog>
