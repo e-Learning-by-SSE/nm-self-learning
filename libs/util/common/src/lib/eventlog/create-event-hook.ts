@@ -5,6 +5,7 @@ export type NewEventInput<K extends Actions> = {
 	action: K;
 	payload: ActionPayloadTypes[K];
 	resourceId?: string;
+	courseId?: string;
 };
 
 export function useEventLog() {

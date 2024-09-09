@@ -16,14 +16,14 @@ export const userEventRouter = t.router({
 		schema.parse(input.payload);
 
 		return createUserEvent({
-			username: ctx.user.id,
+			username: ctx.user.name,
 			...input,
 			payload: input.payload satisfies ActionPayloadTypes[typeof input.action]
 		});
 	}),
 	get: authProcedure.input(eventWhereSchema).query(async ({ ctx, input }) => {
 		return loadUserEvents({
-			username: ctx.user.id,
+			username: ctx.user?.name,
 			...input
 		});
 	})

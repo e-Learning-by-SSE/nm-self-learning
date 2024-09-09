@@ -1,4 +1,4 @@
-import { userEventRouter } from "./eventlog.router";
+import { userEventRouter } from "./event-log.router";
 import { Context } from "../context";
 import { t } from "../trpc";
 import { actionPayloadTypesSchema } from "@self-learning/types";
@@ -11,15 +11,16 @@ function prepare() {
 	mockCreateUserEvent.mockResolvedValue({
 		id: 1,
 		createdAt: new Date(),
-		userId: "user-id",
-		resourceId: null,
-		action: "COURSE_RESUME",
-		payload: { resumeLessonId: "lesson-id" }
+		username: "john",
+		resourceId: "",
+		courseId: "",
+		action: "ERROR",
+		payload: { error: "error", path: "path" }
 	});
 	const ctx: Context = {
 		user: {
 			id: "user-id",
-			name: "John Doe",
+			name: "john",
 			role: "USER",
 			isAuthor: false
 		}
@@ -32,12 +33,12 @@ describe("userEventRouter create", () => {
 	it("should create new db entry", async () => {
 		const { caller, mockCreateUserEvent } = prepare();
 		const input = {
-			action: "COURSE_RESUME" as const,
-			payload: { resumeLessonId: "lesson-id" }
+			action: "ERROR" as const,
+			payload: { error: "error", path: "path" }
 		};
 		await caller.create(input);
 		expect(mockCreateUserEvent).toHaveBeenCalledWith({
-			userId: "user-id",
+			username: "john",
 			...input,
 			payload: input.payload
 		});
@@ -56,20 +57,20 @@ describe("userEventRouter create", () => {
 	it("should validate correct payloads", async () => {
 		const { caller } = prepare();
 		const input = {
-			action: "COURSE_RESUME" as const,
-			payload: { resumeLessonId: "lesson-id" }
+			action: "ERROR" as const,
+			payload: { error: "error", path: "path" }
 		};
 		const result = await caller.create(input); // could throw an error on validation fail
 		// also check manual validation
 
-		const schema = actionPayloadTypesSchema.shape["COURSE_RESUME"];
+		const schema = actionPayloadTypesSchema.shape["ERROR"];
 		expect(() => schema.parse(result.payload)).not.toThrow();
 	});
 	it("should not pass incorrect payloads", async () => {
 		const { caller } = prepare();
 		const input = {
-			action: "COURSE_RESUME" as const,
-			payload: undefined // COURSE_RESUME must have a payload
+			action: "ERROR" as const,
+			payload: undefined // ERROR must have a payload
 		};
 		expect(caller.create(input)).rejects.toThrow();
 	});

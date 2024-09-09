@@ -14,7 +14,7 @@ import { specializationRouter } from "./routers/specialization.router";
 import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 import { settingsRouter } from "./routers/settings.router";
-import { userEventRouter } from "./routers/eventlog.router";
+import { userEventRouter } from "./routers/event-log.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,

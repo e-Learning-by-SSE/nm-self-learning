@@ -18,7 +18,7 @@ export const actionPayloadTypesSchema = z.object({
 	LESSON_QUIZ_SUBMISSION: z.object({
 		index: z.number(),
 		type: z.string(),
-		hints: z.number(),
+		hintsUsed: z.array(z.string()),
 		attempts: z.number(),
 		solved: z.boolean()
 		// timeSpentSeconds: z.number()
@@ -28,12 +28,16 @@ export const actionPayloadTypesSchema = z.object({
 		type: z.string()
 	}),
 	LESSON_VIDEO_PLAY: z.object({
+		url: z.string(),
 		videoCurrentTime: z.number()
 	}),
 	LESSON_VIDEO_PAUSE: z.object({
+		url: z.string(),
 		videoCurrentTime: z.number()
 	}),
-	LESSON_VIDEO_END: z.undefined(),
+	LESSON_VIDEO_END: z.object({
+		url: z.string()
+	}),
 	LESSON_VIDEO_JUMP: z.object({
 		videoJump: z.number(),
 		videoLand: z.number()
@@ -43,7 +47,6 @@ export const actionPayloadTypesSchema = z.object({
 	LESSON_VIDEO_RESOLUTION: z.object({ resolution: z.string() }), // TODO
 	LESSON_VIDEO_START: z.undefined(),
 	LESSON_VIDEO_STOP: z.undefined(),
-	// VIDEO_REPLAY: z.undefined(),
 	ERROR: z.object({
 		error: z.string(),
 		path: z.string()
@@ -58,6 +61,7 @@ export const userEventSchema = z.object({
 	// username: z.string(),
 	action: z.enum(Object.keys(actionPayloadTypesSchema.shape) as [Actions, ...Actions[]]),
 	resourceId: z.string().optional(),
+	courseId: z.string().optional(),
 	payload: z.union([z.never(), z.never(), ...Object.values(actionPayloadTypesSchema.shape)])
 });
 
