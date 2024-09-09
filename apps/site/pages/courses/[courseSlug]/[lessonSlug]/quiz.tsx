@@ -84,6 +84,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
+
 	// const hasPrevious = nextIndex > 1;
 	// const hasNext = nextIndex < questions.length;
 
@@ -107,6 +108,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 			shallow: true
 		});
 	}
+
 
 	useEffect(() => {
 		const indexNumber = Number(index);
@@ -204,6 +206,14 @@ function QuizHeader({
 		failureDialogOpenedRef.current = true;
 		setShowFailureDialog(true);
 	}
+
+	useEffect(() => {
+		writeEvent({
+			action: "LESSON_QUIZ_START",
+			resourceId: lesson.lessonId,
+			payload: { index: 0, type: questions[0].type }
+		});
+	}, [questions]);
 
 	return (
 		<div className="flex flex-col gap-4">
