@@ -11,6 +11,7 @@ export function createUserEvent<K extends Actions>(event: {
 	username: string;
 	action: K;
 	resourceId?: string;
+	courseId?: string;
 	payload: ActionPayloadTypes[K];
 }) {
 	return database.eventLog.create({ data: event });

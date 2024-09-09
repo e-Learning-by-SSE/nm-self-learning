@@ -214,7 +214,7 @@ function QuizHeader({
 				</Link>
 			</div>
 
-			<Tabs onChange={(index) => goToQuestion(index)} selectedIndex={currentIndex}>
+			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
 				{questions.map((question, index) => (
 					<div
 						onClick={() => {

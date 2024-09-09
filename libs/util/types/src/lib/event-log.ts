@@ -10,7 +10,7 @@ export const actionPayloadTypesSchema = z.object({
 	COURSE_RESUME: z.object({
 		resumeLessonId: z.string()
 	}),
-	LESSON_START: z.undefined(),
+	LESSON_OPEN: z.undefined(),
 	LESSON_STOP: z.undefined(),
 	LESSON_RESUME: z.undefined(),
 	LESSON_RESTART: z.undefined(),
