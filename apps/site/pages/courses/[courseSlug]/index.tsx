@@ -36,17 +36,17 @@ function mapToTocContent(
 		content: chapter.content.map(({ lessonId }) => {
 			const lesson: ToC.Content[0]["content"][0] = lessonIdMap.has(lessonId)
 				? {
-					...(lessonIdMap.get(lessonId) as LessonInfo),
-					lessonNr: lessonNr++
-				}
+						...(lessonIdMap.get(lessonId) as LessonInfo),
+						lessonNr: lessonNr++
+					}
 				: {
-					lessonId: "removed",
-					slug: "removed",
-					meta: { hasQuiz: false, mediaTypes: {} },
-					title: "Removed",
-					lessonType: LessonType.TRADITIONAL,
-					lessonNr: -1
-				};
+						lessonId: "removed",
+						slug: "removed",
+						meta: { hasQuiz: false, mediaTypes: {} },
+						title: "Removed",
+						lessonType: LessonType.TRADITIONAL,
+						lessonNr: -1
+					};
 
 			return lesson;
 		})
@@ -162,34 +162,22 @@ async function getCourse(courseSlug: string) {
 }
 
 export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
-	const { newEvent: writeEvent } = useEventLog();
-
-	useMemo(() => {
-		const result = writeEvent({
-			action: "LESSON_OPEN",
-			resourceId: course.courseId,
-			courseId: course.courseId,
-			payload: undefined,
-		});
-	}, [course.courseId]);
-
-
 	return (
 		<div className="bg-gray-50 pb-32">
 			<CenteredSection className="bg-gray-50">
-				<CourseHeader course={course} content={content} summary={summary}/>
+				<CourseHeader course={course} content={content} summary={summary} />
 			</CenteredSection>
 
 			{markdownDescription && (
 				<section className="bg-white py-16">
 					<CenteredContainer>
-						<Description content={markdownDescription}/>
+						<Description content={markdownDescription} />
 					</CenteredContainer>
 				</section>
 			)}
 
 			<CenteredSection className="bg-gray-50">
-				<TableOfContents content={content} course={course}/>
+				<TableOfContents content={content} course={course} />
 			</CenteredSection>
 		</div>
 	);
@@ -245,7 +233,7 @@ function CourseHeader({
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<AuthorsList authors={course.authors}/>
+						<AuthorsList authors={course.authors} />
 						<CreatedUpdatedDates
 							createdAt={formatDateAgo(course.createdAt)}
 							updatedAt={formatDateAgo(course.updatedAt)}
@@ -298,7 +286,7 @@ function CourseHeader({
 										: "Fortfahren"
 									: "Öffnen"}
 							</span>
-							<PlayIcon className="h-5"/>
+							<PlayIcon className="h-5" />
 						</Link>
 					)}
 
@@ -308,7 +296,7 @@ function CourseHeader({
 							onClick={() => enroll({ courseId: course.courseId })}
 						>
 							<span>Zum Lernplan hinzufügen</span>
-							<PlusCircleIcon className="h-5"/>
+							<PlusCircleIcon className="h-5" />
 						</button>
 					)}
 				</div>
