@@ -9,7 +9,7 @@ import {
 	read,
 	seedCaseStudy
 } from "../seed-functions";
-import {seedJavaDemoSkills} from "./seed-java-demo-skills";
+import { seedJavaDemoSkills } from "./seed-java-demo-skills";
 
 const chapters = [
 	{

@@ -18,11 +18,9 @@ export const chapters = [
 				description: "",
 				content: [
 					createPdf({
-							url:
-								"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Folgen_Kapitel.pdf",
-							estimatedDuration: 1260
-						}
-					)
+						url: "https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Folgen_Kapitel.pdf",
+						estimatedDuration: 1260
+					})
 				],
 				questions: [
 					createMultipleChoice({

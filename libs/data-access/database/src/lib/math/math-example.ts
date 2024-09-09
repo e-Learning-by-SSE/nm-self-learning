@@ -1,4 +1,4 @@
-import {createAuthor, seedCaseStudy} from "../seed-functions";
+import { createAuthor, seedCaseStudy } from "../seed-functions";
 import * as Analysis from "./Analysis";
 import * as DidacticsOfGeometry from "./DidacticsOfGeometry";
 

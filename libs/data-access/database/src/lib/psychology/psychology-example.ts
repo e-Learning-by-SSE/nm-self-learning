@@ -1,4 +1,4 @@
-import {createAuthor, seedCaseStudy} from "../seed-functions";
+import { createAuthor, seedCaseStudy } from "../seed-functions";
 
 import * as FundamentalsOfPerception from "./FundamentalsOfPerception";
 import * as PerceptionOfHearing from "./PerceptionOfHearing";
