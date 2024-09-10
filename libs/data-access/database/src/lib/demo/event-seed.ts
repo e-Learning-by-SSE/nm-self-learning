@@ -13,7 +13,7 @@ type EventType = {
 const videoEvents: EventType[] = [
 	// Scenario 1: Start -> Pause -> Play -> Stop -> End
 	{
-		action: "VIDEO_OPENED",
+		action: "LESSON_VIDEO_OPENED",
 		createdAt: "2024-08-01T08:00:00.000Z",
 		payload: {
 			url: "http://example.com/video-1.mp4"
@@ -21,44 +21,47 @@ const videoEvents: EventType[] = [
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-01T08:00:01.000Z",
 		payload: {
+			url: "http://example.com/video-1.mp4",
 			videoCurrentTime: 0
 		},
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_PAUSE",
+		action: "LESSON_VIDEO_PAUSE",
 		createdAt: "2024-08-01T08:01:01.000Z",
 		payload: {
+			url: "http://example.com/video-1.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-01T08:01:06.000Z",
 		payload: {
+			url: "http://example.com/video-1.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_STOP",
+		action: "LESSON_VIDEO_STOP",
 		createdAt: "2024-08-01T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_END",
+		action: "LESSON_VIDEO_END",
 		createdAt: "2024-08-01T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-1"
 	},
 	// Scenario 2: Same video later at the same day; 1 JUMP
 	{
-		action: "VIDEO_OPENED",
+		action: "LESSON_VIDEO_OPENED",
 		createdAt: "2024-08-01T12:00:00.000Z",
 		payload: {
 			url: "http://example.com/video-1.mp4"
@@ -66,23 +69,25 @@ const videoEvents: EventType[] = [
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-01T12:00:01.000Z",
 		payload: {
+			url: "http://example.com/video-1.mp4",
 			videoCurrentTime: 0
 		},
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_PAUSE",
+		action: "LESSON_VIDEO_PAUSE",
 		createdAt: "2024-08-01T12:01:01.000Z",
 		payload: {
+			url: "http://example.com/video-1.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_JUMP",
+		action: "LESSON_VIDEO_JUMP",
 		createdAt: "2024-08-01T12:01:01.500Z",
 		payload: {
 			videoJump: 0,
@@ -91,28 +96,29 @@ const videoEvents: EventType[] = [
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-01T12:01:02.000Z",
 		payload: {
+			url: "http://example.com/video-1.mp4",
 			videoCurrentTime: 120000
 		},
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_STOP",
+		action: "LESSON_VIDEO_STOP",
 		createdAt: "2024-08-01T12:01:32.000Z",
 		payload: undefined,
 		resourceId: "video-1"
 	},
 	{
-		action: "VIDEO_END",
+		action: "LESSON_VIDEO_END",
 		createdAt: "2024-08-01T12:01:32.000Z",
 		payload: undefined,
 		resourceId: "video-1"
 	},
 	// Scenario 3: Scenario 1 with a different video on a different day; same week
 	{
-		action: "VIDEO_OPENED",
+		action: "LESSON_VIDEO_OPENED",
 		createdAt: "2024-08-02T08:00:00.000Z",
 		payload: {
 			url: "http://example.com/video-2.mp4"
@@ -120,44 +126,47 @@ const videoEvents: EventType[] = [
 		resourceId: "video-2"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-02T08:00:01.000Z",
 		payload: {
+			url: "http://example.com/video-2.mp4",
 			videoCurrentTime: 0
 		},
 		resourceId: "video-2"
 	},
 	{
-		action: "VIDEO_PAUSE",
+		action: "LESSON_VIDEO_PAUSE",
 		createdAt: "2024-08-02T08:01:01.000Z",
 		payload: {
+			url: "http://example.com/video-2.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-2"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-02T08:01:06.000Z",
 		payload: {
+			url: "http://example.com/video-2.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-2"
 	},
 	{
-		action: "VIDEO_STOP",
+		action: "LESSON_VIDEO_STOP",
 		createdAt: "2024-08-02T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-2"
 	},
 	{
-		action: "VIDEO_END",
+		action: "LESSON_VIDEO_END",
 		createdAt: "2024-08-02T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-2"
 	},
 	// Scenario 4: Scenario 1 with a different video on a different week
 	{
-		action: "VIDEO_OPENED",
+		action: "LESSON_VIDEO_OPENED",
 		createdAt: "2024-08-05T08:00:00.000Z",
 		payload: {
 			url: "http://example.com/video-3.mp4"
@@ -165,44 +174,47 @@ const videoEvents: EventType[] = [
 		resourceId: "video-3"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-05T08:00:01.000Z",
 		payload: {
+			url: "http://example.com/video-3.mp4",
 			videoCurrentTime: 0
 		},
 		resourceId: "video-3"
 	},
 	{
-		action: "VIDEO_PAUSE",
+		action: "LESSON_VIDEO_PAUSE",
 		createdAt: "2024-08-05T08:01:01.000Z",
 		payload: {
+			url: "http://example.com/video-3.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-3"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-05T08:01:06.000Z",
 		payload: {
+			url: "http://example.com/video-3.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-3"
 	},
 	{
-		action: "VIDEO_STOP",
+		action: "LESSON_VIDEO_STOP",
 		createdAt: "2024-08-05T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-3"
 	},
 	{
-		action: "VIDEO_END",
+		action: "LESSON_VIDEO_END",
 		createdAt: "2024-08-05T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-3"
 	},
 	// Scenario 5: Scenario 1 with a different video on a different month
 	{
-		action: "VIDEO_OPENED",
+		action: "LESSON_VIDEO_OPENED",
 		createdAt: "2024-09-01T08:00:00.000Z",
 		payload: {
 			url: "http://example.com/video-4.mp4"
@@ -210,44 +222,47 @@ const videoEvents: EventType[] = [
 		resourceId: "video-4"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-09-01T08:00:01.000Z",
 		payload: {
+			url: "http://example.com/video-4.mp4",
 			videoCurrentTime: 0
 		},
 		resourceId: "video-4"
 	},
 	{
-		action: "VIDEO_PAUSE",
+		action: "LESSON_VIDEO_PAUSE",
 		createdAt: "2024-09-01T08:01:01.000Z",
 		payload: {
+			url: "http://example.com/video-4.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-4"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-09-01T08:01:06.000Z",
 		payload: {
+			url: "http://example.com/video-4.mp4",
 			videoCurrentTime: 60000
 		},
 		resourceId: "video-4"
 	},
 	{
-		action: "VIDEO_STOP",
+		action: "LESSON_VIDEO_STOP",
 		createdAt: "2024-09-01T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-4"
 	},
 	{
-		action: "VIDEO_END",
+		action: "LESSON_VIDEO_END",
 		createdAt: "2024-09-01T08:02:01.000Z",
 		payload: undefined,
 		resourceId: "video-4"
 	},
 	// Scenario 6: Some parts of the video watched with different speed
 	{
-		action: "VIDEO_OPENED",
+		action: "LESSON_VIDEO_OPENED",
 		createdAt: "2024-09-01T09:00:00.000Z",
 		payload: {
 			url: "http://example.com/video-5.mp4"
@@ -255,15 +270,16 @@ const videoEvents: EventType[] = [
 		resourceId: "video-5"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-09-01T09:00:01.000Z",
 		payload: {
+			url: "http://example.com/video-5.mp4",
 			videoCurrentTime: 0
 		},
 		resourceId: "video-5"
 	},
 	{
-		action: "VIDEO_SPEED",
+		action: "LESSON_VIDEO_SPEED",
 		createdAt: "2024-09-01T09:01:01.000Z",
 		payload: {
 			videoSpeed: 1.5 // After 1 minute
@@ -271,7 +287,7 @@ const videoEvents: EventType[] = [
 		resourceId: "video-5"
 	},
 	{
-		action: "VIDEO_SPEED",
+		action: "LESSON_VIDEO_SPEED",
 		createdAt: "2024-09-01T09:02:01.000Z",
 		payload: {
 			videoSpeed: 1.25 // After 1 min (90sec playback)
@@ -279,20 +295,20 @@ const videoEvents: EventType[] = [
 		resourceId: "video-5"
 	},
 	{
-		action: "VIDEO_STOP",
+		action: "LESSON_VIDEO_STOP",
 		createdAt: "2024-09-01T09:03:01.000Z",
 		payload: undefined, // After 1 min (75sec playback)
 		resourceId: "video-5"
 	},
 	{
-		action: "VIDEO_END",
+		action: "LESSON_VIDEO_END",
 		createdAt: "2024-09-01T09:03:01.000Z",
 		payload: undefined,
 		resourceId: "video-5"
 	},
 	// Scenario 7: Video watches with extreme speed
 	{
-		action: "VIDEO_OPENED",
+		action: "LESSON_VIDEO_OPENED",
 		createdAt: "2024-08-12T09:00:00.000Z",
 		payload: {
 			url: "http://example.com/video-6.mp4"
@@ -300,15 +316,16 @@ const videoEvents: EventType[] = [
 		resourceId: "video-6"
 	},
 	{
-		action: "VIDEO_PLAY",
+		action: "LESSON_VIDEO_PLAY",
 		createdAt: "2024-08-12T09:00:01.000Z",
 		payload: {
+			url: "http://example.com/video-6.mp4",
 			videoCurrentTime: 0
 		},
 		resourceId: "video-6"
 	},
 	{
-		action: "VIDEO_SPEED",
+		action: "LESSON_VIDEO_SPEED",
 		createdAt: "2024-08-12T09:01:01.000Z",
 		payload: {
 			videoSpeed: 2.5 // After 1 minute
@@ -316,7 +333,7 @@ const videoEvents: EventType[] = [
 		resourceId: "video-6"
 	},
 	{
-		action: "VIDEO_SPEED",
+		action: "LESSON_VIDEO_SPEED",
 		createdAt: "2024-08-12T09:02:01.000Z",
 		payload: {
 			videoSpeed: 0.1 // After 1 min (150sec playback)
@@ -324,13 +341,13 @@ const videoEvents: EventType[] = [
 		resourceId: "video-6"
 	},
 	{
-		action: "VIDEO_STOP",
+		action: "LESSON_VIDEO_STOP",
 		createdAt: "2024-08-12T09:03:01.000Z",
 		payload: undefined, // After 1 min (6sec playback)
 		resourceId: "video-6"
 	},
 	{
-		action: "VIDEO_END",
+		action: "LESSON_VIDEO_END",
 		createdAt: "2024-08-12T09:03:01.000Z",
 		payload: undefined,
 		resourceId: "video-6"
