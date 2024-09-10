@@ -8,7 +8,7 @@ export function LessonView() {
 			"LESSON_QUIZ_SUBMISSION",
 			"LESSON_COMPLETE",
 			"LESSON_RESTART",
-			"LESSON_START",
+			"LESSON_OPEN",
 			"LESSON_STOP",
 			"LESSON_RESUME"
 		]

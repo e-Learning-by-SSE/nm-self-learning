@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { MetricData, sumByDate, sumByMonth, sumByWeek, toInterval } from "./aggregation-functions";
+import { sumByDate, sumByMonth, sumByWeek, toInterval } from "./aggregation-functions";
 import { useState } from "react";
 import { MetricsViewer } from "./metrics-viewer";
 import { computeDuration, MetricResult, MetricResultTemp } from "./metrics";
