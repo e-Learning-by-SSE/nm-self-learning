@@ -45,7 +45,9 @@ export function LearningHeatmap() {
 					heatmapData={heatmapData}
 				/>
 			) : (
-				<HeatMap data={heatmapData} />
+				<div className="h-3/5">
+					<HeatMap data={heatmapData} />
+				</div>
 			)}
 		</>
 	);
