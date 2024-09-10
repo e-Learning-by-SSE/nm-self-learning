@@ -2,7 +2,7 @@ import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { sumByDate, sumByMonth, sumByWeek, toInterval } from "./aggregation-functions";
 import { useState } from "react";
-import { MetricsViewer } from "./metrics-viewer";
+import { MetricsViewer } from "./components/metrics-viewer";
 import { computeDuration, MetricResult, MetricResultTemp } from "./metrics";
 
 const PreviewTypes = ["Table", "Chart"];

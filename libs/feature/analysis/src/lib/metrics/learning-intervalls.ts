@@ -8,9 +8,9 @@ export type Interval = {
 };
 
 export type HeatmapEntry = {
+	time: number;
 	day: string;
-	time: string;
-	value: number;
+	v: number;
 };
 
 // Finite events after which we do not extend the interval until the timeout
@@ -80,8 +80,8 @@ function convertToHeatmapData(intervals: Interval[]): HeatmapEntry[] {
 			// Append to heatmap data
 			heatmapData.push({
 				day: format(current, "EEEE"), // Get the day of the week
-				time: `${current.getHours()}:00`,
-				value: timeInHour
+				time: current.getHours(),
+				v: timeInHour
 			});
 
 			// Move to the next hour
@@ -125,7 +125,7 @@ function average(heatmapData: HeatmapEntry[], rangeDef?: RangeDefinition): Heatm
 		if (!groupedData[key]) {
 			groupedData[key] = { total: 0, count: 0 };
 		}
-		groupedData[key].total += entry.value;
+		groupedData[key].total += entry.v;
 		groupedData[key].count += 1;
 	});
 
@@ -145,9 +145,9 @@ function average(heatmapData: HeatmapEntry[], rangeDef?: RangeDefinition): Heatm
 		const group = groupedData[key];
 		const count = nDays[day] || group.count;
 		return {
-			day,
-			time,
-			value: group.total / count
+			time: Number.parseInt(time),
+			day: day,
+			v: group.total / count
 		};
 	});
 

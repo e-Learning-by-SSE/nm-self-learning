@@ -1,8 +1,8 @@
 import { Chart as ChartJS, ChartOptions, registerables } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
-import { toInterval } from "./aggregation-functions";
-import { MetricResult } from "./metrics";
+import { toInterval } from "../aggregation-functions";
+import { MetricResult } from "../metrics";
 ChartJS.register(...registerables);
 
 export function DailyPlot({

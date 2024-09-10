@@ -4,7 +4,7 @@ import { useState } from "react";
 const PreviewTypes = ["Videos", "Heatmap"] as const;
 
 export default function Page() {
-	const [metricSelection, setMetricSelection] = useState("Videos");
+	const [metricSelection, setMetricSelection] = useState("Heatmap");
 
 	const renderMetricComponent = (metricSelection: string) => {
 		switch (metricSelection) {

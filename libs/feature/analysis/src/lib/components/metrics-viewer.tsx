@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { sumByDate, sumByMonth, sumByWeek } from "./aggregation-functions";
+import { sumByDate, sumByMonth, sumByWeek } from "../aggregation-functions";
 import { DailyPlot, MonthlyPlot, WeeklyPlot } from "./unary-charts";
-import { MetricResult } from "./metrics/types";
+import { MetricResult } from "../metrics/types";
 
 const options = ["Täglich", "Wöchentlich", "Monatlich"] as const;
 type OptionsType = (typeof options)[number];
