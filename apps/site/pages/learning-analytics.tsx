@@ -1,10 +1,21 @@
-import { CourseView, LessonView, VideoDuration } from "@self-learning/analysis";
+import { LearningHeatmap, VideoDuration } from "@self-learning/analysis";
 import { useState } from "react";
 
-const PreviewTypes = ["Videos", "Courses", "Lessons"];
+const PreviewTypes = ["Videos", "Heatmap"] as const;
 
 export default function Page() {
 	const [metricSelection, setMetricSelection] = useState("Videos");
+
+	const renderMetricComponent = (metricSelection: string) => {
+		switch (metricSelection) {
+			case "Videos":
+				return <VideoDuration />;
+			case "Heatmap":
+				return <LearningHeatmap />;
+			default:
+				return null;
+		}
+	};
 
 	return (
 		<div className="bg-gray-50">
@@ -20,9 +31,7 @@ export default function Page() {
 				))}
 			</select>
 
-			{metricSelection === "Videos" ? <VideoDuration /> : null}
-			{metricSelection === "Courses" ? <CourseView /> : null}
-			{metricSelection === "Lessons" ? <LessonView /> : null}
+			{renderMetricComponent(metricSelection)}
 		</div>
 	);
 }
