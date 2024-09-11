@@ -200,10 +200,13 @@ const repository = {
 
 async function createRepositories() {
 	const admin = await getAdminUser();
+	if (!admin) {
+		throw new Error("Admin user not found");
+	}
 	await prisma.skillRepository.create({
 		data: {
 			id: repository.id,
-			ownerId: admin?.id ?? "0",
+			ownerName: admin.name,
 			name: repository.name,
 			description: repository.description
 		}
