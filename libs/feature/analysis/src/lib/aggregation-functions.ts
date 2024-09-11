@@ -1,5 +1,7 @@
 import { intervalToDuration, format, parse, isBefore } from "date-fns";
 import { MetricResult } from "./metrics";
+import { UserEvent } from "@self-learning/database";
+import { EventTypeKeys, EventType } from "@self-learning/types";
 
 export type NumericProperty<T> = {
 	[K in keyof T]: T[K] extends number ? K : never;
@@ -110,4 +112,11 @@ export function getSemester(date: Date) {
 			end: new Date(year + 1, 2, 31)
 		};
 	}
+}
+
+export function isEventType<K extends EventTypeKeys>(
+	event: UserEvent,
+	type: K
+): event is UserEvent & { payload: EventType[K] } {
+	return event.type === type;
 }
