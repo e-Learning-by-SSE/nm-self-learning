@@ -6,6 +6,7 @@ import { softwareentwicklungDemoSpecialization } from "../seedSpecializations";
 import { demoSubjects } from "../seedSubjects";
 import { seedReactDemo } from "./seed-react-demo";
 import { seedEvents } from "./event-seed";
+import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
 
 const prisma = new PrismaClient();
 
@@ -26,4 +27,6 @@ export async function seedDemos(): Promise<void> {
 	await seedJavaDemo();
 
 	await seedEvents();
+
+	await generateLearningDiaryDemoData();
 }
