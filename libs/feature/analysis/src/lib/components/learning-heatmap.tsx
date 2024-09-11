@@ -48,8 +48,6 @@ export function HeatMap({ data }: { data: HeatmapEntry[] }) {
 			{
 				label: "Lernzeiten",
 				data: data.map(entry => ({ ...getCoordinate(entry), v: entry.v })),
-				// borderWidth: 1,
-				// borderColor: "rgba(1,1,1,0)",
 				backgroundColor(ctx: ScriptableContext<"matrix">) {
 					let percentage = (ctx.dataset.data[ctx.dataIndex] as unknown as MatrixCellValue)
 						.v;
@@ -76,6 +74,7 @@ export function HeatMap({ data }: { data: HeatmapEntry[] }) {
 	};
 
 	const options: ChartOptions<"matrix"> = {
+		aspectRatio: 3, // width (24h) / height (7 days)
 		scales: {
 			x: {
 				type: "linear",
@@ -119,7 +118,7 @@ export function HeatMap({ data }: { data: HeatmapEntry[] }) {
 					stepSize: 1
 				},
 				grid: {
-					display: true
+					display: false
 				}
 			}
 		},
