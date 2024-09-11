@@ -68,9 +68,8 @@ export async function exportCourseArchive(
 	// Download all media files located on our storage server
 
 	// Compute the total size of all media files
-	const { sizePerFile, totalSize, downloadSize } = await computeEstimatedDownloadSize(
-		exportCandidates
-	);
+	const { sizePerFile, totalSize, downloadSize } =
+		await computeEstimatedDownloadSize(exportCandidates);
 
 	// Download all media files, add them to the zip archive, and report progress
 	let alreadyLoaded = 0;

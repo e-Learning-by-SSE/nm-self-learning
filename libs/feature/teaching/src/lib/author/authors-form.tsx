@@ -11,7 +11,7 @@ import { useRequiredSession } from "@self-learning/ui/layouts";
 
 export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; emptyString: string }) {
 	const session = useRequiredSession();
-	const isAdminUser = session.data?.user.role === "ADMIN"
+	const isAdminUser = session.data?.user.role === "ADMIN";
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 	const { control } = useFormContext<{ authors: CourseFormModel["authors"] }>();
 	const {
@@ -41,7 +41,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 
 	return (
 		<Form.SidebarSection>
-			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle}/>
+			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle} />
 
 			<IconButton
 				type="button"
@@ -49,7 +49,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 				onClick={() => setOpenAddDialog(true)}
 				title="Hinzufügen"
 				text="Hinzufügen"
-				icon={<PlusIcon className="h-5"/>}
+				icon={<PlusIcon className="h-5" />}
 			/>
 
 			{authors.length === 0 ? (
@@ -60,13 +60,17 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 						<Author
 							key={username}
 							username={username}
-							onRemove={authors.length >= 2 || isAdminUser ? () => handleRemove(index) : undefined}
+							onRemove={
+								authors.length >= 2 || isAdminUser
+									? () => handleRemove(index)
+									: undefined
+							}
 						/>
 					))}
 				</ul>
 			)}
 
-			{openAddDialog && <AddAuthorDialog open={openAddDialog} onClose={handleAdd}/>}
+			{openAddDialog && <AddAuthorDialog open={openAddDialog} onClose={handleAdd} />}
 		</Form.SidebarSection>
 	);
 }
