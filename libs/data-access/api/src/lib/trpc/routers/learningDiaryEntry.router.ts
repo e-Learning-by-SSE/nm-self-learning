@@ -1,13 +1,12 @@
 import { database } from "@self-learning/database";
 import {
-	learningDiaryEntrySchema,
+	createLearningDiaryEntrySchema, learningDiaryEntrySchema,
 	learningLocationSchema,
-	learningTechniqueEvaluationSchema,
+	learningTechniqueEvaluationSchema, lessonStartSchema,
 	ResolvedValue
 } from "@self-learning/types";
 import { formatDateToString } from "@self-learning/util/common";
 import { authProcedure, t } from "../trpc";
-import { TRPCError } from "@trpc/server";
 
 export async function getLearningDiaryEntriesOverview({ username }: { username: string }) {
 	const learningDiaryEntries = await database.learningDiaryEntry.findMany({
@@ -40,14 +39,15 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 		return {
 			...entry,
 			date: formatDateToString(new Date(entry.date)),
-			start: new Date(entry.start).toISOString(),
-			end: new Date(entry.end).toISOString(),
+			start: entry.start ? new Date(entry.start).toISOString() : null,
+			end: entry.end ? new Date(entry.end).toISOString() : null,
 			number: index + 1,
-			duration: new Date(entry.end).getTime() - new Date(entry.start).getTime(),
+			duration: entry.start && entry.end ? new Date(entry.end).getTime() - new Date(entry.start).getTime() : null, // Handle null for duration
 			learningLocation: entry.learningLocation,
 			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
 		};
 	});
+
 
 	return result;
 }
@@ -155,7 +155,7 @@ export type LearningDiaryEntryResult = ResolvedValue<typeof createLearningDiaryE
 
 export const learningLocationRouter = t.router({
 	create: authProcedure.input(learningLocationSchema).mutation(async ({ input, ctx }) => {
-		return await database.learningLocation.create({
+		return database.learningLocation.create({
 			data: {
 				id: input.id ?? undefined,
 				name: input.name,
@@ -186,7 +186,7 @@ export const learningTechniqueEvaluationRouter = t.router({
 			});
 
 			if (existingEvaluation) {
-				return await database.learningTechniqueEvaluation.update({
+				return database.learningTechniqueEvaluation.update({
 					where: { id: existingEvaluation.id },
 					data: {
 						score: input.score || 0
@@ -204,7 +204,7 @@ export const learningTechniqueEvaluationRouter = t.router({
 				});
 			}
 
-			return await database.learningTechniqueEvaluation.create({
+			return database.learningTechniqueEvaluation.create({
 				data: {
 					id: input.id ?? undefined,
 					score: input.score || 0,
@@ -230,7 +230,7 @@ export const learningTechniqueEvaluationRouter = t.router({
 			throw new Error("At least one id must be provided for deletion");
 		}
 
-		return await database.learningTechniqueEvaluation.deleteMany({
+		return database.learningTechniqueEvaluation.deleteMany({
 			where: {
 				creatorName: ctx.user.name,
 				id: {
@@ -242,45 +242,60 @@ export const learningTechniqueEvaluationRouter = t.router({
 });
 
 export const learningDiaryEntryRouter = t.router({
-	create: authProcedure.input(learningDiaryEntrySchema).mutation(async ({ input, ctx }) => {
+	create: authProcedure.input(createLearningDiaryEntrySchema).mutation(async ({ input, ctx }) => {
+
+		// threshold for new enty  === 6 hours
+
 		if (
-			!input.semesterId ||
-			!input.studentName ||
-			!input.courseSlug ||
-			!input.start ||
-			!input.end
+			!input.courseSlug
 		) {
-			throw new Error("semesterId, studentName, and courseSlug must be defined");
+			throw new Error("courseSlug must be defined");
 		}
 
-		return await database.learningDiaryEntry.create({
-			data: {
-				semesterId: input.semesterId,
-				studentName: input.studentName,
-				courseSlug: input.courseSlug,
-				notes: input.notes ?? "",
-				date: input.date ?? new Date(),
-				start: input.start,
-				end: input.end,
-				scope: input.scope ?? 0,
-				distractionLevel: input.distractionLevel ?? 1,
-				effortLevel: input.effortLevel ?? 1,
-				learningLocationId: input.learningLocationId ?? null
+		const latestEntry: { date: Date, courseSlug: string } | null = await database.learningDiaryEntry.findFirst({
+			where: {
+				studentName: ctx.user.name,
 			},
-			select: {
-				id: true,
-				semesterId: true,
-				studentName: true,
-				courseSlug: true,
-				notes: true,
-				date: true,
-				start: true,
-				end: true,
-				scope: true,
-				distractionLevel: true,
-				effortLevel: true,
-				learningLocationId: true
+			select: { date: true, courseSlug: true },
+			orderBy: {
+				start: "desc",
+			},
+		});
+
+		if (latestEntry?.courseSlug === input.courseSlug) {
+			if ((new Date().getTime() - latestEntry.date.getTime()) / (1000 * 60 * 60) < 6) {
+				return;
 			}
+		}
+
+		const semester = await database.semester.findFirst({
+			where: {
+				start: {
+					lte: new Date(),
+				},
+				end: {
+					gte: new Date(),
+				},
+			},
+			select: { id: true },
+		});
+
+		return database.learningDiaryEntry.create({
+			data: {
+				semester: {
+					connect: { id: semester?.id ?? "" }
+				},
+				student: {
+					connect: { username: ctx.user.name }
+				},
+				course: {
+					connect: { slug: input.courseSlug }
+				},
+				date: new Date(),
+				start: null,
+				end: null,
+			},
+			select: { id: true }
 		});
 	}),
 	update: authProcedure.input(learningDiaryEntrySchema).mutation(async ({ input, ctx }) => {
@@ -288,7 +303,7 @@ export const learningDiaryEntryRouter = t.router({
 			throw new Error("id must be defined for update");
 		}
 
-		return await database.learningDiaryEntry.update({
+		return database.learningDiaryEntry.update({
 			where: {
 				id: input.id
 			},
@@ -325,6 +340,19 @@ export const learningDiaryEntryRouter = t.router({
 				learningTechniqueEvaluation: true
 			}
 		});
+	}), addLearningDiaryLearnedLessons: authProcedure.input(lessonStartSchema).mutation(async ({ input, ctx }) => {
+
+		if (!input.entryId) {
+			throw new Error("entry id must be defined for update");
+		}
+
+		if (!input.lessonId) {
+			throw new Error("lesson id must be defined for update");
+		}
+
+		return database.learningDiaryLearnedLessons.create({
+			data: { entryId: input.entryId, lessonId: input.lessonId },
+		})
 	})
 });
 

@@ -34,6 +34,10 @@ export const learningDiaryEntrySchema = z.object({
 	learningTechniqueEvaluation: z.array(learningTechniqueEvaluationSchema).optional()
 });
 
+export const createLearningDiaryEntrySchema = z.object({
+	courseSlug: z.string().optional(),
+});
+
 export const learningLocationSchema = z.object({
 	id: z.string().optional().nullable(),
 	name: z.string(),
@@ -41,3 +45,8 @@ export const learningLocationSchema = z.object({
 	defaultLocation: z.boolean().default(false),
 	creatorName: z.string().optional().nullable()
 });
+
+export const lessonStartSchema = z.object({
+	entryId: z.string(),
+	lessonId: z.string()
+})
