@@ -6,6 +6,7 @@ import { HeatmapEntry } from "./metrics/learning-intervalls";
 import { UserEvent } from "@self-learning/database";
 import { useState } from "react";
 import { HeatMap } from "./components/learning-heatmap";
+import { isEventType } from "./aggregation-functions";
 
 const PreviewTypes = ["Table", "Chart"];
 
@@ -23,6 +24,7 @@ export function LearningHeatmap() {
 
 	const learningIntervalls = eventsToIntervalls(data, 1000 * 60 * 10);
 	const heatmapData = computeHeatmapData(learningIntervalls);
+	const filteredData = data.filter(e => isEventType(e, "LESSON_VIDEO_PLAY"));
 
 	return (
 		<>
@@ -43,6 +45,7 @@ export function LearningHeatmap() {
 					data={data}
 					learningIntervalls={learningIntervalls}
 					heatmapData={heatmapData}
+					filteredData={filteredData}
 				/>
 			) : (
 				<div className="h-3/5">
@@ -56,14 +59,43 @@ export function LearningHeatmap() {
 function EventTable({
 	data,
 	learningIntervalls,
-	heatmapData
+	heatmapData,
+	filteredData
 }: {
 	data: UserEvent[];
 	learningIntervalls: Interval[];
 	heatmapData: HeatmapEntry[];
+	filteredData?: UserEvent[];
 }) {
 	return (
 		<div>
+			{filteredData && (
+				<>
+					<h1 className="text-center text-3xl">Filtered</h1>
+					<Table
+						head={
+							<>
+								<TableHeaderColumn>Date</TableHeaderColumn>
+								<TableHeaderColumn>Action</TableHeaderColumn>
+								<TableHeaderColumn>ResourceID</TableHeaderColumn>
+								<TableHeaderColumn>PayLoad</TableHeaderColumn>
+							</>
+						}
+					>
+						{filteredData.map(event => (
+							<tr key={event.id}>
+								<TableDataColumn>
+									{event.createdAt.toLocaleString()}
+								</TableDataColumn>
+								<TableDataColumn>{event.action}</TableDataColumn>
+								<TableDataColumn>{event.resourceId}</TableDataColumn>
+								<TableDataColumn>{JSON.stringify(event.payload)}</TableDataColumn>
+							</tr>
+						))}
+					</Table>
+				</>
+			)}
+
 			<h1 className="text-center text-3xl">All User Events</h1>
 			<Table
 				head={

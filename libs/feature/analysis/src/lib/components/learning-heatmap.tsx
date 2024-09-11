@@ -68,7 +68,9 @@ export function HeatMap({ data }: { data: HeatmapEntry[] }) {
 					return lightenColor("rgb(100, 150, 200)", percentage);
 				},
 				width: ({ chart }) => (chart.chartArea || {}).width / 24,
-				height: ({ chart }) => (chart.chartArea || {}).height / 7
+				height: ({ chart }) => (chart.chartArea || {}).height / 7,
+				borderWidth: 2,
+				borderColor: "#fff"
 			}
 		]
 	};
