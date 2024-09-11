@@ -135,7 +135,7 @@ export async function findLessons({
 					some: {
 						username: authorName
 					}
-			  }
+				}
 			: undefined
 	};
 

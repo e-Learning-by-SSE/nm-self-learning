@@ -1,8 +1,10 @@
 import { database } from "@self-learning/database";
 import {
-	createLearningDiaryEntrySchema, learningDiaryEntrySchema,
+	createLearningDiaryEntrySchema,
+	learningDiaryEntrySchema,
 	learningLocationSchema,
-	learningTechniqueEvaluationSchema, lessonStartSchema,
+	learningTechniqueEvaluationSchema,
+	lessonStartSchema,
 	ResolvedValue
 } from "@self-learning/types";
 import { formatDateToString } from "@self-learning/util/common";
@@ -42,12 +44,14 @@ export async function getLearningDiaryEntriesOverview({ username }: { username: 
 			start: entry.start ? new Date(entry.start).toISOString() : null,
 			end: entry.end ? new Date(entry.end).toISOString() : null,
 			number: index + 1,
-			duration: entry.start && entry.end ? new Date(entry.end).getTime() - new Date(entry.start).getTime() : null, // Handle null for duration
+			duration:
+				entry.start && entry.end
+					? new Date(entry.end).getTime() - new Date(entry.start).getTime()
+					: null, // Handle null for duration
 			learningLocation: entry.learningLocation,
 			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
 		};
 	});
-
 
 	return result;
 }
@@ -243,24 +247,22 @@ export const learningTechniqueEvaluationRouter = t.router({
 
 export const learningDiaryEntryRouter = t.router({
 	create: authProcedure.input(createLearningDiaryEntrySchema).mutation(async ({ input, ctx }) => {
-
 		// threshold for new enty  === 6 hours
 
-		if (
-			!input.courseSlug
-		) {
+		if (!input.courseSlug) {
 			throw new Error("courseSlug must be defined");
 		}
 
-		const latestEntry: { date: Date, courseSlug: string } | null = await database.learningDiaryEntry.findFirst({
-			where: {
-				studentName: ctx.user.name,
-			},
-			select: { date: true, courseSlug: true },
-			orderBy: {
-				start: "desc",
-			},
-		});
+		const latestEntry: { date: Date; courseSlug: string } | null =
+			await database.learningDiaryEntry.findFirst({
+				where: {
+					studentName: ctx.user.name
+				},
+				select: { date: true, courseSlug: true },
+				orderBy: {
+					start: "desc"
+				}
+			});
 
 		if (latestEntry?.courseSlug === input.courseSlug) {
 			if ((new Date().getTime() - latestEntry.date.getTime()) / (1000 * 60 * 60) < 6) {
@@ -271,13 +273,13 @@ export const learningDiaryEntryRouter = t.router({
 		const semester = await database.semester.findFirst({
 			where: {
 				start: {
-					lte: new Date(),
+					lte: new Date()
 				},
 				end: {
-					gte: new Date(),
-				},
+					gte: new Date()
+				}
 			},
-			select: { id: true },
+			select: { id: true }
 		});
 
 		return database.learningDiaryEntry.create({
@@ -293,7 +295,7 @@ export const learningDiaryEntryRouter = t.router({
 				},
 				date: new Date(),
 				start: null,
-				end: null,
+				end: null
 			},
 			select: { id: true }
 		});
@@ -340,20 +342,22 @@ export const learningDiaryEntryRouter = t.router({
 				learningTechniqueEvaluation: true
 			}
 		});
-	}), addLearningDiaryLearnedLessons: authProcedure.input(lessonStartSchema).mutation(async ({ input, ctx }) => {
+	}),
+	addLearningDiaryLearnedLessons: authProcedure
+		.input(lessonStartSchema)
+		.mutation(async ({ input, ctx }) => {
+			if (!input.entryId) {
+				throw new Error("entry id must be defined for update");
+			}
 
-		if (!input.entryId) {
-			throw new Error("entry id must be defined for update");
-		}
+			if (!input.lessonId) {
+				throw new Error("lesson id must be defined for update");
+			}
 
-		if (!input.lessonId) {
-			throw new Error("lesson id must be defined for update");
-		}
-
-		return database.learningDiaryLearnedLessons.create({
-			data: { entryId: input.entryId, lessonId: input.lessonId },
+			return database.learningDiaryLearnedLessons.create({
+				data: { entryId: input.entryId, lessonId: input.lessonId }
+			});
 		})
-	})
 });
 
 export type LearningDiaryInformation = ResolvedValue<typeof getLearningDiaryInformation>;

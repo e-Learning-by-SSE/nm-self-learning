@@ -35,7 +35,7 @@ export const learningDiaryEntrySchema = z.object({
 });
 
 export const createLearningDiaryEntrySchema = z.object({
-	courseSlug: z.string().optional(),
+	courseSlug: z.string().optional()
 });
 
 export const learningLocationSchema = z.object({
@@ -49,4 +49,4 @@ export const learningLocationSchema = z.object({
 export const lessonStartSchema = z.object({
 	entryId: z.string(),
 	lessonId: z.string()
-})
+});

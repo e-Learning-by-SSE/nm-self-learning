@@ -25,11 +25,7 @@ export function Footer() {
 	const { data: studentSettings, isLoading } = trpc.settings.getMySetting.useQuery();
 	const [studentSettingsDialogOpen, setStudentSettingsDialogOpen] = useState(true);
 
-
-	const isFirstLogin = useMemo(
-		() => studentSettings === null,
-		[studentSettings]
-	);
+	const isFirstLogin = useMemo(() => studentSettings === null, [studentSettings]);
 
 	return (
 		<>

@@ -32,8 +32,8 @@ export default function LearningDiaryEntryOverview({
 			slug && !isNaN(Number(slug))
 				? Number(slug) - 1
 				: learningDiaryInformation?.learningDiaryEntries?.length
-				? learningDiaryInformation.learningDiaryEntries.length - 1
-				: 0;
+					? learningDiaryInformation.learningDiaryEntries.length - 1
+					: 0;
 		return initialIndex < 0 ? 0 : initialIndex;
 	});
 
