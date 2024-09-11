@@ -115,6 +115,7 @@ export function MarkdownEditorDialog({
 					<div className="relative flex h-full w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
 							<ReactMarkdown
+								linkTarget="_blank"
 								remarkPlugins={remarkPlugins}
 								rehypePlugins={rehypePlugins}
 							>
