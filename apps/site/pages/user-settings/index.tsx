@@ -74,10 +74,9 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 		onSave();
 	};
 
-	
-    useEffect(() => {
-            onSave();
-    }, [onSave, settings]);
+	useEffect(() => {
+		onSave();
+	}, [onSave, settings]);
 
 	return (
 		<>

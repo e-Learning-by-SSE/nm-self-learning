@@ -91,7 +91,10 @@ function AuthorForm({
 
 	return (
 		<FormProvider {...form}>
-			<form className="flex flex-col justify-between overflow-hidden" onSubmit={form.handleSubmit(onSubmit)}>
+			<form
+				className="flex flex-col justify-between overflow-hidden"
+				onSubmit={form.handleSubmit(onSubmit)}
+			>
 				<div className="absolute top-8 right-8">
 					<OpenAsJsonButton form={form} validationSchema={authorSchema} />
 				</div>

@@ -8,7 +8,7 @@ export async function apiFetch<TResult, TInput>(
 		headers: body
 			? {
 					"content-type": "application/json"
-			  }
+				}
 			: undefined,
 		body: body ? JSON.stringify(body) : undefined
 	});
