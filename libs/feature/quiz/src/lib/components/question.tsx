@@ -17,6 +17,7 @@ import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
+import { useEventLog } from "@self-learning/util/common";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
@@ -111,6 +112,7 @@ export function Question({
 								Reset
 							</button>
 							<CheckResult
+								lessonId={lesson.lessonId}
 								setEvaluation={setEvaluation}
 								nextQuestionStep={nextQuestionStep}
 								isLastQuestionStep={currentStep === totalSteps}
@@ -143,10 +145,12 @@ export function Question({
 }
 
 function CheckResult({
+	lessonId,
 	setEvaluation,
 	nextQuestionStep,
 	isLastQuestionStep
 }: {
+	lessonId: string;
 	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
 	nextQuestionStep: () => void;
 	isLastQuestionStep: boolean;
@@ -154,13 +158,24 @@ function CheckResult({
 	// We only use "multiple-choice" to get better types ... works for all question types
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
 	const { completionState, reload } = useQuiz();
+	const { newEvent: writeEvent } = useEventLog();
 
-	function checkResult() {
+	async function checkResult() {
 		console.debug("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
 		setEvaluation(evaluation);
+		await writeEvent({
+			action: "LESSON_QUIZ_SUBMISSION",
+			resourceId: lessonId,
+			payload: {
+				index: question.questionId,
+				type: question.type,
+				hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
+				attempts: 1,
+				solved: evaluation?.isCorrect
+			}
+		});
 	}
-
 	if (!currentEvaluation) {
 		<span className="text-red-500">No question state found for this question.</span>;
 	}

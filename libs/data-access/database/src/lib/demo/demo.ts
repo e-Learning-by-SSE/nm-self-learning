@@ -5,6 +5,7 @@ import { license } from "../license";
 import { softwareentwicklungDemoSpecialization } from "../seedSpecializations";
 import { demoSubjects } from "../seedSubjects";
 import { seedReactDemo } from "./seed-react-demo";
+import { seedEvents } from "./event-seed";
 
 const prisma = new PrismaClient();
 
@@ -23,4 +24,6 @@ export async function seedDemos(): Promise<void> {
 	await seedReactDemo();
 
 	await seedJavaDemo();
+
+	await seedEvents();
 }

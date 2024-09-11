@@ -19,6 +19,7 @@ import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useEventLog } from "@self-learning/util/common";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -83,6 +84,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
+
 	// const hasPrevious = nextIndex > 1;
 	// const hasNext = nextIndex < questions.length;
 
@@ -192,6 +194,7 @@ function QuizHeader({
 	const failureDialogOpenedRef = useRef(false);
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 	const [showFailureDialog, setShowFailureDialog] = useState(false);
+	const { newEvent } = useEventLog();
 
 	if (!successDialogOpenedRef.current && completionState === "completed") {
 		successDialogOpenedRef.current = true;
@@ -202,6 +205,14 @@ function QuizHeader({
 		failureDialogOpenedRef.current = true;
 		setShowFailureDialog(true);
 	}
+
+	useEffect(() => {
+		newEvent({
+			type: "LESSON_QUIZ_START",
+			resourceId: lesson.lessonId,
+			payload: { index: 0, type: questions[0].type }
+		});
+	}, [questions, lesson.lessonId, newEvent]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -214,16 +225,27 @@ function QuizHeader({
 
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
 				{questions.map((question, index) => (
-					<Tab key={question.questionId}>
-						<QuestionTab
-							index={index}
-							evaluation={evaluations[question.questionId]}
-							isMultiStep={
-								lesson.lessonType === LessonType.SELF_REGULATED &&
-								question.type === "multiple-choice"
-							}
-						/>
-					</Tab>
+					<div
+						onClick={() => {
+							newEvent({
+								type: "LESSON_QUIZ_START",
+								resourceId: lesson.lessonId,
+								payload: { index, type: question.type }
+							});
+						}}
+						key={question.questionId}
+					>
+						<Tab>
+							<QuestionTab
+								index={index}
+								evaluation={evaluations[question.questionId]}
+								isMultiStep={
+									lesson.lessonType === LessonType.SELF_REGULATED &&
+									question.type === "multiple-choice"
+								}
+							/>
+						</Tab>
+					</div>
 				))}
 			</Tabs>
 

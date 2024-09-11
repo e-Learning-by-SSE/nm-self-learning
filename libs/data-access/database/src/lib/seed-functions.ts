@@ -2,7 +2,6 @@
 import { faker } from "@faker-js/faker";
 import { LessonType, Prisma, PrismaClient } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
-import { Quiz } from "@self-learning/quiz";
 import {
 	createCourseContent,
 	createCourseMeta,
@@ -89,7 +88,7 @@ export function createLesson({
 		quiz: {
 			questions,
 			config: null
-		} satisfies Quiz,
+		},
 		meta: {},
 		licenseId: licenseId ?? 0
 	};

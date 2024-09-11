@@ -311,3 +311,15 @@ model Skill {
   @@unique([repositoryId, name])
   @@map("skills")
 }
+
+
+model EventLog {
+  id          Int    @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  username    String   
+  resourceId  String?
+  courseId    String?
+  type        String
+  payload     Json? 
+  // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
+}

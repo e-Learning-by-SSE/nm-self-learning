@@ -19,7 +19,7 @@ import {
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
-import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { formatDateAgo, formatSeconds, useEventLog } from "@self-learning/util/common";
 import { LessonType } from "@prisma/client";
 
 type Course = ResolvedValue<typeof getCourse>;
@@ -38,7 +38,7 @@ function mapToTocContent(
 				? {
 						...(lessonIdMap.get(lessonId) as LessonInfo),
 						lessonNr: lessonNr++
-				  }
+					}
 				: {
 						lessonId: "removed",
 						slug: "removed",
@@ -46,7 +46,7 @@ function mapToTocContent(
 						title: "Removed",
 						lessonType: LessonType.TRADITIONAL,
 						lessonNr: -1
-				  };
+					};
 
 			return lesson;
 		})

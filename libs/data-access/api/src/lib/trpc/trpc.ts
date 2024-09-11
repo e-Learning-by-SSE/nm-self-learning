@@ -1,11 +1,12 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import * as trpcNext from "@trpc/server/adapters/next";
-import { Session, getServerSession } from "next-auth";
-import { authOptions } from "../auth";
 import { z } from "zod";
 import { database } from "@self-learning/database";
+import { Context } from "./context";
+import superjson from "superjson";
 
-export const t = initTRPC.context<Context>().create();
+export const t = initTRPC.context<Context>().create({
+	transformer: superjson
+});
 
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
 	if (!ctx?.user) {
@@ -85,24 +86,3 @@ async function checkIfUserIsAuthor(username: string, courseId: string) {
 
 	return course.authors.some(author => author.username === username);
 }
-
-export async function createTrpcContext({
-	req,
-	res
-}: trpcNext.CreateNextContextOptions): Promise<Context> {
-	const session = await getServerSession(req, res, authOptions);
-
-	if (!session) {
-		return {};
-	}
-
-	return {
-		user: session.user
-	};
-}
-
-type Context = {
-	user?: Session["user"];
-};
-
-export type UserFromSession = Session["user"];

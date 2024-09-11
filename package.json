@@ -21,7 +21,7 @@
 	"private": true,
 	"prisma": {
 		"schema": "libs/data-access/database/prisma/schema.prisma",
-		"seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} --project libs/data-access/database/tsconfig.json --require tsconfig-paths/register libs/data-access/database/src/lib/seed.ts"
+		"seed": "tsx --tsconfig ./libs/data-access/database/tsconfig.json libs/data-access/database/src/lib/seed.ts"
 	},
 	"dependencies": {
 		"@dagrejs/dagre": "^1.1.3",
@@ -42,6 +42,9 @@
 		"@trpc/next": "10.45.2",
 		"@trpc/react-query": "10.45.2",
 		"@trpc/server": "10.45.2",
+		"chart.js": "^4.4.4",
+		"chartjs-adapter-date-fns": "^3.0.0",
+		"chartjs-chart-matrix": "^2.0.1",
 		"core-js": "^3.37.1",
 		"date-fns": "^3.6.0",
 		"framer-motion": "^11.3.21",
@@ -56,6 +59,7 @@
 		"next-plausible": "^3.12.0",
 		"npm-check-updates": "^17.0.0",
 		"react": "18.3.1",
+		"react-chartjs-2": "^5.2.0",
 		"react-cookie": "^7.2.0",
 		"react-dnd": "^16.0.1",
 		"react-dom": "18.3.1",
@@ -75,6 +79,7 @@
 		"remark-gfm": "^4.0.0",
 		"remark-math": "^6.0.0",
 		"sharp": "^0.33.4",
+		"superjson": "^2.2.1",
 		"tslib": "^2.6.3",
 		"zod": "^3.23.8"
 	},
@@ -89,13 +94,16 @@
 		"@nx/esbuild": "19.5.6",
 		"@nx/eslint-plugin": "19.5.6",
 		"@nx/jest": "19.5.6",
+		"@nx/js": "19.5.6",
 		"@nx/linter": "19.5.6",
 		"@nx/next": "19.5.6",
 		"@nx/react": "19.5.6",
 		"@nx/web": "19.5.6",
 		"@nx/workspace": "19.5.6",
 		"@svgr/webpack": "^8.1.0",
+		"@swc-node/register": "~1.9.1",
 		"@swc/core": "1.7.5",
+		"@swc/helpers": "~0.5.11",
 		"@swc/jest": "0.2.36",
 		"@tailwindcss/typography": "^0.5.13",
 		"@testing-library/react": "16.0.0",
@@ -122,7 +130,8 @@
 		"eslint-plugin-react-hooks": "4.6.0",
 		"html-webpack-plugin": "^5.6.0",
 		"jest": "^29.7.0",
-		"jest-environment-jsdom": "29.7.0",
+		"jest-environment-jsdom": "^29.7.0",
+		"jest-environment-node": "^29.4.1",
 		"jest-junit": "^16.0.0",
 		"next-compose-plugins": "^2.2.1",
 		"next-test-api-route-handler": "^4.0.8",
@@ -135,8 +144,7 @@
 		"slugify": "^1.6.6",
 		"tailwindcss": "3.4.7",
 		"ts-jest": "29.2.4",
-		"ts-node": "10.9.2",
-		"tsconfig-paths": "^4.2.0",
+		"tsx": "^4.19.0",
 		"typescript": "5.5.4",
 		"url-loader": "^4.1.1"
 	}
