@@ -1,19 +1,12 @@
 import { trpc } from "@self-learning/api-client";
-import { ActionPayloadTypes, Actions } from "@self-learning/types";
+import { EventLog, EventTypeKeys } from "@self-learning/types";
 import { useCallback } from "react";
-
-export type NewEventInput<K extends Actions> = {
-	action: K;
-	payload: ActionPayloadTypes[K];
-	resourceId?: string;
-	courseId?: string;
-};
 
 export function useEventLog() {
 	const { mutateAsync } = trpc.events.create.useMutation();
 
 	const newEvent = useCallback(
-		async <K extends Actions>(event: NewEventInput<K>) => {
+		async <K extends EventTypeKeys>(event: EventLog<K>) => {
 			await mutateAsync(event);
 		},
 		[mutateAsync]

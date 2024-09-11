@@ -208,7 +208,7 @@ function QuizHeader({
 
 	useEffect(() => {
 		newEvent({
-			action: "LESSON_QUIZ_START",
+			type: "LESSON_QUIZ_START",
 			resourceId: lesson.lessonId,
 			payload: { index: 0, type: questions[0].type }
 		});
@@ -228,7 +228,7 @@ function QuizHeader({
 					<div
 						onClick={() => {
 							newEvent({
-								action: "LESSON_QUIZ_START",
+								type: "LESSON_QUIZ_START",
 								resourceId: lesson.lessonId,
 								payload: { index, type: question.type }
 							});

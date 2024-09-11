@@ -10,7 +10,7 @@ const PreviewTypes = ["Table", "Chart"];
 export function VideoDuration() {
 	const [previewSelection, setPreviewSelection] = useState("Table");
 	const { data, isLoading } = trpc.events.get.useQuery({
-		action: [
+		type: [
 			"LESSON_VIDEO_PLAY",
 			"LESSON_VIDEO_PAUSE",
 			"LESSON_VIDEO_JUMP",
@@ -132,7 +132,7 @@ function TableData({
 				{computedData.map(event => (
 					<tr key={event.id}>
 						<TableDataColumn>{event.createdAt.toLocaleString()}</TableDataColumn>
-						<TableDataColumn>{event.action}</TableDataColumn>
+						<TableDataColumn>{event.type}</TableDataColumn>
 						<TableDataColumn>{event.resourceId}</TableDataColumn>
 						<TableDataColumn>{JSON.stringify(event.payload)}</TableDataColumn>
 						<TableDataColumn>

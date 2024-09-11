@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const actionPayloadTypesSchema = z.object({
+export const evenTypePayloadSchema = z.object({
 	USER_LOGIN: z.undefined(),
 	USER_LOGOUT: z.undefined(),
 	COURSE_ENROLL: z.undefined(),
@@ -53,24 +53,31 @@ export const actionPayloadTypesSchema = z.object({
 	})
 });
 
-export type ActionPayloadTypes = z.infer<typeof actionPayloadTypesSchema>;
-export type Actions = keyof ActionPayloadTypes;
+export type EventType = z.infer<typeof evenTypePayloadSchema>;
+export type EventTypeKeys = keyof EventType;
 
-export const userEventSchema = z.object({
-	// id: z.number(),
-	// username: z.string(),
-	action: z.enum(Object.keys(actionPayloadTypesSchema.shape) as [Actions, ...Actions[]]),
+const typeSchema = z.enum(
+	Object.keys(evenTypePayloadSchema.shape) as [EventTypeKeys, ...EventTypeKeys[]]
+);
+export const eventLogSchema = z.object({
+	type: typeSchema,
 	resourceId: z.string().optional(),
 	courseId: z.string().optional(),
-	payload: z.union([z.never(), z.never(), ...Object.values(actionPayloadTypesSchema.shape)])
+	payload: z.union([z.never(), z.never(), ...Object.values(evenTypePayloadSchema.shape)])
 });
+
+// don't use inferred type from eventLogSchema here, as it will be a union of all possible types
+export type EventLog<K extends EventTypeKeys> = {
+	type: K;
+	payload: EventType[K];
+	resourceId?: string;
+	courseId?: string;
+};
 
 export const eventWhereSchema = z.object({
 	start: z.date().optional(),
 	end: z.date().optional(),
-	action: z
-		.array(z.enum(Object.keys(actionPayloadTypesSchema.shape) as [Actions, ...Actions[]]))
-		.optional(),
+	type: z.array(typeSchema).optional(),
 	resourceId: z.string().optional()
 });
 

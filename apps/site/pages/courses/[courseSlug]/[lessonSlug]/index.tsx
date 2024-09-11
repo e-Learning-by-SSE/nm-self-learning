@@ -123,7 +123,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const { newEvent } = useEventLog();
 	useEffect(() => {
 		newEvent({
-			action: "LESSON_OPEN",
+			type: "LESSON_OPEN",
 			resourceId: lesson.lessonId,
 			courseId: course.courseId,
 			payload: undefined

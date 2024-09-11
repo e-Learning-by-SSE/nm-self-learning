@@ -1,5 +1,5 @@
 import { UserEvent } from "@self-learning/database";
-import { Actions } from "@self-learning/types";
+import { EventTypeKeys } from "@self-learning/types";
 import { addHours, startOfHour, format, addMilliseconds, isBefore, addDays } from "date-fns";
 
 export type Interval = {
@@ -14,7 +14,7 @@ export type HeatmapEntry = {
 };
 
 // Finite events after which we do not extend the interval until the timeout
-const EVENT_ENDINGS: Actions[] = [
+const EVENT_ENDINGS: EventTypeKeys[] = [
 	"USER_LOGOUT",
 	"COURSE_STOP",
 	"LESSON_STOP",
@@ -40,8 +40,8 @@ export function eventsToIntervalls(events: UserEvent[], timeout: number): Interv
 			// Extend the current interval if the time difference is within the timeout
 			currentInterval.end = currentEvent.createdAt;
 		} else {
-			const lastAction = previousEvent.action;
-			if (!EVENT_ENDINGS.includes(lastAction as Actions)) {
+			const lastAction = previousEvent.type;
+			if (!EVENT_ENDINGS.includes(lastAction as EventTypeKeys)) {
 				// Assume that the user was active until the timeout and closed the window without an event
 				currentInterval.end = addMilliseconds(currentInterval.end, timeout);
 			}

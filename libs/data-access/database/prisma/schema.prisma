@@ -318,7 +318,7 @@ model EventLog {
   username    String   
   resourceId  String?
   courseId    String?
-  action      String
+  type        String
   payload     Json? 
   // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
 }

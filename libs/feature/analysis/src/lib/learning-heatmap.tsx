@@ -87,7 +87,7 @@ function EventTable({
 								<TableDataColumn>
 									{event.createdAt.toLocaleString()}
 								</TableDataColumn>
-								<TableDataColumn>{event.action}</TableDataColumn>
+								<TableDataColumn>{event.type}</TableDataColumn>
 								<TableDataColumn>{event.resourceId}</TableDataColumn>
 								<TableDataColumn>{JSON.stringify(event.payload)}</TableDataColumn>
 							</tr>
@@ -110,7 +110,7 @@ function EventTable({
 				{data.map(event => (
 					<tr key={event.id}>
 						<TableDataColumn>{event.createdAt.toLocaleString()}</TableDataColumn>
-						<TableDataColumn>{event.action}</TableDataColumn>
+						<TableDataColumn>{event.type}</TableDataColumn>
 						<TableDataColumn>{event.resourceId}</TableDataColumn>
 						<TableDataColumn>{JSON.stringify(event.payload)}</TableDataColumn>
 					</tr>

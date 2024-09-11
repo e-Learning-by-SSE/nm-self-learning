@@ -20,10 +20,10 @@ export type MetricResultTemp = UserEvent & {
 function filterEvents(events: UserEvent[]): UserEvent[] {
 	// Filter out cases where the user manually moves the slider
 	events = events.filter((event, index) => {
-		if (event.action === "VIDEO_JUMP" && index < events.length - 1) {
+		if (event.type === "VIDEO_JUMP" && index < events.length - 1) {
 			const next = events[index + 1];
 			// SKIP Jump if next event is also a JUMP (user just moved the slider)
-			if (next.action === "VIDEO_JUMP") {
+			if (next.type === "VIDEO_JUMP") {
 				return false;
 			}
 		}
@@ -31,7 +31,7 @@ function filterEvents(events: UserEvent[]): UserEvent[] {
 	});
 
 	// Filter out events that are not considered
-	return events.filter(event => CONSIDERED_EVENTS.includes(event.action as EventType));
+	return events.filter(event => CONSIDERED_EVENTS.includes(event.type as EventType));
 }
 
 class WatchedSpeed {
@@ -85,10 +85,10 @@ export function computeDuration(events: UserEvent[], speeds?: number[]): MetricR
 	let speed = 1;
 	const watchedAtSpeed = new WatchedSpeed(speeds);
 	const data = events.map(event => {
-		if (event.action === "VIDEO_PLAY") {
+		if (event.type === "VIDEO_PLAY") {
 			start = event.createdAt.getTime();
 		}
-		if (event.action === "VIDEO_JUMP") {
+		if (event.type === "VIDEO_JUMP") {
 			if (start) {
 				const watchTime = event.createdAt.getTime() - start;
 				effectivelyWatched += watchTime * speed;
@@ -104,7 +104,7 @@ export function computeDuration(events: UserEvent[], speeds?: number[]): MetricR
 				watchedAtSpeed: watchedAtSpeed.getWatchedAtSpeed()
 			};
 		}
-		if (event.action === "VIDEO_SPEED") {
+		if (event.type === "VIDEO_SPEED") {
 			if (start) {
 				// Video was playing, continue to play
 				const watchTime = event.createdAt.getTime() - start;
@@ -124,7 +124,7 @@ export function computeDuration(events: UserEvent[], speeds?: number[]): MetricR
 				watchedAtSpeed: watchedAtSpeed.getWatchedAtSpeed()
 			};
 		}
-		if (event.action === "VIDEO_PAUSE" || event.action === "VIDEO_STOP") {
+		if (event.type === "VIDEO_PAUSE" || event.type === "VIDEO_STOP") {
 			if (!start) {
 				return {
 					...event,
@@ -147,7 +147,7 @@ export function computeDuration(events: UserEvent[], speeds?: number[]): MetricR
 				watchedAtSpeed: watchedAtSpeed.getWatchedAtSpeed()
 			};
 		}
-		if (event.action === "VIDEO_END") {
+		if (event.type === "VIDEO_END") {
 			// Reset computation
 			if (start) {
 				const watchTime = event.createdAt.getTime() - start;
