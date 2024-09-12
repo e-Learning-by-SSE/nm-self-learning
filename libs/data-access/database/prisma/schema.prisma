@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl"]
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl"]
 }
 
 datasource db {
@@ -64,7 +64,6 @@ model Student {
     completedLessons            CompletedLesson[]
     enrollments                 Enrollment[]
     learningDiary               LearningDiary?
-  learningGoals    LearningGoal[]
     customLearningLocations     LearningLocation[]
     settings                    StudentSettings?
     learningDiaryEntrys         LearningDiaryEntry[]
@@ -72,13 +71,14 @@ model Student {
     user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
     learningTechniques          LearningTechnique[]
     learningTechniqueEvaluation LearningTechniqueEvaluation[]
+    LearningGoal                LearningGoal[]
 }
 
 model StudentSettings {
-  username          String  @id
-  learningStatistics Boolean @default(false)
-  hasLearningDiary  Boolean  @default(false)
-  student           Student @relation(fields: [username], references: [username], onDelete: Cascade)
+    username           String  @id
+    learningStatistics Boolean @default(false)
+    hasLearningDiary   Boolean @default(false)
+    student            Student @relation(fields: [username], references: [username], onDelete: Cascade)
 }
 
 model Author {
@@ -292,15 +292,15 @@ model License {
 }
 
 model SkillRepository {
-  id            String        @id @default(cuid())
-  name          String
-  description   String?
-  skills        Skill[]
-  ownerName     String
-  owner         User     @relation(fields: [ownerName], references: [name])
+    id          String  @id @default(cuid())
+    name        String
+    description String?
+    skills      Skill[]
+    ownerName   String
+    owner       User    @relation(fields: [ownerName], references: [name])
 
-  @@unique([ownerName, name])
-  @@map("skill-repositories")
+    @@unique([ownerName, name])
+    @@map("skill-repositories")
 }
 
 model Skill {
@@ -319,52 +319,55 @@ model Skill {
 }
 
 model LearningGoal {
-  id                 String  @id @default(cuid())
-  description        String
-  status             LearningGoalStatus @default(value:INACTIVE)
-  createdAt          DateTime         @default(now())
-  lastProgressUpdate DateTime?        
-  username           String
-  student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
-  learningSubGoals   LearningSubGoal[]
+    id                   String              @id @default(cuid())
+    description          String
+    status               LearningGoalStatus  @default(value: INACTIVE)
+    createdAt            DateTime            @default(now())
+    lastProgressUpdate   DateTime?
+    username             String
+    student              Student             @relation(fields: [username], references: [username], onDelete: Cascade)
+    learningSubGoals     LearningSubGoal[]
+    LearningDiaryEntry   LearningDiaryEntry? @relation(fields: [learningDiaryEntryId], references: [id])
+    learningDiaryEntryId String?
 }
 
-model LearningSubGoal{
-  id                 String  @id @default(cuid())
-  description        String
-  status             LearningGoalStatus @default(value:INACTIVE)
-  createdAt          DateTime         @default(now())
-  lastProgressUpdate DateTime?        
-  priority           Int              @default(autoincrement())
-  learningGoalId     String
-  learningGoal       LearningGoal     @relation(fields:[learningGoalId], references: [id],onDelete: Cascade)
+model LearningSubGoal {
+    id                 String             @id @default(cuid())
+    description        String
+    status             LearningGoalStatus @default(value: INACTIVE)
+    createdAt          DateTime           @default(now())
+    lastProgressUpdate DateTime?
+    priority           Int                @default(autoincrement())
+    learningGoalId     String
+    learningGoal       LearningGoal       @relation(fields: [learningGoalId], references: [id], onDelete: Cascade)
 }
 
 enum LearningGoalStatus {
-  ACTIVE
-  INACTIVE
-  COMPLETED
+    ACTIVE
+    INACTIVE
+    COMPLETED
 }
+
 model LearningDiaryEntry {
-  id                      		String               				@id @default(uuid())
-  semesterId              		String
-  semester                		Semester            				@relation(fields: [semesterId], references: [id], onDelete: Cascade)
-  studentName			  		String
-  student						Student 							@relation(fields: [studentName], references: [username], onDelete: Cascade)
-  courseSlug               		String
-  course                  		Course              				@relation(fields: [courseSlug], references: [slug], onDelete: Cascade)
-  notes                   		String?
-  date                    		DateTime
-  start                   		DateTime?
-  end                     		DateTime?
-  scope							Int									@default(0)
-  distractionLevel        		Int									@default(0)
-  effortLevel					Int									@default(0)
-  learningLocationId      		String?
-  learningLocation        		LearningLocation?    				@relation(fields: [learningLocationId], references: [id], onDelete: Cascade)
-  learningGoals 		  		LearningGoal[]
-  learningTechniqueEvaluation 	LearningTechniqueEvaluation[]
-  learningDiaryLearnedLessons	LearningDiaryLearnedLessons[]
+    id                          String                        @id @default(uuid())
+    semesterId                  String
+    semester                    Semester                      @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+    studentName                 String
+    student                     Student                       @relation(fields: [studentName], references: [username], onDelete: Cascade)
+    courseSlug                  String
+    course                      Course                        @relation(fields: [courseSlug], references: [slug], onDelete: Cascade)
+    notes                       String?
+    date                        DateTime
+    start                       DateTime?
+    end                         DateTime?
+    scope                       Int                           @default(0)
+    distractionLevel            Int                           @default(0)
+    effortLevel                 Int                           @default(0)
+    learningLocationId          String?
+    learningLocation            LearningLocation?             @relation(fields: [learningLocationId], references: [id], onDelete: Cascade)
+    learningGoals               LearningGoal[]
+    learningTechniqueEvaluation LearningTechniqueEvaluation[]
+    learningDiaryLearnedLessons LearningDiaryLearnedLessons[]
 }
 
 model LearningLocation {
@@ -411,17 +414,6 @@ enum LearningProgeres {
     FINISHED
 }
 
-model LearningGoal {
-    id                   String             @id @default(uuid())
-    name                 String
-    progress             LearningProgeres   @default(NOT_STARTED)
-    learningDiaryEntryId String
-    learningDiaryEntry   LearningDiaryEntry @relation(fields: [learningDiaryEntryId], references: [id], onDelete: Cascade)
-    parentGoalId         String?
-    parentGoal           LearningGoal?      @relation("ParentGoal", fields: [parentGoalId], references: [id], onDelete: Cascade)
-    childGoals           LearningGoal[]     @relation("ParentGoal")
-}
-
 model Semester {
     id                 String               @id @default(uuid())
     start              DateTime             @unique
@@ -439,14 +431,13 @@ model LearningDiaryLearnedLessons {
     lesson    Lesson             @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
 }
 
-
 model EventLog {
-  id          Int    @id @default(autoincrement())
-  createdAt   DateTime  @default(now())
-  username    String   
-  resourceId  String?
-  courseId    String?
-  type        String
-  payload     Json? 
-  // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now())
+    username   String
+    resourceId String?
+    courseId   String?
+    type       String
+    payload    Json?
+    // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
 }
