@@ -1,5 +1,4 @@
 import React from "react";
-import { LearningDiaryEntriesOverview } from "@self-learning/api";
 
 export function Table({ head, children }: { head: React.ReactElement; children: React.ReactNode }) {
 	return (
@@ -30,65 +29,4 @@ export function TableDataColumn({
 	className?: string;
 }) {
 	return <td className={className ?? "py-2 px-8 text-sm"}>{children}</td>;
-}
-
-export interface TableColumn {
-	label: string;
-	sortingFunction: (a: LearningDiaryEntriesOverview, b: LearningDiaryEntriesOverview) => number;
-	isDisplayed: boolean;
-}
-
-export function TableDropdownMenu({
-	columns,
-	setColumns,
-	setChevronMenu
-}: {
-	columns: Map<string, TableColumn>;
-	setColumns: React.Dispatch<React.SetStateAction<Map<string, TableColumn>>>;
-	setChevronMenu: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
-	const handleCheckboxChange = (key: string) => {
-		setColumns(prevColumns => {
-			const newColumns = new Map(prevColumns);
-			const column = newColumns.get(key);
-			if (column) {
-				newColumns.set(key, { ...column, isDisplayed: !column.isDisplayed });
-			}
-			return newColumns;
-		});
-	};
-
-	return (
-		<div
-			className="absolute bg-white p-4 shadow-md"
-			onMouseLeave={() => {
-				setChevronMenu(false);
-			}}
-		>
-			{[...columns.values()].map(column => {
-				const columnKey = findKeyByValue(columns, column);
-
-				return (
-					<div key={columnKey} className="flex items-center space-x-2">
-						<input
-							type="checkbox"
-							checked={column.isDisplayed}
-							onChange={() => handleCheckboxChange(columnKey)}
-							className="form-checkbox rounded text-secondary"
-						/>
-						<label className="text-gray-700">{column.label}</label>
-					</div>
-				);
-			})}
-		</div>
-	);
-}
-
-export function findKeyByValue(map: Map<string, TableColumn>, targetValue: TableColumn): string {
-	for (const [key, value] of map.entries()) {
-		if (value === targetValue) {
-			return key;
-		}
-	}
-	return "";
 }

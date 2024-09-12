@@ -163,7 +163,7 @@ async function getCourse(courseSlug: string) {
 }
 
 function useLearningDiaryRecording(course: CourseProps["course"]) {
-	const { mutateAsync: createLearningDiaryEntry } = trpc.learningDiaryEntry.create.useMutation();
+	const { mutateAsync: createLearningDiaryEntry } = trpc.learningDiary.create.useMutation();
 	const log = useCallback(async () => {
 		try {
 			await createLearningDiaryEntry({
