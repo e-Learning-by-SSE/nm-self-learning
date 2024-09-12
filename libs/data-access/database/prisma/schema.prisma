@@ -291,15 +291,15 @@ model License {
 }
 
 model SkillRepository {
-    id          String  @id @default(cuid())
-    name        String
-    description String?
-    skills      Skill[]
-    ownerId     String
-    owner       User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  skills        Skill[]
+  ownerName     String
+  owner         User     @relation(fields: [ownerName], references: [name])
 
-    @@unique([ownerId, name])
-    @@map("skill-repositories")
+  @@unique([ownerName, name])
+  @@map("skill-repositories")
 }
 
 model Skill {

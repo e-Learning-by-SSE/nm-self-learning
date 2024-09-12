@@ -481,7 +481,7 @@ export async function createRepositories(repository: Repository) {
 	await prisma.skillRepository.create({
 		data: {
 			id: repository.id,
-			ownerId: admin?.id ?? "0",
+			ownerName: admin?.name ?? "unknown",
 			name: repository.name,
 			description: repository.description
 		}
