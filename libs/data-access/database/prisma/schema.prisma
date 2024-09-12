@@ -296,7 +296,7 @@ model SkillRepository {
   description   String?
   skills        Skill[]
   ownerName     String
-  owner         User     @relation(fields: [ownerName], references: [name], onDelete: Cascade)
+  owner         User     @relation(fields: [ownerName], references: [name])
 
   @@unique([ownerName, name])
   @@map("skill-repositories")

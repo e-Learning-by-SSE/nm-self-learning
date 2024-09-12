@@ -15,7 +15,7 @@ import { User } from "next-auth";
 import { useState } from "react";
 
 export function StudentDeleteForm() {
-	const { mutateAsync: deleteOnlyMe } = trpc.me.deleteMe.useMutation();
+	const { mutateAsync: deleteMe } = trpc.me.delete.useMutation();
 	const session = useRequiredSession();
 	const user = session.data?.user;
 	if (!user) {
@@ -30,7 +30,7 @@ export function StudentDeleteForm() {
 				onClose={async accepted => {
 					if (accepted) {
 						try {
-							const success = await deleteOnlyMe();
+							const success = await deleteMe();
 							if (success) {
 								showToast({
 									type: "success",
@@ -206,7 +206,6 @@ function StudentDeleteDialog({
 function StudentDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
 	const session = useRequiredSession();
 	const user = session.data?.user;
-	console.log("user", user);
 	return (
 		<CenteredContainer>
 			<Dialog

@@ -27,7 +27,7 @@ export const meRouter = t.router({
 			}
 		});
 	}),
-	deleteMe: authProcedure.mutation(async ({ ctx }) => {
+	delete: authProcedure.mutation(async ({ ctx }) => {
 		const result = await database.$transaction(async prisma => {
 			const user = await prisma.user.findUnique({
 				where: { name: ctx.user.name }
