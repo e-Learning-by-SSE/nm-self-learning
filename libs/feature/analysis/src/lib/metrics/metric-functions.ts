@@ -41,7 +41,7 @@ export function hintsUsed(
 export function quizAttempts(
 	accumulator: { successful: number; failed: number },
 	event: UserEvent & { payload: EventType["LESSON_QUIZ_SUBMISSION"] }
-) {
+): { successful: number; failed: number } {
 	// Values of the event
 	const attempts = event.payload.attempts;
 	const successfulAttempts = event.payload.solved ? 1 : 0;
@@ -49,8 +49,8 @@ export function quizAttempts(
 
 	// Values of the accumulator
 	let { successful, failed } = accumulator;
-	successful = successful != undefined ? successful + successfulAttempts : successfulAttempts;
-	failed = failed != undefined ? failed + failedAttempts : failedAttempts;
+	successful += successfulAttempts;
+	failed += failedAttempts;
 
 	// Return the new values
 	return { successful, failed };
