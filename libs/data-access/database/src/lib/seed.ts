@@ -5,7 +5,7 @@ import { mathExample } from "./math/math-example";
 import { psychologyExample } from "./psychology/psychology-example";
 import { seedDemos } from "./demo/demo";
 import { subjects } from "./seedSubjects";
-import { softwareentwicklungDemoSpecialization, specializations } from "./seedSpecializations";
+import { specializations } from "./seedSpecializations";
 
 const prisma = new PrismaClient();
 
