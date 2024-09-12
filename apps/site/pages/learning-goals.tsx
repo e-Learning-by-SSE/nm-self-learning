@@ -1,13 +1,12 @@
-import { LearningGoals } from "@self-learning/learning-goals";
+import { LearningGoals } from "@self-learning/learning-diary";
 import { trpc } from "@self-learning/api-client";
 import { LoadingCircle } from "@self-learning/ui/common";
 
-
 /**
  * LearningGoal()
- * 
- * Main component of the learning goals 
- * 
+ *
+ * Main component of the learning goals
+ *
  */
 export default function LearningGoal() {
 	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();

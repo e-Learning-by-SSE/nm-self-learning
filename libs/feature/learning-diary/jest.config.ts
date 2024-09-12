@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-	displayName: "feature-learning-goals",
+	displayName: "feature-learning-diary",
 	preset: "../../../jest.preset.js",
 	globals: {},
 	transform: {
@@ -12,5 +12,5 @@ export default {
 		]
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-	coverageDirectory: "../../../coverage/libs/feature/learning-goals"
+	coverageDirectory: "../../../coverage/libs/feature/learning-diary"
 };

@@ -1,4 +1,4 @@
-# feature-learning-goals
+# feature-learning-diary
 
 This library was generated with [Nx](https://nx.dev).
 

@@ -1,9 +1,7 @@
-import { LearningGoalType } from "@self-learning/api";
 import { useState } from "react";
 import {
 	ButtonActions,
 	DialogHandler,
-	Divider,
 	SectionHeader,
 	SimpleDialog,
 	Tab,
@@ -16,11 +14,9 @@ import { LearningGoal, LearningSubGoal } from "@self-learning/types";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { GoalEditorDialog } from "./learning-goal-components/learning-goal-editor-dialog";
-import { GoalStatus } from "./learning-goal-components/status";
+import { GoalEditorDialog } from "./learning-goal-editor";
+import { GoalStatus } from "./status";
 import { PencilIcon } from "@heroicons/react/24/outline";
-
-export default LearningGoals;
 
 /**
  * Component for displaying learning goals. It contains dialogs for creating and editing of learning goals and sub-goals (Grob-/ Feinziel).
@@ -117,16 +113,15 @@ function GoalsOverview({
 	);
 }
 
-
 /**
- * Component to display the content of a tab.  
- * 
+ * Component to display the content of a tab.
+ *
  * @param selectedTab Current selected tab
  * @param setSelectedTab Function to set the current selected tab
  * @param goals Learning goals data
  * @param notFoundMessage Message if data does not contain any goals
  * @param editable Shows whether a goal can be edited
- * @returns 
+ * @returns
  */
 function TabContent({
 	selectedTab,
@@ -161,12 +156,12 @@ function TabContent({
 }
 
 /**
- * Component to display a row for a learning goal with separate rows for each sub goal.  
- * 
+ * Component to display a row for a learning goal with separate rows for each sub goal.
+ *
  * @param goal Learning goal data for the row
  * @param goals Learning goals data
  * @param editable Shows whether a goal can be edited
- * @returns 
+ * @returns
  */
 function GoalRow({
 	goal,
@@ -231,14 +226,13 @@ function GoalRow({
 	);
 }
 
-
 /**
  * Component to display a row for a learning sub-goal. Contains a dialog for editing sub-goals. Buttons to change the priority (up or down).
- * 
+ *
  * @param subGoal Learning sub-goal data for the row
  * @param goals Learning goals data
  * @param editable Shows whether a goal can be edited
- * @returns 
+ * @returns
  */
 function SubGoalRow({
 	subGoal,
@@ -255,7 +249,7 @@ function SubGoalRow({
 
 	/**
 	 * function to move a sub-goal up or down.
-	 * 
+	 *
 	 * @param subGoal Sub-goal data
 	 * @param direction Direction of the move "up" or "down"
 	 * @param subGoals All sub-goals data of the parent goal
@@ -272,7 +266,7 @@ function SubGoalRow({
 				editSubGoalPriority({ priority: found.priority, subGoalId: subGoal.id });
 				editSubGoalPriority({ priority: subGoal.priority, subGoalId: found.id });
 			}
-		// If down identify the goal with the next lower priority and switch priorities.
+			// If down identify the goal with the next lower priority and switch priorities.
 		} else if (direction == "down") {
 			subGoals.sort((a, b) => (a.priority < b.priority ? -1 : 1));
 			found = subGoals.find(goal => {
@@ -351,11 +345,10 @@ function SubGoalRow({
 	);
 }
 
-
 /**
  * Component to open the editor for a learning goal.
- * 
- * @param onClick Function performed if the button was clicked.  
+ *
+ * @param onClick Function performed if the button was clicked.
  * @returns A Button with a pencil icon.
  */
 function QuickEditButton({ onClick }: Readonly<{ onClick: () => void }>) {
@@ -366,15 +359,14 @@ function QuickEditButton({ onClick }: Readonly<{ onClick: () => void }>) {
 	);
 }
 
-
 /**
- * Component to handle deletion of a learning goal. Contains a warning dialog. 
- * 
+ * Component to handle deletion of a learning goal. Contains a warning dialog.
+ *
  * @param goalId ID of a goal.
  * @param className ClassName string for the component styling (optional)
  * @param isSubGoal Distinction between learning goal and sub-goal.
- * @param onDeleteSuccess Function that is executed when a goal has been successfully deleted   
- * @returns 
+ * @param onDeleteSuccess Function that is executed when a goal has been successfully deleted
+ * @returns
  */
 
 export function GoalDeleteOption({
@@ -436,9 +428,9 @@ export function GoalDeleteOption({
 }
 
 /**
- * Error handling and notification if a goal has been successfully deleted. 
- * 
- * @param fn 
+ * Error handling and notification if a goal has been successfully deleted.
+ *
+ * @param fn
  */
 const withErrorHandling = async (fn: () => Promise<void>) => {
 	try {
