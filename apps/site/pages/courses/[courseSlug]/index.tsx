@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useCallback, useMemo } from "react";
 
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
+import { LessonType } from "@prisma/client";
+import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
@@ -16,12 +18,10 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList, useCountdownSeconds, useTimeout } from "@self-learning/ui/common";
+import { AuthorsList, useTimeout } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
-import { formatDateAgo, formatSeconds, useEventLog } from "@self-learning/util/common";
-import { LessonType } from "@prisma/client";
-import { trpc } from "@self-learning/api-client";
+import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 
 type Course = ResolvedValue<typeof getCourse>;
 
