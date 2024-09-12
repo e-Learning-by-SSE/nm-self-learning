@@ -2,27 +2,27 @@ import { database, updateLearningDiaryEntry } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import {
-	learningDiaryEntrySchema,
+	learningDiaryPageSchema,
 	learningLocationSchema,
-	learningTechniqueEvaluationSchema,
+	techniqueEvaluationSchema,
 	lessonStartSchema
 } from "@self-learning/types";
 
-export const learningDiaryRouter = t.router({
-	setGoals: authProcedure
-		.input(
-			z.object({
-				goals: z.string()
-			})
-		)
-		.mutation(async ({ ctx, input }) => {
-			return database.learningDiary.update({
-				where: { username: ctx.user.name },
-				data: { goals: input.goals },
-				select: { goals: true }
-			});
-		})
-});
+// export const learningDiaryRouter = t.router({
+// 	setGoals: authProcedure
+// 		.input(
+// 			z.object({
+// 				goals: z.string()
+// 			})
+// 		)
+// 		.mutation(async ({ ctx, input }) => {
+// 			return database.learningDiary.update({
+// 				where: { username: ctx.user.name },
+// 				data: { goals: input.goals },
+// 				select: { goals: true }
+// 			});
+// 		})
+// });
 
 export const learningLocationRouter = t.router({
 	create: authProcedure.input(learningLocationSchema).mutation(async ({ input, ctx }) => {
@@ -44,45 +44,21 @@ export const learningLocationRouter = t.router({
 });
 
 export const learningTechniqueEvaluationRouter = t.router({
-	create: authProcedure
-		.input(learningTechniqueEvaluationSchema)
-		.mutation(async ({ input, ctx }) => {
-			const existingEvaluation = await database.learningTechniqueEvaluation.findFirst({
-				where: {
-					learningTechniqueId: input.learningTechniqueId,
-					learningDiaryEntryId: input.learningDiaryEntryId
-				}
-			});
-
-			if (existingEvaluation) {
-				return database.learningTechniqueEvaluation.update({
-					where: { id: existingEvaluation.id },
-					data: {
-						score: input.score || 0
-					},
-					select: {
-						score: true,
-						learningTechnique: {
-							select: {
-								id: true,
-								name: true,
-								learningStrategie: { select: { id: true, name: true } }
-							}
-						}
-					}
-				});
+	create: authProcedure.input(techniqueEvaluationSchema).mutation(async ({ input, ctx }) => {
+		const existingEvaluation = await database.learningTechniqueEvaluation.findFirst({
+			where: {
+				learningTechniqueId: input.learningTechniqueId,
+				learningDiaryEntryId: input.learningDiaryEntryId
 			}
+		});
 
-			return database.learningTechniqueEvaluation.create({
+		if (existingEvaluation) {
+			return database.learningTechniqueEvaluation.update({
+				where: { id: existingEvaluation.id },
 				data: {
-					id: input.id ?? undefined,
-					score: input.score || 0,
-					learningTechniqueId: input.learningTechniqueId,
-					learningDiaryEntryId: input.learningDiaryEntryId,
-					creatorName: ctx.user.name
+					score: input.score || 0
 				},
 				select: {
-					id: true,
 					score: true,
 					learningTechnique: {
 						select: {
@@ -93,7 +69,29 @@ export const learningTechniqueEvaluationRouter = t.router({
 					}
 				}
 			});
-		}),
+		}
+
+		return database.learningTechniqueEvaluation.create({
+			data: {
+				id: input.id ?? undefined,
+				score: input.score || 0,
+				learningTechniqueId: input.learningTechniqueId,
+				learningDiaryEntryId: input.learningDiaryEntryId,
+				creatorName: ctx.user.name
+			},
+			select: {
+				id: true,
+				score: true,
+				learningTechnique: {
+					select: {
+						id: true,
+						name: true,
+						learningStrategie: { select: { id: true, name: true } }
+					}
+				}
+			}
+		});
+	}),
 	deleteMany: authProcedure.input(z.array(z.string()).min(1)).mutation(async ({ input, ctx }) => {
 		return database.learningTechniqueEvaluation.deleteMany({
 			where: {
@@ -112,26 +110,15 @@ export const learningDiaryEntryRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			const ltbEntryThreshold = 1000 * 60 * 6 * 60; // 6 hours
 
-			const [latestEntry, semester] = await database.$transaction([
-				database.learningDiaryEntry.findFirst({
+			const [latestEntry] = await database.$transaction([
+				database.learningDiaryPage.findFirst({
 					where: {
 						studentName: ctx.user.name
 					},
-					select: { date: true, courseSlug: true },
+					select: { createdAt: true, courseSlug: true },
 					orderBy: {
-						start: "desc"
+						createdAt: "desc"
 					}
-				}),
-				database.semester.findFirst({
-					where: {
-						start: {
-							lte: new Date()
-						},
-						end: {
-							gte: new Date()
-						}
-					},
-					select: { id: true }
 				})
 			]);
 
@@ -159,7 +146,7 @@ export const learningDiaryEntryRouter = t.router({
 				select: { id: true }
 			});
 		}),
-	update: authProcedure.input(learningDiaryEntrySchema).mutation(async ({ input }) => {
+	update: authProcedure.input(learningDiaryPageSchema).mutation(async ({ input }) => {
 		return updateLearningDiaryEntry({ id: input.id, input });
 	}),
 	addLearningDiaryLearnedLessons: authProcedure

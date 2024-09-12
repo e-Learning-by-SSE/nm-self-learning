@@ -1,4 +1,4 @@
-import { PrismaClient, LearningProgeres } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const DEFAULT_SLUG = "the-beginners-guide-to-react";
@@ -27,26 +27,6 @@ export async function generateLearningDiaryDemoData() {
 			console.error("No courses found.");
 			return;
 		}
-
-		// Create Semesters (hard-coded)
-		console.log(" - %s\x1b[32m ✔\x1b[0m", "Semester");
-		const semesterWinter2023 = await prisma.semester.create({
-			data: {
-				id: "semester-winter-2023",
-				start: new Date("2023-10-01"),
-				end: new Date("2024-03-31"),
-				name: "Wintersemester 2023/24"
-			}
-		});
-
-		const semesterSommer2024 = await prisma.semester.create({
-			data: {
-				id: "semester-sommer-2024",
-				start: new Date("2024-04-01"),
-				end: new Date("2024-09-30"),
-				name: "Sommersemester 2024"
-			}
-		});
 
 		// Create Learning Locations (hard-coded)
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Locations");
@@ -157,7 +137,7 @@ export async function generateLearningDiaryDemoData() {
 
 		// Create Learning Diary Entries (hard-coded)
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Diary Entry");
-		const diaryEntry1 = await prisma.learningDiaryEntry.create({
+		const diaryEntry1 = await prisma.learningDiaryPage.create({
 			data: {
 				id: "diary-entry-advanced-spells",
 				semesterId: semesterWinter2023.id,
@@ -174,7 +154,7 @@ export async function generateLearningDiaryDemoData() {
 			}
 		});
 
-		const diaryEntry2 = await prisma.learningDiaryEntry.create({
+		const diaryEntry2 = await prisma.learningDiaryPage.create({
 			data: {
 				id: "diary-entry-basic-potions",
 				semesterId: semesterWinter2023.id,
@@ -191,7 +171,7 @@ export async function generateLearningDiaryDemoData() {
 			}
 		});
 
-		const emtydiaryEntry = await prisma.learningDiaryEntry.create({
+		const emtydiaryEntry = await prisma.learningDiaryPage.create({
 			data: {
 				semesterId: semesterWinter2023.id,
 				studentName: student.username,
@@ -214,7 +194,7 @@ export async function generateLearningDiaryDemoData() {
 				id: "evaluation1",
 				score: 4,
 				learningTechniqueId: technique1.id,
-				learningDiaryEntryId: diaryEntry1.id,
+				learningDiaryPageId: diaryEntry1.id,
 				creatorName: student.username
 			}
 		});
@@ -224,7 +204,7 @@ export async function generateLearningDiaryDemoData() {
 				id: "evaluation2",
 				score: 2,
 				learningTechniqueId: technique2.id,
-				learningDiaryEntryId: diaryEntry2.id,
+				learningDiaryPageId: diaryEntry2.id,
 				creatorName: student.username
 			}
 		});
@@ -237,7 +217,7 @@ export async function generateLearningDiaryDemoData() {
 				id: "goal1",
 				name: "Complete Advanced Spells",
 				progress: LearningProgeres.NOT_STARTED,
-				learningDiaryEntryId: diaryEntry1.id
+				learningDiaryPageId: diaryEntry1.id
 			}
 		});
 
@@ -246,7 +226,7 @@ export async function generateLearningDiaryDemoData() {
 				id: "subgoal1",
 				name: "Master Levitation Spell",
 				progress: LearningProgeres.STARTED,
-				learningDiaryEntryId: diaryEntry1.id,
+				learningDiaryPageId: diaryEntry1.id,
 				parentGoalId: goal1.id
 			}
 		});
@@ -256,7 +236,7 @@ export async function generateLearningDiaryDemoData() {
 				id: "subgoal2",
 				name: "Master Invisibility Spell",
 				progress: LearningProgeres.FINISHED,
-				learningDiaryEntryId: diaryEntry1.id,
+				learningDiaryPageId: diaryEntry1.id,
 				parentGoalId: goal1.id
 			}
 		});
@@ -266,14 +246,14 @@ export async function generateLearningDiaryDemoData() {
 				id: "goal2",
 				name: "Brew Basic Potions",
 				progress: LearningProgeres.NOT_STARTED,
-				learningDiaryEntryId: diaryEntry2.id
+				learningDiaryPageId: diaryEntry2.id
 			}
 		});
 
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Additional Learning Diary Entries");
 
 		// Additional hard-coded entries
-		const additionalEntry1 = await prisma.learningDiaryEntry.create({
+		const additionalEntry1 = await prisma.learningDiaryPage.create({
 			data: {
 				id: "entry3",
 				semesterId: semesterWinter2023.id,
@@ -290,7 +270,7 @@ export async function generateLearningDiaryDemoData() {
 			}
 		});
 
-		const additionalEntry2 = await prisma.learningDiaryEntry.create({
+		const additionalEntry2 = await prisma.learningDiaryPage.create({
 			data: {
 				id: "entry4",
 				semesterId: semesterWinter2023.id,
@@ -307,7 +287,7 @@ export async function generateLearningDiaryDemoData() {
 			}
 		});
 
-		const additionalEntry3 = await prisma.learningDiaryEntry.create({
+		const additionalEntry3 = await prisma.learningDiaryPage.create({
 			data: {
 				id: "entry5",
 				semesterId: semesterWinter2023.id,
@@ -324,7 +304,7 @@ export async function generateLearningDiaryDemoData() {
 			}
 		});
 
-		const entryOverTwoDays = await prisma.learningDiaryEntry.create({
+		const entryOverTwoDays = await prisma.learningDiaryPage.create({
 			data: {
 				id: "entry-over-two-days",
 				semesterId: semesterWinter2023.id,

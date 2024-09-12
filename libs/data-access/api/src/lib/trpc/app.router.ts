@@ -4,7 +4,11 @@ import { authorRouter } from "./routers/author.router";
 import { completionRouter } from "./routers/completion.router";
 import { courseRouter } from "./routers/course.router";
 import { enrollmentRouter } from "./routers/enrollment.router";
-import { learningDiaryRouter } from "./routers/learning-diary.router";
+import {
+	learningDiaryEntryRouter,
+	learningLocationRouter,
+	learningTechniqueEvaluationRouter
+} from "./routers/learning-diary.router";
 import { lessonRouter } from "./routers/lesson.router";
 import { licenseRouter } from "./routers/license.router";
 import { meRouter } from "./routers/me.router";
@@ -13,11 +17,7 @@ import { skillRouter } from "./routers/skill.router";
 import { specializationRouter } from "./routers/specialization.router";
 import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
-import {
-	learningDiaryEntryRouter,
-	learningLocationRouter,
-	learningTechniqueEvaluationRouter
-} from "./routers/learningDiaryEntry.router";
+
 import { settingsRouter } from "./routers/settings.router";
 import { userEventRouter } from "./routers/event-log.router";
 
@@ -27,9 +27,8 @@ export const appRouter = t.router({
 	completion: completionRouter,
 	course: courseRouter,
 	enrollment: enrollmentRouter,
-	learningDiary: learningDiaryRouter,
 	learningLocation: learningLocationRouter,
-	learningDiaryEntry: learningDiaryEntryRouter,
+	learningDiary: learningDiaryEntryRouter,
 	learningTechniqueEvaluation: learningTechniqueEvaluationRouter,
 	lesson: lessonRouter,
 	licenseRouter: licenseRouter,

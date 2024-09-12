@@ -1,0 +1,85 @@
+model LearningDiaryPage {
+  id                      		String               				@id @default(uuid())
+  semesterId              		String
+  studentName			  		String
+  student						Student 							@relation(fields: [studentName], references: [username], onDelete: Cascade)
+  courseSlug               		String
+  course                  		Course              				@relation(fields: [courseSlug], references: [slug], onDelete: Cascade)
+  notes                   		String?
+  createdAt               		DateTime              			@default(now())
+  learningDurationMs       		Int
+  scope							Int									@default(0)
+  distractionLevel        		Int									@default(0)
+  effortLevel					Int									@default(0)
+  learningLocationId      		String?
+  learningLocation        		LearningLocation?    				@relation(fields: [learningLocationId], references: [id], onDelete: Cascade)
+  learningGoals 		  		LearningGoal[]
+  learningTechniqueEvaluation 	LearningTechniqueEvaluation[]
+  learningDiaryLearnedLessons	LearningDiaryLearnedLessons[]
+}
+
+model LearningLocation {
+    id                 String               @id @default(uuid())
+    name               String
+    iconURL            String
+    defaultLocation    Boolean              @default(false)
+    creatorName        String?
+    creator            Student?             @relation(fields: [creatorName], references: [username], onDelete: Cascade)
+    learningDiaryEntry LearningDiaryPage[]
+}
+
+model LearningStrategie {
+    id                String              @id @default(uuid())
+    name              String              @unique
+    
+    learningTechnique LearningTechnique[]
+}
+
+model LearningTechnique {
+    id                           String                        @id @default(uuid())
+    name                         String
+    creatorName                  String?
+    creator                      Student?                      @relation(fields: [creatorName], references: [username], onDelete: Cascade)
+    defaultTechnique             Boolean                       @default(false)
+    learningStrategieId          String
+
+    learningStrategie            LearningStrategie             @relation(fields: [learningStrategieId], references: [id], onDelete: Cascade)
+    learningTechniqueEvaluations LearningTechniqueEvaluation[]
+}
+
+model LearningTechniqueEvaluation {
+    id                   String             @id @default(uuid())
+    score                Int
+    learningTechniqueId  String
+    learningTechnique    LearningTechnique  @relation(fields: [learningTechniqueId], references: [id], onDelete: Cascade)
+    learningDiaryEntryId String
+    learningDiaryEntry   LearningDiaryPage @relation(fields: [learningDiaryEntryId], references: [id], onDelete: Cascade)
+    creatorName          String
+    creator              Student            @relation(fields: [creatorName], references: [username], onDelete: Cascade)
+}
+
+enum LearningProgress {
+    NOT_STARTED
+    STARTED
+    FINISHED
+}
+
+model LearningGoal {
+    id                   String             @id @default(uuid())
+    name                 String
+    progress             LearningProgress   @default(NOT_STARTED)
+    learningDiaryEntryId String
+    learningDiaryEntry   LearningDiaryPage @relation(fields: [learningDiaryEntryId], references: [id], onDelete: Cascade)
+    parentGoalId         String?
+    parentGoal           LearningGoal?      @relation("ParentGoal", fields: [parentGoalId], references: [id], onDelete: Cascade)
+    childGoals           LearningGoal[]     @relation("ParentGoal")
+}
+
+model LearningDiaryLearnedLessons {
+    id        String             @id @default(uuid())
+    createdAt DateTime           @default(now())
+    entryId   String
+    entry     LearningDiaryPage @relation(fields: [entryId], references: [id], onDelete: Cascade)
+    lessonId  String
+    lesson    Lesson             @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+}

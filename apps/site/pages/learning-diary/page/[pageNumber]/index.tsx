@@ -1,10 +1,14 @@
 import { PencilIcon, StarIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
 import {
-	findManyLtbDetails,
-	LearningDiaryEntry,
-	LearningDiaryShort
+	database,
+	findLtbPage,
+	getUserLocations,
+	getAllStrategies,
+	LearningDiaryPageDetail
 } from "@self-learning/database";
+import { LearningDiaryPage, learningDiaryPageSchema, ResolvedValue } from "@self-learning/types";
 import { Dialog, showToast } from "@self-learning/ui/common";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
@@ -15,88 +19,156 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 
-export default function LearningDiaryEntryOverview({
-	learningDiaryInformation,
-	slug
-}: {
-	learningDiaryInformation: LearningDiaryInformation;
-	slug: string | null;
-}) {
-	const [currentIndex, setCurrentIndex] = useState<number>(() => {
-		const initialIndex =
-			slug && !isNaN(Number(slug))
-				? Number(slug) - 1
-				: learningDiaryInformation?.learningDiaryEntries?.length
-					? learningDiaryInformation.learningDiaryEntries.length - 1
-					: 0;
-		return initialIndex < 0 ? 0 : initialIndex;
+type TechniqueEvaluation = LearningDiaryPageDetail["learningTechniqueEvaluation"][number];
+
+async function allPages(username: string) {
+	return await database.learningDiaryPage.findMany({
+		select: {
+			id: true
+		},
+		where: {
+			studentName: username
+		}
 	});
+}
 
-	const [entries, setEntries] = useState<LearningDiaryEntryResult[]>(
-		learningDiaryInformation.learningDiaryEntries
-	);
+type PagesMeta = ResolvedValue<typeof allPages>;
 
-	const handleUpdateEntry = (updatedEntry: LearningDiaryEntryResult) => {
-		setEntries(prevEntries =>
-			prevEntries.map(entry => (entry.id === updatedEntry.id ? updatedEntry : entry))
-		);
+export const getServerSideProps: GetServerSideProps = async context => {
+	const session = await getSession(context);
+
+	if (!session || !session.user) {
+		return {
+			redirect: {
+				destination: "/api/auth/signin",
+				permanent: false
+			}
+		};
+	}
+
+	const pageId = context.params?.pageId;
+
+	try {
+		const diaryPage = await findLtbPage(pageId as string);
+		const pages = await allPages(session.user.name);
+		const usersLocation = await getUserLocations(session.user.name);
+		const availableStrategies = await getAllStrategies();
+		// const learningDiaryInformation = await findManyLtbDetails({
+		// 	username: session.user.name
+		// });
+		return {
+			props: {
+				diaryPage,
+				pages,
+				usersLocation,
+				availableStrategies
+			}
+		};
+	} catch (error) {
+		console.error("Error fetching Learning Diary Information:", error);
+		return {
+			props: {
+				learningDiaryInformation: null,
+				pageNumber: null
+			}
+		};
+	}
+};
+
+type Strategy = ResolvedValue<typeof getAllStrategies>[number];
+type Location = ResolvedValue<typeof getUserLocations>[number];
+
+export default function DiaryPageDetail({
+	pages,
+	diaryPage,
+	availableStrategies,
+	usersLocation
+}: {
+	diaryPage: LearningDiaryPageDetail;
+	pages: PagesMeta;
+	availableStrategies: Strategy[];
+	usersLocation: Location[];
+}) {
+	const router = useRouter();
+	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
+
+	const handleUpdateEntry = (updatedEntry: LearningDiaryPage) => {
+		updateLtbPage(updatedEntry);
 	};
-
-	useEffect(() => {
-		window.history.pushState({}, "", "/ltb/entry/" + (currentIndex + 1));
-	}, [currentIndex]);
+	const changePage = (diaryId: string) => {
+		router.push("/learning-diary/page/" + diaryId);
+	};
 
 	return (
 		<div className="flex justify-center">
 			<div className="w-2/3 py-4">
 				<div className="mb-4 flex justify-center">
-					<EntrySwitcher
-						maxLength={entries.length}
-						setIndex={setCurrentIndex}
-						currentIndex={currentIndex}
+					<PageChanger
+						pages={pages}
+						changePage={changePage}
+						currentPageId={diaryPage.id}
 					/>
 				</div>
-				<LearningDiaryEntryForm
+				<EvaluationForm
 					entry={entries[currentIndex]}
-					learningDiaryInformation={learningDiaryInformation}
+					learningDiaryInformation={learningDiaryEvaluation}
 					onUpdate={handleUpdateEntry}
+					initDiaryPage={{
+						id: entries[currentIndex].id,
+						learningLocationId: entries[currentIndex].learningLocation?.id,
+						effortLevel: entries[currentIndex].effortLevel,
+						distractionLevel: entries[currentIndex].distractionLevel,
+						notes: entries[currentIndex].notes ?? undefined,
+						learningTechniqueEvaluation:
+							entries[currentIndex].learningTechniqueEvaluation?.map(evaluation => ({
+								id: evaluation.id,
+								creatorName: "",
+								score: evaluation.score,
+								learningTechniqueId: evaluation.learningTechnique.id,
+								learningDiaryEntryId: ""
+							})) ?? []
+					}}
 				/>
 			</div>
 		</div>
 	);
 }
 
-function EntrySwitcher({
-	maxLength,
-	setIndex,
-	currentIndex
+function PageChanger({
+	pages,
+	changePage,
+	currentPageId
 }: {
-	maxLength: number;
-	setIndex: (index: number) => void;
-	currentIndex: number;
+	pages: PagesMeta;
+	changePage: (index: string) => void;
+	currentPageId: string;
 }) {
-	const handlePrev = () => {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-expect-error
-		setIndex(prevIndex => Math.max(prevIndex - 1, 0));
+	const currentPageIndex = pages.findIndex(page => page.id === currentPageId);
+
+	const updateToPreviousId = () => {
+		const newIndex = Math.max(currentPageIndex - 1, 0);
+		changePage(pages[newIndex].id);
 	};
 
-	const handleNext = () => {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-expect-error
-		setIndex(prevIndex => Math.min(prevIndex + 1, maxLength - 1));
+	const updateToNextId = () => {
+		const newIndex = Math.min(currentPageIndex + 1, pages.length - 1);
+		changePage(pages[newIndex].id);
 	};
 
 	return (
 		<div className="flex space-x-16">
-			<button className="btn btn-primary" onClick={handlePrev} disabled={currentIndex === 0}>
-				Vorheriger Eintrag
-			</button>
-			<div className="rounded bg-gray-100 p-2">{currentIndex + 1}</div>
 			<button
 				className="btn btn-primary"
-				onClick={handleNext}
-				disabled={currentIndex === maxLength - 1}
+				onClick={updateToPreviousId}
+				disabled={currentPageIndex === 0}
+			>
+				Vorheriger Eintrag
+			</button>
+			<div className="rounded bg-gray-100 p-2">{currentPageIndex + 1}</div>
+			<button
+				className="btn btn-primary"
+				onClick={updateToNextId}
+				disabled={currentPageIndex === pages.length - 1}
 			>
 				Nächster Eintrag
 			</button>
@@ -104,70 +176,76 @@ function EntrySwitcher({
 	);
 }
 
-function LearningDiaryEntryForm({
-	entry,
-	learningDiaryInformation,
-	onUpdate
+function EvaluationForm({
+	details,
+	initPageValues,
+	availableStrategies,
+	usersLocation,
+	onSubmit
 }: {
-	entry: LearningDiaryEntryResult;
-	learningDiaryInformation: LearningDiaryInformation;
-	onUpdate: (updatedEntry: LearningDiaryEntryResult) => void;
+	details: LearningDiaryPageDetail;
+	initPageValues: LearningDiaryPage;
+	availableStrategies: Strategy[];
+	usersLocation: Location[];
+	onSubmit: (updatedEntry: LearningDiaryPage) => void;
 }) {
-	const methods = useForm({
-		defaultValues: {
-			learningLocation: entry.learningLocation,
-			effortLevel: entry.effortLevel,
-			distractionLevel: entry.distractionLevel,
-			notes: entry.notes,
-			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
-		}
+	// 	initDiaryPage,
+	// 	onSubmit
+	// }: {
+	// 	data: LearningDiaryEvaluation;
+	// 	initDiaryPage: LearningDiaryPage;
+	// 	onSubmit: (updatedEntry: LearningDiaryPage) => void;
+	// }) {
+	const form = useForm<LearningDiaryPage>({
+		resolver: zodResolver(learningDiaryPageSchema),
+		defaultValues: initPageValues
 	});
 
-	const { handleSubmit, reset } = methods;
+	// const { reset } = form;
 
-	const { mutateAsync: updateLearningDiaryEntry } = trpc.learningDiaryEntry.update.useMutation();
+	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 
-	const onSubmit = async (data: any) => {
-		const updatedEntry: LearningDiaryEntryResult = {
-			...entry,
-			...data
-		};
+	// const onSubmit2 = async (formData: LearningDiaryPage) => {
+	// 	// const updatedEntry: LearningDiaryPage = {
+	// 	// 	...formData
+	// 	// };
+	// 	await updateLtbPage({
+	// 		...formData,
+	// 		learningLocationId:
+	// 			formData.learningLocationId ?? learningDiaryPage.learningLocation.id,
+	// 		effortLevel: formData.effortLevel ?? learningDiaryPage.effortLevel,
+	// 		distractionLevel: formData.distractionLevel ?? learningDiaryPage.distractionLevel,
+	// 		notes: formData.notes ?? leariningDiaryPage.notes
+	// 	});
 
-		await updateLearningDiaryEntry({
-			id: updatedEntry.id,
-			learningLocationId: updatedEntry.learningLocation?.id ?? "",
-			effortLevel: updatedEntry.effortLevel ?? 0,
-			distractionLevel: updatedEntry.distractionLevel ?? 0,
-			notes: updatedEntry.notes ?? ""
-		});
+	// 	onUpdate(updatedEntry);
+	// 	reset(data);
+	// };
 
-		onUpdate(updatedEntry);
-		reset(data);
-	};
-
-	useEffect(() => {
-		reset({
-			learningLocation: entry.learningLocation,
-			effortLevel: entry.effortLevel,
-			distractionLevel: entry.distractionLevel,
-			notes: entry.notes,
-			learningTechniqueEvaluation: entry.learningTechniqueEvaluation
-		});
-	}, [entry, reset]);
+	// maybe not necessary
+	// useEffect(() => {
+	// 	reset({
+	// 		learningLocation: entry.learningLocation,
+	// 		effortLevel: entry.effortLevel,
+	// 		distractionLevel: entry.distractionLevel,
+	// 		notes: entry.notes,
+	// 		learningTechniqueEvaluation: entry.learningTechniqueEvaluation
+	// 	});
+	// }, [entry, reset]);
 
 	return (
-		<FormProvider {...methods}>
-			<form onSubmit={handleSubmit(onSubmit)}>
+		<FormProvider {...form}>
+			<form onSubmit={form.handleSubmit(onSubmit)}>
 				<div className="mb-4 flex justify-center">
-					<DefaultInformation learningDiaryEntry={entry} />
+					<PageDetails page={details} />
 				</div>
 				<div className="mb-4">
 					<Controller
-						name="learningLocation"
-						control={methods.control}
+						name="learningLocationId"
+						control={form.control}
 						render={({ field }) => (
 							<LocationInputTile
-								learningLocations={learningDiaryInformation.learningLocations}
+								learningLocations={diaryPage.learningLocation}
 								initialLearningLocation={field.value}
 								setLearningLocation={field.onChange}
 								onSubmit={onSubmit}
@@ -178,7 +256,7 @@ function LearningDiaryEntryForm({
 				<div className={"mb-4"}>
 					<Controller
 						name="effortLevel"
-						control={methods.control}
+						control={form.control}
 						render={({ field }) => (
 							<StarInputTile
 								name={"Bemühungen:"}
@@ -197,7 +275,7 @@ function LearningDiaryEntryForm({
 				<div className={"mb-4"}>
 					<Controller
 						name="distractionLevel"
-						control={methods.control}
+						control={form.control}
 						render={({ field }) => (
 							<StarInputTile
 								name={"Ablenkungen:"}
@@ -218,7 +296,7 @@ function LearningDiaryEntryForm({
 				<div className={"mb-4"}>
 					<Controller
 						name="notes"
-						control={methods.control}
+						control={form.control}
 						render={({ field }) => (
 							<MarkDownInputTile
 								initialNote={field.value}
@@ -231,15 +309,15 @@ function LearningDiaryEntryForm({
 				<div className={"mb-4"}>
 					<Controller
 						name="learningTechniqueEvaluation"
-						control={methods.control}
+						control={form.control}
 						render={({ field }) => (
 							<LearningTechniqueEvaluationInput
 								onSubmit={onSubmit}
-								learningTechniqueEvaluations={field.value}
+								evaluation={field.value}
 								entryId={entry.id}
 								setEvaluations={field.onChange}
-								learningStrategies={learningDiaryInformation.learningStrategies}
-								learningTechniques={learningDiaryInformation.learningTechniques}
+								learningStrategies={diaryPage.learningStrategies}
+								learningTechniques={diaryPage.learningTechniques}
 							/>
 						)}
 					/>
@@ -250,16 +328,18 @@ function LearningDiaryEntryForm({
 }
 
 function LearningTechniqueEvaluationInput({
-	ltbEntry,
 	entryId,
+	diaryPage,
 	setEvaluations,
 	onSubmit
 }: {
-	ltbEntry: LearningDiaryEntry;
 	entryId: string;
-	setEvaluations: (evaluations: LearningTechniques) => void;
-	onSubmit: (data: any) => Promise<void>;
+	diaryPage: LearningDiaryEvaluation;
+	evaluation: TechniqueEvaluation[];
+	setEvaluations: (evaluations: TechniqueEvaluation[]) => void;
+	onSubmit: (data: InputType) => Promise<void>;
 }) {
+	const { learningTech } = diaryPage;
 	const { mutateAsync: createLearningTechniqueEvaluation } =
 		trpc.learningTechniqueEvaluation.create.useMutation();
 
@@ -338,7 +418,7 @@ function LearningTechniqueEvaluationInput({
 
 	function handleEvaluationToDelete(techniqueId: string) {
 		setEvaluationsToDelete(function (prevEvaluationsToDelete) {
-			const evaluation = learningTechniqueEvaluations.find(function (evaluation) {
+			const evaluation = learningTechniqueEvaluations.find(evaluation => {
 				return evaluation.learningTechnique.id === techniqueId;
 			});
 
@@ -518,12 +598,13 @@ function MarkDownInputTile({
 	setNote,
 	onSubmit
 }: {
-	initialNote: string;
+	initialNote: string | null;
 	setNote: (note: string) => void;
-	onSubmit: (data: any) => Promise<void>;
+	onSubmit: (data: InputType) => Promise<void>;
 }) {
-	const [displayedNotes, setDisplayedNotes] = useState<string>(initialNote);
+	const [displayedNotes, setDisplayedNotes] = useState<string | null>(initialNote);
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+	const { handleSubmit } = useFormContext();
 
 	const onClose = async (newNote?: string) => {
 		if (newNote !== undefined) {
@@ -545,14 +626,14 @@ function MarkDownInputTile({
 					<span>Bisher wurden noch keine Notizen erstellt.</span>
 				) : (
 					<div className={"max-w-5xl truncate"}>
-						<MarkdownViewer content={displayedNotes} />
+						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
 					</div>
 				)}
 			</Tile>
 			{dialogOpen && (
 				<MarkdownEditorDialog
 					title={"Notizen"}
-					initialValue={displayedNotes}
+					initialValue={displayedNotes ? displayedNotes : ""}
 					onClose={onClose}
 				/>
 			)}
@@ -560,33 +641,24 @@ function MarkDownInputTile({
 	);
 }
 
-function DefaultInformation({
-	learningDiaryEntry
-}: {
-	learningDiaryEntry: {
-		date: string;
-		course: { title: string; slug: string };
-		duration: number;
-		scope: number;
-	};
-}) {
+function PageDetails({ page }: { page: LearningDiaryPageDetail }) {
 	return (
 		<div className="flex w-full space-x-4 p-4">
 			<div className="flex flex-shrink-0 flex-grow basis-1/6 flex-col">
 				<span className="font-semibold">Datum:</span>
-				<span>{learningDiaryEntry.date}</span>
+				<span>{page.createdAt.toString() /*TODO*/}</span>
 			</div>
 			<div className="flex flex-shrink-0 flex-grow basis-2/6 flex-col">
 				<span className="font-semibold">Kurs:</span>
-				<span>{learningDiaryEntry.course.title}</span>
+				<span>{page.course.title}</span>
 			</div>
 			<div className="flex flex-shrink-0 flex-grow basis-2/6 flex-col">
 				<span className="font-semibold">Dauer:</span>
-				<span>{formatTimeIntervalToString(learningDiaryEntry.duration)}</span>
+				<span>{formatTimeIntervalToString(page.learningDurationMs)}</span>
 			</div>
 			<div className="flex flex-shrink-0 flex-grow basis-1/6 flex-col">
 				<span className="font-semibold">Umfang:</span>
-				<span>{learningDiaryEntry.scope}</span>
+				<span>{page.scope}</span>
 			</div>
 		</div>
 	);
@@ -716,47 +788,30 @@ function LocationInputTile({
 	setLearningLocation,
 	onSubmit
 }: {
-	learningLocations: { id: string; name: string; iconURL: string }[];
-	initialLearningLocation?: { id: string | null; name: string; iconURL: string } | null;
-	setLearningLocation: (location: { id: string | null; name: string; iconURL: string }) => void;
+	learningLocations: Location[];
+	initialLearningLocation?: Location;
+	setLearningLocation: (location: Location) => void;
 	onSubmit: (data: any) => Promise<void>;
 }) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-	const [locationList, setLocationList] = useState<
-		{
-			id: string | null;
-			name: string;
-			iconURL: string;
-		}[]
-	>(learningLocations);
-	const [selectedLocation, setSelectedLocation] = useState(initialLearningLocation);
-	const [tempLocation, setTempLocation] = useState<{
-		id: string | null;
-		name: string;
-		iconURL: string;
-	} | null>({ name: "", iconURL: "", id: null });
 
 	const { mutateAsync: createLearningLocationAsync } = trpc.learningLocation.create.useMutation();
 	const { handleSubmit } = useFormContext();
 
-	const [newLocation, setNewLocation] = useState<{
-		id: string | null;
-		name: string;
-		iconURL: string;
-	}>({
+	const [selectedLocation, setSelectedLocation] = useState(initialLearningLocation);
+	const [tempLocation, setTempLocation] = useState<Location | null>(null);
+
+	type LocationWithNullableId = Omit<Location, "id"> & { id: string | null };
+	const [newLocation, setNewLocation] = useState<LocationWithNullableId | null>({
 		name: "",
 		iconURL: "",
 		id: null
 	});
 
-	useEffect(() => {
-		setSelectedLocation(initialLearningLocation);
-	}, [initialLearningLocation]);
-
 	const onClose = () => {
 		setDialogOpen(false);
-		setTempLocation({ name: "", iconURL: "", id: null });
-		setNewLocation({ name: "", iconURL: "", id: null });
+		setTempLocation(null);
+		setNewLocation(null);
 	};
 
 	const onSave = async () => {
@@ -856,38 +911,8 @@ function LocationInputTile({
 							</span>
 
 							<div className={"max-h-80 overflow-y-auto"}>
-								<div className={"py-1"}>
-									<button
-										key={"newLocation"}
-										className={`flex w-full items-center space-x-4 rounded border border-gray-300 p-4 shadow-sm ${
-											tempLocation?.id === newLocation.id
-												? "bg-gray-100"
-												: "bg-white"
-										} hover:bg-gray-100`}
-										onClick={() => setTempLocation(newLocation)}
-									>
-										<input
-											type="text"
-											className="flex-grow rounded border p-2"
-											placeholder="Neuen Lernort eingeben"
-											value={newLocation.name}
-											onChange={e => {
-												setNewLocation({
-													name: e.target.value,
-													iconURL: "",
-													id: null
-												});
-												setTempLocation({
-													name: e.target.value,
-													iconURL: "",
-													id: null
-												});
-											}}
-										/>
-									</button>
-								</div>
-
-								{locationList.map(location => {
+								<CreateLocation setNewLocation={setNewLocation} />
+								{learningLocations.map(location => {
 									return (
 										<div key={location.id} className={"py-1"}>
 											<button
@@ -932,6 +957,39 @@ function LocationInputTile({
 				)}
 			</div>
 		</Tile>
+	);
+}
+
+function CreateLocation({ setNewLocation }: { setNewLocation: (location: Location) => void }) {
+	return (
+		<div className={"py-1"}>
+			<button
+				key={"newLocation"}
+				className={`flex w-full items-center space-x-4 rounded border border-gray-300 p-4 shadow-sm ${
+					tempLocation?.id === newLocation.id ? "bg-gray-100" : "bg-white"
+				} hover:bg-gray-100`}
+				onClick={() => setTempLocation(newLocation)}
+			>
+				<input
+					type="text"
+					className="flex-grow rounded border p-2"
+					placeholder="Neuen Lernort eingeben"
+					value={newLocation.name}
+					onChange={e => {
+						setNewLocation({
+							name: e.target.value,
+							iconURL: "",
+							id: null
+						});
+						setTempLocation({
+							name: e.target.value,
+							iconURL: "",
+							id: null
+						});
+					}}
+				/>
+			</button>
+		</div>
 	);
 }
 
@@ -994,38 +1052,3 @@ function StarRatingDisplay({ rating }: { rating: number }) {
 		</div>
 	);
 }
-
-export const getServerSideProps: GetServerSideProps = async context => {
-	const session = await getSession(context);
-
-	if (!session || !session.user) {
-		return {
-			redirect: {
-				destination: "/api/auth/signin",
-				permanent: false
-			}
-		};
-	}
-
-	const slug = context.params?.slug;
-
-	try {
-		const learningDiaryInformation = await findManyLtbDetails({
-			username: session.user.name
-		});
-		return {
-			props: {
-				learningDiaryInformation,
-				slug: slug || null
-			}
-		};
-	} catch (error) {
-		console.error("Error fetching Learning Diary Information:", error);
-		return {
-			props: {
-				learningDiaryInformation: null,
-				slug: null
-			}
-		};
-	}
-};

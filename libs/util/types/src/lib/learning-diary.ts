@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const learningTechniqueEvaluationSchema = z.object({
-	id: z.string().optional(),
-	score: z.number().int().optional(),
+export const techniqueEvaluationSchema = z.object({
+	id: z.string().uuid(),
+	score: z.number().int(),
 	learningTechniqueId: z.string(),
 	learningDiaryEntryId: z.string(),
-	creatorName: z.string().optional()
+	creatorName: z.string()
 });
 
 export const learningGoalSchema: z.ZodSchema = z.lazy(() =>
@@ -17,22 +17,6 @@ export const learningGoalSchema: z.ZodSchema = z.lazy(() =>
 	})
 );
 
-export const learningDiaryEntrySchema = z.object({
-	id: z.string(),
-	notes: z.string().optional(),
-	effortLevel: z.number().int().optional(),
-	distractionLevel: z.number().int().optional(),
-	learningLocationId: z.string().optional(),
-	learningGoals: z.array(learningGoalSchema).optional(),
-	learningTechniqueEvaluation: z.array(learningTechniqueEvaluationSchema).optional()
-});
-
-export type LearningDiaryEntry = z.infer<typeof learningDiaryEntrySchema>;
-
-export const createLearningDiaryEntrySchema = z.object({
-	courseSlug: z.string().optional()
-});
-
 export const learningLocationSchema = z.object({
 	id: z.string().optional().nullable(),
 	name: z.string(),
@@ -40,6 +24,19 @@ export const learningLocationSchema = z.object({
 	defaultLocation: z.boolean().default(false),
 	creatorName: z.string().optional().nullable()
 });
+
+export const learningDiaryPageSchema = z.object({
+	id: z.string(),
+	notes: z.string().optional(),
+	effortLevel: z.number().int().optional(),
+	distractionLevel: z.number().int().optional(),
+	// learningLocation: learningLocationSchema.optional(),
+	learningLocationId: z.string().optional(),
+	learningGoals: z.array(learningGoalSchema).optional(),
+	learningTechniqueEvaluation: z.array(techniqueEvaluationSchema).optional()
+});
+
+export type LearningDiaryPage = z.infer<typeof learningDiaryPageSchema>;
 
 export const lessonStartSchema = z.object({
 	entryId: z.string(),
