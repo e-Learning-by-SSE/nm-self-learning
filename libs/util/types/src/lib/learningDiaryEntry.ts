@@ -18,21 +18,16 @@ export const learningGoalSchema: z.ZodSchema = z.lazy(() =>
 );
 
 export const learningDiaryEntrySchema = z.object({
-	id: z.string().optional(),
-	semesterId: z.string().optional(),
-	studentName: z.string().optional(),
-	courseSlug: z.string().optional(),
+	id: z.string(),
 	notes: z.string().optional(),
-	date: z.date().optional(),
-	start: z.date().optional(),
-	end: z.date().optional(),
-	scope: z.number().int().optional(),
 	effortLevel: z.number().int().optional(),
 	distractionLevel: z.number().int().optional(),
 	learningLocationId: z.string().optional(),
 	learningGoals: z.array(learningGoalSchema).optional(),
 	learningTechniqueEvaluation: z.array(learningTechniqueEvaluationSchema).optional()
 });
+
+export type LearningDiaryEntry = z.infer<typeof learningDiaryEntrySchema>;
 
 export const createLearningDiaryEntrySchema = z.object({
 	courseSlug: z.string().optional()
