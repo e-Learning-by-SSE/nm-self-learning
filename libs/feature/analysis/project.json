@@ -5,21 +5,19 @@
 	"projectType": "library",
 	"tags": [],
 	"targets": {
-		"build": {
-			"executor": "@nx/js:tsc",
-			"outputs": ["{options.outputPath}"],
+		"lint": {
+			"executor": "@nx/linter:eslint",
+			"outputs": ["{options.outputFile}"],
 			"options": {
-				"outputPath": "dist/libs/feature/analysis",
-				"main": "libs/feature/analysis/src/index.ts",
-				"tsConfig": "libs/feature/analysis/tsconfig.lib.json",
-				"assets": ["libs/feature/analysis/*.md"]
+				"lintFilePatterns": ["libs/feature/enrollment/**/*.{ts,tsx,js,jsx}"]
 			}
 		},
 		"test": {
 			"executor": "@nx/jest:jest",
-			"outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+			"outputs": ["{workspaceRoot}/coverage/libs/feature/enrollment"],
 			"options": {
-				"jestConfig": "libs/feature/analysis/jest.config.ts"
+				"jestConfig": "libs/feature/enrollment/jest.config.ts",
+				"passWithNoTests": true
 			}
 		}
 	}
