@@ -100,10 +100,17 @@ function UserForm({
 					<div className="rounded-lg border border-light-border p-6 xl:row-span-3">
 						<UserData />
 					</div>
-					<div className="rounded-lg border border-light-border p-4">
-						<LabeledField label="Nutzer:in löschen">
+					<div className=" rounded-lg border border-red-300 bg-red-50 p-6">
+						<h2 className="text-lg font-bold text-red-700">
+							{" "}
+							<span role="img" aria-label="Warning">
+								⚠️
+							</span>{" "}
+							Danger Zone
+						</h2>
+						<div className="mt-8">
 							<ActionButtons username={username} />
-						</LabeledField>
+						</div>
 					</div>
 				</div>
 
@@ -214,6 +221,7 @@ function UserData() {
 function ActionButtons({ username }: { username: string }) {
 	const { mutateAsync: deleteUserAndDependentData } =
 		trpc.admin.deleteUserAndDependentData.useMutation();
+	const { mutateAsync: deleteUser } = trpc.admin.deleteUser.useMutation();
 	const [deleteData, setDeleteData] = useState(false);
 
 	const onDeleteAllData = () => {
@@ -242,23 +250,67 @@ function ActionButtons({ username }: { username: string }) {
 		}
 	};
 
+	const onDeleteUser = () => {
+		if (confirm("Soll der Nutzer wirklich gelöscht werden?")) {
+			setDeleteData(true);
+			deleteUser(username)
+				.then(_ => {
+					showToast({
+						type: "success",
+						title: "Daten gelöscht!",
+						subtitle: "Nutzer wurde erfolgreich gelöscht."
+					});
+				})
+				.catch(err => {
+					console.error(err);
+					showToast({
+						type: "error",
+						title: "Fehler",
+						subtitle: "Daten konnten nicht gelöscht werden."
+					});
+				})
+				.finally(() => {
+					setDeleteData(false);
+				});
+		}
+	};
+
 	return (
-		<button
-			type="button"
-			className="btn min-w-full bg-red-500 px-3 py-1 text-sm hover:bg-red-600"
-			onClick={onDeleteAllData}
-		>
-			{deleteData ? (
-				<>
-					<div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white" />
-					Deleting...
-				</>
-			) : (
-				<>
-					<TrashIcon className="mr-2 h-5 w-5" />
-					Delete
-				</>
-			)}
-		</button>
+		<div className="">
+			<button
+				type="button"
+				className="flex min-w-full justify-start gap-2 rounded-lg bg-red-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:bg-opacity-25"
+				onClick={onDeleteUser}
+			>
+				{deleteData ? (
+					<>
+						<div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white" />
+						<span className="ml-2">Deleting...</span>
+					</>
+				) : (
+					<>
+						<TrashIcon className="h-5 w-5" />
+						<span className="ml-2">Nutzerdaten löschen</span>
+					</>
+				)}
+			</button>
+			<button
+				type="button"
+				className="mt-4 flex min-w-full justify-start gap-2 rounded-lg bg-red-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:bg-opacity-25"
+				onClick={onDeleteAllData}
+			>
+				{deleteData ? (
+					<>
+						<div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white" />
+						<span className="ml-2">Deleting...</span>
+					</>
+				) : (
+					<>
+						<TrashIcon className="h-5 w-5" />
+						<span className="ml-2">Alle Daten löschen</span>
+					</>
+				)}
+			</button>
+		</div>
 	);
 }

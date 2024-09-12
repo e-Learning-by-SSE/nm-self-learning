@@ -1,9 +1,8 @@
-import { DeletedEntities, deleteUserCascade } from "./delete-user";
+import {  deleteUserAndDependentData } from "./delete-user";
 import { database } from "@self-learning/database";
 
 describe('deleteUserAndDependentData Integration Test', () => {
     const testUsername = 'testUser';
-    const deletedEntities: DeletedEntities[] = [];
   
     beforeAll(async () => {
         const user = await database.user.create({
@@ -66,7 +65,7 @@ describe('deleteUserAndDependentData Integration Test', () => {
     });
   
     it('should delete the user and all dependent data', async () => {
-        await deleteUserCascade(testUsername, deletedEntities, database);
+        await deleteUserAndDependentData(testUsername, database);
 
     const user = await database.user.findUnique({
       where: { name: testUsername },
@@ -105,9 +104,6 @@ describe('deleteUserAndDependentData Integration Test', () => {
       where: { username: testUsername },
     });
     expect(student).toBeNull();
-
-    expect(deletedEntities.length).toBeGreaterThan(0); 
-    expect(deletedEntities).toContainEqual(expect.objectContaining({ entityType: 'User', entityId: testUsername }));
       });
     });
     
