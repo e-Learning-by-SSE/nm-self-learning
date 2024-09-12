@@ -28,19 +28,18 @@ export const meRouter = t.router({
 		});
 	}),
 	deleteMe: authProcedure.mutation(async ({ ctx }) => {
-		const result = await database.$transaction(async (prisma) => {
-			
+		const result = await database.$transaction(async prisma => {
 			const user = await prisma.user.findUnique({
 				where: { name: ctx.user.name }
 			});
-		
+
 			if (!user) {
 				return false;
 			}
-		
+
 			const lessons = await findLessons({ authorName: ctx.user.name });
 			const lessonsIds = lessons.lessons.map(lesson => lesson.lessonId);
-		
+
 			const courses = await prisma.course.findMany({
 				where: {
 					authors: {
@@ -51,16 +50,16 @@ export const meRouter = t.router({
 				}
 			});
 			const courseIds = courses.map(course => course.courseId);
-		
+
 			const skills = await prisma.skillRepository.findMany({
 				where: {
-					ownerId: ctx.user.id
+					ownerName: ctx.user.name
 				}
 			});
 			const skillsIds = skills.map(skill => skill.id);
-		
+
 			const username = "anonymous" + randomUUID();
-	
+
 			await prisma.user.create({
 				data: {
 					name: username,
@@ -83,11 +82,11 @@ export const meRouter = t.router({
 					}
 				}
 			});
-		
+
 			await prisma.user.delete({
 				where: { name: ctx.user.name }
 			});
-		
+
 			return true;
 		});
 

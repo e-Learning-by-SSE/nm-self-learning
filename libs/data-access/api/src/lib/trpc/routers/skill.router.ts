@@ -85,15 +85,15 @@ export const skillRouter = t.router({
 	getRepositoriesByUser: authorProcedure.query(async ({ ctx }) => {
 		const { id: userId } = ctx.user;
 		const repositories = await database.skillRepository.findMany({
-			where: { ownerId: userId }
+			where: { ownerName: userId }
 		});
 		return repositories;
 	}),
 	addRepo: authorProcedure
 		.input(z.object({ rep: skillRepositoryCreationSchema }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			return await database.skillRepository.create({
-				data: { ...input.rep }
+				data: { ...input.rep, ownerName: ctx.user.name }
 			});
 		}),
 	deleteRepository: authorProcedure

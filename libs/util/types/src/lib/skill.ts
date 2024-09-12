@@ -17,7 +17,7 @@ export const skillFormSchema = skillCreationFormSchema.extend({
 export type SkillFormModel = z.infer<typeof skillFormSchema>;
 
 export const skillRepositoryCreationSchema = z.object({
-	ownerId: z.string(),
+	ownerName: z.string(),
 	name: z.string(),
 	description: z.string().nullable()
 });
