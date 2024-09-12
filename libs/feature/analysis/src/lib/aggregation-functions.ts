@@ -1,7 +1,5 @@
 import { intervalToDuration, format, parse } from "date-fns";
 import { MetricResult } from "./metrics";
-import { UserEvent } from "@self-learning/database";
-import { EventTypeKeys, EventType } from "@self-learning/types";
 
 export type NumericProperty<T> = {
 	[K in keyof T]: T[K] extends number ? K : never;
@@ -84,11 +82,4 @@ export function sumByMonth(data: MetricResult[]) {
 export function toInterval(ms: number) {
 	const { hours, minutes, seconds } = intervalToDuration({ start: 0, end: ms });
 	return `${String(hours ?? 0).padStart(2, "0")}:${String(minutes ?? 0).padStart(2, "0")}:${String(seconds ?? 0).padStart(2, "0")}`;
-}
-
-export function isEventType<K extends EventTypeKeys>(
-	event: UserEvent,
-	type: K
-): event is UserEvent & { payload: EventType[K] } {
-	return event.type === type;
 }
