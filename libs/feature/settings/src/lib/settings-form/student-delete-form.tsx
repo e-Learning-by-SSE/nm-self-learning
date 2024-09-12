@@ -1,6 +1,7 @@
 import { trpc } from "@self-learning/api-client";
 import {
-	Dialog, DialogActions,
+	Dialog,
+	DialogActions,
 	DialogHandler,
 	dispatchDialog,
 	freeDialog,
@@ -11,22 +12,20 @@ import {
 } from "@self-learning/ui/common";
 import { CenteredContainer, redirectToLogin, useRequiredSession } from "@self-learning/ui/layouts";
 import { AuthorSvg, DiarySvg, StatisticSvg } from "@self-learning/ui/static";
-import { User } from "next-auth";
+import { Session } from "next-auth";
 import { useState } from "react";
 
 export function StudentDeleteForm() {
 	const { mutateAsync: deleteMe } = trpc.me.delete.useMutation();
 	const session = useRequiredSession();
 	const user = session.data?.user;
-	if (!user) {
-		return null;
-	}
+	if (!user) return null;
 
 	const afterPersonalDeleteInfoDialog = () => {
 		freeDialog("student-delete-form");
 		dispatchDialog(
 			<StudentDeleteDialog
-				user={{ ...user, id: "" }}
+				user={{ ...user }}
 				onClose={async accepted => {
 					if (accepted) {
 						try {
@@ -70,7 +69,7 @@ export function StudentDeleteForm() {
 				<div className="flex items-center gap-2">
 					<button
 						className="btn rounded-full bg-red-500 p-2 text-white hover:bg-red-600 focus:ring-4 focus:ring-red-300"
-						title="Userdaten löschen"
+						title="Nutzerdaten löschen"
 						onClick={() => {
 							dispatchDialog(
 								<StudentDeleteInfoDialog
@@ -113,34 +112,37 @@ export function StudentDeleteForm() {
 	);
 }
 
-
 export function PersonalDataTooltip() {
-
 	return (
-		<Tooltip title={"This will delete the following:" +  
-		"profile information, account settings, saved preferences"}>
+		<Tooltip
+			title={
+				"This will delete the following:" +
+				"profile information, account settings, saved preferences"
+			}
+		>
 			<QuestionMarkTooltip tooltipText="Here you can delete your personal data." />
 		</Tooltip>
 	);
 }
 
 function AllDataTooltip() {
-
 	return (
-		<Tooltip title={"This will delete the following:" +  
-		"profile information, account settings, saved preferences, skill repositorys, created courses, created lessons"}>
+		<Tooltip
+			title={
+				"This will delete the following:" +
+				"profile information, account settings, saved preferences, skill repositorys, created courses, created lessons"
+			}
+		>
 			<QuestionMarkTooltip tooltipText="Here you can delete all your data." />
 		</Tooltip>
 	);
 }
 
-
-
 function StudentDeleteDialog({
 	user,
 	onClose
 }: {
-	user: User;
+	user: Session["user"];
 	onClose: (accepted: boolean) => void;
 }) {
 	const [userTyped, setUserTyped] = useState("");
@@ -276,7 +278,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 						<div className="relative flex w-full items-center">
 							<div className="flex w-full items-center">
 								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
-								<StatisticSvg className="h-16 w-16 rounded-full" />
+									<StatisticSvg className="h-16 w-16 rounded-full" />
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
 									<p className="text-gray-600">Außerdem alle Statistiken</p>
@@ -293,7 +295,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 						<div className="relative flex w-full items-center">
 							<div className="flex w-full items-center">
 								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
-								<AuthorSvg className="h-16 w-16 rounded-full" />
+									<AuthorSvg className="h-16 w-16 rounded-full" />
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
 									<p className="text-gray-600">
@@ -333,9 +335,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 					</div>
 				</CenteredContainer>
 				<div className="mt-auto">
-					<DialogActions
-						onClose={onClose}
-					>
+					<DialogActions onClose={onClose}>
 						<button className="btn-primary" onClick={onClose}>
 							Weiter
 						</button>
