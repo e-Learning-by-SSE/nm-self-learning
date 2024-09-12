@@ -11,7 +11,7 @@ import {
 	showToast
 } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
