@@ -8,7 +8,7 @@ describe("apiHandler", () => {
 	// TODO: disabled, because error will be logged to the console (which is correct, but confusing when inspecting test logs)
 	xit("Throw Error", async () => {
 		return testApiHandler({
-			handler: (req, res) =>
+			pagesHandler: (req, res) =>
 				apiHandler(req, res, "GET", async () => {
 					throw new Error("test");
 				}),
@@ -32,7 +32,7 @@ Object {
 
 	it("Catches ValidationFailed", () => {
 		return testApiHandler({
-			handler: (req, res) =>
+			pagesHandler: (req, res) =>
 				apiHandler(req, res, "GET", async () => {
 					z.number().parse("not a number, this will throw an error!");
 				}),
@@ -64,7 +64,7 @@ Object {
 
 	it("Catches MethodNotAllowed", () => {
 		return testApiHandler({
-			handler: (req, res) =>
+			pagesHandler: (req, res) =>
 				apiHandler(req, res, "GET", async () => {
 					// This will throw an error, because the method is not allowed
 				}),
@@ -88,7 +88,7 @@ Object {
 
 	it("Catches ApiError", () => {
 		return testApiHandler({
-			handler: (req, res) =>
+			pagesHandler: (req, res) =>
 				apiHandler(req, res, "GET", async () => {
 					throw AlreadyExists("Throwing...");
 				}),
@@ -112,7 +112,7 @@ Object {
 
 	it("Catches Prisma.PrismaClientKnownRequestError - P2002", () => {
 		return testApiHandler({
-			handler: (req, res) =>
+			pagesHandler: (req, res) =>
 				apiHandler(req, res, "GET", async () => {
 					throw new Prisma.PrismaClientKnownRequestError("Error from Prisma", {
 						code: "P2002",

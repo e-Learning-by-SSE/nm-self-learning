@@ -10,7 +10,8 @@ import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/type
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, t, UserFromSession } from "../trpc";
+import { authProcedure, isCourseAuthorProcedure, t } from "../trpc";
+import { UserFromSession } from "../context";
 
 export const courseRouter = t.router({
 	findMany: t.procedure
@@ -33,7 +34,7 @@ export const courseRouter = t.router({
 							some: {
 								specializationId: input.specializationId
 							}
-					  }
+						}
 					: undefined
 			};
 
@@ -96,7 +97,7 @@ export const courseRouter = t.router({
 		} = {};
 
 		for (const lesson of lessons) {
-			lessonMap[lesson.lessonId] = lesson as typeof lessons[0] & { meta: LessonMeta };
+			lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
 		}
 
 		return { content, lessonMap };
@@ -127,6 +128,12 @@ export const courseRouter = t.router({
 				message:
 					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
 			});
+		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+			});
 		}
 
 		const courseForDb = mapCourseFormToInsert(input, getRandomId());
@@ -143,7 +150,7 @@ export const courseRouter = t.router({
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
 		return created;
 	}),
-	edit: authProcedure
+	edit: isCourseAuthorProcedure
 		.input(
 			z.object({
 				courseId: z.string(),
@@ -151,13 +158,6 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (!canEditCourse(ctx.user, input.courseId)) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Editing a course requires either: admin role | author of course"
-				});
-			}
-
 			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId);
 
 			const updated = await database.course.update({
@@ -170,36 +170,13 @@ export const courseRouter = t.router({
 				}
 			});
 
-			console.log("[courseRouter.edit]: Course updated by", ctx.user.name, updated);
+			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
 			return updated;
 		})
 });
 
 function canCreate(user: UserFromSession): boolean {
 	return user.role === "ADMIN" || user.isAuthor;
-}
-
-async function canEditCourse(user: UserFromSession, courseId: string): Promise<boolean> {
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const beforeUpdate = await database.course.findUniqueOrThrow({
-		where: { courseId },
-		select: {
-			authors: {
-				select: {
-					username: true
-				}
-			}
-		}
-	});
-
-	if (beforeUpdate.authors.some(author => author.username === user.name)) {
-		return true;
-	}
-
-	return false;
 }
 
 /**

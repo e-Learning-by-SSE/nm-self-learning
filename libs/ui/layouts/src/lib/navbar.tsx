@@ -1,16 +1,26 @@
 import {
 	AcademicCapIcon,
-	ArrowLeftOnRectangleIcon,
 	UserIcon,
 	Bars4Icon,
-	XMarkIcon
+	XMarkIcon,
+	ArrowRightStartOnRectangleIcon,
+	WrenchIcon
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { Fragment } from "react";
-import { Disclosure, Menu, Transition } from "@headlessui/react";
+import {
+	Disclosure,
+	DisclosureButton,
+	DisclosurePanel,
+	Menu,
+	MenuButton,
+	MenuItem,
+	MenuItems,
+	Transition
+} from "@headlessui/react";
 import { SearchBar } from "./search-bar";
 
 export function Navbar() {
@@ -38,14 +48,14 @@ export function Navbar() {
 						<div className="relative flex h-16 items-center justify-between">
 							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
 								{/* Mobile menu button*/}
-								<Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
 									<span className="sr-only">Menü Öffnen</span>
 									{open ? (
 										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
 									) : (
 										<Bars4Icon className="block h-6 w-6" aria-hidden="true" />
 									)}
-								</Disclosure.Button>
+								</DisclosureButton>
 							</div>
 							<div className="flex flex-1 items-center justify-center lg:items-stretch lg:justify-start">
 								<div className="flex flex-shrink-0 items-center">
@@ -109,20 +119,20 @@ export function Navbar() {
 						</div>
 					</div>
 
-					<Disclosure.Panel className="lg:hidden">
+					<DisclosurePanel className="lg:hidden">
 						<div className="space-y-1 px-2 pb-3 pt-2">
 							{navigation.map(item => (
-								<Disclosure.Button
+								<DisclosureButton
 									key={item.name}
 									as="a"
 									href={item.href}
 									className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
 								>
 									{item.name}
-								</Disclosure.Button>
+								</DisclosureButton>
 							))}
 						</div>
-					</Disclosure.Panel>
+					</DisclosurePanel>
 				</>
 			)}
 		</Disclosure>
@@ -139,7 +149,7 @@ export function NavbarDropdownMenu({
 	return (
 		<Menu as="div" className="relative ml-1 xl:ml-3">
 			<div>
-				<Menu.Button className="flex items-center gap-1 rounded-full text-sm">
+				<MenuButton className="flex items-center gap-1 rounded-full text-sm">
 					<span className="sr-only">Nutzermenü Öffnen</span>
 					{avatarUrl ? (
 						<img
@@ -153,7 +163,7 @@ export function NavbarDropdownMenu({
 						<div className="h-[42px] w-[42px] rounded-full bg-gray-200"></div>
 					)}
 					<ChevronDownIcon className="h-6 text-gray-400" />
-				</Menu.Button>
+				</MenuButton>
 			</div>
 			<Transition
 				as={Fragment}
@@ -164,34 +174,50 @@ export function NavbarDropdownMenu({
 				leaveFrom="transform opacity-100 scale-100"
 				leaveTo="transform opacity-0 scale-95"
 			>
-				<Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-					<Menu.Item as="div" className="p-1">
-						{({ active }) => (
+				<MenuItems
+					as="div"
+					className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+				>
+					<MenuItem as="div" className="p-1">
+						{({ focus }) => (
 							<Link
 								href="/overview"
 								className={`${
-									active ? "bg-emerald-500 text-white" : ""
+									focus ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
 								<UserIcon className="h-5" />
 								<span>Übersicht</span>
 							</Link>
 						)}
-					</Menu.Item>
-					<Menu.Item as="div" className="p-1">
-						{({ active }) => (
+					</MenuItem>
+					<MenuItem as="div" className="p-1">
+						{({ focus }) => (
+							<Link
+								href="/user-settings"
+								className={`${
+									focus ? "bg-emerald-500 text-white" : ""
+								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+							>
+								<WrenchIcon className="h-5" />
+								<span>Einstellungen</span>
+							</Link>
+						)}
+					</MenuItem>
+					<MenuItem as="div" className="p-1">
+						{({ focus }) => (
 							<button
 								onClick={signOut}
 								className={`${
-									active ? "bg-emerald-500 text-white" : ""
+									focus ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
-								<ArrowLeftOnRectangleIcon className="h-5" />
+								<ArrowRightStartOnRectangleIcon className="h-5" />
 								<span>Logout</span>
 							</button>
 						)}
-					</Menu.Item>
-				</Menu.Items>
+					</MenuItem>
+				</MenuItems>
 			</Transition>
 		</Menu>
 	);

@@ -1,0 +1,24 @@
+{
+	"name": "feature-analysis",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/feature/analysis/src",
+	"projectType": "library",
+	"tags": [],
+	"targets": {
+		"lint": {
+			"executor": "@nx/linter:eslint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["libs/feature/enrollment/**/*.{ts,tsx,js,jsx}"]
+			}
+		},
+		"test": {
+			"executor": "@nx/jest:jest",
+			"outputs": ["{workspaceRoot}/coverage/libs/feature/enrollment"],
+			"options": {
+				"jestConfig": "libs/feature/enrollment/jest.config.ts",
+				"passWithNoTests": true
+			}
+		}
+	}
+}

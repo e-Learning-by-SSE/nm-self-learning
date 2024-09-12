@@ -27,11 +27,10 @@ export default function ClozeAnswer() {
 				{cloze.segments.map((segment, index) => (
 					<Fragment key={index}>
 						<ReactMarkdown
-							linkTarget="_blank"
 							remarkPlugins={remarkPlugins}
 							rehypePlugins={rehypePlugins}
 							components={{
-								p(props) {
+								p(props: React.ComponentProps<"p">) {
 									const { ...rest } = props;
 									return <span {...rest} />;
 								}
@@ -86,21 +85,13 @@ export function RenderGapType({
 }) {
 	if (gap.type === "C") {
 		const options = gap.values.map(value => (
-			<ReactMarkdown
-				linkTarget="_blank"
-				remarkPlugins={remarkPlugins}
-				rehypePlugins={rehypePlugins}
-			>
+			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
 				{value.text ?? ""}
 			</ReactMarkdown>
 		));
 		//renders the current selected value
 		const renderedValue = (
-			<ReactMarkdown
-				linkTarget="_blank"
-				remarkPlugins={remarkPlugins}
-				rehypePlugins={rehypePlugins}
-			>
+			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
 				{value === "" ? "Select an option" : value}
 			</ReactMarkdown>
 		);

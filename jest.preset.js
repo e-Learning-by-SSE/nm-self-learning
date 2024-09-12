@@ -1,5 +1,5 @@
 const nxPreset = require("@nx/jest/preset").default;
-
+const esModules = ["superjson"].join("|");
 module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
@@ -13,5 +13,27 @@ module.exports = {
 	 * Example: "nx affected --targets=test --update-snapshot"
 	 * More info: https://jestjs.io/docs/upgrading-to-jest29#snapshot-format
 	 */
-	snapshotFormat: { escapeString: true, printBasicPrototype: true }
+	snapshotFormat: { escapeString: true, printBasicPrototype: true },
+	collectCoverageFrom: [
+		"src/**/*.{js,jsx,ts,tsx}",
+		"libs/**/*.{js,jsx,ts,tsx}",
+		"!<rootDir>/node_modules/"
+	],
+	coverageReporters: ["cobertura", "text", "html"],
+	coverageDirectory: "output/test/coverage",
+	reporters: [
+		"default",
+		["jest-junit", { outputDirectory: "output/test", outputName: "junit.xml" }]
+	],
+	transform: {
+		"^.+\\.[tj]sx?$": [
+			"ts-jest",
+			{
+				tsconfig: "<rootDir>/tsconfig.spec.json"
+			}
+		]
+	},
+	moduleFileExtensions: ["ts", "tsx", "js", "jsx"]
+	],
+	transformIgnorePatterns: [`/node_modules/(?!${esModules})`]
 };

@@ -21,10 +21,10 @@ export function Alert({ type }: { type: warningType }) {
 				type.severity === "WARNING"
 					? "border-yellow-500 bg-yellow-100 text-yellow-500"
 					: type.severity === "ERROR"
-					? "border-red-500 bg-red-100 text-red-500"
-					: type.severity === "INFORMATION"
-					? "border-blue-500 bg-blue-100 text-blue-500"
-					: "border-green-500 bg-green-100 text-green-500"
+						? "border-red-500 bg-red-100 text-red-500"
+						: type.severity === "INFORMATION"
+							? "border-blue-500 bg-blue-100 text-blue-500"
+							: "border-green-500 bg-green-100 text-green-500"
 			}`}
 		>
 			<div className="flex flex-row gap-2">

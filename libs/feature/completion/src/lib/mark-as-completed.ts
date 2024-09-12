@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { createUserEvent, database } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 
 export async function markAsCompleted({
@@ -17,7 +17,7 @@ export async function markAsCompleted({
 					courseId: true,
 					content: true
 				}
-		  })
+			})
 		: null;
 
 	const result = await database.completedLesson.create({
@@ -40,6 +40,13 @@ export async function markAsCompleted({
 		}
 	});
 
+	await createUserEvent({
+		username,
+		action: "LESSON_COMPLETE",
+		resourceId: lessonId,
+		payload: undefined
+	});
+
 	if (course) {
 		await updateCourseProgress(course.courseId, course.content as CourseContent, username);
 	}
@@ -56,6 +63,15 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 	const lessons = extractLessonIds(content);
 
 	const progress = Math.floor((completedLessons.length / lessons.length) * 100);
+
+	if (progress === 100) {
+		await createUserEvent({
+			username,
+			action: "COURSE_COMPLETE",
+			resourceId: courseId,
+			payload: undefined
+		});
+	}
 
 	// TODO: Student must be enrolled in course, otherwise this will fail
 	await database.enrollment.update({

@@ -7,6 +7,11 @@ import { Client, ClientOptions } from "minio";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 
+/**
+ * Time in seconds after which the presigned URL expires.
+ */
+const uploadTimeOut = 60 * 60 * 4; // 7 hours
+
 export const minioConfig: ClientOptions & { bucketName: string; publicUrl?: string } = z
 	.object({
 		endPoint: z.string(),
@@ -34,18 +39,34 @@ export const storageRouter = t.router({
 				filename: z.string()
 			})
 		)
+		/**
+		 * Generates a presigned URL that allows the user to upload a file to the storage server.
+		 * @throws {TRPCError} if an error occurs while generating the presigned URL.
+		 */
 		.mutation(async ({ input }) => {
 			const randomizedFilename = `${getRandomId()}-${input.filename}`;
-			const presignedUrl = await getPresignedUrl(randomizedFilename);
+			try {
+				const presignedUrl = await getPresignedUrl(randomizedFilename);
 
-			// Presigned URL contains a temporary signature that allows the user to upload a file to the storage server.
-			// The URL is only valid for a short period of time.
-			// We need further the download URL
-			// Delete after character "?" because these are the parameters for the upload
-			// TODO: Requires public download option -> Implement download via presignedUrl
-			const downloadUrl = presignedUrl.slice(0, presignedUrl.indexOf("?"));
+				// Presigned URL contains a temporary signature that allows the user to upload a file to the storage server.
+				// The URL is only valid for a short period of time.
+				// We need further the download URL
+				// Delete after character "?" because these are the parameters for the upload
+				// TODO: Requires public download option -> Implement download via presignedUrl
+				const downloadUrl = presignedUrl.slice(0, presignedUrl.indexOf("?"));
 
-			return { presignedUrl, downloadUrl };
+				return { presignedUrl, downloadUrl };
+			} catch (error) {
+				const errMsg: string =
+					error instanceof Error
+						? "Minio Access Error: " + (error.message as string)
+						: "Error getting presigned URL";
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: errMsg,
+					cause: (error as Error).cause
+				});
+			}
 		}),
 	removeFileAsAdmin: adminProcedure
 		.input(
@@ -116,16 +137,26 @@ export const storageRouter = t.router({
 });
 
 /** Uses the `minio` SDK to request a presigned URL that users can upload files to. */
-function getPresignedUrl(filename: string): Promise<string> {
-	return new Promise((res, rej) => {
-		minioClient.presignedPutObject(minioConfig.bucketName, filename, (err, result) => {
-			if (err) {
-				console.error("Error getting presigned URL", err);
-				rej(err);
-			}
-			res(result);
+async function getPresignedUrl(filename: string): Promise<string> {
+	try {
+		return await minioClient.presignedPutObject(
+			minioConfig.bucketName,
+			filename,
+			uploadTimeOut
+		);
+	} catch (error) {
+		const errMsg = (error as Error).message;
+		if (errMsg.startsWith("Unable to get bucket region for  ")) {
+			// Attempt to get a proper error message, default message is very misleading
+			await checkMinioServer();
+		}
+		// Default error message
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: `Minio Access Error: ${errMsg}`,
+			cause: (error as Error).cause
 		});
-	});
+	}
 }
 
 async function removeFile(objectName: string) {
@@ -152,12 +183,20 @@ async function removeFile(objectName: string) {
 
 /** Uses the `minio` SDK to remove a file. */
 function _removeFileFromStorageServer(filename: string): Promise<void> {
-	return new Promise((res, rej) => {
-		minioClient.removeObject(minioConfig.bucketName, filename, err => {
-			if (err) {
-				rej(err);
-			}
-			res();
+	return minioClient.removeObject(minioConfig.bucketName, filename);
+}
+
+/**
+ * Checks if the Minio server is reachable and returns an error if not.
+ */
+async function checkMinioServer() {
+	try {
+		// Calls a function that requires few configuration (e.g., no access key, bucket, ...)
+		await minioClient.listBuckets();
+	} catch (error) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: `Minio Server not reachable at ${minioConfig.endPoint}:${minioConfig.port}`
 		});
-	});
+	}
 }

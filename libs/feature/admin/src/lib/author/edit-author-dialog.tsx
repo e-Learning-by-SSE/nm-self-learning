@@ -9,7 +9,7 @@ import {
 	showToast
 } from "@self-learning/ui/common";
 import { LabeledField, Upload } from "@self-learning/ui/forms";
-import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
 export function EditAuthorDialog({
@@ -91,7 +91,10 @@ function AuthorForm({
 
 	return (
 		<FormProvider {...form}>
-			<form className="flex flex-col justify-between overflow-hidden" onSubmit={form.handleSubmit(onSubmit)}>
+			<form
+				className="flex flex-col justify-between overflow-hidden"
+				onSubmit={form.handleSubmit(onSubmit)}
+			>
 				<div className="absolute top-8 right-8">
 					<OpenAsJsonButton form={form} validationSchema={authorSchema} />
 				</div>
