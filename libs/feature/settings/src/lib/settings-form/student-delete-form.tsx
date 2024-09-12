@@ -203,7 +203,7 @@ function StudentDeleteDialog({
 	);
 }
 
-function StudentDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
+function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 	const session = useRequiredSession();
 	const user = session.data?.user;
 	return (
@@ -217,11 +217,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
 					minWidth: "300px"
 				}}
 				title={"Delete Student"}
-				onClose={() => {
-					if (onClose) {
-						onClose();
-					}
-				}}
+				onClose={onClose}
 			>
 				<CenteredContainer>
 					<div className="flex min-h-screen flex-col items-center space-y-6 bg-gray-50 p-6">
@@ -338,11 +334,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
 				</CenteredContainer>
 				<div className="mt-auto">
 					<DialogActions
-						onClose={() => {
-							if (onClose) {
-								onClose();
-							}
-						}}
+						onClose={onClose}
 					>
 						<button className="btn-primary" onClick={onClose}>
 							Weiter
@@ -354,7 +346,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
 	);
 }
 
-function StudentAllDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
+function StudentAllDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 	return (
 		<CenteredContainer>
 			<Dialog
@@ -366,11 +358,7 @@ function StudentAllDeleteInfoDialog({ onClose }: { onClose?: () => void }) {
 					minWidth: "300px"
 				}}
 				title={"Delete Student"}
-				onClose={() => {
-					if (onClose) {
-						onClose();
-					}
-				}}
+				onClose={onClose}
 			>
 				<CenteredContainer>
 					<div>
