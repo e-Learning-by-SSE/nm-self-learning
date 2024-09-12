@@ -1,6 +1,17 @@
 {
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
-
+	"affected": {
+		"defaultBase": "master"
+	},
+	"tasksRunnerOptions": {
+		"default": {
+			"runner": "nx-cloud",
+			"options": {
+				"cacheableOperations": ["lint", "test", "e2e", "component-test"],
+				"accessToken": "ZjhkZTI2MmQtYjcwYi00YTllLWE4NDgtNGJjNWNiNDgxZjdkfHJlYWQtd3JpdGU="
+			}
+		}
+	},
 	"generators": {
 		"@nrwl/angular:application": {
 			"style": "css",
@@ -8,7 +19,10 @@
 			"unitTestRunner": "jest",
 			"e2eTestRunner": "none"
 		},
-		"@nrwl/angular:library": { "linter": "eslint", "unitTestRunner": "jest" },
+		"@nrwl/angular:library": {
+			"linter": "eslint",
+			"unitTestRunner": "jest"
+		},
 		"@nrwl/angular:component": {
 			"style": "none",
 			"changeDetection": "OnPush",
@@ -22,20 +36,32 @@
 			"inlineTemplate": true,
 			"skipTests": true
 		},
-		"@nx/react": { "application": { "babel": true }, "library": { "unitTestRunner": "jest" } },
-		"@nx/next": { "application": { "style": "css", "linter": "eslint" } }
+		"@nx/react": {
+			"application": {
+				"babel": true
+			},
+			"library": {
+				"unitTestRunner": "jest"
+			}
+		},
+		"@nx/next": {
+			"application": {
+				"style": "css",
+				"linter": "eslint"
+			}
+		}
 	},
 	"defaultProject": "site",
 	"targetDefaults": {
 		"build": {
 			"dependsOn": ["^build"],
-			"inputs": ["production", "^production"],
-			"cache": true
+			"inputs": ["production", "^production"]
 		},
-		"e2e": { "inputs": ["default", "^production"] },
+		"e2e": {
+			"inputs": ["default", "^production"]
+		},
 		"test": {
-			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
-			"cache": true
+			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
 		},
 		"lint": {
 			"inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
@@ -60,6 +86,23 @@
 			"!{projectRoot}/src/test-setup.[jt]s"
 		]
 	},
+	"plugins": [
+		{
+			"plugin": "@nx/next/plugin",
+			"options": {
+				"startTargetName": "start",
+				"buildTargetName": "next:build",
+				"devTargetName": "dev",
+				"serveStaticTargetName": "serve-static"
+			}
+		},
+		{
+			"plugin": "@nx/eslint/plugin",
+			"options": {
+				"targetName": "eslint:lint"
+			}
+		}
+	],
 	"plugins": [
 		{
 			"plugin": "@nx/eslint/plugin",
