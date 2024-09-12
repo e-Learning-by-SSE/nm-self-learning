@@ -25,5 +25,15 @@ module.exports = {
 		"default",
 		["jest-junit", { outputDirectory: "output/test", outputName: "junit.xml" }]
 	],
+	transform: {
+		"^.+\\.[tj]sx?$": [
+			"ts-jest",
+			{
+				tsconfig: "<rootDir>/tsconfig.spec.json"
+			}
+		]
+	},
+	moduleFileExtensions: ["ts", "tsx", "js", "jsx"]
+	],
 	transformIgnorePatterns: [`/node_modules/(?!${esModules})`]
 };

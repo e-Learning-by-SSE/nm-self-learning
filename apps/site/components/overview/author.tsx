@@ -21,8 +21,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ComponentProps, useState } from "react";
-import { ReactComponent as VoidSvg } from "../../svg/void.svg";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
+import { VoidSvg } from "@self-learning/ui/static";
 
 const EditAuthorDialog = dynamic(
 	() => import("@self-learning/teaching").then(m => m.EditAuthorDialog),
