@@ -14,7 +14,7 @@ export type MediaFileReplacement = {
  */
 const indentationLevels = [1, 2, 3, 4, 5, 6] as const; // dont export this
 export const maxIndentationLevel = Math.max(...indentationLevels);
-export type IndentationLevels = typeof indentationLevels[number];
+export type IndentationLevels = (typeof indentationLevels)[number];
 export function parseIndent(indent: number) {
 	return isSupportedIndentationLevel(indent)
 		? (indent as IndentationLevels)

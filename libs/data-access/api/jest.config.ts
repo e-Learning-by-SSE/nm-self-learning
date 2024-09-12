@@ -1,7 +1,7 @@
 /* eslint-disable */
 export default {
 	displayName: "data-access-api",
-
+	testEnvironment: "node",
 	globals: {},
 	transform: {
 		"^.+\\.[tj]sx?$": [

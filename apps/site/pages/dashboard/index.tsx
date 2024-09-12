@@ -419,7 +419,7 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 				</span>
 				<Link
 					href="/subjects"
-					className="ml-1 text-sm text-light underline hover:text-secondary"
+					className="text-sm ml-1 text-light underline hover:text-secondary"
 				>
 					Leg los
 				</Link>

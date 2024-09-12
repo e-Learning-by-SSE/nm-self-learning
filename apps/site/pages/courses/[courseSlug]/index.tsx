@@ -2,7 +2,7 @@ import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { useCourseCompletion } from "@self-learning/completion";
@@ -16,11 +16,12 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList } from "@self-learning/ui/common";
+import { AuthorsList, useCountdownSeconds, useTimeout } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
-import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { formatDateAgo, formatSeconds, useEventLog } from "@self-learning/util/common";
 import { LessonType } from "@prisma/client";
+import { trpc } from "@self-learning/api-client";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -38,7 +39,7 @@ function mapToTocContent(
 				? {
 						...(lessonIdMap.get(lessonId) as LessonInfo),
 						lessonNr: lessonNr++
-				  }
+					}
 				: {
 						lessonId: "removed",
 						slug: "removed",
@@ -46,7 +47,7 @@ function mapToTocContent(
 						title: "Removed",
 						lessonType: LessonType.TRADITIONAL,
 						lessonNr: -1
-				  };
+					};
 
 			return lesson;
 		})
@@ -147,7 +148,7 @@ export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ para
 };
 
 async function getCourse(courseSlug: string) {
-	return await database.course.findUnique({
+	return database.course.findUnique({
 		where: { slug: courseSlug },
 		include: {
 			authors: {
@@ -161,9 +162,27 @@ async function getCourse(courseSlug: string) {
 	});
 }
 
+function useLearningDiaryRecording(course: CourseProps["course"]) {
+	const { mutateAsync: createLearningDiaryEntry } = trpc.learningDiaryEntry.create.useMutation();
+	const log = useCallback(async () => {
+		try {
+			await createLearningDiaryEntry({
+				courseSlug: course.slug
+			});
+		} catch (e) {}
+	}, [createLearningDiaryEntry, course.slug]);
+	useTimeout({ callback: log, delayInMilliseconds: 60000 });
+}
+
+function Writer({ course }: { course: CourseProps["course"] }) {
+	useLearningDiaryRecording(course);
+	return <></>;
+}
+
 export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
 	return (
 		<div className="bg-gray-50 pb-32">
+			<Writer course={course} />
 			<CenteredSection className="bg-gray-50">
 				<CourseHeader course={course} content={content} summary={summary} />
 			</CenteredSection>

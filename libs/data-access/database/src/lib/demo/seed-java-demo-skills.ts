@@ -1,4 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { createRepositories, createSkillGroups, createSkills } from "../seed-functions";
 
 const prisma = new PrismaClient();
 
@@ -192,72 +193,20 @@ const skillGroups = [
 		children: ["1006", "1008"]
 	}
 ];
+
 const repository = {
 	id: "1",
 	name: "Java OO Repository",
 	description: "Example to demonstrate competence modelling capabilities"
 };
 
-async function createRepositories() {
-	const admin = await getAdminUser();
-	if (!admin) {
-		throw new Error("Admin user not found");
-	}
-	await prisma.skillRepository.create({
-		data: {
-			id: repository.id,
-			ownerName: admin.name,
-			name: repository.name,
-			description: repository.description
-		}
-	});
-}
-
-async function createSkills() {
-	await Promise.all(
-		skills.map(async skill => {
-			const input: Prisma.SkillUncheckedCreateInput = {
-				repositoryId: repository.id,
-				...skill
-			};
-
-			await prisma.skill.create({
-				data: input
-			});
-		})
-	);
-}
-
-async function createSkillGroups() {
-	// Need to preserve ordering and wait to be finished before creating the next one!
-	for (const skill of skillGroups) {
-		const nested = skill.children?.map(i => ({ id: i }));
-
-		await prisma.skill.create({
-			data: {
-				id: skill.id,
-				repositoryId: repository.id,
-				name: skill.name,
-				description: skill.description,
-				children: {
-					connect: nested
-				}
-			}
-		});
-	}
-}
-
-async function getAdminUser() {
-	const admin = await prisma.user.findFirst({
-		where: { name: "dumbledore" }
-	});
-	return admin;
-}
-
-export async function javaSkillSeed() {
-	await createRepositories();
+export async function seedJavaDemoSkills() {
+	await createRepositories(repository);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Repositories");
-	await createSkills();
-	await createSkillGroups();
+
+	await createSkills(skills, repository.id);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
+
+	await createSkillGroups(skillGroups, repository);
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skill Groups");
 }

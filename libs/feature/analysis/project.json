@@ -1,0 +1,26 @@
+{
+	"name": "feature-analysis",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/feature/analysis/src",
+	"projectType": "library",
+	"tags": [],
+	"targets": {
+		"build": {
+			"executor": "@nx/js:tsc",
+			"outputs": ["{options.outputPath}"],
+			"options": {
+				"outputPath": "dist/libs/feature/analysis",
+				"main": "libs/feature/analysis/src/index.ts",
+				"tsConfig": "libs/feature/analysis/tsconfig.lib.json",
+				"assets": ["libs/feature/analysis/*.md"]
+			}
+		},
+		"test": {
+			"executor": "@nx/jest:jest",
+			"outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+			"options": {
+				"jestConfig": "libs/feature/analysis/jest.config.ts"
+			}
+		}
+	}
+}

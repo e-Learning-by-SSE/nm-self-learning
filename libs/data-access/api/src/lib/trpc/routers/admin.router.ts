@@ -17,7 +17,7 @@ export const adminRouter = t.router({
 					? {
 							contains: input.name,
 							mode: "insensitive"
-					  }
+						}
 					: undefined
 			};
 

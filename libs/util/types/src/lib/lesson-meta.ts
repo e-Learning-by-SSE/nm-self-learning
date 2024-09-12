@@ -17,7 +17,7 @@ export function createLessonMeta(lesson: Lesson): LessonMeta {
 			? lesson.content.reduce(
 					(mediaTypes, item) => ({ ...mediaTypes, [item.type]: item.meta }),
 					{}
-			  )
+				)
 			: {}
 	};
 }

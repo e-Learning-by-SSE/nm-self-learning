@@ -16,6 +16,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
+			"@self-learning/analysis": ["libs/feature/analysis/src/index.ts"],
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/api-client": ["libs/data-access/api-client/src/index.ts"],
 			"@self-learning/cms-api": ["libs/data-access/cms-api/src/index.ts"],

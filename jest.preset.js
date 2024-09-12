@@ -1,5 +1,5 @@
 const nxPreset = require("@nx/jest/preset").default;
-
+const esModules = ["superjson"].join("|");
 module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
@@ -34,4 +34,6 @@ module.exports = {
 		]
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx"]
+	],
+	transformIgnorePatterns: [`/node_modules/(?!${esModules})`]
 };
