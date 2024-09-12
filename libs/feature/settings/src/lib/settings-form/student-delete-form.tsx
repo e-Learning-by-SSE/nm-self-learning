@@ -59,7 +59,13 @@ export function StudentDeleteForm() {
 
 	return (
 		<div className="mt-8 rounded-lg border border-red-300 bg-red-50 p-6">
-			<h2 className="text-lg font-bold text-red-700">⚠️ Danger Zone</h2>
+			<h2 className="text-lg font-bold text-red-700">
+				{" "}
+				<span role="img" aria-label="Warning">
+					⚠️
+				</span>{" "}
+				Danger Zone
+			</h2>
 			<p className="mt-2 text-sm text-red-600">
 				Sei vorsichtig! Diese Aktionen können nicht rückgängig gemacht werden.
 			</p>
