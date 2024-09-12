@@ -1,22 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { getSession } from "next-auth/react";
-import { GetServerSideProps } from "next";
 import { PencilIcon, StarIcon, TrashIcon } from "@heroicons/react/24/solid";
-import { Dialog, showToast } from "@self-learning/ui/common";
-import Image from "next/image";
 import { trpc } from "@self-learning/api-client";
-import { formatTimeIntervalToString } from "@self-learning/util/common";
-import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
-import { useForm, Controller, FormProvider, useFormContext } from "react-hook-form";
 import {
-	getLearningDiaryInformation,
-	LearningDiaryEntryResult,
-	LearningDiaryInformation,
-	LearningStrategy,
-	LearningTechnique,
-	LearningTechniqueEvaluation
-} from "@self-learning/api";
+	findManyLtbDetails,
+	LearningDiaryEntry,
+	LearningDiaryShort
+} from "@self-learning/database";
+import { Dialog, showToast } from "@self-learning/ui/common";
+import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
+import { formatTimeIntervalToString } from "@self-learning/util/common";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
+import Image from "next/image";
 import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 
 export default function LearningDiaryEntryOverview({
 	learningDiaryInformation,
@@ -25,8 +22,6 @@ export default function LearningDiaryEntryOverview({
 	learningDiaryInformation: LearningDiaryInformation;
 	slug: string | null;
 }) {
-	const router = useRouter();
-
 	const [currentIndex, setCurrentIndex] = useState<number>(() => {
 		const initialIndex =
 			slug && !isNaN(Number(slug))
@@ -255,18 +250,14 @@ function LearningDiaryEntryForm({
 }
 
 function LearningTechniqueEvaluationInput({
-	learningTechniqueEvaluations,
-	learningStrategies,
-	learningTechniques,
+	ltbEntry,
 	entryId,
 	setEvaluations,
 	onSubmit
 }: {
-	learningTechniqueEvaluations: LearningTechniqueEvaluation[];
-	learningStrategies: LearningStrategy[];
-	learningTechniques: LearningTechnique[];
+	ltbEntry: LearningDiaryEntry;
 	entryId: string;
-	setEvaluations: (evaluations: LearningTechniqueEvaluation[]) => void;
+	setEvaluations: (evaluations: LearningTechniques) => void;
 	onSubmit: (data: any) => Promise<void>;
 }) {
 	const { mutateAsync: createLearningTechniqueEvaluation } =
@@ -533,7 +524,6 @@ function MarkDownInputTile({
 }) {
 	const [displayedNotes, setDisplayedNotes] = useState<string>(initialNote);
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-	const { trigger, handleSubmit } = useFormContext();
 
 	const onClose = async (newNote?: string) => {
 		if (newNote !== undefined) {
@@ -1020,7 +1010,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
 	const slug = context.params?.slug;
 
 	try {
-		const learningDiaryInformation = await getLearningDiaryInformation({
+		const learningDiaryInformation = await findManyLtbDetails({
 			username: session.user.name
 		});
 		return {
