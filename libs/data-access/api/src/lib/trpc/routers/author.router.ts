@@ -1,11 +1,18 @@
-import { database } from "@self-learning/database";
+import { database, getCoursesAndSubjects } from "@self-learning/database";
 import { authorSchema } from "@self-learning/types";
 import { z } from "zod";
-import { adminProcedure, authProcedure, t } from "../trpc";
+import { adminProcedure, authorProcedure, authProcedure, t } from "../trpc";
 import { updateAuthorAsAdmin } from "@self-learning/admin";
 import { editAuthorSchema } from "@self-learning/teaching";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { Prisma } from "@prisma/client";
+import { courseParticipation } from "@self-learning/analysis";
+
+const participantsInputSchema = z.object({
+	resourceIds: z.array(z.string()),
+	start: z.date(),
+	end: z.date()
+});
 
 export const authorRouter = t.router({
 	getByUsername: authProcedure.input(z.object({ username: z.string() })).query(({ input }) => {
@@ -96,6 +103,19 @@ export const authorRouter = t.router({
 						}
 					}
 				}
+			});
+		}),
+	getCoursesAndSubjects: authorProcedure.query(async ({ ctx }) => {
+		return getCoursesAndSubjects(ctx.user.name);
+	}),
+	courseParticipation: authorProcedure
+		.input(participantsInputSchema)
+		.query(async ({ ctx, input }) => {
+			return courseParticipation({
+				courseIds: input.resourceIds,
+				start: input.start,
+				end: input.end,
+				threshold: 10
 			});
 		}),
 	findMany: authProcedure
