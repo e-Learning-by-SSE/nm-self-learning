@@ -1,6 +1,5 @@
 model LearningDiaryPage {
   id                      		String               				@id @default(uuid())
-  semesterId              		String
   studentName			  		String
   student						Student 							@relation(fields: [studentName], references: [username], onDelete: Cascade)
   courseSlug               		String
@@ -34,8 +33,8 @@ model LearningLocation {
 model LearningStrategy {
     id                String              @id @default(uuid())
     name              String              @unique
-    
     techniques        LearningTechnique[]
+
 	@@map("LearningStrategie")
 }
 
@@ -46,8 +45,7 @@ model LearningTechnique {
     creator                      Student?                      @relation(fields: [creatorName], references: [username], onDelete: Cascade)
     defaultTechnique             Boolean                       @default(false)
     learningStrategieId          String
-
-    strategy                    LearningStrategy             @relation(fields: [learningStrategieId], references: [id], onDelete: Cascade)
+    strategy                     LearningStrategy             @relation(fields: [learningStrategieId], references: [id], onDelete: Cascade)
     techniqueRatings             TechniqueRating[] // TODO check if this is necessary
 }
 
