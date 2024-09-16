@@ -1,6 +1,17 @@
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 
+export async function allPages(username: string) {
+	return await database.learningDiaryPage.findMany({
+		select: {
+			id: true
+		},
+		where: {
+			studentName: username
+		}
+	});
+}
+
 export async function getDiaryPage(ltbId: string) {
 	const ltbPage = await database.learningDiaryPage.findUnique({
 		where: { id: ltbId },

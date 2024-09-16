@@ -1,17 +1,5 @@
-import { database } from "@self-learning/database";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { LearningDiaryPageDetail } from "../access-learning-diary";
-
-export async function allPages(username: string) {
-	return await database.learningDiaryPage.findMany({
-		select: {
-			id: true
-		},
-		where: {
-			studentName: username
-		}
-	});
-}
 
 export function DiaryPageDetails({ page }: { page: LearningDiaryPageDetail }) {
 	return (
