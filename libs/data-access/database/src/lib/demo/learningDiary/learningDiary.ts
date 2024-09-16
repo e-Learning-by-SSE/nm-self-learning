@@ -166,7 +166,7 @@ export async function generateLearningDiaryDemoData() {
 				effortLevel: 3,
 				scope: 5,
 				learningLocationId: location1.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: new Date(new Date().setMinutes(new Date().getMinutes() - 30))
 			}
 		});
 
