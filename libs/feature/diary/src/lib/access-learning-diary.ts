@@ -4,11 +4,14 @@ import { ResolvedValue } from "@self-learning/types";
 export async function allPages(username: string) {
 	return await database.learningDiaryPage.findMany({
 		select: {
-			id: true
+			id: true,
+			createdAt: true,
+			course: { select: { title: true } }
 		},
 		where: {
 			studentName: username
-		}
+		},
+		orderBy: { createdAt: "desc" }
 	});
 }
 
@@ -53,6 +56,7 @@ export async function getDiaryPage(ltbId: string) {
 	});
 	return ltbPage;
 }
+
 export type LearningDiaryPageDetail = ResolvedValue<typeof getDiaryPage>;
 
 export async function getUserLocations(username: string) {
