@@ -6,7 +6,6 @@ import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -19,7 +18,7 @@ export async function findMandyLtb({ username }: { username: string }) {
 			scope: true,
 			course: { select: { title: true, slug: true, authors: true } },
 			learningLocation: { select: { name: true } },
-			learningDurationMs: true,
+			totalDurationLearnedMs: true,
 			techniqueRatings: {
 				select: {
 					technique: {
@@ -47,29 +46,22 @@ export const getServerSideProps: GetServerSideProps = async context => {
 	const session = await getSession(context);
 
 	if (!session || !session.user) {
+		const callbackUrl = encodeURIComponent(context.resolvedUrl);
 		return {
 			redirect: {
-				destination: "/api/auth/signin",
+				destination: `/api/auth/signin?callbackUrl=${callbackUrl}`,
 				permanent: false
 			}
 		};
 	}
 
-	try {
-		return {
-			props: {
-				learningDiaryEntries: await findMandyLtb({
-					username: session.user.name
-				})
-			}
-		};
-	} catch (error) {
-		return {
-			props: {
-				error: "Error fetching Learning Diary Entries"
-			}
-		};
-	}
+	return {
+		props: {
+			learningDiaryEntries: await findMandyLtb({
+				username: session.user.name
+			})
+		}
+	};
 };
 
 export default function LearningDiaryOverview({
@@ -78,10 +70,6 @@ export default function LearningDiaryOverview({
 	learningDiaryEntries: LearningDiaryPageOverview[];
 }) {
 	const [searchQuarry, setSearchQuarry] = useState<string>("");
-
-	if (learningDiaryEntries.length === 0) {
-		return <p>No Learning Diary Entries found</p>;
-	}
 
 	return (
 		<div className="flex w-full justify-center">
@@ -126,7 +114,7 @@ const sortableColumns = {
 	duration: {
 		label: "Dauer",
 		sortingFunction: (a: LearningDiaryPageOverview, b: LearningDiaryPageOverview) =>
-			a.learningDurationMs - b.learningDurationMs,
+			a.totalDurationLearnedMs - b.totalDurationLearnedMs,
 		isDisplayed: true
 	},
 	learningLocation: {
@@ -179,7 +167,7 @@ function getFilterFunction(learningDiaryEntry: LearningDiaryPageOverview, query:
 		learningDiaryEntry.learningLocation?.name.toLowerCase() ?? "",
 		learningDiaryEntry.scope.toString().toLowerCase(),
 		...techniqueNames,
-		formatTimeIntervalToString(learningDiaryEntry.learningDurationMs).toLowerCase()
+		formatTimeIntervalToString(learningDiaryEntry.totalDurationLearnedMs).toLowerCase()
 	];
 
 	return stringsToCheck.some(str => str.includes(lowercasedQuery));
@@ -313,7 +301,7 @@ function SortedTable({
 
 													{key === "duration" &&
 														formatTimeIntervalToString(
-															learningDiaryEntry.learningDurationMs
+															learningDiaryEntry.totalDurationLearnedMs
 														)}
 
 													{key === "learningLocation" &&
