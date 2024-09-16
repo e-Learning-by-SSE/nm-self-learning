@@ -22,6 +22,8 @@
 			"@self-learning/cms-api": ["libs/data-access/cms-api/src/index.ts"],
 			"@self-learning/completion": ["libs/feature/completion/src/index.ts"],
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],
+			"@self-learning/diary": ["libs/feature/diary/src/index.ts"],
+			"@self-learning/diary/server": ["libs/feature/diary/src/server.ts"],
 			"@self-learning/enrollment": ["libs/feature/enrollment/src/index.ts"],
 			"@self-learning/lesson": ["libs/feature/lesson/src/index.ts"],
 			"@self-learning/lia-exporter": ["libs/util/lia-exporter/src/index.ts"],

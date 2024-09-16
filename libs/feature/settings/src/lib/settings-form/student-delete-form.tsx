@@ -121,12 +121,12 @@ export function StudentDeleteForm() {
 export function PersonalDataTooltip() {
 	return (
 		<Tooltip
-			title={
+			content={
 				"This will delete the following:" +
 				"profile information, account settings, saved preferences"
 			}
 		>
-			<QuestionMarkTooltip tooltipText="Here you can delete your personal data." />
+			<QuestionMarkTooltip content="Here you can delete your personal data." />
 		</Tooltip>
 	);
 }
@@ -134,12 +134,12 @@ export function PersonalDataTooltip() {
 function AllDataTooltip() {
 	return (
 		<Tooltip
-			title={
+			content={
 				"This will delete the following:" +
 				"profile information, account settings, saved preferences, skill repositorys, created courses, created lessons"
 			}
 		>
-			<QuestionMarkTooltip tooltipText="Here you can delete all your data." />
+			<QuestionMarkTooltip content="Here you can delete all your data." />
 		</Tooltip>
 	);
 }

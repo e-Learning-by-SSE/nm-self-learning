@@ -13,7 +13,6 @@ async function seed(): Promise<void> {
 	const start = Date.now();
 
 	console.log("Deleting previous records...");
-	await prisma.learningDiaryLearnedLessons.deleteMany();
 	await prisma.studentSettings.deleteMany();
 	await prisma.user.deleteMany();
 	await prisma.team.deleteMany();
@@ -25,13 +24,13 @@ async function seed(): Promise<void> {
 	await prisma.license.deleteMany();
 	await prisma.skill.deleteMany();
 	await prisma.learningGoal.deleteMany();
-	await prisma.learningTechniqueEvaluation.deleteMany();
+	await prisma.techniqueRating.deleteMany();
 	await prisma.learningTechnique.deleteMany();
-	await prisma.learningStrategie.deleteMany();
+	await prisma.learningStrategy.deleteMany();
 	await prisma.learningLocation.deleteMany();
-	await prisma.learningDiaryEntry.deleteMany();
-	await prisma.learningDiary.deleteMany();
-	await prisma.semester.deleteMany();
+	await prisma.learningDiaryPage.deleteMany();
+	await prisma.learningDiaryLearnedLessons.deleteMany();
+	// await prisma.learningDiary.deleteMany();
 	console.log("😅 Seeding...");
 
 	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {

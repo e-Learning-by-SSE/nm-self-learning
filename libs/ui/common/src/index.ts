@@ -31,3 +31,4 @@ export * from "./lib/tooltip/tooltips";
 export * from "./lib/timer/timer";
 export * from "./lib/progress-bar/progress-bar";
 export * from "./lib/table/table-menu";
+export * from "./lib/star-rating/star-rating";

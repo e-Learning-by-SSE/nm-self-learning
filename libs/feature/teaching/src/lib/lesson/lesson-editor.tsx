@@ -1,11 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { lessonSchema } from "@self-learning/types";
 import { SectionHeader, showToast } from "@self-learning/ui/common";
-import { Form, MarkdownField } from "@self-learning/ui/forms";
+import { Form, MarkdownField, OpenAsJsonButton } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import { OpenAsJsonButton } from "../json-editor-dialog";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";

@@ -151,17 +151,17 @@ function LicenseFeatureIcons({
 	return (
 		<>
 			{defaultSuggestion && (
-				<Tooltip title="Standard Lizenz">
+				<Tooltip content="Standard Lizenz">
 					<CheckBadgeIcon className="icon h-5" />
 				</Tooltip>
 			)}
 			{oerCompatible && (
-				<Tooltip title="Erlaubt Exportfunktion">
+				<Tooltip content="Erlaubt Exportfunktion">
 					<ShareIcon className="icon h-5" />
 				</Tooltip>
 			)}
 			{!selectable && (
-				<Tooltip title="Lizenz ist nicht in neuen Lerneinheiten auswählbar.">
+				<Tooltip content="Lizenz ist nicht in neuen Lerneinheiten auswählbar.">
 					<NoSymbolIcon className="icon h-5" />
 				</Tooltip>
 			)}
