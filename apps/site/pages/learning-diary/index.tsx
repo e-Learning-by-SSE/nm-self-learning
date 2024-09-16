@@ -21,12 +21,12 @@ export async function findMandyLtb({ username }: { username: string }) {
 			scope: true,
 			course: { select: { title: true, slug: true, authors: true } },
 			learningLocation: { select: { name: true } },
-			learningTechniqueEvaluation: {
+			techniqueRatings: {
 				select: {
-					learningTechnique: {
+					technique: {
 						select: {
 							name: true,
-							learningStrategie: { select: { id: true, name: true } }
+							strategy: { select: { id: true, name: true } }
 						}
 					}
 				}
@@ -146,12 +146,8 @@ const sortableColumns = {
 	learningStrategie: {
 		label: "Lernstrategie",
 		sortingFunction: (a: LearningDiaryPageOverview, b: LearningDiaryPageOverview) => {
-			const aa = a.learningTechniqueEvaluation
-				.map(evaluation => evaluation.learningTechnique.learningStrategie.name)
-				.join(", ");
-			const bb = b.learningTechniqueEvaluation
-				.map(evaluation => evaluation.learningTechnique.learningStrategie.name)
-				.join(", ");
+			const aa = a.techniqueRatings.map(rating => rating.technique.strategy.name).join(", ");
+			const bb = b.techniqueRatings.map(rating => rating.technique.strategy.name).join(", ");
 			return aa.localeCompare(bb);
 		},
 		isDisplayed: false
@@ -159,12 +155,8 @@ const sortableColumns = {
 	learningTechnique: {
 		label: "Lerntechnik",
 		sortingFunction: (a: LearningDiaryPageOverview, b: LearningDiaryPageOverview) => {
-			const techniquesA = a.learningTechniqueEvaluation
-				.map(evaluation => evaluation.learningTechnique.name)
-				.join(", ");
-			const techniquesB = b.learningTechniqueEvaluation
-				.map(evaluation => evaluation.learningTechnique.name)
-				.join(", ");
+			const techniquesA = a.techniqueRatings.map(rating => rating.technique.name).join(", ");
+			const techniquesB = b.techniqueRatings.map(rating => rating.technique.name).join(", ");
 			return techniquesA.localeCompare(techniquesB);
 		},
 		isDisplayed: false
@@ -179,11 +171,9 @@ function getFilterFunction(learningDiaryEntry: LearningDiaryPageOverview, query:
 	const lowercasedQuery = query.toLowerCase();
 	const { title, slug, authors } = learningDiaryEntry.course;
 	const authorNames = authors.map(author => author.displayName.toLowerCase());
-	const evaluations = learningDiaryEntry.learningTechniqueEvaluation;
+	const ratings = learningDiaryEntry.techniqueRatings;
 
-	const techniqueNames = evaluations.map(evaluation =>
-		evaluation.learningTechnique.name.toLowerCase()
-	);
+	const techniqueNames = ratings.map(rating => rating.technique.name.toLowerCase());
 
 	const stringsToCheck = [
 		title.toLowerCase(),
@@ -298,7 +288,9 @@ function SortedTable({
 								<tr
 									key={learningDiaryEntry.id}
 									onClick={() => {
-										router.push("/ltb/entry/" + learningDiaryEntry.pageCount);
+										router.push(
+											"/learning-diary/page/" + learningDiaryEntry.pageCount
+										);
 									}}
 									className={"cursor-pointer hover:bg-gray-100"}
 								>
@@ -337,11 +329,10 @@ function SortedTable({
 														learningDiaryEntry.learningLocation?.name}
 
 													{key === "learningStrategie" &&
-														learningDiaryEntry.learningTechniqueEvaluation
+														learningDiaryEntry.techniqueRatings
 															.map(
-																evaluation =>
-																	evaluation.learningTechnique
-																		.learningStrategie.name
+																rating =>
+																	rating.technique.strategy.name
 															)
 															.filter(
 																(value, index, self) =>
@@ -350,12 +341,8 @@ function SortedTable({
 															.join(", ")}
 
 													{key === "learningTechnique" &&
-														learningDiaryEntry.learningTechniqueEvaluation
-															.map(
-																evaluation =>
-																	evaluation.learningTechnique
-																		.name
-															)
+														learningDiaryEntry.techniqueRatings
+															.map(rating => rating.technique.name)
 															.join(", ")}
 
 													{key === "scope" && learningDiaryEntry.scope}

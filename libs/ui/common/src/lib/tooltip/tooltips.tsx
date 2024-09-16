@@ -4,14 +4,14 @@ import { useRef, useState } from "react";
 import { usePopper } from "react-popper";
 
 export function QuestionMarkTooltip({
-	tooltipText,
+	content,
 	type = "solid"
 }: {
-	tooltipText: string;
+	content: string;
 	type?: "outline" | "solid";
 }) {
 	return (
-		<Tooltip title={tooltipText}>
+		<Tooltip content={content}>
 			{type === "outline" ? (
 				<QuestionMarcOutline className="h-4 w-4 text-gray-500" />
 			) : (
@@ -20,7 +20,7 @@ export function QuestionMarkTooltip({
 		</Tooltip>
 	);
 }
-export function Tooltip({ children, title }: { children: React.ReactNode; title: string }) {
+export function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
 	const [showTooltip, setShowTooltip] = useState(false);
 	const referenceElement = useRef(null);
 	const popperElement = useRef(null);
@@ -45,7 +45,7 @@ export function Tooltip({ children, title }: { children: React.ReactNode; title:
 					{...attributes["popper"]}
 					className="rounded-lg bg-gray-800 p-2 text-sm text-white shadow-md"
 				>
-					{title}
+					{content}
 				</div>
 			)}
 		</>

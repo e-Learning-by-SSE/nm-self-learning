@@ -14,14 +14,13 @@ model Student {
     username                    String                        @id
     completedLessons            CompletedLesson[]
     enrollments                 Enrollment[]
-    // learningDiary               LearningDiary?
     customLearningLocations     LearningLocation[]
     settings                    StudentSettings?
     learningDiaryEntrys         LearningDiaryPage[]
     quizAttempts                QuizAttempt[]
     user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
-    learningTechniques          LearningTechnique[]
-    learningTechniqueEvaluation LearningTechniqueEvaluation[]
+    personalLearningTechniques  LearningTechnique[]
+    learningTechniqueRatings    TechniqueRating[]
 }
 
 model StudentSettings {
@@ -157,7 +156,7 @@ model Lesson {
     selfRegulatedQuestion String?
     requirements          Skill[]                       @relation("requirements")
     teachingGoals         Skill[]                       @relation("teachingGoals")
-    lessonStart           LearningDiaryLearnedLessons[]
+    lessonStart           LearningDiaryLearnedLessons[] // TODO check if this is necessary
 }
 
 model CompletedLesson {
@@ -202,6 +201,7 @@ model QuizAnswer {
 //     goals    String?
 //     student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
 // }
+
 
 model UploadedAssets {
     objectName String   @id

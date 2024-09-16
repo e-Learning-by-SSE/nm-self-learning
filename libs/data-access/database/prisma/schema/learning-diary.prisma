@@ -8,31 +8,35 @@ model LearningDiaryPage {
   notes                   		String?
   createdAt               		DateTime              			@default(now())
   learningDurationMs       		Int
+  // what is this?
   scope							Int									@default(0)
   distractionLevel        		Int									@default(0)
   effortLevel					Int									@default(0)
   learningLocationId      		String?
   learningLocation        		LearningLocation?    				@relation(fields: [learningLocationId], references: [id], onDelete: Cascade)
   learningGoals 		  		LearningGoal[]
-  learningTechniqueEvaluation 	LearningTechniqueEvaluation[]
-  learningDiaryLearnedLessons	LearningDiaryLearnedLessons[]
+  techniqueRatings 	            TechniqueRating[]
+  lessonsLearned               	LearningDiaryLearnedLessons[]
 }
 
 model LearningLocation {
     id                 String               @id @default(uuid())
     name               String
-    iconURL            String
+    iconURL            String?
     defaultLocation    Boolean              @default(false)
     creatorName        String?
     creator            Student?             @relation(fields: [creatorName], references: [username], onDelete: Cascade)
     learningDiaryEntry LearningDiaryPage[]
+
+    @@unique(name: "unique_name_creator", fields: [name, creatorName])
 }
 
-model LearningStrategie {
+model LearningStrategy {
     id                String              @id @default(uuid())
     name              String              @unique
     
-    learningTechnique LearningTechnique[]
+    techniques        LearningTechnique[]
+	@@map("LearningStrategie")
 }
 
 model LearningTechnique {
@@ -43,19 +47,21 @@ model LearningTechnique {
     defaultTechnique             Boolean                       @default(false)
     learningStrategieId          String
 
-    learningStrategie            LearningStrategie             @relation(fields: [learningStrategieId], references: [id], onDelete: Cascade)
-    learningTechniqueEvaluations LearningTechniqueEvaluation[]
+    strategy                    LearningStrategy             @relation(fields: [learningStrategieId], references: [id], onDelete: Cascade)
+    techniqueRatings             TechniqueRating[] // TODO check if this is necessary
 }
 
-model LearningTechniqueEvaluation {
-    id                   String             @id @default(uuid())
+model TechniqueRating {
     score                Int
-    learningTechniqueId  String
-    learningTechnique    LearningTechnique  @relation(fields: [learningTechniqueId], references: [id], onDelete: Cascade)
-    learningDiaryEntryId String
-    learningDiaryEntry   LearningDiaryPage @relation(fields: [learningDiaryEntryId], references: [id], onDelete: Cascade)
+    techniqueId          String
+    technique            LearningTechnique  @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
+    diaryPageId          String
+    diaryPage            LearningDiaryPage @relation(fields: [diaryPageId], references: [id], onDelete: Cascade)
     creatorName          String
     creator              Student            @relation(fields: [creatorName], references: [username], onDelete: Cascade)
+
+    @@id(name: "evalId", fields: [techniqueId, diaryPageId])
+
 }
 
 enum LearningProgress {

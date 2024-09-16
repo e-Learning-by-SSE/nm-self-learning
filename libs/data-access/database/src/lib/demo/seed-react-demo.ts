@@ -554,8 +554,8 @@ export async function seedReactDemo() {
 	await prisma.completedLesson.createMany({ data: completedReactLessons });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Completed Lessons");
 
-	await prisma.learningDiary.createMany({ data: learningDiaries });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "LearningDiaries");
+	// await prisma.learningDiary.createMany({ data: learningDiaries });
+	// console.log(" - %s\x1b[32m ✔\x1b[0m", "LearningDiaries");
 
 	await prisma.specialization.update({
 		where: { specializationId: "softwareentwicklung" },
