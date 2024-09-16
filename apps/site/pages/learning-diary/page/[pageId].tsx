@@ -41,26 +41,23 @@ export const getServerSideProps: GetServerSideProps = async context => {
 	}
 
 	const pageId = context.params?.pageId;
+	const pages = await allPages(session.user.name);
+	const availableStrategies = await getAllStrategies();
 
-	try {
-		const pages = await allPages(session.user.name);
-		const availableStrategies = await getAllStrategies();
+	const pageExists = pages.some(page => page.id === pageId);
+	if (!pageExists) {
 		return {
-			props: {
-				diaryId: pageId,
-				pages,
-				availableStrategies
-			}
-		};
-	} catch (error) {
-		console.error("Error fetching Learning Diary Information:", error);
-		return {
-			props: {
-				learningDiaryInformation: null,
-				pageNumber: null
-			}
+			notFound: true
 		};
 	}
+
+	return {
+		props: {
+			diaryId: pageId,
+			pages,
+			availableStrategies
+		}
+	};
 };
 
 export default function DiaryPageDetail({
@@ -240,7 +237,7 @@ function DiaryContentForm({
 	if (isLoading) {
 		return <LoadingCircleCorner />;
 	} else if (!pageDetails) {
-		// TODO
+		// should not happen since we are fetching the pages in SSR and return 404 if not found
 		return null;
 	}
 	return (

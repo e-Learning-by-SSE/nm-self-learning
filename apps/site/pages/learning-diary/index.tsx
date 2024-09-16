@@ -10,8 +10,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-//TODO - der link vom kurs + link vom eintrag
-
 export async function findMandyLtb({ username }: { username: string }) {
 	const entries = await database.learningDiaryPage.findMany({
 		where: { studentName: username },
@@ -74,9 +72,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
 	}
 };
 
-export default LearningDiaryOverview;
-
-export function LearningDiaryOverview({
+export default function LearningDiaryOverview({
 	learningDiaryEntries
 }: {
 	learningDiaryEntries: LearningDiaryPageOverview[];

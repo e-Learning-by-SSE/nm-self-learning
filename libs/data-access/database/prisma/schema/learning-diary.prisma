@@ -1,3 +1,16 @@
+
+// in the future, we want something like this
+// model LearningDiary {
+//     id          String             @id @default(uuid())
+//     studentName String
+//     student     Student            @relation(fields: [studentName], references: [username], onDelete: Cascade)
+//     pages  DiaryPage[]
+
+//     personalLearningTechniques  LearningTechnique[]
+//     learningTechniqueRatings    TechniqueRating[]
+//     goals                       LearningGoal[]
+// }
+
 model LearningDiaryPage {
   id                      		String               				@id @default(uuid())
   studentName			  		String

@@ -89,6 +89,20 @@ function getStudent(username: string) {
 						}
 					}
 				}
+			},
+			learningDiaryEntrys: {
+				orderBy: { createdAt: "desc" },
+				take: 5,
+				select: {
+					createdAt: true,
+					id: true,
+					course: {
+						select: {
+							courseId: true,
+							title: true
+						}
+					}
+				}
 			}
 		}
 	});
@@ -110,6 +124,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 	return {
 		props: {
 			student: JSON.parse(JSON.stringify(student)) // using parse to deal with date type :(
+			// TODO test if we can utilize superjson here
 		}
 	};
 };
@@ -218,7 +233,7 @@ function DashboardPage(props: Props) {
 						studentSettings?.learningStatistics ? (
 							<>
 								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
-								<LastLearningDiaryEntry />
+								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
 							</>
 						) : (
 							<>
@@ -300,48 +315,44 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 	);
 }
 
-function LastLearningDiaryEntry() {
-	const { data: learningDiaryEntries, isLoading } =
-		trpc.learningDiaryEntry.getMeLearningDiaryEntries.useQuery();
-
+function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys"] }) {
 	return (
 		<>
-			{learningDiaryEntries && learningDiaryEntries.length == 0 ? (
+			{pages.length == 0 ? (
 				<span className="text-sm text-light">
 					Du hast noch keinen Lerntagebucheintrag erstellt.
 				</span>
 			) : (
 				<>
-					{!isLoading && learningDiaryEntries && (
-						<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
-							{learningDiaryEntries.map((entry, index) => (
-								<Link
-									className="text-sm font-medium"
-									href={`/ltb/entry/${entry.number}/`}
-									key={entry.number}
-								>
-									<li
-										className="hover: flex items-center rounded-lg border border-light-border
+					<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
+						{pages.map((page, index) => (
+							<Link
+								className="text-sm font-medium"
+								href={`/learning-diary/page/${page.id}/`}
+								key={page.id}
+							>
+								<li
+									className="hover: flex items-center rounded-lg border border-light-border
 							p-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
-									>
-										<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-											<div className="flex flex-col gap-1">
-												<div className="flex items-center gap-1">
-													{index < 2 && (
-														<PencilIcon className="h-5 text-emerald-500" />
-													)}
-													Eintrag {entry.number}. {entry.course.title}
-												</div>
+								>
+									<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
+										<div className="flex flex-col gap-1">
+											<div className="flex items-center gap-1">
+												{index < 2 && (
+													<PencilIcon className="h-5 text-emerald-500" />
+												)}
+												{page.course.title} vom $
+												{page.createdAt.toString() /*TODO diary*/}
 											</div>
-											<span className="hidden text-sm text-light md:block">
-												{entry.date}
-											</span>
 										</div>
-									</li>
-								</Link>
-							))}
-						</ul>
-					)}
+										<span className="hidden text-sm text-light md:block">
+											{page.createdAt.getTime().toString() /*TODO diary*/}
+										</span>
+									</div>
+								</li>
+							</Link>
+						))}
+					</ul>
 				</>
 			)}
 		</>

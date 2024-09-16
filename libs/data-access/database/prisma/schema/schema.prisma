@@ -16,9 +16,9 @@ model Student {
     enrollments                 Enrollment[]
     customLearningLocations     LearningLocation[]
     settings                    StudentSettings?
-    learningDiaryEntrys         LearningDiaryPage[]
     quizAttempts                QuizAttempt[]
     user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    learningDiaryEntrys         LearningDiaryPage[]
     personalLearningTechniques  LearningTechnique[]
     learningTechniqueRatings    TechniqueRating[]
 }
