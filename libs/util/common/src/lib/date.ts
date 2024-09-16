@@ -51,6 +51,37 @@ export function formatTimeIntervalToString(ms: number): string {
 	return result || "0 Minuten";
 }
 
+export function adaptiveTimeSpan(ms: number): string {
+	const totalMinutes = Math.floor(ms / 60000);
+	const totalHours = Math.floor(totalMinutes / 60);
+	const days = Math.floor(totalHours / 24);
+	const hours = totalHours % 24;
+	const minutes = totalMinutes % 60;
+
+	if (days > 0) {
+		if (days === 1) {
+			return `Vor einem Tag`;
+		}
+		return `Vor ${days} Tagen`;
+	}
+
+	if (hours > 0) {
+		if (hours > 6) {
+			return `Vor ${hours} Stunden`;
+		}
+		return `Vor ${hours} Stunden`;
+	}
+
+	if (minutes > 0) {
+		if (minutes === 1) {
+			return `Vor einer Minute`;
+		}
+		return `Vor ${minutes} Minuten`;
+	}
+
+	return "Jetzt";
+}
+
 export function formatDateToString(date: Date): string {
 	const day = String(date.getDate()).padStart(2, "0");
 	const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
