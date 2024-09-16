@@ -3,13 +3,22 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const DEFAULT_SLUG = "the-beginners-guide-to-react";
 
+// Function to generate a random date between 30 days and 6 hours ago
+function getRandomCreatedAt(): Date {
+	const currentTime = new Date().getTime();
+	const minTime = currentTime - 50 * 24 * 60 * 60 * 1000; // 50 days ago
+	const maxTime = currentTime - 6 * 60 * 60 * 1000; // 6 hours ago
+
+	const randomTime = Math.floor(Math.random() * (maxTime - minTime)) + minTime;
+	return new Date(randomTime);
+}
+
+// Function to generate random time interval in milliseconds
 function getRandomTimeIntervalInMs(): number {
 	const minTimeMs = 60 * 1000; // 1 minute in ms
 	const maxTimeMs = 28 * 60 * 60 * 1000; // 28 hours in ms
 
-	const randomTimeMs = Math.floor(Math.random() * (maxTimeMs - minTimeMs + 1)) + minTimeMs;
-
-	return randomTimeMs;
+	return Math.floor(Math.random() * (maxTimeMs - minTimeMs + 1)) + minTimeMs;
 }
 
 export async function generateLearningDiaryDemoData() {
@@ -156,7 +165,8 @@ export async function generateLearningDiaryDemoData() {
 				distractionLevel: 2,
 				effortLevel: 3,
 				scope: 5,
-				learningLocationId: location1.id
+				learningLocationId: location1.id,
+				createdAt: getRandomCreatedAt() // Use the random date function
 			}
 		});
 
@@ -170,11 +180,12 @@ export async function generateLearningDiaryDemoData() {
 				distractionLevel: 1,
 				effortLevel: 4,
 				scope: 6,
-				learningLocationId: location2.id
+				learningLocationId: location2.id,
+				createdAt: getRandomCreatedAt() // Use the random date function
 			}
 		});
 
-		const emtydiaryEntry = await prisma.learningDiaryPage.create({
+		const emptyDiaryEntry = await prisma.learningDiaryPage.create({
 			data: {
 				studentName: student.username,
 				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
@@ -183,33 +194,75 @@ export async function generateLearningDiaryDemoData() {
 				distractionLevel: 0,
 				effortLevel: 0,
 				scope: 5,
-				learningLocationId: null
+				learningLocationId: null,
+				createdAt: getRandomCreatedAt() // Use the random date function
 			}
 		});
 
-		// Create Learning Technique Evaluations (hard-coded)
-		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Technique Evaluations");
-		const evaluation1 = await prisma.techniqueRating.create({
+		// Additional hard-coded entries
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Additional Learning Diary Entries");
+		const additionalEntry1 = await prisma.learningDiaryPage.create({
 			data: {
-				score: 4,
-				techniqueId: technique1.id,
-				diaryPageId: diaryEntry1.id,
-				creatorName: student.username
+				id: "entry3",
+				studentName: student.username,
+				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				notes: "Studied defensive spells",
+				learningDurationMs: getRandomTimeIntervalInMs(),
+				distractionLevel: 2,
+				effortLevel: 3,
+				scope: 4,
+				learningLocationId: location3.id,
+				createdAt: getRandomCreatedAt() // Use the random date function
 			}
 		});
 
-		const evaluation2 = await prisma.techniqueRating.create({
+		const additionalEntry2 = await prisma.learningDiaryPage.create({
 			data: {
-				score: 2,
-				techniqueId: technique2.id,
-				diaryPageId: diaryEntry2.id,
-				creatorName: student.username
+				id: "entry4",
+				studentName: student.username,
+				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				notes: "Studied magical creatures",
+				learningDurationMs: getRandomTimeIntervalInMs(),
+				distractionLevel: 1,
+				effortLevel: 5,
+				scope: 7,
+				learningLocationId: location2.id,
+				createdAt: getRandomCreatedAt() // Use the random date function
+			}
+		});
+
+		const additionalEntry3 = await prisma.learningDiaryPage.create({
+			data: {
+				id: "entry5",
+				studentName: student.username,
+				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				notes: "Studied advanced charms",
+				learningDurationMs: getRandomTimeIntervalInMs(),
+				distractionLevel: 2,
+				effortLevel: 4,
+				scope: 6,
+				learningLocationId: location1.id,
+				createdAt: getRandomCreatedAt() // Use the random date function
+			}
+		});
+
+		const entryOverTwoDays = await prisma.learningDiaryPage.create({
+			data: {
+				id: "entry-over-two-days",
+				studentName: student.username,
+				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				notes: "Studied transfiguration over two days",
+				learningDurationMs: getRandomTimeIntervalInMs(),
+				distractionLevel: 3,
+				effortLevel: 4,
+				scope: 8,
+				learningLocationId: location3.id,
+				createdAt: getRandomCreatedAt() // Use the random date function
 			}
 		});
 
 		// Create Learning Goals (hard-coded)
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Goals");
-
 		const goal1 = await prisma.learningGoal.create({
 			data: {
 				id: "goal1",
@@ -248,62 +301,23 @@ export async function generateLearningDiaryDemoData() {
 			}
 		});
 
-		console.log(" - %s\x1b[32m ✔\x1b[0m", "Additional Learning Diary Entries");
-
-		// Additional hard-coded entries
-		const additionalEntry1 = await prisma.learningDiaryPage.create({
+		// Create Learning Technique Evaluations (hard-coded)
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Technique Evaluations");
+		const evaluation1 = await prisma.techniqueRating.create({
 			data: {
-				id: "entry3",
-				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
-				notes: "Studied defensive spells",
-				learningDurationMs: getRandomTimeIntervalInMs(),
-				distractionLevel: 2,
-				effortLevel: 3,
-				scope: 4,
-				learningLocationId: location3.id
+				score: 4,
+				techniqueId: technique1.id,
+				diaryPageId: diaryEntry1.id,
+				creatorName: student.username
 			}
 		});
 
-		const additionalEntry2 = await prisma.learningDiaryPage.create({
+		const evaluation2 = await prisma.techniqueRating.create({
 			data: {
-				id: "entry4",
-				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
-				notes: "Studied magical creatures",
-				learningDurationMs: getRandomTimeIntervalInMs(),
-				distractionLevel: 1,
-				effortLevel: 5,
-				scope: 7,
-				learningLocationId: location2.id
-			}
-		});
-
-		const additionalEntry3 = await prisma.learningDiaryPage.create({
-			data: {
-				id: "entry5",
-				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
-				notes: "Studied advanced charms",
-				learningDurationMs: getRandomTimeIntervalInMs(),
-				distractionLevel: 2,
-				effortLevel: 4,
-				scope: 6,
-				learningLocationId: location1.id
-			}
-		});
-
-		const entryOverTwoDays = await prisma.learningDiaryPage.create({
-			data: {
-				id: "entry-over-two-days",
-				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
-				notes: "Studied transfiguration over two days",
-				learningDurationMs: getRandomTimeIntervalInMs(),
-				distractionLevel: 3,
-				effortLevel: 4,
-				scope: 8,
-				learningLocationId: location3.id
+				score: 2,
+				techniqueId: technique2.id,
+				diaryPageId: diaryEntry2.id,
+				creatorName: student.username
 			}
 		});
 	} catch (error) {

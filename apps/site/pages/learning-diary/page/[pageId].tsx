@@ -25,6 +25,7 @@ import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
+import { Sidebar } from "../../../../../libs/feature/diary/src/lib/page-viewer/sidebar";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
 
@@ -70,17 +71,24 @@ export default function DiaryPageDetail({
 	availableStrategies: Strategy[];
 }) {
 	return (
-		<div className="flex justify-center">
-			<div className="w-2/3 py-4">
-				<div className="mb-4 flex justify-center">
-					<PageChanger pages={pages} currentPageId={diaryId} />
+		<div>
+			<div>
+				<Sidebar pages={pages} />
+			</div>
+
+			<div className="flex justify-center">
+				<div className="w-2/3 py-4">
+					<div className="mb-4 flex justify-center">
+						<PageChanger pages={pages} currentPageId={diaryId} />
+					</div>
+					<Divider />
+					<DiaryContentForm diaryId={diaryId} availableStrategies={availableStrategies} />
 				</div>
-				<Divider />
-				<DiaryContentForm diaryId={diaryId} availableStrategies={availableStrategies} />
 			</div>
 		</div>
 	);
 }
+
 
 function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId: string }) {
 	const router = useRouter();
