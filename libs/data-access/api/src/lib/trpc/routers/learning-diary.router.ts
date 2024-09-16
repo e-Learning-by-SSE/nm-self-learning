@@ -71,16 +71,6 @@ export const learningTechniqueRouter = t.router({
 				}
 			}
 		});
-	}),
-	deleteMany: authProcedure.input(z.array(z.string()).min(1)).mutation(async ({ input, ctx }) => {
-		return database.techniqueRating.deleteMany({
-			where: {
-				creatorName: ctx.user.name,
-				id: {
-					in: input
-				}
-			}
-		});
 	})
 });
 
