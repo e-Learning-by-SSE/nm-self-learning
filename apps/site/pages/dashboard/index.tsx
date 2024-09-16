@@ -123,8 +123,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 
 	return {
 		props: {
-			student: JSON.parse(JSON.stringify(student)) // using parse to deal with date type :(
-			// TODO test if we can utilize superjson here
+			student
 		}
 	};
 };
