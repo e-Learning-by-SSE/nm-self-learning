@@ -19,6 +19,7 @@ export async function findMandyLtb({ username }: { username: string }) {
 			scope: true,
 			course: { select: { title: true, slug: true, authors: true } },
 			learningLocation: { select: { name: true } },
+			learningDurationMs: true,
 			techniqueRatings: {
 				select: {
 					technique: {
@@ -63,10 +64,9 @@ export const getServerSideProps: GetServerSideProps = async context => {
 			}
 		};
 	} catch (error) {
-		console.error("Error fetching Learning Diary Entries:", error);
 		return {
 			props: {
-				learningDiaryEntries: null
+				error: "Error fetching Learning Diary Entries"
 			}
 		};
 	}
@@ -123,12 +123,12 @@ const sortableColumns = {
 			a.createdAt.getTime() - b.createdAt.getTime(),
 		isDisplayed: true
 	},
-	// duration: {
-	// 	label: "Dauer",
-	// 	sortingFunction: (a: LearningDiaryDashboard, b: LearningDiaryDashboard) =>
-	// 		a.duration - b.duration,
-	// 	isDisplayed: true
-	// },
+	duration: {
+		label: "Dauer",
+		sortingFunction: (a: LearningDiaryPageOverview, b: LearningDiaryPageOverview) =>
+			a.learningDurationMs - b.learningDurationMs,
+		isDisplayed: true
+	},
 	learningLocation: {
 		label: "Lernort",
 		sortingFunction: (a: LearningDiaryPageOverview, b: LearningDiaryPageOverview) => {
@@ -178,8 +178,8 @@ function getFilterFunction(learningDiaryEntry: LearningDiaryPageOverview, query:
 		learningDiaryEntry.pageCount.toString().toLowerCase(),
 		learningDiaryEntry.learningLocation?.name.toLowerCase() ?? "",
 		learningDiaryEntry.scope.toString().toLowerCase(),
-		...techniqueNames
-		// formatTimeIntervalToString(learningDiaryEntry.duration).toLowerCase()
+		...techniqueNames,
+		formatTimeIntervalToString(learningDiaryEntry.learningDurationMs).toLowerCase()
 	];
 
 	return stringsToCheck.some(str => str.includes(lowercasedQuery));
@@ -285,7 +285,7 @@ function SortedTable({
 									key={learningDiaryEntry.id}
 									onClick={() => {
 										router.push(
-											"/learning-diary/page/" + learningDiaryEntry.pageCount
+											"/learning-diary/page/" + learningDiaryEntry.id
 										);
 									}}
 									className={"cursor-pointer hover:bg-gray-100"}
@@ -299,26 +299,21 @@ function SortedTable({
 														learningDiaryEntry.pageCount}
 
 													{key === "course" && (
-														<Link
-															href={`/courses/${learningDiaryEntry.course.slug}/`}
-															className="block"
-														>
-															<div>
-																<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
-																	<span className="truncate">
-																		{
-																			learningDiaryEntry
-																				.course.title
-																		}
-																	</span>
+														<div>
+															<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+																<span className="truncate">
+																	{
+																		learningDiaryEntry.course
+																			.title
+																	}
 																</span>
-															</div>
-														</Link>
+															</span>
+														</div>
 													)}
 
 													{key === "duration" &&
 														formatTimeIntervalToString(
-															learningDiaryEntry.duration
+															learningDiaryEntry.learningDurationMs
 														)}
 
 													{key === "learningLocation" &&
