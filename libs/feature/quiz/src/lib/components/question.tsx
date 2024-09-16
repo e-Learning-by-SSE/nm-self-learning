@@ -165,7 +165,7 @@ function CheckResult({
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
 		setEvaluation(evaluation);
 		await writeEvent({
-			action: "LESSON_QUIZ_SUBMISSION",
+			type: "LESSON_QUIZ_SUBMISSION",
 			resourceId: lessonId,
 			payload: {
 				index: question.questionId,
