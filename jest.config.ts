@@ -1,5 +1,6 @@
 const { getJestProjects } = require("@nx/jest");
 
 export default {
-	projects: getJestProjects()
+	projects: getJestProjects(),
+	coverageReporters: ["cobertura", "text", "html"]
 };

@@ -4,9 +4,7 @@
 /dist
 /tmp
 /out-tsc
-
-# dependencies
-/node_modules
+/output
 
 # IDEs and editors
 /.idea
@@ -33,7 +31,9 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
-.next
+**/.next
+
+/.nx
 
 # System Files
 .DS_Store

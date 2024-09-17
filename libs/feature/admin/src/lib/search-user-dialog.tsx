@@ -1,4 +1,4 @@
-import { Combobox } from "@headlessui/react";
+import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import {
 	DropdownDialog,
@@ -31,7 +31,7 @@ export function SearchUserDialog({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onChange={onClose}>
+			<Combobox value={null} onClose={onClose}>
 				<DropdownDialog.SearchInput
 					filter={name}
 					setFilter={setName}
@@ -44,13 +44,13 @@ export function SearchUserDialog({
 
 				<DropdownDialog.Options>
 					{users?.result.map(user => (
-						<Combobox.Option value={user.name} key={user.name} as={Fragment}>
-							{({ active }) => (
+						<ComboboxOption value={user.name} key={user.name} as={Fragment}>
+							{({ focus }) => (
 								<button
 									type="button"
 									data-testid="author-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										active ? "bg-secondary text-white" : ""
+										focus ? "bg-secondary text-white" : ""
 									}`}
 								>
 									<ImageOrPlaceholder
@@ -61,7 +61,7 @@ export function SearchUserDialog({
 										<span className="text-sm font-medium">{user.name}</span>
 										<span
 											className={`text-start text-xs ${
-												active ? "text-white" : "text-light"
+												focus ? "text-white" : "text-light"
 											}`}
 										>
 											{user.email}
@@ -69,7 +69,7 @@ export function SearchUserDialog({
 									</div>
 								</button>
 							)}
-						</Combobox.Option>
+						</ComboboxOption>
 					))}
 				</DropdownDialog.Options>
 			</Combobox>

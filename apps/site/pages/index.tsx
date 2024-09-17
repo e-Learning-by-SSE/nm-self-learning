@@ -1,6 +1,6 @@
+import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 
-import { ReactComponent as StudyingSvg } from "../svg/studying.svg";
 
 export function LandingPage() {
 	return (

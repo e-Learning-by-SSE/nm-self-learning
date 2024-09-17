@@ -9,27 +9,27 @@ const didacticCourses = [DidacticsOfGeometry.course];
 const mathCourses = [Analysis.course];
 
 const authors = [
-	createAuthor(
-		"beste-demo",
-		"Meeri-Liisa Beste",
-		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=14397",
-		didacticChapters,
-		didacticCourses
-	),
-	createAuthor(
-		"wolffb-demo",
-		"Bianca Wolff",
-		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=14411",
-		didacticChapters,
-		didacticCourses
-	),
-	createAuthor(
-		"veith-demo",
-		"Joaquin Veith",
-		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=15414",
-		mathChapters,
-		mathCourses
-	)
+	createAuthor({
+		userName: "beste-demo",
+		name: "Meeri-Liisa Beste",
+		imgUrl: "https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=14397",
+		lessons: didacticChapters,
+		courses: didacticCourses
+	}),
+	createAuthor({
+		userName: "wolffb-demo",
+		name: "Bianca Wolff",
+		imgUrl: "https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=14411",
+		lessons: didacticChapters,
+		courses: didacticCourses
+	}),
+	createAuthor({
+		userName: "veith-demo",
+		name: "Joaquin Veith",
+		imgUrl: "https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=15414",
+		lessons: mathChapters,
+		courses: mathCourses
+	})
 ];
 
 export async function mathExample(): Promise<void> {

@@ -1,36 +1,85 @@
+/* eslint-disable quotes */
 import { faker } from "@faker-js/faker";
 import { LessonType, Prisma, PrismaClient } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
-import { Quiz } from "@self-learning/quiz";
 import {
 	createCourseContent,
 	createCourseMeta,
 	createLessonMeta,
 	extractLessonIds,
-	LessonContent,
+	LessonContent /* eslint-disable quotes */,
 	LessonContentType
 } from "@self-learning/types";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { slugify } from "@self-learning/util/common";
-import { defaultLicence } from "./demo/license";
+import { defaultLicence } from "./license";
 
 const prisma = new PrismaClient();
 
-export function createLesson(
-	title: string,
-	subtitle: string | null,
-	description: string | null,
-	content: LessonContent,
-	questions: QuizContent,
-	licenseId?: number | null,
-	lessonType?: LessonType,
-	selfRegulatedQuestion?: string
-) {
+const adminName = "dumbledore";
+
+export function createLessonWithRandomContentAndDemoQuestions({
+	title,
+	questions
+}: {
+	title: string;
+	questions: QuizContent;
+}) {
+	const content = [
+		{
+			type: "video",
+			value: {
+				url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+			},
+			meta: {
+				duration: 300
+			}
+		},
+		{
+			type: "article",
+			value: {
+				content: read("./demo/markdown-example.mdx")
+			},
+			meta: {
+				estimatedDuration: 300
+			}
+		}
+	] as LessonContent;
+
+	return createLesson({
+		title,
+		subtitle: faker.lorem.paragraph(1),
+		description: faker.lorem.paragraphs(3),
+		content,
+		questions,
+		licenseId: defaultLicence.licenseId
+	});
+}
+
+export function createLesson({
+	title,
+	subtitle,
+	description,
+	content,
+	questions,
+	licenseId,
+	lessonType,
+	selfRegulatedQuestion
+}: {
+	title: string;
+	subtitle: string | null;
+	description: string | null;
+	content: LessonContent;
+	questions: QuizContent;
+	licenseId?: number | null;
+	lessonType?: LessonType;
+	selfRegulatedQuestion?: string;
+}) {
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
-		lessonId: faker.datatype.uuid(),
-		slug: slugify(faker.random.alphaNumeric(8) + title, { lower: true, strict: true }),
+		lessonId: faker.string.uuid(),
+		slug: slugify(faker.string.alphanumeric(8) + title, { lower: true, strict: true }),
 		subtitle: subtitle,
 		description: description,
 		content: content,
@@ -39,7 +88,7 @@ export function createLesson(
 		quiz: {
 			questions,
 			config: null
-		} satisfies Quiz,
+		},
 		meta: {},
 		licenseId: licenseId ?? 0
 	};
@@ -55,13 +104,19 @@ type Lessons = {
 	content: Prisma.LessonCreateManyInput[];
 }[];
 
-export function createAuthor(
-	userName: string,
-	name: string,
-	imgUrl: string,
-	lessons: Lessons,
-	courses: Course[]
-): Prisma.UserCreateInput {
+export function createAuthor({
+	userName,
+	name,
+	imgUrl,
+	lessons,
+	courses
+}: {
+	userName: string;
+	name: string;
+	imgUrl: string;
+	lessons: Lessons;
+	courses: Course[];
+}): Prisma.UserCreateInput {
 	const slug = slugify(name, { lower: true, strict: true });
 	return {
 		name: userName,
@@ -101,17 +156,25 @@ type Chapters = {
 	licenseId?: number;
 }[];
 
-export function createCourse(
-	subjectId: string,
-	specializationId: string,
-	title: string,
-	subtitle: string | null,
-	description: string | null,
-	imgUrl: string | null,
-	chapters: Chapters
-): Course {
+export function createCourse({
+	subjectId,
+	specializationId,
+	title,
+	subtitle,
+	description,
+	imgUrl,
+	chapters
+}: {
+	subjectId: string;
+	specializationId: string;
+	title: string;
+	subtitle?: string;
+	description?: string;
+	imgUrl?: string;
+	chapters: Chapters;
+}): Course {
 	const course = {
-		courseId: faker.random.alphaNumeric(8),
+		courseId: faker.string.alphanumeric(8),
 		title: title,
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle ?? "",
@@ -140,29 +203,31 @@ export function createCourse(
 	return result;
 }
 
-type answer = {
-	content: string;
-	isCorrect: boolean;
-};
-
-export function createMultipleChoice(
-	question: string,
-	answers: answer[],
-	hints?: string[]
-): QuestionType {
+export function createMultipleChoice({
+	question,
+	answers,
+	hints
+}: {
+	question: string;
+	answers: {
+		content: string;
+		isCorrect: boolean;
+	}[];
+	hints?: string[];
+}): QuestionType {
 	const hintsData =
 		hints?.map(h => ({
-			hintId: faker.random.alphaNumeric(8),
+			hintId: faker.string.alphanumeric(8),
 			content: h
 		})) ?? [];
 
 	return {
 		type: "multiple-choice",
-		questionId: faker.random.alphaNumeric(8),
+		questionId: faker.string.alphanumeric(8),
 		statement: question,
 		withCertainty: false,
 		answers: answers.map(answer => ({
-			answerId: faker.random.alphaNumeric(8),
+			answerId: faker.string.alphanumeric(8),
 			...answer
 		})),
 		questionStep: 1,
@@ -177,18 +242,18 @@ export function createTextQuestion(
 ): QuestionType {
 	const hintsData =
 		hints?.map(h => ({
-			hintId: faker.random.alphaNumeric(8),
+			hintId: faker.string.alphanumeric(8),
 			content: h
 		})) ?? [];
 
 	return {
 		type: "exact",
-		questionId: faker.random.alphaNumeric(8),
+		questionId: faker.string.alphanumeric(8),
 		statement: question,
 		withCertainty: false,
 		caseSensitive: false,
 		acceptedAnswers: answers.map(answer => ({
-			acceptedAnswerId: faker.random.alphaNumeric(8),
+			acceptedAnswerId: faker.string.alphanumeric(8),
 			value: answer
 		})),
 		hints: hintsData
@@ -207,7 +272,13 @@ export function createVideo(url: string, duration: number): LessonContentType {
 	};
 }
 
-export function createArticle(mdContent: string, estimatedDuration = 300): LessonContentType {
+export function createArticle({
+	mdContent,
+	estimatedDuration = 300
+}: {
+	mdContent: string;
+	estimatedDuration: number;
+}): LessonContentType {
 	return {
 		type: "article",
 		value: {
@@ -219,7 +290,13 @@ export function createArticle(mdContent: string, estimatedDuration = 300): Lesso
 	};
 }
 
-export function createPdf(url: string, estimatedDuration: number): LessonContentType {
+export function createPdf({
+	url,
+	estimatedDuration
+}: {
+	url: string;
+	estimatedDuration: number;
+}): LessonContentType {
 	return {
 		type: "pdf",
 		value: {
@@ -231,14 +308,21 @@ export function createPdf(url: string, estimatedDuration: number): LessonContent
 	};
 }
 
-export function createSpecialization(
-	subjectId: string,
-	specializationId: string,
-	title: string,
-	subtitle: string,
-	imgUrlBanner: string | null,
-	cardImgUrl: string | null
-): Prisma.SpecializationCreateManyInput {
+export function createSpecialization({
+	subjectId,
+	specializationId,
+	title,
+	subtitle,
+	imgUrlBanner,
+	cardImgUrl
+}: {
+	subjectId: string;
+	specializationId: string;
+	title: string;
+	subtitle: string;
+	imgUrlBanner?: string;
+	cardImgUrl?: string;
+}): Prisma.SpecializationCreateManyInput {
 	return {
 		specializationId: specializationId,
 		subjectId: subjectId,
@@ -323,4 +407,83 @@ export async function seedCaseStudy(
 	}
 
 	console.log("\x1b[94m%s\x1b[32m ✔\x1b[0m", name + " Example");
+}
+
+export async function createUsers(users: Prisma.UserCreateInput[]): Promise<void> {
+	for (const user of users) {
+		await prisma.user.create({
+			data: user
+		});
+	}
+}
+
+export async function getAdminUser() {
+	return await prisma.user.findFirst({
+		where: { name: adminName }
+	});
+}
+
+export type Skill = {
+	id: string;
+	name: string;
+	description: string;
+};
+
+export async function createSkills(skills: Skill[], repositoryId: string) {
+	await Promise.all(
+		skills.map(async skill => {
+			const input: Prisma.SkillUncheckedCreateInput = {
+				repositoryId: repositoryId,
+				...skill
+			};
+
+			await prisma.skill.create({
+				data: input
+			});
+		})
+	);
+}
+
+export type SkillGroup = {
+	id: string;
+	name: string;
+	description: string;
+	children: string[];
+};
+
+export async function createSkillGroups(skillGroups: SkillGroup[], repository: Repository) {
+	// Need to preserve ordering and wait to be finished before creating the next one!
+	for (const skill of skillGroups) {
+		const nested = skill.children?.map(i => ({ id: i }));
+
+		await prisma.skill.create({
+			data: {
+				id: skill.id,
+				repositoryId: repository.id,
+				name: skill.name,
+				description: skill.description,
+				children: {
+					connect: nested
+				}
+			}
+		});
+	}
+}
+
+export type Repository = {
+	id: string;
+	name: string;
+	description: string;
+};
+
+export async function createRepositories(repository: Repository) {
+	const admin = await getAdminUser();
+	await prisma.skillRepository.create({
+		data: {
+			id: repository.id,
+			ownerName: admin?.name ?? "unknown",
+			name: repository.name,
+			description: repository.description
+		}
+	});
 }

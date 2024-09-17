@@ -4,7 +4,11 @@ import { authorRouter } from "./routers/author.router";
 import { completionRouter } from "./routers/completion.router";
 import { courseRouter } from "./routers/course.router";
 import { enrollmentRouter } from "./routers/enrollment.router";
-import { learningDiaryRouter } from "./routers/learning-diary.router";
+import {
+	learningDiaryPageRouter,
+	learningLocationRouter,
+	learningTechniqueRouter
+} from "./routers/learning-diary.router";
 import { learningGoalRouter } from "./routers/learning-goal.router";
 import { lessonRouter } from "./routers/lesson.router";
 import { licenseRouter } from "./routers/license.router";
@@ -15,14 +19,19 @@ import { specializationRouter } from "./routers/specialization.router";
 import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 
+import { settingsRouter } from "./routers/settings.router";
+import { userEventRouter } from "./routers/event-log.router";
+
 export const appRouter = t.router({
 	admin: adminRouter,
 	author: authorRouter,
 	completion: completionRouter,
 	course: courseRouter,
 	enrollment: enrollmentRouter,
-	learningDiary: learningDiaryRouter,
 	learningGoal: learningGoalRouter,
+	learningLocation: learningLocationRouter,
+	learningDiary: learningDiaryPageRouter,
+	learningTechniqueRating: learningTechniqueRouter,
 	lesson: lessonRouter,
 	licenseRouter: licenseRouter,
 	me: meRouter,
@@ -30,7 +39,9 @@ export const appRouter = t.router({
 	specialization: specializationRouter,
 	subject: subjectRouter,
 	programming: programmingRouter,
-	skill: skillRouter
+	skill: skillRouter,
+	settings: settingsRouter,
+	events: userEventRouter
 });
 
 // export type definition of API

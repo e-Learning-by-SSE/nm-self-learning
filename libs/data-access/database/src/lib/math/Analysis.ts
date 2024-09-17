@@ -12,20 +12,21 @@ export const chapters = [
 		description:
 			"In diesem Kapitel werden Folgen und Reihen behandelt. Es werden verschiedene Eigenschaften untersucht, wie etwa Monotonie, Beschränktheit und Konvergenz. Dabei stellt sich heraus, dass konvergente Folgen von besonderer Bedeutung sind - sie werden die Grundlage für die gesamte nachfolgende Theorie der Analysis bilden.",
 		content: [
-			createLesson(
-				"Folgen",
-				"Konvergenz",
-				"",
-				[
-					createPdf(
-						"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Folgen_Kapitel.pdf",
-						1260
-					)
+			createLesson({
+				title: "Folgen",
+				subtitle: "Konvergenz",
+				description: "",
+				content: [
+					createPdf({
+						url: "https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Folgen_Kapitel.pdf",
+						estimatedDuration: 1260
+					})
 				],
-				[
-					createMultipleChoice(
-						"Wahr oder falsch? Für die reelle Folge  $(a_n)_{n\\in\\mathbb N}$ sei die durch $$b_n:=\\frac{1}{2}(a_n+a_{n+1})$$ definierte Folge gegeben.\r\n\r\nWenn $(a_n)_{n\\in\\mathbb N}$ konvergiert, dann auch $(b_n)_{n\\in\\mathbb N}$.",
-						[
+				questions: [
+					createMultipleChoice({
+						question:
+							"Wahr oder falsch? Für die reelle Folge  $(a_n)_{n\\in\\mathbb N}$ sei die durch $$b_n:=\\frac{1}{2}(a_n+a_{n+1})$$ definierte Folge gegeben.\r\n\r\nWenn $(a_n)_{n\\in\\mathbb N}$ konvergiert, dann auch $(b_n)_{n\\in\\mathbb N}$.",
+						answers: [
 							{
 								content: "Diese Aussage ist wahr.",
 								isCorrect: true
@@ -35,11 +36,11 @@ export const chapters = [
 								isCorrect: false
 							}
 						],
-						[
+						hints: [
 							"Denken Sie an die Rechenregeln für Grenzwerte",
 							"Aus den Rechenregeln für Grenzwerte folgt sofort die Konvergenz der Folge $(b_n)_{n\\in\\mathbb N}$, und zwar ebenfalls gegen $a$."
 						]
-					),
+					}),
 					createTextQuestion(
 						"Man kann zeigen, dass die rekursiv durch $$a_{n+1}=\\frac{a_n}{2}+1,\\quad a_0=1$$ definierte Folge $(a_n)_{n\\in\\mathbb N}$ konvergiert. Bestimmen Sie den Grenzwert der Folge.",
 						["2", "2.0", "2,0"],
@@ -49,17 +50,15 @@ export const chapters = [
 						]
 					)
 				]
-			)
+			})
 		]
 	}
 ];
 
-export const course = createCourse(
-	"mathematik",
-	"analysis",
-	"Analysis",
-	null,
-	null,
-	"https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Mittelwertsatz.png",
+export const course = createCourse({
+	subjectId: "mathematik",
+	specializationId: "analysis",
+	title: "Analysis",
+	imgUrl: "https://staging.sse.uni-hildesheim.de:9006/upload/analysis/Mittelwertsatz.png",
 	chapters
-);
+});
