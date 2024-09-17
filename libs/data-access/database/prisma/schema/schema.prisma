@@ -21,6 +21,7 @@ model Student {
     learningDiaryEntrys         LearningDiaryPage[]
     personalLearningTechniques  LearningTechnique[]
     learningTechniqueRatings    TechniqueRating[]
+	learningGoals				LearningGoal[]
 }
 
 model StudentSettings {
@@ -271,10 +272,10 @@ model Skill {
 model EventLog {
   id          Int    @id @default(autoincrement())
   createdAt   DateTime  @default(now())
-  username    String   
+  username    String
   resourceId  String?
   courseId    String?
   type        String
-  payload     Json? 
+  payload     Json?
   // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
 }
