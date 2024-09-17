@@ -263,41 +263,118 @@ export async function generateLearningDiaryDemoData() {
 
 		// Create Learning Goals (hard-coded)
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Goals");
-		const goal1 = await prisma.learningGoal.create({
+		const learningGoal1 = await prisma.learningGoal.create({
 			data: {
-				id: "goal1",
-				name: "Complete Advanced Spells",
-				progress: "NOT_STARTED",
-				learningDiaryEntryId: diaryEntry1.id
+				description: "Learn TypeScript",
+				status: "ACTIVE",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Understand basic types",
+							status: "ACTIVE",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn about interfaces",
+							status: "INACTIVE",
+							createdAt: new Date()
+						}
+					]
+				}
 			}
 		});
 
-		const subGoal1 = await prisma.learningGoal.create({
+		const learningGoal2 = await prisma.learningGoal.create({
 			data: {
-				id: "subgoal1",
-				name: "Master Levitation Spell",
-				progress: "STARTED",
-				learningDiaryEntryId: diaryEntry1.id,
-				parentGoalId: goal1.id
+				description: "Master Prisma",
+				status: "INACTIVE",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Understand relations",
+							status: "ACTIVE",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn about migrations",
+							status: "INACTIVE",
+							createdAt: new Date()
+						}
+					]
+				}
 			}
 		});
 
-		const subGoal2 = await prisma.learningGoal.create({
+		const learningGoal3 = await prisma.learningGoal.create({
 			data: {
-				id: "subgoal2",
-				name: "Master Invisibility Spell",
-				progress: "FINISHED",
-				learningDiaryEntryId: diaryEntry1.id,
-				parentGoalId: goal1.id
+				description: "Understand SQL",
+				status: "INACTIVE",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Learn basic SQL commands",
+							status: "ACTIVE",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn joins",
+							status: "INACTIVE",
+							createdAt: new Date()
+						}
+					]
+				}
 			}
 		});
 
-		const goal2 = await prisma.learningGoal.create({
+		const learningGoal4 = await prisma.learningGoal.create({
 			data: {
-				id: "goal2",
-				name: "Brew Basic Potions",
-				progress: "NOT_STARTED",
-				learningDiaryEntryId: diaryEntry2.id
+				description: "Learn Docker",
+				status: "ACTIVE",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Understand containers",
+							status: "ACTIVE",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn Dockerfile basics",
+							status: "INACTIVE",
+							createdAt: new Date()
+						}
+					]
+				}
+			}
+		});
+
+		const learningGoal5 = await prisma.learningGoal.create({
+			data: {
+				description: "Learn Git and GitHub",
+				status: "COMPLETED",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Understand version control",
+							status: "COMPLETED",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn branching strategies",
+							status: "COMPLETED",
+							createdAt: new Date()
+						}
+					]
+				}
 			}
 		});
 

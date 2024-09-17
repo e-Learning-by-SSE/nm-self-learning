@@ -26,6 +26,8 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Sidebar } from "../../../../../libs/feature/diary/src/lib/page-viewer/sidebar";
+import { LearningGoalInputTile } from "../../../../../libs/feature/diary/src/lib/page-viewer/learning-goal-input-tile";
+import { LearningGoal } from "@self-learning/types";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
 
@@ -88,7 +90,6 @@ export default function DiaryPageDetail({
 		</div>
 	);
 }
-
 
 function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId: string }) {
 	const router = useRouter();
@@ -199,6 +200,7 @@ function DiaryContentForm({
 			...pageDetails,
 			// convert since data from database has null values and in API we only allow undefined
 			notes: pageDetails?.notes ?? undefined,
+			learningGoals: pageDetails?.learningGoals ?? undefined,
 			learningLocation: pageDetails?.learningLocation
 				? {
 						name: pageDetails?.learningLocation.name,
@@ -323,6 +325,18 @@ function DiaryContentForm({
 						render={({ field }) => (
 							<PersonalTechniqueRatingTile
 								strategies={itemsWithRatings}
+								onChange={field.onChange}
+							/>
+						)}
+					/>
+				</div>
+				<div className={"mb-4"}>
+					<Controller
+						name="learningGoals"
+						control={form.control}
+						render={({ field }) => (
+							<LearningGoalInputTile
+								initialGoals={pageDetails?.learningGoals as LearningGoal[]}
 								onChange={field.onChange}
 							/>
 						)}

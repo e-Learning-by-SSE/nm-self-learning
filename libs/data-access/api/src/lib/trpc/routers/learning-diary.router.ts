@@ -145,6 +145,13 @@ export const learningDiaryPageRouter = t.router({
 							creatorName: ctx.user.name
 						}
 					}))
+				},
+				learningGoals: {
+					connect: input.learningGoals
+						?.filter(goal => goal.id)
+						.map(goal => ({
+							id: goal.id
+						}))
 				}
 			},
 			select: {

@@ -157,7 +157,7 @@ function MyCombobox({
 			? goals
 			: goals.filter(goals => {
 					return goals.description.toLowerCase().includes(query.toLowerCase());
-			  });
+				});
 
 	function onSelectedGoalChange(e: { id: number; description: string; goalId: string }) {
 		setSelectedGoal(e);

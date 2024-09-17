@@ -8,14 +8,22 @@ export const techniqueRatingSchema = z.object({
 	creatorName: z.string()
 });
 
-export const learningGoalSchema: z.ZodSchema = z.lazy(() =>
-	z.object({
-		id: z.string().optional(),
-		learningDiaryEntryId: z.string().uuid().optional(),
-		parentGoalId: z.string().nullable().optional(),
-		childGoals: z.array(z.lazy(() => learningGoalSchema)).optional()
-	})
-);
+const learningGoalStatusSchema = z.enum(["ACTIVE", "INACTIVE", "COMPLETED"]);
+
+const learningSubGoalSchema = z.object({
+	id: z.string().cuid(),
+	description: z.string().min(1),
+	status: learningGoalStatusSchema.default("INACTIVE"),
+	priority: z.number().int(),
+	learningGoalId: z.string().cuid()
+});
+
+const learningGoalSchema = z.object({
+	id: z.string().cuid(),
+	description: z.string().min(1),
+	status: learningGoalStatusSchema.default("INACTIVE"),
+	learningSubGoals: z.array(learningSubGoalSchema)
+});
 
 export const learningLocationSchema = z.object({
 	name: z.string(),
