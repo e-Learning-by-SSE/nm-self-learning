@@ -13,11 +13,18 @@ export function createUserEvent<K extends keyof EventType>(event: {
 }
 
 export async function loadUserEvents(input: EventLogQueryInput) {
-	// No query if undefined, equality check if 1 type provided, else in list query
-	let typeWhereQuery: Prisma.StringFilter<"EventLog"> | string | undefined = undefined;
-	if (input.type && input.type.length > 0) {
-		typeWhereQuery = input.type.length > 1 ? { in: input.type } : input.type[0];
-	}
+	// No query if undefined, equality check if 1 string provided, else in list query for arrays
+	const buildQuery = (input: string | string[] | undefined) => {
+		let query: Prisma.StringFilter<"EventLog"> | string | undefined = undefined;
+		if (input) {
+			query = Array.isArray(input) ? { in: input } : input;
+		}
+		return query;
+	};
+
+	const typeWhereQuery = buildQuery(input.type);
+	const resourceIdQuery = buildQuery(input.resourceId);
+	const courseIdQuery = buildQuery(input.courseId);
 
 	const results = await database.eventLog.findMany({
 		where: {
@@ -27,7 +34,8 @@ export async function loadUserEvents(input: EventLogQueryInput) {
 				lte: input.end
 			},
 			type: typeWhereQuery,
-			resourceId: input.resourceId
+			resourceId: resourceIdQuery,
+			courseId: courseIdQuery
 		},
 		orderBy: {
 			createdAt: "asc"
