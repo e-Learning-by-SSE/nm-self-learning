@@ -13,9 +13,6 @@ const prisma = new PrismaClient();
 export async function seedDemos(): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", "Seeding Demo Data:");
 
-	await prisma.license.createMany({ data: license });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Licenses");
-
 	await prisma.subject.createMany({ data: demoSubjects });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 

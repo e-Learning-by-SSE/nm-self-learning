@@ -1,25 +1,11 @@
 import { PrismaClient } from "@prisma/client";
+import { faker } from "@faker-js/faker";
+import { getRandomCreatedAt, getRandomElementFromArray, getRandomTimeIntervalInMs } from "../../seed-functions";
 
 const prisma = new PrismaClient();
 const DEFAULT_SLUG = "the-beginners-guide-to-react";
 
-// Function to generate a random date between 30 days and 6 hours ago
-function getRandomCreatedAt(): Date {
-	const currentTime = new Date().getTime();
-	const minTime = currentTime - 50 * 24 * 60 * 60 * 1000; // 50 days ago
-	const maxTime = currentTime - 6 * 60 * 60 * 1000; // 6 hours ago
-
-	const randomTime = Math.floor(Math.random() * (maxTime - minTime)) + minTime;
-	return new Date(randomTime);
-}
-
-// Function to generate random time interval in milliseconds
-function getRandomTimeIntervalInMs(): number {
-	const minTimeMs = 60 * 1000; // 1 minute in ms
-	const maxTimeMs = 28 * 60 * 60 * 1000; // 28 hours in ms
-
-	return Math.floor(Math.random() * (maxTimeMs - minTimeMs + 1)) + minTimeMs;
-}
+// Reuse this function for generating random numbers within a range
 
 export async function generateLearningDiaryDemoData() {
 	console.log("\x1b[94m%s\x1b[0m", "Learning Diary Example:");
@@ -159,7 +145,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "diary-entry-advanced-spells",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied advanced spells",
 				learningDurationMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
@@ -174,28 +160,28 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "diary-entry-basic-potions",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied basic potions",
 				learningDurationMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 1,
 				effortLevel: 4,
 				scope: 6,
 				learningLocationId: location2.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
 		const emptyDiaryEntry = await prisma.learningDiaryPage.create({
 			data: {
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "",
 				learningDurationMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 0,
 				effortLevel: 0,
 				scope: 5,
 				learningLocationId: null,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
@@ -205,14 +191,14 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "entry3",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied defensive spells",
 				learningDurationMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
 				effortLevel: 3,
 				scope: 4,
 				learningLocationId: location3.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
@@ -220,14 +206,14 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "entry4",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied magical creatures",
 				learningDurationMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 1,
 				effortLevel: 5,
 				scope: 7,
 				learningLocationId: location2.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
@@ -235,14 +221,14 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "entry5",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied advanced charms",
 				learningDurationMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
 				effortLevel: 4,
 				scope: 6,
 				learningLocationId: location1.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
@@ -250,14 +236,14 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "entry-over-two-days",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied transfiguration over two days",
 				learningDurationMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 3,
 				effortLevel: 4,
 				scope: 8,
 				learningLocationId: location3.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
