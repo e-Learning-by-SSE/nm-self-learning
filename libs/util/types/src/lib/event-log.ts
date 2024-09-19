@@ -77,8 +77,9 @@ export type EventLog<K extends EventTypeKeys> = {
 export const eventWhereSchema = z.object({
 	start: z.date().optional(),
 	end: z.date().optional(),
-	type: z.array(typeSchema).optional(),
-	resourceId: z.string().optional()
+	type: z.union([typeSchema, z.array(typeSchema)]).optional(),
+	resourceId: z.union([z.string(), z.array(z.string())]).optional(),
+	courseId: z.union([z.string(), z.array(z.string())]).optional()
 });
 
 export type EventWhereClause = z.input<typeof eventWhereSchema>;
