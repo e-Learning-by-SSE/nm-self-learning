@@ -15,7 +15,7 @@ const PreviewTypes = ["Table", "Chart"];
 
 export function LearningHeatmap() {
 	const [previewSelection, setPreviewSelection] = useState("Table");
-	const { data, isLoading } = trpc.events.get.useQuery({});
+	const { data, isLoading } = trpc.events.findMany.useQuery({}); // TODO metrics: remove this, and use hook instead
 
 	if (isLoading) {
 		return <div>Loading...</div>;
