@@ -240,7 +240,8 @@ const esModules = [
 	"y18n",
 	"yargs",
 	"yargs-parser",
-	"zwitch"
+	"zwitch",
+	"@e-learning-by-sse/nm-skill-lib"
 ].join("|");
 
 const path = require("path");
