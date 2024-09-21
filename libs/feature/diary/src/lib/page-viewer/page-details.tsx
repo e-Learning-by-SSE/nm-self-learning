@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { LearningDiaryPageDetail } from "../access-learning-diary";
 import {
+	duplicateRemover,
 	formatDateToGermanDate,
 	formatTimeIntervalToString,
 	isTruthy
@@ -9,7 +10,6 @@ import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/com
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { hintsUsed, isEventType, quizAttempts } from "libs/feature/analysis/src/lib/metrics";
-import { IdSet } from "@e-learning-by-sse/nm-skill-lib";
 
 export function DiaryLearnedContent({ page }: { page: LearningDiaryPageDetail }) {
 	const [showMore, setShowMore] = useState(false);
@@ -106,12 +106,12 @@ export function useLessonDetails({ page }: { page: LearningDiaryPageDetail }) {
 			.reduce(hintsUsed, 0);
 
 		// create a list of unique taskIds for this specific lessons
-		let taskIds: { id: string }[] = lessonEvents
+		const taskIds: { id: string }[] = lessonEvents
 			.filter(e => isEventType(e, "LESSON_QUIZ_SUBMISSION"))
 			.map(e => e.payload.questionId)
 			.filter(isTruthy)
-			.map(e => ({ id: e }));
-		taskIds = Array.from(new IdSet(taskIds)); // remove duplicates
+			.map(e => ({ id: e }))
+			.filter(duplicateRemover());
 
 		return {
 			title: lesson.lesson.title,

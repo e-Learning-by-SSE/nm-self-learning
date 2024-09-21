@@ -2,7 +2,7 @@ import { LearningDiaryPageDetail } from "../access-learning-diary";
 import { trpc } from "@self-learning/api-client";
 import { useLessonDetails } from "./page-details";
 import { renderHook } from "@testing-library/react";
-import { EventLog, EventType } from "@self-learning/types";
+import { EventLog } from "@self-learning/types";
 
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {

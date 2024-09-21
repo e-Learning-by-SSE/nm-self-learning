@@ -163,6 +163,7 @@ function QuizCompletionSubscriber({
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
 
 	useEffect(() => {
+		// TODO check if this useEffect is necessary
 		if (!unsubscribeRef.current && completionState === "completed") {
 			unsubscribeRef.current = true;
 			console.log("QuizCompletionSubscriber: Marking as completed");
@@ -175,7 +176,8 @@ function QuizCompletionSubscriber({
 
 QuestionsPage.getLayout = LessonLayout;
 
-function QuizHeader({
+// exported for testing
+export function QuizHeader({
 	lesson,
 	course,
 	questions,
@@ -194,7 +196,21 @@ function QuizHeader({
 	const failureDialogOpenedRef = useRef(false);
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 	const [showFailureDialog, setShowFailureDialog] = useState(false);
+
 	const { newEvent } = useEventLog();
+	const logQuizStart = useCallback(
+		(lesson: QuestionProps["lesson"], question: QuizContent[number]) => {
+			newEvent({
+				type: "LESSON_QUIZ_START",
+				resourceId: lesson.lessonId,
+				payload: {
+					questionId: question.questionId,
+					type: question.type
+				}
+			});
+		},
+		[newEvent]
+	);
 
 	if (!successDialogOpenedRef.current && completionState === "completed") {
 		successDialogOpenedRef.current = true;
@@ -207,12 +223,9 @@ function QuizHeader({
 	}
 
 	useEffect(() => {
-		newEvent({
-			type: "LESSON_QUIZ_START",
-			resourceId: lesson.lessonId,
-			payload: { index: 0, type: questions[0].type }
-		});
-	}, [questions, lesson.lessonId, newEvent]);
+		// TODO diary: check if the useEffect is necessary
+		logQuizStart(lesson, questions[currentIndex]);
+	}, [questions, currentIndex, logQuizStart, lesson]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -225,16 +238,7 @@ function QuizHeader({
 
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
 				{questions.map((question, index) => (
-					<div
-						onClick={() => {
-							newEvent({
-								type: "LESSON_QUIZ_START",
-								resourceId: lesson.lessonId,
-								payload: { index, type: question.type }
-							});
-						}}
-						key={question.questionId}
-					>
+					<div onClick={() => logQuizStart(lesson, question)} key={question.questionId}>
 						<Tab>
 							<QuestionTab
 								index={index}
