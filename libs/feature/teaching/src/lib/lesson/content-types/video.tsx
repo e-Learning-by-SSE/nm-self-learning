@@ -1,6 +1,6 @@
 import { Video } from "@self-learning/types";
 import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
-import { LabeledField, Upload } from "@self-learning/ui/forms";
+import { GenerateSubtile, LabeledField, Upload } from "@self-learning/ui/forms";
 import { VideoPlayer } from "@self-learning/ui/lesson";
 import { formatSeconds } from "@self-learning/util/common";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
@@ -12,7 +12,7 @@ export function VideoInput({ index }: { index: number }) {
 	});
 
 	const {
-		value: { url },
+		value: { url, subtitle },
 		meta: { duration }
 	} = useWatch({ control, name: `content.${index}` });
 
@@ -81,6 +81,8 @@ export function VideoInput({ index }: { index: number }) {
 							});
 						}}
 					/>
+					{url && !subtitle && <GenerateSubtile video_url={url} />}
+					
 				</div>
 			</div>
 		</SectionCard>

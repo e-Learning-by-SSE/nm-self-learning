@@ -1,4 +1,4 @@
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Button, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { CloudArrowDownIcon } from "@heroicons/react/24/outline";
 import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
@@ -18,9 +18,11 @@ import { formatDateAgo } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
 import { parseISO } from "date-fns";
-import { ReactElement, useId, useMemo, useState } from "react";
+import { ReactElement, useEffect, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
+import { CenteredContainer } from "@self-learning/ui/layouts";
+import io, { Socket } from "socket.io-client";
 
 const MediaType = {
 	image: "image",
@@ -170,6 +172,114 @@ export function Upload({
 			/>
 			{preview}
 		</div>
+	);
+}
+
+export function ModifySubtile({
+	subtitle,
+	onClose
+}: {
+	subtitle: string;
+	onClose: OnDialogCloseFn<string>;
+}) {
+	return (
+		<CenteredContainer>
+			<Dialog
+				style={{ height: "25vh", width: "30vw", overflow: "auto" }}
+				title={"Untertitel generieren"}
+				onClose={() => {}}
+			>
+				<CenteredContainer>{subtitle}</CenteredContainer>
+
+				<div className="mt-auto">
+					<DialogActions onClose={onClose}>
+						<button className="btn-primary" onClick={() => {}}>
+							OK
+						</button>
+					</DialogActions>
+				</div>
+			</Dialog>
+		</CenteredContainer>
+	);
+}
+export function GenerateSubtile({ video_url }: { video_url: string }) {
+	const [showDialog, setShowDialog] = useState(false);
+
+	return (
+		<>
+			{showDialog && <GenerateSubtileDialog video_url={video_url} onClose={() => {}} />}
+			<Button
+				className="btn-primary"
+				onClick={() => {
+					setShowDialog(true);
+				}}
+			/>
+		</>
+	);
+}
+
+function GenerateSubtileDialog({
+	video_url,
+	onClose
+}: {
+	video_url: string;
+	onClose: OnDialogCloseFn<string>;
+}) {
+	const [progress, setProgress] = useState<string>("Initializing...");
+	const [transcription, setTranscription] = useState<string | null>(null);
+	const [socket, setSocket] = useState<Socket | null>(null);
+
+	useEffect(() => {
+		const socket = io("http://localhost:5000");
+		setSocket(socket);
+
+		socket.emit("transcribe", { video_url });
+
+		socket.on("progress", (data: { message: string }) => {
+			setProgress(data.message);
+		});
+
+		socket.on("complete", (data: { transcription: string }) => {
+			setTranscription(data.transcription);
+			setProgress("Transcription complete!");
+		});
+
+		socket.on("error", (data: { error: string }) => {
+			setProgress(`Error: ${data.error}`);
+		});
+
+		return () => {
+			socket.disconnect();
+		};
+	}, [video_url]);
+
+	return (
+		<CenteredContainer>
+			<Dialog
+				style={{ height: "25vh", width: "30vw", overflow: "auto" }}
+				title={"Generate Subtitle"}
+				onClose={onClose}
+			>
+				<CenteredContainer>
+					<div>
+						<p>{progress}</p>
+						{!transcription && <div className="h-5 w-5 mt-5 justify-center animate-spin rounded-full border-b-2 border-black" />}
+						{transcription && (
+							<div>
+								<h3>Transcription Result</h3>
+								<p>Hallo</p>
+							</div>
+						)}
+					</div>
+				</CenteredContainer>
+
+				<div className="mt-auto">
+					<DialogActions onClose={() => onClose(transcription || "")}>
+						<button className="btn-primary">OK</button>
+					</DialogActions>
+				</div>
+			</Dialog>
+		</CenteredContainer>
 	);
 }
 
