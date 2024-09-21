@@ -161,7 +161,7 @@ export async function generateLearningDiaryDemoData() {
 				studentName: student.username,
 				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
 				notes: "Studied advanced spells",
-				learningDurationMs: getRandomTimeIntervalInMs(),
+				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
 				effortLevel: 3,
 				scope: 5,
@@ -176,7 +176,7 @@ export async function generateLearningDiaryDemoData() {
 				studentName: student.username,
 				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
 				notes: "Studied basic potions",
-				learningDurationMs: getRandomTimeIntervalInMs(),
+				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 1,
 				effortLevel: 4,
 				scope: 6,
@@ -190,7 +190,7 @@ export async function generateLearningDiaryDemoData() {
 				studentName: student.username,
 				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
 				notes: "",
-				learningDurationMs: getRandomTimeIntervalInMs(),
+				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 0,
 				effortLevel: 0,
 				scope: 5,
@@ -207,7 +207,7 @@ export async function generateLearningDiaryDemoData() {
 				studentName: student.username,
 				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
 				notes: "Studied defensive spells",
-				learningDurationMs: getRandomTimeIntervalInMs(),
+				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
 				effortLevel: 3,
 				scope: 4,
@@ -222,7 +222,7 @@ export async function generateLearningDiaryDemoData() {
 				studentName: student.username,
 				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
 				notes: "Studied magical creatures",
-				learningDurationMs: getRandomTimeIntervalInMs(),
+				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 1,
 				effortLevel: 5,
 				scope: 7,
@@ -237,7 +237,7 @@ export async function generateLearningDiaryDemoData() {
 				studentName: student.username,
 				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
 				notes: "Studied advanced charms",
-				learningDurationMs: getRandomTimeIntervalInMs(),
+				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
 				effortLevel: 4,
 				scope: 6,
@@ -252,7 +252,7 @@ export async function generateLearningDiaryDemoData() {
 				studentName: student.username,
 				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
 				notes: "Studied transfiguration over two days",
-				learningDurationMs: getRandomTimeIntervalInMs(),
+				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 3,
 				effortLevel: 4,
 				scope: 8,

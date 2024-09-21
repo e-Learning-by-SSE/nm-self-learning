@@ -1,7 +1,7 @@
-import { LearningHeatmap, VideoDuration } from "@self-learning/analysis";
+import { LearningHeatmap, TeacherView, VideoDuration } from "@self-learning/analysis";
 import { useState } from "react";
 
-const PreviewTypes = ["Videos", "Heatmap"] as const;
+const PreviewTypes = ["Videos", "Heatmap", "Teacher"] as const;
 
 export default function Page() {
 	const [metricSelection, setMetricSelection] = useState("Heatmap");
@@ -12,6 +12,8 @@ export default function Page() {
 				return <VideoDuration />;
 			case "Heatmap":
 				return <LearningHeatmap />;
+			case "Teacher":
+				return <TeacherView />;
 			default:
 				return null;
 		}

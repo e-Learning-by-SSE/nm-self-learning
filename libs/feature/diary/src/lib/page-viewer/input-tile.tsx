@@ -2,10 +2,15 @@ import { PencilIcon } from "@heroicons/react/24/solid";
 import React, { PropsWithChildren } from "react";
 import { trpc } from "@self-learning/api-client";
 import { Location } from "@self-learning/diary";
-import { Dialog, DialogActions, LoadingBox, StarRating } from "@self-learning/ui/common";
+import {
+	ButtonSmallX,
+	Dialog,
+	DialogActions,
+	LoadingBox,
+	StarRating
+} from "@self-learning/ui/common";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { RemoveButton } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-view";
 
 export function Tile({
 	onToggleEdit,
@@ -227,8 +232,8 @@ export function LocationChooseDialog({
 								)}
 								<span className="text-gray-800 flex-grow">{location.name}</span>
 								{!location.defaultLocation && (
-									<RemoveButton
-										onRemove={() => deleteLearningLocationAsync(location.id)}
+									<ButtonSmallX
+										onClick={() => deleteLearningLocationAsync(location.id)}
 										className="ml-auto text-red-500 hover:text-red-700"
 									/>
 								)}

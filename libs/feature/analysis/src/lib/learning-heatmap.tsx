@@ -1,18 +1,21 @@
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { eventsToIntervalls, computeHeatmapData } from "./metrics/learning-intervalls";
-import { Interval } from "./metrics/learning-intervalls";
-import { HeatmapEntry } from "./metrics/learning-intervalls";
 import { UserEvent } from "@self-learning/database";
 import { useState } from "react";
 import { HeatMap } from "./components/learning-heatmap";
-import { isEventType } from "./aggregation-functions";
+import {
+	isEventType,
+	HeatmapEntry,
+	Interval,
+	eventsToIntervalls,
+	computeHeatmapData
+} from "./metrics";
 
 const PreviewTypes = ["Table", "Chart"];
 
 export function LearningHeatmap() {
 	const [previewSelection, setPreviewSelection] = useState("Table");
-	const { data, isLoading } = trpc.events.get.useQuery({});
+	const { data, isLoading } = trpc.events.findMany.useQuery({}); // TODO metrics: remove this, and use hook instead
 
 	if (isLoading) {
 		return <div>Loading...</div>;

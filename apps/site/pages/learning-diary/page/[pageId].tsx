@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
 import {
 	allPages,
-	DiaryPageDetails,
+	DiaryLearnedContent,
 	getAllStrategies,
 	LocationInputTile,
 	StarInputTile,
@@ -105,6 +105,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 	};
 
 	const changePage = (diaryId: string) => {
+		console.log("push");
 		router.push("/learning-diary/page/" + diaryId);
 	};
 
@@ -249,12 +250,13 @@ function DiaryContentForm({
 		return null;
 	}
 	return (
-		<FormProvider {...form}>
-			<form>
-				<div className="mb-4 flex justify-center">
-					<DiaryPageDetails page={pageDetails} />
-				</div>
-				<div className="mb-4">
+		<div className="space-y-4">
+			<div className="flex justify-center">
+				<DiaryLearnedContent page={pageDetails} />
+			</div>
+			<Divider />
+			<FormProvider {...form}>
+				<form className="space-y-4">
 					<Controller
 						name="learningLocation"
 						control={form.control}
@@ -265,8 +267,6 @@ function DiaryContentForm({
 							/>
 						)}
 					/>
-				</div>
-				<div className={"mb-4"}>
 					<Controller
 						name="effortLevel"
 						control={form.control}
@@ -283,8 +283,6 @@ function DiaryContentForm({
 							/>
 						)}
 					/>
-				</div>
-				<div className={"mb-4"}>
 					<Controller
 						name="distractionLevel"
 						control={form.control}
@@ -303,8 +301,6 @@ function DiaryContentForm({
 							/>
 						)}
 					/>
-				</div>
-				<div className={"mb-4"}>
 					<Controller
 						name="notes"
 						control={form.control}
@@ -315,8 +311,6 @@ function DiaryContentForm({
 							/>
 						)}
 					/>
-				</div>
-				<div className={"mb-4"}>
 					<Controller
 						name="techniqueRatings"
 						control={form.control}
@@ -327,9 +321,9 @@ function DiaryContentForm({
 							/>
 						)}
 					/>
-				</div>
-			</form>
-		</FormProvider>
+				</form>
+			</FormProvider>
+		</div>
 	);
 }
 

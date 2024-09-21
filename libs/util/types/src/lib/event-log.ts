@@ -1,3 +1,4 @@
+import { differenceInMonths } from "date-fns";
 import { z } from "zod";
 
 export const evenTypePayloadSchema = z.object({
@@ -16,7 +17,9 @@ export const evenTypePayloadSchema = z.object({
 	LESSON_RESTART: z.undefined(),
 	LESSON_COMPLETE: z.undefined(),
 	LESSON_QUIZ_SUBMISSION: z.object({
-		index: z.string(),
+		questionId: z.string(),
+		totalQuestionPool: z.number(),
+		questionPoolIndex: z.number(),
 		type: z.string(),
 		hintsUsed: z.array(z.string()),
 		attempts: z.number(),
@@ -24,7 +27,7 @@ export const evenTypePayloadSchema = z.object({
 		// timeSpentSeconds: z.number()
 	}),
 	LESSON_QUIZ_START: z.object({
-		index: z.number(),
+		questionId: z.string(),
 		type: z.string()
 	}),
 	LESSON_VIDEO_PLAY: z.object({
@@ -77,10 +80,37 @@ export type EventLog<K extends EventTypeKeys> = {
 export const eventWhereSchema = z.object({
 	start: z.date().optional(),
 	end: z.date().optional(),
-	type: z.union([typeSchema, z.array(typeSchema)]).optional(),
-	resourceId: z.union([z.string(), z.array(z.string())]).optional(),
-	courseId: z.union([z.string(), z.array(z.string())]).optional()
+	type: z.array(typeSchema).or(typeSchema).optional(),
+	resourceId: z.array(z.string()).or(z.string()).optional(),
+	courseId: z.array(z.string()).or(z.string()).optional()
 });
+// .refine(
+// 	data => {
+// 		// specify conditions to limit the data a user can query.
+
+// 		// // Bedingung 1: Prüfen, ob sowohl start als auch end gesetzt sind und max. 6 Monate auseinanderliegen
+// 		// if (data.start) {
+// 		// 	const monthsDifference = differenceInMonths(data.end ?? new Date(), data.start);
+// 		// 	if (monthsDifference > 6) {
+// 		// 		return false;
+// 		// 	}
+// 		// } else {
+// 		// 	else if (!data.resourceId && !data.courseId) {
+// 		// 		// resourceId und courseId sind beide nicht gesetzt, also ungültig
+// 		// 		return false;
+// 		// 	} // Bedingung 3: Wenn kein Typ gesetzt ist, müssen entweder resourceId oder courseId vorhanden sein
+// 		// 	else if (!data.type && (!data.resourceId || !data.courseId)) {
+// 		// 		return false;
+// 		// 	}
+// 		// }
+
+// 		return true;
+// 	},
+// 	{
+// 		message:
+// 			"Entweder müssen (start und end, max 6 Monate auseinander), oder (resourceId oder courseId), oder (type) gesetzt sein."
+// 	}
+// );
 
 export type EventWhereClause = z.input<typeof eventWhereSchema>;
 
