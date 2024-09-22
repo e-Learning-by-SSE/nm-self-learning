@@ -2,7 +2,7 @@
 import { useLessonContext } from "@self-learning/lesson";
 import { useQuiz } from "@self-learning/quiz";
 import { useEventLog } from "@self-learning/util/common";
-import { QuizHeader } from "./quiz";
+import { QuizHeader } from "../pages/courses/[courseSlug]/[lessonSlug]/quiz";
 import { render, screen, fireEvent } from "@testing-library/react";
 
 jest.mock("@self-learning/util/common");
