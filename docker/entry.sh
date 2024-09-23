@@ -1,4 +1,5 @@
 #!/bin/bash
+source /app/docker/startup.sh
 
 createEffectiveConfiguration() {
 	# Creates a list of environment variables as follows:
@@ -78,11 +79,4 @@ mkdir -p state
 # This is required for React/NextJS applications
 compileOnChange
 
-createOrMigrateDB
-
-# Start Next.js
-if [ ! -z "${RUN_AS_DEMO}" ]; then
-    npm run start:demo
-else
-    npm run start:prod
-fi
+startup $@
