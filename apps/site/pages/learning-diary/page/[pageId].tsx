@@ -195,27 +195,29 @@ function DiaryContentForm({
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
 
-	const defaultValues = useMemo(
-		() => ({
+	const defaultValues = useMemo(() => {
+		console.log("pagedetails", pageDetails);
+		return {
 			...pageDetails,
 			// convert since data from database has null values and in API we only allow undefined
 			notes: pageDetails?.notes ?? undefined,
 			learningGoals: pageDetails?.learningGoals ?? undefined,
 			learningLocation: pageDetails?.learningLocation
 				? {
-						name: pageDetails?.learningLocation.name,
-						iconURL: pageDetails?.learningLocation.iconURL ?? undefined,
+						name: pageDetails.learningLocation.name,
+						iconURL: pageDetails.learningLocation.iconURL ?? undefined,
 						defaultLocation: false
 					}
 				: undefined
-		}),
-		[pageDetails]
-	);
+		};
+	}, [pageDetails]);
 
 	const form = useForm<LearningDiaryPage>({
 		resolver: zodResolver(learningDiaryPageSchema),
 		defaultValues
 	});
+
+	console.log("defaultValues", defaultValues);
 
 	useEffect(() => {
 		const subscription = form.watch((value, _) => {
@@ -336,7 +338,7 @@ function DiaryContentForm({
 						control={form.control}
 						render={({ field }) => (
 							<LearningGoalInputTile
-								initialGoals={pageDetails?.learningGoals as LearningGoal[]}
+								initialGoals={field.value}
 								onChange={field.onChange}
 							/>
 						)}

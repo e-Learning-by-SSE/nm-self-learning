@@ -45,6 +45,7 @@ export async function getDiaryPage(ltbId: string) {
 					id: true,
 					description: true,
 					status: true,
+					lastProgressUpdate: true,
 					learningSubGoals: {
 						select: {
 							id: true,
