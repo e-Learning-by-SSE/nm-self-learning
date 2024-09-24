@@ -258,12 +258,18 @@ export const authOptions: NextAuthOptions = {
 				});
 			}
 
+			const eventLogEnabled = await database.studentSettings.findUnique({
+				where: { username: username },
+				select: { learningStatistics: true }
+			});
+
 			session.user = {
 				id: userFromDb.id,
 				name: username,
 				role: userFromDb.role,
 				isAuthor: !!userFromDb.author,
-				avatarUrl: userFromDb.image
+				avatarUrl: userFromDb.image,
+				eventLogEnabled: eventLogEnabled?.learningStatistics ?? false
 			};
 
 			return session;
