@@ -1,13 +1,15 @@
 import { Combobox } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { LearningGoal, LearningSubGoal } from "@self-learning/types";
+import { LearningSubGoal } from "@self-learning/types";
 import { Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
+import { LearningGoalType } from "../../util/types";
 
 /**
  * Component to display an editor dialog for a learning goal or sub-goal.
+ * Author Fabian Kneer
  *
  * @param goal Learning goal data
  * @param subGoal Sub-goal data
@@ -19,7 +21,7 @@ export function GoalEditorDialog({
 	subGoal,
 	onClose
 }: Readonly<{
-	goal?: LearningGoal;
+	goal?: LearningGoalType;
 	subGoal?: LearningSubGoal;
 	onClose: () => void;
 }>) {
@@ -35,7 +37,7 @@ export function GoalEditorDialog({
 
 	// Different label for creating or editing of a goal or sub-goal
 	const title = goal || subGoal ? "Lernziel bearbeiten" : "Lernziel erstellen";
-
+	
 	/**
 	 * Function for saving a goal or sub-goal. Contains a textarea for describing a learning goal and a combobox to select the parent goal.
 	 * The combobox is only displayed for new learning goals or sub-goals.
@@ -48,19 +50,19 @@ export function GoalEditorDialog({
 			const date = new Date();
 			const lastProgressUpdate = date.toISOString();
 
-			if (goalId != "") {
+			if (goalId !== "") {
 				// Learning goal was edited
 				editGoal({ description, lastProgressUpdate, goalId });
-			} else if (subGoalId != "") {
+			} else if (subGoalId !== "") {
 				// Learning sub-goal was edited
-				if (learningGoalId == "") {
+				if (learningGoalId === "") {
 					// a Sub-goal was edited and converted to a learning goal.
 					createGoalFromSubGoal({ description, subGoalId });
 				} else {
 					// a Sub-goal was edited
 					editSubGoal({ description, lastProgressUpdate, learningGoalId, subGoalId });
 				}
-			} else if (learningGoalId == "") {
+			} else if (learningGoalId === "") {
 				// a new learning goal was created
 				createGoal({ description });
 			} else {
@@ -83,8 +85,8 @@ export function GoalEditorDialog({
 		const goals = [{ id: 1, description: "Kein Ziel ausgewählt", goalId: "" }];
 		let index = 2;
 
-		_goals?.map((goal: { status: string; description: string; id: string }) => {
-			if (goal.status != "COMPLETED") {
+		_goals?.forEach((goal: { status: string; description: string; id: string }) => {
+			if (goal.status !== "COMPLETED") {
 				goals.push({ id: index, description: goal.description, goalId: goal.id });
 				index++;
 			}
@@ -151,7 +153,7 @@ function MyCombobox({
 }>) {
 	const [selectedGoal, setSelectedGoal] = useState(goals[pSelectedGoal]);
 	const [query, setQuery] = useState("");
-
+	
 	const filteredGoals =
 		query === ""
 			? goals
@@ -163,7 +165,7 @@ function MyCombobox({
 		setSelectedGoal(e);
 		onChange(e.goalId);
 	}
-
+	
 	return (
 		<Combobox value={selectedGoal} onChange={onSelectedGoalChange}>
 			<div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">

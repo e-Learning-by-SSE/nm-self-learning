@@ -1,8 +1,9 @@
 import { LockClosedIcon, LockOpenIcon } from "@heroicons/react/24/solid";
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
-import { LearningGoal, LearningSubGoal } from "@self-learning/types";
+import {  LearningSubGoal } from "@self-learning/types";
 import { useEffect, useRef, useState } from "react";
+import { LearningGoalType } from "../../util/types";
 
 /**
  * Component to display and change the status of a learning goal or sub-goal. Shows the status and on click opens the three option for a status.
@@ -18,10 +19,10 @@ export function GoalStatus({
 	editable,
 	onEdit
 }: Readonly<{
-	goal?: LearningGoal;
+	goal?: LearningGoalType;
 	subGoal?: LearningSubGoal;
 	editable: boolean;
-	onEdit: (editedGoal: LearningGoal) => void;
+	onEdit: (editedGoal: LearningGoalType) => void;
 }>) {
 	const { mutateAsync: editSubGoal } = trpc.learningGoal.editSubGoalStatus.useMutation();
 	const { mutateAsync: editGoal } = trpc.learningGoal.editGoalStatus.useMutation();
@@ -107,7 +108,7 @@ export function GoalStatus({
 		let result = false;
 		if (goal) {
 			const index = goal.learningSubGoals.findIndex(
-				goal => goal.status == "INACTIVE" || goal.status == "ACTIVE"
+				goal => goal.status === "INACTIVE" || goal.status === "ACTIVE"
 			);
 			if (index < 0) {
 				result = true;
@@ -117,7 +118,7 @@ export function GoalStatus({
 	}
 
 	const disable =
-		(goal && status == "COMPLETED") ||
+		(goal && status === "COMPLETED") ||
 		(goal && !areSubGoalsCompleted() && !subGoal) ||
 		!editable;
 

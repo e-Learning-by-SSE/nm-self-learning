@@ -3,18 +3,7 @@ import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import React, { useState } from "react";
 import { Dialog, DialogActions, OnDialogCloseFn, StarRating } from "@self-learning/ui/common";
 import { Tile } from "./input-tile";
-
-type Technique = {
-	name: string;
-	id: string;
-	score?: number;
-};
-
-type Strategy = {
-	techniques: Technique[];
-	id: string;
-	name: string;
-};
+import { Strategy, Technique } from "../util/types";
 
 type StrategiesProps = {
 	strategies: Strategy[];

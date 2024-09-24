@@ -1,12 +1,12 @@
-import { LearningGoals } from "@self-learning/learning-goals";
 import { trpc } from "@self-learning/api-client";
+import { LearningGoals } from "@self-learning/diary";
 import { LoadingCircle } from "@self-learning/ui/common";
 
 /**
  * LearningGoal()
  *
  * Main component of the learning goals
- *
+ * * Author Fabian Kneer
  */
 export default function LearningGoal() {
 	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
@@ -21,8 +21,14 @@ export default function LearningGoal() {
 		);
 	} else if (learningGoals) {
 		// prisma Date string problem -> workaround JSON parse
-		return <LearningGoals goals={JSON.parse(JSON.stringify(learningGoals))}  onEdit={(changedGoal) => {}}/>;
+		return (
+			<LearningGoals
+				goals={JSON.parse(JSON.stringify(learningGoals))}
+				onEdit={changedGoal => {}}
+			/>
+		);
 	} else {
-		return <LearningGoals goals={null} onEdit={(changedGoal) => {}}/>;
+		return <LearningGoals goals={[]} onEdit={changedGoal => {}} />;
 	}
 }
+// TODO: diary-goals: why this page?

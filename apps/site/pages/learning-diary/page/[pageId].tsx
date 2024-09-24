@@ -14,20 +14,20 @@ import {
 	StarInputTile,
 	Strategy,
 	PersonalTechniqueRatingTile,
-	Tile
+	Tile,
+	LearningGoalInputTile,
+	Sidebar
 } from "@self-learning/diary";
 
 import { LearningDiaryPage, learningDiaryPageSchema, ResolvedValue } from "@self-learning/types";
 import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
+import { LearningGoalType } from "libs/feature/diary/src/lib/util/types";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
-import { Sidebar } from "../../../../../libs/feature/diary/src/lib/page-viewer/sidebar";
-import { LearningGoalInputTile } from "../../../../../libs/feature/diary/src/lib/page-viewer/learning-goal-input-tile";
-import { LearningGoal } from "@self-learning/types";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
 
@@ -246,6 +246,12 @@ function DiaryContentForm({
 
 	const handleUpdateTechniqueRating = (update: StrategyWithRating) => {};
 
+	const transformToInputType = (goals: LearningGoalType[]) =>
+		goals.map(goal => ({
+			...goal,
+			lastProgressUpdate: goal.lastProgressUpdate ?? null
+		}));
+
 	if (isLoading) {
 		return <LoadingCircleCorner />;
 	} else if (!pageDetails) {
@@ -337,10 +343,7 @@ function DiaryContentForm({
 						name="learningGoals"
 						control={form.control}
 						render={({ field }) => (
-							<LearningGoalInputTile
-								initialGoals={field.value}
-								onChange={field.onChange}
-							/>
+							<LearningGoalInputTile initialGoals={[]} onChange={field.onChange} />
 						)}
 					/>
 				</div>

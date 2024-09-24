@@ -1,11 +1,10 @@
 import { database } from "@self-learning/database";
 import { authProcedure, t } from "../trpc";
-import { ResolvedValue } from "@self-learning/types";
 import { z } from "zod";
 import { LearningGoalStatus } from "@prisma/client";
+import { getLearningGoals } from "libs/feature/diary/src/lib/goals/access-learning-goal";
 
 export const learningGoalRouter = t.router({
-	// returns all learning goals of a user.
 	loadLearningGoal: authProcedure.query(async ({ ctx }) => {
 		return await getLearningGoals(ctx.user.name);
 	}),
@@ -327,37 +326,3 @@ export const learningGoalRouter = t.router({
 		});
 	})
 });
-
-export type LearningGoalType = ResolvedValue<typeof getLearningGoals>;
-
-/**
- * Fetch learning goals from database
- * @param username The username of the current user
- * @returns The learning goals of the user
- */
-async function getLearningGoals(username: string) {
-	return await database.learningGoal.findMany({
-		where: { username: username },
-		orderBy: {
-			lastProgressUpdate: { sort: "desc", nulls: "last" }
-		},
-		select: {
-			id: true,
-			status: true,
-			lastProgressUpdate: true,
-			description: true,
-			learningSubGoals: {
-				orderBy: {
-					priority: "asc"
-				},
-				select: {
-					id: true,
-					description: true,
-					priority: true,
-					status: true,
-					learningGoalId: true
-				}
-			}
-		}
-	});
-}
