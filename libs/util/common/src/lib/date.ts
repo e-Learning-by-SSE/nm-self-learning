@@ -1,4 +1,4 @@
-import { formatDistance } from "date-fns";
+import { format, formatDistance, intervalToDuration } from "date-fns";
 import { de } from "date-fns/locale";
 
 /**
@@ -26,28 +26,25 @@ export function formatDateAgo(date: Date | string | number) {
 }
 
 export function formatTimeIntervalToString(ms: number): string {
-	const totalMinutes = Math.floor(ms / 60000);
-	const totalHours = Math.floor(totalMinutes / 60);
-	const days = Math.floor(totalHours / 24);
-	const hours = totalHours % 24;
-	const minutes = totalMinutes % 60;
+	const duration = intervalToDuration({ start: 0, end: ms });
+
+	const { days, hours, minutes } = duration;
 
 	let result = "";
 
-	if (days > 0) {
+	if (days && days > 0) {
 		result += `${days} ${days > 1 ? "Tage" : "Tag"}`;
 	}
 
-	if (hours > 0) {
+	if (hours && hours > 0) {
 		if (result) result += " und ";
 		result += `${hours} ${hours > 1 ? "Stunden" : "Stunde"}`;
 	}
 
-	if (minutes > 0) {
+	if (minutes && minutes > 0) {
 		if (result) result += " und ";
 		result += `${minutes} ${minutes > 1 ? "Minuten" : "Minute"}`;
 	}
-
 	return result || "0 Minuten";
 }
 
@@ -83,8 +80,9 @@ export function adaptiveTimeSpan(ms: number): string {
 }
 
 export function formatDateToString(date: Date): string {
-	const day = String(date.getDate()).padStart(2, "0");
-	const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-	const year = date.getFullYear();
-	return `${day}.${month}.${year}`;
+	return format(date, "dd.MM.yyyy");
+}
+
+export function formatDateToGermanDate(date: Date): string {
+	return format(date, "Pp", { locale: de });
 }

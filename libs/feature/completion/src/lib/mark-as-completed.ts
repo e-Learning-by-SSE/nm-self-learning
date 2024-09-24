@@ -42,7 +42,7 @@ export async function markAsCompleted({
 
 	await createUserEvent({
 		username,
-		action: "LESSON_COMPLETE",
+		type: "LESSON_COMPLETE",
 		resourceId: lessonId,
 		payload: undefined
 	});
@@ -67,7 +67,7 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 	if (progress === 100) {
 		await createUserEvent({
 			username,
-			action: "COURSE_COMPLETE",
+			type: "COURSE_COMPLETE",
 			resourceId: courseId,
 			payload: undefined
 		});

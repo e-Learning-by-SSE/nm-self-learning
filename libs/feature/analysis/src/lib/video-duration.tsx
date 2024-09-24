@@ -9,7 +9,7 @@ const PreviewTypes = ["Table", "Chart"];
 
 export function VideoDuration() {
 	const [previewSelection, setPreviewSelection] = useState("Table");
-	const { data, isLoading } = trpc.events.get.useQuery({
+	const { data, isLoading } = trpc.events.findMany.useQuery({
 		type: [
 			"LESSON_VIDEO_PLAY",
 			"LESSON_VIDEO_PAUSE",

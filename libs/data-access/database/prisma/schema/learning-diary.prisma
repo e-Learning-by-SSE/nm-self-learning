@@ -28,7 +28,7 @@ model LearningDiaryPage {
   lessonsLearned     LearningDiaryLearnedLessons[]
 
   // the following values can be caluclated but are cached for performance reasons
-  learningDurationMs Int
+  totalDurationLearnedMs   		Int
 }
 
 model LearningLocation {

@@ -1,3 +1,4 @@
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
 
 export function PrimaryButton(
@@ -32,6 +33,25 @@ export function IconButton(
 		>
 			{props.icon}
 			<span className="text-sm">{props.text}</span>
+		</button>
+	);
+}
+
+export function ButtonSmallX({
+	onClick,
+	className = ""
+}: {
+	onClick: () => void;
+	className?: string;
+}) {
+	return (
+		<button
+			type="button"
+			data-testid="remove"
+			className={`mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500 ${className}`}
+			onClick={onClick}
+		>
+			<XMarkIcon className="h-3" />
 		</button>
 	);
 }

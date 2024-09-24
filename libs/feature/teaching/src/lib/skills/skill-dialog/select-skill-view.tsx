@@ -76,22 +76,3 @@ function InlineRemoveButton({
 		</div>
 	);
 }
-
-export function RemoveButton({
-	onRemove,
-	className = ""
-}: {
-	onRemove: () => void;
-	className?: string;
-}) {
-	return (
-		<button
-			type="button"
-			data-testid="remove"
-			className={`mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500 ${className}`}
-			onClick={onRemove}
-		>
-			<XMarkIcon className="h-3" />
-		</button>
-	);
-}

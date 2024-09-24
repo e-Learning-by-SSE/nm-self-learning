@@ -1,7 +1,5 @@
-import { intervalToDuration, format, parse } from "date-fns";
+import { intervalToDuration, format, parse, isBefore } from "date-fns";
 import { MetricResult } from "./metrics";
-import { UserEvent } from "@self-learning/database";
-import { EventTypeKeys, EventType } from "@self-learning/types";
 
 export type NumericProperty<T> = {
 	[K in keyof T]: T[K] extends number ? K : never;
@@ -86,9 +84,30 @@ export function toInterval(ms: number) {
 	return `${String(hours ?? 0).padStart(2, "0")}:${String(minutes ?? 0).padStart(2, "0")}:${String(seconds ?? 0).padStart(2, "0")}`;
 }
 
-export function isEventType<K extends EventTypeKeys>(
-	event: UserEvent,
-	type: K
-): event is UserEvent & { payload: EventType[K] } {
-	return event.type === type;
+export function getSemester(date: Date) {
+	const year = date.getFullYear();
+
+	// Semester 1 starts on April 1st and ends on September 30th
+	const semester1Start = new Date(year, 3, 1); // April 1st
+	const semester2Start = new Date(year, 9, 1); // October 1st
+
+	if (isBefore(date, semester1Start)) {
+		// Before April 1st -> Belongs to semester 2 of the previous year
+		return {
+			start: new Date(year - 1, 9, 1),
+			end: new Date(year, 2, 31)
+		};
+	} else if (isBefore(date, semester2Start)) {
+		// Between April 1st and September 30th -> Semester 1 of the current year
+		return {
+			start: semester1Start,
+			end: new Date(year, 8, 30)
+		};
+	} else {
+		// From October 1st -> Semester 2 of the current year
+		return {
+			start: semester2Start,
+			end: new Date(year + 1, 2, 31)
+		};
+	}
 }

@@ -32,7 +32,7 @@ export async function getDiaryPage(ltbId: string) {
 			distractionLevel: true,
 			studentName: true,
 			effortLevel: true,
-			learningDurationMs: true,
+			totalDurationLearnedMs: true,
 			learningLocation: {
 				select: {
 					id: true,
@@ -57,6 +57,21 @@ export async function getDiaryPage(ltbId: string) {
 				}
 			},
 			createdAt: true,
+			lessonsLearned: {
+				select: {
+					lesson: {
+						select: {
+							lessonId: true,
+							title: true,
+							slug: true
+						}
+					},
+					createdAt: true
+				},
+				orderBy: {
+					createdAt: "asc"
+				}
+			},
 			techniqueRatings: {
 				select: {
 					score: true,

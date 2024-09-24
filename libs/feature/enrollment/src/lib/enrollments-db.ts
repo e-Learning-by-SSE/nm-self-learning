@@ -102,7 +102,7 @@ export async function enrollUser({ courseId, username }: { courseId: string; use
 
 	await createUserEvent({
 		username,
-		action: "COURSE_ENROLL",
+		type: "COURSE_ENROLL",
 		resourceId: courseId,
 		payload: undefined
 	});

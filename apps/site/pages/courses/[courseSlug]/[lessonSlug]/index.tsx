@@ -122,6 +122,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const { newEvent } = useEventLog();
 	useEffect(() => {
+		// TODO check if useEffect can be removed
 		newEvent({
 			type: "LESSON_OPEN",
 			resourceId: lesson.lessonId,
