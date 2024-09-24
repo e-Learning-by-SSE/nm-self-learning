@@ -34,9 +34,8 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Prepare startup script
 COPY docker/entry.sh /entry.sh
 RUN chmod +x /entry.sh
-RUN chmod +x /app/docker/*.sh
 
 # Start the server using the production build
 ENTRYPOINT ["/entry.sh"]
-CMD [ "start" ]
+CMD [ "start:prod" ]
 EXPOSE 3000

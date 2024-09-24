@@ -16,7 +16,11 @@
 		"prisma": "prisma",
 		"preprisma:seed": "prisma generate",
 		"prisma:seed": "prisma db push --accept-data-loss && prisma db seed",
-		"start:prod": "cd dist/apps/site && npm start"
+		"prestart:prod": "prisma migrate deploy",
+		"start_prod": "cd dist/apps/site && npm start",
+		"start:prod": "npm run start_prod",
+		"init": "prisma db push && node docker/resolve-all-migrations.js && npm run start_prod",
+		"reset": "prisma db push --force-reset --accept-data-loss --skip-generate && node docker/resolve-all-migrations.js && npm run start_prod"
 	},
 	"private": true,
 	"prisma": {
