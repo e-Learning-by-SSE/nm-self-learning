@@ -26,14 +26,9 @@ import { LearningGoalType } from "../util/types";
  * @param goals Learning goal data
  * @returns A component to display learning goals
  */
-export function LearningGoals({
-	goals,
-	onEdit
-}: {
-	goals: LearningGoalType[];
-	onEdit: (changedGoal: LearningGoalType) => void;
-}) {
+export function LearningGoals({ goals }: { goals: LearningGoalType[] }) {
 	const [selectedTab, setSelectedTab] = useState(0);
+	const [editTarget, setEditTarget] = useState<Goal | null>(null);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
 	if (goals.length === 0) {
@@ -42,6 +37,10 @@ export function LearningGoals({
 
 	const inProgress = goals.filter(g => g.status === "INACTIVE" || g.status === "ACTIVE");
 	const complete = goals.filter(g => g.status === "COMPLETED");
+
+	const handleEditTarget = (editedGoal: Goal) => {
+		setEditTarget(editedGoal);
+	};
 
 	return (
 		<CenteredSection className="overflow-y-auto bg-gray-50 pb-32">
@@ -62,7 +61,7 @@ export function LearningGoals({
 							goals={inProgress}
 							notFoundMessage={"Derzeit ist kein Ziel erstellt worden."}
 							editable={true}
-							onClick={onEdit}
+							onRowClick={handleEditTarget}
 						/>
 					)}
 					{selectedTab === 1 && (
@@ -72,12 +71,15 @@ export function LearningGoals({
 							goals={complete}
 							notFoundMessage={"Derzeit ist kein Ziel abgeschlossen."}
 							editable={false}
-							onClick={onEdit}
+							onRowClick={handleEditTarget}
 						/>
 					)}
 				</div>
 			</section>
 			{openAddDialog && <GoalEditorDialog onClose={() => setOpenAddDialog(false)} />}
+			{editTarget && (
+				<GoalEditorDialog goal={editTarget} onClose={() => setEditTarget(null)} />
+			)}
 			<DialogHandler id={"simpleGoalDialog"} />
 		</CenteredSection>
 	);
@@ -95,12 +97,12 @@ export function GoalsOverview({
 	goals,
 	notFoundMessage,
 	editable,
-	onClick
+	onRowClick
 }: Readonly<{
-	goals: LearningGoalType[];
+	goals: Goal[];
 	notFoundMessage: string;
 	editable: boolean;
-	onClick: (editedGoal: LearningGoalType) => void;
+	onRowClick: (editedGoal: Goal) => void;
 }>) {
 	if (goals.length === 0) {
 		return <p>Keine Ziele Gefunden.</p>;
@@ -112,7 +114,7 @@ export function GoalsOverview({
 				<ul className="space-y-4">
 					{goals.map(goal => (
 						<GoalRow
-							onClick={onClick}
+							onClick={onRowClick}
 							key={goal.id}
 							goals={goals}
 							editable={editable}
@@ -143,14 +145,14 @@ function TabContent({
 	goals,
 	notFoundMessage,
 	editable,
-	onClick
+	onRowClick
 }: Readonly<{
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
 	goals: LearningGoalType[];
 	notFoundMessage: string;
 	editable: boolean;
-	onClick: (editedGoal: LearningGoalType) => void;
+	onRowClick: (editedGoal: Goal) => void;
 }>) {
 	return (
 		<div className="xl:grid-cols grid h-full gap-8">
@@ -164,13 +166,15 @@ function TabContent({
 						goals={goals}
 						notFoundMessage={notFoundMessage}
 						editable={editable}
-						onClick={onClick}
+						onRowClick={onRowClick}
 					/>
 				</div>
 			</div>
 		</div>
 	);
 }
+
+export type Goal = LearningGoalType | LearningGoal;
 
 /**
  * Component to display a row for a learning goal with separate rows for each sub goal.
@@ -188,10 +192,9 @@ function GoalRow({
 }: Readonly<{
 	goalDisplayId: string;
 	editable: boolean;
-	goals: LearningGoalType[];
-	onClick: (editedGoal: LearningGoalType) => void;
+	goals: Goal[];
+	onClick: (editedGoal: Goal) => void;
 }>) {
-	const [openAddDialog, setOpenAddDialog] = useState(false);
 	const goal = goals.find(goal => goal.id === goalDisplayId);
 	if (!goal) {
 		return null;
@@ -217,7 +220,7 @@ function GoalRow({
 						<div className="mb-2 text-xl font-semibold">{goal.description}</div>
 						{goal.status !== "COMPLETED" && editable && (
 							<div className="invisible flex flex-row group-hover:visible">
-								<QuickEditButton onClick={() => setOpenAddDialog(true)} />
+								<QuickEditButton onClick={() => onClick(goal)} />
 								<GoalDeleteOption
 									goalId={goal.id}
 									isSubGoal={false}
@@ -227,7 +230,7 @@ function GoalRow({
 						)}
 					</div>
 					<div className="mr-4 flex justify-end">
-						<GoalStatus goal={goal} editable={editable} onEdit={onClick} />
+						<GoalStatus goal={goal} editable={editable} />
 					</div>
 				</div>
 				<ul className="flex flex-col gap-1">
@@ -238,14 +241,10 @@ function GoalRow({
 							editable={editable}
 							goals={goals}
 							goal={goal}
-							onEdit={onClick}
 						/>
 					))}
 				</ul>
 			</li>
-			{openAddDialog && (
-				<GoalEditorDialog goal={goal} onClose={() => setOpenAddDialog(false)} />
-			)}
 		</section>
 	);
 }
@@ -262,14 +261,12 @@ function SubGoalRow({
 	subGoal,
 	editable,
 	goals,
-	goal,
-	onEdit
+	goal
 }: Readonly<{
 	subGoal: LearningSubGoal;
 	editable: boolean;
-	goals: LearningGoalType[];
-	goal: LearningGoalType;
-	onEdit: (editedGoal: LearningGoalType) => void;
+	goals: Goal[];
+	goal: Goal;
 }>) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 	const { mutateAsync: editSubGoalPriority } =
@@ -363,12 +360,7 @@ function SubGoalRow({
 						</div>
 					</div>
 					<div className="flex justify-end">
-						<GoalStatus
-							goal={goal}
-							onEdit={onEdit}
-							subGoal={subGoal}
-							editable={editable}
-						/>
+						<GoalStatus goal={goal} subGoal={subGoal} editable={editable} />
 					</div>
 				</div>
 			</div>

@@ -5,7 +5,7 @@ import { LearningSubGoal } from "@self-learning/types";
 import { Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
-import { LearningGoalType } from "../../util/types";
+import { Goal } from "../learning-goals";
 
 /**
  * Component to display an editor dialog for a learning goal or sub-goal.
@@ -21,7 +21,7 @@ export function GoalEditorDialog({
 	subGoal,
 	onClose
 }: Readonly<{
-	goal?: LearningGoalType;
+	goal?: Goal;
 	subGoal?: LearningSubGoal;
 	onClose: () => void;
 }>) {
@@ -37,7 +37,7 @@ export function GoalEditorDialog({
 
 	// Different label for creating or editing of a goal or sub-goal
 	const title = goal || subGoal ? "Lernziel bearbeiten" : "Lernziel erstellen";
-	
+
 	/**
 	 * Function for saving a goal or sub-goal. Contains a textarea for describing a learning goal and a combobox to select the parent goal.
 	 * The combobox is only displayed for new learning goals or sub-goals.
@@ -153,7 +153,7 @@ function MyCombobox({
 }>) {
 	const [selectedGoal, setSelectedGoal] = useState(goals[pSelectedGoal]);
 	const [query, setQuery] = useState("");
-	
+
 	const filteredGoals =
 		query === ""
 			? goals
@@ -165,7 +165,7 @@ function MyCombobox({
 		setSelectedGoal(e);
 		onChange(e.goalId);
 	}
-	
+
 	return (
 		<Combobox value={selectedGoal} onChange={onSelectedGoalChange}>
 			<div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">

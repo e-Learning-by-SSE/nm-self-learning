@@ -1,9 +1,9 @@
 import { LockClosedIcon, LockOpenIcon } from "@heroicons/react/24/solid";
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
-import {  LearningSubGoal } from "@self-learning/types";
+import { LearningSubGoal } from "@self-learning/types";
 import { useEffect, useRef, useState } from "react";
-import { LearningGoalType } from "../../util/types";
+import { Goal } from "../learning-goals";
 
 /**
  * Component to display and change the status of a learning goal or sub-goal. Shows the status and on click opens the three option for a status.
@@ -16,13 +16,11 @@ import { LearningGoalType } from "../../util/types";
 export function GoalStatus({
 	goal,
 	subGoal,
-	editable,
-	onEdit
+	editable
 }: Readonly<{
-	goal?: LearningGoalType;
+	goal?: Goal;
 	subGoal?: LearningSubGoal;
 	editable: boolean;
-	onEdit: (editedGoal: LearningGoalType) => void;
 }>) {
 	const { mutateAsync: editSubGoal } = trpc.learningGoal.editSubGoalStatus.useMutation();
 	const { mutateAsync: editGoal } = trpc.learningGoal.editGoalStatus.useMutation();
@@ -70,20 +68,12 @@ export function GoalStatus({
 			const lastProgressUpdate = date.toISOString();
 			if (!subGoal && goal) {
 				editGoal({ goalId: goal.id, lastProgressUpdate, status });
-				onEdit({
-					...goal,
-					status: status
-				});
 			} else if (subGoal && goal) {
 				editSubGoal({
 					subGoalId: subGoal.id,
 					status,
 					learningGoalId: subGoal.learningGoalId,
 					lastProgressUpdate
-				});
-				onEdit({
-					...goal,
-					status: status
 				});
 			}
 		}

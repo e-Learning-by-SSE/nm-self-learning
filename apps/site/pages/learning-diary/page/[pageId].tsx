@@ -22,7 +22,6 @@ import {
 import { LearningDiaryPage, learningDiaryPageSchema, ResolvedValue } from "@self-learning/types";
 import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
-import { LearningGoalType } from "libs/feature/diary/src/lib/util/types";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -196,12 +195,16 @@ function DiaryContentForm({
 	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
 
 	const defaultValues = useMemo(() => {
-		console.log("pagedetails", pageDetails);
 		return {
+			// Set the defaults of the form here. Since we have start values directly from the database
+			// we need to transform the to the correct zod-input type for validation. Especially the incompatibilities between
+			// null and undefined are important here. This is a common pattern in the codebase.
 			...pageDetails,
-			// convert since data from database has null values and in API we only allow undefined
 			notes: pageDetails?.notes ?? undefined,
-			learningGoals: pageDetails?.learningGoals ?? undefined,
+			learningGoals: pageDetails?.learningGoals.map(goal => ({
+				...goal,
+				lastProgressUpdate: goal.lastProgressUpdate ?? undefined
+			})),
 			learningLocation: pageDetails?.learningLocation
 				? {
 						name: pageDetails.learningLocation.name,
@@ -216,8 +219,6 @@ function DiaryContentForm({
 		resolver: zodResolver(learningDiaryPageSchema),
 		defaultValues
 	});
-
-	console.log("defaultValues", defaultValues);
 
 	useEffect(() => {
 		const subscription = form.watch((value, _) => {
@@ -245,12 +246,6 @@ function DiaryContentForm({
 	type StrategyWithRating = typeof itemsWithRatings;
 
 	const handleUpdateTechniqueRating = (update: StrategyWithRating) => {};
-
-	const transformToInputType = (goals: LearningGoalType[]) =>
-		goals.map(goal => ({
-			...goal,
-			lastProgressUpdate: goal.lastProgressUpdate ?? null
-		}));
 
 	if (isLoading) {
 		return <LoadingCircleCorner />;
@@ -342,9 +337,7 @@ function DiaryContentForm({
 					<Controller
 						name="learningGoals"
 						control={form.control}
-						render={({ field }) => (
-							<LearningGoalInputTile initialGoals={[]} onChange={field.onChange} />
-						)}
+						render={({ field }) => <LearningGoalInputTile goals={field.value ?? []} />}
 					/>
 				</div>
 			</form>
