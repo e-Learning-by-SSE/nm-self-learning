@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { database } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
+import { useSession } from "next-auth/react";
 
 interface Props {
 	learningStatistics: boolean;
@@ -53,12 +54,21 @@ export default function Start(props: Props) {
 function StudentSettingPage(initialSettings: StudentSettings) {
 	const [settings, setSettings] = useState(initialSettings);
 	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
+	const { data: session, update } = useSession();
 
 	const onSave = useCallback(async () => {
 		try {
 			await updateSettings({
 				settings
 			});
+			const updatedSession = {
+				...session,
+				user: {
+					...session?.user,
+					eventLogEnabled: settings.learningStatistics
+				}
+			};
+			update(updatedSession);
 		} catch (error) {
 			if (error instanceof Error) {
 				showToast({

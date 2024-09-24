@@ -206,14 +206,7 @@ export const authOptions: NextAuthOptions = {
 	theme: { colorScheme: "light" },
 	adapter: customPrismaAdapter,
 	callbacks: {
-		jwt({ token, account, trigger, session }) {
-			// Enables update of session: https://kcib.medium.com/-9846d70ada06
-			if (trigger === "update" && session) {
-				// Session is an arbitrary user-defined object: Take over information carefully
-				// See: https://next-auth.js.org/getting-started/client#updating-the-session
-				token.eventLogEnabled = session.user.eventLogEnabled;
-			}
-
+		jwt({ token, account }) {
 			// Store OIDC role inside JWT token
 			const role = hasAdminRole(account?.access_token);
 			if (role == Role.ADMIN) {
