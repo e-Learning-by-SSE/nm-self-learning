@@ -22,7 +22,8 @@ function prepare() {
 			id: "user-id",
 			name: "john",
 			role: "USER",
-			isAuthor: false
+			isAuthor: false,
+			eventLogEnabled: true
 		}
 	};
 	const mockLoadUserEvent = loadUserEvents as jest.MockedFunction<typeof loadUserEvents>;
@@ -54,7 +55,7 @@ describe("userEventRouter create", () => {
 		expect(result).toHaveProperty("createdAt");
 	});
 
-	it("should validate correct payloads", async () => {
+	it("Error; valid payload -> no validation error", async () => {
 		const { caller } = prepare();
 		const input = {
 			type: "ERROR" as const,
@@ -64,9 +65,10 @@ describe("userEventRouter create", () => {
 		// also check manual validation
 
 		const schema = evenTypePayloadSchema.shape["ERROR"];
-		expect(() => schema.parse(result.payload)).not.toThrow();
+		/* eslint-disable @typescript-eslint/no-non-null-assertion */
+		expect(() => schema.parse(result!.payload)).not.toThrow();
 	});
-	it("should not pass incorrect payloads", async () => {
+	it("Error; invalid payload -> validation error", async () => {
 		const { caller } = prepare();
 		const input = {
 			type: "ERROR" as const,
