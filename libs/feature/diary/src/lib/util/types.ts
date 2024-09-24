@@ -1,4 +1,4 @@
-import { ResolvedValue } from "@self-learning/types";
+import { LearningGoal, ResolvedValue } from "@self-learning/types";
 import { getLearningGoals } from "../goals/access-learning-goal";
 
 // used only inside the lib
@@ -16,3 +16,5 @@ export type Strategy = {
 	id: string;
 	name: string;
 };
+
+export type Goal = LearningGoalType | LearningGoal;

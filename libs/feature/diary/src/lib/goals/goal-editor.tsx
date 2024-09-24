@@ -5,7 +5,7 @@ import { LearningSubGoal } from "@self-learning/types";
 import { Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
-import { Goal } from "../learning-goals";
+import { Goal } from "../util/types";
 
 /**
  * Component to display an editor dialog for a learning goal or sub-goal.

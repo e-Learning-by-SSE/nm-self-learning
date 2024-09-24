@@ -3,7 +3,7 @@ import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
 import { useEffect, useRef, useState } from "react";
-import { Goal } from "../learning-goals";
+import { Goal } from "../util/types";
 
 /**
  * Component to display and change the status of a learning goal or sub-goal. Shows the status and on click opens the three option for a status.

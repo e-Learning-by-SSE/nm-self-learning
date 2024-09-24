@@ -10,14 +10,14 @@ import {
 	freeDialog,
 	showToast
 } from "@self-learning/ui/common";
-import { LearningGoal, LearningSubGoal } from "@self-learning/types";
+import { LearningSubGoal } from "@self-learning/types";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { GoalEditorDialog } from "./components/learning-goal-editor-dialog";
-import { GoalStatus } from "./components/status";
+import { GoalEditorDialog } from "./goal-editor";
+import { GoalStatus } from "./status";
 import { PencilIcon } from "@heroicons/react/24/outline";
-import { LearningGoalType } from "../util/types";
+import { Goal, LearningGoalType } from "../util/types";
 
 /**
  * Component for displaying learning goals. It contains dialogs for creating and editing of learning goals and sub-goals (Grob-/ Feinziel).
@@ -26,7 +26,13 @@ import { LearningGoalType } from "../util/types";
  * @param goals Learning goal data
  * @returns A component to display learning goals
  */
-export function LearningGoals({ goals }: { goals: LearningGoalType[] }) {
+export function LearningGoals({
+	goals,
+	onChange
+}: {
+	goals: LearningGoalType[];
+	onChange: (changedGoal: Goal) => void;
+}) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [editTarget, setEditTarget] = useState<Goal | null>(null);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -173,8 +179,6 @@ function TabContent({
 		</div>
 	);
 }
-
-export type Goal = LearningGoalType | LearningGoal;
 
 /**
  * Component to display a row for a learning goal with separate rows for each sub goal.
@@ -395,7 +399,7 @@ function QuickEditButton({ onClick }: Readonly<{ onClick: () => void }>) {
  * @returns
  */
 
-export function GoalDeleteOption({
+function GoalDeleteOption({
 	goalId,
 	className,
 	isSubGoal,
