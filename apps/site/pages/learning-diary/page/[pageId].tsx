@@ -263,6 +263,16 @@ function DiaryContentForm({
 			<FormProvider {...form}>
 				<form className="space-y-4">
 					<Controller
+						name="learningGoals"
+						control={form.control}
+						render={({ field }) => (
+							<LearningGoalInputTile
+								goals={field.value ?? []}
+								onChange={field.onChange}
+							/>
+						)}
+					/>
+					<Controller
 						name="learningLocation"
 						control={form.control}
 						render={({ field }) => (
@@ -293,7 +303,7 @@ function DiaryContentForm({
 						control={form.control}
 						render={({ field }) => (
 							<StarInputTile
-								name={"Bemühungen:"}
+								name={"Ablenkungen:"}
 								initialRating={field.value}
 								onChange={field.onChange}
 								description={
@@ -303,16 +313,6 @@ function DiaryContentForm({
 									"Mitbewohner, etc. sein. Mehr Sterne zeigen eine\n" +
 									"größere Ablenkung an.\n"
 								}
-							/>
-						)}
-					/>
-					<Controller
-						name="notes"
-						control={form.control}
-						render={({ field }) => (
-							<MarkDownInputTile
-								initialNote={field.value}
-								onSubmit={field.onChange}
 							/>
 						)}
 					/>
@@ -327,9 +327,14 @@ function DiaryContentForm({
 						)}
 					/>
 					<Controller
-						name="learningGoals"
+						name="notes"
 						control={form.control}
-						render={({ field }) => <LearningGoalInputTile goals={field.value ?? []} />}
+						render={({ field }) => (
+							<MarkDownInputTile
+								initialNote={field.value}
+								onSubmit={field.onChange}
+							/>
+						)}
 					/>
 				</form>
 			</FormProvider>

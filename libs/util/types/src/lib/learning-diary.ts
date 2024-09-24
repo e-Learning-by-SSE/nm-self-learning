@@ -22,8 +22,7 @@ const learningGoalSchema = z.object({
 	id: z.string().cuid(),
 	description: z.string().min(1),
 	status: learningGoalStatusSchema.default("INACTIVE"),
-	learningSubGoals: z.array(learningSubGoalSchema),
-	lastProgressUpdate: z.date().optional()
+	learningSubGoals: z.array(learningSubGoalSchema)
 });
 
 export const learningLocationSchema = z.object({

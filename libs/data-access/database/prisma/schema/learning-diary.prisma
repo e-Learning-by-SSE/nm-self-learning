@@ -107,7 +107,7 @@ model LearningSubGoal {
   description        String
   status             LearningGoalStatus @default(value: INACTIVE)
   createdAt          DateTime           @default(now())
-  lastProgressUpdate DateTime?
+  lastProgressUpdate DateTime?          @default(now())
   priority           Int                @default(autoincrement())
   learningGoalId     String
   learningGoal       LearningGoal       @relation(fields: [learningGoalId], references: [id], onDelete: Cascade)

@@ -3,7 +3,8 @@ import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
 import { useEffect, useRef, useState } from "react";
-import { Goal } from "../util/types";
+import { Goal, StatusUpdateCallback } from "../util/types";
+import { useLearningGoalContext } from "./goal-context";
 
 /**
  * Component to display and change the status of a learning goal or sub-goal. Shows the status and on click opens the three option for a status.
@@ -16,19 +17,24 @@ import { Goal } from "../util/types";
 export function GoalStatus({
 	goal,
 	subGoal,
-	editable
+	editable,
+	onChange: onStatusUpdate
 }: Readonly<{
-	goal?: Goal;
+	goal: Goal;
 	subGoal?: LearningSubGoal;
 	editable: boolean;
+	onChange?: StatusUpdateCallback;
 }>) {
 	const { mutateAsync: editSubGoal } = trpc.learningGoal.editSubGoalStatus.useMutation();
 	const { mutateAsync: editGoal } = trpc.learningGoal.editGoalStatus.useMutation();
 	const [showDialog, setShowDialog] = useState(false);
+
+	// Be safe and use a state to trigger rerender when user changes something.
+	// We could assume that executing "onEdit" will lead to a rerender (e.g. because the "goal" prop changes), but this is not guaranteed.
+	// Drawback is double render when the user changes the status.
 	const [status, setStatus] = useState(
-		goal?.status ?? subGoal?.status ?? LearningGoalStatus.INACTIVE
+		goal.status ?? subGoal?.status ?? LearningGoalStatus.INACTIVE
 	);
-	const [initialRender, setInitialRender] = useState(true);
 
 	const myRef = useRef<HTMLInputElement>(null);
 	// Handling clicks outside of the three status options and close the option area.
@@ -58,28 +64,6 @@ export function GoalStatus({
 	}
 
 	/**
-	 * Hook for changing the status of a goal or sub-goal.
-	 */
-	useEffect(() => {
-		if (initialRender) {
-			setInitialRender(false);
-		} else {
-			const date = new Date();
-			const lastProgressUpdate = date.toISOString();
-			if (!subGoal && goal) {
-				editGoal({ goalId: goal.id, lastProgressUpdate, status });
-			} else if (subGoal && goal) {
-				editSubGoal({
-					subGoalId: subGoal.id,
-					status,
-					learningGoalId: subGoal.learningGoalId,
-					lastProgressUpdate
-				});
-			}
-		}
-	}, [status]);
-
-	/**
 	 * Function on change of a goal or sub-goal status. Close the three options
 	 *
 	 * @param pStatus Selected new status value
@@ -87,6 +71,16 @@ export function GoalStatus({
 	function onChange(pStatus: LearningGoalStatus) {
 		setStatus(pStatus);
 		setShowDialog(false);
+		if (!subGoal && goal) {
+			editGoal({ goalId: goal.id, status });
+		} else if (subGoal && goal) {
+			editSubGoal({
+				subGoalId: subGoal.id,
+				status,
+				learningGoalId: subGoal.learningGoalId
+			});
+		}
+		onStatusUpdate && onStatusUpdate(goal, pStatus);
 	}
 
 	/**

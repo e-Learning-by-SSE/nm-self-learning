@@ -92,7 +92,6 @@ export const learningGoalRouter = t.router({
 		.input(
 			z.object({
 				goalId: z.string(),
-				lastProgressUpdate: z.string().datetime(),
 				status: z.nativeEnum(LearningGoalStatus)
 			})
 		)
@@ -101,7 +100,7 @@ export const learningGoalRouter = t.router({
 				where: { id: input.goalId },
 				data: {
 					status: input.status,
-					lastProgressUpdate: input.lastProgressUpdate
+					lastProgressUpdate: new Date()
 				},
 				select: {
 					id: true,
@@ -122,66 +121,58 @@ export const learningGoalRouter = t.router({
 		.input(
 			z.object({
 				subGoalId: z.string(),
-				lastProgressUpdate: z.string().datetime(),
 				status: z.nativeEnum(LearningGoalStatus),
 				learningGoalId: z.string()
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
 			// updates status of a sub-goal
-			const updated = await database.learningSubGoal.update({
-				where: { id: input.subGoalId },
-				data: {
-					status: input.status,
-					lastProgressUpdate: input.lastProgressUpdate
-				},
-				select: {
-					id: true,
-					description: true,
-					status: true,
-					lastProgressUpdate: true
-				}
-			});
-			// updates the "lastProgressUpdate" of the parent and the status if the new status is "Active".
-			let updatedGoal;
-			if (input.status == LearningGoalStatus.ACTIVE) {
-				updatedGoal = await database.learningGoal.update({
-					where: { id: input.learningGoalId },
-					data: {
-						lastProgressUpdate: input.lastProgressUpdate,
-						status: input.status
-					},
-					select: {
-						id: true,
-						description: true,
-						status: true,
-						lastProgressUpdate: true
-					}
-				});
-			} else {
-				updatedGoal = await database.learningGoal.update({
-					where: { id: input.learningGoalId },
-					data: {
-						lastProgressUpdate: input.lastProgressUpdate
-					},
-					select: {
-						id: true,
-						description: true,
-						status: true,
-						lastProgressUpdate: true
-					}
-				});
-			}
+			const now = new Date();
 
-			console.log(
-				"[learningGoalRouter.editSubGoalStatus]: SubGoal updated by",
-				ctx.user.name,
-				"SubGoal: ",
-				updated,
-				"Goal: ",
-				updatedGoal
-			);
-			return updated;
+			const updatedGoal = await database.$transaction(async prisma => {
+				// Update the learning sub-goal
+				const updatedSubGoal = await prisma.learningSubGoal.update({
+					where: { id: input.subGoalId },
+					data: {
+						status: input.status,
+						lastProgressUpdate: now
+					},
+					select: {
+						id: true,
+						description: true,
+						status: true,
+						lastProgressUpdate: true
+					}
+				});
+
+				// Update the parent learning goal
+				const updatedGoal = await prisma.learningGoal.update({
+					where: { id: input.learningGoalId },
+					data: {
+						lastProgressUpdate: now,
+						...(input.status === LearningGoalStatus.ACTIVE && { status: input.status })
+					},
+					select: {
+						id: true,
+						description: true,
+						status: true,
+						lastProgressUpdate: true
+					}
+				});
+
+				console.log(
+					"[learningGoalRouter.editSubGoalStatus]: SubGoal updated by",
+					ctx.user.name,
+					"SubGoal: ",
+					updatedSubGoal,
+					"Goal: ",
+					updatedGoal
+				);
+
+				return { updatedSubGoal, updatedGoal };
+			});
+
+			return updatedGoal.updatedSubGoal;
 		}),
 	editSubGoal: authProcedure
 		.input(

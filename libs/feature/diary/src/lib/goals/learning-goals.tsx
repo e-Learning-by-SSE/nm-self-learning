@@ -17,7 +17,8 @@ import { trpc } from "@self-learning/api-client";
 import { GoalEditorDialog } from "./goal-editor";
 import { GoalStatus } from "./status";
 import { PencilIcon } from "@heroicons/react/24/outline";
-import { Goal, LearningGoalType } from "../util/types";
+import { Goal, LearningGoalType, StatusUpdateCallback } from "../util/types";
+import { LearningGoalProvider, useLearningGoalContext } from "./goal-context";
 
 /**
  * Component for displaying learning goals. It contains dialogs for creating and editing of learning goals and sub-goals (Grob-/ Feinziel).
@@ -28,10 +29,10 @@ import { Goal, LearningGoalType } from "../util/types";
  */
 export function LearningGoals({
 	goals,
-	onChange
+	onStatusUpdate
 }: {
 	goals: LearningGoalType[];
-	onChange: (changedGoal: Goal) => void;
+	onStatusUpdate: StatusUpdateCallback;
 }) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [editTarget, setEditTarget] = useState<Goal | null>(null);
@@ -60,26 +61,28 @@ export function LearningGoals({
 				</div>
 
 				<div className="py-2 ">
-					{selectedTab === 0 && (
-						<TabContent
-							selectedTab={selectedTab}
-							setSelectedTab={setSelectedTab}
-							goals={inProgress}
-							notFoundMessage={"Derzeit ist kein Ziel erstellt worden."}
-							editable={true}
-							onRowClick={handleEditTarget}
-						/>
-					)}
-					{selectedTab === 1 && (
-						<TabContent
-							selectedTab={selectedTab}
-							setSelectedTab={setSelectedTab}
-							goals={complete}
-							notFoundMessage={"Derzeit ist kein Ziel abgeschlossen."}
-							editable={false}
-							onRowClick={handleEditTarget}
-						/>
-					)}
+					<LearningGoalProvider userGoals={inProgress} onStatusUpdate={onStatusUpdate}>
+						{selectedTab === 0 && (
+							<TabContent
+								selectedTab={selectedTab}
+								setSelectedTab={setSelectedTab}
+								notFoundMessage={"Derzeit ist kein Ziel erstellt worden."}
+								editable={true}
+								onRowClick={handleEditTarget}
+							/>
+						)}
+					</LearningGoalProvider>
+					<LearningGoalProvider userGoals={complete} onStatusUpdate={onStatusUpdate}>
+						{selectedTab === 1 && (
+							<TabContent
+								selectedTab={selectedTab}
+								setSelectedTab={setSelectedTab}
+								notFoundMessage={"Derzeit ist kein Ziel abgeschlossen."}
+								editable={false}
+								onRowClick={handleEditTarget}
+							/>
+						)}
+					</LearningGoalProvider>
 				</div>
 			</section>
 			{openAddDialog && <GoalEditorDialog onClose={() => setOpenAddDialog(false)} />}
@@ -100,16 +103,15 @@ export function LearningGoals({
  */
 
 export function GoalsOverview({
-	goals,
 	notFoundMessage,
 	editable,
 	onRowClick
 }: Readonly<{
-	goals: Goal[];
 	notFoundMessage: string;
 	editable: boolean;
 	onRowClick: (editedGoal: Goal) => void;
 }>) {
+	const { userGoals: goals } = useLearningGoalContext();
 	if (goals.length === 0) {
 		return <p>Keine Ziele Gefunden.</p>;
 	}
@@ -122,9 +124,8 @@ export function GoalsOverview({
 						<GoalRow
 							onClick={onRowClick}
 							key={goal.id}
-							goals={goals}
 							editable={editable}
-							goalDisplayId={goal.id}
+							goal={goal}
 						/>
 					))}
 				</ul>
@@ -148,14 +149,12 @@ export function GoalsOverview({
 function TabContent({
 	selectedTab,
 	setSelectedTab,
-	goals,
 	notFoundMessage,
 	editable,
 	onRowClick
 }: Readonly<{
 	selectedTab: number;
 	setSelectedTab: (v: number) => void;
-	goals: LearningGoalType[];
 	notFoundMessage: string;
 	editable: boolean;
 	onRowClick: (editedGoal: Goal) => void;
@@ -169,7 +168,6 @@ function TabContent({
 				</Tabs>
 				<div className={"pt-4"}>
 					<GoalsOverview
-						goals={goals}
 						notFoundMessage={notFoundMessage}
 						editable={editable}
 						onRowClick={onRowClick}
@@ -189,20 +187,16 @@ function TabContent({
  * @returns
  */
 function GoalRow({
-	goalDisplayId,
 	editable,
-	goals,
+	goal,
 	onClick
 }: Readonly<{
-	goalDisplayId: string;
 	editable: boolean;
-	goals: Goal[];
+	goal: Goal;
 	onClick: (editedGoal: Goal) => void;
 }>) {
-	const goal = goals.find(goal => goal.id === goalDisplayId);
-	if (!goal) {
-		return null;
-	}
+	const { onStatusUpdate } = useLearningGoalContext();
+
 	if (goal.status !== "COMPLETED" && goal.learningSubGoals.length > 0) {
 		const index = goal.learningSubGoals.findIndex(
 			subGoal => subGoal.status === "INACTIVE" || subGoal.status === "ACTIVE"
@@ -234,7 +228,7 @@ function GoalRow({
 						)}
 					</div>
 					<div className="mr-4 flex justify-end">
-						<GoalStatus goal={goal} editable={editable} />
+						<GoalStatus goal={goal} editable={editable} onChange={onStatusUpdate} />
 					</div>
 				</div>
 				<ul className="flex flex-col gap-1">
@@ -243,7 +237,6 @@ function GoalRow({
 							key={subGoal.id}
 							subGoal={subGoal}
 							editable={editable}
-							goals={goals}
 							goal={goal}
 						/>
 					))}
@@ -264,18 +257,17 @@ function GoalRow({
 function SubGoalRow({
 	subGoal,
 	editable,
-	goals,
 	goal
 }: Readonly<{
 	subGoal: LearningSubGoal;
 	editable: boolean;
-	goals: Goal[];
 	goal: Goal;
 }>) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 	const { mutateAsync: editSubGoalPriority } =
 		trpc.learningGoal.editSubGoalPriority.useMutation();
 
+	const { userGoals: goals, onStatusUpdate } = useLearningGoalContext();
 	/**
 	 * function to move a sub-goal up or down.
 	 *
@@ -364,7 +356,12 @@ function SubGoalRow({
 						</div>
 					</div>
 					<div className="flex justify-end">
-						<GoalStatus goal={goal} subGoal={subGoal} editable={editable} />
+						<GoalStatus
+							goal={goal}
+							subGoal={subGoal}
+							editable={editable}
+							onChange={onStatusUpdate}
+						/>
 					</div>
 				</div>
 			</div>
