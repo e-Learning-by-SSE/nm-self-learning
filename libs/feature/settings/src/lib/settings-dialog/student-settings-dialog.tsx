@@ -3,9 +3,7 @@ import { StudentSettingsForm } from "@self-learning/settings";
 import { Dialog, DialogActions, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import { StudentSettings } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
-
-
-
+import { useSession } from "next-auth/react";
 
 export function StudentSettingsDialog({
 	initialSettings,
@@ -21,12 +19,21 @@ export function StudentSettingsDialog({
 		}
 	);
 	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
+	const { data: session, update } = useSession();
 
 	const onSave = async () => {
 		try {
 			await updateSettings({
 				settings
 			});
+			const updatedSession = {
+				...session,
+				user: {
+					...session?.user,
+					eventLogEnabled: settings.learningStatistics
+				}
+			};
+			update(updatedSession);
 		} catch (error) {
 			if (error instanceof Error) {
 				showToast({
