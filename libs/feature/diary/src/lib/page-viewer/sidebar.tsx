@@ -29,67 +29,94 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 		const timeDiff = currentTimeMS - createdAtTime;
 		return timeDiff > sevenDays;
 	});
-
 	return (
-		<div className="w-64 h-full p-4 fixed">
-			<h2 className="text-lg font-bold mb-4">Lerntagebuch Seiten</h2>
-
-			<div className="max-h-full overflow-y-auto">
-				{fromToday.length >= 1 && (
-					<div className="mb-4">
-						<h3 className="block p-2 pl-4 rounded overflow-hidden">Von Heute</h3>
-						<div className="relative">
-							<div className="absolute top-0 left-0 h-full border-l-4 border-gray-300"></div>
-							<ul className="pl-4">
-								{fromToday.map(page => (
-									<SideBarContent key={page.id} page={page}  currentTimeMS={currentTimeMS}/>
-								))}
-							</ul>
+		<div className="fixed top-8 left-4 z-10 flex h-full w-full flex-col overflow-hidden bg-white sm:w-80">
+			<aside
+				className="playlist-scroll sticky top-[61px] w-full overflow-auto pb-8
+				xl:h-[calc(100vh-61px)] xl:pr-4"
+			>
+				<h2 className="text-2xl font-bold mb-4">Lerntagebuch Seiten</h2>
+				<div className="max-h-full overflow-y-auto">
+					{fromToday.length >= 1 && (
+						<div className="mb-4">
+							<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
+								Von Heute
+							</div>
+							<div className="relative">
+								<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+								<ul className="pl-4">
+									{fromToday.map(page => (
+										<SideBarContent
+											key={page.id}
+											page={page}
+											currentTimeMS={currentTimeMS}
+										/>
+									))}
+								</ul>
+							</div>
 						</div>
-					</div>
-				)}
+					)}
 
-				{fromLastWeek.length >= 1 && (
-					<div className="mb-4">
-						<h3 className="block p-2 pl-4 rounded overflow-hidden">Von dieser Woche</h3>
-						<div className="relative">
-							<div className="absolute top-0 left-0 h-full border-l-4 border-gray-300"></div>
-							<ul className="pl-4">
-								{fromLastWeek.map(page => (
-									<SideBarContent key={page.id} page={page}  currentTimeMS={currentTimeMS}/>
-								))}
-							</ul>
+					{fromLastWeek.length >= 1 && (
+						<div className="mb-4">
+							<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
+								Von dieser Woche
+							</div>
+							<div className="relative">
+								<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+								<ul className="pl-4">
+									{fromLastWeek.map(page => (
+										<SideBarContent
+											key={page.id}
+											page={page}
+											currentTimeMS={currentTimeMS}
+										/>
+									))}
+								</ul>
+							</div>
 						</div>
-					</div>
-				)}
+					)}
 
-				{olderThanSevenDays.length >= 1 && (
-					<div className="mb-4">
-						<h3 className="block p-2 pl-4 rounded overflow-hidden">Älter als eine Woche</h3>
-						<div className="relative">
-							<div className="absolute top-0 left-0 h-full border-l-4 border-gray-300"></div>
-							<ul className="pl-4">
-								{olderThanSevenDays.map(page => (
-									<SideBarContent key={page.id} page={page}  currentTimeMS={currentTimeMS}/>
-								))}
-							</ul>
+					{olderThanSevenDays.length >= 1 && (
+						<div className="mb-4">
+							<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
+								Älter als eine Woche
+							</div>
+							<div className="relative">
+								<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+								<ul className="pl-4">
+									{olderThanSevenDays.map(page => (
+										<SideBarContent
+											key={page.id}
+											page={page}
+											currentTimeMS={currentTimeMS}
+										/>
+									))}
+								</ul>
+							</div>
 						</div>
-					</div>
-				)}
-			</div>
+					)}
+				</div>
+			</aside>
 		</div>
 	);
 }
 
-function SideBarContent({ page, currentTimeMS }: { page: PagesMeta[number] & { index: number }, currentTimeMS: number }) {
+function SideBarContent({
+	page,
+	currentTimeMS
+}: {
+	page: PagesMeta[number] & { index: number };
+	currentTimeMS: number;
+}) {
 	return (
-		<li className="mb-2 hover:bg-gray-200 border border-gray-100 rounded">
+		<li className="mb-3 hover:bg-gray-200">
 			<Link href={"/learning-diary/page/" + page.id}>
 				<div>
-					<span className="block p-2 rounded overflow-hidden text-ellipsis whitespace-nowrap">
-						{"Nr. " + page.index + " " + page.course.title}
+					<span className="block p-2 rounded break-words whitespace-normal">
+						{page.index + ". " + page.course.title}
 					</span>
-					<span className="block p-2 rounded overflow-hidden text-ellipsis whitespace-nowrap">
+					<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
 						{adaptiveTimeSpan(currentTimeMS - page.createdAt.getTime())}
 					</span>
 				</div>
