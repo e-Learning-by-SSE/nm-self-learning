@@ -71,24 +71,28 @@ export default function DiaryPageDetail({
 	availableStrategies: Strategy[];
 }) {
 	return (
-		<div>
-			<div>
-				<Sidebar pages={pages} />
-			</div>
+		<div className="flex flex-col">
+			<div className="mx-auto flex w-full flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+				<div>
+					<Sidebar pages={pages} />
+				</div>
 
-			<div className="flex justify-center">
-				<div className="w-2/3 py-4">
-					<div className="mb-4 flex justify-center">
-						<PageChanger pages={pages} currentPageId={diaryId} />
+				<div>
+					<div className="w-2/3 py-4">
+						<div className="mb-4 flex justify-center">
+							<PageChanger pages={pages} currentPageId={diaryId} />
+						</div>
+						<Divider />
+						<DiaryContentForm
+							diaryId={diaryId}
+							availableStrategies={availableStrategies}
+						/>
 					</div>
-					<Divider />
-					<DiaryContentForm diaryId={diaryId} availableStrategies={availableStrategies} />
 				</div>
 			</div>
 		</div>
 	);
 }
-
 
 function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId: string }) {
 	const router = useRouter();

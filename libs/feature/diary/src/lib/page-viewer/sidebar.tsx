@@ -29,76 +29,76 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 		const timeDiff = currentTimeMS - createdAtTime;
 		return timeDiff > sevenDays;
 	});
+
 	return (
-		<div className="fixed top-8 left-4 z-10 flex h-full w-full flex-col overflow-hidden bg-white sm:w-80">
-			<aside
-				className="playlist-scroll sticky top-[61px] w-full overflow-auto pb-8
-				xl:h-[calc(100vh-61px)] xl:pr-4"
-			>
-				<h2 className="text-2xl font-bold mb-4">Lerntagebuch Seiten</h2>
-				<div className="max-h-full overflow-y-auto">
-					{fromToday.length >= 1 && (
-						<div className="mb-4">
-							<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
-								Von Heute
-							</div>
-							<div className="relative">
-								<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
-								<ul className="pl-4">
-									{fromToday.map(page => (
-										<SideBarContent
-											key={page.id}
-											page={page}
-											currentTimeMS={currentTimeMS}
-										/>
-									))}
-								</ul>
-							</div>
+		<aside
+			className="playlist-scroll sticky top-[61px]
+		w-full overflow-auto border-t border-r-gray-200
+		pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
+		>
+			<h2 className="text-2xl font-bold mt-4 mb-2">Lerntagebuch Seiten</h2>
+			<div className="max-h-full overflow-y-auto">
+				{fromToday.length >= 1 && (
+					<div className="mb-4">
+						<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
+							Von Heute
 						</div>
-					)}
+						<div className="relative">
+							<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+							<ul className="pl-4">
+								{fromToday.map(page => (
+									<SideBarContent
+										key={page.id}
+										page={page}
+										currentTimeMS={currentTimeMS}
+									/>
+								))}
+							</ul>
+						</div>
+					</div>
+				)}
 
-					{fromLastWeek.length >= 1 && (
-						<div className="mb-4">
-							<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
-								Von dieser Woche
-							</div>
-							<div className="relative">
-								<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
-								<ul className="pl-4">
-									{fromLastWeek.map(page => (
-										<SideBarContent
-											key={page.id}
-											page={page}
-											currentTimeMS={currentTimeMS}
-										/>
-									))}
-								</ul>
-							</div>
+				{fromLastWeek.length >= 1 && (
+					<div className="mb-4">
+						<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
+							Von dieser Woche
 						</div>
-					)}
+						<div className="relative">
+							<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+							<ul className="pl-4">
+								{fromLastWeek.map(page => (
+									<SideBarContent
+										key={page.id}
+										page={page}
+										currentTimeMS={currentTimeMS}
+									/>
+								))}
+							</ul>
+						</div>
+					</div>
+				)}
 
-					{olderThanSevenDays.length >= 1 && (
-						<div className="mb-4">
-							<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
-								Älter als eine Woche
-							</div>
-							<div className="relative">
-								<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
-								<ul className="pl-4">
-									{olderThanSevenDays.map(page => (
-										<SideBarContent
-											key={page.id}
-											page={page}
-											currentTimeMS={currentTimeMS}
-										/>
-									))}
-								</ul>
-							</div>
+				{olderThanSevenDays.length >= 1 && (
+					<div className="mb-4">
+						<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
+							Älter als eine Woche
 						</div>
-					)}
-				</div>
-			</aside>
-		</div>
+						<div className="relative">
+							<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+							<ul className="pl-4">
+								{olderThanSevenDays.map(page => (
+									<SideBarContent
+										key={page.id}
+										page={page}
+										currentTimeMS={currentTimeMS}
+									/>
+								))}
+							</ul>
+						</div>
+					</div>
+				)}
+			</div>
+		</aside>
 	);
 }
 
@@ -110,7 +110,7 @@ function SideBarContent({
 	currentTimeMS: number;
 }) {
 	return (
-		<li className="mb-3 hover:bg-gray-200">
+		<li className="mb-3 hover:bg-gray-00">
 			<Link href={"/learning-diary/page/" + page.id}>
 				<div>
 					<span className="block p-2 rounded break-words whitespace-normal">
