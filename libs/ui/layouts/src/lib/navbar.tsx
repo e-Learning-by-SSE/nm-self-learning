@@ -181,13 +181,26 @@ export function NavbarDropdownMenu({
 					<MenuItem as="div" className="p-1">
 						{({ focus }) => (
 							<Link
-								href="/overview"
+								href="/dashboard"
 								className={`${
 									focus ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
 								<UserIcon className="h-5" />
 								<span>Übersicht</span>
+							</Link>
+						)}
+					</MenuItem>
+					<MenuItem as="div" className="p-1">
+						{({ focus }) => (
+							<Link
+								href="/dashboard/author"
+								className={`${
+									focus ? "bg-emerald-500 text-white" : ""
+								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+							>
+								<AcademicCapIcon className="h-5" />
+								<span>Autoren - Übersicht</span>
 							</Link>
 						)}
 					</MenuItem>
