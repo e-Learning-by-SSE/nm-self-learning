@@ -10,11 +10,11 @@ async function _courseParticipation({
 	start?: Date;
 	end?: Date;
 	threshold: number;
-}): Promise<{ resourceId: string; participants: number | null }[]> {
+}): Promise<{ courseId: string; participants: number | null }[]> {
 	// Retrieve distinct participants for each course
 	const result = await database.eventLog.findMany({
 		where: {
-			resourceId: {
+			courseId: {
 				in: courseIds
 			},
 			createdAt: {
@@ -23,23 +23,23 @@ async function _courseParticipation({
 			}
 		},
 		select: {
-			resourceId: true,
+			courseId: true,
 			username: true
 		},
-		distinct: ["resourceId", "username"]
+		distinct: ["courseId", "username"]
 	});
 
 	// Count distinct participants for each course
-	const distinctParticipants = result.filter(r => r.resourceId !== undefined) as {
-		resourceId: string;
+	const distinctParticipants = result.filter(r => r.courseId !== undefined) as {
+		courseId: string;
 		username: string;
 	}[];
 	const distinctParticipantsPerCourse = distinctParticipants.reduce(
 		(acc, participation) => {
-			if (!acc[participation.resourceId]) {
-				acc[participation.resourceId] = 0;
+			if (!acc[participation.courseId]) {
+				acc[participation.courseId] = 0;
 			}
-			acc[participation.resourceId]++;
+			acc[participation.courseId]++;
 			return acc;
 		},
 		{} as Record<string, number>
@@ -48,9 +48,9 @@ async function _courseParticipation({
 	// Map results to type
 	return Object.entries(distinctParticipantsPerCourse).map(([courseId, participants]) => {
 		if (participants >= threshold) {
-			return { resourceId: courseId, participants };
+			return { courseId: courseId, participants };
 		}
-		return { resourceId: courseId, participants: null };
+		return { courseId: courseId, participants: null };
 	});
 }
 
@@ -81,9 +81,9 @@ export async function courseParticipation({
 
 	// Merge both results
 	return participantsTotal.map(item1 => {
-		const item2 = participantsInIntervall.find(item => item.resourceId === item1.resourceId);
+		const item2 = participantsInIntervall.find(item => item.courseId === item1.courseId);
 		return {
-			resourceId: item1.resourceId,
+			courseId: item1.courseId,
 			participants: item2?.participants ?? null,
 			participantsTotal: item1.participants
 		};

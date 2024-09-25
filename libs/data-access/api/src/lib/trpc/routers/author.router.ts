@@ -9,7 +9,7 @@ import { Prisma } from "@prisma/client";
 import { courseParticipation } from "@self-learning/analysis";
 
 const participantsInputSchema = z.object({
-	resourceIds: z.array(z.string()),
+	courseId: z.array(z.string()),
 	start: z.date(),
 	end: z.date()
 });
@@ -112,10 +112,10 @@ export const authorRouter = t.router({
 		.input(participantsInputSchema)
 		.query(async ({ ctx, input }) => {
 			return courseParticipation({
-				courseIds: input.resourceIds,
+				courseIds: input.courseId,
 				start: input.start,
 				end: input.end,
-				threshold: 10
+				threshold: 0
 			});
 		}),
 	findMany: authProcedure
