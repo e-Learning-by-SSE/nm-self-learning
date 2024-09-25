@@ -23,6 +23,7 @@ import { useRouter } from "next/router";
 import { ComponentProps, useState } from "react";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
 import { VoidSvg } from "@self-learning/ui/static";
+import { TeacherView } from "@self-learning/analysis";
 
 const EditAuthorDialog = dynamic(
 	() => import("@self-learning/teaching").then(m => m.EditAuthorDialog),
@@ -301,6 +302,17 @@ export default function AuthorOverview({ author }: Props) {
 						</Link>
 					</div>
 					<SkillRepositoryOverview />
+				</section>
+
+				<Divider />
+				<section>
+					<div className="flex justify-between gap-4">
+						<SectionHeader
+							title="Teilnahmeübersicht"
+							subtitle="Studierende pro betreuter Kurs (im aktuellen Semester / insgesamt)"
+						/>
+					</div>
+					<TeacherView />
 				</section>
 			</div>
 		</CenteredSection>
