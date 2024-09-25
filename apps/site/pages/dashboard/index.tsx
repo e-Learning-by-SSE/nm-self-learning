@@ -252,13 +252,13 @@ function DashboardPage(props: Props) {
 								title="Kursübersicht"
 							/>
 							<Card
-								href="/ltb/entry/0"
+								href="/learning-diary"
 								imageElement={<TutorialSvg />}
 								title="Lerntagebucheinträge verwalten"
 							/>
 
 							<Card
-								href="/ltb/"
+								href="/learning-diary"
 								imageElement={<TutorialSvg />}
 								title="Lerntagebuchübersicht einsehen"
 							/>
