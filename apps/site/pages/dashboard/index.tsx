@@ -303,8 +303,8 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 								onClose={value => {
 									refetch();
 									onChange({
-										hasLearningDiary: value?.hasLearningDiary ?? false,
-										learningStatistics: value?.learningStatistics ?? false
+										hasLearningDiary: value.hasLearningDiary,
+										learningStatistics: value.learningStatistics
 									});
 									freeDialog("studentSettingsDialogDashboard");
 								}}
