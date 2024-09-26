@@ -53,7 +53,7 @@ export function PersonalTechniqueRatingTile({
 	};
 
 	return (
-		<>
+		<div>
 			<Tile
 				tileName="Genutzte Techniken"
 				isFilled={ratedTechniques.length > 0}
@@ -67,12 +67,16 @@ export function PersonalTechniqueRatingTile({
 					onClose={() => setStrategyDialogOpen(false)}
 					className="fixed inset-0 z-10 overflow-y-auto"
 				>
-					<div className="mt-4 p-4 columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-8">
-						<StrategyList
-							onTechniqueClick={technique => setEvalTarget(technique)}
-							strategies={strategies}
-						/>
-						<DialogActions onClose={() => setStrategyDialogOpen(false)} />
+					<div className="mt-1 p-1 grid grid-rows-2 gap-0 xl:grid-rows-[500px_100px]">
+						<div className="flex h-full overflow-y-scroll">
+							<StrategyList
+								onTechniqueClick={technique => setEvalTarget(technique)}
+								strategies={strategies}
+							/>
+						</div>
+						<div className="">
+							<DialogActions onClose={() => setStrategyDialogOpen(false)} />
+						</div>
 					</div>
 				</Dialog>
 			)}
@@ -83,7 +87,7 @@ export function PersonalTechniqueRatingTile({
 					onSubmit={handleEvaluationSubmit}
 				/>
 			)}
-		</>
+		</div>
 	);
 }
 
@@ -117,11 +121,11 @@ function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
 	};
 
 	return (
-		<div className="p-4 columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-8">
+		<div className="p-4 grid grid-cols-4 gap-8">
 			{strategies.map(strategy => (
-				<div key={strategy.id} className="mb-8 break-inside-avoid">
-					<div className="flex items-center justify-between mb-4">
-						<h2 className="font-bold text-xl">{strategy.name}</h2>
+				<div key={strategy.id} className="mb-8  break-inside-avoid">
+					<div className="flex items-center justify-between mb-4 pr-4">
+						<h2 className="font-bold text-xl mr-4">{strategy.name}</h2>
 						<button onClick={() => handleInfoClick(strategy.id)}>
 							<InformationCircleIcon className="h-6 w-6 text-blue-500" />
 						</button>
