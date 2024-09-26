@@ -6,6 +6,7 @@ import { psychologyExample } from "./psychology/psychology-example";
 import { seedDemos } from "./demo/demo";
 import { subjects } from "./seedSubjects";
 import { specializations } from "./seedSpecializations";
+import { seedStrategiesAndTechniques } from "./learning-diary/learning-strategies";
 
 const prisma = new PrismaClient();
 
@@ -33,15 +34,17 @@ async function seed(): Promise<void> {
 	await prisma.learningDiaryPage.deleteMany();
 	console.log("😅 Seeding...");
 
+	await seedStrategiesAndTechniques();
+
 	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
 		faker.seed(1);
 		await seedDemos();
 	}
-
 	await prisma.subject.createMany({ data: subjects });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 	await prisma.specialization.createMany({ data: specializations });
+
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Specialities");
 
 	await psychologyExample();
