@@ -58,11 +58,6 @@ function CourseParticipation({
 					</tr>
 				))}
 			</Table>
-
-			<div className="pt-5 text-light">
-				Es werden aus datenschutzgründen nur Studierendenangaben nur für Kurse mit
-				mindestens 10 Studierenden angezeigt.
-			</div>
 		</>
 	);
 }

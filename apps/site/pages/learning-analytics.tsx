@@ -13,7 +13,12 @@ export default function Page() {
 			case "Heatmap":
 				return <LearningHeatmap />;
 			case "Teacher":
-				return <TeacherView />;
+				return (
+					<>
+						<h1>Teilnahmeübersicht</h1>
+						<TeacherView />;
+					</>
+				);
 			default:
 				return null;
 		}
