@@ -2,12 +2,95 @@ import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { getSemester } from "./aggregation-functions";
 import Link from "next/link";
+import { useState } from "react";
 
 type Course = {
 	slug: string;
 	title: string;
 	courseId: string;
 };
+
+type ParticipationData = Course & {
+	participants?: number | null | undefined;
+	participantsTotal?: number | null | undefined;
+};
+
+function SortedTable({ participationData }: { participationData: ParticipationData[] }) {
+	const [data, setData] = useState(participationData);
+	const [sortConfig, setSortConfig] = useState<{
+		key: keyof ParticipationData | null;
+		direction: "ascending" | "descending" | null;
+	}>({ key: null, direction: null });
+
+	// Sorting function
+	const sortData = (key: keyof ParticipationData) => {
+		const sortedData = [...data];
+		let direction: "ascending" | "descending" = "ascending";
+
+		if (sortConfig.key === key && sortConfig.direction === "ascending") {
+			direction = "descending";
+		}
+
+		sortedData.sort((a, b) => {
+			if ((a[key] ?? 0) < (b[key] ?? 0)) {
+				return direction === "ascending" ? -1 : 1;
+			}
+			if ((a[key] ?? 0) > (b[key] ?? 0)) {
+				return direction === "ascending" ? 1 : -1;
+			}
+			return 0;
+		});
+
+		setData(sortedData);
+		setSortConfig({ key, direction });
+	};
+
+	const getSortIndicator = (key: keyof ParticipationData) => {
+		if (sortConfig.key !== key) {
+			return null;
+		}
+		return sortConfig.direction === "ascending" ? "▲" : "▼";
+	};
+
+	return (
+		<>
+			<Table
+				head={
+					<>
+						<th
+							className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+							onClick={() => sortData("title")}
+						>
+							Kurs {getSortIndicator("title")}
+						</th>
+						<th
+							className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+							onClick={() => sortData("participants")}
+						>
+							Aktuelles Semester {getSortIndicator("participants")}
+						</th>
+						<th
+							className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+							onClick={() => sortData("participantsTotal")}
+						>
+							Insgesamt {getSortIndicator("participantsTotal")}
+						</th>
+					</>
+				}
+			>
+				{data.map(course => (
+					<tr key={course.slug}>
+						<TableDataColumn>
+							<Link href={`/courses/${course.slug}`}>{course.title}</Link>
+						</TableDataColumn>
+						<TableDataColumn>{course.participants ?? "*"}</TableDataColumn>
+						<TableDataColumn>{course.participantsTotal ?? "*"}</TableDataColumn>
+					</tr>
+				))}
+			</Table>
+		</>
+	);
+}
 
 function CourseParticipation({
 	courses,
@@ -32,34 +115,15 @@ function CourseParticipation({
 		return <p>Keine Daten vorhanden.</p>;
 	}
 
-	return (
-		<>
-			<Table
-				head={
-					<>
-						<TableHeaderColumn>Kurs</TableHeaderColumn>
-						<TableHeaderColumn>Aktuelles Semester</TableHeaderColumn>
-						<TableHeaderColumn>Insgesamt</TableHeaderColumn>
-					</>
-				}
-			>
-				{courses.map(course => (
-					<tr key={course.slug}>
-						<TableDataColumn>
-							<Link href={`/courses/${course.slug}`}>{course.title}</Link>
-						</TableDataColumn>
-						<TableDataColumn>
-							{data.find(p => p.courseId === course.courseId)?.participants ?? "---"}
-						</TableDataColumn>
-						<TableDataColumn>
-							{data.find(p => p.courseId === course.courseId)?.participantsTotal ??
-								"---"}
-						</TableDataColumn>
-					</tr>
-				))}
-			</Table>
-		</>
-	);
+	const merged = courses.map(course => {
+		const participationData = data.find(p => p.courseId === course.courseId);
+		return {
+			...course,
+			...(participationData || {})
+		};
+	});
+
+	return <SortedTable participationData={merged} />;
 }
 
 export function TeacherView() {

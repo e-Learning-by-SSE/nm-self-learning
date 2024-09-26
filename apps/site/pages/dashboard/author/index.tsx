@@ -125,7 +125,6 @@ function AuthorDashboardPage({ author }: Props) {
 				<div className="flex flex-col gap-10">
 					{author.subjectAdmin.length > 0 && (
 						<>
-
 							<section>
 								<SectionHeader
 									title="Fachgebiete"
@@ -285,15 +284,16 @@ function AuthorDashboardPage({ author }: Props) {
 					</section>
 
 					<Divider />
-				<section>
-					<div className="flex justify-between gap-4">
-						<SectionHeader
-							title="Teilnahmeübersicht"
-							subtitle="Studierende pro betreuter Kurs (im aktuellen Semester / insgesamt)"
-						/>
-					</div>
-					<TeacherView />
-				</section>
+					<section>
+						<div className="flex justify-between gap-4">
+							<SectionHeader
+								title="Teilnahmeübersicht"
+								subtitle="Es werden aus datenschutzgründen nur Angaben bei mindestens 10
+				teilnehmenden Studierenden angezeigt."
+							/>
+						</div>
+						<TeacherView />
+					</section>
 				</div>
 			</CenteredSection>
 		</div>
