@@ -110,7 +110,7 @@ function SideBarContent({
 	currentTimeMS: number;
 }) {
 	return (
-		<li className="mb-3 hover:bg-gray-00">
+		<li className="mb-1 hover:bg-gray-200">
 			<Link href={"/learning-diary/page/" + page.id}>
 				<div>
 					<span className="block p-2 rounded break-words whitespace-normal">
