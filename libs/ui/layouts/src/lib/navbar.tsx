@@ -33,7 +33,6 @@ export function Navbar() {
 
 	// List with all routes accessible by the User
 	const navigation = [
-		{ name: "Übersicht", href: "/overview" },
 		{ name: "Fachgebiete", href: "/subjects" }
 	];
 
