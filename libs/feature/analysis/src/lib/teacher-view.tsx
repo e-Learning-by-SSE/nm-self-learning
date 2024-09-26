@@ -49,7 +49,8 @@ function SortedTable({ participationData }: { participationData: ParticipationDa
 		if (sortConfig.key !== key) {
 			return null;
 		}
-		return sortConfig.direction === "ascending" ? "▲" : "▼";
+		const icon = sortConfig.direction === "ascending" ? "▲" : "▼";
+		return <span className="px-2">{icon}</span>;
 	};
 
 	return (
@@ -57,24 +58,15 @@ function SortedTable({ participationData }: { participationData: ParticipationDa
 			<Table
 				head={
 					<>
-						<th
-							className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
-							onClick={() => sortData("title")}
-						>
+						<TableHeaderColumn onClick={() => sortData("title")}>
 							Kurs {getSortIndicator("title")}
-						</th>
-						<th
-							className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
-							onClick={() => sortData("participants")}
-						>
+						</TableHeaderColumn>
+						<TableHeaderColumn onClick={() => sortData("participants")}>
 							Aktuelles Semester {getSortIndicator("participants")}
-						</th>
-						<th
-							className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
-							onClick={() => sortData("participantsTotal")}
-						>
+						</TableHeaderColumn>
+						<TableHeaderColumn onClick={() => sortData("participantsTotal")}>
 							Insgesamt {getSortIndicator("participantsTotal")}
-						</th>
+						</TableHeaderColumn>
 					</>
 				}
 			>
