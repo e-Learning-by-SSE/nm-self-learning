@@ -6,6 +6,8 @@ export async function allPages(username: string) {
 		select: {
 			id: true,
 			createdAt: true,
+			hasRead: true,
+			isDraft: true,
 			course: { select: { title: true } }
 		},
 		where: {
