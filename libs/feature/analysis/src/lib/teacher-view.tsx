@@ -1,5 +1,5 @@
 import { trpc } from "@self-learning/api-client";
-import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import { Table, TableDataColumn, TableHeaderColumn, SortIndicator } from "@self-learning/ui/common";
 import { getSemester } from "./aggregation-functions";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,8 +19,8 @@ function SortedTable({ participationData }: { participationData: ParticipationDa
 	const [data, setData] = useState(participationData);
 	const [sortConfig, setSortConfig] = useState<{
 		key: keyof ParticipationData | null;
-		direction: "ascending" | "descending" | null;
-	}>({ key: null, direction: null });
+		direction: "ascending" | "descending";
+	}>({ key: null, direction: "ascending" });
 
 	// Sorting function
 	const sortData = (key: keyof ParticipationData) => {
@@ -45,27 +45,19 @@ function SortedTable({ participationData }: { participationData: ParticipationDa
 		setSortConfig({ key, direction });
 	};
 
-	const getSortIndicator = (key: keyof ParticipationData) => {
-		if (sortConfig.key !== key) {
-			return null;
-		}
-		const icon = sortConfig.direction === "ascending" ? "▲" : "▼";
-		return <span className="px-2">{icon}</span>;
-	};
-
 	return (
 		<>
 			<Table
 				head={
 					<>
 						<TableHeaderColumn onClick={() => sortData("title")}>
-							Kurs {getSortIndicator("title")}
+							Kurs {SortIndicator("title", sortConfig)}
 						</TableHeaderColumn>
 						<TableHeaderColumn onClick={() => sortData("participants")}>
-							Aktuelles Semester {getSortIndicator("participants")}
+							Aktuelles Semester {SortIndicator("participants", sortConfig)}
 						</TableHeaderColumn>
 						<TableHeaderColumn onClick={() => sortData("participantsTotal")}>
-							Insgesamt {getSortIndicator("participantsTotal")}
+							Insgesamt {SortIndicator("participantsTotal", sortConfig)}
 						</TableHeaderColumn>
 					</>
 				}
