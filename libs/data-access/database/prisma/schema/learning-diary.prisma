@@ -16,8 +16,10 @@ model LearningDiaryPage {
   student            Student                       @relation(fields: [studentName], references: [username], onDelete: Cascade)
   courseSlug         String
   course             Course                        @relation(fields: [courseSlug], references: [slug], onDelete: Cascade)
+  hasRead          		        Boolean              				@default(false)
+
   notes              String?
-  createdAt          DateTime                      @default(now())
+  createdAt          DateTime                          @default(now())
   scope              Int                           @default(0)
   distractionLevel   Int                           @default(0)
   effortLevel        Int                           @default(0)
@@ -28,6 +30,7 @@ model LearningDiaryPage {
   lessonsLearned     LearningDiaryLearnedLessons[]
 
   // the following values can be caluclated but are cached for performance reasons
+  isDraft                       Boolean								@default(true)
   totalDurationLearnedMs   		Int?
 }
 

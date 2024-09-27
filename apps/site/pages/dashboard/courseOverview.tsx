@@ -3,7 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import { getSession } from "next-auth/react";
-import { ProgressBar, Tab, Table, TableDataColumn, Tabs } from "@self-learning/ui/common";
+import {
+	ProgressBar,
+	SortIndicator,
+	Tab,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn,
+	Tabs
+} from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import { formatDateAgo } from "@self-learning/util/common";
@@ -131,13 +139,10 @@ function TabContent({
 }
 
 function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
-	const [sortedColumn, setSortedColumn] = useState<{
+	const [sortConfig, setSortConfig] = useState<{
 		key: string;
-		descendingOrder: boolean;
-	}>({
-		key: "title",
-		descendingOrder: true
-	});
+		direction: "ascending" | "descending";
+	}>({ key: "title", direction: "ascending" });
 
 	type Column = {
 		key: string;
@@ -174,49 +179,41 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 
 	function getSortingFunction(): Column["sortingFunction"] {
 		let sortingFunction = columns.find(
-			column => column.key === sortedColumn.key
+			column => column.key === sortConfig.key
 		)?.sortingFunction;
 
 		if (!sortingFunction) {
 			return (sortingFunction = (_: EnrollmentDetails, __: EnrollmentDetails) => 0);
 		}
 
-		if (sortedColumn.descendingOrder) {
+		if (sortConfig.direction === "descending") {
 			return (a: EnrollmentDetails, b: EnrollmentDetails) => -sortingFunction(a, b);
 		} else {
 			return sortingFunction;
 		}
 	}
 
+	const setSortOrder = (key: string) => {
+		setSortConfig({
+			key,
+			direction:
+				sortConfig.key === key && sortConfig.direction === "ascending"
+					? "descending"
+					: "ascending"
+		});
+	};
+
 	return (
 		<Table
 			head={
 				<>
 					{columns.map(column => (
-						<th
-							className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+						<TableHeaderColumn
+							onClick={() => setSortOrder(column.key)}
 							key={column.key}
-							onClick={() =>
-								setSortedColumn({
-									key: column.key,
-									descendingOrder:
-										sortedColumn.key == column.key
-											? !sortedColumn.descendingOrder
-											: true
-								})
-							}
 						>
-							<div className="">
-								<span>{column.label}</span>
-								{sortedColumn && sortedColumn.key === column.key ? (
-									<span className="">
-										{sortedColumn.descendingOrder ? " ▼" : " ▲"}
-									</span>
-								) : (
-									<span className="invisible"> ▲</span>
-								)}
-							</div>
-						</th>
+							{column.label} {SortIndicator(column.key, sortConfig)}
+						</TableHeaderColumn>
 					))}
 				</>
 			}

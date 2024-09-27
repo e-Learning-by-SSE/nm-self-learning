@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ResolvedValue } from "@self-learning/types";
-import { allPages } from "@self-learning/diary";
+import { allPages, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
 
@@ -10,7 +12,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 
 	const currentTimeMS = new Date().getTime();
 	const pagesWithIndex = pages.map((page, index) => {
-		return { ...page, index: pages.length - index };
+		return { ...page, index: index + 1 };
 	});
 
 	const fromToday = pagesWithIndex.filter(
@@ -28,6 +30,15 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 		const timeDiff = currentTimeMS - createdAtTime;
 		return timeDiff > sevenDays;
 	});
+
+	// sorting lists descending
+	fromToday.sort((a, b) => b.index - a.index);
+	fromLastWeek.sort((a, b) => b.index - a.index);
+	olderThanSevenDays.sort((a, b) => b.index - a.index);
+
+	const { asPath } = useRouter();
+	const pageId = asPath.split("/").pop();
+	const { index = -1 } = pagesWithIndex.find(page => page.id === pageId) || {};
 
 	return (
 		<aside
@@ -48,8 +59,9 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 								{fromToday.map(page => (
 									<SideBarContent
 										key={page.id}
-										page={page}
+										initialPage={page}
 										creationDate={page.createdAt}
+										currentPageIndex={index}
 									/>
 								))}
 							</ul>
@@ -68,8 +80,9 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 								{fromLastWeek.map(page => (
 									<SideBarContent
 										key={page.id}
-										page={page}
+										initialPage={page}
 										creationDate={page.createdAt}
+										currentPageIndex={index}
 									/>
 								))}
 							</ul>
@@ -88,8 +101,9 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 								{olderThanSevenDays.map(page => (
 									<SideBarContent
 										key={page.id}
-										page={page}
+										initialPage={page}
 										creationDate={page.createdAt}
+										currentPageIndex={index}
 									/>
 								))}
 							</ul>
@@ -102,26 +116,39 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 }
 
 function SideBarContent({
-	page,
-	creationDate
+	initialPage,
+	creationDate,
+	currentPageIndex
 }: {
-	page: PagesMeta[number] & { index: number };
+	initialPage: PagesMeta[number] & { index: number };
 	creationDate: Date;
+	currentPageIndex: number;
 }) {
-	const formattedDate = `${creationDate.getDate().toString().padStart(2, "0")}/${creationDate.getMonth().toString().padStart(2, "0")}/${creationDate.getFullYear()}`;
-
+	const [page, setPage] = useState(initialPage);
+	const formattedDate = `${creationDate.getDate().toString().padStart(2, "0")}/${(creationDate.getMonth() + 1).toString().padStart(2, "0")}/${creationDate.getFullYear()}`;
 	return (
-		<li className="mb-1 hover:bg-gray-200">
-			<Link href={"/learning-diary/page/" + page.id}>
-				<div>
-					<span className="block p-2 rounded break-words whitespace-normal">
-						{page.index + ". " + page.course.title}
-					</span>
-					<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
-						{formattedDate}
-					</span>
-				</div>
-			</Link>
+		<li
+			className={`mb-1 rounded hover:bg-gray-100 ${
+				page.index === currentPageIndex ? "font-bold bg-gray-100" : ""
+			}`}
+		>
+			<LearningDiaryEntryStatusBadge {...page} className="left-[-11px] top-2">
+				<Link
+					href={"/learning-diary/page/" + page.id}
+					onClick={() => {
+						setPage({ ...page, hasRead: true });
+					}}
+				>
+					<div>
+						<span className="block p-2 rounded break-words whitespace-normal">
+							{page.index + ". " + page.course.title}
+						</span>
+						<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
+							{formattedDate}
+						</span>
+					</div>
+				</Link>
+			</LearningDiaryEntryStatusBadge>
 		</li>
 	);
 }

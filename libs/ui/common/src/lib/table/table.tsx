@@ -13,17 +13,52 @@ export function Table({ head, children }: { head: React.ReactElement; children: 
 	);
 }
 
+/**
+ * May be used as part of the children of a sorted TableHeaderColumn to indicate the sorting direction.
+ * @param key An identifier used for the column at which the sorting indicator should be displayed.
+ * @param sortConfig The sorting configuration of the complete table.
+ * @returns A visible sign that shows how the column is currently sorted or an empty place holder.
+ * 
+ * @example
+ * ```tsx
+ * const [sortConfig, setSortConfig] = 
+ *     useState<{key: string | null; direction: "ascending" | "descending"}>
+ *     ({ key: null, direction: "ascending" });
+ * ...
+ * 
+ * <TableHeaderColumn onClick={() => sortData("title")}>
+ *    Titel {SortIndicator("title", sortConfig)}
+	</TableHeaderColumn>
+ * ```
+ */
+export function SortIndicator(
+	key: string,
+	sortConfig: { key: string | null; direction: "ascending" | "descending" }
+) {
+	if (sortConfig.key !== key) {
+		// Use the same space to avoid layout shifts; but use neutral symbol to support screen readers
+		// See for alternatives: https://www.compart.com/de/unicode/block/U+25A0
+		// However, should be hidden anyways according to: https://webaim.org/techniques/css/invisiblecontent/
+		return <span className="px-2 invisible">▭</span>;
+	}
+	const icon = sortConfig.direction === "ascending" ? "▲" : "▼";
+	return <span className="px-2">{icon}</span>;
+}
+
 export function TableHeaderColumn({
 	children,
-	onClick
+	onClick,
+	key
 }: {
 	children?: React.ReactNode;
+	key?: string;
 	onClick?: () => void;
 }) {
 	return (
 		<th
 			className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
 			onClick={onClick}
+			key={key}
 		>
 			{children}
 		</th>

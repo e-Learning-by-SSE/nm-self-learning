@@ -6,3 +6,4 @@ export * from "./lib/page-viewer/sidebar";
 export * from "./lib/access-learning-diary";
 
 export * from "./lib/goals/learning-goals";
+export * from "./lib/status-badge";

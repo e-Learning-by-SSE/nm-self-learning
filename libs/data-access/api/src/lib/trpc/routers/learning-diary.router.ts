@@ -113,6 +113,7 @@ export const learningDiaryPageRouter = t.router({
 				id: input.id
 			},
 			data: {
+				isDraft: false,
 				notes: input.notes,
 				scope: input.scope ?? 0, // TODO remove default value
 				distractionLevel: input.distractionLevel,
@@ -187,6 +188,15 @@ export const learningDiaryPageRouter = t.router({
 			});
 		}),
 	get: authProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
+		await database.learningDiaryPage.update({
+			where: {
+				id: input.id
+			},
+			data: {
+				hasRead: true
+			}
+		});
+
 		return getDiaryPage(input.id);
 	})
 });

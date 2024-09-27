@@ -6,16 +6,24 @@ export async function allPages(username: string) {
 		select: {
 			id: true,
 			createdAt: true,
+			hasRead: true,
+			isDraft: true,
 			course: { select: { title: true } }
 		},
 		where: {
 			studentName: username
 		},
-		orderBy: { createdAt: "desc" }
+		orderBy: { createdAt: "asc" }
 	});
 }
 
 export async function getDiaryPage(ltbId: string) {
+	await database.learningDiaryPage.update({
+		where: { id: ltbId },
+		data: {
+			hasRead: true
+		}
+	});
 	const ltbPage = await database.learningDiaryPage.findUnique({
 		where: { id: ltbId },
 		select: {
