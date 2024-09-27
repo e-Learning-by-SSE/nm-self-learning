@@ -38,6 +38,7 @@ export function SortIndicator(
 	if (sortConfig.key !== key) {
 		// Use the same space to avoid layout shifts; but use neutral symbol to support screen readers
 		// See for alternatives: https://www.compart.com/de/unicode/block/U+25A0
+		// However, should be hidden anyways according to: https://webaim.org/techniques/css/invisiblecontent/
 		return <span className="px-2 invisible">▭</span>;
 	}
 	const icon = sortConfig.direction === "ascending" ? "▲" : "▼";
@@ -46,15 +47,18 @@ export function SortIndicator(
 
 export function TableHeaderColumn({
 	children,
-	onClick
+	onClick,
+	key
 }: {
 	children?: React.ReactNode;
+	key?: string;
 	onClick?: () => void;
 }) {
 	return (
 		<th
 			className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
 			onClick={onClick}
+			key={key}
 		>
 			{children}
 		</th>
