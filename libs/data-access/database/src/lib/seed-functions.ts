@@ -488,6 +488,40 @@ export async function createRepositories(repository: Repository) {
 	});
 }
 
+function getRandomNumber(min: number, max: number): number {
+	if (min > max) {
+		throw new Error('min should not be greater than max');
+	}
+	return faker.number.int({ min, max });
+}
+
+// Function to generate a random date between 50 days and 6 hours ago
+export function getRandomCreatedAt(): Date {
+	const currentTime = new Date().getTime();
+	const minTime = currentTime - 50 * 24 * 60 * 60 * 1000; // 50 days ago
+	const maxTime = currentTime - 6 * 60 * 60 * 1000; // 6 hours ago
+
+	const randomTime = getRandomNumber(minTime, maxTime);
+	return new Date(randomTime);
+}
+
+// Function to generate random time interval in milliseconds
+export function getRandomTimeIntervalInMs(): number {
+	const minTimeMs = 60 * 1000; // 1 minute in ms
+	const maxTimeMs = 28 * 60 * 60 * 1000; // 28 hours in ms
+
+	return getRandomNumber(minTimeMs, maxTimeMs);
+}
+
+export function getRandomElementFromArray<T>(arr: T[]): T {
+  if (arr.length === 0) {
+    throw new Error('Array cannot be empty');
+  }
+
+  const randomIndex = getRandomNumber(0, arr.length - 1);
+  return arr[randomIndex];
+}
+
 export type LearningStrategyCategory = {
 	strategieName: string;
 	techniques: string[];

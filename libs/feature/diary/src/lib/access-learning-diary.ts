@@ -48,7 +48,22 @@ export async function getDiaryPage(ltbId: string) {
 					iconURL: true
 				}
 			},
-			learningGoals: true,
+			learningGoals: {
+				select: {
+					id: true,
+					description: true,
+					status: true,
+					lastProgressUpdate: true,
+					learningSubGoals: {
+						select: {
+							id: true,
+							description: true,
+							status: true,
+							priority: true
+						}
+					}
+				}
+			},
 			createdAt: true,
 			lessonsLearned: {
 				select: {

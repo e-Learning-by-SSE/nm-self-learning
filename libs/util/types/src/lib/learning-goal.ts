@@ -1,0 +1,16 @@
+import { LearningGoalStatus } from "@prisma/client";
+
+export type LearningGoal = {
+	status: LearningGoalStatus;
+	lastProgressUpdate?: Date;
+	id: string;
+	description: string;
+	learningSubGoals: LearningSubGoal[];
+};
+export type LearningSubGoal = {
+	status: LearningGoalStatus;
+	id: string;
+	description: string;
+	priority: number;
+	learningGoalId: string;
+};

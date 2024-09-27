@@ -1,25 +1,11 @@
 import { PrismaClient } from "@prisma/client";
+import { faker } from "@faker-js/faker";
+import { getRandomCreatedAt, getRandomElementFromArray, getRandomTimeIntervalInMs } from "../../seed-functions";
 
 const prisma = new PrismaClient();
 const DEFAULT_SLUG = "the-beginners-guide-to-react";
 
-// Function to generate a random date between 30 days and 6 hours ago
-function getRandomCreatedAt(): Date {
-	const currentTime = new Date().getTime();
-	const minTime = currentTime - 50 * 24 * 60 * 60 * 1000; // 50 days ago
-	const maxTime = currentTime - 6 * 60 * 60 * 1000; // 6 hours ago
-
-	const randomTime = Math.floor(Math.random() * (maxTime - minTime)) + minTime;
-	return new Date(randomTime);
-}
-
-// Function to generate random time interval in milliseconds
-function getRandomTimeIntervalInMs(): number {
-	const minTimeMs = 60 * 1000; // 1 minute in ms
-	const maxTimeMs = 28 * 60 * 60 * 1000; // 28 hours in ms
-
-	return Math.floor(Math.random() * (maxTimeMs - minTimeMs + 1)) + minTimeMs;
-}
+// Reuse this function for generating random numbers within a range
 
 export async function generateLearningDiaryDemoData() {
 	console.log("\x1b[94m%s\x1b[0m", "Learning Diary Example:");
@@ -99,7 +85,7 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "diary-entry-advanced-spells",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied advanced spells",
 				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
@@ -114,28 +100,28 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "diary-entry-basic-potions",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied basic potions",
 				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 1,
 				effortLevel: 4,
 				scope: 6,
 				learningLocationId: location2.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
 		const emptyDiaryEntry = await prisma.learningDiaryPage.create({
 			data: {
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "",
 				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 0,
 				effortLevel: 0,
 				scope: 5,
 				learningLocationId: null,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
@@ -145,14 +131,14 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "entry3",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied defensive spells",
 				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
 				effortLevel: 3,
 				scope: 4,
 				learningLocationId: location3.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
@@ -160,14 +146,14 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "entry4",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied magical creatures",
 				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 1,
 				effortLevel: 5,
 				scope: 7,
 				learningLocationId: location2.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
@@ -175,14 +161,14 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "entry5",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied advanced charms",
 				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 2,
 				effortLevel: 4,
 				scope: 6,
 				learningLocationId: location1.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
@@ -190,54 +176,131 @@ export async function generateLearningDiaryDemoData() {
 			data: {
 				id: "entry-over-two-days",
 				studentName: student.username,
-				courseSlug: courses[0]?.slug || DEFAULT_SLUG, // Use the default slug
+				courseSlug: getRandomElementFromArray(courses).slug || DEFAULT_SLUG,
 				notes: "Studied transfiguration over two days",
 				totalDurationLearnedMs: getRandomTimeIntervalInMs(),
 				distractionLevel: 3,
 				effortLevel: 4,
 				scope: 8,
 				learningLocationId: location3.id,
-				createdAt: getRandomCreatedAt() // Use the random date function
+				createdAt: getRandomCreatedAt()
 			}
 		});
 
 		// Create Learning Goals (hard-coded)
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Learning Goals");
-		const goal1 = await prisma.learningGoal.create({
+		const learningGoal1 = await prisma.learningGoal.create({
 			data: {
-				id: "goal1",
-				name: "Complete Advanced Spells",
-				progress: "NOT_STARTED",
-				learningDiaryEntryId: diaryEntry1.id
+				description: "Learn TypeScript",
+				status: "ACTIVE",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Understand basic types",
+							status: "ACTIVE",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn about interfaces",
+							status: "INACTIVE",
+							createdAt: new Date()
+						}
+					]
+				}
 			}
 		});
 
-		const subGoal1 = await prisma.learningGoal.create({
+		const learningGoal2 = await prisma.learningGoal.create({
 			data: {
-				id: "subgoal1",
-				name: "Master Levitation Spell",
-				progress: "STARTED",
-				learningDiaryEntryId: diaryEntry1.id,
-				parentGoalId: goal1.id
+				description: "Master Prisma",
+				status: "INACTIVE",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Understand relations",
+							status: "ACTIVE",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn about migrations",
+							status: "INACTIVE",
+							createdAt: new Date()
+						}
+					]
+				}
 			}
 		});
 
-		const subGoal2 = await prisma.learningGoal.create({
+		const learningGoal3 = await prisma.learningGoal.create({
 			data: {
-				id: "subgoal2",
-				name: "Master Invisibility Spell",
-				progress: "FINISHED",
-				learningDiaryEntryId: diaryEntry1.id,
-				parentGoalId: goal1.id
+				description: "Understand SQL",
+				status: "INACTIVE",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Learn basic SQL commands",
+							status: "ACTIVE",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn joins",
+							status: "INACTIVE",
+							createdAt: new Date()
+						}
+					]
+				}
 			}
 		});
 
-		const goal2 = await prisma.learningGoal.create({
+		const learningGoal4 = await prisma.learningGoal.create({
 			data: {
-				id: "goal2",
-				name: "Brew Basic Potions",
-				progress: "NOT_STARTED",
-				learningDiaryEntryId: diaryEntry2.id
+				description: "Learn Docker",
+				status: "ACTIVE",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Understand containers",
+							status: "ACTIVE",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn Dockerfile basics",
+							status: "INACTIVE",
+							createdAt: new Date()
+						}
+					]
+				}
+			}
+		});
+
+		const learningGoal5 = await prisma.learningGoal.create({
+			data: {
+				description: "Learn Git and GitHub",
+				status: "COMPLETED",
+				username: student.username,
+				createdAt: new Date(),
+				learningSubGoals: {
+					create: [
+						{
+							description: "Understand version control",
+							status: "COMPLETED",
+							createdAt: new Date()
+						},
+						{
+							description: "Learn branching strategies",
+							status: "COMPLETED",
+							createdAt: new Date()
+						}
+					]
+				}
 			}
 		});
 

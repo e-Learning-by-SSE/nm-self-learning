@@ -9,6 +9,7 @@ import {
 	learningLocationRouter,
 	learningTechniqueRouter
 } from "./routers/learning-diary.router";
+import { learningGoalRouter } from "./routers/learning-goal.router";
 import { lessonRouter } from "./routers/lesson.router";
 import { licenseRouter } from "./routers/license.router";
 import { meRouter } from "./routers/me.router";
@@ -27,6 +28,7 @@ export const appRouter = t.router({
 	completion: completionRouter,
 	course: courseRouter,
 	enrollment: enrollmentRouter,
+	learningGoal: learningGoalRouter,
 	learningLocation: learningLocationRouter,
 	learningDiary: learningDiaryPageRouter,
 	learningTechniqueRating: learningTechniqueRouter,

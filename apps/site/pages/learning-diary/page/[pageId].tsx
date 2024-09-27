@@ -14,7 +14,9 @@ import {
 	StarInputTile,
 	Strategy,
 	PersonalTechniqueRatingTile,
-	Tile
+	Tile,
+	LearningGoalInputTile,
+	Sidebar
 } from "@self-learning/diary";
 
 import { LearningDiaryPage, learningDiaryPageSchema, ResolvedValue } from "@self-learning/types";
@@ -25,7 +27,6 @@ import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
-import { Sidebar } from "../../../../../libs/feature/diary/src/lib/page-viewer/sidebar";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
 
@@ -204,21 +205,26 @@ function DiaryContentForm({
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
 
-	const defaultValues = useMemo(
-		() => ({
+	const defaultValues = useMemo(() => {
+		return {
+			// Set the defaults of the form here. Since we have start values directly from the database
+			// we need to transform the to the correct zod-input type for validation. Especially the incompatibilities between
+			// null and undefined are important here. This is a common pattern in the codebase.
 			...pageDetails,
-			// convert since data from database has null values and in API we only allow undefined
 			notes: pageDetails?.notes ?? undefined,
+			learningGoals: pageDetails?.learningGoals.map(goal => ({
+				...goal,
+				lastProgressUpdate: goal.lastProgressUpdate ?? undefined
+			})),
 			learningLocation: pageDetails?.learningLocation
 				? {
-						name: pageDetails?.learningLocation.name,
-						iconURL: pageDetails?.learningLocation.iconURL ?? undefined,
+						name: pageDetails.learningLocation.name,
+						iconURL: pageDetails.learningLocation.iconURL ?? undefined,
 						defaultLocation: false
 					}
 				: undefined
-		}),
-		[pageDetails]
-	);
+		};
+	}, [pageDetails]);
 
 	const form = useForm<LearningDiaryPage>({
 		resolver: zodResolver(learningDiaryPageSchema),
@@ -267,6 +273,16 @@ function DiaryContentForm({
 			<FormProvider {...form}>
 				<form className="space-y-4">
 					<Controller
+						name="learningGoals"
+						control={form.control}
+						render={({ field }) => (
+							<LearningGoalInputTile
+								goals={field.value ?? []}
+								onChange={field.onChange}
+							/>
+						)}
+					/>
+					<Controller
 						name="learningLocation"
 						control={form.control}
 						render={({ field }) => (
@@ -297,7 +313,7 @@ function DiaryContentForm({
 						control={form.control}
 						render={({ field }) => (
 							<StarInputTile
-								name={"Bemühungen:"}
+								name={"Ablenkungen:"}
 								initialRating={field.value}
 								onChange={field.onChange}
 								description={
@@ -311,22 +327,22 @@ function DiaryContentForm({
 						)}
 					/>
 					<Controller
-						name="notes"
-						control={form.control}
-						render={({ field }) => (
-							<MarkDownInputTile
-								initialNote={field.value}
-								onSubmit={field.onChange}
-							/>
-						)}
-					/>
-					<Controller
 						name="techniqueRatings"
 						control={form.control}
 						render={({ field }) => (
 							<PersonalTechniqueRatingTile
 								strategies={itemsWithRatings}
 								onChange={field.onChange}
+							/>
+						)}
+					/>
+					<Controller
+						name="notes"
+						control={form.control}
+						render={({ field }) => (
+							<MarkDownInputTile
+								initialNote={field.value}
+								onSubmit={field.onChange}
 							/>
 						)}
 					/>
