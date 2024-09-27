@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ResolvedValue } from "@self-learning/types";
-import { allPages } from "@self-learning/diary";
+import { allPages, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
 
@@ -58,7 +59,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 								{fromToday.map(page => (
 									<SideBarContent
 										key={page.id}
-										page={page}
+										initialPage={page}
 										creationDate={page.createdAt}
 										currentPageIndex={index}
 									/>
@@ -79,7 +80,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 								{fromLastWeek.map(page => (
 									<SideBarContent
 										key={page.id}
-										page={page}
+										initialPage={page}
 										creationDate={page.createdAt}
 										currentPageIndex={index}
 									/>
@@ -100,7 +101,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 								{olderThanSevenDays.map(page => (
 									<SideBarContent
 										key={page.id}
-										page={page}
+										initialPage={page}
 										creationDate={page.createdAt}
 										currentPageIndex={index}
 									/>
@@ -115,14 +116,15 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 }
 
 function SideBarContent({
-	page,
+	initialPage,
 	creationDate,
 	currentPageIndex
 }: {
-	page: PagesMeta[number] & { index: number };
+	initialPage: PagesMeta[number] & { index: number };
 	creationDate: Date;
 	currentPageIndex: number;
 }) {
+	const [page, setPage] = useState(initialPage);
 	const formattedDate = `${creationDate.getDate().toString().padStart(2, "0")}/${(creationDate.getMonth() + 1).toString().padStart(2, "0")}/${creationDate.getFullYear()}`;
 	return (
 		<li
@@ -130,16 +132,23 @@ function SideBarContent({
 				page.index === currentPageIndex ? "font-bold bg-gray-100" : ""
 			}`}
 		>
-			<Link href={"/learning-diary/page/" + page.id}>
-				<div>
-					<span className="block p-2 rounded break-words whitespace-normal">
-						{page.index + ". " + page.course.title}
-					</span>
-					<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
-						{formattedDate}
-					</span>
-				</div>
-			</Link>
+			<LearningDiaryEntryStatusBadge {...page} className="left-[-11px] top-2">
+				<Link
+					href={"/learning-diary/page/" + page.id}
+					onClick={() => {
+						setPage({ ...page, hasRead: true });
+					}}
+				>
+					<div>
+						<span className="block p-2 rounded break-words whitespace-normal">
+							{page.index + ". " + page.course.title}
+						</span>
+						<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
+							{formattedDate}
+						</span>
+					</div>
+				</Link>
+			</LearningDiaryEntryStatusBadge>
 		</li>
 	);
 }
