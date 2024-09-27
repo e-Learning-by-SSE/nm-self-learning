@@ -544,3 +544,29 @@ export async function createStrategiesAndTechniques(input: LearningStrategyCateg
 		}
 	}
 }
+
+export function getRandomItemsFromArray<T>(arr: T[]): T[] {
+	if (!arr || arr.length === 0) {
+		return [];
+	}
+
+	const randomCount = getRandomNumber(1, arr.length);
+	const shuffledArray = arr.sort(() => 0.5 - Math.random());
+	return shuffledArray.slice(0, randomCount);
+}
+
+
+export function getRandomElementFromArray<T>(arr: T[]): T {
+	if (arr.length === 0) {
+		throw new Error('Array cannot be empty');
+	}
+	const randomIndex = getRandomNumber(0, arr.length - 1);
+	return arr[randomIndex];
+}
+
+export function getRandomNumber(min: number, max: number): number {
+	if (min > max) {
+		throw new Error('min should not be greater than max');
+	}
+	return faker.number.int({ min, max });
+}

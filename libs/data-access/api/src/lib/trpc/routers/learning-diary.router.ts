@@ -184,7 +184,7 @@ export const learningDiaryPageRouter = t.router({
 		.input(lessonStartSchema)
 		.mutation(async ({ input }) => {
 			return database.learningDiaryLearnedLessons.create({
-				data: { entryId: input.entryId, lessonId: input.lessonId }
+				data: { entryId: input.entryId, lessonId: input.lessonId, createdAt: input.createdAt ?? new Date }
 			});
 		}),
 	get: authProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {

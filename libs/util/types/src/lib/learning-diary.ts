@@ -39,12 +39,13 @@ export const learningDiaryPageSchema = z.object({
 	distractionLevel: z.number().int().optional(),
 	learningLocation: learningLocationSchema.optional(),
 	learningGoals: z.array(learningGoalSchema).optional(),
-	techniqueRatings: z.array(techniqueRatingSchema).optional()
+	techniqueRatings: z.array(techniqueRatingSchema).optional(),
 });
 
 export type LearningDiaryPage = z.infer<typeof learningDiaryPageSchema>;
 
 export const lessonStartSchema = z.object({
 	entryId: z.string(),
-	lessonId: z.string()
+	lessonId: z.string(),
+	createdAt: z.date().optional(),
 });

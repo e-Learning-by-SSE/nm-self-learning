@@ -1,12 +1,13 @@
 /* eslint-disable quotes */
 import { PrismaClient } from "@prisma/client";
 import { seedJavaDemo } from "./seed-java-demo";
-import { license } from "../license";
 import { softwareentwicklungDemoSpecialization } from "../seedSpecializations";
 import { demoSubjects } from "../seedSubjects";
 import { seedReactDemo } from "./seed-react-demo";
 import { seedEvents } from "./event-seed";
 import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
+import { generateEventlogDate } from "./event-log/seed-event-log";
+import { license } from "./license";
 
 const prisma = new PrismaClient();
 
@@ -26,4 +27,6 @@ export async function seedDemos(): Promise<void> {
 	await seedEvents();
 
 	await generateLearningDiaryDemoData();
+
+	await generateEventlogDate();
 }
