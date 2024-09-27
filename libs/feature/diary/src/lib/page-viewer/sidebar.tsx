@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ResolvedValue } from "@self-learning/types";
 import { allPages } from "@self-learning/diary";
-import { adaptiveTimeSpan } from "@self-learning/util/common";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
 
@@ -50,7 +49,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 									<SideBarContent
 										key={page.id}
 										page={page}
-										currentTimeMS={currentTimeMS}
+										creationDate={page.createdAt}
 									/>
 								))}
 							</ul>
@@ -70,7 +69,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 									<SideBarContent
 										key={page.id}
 										page={page}
-										currentTimeMS={currentTimeMS}
+										creationDate={page.createdAt}
 									/>
 								))}
 							</ul>
@@ -90,7 +89,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 									<SideBarContent
 										key={page.id}
 										page={page}
-										currentTimeMS={currentTimeMS}
+										creationDate={page.createdAt}
 									/>
 								))}
 							</ul>
@@ -104,11 +103,13 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 
 function SideBarContent({
 	page,
-	currentTimeMS
+	creationDate
 }: {
 	page: PagesMeta[number] & { index: number };
-	currentTimeMS: number;
+	creationDate: Date;
 }) {
+	const formattedDate = `${creationDate.getDate().toString().padStart(2, "0")}/${creationDate.getMonth().toString().padStart(2, "0")}/${creationDate.getFullYear()}`;
+
 	return (
 		<li className="mb-1 hover:bg-gray-200">
 			<Link href={"/learning-diary/page/" + page.id}>
@@ -117,7 +118,7 @@ function SideBarContent({
 						{page.index + ". " + page.course.title}
 					</span>
 					<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
-						{adaptiveTimeSpan(currentTimeMS - page.createdAt.getTime())}
+						{formattedDate}
 					</span>
 				</div>
 			</Link>
