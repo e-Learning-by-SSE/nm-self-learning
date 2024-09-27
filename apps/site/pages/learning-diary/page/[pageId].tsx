@@ -82,6 +82,7 @@ export default function DiaryPageDetail({
 						<div className="mb-4 flex justify-center">
 							<PageChanger pages={pages} currentPageId={diaryId} />
 						</div>
+
 						<Divider />
 						<DiaryContentForm
 							diaryId={diaryId}
@@ -137,7 +138,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 	};
 
 	return (
-		<div className="flex space-x-4 items-center w-full">
+		<div className="flex space-x-4 items-center">
 			<Tooltip content="Zum ersten Eintrag springen">
 				<button
 					className="btn btn-primary flex items-center"
