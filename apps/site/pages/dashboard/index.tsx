@@ -34,6 +34,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { StudentSettings } from "@self-learning/types";
 import { TutorialSvg } from "@self-learning/ui/static";
+import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -101,6 +102,8 @@ function getStudent(username: string) {
 					createdAt: true,
 					id: true,
 					totalDurationLearnedMs: true,
+					hasRead: true,
+					isDraft: true,
 					course: {
 						select: {
 							courseId: true,
@@ -180,7 +183,9 @@ function DashboardPage(props: Props) {
 							className="h-24 w-24 rounded-lg object-cover"
 						/>
 						<div className="flex flex-col gap-4 pl-8 pr-4">
-							<h1 className=" text-3xl lg:text-6xl">{props.student.user.displayName}</h1>
+							<h1 className=" text-3xl lg:text-6xl">
+								{props.student.user.displayName}
+							</h1>
 							<span>
 								Du hast bereits{" "}
 								<span className="mx-1 font-semibold text-secondary">
@@ -329,7 +334,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 			) : (
 				<>
 					<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
-						{pages.map((page, index) => (
+						{pages.map((page, _) => (
 							<Link
 								className="text-sm font-medium"
 								href={`/learning-diary/page/${page.id}/`}
@@ -342,13 +347,18 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
 										<div className="flex flex-col gap-1">
 											<div className="flex flex-col items-center gap-1">
-												<span className="truncate max-w- inline-block align-middle">
-													{page.course.title}
-												</span>
+												<LearningDiaryEntryStatusBadge
+													isDraft={page.isDraft}
+													hasRead={page.hasRead}
+												>
+													<span className="truncate max-w- inline-block align-middle">
+														{page.course.title}
+													</span>
+												</LearningDiaryEntryStatusBadge>
 												<span className="text-xs text-gray-400">
 													Verbrachte Zeit:{" "}
 													{formatTimeIntervalToString(
-														page.totalDurationLearnedMs
+														page.totalDurationLearnedMs ?? 0
 													)}
 												</span>
 											</div>

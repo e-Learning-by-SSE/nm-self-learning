@@ -2,3 +2,4 @@ export { DiaryLearnedContent } from "./lib/page-viewer/page-details"; // there a
 export * from "./lib/page-viewer/input-tile";
 export * from "./lib/page-viewer/technique-rating";
 export * from "./lib/access-learning-diary";
+export * from "./lib/status-badge";
