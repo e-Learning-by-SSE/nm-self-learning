@@ -180,7 +180,7 @@ function DashboardPage(props: Props) {
 							className="h-24 w-24 rounded-lg object-cover"
 						/>
 						<div className="flex flex-col gap-4 pl-8 pr-4">
-							<h1 className="text-6xl">{props.student.user.displayName}</h1>
+							<h1 className=" text-3xl lg:text-6xl">{props.student.user.displayName}</h1>
 							<span>
 								Du hast bereits{" "}
 								<span className="mx-1 font-semibold text-secondary">
@@ -339,10 +339,12 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 									className="hover: flex items-center rounded-lg border border-light-border
 							p-3 transition-transform hover:bg-slate-100"
 								>
-									<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
+									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
 										<div className="flex flex-col gap-1">
 											<div className="flex flex-col items-center gap-1">
-												<span className="text-sm">{page.course.title}</span>
+												<span className="truncate max-w- inline-block align-middle">
+													{page.course.title}
+												</span>
 												<span className="text-xs text-gray-400">
 													Verbrachte Zeit:{" "}
 													{formatTimeIntervalToString(
