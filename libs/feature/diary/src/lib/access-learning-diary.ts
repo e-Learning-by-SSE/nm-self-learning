@@ -16,6 +16,12 @@ export async function allPages(username: string) {
 }
 
 export async function getDiaryPage(ltbId: string) {
+	await database.learningDiaryPage.update({
+		where: { id: ltbId },
+		data: {
+			hasRead: true
+		}
+	});
 	const ltbPage = await database.learningDiaryPage.findUnique({
 		where: { id: ltbId },
 		select: {
