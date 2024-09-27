@@ -521,3 +521,26 @@ export function getRandomElementFromArray<T>(arr: T[]): T {
   const randomIndex = getRandomNumber(0, arr.length - 1);
   return arr[randomIndex];
 }
+
+export type LearningStrategyCategory = {
+	strategieName: string;
+	techniques: string[];
+};
+
+export async function createStrategiesAndTechniques(input: LearningStrategyCategory[]) {
+	for (const category of input) {
+		const strat = await prisma.learningStrategy.create({
+			data: { name: category.strategieName }
+		});
+
+		for (const technique of category.techniques) {
+			await prisma.learningTechnique.create({
+				data: {
+					name: technique,
+					defaultTechnique: true,
+					strategy: { connect: { id: strat.id } }
+				}
+			});
+		}
+	}
+}

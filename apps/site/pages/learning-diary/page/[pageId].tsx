@@ -72,18 +72,23 @@ export default function DiaryPageDetail({
 	availableStrategies: Strategy[];
 }) {
 	return (
-		<div>
-			<div>
-				<Sidebar pages={pages} />
-			</div>
+		<div className="flex flex-col">
+			<div className="mx-auto flex w-full flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+				<div>
+					<Sidebar pages={pages} />
+				</div>
 
-			<div className="flex justify-center">
-				<div className="w-2/3 py-4">
-					<div className="mb-4 flex justify-center">
-						<PageChanger pages={pages} currentPageId={diaryId} />
+				<div>
+					<div className="w-2/3 py-4">
+						<div className="mb-4 flex justify-center">
+							<PageChanger pages={pages} currentPageId={diaryId} />
+						</div>
+						<Divider />
+						<DiaryContentForm
+							diaryId={diaryId}
+							availableStrategies={availableStrategies}
+						/>
 					</div>
-					<Divider />
-					<DiaryContentForm diaryId={diaryId} availableStrategies={availableStrategies} />
 				</div>
 			</div>
 		</div>
@@ -92,31 +97,41 @@ export default function DiaryPageDetail({
 
 function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId: string }) {
 	const router = useRouter();
-	const currentPageIndex = pages.findIndex(page => page.id === currentPageId);
 
-	const [pageInput, setPageInput] = useState(currentPageIndex + 1);
+	const [currentDisplayIndex, setCurrentPageIndex] = useState(getCurrentPageDisplayIndex());
+
+	function getCurrentPageDisplayIndex() {
+		const url = router.asPath;
+		const pageId = url.split("/").pop();
+		return pages.length - pages.findIndex(page => page.id === pageId);
+	}
+
+	useEffect(() => {
+		setCurrentPageIndex(getCurrentPageDisplayIndex());
+	}, [router.asPath]);
 
 	const jumpToFirstEntry = () => {
-		changePage(pages[0].id);
-	};
-
-	const jumpToLastEntry = () => {
 		changePage(pages[pages.length - 1].id);
 	};
 
+	const jumpToLastEntry = () => {
+		changePage(pages[0].id);
+	};
+
 	const changePage = (diaryId: string) => {
-		console.log("push");
 		router.push("/learning-diary/page/" + diaryId);
 	};
 
 	const updateToPreviousId = () => {
-		const newIndex = Math.max(currentPageIndex - 1, 0);
-		changePage(pages[newIndex].id);
+		const currentPageIndex = pages.length - currentDisplayIndex;
+		const newPageIndex = currentPageIndex + 1;
+		changePage(pages[newPageIndex].id);
 	};
 
 	const updateToNextId = () => {
-		const newIndex = Math.min(currentPageIndex + 1, pages.length - 1);
-		changePage(pages[newIndex].id);
+		const currentPageIndex = pages.length - currentDisplayIndex;
+		const newPageIndex = currentPageIndex - 1;
+		changePage(pages[newPageIndex].id);
 	};
 
 	const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +140,6 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 		if (!isNaN(value) && value >= 1 && value <= pages.length) {
 			changePage(pages[value - 1].id);
 		}
-		setPageInput(value);
 	};
 
 	return (
@@ -134,7 +148,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={jumpToFirstEntry}
-					disabled={currentPageIndex === 0}
+					disabled={currentDisplayIndex === 1}
 				>
 					<ChevronDoubleLeftIcon className="h-4 w-4" />
 				</button>
@@ -143,7 +157,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={updateToPreviousId}
-					disabled={currentPageIndex === 0}
+					disabled={currentDisplayIndex === 1}
 				>
 					<ChevronLeftIcon className="h-5 w-5 mr-2" />
 					Vorheriger Eintrag
@@ -153,7 +167,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<input
 					type="number"
 					// ref={inputRef}
-					value={pageInput}
+					value={currentDisplayIndex}
 					// instead of using the submit event, this enables live updating while switching "pages"
 					onInput={handlePageInputChange}
 					className="w-16 text-center border rounded"
@@ -166,7 +180,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={updateToNextId}
-					disabled={currentPageIndex === pages.length - 1}
+					disabled={currentDisplayIndex === pages.length}
 				>
 					Nächster Eintrag
 					<ChevronRightIcon className="h-5 w-5 ml-2" />
@@ -176,7 +190,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={jumpToLastEntry}
-					disabled={currentPageIndex === pages.length - 1}
+					disabled={currentDisplayIndex === pages.length}
 				>
 					<ChevronDoubleRightIcon className="h-4 w-4" />
 				</button>

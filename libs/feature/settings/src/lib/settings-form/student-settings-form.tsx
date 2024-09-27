@@ -11,7 +11,7 @@ export function StudentSettingsForm({
 }) {
 	return (
 		<div>
-			<h2 className="mt-4 text-lg font-bold">Lernen</h2>
+			<h2 className="text-lg font-bold">Lernen</h2>
 			<div className="mt-6 flex items-center gap-2">
 				<Toggle
 					value={learningStatistics}

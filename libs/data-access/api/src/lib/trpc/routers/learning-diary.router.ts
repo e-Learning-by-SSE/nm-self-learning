@@ -78,34 +78,34 @@ export const learningDiaryPageRouter = t.router({
 	create: authProcedure
 		.input(z.object({ courseSlug: z.string() }))
 		.mutation(async ({ input, ctx }) => {
-			// const ltbEntryThreshold = 1000 * 60 * 6 * 60; // 6 hours
-			// const [latestEntry] = await database.$transaction([
-			// 	database.learningDiaryPage.findFirst({
-			// 		where: {
-			// 			studentName: ctx.user.name
-			// 		},
-			// 		select: { createdAt: true, courseSlug: true },
-			// 		orderBy: {
-			// 			createdAt: "desc"
-			// 		}
-			// 	})
-			// ]);
-			// if (latestEntry?.courseSlug === input.courseSlug) {
-			// 	if (new Date().getTime() - latestEntry.date.getTime() < ltbEntryThreshold) {
-			// 		return;
-			// 	}
-			// }
-			// return database.learningDiaryPage.create({
-			// 	data: {
-			// 		student: {
-			// 			connect: { username: ctx.user.name }
-			// 		},
-			// 		course: {
-			// 			connect: { slug: input.courseSlug }
-			// 		}
-			// 	},
-			// 	select: { id: true }
-			// });
+			const ltbEntryThreshold = 1000 * 60 * 6 * 60; // 6 hours
+			const [latestEntry] = await database.$transaction([
+				database.learningDiaryPage.findFirst({
+					where: {
+						studentName: ctx.user.name
+					},
+					select: { createdAt: true, courseSlug: true },
+					orderBy: {
+						createdAt: "desc"
+					}
+				})
+			]);
+			if (latestEntry?.courseSlug === input.courseSlug) {
+				if (new Date().getTime() - latestEntry.createdAt.getTime() < ltbEntryThreshold) {
+					return;
+				}
+			}
+			return database.learningDiaryPage.create({
+				data: {
+					student: {
+						connect: { username: ctx.user.name }
+					},
+					course: {
+						connect: { slug: input.courseSlug }
+					}
+				},
+				select: { id: true }
+			});
 		}),
 	update: authProcedure.input(learningDiaryPageSchema).mutation(async ({ input, ctx }) => {
 		return database.learningDiaryPage.update({

@@ -2,7 +2,7 @@ import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { getSemester } from "./aggregation-functions";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 type Course = {
 	slug: string;
@@ -10,87 +10,136 @@ type Course = {
 	courseId: string;
 };
 
-export function TeacherView() {
-	const today = new Date();
-	const semester = getSemester(today);
+type ParticipationData = Course & {
+	participants?: number | null | undefined;
+	participantsTotal?: number | null | undefined;
+};
 
-	const [courses, setCourses] = useState<string[]>([]);
-	const { data: authorData, isLoading } = trpc.author.getCoursesAndSubjects.useQuery(undefined, {
-		enabled: courses.length === 0
-	});
-	const authoredCourses: Course[] = [];
-	const participationData = trpc.author.courseParticipation.useQuery(
+function SortedTable({ participationData }: { participationData: ParticipationData[] }) {
+	const [data, setData] = useState(participationData);
+	const [sortConfig, setSortConfig] = useState<{
+		key: keyof ParticipationData | null;
+		direction: "ascending" | "descending" | null;
+	}>({ key: null, direction: null });
+
+	// Sorting function
+	const sortData = (key: keyof ParticipationData) => {
+		const sortedData = [...data];
+		let direction: "ascending" | "descending" = "ascending";
+
+		if (sortConfig.key === key && sortConfig.direction === "ascending") {
+			direction = "descending";
+		}
+
+		sortedData.sort((a, b) => {
+			if ((a[key] ?? 0) < (b[key] ?? 0)) {
+				return direction === "ascending" ? -1 : 1;
+			}
+			if ((a[key] ?? 0) > (b[key] ?? 0)) {
+				return direction === "ascending" ? 1 : -1;
+			}
+			return 0;
+		});
+
+		setData(sortedData);
+		setSortConfig({ key, direction });
+	};
+
+	const getSortIndicator = (key: keyof ParticipationData) => {
+		if (sortConfig.key !== key) {
+			return null;
+		}
+		const icon = sortConfig.direction === "ascending" ? "▲" : "▼";
+		return <span className="px-2">{icon}</span>;
+	};
+
+	return (
+		<>
+			<Table
+				head={
+					<>
+						<TableHeaderColumn onClick={() => sortData("title")}>
+							Kurs {getSortIndicator("title")}
+						</TableHeaderColumn>
+						<TableHeaderColumn onClick={() => sortData("participants")}>
+							Aktuelles Semester {getSortIndicator("participants")}
+						</TableHeaderColumn>
+						<TableHeaderColumn onClick={() => sortData("participantsTotal")}>
+							Insgesamt {getSortIndicator("participantsTotal")}
+						</TableHeaderColumn>
+					</>
+				}
+			>
+				{data.map(course => (
+					<tr key={course.slug}>
+						<TableDataColumn>
+							<Link href={`/courses/${course.slug}`}>{course.title}</Link>
+						</TableDataColumn>
+						<TableDataColumn>{course.participants ?? "*"}</TableDataColumn>
+						<TableDataColumn>{course.participantsTotal ?? "*"}</TableDataColumn>
+					</tr>
+				))}
+			</Table>
+		</>
+	);
+}
+
+function CourseParticipation({
+	courses,
+	semester
+}: {
+	courses: Course[];
+	semester: { start: Date; end: Date };
+}) {
+	const { data, isLoading } = trpc.author.courseParticipation.useQuery(
 		{
-			resourceIds: courses,
+			courseId: courses.map(c => c.courseId),
 			start: semester.start,
 			end: semester.end
 		},
 		{ enabled: courses.length > 0 }
-	).data;
+	);
+
+	if (isLoading) {
+		return <p>Loading...</p>;
+	}
+	if (!data) {
+		return <p>Keine Daten vorhanden.</p>;
+	}
+
+	const merged = courses.map(course => {
+		const participationData = data.find(p => p.courseId === course.courseId);
+		return {
+			...course,
+			...(participationData || {})
+		};
+	});
+
+	return <SortedTable participationData={merged} />;
+}
+
+export function TeacherView() {
+	const today = new Date();
+	const semester = getSemester(today);
+	const { data, isLoading } = trpc.author.getCoursesAndSubjects.useQuery();
 
 	if (isLoading) {
 		return <p>Loading...</p>;
 	}
 
-	if (!authorData) {
+	if (!data) {
 		return <p>Keine administrierten Kurse vorhanden.</p>;
 	}
 
-	authorData.subjectAdmin
-		.map(subject => subject.subject.courses)
-		.flat()
-		.forEach(course => {
-			authoredCourses.push(course);
-		});
-	authorData.specializationAdmin.forEach(specialization => {
+	const authoredCourses = data.subjectAdmin.map(subject => subject.subject.courses).flat();
+
+	data.specializationAdmin.forEach(specialization => {
 		specialization.specialization.courses.forEach(course => {
 			if (!authoredCourses.find(c => c.courseId === course.courseId)) {
 				authoredCourses.push(course);
 			}
 		});
 	});
-	setCourses(authoredCourses.map(course => course.courseId));
 
-	if (!participationData) {
-		console.log("participationData", JSON.stringify(authorData));
-		console.log("auhored", JSON.stringify(authoredCourses));
-		console.log("courses", courses);
-		return <p>Keine Daten vorhanden.</p>;
-	}
-
-	return (
-		<>
-			<h1 className="text-center text-3xl">Studierende pro betreuter Kurs</h1>
-			<Table
-				head={
-					<>
-						<TableHeaderColumn>Kurs</TableHeaderColumn>
-						<TableHeaderColumn>Aktuelles Semester</TableHeaderColumn>
-						<TableHeaderColumn>Insgesamt</TableHeaderColumn>
-					</>
-				}
-			>
-				{authoredCourses.map(course => (
-					<tr key={course.slug}>
-						<TableDataColumn>
-							<Link href={`/courses/${course.slug}`}>{course.title}</Link>
-						</TableDataColumn>
-						<TableDataColumn>
-							{participationData.find(p => p.resourceId === course.courseId)
-								?.participants ?? "---"}
-						</TableDataColumn>
-						<TableDataColumn>
-							{participationData.find(p => p.resourceId === course.courseId)
-								?.participantsTotal ?? "---"}
-						</TableDataColumn>
-					</tr>
-				))}
-			</Table>
-
-			<div className="pt-5 text-sm">
-				Es werden aus datenschutzgründen nur Studierendenangaben nur für Kurse mit
-				mindestens 10 Studierenden angezeigt.
-			</div>
-		</>
-	);
+	return <CourseParticipation courses={authoredCourses} semester={semester} />;
 }

@@ -20,7 +20,11 @@ import {
 } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { formatDateAgo } from "@self-learning/util/common";
+import {
+	formatDateAgo,
+	formatDateToString,
+	formatTimeIntervalToString
+} from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
@@ -96,6 +100,7 @@ function getStudent(username: string) {
 				select: {
 					createdAt: true,
 					id: true,
+					totalDurationLearnedMs: true,
 					course: {
 						select: {
 							courseId: true,
@@ -175,7 +180,7 @@ function DashboardPage(props: Props) {
 							className="h-24 w-24 rounded-lg object-cover"
 						/>
 						<div className="flex flex-col gap-4 pl-8 pr-4">
-							<h1 className="text-6xl">{props.student.user.displayName}</h1>
+							<h1 className=" text-3xl lg:text-6xl">{props.student.user.displayName}</h1>
 							<span>
 								Du hast bereits{" "}
 								<span className="mx-1 font-semibold text-secondary">
@@ -252,13 +257,13 @@ function DashboardPage(props: Props) {
 								title="Kursübersicht"
 							/>
 							<Card
-								href="/ltb/entry/0"
+								href="/learning-diary"
 								imageElement={<TutorialSvg />}
 								title="Lerntagebucheinträge verwalten"
 							/>
 
 							<Card
-								href="/ltb/"
+								href="/learning-diary"
 								imageElement={<TutorialSvg />}
 								title="Lerntagebuchübersicht einsehen"
 							/>
@@ -298,8 +303,8 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 								onClose={value => {
 									refetch();
 									onChange({
-										hasLearningDiary: value?.hasLearningDiary ?? false,
-										learningStatistics: value?.learningStatistics ?? false
+										hasLearningDiary: value.hasLearningDiary,
+										learningStatistics: value.learningStatistics
 									});
 									freeDialog("studentSettingsDialogDashboard");
 								}}
@@ -332,20 +337,24 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 							>
 								<li
 									className="hover: flex items-center rounded-lg border border-light-border
-							p-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+							p-3 transition-transform hover:bg-slate-100"
 								>
-									<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
+									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
 										<div className="flex flex-col gap-1">
-											<div className="flex items-center gap-1">
-												{index < 2 && (
-													<PencilIcon className="h-5 text-emerald-500" />
-												)}
-												{page.course.title} vom $
-												{page.createdAt.toString() /*TODO diary*/}
+											<div className="flex flex-col items-center gap-1">
+												<span className="truncate max-w- inline-block align-middle">
+													{page.course.title}
+												</span>
+												<span className="text-xs text-gray-400">
+													Verbrachte Zeit:{" "}
+													{formatTimeIntervalToString(
+														page.totalDurationLearnedMs
+													)}
+												</span>
 											</div>
 										</div>
 										<span className="hidden text-sm text-light md:block">
-											{page.createdAt.getTime().toString() /*TODO diary*/}
+											{formatDateToString(page.createdAt)}
 										</span>
 									</div>
 								</li>

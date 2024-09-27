@@ -13,9 +13,18 @@ export function Table({ head, children }: { head: React.ReactElement; children: 
 	);
 }
 
-export function TableHeaderColumn({ children }: { children?: React.ReactNode }) {
+export function TableHeaderColumn({
+	children,
+	onClick
+}: {
+	children?: React.ReactNode;
+	onClick?: () => void;
+}) {
 	return (
-		<th className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold">
+		<th
+			className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+			onClick={onClick}
+		>
 			{children}
 		</th>
 	);

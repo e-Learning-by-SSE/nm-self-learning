@@ -6,11 +6,11 @@ import {
 	ArrowRightStartOnRectangleIcon,
 	WrenchIcon
 } from "@heroicons/react/24/outline";
-import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, RectangleGroupIcon, StarIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
 	Disclosure,
 	DisclosureButton,
@@ -22,20 +22,24 @@ import {
 	Transition
 } from "@headlessui/react";
 import { SearchBar } from "./search-bar";
+import { useRouter } from "next/router";
 
 export function Navbar() {
 	const session = useSession();
 	const user = session.data?.user;
+	const [navigation, setNavigation] = useState([
+		{ name: "Fachgebiete Erkunden", href: "/subjects" }
+	]);
+	const router = useRouter();
 
-	// List with all routes accessible by the User
-	const navigation = [
-		{ name: "Übersicht", href: "/overview" },
-		{ name: "Fachgebiete", href: "/subjects" }
-	];
-
-	if (user?.role === "ADMIN") {
-		navigation.push({ name: "Adminbereich", href: "/admin" });
-	}
+	useEffect(() => {
+		const query = router.query;
+		!query.subjectSlug && setNavigation([{ name: "Fachgebiete Erkunden", href: "/subjects" }]);
+		query.subjectSlug && setNavigation([{ name: `Fachgebiete Erkunden -> ${query.subjectSlug}`, href: "/subjects" }]);
+		query.subjectSlug && query.specializationSlug && setNavigation([
+			{ name: `Fachgebiete Erkunden -> ${query.subjectSlug} -> ${query.specializationSlug}`, href: "/subjects" },
+		]);
+	}, [router.query]);
 
 	return (
 		<Disclosure
@@ -111,6 +115,8 @@ export function Navbar() {
 										</span>
 										<NavbarDropdownMenu
 											avatarUrl={user.avatarUrl}
+											isAuthor={user.isAuthor}
+											isAdmin={user.role === "ADMIN"}
 											signOut={redirectToLogout}
 										/>
 									</div>
@@ -141,9 +147,13 @@ export function Navbar() {
 
 export function NavbarDropdownMenu({
 	signOut,
+	isAuthor,
+	isAdmin,
 	avatarUrl
 }: {
 	avatarUrl?: string | null;
+	isAuthor: boolean;
+	isAdmin: boolean;
 	signOut: () => void;
 }) {
 	return (
@@ -178,19 +188,49 @@ export function NavbarDropdownMenu({
 					as="div"
 					className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 				>
+					{isAdmin && (
+						<MenuItem as="div" className="p-1">
+							{({ focus }) => (
+								<Link
+									href="/admin"
+									className={`${
+										focus ? "bg-emerald-500 text-white" : ""
+									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+								>
+									<RectangleGroupIcon className="h-5" />
+									<span>Admin - Bereich</span>
+								</Link>
+							)}
+						</MenuItem>
+					)}
 					<MenuItem as="div" className="p-1">
 						{({ focus }) => (
 							<Link
-								href="/overview"
+								href="/dashboard"
 								className={`${
 									focus ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
 								<UserIcon className="h-5" />
-								<span>Übersicht</span>
+								<span>Profil</span>
 							</Link>
 						)}
 					</MenuItem>
+					{isAuthor && (
+						<MenuItem as="div" className="p-1">
+							{({ focus }) => (
+								<Link
+									href="/dashboard/author"
+									className={`${
+										focus ? "bg-emerald-500 text-white" : ""
+									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+								>
+									<AcademicCapIcon className="h-5" />
+									<span>Autoren - Profil</span>
+								</Link>
+							)}
+						</MenuItem>
+					)}
 					<MenuItem as="div" className="p-1">
 						{({ focus }) => (
 							<Link
