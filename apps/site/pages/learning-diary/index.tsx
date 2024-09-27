@@ -1,7 +1,12 @@
 import { ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
-import { TableDataColumn, TableVisibilityDropdown } from "@self-learning/ui/common";
+import {
+	SortIndicator,
+	TableDataColumn,
+	TableHeaderColumn,
+	TableVisibilityDropdown
+} from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
@@ -184,12 +189,15 @@ function SortedTable({
 
 	const [chevronMenu, setChevronMenu] = useState<boolean>(false);
 	const [columns, setColumns] = useState(sortableColumns);
-	const [sortTarget, setSortTarget] = useState<keyof typeof sortableColumns>("pageCount");
-	const [sortDescending, setSortDescending] = useState(false);
+	const [sortConfig, setSortConfig] = useState<{
+		key: string;
+		direction: "ascending" | "descending";
+	}>({ key: "pageCount", direction: "ascending" });
 
 	function sortColumnFunc() {
-		const column = columns[sortTarget];
-		const sortingFunction = column.sortingFunction;
+		const sortingFunction = Object.entries(columns).find(
+			([key, _column]) => key === sortConfig.key
+		)?.[1].sortingFunction;
 
 		if (!sortingFunction) {
 			return () => 0; // Default in case a column has no sorting function
@@ -197,9 +205,19 @@ function SortedTable({
 
 		return (a: LearningDiaryPageOverview, b: LearningDiaryPageOverview) => {
 			const result = sortingFunction(a, b);
-			return sortDescending ? -result : result;
+			return sortConfig.direction === "ascending" ? -result : result;
 		};
 	}
+
+	const setSortOrder = (key: string) => {
+		setSortConfig({
+			key,
+			direction:
+				sortConfig.key === key && sortConfig.direction === "ascending"
+					? "descending"
+					: "ascending"
+		});
+	};
 
 	return (
 		<div>
@@ -209,34 +227,11 @@ function SortedTable({
 						<tr>
 							{Object.entries(columns)
 								.filter(([_, column]) => column.isDisplayed)
-								.map(([key, column]) => {
-									const columnKey = key;
-
-									return (
-										<th
-											className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
-											key={columnKey}
-											onClick={() => {
-												const differentTarget = sortTarget !== key;
-												setSortDescending(prev =>
-													differentTarget ? false : !prev
-												);
-												setSortTarget(key as keyof typeof sortableColumns);
-											}}
-										>
-											<div className="">
-												<span>{column.label}</span>
-												{sortTarget === columnKey ? (
-													<span className="">
-														{sortDescending ? " ▼" : " ▲"}
-													</span>
-												) : (
-													<span className="invisible"> ▲</span>
-												)}
-											</div>
-										</th>
-									);
-								})}
+								.map(([key, column]) => (
+									<TableHeaderColumn key={key} onClick={() => setSortOrder(key)}>
+										{column.label} {SortIndicator(key, sortConfig)}
+									</TableHeaderColumn>
+								))}
 
 							<th
 								className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
