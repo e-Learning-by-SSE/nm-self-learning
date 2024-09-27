@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ResolvedValue } from "@self-learning/types";
 import { allPages } from "@self-learning/diary";
+import { useRouter } from "next/router";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
 
@@ -10,7 +11,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 
 	const currentTimeMS = new Date().getTime();
 	const pagesWithIndex = pages.map((page, index) => {
-		return { ...page, index: pages.length - index };
+		return { ...page, index: index + 1 };
 	});
 
 	const fromToday = pagesWithIndex.filter(
@@ -28,6 +29,15 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 		const timeDiff = currentTimeMS - createdAtTime;
 		return timeDiff > sevenDays;
 	});
+
+	// sorting lists descending
+	fromToday.sort((a, b) => b.index - a.index);
+	fromLastWeek.sort((a, b) => b.index - a.index);
+	olderThanSevenDays.sort((a, b) => b.index - a.index);
+
+	const { asPath } = useRouter();
+	const pageId = asPath.split("/").pop();
+	const { index = -1 } = pagesWithIndex.find(page => page.id === pageId) || {};
 
 	return (
 		<aside
@@ -50,6 +60,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 										key={page.id}
 										page={page}
 										creationDate={page.createdAt}
+										currentPageIndex={index}
 									/>
 								))}
 							</ul>
@@ -70,6 +81,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 										key={page.id}
 										page={page}
 										creationDate={page.createdAt}
+										currentPageIndex={index}
 									/>
 								))}
 							</ul>
@@ -90,6 +102,7 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 										key={page.id}
 										page={page}
 										creationDate={page.createdAt}
+										currentPageIndex={index}
 									/>
 								))}
 							</ul>
@@ -103,15 +116,20 @@ export function Sidebar({ pages }: { pages: PagesMeta }) {
 
 function SideBarContent({
 	page,
-	creationDate
+	creationDate,
+	currentPageIndex
 }: {
 	page: PagesMeta[number] & { index: number };
 	creationDate: Date;
+	currentPageIndex: number;
 }) {
-	const formattedDate = `${creationDate.getDate().toString().padStart(2, "0")}/${creationDate.getMonth().toString().padStart(2, "0")}/${creationDate.getFullYear()}`;
-
+	const formattedDate = `${creationDate.getDate().toString().padStart(2, "0")}/${(creationDate.getMonth() + 1).toString().padStart(2, "0")}/${creationDate.getFullYear()}`;
 	return (
-		<li className="mb-1 hover:bg-gray-200">
+		<li
+			className={`mb-1 rounded hover:bg-gray-100 ${
+				page.index === currentPageIndex ? "font-bold bg-gray-100" : ""
+			}`}
+		>
 			<Link href={"/learning-diary/page/" + page.id}>
 				<div>
 					<span className="block p-2 rounded break-words whitespace-normal">

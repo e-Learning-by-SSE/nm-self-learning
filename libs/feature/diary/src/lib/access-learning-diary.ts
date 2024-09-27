@@ -11,7 +11,7 @@ export async function allPages(username: string) {
 		where: {
 			studentName: username
 		},
-		orderBy: { createdAt: "desc" }
+		orderBy: { createdAt: "asc" }
 	});
 }
 

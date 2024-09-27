@@ -94,43 +94,37 @@ export default function DiaryPageDetail({
 	);
 }
 
+/** This component relies on the LearningDiaryPages list being sorted in ascending manner (refer to the database function)  */
 function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId: string }) {
 	const router = useRouter();
-
-	const [currentDisplayIndex, setCurrentPageIndex] = useState(getCurrentPageDisplayIndex());
-
-	function getCurrentPageDisplayIndex() {
-		const url = router.asPath;
-		const pageId = url.split("/").pop();
-		return pages.length - pages.findIndex(page => page.id === pageId);
-	}
+	const currentPageIndex = pages.findIndex(page => page.id === currentPageId);
+	const [pageInput, setPageInput] = useState(currentPageIndex + 1);
 
 	useEffect(() => {
-		setCurrentPageIndex(getCurrentPageDisplayIndex());
+		setPageInput(currentPageIndex + 1);
 	}, [router.asPath]);
 
 	const jumpToFirstEntry = () => {
-		changePage(pages[pages.length - 1].id);
-	};
-
-	const jumpToLastEntry = () => {
 		changePage(pages[0].id);
 	};
 
+	const jumpToLastEntry = () => {
+		changePage(pages[pages.length - 1].id);
+	};
+
 	const changePage = (diaryId: string) => {
+		console.log("push");
 		router.push("/learning-diary/page/" + diaryId);
 	};
 
 	const updateToPreviousId = () => {
-		const currentPageIndex = pages.length - currentDisplayIndex;
-		const newPageIndex = currentPageIndex + 1;
-		changePage(pages[newPageIndex].id);
+		const newIndex = Math.max(currentPageIndex - 1, 0);
+		changePage(pages[newIndex].id);
 	};
 
 	const updateToNextId = () => {
-		const currentPageIndex = pages.length - currentDisplayIndex;
-		const newPageIndex = currentPageIndex - 1;
-		changePage(pages[newPageIndex].id);
+		const newIndex = Math.min(currentPageIndex + 1, pages.length - 1);
+		changePage(pages[newIndex].id);
 	};
 
 	const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,15 +133,16 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 		if (!isNaN(value) && value >= 1 && value <= pages.length) {
 			changePage(pages[value - 1].id);
 		}
+		setPageInput(value);
 	};
 
 	return (
-		<div className="flex space-x-4 items-center">
+		<div className="flex space-x-4 items-center w-full">
 			<Tooltip content="Zum ersten Eintrag springen">
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={jumpToFirstEntry}
-					disabled={currentDisplayIndex === 1}
+					disabled={currentPageIndex === 0}
 				>
 					<ChevronDoubleLeftIcon className="h-4 w-4" />
 				</button>
@@ -156,7 +151,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={updateToPreviousId}
-					disabled={currentDisplayIndex === 1}
+					disabled={currentPageIndex === 0}
 				>
 					<ChevronLeftIcon className="h-5 w-5 mr-2" />
 					Vorheriger Eintrag
@@ -166,7 +161,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<input
 					type="number"
 					// ref={inputRef}
-					value={currentDisplayIndex}
+					value={pageInput}
 					// instead of using the submit event, this enables live updating while switching "pages"
 					onInput={handlePageInputChange}
 					className="w-16 text-center border rounded"
@@ -179,7 +174,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={updateToNextId}
-					disabled={currentDisplayIndex === pages.length}
+					disabled={currentPageIndex === pages.length - 1}
 				>
 					Nächster Eintrag
 					<ChevronRightIcon className="h-5 w-5 ml-2" />
@@ -189,7 +184,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={jumpToLastEntry}
-					disabled={currentDisplayIndex === pages.length}
+					disabled={currentPageIndex === pages.length - 1}
 				>
 					<ChevronDoubleRightIcon className="h-4 w-4" />
 				</button>
