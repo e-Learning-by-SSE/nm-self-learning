@@ -1,8 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
-	getRandomItemsFromArray,
-	getRandomNumber,
+	getRandomItemsFromArray, getRandomNumber
 } from "../../seed-functions";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 
@@ -209,8 +208,6 @@ async function seedQuizEvents({ lessonId, courseId, createdAt, username, quiz }:
 	username: string,
 	quiz: any,
 }) {
-
-	console.log(quiz)
 
 	await prisma.eventLog.create({
 		data: {

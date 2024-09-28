@@ -488,7 +488,7 @@ export async function createRepositories(repository: Repository) {
 	});
 }
 
-function getRandomNumber(min: number, max: number): number {
+export function getRandomNumber(min: number, max: number): number {
 	if (min > max) {
 		throw new Error('min should not be greater than max');
 	}
@@ -511,15 +511,6 @@ export function getRandomTimeIntervalInMs(): number {
 	const maxTimeMs = 28 * 60 * 60 * 1000; // 28 hours in ms
 
 	return getRandomNumber(minTimeMs, maxTimeMs);
-}
-
-export function getRandomElementFromArray<T>(arr: T[]): T {
-  if (arr.length === 0) {
-    throw new Error('Array cannot be empty');
-  }
-
-  const randomIndex = getRandomNumber(0, arr.length - 1);
-  return arr[randomIndex];
 }
 
 export type LearningStrategyCategory = {
@@ -555,7 +546,6 @@ export function getRandomItemsFromArray<T>(arr: T[]): T[] {
 	return shuffledArray.slice(0, randomCount);
 }
 
-
 export function getRandomElementFromArray<T>(arr: T[]): T {
 	if (arr.length === 0) {
 		throw new Error('Array cannot be empty');
@@ -564,9 +554,3 @@ export function getRandomElementFromArray<T>(arr: T[]): T {
 	return arr[randomIndex];
 }
 
-export function getRandomNumber(min: number, max: number): number {
-	if (min > max) {
-		throw new Error('min should not be greater than max');
-	}
-	return faker.number.int({ min, max });
-}
