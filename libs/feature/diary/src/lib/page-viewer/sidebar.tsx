@@ -132,23 +132,22 @@ function SideBarContent({
 				page.index === currentPageIndex ? "font-bold bg-gray-100" : ""
 			}`}
 		>
-			<LearningDiaryEntryStatusBadge {...page} className="left-[-11px] top-2">
-				<Link
-					href={"/learning-diary/page/" + page.id}
-					onClick={() => {
-						setPage({ ...page, hasRead: true });
-					}}
-				>
-					<div>
-						<span className="block p-2 rounded break-words whitespace-normal">
-							{page.index + ". " + page.course.title}
-						</span>
-						<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
-							{formattedDate}
-						</span>
-					</div>
-				</Link>
-			</LearningDiaryEntryStatusBadge>
+			<Link
+				href={"/learning-diary/page/" + page.id}
+				onClick={() => {
+					setPage({ ...page, hasRead: true });
+				}}
+			>
+				<div className="flex items-center justify-between p-2 rounded break-words whitespace-normal">
+					<span className="flex-grow">{page.index + ". " + page.course.title}</span>
+					<span className="ml-4">
+						<LearningDiaryEntryStatusBadge {...page} className="top-2" />
+					</span>
+				</div>
+				<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
+					{formattedDate}
+				</span>
+			</Link>
 		</li>
 	);
 }

@@ -140,7 +140,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 
 	return (
 		<div className="flex space-x-4 items-center">
-			<Tooltip content="Zum ersten Eintrag springen">
+			<Tooltip placement={"bottom"} content="Zum ersten Eintrag springen">
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={jumpToFirstEntry}
@@ -149,7 +149,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 					<ChevronDoubleLeftIcon className="h-4 w-4" />
 				</button>
 			</Tooltip>
-			<Tooltip content="Zum vorherigen Eintrag springen">
+			<Tooltip placement={"bottom"} content="Zum vorherigen Eintrag springen">
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={updateToPreviousId}
@@ -172,7 +172,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 				/>
 				<span className="ml-2">/ {pages.length}</span>
 			</form>
-			<Tooltip content="Zum nächsten Eintrag springen">
+			<Tooltip placement={"bottom"} content="Zum nächsten Eintrag springen">
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={updateToNextId}
@@ -182,7 +182,7 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 					<ChevronRightIcon className="h-5 w-5 ml-2" />
 				</button>
 			</Tooltip>
-			<Tooltip content="Zum letzten Eintrag springen">
+			<Tooltip placement={"bottom"} content="Zum letzten Eintrag springen">
 				<button
 					className="btn btn-primary flex items-center"
 					onClick={jumpToLastEntry}

@@ -345,17 +345,16 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 							p-3 transition-transform hover:bg-slate-100"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
-										<div className="flex flex-col gap-1">
-											<div className="flex flex-col items-center gap-1">
-												<LearningDiaryEntryStatusBadge
-													isDraft={page.isDraft}
-													hasRead={page.hasRead}
-												>
-													<span className="truncate max-w- inline-block align-middle">
-														{page.course.title}
-													</span>
-												</LearningDiaryEntryStatusBadge>
-												<span className="text-xs text-gray-400">
+										<div className="flex items-center gap-2">
+											<LearningDiaryEntryStatusBadge
+												isDraft={page.isDraft}
+												hasRead={page.hasRead}
+											/>
+											<div className="flex flex-col">
+												<span className="truncate max-w-full inline-block align-middle">
+													{page.course.title}
+												</span>
+												<span className="text-xs text-gray-400 truncate block max-w-full">
 													Verbrachte Zeit:{" "}
 													{formatTimeIntervalToString(
 														page.totalDurationLearnedMs ?? 0

@@ -20,13 +20,13 @@ export function QuestionMarkTooltip({
 		</Tooltip>
 	);
 }
-export function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
+export function Tooltip({ children, content, placement = "top" }: { children: React.ReactNode; content: string, placement?: "top" | "bottom" | "left" | "right" }) {
 	const [showTooltip, setShowTooltip] = useState(false);
 	const referenceElement = useRef(null);
 	const popperElement = useRef(null);
-	const { styles, attributes } = usePopper(referenceElement.current, popperElement.current, {
-		placement: "top"
-	});
+  const { styles, attributes } = usePopper(referenceElement.current, popperElement.current, {
+    placement: placement,
+  });
 
 	return (
 		<>
