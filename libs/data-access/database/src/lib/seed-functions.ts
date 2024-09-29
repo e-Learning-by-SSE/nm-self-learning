@@ -14,6 +14,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { slugify } from "@self-learning/util/common";
 import { defaultLicence } from "./license";
+import { subDays, subHours, subMinutes } from "date-fns";
 
 const prisma = new PrismaClient();
 
@@ -488,29 +489,19 @@ export async function createRepositories(repository: Repository) {
 	});
 }
 
-export function getRandomNumber(min: number, max: number): number {
-	if (min > max) {
-		throw new Error('min should not be greater than max');
-	}
-	return faker.number.int({ min, max });
-}
-
 // Function to generate a random date between 50 days and 6 hours ago
-export function getRandomCreatedAt(): Date {
-	const currentTime = new Date().getTime();
-	const minTime = currentTime - 50 * 24 * 60 * 60 * 1000; // 50 days ago
-	const maxTime = currentTime - 6 * 60 * 60 * 1000; // 6 hours ago
 
-	const randomTime = getRandomNumber(minTime, maxTime);
-	return new Date(randomTime);
+export function getRandomCreatedAt(): Date {
+	const from = subDays(new Date(), 50);
+	const to = subHours(new Date(), 6);
+	return faker.date.between({ from, to });
 }
 
 // Function to generate random time interval in milliseconds
 export function getRandomTimeIntervalInMs(): number {
-	const minTimeMs = 60 * 1000; // 1 minute in ms
-	const maxTimeMs = 28 * 60 * 60 * 1000; // 28 hours in ms
-
-	return getRandomNumber(minTimeMs, maxTimeMs);
+	const from = subMinutes(new Date(), 1);
+	const to = subHours(new Date(), 28);
+	return faker.date.between({ from, to }).getTime();
 }
 
 export type LearningStrategyCategory = {
@@ -541,16 +532,15 @@ export function getRandomItemsFromArray<T>(arr: T[]): T[] {
 		return [];
 	}
 
-	const randomCount = getRandomNumber(1, arr.length);
+	const randomCount = faker.number.int({ min: 1, max: arr.length - 1 });
 	const shuffledArray = arr.sort(() => 0.5 - Math.random());
 	return shuffledArray.slice(0, randomCount);
 }
 
 export function getRandomElementFromArray<T>(arr: T[]): T {
 	if (arr.length === 0) {
-		throw new Error('Array cannot be empty');
+		throw new Error("Array cannot be empty");
 	}
-	const randomIndex = getRandomNumber(0, arr.length - 1);
+	const randomIndex = faker.number.int({ min: 0, max: arr.length - 1 });
 	return arr[randomIndex];
 }
-

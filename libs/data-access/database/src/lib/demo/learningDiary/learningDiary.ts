@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { faker } from "@faker-js/faker";
-import { getRandomCreatedAt, getRandomElementFromArray, getRandomTimeIntervalInMs } from "../../seed-functions";
+import {
+	getRandomCreatedAt,
+	getRandomElementFromArray,
+	getRandomTimeIntervalInMs
+} from "../../seed-functions";
 
 const prisma = new PrismaClient();
 const DEFAULT_SLUG = "the-beginners-guide-to-react";

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { LearningDiaryPageDetail } from "../access-learning-diary";
 import {
 	duplicateRemover,
-	formatDateToGermanDate,
+	formatDateStringFull,
 	formatTimeIntervalToString,
 	isTruthy
 } from "@self-learning/util/common";
@@ -18,7 +18,7 @@ export function DiaryLearnedContent({ page }: { page: LearningDiaryPageDetail })
 			<div className="flex w-full flex-wrap ">
 				<DetailRow
 					label="Datum"
-					value={formatDateToGermanDate(page.createdAt)}
+					value={formatDateStringFull(page.createdAt)}
 					className="w-full sm:className-1/6"
 				/>
 				<DetailRow
@@ -133,7 +133,7 @@ export function useLessonDetails({ page }: { page: LearningDiaryPageDetail }) {
 function MoreDetails({ page }: { page: LearningDiaryPageDetail }) {
 	const { latestDate, lessonDetails } = useLessonDetails({ page });
 
-	const latestDateString = latestDate ? formatDateToGermanDate(latestDate) : "unbekannt";
+	const latestDateString = latestDate ? formatDateStringFull(latestDate) : "unbekannt";
 	return (
 		<div className="flex w-full flex-col space-y-4 mt-4">
 			<DetailRow

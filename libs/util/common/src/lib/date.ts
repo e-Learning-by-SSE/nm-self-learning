@@ -1,5 +1,6 @@
-import { format, formatDistance, intervalToDuration } from "date-fns";
+import { formatDistance, intervalToDuration } from "date-fns";
 import { de } from "date-fns/locale";
+import { formatInTimeZone } from "date-fns-tz";
 
 /**
  * Formats seconds to "hh:mm:ss" (hh will be removed if less than an hour).
@@ -48,41 +49,14 @@ export function formatTimeIntervalToString(ms: number): string {
 	return result || "0 Minuten";
 }
 
-export function adaptiveTimeSpan(ms: number): string {
-	const totalMinutes = Math.floor(ms / 60000);
-	const totalHours = Math.floor(totalMinutes / 60);
-	const days = Math.floor(totalHours / 24);
-	const hours = totalHours % 24;
-	const minutes = totalMinutes % 60;
-
-	if (days > 0) {
-		if (days === 1) {
-			return `Vor einem Tag`;
-		}
-		return `Vor ${days} Tagen`;
-	}
-
-	if (hours > 0) {
-		if (hours > 6) {
-			return `Vor ${hours} Stunden`;
-		}
-		return `Vor ${hours} Stunden`;
-	}
-
-	if (minutes > 0) {
-		if (minutes === 1) {
-			return `Vor einer Minute`;
-		}
-		return `Vor ${minutes} Minuten`;
-	}
-
-	return "Jetzt";
+export function formatDateStringShort(date: Date): string {
+	return formatInTimeZone(date, "Europe/Berlin", "dd.MM.yyyy", { locale: de });
 }
 
-export function formatDateToString(date: Date): string {
-	return format(date, "dd.MM.yyyy");
+export function formatDateString(date: Date, format: string): string {
+	return formatInTimeZone(date, "Europe/Berlin", format, { locale: de });
 }
 
-export function formatDateToGermanDate(date: Date): string {
-	return format(date, "Pp", { locale: de });
+export function formatDateStringFull(date: Date): string {
+	return formatInTimeZone(date, "Europe/Berlin", "Pp", { locale: de });
 }

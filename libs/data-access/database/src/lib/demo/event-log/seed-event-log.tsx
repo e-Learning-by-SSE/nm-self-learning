@@ -1,9 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { database } from "@self-learning/database";
-import {
-	getRandomItemsFromArray, getRandomNumber
-} from "../../seed-functions";
+import { getRandomItemsFromArray } from "../../seed-functions";
 import { InputJsonValue } from "@prisma/client/runtime/library";
+import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
 
@@ -34,7 +33,6 @@ export async function generateEventlogDate() {
 			startTime: new Date(),
 			username: student.username
 		});
-
 	} catch (error) {
 		console.error("Error generating demo data:", error);
 	} finally {
@@ -42,13 +40,16 @@ export async function generateEventlogDate() {
 	}
 }
 
-async function seedCourseEvents({ courseSlug, startTime, username }: {
-	courseSlug: string,
-	startTime: Date,
-	username: string
+async function seedCourseEvents({
+	courseSlug,
+	startTime,
+	username
+}: {
+	courseSlug: string;
+	startTime: Date;
+	username: string;
 }) {
-
-	const course = await prisma.course.findFirst({ where: { slug: courseSlug } })
+	const course = await prisma.course.findFirst({ where: { slug: courseSlug } });
 
 	if (!course || !course.content) {
 		console.error("No courses found.");
@@ -63,7 +64,7 @@ async function seedCourseEvents({ courseSlug, startTime, username }: {
 		lessonsIds.push(...value.content.map(lesson => lesson.lessonId));
 	});
 
-	await prisma.eventLog.create({ data: { type: "USER_LOGIN", username, createdAt: startTime } })
+	await prisma.eventLog.create({ data: { type: "USER_LOGIN", username, createdAt: startTime } });
 
 	// Add 5 Minutes
 	let createdAt: Date = new Date(startTime.getTime() + 5 * 60 * 1000);
@@ -76,7 +77,7 @@ async function seedCourseEvents({ courseSlug, startTime, username }: {
 			username,
 			createdAt
 		}
-	})
+	});
 
 	// Add 5 Minutes
 	createdAt = new Date(startTime.getTime() + 5 * 60 * 1000);
@@ -89,7 +90,7 @@ async function seedCourseEvents({ courseSlug, startTime, username }: {
 			username,
 			createdAt
 		}
-	})
+	});
 
 	createdAt = new Date(startTime.getTime() + 60 * 1000);
 
@@ -99,7 +100,7 @@ async function seedCourseEvents({ courseSlug, startTime, username }: {
 			courseSlug: course.slug,
 			createdAt
 		}
-	})
+	});
 
 	for (const lessonId of lessonsIds) {
 		// Add 5 Minutes
@@ -140,21 +141,26 @@ async function seedCourseEvents({ courseSlug, startTime, username }: {
 }
 
 function removeConfig(quiz: any): any {
-	if (Object.prototype.hasOwnProperty.call(quiz, 'config')) {
+	if (Object.prototype.hasOwnProperty.call(quiz, "config")) {
 		delete quiz.config;
 	}
 
 	return quiz;
 }
 
-async function seedLessonEvents({ lessonId, courseId, createdAt, entryId, username }: {
-	lessonId: string,
-	courseId: string,
-	createdAt: Date,
-	entryId: string,
-	username: string
+async function seedLessonEvents({
+	lessonId,
+	courseId,
+	createdAt,
+	entryId,
+	username
+}: {
+	lessonId: string;
+	courseId: string;
+	createdAt: Date;
+	entryId: string;
+	username: string;
 }) {
-
 	const lesson = await prisma.lesson.findFirst({ where: { lessonId } });
 	const quizes = removeConfig(JSON.parse(JSON.stringify(lesson?.quiz)));
 
@@ -166,7 +172,7 @@ async function seedLessonEvents({ lessonId, courseId, createdAt, entryId, userna
 			username,
 			createdAt
 		}
-	})
+	});
 
 	// Add 1 Minute
 	createdAt = new Date(createdAt.getTime() + 60 * 1000);
@@ -178,12 +184,21 @@ async function seedLessonEvents({ lessonId, courseId, createdAt, entryId, userna
 	createdAt = new Date(createdAt.getTime() + 5 * 60 * 1000);
 
 	for (const quiz in quizes) {
-		createdAt = await seedQuizEvents({ lessonId, courseId, createdAt, entryId, username, quiz })
+		createdAt = await seedQuizEvents({
+			lessonId,
+			courseId,
+			createdAt,
+			entryId,
+			username,
+			quiz
+		});
 	}
 
 	createdAt = new Date(createdAt.getTime() + 60 * 1000);
 
-	const completedLesson = await prisma.completedLesson.create({ data: { courseId, lessonId, username, createdAt } })
+	const completedLesson = await prisma.completedLesson.create({
+		data: { courseId, lessonId, username, createdAt }
+	});
 	const lessonComplete = await prisma.eventLog.create({
 		data: {
 			type: "LESSON_COMPLETE",
@@ -197,18 +212,23 @@ async function seedLessonEvents({ lessonId, courseId, createdAt, entryId, userna
 
 	createdAt = new Date(createdAt.getTime() + 60 * 1000);
 
-	return createdAt
+	return createdAt;
 }
 
-async function seedQuizEvents({ lessonId, courseId, createdAt, username, quiz }: {
-	lessonId: string,
-	courseId: string,
-	createdAt: Date,
-	entryId: string,
-	username: string,
-	quiz: any,
+async function seedQuizEvents({
+	lessonId,
+	courseId,
+	createdAt,
+	username,
+	quiz
+}: {
+	lessonId: string;
+	courseId: string;
+	createdAt: Date;
+	entryId: string;
+	username: string;
+	quiz: any;
 }) {
-
 	await prisma.eventLog.create({
 		data: {
 			type: "LESSON_QUIZ_START",
@@ -222,7 +242,6 @@ async function seedQuizEvents({ lessonId, courseId, createdAt, username, quiz }:
 
 	createdAt = new Date(createdAt.getTime() + 60 * 1000);
 
-
 	await prisma.eventLog.create({
 		data: {
 			type: "LESSON_QUIZ_SUBMISSION",
@@ -235,10 +254,10 @@ async function seedQuizEvents({ lessonId, courseId, createdAt, username, quiz }:
 				totalQuestionPool: 1,
 				questionPoolIndex: 0,
 				type: quiz.type,
-				hintsUsed: getRandomItemsFromArray(quiz.hints?.map((hint: {
-					hintId: string
-				}) => hint.hintId)) as InputJsonValue,
-				attempts: getRandomNumber(1, 3),
+				hintsUsed: getRandomItemsFromArray(
+					quiz.hints?.map((hint: { hintId: string }) => hint.hintId)
+				) as InputJsonValue,
+				attempts: faker.number.int({ min: 1, max: 3 }),
 				solved: true
 			}
 		}
