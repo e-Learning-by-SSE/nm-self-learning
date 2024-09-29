@@ -16,9 +16,10 @@ export async function deleteUserAndDependentData(
 			where: { authors: { some: { username: username} } }
 		});
 
-		/*await transaction.skillRepository.delete({
-			where: { ownerName: username }
-		});*/ 
+		await transaction.skillRepository.deleteMany({
+			where: { ownerId: username }
+		});
+		
 		return true;
 
 	});
