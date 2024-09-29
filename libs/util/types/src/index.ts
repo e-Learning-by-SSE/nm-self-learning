@@ -9,6 +9,7 @@ export * from "./lib/lesson-meta";
 export * from "./lib/license";
 export * from "./lib/specialization";
 export * from "./lib/subject";
+export * from "./lib/user";
 export * from "./lib/skill";
 export * from "./lib/learning-diary";
 export * from "./lib/student";
