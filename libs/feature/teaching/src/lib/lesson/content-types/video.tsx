@@ -68,7 +68,7 @@ export function VideoInput({ index }: { index: number }) {
 						mediaType="video"
 						preview={
 							<div className="aspect-video w-full bg-black">
-								{url && <VideoPlayer url={url} />}
+								{url && <VideoPlayer url={url} subtitle={subtitle} />}
 							</div>
 						}
 						onUploadCompleted={(publicUrl, meta) => {
@@ -81,8 +81,19 @@ export function VideoInput({ index }: { index: number }) {
 							});
 						}}
 					/>
-					{url && !subtitle && <GenerateSubtile video_url={url} />}
-					
+					{url && !subtitle && (
+						<GenerateSubtile
+							video_url={url}
+							onTranscribitionCompleted={createdSubtitle => {
+								update(index, {
+									type: "video",
+									value: { url,  subtitle: createdSubtitle },
+									meta: { duration }
+								}
+								)
+							}}
+						/>
+					)}
 				</div>
 			</div>
 		</SectionCard>

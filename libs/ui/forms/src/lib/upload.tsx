@@ -23,6 +23,8 @@ import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import io, { Socket } from "socket.io-client";
+import { Subtitle, SubtitleSrc, subtitleSrcSchema } from "@self-learning/types";
+import { ConvertTranscriptionToSubtitle } from "@self-learning/ui/lesson";
 
 const MediaType = {
 	image: "image",
@@ -202,12 +204,41 @@ export function ModifySubtile({
 		</CenteredContainer>
 	);
 }
-export function GenerateSubtile({ video_url }: { video_url: string }) {
+
+export function GenerateSubtile({
+	video_url,
+	onTranscribitionCompleted
+}: {
+	video_url: string;
+	onTranscribitionCompleted: (subtitle: Subtitle) => void;
+}) {
 	const [showDialog, setShowDialog] = useState(false);
 
 	return (
 		<>
-			{showDialog && <GenerateSubtileDialog video_url={video_url} onClose={() => {}} />}
+			{showDialog && (
+				<GenerateSubtileDialog
+					video_url={video_url}
+					onClose={async transcription => {
+						setShowDialog(false);
+						if (!transcription) return;
+						try {
+							const subtitle = {
+								src: await ConvertTranscriptionToSubtitle(transcription),
+								label: "Deutsch",
+								srcLang: transcription?.language
+							};
+							onTranscribitionCompleted(subtitle);
+						} catch (error) {
+							showToast({
+								type: "error",
+								title: "Fehler beim Erstellen des Untertitels",
+								subtitle: "Fehler beim Erstellen des Untertitels"
+							});
+						}
+					}}
+				/>
+			)}
 			<Button
 				className="btn-primary"
 				onClick={() => {
@@ -223,7 +254,7 @@ function GenerateSubtileDialog({
 	onClose
 }: {
 	video_url: string;
-	onClose: OnDialogCloseFn<string>;
+	onClose: OnDialogCloseFn<SubtitleSrc>;
 }) {
 	const [progress, setProgress] = useState<string>("Initializing...");
 	const [transcription, setTranscription] = useState<string | null>(null);
@@ -263,7 +294,9 @@ function GenerateSubtileDialog({
 				<CenteredContainer>
 					<div>
 						<p>{progress}</p>
-						{!transcription && <div className="h-5 w-5 mt-5 justify-center animate-spin rounded-full border-b-2 border-black" />}
+						{!transcription && (
+							<div className="h-5 w-5 mt-5 justify-center animate-spin rounded-full border-b-2 border-black" />
+						)}
 						{transcription && (
 							<div>
 								<h3>Transcription Result</h3>
@@ -274,8 +307,19 @@ function GenerateSubtileDialog({
 				</CenteredContainer>
 
 				<div className="mt-auto">
-					<DialogActions onClose={() => onClose(transcription || "")}>
-						<button className="btn-primary">OK</button>
+					<DialogActions onClose={onClose}>
+						<button
+							className="btn-primary"
+							onClick={() => {
+								if (transcription) {
+									onClose(subtitleSrcSchema.parse(transcription));
+								} else {
+									onClose();
+								}
+							}}
+						>
+							OK
+						</button>
 					</DialogActions>
 				</div>
 			</Dialog>
