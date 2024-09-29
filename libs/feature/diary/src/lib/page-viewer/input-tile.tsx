@@ -11,6 +11,7 @@ import {
 } from "@self-learning/ui/common";
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 
 export function Tile({
 	onToggleEdit,
@@ -297,5 +298,45 @@ export function StarInputTile({
 				</div>
 			</div>
 		</Tile>
+	);
+}
+
+export function MarkDownInputTile({
+	initialNote,
+	onSubmit
+}: {
+	initialNote?: string;
+	onSubmit: (note: string) => void;
+}) {
+	const [displayedNotes, setDisplayedNotes] = useState<string | null>(initialNote ?? null);
+	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
+	const onClose = async (newNote?: string) => {
+		if (newNote !== undefined) {
+			onSubmit(newNote);
+			setDisplayedNotes(newNote);
+		}
+		setDialogOpen(false);
+	};
+
+	return (
+		<div>
+			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"} isFilled={initialNote !== ""}>
+				{initialNote === "" ? (
+					<span>Bisher wurden noch keine Notizen erstellt.</span>
+				) : (
+					<div className={"max-w-5xl truncate"}>
+						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
+					</div>
+				)}
+			</Tile>
+			{dialogOpen && (
+				<MarkdownEditorDialog
+					title={"Notizen"}
+					initialValue={displayedNotes ? displayedNotes : ""}
+					onClose={onClose}
+				/>
+			)}
+		</div>
 	);
 }

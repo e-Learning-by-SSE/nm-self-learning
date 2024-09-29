@@ -14,17 +14,17 @@ import {
 	StarInputTile,
 	Strategy,
 	PersonalTechniqueRatingTile,
-	Tile,
 	LearningGoalInputTile,
-	Sidebar
+	Sidebar,
+	LearningDiaryPageDetail,
+	useDiaryPage,
+	MarkDownInputTile
 } from "@self-learning/diary";
 
 import { LearningDiaryPage, learningDiaryPageSchema, ResolvedValue } from "@self-learning/types";
 import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
-import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 
@@ -75,17 +75,18 @@ export default function DiaryPageDetail({
 		<div className="flex flex-col">
 			<div className="mx-auto flex w-full flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
 				<div>
-					<Sidebar pages={pages} />
+					<Sidebar selectedPageId={diaryId} pages={pages} />
 				</div>
 
 				<div>
 					<div className="w-2/3 py-4">
 						<div className="mb-4 flex justify-center">
-							<PageChanger pages={pages} currentPageId={diaryId} />
+							<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
 						</div>
 
 						<Divider />
 						<DiaryContentForm
+							key={diaryId}
 							diaryId={diaryId}
 							availableStrategies={availableStrategies}
 						/>
@@ -98,36 +99,11 @@ export default function DiaryPageDetail({
 
 /** This component relies on the LearningDiaryPages list being sorted in ascending manner (refer to the database function)  */
 function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId: string }) {
-	const router = useRouter();
 	const currentPageIndex = pages.findIndex(page => page.id === currentPageId);
 	const [pageInput, setPageInput] = useState(currentPageIndex + 1);
 
-	useEffect(() => {
-		setPageInput(currentPageIndex + 1);
-	}, [router.asPath]);
-
-	const jumpToFirstEntry = () => {
-		changePage(pages[0].id);
-	};
-
-	const jumpToLastEntry = () => {
-		changePage(pages[pages.length - 1].id);
-	};
-
-	const changePage = (diaryId: string) => {
-		console.log("push");
-		router.push("/learning-diary/page/" + diaryId);
-	};
-
-	const updateToPreviousId = () => {
-		const newIndex = Math.max(currentPageIndex - 1, 0);
-		changePage(pages[newIndex].id);
-	};
-
-	const updateToNextId = () => {
-		const newIndex = Math.min(currentPageIndex + 1, pages.length - 1);
-		changePage(pages[newIndex].id);
-	};
+	const { changePage, jumpToFirstEntry, jumpToLastEntry, updateToPreviousId, updateToNextId } =
+		useDiaryPage({ pages, diaryId: currentPageId });
 
 	const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = parseInt(e.target.value, 10);
@@ -195,16 +171,17 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 	);
 }
 
-function DiaryContentForm({
-	diaryId,
-	availableStrategies
+/**
+ * Initialize the form with the page details and update the page on every change (currently not debounced).
+ * onChange must do the validation of the form and update the page accordingly
+ */
+function usePageForm({
+	pageDetails,
+	onChange
 }: {
-	diaryId: string;
-	availableStrategies: Strategy[];
+	pageDetails: LearningDiaryPageDetail | null | undefined;
+	onChange?: (page: LearningDiaryPage) => void;
 }) {
-	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
-	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
-
 	const defaultValues = useMemo(() => {
 		return {
 			// Set the defaults of the form here. Since we have start values directly from the database
@@ -231,18 +208,36 @@ function DiaryContentForm({
 		defaultValues
 	});
 
+	// avoid render loops
 	useEffect(() => {
 		const subscription = form.watch((value, _) => {
 			const updateCandidate = { ...defaultValues, ...value };
-			console.debug("Update Candidate:", updateCandidate);
-
 			/* The type should match since the missing values come from the defaultValues
 			 * but it does not hurt to do un unsafely cast here, since trpc will validate the data anyway
 			 */
-			updateLtbPage(updateCandidate as LearningDiaryPage);
+			onChange?.(updateCandidate as LearningDiaryPage);
 		});
-		return () => subscription.unsubscribe();
-	}, [form, form.watch, updateLtbPage, defaultValues]);
+
+		return () => {
+			// // Reset the form on every db load
+			// form.reset(defaultValues);
+			subscription.unsubscribe();
+		};
+	}, [form, onChange, defaultValues]);
+
+	return { ...form };
+}
+
+function DiaryContentForm({
+	diaryId,
+	availableStrategies
+}: {
+	diaryId: string;
+	availableStrategies: Strategy[];
+}) {
+	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
+	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
+	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
 
 	const itemsWithRatings = availableStrategies.map(strategy => {
 		const updatedStrategy = strategy.techniques.map(technique => {
@@ -348,46 +343,6 @@ function DiaryContentForm({
 					/>
 				</form>
 			</FormProvider>
-		</div>
-	);
-}
-
-function MarkDownInputTile({
-	initialNote,
-	onSubmit
-}: {
-	initialNote?: string;
-	onSubmit: (note: string) => void;
-}) {
-	const [displayedNotes, setDisplayedNotes] = useState<string | null>(initialNote ?? null);
-	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-
-	const onClose = async (newNote?: string) => {
-		if (newNote !== undefined) {
-			onSubmit(newNote);
-			setDisplayedNotes(newNote);
-		}
-		setDialogOpen(false);
-	};
-
-	return (
-		<div>
-			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"} isFilled={initialNote !== ""}>
-				{initialNote === "" ? (
-					<span>Bisher wurden noch keine Notizen erstellt.</span>
-				) : (
-					<div className={"max-w-5xl truncate"}>
-						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
-					</div>
-				)}
-			</Tile>
-			{dialogOpen && (
-				<MarkdownEditorDialog
-					title={"Notizen"}
-					initialValue={displayedNotes ? displayedNotes : ""}
-					onClose={onClose}
-				/>
-			)}
 		</div>
 	);
 }

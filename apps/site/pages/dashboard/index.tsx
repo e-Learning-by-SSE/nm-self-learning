@@ -22,7 +22,7 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import {
 	formatDateAgo,
-	formatDateToString,
+	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
@@ -363,7 +363,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 											</div>
 										</div>
 										<span className="hidden text-sm text-light md:block">
-											{formatDateToString(page.createdAt)}
+											{formatDateStringShort(page.createdAt)}
 										</span>
 									</div>
 								</li>
