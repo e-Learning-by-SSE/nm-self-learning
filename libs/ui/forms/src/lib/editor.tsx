@@ -20,7 +20,6 @@ export function EditorField({
 				if (onMount) {
 					onMount(editor);
 				}
-				onMount?.(editor);
 				editor.focus();
 				setTimeout(() => {
 					editor?.getAction("editor.action.formatDocument")?.run();
