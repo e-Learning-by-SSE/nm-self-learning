@@ -31,15 +31,17 @@ export function Table({ head, children }: { head: React.ReactElement; children: 
 	</TableHeaderColumn>
  * ```
  */
-export function SortIndicator(
-	key: string,
-	sortConfig: { key: string | null; direction: "ascending" | "descending" }
-) {
+export function SortIndicator({
+	key,
+	sortConfig
+}: {
+	key: string;
+	sortConfig: { key: string | null; direction: "ascending" | "descending" };
+}) {
 	if (sortConfig.key !== key) {
-		// Use the same space to avoid layout shifts; but use neutral symbol to support screen readers
-		// See for alternatives: https://www.compart.com/de/unicode/block/U+25A0
-		// However, should be hidden anyways according to: https://webaim.org/techniques/css/invisiblecontent/
-		return <span className="px-2 invisible">▭</span>;
+		// Use the same space to avoid layout shifts; invisible content should not be read by screen readers
+		// See for alternative symbols: https://www.compart.com/de/unicode/block/U+25A0
+		return <span className="px-2 invisible">▲</span>;
 	}
 	const icon = sortConfig.direction === "ascending" ? "▲" : "▼";
 	return <span className="px-2">{icon}</span>;

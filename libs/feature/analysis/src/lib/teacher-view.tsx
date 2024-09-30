@@ -51,13 +51,15 @@ function SortedTable({ participationData }: { participationData: ParticipationDa
 				head={
 					<>
 						<TableHeaderColumn onClick={() => sortData("title")}>
-							Kurs {SortIndicator("title", sortConfig)}
+							Kurs <SortIndicator key="title" sortConfig={sortConfig} />
 						</TableHeaderColumn>
 						<TableHeaderColumn onClick={() => sortData("participants")}>
-							Aktuelles Semester {SortIndicator("participants", sortConfig)}
+							Aktuelles Semester{" "}
+							<SortIndicator key="participants" sortConfig={sortConfig} />
 						</TableHeaderColumn>
 						<TableHeaderColumn onClick={() => sortData("participantsTotal")}>
-							Insgesamt {SortIndicator("participantsTotal", sortConfig)}
+							Insgesamt{" "}
+							<SortIndicator key="participantsTotal" sortConfig={sortConfig} />
 						</TableHeaderColumn>
 					</>
 				}

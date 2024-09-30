@@ -212,7 +212,8 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							onClick={() => setSortOrder(column.key)}
 							key={column.key}
 						>
-							{column.label} {SortIndicator(column.key, sortConfig)}
+							{column.label}{" "}
+							<SortIndicator key={column.key} sortConfig={sortConfig} />
 						</TableHeaderColumn>
 					))}
 				</>

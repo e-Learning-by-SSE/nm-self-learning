@@ -229,7 +229,8 @@ function SortedTable({
 								.filter(([_, column]) => column.isDisplayed)
 								.map(([key, column]) => (
 									<TableHeaderColumn key={key} onClick={() => setSortOrder(key)}>
-										{column.label} {SortIndicator(key, sortConfig)}
+										{column.label}{" "}
+										<SortIndicator key={key} sortConfig={sortConfig} />
 									</TableHeaderColumn>
 								))}
 
