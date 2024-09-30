@@ -94,10 +94,10 @@ function SideBarContent({
 }) {
 	const { changePage } = useDiaryPageRouter();
 	return (
-		<li className={`mb-1 rounded hover:bg-gray-100 ${selected ? "font-bold bg-gray-100" : ""}`}>
+		<li className={`mb-1 rounded hover:bg-gray-100 ${selected ? "bg-gray-100" : ""}`}>
 			<Link href={"/learning-diary/page/" + page.id} onClick={() => changePage(page.id)}>
 				<div className="flex items-center justify-between p-2 rounded break-words whitespace-normal">
-					<span className="flex-grow">{index + ". " + page.course.title}</span>
+					<span className="flex-grow">{`${index}: ${page.course.title}`}</span>
 					<span className="ml-4">
 						<LearningDiaryEntryStatusBadge {...page} className="top-2" />
 					</span>
