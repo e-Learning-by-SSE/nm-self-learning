@@ -53,8 +53,12 @@ export function LearningGoalInputTile({
 					</div>
 				</div>
 			</Tile>
-			{dialogOpen &&
-				LearningGoalEditorDialog({ onClose, onStatusUpdate: handleGoalStatusUpdate })}
+			{dialogOpen && (
+				<LearningGoalEditorDialog
+					onClose={onClose}
+					onStatusUpdate={handleGoalStatusUpdate}
+				/>
+			)}
 		</div>
 	);
 }
