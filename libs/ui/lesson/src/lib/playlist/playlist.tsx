@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { trpc } from "@self-learning/api-client";
+import { z } from "zod";
 
 export type PlaylistChapter = {
 	title: string;
@@ -43,20 +44,27 @@ type PlaylistProps = {
 	completion?: CourseCompletion;
 };
 
-function useLearningDiaryRecording(courseSlug: string) {
+function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
 	const { mutateAsync: createLearningDiaryEntry } = trpc.learningDiary.create.useMutation();
+	const { mutateAsync: createLearningDiaryLearnedLesson } =
+		trpc.learningDiary.addLearningDiaryLearnedLessons.useMutation();
 	const log = useCallback(async () => {
 		try {
-			await createLearningDiaryEntry({
+			const page = await createLearningDiaryEntry({
 				courseSlug: courseSlug
+			});
+
+			await createLearningDiaryLearnedLesson({
+				entryId: page?.id ?? "",
+				lessonId
 			});
 		} catch (e) {}
 	}, [createLearningDiaryEntry, courseSlug]);
 	useTimeout({ callback: log, delayInMilliseconds: 60000 });
 }
 
-function Writer({ courseSlug }: { courseSlug: string }) {
-	useLearningDiaryRecording(courseSlug);
+function Writer({ courseSlug, lessonId }: { courseSlug: string, lessonId: string }) {
+	useLearningDiaryRecording(courseSlug, lessonId);
 	return <></>;
 }
 
@@ -78,7 +86,7 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 
 	return (
 		<>
-			<Writer courseSlug={course.slug} />
+			<Writer courseSlug={course.slug} lessonId={lesson.lessonId} />
 			<PlaylistHeader
 				content={content}
 				course={course}
