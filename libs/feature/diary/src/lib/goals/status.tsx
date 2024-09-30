@@ -33,7 +33,7 @@ export function GoalStatus({
 	// We could assume that executing "onEdit" will lead to a rerender (e.g. because the "goal" prop changes), but this is not guaranteed.
 	// Drawback is double render when the user changes the status.
 	const [status, setStatus] = useState(
-		goal.status ?? subGoal?.status ?? LearningGoalStatus.INACTIVE
+		subGoal?.status ?? goal.status ?? LearningGoalStatus.INACTIVE
 	);
 
 	const myRef = useRef<HTMLInputElement>(null);
@@ -72,11 +72,11 @@ export function GoalStatus({
 		setStatus(pStatus);
 		setShowDialog(false);
 		if (!subGoal && goal) {
-			editGoal({ goalId: goal.id, status });
+			editGoal({ goalId: goal.id, status: pStatus });
 		} else if (subGoal && goal) {
 			editSubGoal({
 				subGoalId: subGoal.id,
-				status,
+				status: pStatus,
 				learningGoalId: subGoal.learningGoalId
 			});
 		}
