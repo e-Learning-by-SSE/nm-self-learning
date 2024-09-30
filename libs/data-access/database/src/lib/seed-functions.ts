@@ -14,7 +14,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { slugify } from "@self-learning/util/common";
 import { defaultLicence } from "./license";
-import { subDays, subHours, subMinutes } from "date-fns";
+import { subDays, subHours } from "date-fns";
 
 const prisma = new PrismaClient();
 
@@ -499,9 +499,10 @@ export function getRandomCreatedAt(): Date {
 
 // Function to generate random time interval in milliseconds
 export function getRandomTimeIntervalInMs(): number {
-	const from = subMinutes(new Date(), 1);
-	const to = subHours(new Date(), 28);
-	return faker.date.between({ from, to }).getTime();
+  const minMs = 45 * 60 * 1000; // 45 minutes in milliseconds
+  const maxMs = 36 * 60 * 60 * 1000; // 36 hours in milliseconds
+
+  return faker.number.int({ min: minMs, max: maxMs });
 }
 
 export type LearningStrategyCategory = {
