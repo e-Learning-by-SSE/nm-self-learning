@@ -86,11 +86,11 @@ function LearningGoalEditorDialog({
 				<div className={"flex justify-center py-4"}>
 					<LearningGoals goals={learningGoals} onStatusUpdate={onStatusUpdate} />
 				</div>
-			</div>
-			<div className="flex justify-end pt-5">
-				<button className="btn-primary" onClick={onClose}>
-					OK
-				</button>
+				<div className="flex justify-end">
+					<button type="button" className="btn-primary" onClick={onClose}>
+						Schließen
+					</button>
+				</div>
 			</div>
 		</Dialog>
 	);
