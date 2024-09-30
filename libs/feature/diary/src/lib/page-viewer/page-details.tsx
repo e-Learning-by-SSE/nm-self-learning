@@ -67,6 +67,7 @@ function DetailRow({
 
 type LessonDetailTableProps = {
 	title: string;
+	slug: string;
 	duration: number;
 	tasks: { id: string }[]; // id for the case, that we want to link to the task in the future
 	tasksSolved: number;
@@ -115,6 +116,7 @@ export function useLessonDetails({ page }: { page: LearningDiaryPageDetail }) {
 
 		return {
 			title: lesson.lesson.title,
+			slug: `${page.course.slug}/${lesson.lesson.slug}`,
 			duration: 0,
 			tasks: taskIds,
 			tasksSolved: successful,
@@ -156,7 +158,7 @@ function MoreDetails({ page }: { page: LearningDiaryPageDetail }) {
 				{lessonDetails.map((lessonDetail, index) => (
 					<tr key={index}>
 						<TableDataColumn>
-							<Link href={""} className="hover:text-blue-300">
+							<Link href={`/courses/${lessonDetail.slug}`} className="hover:text-blue-300">
 								{lessonDetail.title}
 							</Link>
 						</TableDataColumn>
