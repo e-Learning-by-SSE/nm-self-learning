@@ -14,11 +14,11 @@ import {
 	StarInputTile,
 	Strategy,
 	PersonalTechniqueRatingTile,
-	LearningGoalInputTile,
 	Sidebar,
 	LearningDiaryPageDetail,
 	useDiaryPage,
-	MarkDownInputTile
+	MarkDownInputTile,
+	LearningGoalInputTile
 } from "@self-learning/diary";
 
 import { LearningDiaryPage, learningDiaryPageSchema, ResolvedValue } from "@self-learning/types";
@@ -171,9 +171,51 @@ function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId
 	);
 }
 
+function convertToLearningDiaryPageSafe(
+	pageDetails: LearningDiaryPageDetail | undefined | null
+): LearningDiaryPage | undefined {
+	if (!pageDetails) {
+		return undefined;
+	}
+	return {
+		id: pageDetails.id,
+		scope: pageDetails.scope,
+		distractionLevel: pageDetails.distractionLevel,
+		effortLevel: pageDetails.effortLevel,
+		notes: pageDetails.notes ?? undefined,
+		learningLocation: pageDetails?.learningLocation
+			? {
+					name: pageDetails.learningLocation.name,
+					iconURL: pageDetails.learningLocation.iconURL ?? undefined,
+					defaultLocation: false
+				}
+			: undefined,
+		learningGoals:
+			pageDetails?.learningGoals?.map(goal => ({
+				id: goal.id,
+				description: goal.description,
+				learningSubGoals: goal.learningSubGoals.map(subGoal => ({
+					id: subGoal.id,
+					description: subGoal.description,
+					priority: subGoal.priority,
+					learningGoalId: goal.id, // rename
+					status: subGoal.status ?? undefined
+				})),
+				status: goal.status ?? undefined
+			})) ?? undefined,
+		techniqueRatings:
+			pageDetails?.techniqueRatings?.map(rating => ({
+				id: rating.technique.id,
+				score: rating.score,
+				learningTechniqueId: rating.technique.id, // reanem
+				learningDiaryEntryId: pageDetails.id // rename
+			})) ?? undefined
+	};
+}
+
 /**
  * Initialize the form with the page details and update the page on every change (currently not debounced).
- * onChange must do the validation of the form and update the page accordingly
+ * onChange must do the validation of the form and triggers a rerender then.
  */
 function usePageForm({
 	pageDetails,
@@ -182,48 +224,32 @@ function usePageForm({
 	pageDetails: LearningDiaryPageDetail | null | undefined;
 	onChange?: (page: LearningDiaryPage) => void;
 }) {
-	const defaultValues = useMemo(() => {
-		return {
-			// Set the defaults of the form here. Since we have start values directly from the database
-			// we need to transform the to the correct zod-input type for validation. Especially the incompatibilities between
-			// null and undefined are important here. This is a common pattern in the codebase.
-			...pageDetails,
-			notes: pageDetails?.notes ?? undefined,
-			learningGoals: pageDetails?.learningGoals.map(goal => ({
-				...goal,
-				lastProgressUpdate: goal.lastProgressUpdate ?? undefined
-			})),
-			learningLocation: pageDetails?.learningLocation
-				? {
-						name: pageDetails.learningLocation.name,
-						iconURL: pageDetails.learningLocation.iconURL ?? undefined,
-						defaultLocation: false
-					}
-				: undefined
-		};
+	const values = useMemo(() => {
+		//  Since we start with values directly from the database we need to transform them to the correct zod-input type for form validation.
+		// Especially the incompatibilities between, null and undefined are important here, but there are other properties which needs to be renamed. This is a common pattern in the codebase.
+		return convertToLearningDiaryPageSafe(pageDetails);
 	}, [pageDetails]);
 
 	const form = useForm<LearningDiaryPage>({
 		resolver: zodResolver(learningDiaryPageSchema),
-		defaultValues
+		values
 	});
 
 	// avoid render loops
 	useEffect(() => {
 		const subscription = form.watch((value, _) => {
-			const updateCandidate = { ...defaultValues, ...value };
-			/* The type should match since the missing values come from the defaultValues
-			 * but it does not hurt to do un unsafely cast here, since trpc will validate the data anyway
+			const updateCandidate /* TODO check here that the updateCandidate is indeed compatible with LearningDiaryPage except null values  */ =
+				{ ...values, ...value };
+			console.debug("updateCandidate", updateCandidate);
+			/* TypeCast: The prop should match since the missing values come from the already transformed values. An exception are  undefined and null values which
+			 * are possible. To ensure this, updateCandidate must be a partial type. Then we can safely cast here since trpc will validate the data anyway. So
+			 * we just ignore undefined/null values here.
 			 */
 			onChange?.(updateCandidate as LearningDiaryPage);
 		});
 
-		return () => {
-			// // Reset the form on every db load
-			// form.reset(defaultValues);
-			subscription.unsubscribe();
-		};
-	}, [form, onChange, defaultValues]);
+		return () => subscription.unsubscribe();
+	}, [form, onChange, values]);
 
 	return { ...form };
 }
@@ -239,6 +265,7 @@ function DiaryContentForm({
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
 
+	// add "rating" prop
 	const itemsWithRatings = availableStrategies.map(strategy => {
 		const updatedStrategy = strategy.techniques.map(technique => {
 			const rating = pageDetails?.techniqueRatings.find(
@@ -248,10 +275,6 @@ function DiaryContentForm({
 		});
 		return { ...strategy, techniques: updatedStrategy };
 	});
-
-	type StrategyWithRating = typeof itemsWithRatings;
-
-	const handleUpdateTechniqueRating = (update: StrategyWithRating) => {};
 
 	if (isLoading) {
 		return <LoadingCircleCorner />;
@@ -327,7 +350,15 @@ function DiaryContentForm({
 						render={({ field }) => (
 							<PersonalTechniqueRatingTile
 								strategies={itemsWithRatings}
-								onChange={field.onChange}
+								onChange={updatedTechnique => {
+									console.log("fieldvalue", field.value);
+									const updatedArray = field.value?.map(technique =>
+										technique.id === updatedTechnique.id
+											? updatedTechnique
+											: technique
+									);
+									field.onChange(updatedArray ?? [updatedTechnique]);
+								}}
 							/>
 						)}
 					/>
