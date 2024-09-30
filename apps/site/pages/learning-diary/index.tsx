@@ -119,7 +119,7 @@ const sortableColumns = {
 	duration: {
 		label: "Dauer",
 		sortingFunction: (a: LearningDiaryPageOverview, b: LearningDiaryPageOverview) =>
-			a.totalDurationLearnedMs - b.totalDurationLearnedMs,
+			(a.totalDurationLearnedMs ?? 0) - (b.totalDurationLearnedMs ?? 0),
 		isDisplayed: true
 	},
 	learningLocation: {
@@ -172,7 +172,7 @@ function getFilterFunction(learningDiaryEntry: LearningDiaryPageOverview, query:
 		learningDiaryEntry.learningLocation?.name.toLowerCase() ?? "",
 		learningDiaryEntry.scope.toString().toLowerCase(),
 		...techniqueNames,
-		formatTimeIntervalToString(learningDiaryEntry.totalDurationLearnedMs).toLowerCase()
+		formatTimeIntervalToString(learningDiaryEntry.totalDurationLearnedMs ?? 0).toLowerCase()
 	];
 
 	return stringsToCheck.some(str => str.includes(lowercasedQuery));
@@ -297,7 +297,8 @@ function SortedTable({
 
 													{key === "duration" &&
 														formatTimeIntervalToString(
-															learningDiaryEntry.totalDurationLearnedMs
+															learningDiaryEntry.totalDurationLearnedMs ??
+																0
 														)}
 
 													{key === "learningLocation" &&

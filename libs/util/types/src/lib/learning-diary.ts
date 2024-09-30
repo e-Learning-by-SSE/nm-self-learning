@@ -1,19 +1,19 @@
+import { LearningGoalStatus } from "@prisma/client";
 import { z } from "zod";
 
 export const techniqueRatingSchema = z.object({
 	id: z.string().uuid(),
 	score: z.number().int(),
 	learningTechniqueId: z.string(),
-	learningDiaryEntryId: z.string(),
-	creatorName: z.string()
+	learningDiaryEntryId: z.string()
 });
 
-const learningGoalStatusSchema = z.enum(["ACTIVE", "INACTIVE", "COMPLETED"]);
+const learningGoalStatusSchema = z.nativeEnum(LearningGoalStatus);
 
 const learningSubGoalSchema = z.object({
 	id: z.string().cuid(),
 	description: z.string().min(1),
-	status: learningGoalStatusSchema.default("INACTIVE"),
+	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE).optional(),
 	priority: z.number().int(),
 	learningGoalId: z.string().cuid()
 });
@@ -21,7 +21,7 @@ const learningSubGoalSchema = z.object({
 const learningGoalSchema = z.object({
 	id: z.string().cuid(),
 	description: z.string().min(1),
-	status: learningGoalStatusSchema.default("INACTIVE"),
+	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
 	learningSubGoals: z.array(learningSubGoalSchema)
 });
 
@@ -39,13 +39,13 @@ export const learningDiaryPageSchema = z.object({
 	distractionLevel: z.number().int().optional(),
 	learningLocation: learningLocationSchema.optional(),
 	learningGoals: z.array(learningGoalSchema).optional(),
-	techniqueRatings: z.array(techniqueRatingSchema).optional(),
+	techniqueRatings: z.array(techniqueRatingSchema).optional()
 });
 
-export type LearningDiaryPage = z.infer<typeof learningDiaryPageSchema>;
+export type LearningDiaryPage = z.input<typeof learningDiaryPageSchema>; // use input type to allow default values
 
 export const lessonStartSchema = z.object({
 	entryId: z.string(),
 	lessonId: z.string(),
-	createdAt: z.date().optional(),
+	createdAt: z.date().optional()
 });
