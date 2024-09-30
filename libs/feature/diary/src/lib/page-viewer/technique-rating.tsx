@@ -25,13 +25,13 @@ export function PersonalTechniqueRatingTile({
 
 	const [evalTarget, setEvalTarget] = useState<Technique | null>(null);
 
-	const ratedTechniques = findRatedTechniques(strategies);
+	const techniquesWithRating = findRatedTechniques(strategies);
 
 	const handleTileClick = () => {
 		setStrategyDialogOpen(true);
 	};
 
-	const handleEvaluationSubmit = (updatedTechnique: Technique) => {
+	const handleTechniqueRatingSubmit = (updatedTechnique: Technique) => {
 		setEvalTarget(null);
 		console.debug("save", updatedTechnique);
 		onChange(updatedTechnique);
@@ -45,10 +45,10 @@ export function PersonalTechniqueRatingTile({
 		<div>
 			<Tile
 				tileName="Genutzte Techniken"
-				isFilled={ratedTechniques.length > 0}
+				isFilled={techniquesWithRating.length > 0}
 				onToggleEdit={handleTileClick}
 			>
-				<UsedTechniqueList techniques={ratedTechniques} />
+				<UsedTechniqueList techniques={techniquesWithRating} />
 			</Tile>
 			{strategyDialogOpen && (
 				<Dialog
@@ -76,7 +76,7 @@ export function PersonalTechniqueRatingTile({
 				<TechniqueRatingDialog
 					technique={evalTarget}
 					onClose={handleEvaluationDialogClose}
-					onSubmit={handleEvaluationSubmit}
+					onSubmit={handleTechniqueRatingSubmit}
 				/>
 			)}
 		</div>

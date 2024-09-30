@@ -198,7 +198,7 @@ function convertToLearningDiaryPageSafe(
 				}
 			: undefined,
 		learningGoals:
-			pageDetails?.learningGoals?.map(goal => ({
+			pageDetails.learningGoals?.map(goal => ({
 				id: goal.id,
 				description: goal.description,
 				learningSubGoals: goal.learningSubGoals.map(subGoal => ({
@@ -211,7 +211,7 @@ function convertToLearningDiaryPageSafe(
 				status: goal.status ?? undefined
 			})) ?? undefined,
 		techniqueRatings:
-			pageDetails?.techniqueRatings?.map(rating => ({
+			pageDetails.techniqueRatings?.map(rating => ({
 				id: rating.technique.id,
 				score: rating.score,
 				learningTechniqueId: rating.technique.id, // rename
@@ -222,7 +222,6 @@ function convertToLearningDiaryPageSafe(
 
 /**
  * Initialize the form with the page details and update the page on every change (currently not debounced).
- * onChange must do the validation of the form and triggers a rerender then.
  */
 function usePageForm({
 	pageDetails,
@@ -242,17 +241,13 @@ function usePageForm({
 		values
 	});
 
-	// avoid render loops
+	// useEffect to avoid render loops
 	useEffect(() => {
 		const subscription = form.watch((value, _) => {
-			const updateCandidate /* TODO check here that the updateCandidate is indeed compatible with LearningDiaryPage except null values  */ =
-				{ ...values, ...value };
-			console.debug("updateCandidate", updateCandidate);
-			/* TypeCast: The prop should match since the missing values come from the already transformed values. An exception are  undefined and null values which
-			 * are possible. To ensure this, updateCandidate must be a partial type. Then we can safely cast here since trpc will validate the data anyway. So
-			 * we just ignore undefined/null values here.
-			 */
-			onChange?.(updateCandidate as LearningDiaryPage);
+			const updateCandidate = { ...values, ...value };
+			/** We do manual cast here, even if trpc would validate it later. We want to have some kind of compiler check here to make development easier. It should warn if the props, ignoring null and undefined. */
+			const result = learningDiaryPageSchema.parse(updateCandidate);
+			onChange?.(result);
 		});
 
 		return () => subscription.unsubscribe();
@@ -277,10 +272,10 @@ function DiaryContentForm({
 	// add "rating" prop
 	const itemsWithRatings = availableStrategies.map(strategy => {
 		const updatedStrategy = strategy.techniques.map(technique => {
-			const rating = pageDetails?.techniqueRatings.find(
+			const score = pageDetails?.techniqueRatings.find(
 				evaluation => evaluation.technique.id === technique.id
 			)?.score;
-			return { ...technique, rating };
+			return { ...technique, score };
 		});
 		return { ...strategy, techniques: updatedStrategy };
 	});
@@ -360,13 +355,19 @@ function DiaryContentForm({
 							<PersonalTechniqueRatingTile
 								strategies={itemsWithRatings}
 								onChange={updatedTechnique => {
-									console.log("fieldvalue", field.value);
-									const updatedArray = field.value?.map(technique =>
-										technique.id === updatedTechnique.id
-											? updatedTechnique
-											: technique
-									);
-									field.onChange(updatedArray ?? [updatedTechnique]);
+									const updatedArray = field.value?.map(technique => ({
+										...technique,
+										score:
+											technique.id === updatedTechnique.id
+												? updatedTechnique.score
+												: technique.score
+									}));
+									const nonEmptyArray =
+										updatedArray && updatedArray.length > 0
+											? updatedArray
+											: [updatedTechnique];
+									console.log("fieldvalue", nonEmptyArray);
+									field.onChange(nonEmptyArray);
 								}}
 							/>
 						)}

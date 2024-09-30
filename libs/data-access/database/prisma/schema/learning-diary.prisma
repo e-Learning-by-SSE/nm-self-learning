@@ -19,7 +19,7 @@ model LearningDiaryPage {
   hasRead            Boolean              				 @default(false)
   notes              String?
   createdAt          DateTime                      @default(now())
-  scope              Int                           @default(0)
+  scope              Int                           @default(0) // TODO diary: delete this
   distractionLevel   Int                           @default(0)
   effortLevel        Int                           @default(0)
   learningLocationId String?
@@ -73,7 +73,7 @@ model TechniqueRating {
   creatorName String
   creator     Student           @relation(fields: [creatorName], references: [username], onDelete: Cascade)
 
-  @@id(name: "evalId", fields: [techniqueId, diaryPageId])
+  @@id(name: "evalId", fields: [diaryPageId, techniqueId])
 }
 
 enum LearningProgress {

@@ -3,9 +3,7 @@ import { z } from "zod";
 
 export const techniqueRatingSchema = z.object({
 	id: z.string().uuid(),
-	score: z.number().int(),
-	learningTechniqueId: z.string(),
-	learningDiaryEntryId: z.string()
+	score: z.number().int()
 });
 
 const learningGoalStatusSchema = z.nativeEnum(LearningGoalStatus);
