@@ -50,7 +50,7 @@ export function LearningGoals({
 	};
 
 	return (
-		<CenteredSection className="overflow-y-auto bg-gray-50 pb-32">
+		<CenteredSection className="overflow-y-auto bg-gray-50 pb-32 px-5">
 			<section>
 				<div className="flex items-center justify-between gap-4">
 					<SectionHeader title="Meine Lernziele" />

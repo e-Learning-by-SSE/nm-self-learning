@@ -57,13 +57,18 @@ export function PersonalTechniqueRatingTile({
 					className="w-4/5 h-4/5 flex items-center justify-center"
 				>
 					<div className="grid grid-flow-* grid-cols-1 gap-4 w-full h-full overflow-y-auto">
-							<StrategyList
-								onTechniqueClick={technique => setEvalTarget(technique)}
-								strategies={strategies}
-							/>
+						<StrategyList
+							onTechniqueClick={technique => setEvalTarget(technique)}
+							strategies={strategies}
+						/>
 					</div>
-					<div className="w-full flex justify-end">
-						<DialogActions onClose={() => setStrategyDialogOpen(false)} />
+					<div className="flex w-full justify-end pt-5">
+						<button
+							className="btn-primary"
+							onClick={() => setStrategyDialogOpen(false)}
+						>
+							OK
+						</button>
 					</div>
 				</Dialog>
 			)}

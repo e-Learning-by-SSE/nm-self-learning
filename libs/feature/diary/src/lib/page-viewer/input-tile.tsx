@@ -260,7 +260,11 @@ export function LocationChooseDialog({
 					</div>
 				</div>
 			</div>
-			<DialogActions onClose={onClose} />
+			<div className="flex justify-end pt-5">
+				<button className="btn-primary" onClick={onClose}>
+					OK
+				</button>
+			</div>
 		</Dialog>
 	);
 }
