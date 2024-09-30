@@ -233,7 +233,7 @@ export function NavbarDropdownMenu({
 									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 								>
 									<RectangleGroupIcon className="h-5" />
-									<span>Admin - Bereich</span>
+									<span>Adminbereich</span>
 								</Link>
 							)}
 						</MenuItem>
