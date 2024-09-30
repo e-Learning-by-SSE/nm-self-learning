@@ -10,7 +10,7 @@ import { ChevronDownIcon, RectangleGroupIcon, StarIcon } from "@heroicons/react/
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import {
 	Disclosure,
 	DisclosureButton,
@@ -23,23 +23,11 @@ import {
 } from "@headlessui/react";
 import { SearchBar } from "./search-bar";
 import { useRouter } from "next/router";
+import { ParsedUrlQuery } from "querystring";
 
 export function Navbar() {
 	const session = useSession();
 	const user = session.data?.user;
-	const [navigation, setNavigation] = useState([
-		{ name: "Fachgebiete Erkunden", href: "/subjects" }
-	]);
-	const router = useRouter();
-
-	useEffect(() => {
-		const query = router.query;
-		!query.subjectSlug && setNavigation([{ name: "Fachgebiete Erkunden", href: "/subjects" }]);
-		query.subjectSlug && setNavigation([{ name: `Fachgebiete Erkunden -> ${query.subjectSlug}`, href: "/subjects" }]);
-		query.subjectSlug && query.specializationSlug && setNavigation([
-			{ name: `Fachgebiete Erkunden -> ${query.subjectSlug} -> ${query.specializationSlug}`, href: "/subjects" },
-		]);
-	}, [router.query]);
 
 	return (
 		<Disclosure
@@ -78,19 +66,7 @@ export function Navbar() {
 									</Link>
 								</div>
 								<div className="hidden lg:ml-6 lg:block">
-									{user && (
-										<div className="flex h-full items-center space-x-4 px-1 text-sm font-medium">
-											{navigation.map(item => (
-												<Link
-													className="hover:text-gray-500"
-													key={item.name}
-													href={item.href}
-												>
-													{item.name}
-												</Link>
-											))}
-										</div>
-									)}
+									{user && <NavbarNavigationLink />}
 								</div>
 							</div>
 							{user && <SearchBar />}
@@ -127,21 +103,80 @@ export function Navbar() {
 
 					<DisclosurePanel className="lg:hidden">
 						<div className="space-y-1 px-2 pb-3 pt-2">
-							{navigation.map(item => (
-								<DisclosureButton
-									key={item.name}
-									as="a"
-									href={item.href}
-									className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
-								>
-									{item.name}
-								</DisclosureButton>
-							))}
+							<DisclosureButton
+								as="a"
+								href="subjects"
+								className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
+							>
+								Fachgebiete Erkunden
+							</DisclosureButton>
 						</div>
 					</DisclosurePanel>
 				</>
 			)}
 		</Disclosure>
+	);
+}
+
+function NavbarNavigationLink() {
+	const [navigation, setNavigation] = useState([
+		{ name: "Fachgebiete Erkunden", href: "/subjects" }
+	]);
+	const router = useRouter();
+
+	const setNavigationLink = useCallback(
+		(query: ParsedUrlQuery) => {
+			let newNavigation: { name: string; href: string }[] = [];
+			newNavigation.push({ name: "Fachgebiete Erkunden", href: "/subjects" });
+
+			if (query.subjectSlug) {
+				newNavigation.push({
+					name: `${query.subjectSlug}`,
+					href: `/subjects/${query.subjectSlug}`
+				});
+				if (query.specializationSlug) {
+					newNavigation.push({
+						name: `${query.specializationSlug}`,
+						href: `/subjects/${query.subjectSlug}/${query.specializationSlug}`
+					});
+				}
+				localStorage.setItem("navigation", JSON.stringify(newNavigation));
+			} else if (query.courseSlug) {
+				newNavigation = JSON.parse(localStorage.getItem("navigation") ?? "[]");
+				if (newNavigation.length < 1) {
+					newNavigation.push({ name: "Fachgebiete Erkunden", href: "/subjects" });
+					return;
+				}
+				newNavigation.push({
+					name: `${query.courseSlug}`,
+					href: `/courses/${query.courseSlug}`
+				});
+			}
+			setNavigation(newNavigation);
+		},
+		[setNavigation]
+	);
+
+	useEffect(() => {
+		const query = router.query;
+		setNavigationLink(query);
+	}, [router.query, setNavigationLink]);
+
+	return (
+		<div className="flex h-full items-center flex-row px-1 text-sm font-medium space-x-2">
+			{navigation.map((item, index) => (
+				<div key={item.name + index} className="flex items-center">
+					<Link
+						className={`hover:text-gray-500 ${index === navigation.length - 1 ? "text-gray-700 font-semibold" : ""}`}
+						key={item.name + index}
+						href={item.href}
+					>
+						{item.name}
+					</Link>
+					{index < navigation.length - 1 && <span className="mx-2 text-gray-400">/</span>}
+				</div>
+			))}
+		</div>
 	);
 }
 
