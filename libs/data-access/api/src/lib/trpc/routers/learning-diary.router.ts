@@ -46,8 +46,8 @@ export const learningTechniqueRouter = t.router({
 		return database.techniqueRating.upsert({
 			where: {
 				evalId: {
-					techniqueId: input.learningTechniqueId,
-					diaryPageId: input.learningDiaryEntryId
+					techniqueId: input.id,
+					diaryPageId: input.id // TODO hier muss die richtige id hin
 				},
 				creatorName: ctx.user.name // security reasons; only allow own evaluations
 			},
@@ -56,8 +56,8 @@ export const learningTechniqueRouter = t.router({
 			},
 			create: {
 				score: input.score || 0,
-				techniqueId: input.learningTechniqueId,
-				diaryPageId: input.learningDiaryEntryId,
+				techniqueId: input.id,
+				diaryPageId: input.id, // TODO hier muss die richtige id hin
 				creatorName: ctx.user.name
 			},
 			select: {
@@ -108,77 +108,90 @@ export const learningDiaryPageRouter = t.router({
 			});
 		}),
 	update: authProcedure.input(learningDiaryPageSchema).mutation(async ({ input, ctx }) => {
-		return database.learningDiaryPage.update({
-			where: {
-				id: input.id
-			},
-			data: {
-				isDraft: false,
-				notes: input.notes,
-				scope: input.scope ?? 0, // TODO remove default value
-				distractionLevel: input.distractionLevel,
-				effortLevel: input.effortLevel,
-				learningLocation: input.learningLocation
-					? {
-							connect: {
-								unique_name_creator: {
-									name: input.learningLocation.name,
-									creatorName: ctx.user.name
+		const ratings = input.techniqueRatings;
+		if (ratings && ratings.length > 0) {
+			// Array to hold promises of techniqueRating creations
+			const createPromises = ratings.map(rating => {
+				return database.techniqueRating.upsert({
+					where: {
+						evalId: {
+							techniqueId: rating.id,
+							diaryPageId: input.id
+						}
+					},
+					update: {
+						score: rating.score,
+						creator: { connect: { username: ctx.user.name } }
+					},
+					create: {
+						score: rating.score,
+						technique: { connect: { id: rating.id } },
+						diaryPage: { connect: { id: input.id } },
+						creator: { connect: { username: ctx.user.name } }
+					}
+				});
+			});
+
+			// Use await here to resolve all promises
+			const createdRatings = await Promise.all(createPromises);
+
+			// Execute all promises concurrently and collect the created `id`s
+
+			return database.learningDiaryPage.update({
+				where: {
+					id: input.id
+				},
+				data: {
+					isDraft: false,
+					notes: input.notes,
+					scope: input.scope ?? 0, // TODO remove default value
+					distractionLevel: input.distractionLevel,
+					effortLevel: input.effortLevel,
+					learningLocation: input.learningLocation
+						? {
+								connect: {
+									unique_name_creator: {
+										name: input.learningLocation.name,
+										creatorName: ctx.user.name
+									}
 								}
 							}
-						}
-					: undefined,
-				techniqueRatings: {
-					upsert: input.techniqueRatings?.map(technique => ({
-						where: {
-							evalId: {
-								techniqueId: technique.learningTechniqueId,
-								diaryPageId: input.id
-							}
-						},
-						update: {
-							score: technique.score
-						},
-						create: {
-							score: technique.score,
-							techniqueId: technique.learningTechniqueId,
-							diaryPageId: input.id,
-							creatorName: ctx.user.name
-						}
-					}))
+						: undefined,
+					learningGoals: {
+						connect: input.learningGoals
+							?.filter(goal => goal.id)
+							.map(goal => ({
+								id: goal.id
+							}))
+					}
 				},
-				learningGoals: {
-					connect: input.learningGoals
-						?.filter(goal => goal.id)
-						.map(goal => ({
-							id: goal.id
-						}))
+				select: {
+					id: true,
+					course: {
+						select: {
+							courseId: true,
+							slug: true,
+							title: true
+						}
+					},
+					notes: true,
+					scope: true,
+					distractionLevel: true,
+					effortLevel: true,
+					learningLocation: {
+						select: {
+							id: true,
+							name: true,
+							iconURL: true
+						}
+					},
+					learningGoals: true,
+					techniqueRatings: true
 				}
-			},
-			select: {
-				id: true,
-				course: {
-					select: {
-						courseId: true,
-						slug: true,
-						title: true
-					}
-				},
-				notes: true,
-				scope: true,
-				distractionLevel: true,
-				effortLevel: true,
-				learningLocation: {
-					select: {
-						id: true,
-						name: true,
-						iconURL: true
-					}
-				},
-				learningGoals: true,
-				techniqueRatings: true
-			}
-		});
+			});
+		}
+		console.log("nothing")
+		return;
 	}),
 	addLearningDiaryLearnedLessons: authProcedure
 		.input(lessonStartSchema)
