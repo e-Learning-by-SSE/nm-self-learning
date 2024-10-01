@@ -77,20 +77,20 @@ function LearningGoalEditorDialog({
 	}
 	return (
 		<Dialog title="Lernziel Editor" onClose={onClose}>
-			<div className={"overflow-y-auto"}>
-				<div className={"space-y-4"}>
-					<div className={"max-w-md py-2"}>
+			<div className="overflow-y-auto mb-2">
+				<div className="space-y-4">
+					<div className="max-w-md py-2">
 						<span>{"Hier muss noch ein Text rein!!!!!!!!!!!!!!!"}</span>
 					</div>
 				</div>
 				<div className={"flex justify-center py-4"}>
 					<LearningGoals goals={learningGoals} onStatusUpdate={onStatusUpdate} />
 				</div>
-				<div className="flex justify-end">
-					<button type="button" className="btn-primary" onClick={onClose}>
-						Schließen
-					</button>
-				</div>
+			</div>
+			<div className="flex justify-end">
+				<button type="button" className="btn-primary" onClick={onClose}>
+					Schließen
+				</button>
 			</div>
 		</Dialog>
 	);

@@ -54,7 +54,7 @@ export function LearningGoals({
 			<section>
 				<div className="flex items-center justify-between gap-4">
 					<SectionHeader title="Meine Lernziele" />
-					<button className="btn-primary" onClick={() => setOpenAddDialog(true)}>
+					<button className="btn-primary -mt-8" onClick={() => setOpenAddDialog(true)}>
 						<PlusIcon className="icon h-5" />
 						<span>Lernziel hinzufügen</span>
 					</button>
