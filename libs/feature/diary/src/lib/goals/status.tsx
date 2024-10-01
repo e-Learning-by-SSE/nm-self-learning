@@ -1,10 +1,13 @@
-import { LockClosedIcon, LockOpenIcon } from "@heroicons/react/24/solid";
+import {
+	ArrowUpCircleIcon,
+	ArrowRightCircleIcon,
+	ArrowDownCircleIcon
+} from "@heroicons/react/24/solid";
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
 import { useEffect, useRef, useState } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
-import { useLearningGoalContext } from "./goal-context";
 
 /**
  * Component to display and change the status of a learning goal or sub-goal. Shows the status and on click opens the three option for a status.
@@ -52,6 +55,7 @@ export function GoalStatus({
 	});
 
 	let newClassName = "h-5 w-10 rounded-md border-gray-400";
+	// let newClassName = "w-6 h-6 rounded-full";
 	switch (status) {
 		case "ACTIVE":
 			newClassName += " bg-orange-300";
@@ -120,8 +124,7 @@ export function GoalStatus({
 					disable ? "Feinziele müssen Bearbeitet sein" : "Bearbeitungsstatus bearbeiten"
 				}
 			>
-				{disable && <LockClosedIcon className="ml-3 h-4" />}
-				{!disable && goal && <LockOpenIcon className="ml-3 h-4" />}
+				<ProgressStatusIcon status={status} iconPosition="h-4 ml-3" />
 			</button>
 			{showDialog && (
 				<div className="absolute z-50 flex flex-row" ref={myRef}>
@@ -129,19 +132,50 @@ export function GoalStatus({
 						className="h-5 w-10 rounded-md border-gray-400 bg-red-300"
 						onClick={() => onChange("INACTIVE")}
 						title="Nicht bearbeitet"
-					/>
+					>
+						<ProgressStatusIcon status="INACTIVE" iconPosition="h-4 ml-3" />
+					</button>
 					<button
 						className="h-5 w-10 rounded-md border-gray-400 bg-orange-300"
 						onClick={() => onChange("ACTIVE")}
 						title="Teilweise bearbeitet"
-					/>
+					>
+						<ProgressStatusIcon status="ACTIVE" iconPosition="h-4 ml-3" />
+					</button>
 					<button
 						className="h-5 w-10 rounded-md border-gray-400 bg-green-300"
 						onClick={() => onChange("COMPLETED")}
 						title="Bearbeitet"
-					/>
+					>
+						<ProgressStatusIcon status="COMPLETED" iconPosition="h-4 ml-3" />
+					</button>
 				</div>
 			)}
 		</div>
 	);
+}
+
+function ProgressStatusIcon({
+	status,
+	iconPosition
+}: {
+	status: LearningGoalStatus;
+	iconPosition: string;
+}) {
+	let icon = null;
+	const className = `opacity-85 ${iconPosition}`;
+	switch (status) {
+		case "INACTIVE":
+			icon = <ArrowDownCircleIcon className={className} />;
+			break;
+		case "ACTIVE":
+			icon = <ArrowRightCircleIcon className={className} />;
+			break;
+		case "COMPLETED":
+			icon = <ArrowUpCircleIcon className={className} />;
+			break;
+		default:
+			icon = <ArrowDownCircleIcon className={className} />;
+	}
+	return icon;
 }

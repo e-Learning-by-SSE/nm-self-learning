@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { Tile } from "@self-learning/diary";
-import { Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
+import { Dialog, LoadingCircle } from "@self-learning/ui/common";
 import { useCallback, useState } from "react";
 import { LearningGoals } from "../goals/learning-goals";
 import { LearningGoal } from "@self-learning/types";
