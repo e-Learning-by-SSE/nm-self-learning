@@ -190,7 +190,7 @@ export const learningDiaryPageRouter = t.router({
 				}
 			});
 		}
-		console.log("nothing")
+		console.log("nothing");
 		return;
 	}),
 	addLearningDiaryLearnedLessons: authProcedure
