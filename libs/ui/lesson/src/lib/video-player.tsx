@@ -16,7 +16,7 @@ export function VideoPlayer({
 }) {
 	const subtitleUrl = useMemo(() => {
 		if (subtitle && subtitle.src) {
-			const blob = new Blob([subtitle.src], { type: "text/vtt" });
+			const blob = new Blob([subtitle.src], { type: "text/vtt;charset=utf-8" });
 			return URL.createObjectURL(blob);
 		}
 		return null;

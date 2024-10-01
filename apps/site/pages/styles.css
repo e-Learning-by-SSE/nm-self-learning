@@ -78,6 +78,11 @@ video {
 	border-radius: theme("borderRadius.lg");
 }
 
+video::cue {
+	background: rgba(0, 0, 0, 0.5);
+	color: white;
+}
+
 .heading {
 	font-weight: 700;
 	letter-spacing: -0.05em;

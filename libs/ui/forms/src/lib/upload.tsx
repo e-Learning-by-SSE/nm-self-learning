@@ -1,5 +1,5 @@
-import { Button, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { CloudArrowDownIcon } from "@heroicons/react/24/outline";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { CloudArrowDownIcon, StarIcon } from "@heroicons/react/24/outline";
 import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -239,12 +239,15 @@ export function GenerateSubtile({
 					}}
 				/>
 			)}
-			<Button
-				className="btn-primary"
+			<button
+				className="btn-primary "
 				onClick={() => {
 					setShowDialog(true);
 				}}
-			/>
+			>
+				<StarIcon className="h-5" />
+				Generate Subtitle
+			</button>
 		</>
 	);
 }
@@ -287,7 +290,7 @@ function GenerateSubtileDialog({
 	return (
 		<CenteredContainer>
 			<Dialog
-				style={{ height: "25vh", width: "30vw", overflow: "auto" }}
+				style={{ height: "35vh", width: "30vw", overflow: "auto" }}
 				title={"Generate Subtitle"}
 				onClose={onClose}
 			>
