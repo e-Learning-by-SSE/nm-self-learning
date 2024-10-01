@@ -9,7 +9,9 @@ export async function getLearningGoals(username: string) {
 	return await database.learningGoal.findMany({
 		where: { username: username },
 		orderBy: {
-			lastProgressUpdate: { sort: "desc", nulls: "last" }
+			// SE: Don't order by lastProgressUpdate, to avoid re-sorting during edit
+			// I think alphabetical order by description is more intuitive to end users
+			description: "asc"
 		},
 		select: {
 			id: true,

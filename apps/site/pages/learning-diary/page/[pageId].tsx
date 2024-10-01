@@ -207,7 +207,7 @@ function convertToLearningDiaryPageSafe(
 			pageDetails?.techniqueRatings?.map(rating => ({
 				id: rating.technique.id,
 				score: rating.score,
-				learningTechniqueId: rating.technique.id, // reanem
+				learningTechniqueId: rating.technique.id, // rename
 				learningDiaryEntryId: pageDetails.id // rename
 			})) ?? undefined
 	};
