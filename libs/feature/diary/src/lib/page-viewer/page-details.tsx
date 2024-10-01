@@ -28,7 +28,7 @@ export function DiaryLearnedContent({ page }: { page: LearningDiaryPageDetail })
 				/>
 				<DetailRow
 					label="Dauer"
-					value={formatTimeIntervalToString(page.totalDurationLearnedMs)}
+					value={formatTimeIntervalToString(page.totalDurationLearnedMs ?? 0)}
 					className="w-full sm:className-2/6"
 				/>
 				<DetailRow
@@ -158,7 +158,10 @@ function MoreDetails({ page }: { page: LearningDiaryPageDetail }) {
 				{lessonDetails.map((lessonDetail, index) => (
 					<tr key={index}>
 						<TableDataColumn>
-							<Link href={`/courses/${lessonDetail.slug}`} className="hover:text-blue-300">
+							<Link
+								href={`/courses/${lessonDetail.slug}`}
+								className="hover:text-blue-300"
+							>
 								{lessonDetail.title}
 							</Link>
 						</TableDataColumn>

@@ -304,10 +304,15 @@ function SubGoalRow({
 		return goal.id === subGoal.learningGoalId;
 	});
 	let max;
-	if (result.length > 0)
+	let min;
+	if (result.length > 0) {
 		max = result[0].learningSubGoals.reduce((a, b) =>
 			a.priority > b.priority ? a : b
 		).priority;
+		min = result[0].learningSubGoals.reduce((a, b) =>
+			a.priority < b.priority ? a : b
+		).priority;
+	}
 
 	return (
 		<span className="flex w-full justify-between gap-4 rounded-lg bg-white px-4 py-2">
@@ -322,11 +327,11 @@ function SubGoalRow({
 								onClick={() =>
 									moveSubGoal(subGoal, "up", result[0].learningSubGoals)
 								}
-								hidden={subGoal.priority === 1 || !editable}
+								hidden={subGoal.priority === min || !editable}
 							>
 								<ArrowUpIcon className="h-3" />
 							</button>
-							{(subGoal.priority === 1 || !editable) && <div className="p-2.5" />}
+							{(subGoal.priority === min || !editable) && <div className="p-2.5" />}
 							<button
 								type="button"
 								title="Nach unten"
