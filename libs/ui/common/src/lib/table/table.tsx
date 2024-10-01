@@ -32,13 +32,13 @@ export function Table({ head, children }: { head: React.ReactElement; children: 
  * ```
  */
 export function SortIndicator({
-	key,
+	columnId,
 	sortConfig
 }: {
-	key: string;
+	columnId: string;
 	sortConfig: { key: string | null; direction: "ascending" | "descending" };
 }) {
-	if (sortConfig.key !== key) {
+	if (sortConfig.key !== columnId) {
 		// Use the same space to avoid layout shifts; invisible content should not be read by screen readers
 		// See for alternative symbols: https://www.compart.com/de/unicode/block/U+25A0
 		return <span className="px-2 invisible">▲</span>;
@@ -49,18 +49,15 @@ export function SortIndicator({
 
 export function TableHeaderColumn({
 	children,
-	onClick,
-	key
+	onClick
 }: {
 	children?: React.ReactNode;
-	key?: string;
 	onClick?: () => void;
 }) {
 	return (
 		<th
 			className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
 			onClick={onClick}
-			key={key}
 		>
 			{children}
 		</th>

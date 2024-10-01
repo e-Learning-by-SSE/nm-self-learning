@@ -230,7 +230,7 @@ function SortedTable({
 								.map(([key, column]) => (
 									<TableHeaderColumn key={key} onClick={() => setSortOrder(key)}>
 										{column.label}{" "}
-										<SortIndicator key={key} sortConfig={sortConfig} />
+										<SortIndicator columnId={key} sortConfig={sortConfig} />
 									</TableHeaderColumn>
 								))}
 

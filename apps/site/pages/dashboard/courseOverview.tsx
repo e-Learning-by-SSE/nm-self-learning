@@ -213,7 +213,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							key={column.key}
 						>
 							{column.label}{" "}
-							<SortIndicator key={column.key} sortConfig={sortConfig} />
+							<SortIndicator columnId={column.key} sortConfig={sortConfig} />
 						</TableHeaderColumn>
 					))}
 				</>
