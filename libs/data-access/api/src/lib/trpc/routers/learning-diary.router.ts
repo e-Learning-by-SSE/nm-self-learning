@@ -108,50 +108,45 @@ export const learningDiaryPageRouter = t.router({
 			});
 		}),
 	update: authProcedure.input(learningDiaryPageSchema).mutation(async ({ input, ctx }) => {
-			const ratings = input.techniqueRatings;
+		const ratings = input.techniqueRatings;
 
-			if (ratings && ratings.length > 0) {
-				const existingRatings = await database.techniqueRating.findMany({
-					where: {
-						diaryPageId: input.id
-					},
-					select: { techniqueId: true }
-				});
-
-				const uniqueRatings = ratings.filter(
-					rating =>
-						!existingRatings?.some(
-							existingRating => existingRating.techniqueId === rating.id
-						)
-				);
-
-				const createPromises = uniqueRatings.map(rating => {
-					return database.techniqueRating.create({
-							data: {
-								score: rating.score,
+		if (ratings) {
+			await Promise.all(
+				ratings.map(rating => {
+					return database.techniqueRating.upsert({
+						where: {
+							evalId: {
 								techniqueId: rating.id,
-								diaryPageId: input.id,
-								creatorName: ctx.user.name
+								diaryPageId: input.id
 							}
+						},
+						update: {
+							score: rating.score,
+							creatorName: ctx.user.name
+						},
+						create: {
+							score: rating.score,
+							techniqueId: rating.id,
+							diaryPageId: input.id,
+							creatorName: ctx.user.name
 						}
-					);
-				});
+					});
+				})
+			);
+		}
 
-				await Promise.all(createPromises);
-			}
-
-			return database.learningDiaryPage.update({
-				where: {
-					id: input.id
-				},
-				data: {
-					isDraft: false,
-					notes: input.notes,
-					scope: input.scope ?? 0, // TODO remove default value
-					distractionLevel: input.distractionLevel,
-					effortLevel: input.effortLevel,
-					learningLocation: input.learningLocation
-						? {
+		return database.learningDiaryPage.update({
+			where: {
+				id: input.id
+			},
+			data: {
+				isDraft: false,
+				notes: input.notes,
+				scope: input.scope ?? 0, // TODO remove default value
+				distractionLevel: input.distractionLevel,
+				effortLevel: input.effortLevel,
+				learningLocation: input.learningLocation
+					? {
 							connect: {
 								unique_name_creator: {
 									name: input.learningLocation.name,
@@ -159,41 +154,40 @@ export const learningDiaryPageRouter = t.router({
 								}
 							}
 						}
-						: undefined,
-					learningGoals: {
-						connect: input.learningGoals
-							?.filter(goal => goal.id)
-							.map(goal => ({
-								id: goal.id
-							}))
+					: undefined,
+				learningGoals: {
+					connect: input.learningGoals
+						?.filter(goal => goal.id)
+						.map(goal => ({
+							id: goal.id
+						}))
+				}
+			},
+			select: {
+				id: true,
+				course: {
+					select: {
+						courseId: true,
+						slug: true,
+						title: true
 					}
 				},
-				select: {
-					id: true,
-					course: {
-						select: {
-							courseId: true,
-							slug: true,
-							title: true
-						}
-					},
-					notes: true,
-					scope: true,
-					distractionLevel: true,
-					effortLevel: true,
-					learningLocation: {
-						select: {
-							id: true,
-							name: true,
-							iconURL: true
-						}
-					},
-					learningGoals: true,
-					techniqueRatings: true
-				}
-			});
-		}
-	),
+				notes: true,
+				scope: true,
+				distractionLevel: true,
+				effortLevel: true,
+				learningLocation: {
+					select: {
+						id: true,
+						name: true,
+						iconURL: true
+					}
+				},
+				learningGoals: true,
+				techniqueRatings: true
+			}
+		});
+	}),
 	addLearningDiaryLearnedLessons: authProcedure
 		.input(lessonStartSchema)
 		.mutation(async ({ input }) => {
