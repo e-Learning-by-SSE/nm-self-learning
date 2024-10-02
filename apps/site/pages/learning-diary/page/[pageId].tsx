@@ -21,6 +21,7 @@ import {
 	LearningGoalInputTile,
 	updateDiaryDetails
 } from "@self-learning/diary";
+import { subMilliseconds } from "date-fns";
 
 import { LearningDiaryPage, learningDiaryPageSchema, ResolvedValue } from "@self-learning/types";
 import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
@@ -80,6 +81,11 @@ export default function DiaryPageDetail({
 	pages: PagesMeta;
 	availableStrategies: Strategy[];
 }) {
+	// Identify the end date of the page, required for computations / filtering of details
+	const index = pages.findIndex(page => page.id === diaryId);
+	let endDate = index >= 0 && index < pages.length - 1 ? pages[index + 1].createdAt : new Date();
+	endDate = subMilliseconds(endDate, 1); // subtract 1 ms to avoid fetching data of the next page
+
 	return (
 		<div className="flex flex-col">
 			<div className="mx-auto flex w-full flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
@@ -98,6 +104,7 @@ export default function DiaryPageDetail({
 							key={diaryId}
 							diaryId={diaryId}
 							availableStrategies={availableStrategies}
+							endDate={endDate}
 						/>
 					</div>
 				</div>
@@ -265,10 +272,12 @@ function usePageForm({
 
 function DiaryContentForm({
 	diaryId,
-	availableStrategies
+	availableStrategies,
+	endDate
 }: {
 	diaryId: string;
 	availableStrategies: Strategy[];
+	endDate: Date;
 }) {
 	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
@@ -294,7 +303,7 @@ function DiaryContentForm({
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-center">
-				<DiaryLearnedContent page={pageDetails} />
+				<DiaryLearnedContent page={pageDetails} endDate={endDate} />
 			</div>
 			<Divider />
 			<FormProvider {...form}>

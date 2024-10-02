@@ -11,7 +11,13 @@ import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { hintsUsed, isEventType, quizAttempts } from "libs/feature/analysis/src/lib/metrics";
 
-export function DiaryLearnedContent({ page }: { page: LearningDiaryPageDetail }) {
+export function DiaryLearnedContent({
+	page,
+	endDate
+}: {
+	page: LearningDiaryPageDetail;
+	endDate: Date;
+}) {
 	const [showMore, setShowMore] = useState(false);
 	return (
 		<div className="flex w-full flex-col space-y-2 p-4">
@@ -37,7 +43,7 @@ export function DiaryLearnedContent({ page }: { page: LearningDiaryPageDetail })
 					className="w-full sm:className-1/6"
 				/>
 			</div>
-			{showMore && <MoreDetails page={page} />}
+			{showMore && <MoreDetails page={page} endDate={endDate} />}
 			<button
 				onClick={() => setShowMore(!showMore)}
 				className="self-start px-4 py-2 mt-4 text-white bg-blue-500 rounded hover:bg-blue-700"
@@ -75,7 +81,13 @@ type LessonDetailTableProps = {
 	retryRatio: number;
 };
 
-export function useLessonDetails({ page }: { page: LearningDiaryPageDetail }) {
+export function useLessonDetails({
+	page,
+	endDate
+}: {
+	page: LearningDiaryPageDetail;
+	endDate: Date;
+}) {
 	const learnedLessons = page.lessonsLearned;
 	const firstLessonLearned = learnedLessons.length > 0 ? learnedLessons[0] : null;
 	const lastLessonLearned = learnedLessons.length > 0 ? learnedLessons[-1] : null;
@@ -84,20 +96,19 @@ export function useLessonDetails({ page }: { page: LearningDiaryPageDetail }) {
 		// courseId: page.course.courseId, // SE: Currently, CourseId is not always set -> wrong results
 		start: page.createdAt,
 		resourceId: learnedLessons.map(({ lesson }) => lesson.lessonId),
-		end: lastLessonLearned?.createdAt
+		end: endDate
 	});
 
 	if (!data || isLoading) {
 		return {
 			earliestDate: firstLessonLearned?.createdAt,
-			latestDate: lastLessonLearned?.createdAt,
+			latestDate: endDate,
 			lessonDetails: []
 		};
 	}
 
 	const aggregation = learnedLessons.map(lesson => {
 		const lessonEvents = data.filter(event => event.resourceId === lesson.lesson.lessonId);
-		console.log(lessonEvents);
 		const { successful, failed } = lessonEvents
 			.filter(e => isEventType(e, "LESSON_QUIZ_SUBMISSION"))
 			.reduce(quizAttempts, { successful: 0, failed: 0 });
@@ -139,8 +150,8 @@ export function useLessonDetails({ page }: { page: LearningDiaryPageDetail }) {
 	};
 }
 
-function MoreDetails({ page }: { page: LearningDiaryPageDetail }) {
-	const { latestDate, lessonDetails } = useLessonDetails({ page });
+function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate: Date }) {
+	const { latestDate, lessonDetails } = useLessonDetails({ page, endDate });
 
 	const latestDateString = latestDate ? formatDateStringFull(latestDate) : "unbekannt";
 	return (
