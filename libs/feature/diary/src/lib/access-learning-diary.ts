@@ -25,7 +25,10 @@ export async function allPages(username: string) {
 	);
 	if (incompletePages.length > 0) {
 		for (const page of incompletePages) {
-			await updateDiaryDetails(username, page.id);
+			const index = pages.findIndex(p => p.id === page.id);
+			const nextPage = index >= 0 && index < pages.length - 1 ? pages[index + 1] : null;
+			const endDate = nextPage ? nextPage.createdAt : new Date();
+			await updateDiaryDetails(username, page.id, endDate);
 		}
 		pages = await database.learningDiaryPage.findMany({
 			select: {
@@ -46,7 +49,7 @@ export async function allPages(username: string) {
 	return pages;
 }
 
-async function updateDiaryDetails(username: string, id: string) {
+async function updateDiaryDetails(username: string, id: string, endDate: Date) {
 	return database.$transaction(async tx => {
 		// Retrieve the learning diary page
 		const diaryMeta = await tx.learningDiaryPage.findUnique({
@@ -57,9 +60,10 @@ async function updateDiaryDetails(username: string, id: string) {
 			select: {
 				id: true,
 				createdAt: true,
-				course: {
+				course: { select: { courseId: true } },
+				lessonsLearned: {
 					select: {
-						courseId: true
+						lesson: { select: { lessonId: true } }
 					}
 				}
 			}
@@ -69,33 +73,42 @@ async function updateDiaryDetails(username: string, id: string) {
 			return;
 		}
 
-		// Load all events for the course
-		const events = await tx.eventLog.findMany({
-			where: {
-				courseId: diaryMeta.course.courseId,
-				createdAt: {
-					gte: diaryMeta.createdAt
-				}
-			},
-			orderBy: {
-				createdAt: "asc"
-			}
-		});
-
-		// Calculate & update the duration
-		const duration =
-			events.length > 0
-				? events[events.length - 1].createdAt.getTime() - events[0].createdAt.getTime()
-				: null;
-		if (duration === null) {
+		// Compute duration per lesson
+		const lessonIds = diaryMeta.lessonsLearned.map(l => l.lesson.lessonId);
+		if (lessonIds.length === 0) {
 			return;
 		}
-		tx.learningDiaryPage.update({
+		// No transaction needed -> do not block other transactions
+		const events = await database.eventLog.findMany({
+			where: {
+				// courseId: diaryMeta.course.courseId,
+				createdAt: {
+					gte: diaryMeta.createdAt,
+					lt: endDate
+				},
+				resourceId: { in: lessonIds },
+				username: username
+			},
+			orderBy: { createdAt: "asc" }
+		});
+		const totalDuration = lessonIds
+			.map(lessonId => {
+				const lessonEvents = events.filter(e => e.resourceId === lessonId);
+				const duration =
+					lessonEvents.length > 0
+						? lessonEvents[lessonEvents.length - 1].createdAt.getTime() -
+							lessonEvents[0].createdAt.getTime()
+						: 0;
+				return duration;
+			})
+			.reduce((acc, duration) => acc + duration, 0);
+
+		return await tx.learningDiaryPage.update({
 			where: {
 				id: diaryMeta.id
 			},
 			data: {
-				totalDurationLearnedMs: duration
+				totalDurationLearnedMs: totalDuration
 			}
 		});
 	});
