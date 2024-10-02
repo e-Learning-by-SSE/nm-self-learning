@@ -55,8 +55,13 @@ export async function updateDiaryDetails(username: string, id: string) {
 
 		// Calculate & update the duration
 		const duration =
-			events[events.length - 1].createdAt.getTime() - events[0].createdAt.getTime();
-		return tx.learningDiaryPage.update({
+			events.length > 0
+				? events[events.length - 1].createdAt.getTime() - events[0].createdAt.getTime()
+				: null;
+		if (duration === null) {
+			return;
+		}
+		tx.learningDiaryPage.update({
 			where: {
 				id: diaryMeta.id
 			},

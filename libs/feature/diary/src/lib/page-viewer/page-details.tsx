@@ -81,7 +81,7 @@ export function useLessonDetails({ page }: { page: LearningDiaryPageDetail }) {
 	const lastLessonLearned = learnedLessons.length > 0 ? learnedLessons[-1] : null;
 
 	const { data, isLoading } = trpc.events.findMany.useQuery({
-		courseId: page.course.courseId,
+		// courseId: page.course.courseId, // SE: Currently, CourseId is not always set -> wrong results
 		start: page.createdAt,
 		resourceId: learnedLessons.map(({ lesson }) => lesson.lessonId),
 		end: lastLessonLearned?.createdAt
@@ -114,10 +114,17 @@ export function useLessonDetails({ page }: { page: LearningDiaryPageDetail }) {
 			.map(e => ({ id: e }))
 			.filter(duplicateRemover());
 
+		// Duration last - first; relies on sorted events
+		const duration =
+			lessonEvents.length > 0
+				? lessonEvents[lessonEvents.length - 1].createdAt.getTime() -
+					lessonEvents[0].createdAt.getTime()
+				: 0;
+
 		return {
 			title: lesson.lesson.title,
 			slug: `${page.course.slug}/${lesson.lesson.slug}`,
-			duration: 0,
+			duration: duration,
 			tasks: taskIds,
 			tasksSolved: successful,
 			hintsUsed: nHints,
