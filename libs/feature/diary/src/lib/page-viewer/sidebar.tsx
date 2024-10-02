@@ -1,7 +1,7 @@
 import { allPages, LearningDiaryEntryStatusBadge, useDiaryPageRouter } from "@self-learning/diary";
 import { ResolvedValue } from "@self-learning/types";
 import { formatDateString, formatDateStringFull } from "@self-learning/util/common";
-import { isThisMonth, isThisWeek, isToday } from "date-fns";
+import { isThisMonth, isThisWeek, isToday, format, parse } from "date-fns";
 import Link from "next/link";
 
 type PagesMeta = ResolvedValue<typeof allPages>;
@@ -10,7 +10,7 @@ function categorizePagesIntoGroups(pages: PagesMeta) {
 	const fromToday: PagesMeta = [];
 	const fromThisWeek: PagesMeta = [];
 	const fromThisMonth: PagesMeta = [];
-	const fromOlderMonths: Record<string, PagesMeta> = {};
+	let fromOlderMonths: Record<string, PagesMeta> = {};
 
 	pages.forEach(page => {
 		const createdAt = page.createdAt;
@@ -24,13 +24,28 @@ function categorizePagesIntoGroups(pages: PagesMeta) {
 		}
 		// Ältere Monate (nach Jahr und Monat gruppiert)
 		else {
-			const monthKey = formatDateString(createdAt, "MMMM yyyy");
+			const monthKey = formatDateString(createdAt, "yyyy MM");
 			if (!fromOlderMonths[monthKey]) {
 				fromOlderMonths[monthKey] = [];
 			}
 			fromOlderMonths[monthKey].push(page);
 		}
 	});
+
+	// Sort by date
+	fromOlderMonths = Object.fromEntries(
+		Object.entries(fromOlderMonths)
+			.sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+			.reverse()
+	);
+	// Convert keys: "yyyy MM" -> "MMMM yyyy"
+	fromOlderMonths = Object.fromEntries(
+		Object.entries(fromOlderMonths).map(([key, value]) => {
+			const date = parse(key, "yyyy MM", new Date());
+			const newKey = format(date, "MMMM yyyy");
+			return [newKey, value];
+		})
+	);
 
 	return {
 		"Von Heute": fromToday,
