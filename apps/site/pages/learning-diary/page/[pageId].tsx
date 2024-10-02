@@ -277,10 +277,10 @@ function DiaryContentForm({
 	// add "rating" prop
 	const itemsWithRatings = availableStrategies.map(strategy => {
 		const updatedStrategy = strategy.techniques.map(technique => {
-			const rating = pageDetails?.techniqueRatings.find(
+			const score = pageDetails?.techniqueRatings.find(
 				evaluation => evaluation.technique.id === technique.id
 			)?.score;
-			return { ...technique, rating };
+			return { ...technique, score };
 		});
 		return { ...strategy, techniques: updatedStrategy };
 	});

@@ -85,25 +85,27 @@ export function PersonalTechniqueRatingTile({
 
 export function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 	return (
-		<ul className="space-y-4">
-			{techniques.map(technique => (
-				<li key={technique.id} className="flex items-center justify-between">
-					<span className="flex-grow whitespace-normal break-words">
-						{technique.name}
-					</span>
-					{technique.score !== undefined && (
-						<div className="flex items-center space-x-2 ml-4">
-							<StarRating
-								rating={technique.score}
-								onChange={() => {
-									/* Nothing; user is not able to change rating from this view */
-								}}
-							/>
-						</div>
-					)}
-				</li>
-			))}
-		</ul>
+		<div className="max-h-[140px] min-h-[140px] overflow-y-auto">
+			<ul className="space-y-4">
+				{techniques.map(technique => (
+					<li key={technique.id} className="flex items-center justify-between">
+						<span className="flex-grow whitespace-normal break-words">
+							{technique.name}
+						</span>
+						{technique.score !== undefined && (
+							<div className="flex items-center space-x-2 ml-4">
+								<StarRating
+									rating={technique.score}
+									onChange={() => {
+										/* Nothing; user is not able to change rating from this view */
+									}}
+								/>
+							</div>
+						)}
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 }
 

@@ -325,7 +325,7 @@ export function MarkDownInputTile({
 
 	return (
 		<div>
-			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"} isFilled={initialNote !== ""}>
+			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"} isFilled={false}>
 				{initialNote === "" ? (
 					<span>Bisher wurden noch keine Notizen erstellt.</span>
 				) : (
