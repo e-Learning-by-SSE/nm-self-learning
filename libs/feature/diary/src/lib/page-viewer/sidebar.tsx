@@ -59,7 +59,7 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 	const categorizedPages = categorizePagesIntoGroups(pages);
 
 	const renderSection = (label: string, renderPages: PagesMeta) => (
-		<div className="mb-4">
+		<div className="mb-4" key={label}>
 			<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
 				{label}
 			</div>
@@ -98,6 +98,7 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 		</aside>
 	);
 }
+
 function SideBarContent({
 	page,
 	index,
