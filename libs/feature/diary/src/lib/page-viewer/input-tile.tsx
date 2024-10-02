@@ -199,7 +199,7 @@ export function LocationChooseDialog({
 
 	const createNewLocation = async (name: string) => {
 		if (name.trim()) {
-			await createLearningLocationAsync({ name: name.trim() });
+			await createLearningLocationAsync({ name: name.trim(), iconURL: "" });
 			if (newLocationInputRef.current) {
 				newLocationInputRef.current.value = "";
 			}
