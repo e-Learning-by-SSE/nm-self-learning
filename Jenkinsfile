@@ -33,6 +33,7 @@ pipeline {
 
         API_VERSION = packageJson.getVersion() // package.json must be in the root level in order for this to work
         TZ = 'Europe/Berlin'
+        DOCKER_ARGS = '--tmpfs /.cache -v $HOME/build-caches/.npm:/.npm -v $HOME/build-caches/.nx:/.nx'
     }
 
     options {
@@ -43,7 +44,7 @@ pipeline {
             agent {
                 docker {
                     image "${NODE_DOCKER_IMAGE}"
-                    args '--tmpfs /.cache -v $HOME/.npm:/.npm'
+                    args "${DOCKER_ARGS}"
                     reuseNode true // This is important to enable the use of the docker socket for sidecar pattern later
                 }
             }
@@ -86,9 +87,9 @@ pipeline {
                                 returnStdout: true
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run prisma:seed'
-                                    sh "npx nx-cloud record -- nx format:check"
+                                    sh "npx nx format:check"
                                     // This line enables distribution
                                     // The "--stop-agents-after" is optional, but allows idle agents to shut down once the "e2e-ci" targets have been requested
                                     // sh "npx nx-cloud start-ci-run --distribute-on='3 linux-medium-js' --stop-agents-after='e2e-ci'"
@@ -129,9 +130,9 @@ pipeline {
                         // sh "npx nx-cloud start-ci-run --distribute-on='3 linux-medium-js' --stop-agents-after='e2e-ci'"
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run prisma:seed'
-                                sh "npx nx-cloud record -- nx format:check"
+                                sh "npx nx format:check"
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-ci"
                             }
                         }
