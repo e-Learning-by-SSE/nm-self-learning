@@ -18,8 +18,7 @@ import {
 	LearningDiaryPageDetail,
 	useDiaryPage,
 	MarkDownInputTile,
-	LearningGoalInputTile,
-	updateDiaryDetails
+	LearningGoalInputTile
 } from "@self-learning/diary";
 import { subMilliseconds } from "date-fns";
 
