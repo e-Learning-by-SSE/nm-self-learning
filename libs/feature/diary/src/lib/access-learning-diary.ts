@@ -2,22 +2,51 @@ import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 
 export async function allPages(username: string) {
-	return await database.learningDiaryPage.findMany({
+	let pages = await database.learningDiaryPage.findMany({
 		select: {
 			id: true,
 			createdAt: true,
 			hasRead: true,
 			isDraft: true,
-			course: { select: { title: true } }
+			course: { select: { title: true } },
+			totalDurationLearnedMs: true
 		},
 		where: {
 			studentName: username
 		},
 		orderBy: { createdAt: "asc" }
 	});
+
+	// Identify & update pages that are incomplete (no duration computed)
+	const incompletePages = pages.filter(
+		page =>
+			!page.hasRead &&
+			(page.totalDurationLearnedMs === null || page.totalDurationLearnedMs === 0)
+	);
+	if (incompletePages.length > 0) {
+		for (const page of incompletePages) {
+			await updateDiaryDetails(username, page.id);
+		}
+		pages = await database.learningDiaryPage.findMany({
+			select: {
+				id: true,
+				createdAt: true,
+				hasRead: true,
+				isDraft: true,
+				course: { select: { title: true } },
+				totalDurationLearnedMs: true
+			},
+			where: {
+				studentName: username
+			},
+			orderBy: { createdAt: "asc" }
+		});
+	}
+
+	return pages;
 }
 
-export async function updateDiaryDetails(username: string, id: string) {
+async function updateDiaryDetails(username: string, id: string) {
 	return database.$transaction(async tx => {
 		// Retrieve the learning diary page
 		const diaryMeta = await tx.learningDiaryPage.findUnique({

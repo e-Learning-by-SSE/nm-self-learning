@@ -45,16 +45,8 @@ export const getServerSideProps: GetServerSideProps = async context => {
 	}
 
 	const pageId = context.params?.pageId;
-	let pages = await allPages(session.user.name);
+	const pages = await allPages(session.user.name);
 	const availableStrategies = await getAllStrategies();
-
-	const latestDiaryEntry = pages.reduce(
-		(latest, current) =>
-			current.createdAt.getTime() > latest.createdAt.getTime() ? current : latest,
-		pages[0]
-	);
-	await updateDiaryDetails(session.user.name, latestDiaryEntry.id);
-	pages = await allPages(session.user.name);
 
 	const pageExists = pages.some(page => page.id === pageId);
 	if (!pageExists) {
