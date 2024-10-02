@@ -108,34 +108,37 @@ export const learningDiaryPageRouter = t.router({
 			});
 		}),
 	update: authProcedure.input(learningDiaryPageSchema).mutation(async ({ input, ctx }) => {
-		const ratings = input.techniqueRatings;
-		if (ratings && ratings.length > 0) {
-			// Array to hold promises of techniqueRating creations
-			const createPromises = ratings.map(rating => {
-				return database.techniqueRating.upsert({
+			const ratings = input.techniqueRatings;
+
+			if (ratings && ratings.length > 0) {
+				const existingRatings = await database.techniqueRating.findMany({
 					where: {
-						evalId: {
-							techniqueId: rating.id,
-							diaryPageId: input.id
-						}
+						diaryPageId: input.id
 					},
-					update: {
-						score: rating.score,
-						creator: { connect: { username: ctx.user.name } }
-					},
-					create: {
-						score: rating.score,
-						technique: { connect: { id: rating.id } },
-						diaryPage: { connect: { id: input.id } },
-						creator: { connect: { username: ctx.user.name } }
-					}
+					select: { techniqueId: true }
 				});
-			});
 
-			// Use await here to resolve all promises
-			const createdRatings = await Promise.all(createPromises);
+				const uniqueRatings = ratings.filter(
+					rating =>
+						!existingRatings?.some(
+							existingRating => existingRating.techniqueId === rating.id
+						)
+				);
 
-			// Execute all promises concurrently and collect the created `id`s
+				const createPromises = uniqueRatings.map(rating => {
+					return database.techniqueRating.create({
+							data: {
+								score: rating.score,
+								techniqueId: rating.id,
+								diaryPageId: input.id,
+								creatorName: ctx.user.name
+							}
+						}
+					);
+				});
+
+				await Promise.all(createPromises);
+			}
 
 			return database.learningDiaryPage.update({
 				where: {
@@ -149,13 +152,13 @@ export const learningDiaryPageRouter = t.router({
 					effortLevel: input.effortLevel,
 					learningLocation: input.learningLocation
 						? {
-								connect: {
-									unique_name_creator: {
-										name: input.learningLocation.name,
-										creatorName: ctx.user.name
-									}
+							connect: {
+								unique_name_creator: {
+									name: input.learningLocation.name,
+									creatorName: ctx.user.name
 								}
 							}
+						}
 						: undefined,
 					learningGoals: {
 						connect: input.learningGoals
@@ -190,9 +193,7 @@ export const learningDiaryPageRouter = t.router({
 				}
 			});
 		}
-		console.log("nothing");
-		return;
-	}),
+	),
 	addLearningDiaryLearnedLessons: authProcedure
 		.input(lessonStartSchema)
 		.mutation(async ({ input }) => {
