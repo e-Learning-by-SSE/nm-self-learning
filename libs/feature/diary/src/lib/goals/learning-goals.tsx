@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
 	ButtonActions,
 	DialogHandler,
@@ -196,17 +196,22 @@ function GoalRow({
 	onClick: (editedGoal: Goal) => void;
 }>) {
 	const { onStatusUpdate } = useLearningGoalContext();
+	const lastToastTime = useRef<number>(Date.now() - 500);
 
+	const currentTime = Date.now();
 	if (goal.status !== "COMPLETED" && goal.learningSubGoals.length > 0) {
-		const index = goal.learningSubGoals.findIndex(
-			subGoal => subGoal.status === "INACTIVE" || subGoal.status === "ACTIVE"
-		);
-		if (index < 0) {
-			showToast({
-				type: "success",
-				title: `"${goal.description}" kann abgeschlossen werden!`,
-				subtitle: "Alle Feinziele erreicht!"
-			});
+		if (currentTime - lastToastTime.current >= 500) {
+			const index = goal.learningSubGoals.findIndex(
+				subGoal => subGoal.status === "INACTIVE" || subGoal.status === "ACTIVE"
+			);
+			if (index < 0) {
+				showToast({
+					type: "success",
+					title: `"${goal.description}" kann abgeschlossen werden!`,
+					subtitle: "Alle Feinziele erreicht!"
+				});
+			}
+			lastToastTime.current = currentTime;
 		}
 	}
 
