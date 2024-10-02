@@ -499,10 +499,10 @@ export function getRandomCreatedAt(): Date {
 
 // Function to generate random time interval in milliseconds
 export function getRandomTimeIntervalInMs(): number {
-  const minMs = 45 * 60 * 1000; // 45 minutes in milliseconds
-  const maxMs = 36 * 60 * 60 * 1000; // 36 hours in milliseconds
+	const minMs = 45 * 60 * 1000; // 45 minutes in milliseconds
+	const maxMs = 36 * 60 * 60 * 1000; // 36 hours in milliseconds
 
-  return faker.number.int({ min: minMs, max: maxMs });
+	return faker.number.int({ min: minMs, max: maxMs });
 }
 
 export type LearningStrategyCategory = {

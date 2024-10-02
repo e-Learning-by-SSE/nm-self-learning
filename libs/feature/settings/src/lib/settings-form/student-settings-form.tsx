@@ -57,7 +57,7 @@ export function StudentSettingsForm({
 	);
 }
 
-function ExpandableSettingsSection ({ text, title }: { text: string; title: string })  {
+function ExpandableSettingsSection({ text, title }: { text: string; title: string }) {
 	const [isExpanded, setIsExpanded] = useState(false);
 
 	const toggleExpanded = () => {

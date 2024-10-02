@@ -11,7 +11,7 @@
 		"test:ci:affected": "env TZ='Europe/Berlin' nx affected:test --parallel --maxParallel=4",
 		"test:ci:full": "env TZ='Europe/Berlin' nx run-many --target=test --all --parallel --maxParallel=4 --coverage --coverageDirectory=output/test/coverage",
 		"cypress": "cypress open --project=apps/site-e2e",
-		"prettier:check": "prettier --check **/*",
+		"prettier:check": "prettier --check '{apps,libs}/**/*.{ts,tsx}'",
 		"prettier:write": "prettier --write '{apps,libs}/**/*.{ts,tsx}'",
 		"prisma": "prisma",
 		"preprisma:seed": "prisma generate",

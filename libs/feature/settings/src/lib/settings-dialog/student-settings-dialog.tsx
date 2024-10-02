@@ -11,13 +11,15 @@ export function StudentSettingsDialog({
 	initialSettings?: StudentSettings;
 	onClose: (settings: StudentSettings) => void;
 }) {
-	const defaultSetting = useMemo(() => initialSettings ?? {
-		learningStatistics: false,
-		hasLearningDiary: false
-	}, [initialSettings]);
-	const [settings, setSettings] = useState(
-		defaultSetting
+	const defaultSetting = useMemo(
+		() =>
+			initialSettings ?? {
+				learningStatistics: false,
+				hasLearningDiary: false
+			},
+		[initialSettings]
 	);
+	const [settings, setSettings] = useState(defaultSetting);
 	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
 
 	const onSave = async () => {

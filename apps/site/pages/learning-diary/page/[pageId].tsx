@@ -241,7 +241,7 @@ function usePageForm({
 		values
 	});
 
-	// useEffect to avoid render loops
+	// useEffect avoid render loops
 	useEffect(() => {
 		const subscription = form.watch((value, _) => {
 			const updateCandidate = { ...values, ...value };

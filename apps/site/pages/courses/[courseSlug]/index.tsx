@@ -2,7 +2,7 @@ import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import {  useMemo } from "react";
+import { useMemo } from "react";
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useCourseCompletion } from "@self-learning/completion";

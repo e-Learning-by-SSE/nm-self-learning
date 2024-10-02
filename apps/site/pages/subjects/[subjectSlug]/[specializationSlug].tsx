@@ -7,7 +7,6 @@ import { VoidSvg } from "@self-learning/ui/static";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 
-
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
 };
