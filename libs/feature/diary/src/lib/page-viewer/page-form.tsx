@@ -135,7 +135,7 @@ export function DiaryContentForm({
 						control={form.control}
 						render={({ field }) => (
 							<LearningGoalInputTile
-								goals={(field.value ?? []) as any}
+								goals={field.value ?? []}
 								onChange={field.onChange}
 							/>
 						)}
