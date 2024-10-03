@@ -13,9 +13,9 @@ interface CreateAndViewRepositoryProps {
 	initialSkills: SkillFormModel[];
 }
 
-async function createNewRepository(userId: string) {
+async function createNewRepository(userName: string) {
 	const newRep = {
-		ownerId: userId,
+		ownerName: userName,
 		name: `Neue Skillkarte: ${Date.now()}`,
 		description: "Beschreibung der Skillkarte"
 	};
@@ -48,7 +48,7 @@ export const getServerSideProps: GetServerSideProps<CreateAndViewRepositoryProps
 	if (!repoId || repoId === "") return { notFound: true };
 
 	if (repoId === "create") {
-		return await createNewRepository(user.id);
+		return await createNewRepository(user.name ?? "user-id");
 	}
 
 	const repo = await database.skillRepository.findUnique({ where: { id: repoId } });

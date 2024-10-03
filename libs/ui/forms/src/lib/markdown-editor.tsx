@@ -1,10 +1,6 @@
 import { ChevronDownIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import {
-	Dialog,
-	DialogActions,
-	OnDialogCloseFn,
-} from "@self-learning/ui/common";
+import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
@@ -53,11 +49,7 @@ export function MarkdownField({
 			>
 				<div className={"prose prose-emerald max-w-full" + (inline && " text-sm")}>
 					{content !== "" ? (
-						<ReactMarkdown
-							linkTarget="_blank"
-							remarkPlugins={remarkPlugins}
-							rehypePlugins={rehypePlugins}
-						>
+						<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
 							{content ?? ""}
 						</ReactMarkdown>
 					) : (
@@ -132,7 +124,6 @@ export function MarkdownEditorDialog({
 					<div className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
 							<ReactMarkdown
-								linkTarget="_blank"
 								remarkPlugins={remarkPlugins}
 								rehypePlugins={rehypePlugins}
 							>
@@ -286,7 +277,11 @@ function EditorQuickActionsHeaderDropdown({ onChange }: { onChange: (value: stri
 
 	return (
 		<div className="relative inline-block">
-			<button type="button" className="btn-stroked flex items-center space-x-1 px-3 py-2" onClick={() => setMenuOpen(!menuOpen)}>
+			<button
+				type="button"
+				className="btn-stroked flex items-center space-x-1 px-3 py-2"
+				onClick={() => setMenuOpen(!menuOpen)}
+			>
 				{selectedHeader}
 				<div className="ml-2" />
 				<ChevronDownIcon className="icon" />
@@ -329,7 +324,11 @@ function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string
 
 	return (
 		<div className="relative inline-block">
-			<button type="button" className="btn-stroked flex items-center space-x-1 px-3 py-2" onClick={() => setMenuOpen(!menuOpen)}>
+			<button
+				type="button"
+				className="btn-stroked flex items-center space-x-1 px-3 py-2"
+				onClick={() => setMenuOpen(!menuOpen)}
+			>
 				{languages[selectedLanguage]}
 				<div className="ml-2" />
 				<ChevronDownIcon className="icon" />
@@ -358,11 +357,7 @@ function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string
  */
 export function MarkdownViewer({ content }: { content: string }) {
 	return (
-		<ReactMarkdown
-			linkTarget="_blank"
-			remarkPlugins={remarkPlugins}
-			rehypePlugins={rehypePlugins}
-		>
+		<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
 			{content ?? ""}
 		</ReactMarkdown>
 	);

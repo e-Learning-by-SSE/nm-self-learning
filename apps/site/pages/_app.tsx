@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import { init } from "@socialgouv/matomo-next";
 import PlausibleProvider from "next-plausible";
 import { MessagePortal } from "@self-learning/ui/notifications";
+import superjson from "superjson";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -29,6 +30,7 @@ export default withTRPC<AppRouter>({
 					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`
 				})
 			],
+			transformer: superjson,
 			queryClientConfig: {
 				defaultOptions: {
 					queries: {
@@ -45,7 +47,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const Layout = (Component as any).getLayout
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-		  (Component as any).getLayout(Component, pageProps)
+			(Component as any).getLayout(Component, pageProps)
 		: null;
 
 	useEffect(() => {

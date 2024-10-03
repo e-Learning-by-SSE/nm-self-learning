@@ -12,3 +12,19 @@ export function useCountdownSeconds(timeoutInSeconds: number) {
 
 	return timeLeft;
 }
+
+export function useTimeout({
+	callback,
+	delayInMilliseconds
+}: {
+	callback: () => void;
+	delayInMilliseconds: number;
+}) {
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			callback();
+		}, delayInMilliseconds);
+
+		return () => clearTimeout(timer);
+	}, [callback, delayInMilliseconds]);
+}

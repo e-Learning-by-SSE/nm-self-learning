@@ -29,13 +29,13 @@ const courses = [
 ];
 
 const authors = [
-	createAuthor(
-		"zaepernickrothe-demo",
-		"Ute Zaepernick-Rothe",
-		"https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=15528",
-		chapters,
-		courses
-	)
+	createAuthor({
+		userName: "zaepernickrothe-demo",
+		name: "Ute Zaepernick-Rothe",
+		imgUrl: "https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=15528",
+		lessons: chapters,
+		courses: courses
+	})
 ];
 
 export async function psychologyExample(): Promise<void> {

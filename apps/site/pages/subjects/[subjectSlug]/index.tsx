@@ -3,9 +3,9 @@ import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
+import { VoidSvg } from "@self-learning/ui/static";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
-import { ReactComponent as VoidSvg } from "../../../svg/void.svg";
 
 type SubjectPageProps = {
 	subject: ResolvedValue<typeof getSubject>;

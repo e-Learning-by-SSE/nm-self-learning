@@ -1,6 +1,6 @@
 import { getAuthenticatedUser } from "@self-learning/api";
 import { StudentSettings } from "@self-learning/types";
-import { StudentSettingsForm } from "@self-learning/settings";
+import { StudentDeleteForm, StudentSettingsForm } from "@self-learning/settings";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
 import { useCallback, useEffect, useState } from "react";
@@ -45,6 +45,7 @@ export default function Start(props: Props) {
 	return (
 		<CenteredSection className="bg-gray-50">
 			<StudentSettingPage {...props} />
+			<StudentDeleteForm />
 		</CenteredSection>
 	);
 }
@@ -74,10 +75,9 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 		onSave();
 	};
 
-	
-    useEffect(() => {
-            onSave();
-    }, [onSave, settings]);
+	useEffect(() => {
+		onSave();
+	}, [onSave, settings]);
 
 	return (
 		<>
