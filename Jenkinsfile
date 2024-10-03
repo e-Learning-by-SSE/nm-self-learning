@@ -33,7 +33,7 @@ pipeline {
 
         API_VERSION = packageJson.getVersion() // package.json must be in the root level in order for this to work
         TZ = 'Europe/Berlin'
-        DOCKER_ARGS = "-v $HOME/build-caches/.cache:${env.WORKSPACE}/.cache -v $HOME/build-caches/.nx:${env.WORKSPACE}.nx"
+        DOCKER_ARGS = "--tmpfs /.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
     }
 
     options {
