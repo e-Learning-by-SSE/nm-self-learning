@@ -36,7 +36,7 @@ pipeline {
         NODE_DOCKER_IMAGE = 'node:21-bullseye'
         TARGET_PREFIX = 'e-learning-by-sse/nm-self-learning'
         // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
-        DOCKER_ARGS = "--tmpfs /.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
+        DOCKER_ARGS = "--tmpfs /.npm -v ${env.WORKSPACE}/build-caches/npm:${env.WORKSPACE}/.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
     }
 
     options {
@@ -58,7 +58,7 @@ pipeline {
                 sh 'git fetch --no-tags --force --progress origin master:master' // for nx affected
                 sh 'cp -f .npmrc.example .npmrc'
                 sh 'cp -f .env.example .env'
-                sh 'npm ci --force' // force for permission errors
+                sh 'npm install --force' // force for permission errors
             }
         }
 
@@ -71,7 +71,6 @@ pipeline {
             }
             parallel {
                 stage('Master') {
-                    agent { label 'jq' }
                     when {
                         allOf {
                             branch 'master'
@@ -162,8 +161,8 @@ pipeline {
                     steps {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
-                                sh 'npm run prisma:seed'
+                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                sh 'npx nx migrate reset' // this will test migrations too
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
                             }
                             if (params.RELEASE) {
