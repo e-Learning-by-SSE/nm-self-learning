@@ -5,6 +5,7 @@
 	"scripts": {
 		"start": "nx serve",
 		"dev": "node scripts/dev-start.js",
+		"prebuild": "npm run prisma generate",
 		"build": "nx build --skip-nx-cache",
 		"build:affected": "nx affected:build --parallel",
 		"test": "env TZ='Europe/Berlin' nx run-many --target=test --all",
@@ -14,8 +15,7 @@
 		"format:check":	"nx format:check --files '{apps,libs}/**/*.{ts,tsx}'",
 		"format:write": "nx format:write --files '{apps,libs}/**/*.{ts,tsx}'",
 		"prisma": "prisma",
-		"preprisma:seed": "prisma generate",
-		"prisma:seed": "prisma db push --accept-data-loss && prisma db seed",
+		"prisma:seed": "prisma generate && prisma db push --accept-data-loss && prisma db seed",
 		"start:prod": "cd dist/apps/site && npm start"
 	},
 	"private": true,
