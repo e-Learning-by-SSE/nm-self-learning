@@ -14,7 +14,7 @@ export async function deleteUserAndDependentData(username: string, database: Pri
 		});
 
 		await transaction.skillRepository.deleteMany({
-			where: { ownerId: username }
+			where: { ownerName: username }
 		});
 
 		return true;
