@@ -9,7 +9,19 @@ import {
 	StarRating
 } from "@self-learning/ui/common";
 import { Tile } from "./input-tile";
-import { Strategy, Technique } from "../util/types";
+
+type Technique = {
+	name: string;
+	id: string;
+	score?: number;
+};
+
+type Strategy = {
+	techniques: Technique[];
+	id: string;
+	name: string;
+	description: string;
+};
 
 type StrategiesProps = {
 	strategies: Strategy[];
@@ -127,7 +139,10 @@ function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
 				<div key={strategy.id} className="mb-8  break-inside-avoid">
 					<div className="flex items-center justify-between mb-4 pr-4">
 						<h2 className="font-bold text-xl mr-4">{strategy.name}</h2>
-						<button title="Erweiterte Informationen" onClick={() => handleInfoClick(strategy)}>
+						<button
+							title="Erweiterte Informationen"
+							onClick={() => handleInfoClick(strategy)}
+						>
 							<InformationCircleIcon className="h-6 w-6 text-gray-500" />
 						</button>
 					</div>
@@ -162,13 +177,7 @@ function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
 	);
 }
 
-function StrategieInfoDialog({
-	strategy,
-	onClose
-}: {
-	strategy: Strategy;
-	onClose: () => void;
-}) {
+function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClose: () => void }) {
 	return SimpleDialog({
 		name: strategy.name,
 		onClose: onClose,

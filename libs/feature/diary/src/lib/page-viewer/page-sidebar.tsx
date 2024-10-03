@@ -1,10 +1,9 @@
-import { allPages, LearningDiaryEntryStatusBadge, useDiaryPageRouter } from "@self-learning/diary";
-import { ResolvedValue } from "@self-learning/types";
+import { useDiaryPageRouter } from "@self-learning/diary";
 import { formatDateString, formatDateStringFull } from "@self-learning/util/common";
 import { isThisMonth, isThisWeek, isToday, format, parse } from "date-fns";
 import Link from "next/link";
-
-type PagesMeta = ResolvedValue<typeof allPages>;
+import { PagesMeta } from "../access-learning-diary";
+import { LearningDiaryEntryStatusBadge } from "../status-badge";
 
 function categorizePagesIntoGroups(pages: PagesMeta) {
 	const fromToday: PagesMeta = [];

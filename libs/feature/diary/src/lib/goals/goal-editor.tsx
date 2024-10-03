@@ -5,7 +5,8 @@ import { LearningSubGoal } from "@self-learning/types";
 import { Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
-import { Goal } from "../util/types";
+import { Goal, StatusUpdateCallback } from "../util/types";
+import { LearningGoals } from "./learning-goals";
 
 /**
  * Component to display an editor dialog for a learning goal or sub-goal.
@@ -196,5 +197,38 @@ function MyCombobox({
 				))}
 			</Combobox.Options>
 		</Combobox>
+	);
+}
+
+export function LearningGoalEditorDialog({
+	onClose,
+	onStatusUpdate
+}: {
+	onClose: () => void;
+	onStatusUpdate: StatusUpdateCallback;
+}) {
+	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
+
+	if (!learningGoals || isLoading) {
+		return <LoadingCircle />;
+	}
+	return (
+		<Dialog title="Lernziel Editor" onClose={onClose}>
+			<div className="overflow-y-auto mb-2">
+				<div className="space-y-4">
+					<div className="max-w-md py-2">
+						<span>{"Hier muss noch ein Text rein!!!!!!!!!!!!!!!"}</span>
+					</div>
+				</div>
+				<div className={"flex justify-center py-4"}>
+					<LearningGoals goals={learningGoals} onStatusUpdate={onStatusUpdate} />
+				</div>
+			</div>
+			<div className="flex justify-end">
+				<button type="button" className="btn-primary" onClick={onClose}>
+					Schließen
+				</button>
+			</div>
+		</Dialog>
 	);
 }

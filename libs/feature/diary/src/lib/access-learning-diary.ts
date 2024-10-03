@@ -49,6 +49,8 @@ export async function allPages(username: string) {
 	return pages;
 }
 
+export type PagesMeta = ResolvedValue<typeof allPages>;
+
 async function updateDiaryDetails(username: string, id: string, endDate: Date) {
 	return database.$transaction(async tx => {
 		// Retrieve the learning diary page

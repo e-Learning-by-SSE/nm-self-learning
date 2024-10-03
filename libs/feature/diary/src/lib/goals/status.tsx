@@ -1,11 +1,4 @@
-import {
-	ArrowDownRightIcon,
-	ArrowPathIcon,
-	HandThumbUpIcon,
-	XMarkIcon,
-	CheckIcon
-} from "@heroicons/react/24/solid";
-import { DocumentCheckIcon } from "@heroicons/react/24/solid";
+import { ArrowDownRightIcon, ArrowPathIcon, XMarkIcon, CheckIcon } from "@heroicons/react/24/solid";
 
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
