@@ -80,7 +80,10 @@ export default function UsersPage() {
 										</TableDataColumn>
 										<TableDataColumn>
 											<div className="flex flex-wrap justify-end gap-4">
-												<button className="btn-stroked" onClick={() => setOpenEditDialog(name)}>
+												<button
+													className="btn-stroked"
+													onClick={() => setOpenEditDialog(name)}
+												>
 													Editieren
 												</button>
 											</div>
@@ -93,7 +96,12 @@ export default function UsersPage() {
 				{!isLoading && users && (
 					<Paginator pagination={users} url={`${router.route}?title=${title}`} />
 				)}
-				{openEditDialog && (<EditUserDialog username={openEditDialog} onClose={() => setOpenEditDialog(null)} />)}
+				{openEditDialog && (
+					<EditUserDialog
+						username={openEditDialog}
+						onClose={() => setOpenEditDialog(null)}
+					/>
+				)}
 			</CenteredSection>
 		</AdminGuard>
 	);

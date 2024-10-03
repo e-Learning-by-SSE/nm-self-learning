@@ -1,7 +1,6 @@
 import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 
-
 export function LandingPage() {
 	return (
 		<div className="flex h-full flex-col gap-16 px-4">

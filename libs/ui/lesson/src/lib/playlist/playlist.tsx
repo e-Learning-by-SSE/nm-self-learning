@@ -63,7 +63,7 @@ function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
 	useTimeout({ callback: log, delayInMilliseconds: 60000 });
 }
 
-function Writer({ courseSlug, lessonId }: { courseSlug: string, lessonId: string }) {
+function Writer({ courseSlug, lessonId }: { courseSlug: string; lessonId: string }) {
 	useLearningDiaryRecording(courseSlug, lessonId);
 	return <></>;
 }

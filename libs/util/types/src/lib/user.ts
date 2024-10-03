@@ -6,5 +6,5 @@ export const userSchema = z.object({
 	role: z.enum(["USER", "ADMIN"]),
 	image: z.string().url().nullable(),
 	displayName: z.string().min(3),
-	emailVerified:  z.coerce.date().nullable(),
+	emailVerified: z.coerce.date().nullable()
 });

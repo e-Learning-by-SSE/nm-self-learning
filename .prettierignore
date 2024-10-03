@@ -4,3 +4,4 @@
 /dist
 /coverage
 /.nx/workspace-data
+*.json

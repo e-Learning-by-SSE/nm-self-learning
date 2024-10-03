@@ -3,5 +3,6 @@ export * from "./lib/page-viewer/page-form";
 export * from "./lib/page-viewer/page-sidebar";
 export * from "./lib/page-viewer/page-changer";
 
+export * from "./lib/status-badge";
 export * from "./lib/access-learning-diary";
 export * from "./lib/goals/learning-goals";

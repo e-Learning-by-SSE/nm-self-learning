@@ -71,7 +71,6 @@
 			"!{projectRoot}/src/test-setup.[jt]s"
 		]
 	},
-	"nxCloudAccessToken": "MGIzZTAwNzEtZGU5My00NGMxLWE4NTQtOWI1OGY2YmNhZTQ2fHJlYWQtd3JpdGU=",
 	"plugins": [
 		{
 			"plugin": "@nx/next/plugin",
