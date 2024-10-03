@@ -48,6 +48,7 @@ model LearningLocation {
 model LearningStrategy {
   id         String              @id @default(uuid())
   name       String              @unique
+  description String
   techniques LearningTechnique[]
 
   @@map("LearningStrategie")

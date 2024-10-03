@@ -1,10 +1,7 @@
-export { DiaryLearnedContent } from "./lib/page-viewer/page-details"; // there are exports for testing which aren't needed outside of this module
-export * from "./lib/page-viewer/input-tile";
-export * from "./lib/page-viewer/goal-tile";
-export * from "./lib/page-viewer/technique-rating";
-export * from "./lib/page-viewer/sidebar";
-export * from "./lib/page-viewer/pages-change";
-export * from "./lib/access-learning-diary";
+export { DiaryLearnedContent } from "./lib/page-viewer/page-details"; // reduce export to avoid other exports from this file which are there for testing purposes.
+export * from "./lib/page-viewer/page-form";
+export * from "./lib/page-viewer/page-sidebar";
+export * from "./lib/page-viewer/page-changer";
 
+export * from "./lib/access-learning-diary";
 export * from "./lib/goals/learning-goals";
-export * from "./lib/status-badge";

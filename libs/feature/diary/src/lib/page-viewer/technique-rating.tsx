@@ -1,9 +1,27 @@
 import { StarIcon } from "@heroicons/react/24/solid";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import React, { useState } from "react";
-import { Dialog, DialogActions, OnDialogCloseFn, StarRating } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	OnDialogCloseFn,
+	SimpleDialog,
+	StarRating
+} from "@self-learning/ui/common";
 import { Tile } from "./input-tile";
-import { Strategy, Technique } from "../util/types";
+
+type Technique = {
+	name: string;
+	id: string;
+	score?: number;
+};
+
+type Strategy = {
+	techniques: Technique[];
+	id: string;
+	name: string;
+	description: string;
+};
 
 type StrategiesProps = {
 	strategies: Strategy[];
@@ -85,31 +103,34 @@ export function PersonalTechniqueRatingTile({
 
 export function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 	return (
-		<ul className="space-y-4">
-			{techniques.map(technique => (
-				<li key={technique.id} className="flex items-center justify-between">
-					<span className="flex-grow whitespace-normal break-words">
-						{technique.name}
-					</span>
-					{technique.score !== undefined && (
-						<div className="flex items-center space-x-2 ml-4">
-							<StarRating
-								rating={technique.score}
-								onChange={() => {
-									/* Nothing; user is not able to change rating from this view */
-								}}
-							/>
-						</div>
-					)}
-				</li>
-			))}
-		</ul>
+		<div className="max-h-[140px] min-h-[140px] overflow-y-auto">
+			<ul className="space-y-4">
+				{techniques.map(technique => (
+					<li key={technique.id} className="flex items-center justify-between">
+						<span className="flex-grow whitespace-normal break-words">
+							{technique.name}
+						</span>
+						{technique.score !== undefined && (
+							<div className="flex items-center space-x-2 ml-4">
+								<StarRating
+									rating={technique.score}
+									onChange={() => {
+										/* Nothing; user is not able to change rating from this view */
+									}}
+								/>
+							</div>
+						)}
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 }
 
 function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
-	const handleInfoClick = (strategyId: string) => {
-		console.log("Aktuell keine Funktion");
+	const [infoDialogOpen, setInfoDialogOpen] = useState<Strategy | null>(null);
+	const handleInfoClick = (strategy: Strategy) => {
+		setInfoDialogOpen(strategy);
 	};
 
 	return (
@@ -118,7 +139,10 @@ function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
 				<div key={strategy.id} className="mb-8  break-inside-avoid">
 					<div className="flex items-center justify-between mb-4 pr-4">
 						<h2 className="font-bold text-xl mr-4">{strategy.name}</h2>
-						<button onClick={() => handleInfoClick(strategy.id)}>
+						<button
+							title="Erweiterte Informationen"
+							onClick={() => handleInfoClick(strategy)}
+						>
 							<InformationCircleIcon className="h-6 w-6 text-gray-500" />
 						</button>
 					</div>
@@ -141,8 +165,28 @@ function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
 					</ul>
 				</div>
 			))}
+			{infoDialogOpen && (
+				<StrategieInfoDialog
+					strategy={infoDialogOpen}
+					onClose={() => {
+						setInfoDialogOpen(null);
+					}}
+				/>
+			)}
 		</div>
 	);
+}
+
+function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClose: () => void }) {
+	return SimpleDialog({
+		name: strategy.name,
+		onClose: onClose,
+		children: (
+			<div>
+				<p>{strategy.description}</p>
+			</div>
+		)
+	});
 }
 
 export function TechniqueRatingDialog({

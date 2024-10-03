@@ -1,10 +1,9 @@
-import { allPages, LearningDiaryEntryStatusBadge, useDiaryPageRouter } from "@self-learning/diary";
-import { ResolvedValue } from "@self-learning/types";
+import { useDiaryPageRouter } from "@self-learning/diary";
 import { formatDateString, formatDateStringFull } from "@self-learning/util/common";
 import { isThisMonth, isThisWeek, isToday, format, parse } from "date-fns";
 import Link from "next/link";
-
-type PagesMeta = ResolvedValue<typeof allPages>;
+import { PagesMeta } from "../access-learning-diary";
+import { LearningDiaryEntryStatusBadge } from "../status-badge";
 
 function categorizePagesIntoGroups(pages: PagesMeta) {
 	const fromToday: PagesMeta = [];
@@ -59,7 +58,7 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 	const categorizedPages = categorizePagesIntoGroups(pages);
 
 	const renderSection = (label: string, renderPages: PagesMeta) => (
-		<div className="mb-4">
+		<div className="mb-4" key={label}>
 			<div className="block p-2 pl-0 rounded overflow-hidden font-semibold tracking-tight">
 				{label}
 			</div>
@@ -98,6 +97,7 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 		</aside>
 	);
 }
+
 function SideBarContent({
 	page,
 	index,

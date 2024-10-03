@@ -507,13 +507,17 @@ export function getRandomTimeIntervalInMs(): number {
 
 export type LearningStrategyCategory = {
 	strategieName: string;
+	strategieDescription: string;
 	techniques: string[];
 };
 
 export async function createStrategiesAndTechniques(input: LearningStrategyCategory[]) {
 	for (const category of input) {
 		const strat = await prisma.learningStrategy.create({
-			data: { name: category.strategieName }
+			data: {
+				name: category.strategieName,
+				description: category.strategieDescription
+			}
 		});
 
 		for (const technique of category.techniques) {

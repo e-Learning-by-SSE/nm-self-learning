@@ -1,9 +1,4 @@
-import {
-	ArrowDownRightIcon,
-	ArrowPathIcon,
-	HandThumbUpIcon,
-	XMarkIcon
-} from "@heroicons/react/24/solid";
+import { ArrowDownRightIcon, ArrowPathIcon, XMarkIcon, CheckIcon } from "@heroicons/react/24/solid";
 
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
@@ -165,7 +160,7 @@ function ProgressStatusIcon({
 	iconPosition: string;
 }) {
 	let icon = null;
-	const className = `opacity-85 ${iconPosition}`;
+	const className = iconPosition;
 	switch (status) {
 		case "INACTIVE":
 			icon = <XMarkIcon className={className} />;
@@ -174,7 +169,7 @@ function ProgressStatusIcon({
 			icon = <ArrowPathIcon className={className} />;
 			break;
 		case "COMPLETED":
-			icon = <HandThumbUpIcon className={className} />;
+			icon = <CheckIcon className={className} />;
 			break;
 		default:
 			icon = <ArrowDownRightIcon className={className} />;
