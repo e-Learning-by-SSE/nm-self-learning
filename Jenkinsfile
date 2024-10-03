@@ -1,6 +1,6 @@
 @Library('web-service-helper-lib') _
 
-pipeline {
+pipeline { 
     agent { label 'docker' }
     parameters {
         booleanParam(
