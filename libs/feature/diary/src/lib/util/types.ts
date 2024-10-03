@@ -16,6 +16,7 @@ export type Strategy = {
 	techniques: Technique[];
 	id: string;
 	name: string;
+	description: string;
 };
 
 export type Goal = LearningGoalType | LearningGoal;

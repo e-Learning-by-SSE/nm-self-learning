@@ -193,6 +193,7 @@ export async function getAllStrategies() {
 		select: {
 			id: true,
 			name: true,
+			description: true,
 			techniques: {
 				select: {
 					id: true,

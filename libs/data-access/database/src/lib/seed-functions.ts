@@ -499,21 +499,25 @@ export function getRandomCreatedAt(): Date {
 
 // Function to generate random time interval in milliseconds
 export function getRandomTimeIntervalInMs(): number {
-  const minMs = 45 * 60 * 1000; // 45 minutes in milliseconds
-  const maxMs = 36 * 60 * 60 * 1000; // 36 hours in milliseconds
+	const minMs = 45 * 60 * 1000; // 45 minutes in milliseconds
+	const maxMs = 36 * 60 * 60 * 1000; // 36 hours in milliseconds
 
-  return faker.number.int({ min: minMs, max: maxMs });
+	return faker.number.int({ min: minMs, max: maxMs });
 }
 
 export type LearningStrategyCategory = {
 	strategieName: string;
+	strategieDescription: string;
 	techniques: string[];
 };
 
 export async function createStrategiesAndTechniques(input: LearningStrategyCategory[]) {
 	for (const category of input) {
 		const strat = await prisma.learningStrategy.create({
-			data: { name: category.strategieName }
+			data: {
+				name: category.strategieName,
+				description: category.strategieDescription
+			}
 		});
 
 		for (const technique of category.techniques) {

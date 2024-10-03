@@ -5,6 +5,7 @@ export async function seedStrategiesAndTechniques() {
 	const data: LearningStrategyCategory[] = [
 		{
 			strategieName: "Wiederholung (Kognition)",
+			strategieDescription: "Wiederholungsstrategien gehören zu den kognitiven Lernstrategien und dienen dem erneuten Abruf aus dem Langzeitgedächtnis.",
 			techniques: [
 				"Vorwissensaktivierung",
 				"Aktivierungsfrage beantworten",
@@ -18,6 +19,7 @@ export async function seedStrategiesAndTechniques() {
 		},
 		{
 			strategieName: "Elaboration (Kognition)",
+			strategieDescription: "Elaborationsstrategien gehören zu den kognitiven Lernstrategien und dienen dazu Verknüpfungen zum Vorwissen herzustellen bzw. Verknüpfungen im Lernstoff zu finden.",
 			techniques: [
 				"Analogien finden",
 				"Eigene Beispiele finden",
@@ -28,6 +30,7 @@ export async function seedStrategiesAndTechniques() {
 		},
 		{
 			strategieName: "Organisation (Kognition)",
+			strategieDescription: "Organisationsstrategien gehören zu den kognitiven Lernstrategien und dienen dazu Kernpunkte herauszuarbeiten und ihre Zusammenhänge zu visualisieren.",
 			techniques: [
 				"Concept-Map erstellen",
 				"Diagramm erstellen",
@@ -38,6 +41,7 @@ export async function seedStrategiesAndTechniques() {
 		},
 		{
 			strategieName: "Planung (Metakognition)",
+			strategieDescription: "Planungsstrategien gehören zu den metakognitiven  Lernstrategien und  dienen dazu Ziele zu setzen und die Vorgehensweise konkret zu planen.",
 			techniques: [
 				"ALPEN-Methode",
 				"Gantt-Diagramm",
@@ -53,6 +57,7 @@ export async function seedStrategiesAndTechniques() {
 		},
 		{
 			strategieName: "Überwachung (Metakognition)",
+			strategieDescription: "Überwachungsstrategien gehören zu den metakognitiven  Lernstrategien und  dienen dazu die Selbstüberwachung von Lernaktivitäten, Anstrengung und Aufmerksamkeit zu kontrollieren.",
 			techniques: [
 				"Anstrengungsmanagement",
 				"Aufmerksamkeit fokussieren",
@@ -67,6 +72,7 @@ export async function seedStrategiesAndTechniques() {
 		},
 		{
 			strategieName: "Bewertung (Metakognition)",
+			strategieDescription: "Bewertungsstrategien gehören zu den metakognitiven  Lernstrategien und  dienen dazu die Reflexion vom Lernprozess und -ergebnis zu fördern.",
 			techniques: [
 				"Selbstreflexion",
 				"Lerntagebucheinträge analysieren",
@@ -82,6 +88,7 @@ export async function seedStrategiesAndTechniques() {
 		},
 		{
 			strategieName: "Ressourcenmanagement",
+			strategieDescription: " Ressourcenmanagementstrategien dienen der Nutzung von externen Ressourcen für das Lernen.",
 			techniques: [
 				"Arbeitsplatz einrichten",
 				"geeignete Lernmaterialien suchen",
@@ -95,6 +102,7 @@ export async function seedStrategiesAndTechniques() {
 		},
 		{
 			strategieName: "Motivation",
+			strategieDescription: "Motivationale Strategien dienen dazu die Lernmotivation zu initiieren und aufrechtzuerhalten.",
 			techniques: [
 				"An selbst gesetzte Ziele zurückerinnern",
 				"Arbeitskontrakt abschließen",
