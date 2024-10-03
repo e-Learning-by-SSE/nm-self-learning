@@ -33,6 +33,7 @@ pipeline {
 
         API_VERSION = packageJson.getVersion() // package.json must be in the root level in order for this to work
         TZ = 'Europe/Berlin'
+        // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
         DOCKER_ARGS = "--tmpfs /.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
     }
 
@@ -162,7 +163,6 @@ pipeline {
                              .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
                                 sh 'npm run prisma:seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
-                                // sh "env TZ=${env.TZ} npx nx run-many --target=e2e-ci --all
                             }
                             if (params.RELEASE) {
                                 def apiVersion = ''
