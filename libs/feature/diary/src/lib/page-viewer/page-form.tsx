@@ -1,4 +1,8 @@
-import { LearningDiaryPage, learningDiaryPageSchema } from "@self-learning/types";
+import {
+	LearningDiaryPageInput,
+	LearningDiaryPageOutput,
+	learningDiaryPageSchema
+} from "@self-learning/types";
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
 import { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,13 +18,11 @@ import {
 } from "./input-tile";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
 
-function convertToLearningDiaryPageSafe(
-	pageDetails: LearningDiaryPageDetail | undefined | null
-): LearningDiaryPage | undefined {
+function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
 		return undefined;
 	}
-	return {
+	const inputType = {
 		id: pageDetails.id,
 		scope: pageDetails.scope,
 		distractionLevel: pageDetails.distractionLevel,
@@ -41,10 +43,8 @@ function convertToLearningDiaryPageSafe(
 					id: subGoal.id,
 					description: subGoal.description,
 					priority: subGoal.priority,
-					learningGoalId: goal.id, // rename
-					status: subGoal.status ?? undefined
-				})),
-				status: goal.status ?? undefined
+					learningGoalId: goal.id // rename
+				}))
 			})) ?? undefined,
 		techniqueRatings:
 			pageDetails.techniqueRatings?.map(rating => ({
@@ -53,7 +53,8 @@ function convertToLearningDiaryPageSafe(
 				learningTechniqueId: rating.technique.id, // rename
 				learningDiaryEntryId: pageDetails.id // rename
 			})) ?? undefined
-	};
+	} satisfies LearningDiaryPageInput;
+	return learningDiaryPageSchema.parse(inputType); // parse to add defaults
 }
 
 /**
@@ -64,7 +65,7 @@ function usePageForm({
 	onChange
 }: {
 	pageDetails: LearningDiaryPageDetail | null | undefined;
-	onChange?: (page: LearningDiaryPage) => void;
+	onChange?: (page: LearningDiaryPageInput) => void;
 }) {
 	const values = useMemo(() => {
 		//  Since we start with values directly from the database we need to transform them to the correct zod-input type for form validation.
@@ -72,7 +73,7 @@ function usePageForm({
 		return convertToLearningDiaryPageSafe(pageDetails);
 	}, [pageDetails]);
 
-	const form = useForm<LearningDiaryPage>({
+	const form = useForm<LearningDiaryPageOutput>({
 		resolver: zodResolver(learningDiaryPageSchema),
 		values
 	});

@@ -8,15 +8,15 @@ export const techniqueRatingSchema = z.object({
 
 const learningGoalStatusSchema = z.nativeEnum(LearningGoalStatus);
 
-const learningSubGoalSchema = z.object({
+export const learningSubGoalSchema = z.object({
 	id: z.string().cuid(),
 	description: z.string().min(1),
-	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE).optional(),
+	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
 	priority: z.number().int(),
 	learningGoalId: z.string().cuid()
 });
 
-const learningGoalSchema = z.object({
+export const learningGoalSchema = z.object({
 	id: z.string().cuid(),
 	description: z.string().min(1),
 	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
@@ -40,7 +40,11 @@ export const learningDiaryPageSchema = z.object({
 	techniqueRatings: z.array(techniqueRatingSchema).optional()
 });
 
-export type LearningDiaryPage = z.input<typeof learningDiaryPageSchema>; // use input type to allow default values
+export type LearningDiaryPageInput = z.input<typeof learningDiaryPageSchema>; // use input type to allow default values
+export type LearningDiaryPageOutput = z.output<typeof learningDiaryPageSchema>;
+
+export type LearningGoal = z.infer<typeof learningGoalSchema>;
+export type LearningSubGoal = z.infer<typeof learningSubGoalSchema>;
 
 export const lessonStartSchema = z.object({
 	entryId: z.string(),
