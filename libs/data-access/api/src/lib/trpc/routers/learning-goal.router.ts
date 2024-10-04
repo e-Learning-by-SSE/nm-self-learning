@@ -2,7 +2,7 @@ import { database } from "@self-learning/database";
 import { authProcedure, t } from "../trpc";
 import { z } from "zod";
 import { LearningGoalStatus } from "@prisma/client";
-import { getLearningGoals } from "libs/feature/diary/src/lib/goals/access-learning-goal";
+import { getLearningGoals } from "@self-learning/diary";
 
 export const learningGoalRouter = t.router({
 	loadLearningGoal: authProcedure.query(async ({ ctx }) => {
