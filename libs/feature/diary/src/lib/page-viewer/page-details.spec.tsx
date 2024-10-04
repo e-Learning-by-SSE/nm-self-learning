@@ -14,6 +14,8 @@ jest.mock("@self-learning/api-client", () => ({
 	}
 }));
 
+const now = new Date();
+
 const mockEvents = [
 	{
 		type: "LESSON_QUIZ_SUBMISSION",
@@ -80,7 +82,7 @@ describe("useLessonDetails", () => {
 		});
 	});
 	it("should return unique taskIds", () => {
-		const { result } = renderHook(() => useLessonDetails({ page: mockPage }));
+		const { result } = renderHook(() => useLessonDetails({ page: mockPage, endDate: now }));
 
 		const { lessonDetails } = result.current;
 		const taskIds = lessonDetails[0].tasks.map(task => task.id);
@@ -88,14 +90,14 @@ describe("useLessonDetails", () => {
 		expect(taskIds).toEqual(["task1", "task2"]);
 	});
 	it("should return hints used", () => {
-		const { result } = renderHook(() => useLessonDetails({ page: mockPage }));
+		const { result } = renderHook(() => useLessonDetails({ page: mockPage, endDate: now }));
 
 		const { lessonDetails } = result.current;
 		const hintsUsed = lessonDetails[0].hintsUsed;
 		expect(hintsUsed).toEqual(3);
 	});
 	it("should return retry ratio", () => {
-		const { result } = renderHook(() => useLessonDetails({ page: mockPage }));
+		const { result } = renderHook(() => useLessonDetails({ page: mockPage, endDate: now }));
 
 		const { lessonDetails } = result.current;
 		const retryRatio = lessonDetails[0].retryRatio;
