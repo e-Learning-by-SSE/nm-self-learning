@@ -1,6 +1,6 @@
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
-import { authOptions } from "@self-learning/api";
+import { withAuth } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
@@ -20,7 +20,6 @@ import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { formatDateAgo } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
-import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -85,21 +84,10 @@ export function getAuthor(username: string) {
 	});
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
-	const session = await getServerSession(ctx.req, ctx.res, authOptions);
-
-	if (!session) {
+export const getServerSideProps: GetServerSideProps<Props> = withAuth(async (_, user) => {
+	if (user.isAuthor) {
 		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
-			}
-		};
-	}
-
-	if (session.user.isAuthor) {
-		return {
-			props: { author: await getAuthor(session.user.name) }
+			props: { author: await getAuthor(user.name) }
 		};
 	}
 
@@ -109,7 +97,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 			permanent: false
 		}
 	};
-};
+});
 
 export default function Start(props: Props) {
 	return <AuthorDashboardPage {...props} />;

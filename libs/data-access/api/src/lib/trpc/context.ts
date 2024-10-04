@@ -1,6 +1,6 @@
 import { getServerSession, Session } from "next-auth";
 import * as trpcNext from "@trpc/server/adapters/next";
-import { authOptions } from "../auth";
+import { authOptions } from "../auth/auth";
 
 export type UserFromSession = Session["user"];
 

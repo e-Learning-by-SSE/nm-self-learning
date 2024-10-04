@@ -2,15 +2,12 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database } from "@self-learning/database";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
-import { NextAuthOptions, User } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import { Adapter } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { jwtDecode } from "jwt-decode";
-import { GetServerSidePropsContext, PreviewData } from "next";
-import { ParsedUrlQuery } from "querystring";
-import { getSession } from "next-auth/react";
 
 type KeyCloakClaims = {
 	realm_access?: {
@@ -275,11 +272,4 @@ export const authOptions: NextAuthOptions = {
 	providers: getProviders()
 };
 
-export async function getAuthenticatedUser(
-	ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>
-): Promise<User | undefined> {
-	const session = await getSession(ctx);
-	if (!session) return;
-	if (!session.user) return;
-	return session.user;
-}
+export const NextAuthPage = NextAuth(authOptions);

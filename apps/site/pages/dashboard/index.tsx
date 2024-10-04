@@ -1,4 +1,4 @@
-import { CogIcon, PencilIcon } from "@heroicons/react/24/solid";
+import { CogIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getAuthenticatedUser } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";

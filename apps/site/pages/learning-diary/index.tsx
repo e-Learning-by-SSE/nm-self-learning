@@ -1,4 +1,5 @@
 import { ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import { withAuth } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 import {
@@ -10,7 +11,6 @@ import {
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -47,27 +47,15 @@ export async function findMandyLtb({ username }: { username: string }) {
 
 export type LearningDiaryPageOverview = ResolvedValue<typeof findMandyLtb>[number];
 
-export const getServerSideProps: GetServerSideProps = async context => {
-	const session = await getSession(context);
-
-	if (!session || !session.user) {
-		const callbackUrl = encodeURIComponent(context.resolvedUrl);
-		return {
-			redirect: {
-				destination: `/api/auth/signin?callbackUrl=${callbackUrl}`,
-				permanent: false
-			}
-		};
-	}
-
+export const getServerSideProps: GetServerSideProps = withAuth(async (_, user) => {
 	return {
 		props: {
 			learningDiaryEntries: await findMandyLtb({
-				username: session.user.name
+				username: user.name
 			})
 		}
 	};
-};
+});
 
 export default function LearningDiaryOverview({
 	learningDiaryEntries

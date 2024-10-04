@@ -2,7 +2,6 @@ import { GetServerSideProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
-import { getSession } from "next-auth/react";
 import {
 	ProgressBar,
 	SortIndicator,
@@ -15,6 +14,7 @@ import {
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import { formatDateAgo } from "@self-learning/util/common";
+import { withAuth } from "@self-learning/api";
 
 function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -271,22 +271,11 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async context => {
-	const session = await getSession(context);
-
-	if (!session || !session.user) {
-		return {
-			redirect: {
-				destination: "/api/auth/signin",
-				permanent: false
-			}
-		};
-	}
-
+export const getServerSideProps: GetServerSideProps = withAuth(async (_, user) => {
 	try {
 		return {
 			props: {
-				enrollments: await getEnrollmentDetails(session.user.name)
+				enrollments: await getEnrollmentDetails(user.name)
 			}
 		};
 	} catch (error) {
@@ -297,6 +286,6 @@ export const getServerSideProps: GetServerSideProps = async context => {
 			}
 		};
 	}
-};
+});
 
 export default CourseOverview;

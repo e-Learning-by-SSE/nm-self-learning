@@ -1,3 +1,4 @@
+import { withAuth } from "@self-learning/api";
 import {
 	allPages,
 	DiaryContentForm,
@@ -10,22 +11,10 @@ import {
 import { Divider } from "@self-learning/ui/common";
 import { subMilliseconds } from "date-fns";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
 
-export const getServerSideProps: GetServerSideProps = async context => {
-	const session = await getSession(context);
-
-	if (!session || !session.user) {
-		return {
-			redirect: {
-				destination: "/api/auth/signin",
-				permanent: false
-			}
-		};
-	}
-
+export const getServerSideProps: GetServerSideProps = withAuth(async (context, user) => {
 	const pageId = context.params?.pageId;
-	const pages = await allPages(session.user.name);
+	const pages = await allPages(user.name);
 	const availableStrategies = await getAllStrategies();
 
 	const pageExists = pages.some(page => page.id === pageId);
@@ -42,7 +31,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
 			availableStrategies
 		}
 	};
-};
+});
 
 export default function DiaryPageDetail({
 	diaryId,
