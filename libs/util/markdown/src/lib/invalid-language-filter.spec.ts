@@ -1,5 +1,6 @@
 jest.mock("refractor", () => ({ refractor: { registered: jest.fn() } }));
 jest.mock("unist-util-visit", () => ({ visit: jest.fn() }));
+jest.mock("superjson", () => ({ superjson: { create: jest.fn() } }));
 
 import { removeInvalidLanguage } from "./invalid-language-filter";
 import { Element, Parent } from "hast";
