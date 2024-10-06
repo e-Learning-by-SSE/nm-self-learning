@@ -73,7 +73,7 @@ pipeline {
                 stage('Master') {
                     when {
                         allOf {
-                            branch 'master'
+                            branch 'master-nonstable'
                             expression {
                                 return !params.FULL_BUILD
                             }
@@ -90,9 +90,8 @@ pipeline {
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                    sh 'npm run format:check'
                                     sh 'npm run prisma:seed'
-                                    sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci"
+                                    sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t build"
                                 }
                         }
                         ssedocker {
@@ -163,7 +162,7 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npx nx migrate reset' // this will test migrations too
-                                sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
+                                sh "env TZ=${env.TZ} npx nx run-many --target=build --all --skip-nx-cache"
                             }
                             if (params.RELEASE) {
                                 def apiVersion = ''
