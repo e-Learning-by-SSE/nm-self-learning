@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
-import { useRequiredSession } from "@self-learning/ui/layouts";
-import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { lessonSchema } from "@self-learning/types";
+import { SectionHeader, showToast } from "@self-learning/ui/common";
+import { Form, MarkdownField, OpenAsJsonButton } from "@self-learning/ui/forms";
+import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { useEffect, useState } from "react";
+import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";

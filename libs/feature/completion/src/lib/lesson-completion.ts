@@ -7,6 +7,7 @@ import { endOfWeek, startOfWeek } from "date-fns";
  * const completed = await checkLessonCompletion(username, ["lesson-1", "lesson-2", "lesson-3"]);
  * // completed = { "lesson-1": true, "lesson-2": true }
  */
+// TODO this is not used anywhere, should we remove it? @spark-sse
 export async function checkLessonCompletion(
 	username: string,
 	lessonIds: string[]

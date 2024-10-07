@@ -10,7 +10,7 @@ import {
 	useSlugify
 } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm } from "react-hook-form";
 
 export function SubjectEditor({

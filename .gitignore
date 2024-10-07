@@ -2,13 +2,14 @@
 
 # npm config
 .npmrc
-
+bak
 .nx
 
 # compiled output
 /dist
 /tmp
 /out-tsc
+/output
 
 # dependencies
 /node_modules

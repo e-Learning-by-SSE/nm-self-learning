@@ -1,4 +1,4 @@
-import { Menu } from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { CloudArrowDownIcon } from "@heroicons/react/24/outline";
 import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
@@ -147,8 +147,8 @@ export function Upload({
 					{mediaType === "video"
 						? "Video hochladen"
 						: mediaType === "image"
-						? "Bild hochladen"
-						: "Datei hochladen"}
+							? "Bild hochladen"
+							: "Datei hochladen"}
 				</label>
 
 				{!hideAssetPicker && (
@@ -370,11 +370,7 @@ function AssetPickerDialog({
 											</TableDataColumn>
 											<TableDataColumn>{asset.fileType}</TableDataColumn>
 											<TableDataColumn>
-												<span
-													title={parseISO(
-														asset.createdAt
-													).toLocaleString()}
-												>
+												<span title={asset.createdAt.toLocaleString()}>
 													{formatDateAgo(asset.createdAt)}
 												</span>
 											</TableDataColumn>
@@ -449,36 +445,36 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 
 	return (
 		<Menu as="div" className="relative flex">
-			<Menu.Button className="rounded-full p-2 hover:bg-gray-50">
+			<MenuButton className="rounded-full p-2 hover:bg-gray-50">
 				<EllipsisVerticalIcon className="h-5 text-gray-400" />
-			</Menu.Button>
-			<Menu.Items className="absolute left-4 top-4 divide-y divide-gray-100 rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
-				<Menu.Item as="div" className="p-1">
-					{({ active }) => (
+			</MenuButton>
+			<MenuItems className="absolute left-4 top-4 divide-y divide-gray-100 rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
+				<MenuItem as="div" className="p-1">
+					{({ focus }) => (
 						<button
 							className={`${
-								active ? "bg-secondary text-white" : ""
+								focus ? "bg-secondary text-white" : ""
 							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2 opacity-25`}
 						>
 							<PencilIcon className="h-5" />
 							<span>Umbenennen (Nicht verfügbar)</span>
 						</button>
 					)}
-				</Menu.Item>
-				<Menu.Item as="div" className="p-1">
-					{({ active }) => (
+				</MenuItem>
+				<MenuItem as="div" className="p-1">
+					{({ focus }) => (
 						<button
 							onClick={onDelete}
 							className={`${
-								active ? "bg-secondary text-white" : "text-red-500"
+								focus ? "bg-secondary text-white" : "text-red-500"
 							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2`}
 						>
 							<TrashIcon className="h-5" />
 							<span>Löschen</span>
 						</button>
 					)}
-				</Menu.Item>
-			</Menu.Items>
+				</MenuItem>
+			</MenuItems>
 		</Menu>
 	);
 }

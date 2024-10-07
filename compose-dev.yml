@@ -1,0 +1,27 @@
+services:
+    app:
+        image: ghcr.io/e-learning-by-sse/dev-env-javascript:latest
+        entrypoint:
+            - sleep
+            - infinity
+        init: true
+        volumes:
+            - type: bind
+              source: /var/run/docker.sock
+              target: /var/run/docker.sock
+            - codebase:/com.docker.devenvironments.code
+    dev-db:
+        image: postgres:13
+        #ports: # enable if you want to access it outside the dev environment
+        #    - 5432:5432
+        environment:
+            POSTGRES_USER: username
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: SelfLearningDb
+        volumes:
+            - dev_db_data:/var/lib/postgresql/data
+volumes:
+    dev_db_data:
+    codebase: 
+      name: ${VOLUME_NAME}
+      external: true

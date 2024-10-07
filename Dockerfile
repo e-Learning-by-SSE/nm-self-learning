@@ -1,28 +1,11 @@
+FROM node:22.6.0-alpine as build
 
-ARG NPM_TOKEN
-
-# Base image
-FROM node:alpine as build
-
-ARG NPM_TOKEN
-ENV NPM_TOKEN=${NPM_TOKEN}
-
-# Create app directory
 WORKDIR /app
-
-# Install dependencies
-COPY package.json package-lock.json ./
-COPY .npmrc.example .npmrc
-RUN sed -i "s/\${NPM_TOKEN}/${NPM_TOKEN}/g" .npmrc
-RUN npm install
-RUN rm .npmrc
 
 #RUN addgroup --system --gid 1001 nodejs
 #RUN adduser --system --uid 1001 nextjs
 
-# Bundle app source
 COPY . ./
-# Use example as default configuration
 RUN mv .env.example .env
 
 # Generate Prisma client
@@ -30,8 +13,9 @@ RUN npm run prisma generate
 # Allow runnig prisma commands, based on: https://stackoverflow.com/a/72602624
 # RUN chown nextjs:nodejs -R node_modules/.prisma
 
-# Multistage build: Keep only result instead of all intermediate layers
-FROM node:alpine
+FROM node:22.6.0-alpine
+# org image node:alpine - temporary fix https://github.com/vercel/next.js/discussions/69326
+
 COPY --from=build /app /app
 
 WORKDIR /app
@@ -43,8 +27,6 @@ WORKDIR /app
 # * diffutils is needed for cmp (needed for entry-script)
 RUN apk add --no-cache libc6-compat bash postgresql-libs postgresql-client diffutils
 
-# Environment
-ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during build & runtime.
 ENV NEXT_TELEMETRY_DISABLED 1
 
