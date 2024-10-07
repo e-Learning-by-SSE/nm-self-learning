@@ -144,9 +144,10 @@ export function LocationInputTile({
 	initialSelection?: Partial<Location>; // show what is available.
 	onChange?: (location: Location) => void;
 }) {
+	console.log("initialSelection", initialSelection);
+
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 	const { data: learningLocations } = trpc.learningLocation.findMany.useQuery();
-	const [selectedLocation, setSelectedLocation] = useState(initialSelection);
 
 	const closeDialog = () => setDialogOpen(false);
 
@@ -154,19 +155,18 @@ export function LocationInputTile({
 		return <LoadingBox />;
 	}
 	const handleChange = (location: Location) => {
-		setSelectedLocation(location);
 		onChange && onChange(location);
 	};
 
 	return (
 		<Tile onToggleEdit={setDialogOpen} tileName={"Lernort"} isFilled={!!initialSelection}>
 			<div className="p-4">
-				{selectedLocation ? (
+				{initialSelection ? (
 					<div>
-						<p>{selectedLocation.name ?? ""}</p>
+						<p>{initialSelection?.name ?? ""}</p>
 
-						{selectedLocation.iconURL && selectedLocation.iconURL !== "" && (
-							<Image src={selectedLocation.iconURL} alt={""} width={48} height={48} />
+						{initialSelection.iconURL && initialSelection.iconURL !== "" && (
+							<Image src={initialSelection.iconURL} alt={""} width={48} height={48} />
 						)}
 					</div>
 				) : (
@@ -208,6 +208,8 @@ export function LocationChooseDialog({
 	const newLocationInputRef = useRef<HTMLInputElement>(null);
 
 	const handleLocationClick = (locationId: string) => {
+		console.log("hitzs");
+
 		const location = learningLocations.find(location => location.id === locationId);
 		if (location) {
 			onSubmit(location);
@@ -233,7 +235,10 @@ export function LocationChooseDialog({
 								<span className="text-gray-800 flex-grow">{location.name}</span>
 								{!location.defaultLocation && (
 									<ButtonSmallX
-										onClick={() => deleteLearningLocationAsync(location.id)}
+										onClick={e => {
+											e.stopPropagation();
+											deleteLearningLocationAsync(location.id);
+										}}
 										className="ml-auto text-red-500 hover:text-red-700"
 									/>
 								)}
