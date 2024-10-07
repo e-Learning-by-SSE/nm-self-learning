@@ -144,8 +144,6 @@ export function LocationInputTile({
 	initialSelection?: Partial<Location>; // show what is available.
 	onChange?: (location: Location) => void;
 }) {
-	console.log("initialSelection", initialSelection);
-
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 	const { data: learningLocations } = trpc.learningLocation.findMany.useQuery();
 
@@ -208,8 +206,6 @@ export function LocationChooseDialog({
 	const newLocationInputRef = useRef<HTMLInputElement>(null);
 
 	const handleLocationClick = (locationId: string) => {
-		console.log("hitzs");
-
 		const location = learningLocations.find(location => location.id === locationId);
 		if (location) {
 			onSubmit(location);

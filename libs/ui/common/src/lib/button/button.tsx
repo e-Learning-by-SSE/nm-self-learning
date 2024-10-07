@@ -41,7 +41,7 @@ export function ButtonSmallX({
 	onClick,
 	className = ""
 }: {
-	onClick: (e: React.MouseEvent<HTMLButtonElement>) => void; // Accept the event argument here
+	onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 	className?: string;
 }) {
 	return (
