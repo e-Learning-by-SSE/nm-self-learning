@@ -41,7 +41,7 @@ export function ButtonSmallX({
 	onClick,
 	className = ""
 }: {
-	onClick: () => void;
+	onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 	className?: string;
 }) {
 	return (
@@ -55,3 +55,4 @@ export function ButtonSmallX({
 		</button>
 	);
 }
+

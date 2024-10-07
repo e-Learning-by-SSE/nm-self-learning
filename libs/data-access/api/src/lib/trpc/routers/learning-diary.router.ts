@@ -17,7 +17,7 @@ export const learningLocationRouter = t.router({
 		return database.learningLocation.create({
 			data: {
 				name: input.name,
-				iconURL: input.iconURL,
+				iconURL: input.iconURL ?? "",
 				creatorName: ctx.user.name,
 				defaultLocation: false
 			},
