@@ -192,19 +192,19 @@ export function DiaryContentForm({
 							<PersonalTechniqueRatingTile
 								strategies={itemsWithRatings}
 								onChange={updatedTechnique => {
-									const updatedArray = field.value?.map(technique => ({
-										...technique,
-										score:
-											technique.id === updatedTechnique.id
-												? updatedTechnique.score
-												: technique.score
-									}));
-									const nonEmptyArray =
-										updatedArray && updatedArray.length > 0
-											? updatedArray
-											: [updatedTechnique];
-									console.log("fieldvalue", nonEmptyArray);
-									field.onChange(nonEmptyArray);
+									const updatedArray = field.value?.some(
+										technique => technique.id === updatedTechnique.id
+									)
+										? field.value.map(technique =>
+												technique.id === updatedTechnique.id
+													? updatedTechnique
+													: technique
+											)
+										: [...(field.value || []), updatedTechnique];
+
+									field.onChange(
+										updatedArray.length > 0 ? updatedArray : [updatedTechnique]
+									);
 								}}
 							/>
 						)}
