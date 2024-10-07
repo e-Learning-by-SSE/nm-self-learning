@@ -19,6 +19,7 @@ import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useEventLog } from "@self-learning/util/common";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -83,6 +84,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
+
 	// const hasPrevious = nextIndex > 1;
 	// const hasNext = nextIndex < questions.length;
 
@@ -161,6 +163,7 @@ function QuizCompletionSubscriber({
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
 
 	useEffect(() => {
+		// TODO check if this useEffect is necessary
 		if (!unsubscribeRef.current && completionState === "completed") {
 			unsubscribeRef.current = true;
 			console.log("QuizCompletionSubscriber: Marking as completed");
@@ -173,7 +176,8 @@ function QuizCompletionSubscriber({
 
 QuestionsPage.getLayout = LessonLayout;
 
-function QuizHeader({
+// exported for testing
+export function QuizHeader({
 	lesson,
 	course,
 	questions,
@@ -193,6 +197,21 @@ function QuizHeader({
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 	const [showFailureDialog, setShowFailureDialog] = useState(false);
 
+	const { newEvent } = useEventLog();
+	const logQuizStart = useCallback(
+		(lesson: QuestionProps["lesson"], question: QuizContent[number]) => {
+			newEvent({
+				type: "LESSON_QUIZ_START",
+				resourceId: lesson.lessonId,
+				payload: {
+					questionId: question.questionId,
+					type: question.type
+				}
+			});
+		},
+		[newEvent]
+	);
+
 	if (!successDialogOpenedRef.current && completionState === "completed") {
 		successDialogOpenedRef.current = true;
 		setShowSuccessDialog(true);
@@ -202,6 +221,11 @@ function QuizHeader({
 		failureDialogOpenedRef.current = true;
 		setShowFailureDialog(true);
 	}
+
+	useEffect(() => {
+		// TODO diary: check if the useEffect is necessary
+		logQuizStart(lesson, questions[currentIndex]);
+	}, [questions, currentIndex, logQuizStart, lesson]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -214,16 +238,18 @@ function QuizHeader({
 
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
 				{questions.map((question, index) => (
-					<Tab key={question.questionId}>
-						<QuestionTab
-							index={index}
-							evaluation={evaluations[question.questionId]}
-							isMultiStep={
-								lesson.lessonType === LessonType.SELF_REGULATED &&
-								question.type === "multiple-choice"
-							}
-						/>
-					</Tab>
+					<div onClick={() => logQuizStart(lesson, question)} key={question.questionId}>
+						<Tab>
+							<QuestionTab
+								index={index}
+								evaluation={evaluations[question.questionId]}
+								isMultiStep={
+									lesson.lessonType === LessonType.SELF_REGULATED &&
+									question.type === "multiple-choice"
+								}
+							/>
+						</Tab>
+					</div>
 				))}
 			</Tabs>
 

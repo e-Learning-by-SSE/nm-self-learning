@@ -2,7 +2,7 @@ import { EvaluationFn } from "../../question-type-registry";
 
 export const evaluateExactAnswer: EvaluationFn<"exact"> = (question, answer) => {
 	let studentAnswer = answer.value.trim();
-	let correctAnswer: typeof question["acceptedAnswers"][0] | undefined = undefined;
+	let correctAnswer: (typeof question)["acceptedAnswers"][0] | undefined = undefined;
 
 	if (question.caseSensitive) {
 		correctAnswer = question.acceptedAnswers.find(a => a.value.trim() === studentAnswer);

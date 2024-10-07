@@ -17,12 +17,15 @@ describe("markAsCompleted", () => {
 	});
 
 	describe("With course", () => {
-		it("Creates completedLesson and updates course progress", async () => {
-			const courseId = "mark-as-completed-course";
+		const courseId = "mark-as-completed-course";
+		const lessonId = "mark-as-completed-lesson-1";
 
+		beforeEach(async () => {
 			await database.course.deleteMany({ where: { courseId } });
 			await database.completedLesson.deleteMany({ where: { courseId } });
 			await database.enrollment.deleteMany({ where: { courseId } });
+			await database.eventLog.deleteMany({ where: { resourceId: courseId } });
+			await database.eventLog.deleteMany({ where: { resourceId: lessonId } });
 
 			const content = createCourseContent([
 				createChapter("Chapter 1", [
@@ -35,7 +38,7 @@ describe("markAsCompleted", () => {
 				])
 			]);
 
-			const [course] = await Promise.all([
+			await Promise.all([
 				database.course.create({
 					data: {
 						courseId,
@@ -62,15 +65,16 @@ describe("markAsCompleted", () => {
 
 			await markAsCompleted({
 				username,
-				courseSlug: course.slug,
-				lessonId: "mark-as-completed-lesson-1"
+				courseSlug: "mark-as-completed-course-slug",
+				lessonId
 			});
-
+		});
+		it("Creates completedLesson and updates course progress", async () => {
 			const completedLesson = await database.completedLesson.findFirst({
-				where: { AND: { lessonId: "mark-as-completed-lesson-1", courseId, username } }
+				where: { AND: { lessonId, courseId, username } }
 			});
 
-			expect(completedLesson?.lessonId).toEqual("mark-as-completed-lesson-1");
+			expect(completedLesson?.lessonId).toEqual(lessonId);
 
 			const enrollment = await database.enrollment.findUnique({
 				where: { courseId_username: { courseId, username } }
@@ -78,12 +82,50 @@ describe("markAsCompleted", () => {
 
 			expect(enrollment?.progress).toEqual(25);
 		});
+
+		it("Creates user event log entry on lesson complete", async () => {
+			const userEvent = await database.eventLog.findFirst({
+				where: { resourceId: lessonId }
+			});
+			expect(userEvent?.action).toEqual("LESSON_COMPLETE");
+		});
+
+		it("Creates don't create course completion without 100% progress", async () => {
+			const userEvent = await database.eventLog.findFirst({
+				where: { resourceId: courseId }
+			});
+			expect(userEvent).toBeNull();
+		});
+
+		it("Creates log event entry for course completion on 100% progress", async () => {
+			const completions = [
+				"mark-as-completed-lesson-1",
+				"mark-as-completed-lesson-2",
+				"mark-as-completed-lesson-3",
+				"mark-as-completed-lesson-4"
+			];
+
+			await Promise.all(
+				completions.map(c =>
+					markAsCompleted({
+						username,
+						lessonId: c,
+						courseSlug: "mark-as-completed-course-slug"
+					})
+				)
+			);
+
+			const userEvent = await database.eventLog.findFirst({
+				where: { resourceId: courseId }
+			});
+			expect(userEvent?.action).toEqual("COURSE_COMPLETE");
+		});
 	});
 
 	describe("Without course", () => {
-		it("Creates completedLesson", async () => {
-			const lessonId = "mark-as-completed-no-course-lesson";
+		const lessonId = "mark-as-completed-no-course-lesson";
 
+		beforeEach(async () => {
 			await database.completedLesson.deleteMany({ where: { lessonId } });
 
 			await database.lesson.upsert({
@@ -93,7 +135,9 @@ describe("markAsCompleted", () => {
 			});
 
 			await markAsCompleted({ username, lessonId, courseSlug: null });
+		});
 
+		it("Creates completedLesson", async () => {
 			const completedLesson = await database.completedLesson.findFirst({
 				where: { AND: { lessonId, username } }
 			});

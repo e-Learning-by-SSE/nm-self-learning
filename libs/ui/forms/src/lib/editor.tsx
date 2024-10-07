@@ -1,19 +1,25 @@
 import Editor from "@monaco-editor/react";
+import { editor } from "monaco-editor";
 
 export function EditorField({
 	value,
 	onChange,
 	language,
-	height
+	height,
+	onMount
 }: {
 	value: string | undefined;
 	onChange: (value: string | undefined) => void;
 	language?: string;
 	height?: string;
+	onMount?: (editor: editor.IStandaloneCodeEditor) => void;
 }) {
 	return (
 		<Editor
 			onMount={editor => {
+				if (onMount) {
+					onMount(editor);
+				}
 				editor.focus();
 				setTimeout(() => {
 					editor?.getAction("editor.action.formatDocument")?.run();

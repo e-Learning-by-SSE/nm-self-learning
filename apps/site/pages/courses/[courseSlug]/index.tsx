@@ -3,8 +3,8 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
-
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
+import { LessonType } from "@prisma/client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
@@ -20,7 +20,6 @@ import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
-import { LessonType } from "@prisma/client";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -38,7 +37,7 @@ function mapToTocContent(
 				? {
 						...(lessonIdMap.get(lessonId) as LessonInfo),
 						lessonNr: lessonNr++
-				  }
+					}
 				: {
 						lessonId: "removed",
 						slug: "removed",
@@ -46,7 +45,7 @@ function mapToTocContent(
 						title: "Removed",
 						lessonType: LessonType.TRADITIONAL,
 						lessonNr: -1
-				  };
+					};
 
 			return lesson;
 		})
@@ -147,7 +146,7 @@ export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ para
 };
 
 async function getCourse(courseSlug: string) {
-	return await database.course.findUnique({
+	return database.course.findUnique({
 		where: { slug: courseSlug },
 		include: {
 			authors: {

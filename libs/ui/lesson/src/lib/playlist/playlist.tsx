@@ -6,11 +6,12 @@ import {
 	PlayIcon
 } from "@heroicons/react/24/solid";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
-import { Divider, ProgressBar } from "@self-learning/ui/common";
-import { motion } from "framer-motion";
+import { Divider, ProgressBar, useTimeout } from "@self-learning/ui/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { trpc } from "@self-learning/api-client";
+import { z } from "zod";
 
 export type PlaylistChapter = {
 	title: string;
@@ -43,9 +44,32 @@ type PlaylistProps = {
 	completion?: CourseCompletion;
 };
 
+function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
+	const { mutateAsync: createLearningDiaryEntry } = trpc.learningDiary.create.useMutation();
+	const { mutateAsync: createLearningDiaryLearnedLesson } =
+		trpc.learningDiary.addLearningDiaryLearnedLessons.useMutation();
+	const log = useCallback(async () => {
+		try {
+			const page = await createLearningDiaryEntry({
+				courseSlug: courseSlug
+			});
+
+			await createLearningDiaryLearnedLesson({
+				entryId: page?.id ?? "",
+				lessonId
+			});
+		} catch (e) {}
+	}, [createLearningDiaryEntry, courseSlug]);
+	useTimeout({ callback: log, delayInMilliseconds: 60000 });
+}
+
+function Writer({ courseSlug, lessonId }: { courseSlug: string; lessonId: string }) {
+	useLearningDiaryRecording(courseSlug, lessonId);
+	return <></>;
+}
+
 export function Playlist({ content, course, lesson, completion }: PlaylistProps) {
 	const [contentWithCompletion, setContentWithCompletion] = useState(content);
-
 	useEffect(() => {
 		if (!completion) {
 			return;
@@ -62,6 +86,7 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 
 	return (
 		<>
+			<Writer courseSlug={course.slug} lessonId={lesson.lessonId} />
 			<PlaylistHeader
 				content={content}
 				course={course}

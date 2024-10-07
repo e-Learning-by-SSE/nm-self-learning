@@ -10,7 +10,8 @@ import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/type
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, isCourseAuthorProcedure, t, UserFromSession } from "../trpc";
+import { authProcedure, isCourseAuthorProcedure, t } from "../trpc";
+import { UserFromSession } from "../context";
 
 export const courseRouter = t.router({
 	findMany: t.procedure
@@ -33,7 +34,7 @@ export const courseRouter = t.router({
 							some: {
 								specializationId: input.specializationId
 							}
-					  }
+						}
 					: undefined
 			};
 

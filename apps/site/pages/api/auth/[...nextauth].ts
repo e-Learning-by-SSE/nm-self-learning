@@ -1,4 +1,3 @@
-import { authOptions } from "@self-learning/api";
-import NextAuth from "next-auth";
+import { NextAuthPage } from "@self-learning/api";
 
-export default NextAuth(authOptions);
+export default NextAuthPage;

@@ -1,13 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
-import { LabeledField, MarkdownEditorDialog, MarkdownField } from "@self-learning/ui/forms";
+import {
+	LabeledField,
+	MarkdownEditorDialog,
+	MarkdownField,
+	OpenAsJsonButton
+} from "@self-learning/ui/forms";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
 import { useState } from "react";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../../author/authors-form";
-import { OpenAsJsonButton } from "../../../json-editor-dialog";
 import { LessonContentEditor } from "../../../lesson/forms/lesson-content";
 import { QuizEditor } from "../../../lesson/forms/quiz-editor";
 import { LessonFormModel } from "../../../lesson/lesson-form-model";
