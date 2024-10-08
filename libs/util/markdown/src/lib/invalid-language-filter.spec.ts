@@ -1,10 +1,5 @@
-jest.mock("refractor", () => ({ refractor: { registered: jest.fn() } }));
-jest.mock("unist-util-visit", () => ({ visit: jest.fn() }));
-jest.mock("superjson", () => ({ superjson: { create: jest.fn() } }));
-
 import { removeInvalidLanguage } from "./invalid-language-filter";
 import { Element, Parent } from "hast";
-import { refractor } from "refractor";
 
 describe("removeInvalidLanguage", () => {
 	it("should return early if parent is not a Parent node or Element node", () => {
@@ -41,8 +36,6 @@ describe("removeInvalidLanguage", () => {
 		} as unknown as Element;
 		const parent = { type: "element", children: [node] } as Parent;
 
-		(refractor.registered as jest.Mock).mockReturnValue(false);
-
 		removeInvalidLanguage(node, 0, parent);
 
 		expect(node.properties?.className).toEqual([]);
@@ -55,8 +48,6 @@ describe("removeInvalidLanguage", () => {
 			properties: { className: ["language-javascript"] }
 		} as unknown as Element;
 		const parent = { type: "element", children: [node] } as Parent;
-
-		(refractor.registered as jest.Mock).mockReturnValue(true);
 
 		removeInvalidLanguage(node, 0, parent);
 
