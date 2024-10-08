@@ -115,7 +115,7 @@ export const authorRouter = t.router({
 				courseIds: input.courseId,
 				start: input.start,
 				end: input.end,
-				threshold: 0
+				threshold: 10
 			});
 		}),
 	findMany: authProcedure
