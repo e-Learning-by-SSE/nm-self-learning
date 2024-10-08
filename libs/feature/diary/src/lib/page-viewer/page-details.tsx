@@ -93,7 +93,6 @@ export function useLessonDetails({
 	const lastLessonLearned = learnedLessons.length > 0 ? learnedLessons[-1] : null;
 
 	const { data, isLoading } = trpc.events.findMany.useQuery({
-		// courseId: page.course.courseId, // SE: Currently, CourseId is not always set -> wrong results
 		start: page.createdAt,
 		resourceId: learnedLessons.map(({ lesson }) => lesson.lessonId),
 		end: endDate
