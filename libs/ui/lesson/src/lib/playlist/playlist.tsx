@@ -48,10 +48,14 @@ function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
 	const { mutateAsync: createLearningDiaryEntry } = trpc.learningDiary.create.useMutation();
 	const { mutateAsync: createLearningDiaryLearnedLesson } =
 		trpc.learningDiary.addLearningDiaryLearnedLessons.useMutation();
+	// Exact starting time is required, otherwise we miss some events during the learning analysis
+	const creationDate = new Date();
+
 	const log = useCallback(async () => {
 		try {
 			const page = await createLearningDiaryEntry({
-				courseSlug: courseSlug
+				courseSlug: courseSlug,
+				date: creationDate
 			});
 
 			await createLearningDiaryLearnedLesson({
