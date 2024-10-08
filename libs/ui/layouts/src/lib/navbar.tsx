@@ -6,11 +6,11 @@ import {
 	ArrowRightStartOnRectangleIcon,
 	WrenchIcon
 } from "@heroicons/react/24/outline";
-import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, RectangleGroupIcon, StarIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
-import { Fragment } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import {
 	Disclosure,
 	DisclosureButton,
@@ -22,20 +22,12 @@ import {
 	Transition
 } from "@headlessui/react";
 import { SearchBar } from "./search-bar";
+import { useRouter } from "next/router";
+import { ParsedUrlQuery } from "querystring";
 
 export function Navbar() {
 	const session = useSession();
 	const user = session.data?.user;
-
-	// List with all routes accessible by the User
-	const navigation = [
-		{ name: "Übersicht", href: "/overview" },
-		{ name: "Fachgebiete", href: "/subjects" }
-	];
-
-	if (user?.role === "ADMIN") {
-		navigation.push({ name: "Adminbereich", href: "/admin" });
-	}
 
 	return (
 		<Disclosure
@@ -74,19 +66,7 @@ export function Navbar() {
 									</Link>
 								</div>
 								<div className="hidden lg:ml-6 lg:block">
-									{user && (
-										<div className="flex h-full items-center space-x-4 px-1 text-sm font-medium">
-											{navigation.map(item => (
-												<Link
-													className="hover:text-gray-500"
-													key={item.name}
-													href={item.href}
-												>
-													{item.name}
-												</Link>
-											))}
-										</div>
-									)}
+									{user && <NavbarNavigationLink />}
 								</div>
 							</div>
 							{user && <SearchBar />}
@@ -111,6 +91,8 @@ export function Navbar() {
 										</span>
 										<NavbarDropdownMenu
 											avatarUrl={user.avatarUrl}
+											isAuthor={user.isAuthor}
+											isAdmin={user.role === "ADMIN"}
 											signOut={redirectToLogout}
 										/>
 									</div>
@@ -121,16 +103,13 @@ export function Navbar() {
 
 					<DisclosurePanel className="lg:hidden">
 						<div className="space-y-1 px-2 pb-3 pt-2">
-							{navigation.map(item => (
-								<DisclosureButton
-									key={item.name}
-									as="a"
-									href={item.href}
-									className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
-								>
-									{item.name}
-								</DisclosureButton>
-							))}
+							<DisclosureButton
+								as="a"
+								href="subjects"
+								className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
+							>
+								Fachgebiete Erkunden
+							</DisclosureButton>
 						</div>
 					</DisclosurePanel>
 				</>
@@ -139,11 +118,77 @@ export function Navbar() {
 	);
 }
 
+function NavbarNavigationLink() {
+	const [navigation, setNavigation] = useState([
+		{ name: "Fachgebiete Erkunden", href: "/subjects" }
+	]);
+	const router = useRouter();
+
+	const setNavigationLink = useCallback(
+		(query: ParsedUrlQuery) => {
+			let newNavigation: { name: string; href: string }[] = [];
+			newNavigation.push({ name: "Fachgebiete Erkunden", href: "/subjects" });
+
+			if (query.subjectSlug) {
+				newNavigation.push({
+					name: `${query.subjectSlug}`,
+					href: `/subjects/${query.subjectSlug}`
+				});
+				if (query.specializationSlug) {
+					newNavigation.push({
+						name: `${query.specializationSlug}`,
+						href: `/subjects/${query.subjectSlug}/${query.specializationSlug}`
+					});
+				}
+				localStorage.setItem("navigation", JSON.stringify(newNavigation));
+			} else if (query.courseSlug) {
+				newNavigation = JSON.parse(localStorage.getItem("navigation") ?? "[]");
+				if (newNavigation.length < 1) {
+					newNavigation.push({ name: "Fachgebiete Erkunden", href: "/subjects" });
+					return;
+				}
+				newNavigation.push({
+					name: `${query.courseSlug}`,
+					href: `/courses/${query.courseSlug}`
+				});
+			}
+			setNavigation(newNavigation);
+		},
+		[setNavigation]
+	);
+
+	useEffect(() => {
+		const query = router.query;
+		setNavigationLink(query);
+	}, [router.query, setNavigationLink]);
+
+	return (
+		<div className="flex h-full items-center flex-row px-1 text-sm font-medium space-x-2">
+			{navigation.map((item, index) => (
+				<div key={item.name + index} className="flex items-center">
+					<Link
+						className={`hover:text-gray-500 ${index === navigation.length - 1 ? "text-gray-700 font-semibold" : ""}`}
+						key={item.name + index}
+						href={item.href}
+					>
+						{item.name}
+					</Link>
+					{index < navigation.length - 1 && <span className="mx-2 text-gray-400">/</span>}
+				</div>
+			))}
+		</div>
+	);
+}
+
 export function NavbarDropdownMenu({
 	signOut,
+	isAuthor,
+	isAdmin,
 	avatarUrl
 }: {
 	avatarUrl?: string | null;
+	isAuthor: boolean;
+	isAdmin: boolean;
 	signOut: () => void;
 }) {
 	return (
@@ -178,19 +223,49 @@ export function NavbarDropdownMenu({
 					as="div"
 					className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 				>
+					{isAdmin && (
+						<MenuItem as="div" className="p-1">
+							{({ focus }) => (
+								<Link
+									href="/admin"
+									className={`${
+										focus ? "bg-emerald-500 text-white" : ""
+									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+								>
+									<RectangleGroupIcon className="h-5" />
+									<span>Adminbereich</span>
+								</Link>
+							)}
+						</MenuItem>
+					)}
 					<MenuItem as="div" className="p-1">
 						{({ focus }) => (
 							<Link
-								href="/overview"
+								href="/dashboard"
 								className={`${
 									focus ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 							>
 								<UserIcon className="h-5" />
-								<span>Übersicht</span>
+								<span>Profil</span>
 							</Link>
 						)}
 					</MenuItem>
+					{isAuthor && (
+						<MenuItem as="div" className="p-1">
+							{({ focus }) => (
+								<Link
+									href="/dashboard/author"
+									className={`${
+										focus ? "bg-emerald-500 text-white" : ""
+									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+								>
+									<AcademicCapIcon className="h-5" />
+									<span>Autoren - Profil</span>
+								</Link>
+							)}
+						</MenuItem>
+					)}
 					<MenuItem as="div" className="p-1">
 						{({ focus }) => (
 							<Link

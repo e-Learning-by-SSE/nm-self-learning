@@ -1,8 +1,8 @@
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { ReactComponent as EnvStudySvg } from "../../svg/environmental-study.svg";
-import { ReactComponent as SoftwareEngineerSvg } from "../../svg/software-engineer.svg";
-import { ReactComponent as PersonalInformationSvg } from "../../svg/teams.svg";
-import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
+import { EnvStudySvg } from "@self-learning/ui/static";
+import { SoftwareEngineerSvg } from "@self-learning/ui/static";
+import { PersonalInformationSvg } from "@self-learning/ui/static";
+import { TutorialSvg } from "@self-learning/ui/static";
 import { Card } from "@self-learning/ui/common";
 
 export default function AdminPage() {
@@ -45,8 +45,12 @@ export default function AdminPage() {
 					imageElement={<PersonalInformationSvg />}
 					title="Lizenzen verwalten"
 				/>
+				<Card
+					href="/admin/users"
+					imageElement={<PersonalInformationSvg />}
+					title="Nutzer:innen verwalten"
+				/>
 			</div>
 		</CenteredSection>
 	);
 }
-

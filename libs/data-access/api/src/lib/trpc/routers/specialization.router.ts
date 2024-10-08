@@ -2,7 +2,8 @@ import { database } from "@self-learning/database";
 import { specializationSchema } from "@self-learning/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, t, UserFromSession } from "../trpc";
+import { authProcedure, t } from "../trpc";
+import { UserFromSession } from "../context";
 
 export const specializationRouter = t.router({
 	getById: authProcedure.input(z.object({ specializationId: z.string() })).query(({ input }) => {

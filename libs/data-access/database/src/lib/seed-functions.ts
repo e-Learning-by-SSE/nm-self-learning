@@ -2,7 +2,6 @@
 import { faker } from "@faker-js/faker";
 import { LessonType, Prisma, PrismaClient } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
-import { Quiz } from "@self-learning/quiz";
 import {
 	createCourseContent,
 	createCourseMeta,
@@ -15,6 +14,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { slugify } from "@self-learning/util/common";
 import { defaultLicence } from "./license";
+import { subDays, subHours } from "date-fns";
 
 const prisma = new PrismaClient();
 
@@ -89,7 +89,7 @@ export function createLesson({
 		quiz: {
 			questions,
 			config: null
-		} satisfies Quiz,
+		},
 		meta: {},
 		licenseId: licenseId ?? 0
 	};
@@ -482,9 +482,70 @@ export async function createRepositories(repository: Repository) {
 	await prisma.skillRepository.create({
 		data: {
 			id: repository.id,
-			ownerId: admin?.id ?? "0",
+			ownerName: admin?.name ?? "unknown",
 			name: repository.name,
 			description: repository.description
 		}
 	});
+}
+
+// Function to generate a random date between 50 days and 6 hours ago
+
+export function getRandomCreatedAt(): Date {
+	const from = subDays(new Date(), 50);
+	const to = subHours(new Date(), 6);
+	return faker.date.between({ from, to });
+}
+
+// Function to generate random time interval in milliseconds
+export function getRandomTimeIntervalInMs(): number {
+	const minMs = 45 * 60 * 1000; // 45 minutes in milliseconds
+	const maxMs = 36 * 60 * 60 * 1000; // 36 hours in milliseconds
+
+	return faker.number.int({ min: minMs, max: maxMs });
+}
+
+export type LearningStrategyCategory = {
+	strategieName: string;
+	strategieDescription: string;
+	techniques: string[];
+};
+
+export async function createStrategiesAndTechniques(input: LearningStrategyCategory[]) {
+	for (const category of input) {
+		const strat = await prisma.learningStrategy.create({
+			data: {
+				name: category.strategieName,
+				description: category.strategieDescription
+			}
+		});
+
+		for (const technique of category.techniques) {
+			await prisma.learningTechnique.create({
+				data: {
+					name: technique,
+					defaultTechnique: true,
+					strategy: { connect: { id: strat.id } }
+				}
+			});
+		}
+	}
+}
+
+export function getRandomItemsFromArray<T>(arr: T[]): T[] {
+	if (!arr || arr.length === 0) {
+		return [];
+	}
+
+	const randomCount = faker.number.int({ min: 1, max: arr.length - 1 });
+	const shuffledArray = arr.sort(() => 0.5 - Math.random());
+	return shuffledArray.slice(0, randomCount);
+}
+
+export function getRandomElementFromArray<T>(arr: T[]): T {
+	if (arr.length === 0) {
+		throw new Error("Array cannot be empty");
+	}
+	const randomIndex = faker.number.int({ min: 0, max: arr.length - 1 });
+	return arr[randomIndex];
 }

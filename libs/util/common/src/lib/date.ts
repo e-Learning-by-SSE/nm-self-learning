@@ -1,5 +1,6 @@
-import { formatDistance } from "date-fns";
+import { formatDistance, intervalToDuration } from "date-fns";
 import { de } from "date-fns/locale";
+import { formatInTimeZone } from "date-fns-tz";
 
 /**
  * Formats seconds to "hh:mm:ss" (hh will be removed if less than an hour).
@@ -23,4 +24,39 @@ export function formatDateAgo(date: Date | string | number) {
 		addSuffix: true,
 		locale: de
 	});
+}
+
+export function formatTimeIntervalToString(ms: number): string {
+	const duration = intervalToDuration({ start: 0, end: ms });
+
+	const { days, hours, minutes } = duration;
+
+	let result = "";
+
+	if (days && days > 0) {
+		result += `${days} ${days > 1 ? "Tage" : "Tag"}`;
+	}
+
+	if (hours && hours > 0) {
+		if (result) result += " und ";
+		result += `${hours} ${hours > 1 ? "Stunden" : "Stunde"}`;
+	}
+
+	if (minutes && minutes > 0) {
+		if (result) result += " und ";
+		result += `${minutes} ${minutes > 1 ? "Minuten" : "Minute"}`;
+	}
+	return result || "0 Minuten";
+}
+
+export function formatDateStringShort(date: Date): string {
+	return formatInTimeZone(date, "Europe/Berlin", "dd.MM.yyyy", { locale: de });
+}
+
+export function formatDateString(date: Date, format: string): string {
+	return formatInTimeZone(date, "Europe/Berlin", format, { locale: de });
+}
+
+export function formatDateStringFull(date: Date): string {
+	return formatInTimeZone(date, "Europe/Berlin", "Pp", { locale: de });
 }

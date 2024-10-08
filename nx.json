@@ -1,6 +1,5 @@
 {
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
-
 	"generators": {
 		"@nrwl/angular:application": {
 			"style": "css",
@@ -8,7 +7,10 @@
 			"unitTestRunner": "jest",
 			"e2eTestRunner": "none"
 		},
-		"@nrwl/angular:library": { "linter": "eslint", "unitTestRunner": "jest" },
+		"@nrwl/angular:library": {
+			"linter": "eslint",
+			"unitTestRunner": "jest"
+		},
 		"@nrwl/angular:component": {
 			"style": "none",
 			"changeDetection": "OnPush",
@@ -22,8 +24,20 @@
 			"inlineTemplate": true,
 			"skipTests": true
 		},
-		"@nx/react": { "application": { "babel": true }, "library": { "unitTestRunner": "jest" } },
-		"@nx/next": { "application": { "style": "css", "linter": "eslint" } }
+		"@nx/react": {
+			"application": {
+				"babel": true
+			},
+			"library": {
+				"unitTestRunner": "jest"
+			}
+		},
+		"@nx/next": {
+			"application": {
+				"style": "css",
+				"linter": "eslint"
+			}
+		}
 	},
 	"defaultProject": "site",
 	"targetDefaults": {
@@ -32,12 +46,17 @@
 			"inputs": ["production", "^production"],
 			"cache": true
 		},
-		"e2e": { "inputs": ["default", "^production"] },
+		"e2e": {
+			"inputs": ["default", "^production"]
+		},
 		"test": {
 			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
 			"cache": true
 		},
-		"lint": { "inputs": ["default", "{workspaceRoot}/.eslintrc.json"], "cache": true }
+		"lint": {
+			"inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
+			"cache": true
+		}
 	},
 	"namedInputs": {
 		"default": ["{projectRoot}/**/*", "sharedGlobals"],
@@ -52,5 +71,21 @@
 			"!{projectRoot}/src/test-setup.[jt]s"
 		]
 	},
-	"nxCloudAccessToken": "MGIzZTAwNzEtZGU5My00NGMxLWE4NTQtOWI1OGY2YmNhZTQ2fHJlYWQtd3JpdGU="
+	"plugins": [
+		{
+			"plugin": "@nx/next/plugin",
+			"options": {
+				"startTargetName": "start",
+				"buildTargetName": "next:build",
+				"devTargetName": "dev",
+				"serveStaticTargetName": "serve-static"
+			}
+		},
+		{
+			"plugin": "@nx/eslint/plugin",
+			"options": {
+				"targetName": "eslint:lint"
+			}
+		}
+	]
 }

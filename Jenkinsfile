@@ -25,14 +25,18 @@ pipeline {
         )
     }
     environment {
-        NODE_DOCKER_IMAGE = 'node:21-bullseye'
-        NX_BASE = 'master'
-        NX_HEAD = 'HEAD'
-        TARGET_PREFIX = 'e-learning-by-sse/nm-self-learning'
-        NX_BRANCH = env.BRANCH_NAME.replace('PR-', '')
-
         API_VERSION = packageJson.getVersion() // package.json must be in the root level in order for this to work
         TZ = 'Europe/Berlin'
+        
+        NX_BASE = 'master'
+        NX_HEAD = 'HEAD'
+        NX_BRANCH = env.BRANCH_NAME.replace('PR-', '')
+        NX_REJECT_UNKNOWN_LOCAL_CACHE = 0
+        
+        NODE_DOCKER_IMAGE = 'node:21-bullseye'
+        TARGET_PREFIX = 'e-learning-by-sse/nm-self-learning'
+        // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
+        DOCKER_ARGS = "--tmpfs /.npm -v ${env.WORKSPACE}/build-caches/npm:${env.WORKSPACE}/.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
     }
 
     options {
@@ -43,7 +47,7 @@ pipeline {
             agent {
                 docker {
                     image "${NODE_DOCKER_IMAGE}"
-                    args '--tmpfs /.cache -v $HOME/.npm:/.npm'
+                    args "${DOCKER_ARGS}"
                     reuseNode true // This is important to enable the use of the docker socket for sidecar pattern later
                 }
             }
@@ -54,7 +58,7 @@ pipeline {
                 sh 'git fetch --no-tags --force --progress origin master:master' // for nx affected
                 sh 'cp -f .npmrc.example .npmrc'
                 sh 'cp -f .env.example .env'
-                sh 'npm ci --force' // force for permission errors
+                sh 'npm install --force' // force for permission errors
             }
         }
 
@@ -67,7 +71,6 @@ pipeline {
             }
             parallel {
                 stage('Master') {
-                    agent { label 'jq' }
                     when {
                         allOf {
                             branch 'master'
@@ -86,12 +89,9 @@ pipeline {
                                 returnStdout: true
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                    sh 'npm run format:check'
                                     sh 'npm run prisma:seed'
-                                    sh "npx nx-cloud record -- nx format:check"
-                                    // This line enables distribution
-                                    // The "--stop-agents-after" is optional, but allows idle agents to shut down once the "e2e-ci" targets have been requested
-                                    // sh "npx nx-cloud start-ci-run --distribute-on='3 linux-medium-js' --stop-agents-after='e2e-ci'"
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci"
                                 }
                         }
@@ -124,14 +124,11 @@ pipeline {
                         VERSION = "${env.API_VERSION}.${env.BRANCH_NAME.split('_')[-1]}"
                     }
                     steps {
-                        // This line enables distribution
-                        // The "--stop-agents-after" is optional, but allows idle agents to shut down once the "e2e-ci" targets have been requested
-                        // sh "npx nx-cloud start-ci-run --distribute-on='3 linux-medium-js' --stop-agents-after='e2e-ci'"
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
+                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                sh 'npm run format:check'
                                 sh 'npm run prisma:seed'
-                                sh "npx nx-cloud record -- nx format:check"
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-ci"
                             }
                         }
@@ -164,10 +161,9 @@ pipeline {
                     steps {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", '--tmpfs /.cache -v $HOME/.npm:/.npm') {
-                                sh 'npm run prisma:seed'
+                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                sh 'npx nx migrate reset' // this will test migrations too
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
-                                // sh "env TZ=${env.TZ} npx nx run-many --target=e2e-ci --all
                             }
                             if (params.RELEASE) {
                                 def apiVersion = ''

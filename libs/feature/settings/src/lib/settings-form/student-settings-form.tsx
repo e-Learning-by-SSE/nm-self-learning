@@ -1,4 +1,5 @@
 import { Toggle } from "@self-learning/ui/common";
+import { useState } from "react";
 
 export function StudentSettingsForm({
 	learningStatistics,
@@ -11,7 +12,7 @@ export function StudentSettingsForm({
 }) {
 	return (
 		<div>
-			<h2 className="mt-4 text-lg font-bold">Lernen</h2>
+			<h2 className="text-lg font-bold">Lernen</h2>
 			<div className="mt-6 flex items-center gap-2">
 				<Toggle
 					value={learningStatistics}
@@ -21,18 +22,17 @@ export function StudentSettingsForm({
 					label="Lernstatistiken"
 				/>
 			</div>
-			<section className="mt-5 rounded-lg bg-white p-3.5">
-				<span className="mt-5 h-32 w-full" title="Check this for learning statistics">
-					Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
+			<ExpandableSettingsSection
+				text="Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
 					tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At
 					vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren,
 					no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit
 					amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
 					labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
 					et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata
-					sanctus est Lorem ipsum dolor sit amet.
-				</span>
-			</section>
+					sanctus est Lorem ipsum dolor sit amet."
+				title="Check this for learning statistics"
+			/>
 			<div className="mt-4 flex items-center gap-2">
 				<Toggle
 					value={hasLearningDiary}
@@ -42,18 +42,38 @@ export function StudentSettingsForm({
 					label="Lerntagebuch"
 				/>
 			</div>
-			<section className="mt-5 rounded-lg bg-white p-3.5">
-				<span className="mt-5 h-32 w-full" title="Check this for learningdiary">
-					Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
+			<ExpandableSettingsSection
+				text="Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
 					tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At
 					vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren,
 					no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit
 					amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
 					labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
 					et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata
-					sanctus est Lorem ipsum dolor sit amet.
-				</span>
-			</section>
+					sanctus est Lorem ipsum dolor sit amet."
+				title="Check this for learning diary"
+			/>
 		</div>
+	);
+}
+
+function ExpandableSettingsSection({ text, title }: { text: string; title: string }) {
+	const [isExpanded, setIsExpanded] = useState(false);
+
+	const toggleExpanded = () => {
+		setIsExpanded(!isExpanded);
+	};
+
+	const displayedText = isExpanded ? text : text.substring(0, 150) + "...";
+
+	return (
+		<section className="mt-5 rounded-lg bg-white p-3.5">
+			<span className="h-32 w-full" title={title}>
+				{displayedText}
+			</span>
+			<button className="mt-2 text-blue-500 hover:underline" onClick={toggleExpanded}>
+				{isExpanded ? "Weniger anzeigen" : "Mehr anzeigen"}
+			</button>
+		</section>
 	);
 }

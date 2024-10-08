@@ -38,26 +38,21 @@ describe("Cloze Parser", () => {
 				"This is the {C: [#a, b]} first sentence.\nThis is the {C: [c, #d]} second sentence."
 			);
 			// Is the same as inline snapshot above only exported as a file
-			expect (gaps).toMatchSnapshot();
-			
+			expect(gaps).toMatchSnapshot();
 		});
 
 		it("Two lines but with whitespace in the first", () => {
-			const gaps = parseCloze(
-				"  \n This is the {C: [c, #d]} second sentence."
-			);
+			const gaps = parseCloze("  \n This is the {C: [c, #d]} second sentence.");
 			// Is the same as inline snapshot above only exported as a file
-			expect (gaps).toMatchSnapshot();
+			expect(gaps).toMatchSnapshot();
 		});
 
-		it('should handle latex correctly', () => {
+		it("should handle latex correctly", () => {
 			const text = "{T: [$$latex1$$, #$$latex2$$]}";
 			const result = parseCloze(text);
 			// Is the same as inline snapshot above only exported as a file
 			expect(result).toMatchSnapshot();
 		});
-
-
 	});
 
 	describe("insertPlaceholder", () => {

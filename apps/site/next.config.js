@@ -24,7 +24,10 @@ const nextConfig = {
 	assetPrefix: process.env.NEXT_ASSET_PREFIX,
 	trailingSlash: process.env.NEXT_TRAILING_SLASH ?? false,
 	reactStrictMode: process.env.NODE_ENV === "development",
-	productionBrowserSourceMaps: process.env.NODE_ENV === "development"
+	productionBrowserSourceMaps: process.env.NODE_ENV === "development",
+	experimental: {
+		swcPlugins: [["next-superjson-plugin", {}]]
+	}
 };
 
 module.exports = withNx(

@@ -2,7 +2,8 @@ import { database } from "@self-learning/database";
 import { subjectSchema } from "@self-learning/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, authProcedure, t, UserFromSession } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
+import { UserFromSession } from "../context";
 
 export const subjectRouter = t.router({
 	getAllWithSpecializations: t.procedure.query(() => {
