@@ -76,7 +76,7 @@ export const learningTechniqueRouter = t.router({
 
 export const learningDiaryPageRouter = t.router({
 	create: authProcedure
-		.input(z.object({ courseSlug: z.string() }))
+		.input(z.object({ courseSlug: z.string(), date: z.date().optional() }))
 		.mutation(async ({ input, ctx }) => {
 			const ltbEntryThreshold = 1000 * 60 * 6 * 60; // 6 hours
 			const [latestEntry] = await database.$transaction([
@@ -102,7 +102,8 @@ export const learningDiaryPageRouter = t.router({
 					},
 					course: {
 						connect: { slug: input.courseSlug }
-					}
+					},
+					createdAt: input.date
 				},
 				select: { id: true }
 			});

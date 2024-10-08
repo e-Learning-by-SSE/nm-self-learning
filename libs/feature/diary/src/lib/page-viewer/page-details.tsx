@@ -78,7 +78,7 @@ type LessonDetailTableProps = {
 	tasks: { id: string }[]; // id for the case, that we want to link to the task in the future
 	tasksSolved: number;
 	hintsUsed: number;
-	retryRatio: number;
+	successRate: number;
 };
 
 export function useLessonDetails({
@@ -90,7 +90,8 @@ export function useLessonDetails({
 }) {
 	const learnedLessons = page.lessonsLearned;
 	const firstLessonLearned = learnedLessons.length > 0 ? learnedLessons[0] : null;
-	const lastLessonLearned = learnedLessons.length > 0 ? learnedLessons[-1] : null;
+	let latestDate =
+		learnedLessons.length > 0 ? learnedLessons[learnedLessons.length - 1].createdAt : null;
 
 	const { data, isLoading } = trpc.events.findMany.useQuery({
 		start: page.createdAt,
@@ -104,6 +105,10 @@ export function useLessonDetails({
 			latestDate: endDate,
 			lessonDetails: []
 		};
+	}
+
+	if (data.length > 0) {
+		latestDate = data[data.length - 1].createdAt;
 	}
 
 	const aggregation = learnedLessons.map(lesson => {
@@ -138,36 +143,37 @@ export function useLessonDetails({
 			tasks: taskIds,
 			tasksSolved: successful,
 			hintsUsed: nHints,
-			retryRatio: failed / (successful + failed)
+			successRate: successful / (successful + failed)
 		} satisfies LessonDetailTableProps;
 	});
 
 	return {
 		earliestDate: firstLessonLearned?.createdAt,
-		latestDate: lastLessonLearned?.createdAt,
+		latestDate: latestDate,
 		lessonDetails: aggregation
 	};
 }
 
-function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate: Date }) {
-	const { latestDate, lessonDetails } = useLessonDetails({ page, endDate });
+function toPercentage(value: number) {
+	let percentage = (value * 100).toFixed(2);
+	// Remove trailing zeros
+	percentage = percentage.replace(/\.?0+$/, "");
+	// German formatting (replace . with ,)
+	return percentage.replace(".", ",") + " %";
+}
 
-	const latestDateString = latestDate ? formatDateStringFull(latestDate) : "unbekannt";
+function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate: Date }) {
+	const { lessonDetails } = useLessonDetails({ page, endDate });
+
 	return (
 		<div className="flex w-full flex-col space-y-4 mt-4">
-			<DetailRow
-				label="Datum der letzten Bearbeitung"
-				value={latestDateString}
-				className="1/6"
-			/>
-
 			<Table
 				head={
 					<>
 						<TableHeaderColumn>Titel</TableHeaderColumn>
 						<TableHeaderColumn>Dauer</TableHeaderColumn>
 						<TableHeaderColumn>Aufgaben gelöst</TableHeaderColumn>
-						<TableHeaderColumn>Wiederholungsrate</TableHeaderColumn>
+						<TableHeaderColumn>Erfolgsrate</TableHeaderColumn>
 						<TableHeaderColumn>Hinweise verwendet</TableHeaderColumn>
 					</>
 				}
@@ -188,7 +194,7 @@ function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate
 						<TableDataColumn>
 							{lessonDetail.tasksSolved}/{lessonDetail.tasks.length}
 						</TableDataColumn>
-						<TableDataColumn> {lessonDetail.retryRatio}</TableDataColumn>
+						<TableDataColumn> {toPercentage(lessonDetail.successRate)}</TableDataColumn>
 						<TableDataColumn>{lessonDetail.hintsUsed}</TableDataColumn>
 					</tr>
 				))}
