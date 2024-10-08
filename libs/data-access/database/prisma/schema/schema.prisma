@@ -26,7 +26,7 @@ model Student {
 
 model StudentSettings {
   username          String  @id
-  learningStatistics Boolean @default(false)
+  learningStatistics Boolean @default(true)
   hasLearningDiary  Boolean  @default(false)
   student           Student @relation(fields: [username], references: [username], onDelete: Cascade)
 }
