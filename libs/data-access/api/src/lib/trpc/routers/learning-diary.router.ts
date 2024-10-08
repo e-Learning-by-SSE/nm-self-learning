@@ -84,13 +84,22 @@ export const learningDiaryPageRouter = t.router({
 					where: {
 						studentName: ctx.user.name
 					},
-					select: { createdAt: true, courseSlug: true },
+					select: { createdAt: true, courseSlug: true, id: true },
 					orderBy: {
 						createdAt: "desc"
 					}
 				})
 			]);
 			if (latestEntry?.courseSlug === input.courseSlug) {
+				// Reset hasRead flag if the user updates the learning diary
+				database.learningDiaryPage.update({
+					where: {
+						id: latestEntry.id
+					},
+					data: {
+						hasRead: false
+					}
+				});
 				if (new Date().getTime() - latestEntry.createdAt.getTime() < ltbEntryThreshold) {
 					return;
 				}
