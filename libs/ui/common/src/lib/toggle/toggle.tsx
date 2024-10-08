@@ -1,11 +1,13 @@
 export function Toggle({
 	value,
 	onChange,
-	label
+	label,
+	disabled
 }: {
 	value: boolean;
 	onChange: (value: boolean) => void;
 	label: string;
+	disabled?: boolean;
 }) {
 	return (
 		<label className="inline-flex cursor-pointer items-center">
@@ -15,6 +17,7 @@ export function Toggle({
 				className="peer sr-only"
 				aria-label="Toggle switch"
 				onChange={e => onChange(e.target.checked)}
+				disabled={disabled}
 			/>
 			<div
 				className="after:start-[2px]
