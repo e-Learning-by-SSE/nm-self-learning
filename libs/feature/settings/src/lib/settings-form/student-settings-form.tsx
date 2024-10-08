@@ -26,11 +26,11 @@ export function StudentSettingsForm({
 				text="Erfassung und Speicherung von Sitzungsdaten zur Auswertung des persönlichen Lernverhalten"
 				title="Check this for learning statistics"
 			>
-				Es werden alle Daten zum Lernverhalten werden erfasst und ausschließlich dir
-				zugänglich gemacht. Dabei werden nur jene Informationen erhoben, die für die Nutzung
-				unserer Plattform erforderlich sind. Dies umfasst unter anderem:
+				Es werden alle Daten zum Lernverhalten erfasst und ausschließlich dir zugänglich
+				gemacht. Dabei werden nur jene Informationen erhoben, die für die Nutzung unserer
+				Plattform erforderlich sind. Dies umfasst unter anderem:
 				<ul className="text-md my-2 flex list-inside list-disc flex-col gap-2 px-2">
-					<li>Aufgerufene Kurse</li>
+					<li>Aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern</li>
 					<li>Starten, pausieren und anhalten von Videos</li>
 					<li>Abgabeversuche von Lernzielkontrollen</li>
 				</ul>
@@ -41,7 +41,7 @@ export function StudentSettingsForm({
 				zur Verbesserung der Kurse bereitgestellt. Dabei gilt:
 				<ul className="text-md my-2 flex list-inside list-disc flex-col gap-2 px-2">
 					<li>
-						Es werden Daten nur angezeigt, wenn min. 10 Studierende am Kurs teilgenommen
+						Es werden Daten nur angezeigt wenn min. 10 Studierende am Kurs teilgenommen
 						haben, um die Anonymität zu gewährleisten.
 					</li>
 					<li>
@@ -53,7 +53,8 @@ export function StudentSettingsForm({
 						bereit gestellt.
 					</li>
 				</ul>
-				Es werden keine Daten an Dritte weitergegeben.{" "}
+				Es werden keine Daten an Dritte weitergegeben und du kannst jederzeit die
+				gesammelten Daten löschen.{" "}
 			</ExpandableSettingsSection>
 			<div className="mt-4 flex items-center gap-2">
 				<Toggle
