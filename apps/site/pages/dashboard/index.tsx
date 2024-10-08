@@ -173,6 +173,8 @@ function DashboardPage(props: Props) {
 		}
 	};
 
+	console.log("props", props);
+
 	return (
 		<div className="bg-gray-50">
 			<CenteredSection>
@@ -198,14 +200,6 @@ function DashboardPage(props: Props) {
 							</span>
 						</div>
 
-						<button
-							className="self-start rounded-full p-2 hover:bg-gray-100"
-							title="Bearbeiten"
-							onClick={() => setEditStudentDialog(true)}
-						>
-							<CogIcon className="h-5 text-gray-400" />
-						</button>
-
 						{editStudentDialog && (
 							<EditStudentDialog
 								student={{ user: { displayName: props.student.user.displayName } }}
@@ -214,12 +208,24 @@ function DashboardPage(props: Props) {
 						)}
 					</section>
 
-					<div className="mt-4 flex items-end gap-2 justify-self-end">
-						<TagebuchToggle
-							onChange={value => {
-								setStudentSettings(value);
-							}}
-						/>
+					<div className="grid grid-rows-2">
+						<div className="flex justify-end items-start">
+							<button
+								className="rounded-full p-2 hover:bg-gray-100"
+								title="Bearbeiten"
+								onClick={() => setEditStudentDialog(true)}
+							>
+								<CogIcon className="h-6 text-gray-500" />
+							</button>
+						</div>
+
+						<div className="flex items-end justify-end">
+							<TagebuchToggle
+								onChange={value => {
+									setStudentSettings(value);
+								}}
+							/>
+						</div>
 					</div>
 				</div>
 
@@ -384,7 +390,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 
 function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 	const notCompletedCourses = enrollments.filter(enrollment => enrollment.status === "ACTIVE");
-
+	console.log("enrollments", enrollments);
 	return (
 		<>
 			{notCompletedCourses.length === 0 ? (
@@ -410,7 +416,7 @@ function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 
 								<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
 									<div className="flex flex-col gap-1">
-										{completion.course?.title}
+										{completion.course?.title} ajlksdjflak
 									</div>
 									<ProgressFooter progress={completion.progress} />
 									<span className="hidden text-sm text-light md:block">
