@@ -254,7 +254,7 @@ function DashboardPage(props: Props) {
 				</div>
 
 				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
-					{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics && (
+					{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics ? (
 						<>
 							<Card
 								href="/dashboard/courseOverview"
@@ -279,6 +279,12 @@ function DashboardPage(props: Props) {
 								title="Lernziele verwalten"
 							/>
 						</>
+					) : (
+						<Card
+							href="/dashboard/courseOverview"
+							imageElement={<TutorialSvg />}
+							title="Kursübersicht"
+						/>
 					)}
 				</div>
 			</CenteredSection>
