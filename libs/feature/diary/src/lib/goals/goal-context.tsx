@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
 
 type LearningGoalContextType = {

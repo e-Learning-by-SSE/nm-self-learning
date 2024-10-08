@@ -1,5 +1,4 @@
 import { ArrowDownRightIcon, ArrowPathIcon, XMarkIcon, CheckIcon } from "@heroicons/react/24/solid";
-
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
