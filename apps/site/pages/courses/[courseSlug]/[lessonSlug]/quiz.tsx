@@ -202,6 +202,7 @@ export function QuizHeader({
 		(lesson: QuestionProps["lesson"], question: QuizContent[number]) => {
 			newEvent({
 				type: "LESSON_QUIZ_START",
+				courseId: course.courseId,
 				resourceId: lesson.lessonId,
 				payload: {
 					questionId: question.questionId,
@@ -209,7 +210,7 @@ export function QuizHeader({
 				}
 			});
 		},
-		[newEvent]
+		[newEvent, course.courseId]
 	);
 
 	if (!successDialogOpenedRef.current && completionState === "completed") {
