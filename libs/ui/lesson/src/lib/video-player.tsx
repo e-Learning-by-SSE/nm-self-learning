@@ -17,8 +17,9 @@ function useHydrationFix() {
 export function VideoPlayer({
 	url,
 	startAt = 0,
-	parentLessonId
-}: Readonly<{ url: string; startAt?: number; parentLessonId?: string }>) {
+	parentLessonId,
+	courseId
+}: Readonly<{ url: string; startAt?: number; parentLessonId?: string; courseId?: string }>) {
 	const playerRef = useRef<ReactPlayer | null>(null);
 	const { isClient } = useHydrationFix();
 	const { newEvent: writeEvent } = useEventLog();
@@ -33,10 +34,10 @@ export function VideoPlayer({
 			// when parentLessonId is not provided, the player is probably not in a lesson during learning
 			// (probably inside an editor) so we don't need to write events
 			if (parentLessonId) {
-				await writeEvent({ ...event, resourceId: parentLessonId });
+				await writeEvent({ ...event, resourceId: parentLessonId, courseId: courseId });
 			}
 		},
-		[parentLessonId, writeEvent]
+		[parentLessonId, writeEvent, courseId]
 	);
 	async function onStart() {
 		await newEvent({
