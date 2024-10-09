@@ -24,7 +24,8 @@ export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 export function Question({
 	question,
 	markdown,
-	lesson
+	lesson,
+	courseId
 }: {
 	question: QuestionType;
 	markdown: {
@@ -33,6 +34,7 @@ export function Question({
 		hintsMd: MdLookupArray;
 	};
 	lesson: LessonLayoutProps["lesson"];
+	courseId?: string;
 }) {
 	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } =
 		useQuiz();
@@ -84,6 +86,7 @@ export function Question({
 		await writeEvent({
 			type: "LESSON_QUIZ_SUBMISSION",
 			resourceId: lesson.lessonId,
+			courseId: courseId,
 			payload: {
 				questionId: question.questionId,
 				totalQuestionPool: totalSteps,
