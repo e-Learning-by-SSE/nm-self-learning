@@ -87,7 +87,7 @@ describe("markAsCompleted", () => {
 			const userEvent = await database.eventLog.findFirst({
 				where: { resourceId: lessonId }
 			});
-			expect(userEvent?.action).toEqual("LESSON_COMPLETE");
+			expect(userEvent?.type).toEqual("LESSON_COMPLETE");
 		});
 
 		it("Creates don't create course completion without 100% progress", async () => {
@@ -118,7 +118,7 @@ describe("markAsCompleted", () => {
 			const userEvent = await database.eventLog.findFirst({
 				where: { resourceId: courseId }
 			});
-			expect(userEvent?.action).toEqual("COURSE_COMPLETE");
+			expect(userEvent?.type).toEqual("COURSE_COMPLETE");
 		});
 	});
 
