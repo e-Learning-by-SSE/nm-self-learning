@@ -143,7 +143,7 @@ export function useLessonDetails({
 			tasks: taskIds,
 			tasksSolved: successful,
 			hintsUsed: nHints,
-			successRate: successful / (successful + failed)
+			successRate: successful !== 0 ? successful / (successful + failed) : 0
 		} satisfies LessonDetailTableProps;
 	});
 
