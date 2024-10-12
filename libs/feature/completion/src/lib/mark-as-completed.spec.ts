@@ -9,6 +9,7 @@ import {
 import { markAsCompleted } from "./mark-as-completed";
 
 const username = "markAsCompletedUser";
+const courseSlug = "mark-as-completed-course-slug";
 
 describe("markAsCompleted", () => {
 	beforeAll(async () => {
@@ -44,7 +45,7 @@ describe("markAsCompleted", () => {
 						courseId,
 						title: "Mark as completed course",
 						subtitle: "Mark as completed course subtitle",
-						slug: "mark-as-completed-course-slug",
+						slug: courseSlug,
 						meta: {},
 						content
 					}
@@ -65,7 +66,7 @@ describe("markAsCompleted", () => {
 
 			await markAsCompleted({
 				username,
-				courseSlug: "mark-as-completed-course-slug",
+				courseSlug,
 				lessonId
 			});
 		});
@@ -110,15 +111,15 @@ describe("markAsCompleted", () => {
 					markAsCompleted({
 						username,
 						lessonId: c,
-						courseSlug: "mark-as-completed-course-slug"
+						courseSlug
 					})
 				)
 			);
 
-			const userEvent = await database.eventLog.findFirst({
-				where: { resourceId: courseId }
+			const userEvent = await database.eventLog.findMany({
+				where: { courseId: courseId }
 			});
-			expect(userEvent?.type).toEqual("COURSE_COMPLETE");
+			expect(userEvent.some(event => event.type === "COURSE_COMPLETE")).toBe(true);
 		});
 	});
 
