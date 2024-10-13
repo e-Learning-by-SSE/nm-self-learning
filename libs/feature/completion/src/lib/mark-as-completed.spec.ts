@@ -25,7 +25,7 @@ describe("markAsCompleted", () => {
 			await database.course.deleteMany({ where: { courseId } });
 			await database.completedLesson.deleteMany({ where: { courseId } });
 			await database.enrollment.deleteMany({ where: { courseId } });
-			await database.eventLog.deleteMany({ where: { resourceId: courseId } });
+			await database.eventLog.deleteMany({ where: { courseId: courseId } });
 			await database.eventLog.deleteMany({ where: { resourceId: lessonId } });
 
 			const content = createCourseContent([
@@ -119,6 +119,7 @@ describe("markAsCompleted", () => {
 			const userEvent = await database.eventLog.findMany({
 				where: { courseId: courseId }
 			});
+			console.log(userEvent);
 			expect(userEvent.some(event => event.type === "COURSE_COMPLETE")).toBe(true);
 		});
 	});
