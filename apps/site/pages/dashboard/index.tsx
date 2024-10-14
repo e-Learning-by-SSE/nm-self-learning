@@ -280,7 +280,7 @@ function DashboardPage(props: Props) {
 							/>
 
 							<Card
-								href="/learning-goals"
+								href="/learning-diary/goals"
 								imageElement={<TutorialSvg />}
 								title="Lernziele verwalten"
 							/>
