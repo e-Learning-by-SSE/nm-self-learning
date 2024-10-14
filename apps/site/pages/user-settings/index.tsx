@@ -71,8 +71,12 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 	}, [settings, updateSettings]);
 
 	const onChange = async (checkbox: string, value: boolean) => {
-		setSettings({ ...settings, [checkbox]: value });
-		onSave();
+		const newSettings = { ...settings, [checkbox]: value };
+		// Automatically disable learning diary if learning statistics are disabled
+		if (checkbox === "learningStatistics" && value === false) {
+			newSettings.hasLearningDiary = false;
+		}
+		setSettings(newSettings);
 	};
 
 	useEffect(() => {

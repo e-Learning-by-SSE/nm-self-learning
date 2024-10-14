@@ -142,6 +142,7 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						question={currentQuestion}
 						markdown={markdown}
 						lesson={lesson}
+						courseId={course.courseId}
 					/>
 					<QuizCompletionSubscriber lesson={lesson} course={course} />
 				</div>
@@ -202,6 +203,7 @@ export function QuizHeader({
 		(lesson: QuestionProps["lesson"], question: QuizContent[number]) => {
 			newEvent({
 				type: "LESSON_QUIZ_START",
+				courseId: course.courseId,
 				resourceId: lesson.lessonId,
 				payload: {
 					questionId: question.questionId,
@@ -209,7 +211,7 @@ export function QuizHeader({
 				}
 			});
 		},
-		[newEvent]
+		[newEvent, course.courseId]
 	);
 
 	if (!successDialogOpenedRef.current && completionState === "completed") {
