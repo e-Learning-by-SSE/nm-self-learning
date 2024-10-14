@@ -38,10 +38,6 @@ export function LearningGoals({
 	const [editTarget, setEditTarget] = useState<Goal | null>(null);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
-	if (goals.length === 0) {
-		return <p>Keine Ziele gefunden</p>;
-	}
-
 	const inProgress = goals.filter(g => g.status === "INACTIVE" || g.status === "ACTIVE");
 	const complete = goals.filter(g => g.status === "COMPLETED");
 
