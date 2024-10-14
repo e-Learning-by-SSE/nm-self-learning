@@ -88,13 +88,8 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	// Handle situations that content creator may created an empty lesson (to add content later)
 	const content = lesson.content as LessonContent;
 	const router = useRouter();
-	const [preferredMediaType, setPreferredMediaType] = useState<
-		"video" | "article" | "pdf" | "iframe"
-	>("video");
 
-	useEffect(() => {
-		setPreferredMediaType(content.length > 0 ? content[0].type : "video");
-	}, [content]);
+	let preferredMediaType = content.length > 0 ? content[0].type : "video";
 
 	if (content.length > 0) {
 		const availableMediaTypes = content.map(c => c.type);
@@ -112,7 +107,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 		);
 
 		if (isIncluded) {
-			setPreferredMediaType(type);
+			preferredMediaType = type;
 		}
 	}
 	return preferredMediaType;
