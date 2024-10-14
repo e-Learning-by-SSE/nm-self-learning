@@ -14,6 +14,8 @@ export default function CreateLessonPage() {
 		);
 	}
 
+	// This function is triggered when the Editor is closed.
+	// It sets the TRPC mutation and the url where the user is directed after submission
 	async function handleCreateClose(lesson?: LessonFormModel) {
 		await onLessonCreatorSubmit(
 			() => {

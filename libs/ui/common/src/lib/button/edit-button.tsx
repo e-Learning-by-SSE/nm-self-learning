@@ -1,26 +1,26 @@
 import React from "react";
 import { PencilIcon } from "@heroicons/react/24/solid";
-import { DefaultButton } from "./default-button";
+import { UniversalButton } from "./universal-button";
 
 export function EditButton({
 	onEdit,
 	title,
-	children
+	buttonTitle
 }: {
 	onEdit: () => void;
-	title?: string;
-	children?: React.ReactNode;
+	title: string;
+	buttonTitle?: string;
 }) {
 	return (
-		<DefaultButton onClick={onEdit} title={title ? title : "Bearbeiten"}>
-			{children ? (
+		<UniversalButton onClick={onEdit} title={title}>
+			{buttonTitle && buttonTitle !== "" ? (
 				<div className="flex items-center space-x-2">
 					<PencilIcon className="h-5 w-5 text-gray-500" />
-					<div>{children}</div>
+					<span className="text-gray-600">{buttonTitle}</span>
 				</div>
 			) : (
 				<PencilIcon className="h-5 w-5 text-gray-500" />
 			)}
-		</DefaultButton>
+		</UniversalButton>
 	);
 }

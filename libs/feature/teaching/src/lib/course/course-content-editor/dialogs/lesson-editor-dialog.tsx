@@ -121,7 +121,7 @@ function NoPermissionToEditComponent({
 	if (!initialLesson) return <></>;
 
 	return (
-		<Dialog title="Nicht erlaubt" onClose={onClose}>
+		 <Dialog title="Nicht erlaubt" onClose={onClose}>
 			<div className="flex flex-col gap-8">
 				<p className="text-light">
 					Du hast keine Berechtigung, diese Lerneinheit zu bearbeiten:

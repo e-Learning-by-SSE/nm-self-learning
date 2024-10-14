@@ -346,19 +346,13 @@ function EditExistingLessonDialog({
 			initialLesson={{
 				...data,
 				requirements: data.requirements.map(req => ({
-					id: req.id,
-					name: req.name,
-					description: req.description,
+					...req,
 					children: req.children.map(c => c.name),
-					repositoryId: req.repositoryId,
 					parents: req.parents.map(p => p.name)
 				})),
 				teachingGoals: data.teachingGoals.map(goal => ({
-					id: goal.id,
-					name: goal.name,
-					description: goal.description,
+					...goal,
 					children: goal.children.map(c => c.name),
-					repositoryId: goal.repositoryId,
 					parents: goal.parents.map(p => p.name)
 				})),
 				// currently there is no license label in the UI so we don't need to set this; see sample implementation below

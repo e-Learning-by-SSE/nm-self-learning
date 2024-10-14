@@ -1,14 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { lessonSchema } from "@self-learning/types";
-import { SectionHeader, showToast } from "@self-learning/ui/common";
-import { Form, MarkdownField, OpenAsJsonButton } from "@self-learning/ui/forms";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { useEffect, useState } from "react";
-import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
+import { createEmptyLesson, lessonSchema } from "@self-learning/types";
+import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -83,7 +82,7 @@ export function LessonEditor({
 		},
 		resolver: zodResolver(lessonSchema)
 	});
-	console.log(initialLesson);
+
 	return (
 		<FormProvider {...form}>
 			<form

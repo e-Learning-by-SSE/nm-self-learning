@@ -1,14 +1,12 @@
-import { ChevronDownIcon, PencilIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, EditButton, OnDialogCloseFn } from "@self-learning/ui/common";
-import { useState } from "react";
-import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
-import { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
 import { editor } from "monaco-editor";
 import { ListBulletIcon, NumberedListIcon } from "@heroicons/react/24/outline";
+import { useRef, useState } from "react";
+import { Dialog, DialogActions, EditButton, OnDialogCloseFn } from "@self-learning/ui/common";
 
 export function MarkdownField({
 	content,
@@ -30,11 +28,10 @@ export function MarkdownField({
 			{!inline && (
 				<div className="mb-2 flex items-end justify-end">
 					<EditButton
+						buttonTitle={"Bearbeiten"}
 						onEdit={() => setOpenEditor(true)}
 						title={"Beschreibung bearbeiten"}
-					>
-						<span className={"text-gray-600"}>Bearbeiten</span>
-					</EditButton>
+					/>
 				</div>
 			)}
 

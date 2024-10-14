@@ -5,6 +5,7 @@ import {
 	InputWithButton,
 	LabeledField,
 	MarkdownField,
+	OpenAsJsonButton,
 	useSlugify
 } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
@@ -12,9 +13,8 @@ import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { SkillForm } from "./skills-form";
 import { lessonSchema } from "@self-learning/types";
-import { OpenAsJsonButton } from "../../json-editor-dialog";
-import { LabeledCheckbox } from "../../../../../../ui/forms/src/lib/labeled-checkbox";
-import { DefaultButton } from "@self-learning/ui/common";
+import { UniversalButton } from "@self-learning/ui/common";
+import { LabeledCheckbox } from "@self-learning/ui/forms";
 
 export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	const form = useFormContext<LessonFormModel>();
@@ -62,9 +62,9 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 							/>
 						}
 						button={
-							<DefaultButton onClick={slugifyField} title={"Generiere Slug"}>
+							<UniversalButton onClick={slugifyField} title={"Generiere Slug"}>
 								<span className={"text-gray-600"}>Generieren</span>
-							</DefaultButton>
+							</UniversalButton>
 						}
 					/>
 					<FieldHint>

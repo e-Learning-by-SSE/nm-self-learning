@@ -1,12 +1,9 @@
-import { authOptions } from "@self-learning/api";
 import { withAuth } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";

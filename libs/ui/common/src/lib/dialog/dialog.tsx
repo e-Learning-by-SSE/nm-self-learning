@@ -1,6 +1,6 @@
 import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { CSSProperties, ReactNode } from "react";
-import { DefaultButton } from "../button/default-button";
+import { UniversalButton } from "../button/universal-button";
 
 export type OnDialogCloseFn<T> = (result?: T) => void;
 
@@ -94,9 +94,9 @@ export function DialogActions({
 }) {
 	return (
 		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
-			<DefaultButton onClick={() => onClose(undefined)}>
+			<UniversalButton onClick={() => onClose(undefined)}>
 				<span className={"text-gray-600"}>Abbrechen</span>
-			</DefaultButton>
+			</UniversalButton>
 			{children}
 		</div>
 	);
