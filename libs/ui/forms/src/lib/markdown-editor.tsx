@@ -169,45 +169,80 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 		if (!editor) return;
 		const selection = editor.getSelection();
 		if (selection === null) return;
-		const selectedText = editor.getModel()?.getValueInRange(selection);
-		if (!selectedText) return;
-
+		const model = editor.getModel();
+		if (!model) return;
+	
+		const selectedText = model.getValueInRange(selection);
 		let formattedText = "";
-
+		let insertPosition = null;
+		const range = selection;
+	
 		switch (formatType) {
 			case "BOLD":
-				formattedText = `**${selectedText?.trim()}**`;
+				if (!selectedText) {
+					formattedText = `****`;
+					insertPosition = selection.getStartPosition().delta(0, 2); 
+				} else {
+					formattedText = `**${selectedText.trim()}**`;
+				}
 				break;
 			case "ITALIC":
-				formattedText = `*${selectedText?.trim()}*`;
+				if (!selectedText) {
+					formattedText = `**`;
+					insertPosition = selection.getStartPosition().delta(0, 1);
+				} else {
+					formattedText = `*${selectedText.trim()}*`;
+				}
 				break;
 			case "UNORDEREDLIST":
-				formattedText = createList("unordered", selectedText?.trim());
+				if (!selectedText) {
+					formattedText = `- `;
+					insertPosition = selection.getStartPosition().delta(0, 2);
+				} else {
+					formattedText = createList("unordered", selectedText.trim());
+				}
 				break;
 			case "ORDEREDLIST":
-				formattedText = createList("ordered", selectedText?.trim());
+				if (!selectedText) {
+					formattedText = `1. `;
+					insertPosition = selection.getStartPosition().delta(0, 3);
+				} else {
+					formattedText = createList("ordered", selectedText.trim());
+				}
 				break;
 			case "HEADER":
-				formattedText = `${"#".repeat(
-					parseInt(selectedHeader.current[1])
-				)} ${selectedText?.trim()}`;
+				if (!selectedText) {
+					formattedText = `${"#".repeat(parseInt(selectedHeader.current[1]))} `;
+					insertPosition = selection.getStartPosition().delta(0, formattedText.length);
+				} else {
+					formattedText = `${"#".repeat(parseInt(selectedHeader.current[1]))} ${selectedText.trim()}`;
+				}
 				break;
 			case "LANGUAGE":
-				formattedText = `\`\`\`${
-					selectedLanguage.current
-				}\n${selectedText?.trim()}\n\`\`\``;
+				if (!selectedText) {
+					formattedText = `\`\`\`${selectedLanguage.current}\n\n\`\`\``;
+					insertPosition = selection.getStartPosition().delta(1, selectedLanguage.current.length + 6); 
+				} else {
+					formattedText = `\`\`\`${selectedLanguage.current}\n${selectedText.trim()}\n\`\`\``;
+				}
 				break;
 			default:
 				break;
 		}
-
+	
 		editor.executeEdits("", [
 			{
-				range: selection,
+				range: range,
 				text: formattedText,
 				forceMoveMarkers: true
 			}
 		]);
+	
+		if (insertPosition) {
+			editor.setPosition(insertPosition);
+		}
+
+		editor.focus();
 	};
 
 	return (
