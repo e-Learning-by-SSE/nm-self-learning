@@ -1,8 +1,9 @@
 import { Dialog } from "@headlessui/react";
 import { EditorField } from "@self-learning/ui/forms";
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useFormContext, UseFormReturn } from "react-hook-form";
 import { ZodSchema } from "zod";
+import { StrokedButton } from "@self-learning/ui/common";
 
 export function JsonEditorDialog<T>({
 	onClose,
@@ -133,15 +134,14 @@ export function OpenAsJsonButton({
 	form: UseFormReturn<any>;
 	validationSchema?: ZodSchema;
 }) {
-	const id = useId();
 	const { isJsonEditorOpen, openJsonEditor, onCloseJsonEditor } = useJsonEditor(form);
 
 	return (
-		<button key={id} type="button" className="btn-stroked" onClick={openJsonEditor}>
-			<span>Als JSON bearbeiten</span>
+		<StrokedButton onClick={openJsonEditor}>
+			<span className={"text-gray-600"}>Als JSON bearbeiten</span>
 			{isJsonEditorOpen && (
 				<JsonEditorDialog onClose={onCloseJsonEditor} validationSchema={validationSchema} />
 			)}
-		</button>
+		</StrokedButton>
 	);
 }
