@@ -17,6 +17,7 @@ import {
 	StarInputTile
 } from "./input-tile";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
+import { LearningTechnique } from "@prisma/client";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -117,6 +118,23 @@ export function DiaryContentForm({
 		return { ...strategy, techniques: updatedStrategy };
 	});
 
+	type Technique = { name: string; id: string; score?: number };
+
+	function onTechniqueChange(
+		updatedTechnique: Technique,
+		field: ControllerRenderProps<LearningDiaryPageOutput, "techniqueRatings">
+	) {
+		const updatedArray = field.value?.some(
+			(technique: LearningTechnique) => technique.id === updatedTechnique.id
+		)
+			? field.value.map((technique: LearningTechnique) =>
+					technique.id === updatedTechnique.id ? updatedTechnique : technique
+				)
+			: [...(field.value || []), updatedTechnique];
+
+		field.onChange(updatedArray.length > 0 ? updatedArray : [updatedTechnique]);
+	}
+
 	if (isLoading) {
 		return <LoadingCircleCorner />;
 	} else if (!pageDetails) {
@@ -192,19 +210,7 @@ export function DiaryContentForm({
 							<PersonalTechniqueRatingTile
 								strategies={itemsWithRatings}
 								onChange={updatedTechnique => {
-									const updatedArray = field.value?.map(technique => ({
-										...technique,
-										score:
-											technique.id === updatedTechnique.id
-												? updatedTechnique.score
-												: technique.score
-									}));
-									const nonEmptyArray =
-										updatedArray && updatedArray.length > 0
-											? updatedArray
-											: [updatedTechnique];
-									console.log("fieldvalue", nonEmptyArray);
-									field.onChange(nonEmptyArray);
+									onTechniqueChange(updatedTechnique, field);
 								}}
 							/>
 						)}
