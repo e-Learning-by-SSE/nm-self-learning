@@ -76,7 +76,7 @@ export const learningTechniqueRouter = t.router({
 
 export const learningDiaryPageRouter = t.router({
 	create: authProcedure
-		.input(z.object({ courseSlug: z.string() }))
+		.input(z.object({ courseSlug: z.string(), date: z.date().optional() }))
 		.mutation(async ({ input, ctx }) => {
 			const ltbEntryThreshold = 1000 * 60 * 6 * 60; // 6 hours
 			const [latestEntry] = await database.$transaction([
@@ -84,13 +84,22 @@ export const learningDiaryPageRouter = t.router({
 					where: {
 						studentName: ctx.user.name
 					},
-					select: { createdAt: true, courseSlug: true },
+					select: { createdAt: true, courseSlug: true, id: true },
 					orderBy: {
 						createdAt: "desc"
 					}
 				})
 			]);
 			if (latestEntry?.courseSlug === input.courseSlug) {
+				// Reset hasRead flag if the user updates the learning diary
+				database.learningDiaryPage.update({
+					where: {
+						id: latestEntry.id
+					},
+					data: {
+						hasRead: false
+					}
+				});
 				if (new Date().getTime() - latestEntry.createdAt.getTime() < ltbEntryThreshold) {
 					return;
 				}
@@ -102,7 +111,8 @@ export const learningDiaryPageRouter = t.router({
 					},
 					course: {
 						connect: { slug: input.courseSlug }
-					}
+					},
+					createdAt: input.date
 				},
 				select: { id: true }
 			});

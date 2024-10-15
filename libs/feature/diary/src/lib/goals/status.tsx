@@ -1,5 +1,4 @@
-import { ArrowDownRightIcon, ArrowPathIcon, XMarkIcon, CheckIcon } from "@heroicons/react/24/solid";
-
+import { ArrowDownRightIcon, ArrowPathIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
@@ -44,25 +43,11 @@ export function GoalStatus({
 		}
 	};
 
-	const handleClickInside = () => setShowDialog(true);
 	// Hook that managed the mousedown eventListener for handling clicks outside of the status options.
 	useEffect(() => {
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	});
-
-	let newClassName = "h-5 w-10 rounded-md border-gray-400";
-	// let newClassName = "w-6 h-6 rounded-full";
-	switch (status) {
-		case "ACTIVE":
-			newClassName += " bg-orange-300";
-			break;
-		case "COMPLETED":
-			newClassName += " bg-green-300";
-			break;
-		case "INACTIVE":
-			newClassName += " bg-red-300";
-	}
 
 	/**
 	 * Function on change of a goal or sub-goal status. Close the three options
@@ -102,65 +87,90 @@ export function GoalStatus({
 		return result;
 	}
 
-	const disable =
-		(goal && status === "COMPLETED") ||
-		(goal && !areSubGoalsCompleted() && !subGoal) ||
-		!editable;
+	const disable = (goal && !areSubGoalsCompleted() && !subGoal) || !editable;
 
-	/*
-		console.log(goal?.id, goal && !areSubGoalsCompleted());
-	*/
+	let statusBgColor = "";
+	if (disable) {
+		statusBgColor = " bg-gray-300";
+	} else {
+		switch (status) {
+			case "ACTIVE":
+				statusBgColor = " bg-orange-300";
+				break;
+			case "COMPLETED":
+				statusBgColor = " bg-green-300";
+				break;
+			case "INACTIVE":
+				statusBgColor = " bg-red-300";
+				break;
+		}
+	}
+	const [showPopup, setShowPopup] = useState(false);
+
+	const onClickStatus = () => {
+		if (disable) {
+			setShowPopup(true);
+			setTimeout(() => setShowPopup(false), 2000); // Hide popup after 2 seconds
+		} else {
+			setShowDialog(true);
+		}
+	};
 
 	return (
 		<div className="relative flex flex-col items-center">
-			<button
-				className={newClassName}
-				onClick={handleClickInside}
-				disabled={disable}
-				title={
-					disable ? "Feinziele müssen Bearbeitet sein" : "Bearbeitungsstatus bearbeiten"
-				}
-			>
-				<ProgressStatusIcon status={status} iconPosition="h-4 ml-3" />
-			</button>
+			{!showDialog && (
+				<div className="relative inline-block">
+					<button
+						data-testid="status-button"
+						className={"h-5 w-10 rounded-md border-gray-400 " + statusBgColor}
+						onClick={onClickStatus}
+						title={"Hauptziel bearbeiten"}
+					>
+						<ProgressStatusIcon status={status} className="h-4 ml-3" />
+					</button>
+					{showPopup && (
+						<div className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-red-100 text-red-700 border border-red-400 rounded-md p-2 z-50">
+							Feinziele müssen Bearbeitet sein
+						</div>
+					)}
+				</div>
+			)}
 			{showDialog && (
-				<div className="absolute z-50 flex flex-row" ref={myRef}>
+				<div className="flex flex-row" ref={myRef}>
 					<button
 						className="h-5 w-10 rounded-md border-gray-400 bg-red-300"
 						onClick={() => onChange("INACTIVE")}
 						title="Nicht bearbeitet"
 					>
-						<ProgressStatusIcon status="INACTIVE" iconPosition="h-4 ml-3" />
+						<ProgressStatusIcon status="INACTIVE" className="h-4 ml-3" />
 					</button>
 					<button
 						className="h-5 w-10 rounded-md border-gray-400 bg-orange-300"
 						onClick={() => onChange("ACTIVE")}
 						title="Teilweise bearbeitet"
 					>
-						<ProgressStatusIcon status="ACTIVE" iconPosition="h-4 ml-3" />
+						<ProgressStatusIcon status="ACTIVE" className="h-4 ml-3" />
 					</button>
 					<button
 						className="h-5 w-10 rounded-md border-gray-400 bg-green-300"
 						onClick={() => onChange("COMPLETED")}
 						title="Bearbeitet"
 					>
-						<ProgressStatusIcon status="COMPLETED" iconPosition="h-4 ml-3" />
+						<ProgressStatusIcon status="COMPLETED" className="h-4 ml-3" />
 					</button>
 				</div>
 			)}
 		</div>
 	);
 }
-
 function ProgressStatusIcon({
 	status,
-	iconPosition
+	className
 }: {
 	status: LearningGoalStatus;
-	iconPosition: string;
+	className: string;
 }) {
 	let icon = null;
-	const className = iconPosition;
 	switch (status) {
 		case "INACTIVE":
 			icon = <XMarkIcon className={className} />;
