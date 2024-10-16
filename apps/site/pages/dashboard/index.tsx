@@ -198,14 +198,6 @@ function DashboardPage(props: Props) {
 							</span>
 						</div>
 
-						<button
-							className="self-start rounded-full p-2 hover:bg-gray-100"
-							title="Bearbeiten"
-							onClick={() => setEditStudentDialog(true)}
-						>
-							<CogIcon className="h-5 text-gray-400" />
-						</button>
-
 						{editStudentDialog && (
 							<EditStudentDialog
 								student={{ user: { displayName: props.student.user.displayName } }}
@@ -214,12 +206,24 @@ function DashboardPage(props: Props) {
 						)}
 					</section>
 
-					<div className="mt-4 flex items-end gap-2 justify-self-end">
-						<TagebuchToggle
-							onChange={value => {
-								setStudentSettings(value);
-							}}
-						/>
+					<div className="grid grid-rows-2">
+						<div className="flex justify-end items-start">
+							<button
+								className="rounded-full p-2 hover:bg-gray-100"
+								title="Bearbeiten"
+								onClick={() => setEditStudentDialog(true)}
+							>
+								<CogIcon className="h-6 text-gray-500" />
+							</button>
+						</div>
+
+						<div className="flex items-end justify-end">
+							<TagebuchToggle
+								onChange={value => {
+									setStudentSettings(value);
+								}}
+							/>
+						</div>
 					</div>
 				</div>
 
@@ -254,7 +258,7 @@ function DashboardPage(props: Props) {
 				</div>
 
 				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
-					{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics && (
+					{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics ? (
 						<>
 							<Card
 								href="/dashboard/courseOverview"
@@ -279,6 +283,12 @@ function DashboardPage(props: Props) {
 								title="Lernziele verwalten"
 							/>
 						</>
+					) : (
+						<Card
+							href="/dashboard/courseOverview"
+							imageElement={<TutorialSvg />}
+							title="Kursübersicht"
+						/>
 					)}
 				</div>
 			</CenteredSection>
@@ -378,7 +388,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 
 function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 	const notCompletedCourses = enrollments.filter(enrollment => enrollment.status === "ACTIVE");
-
+	console.log("enrollments", enrollments);
 	return (
 		<>
 			{notCompletedCourses.length === 0 ? (
