@@ -173,8 +173,6 @@ function DashboardPage(props: Props) {
 		}
 	};
 
-	console.log("props", props);
-
 	return (
 		<div className="bg-gray-50">
 			<CenteredSection>
@@ -416,7 +414,7 @@ function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 
 								<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
 									<div className="flex flex-col gap-1">
-										{completion.course?.title} ajlksdjflak
+										{completion.course?.title}
 									</div>
 									<ProgressFooter progress={completion.progress} />
 									<span className="hidden text-sm text-light md:block">
