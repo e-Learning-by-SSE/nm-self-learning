@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { StudentSettingsForm } from "@self-learning/settings";
 import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
 import { StudentSettings } from "@self-learning/types";
@@ -41,19 +41,18 @@ export function StudentSettingsDialog({
 
 	const onChange = (checkbox: string, value: boolean) => {
 		const newSettings = { ...settings, [checkbox]: value };
+
+		if (checkbox === "hasLearningDiary" && value === true) {
+			newSettings.learningStatistics = true;
+		}
+
 		// Automatically disable learning diary if learning statistics are disabled
 		if (checkbox === "learningStatistics" && value === false) {
 			newSettings.hasLearningDiary = false;
 		}
+
 		setSettings(newSettings);
 	};
-
-	useEffect(() => {
-		if (settings.hasLearningDiary) {
-			const updatedSettings = { learningStatistics: true, hasLearningDiary: true };
-			setSettings(updatedSettings);
-		}
-	}, [settings.hasLearningDiary]);
 
 	return (
 		<Dialog
