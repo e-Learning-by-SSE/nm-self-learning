@@ -1,4 +1,4 @@
-import { CogIcon } from "@heroicons/react/24/solid";
+import { CogIcon, CheckIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getAuthenticatedUser } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -46,6 +46,7 @@ type LearningDiaryEntryLessonWithDetails = {
 	courseImgUrl?: string;
 	courseSlug: string;
 	touchedAt: Date;
+	completed: boolean;
 };
 
 type Props = {
@@ -154,7 +155,7 @@ async function getTouchedLessons(student: Student, numOfLessons: number) {
 				select: {
 					title: true,
 					slug: true,
-					imgUrl: true
+					completions: true
 				}
 			});
 
@@ -165,12 +166,20 @@ async function getTouchedLessons(student: Student, numOfLessons: number) {
 				courseImgUrl: lesson.courseImgUrl || "",
 				courseSlug: lesson.courseSlug || "",
 				touchedAt: lesson.createdAt || null,
-				entryId: lesson.entryId || ""
+				entryId: lesson.entryId || "",
+				completed: false
 			};
 		})
 	);
 
-	return lessonWithDetails;
+	const completedLessonsTitleSet = new Set(
+		student.completedLessons.map(lesson => lesson.lesson.title)
+	);
+
+	return lessonWithDetails.map(lesson => ({
+		...lesson,
+		completed: completedLessonsTitleSet.has(lesson.title)
+	}));
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
@@ -185,7 +194,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 	}
 
 	const student = await getStudent(user.name);
-	const touchedLessons = await getTouchedLessons(student, 4);
+	const touchedLessons = await getTouchedLessons(student, 6);
 
 	return {
 		props: {
@@ -472,10 +481,16 @@ function LastTouchedLessons({
 									src={lesson.courseImgUrl}
 									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 								/>
-								<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-									<div className="flex flex-col gap-1">{lesson.title}</div>
+								<div className="flex w-full grid grid-rows-2 justify-between gap-2 px-4">
+									<span className="flex gap-3 ">
+										<span className="truncate max-w-xs">{lesson.title}</span>
 
-									<span className="hidden text-sm text-light md:block">
+										{lesson.completed && (
+											<CheckIcon className="icon h-5 text-green-500" />
+										)}
+									</span>
+
+									<span className="hidden text-xs text-light md:block">
 										{formatDateAgo(lesson.touchedAt)}
 									</span>
 								</div>
