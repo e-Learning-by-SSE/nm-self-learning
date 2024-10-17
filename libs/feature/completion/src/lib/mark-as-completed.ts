@@ -44,6 +44,7 @@ export async function markAsCompleted({
 		username,
 		type: "LESSON_COMPLETE",
 		resourceId: lessonId,
+		courseId: course?.courseId,
 		payload: undefined
 	});
 
@@ -69,6 +70,7 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 			username,
 			type: "COURSE_COMPLETE",
 			resourceId: courseId,
+			courseId,
 			payload: undefined
 		});
 	}
