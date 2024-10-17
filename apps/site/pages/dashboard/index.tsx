@@ -38,8 +38,19 @@ import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
+type LearningDiaryEntryLessonWithDetails = {
+	entryId: string;
+	lessonId: string;
+	title: string;
+	slug: string;
+	courseImgUrl?: string;
+	courseSlug: string;
+	touchedAt: Date;
+};
+
 type Props = {
 	student: Student;
+	touchedLessons: LearningDiaryEntryLessonWithDetails[];
 };
 
 function getStudent(username: string) {
@@ -107,13 +118,59 @@ function getStudent(username: string) {
 					course: {
 						select: {
 							courseId: true,
-							title: true
+							title: true,
+							imgUrl: true
 						}
-					}
+					},
+					lessonsLearned: true,
+					courseSlug: true
 				}
 			}
 		}
 	});
+}
+
+async function getTouchedLessons(student: Student, numOfLessons: number) {
+	const lessonsFromDiary: any[] = student.learningDiaryEntrys.flatMap(entry =>
+		entry.lessonsLearned.map(lesson => ({
+			...lesson,
+			courseSlug: entry.courseSlug,
+			courseImgUrl: entry.course?.imgUrl,
+			entryId: lesson.id,
+			createdAt: entry.createdAt
+		}))
+	);
+
+	const sortedLessons = lessonsFromDiary.sort(
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+	);
+
+	const newestLessons = sortedLessons.slice(0, numOfLessons);
+
+	const lessonWithDetails = await Promise.all(
+		newestLessons.map(async lesson => {
+			const lessonDetails = await database.lesson.findUnique({
+				where: { lessonId: lesson.lessonId },
+				select: {
+					title: true,
+					slug: true,
+					imgUrl: true
+				}
+			});
+
+			return {
+				lessonId: lesson.lessonId,
+				title: lessonDetails?.title || "",
+				slug: lessonDetails?.slug || "",
+				courseImgUrl: lesson.courseImgUrl || "",
+				courseSlug: lesson.courseSlug || "",
+				touchedAt: lesson.createdAt || null,
+				entryId: lesson.entryId || ""
+			};
+		})
+	);
+
+	return lessonWithDetails;
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
@@ -128,10 +185,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 	}
 
 	const student = await getStudent(user.name);
+	const touchedLessons = await getTouchedLessons(student, 4);
 
 	return {
 		props: {
-			student
+			student,
+			touchedLessons
 		}
 	};
 };
@@ -251,7 +310,7 @@ function DashboardPage(props: Props) {
 						) : (
 							<>
 								<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
-								<Activity enrollments={props.student.enrollments} />
+								<LastTouchedLessons touchedLessons={props.touchedLessons} />
 							</>
 						)}
 					</div>
@@ -386,21 +445,23 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	);
 }
 
-function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
-	const notCompletedCourses = enrollments.filter(enrollment => enrollment.status === "ACTIVE");
-	console.log("enrollments", enrollments);
+function LastTouchedLessons({
+	touchedLessons
+}: {
+	touchedLessons: LearningDiaryEntryLessonWithDetails[];
+}) {
 	return (
 		<>
-			{notCompletedCourses.length === 0 ? (
+			{touchedLessons.length === 0 ? (
 				<span className="text-sm text-light">
-					Du bist momentan in keinem Kurs eingeschrieben.
+					Du hast noch keine Lerneinheiten bearbeitet.
 				</span>
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
-					{notCompletedCourses.map((completion, index) => (
+					{touchedLessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"
-							href={`/courses/${completion.course?.slug}`}
+							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
 							key={"course-" + index}
 						>
 							<li
@@ -408,17 +469,14 @@ function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
 							>
 								<ImageOrPlaceholder
-									src={completion.course?.imgUrl ?? undefined}
+									src={lesson.courseImgUrl}
 									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 								/>
-
 								<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-									<div className="flex flex-col gap-1">
-										{completion.course?.title}
-									</div>
-									<ProgressFooter progress={completion.progress} />
+									<div className="flex flex-col gap-1">{lesson.title}</div>
+
 									<span className="hidden text-sm text-light md:block">
-										{formatDateAgo(completion.lastProgressUpdate)}
+										{formatDateAgo(lesson.touchedAt)}
 									</span>
 								</div>
 							</li>
