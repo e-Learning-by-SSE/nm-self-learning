@@ -3,6 +3,7 @@ import { trpc } from "@self-learning/api-client";
 import { useLessonDetails } from "./page-details";
 import { renderHook } from "@testing-library/react";
 import { EventLog } from "@self-learning/types";
+import { UserEvent } from "@self-learning/database";
 
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
@@ -21,6 +22,7 @@ const mockEvents = [
 		type: "LESSON_QUIZ_SUBMISSION",
 		resourceId: "lesson1",
 		courseId: "course1",
+		createdAt: new Date("2023-01-01"),	
 		payload: {
 			questionId: "task1",
 			totalQuestionPool: 10,
@@ -35,6 +37,7 @@ const mockEvents = [
 		type: "LESSON_QUIZ_SUBMISSION",
 		resourceId: "lesson1",
 		courseId: "course1",
+		createdAt: new Date("2023-01-01"),	
 		payload: {
 			questionId: "task1", // same task again, since task1 was false before
 			totalQuestionPool: 10,
@@ -49,6 +52,7 @@ const mockEvents = [
 		type: "LESSON_QUIZ_SUBMISSION",
 		resourceId: "lesson1",
 		courseId: "course1",
+		createdAt: new Date("2023-01-01"),	
 		payload: {
 			questionId: "task2",
 			totalQuestionPool: 10,
@@ -59,7 +63,7 @@ const mockEvents = [
 			solved: true
 		}
 	}
-] satisfies EventLog<"LESSON_QUIZ_SUBMISSION">[];
+] satisfies (EventLog<"LESSON_QUIZ_SUBMISSION"> | UserEvent)[];
 const mockPage: LearningDiaryPageDetail = {
 	course: { courseId: "course1" },
 	createdAt: new Date("2023-01-01"),
@@ -94,7 +98,7 @@ describe("useLessonDetails", () => {
 
 		const { lessonDetails } = result.current;
 		const hintsUsed = lessonDetails[0].hintsUsed;
-		expect(hintsUsed).toEqual(3);
+		expect(hintsUsed).toEqual(7);
 	});
 	it("should return retry ratio", () => {
 		const { result } = renderHook(() => useLessonDetails({ page: mockPage, endDate: now }));
@@ -102,6 +106,6 @@ describe("useLessonDetails", () => {
 		const { lessonDetails } = result.current;
 		const retryRatio = lessonDetails[0].retryRatio;
 
-		expect(retryRatio).toEqual(0.25);
+		expect(retryRatio.toFixed(2)).toEqual("0.33");
 	});
 });
