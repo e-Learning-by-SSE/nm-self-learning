@@ -4,6 +4,8 @@ import { isThisMonth, isThisWeek, isToday, format, parse } from "date-fns";
 import Link from "next/link";
 import { PagesMeta } from "../access-learning-diary";
 import { LearningDiaryEntryStatusBadge } from "../status-badge";
+import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { ReactNode } from "react";
 
 function categorizePagesIntoGroups(pages: PagesMeta) {
 	const fromToday: PagesMeta = [];
@@ -54,7 +56,15 @@ function categorizePagesIntoGroups(pages: PagesMeta) {
 	};
 }
 
-export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedPageId: string }) {
+export function PageSidebarLayout({
+	pages,
+	selectedPageId,
+	children
+}: {
+	pages: PagesMeta;
+	selectedPageId: string;
+	children: ReactNode;
+}) {
 	const categorizedPages = categorizePagesIntoGroups(pages);
 
 	const renderSection = (label: string, renderPages: PagesMeta) => (
@@ -82,19 +92,21 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 	);
 
 	return (
-		<aside
-			className="playlist-scroll sticky top-[61px]
-        w-full overflow-auto border-t border-r-gray-200
-        pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
+		<SidebarEditorLayout
+			sidebar={
+				<>
+					<h2 className="text-2xl font-bold mt-4 mb-2">Lerntagebuch Seiten</h2>
+					<div className="max-h-full overflow-y-auto">
+						{Object.entries(categorizedPages).map(([label, pages]) => {
+							if (pages.length === 0) return null; // Skip empty sections
+							return renderSection(label, pages.reverse()); // Reverse to show newest first in each section
+						})}
+					</div>
+				</>
+			}
 		>
-			<h2 className="text-2xl font-bold mt-4 mb-2">Lerntagebuch Seiten</h2>
-			<div className="max-h-full overflow-y-auto">
-				{Object.entries(categorizedPages).map(([label, pages]) => {
-					if (pages.length === 0) return null; // Skip empty sections
-					return renderSection(label, pages.reverse()); // Reverse to show newest first in each section
-				})}
-			</div>
-		</aside>
+			<div className="w-full">{children}</div>
+		</SidebarEditorLayout>
 	);
 }
 
