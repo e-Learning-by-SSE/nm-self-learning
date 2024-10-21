@@ -19,6 +19,7 @@ import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { Button } from "@headlessui/react";
 
 type QuizForm = { quiz: Quiz };
 
@@ -97,19 +98,22 @@ export function QuizEditor() {
 					erfolgreich abzuschließen."
 				button={
 					<AddDropDownButton label={"Aufgabe Hinzufügen"}>
-						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
-							<AddButton
-								title={"Aufgabe Hinzufügen"}
-								onAdd={() => appendQuestion(type as QuestionType["type"])}
-								size={"w-full"}
-								key={type as QuestionType["type"]}
-								label={
+						<div className={"bg-white"}>
+							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+								<Button
+									title={"Aufgabe Hinzufügen"}
+									onClick={() => appendQuestion(type as QuestionType["type"])}
+									key={type as QuestionType["type"]}
+									className={
+										"hover:bg-secondary hover:text-white border rounded-md p-2 w-full"
+									}
+								>
 									<span>
 										{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
 									</span>
-								}
-							/>
-						))}
+								</Button>
+							))}
+						</div>
 					</AddDropDownButton>
 				}
 			/>
