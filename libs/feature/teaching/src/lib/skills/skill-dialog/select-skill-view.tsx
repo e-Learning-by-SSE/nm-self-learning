@@ -1,8 +1,47 @@
-import { IconButton } from "@self-learning/ui/common";
+import { AddButton, TransparentDeleteButton } from "@self-learning/ui/common";
 import { SelectSkillDialog } from "./select-skill-dialog";
 import { useState } from "react";
 import { SkillFormModel } from "@self-learning/types";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { LabeledField } from "@self-learning/ui/forms";
+
+export function LabeledFieldSelectSkillsView({
+	skills,
+	onDeleteSkill,
+	onAddSkill,
+	repoId,
+	lable
+}: {
+	skills: SkillFormModel[];
+	onDeleteSkill: (skill: SkillFormModel) => void;
+	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
+	repoId: string;
+	lable: string;
+}) {
+	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
+
+	return (
+		<LabeledField
+			label={lable}
+			button={
+				<AddButton
+					onAdd={() => setSelectSkillModal(true)}
+					title={"Hinzufügen"}
+					data-testid="BenoetigteSkills-add"
+					label={<span>Hinzufügen</span>}
+				/>
+			}
+		>
+			<SkillManagementComponent
+				skills={skills}
+				setSelectSkillModal={setSelectSkillModal}
+				onAddSkill={onAddSkill}
+				selectSkillModal={selectSkillModal}
+				onDeleteSkill={onDeleteSkill}
+				repoId={repoId}
+			></SkillManagementComponent>
+		</LabeledField>
+	);
+}
 
 export function SelectSkillsView({
 	skills,
@@ -18,15 +57,42 @@ export function SelectSkillsView({
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
 
 	return (
-		<div className="flex flex-col">
-			<IconButton
-				type="button"
+		<>
+			<AddButton
+				onAdd={() => setSelectSkillModal(true)}
+				title={"Hinzufügen"}
 				data-testid="BenoetigteSkills-add"
-				onClick={() => setSelectSkillModal(true)}
-				title="Hinzufügen"
-				text="Hinzufügen"
-				icon={<PlusIcon className="h-5" />}
+				label={<span>Hinzufügen</span>}
 			/>
+			<SkillManagementComponent
+				skills={skills}
+				setSelectSkillModal={setSelectSkillModal}
+				onAddSkill={onAddSkill}
+				selectSkillModal={selectSkillModal}
+				onDeleteSkill={onDeleteSkill}
+				repoId={repoId}
+			></SkillManagementComponent>
+		</>
+	);
+}
+
+function SkillManagementComponent({
+	skills,
+	onDeleteSkill,
+	onAddSkill,
+	repoId,
+	setSelectSkillModal,
+	selectSkillModal
+}: {
+	skills: SkillFormModel[];
+	onDeleteSkill: (skill: SkillFormModel) => void;
+	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
+	repoId: string;
+	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+	selectSkillModal: boolean;
+}) {
+	return (
+		<div className="flex flex-col">
 			{skills.length === 0 && (
 				<div className="mt-3 text-sm text-gray-500">Keine Skills vorhanden</div>
 			)}
@@ -72,6 +138,9 @@ function InlineRemoveButton({
 				>
 					{label}
 				</button>
+				<div className={"px-2 py-2"}>
+					<TransparentDeleteButton onDelete={onRemove} title={"Skill entfernen"} />
+				</div>
 			</div>
 		</div>
 	);
