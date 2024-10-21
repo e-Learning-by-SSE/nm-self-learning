@@ -261,7 +261,7 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Besitzer der folgenden Repositories"
 							/>
 							<Link
-								href="skills/repository/create"
+								href="/skills/repository/create"
 								className="btn-primary h-fit w-fit"
 							>
 								<PlusIcon className="icon h-5" />
