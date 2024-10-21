@@ -5,7 +5,7 @@ import {
 	getAllStrategies,
 	PageChanger,
 	PagesMeta,
-	Sidebar,
+	PageSidebarLayout,
 	Strategy
 } from "@self-learning/diary";
 import { Divider } from "@self-learning/ui/common";
@@ -48,28 +48,21 @@ export default function DiaryPageDetail({
 	endDate = subMilliseconds(endDate, 1); // subtract 1 ms to avoid fetching data of the next page
 
 	return (
-		<div className="flex flex-col">
-			<div className="mx-auto flex w-full flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-				<div>
-					<Sidebar selectedPageId={diaryId} pages={pages} />
-				</div>
-
-				<div>
-					<div className="w-2/3 py-4">
-						<div className="mb-4 flex justify-center">
-							<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
-						</div>
-
-						<Divider />
-						<DiaryContentForm
-							key={diaryId}
-							diaryId={diaryId}
-							availableStrategies={availableStrategies}
-							endDate={endDate}
-						/>
+		<div className="w-full min-h-screen">
+			<PageSidebarLayout selectedPageId={diaryId} pages={pages}>
+				<div className={"w-full"}>
+					<div className="mb-4 flex justify-center">
+						<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
 					</div>
+					<Divider />
+					<DiaryContentForm
+						key={diaryId}
+						diaryId={diaryId}
+						availableStrategies={availableStrategies}
+						endDate={endDate}
+					/>
 				</div>
-			</div>
+			</PageSidebarLayout>
 		</div>
 	);
 }
