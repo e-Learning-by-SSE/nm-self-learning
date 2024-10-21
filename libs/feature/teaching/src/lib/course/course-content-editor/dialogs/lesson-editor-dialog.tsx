@@ -1,4 +1,4 @@
-import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
+import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import {
 	LessonEditor,
@@ -8,6 +8,7 @@ import {
 } from "@self-learning/teaching";
 import { trpc } from "@self-learning/api-client";
 import React from "react";
+import { NoPermissionToEditComponent } from "@self-learning/ui/forms";
 
 export function CreateLessonDialog({
 	setCreateLessonDialogOpen
@@ -87,7 +88,7 @@ function LessonEditorDialog({
 }) {
 	return (
 		<Dialog
-			title={!initialLesson ? "Neue Lernheit erstellen" : "Lerneinheit anpassen"}
+			title={!initialLesson ? "Neue Lerneinheit erstellen" : "Lerneinheit anpassen"}
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			style={{ height: "80vh", width: "80vw" }}
 		>
@@ -107,42 +108,6 @@ function LessonEditorDialog({
 				</a>
 			</div>
 			<LessonEditor onSubmit={onClose} initialLesson={initialLesson} isFullScreen={false} />
-		</Dialog>
-	);
-}
-
-function NoPermissionToEditComponent({
-	onClose,
-	initialLesson
-}: {
-	onClose: OnDialogCloseFn<LessonFormModel>;
-	initialLesson?: LessonFormModel;
-}) {
-	if (!initialLesson) return <></>;
-
-	return (
-		 <Dialog title="Nicht erlaubt" onClose={onClose}>
-			<div className="flex flex-col gap-8">
-				<p className="text-light">
-					Du hast keine Berechtigung, diese Lerneinheit zu bearbeiten:
-				</p>
-
-				<div className="flex flex-col">
-					<span className="font-semibold">Titel:</span>
-					<span className="font-semibold text-secondary">{initialLesson.title}</span>
-				</div>
-
-				<div>
-					<span className="font-semibold">Autoren:</span>
-
-					<ul className="flex flex-col">
-						{initialLesson.authors.map(a => (
-							<span className="font-semibold text-secondary">{a.username}</span>
-						))}
-					</ul>
-				</div>
-			</div>
-			<DialogActions onClose={onClose} />
 		</Dialog>
 	);
 }
