@@ -18,6 +18,22 @@ export const settingsRouter = t.router({
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
+			const currentSettings = await database.studentSettings.findUnique({
+				where: {
+					username: ctx.user.name
+				}
+			});
+
+			if (currentSettings?.hasLearningDiary !== input.settings.hasLearningDiary) {
+				await database.eventLog.create({
+					data: {
+						type: "LTB_TOGGLE",
+						payload: { enabled: input.settings.hasLearningDiary },
+						username: ctx.user.name
+					}
+				});
+			}
+
 			return await database.studentSettings.upsert({
 				where: {
 					username: ctx.user.name
