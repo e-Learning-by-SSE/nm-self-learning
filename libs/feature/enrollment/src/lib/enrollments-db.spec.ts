@@ -45,7 +45,7 @@ describe("enrollUser", () => {
 		expect(result).toEqual(mockEnrollment);
 		expect(createUserEvent).toHaveBeenCalledWith({
 			username,
-			action: "COURSE_ENROLL",
+			type: "COURSE_ENROLL",
 			resourceId: courseId,
 			payload: undefined
 		});
