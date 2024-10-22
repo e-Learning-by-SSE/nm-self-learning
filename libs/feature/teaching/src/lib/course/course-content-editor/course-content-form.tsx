@@ -124,7 +124,7 @@ function LessonNode({
 	onRemove: () => void;
 }) {
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
-	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
+	const [lessonEditorDialogOpen, setLessonEditorDialogOpen] = useState(false);
 
 	return (
 		<span className="flex justify-between gap-4 rounded-lg bg-white px-4 py-2">
@@ -151,13 +151,13 @@ function LessonNode({
 				<button
 					type="button"
 					className="flex items-center whitespace-nowrap hover:text-secondary"
-					onClick={() => setLessonEditorDialog(true)}
+					onClick={() => setLessonEditorDialogOpen(true)}
 				>
 					<span className="text-sm">{data ? data.title : "Loading..."}</span>
 
-					{lessonEditorDialog && (
+					{lessonEditorDialogOpen && (
 						<EditExistingLessonDialog
-							setLessonEditorDialog={setLessonEditorDialog}
+							setLessonEditorDialogOpen={setLessonEditorDialogOpen}
 							lessonId={lesson.lessonId}
 						/>
 					)}
@@ -334,15 +334,15 @@ function ChapterNode({
 
 function EditExistingLessonDialog({
 	lessonId,
-	setLessonEditorDialog
+	setLessonEditorDialogOpen
 }: {
 	lessonId: string;
-	setLessonEditorDialog: (value: boolean) => void;
+	setLessonEditorDialogOpen: (value: boolean) => void;
 }) {
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
 	return data ? (
 		<EditLessonDialog
-			setLessonEditorDialog={setLessonEditorDialog}
+			setLessonEditorDialog={setLessonEditorDialogOpen}
 			initialLesson={{
 				...data,
 				requirements: data.requirements.map(req => ({
