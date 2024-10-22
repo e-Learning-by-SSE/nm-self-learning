@@ -342,7 +342,7 @@ function EditExistingLessonDialog({
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
 	return data ? (
 		<EditLessonDialog
-			setLessonEditorDialog={setLessonEditorDialogOpen}
+			setLessonEditorDialogOpen={setLessonEditorDialogOpen}
 			initialLesson={{
 				...data,
 				requirements: data.requirements.map(req => ({

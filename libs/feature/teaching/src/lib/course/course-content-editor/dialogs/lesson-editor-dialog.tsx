@@ -32,16 +32,16 @@ export function CreateLessonDialog({
 
 export function EditLessonDialog({
 	initialLesson,
-	setLessonEditorDialog
+	setLessonEditorDialogOpen
 }: {
 	initialLesson?: LessonFormModel;
-	setLessonEditorDialog: (value: boolean) => void;
+	setLessonEditorDialogOpen: (value: boolean) => void;
 }) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
 		await onLessonEditorSubmit(
 			() => {
-				setLessonEditorDialog(false);
+				setLessonEditorDialogOpen(false);
 			},
 			editLessonAsync,
 			updatedLesson
