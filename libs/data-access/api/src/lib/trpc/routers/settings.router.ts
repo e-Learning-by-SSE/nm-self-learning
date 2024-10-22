@@ -24,29 +24,32 @@ export const settingsRouter = t.router({
 				}
 			});
 
-			if (currentSettings?.hasLearningDiary !== input.settings.hasLearningDiary) {
-				await database.eventLog.create({
-					data: {
-						type: "LTB_TOGGLE",
-						payload: { enabled: input.settings.hasLearningDiary },
+			await database.$transaction(async tx => {
+				if (currentSettings?.hasLearningDiary !== input.settings.hasLearningDiary) {
+					await tx.eventLog.create({
+						data: {
+							type: "LTB_TOGGLE",
+							payload: { enabled: input.settings.hasLearningDiary },
+							username: ctx.user.name,
+							resourceId: ctx.user.name
+						}
+					});
+				}
+
+				return await tx.studentSettings.upsert({
+					where: {
 						username: ctx.user.name
+					},
+					update: {
+						learningStatistics: input.settings.learningStatistics,
+						hasLearningDiary: input.settings.hasLearningDiary
+					},
+					create: {
+						username: ctx.user.name,
+						learningStatistics: input.settings.learningStatistics,
+						hasLearningDiary: input.settings.hasLearningDiary
 					}
 				});
-			}
-
-			return await database.studentSettings.upsert({
-				where: {
-					username: ctx.user.name
-				},
-				update: {
-					learningStatistics: input.settings.learningStatistics,
-					hasLearningDiary: input.settings.hasLearningDiary
-				},
-				create: {
-					username: ctx.user.name,
-					learningStatistics: input.settings.learningStatistics,
-					hasLearningDiary: input.settings.hasLearningDiary
-				}
 			});
 		})
 });
