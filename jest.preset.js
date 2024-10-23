@@ -3,6 +3,7 @@ const nxPreset = require("@nx/jest/preset").default;
 const path = require("path");
 
 const projectRoot = path.resolve(__dirname, "./");
+process.env.TZ = "Europe/Berlin";
 
 module.exports = {
 	...nxPreset,
