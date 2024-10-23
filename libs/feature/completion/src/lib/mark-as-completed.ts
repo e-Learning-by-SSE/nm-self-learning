@@ -61,9 +61,11 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 		select: { lessonId: true }
 	});
 
-	const lessons = extractLessonIds(content);
+	// Remove duplicates to support re-visiting a lesson
+	const completedIds = new Set(completedLessons.map(({ lessonId }) => lessonId));
+	const lessons = new Set(extractLessonIds(content));
 
-	const progress = Math.floor((completedLessons.length / lessons.length) * 100);
+	const progress = Math.floor((completedIds.size / lessons.size) * 100);
 
 	if (progress === 100) {
 		await createUserEvent({
