@@ -44,25 +44,6 @@ compileOnChange() {
     rm -f outside.env
 }
 
-createOrMigrateDB() {
-    if [ ! -f state/.db_initialized ]; then
-        echo "Initialize Database"
-
-		# Create database and apply sample data on first boot
-        npx prisma db push --accept-data-loss
-        npx prisma db seed
-
-        # Create init file to avoid multiple initializations
-        touch state/.db_initialized
-    else
-        echo "Database initialized, apply migrations"
-
-		# Apply only migrations
-        npx prisma migrate deploy
-    fi
-}
-
-
 # Wait until DB is running (only if a host was specified)
 if [ ! -z "${DB_HOST}" ]; then
     while ! pg_isready -h $DB_HOST -p $DB_PORT &> /dev/null; do
@@ -78,11 +59,5 @@ mkdir -p state
 # This is required for React/NextJS applications
 compileOnChange
 
-createOrMigrateDB
-
-# Start Next.js
-if [ ! -z "${RUN_AS_DEMO}" ]; then
-    npm run start:demo
-else
-    npm run start:prod
-fi
+echo "Starting SelfLearn..."
+eval "npm run $@"
