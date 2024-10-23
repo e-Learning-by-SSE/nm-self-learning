@@ -93,7 +93,7 @@ describe("markAsCompleted", () => {
 
 		it("Creates don't create course completion without 100% progress", async () => {
 			const userEvent = await database.eventLog.findFirst({
-				where: { resourceId: courseId }
+				where: { courseId: courseId, type: "COURSE_COMPLETE" }
 			});
 			expect(userEvent).toBeNull();
 		});
