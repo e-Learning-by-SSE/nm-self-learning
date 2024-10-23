@@ -52,7 +52,8 @@ export const evenTypePayloadSchema = z.object({
 	ERROR: z.object({
 		error: z.string(),
 		path: z.string()
-	})
+	}),
+	LTB_TOGGLE: z.object({ enabled: z.boolean() })
 });
 
 export type EventType = z.infer<typeof evenTypePayloadSchema>;
