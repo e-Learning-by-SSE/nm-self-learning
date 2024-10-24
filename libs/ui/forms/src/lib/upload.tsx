@@ -179,29 +179,74 @@ export function Upload({
 
 export function ModifySubtile({
 	subtitle,
-	onClose
+	onChange,
+	onClick
 }: {
-	subtitle: string;
-	onClose: OnDialogCloseFn<string>;
+	subtitle: Subtitle;
+	onClick: (seconds: number) => void;
+	onChange: (subtitle: Subtitle) => void;
 }) {
-	return (
-		<CenteredContainer>
-			<Dialog
-				style={{ height: "25vh", width: "30vw", overflow: "auto" }}
-				title={"Untertitel generieren"}
-				onClose={() => {}}
-			>
-				<CenteredContainer>{subtitle}</CenteredContainer>
+	const parseVTT = (vtt: string) => {
+		const lines = vtt.split("\n\n").filter(line => line.trim() !== "");
+		let metadata = "";
+		if (lines[0].startsWith("WEBVTT")) {
+			metadata = lines.shift() || "";
+		} else {
+			//throw new Error("Invalid VTT format");
+		}
+		const subtitleLines = lines.map(line => {
+			const [timestamp, ...text] = line.split("\n");
+			return { timestamp, text: text.join(" ") };
+		});
 
-				<div className="mt-auto">
-					<DialogActions onClose={onClose}>
-						<button className="btn-primary" onClick={() => {}}>
-							OK
-						</button>
-					</DialogActions>
-				</div>
-			</Dialog>
-		</CenteredContainer>
+		return { metadata, subtitles: subtitleLines };
+	};
+
+	const [subtitles, setSubtitles] = useState(parseVTT(subtitle.src));
+
+	const handleTextChange = (index: number, newText: string) => {
+		const updatedSubtitles = [...subtitles.subtitles];
+		updatedSubtitles[index].text = newText;
+		setSubtitles({
+			...subtitles,
+			subtitles: updatedSubtitles
+		});
+
+	
+		const updatedSubtitleContent = updatedSubtitles
+			.map(({ timestamp, text }) => `${timestamp}\n${text}`)
+			.join("\n\n");
+		const updatetSubtitleVTT = `${subtitles.metadata}\n\n${updatedSubtitleContent}`;
+		onChange({
+			...subtitle,
+			src: updatetSubtitleVTT
+		});
+	};
+
+	const onClickTimeStamp = (timestamp: string) => {
+		const [hours, minutes, seconds] = timestamp.split(":").map(parseFloat);
+		const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+		onClick(totalSeconds);
+	};
+
+	return (
+		<div>
+			<ul>
+				{subtitles.subtitles.map((subtitle, index) => (
+					<li key={index} className="flex items-center mb-2 p-2">
+						<span className="w-1/4 text-right pr-4 hover:text-secondary hover:cursor-pointer" onClick={() => {onClickTimeStamp(subtitle.timestamp)}}>
+							{subtitle.timestamp}
+						</span>
+
+						<textarea
+							className="w-3/4 p-2 border border-gray-300 rounded"
+							value={subtitle.text}
+							onChange={e => handleTextChange(index, e.target.value)}
+						/>
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 }
 

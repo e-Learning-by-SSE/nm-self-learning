@@ -5,7 +5,9 @@ const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export function VideoPlayer({
 	url,
-	subtitle
+	subtitle,
+	onProgress,
+	ref,
 }: {
 	url: string;
 	subtitle?: {
@@ -13,6 +15,9 @@ export function VideoPlayer({
 		label: string;
 		srcLang: string;
 	};
+	onProgress?: (progress: number) => void;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	ref?: React.MutableRefObject<any>;
 }) {
 	const subtitleUrl = useMemo(() => {
 		if (subtitle && subtitle.src) {
@@ -21,6 +26,7 @@ export function VideoPlayer({
 		}
 		return null;
 	}, [subtitle]);
+
 
 	if (!subtitleUrl) {
 		return <ReactPlayer url={url} height="100%" width="100%" controls={true} />;
@@ -31,7 +37,9 @@ export function VideoPlayer({
 			url={url}
 			height="100%"
 			width="100%"
+			ref={ref}
 			controls={true}
+			onProgress={() =>{}}
 			config={{
 				file: {
 					attributes: {
