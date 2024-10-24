@@ -6,7 +6,7 @@ import {
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
 import { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, FormProvider, useForm } from "react-hook-form";
+import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
 import { trpc } from "@self-learning/api-client";
 import { Divider, LoadingCircleCorner } from "@self-learning/ui/common";
 import { DiaryLearnedContent } from "./page-details";
@@ -125,9 +125,9 @@ export function DiaryContentForm({
 		field: ControllerRenderProps<LearningDiaryPageOutput, "techniqueRatings">
 	) {
 		const updatedArray = field.value?.some(
-			(technique: LearningTechnique) => technique.id === updatedTechnique.id
+			(technique: { id: string }) => technique.id === updatedTechnique.id
 		)
-			? field.value.map((technique: LearningTechnique) =>
+			? field.value.map((technique: { id: string }) =>
 					technique.id === updatedTechnique.id ? updatedTechnique : technique
 				)
 			: [...(field.value || []), updatedTechnique];

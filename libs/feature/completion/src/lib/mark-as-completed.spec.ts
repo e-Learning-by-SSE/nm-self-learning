@@ -9,6 +9,7 @@ import {
 import { markAsCompleted } from "./mark-as-completed";
 
 const username = "markAsCompletedUser";
+const courseSlug = "mark-as-completed-course-slug";
 
 describe("markAsCompleted", () => {
 	beforeAll(async () => {
@@ -24,7 +25,7 @@ describe("markAsCompleted", () => {
 			await database.course.deleteMany({ where: { courseId } });
 			await database.completedLesson.deleteMany({ where: { courseId } });
 			await database.enrollment.deleteMany({ where: { courseId } });
-			await database.eventLog.deleteMany({ where: { resourceId: courseId } });
+			await database.eventLog.deleteMany({ where: { courseId: courseId } });
 			await database.eventLog.deleteMany({ where: { resourceId: lessonId } });
 
 			const content = createCourseContent([
@@ -44,7 +45,7 @@ describe("markAsCompleted", () => {
 						courseId,
 						title: "Mark as completed course",
 						subtitle: "Mark as completed course subtitle",
-						slug: "mark-as-completed-course-slug",
+						slug: courseSlug,
 						meta: {},
 						content
 					}
@@ -65,7 +66,7 @@ describe("markAsCompleted", () => {
 
 			await markAsCompleted({
 				username,
-				courseSlug: "mark-as-completed-course-slug",
+				courseSlug,
 				lessonId
 			});
 		});
@@ -87,12 +88,12 @@ describe("markAsCompleted", () => {
 			const userEvent = await database.eventLog.findFirst({
 				where: { resourceId: lessonId }
 			});
-			expect(userEvent?.action).toEqual("LESSON_COMPLETE");
+			expect(userEvent?.type).toEqual("LESSON_COMPLETE");
 		});
 
 		it("Creates don't create course completion without 100% progress", async () => {
 			const userEvent = await database.eventLog.findFirst({
-				where: { resourceId: courseId }
+				where: { courseId: courseId, type: "COURSE_COMPLETE" }
 			});
 			expect(userEvent).toBeNull();
 		});
@@ -110,15 +111,16 @@ describe("markAsCompleted", () => {
 					markAsCompleted({
 						username,
 						lessonId: c,
-						courseSlug: "mark-as-completed-course-slug"
+						courseSlug
 					})
 				)
 			);
 
-			const userEvent = await database.eventLog.findFirst({
-				where: { resourceId: courseId }
+			const userEvent = await database.eventLog.findMany({
+				where: { courseId: courseId }
 			});
-			expect(userEvent?.action).toEqual("COURSE_COMPLETE");
+			console.log(userEvent);
+			expect(userEvent.some(event => event.type === "COURSE_COMPLETE")).toBe(true);
 		});
 	});
 

@@ -139,6 +139,10 @@ pipeline {
                         }
                     }
                     post {
+                        always {
+                            // Test Results
+                            junit 'output/test/junit*.xml'
+                        }
                         success {
                             catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                                 sshagent(['STM-SSH-DEMO']) {
