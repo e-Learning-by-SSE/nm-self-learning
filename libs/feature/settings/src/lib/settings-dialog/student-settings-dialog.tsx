@@ -41,10 +41,16 @@ export function StudentSettingsDialog({
 
 	const onChange = (checkbox: string, value: boolean) => {
 		const newSettings = { ...settings, [checkbox]: value };
+
+		if (checkbox === "hasLearningDiary" && value === true) {
+			newSettings.learningStatistics = true;
+		}
+
 		// Automatically disable learning diary if learning statistics are disabled
 		if (checkbox === "learningStatistics" && value === false) {
 			newSettings.hasLearningDiary = false;
 		}
+
 		setSettings(newSettings);
 	};
 
