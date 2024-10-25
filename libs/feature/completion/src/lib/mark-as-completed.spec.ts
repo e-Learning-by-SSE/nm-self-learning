@@ -23,8 +23,8 @@ describe("markAsCompleted", () => {
 
 		beforeEach(async () => {
 			await database.course.deleteMany({ where: { courseId } });
+			await database.lesson.deleteMany({ where: { lessonId } });
 			await database.completedLesson.deleteMany({ where: { courseId } });
-			await database.completedLesson.deleteMany({ where: { lessonId } });
 			await database.enrollment.deleteMany({ where: { courseId } });
 			await database.eventLog.deleteMany({ where: { courseId: courseId } });
 			await database.eventLog.deleteMany({ where: { resourceId: lessonId } });
