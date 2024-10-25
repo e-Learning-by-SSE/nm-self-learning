@@ -64,42 +64,83 @@ describe("markAsCompleted", () => {
 					status: "ACTIVE"
 				}
 			});
+		});
 
+		it("Lesson marked as completed -> Lesson completed; progress updated", async () => {
+			// Pre-Condition: Lesson is not completed, progress is 0
+			let completedLesson = await database.completedLesson.findFirst({
+				where: { AND: { lessonId, courseId, username } }
+			});
+			expect(completedLesson).toBeNull();
+
+			let enrollment = await database.enrollment.findUnique({
+				where: { courseId_username: { courseId, username } }
+			});
+			expect(enrollment?.progress).toEqual(0);
+
+			// Action: Mark lesson as completed
 			await markAsCompleted({
 				username,
 				courseSlug,
 				lessonId
 			});
-		});
-		it("Creates completedLesson and updates course progress", async () => {
-			const completedLesson = await database.completedLesson.findFirst({
+
+			// Post-Condition: Lesson is completed, progress 1 of 4
+			completedLesson = await database.completedLesson.findFirst({
 				where: { AND: { lessonId, courseId, username } }
 			});
-
 			expect(completedLesson?.lessonId).toEqual(lessonId);
 
-			const enrollment = await database.enrollment.findUnique({
+			enrollment = await database.enrollment.findUnique({
 				where: { courseId_username: { courseId, username } }
 			});
-
 			expect(enrollment?.progress).toEqual(25);
 		});
 
-		it("Creates user event log entry on lesson complete", async () => {
-			const userEvent = await database.eventLog.findFirst({
+		it("Lesson marked as completed -> user event log entry", async () => {
+			// Pre-Condition: No event log entry for lesson completion
+			let userEvent = await database.eventLog.findFirst({
+				where: { resourceId: lessonId }
+			});
+			expect(userEvent).toBeNull();
+
+			// Action: Mark lesson as completed
+			await markAsCompleted({
+				username,
+				courseSlug,
+				lessonId
+			});
+
+			// Post-Condition: Event log entry for lesson completion
+			userEvent = await database.eventLog.findFirst({
 				where: { resourceId: lessonId }
 			});
 			expect(userEvent?.type).toEqual("LESSON_COMPLETE");
 		});
 
-		it("Creates don't create course completion without 100% progress", async () => {
-			const userEvent = await database.eventLog.findFirst({
+		it("1 of 4 lessons completed -> course not completed (course completion requires 100%)", async () => {
+			// Pre-Condition: Course not completed
+			let userEvent = await database.eventLog.findFirst({
+				where: { courseId: courseId, type: "COURSE_COMPLETE" }
+			});
+			expect(userEvent).toBeNull();
+
+			// Action: Mark lesson as completed
+			await markAsCompleted({
+				username,
+				courseSlug,
+				lessonId
+			});
+
+			// Post-Condition: Course still not completed
+			userEvent = await database.eventLog.findFirst({
 				where: { courseId: courseId, type: "COURSE_COMPLETE" }
 			});
 			expect(userEvent).toBeNull();
 		});
 
-		it("Creates log event entry for course completion on 100% progress", async () => {
+		it("All lessons completed -> Course also marked as completed", async () => {
+			// Test data: All lessons of course shall be completed
 			const completions = [
 				"mark-as-completed-lesson-1",
 				"mark-as-completed-lesson-2",
@@ -107,6 +148,13 @@ describe("markAsCompleted", () => {
 				"mark-as-completed-lesson-4"
 			];
 
+			// Pre-Condition: Course not completed
+			let userEvents = await database.eventLog.findMany({
+				where: { courseId: courseId, type: "COURSE_COMPLETE" }
+			});
+			expect(userEvents.length).toBe(0);
+
+			// Action: Mark all lessons as completed
 			await Promise.all(
 				completions.map(c =>
 					markAsCompleted({
@@ -117,11 +165,20 @@ describe("markAsCompleted", () => {
 				)
 			);
 
-			const userEvent = await database.eventLog.findMany({
-				where: { courseId: courseId }
+			// Post-Condition: Course marked as completed (at least 1 event log entry)
+			userEvents = await database.eventLog.findMany({
+				where: { courseId: courseId, type: "COURSE_COMPLETE" }
 			});
-			console.log(userEvent);
-			expect(userEvent.some(event => event.type === "COURSE_COMPLETE")).toBe(true);
+			expect(userEvents.length).toBeGreaterThanOrEqual(1);
+			expect(userEvents[0]).toMatchObject({
+				id: expect.any(Number),
+				type: "COURSE_COMPLETE",
+				resourceId: courseId,
+				username,
+				payload: null,
+				courseId,
+				createdAt: expect.any(Date)
+			});
 		});
 	});
 
