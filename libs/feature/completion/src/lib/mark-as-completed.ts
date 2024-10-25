@@ -20,7 +20,7 @@ export async function markAsCompleted({
 			})
 		: null;
 
-	console.log("Slug", courseSlug, "course", course, "lessonId", lessonId, "username", username);
+	console.error("Slug", courseSlug, "course", course, "lessonId", lessonId, "username", username);
 	const result = await database.completedLesson.create({
 		data: {
 			courseId: course?.courseId,
