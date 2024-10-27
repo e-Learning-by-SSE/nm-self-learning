@@ -1,6 +1,6 @@
+import { withAuth } from "@self-learning/api";
 import { getLearningGoals, LearningGoals } from "@self-learning/diary";
 import { ResolvedValue } from "@self-learning/types";
-import { withAuth } from "@self-learning/util/http";
 import { GetServerSideProps } from "next";
 
 type Goals = ResolvedValue<typeof getLearningGoals>;
