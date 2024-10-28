@@ -21,12 +21,14 @@ import {
 } from "@self-learning/ui/common";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { Author } from "@self-learning/types";
+//import { Author } from "@self-learning/types";
+/*
 import {
 	InlineRemoveButton,
 	SelectSkillsView
 } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-view";
-import { SelectSkillDialog } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-dialog";
+*/
+//import { SelectSkillDialog } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-dialog";
 
 export function CourseBasicInformation() {
 	const form = useFormContext<ExtendedCourseFormValues>();
@@ -54,6 +56,7 @@ export function CourseBasicInformation() {
 
 			<div>
 				<Skills />
+
 				<Selectors
 					authors={authors}
 					onAddAuthor={onAddAuthor}
@@ -93,9 +96,11 @@ function Selectors({
 						text="Hinzufügen"
 						icon={<PlusIcon className="h-5" />}
 					/>
+
 					{authors.length === 0 && (
-						<div className="mt-3 text-sm text-gray-500">Keine Skills vorhanden</div>
+						<div className="mt-3 text-sm text-gray-500">Keine Authoren vorhanden</div>
 					)}
+					{/**
 					<div className="mt-3 max-h-40 overflow-auto">
 						{authors.map((author, index) => (
 							<InlineRemoveButton
@@ -106,6 +111,7 @@ function Selectors({
 							/>
 						))}
 					</div>
+					*/}
 
 					{selectAuthorSelector && (
 						<SelectAuthorSelectorDialog
@@ -175,7 +181,7 @@ function SelectSelectorForm({
 		search !== ""
 			? authors.filter(skill =>
 					skill.displayName.toLowerCase().includes(search.toLowerCase())
-			  )
+				)
 			: authors;
 
 	return (
