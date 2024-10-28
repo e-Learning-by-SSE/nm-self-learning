@@ -1,12 +1,13 @@
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
+import { Dialog, DialogActions, EditButton, OnDialogCloseFn } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
 import { editor } from "monaco-editor";
 import { ListBulletIcon, NumberedListIcon } from "@heroicons/react/24/outline";
-import { useRef, useState } from "react";
-import { Dialog, DialogActions, EditButton, OnDialogCloseFn } from "@self-learning/ui/common";
+import { useCallback, useRef, useState } from "react";
+import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 
 export function MarkdownField({
 	content,
@@ -139,108 +140,121 @@ export function MarkdownEditorDialog({
 	);
 }
 
+type FORMAT_TYPES = "BOLD" | "ITALIC" | "ORDERED_LIST" | "UNORDERED_LIST" | "HEADER" | "LANGUAGE";
+
+function createFormattedList(type: "ordered" | "unordered", text: string) {
+	return text
+		.split("\n")
+		.map((line, i) => (type === "ordered" ? `${i + 1}. ${line}` : `- ${line}`))
+		.join("\n");
+}
+
+const MD_LANG_BLOCK = "```";
+
 function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }) {
-	const selectedHeader = useRef<string>("H1");
-	const selectedLanguage = useRef<string>("javascript");
+	const selectedHeader = useRef("H1");
+	const selectedLanguage = useRef("javascript");
 
-	const createList = (type: "ordered" | "unordered", selectedText: string) => {
-		let formattedList = "";
-		if (type === "ordered") {
-			formattedList = selectedText
-				?.split("\n")
-				.map((line, i) => `${i + 1}. ${line}`)
-				.join("\n");
-		} else {
-			formattedList = selectedText
-				?.split("\n")
-				.map(line => `- ${line}`)
-				.join("\n");
-		}
-		return formattedList;
-	};
+	const applyMarkdownFormat = useCallback(
+		(formatType: FORMAT_TYPES) => {
+			if (!editor) return;
+			const selection = editor.getSelection();
+			const model = editor.getModel();
+			if (!selection || !model) return;
 
-	const applyMarkdownFormat = (
-		formatType: "BOLD" | "ITALIC" | "ORDEREDLIST" | "UNORDEREDLIST" | "HEADER" | "LANGUAGE"
-	) => {
-		if (!editor) return;
-		const selection = editor.getSelection();
-		if (selection === null) return;
-		const selectedText = editor.getModel()?.getValueInRange(selection);
-		if (!selectedText) return;
+			const setCursorPos = (lineColumn: number) => {
+				const insertPosition = selection.getStartPosition().delta(0, lineColumn);
+				editor.setPosition(insertPosition);
+			};
 
-		let formattedText = "";
-
-		switch (formatType) {
-			case "BOLD":
-				formattedText = `**${selectedText?.trim()}**`;
-				break;
-			case "ITALIC":
-				formattedText = `*${selectedText?.trim()}*`;
-				break;
-			case "UNORDEREDLIST":
-				formattedText = createList("unordered", selectedText?.trim());
-				break;
-			case "ORDEREDLIST":
-				formattedText = createList("ordered", selectedText?.trim());
-				break;
-			case "HEADER":
-				formattedText = `${"#".repeat(
-					parseInt(selectedHeader.current[1])
-				)} ${selectedText?.trim()}`;
-				break;
-			case "LANGUAGE":
-				formattedText = `\`\`\`${
-					selectedLanguage.current
-				}\n${selectedText?.trim()}\n\`\`\``;
-				break;
-			default:
-				break;
-		}
-
-		editor.executeEdits("", [
-			{
-				range: selection,
-				text: formattedText,
-				forceMoveMarkers: true
+			const selectedText = model.getValueInRange(selection).trim();
+			const range = selection;
+			let formattedText = "";
+			switch (formatType) {
+				case "BOLD":
+					if (!selectedText) {
+						formattedText = `****`;
+						setCursorPos(2);
+					} else {
+						formattedText = `**${selectedText}**`;
+					}
+					break;
+				case "ITALIC":
+					if (!selectedText) {
+						formattedText = `**`;
+						setCursorPos(1);
+					} else {
+						formattedText = `*${selectedText}*`;
+					}
+					break;
+				case "UNORDERED_LIST":
+					if (!selectedText) {
+						formattedText = `- `;
+						setCursorPos(2);
+					} else {
+						formattedText = createFormattedList("unordered", selectedText);
+					}
+					break;
+				case "ORDERED_LIST":
+					if (!selectedText) {
+						formattedText = `1. `;
+						setCursorPos(3);
+					} else {
+						formattedText = createFormattedList("ordered", selectedText);
+					}
+					break;
+				case "HEADER":
+					if (!selectedText) {
+						formattedText = `${"#".repeat(parseInt(selectedHeader.current[1]))} `;
+						setCursorPos(formattedText.length);
+					} else {
+						formattedText = `${"#".repeat(parseInt(selectedHeader.current[1]))} ${selectedText}`;
+					}
+					break;
+				case "LANGUAGE":
+					if (!selectedText) {
+						formattedText = `${MD_LANG_BLOCK}${selectedLanguage.current}\n\n${MD_LANG_BLOCK}`;
+						setCursorPos(selectedLanguage.current.length + 6);
+					} else {
+						formattedText = `${MD_LANG_BLOCK}${selectedLanguage.current}\n${selectedText}\n${MD_LANG_BLOCK}`;
+					}
+					break;
+				default:
+					break;
 			}
-		]);
-	};
 
+			editor.executeEdits("", [{ range, text: formattedText, forceMoveMarkers: true }]);
+			editor.focus();
+		},
+		[editor]
+	);
 	return (
 		<div className="mb-2 flex flex-col rounded-xl bg-gray-200 p-2">
 			<div className="flex flex-wrap gap-1">
-				<button
-					title="Bold"
-					type="button"
-					className="btn-stroked"
-					onClick={() => applyMarkdownFormat("BOLD")}
-				>
-					<strong>B</strong>
-				</button>
-				<button
-					title="Italic"
-					type="button"
-					className="btn-stroked"
-					onClick={() => applyMarkdownFormat("ITALIC")}
-				>
-					<em>I</em>
-				</button>
-				<button
-					title="Ungeordnete Liste"
-					type="button"
-					className="btn-stroked flex items-center justify-center"
-					onClick={() => applyMarkdownFormat("UNORDEREDLIST")}
-				>
-					<ListBulletIcon className="icon h-5 w-5" />
-				</button>
-				<button
-					title="Geordnete Liste"
-					type="button"
-					className="btn-stroked flex items-center justify-center"
-					onClick={() => applyMarkdownFormat("ORDEREDLIST")}
-				>
-					<NumberedListIcon className="icon h-5 w-5" />
-				</button>
+				{[
+					{ title: "Bold", format: "BOLD", content: <strong>B</strong> },
+					{ title: "Italic", format: "ITALIC", content: <em>I</em> },
+					{
+						title: "Unordered List",
+						format: "UNORDERED_LIST",
+						content: <ListBulletIcon className="icon h-5 w-5" />
+					},
+					{
+						title: "Ordered List",
+						format: "ORDERED_LIST",
+						content: <NumberedListIcon className="icon h-5 w-5" />
+					}
+				].map(({ title, format, content }) => (
+					<button
+						key={format}
+						title={title}
+						type="button"
+						className="btn-stroked"
+						onClick={() => applyMarkdownFormat(format as FORMAT_TYPES)}
+					>
+						{content}
+					</button>
+				))}
 
 				<EditorQuickActionsHeaderDropdown
 					onChange={value => {
