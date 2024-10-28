@@ -50,7 +50,6 @@ export default function CourseCreationEditor({
 }: {
 	onConfirm: (course: ExtendedCourseFormModel) => void;
 }) {
-	//const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau", "Test"];
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
 
