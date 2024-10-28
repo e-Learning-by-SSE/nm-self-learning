@@ -25,7 +25,7 @@ export const learningGoalSchema = z.object({
 
 export const learningLocationSchema = z.object({
 	name: z.string(),
-	iconURL: z.string().optional(),
+	iconURL: z.string().optional().nullable(),
 	defaultLocation: z.boolean().optional()
 });
 
