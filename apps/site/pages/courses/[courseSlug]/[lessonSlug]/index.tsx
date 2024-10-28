@@ -20,6 +20,7 @@ import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
+import { useEventLog } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
@@ -87,9 +88,8 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	// Handle situations that content creator may created an empty lesson (to add content later)
 	const content = lesson.content as LessonContent;
 	const router = useRouter();
-	const [preferredMediaType, setPreferredMediaType] = useState(
-		content.length > 0 ? content[0].type : null
-	);
+
+	let preferredMediaType = content.length > 0 ? content[0].type : "video";
 
 	if (content.length > 0) {
 		const availableMediaTypes = content.map(c => c.type);
@@ -107,7 +107,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 		);
 
 		if (isIncluded) {
-			setPreferredMediaType(type);
+			preferredMediaType = type;
 		}
 	}
 	return preferredMediaType;
@@ -118,6 +118,17 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
+
+	const { newEvent } = useEventLog();
+	useEffect(() => {
+		// TODO check if useEffect can be removed
+		newEvent({
+			type: "LESSON_OPEN",
+			resourceId: lesson.lessonId,
+			courseId: course.courseId,
+			payload: undefined
+		});
+	}, [newEvent, lesson.lessonId, course.courseId]);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
@@ -137,7 +148,11 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
 					{video?.value.url ? (
-						<VideoPlayer url={video.value.url} />
+						<VideoPlayer
+							parentLessonId={lesson.lessonId}
+							url={video.value.url}
+							courseId={course.courseId}
+						/>
 					) : (
 						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
 					)}
@@ -315,7 +330,7 @@ function MediaTypeSelector({
 }) {
 	const lessonContent = lesson.content as LessonContent;
 	// If no content is specified at this time, use video as default (and don't s´display anything)
-	const preferredMediaType = usePreferredMediaType(lesson) ?? "video";
+	const preferredMediaType = usePreferredMediaType(lesson);
 	const { index } = findContentType(preferredMediaType, lessonContent);
 	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();

@@ -1,5 +1,9 @@
 const nxPreset = require("@nx/jest/preset").default;
 
+const path = require("path");
+
+const projectRoot = path.resolve(__dirname, "./");
+
 module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
@@ -24,5 +28,20 @@ module.exports = {
 	reporters: [
 		"default",
 		["jest-junit", { outputDirectory: "output/test", outputName: "junit.xml" }]
-	]
+	],
+	transform: {
+		"^.+\\.[tj]sx?$": [
+			"@swc/jest",
+			{
+				jsc: {
+					parser: { syntax: "typescript", tsx: true },
+					transform: { react: { runtime: "automatic" } }
+				}
+			}
+		],
+		"^.+\\.svg$": path.join(projectRoot, "jest.svgTransform.js")
+	},
+	transformIgnorePatterns: [],
+	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
+	extensionsToTreatAsEsm: [".ts", ".tsx"]
 };

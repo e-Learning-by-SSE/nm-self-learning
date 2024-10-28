@@ -1,4 +1,4 @@
-import { Menu, Transition } from "@headlessui/react";
+import { Menu, MenuItem, Transition } from "@headlessui/react";
 import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/24/solid";
 import React, { Fragment, useState } from "react";
 
@@ -57,18 +57,18 @@ export function Selection({
 					className="absolute z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 				>
 					{content.map((item, index) => (
-						<Menu.Item key={index}>
-							{({ active }) => (
+						<MenuItem key={index}>
+							{({ focus }) => (
 								<div
 									className={`${
-										active ? "bg-emerald-500 text-white" : ""
+										focus ? "bg-emerald-500 text-white" : ""
 									} flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-2`}
 									onClick={() => onSelection(index)}
 								>
 									{item}
 								</div>
 							)}
-						</Menu.Item>
+						</MenuItem>
 					))}
 				</Menu>
 			</Transition>

@@ -1,12 +1,11 @@
 import { Prisma } from "@prisma/client";
-import { authOptions } from "@self-learning/api";
+import { withAuth } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
 import { useRouter } from "next/router";
 import { useRef } from "react";
 
@@ -15,98 +14,88 @@ type EditCourseProps = {
 	lessons: { title: string; lessonId: string; slug: string; meta: Prisma.JsonValue }[];
 };
 
-export const getServerSideProps: GetServerSideProps<EditCourseProps> = async ctx => {
-	const courseId = ctx.params?.courseId as string;
+export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth(
+	async (ctx, user) => {
+		const courseId = ctx.params?.courseId as string;
 
-	const course = await database.course.findUnique({
-		where: { courseId },
-		include: {
-			authors: {
-				select: {
-					username: true
-				}
-			},
-			specializations: {
-				select: {
-					specializationId: true
-				}
-			},
-			subject: {
-				select: {
-					subjectId: true,
-					title: true
+		const course = await database.course.findUnique({
+			where: { courseId },
+			include: {
+				authors: {
+					select: {
+						username: true
+					}
+				},
+				specializations: {
+					select: {
+						specializationId: true
+					}
+				},
+				subject: {
+					select: {
+						subjectId: true,
+						title: true
+					}
 				}
 			}
+		});
+
+		if (!course) {
+			return {
+				notFound: true
+			};
 		}
-	});
 
-	if (!course) {
-		return {
-			notFound: true
-		};
-	}
-
-	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
-
-	if (!session) {
-		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
-			}
-		};
-	}
-
-	if (
-		session.user.role !== "ADMIN" &&
-		(!session.user.isAuthor ||
-			!course.authors.some(author => author.username === session.user.name))
-	) {
-		return {
-			redirect: {
-				destination: "/403",
-				permanent: false
-			}
-		};
-	}
-
-	const content = course.content as CourseContent;
-
-	const lessonIds = extractLessonIds(content);
-
-	const lessons = await database.lesson.findMany({
-		where: { lessonId: { in: lessonIds } },
-		select: {
-			title: true,
-			slug: true,
-			lessonId: true,
-			meta: true
+		if (
+			user.role !== "ADMIN" &&
+			(user.isAuthor || !course.authors.some(author => author.username === user.name))
+		) {
+			return {
+				redirect: {
+					destination: "/403",
+					permanent: false
+				}
+			};
 		}
-	});
 
-	const lessonsById = new Map<string, typeof lessons[0]>();
+		const content = course.content as CourseContent;
 
-	for (const lesson of lessons) {
-		lessonsById.set(lesson.lessonId, lesson);
+		const lessonIds = extractLessonIds(content);
+
+		const lessons = await database.lesson.findMany({
+			where: { lessonId: { in: lessonIds } },
+			select: {
+				title: true,
+				slug: true,
+				lessonId: true,
+				meta: true
+			}
+		});
+
+		const lessonsById = new Map<string, (typeof lessons)[0]>();
+
+		for (const lesson of lessons) {
+			lessonsById.set(lesson.lessonId, lesson);
+		}
+
+		const courseFormModel: CourseFormModel = {
+			title: course.title,
+			courseId: course.courseId,
+			description: course.description,
+			subtitle: course.subtitle,
+			imgUrl: course.imgUrl,
+			slug: course.slug,
+			subjectId: course.subject?.subjectId ?? null,
+			authors: course.authors.map(author => ({ username: author.username })),
+			content: content
+		};
+
+		return {
+			notFound: !course,
+			props: { course: courseFormModel, lessons }
+		};
 	}
-
-	const courseFormModel: CourseFormModel = {
-		title: course.title,
-		courseId: course.courseId,
-		description: course.description,
-		subtitle: course.subtitle,
-		imgUrl: course.imgUrl,
-		slug: course.slug,
-		subjectId: course.subject?.subjectId ?? null,
-		authors: course.authors.map(author => ({ username: author.username })),
-		content: content
-	};
-
-	return {
-		notFound: !course,
-		props: { course: courseFormModel, lessons }
-	};
-};
+);
 
 export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();

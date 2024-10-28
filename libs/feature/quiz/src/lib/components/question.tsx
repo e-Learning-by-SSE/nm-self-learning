@@ -17,13 +17,15 @@ import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
+import { useEventLog } from "@self-learning/util/common";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
 export function Question({
 	question,
 	markdown,
-	lesson
+	lesson,
+	courseId
 }: {
 	question: QuestionType;
 	markdown: {
@@ -32,9 +34,11 @@ export function Question({
 		hintsMd: MdLookupArray;
 	};
 	lesson: LessonLayoutProps["lesson"];
+	courseId?: string;
 }) {
 	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } =
 		useQuiz();
+	const { newEvent: writeEvent } = useEventLog();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
 	const [currentStep, setCurrentStep] = useState(
@@ -68,7 +72,7 @@ export function Question({
 		});
 	}
 
-	function setEvaluation(e: BaseEvaluation | null) {
+	async function setEvaluation(e: BaseEvaluation | null) {
 		setCurrentStep(
 			question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED
 				? 2
@@ -78,6 +82,21 @@ export function Question({
 			...prev,
 			[question.questionId]: e
 		}));
+
+		await writeEvent({
+			type: "LESSON_QUIZ_SUBMISSION",
+			resourceId: lesson.lessonId,
+			courseId: courseId,
+			payload: {
+				questionId: question.questionId,
+				totalQuestionPool: totalSteps,
+				questionPoolIndex: currentStep,
+				type: question.type,
+				hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
+				attempts: 1,
+				solved: e?.isCorrect ?? false
+			}
+		});
 	}
 
 	function nextQuestionStep() {
@@ -155,12 +174,11 @@ function CheckResult({
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
 	const { completionState, reload } = useQuiz();
 
-	function checkResult() {
+	async function checkResult() {
 		console.debug("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
 		setEvaluation(evaluation);
 	}
-
 	if (!currentEvaluation) {
 		<span className="text-red-500">No question state found for this question.</span>;
 	}

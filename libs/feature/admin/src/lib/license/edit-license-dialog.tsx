@@ -11,7 +11,7 @@ import {
 	showToast
 } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
@@ -225,7 +225,7 @@ function LicenseDataEditSection() {
 							<label htmlFor={"selectable"} className="text-sm font-semibold">
 								Auswählbar
 							</label>
-							<QuestionMarkTooltip tooltipText="Entscheidet ob die Lizenz für neue Lerneinheiten ausgewählt werden kann. Bestehende Zuordnungen bleiben bestehen" />
+							<QuestionMarkTooltip content="Entscheidet ob die Lizenz für neue Lerneinheiten ausgewählt werden kann. Bestehende Zuordnungen bleiben bestehen" />
 						</span>
 						<span className="flex items-center gap-2">
 							<input
@@ -240,7 +240,7 @@ function LicenseDataEditSection() {
 							<label htmlFor={"oerCompatible"} className="text-sm font-semibold">
 								Export erlaubt
 							</label>
-							<QuestionMarkTooltip tooltipText="Entscheidet ob die LiaScript-Exportfunktion bei Lerneinheiten mit dieser Lizenz verwendet werden kann." />
+							<QuestionMarkTooltip content="Entscheidet ob die LiaScript-Exportfunktion bei Lerneinheiten mit dieser Lizenz verwendet werden kann." />
 						</span>
 						<span className="flex items-center gap-2">
 							<input
@@ -255,7 +255,7 @@ function LicenseDataEditSection() {
 							<label htmlFor={"defaultSuggestion"} className="text-sm font-semibold">
 								Standardlizenz
 							</label>
-							<QuestionMarkTooltip tooltipText="Eine Standardlizenz wird für alle neuen Lerneinheiten vorgeschlagen. Alle Lerneinheiten ohne zugeordnete Lizenz erhalten ebenfalls die Standardlizenz. Es kann nur eine Standardlizenz geben." />
+							<QuestionMarkTooltip content="Eine Standardlizenz wird für alle neuen Lerneinheiten vorgeschlagen. Alle Lerneinheiten ohne zugeordnete Lizenz erhalten ebenfalls die Standardlizenz. Es kann nur eine Standardlizenz geben." />
 						</span>
 					</div>
 				</LabeledField>

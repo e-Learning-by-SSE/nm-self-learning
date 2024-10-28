@@ -6,11 +6,12 @@ import {
 	PlayIcon
 } from "@heroicons/react/24/solid";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
-import { Divider } from "@self-learning/ui/common";
-import { motion } from "framer-motion";
+import { Divider, ProgressBar, useTimeout } from "@self-learning/ui/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { trpc } from "@self-learning/api-client";
+import { z } from "zod";
 
 export type PlaylistChapter = {
 	title: string;
@@ -43,9 +44,36 @@ type PlaylistProps = {
 	completion?: CourseCompletion;
 };
 
+function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
+	const { mutateAsync: createLearningDiaryEntry } = trpc.learningDiary.create.useMutation();
+	const { mutateAsync: createLearningDiaryLearnedLesson } =
+		trpc.learningDiary.addLearningDiaryLearnedLessons.useMutation();
+	// Exact starting time is required, otherwise we miss some events during the learning analysis
+	const creationDate = new Date();
+
+	const log = useCallback(async () => {
+		try {
+			const page = await createLearningDiaryEntry({
+				courseSlug: courseSlug,
+				date: creationDate
+			});
+
+			await createLearningDiaryLearnedLesson({
+				entryId: page?.id ?? "",
+				lessonId
+			});
+		} catch (e) {}
+	}, [createLearningDiaryEntry, courseSlug]);
+	useTimeout({ callback: log, delayInMilliseconds: 60000 });
+}
+
+function Writer({ courseSlug, lessonId }: { courseSlug: string; lessonId: string }) {
+	useLearningDiaryRecording(courseSlug, lessonId);
+	return <></>;
+}
+
 export function Playlist({ content, course, lesson, completion }: PlaylistProps) {
 	const [contentWithCompletion, setContentWithCompletion] = useState(content);
-
 	useEffect(() => {
 		if (!completion) {
 			return;
@@ -62,6 +90,7 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 
 	return (
 		<>
+			<Writer courseSlug={course.slug} lessonId={lesson.lessonId} />
 			<PlaylistHeader
 				content={content}
 				course={course}
@@ -174,21 +203,8 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 					{extractLessonIds(content).length} Lerneinheiten abgeschlossen
 				</span>
 			</div>
-			<span className="relative h-5 w-full rounded-lg bg-gray-200">
-				<motion.span
-					className="absolute left-0 h-5 rounded-lg bg-secondary"
-					initial={{ width: 0 }}
-					animate={{ width: `${completionPercentage}%` }}
-					transition={{ type: "tween" }}
-				></motion.span>
-				<span
-					className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
-						completionPercentage === 0 ? "text-secondary" : "text-white"
-					}`}
-				>
-					{completionPercentage}%
-				</span>
-			</span>
+
+			<ProgressBar completionPercentage={completionPercentage} />
 
 			<Divider />
 
@@ -241,18 +257,16 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 				</span>
 			</span>
 			<span className="flex justify-between">
-
 				{lesson.meta.hasQuiz && (
-
-				<Link
-					href={`/courses/${course.slug}/${lesson.slug}${
-						router.pathname.endsWith("quiz") ? "" : "/quiz"
-					}`}
-					className="btn-primary text-sm"
-					data-testid="quizLink"
-				>
-					{router.pathname.endsWith("quiz") ? "Zum Lernhinhalt" : "Zur Lernkontrolle"}
-				</Link>
+					<Link
+						href={`/courses/${course.slug}/${lesson.slug}${
+							router.pathname.endsWith("quiz") ? "" : "/quiz"
+						}`}
+						className="btn-primary text-sm"
+						data-testid="quizLink"
+					>
+						{router.pathname.endsWith("quiz") ? "Zum Lernhinhalt" : "Zur Lernkontrolle"}
+					</Link>
 				)}
 
 				<span className="flex gap-2">
