@@ -7,7 +7,6 @@ import { AssetPickerButton } from "./upload";
 import { editor } from "monaco-editor";
 import { ListBulletIcon, NumberedListIcon } from "@heroicons/react/24/outline";
 import { useCallback, useRef, useState } from "react";
-import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 
 export function MarkdownField({
 	content,
