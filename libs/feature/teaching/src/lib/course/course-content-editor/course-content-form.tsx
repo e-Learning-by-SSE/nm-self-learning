@@ -11,12 +11,17 @@ import {
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
-import { SectionHeader } from "@self-learning/ui/common";
-import { useState } from "react";
+import { OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
+import React, { useState } from "react";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
 import { useCourseContentForm } from "./use-content-form";
-import { CreateLessonDialog, EditLessonDialog } from "./dialogs/lesson-editor-dialog";
+import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
+import {
+	LessonFormModel,
+	onLessonCreatorSubmit,
+	onLessonEditorSubmit
+} from "@self-learning/teaching";
 
 type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
 
@@ -203,6 +208,7 @@ function ChapterNode({
 	onRemove: () => void;
 	removeLesson: UseCourseContentForm["removeLesson"];
 }) {
+	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const [editChapterDialogOpen, setEditChapterDialogOpen] = useState(false);
@@ -222,6 +228,16 @@ function ChapterNode({
 		}
 
 		setEditChapterDialogOpen(false);
+	}
+
+	async function handleCreateDialogClose(lesson?: LessonFormModel) {
+		await onLessonCreatorSubmit(
+			() => {
+				setCreateLessonDialogOpen(false);
+			},
+			createLessonAsync,
+			lesson
+		);
 	}
 
 	return (
@@ -323,7 +339,7 @@ function ChapterNode({
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 			)}
 			{createLessonDialogOpen && (
-				<CreateLessonDialog setCreateLessonDialogOpen={setCreateLessonDialogOpen} />
+				<LessonEditorDialogWithGuard onClose={handleCreateDialogClose} />
 			)}
 			{editChapterDialogOpen && (
 				<ChapterDialog chapter={chapter} onClose={handleEditChapterDialogClosed} />
@@ -340,9 +356,21 @@ function EditExistingLessonDialog({
 	setLessonEditorDialogOpen: (value: boolean) => void;
 }) {
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
+	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
+
+	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
+		await onLessonEditorSubmit(
+			() => {
+				setLessonEditorDialogOpen(false);
+			},
+			editLessonAsync,
+			updatedLesson
+		);
+	};
+
 	return data ? (
-		<EditLessonDialog
-			setLessonEditorDialogOpen={setLessonEditorDialogOpen}
+		<LessonEditorDialogWithGuard
+			onClose={handleEditDialogClose}
 			initialLesson={{
 				...data,
 				requirements: data.requirements.map(req => ({

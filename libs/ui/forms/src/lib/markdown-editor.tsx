@@ -29,7 +29,7 @@ export function MarkdownField({
 				<div className="mb-2 flex items-end justify-end">
 					<EditButton
 						buttonTitle={"Bearbeiten"}
-						onEdit={() => setOpenEditor(true)}
+						onClick={() => setOpenEditor(true)}
 						title={"Beschreibung bearbeiten"}
 					/>
 				</div>

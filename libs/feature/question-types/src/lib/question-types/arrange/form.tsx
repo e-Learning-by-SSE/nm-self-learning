@@ -195,7 +195,7 @@ function DraggableContent({
 				>
 					<div className="flex justify-end gap-2">
 						<EditButton
-							onEdit={() =>
+							onClick={() =>
 								setEditItemDialog({
 									containerId,
 									item

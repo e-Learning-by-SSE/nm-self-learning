@@ -1,61 +1,9 @@
 import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
-import {
-	LessonEditor,
-	LessonFormModel,
-	onLessonCreatorSubmit,
-	onLessonEditorSubmit
-} from "@self-learning/teaching";
-import { trpc } from "@self-learning/api-client";
+import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import React from "react";
 
-export function CreateLessonDialog({
-	setCreateLessonDialogOpen
-}: {
-	setCreateLessonDialogOpen: (open: boolean) => void;
-}) {
-	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
-
-	async function handleCreateDialogClose(lesson?: LessonFormModel) {
-		await onLessonCreatorSubmit(
-			() => {
-				setCreateLessonDialogOpen(false);
-			},
-			createLessonAsync,
-			lesson
-		);
-	}
-
-	return <LessonEditorDialogWithGuard onClose={handleCreateDialogClose} />;
-}
-
-export function EditLessonDialog({
-	initialLesson,
-	setLessonEditorDialogOpen
-}: {
-	initialLesson?: LessonFormModel;
-	setLessonEditorDialogOpen: (value: boolean) => void;
-}) {
-	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
-	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		await onLessonEditorSubmit(
-			() => {
-				setLessonEditorDialogOpen(false);
-			},
-			editLessonAsync,
-			updatedLesson
-		);
-	};
-
-	return (
-		<LessonEditorDialogWithGuard
-			initialLesson={initialLesson}
-			onClose={handleEditDialogClose}
-		/>
-	);
-}
-
-function LessonEditorDialogWithGuard({
+export function LessonEditorDialogWithGuard({
 	onClose,
 	initialLesson
 }: {
