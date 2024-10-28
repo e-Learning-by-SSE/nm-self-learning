@@ -2,12 +2,12 @@ import React, { ReactNode } from "react";
 import { XMarkIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export function DeleteButton({
-	onDelete,
+	onClick,
 	title,
 	label,
 	additionalClassNames
 }: {
-	onDelete: () => void;
+	onClick: () => void;
 	title: string;
 	label?: ReactNode;
 	additionalClassNames?: string;
@@ -15,7 +15,7 @@ export function DeleteButton({
 	return (
 		<button
 			type="button"
-			onClick={onDelete}
+			onClick={onClick}
 			title={title ? title : "Entfernen"}
 			className={`rounded-md border border-transparent bg-red-500 px-4 py-2 hover:bg-red-600 ${additionalClassNames}`}
 		>
@@ -25,12 +25,12 @@ export function DeleteButton({
 }
 
 export function TransparentDeleteButton({
-	onDelete,
+	onClick,
 	title,
 	label,
 	additionalClassNames
 }: {
-	onDelete: () => void;
+	onClick: () => void;
 	title: string;
 	label?: ReactNode;
 	additionalClassNames?: string;
@@ -38,7 +38,7 @@ export function TransparentDeleteButton({
 	return (
 		<button
 			type="button"
-			onClick={onDelete}
+			onClick={onClick}
 			title={title}
 			className={`rounded-md border border-transparent bg-transparent ${additionalClassNames}`}
 		>

@@ -71,7 +71,7 @@ export default function MultipleChoiceForm({
 						</label>
 
 						<DeleteButton
-							onDelete={() => removeAnswer(answerIndex)}
+							onClick={() => removeAnswer(answerIndex)}
 							title={"Antwort entfernen"}
 						/>
 					</div>

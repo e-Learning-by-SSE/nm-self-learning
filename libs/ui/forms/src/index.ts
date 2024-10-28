@@ -7,4 +7,3 @@ export * from "./lib/upload";
 export * as Form from "./lib/form-container";
 export * from "./lib/json-editor-dialog";
 export * from "./lib/labeled-checkbox";
-export * from "./lib/no-permission-to-edit-dialog";

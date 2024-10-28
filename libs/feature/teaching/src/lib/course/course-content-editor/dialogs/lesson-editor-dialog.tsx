@@ -1,5 +1,5 @@
 import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
-import { useRequiredSession } from "@self-learning/ui/layouts";
+import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import {
 	LessonEditor,
 	LessonFormModel,
@@ -8,7 +8,6 @@ import {
 } from "@self-learning/teaching";
 import { trpc } from "@self-learning/api-client";
 import React from "react";
-import { NoPermissionToEditComponent } from "@self-learning/ui/forms";
 
 export function CreateLessonDialog({
 	setCreateLessonDialogOpen
@@ -73,7 +72,7 @@ function LessonEditorDialogWithGuard({
 			{canEdit ? (
 				<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
 			) : (
-				<NoPermissionToEditComponent initialLesson={initialLesson} onClose={onClose} />
+				<Unauthorized />
 			)}
 		</div>
 	);

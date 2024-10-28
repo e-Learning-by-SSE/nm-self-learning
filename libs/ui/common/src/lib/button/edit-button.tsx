@@ -1,6 +1,6 @@
 import React from "react";
 import { PencilIcon } from "@heroicons/react/24/solid";
-import { UniversalButton } from "./universal-button";
+import { GreyBoarderButton } from "./grey-boarder-button";
 
 export function EditButton({
 	onEdit,
@@ -12,7 +12,7 @@ export function EditButton({
 	buttonTitle?: string;
 }) {
 	return (
-		<UniversalButton onClick={onEdit} title={title}>
+		<GreyBoarderButton onClick={onEdit} title={title}>
 			{buttonTitle && buttonTitle !== "" ? (
 				<div className="flex items-center space-x-2">
 					<PencilIcon className="h-5 w-5 text-gray-500" />
@@ -21,6 +21,6 @@ export function EditButton({
 			) : (
 				<PencilIcon className="h-5 w-5 text-gray-500" />
 			)}
-		</UniversalButton>
+		</GreyBoarderButton>
 	);
 }

@@ -347,7 +347,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 					className="flex flex-col gap-4 rounded-lg border border-yellow-500 bg-yellow-100  p-4"
 				>
 					<DeleteButton
-						onDelete={() => removeHint(hintIndex)}
+						onClick={() => removeHint(hintIndex)}
 						additionalClassNames={"self-end"}
 						title={"Hinweis Entfernen"}
 					/>

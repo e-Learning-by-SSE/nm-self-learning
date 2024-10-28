@@ -139,7 +139,7 @@ function InlineRemoveButton({
 					{label}
 				</button>
 				<div className={"px-2 py-2"}>
-					<TransparentDeleteButton onDelete={onRemove} title={"Skill entfernen"} />
+					<TransparentDeleteButton onClick={onRemove} title={"Skill entfernen"} />
 				</div>
 			</div>
 		</div>

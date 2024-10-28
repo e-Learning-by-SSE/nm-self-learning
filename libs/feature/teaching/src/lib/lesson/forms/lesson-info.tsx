@@ -13,8 +13,8 @@ import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { SkillForm } from "./skills-form";
 import { lessonSchema } from "@self-learning/types";
-import { UniversalButton } from "@self-learning/ui/common";
 import { LabeledCheckbox } from "@self-learning/ui/forms";
+import { GreyBoarderButton } from "@self-learning/ui/common";
 
 export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	const form = useFormContext<LessonFormModel>();
@@ -62,9 +62,9 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 							/>
 						}
 						button={
-							<UniversalButton onClick={slugifyField} title={"Generiere Slug"}>
+							<GreyBoarderButton onClick={slugifyField} title={"Generiere Slug"}>
 								<span className={"text-gray-600"}>Generieren</span>
-							</UniversalButton>
+							</GreyBoarderButton>
 						}
 					/>
 					<FieldHint>

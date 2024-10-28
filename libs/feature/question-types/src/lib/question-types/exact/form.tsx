@@ -73,7 +73,7 @@ export default function ExactForm({
 							/>
 
 							<DeleteButton
-								onDelete={() => removeAnswer(acceptedAnswerIndex)}
+								onClick={() => removeAnswer(acceptedAnswerIndex)}
 								title={"Antwort entfernen"}
 							/>
 						</div>

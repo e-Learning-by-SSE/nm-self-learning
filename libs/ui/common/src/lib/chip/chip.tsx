@@ -1,4 +1,3 @@
-import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 import { TransparentDeleteButton } from "../button/delete-button";
 
@@ -26,7 +25,7 @@ export function Chip({
 			<div className={"px-2"}>
 				{onRemove && (
 					<TransparentDeleteButton
-						onDelete={onRemove}
+						onClick={onRemove}
 						data-testid={"remove"}
 						title="Author Entfernen"
 					/>

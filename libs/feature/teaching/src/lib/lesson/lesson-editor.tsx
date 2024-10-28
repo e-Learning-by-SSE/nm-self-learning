@@ -103,7 +103,7 @@ export function LessonEditor({
 							initialLesson={initialLesson}
 							selectedTab={selectedTab}
 							setSelectedTab={setSelectedTab}
-						></SecondTabContent>
+						/>
 					)}
 				</div>
 

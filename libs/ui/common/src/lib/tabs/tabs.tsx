@@ -60,7 +60,7 @@ export function RemovableTab({
 			<span className="flex items-end gap-4 hover:text-secondary">
 				<span>{children}</span>
 				<TransparentDeleteButton
-					onDelete={onRemove}
+					onClick={onRemove}
 					title="Entfernen"
 					additionalClassNames="flex items-center"
 				/>

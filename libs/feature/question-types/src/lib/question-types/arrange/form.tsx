@@ -135,7 +135,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 											/>
 
 											<DeleteButton
-												onDelete={() => onDeleteContainer(containerId)}
+												onClick={() => onDeleteContainer(containerId)}
 												title={"Kategorie entfernen"}
 											/>
 										</div>
@@ -205,7 +205,7 @@ function DraggableContent({
 						/>
 
 						<TransparentDeleteButton
-							onDelete={() => onDeleteItem(containerId, item.id)}
+							onClick={() => onDeleteItem(containerId, item.id)}
 							title="Löschen"
 						/>
 					</div>
