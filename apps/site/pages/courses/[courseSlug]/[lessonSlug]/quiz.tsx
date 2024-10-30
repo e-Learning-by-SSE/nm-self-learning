@@ -193,12 +193,16 @@ export function QuizHeader({
 }) {
 	const { chapterName, nextLesson } = useLessonContext(lesson.lessonId, course.slug);
 	const { evaluations, completionState } = useQuiz();
-	const successDialogOpenedRef = useRef(false);
-	const failureDialogOpenedRef = useRef(false);
-	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-	const [showFailureDialog, setShowFailureDialog] = useState(false);
-
 	const { newEvent } = useEventLog();
+	const [suppressDialog, setSuppressDialog] = useState(false);
+
+	if (completionState === "in-progress" && suppressDialog) {
+		setSuppressDialog(false);
+	}
+
+	const showSuccessDialog = completionState === "completed" && !suppressDialog;
+	const showFailureDialog = completionState === "failed" && !suppressDialog;
+
 	const logQuizStart = useCallback(
 		(lesson: QuestionProps["lesson"], question: QuizContent[number]) => {
 			newEvent({
@@ -213,16 +217,6 @@ export function QuizHeader({
 		},
 		[newEvent, course.courseId]
 	);
-
-	if (!successDialogOpenedRef.current && completionState === "completed") {
-		successDialogOpenedRef.current = true;
-		setShowSuccessDialog(true);
-	}
-
-	if (!failureDialogOpenedRef.current && completionState === "failed") {
-		failureDialogOpenedRef.current = true;
-		setShowFailureDialog(true);
-	}
 
 	useEffect(() => {
 		// TODO diary: check if the useEffect is necessary
@@ -261,16 +255,18 @@ export function QuizHeader({
 					lesson={lesson}
 					nextLesson={nextLesson}
 					onClose={() => {
-						setShowSuccessDialog(false);
+						setSuppressDialog(true);
 					}}
 				/>
 			)}
 
 			{showFailureDialog && (
 				<QuizFailedDialog
+					course={course}
 					lesson={lesson}
+					nextLesson={nextLesson}
 					onClose={() => {
-						setShowFailureDialog(false);
+						setSuppressDialog(true);
 					}}
 				/>
 			)}
@@ -327,6 +323,21 @@ function QuestionTabIcon({
 	);
 }
 
+function NextLessonButton({
+	courseSlug,
+	nextLessonSlug
+}: {
+	courseSlug: string;
+	nextLessonSlug: string;
+}) {
+	return (
+		<Link href={`/courses/${courseSlug}/${nextLessonSlug}`} className="btn-primary">
+			<span>Zur nächsten Lerneinheit</span>
+			<PlayIcon className="h-5 shrink-0" />
+		</Link>
+	);
+}
+
 function QuizCompletionDialog({
 	course,
 	lesson,
@@ -365,13 +376,7 @@ function QuizCompletionDialog({
 
 			<DialogActions onClose={onClose}>
 				{nextLesson && (
-					<Link
-						href={`/courses/${course.slug}/${nextLesson.slug}`}
-						className="btn-primary"
-					>
-						<span>Zur nächsten Lerneinheit</span>
-						<PlayIcon className="h-5 shrink-0" />
-					</Link>
+					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
 				)}
 			</DialogActions>
 		</Dialog>
@@ -379,10 +384,14 @@ function QuizCompletionDialog({
 }
 
 function QuizFailedDialog({
+	course,
 	lesson,
+	nextLesson,
 	onClose
 }: {
+	course: QuestionProps["course"];
 	lesson: QuestionProps["lesson"];
+	nextLesson: { title: string; slug: string } | null;
 	onClose: OnDialogCloseFn<void>;
 }) {
 	const { reload } = useQuiz();
@@ -402,6 +411,10 @@ function QuizFailedDialog({
 					<span>Erneut probieren</span>
 					<ArrowPathIcon className="h-5 shrink-0" />
 				</button>
+
+				{nextLesson && (
+					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
+				)}
 			</DialogActions>
 		</Dialog>
 	);
