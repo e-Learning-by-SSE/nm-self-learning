@@ -140,8 +140,7 @@ pipeline {
                     }
                     post {
                         always {
-                            // Test Results
-                            junit 'output/test/junit*.xml'
+                            junit testResults: 'output/test/junit*.xml', skipPublishingChecks: true
                         }
                         success {
                             catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {

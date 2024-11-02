@@ -1,4 +1,3 @@
-import { database } from "@self-learning/database";
 import { createChapter, createCourseContent, createLesson } from "@self-learning/types";
 import {
 	createExampleLesson,
@@ -7,6 +6,22 @@ import {
 	createLicense
 } from "@self-learning/util/testing";
 import { markAsCompleted } from "./mark-as-completed";
+import createPrismaMock from "prisma-mock";
+import { mockDeep, mockReset } from "jest-mock-extended";
+import { database } from "@self-learning/database";
+import { PrismaClient } from "@prisma/client";
+
+jest.mock("@self-learning/database", () => ({
+	__esModule: true,
+	...jest.requireActual("@self-learning/database"),
+	database: jest.fn()
+}));
+
+beforeEach(() => {
+	mockReset(database);
+	(database as jest.Mocked<PrismaClient>) = mockDeep<PrismaClient>();
+	createPrismaMock();
+});
 
 const username = "markAsCompletedUser";
 const courseSlug = "mark-as-completed-course-slug";
