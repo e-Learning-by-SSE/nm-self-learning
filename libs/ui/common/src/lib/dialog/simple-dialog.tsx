@@ -12,10 +12,12 @@ export const ButtonActions = {
 
 export function SimpleDialog({
 	children,
+	style,
 	name,
 	onClose
 }: {
 	children: React.ReactNode;
+	style?: React.CSSProperties;
 	name: string;
 	onClose: (action: ButtonActions) => void;
 }) {
@@ -28,9 +30,8 @@ export function SimpleDialog({
 
 	if (!open) return null;
 	return (
-		<CenteredContainer>
 			<Dialog
-				style={{ height: "25vh", width: "30vw", overflow: "auto" }}
+				style={style ?? { height: "25vh", width: "30vw", overflow: "auto" }}
 				title={name}
 				onClose={() => {
 					onDialogClose();
@@ -48,6 +49,5 @@ export function SimpleDialog({
 					</DialogActions>
 				</div>
 			</Dialog>
-		</CenteredContainer>
 	);
 }
