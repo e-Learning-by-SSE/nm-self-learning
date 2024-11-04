@@ -1,13 +1,11 @@
-import { StarIcon } from "@heroicons/react/24/solid";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
-import React, { useState } from "react";
-import {
-	Dialog,
-	DialogActions,
-	OnDialogCloseFn,
-	SimpleDialog,
-	StarRating
-} from "@self-learning/ui/common";
+import { StarIcon } from "@heroicons/react/24/solid";
+import { trpc } from "@self-learning/api-client";
+import { Dialog, DialogActions, OnDialogCloseFn, StarRating } from "@self-learning/ui/common";
+import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useState } from "react";
 import { Tile } from "./input-tile";
 
 type Technique = {
@@ -78,8 +76,7 @@ export function PersonalTechniqueRatingTile({
 					onClose={() => setStrategyDialogOpen(false)}
 					className="w-4/5 h-4/5 flex items-center justify-center"
 				>
-					<span>{toolTipText}</span>
-
+					<span className="text-lg">{toolTipText}</span>
 					<div className="grid grid-flow-* grid-cols-1 gap-4 w-full h-full overflow-y-auto">
 						<StrategyList
 							onTechniqueClick={technique => setEvalTarget(technique)}
@@ -107,7 +104,7 @@ export function PersonalTechniqueRatingTile({
 	);
 }
 
-export function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
+function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 	return (
 		<div className="max-h-[140px] min-h-[140px] overflow-y-auto">
 			<ul className="space-y-4">
@@ -184,18 +181,56 @@ function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
 }
 
 function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClose: () => void }) {
-	return SimpleDialog({
-		name: strategy.name,
-		onClose: onClose,
-		children: (
-			<div>
-				<p>{strategy.description}</p>
-			</div>
-		)
-	});
+	const [showEditDialog, setShowEditDialog] = useState(false);
+	const session = useSession();
+	const { mutateAsync: saveStrategy } = trpc.learningDiary.updateStrategy.useMutation();
+	const { reload } = useRouter();
+
+	const handleSaveStrategy = async (updatedDesc: string | undefined) => {
+		if (updatedDesc) {
+			await saveStrategy({
+				...strategy,
+				description: updatedDesc
+			});
+		}
+		setShowEditDialog(false);
+		reload();
+	};
+
+	const user = session.data?.user;
+	const isAdmin = user?.role ?? "USER";
+
+	if (showEditDialog) {
+		return (
+			<MarkdownEditorDialog
+				title="Strategie bearbeiten"
+				initialValue={strategy.description}
+				onClose={handleSaveStrategy}
+			/>
+		);
+	} else {
+		return (
+			<Dialog
+				title={strategy.name}
+				onClose={onClose}
+				className="fixed inset-0 z-10 overflow-y-auto"
+			>
+				<div className={"prose prose-emerald max-w-full"}>
+					<MarkdownViewer content={strategy.description} />
+				</div>
+				<DialogActions onClose={onClose}>
+					{isAdmin === "ADMIN" && (
+						<button className="btn-stroked" onClick={() => setShowEditDialog(true)}>
+							(Admin) Bearbeiten
+						</button>
+					)}
+				</DialogActions>
+			</Dialog>
+		);
+	}
 }
 
-export function TechniqueRatingDialog({
+function TechniqueRatingDialog({
 	technique,
 	onSubmit,
 	onClose

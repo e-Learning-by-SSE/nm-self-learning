@@ -1,11 +1,12 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
-import { authProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 import {
 	learningDiaryPageSchema,
 	learningLocationSchema,
 	techniqueRatingSchema,
-	lessonStartSchema
+	lessonStartSchema,
+	learningStrategySchema
 } from "@self-learning/types";
 import { getDiaryPage, getUserLocations } from "@self-learning/diary";
 
@@ -220,5 +221,18 @@ export const learningDiaryPageRouter = t.router({
 		});
 
 		return getDiaryPage(input.id);
+	}),
+	updateStrategy: adminProcedure.input(learningStrategySchema).mutation(async ({ input }) => {
+		return database.learningStrategy.upsert({
+			where: {
+				id: input.id
+			},
+			update: {
+				...input
+			},
+			create: {
+				...input
+			}
+		});
 	})
 });
