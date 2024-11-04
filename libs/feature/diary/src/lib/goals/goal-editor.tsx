@@ -202,10 +202,12 @@ function MyCombobox({
 
 export function LearningGoalEditorDialog({
 	onClose,
-	onStatusUpdate
+	onStatusUpdate,
+	description
 }: {
 	onClose: () => void;
 	onStatusUpdate: StatusUpdateCallback;
+	description: string;
 }) {
 	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
 
@@ -217,7 +219,7 @@ export function LearningGoalEditorDialog({
 			<div className="overflow-y-auto mb-2">
 				<div className="space-y-4">
 					<div className="max-w-md py-2">
-						<span>{"Hier muss noch ein Text rein!!!!!!!!!!!!!!!"}</span>
+						<span>{description}</span>
 					</div>
 				</div>
 				<div className={"flex justify-center py-4"}>

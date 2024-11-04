@@ -178,9 +178,8 @@ export function DiaryContentForm({
 								initialRating={field.value}
 								onChange={field.onChange}
 								description={
-									"Bitte bewerte deine Bemühungen während der\n" +
-									"Lernsession. Bemühungen können ... sein. Mehr\n" +
-									"Sterne bedeutet du hast dich mehr bemüht."
+									"Hier kannst du deine eigenen Bemühungen einschätzen " +
+									"und das kann die helfen deine Lernstrategien zu optimieren."
 								}
 							/>
 						)}
@@ -194,11 +193,7 @@ export function DiaryContentForm({
 								initialRating={field.value}
 								onChange={field.onChange}
 								description={
-									"Bitte bewerte deine Ablenkungen während der\n" +
-									"Lernsession. Ablenkungen können z.B. eine hohe\n" +
-									"Geräuschkulisse, Unterbrechungen, Anrufe,\n" +
-									"Mitbewohner, etc. sein. Mehr Sterne zeigen eine\n" +
-									"größere Ablenkung an.\n"
+									"Wie stark waren deine Ablenkungen beim Lernen? Hier kannst du deine Ablenkungen einschätzen und das kann dir helfen deine Lernstrategien zu optimieren."
 								}
 							/>
 						)}

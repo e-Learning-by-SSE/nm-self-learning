@@ -59,12 +59,16 @@ export function PersonalTechniqueRatingTile({
 		setEvalTarget(null);
 	};
 
+	const toolTipText =
+		"Welche Lernstrategie/-technik hast du genutzt? Und wie schätzt du den Nutzen ein?";
+
 	return (
 		<div>
 			<Tile
 				tileName="Genutzte Techniken"
 				isFilled={techniquesWithRating.length > 0}
 				onToggleEdit={handleTileClick}
+				tooltip={toolTipText}
 			>
 				<UsedTechniqueList techniques={techniquesWithRating} />
 			</Tile>
@@ -74,6 +78,8 @@ export function PersonalTechniqueRatingTile({
 					onClose={() => setStrategyDialogOpen(false)}
 					className="w-4/5 h-4/5 flex items-center justify-center"
 				>
+					<span>{toolTipText}</span>
+
 					<div className="grid grid-flow-* grid-cols-1 gap-4 w-full h-full overflow-y-auto">
 						<StrategyList
 							onTechniqueClick={technique => setEvalTarget(technique)}

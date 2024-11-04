@@ -1,4 +1,3 @@
-import { PencilIcon } from "@heroicons/react/24/solid";
 import React, { PropsWithChildren, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
 import { ButtonSmallX, Dialog, LoadingBox, StarRating } from "@self-learning/ui/common";
@@ -11,17 +10,22 @@ import { IdSet } from "@self-learning/util/common";
 import { StatusUpdateCallback } from "../util/types";
 import { GoalStatus } from "../goals/status";
 import { LearningGoalEditorDialog } from "../goals/goal-editor";
+import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
 export function Tile({
 	onToggleEdit,
 	tileName,
 	isFilled,
-	children
+	children,
+	tooltip
 }: PropsWithChildren<{
 	onToggleEdit: (open: boolean) => void;
 	tileName: string;
 	isFilled: boolean;
+	tooltip: string;
 }>) {
+	const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+
 	return (
 		<div
 			className={`relative flex max-h-[200px] min-h-[200px] items-center justify-center rounded border cursor-pointer ${
@@ -31,12 +35,20 @@ export function Tile({
 		>
 			<div className="absolute top-2 left-2 text-gray-800">{tileName}</div>
 			<div className="absolute top-2 right-2">
-				<PencilIcon
-					className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700"
-					onClick={() => onToggleEdit(true)}
-				/>
-			</div>
+				<div
+					className="relative inline-flex items-center"
+					onMouseEnter={() => setIsTooltipVisible(true)}
+					onMouseLeave={() => setIsTooltipVisible(false)}
+				>
+					<QuestionMarkCircleIcon className="h-5 w-5 text-gray-500 cursor-pointer" />
 
+					{isTooltipVisible && (
+						<div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-sm text-white bg-gray-700 rounded shadow-lg whitespace-nowrap">
+							{tooltip}
+						</div>
+					)}
+				</div>
+			</div>
 			{children}
 		</div>
 	);
@@ -156,8 +168,16 @@ export function LocationInputTile({
 		onChange && onChange(location);
 	};
 
+	const tooltipText =
+		"Notiere deinen Lernort! Wenn du deinen Lernort einträgst, kannst du später leicht herausfinden, wo du am besten lernst.";
+
 	return (
-		<Tile onToggleEdit={setDialogOpen} tileName={"Lernort"} isFilled={!!initialSelection}>
+		<Tile
+			onToggleEdit={setDialogOpen}
+			tileName={"Lernort"}
+			isFilled={!!initialSelection}
+			tooltip={tooltipText}
+		>
 			<div className="p-4">
 				{initialSelection ? (
 					<div>
@@ -175,6 +195,7 @@ export function LocationInputTile({
 						learningLocations={learningLocations}
 						onClose={closeDialog}
 						onSubmit={handleChange}
+						description={tooltipText}
 					/>
 				)}
 			</div>
@@ -185,11 +206,13 @@ export function LocationInputTile({
 export function LocationChooseDialog({
 	learningLocations,
 	onClose,
-	onSubmit
+	onSubmit,
+	description
 }: {
 	learningLocations: Location[];
 	onClose: () => void;
 	onSubmit: (location: Location) => void;
+	description: string;
 }) {
 	const { mutateAsync: createLearningLocationAsync } = trpc.learningLocation.create.useMutation();
 	const { mutateAsync: deleteLearningLocationAsync } = trpc.learningLocation.delete.useMutation();
@@ -216,7 +239,7 @@ export function LocationChooseDialog({
 	return (
 		<Dialog title={"Lernort:"} onClose={onClose} className={"max-w-md"}>
 			<div className="space-y-4 max-h-96 overflow-y-auto">
-				<span>Bitte wähle deinen Lernort aus oder trage deinen eigenen Lernort ein.</span>
+				<span>{description}</span>
 
 				{learningLocations.map(location => {
 					return (
@@ -278,7 +301,7 @@ export function StarInputTile({
 	name: string;
 	initialRating?: number;
 	onChange: (rating: number) => void;
-	description?: string;
+	description: string;
 }) {
 	return (
 		<Tile
@@ -295,6 +318,7 @@ export function StarInputTile({
 			// 	</div>
 			// }
 			onToggleEdit={() => {}}
+			tooltip={description}
 		>
 			<div className="overflow-y-auto">
 				<div className="space-y-4">
@@ -325,7 +349,12 @@ export function MarkDownInputTile({
 
 	return (
 		<div>
-			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"} isFilled={initialNote !== ""}>
+			<Tile
+				onToggleEdit={setDialogOpen}
+				tileName={"Notizen"}
+				isFilled={initialNote !== ""}
+				tooltip={"Platz für persönliche Anmerkungen."}
+			>
 				{initialNote === "" ? (
 					<span>Bisher wurden noch keine Notizen erstellt.</span>
 				) : (
@@ -368,12 +397,16 @@ export function LearningGoalInputTile({
 		[displayGoals, onChange]
 	);
 
+	const tooltip =
+		"Ziele helfen dir eine Richtung zu finden, die du einschlagen möchtest, und bietet dir eine Checkliste, um deine Fortschritte zu überprüfen.";
+
 	return (
 		<div>
 			<Tile
 				onToggleEdit={setDialogOpen}
 				tileName={"Lernziele"}
 				isFilled={displayGoals.length > 0}
+				tooltip={tooltip}
 			>
 				<div>
 					<div className="flex flex-wrap">
@@ -394,6 +427,7 @@ export function LearningGoalInputTile({
 				<LearningGoalEditorDialog
 					onClose={onClose}
 					onStatusUpdate={handleGoalStatusUpdate}
+					description={tooltip}
 				/>
 			)}
 		</div>
