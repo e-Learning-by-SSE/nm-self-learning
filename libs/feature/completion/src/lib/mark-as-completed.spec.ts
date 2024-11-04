@@ -1,27 +1,12 @@
+import { database } from "@self-learning/database";
 import { createChapter, createCourseContent, createLesson } from "@self-learning/types";
 import {
 	createExampleLesson,
 	createExampleLessonsFromContent,
-	createTestUser,
-	createLicense
+	createLicense,
+	createTestUser
 } from "@self-learning/util/testing";
 import { markAsCompleted } from "./mark-as-completed";
-import createPrismaMock from "prisma-mock";
-import { mockDeep, mockReset } from "jest-mock-extended";
-import { database } from "@self-learning/database";
-import { PrismaClient } from "@prisma/client";
-
-jest.mock("@self-learning/database", () => ({
-	__esModule: true,
-	...jest.requireActual("@self-learning/database"),
-	database: jest.fn()
-}));
-
-beforeEach(() => {
-	mockReset(database);
-	(database as jest.Mocked<PrismaClient>) = mockDeep<PrismaClient>();
-	createPrismaMock();
-});
 
 const username = "markAsCompletedUser";
 const courseSlug = "mark-as-completed-course-slug";
@@ -36,13 +21,13 @@ const content = createCourseContent([
 	])
 ]);
 
-describe("markAsCompleted", () => {
-	beforeAll(async () => {
-		await createTestUser(username);
-		await createLicense(1);
-	});
+beforeAll(async () => {
+	await createTestUser(username);
+	await createLicense(1);
+});
 
-	describe("With course", () => {
+describe("markAsCompleted", () => {
+	describe("With lessons in course", () => {
 		const courseId = "mark-as-completed-course";
 		const lessonId = "mark-as-completed-lesson-1";
 
@@ -154,7 +139,7 @@ describe("markAsCompleted", () => {
 		});
 	});
 
-	describe("Without course", () => {
+	describe("With lessons not inside a course", () => {
 		const lessonId = "mark-as-completed-no-course-lesson";
 
 		beforeEach(async () => {
@@ -167,7 +152,7 @@ describe("markAsCompleted", () => {
 			});
 		});
 
-		it("Creates completedLesson", async () => {
+		it("should create completedLesson entry", async () => {
 			await markAsCompleted({ username, lessonId, courseSlug: null });
 
 			const completedLesson = await database.completedLesson.findFirst({
