@@ -174,12 +174,11 @@ export function DiaryContentForm({
 						control={form.control}
 						render={({ field }) => (
 							<StarInputTile
-								name={"Bemühungen:"}
+								name={"Bemühungen"}
 								initialRating={field.value}
 								onChange={field.onChange}
 								description={
-									"Hier kannst du deine eigenen Bemühungen einschätzen " +
-									"und das kann die helfen deine Lernstrategien zu optimieren."
+									"Hier kannst du deine eigenen Bemühungen einschätzen. Dies kann dir helfen deine Lernstrategien zu optimieren."
 								}
 							/>
 						)}
@@ -189,7 +188,7 @@ export function DiaryContentForm({
 						control={form.control}
 						render={({ field }) => (
 							<StarInputTile
-								name={"Ablenkungen:"}
+								name={"Ablenkungen"}
 								initialRating={field.value}
 								onChange={field.onChange}
 								description={

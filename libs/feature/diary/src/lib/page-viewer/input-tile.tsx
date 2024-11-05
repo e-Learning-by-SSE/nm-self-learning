@@ -10,7 +10,6 @@ import { IdSet } from "@self-learning/util/common";
 import { StatusUpdateCallback } from "../util/types";
 import { GoalStatus } from "../goals/status";
 import { LearningGoalEditorDialog } from "../goals/goal-editor";
-import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
 export function Tile({
 	onToggleEdit,
@@ -24,32 +23,25 @@ export function Tile({
 	isFilled: boolean;
 	tooltip: string;
 }>) {
-	const [isTooltipVisible, setIsTooltipVisible] = useState(false);
-
 	return (
 		<div
-			className={`relative flex max-h-[200px] min-h-[200px] items-center justify-center rounded border cursor-pointer ${
-				isFilled ? "bg-green-100" : "bg-gray-100"
-			}`}
+			className="flex max-h-[400px] min-h-[200px] cursor-pointer space-x-4"
 			onClick={() => onToggleEdit(true)}
 		>
-			<div className="absolute top-2 left-2 text-gray-800">{tileName}</div>
-			<div className="absolute top-2 right-2">
-				<div
-					className="relative inline-flex items-center"
-					onMouseEnter={() => setIsTooltipVisible(true)}
-					onMouseLeave={() => setIsTooltipVisible(false)}
-				>
-					<QuestionMarkCircleIcon className="h-5 w-5 text-gray-500 cursor-pointer" />
-
-					{isTooltipVisible && (
-						<div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-sm text-white bg-gray-700 rounded shadow-lg whitespace-nowrap">
-							{tooltip}
-						</div>
-					)}
-				</div>
+			<div className="flex flex-col w-1/3 bg-gray-200 rounded-lg text-center">
+				<span className="text-gray-800 pt-2">{tileName}:</span>
+				<span className="text-gray-600 mt-1 justify-center items-center py-6 px-2">
+					{tooltip}
+				</span>
 			</div>
-			{children}
+
+			<div
+				className={`flex justify-center items-center w-2/3 px-4 py-2 rounded-lg ${
+					isFilled ? "bg-green-100" : "bg-gray-100"
+				}`}
+			>
+				{children}
+			</div>
 		</div>
 	);
 }
