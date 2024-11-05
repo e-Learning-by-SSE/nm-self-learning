@@ -83,3 +83,6 @@ ALTER TABLE "_parent" ADD CONSTRAINT "_parent_A_fkey" FOREIGN KEY ("A") REFERENC
 
 -- AddForeignKey
 ALTER TABLE "_parent" ADD CONSTRAINT "_parent_B_fkey" FOREIGN KEY ("B") REFERENCES "skills"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+INSERT INTO "User" ("id", "name", "displayName") VALUES ('FirstId', 'first_user', 'First User');
+INSERT INTO "skill-repositories" ("id", "name", "ownerId") VALUES ('FirstId', 'first_repository', 'FirstId');
