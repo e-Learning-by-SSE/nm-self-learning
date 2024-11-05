@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useLessonContext } from "@self-learning/lesson";
-import { useQuiz } from "@self-learning/quiz";
 import { useEventLog } from "@self-learning/util/common";
 import { QuizHeader } from "../pages/courses/[courseSlug]/[lessonSlug]/quiz";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import { useQuiz } from "@self-learning/quiz";
+import "@testing-library/jest-dom";
 
 jest.mock("@self-learning/util/common");
 jest.mock("@self-learning/lesson");
@@ -77,7 +78,7 @@ describe("QuizHeader", () => {
 			/>
 		);
 
-		const tab = screen.getByText("Question 2");
+		const tab = screen.getByText("Frage 2");
 		fireEvent.click(tab);
 
 		expect(mockNewEvent).toHaveBeenCalledWith({
@@ -88,5 +89,58 @@ describe("QuizHeader", () => {
 				type: "multiple-choice"
 			}
 		});
+	});
+
+	it("should open the success dialog", () => {
+		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "completed" });
+
+		render(
+			<QuizHeader
+				lesson={mockLesson}
+				course={mockCourse}
+				questions={mockQuestions}
+				currentIndex={0}
+				goToQuestion={jest.fn()}
+			/>
+		);
+
+		const successDialog = screen.getByText("Geschafft!");
+		expect(successDialog).toBeInTheDocument();
+	});
+
+	it("should open the failed dialog", () => {
+		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "failed" });
+
+		render(
+			<QuizHeader
+				lesson={mockLesson}
+				course={mockCourse}
+				questions={mockQuestions}
+				currentIndex={0}
+				goToQuestion={jest.fn()}
+			/>
+		);
+
+		const failDialog = screen.getByText("Nicht Bestanden");
+		expect(failDialog).toBeInTheDocument();
+	});
+
+	it("should not open any dialog", () => {
+		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "in-progress" });
+
+		render(
+			<QuizHeader
+				lesson={mockLesson}
+				course={mockCourse}
+				questions={mockQuestions}
+				currentIndex={0}
+				goToQuestion={jest.fn()}
+			/>
+		);
+
+		expect([screen.queryByText("Geschafft!"), screen.queryByText("Nicht Bestanden")]).toEqual([
+			null,
+			null
+		]);
 	});
 });
