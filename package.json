@@ -16,8 +16,8 @@
 		"format:write": "nx format:write --files '{apps,libs}/**/*.{ts,tsx}'",
 		"prisma": "prisma",
 		"prisma:seed": "prisma generate && prisma db push --accept-data-loss && prisma db seed",
-		"prestart:prod": "prisma migrate deploy",
-    "start:prod": "cd dist/apps/site && npm start"
+		"prestart:prod": "ts-node deploy-migrations.ts",
+        "start:prod": "cd dist/apps/site && npm start"
 	},
 	"private": true,
 	"prisma": {
