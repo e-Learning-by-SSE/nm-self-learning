@@ -2,7 +2,6 @@
   Warnings:
 
   - You are about to drop the `LearningDiary` table. If the table is not empty, all the data it contains will be lost.
-  - A unique constraint covering the columns `[ownerName,name]` on the table `skill-repositories` will be added. If there are existing duplicate values, this will fail.
 
 */
 -- CreateEnum
@@ -13,12 +12,6 @@ CREATE TYPE "LearningGoalStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'COMPLETED');
 
 -- DropForeignKey
 ALTER TABLE "LearningDiary" DROP CONSTRAINT "LearningDiary_username_fkey";
-
--- DropForeignKey
-ALTER TABLE "skill-repositories" DROP CONSTRAINT "skill-repositories_ownerId_fkey";
-
--- DropIndex
-DROP INDEX "skill-repositories_ownerId_name_key";
 
 -- AlterTable
 ALTER TABLE "skill-repositories" ADD COLUMN     "ownerName" TEXT;
@@ -149,9 +142,6 @@ CREATE UNIQUE INDEX "LearningLocation_name_creatorName_key" ON "LearningLocation
 -- CreateIndex
 CREATE UNIQUE INDEX "LearningStrategie_name_key" ON "LearningStrategie"("name");
 
--- CreateIndex
-CREATE UNIQUE INDEX "skill-repositories_ownerName_name_key" ON "skill-repositories"("ownerName", "name");
-
 -- AddForeignKey
 ALTER TABLE "LearningDiaryPage" ADD CONSTRAINT "LearningDiaryPage_studentName_fkey" FOREIGN KEY ("studentName") REFERENCES "Student"("username") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -196,6 +186,3 @@ ALTER TABLE "LearningSubGoal" ADD CONSTRAINT "LearningSubGoal_learningGoalId_fke
 
 -- AddForeignKey
 ALTER TABLE "StudentSettings" ADD CONSTRAINT "StudentSettings_username_fkey" FOREIGN KEY ("username") REFERENCES "Student"("username") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "skill-repositories" ADD CONSTRAINT "skill-repositories_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

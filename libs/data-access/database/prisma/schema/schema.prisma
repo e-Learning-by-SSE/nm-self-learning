@@ -247,9 +247,8 @@ model SkillRepository {
   name          String
   description   String?
   skills        Skill[]
-  ownerId       String   // Old reference, must be kept temporarily to for data migration
-  ownerName     String?
-  owner         User     @relation(fields: [ownerId], references: [id])
+  ownerName     String
+  owner         User    @relation(fields: [ownerName], references: [name])
 
   @@unique([ownerName, name])
   @@map("skill-repositories")
