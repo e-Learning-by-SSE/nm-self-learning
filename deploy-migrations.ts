@@ -25,6 +25,14 @@ function moveToMigrationDir(file: string) {
 	renameSync(join(migrationsTempPath, file), join(migrationsPath, file));
 }
 
+/*
+ * Moves all remaining files from temp back to migration folder and deleted temp folder.
+ */
+function cleanup() {
+	readdirSync(migrationsTempPath).forEach(moveToMigrationDir);
+	rmSync(migrationsTempPath, { recursive: true, force: true });
+}
+
 async function main() {
 	// Step 1: Rename  Migrations folder and copy all non-migration files and folders
 	renameSync(migrationsPath, migrationsTempPath);
@@ -51,20 +59,28 @@ async function main() {
 		try {
 			result = execSync(`npx prisma migrate deploy`).toString();
 			if (result.includes("No pending migrations to apply.")) {
-				console.log(`⮡ Migration \x1b[1m\x1b[32m${migration}\x1b[0m already applied.`);
+				console.log(
+					`⮡ Database migration ${migration}\x1b[1m\x1b[33m already applied\x1b[0m.`
+				);
 				migrationApplied = false;
 			} else {
-				console.log(`⮡ Migration \x1b[1m\x1b[32m${migration}\x1b[0m successfully applied.`);
+				console.log(
+					`⮡ Database migration ${migration}\x1b[1m\x1b[32m successfully applied\x1b[0m.`
+				);
 			}
 		} catch (e) {
 			migrationApplied = false;
-			console.error("\x1b[1m\x1b[31mError:\x1b[0m\n" + e);
+			console.log("⮡ Database migration ${migration}\x1b[1m\x1b[31m failed:\x1b[0m\n" + e);
+			cleanup();
+			process.exit(1);
 		}
 
 		// Apply data migration if exists
 		const dataMigrationFile = join(migrationsPath, migration, dataMigration);
 		if (migrationApplied && existsSync(dataMigrationFile)) {
-			console.log(`⮡ Applying data migration for \x1b[1m\x1b[34m${migration}\x1b[0m`);
+			console.log(`⮡ Applying\x1b[1m\x1b[34m data migration\x1b[0m`);
+			execSync(`npx prisma db pull`, { stdio: "inherit" });
+			execSync(`npx prisma generate`, { stdio: "inherit" });
 			await import(dataMigrationFile);
 		}
 
@@ -75,7 +91,7 @@ async function main() {
 	}
 
 	// Step 4: Cleanup
-	rmSync(migrationsTempPath, { recursive: true, force: true });
+	cleanup();
 }
 
 main()
