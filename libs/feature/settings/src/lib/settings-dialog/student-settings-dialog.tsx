@@ -57,7 +57,7 @@ export function StudentSettingsDialog({
 			<div className="overflow-x-auto p-5">
 				<StudentSettingsForm {...settings} onChange={onChange} />
 			</div>
-			<div className="pt-5" />
+			<div className="pt-14" />
 			<div className="absolute right-4 bottom-5">
 				<DialogActions onClose={() => onClose(defaultSetting)}>
 					<button className="btn-primary" onClick={onSave}>
