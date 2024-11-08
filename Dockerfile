@@ -9,7 +9,7 @@ COPY . ./
 RUN mv .env.example .env
 
 # Generate Prisma client
-RUN npm install
+ADD node_modules /app/node_modules
 RUN npm run prisma generate
 # Allow runnig prisma commands, based on: https://stackoverflow.com/a/72602624
 # RUN chown nextjs:nodejs -R node_modules/.prisma
