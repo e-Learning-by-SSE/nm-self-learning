@@ -212,6 +212,7 @@ export async function getAllStrategies() {
 			techniques: {
 				select: {
 					id: true,
+					description: true,
 					name: true
 				}
 			}

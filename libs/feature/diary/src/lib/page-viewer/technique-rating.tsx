@@ -10,6 +10,7 @@ import { Tile } from "./input-tile";
 
 type Technique = {
 	name: string;
+	description: string;
 	id: string;
 	score?: number;
 };
@@ -251,23 +252,30 @@ function TechniqueRatingDialog({
 		onSubmit(selectedTechnique);
 	};
 
+	console.log("selectedTechnique", selectedTechnique);
+
 	return (
 		<Dialog
 			title={`Bewertung von "${selectedTechnique.name}"`}
 			onClose={onClose}
-			className="fixed inset-0 z-10 overflow-y-auto"
+			className="fixed inset-0 z-10"
 		>
-			<div className="flex justify-center items-center">
-				<StarRating
-					rating={selectedTechnique.score ?? 0}
-					onChange={handleTechniqueRatingChange}
-				/>
+			<div className="flex flex-col justify-start items-start overflow-y-auto">
+				<div className="w-full max-w-md pb-5 text-l prose prose-emerald">
+					<MarkdownViewer content={selectedTechnique.description} />
+				</div>
+				<div className="">
+					<StarRating
+						rating={selectedTechnique.score ?? 0}
+						onChange={handleTechniqueRatingChange}
+					/>
+				</div>
 			</div>
-			<DialogActions onClose={onClose}>
-				<button className="btn-primary" onClick={submitRating}>
+			<div className="relative h-10 bg-white">
+				<button className="btn-primary absolute bottom-0 right-3" onClick={submitRating}>
 					<span>Fertig</span>
 				</button>
-			</DialogActions>
+			</div>
 		</Dialog>
 	);
 }
