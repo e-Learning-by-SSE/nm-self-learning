@@ -107,7 +107,7 @@ export function PersonalTechniqueRatingTile({
 
 function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 	return (
-		<div className="max-h-[140px] min-h-[140px] overflow-y-auto">
+		<div className="flex items-center justify-center max-h-[140px] min-h-40 w-full overflow-y-auto">
 			<ul className="space-y-4">
 				{techniques.map(technique => (
 					<li key={technique.id} className="flex items-center justify-between">
@@ -251,8 +251,6 @@ function TechniqueRatingDialog({
 	const submitRating = () => {
 		onSubmit(selectedTechnique);
 	};
-
-	console.log("selectedTechnique", selectedTechnique);
 
 	return (
 		<Dialog

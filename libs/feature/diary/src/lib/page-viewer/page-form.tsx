@@ -148,7 +148,7 @@ export function DiaryContentForm({
 			</div>
 			<Divider />
 			<FormProvider {...form}>
-				<form className="space-y-4">
+				<form className=" space-y-6 xl:space-y-4">
 					<Controller
 						name="learningGoals"
 						control={form.control}
