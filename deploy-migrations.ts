@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { readdirSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from "fs";
+import { readdirSync, existsSync, mkdirSync, renameSync, rmSync, statSync, copyFileSync } from "fs";
 import { join } from "path";
 
 // Color scheme definitions
@@ -12,6 +12,8 @@ const info = "\x1b[1m\x1b[34m";
 const prismaPath = join(__dirname, "libs", "data-access", "database", "prisma");
 const migrationsPath = join(prismaPath, "migrations");
 const migrationsTempPath = join(prismaPath, "migrations_temp");
+const schemaPath = join(prismaPath, "schema");
+const schemaTempPath = join(prismaPath, "schema_temp");
 const dbMigration = "migration.sql";
 const dataMigration = "data-migration.ts";
 
@@ -31,11 +33,17 @@ function moveToMigrationDir(file: string) {
 }
 
 /*
- * Moves all remaining files from temp back to migration folder and deleted temp folder.
+ * Restores original migration and schema files.
  */
 function cleanup() {
+	// Restore migrations and delete temp folder
 	readdirSync(migrationsTempPath).forEach(moveToMigrationDir);
 	rmSync(migrationsTempPath, { recursive: true, force: true });
+
+	// Restore schema files
+	const schemaFiles = readdirSync(schemaTempPath);
+	schemaFiles.forEach(file => copyFileSync(join(schemaTempPath, file), join(schemaPath, file)));
+	rmSync(schemaTempPath, { recursive: true, force: true });
 }
 
 /**
@@ -81,12 +89,16 @@ async function migrateData(migration: string, migrationApplied: boolean) {
 		try {
 			// Execute the data migration in a separate process (to support alternative versions of Prisma Client)
 			execSync(`npx ts-node --skipProject ${dataMigrationFile}`);
+			return true;
 		} catch (error) {
 			console.error(`⮡ Data migration ${error}failed.${normal}`);
 			cleanup();
+			// Restore original Prisma Client
+			execSync(`npx prisma generate`);
 			process.exit(1);
 		}
 	}
+	return false;
 }
 
 async function main() {
@@ -96,6 +108,11 @@ async function main() {
 	const files = readdirSync(migrationsTempPath);
 	files.filter(file => !isMigration(join(migrationsTempPath, file))).forEach(moveToMigrationDir);
 
+	// Step 1.1: Create backup of schema.prisma
+	mkdirSync(schemaTempPath, { recursive: true });
+	const schemaFiles = readdirSync(schemaPath);
+	schemaFiles.forEach(file => copyFileSync(join(schemaPath, file), join(schemaTempPath, file)));
+
 	// Step 2: Identify all migrations
 	// Alphabetic sorting is important to ensure that migrations are applied as Prisma does
 	// https://www.prisma.io/docs/orm/prisma-migrate/workflows/baselining#baselining-a-database
@@ -104,6 +121,7 @@ async function main() {
 		.filter(folder => existsSync(join(migrationsTempPath, folder, "migration.sql")));
 
 	// Step 3: Run each migration
+	let dataMigrationApplied = false;
 	for (let i = 0; i < migrations.length; i++) {
 		const migration = migrations[i];
 		console.log(`Applying migration ${info}${migration}${normal}`);
@@ -113,7 +131,8 @@ async function main() {
 		let { migrationApplied, result } = migrateDatabase(migration);
 
 		// Apply data migration if exists
-		await migrateData(migration, migrationApplied);
+		dataMigrationApplied =
+			dataMigrationApplied || (await migrateData(migration, migrationApplied));
 
 		if (i === migrations.length - 1) {
 			// Print log of last migration
@@ -123,6 +142,10 @@ async function main() {
 
 	// Step 4: Cleanup
 	cleanup();
+	if (dataMigrationApplied) {
+		// Restore original Prisma Client
+		execSync(`npx prisma generate`);
+	}
 }
 
 main().catch(async e => {
