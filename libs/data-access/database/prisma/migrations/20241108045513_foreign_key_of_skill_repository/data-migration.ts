@@ -10,7 +10,7 @@ async function main() {
 				await tx.skillRepository.update({
 					where: { id: repository.id },
 					data: {
-						ownerName: "first_user"
+						ownerName: repository.User.name
 					}
 				});
 			}
