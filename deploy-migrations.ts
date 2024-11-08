@@ -2,6 +2,13 @@ import { execSync } from "child_process";
 import { readdirSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from "fs";
 import { join } from "path";
 
+// Color scheme definitions
+const normal = "\x1b[0m";
+const success = "\x1b[1m\x1b[32m";
+const error = "\x1b[1m\x1b[31m";
+const neutral = "\x1b[1m\x1b[33m";
+const info = "\x1b[1m\x1b[34m";
+
 const prismaPath = join(__dirname, "libs", "data-access", "database", "prisma");
 const migrationsPath = join(prismaPath, "migrations");
 const migrationsTempPath = join(prismaPath, "migrations_temp");
@@ -42,15 +49,15 @@ function migrateDatabase(migration: string) {
 	try {
 		result = execSync(`npx prisma migrate deploy`).toString();
 		if (result.includes("No pending migrations to apply.")) {
-			console.log(`⮡ Database migration ${migration}\x1b[1m\x1b[33m already applied\x1b[0m.`);
+			console.log(`⮡ Database migration ${migration} ${neutral}already applied${normal}.`);
 		} else {
 			console.log(
-				`⮡ Database migration ${migration}\x1b[1m\x1b[32m successfully applied\x1b[0m.`
+				`⮡ Database migration ${migration} ${success}successfully applied${normal}.`
 			);
 			migrationApplied = true;
 		}
 	} catch (e) {
-		console.log("⮡ Database migration \x1b[1m\x1b[31m failed:\x1b[0m\n" + e);
+		console.log(`⮡ Database migration ${error}failed:${normal}\n` + e);
 		cleanup();
 		process.exit(1);
 	}
@@ -67,19 +74,15 @@ function migrateDatabase(migration: string) {
 async function migrateData(migration: string, migrationApplied: boolean) {
 	const dataMigrationFile = join(migrationsPath, migration, dataMigration);
 	if (migrationApplied && existsSync(dataMigrationFile)) {
-		console.log(`⮡ Applying\x1b[1m\x1b[34m data migration\x1b[0m`);
+		console.log(`⮡ Applying ${info}data migration${normal}`);
 		// Create a Prisma client based on current database schema
 		execSync(`npx prisma db pull`);
 		execSync(`npx prisma generate`);
 		try {
-			const module = await import(dataMigrationFile);
-			if (module.main) {
-				// Manually call and await the `main` function from the imported file
-				// Otherwise it may be executed in parallel with the next migration
-				await module.main();
-			}
-		} catch (e) {
-			console.error("⮡ Data migration \x1b[1m\x1b[31m failed:\x1b[0m\n", e);
+			// Execute the data migration in a separate process (to support alternative versions of Prisma Client)
+			execSync(`npx ts-node --skipProject ${dataMigrationFile}`);
+		} catch (error) {
+			console.error(`⮡ Data migration ${error}failed.${normal}`);
 			cleanup();
 			process.exit(1);
 		}
@@ -103,7 +106,7 @@ async function main() {
 	// Step 3: Run each migration
 	for (let i = 0; i < migrations.length; i++) {
 		const migration = migrations[i];
-		console.log(`Applying migration \x1b[1m\x1b[34m${migration}\x1b[0m`);
+		console.log(`Applying migration ${info}${migration}${normal}`);
 		moveToMigrationDir(migration);
 
 		// Execute the DB migration
