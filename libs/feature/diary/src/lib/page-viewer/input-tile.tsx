@@ -25,10 +25,10 @@ export function Tile({
 }>) {
 	return (
 		<div
-			className="flex flex-col xl:flex-row max-h-[400px] min-h-[200px] cursor-pointer xl:space-x-4"
+			className="flex max-h-[400px] min-h-[200px] cursor-pointer space-x-4"
 			onClick={() => onToggleEdit(true)}
 		>
-			<div className="flex flex-col xl:w-1/3 bg-gray-200 rounded-lg text-center">
+			<div className="flex flex-col w-1/4 bg-gray-200 rounded-lg text-center">
 				<span className="text-gray-800 pt-2">{tileName}:</span>
 				<span className="text-gray-600 mt-1 justify-center items-center py-6 px-2">
 					{tooltip}
@@ -36,7 +36,7 @@ export function Tile({
 			</div>
 
 			<div
-				className={`flex justify-center items-center w-full xl:w-2/3 px-4 xl:py-2 mt-2 xl:mt-0 rounded-lg ${
+				className={`flex justify-center items-center w-3/4 px-4 py-2 rounded-lg ${
 					isFilled ? "bg-green-100" : "bg-gray-100"
 				}`}
 			>
@@ -170,7 +170,7 @@ export function LocationInputTile({
 			isFilled={!!initialSelection}
 			tooltip={tooltipText}
 		>
-			<div className="p-4 min-h-40 xl:min-h-0">
+			<div className="p-4">
 				{initialSelection ? (
 					<div>
 						<p>{initialSelection?.name ?? ""}</p>
@@ -312,7 +312,7 @@ export function StarInputTile({
 			onToggleEdit={() => {}}
 			tooltip={description}
 		>
-			<div className="flex items-center justify-center overflow-y-auto min-h-40 xl:min-h-0">
+			<div className="overflow-y-auto">
 				<div className="space-y-4">
 					<StarRating rating={initialRating ?? 0} onChange={onChange} />
 				</div>
@@ -346,7 +346,7 @@ export function MarkDownInputTile({
 				tileName={"Notizen"}
 				isFilled={initialNote !== ""}
 				tooltip={"Platz für persönliche Anmerkungen."}
-			><div className="flex items-center min-h-40">
+			>
 				{initialNote === "" ? (
 					<span>Bisher wurden noch keine Notizen erstellt.</span>
 				) : (
@@ -354,7 +354,6 @@ export function MarkDownInputTile({
 						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
 					</div>
 				)}
-				</div>
 			</Tile>
 			{dialogOpen && (
 				<MarkdownEditorDialog
@@ -402,7 +401,7 @@ export function LearningGoalInputTile({
 				tooltip={tooltip}
 			>
 				<div>
-					<div className="flex flex-wrap p-4 min-h-40 xl:min-h-0">
+					<div className="flex flex-wrap">
 						{displayGoals.length === 0 && <span>Keine Lernziele vorhanden</span>}
 						{displayGoals.map(goal => (
 							<div
