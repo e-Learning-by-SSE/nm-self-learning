@@ -1,5 +1,5 @@
 import { SkillFormModel } from "@self-learning/types";
-import { Alert, SimpleDialog } from "@self-learning/ui/common";
+import { Alert, Dialog } from "@self-learning/ui/common";
 import { useState } from "react";
 
 export function ShowCyclesDialog({ cycleParticipants }: { cycleParticipants: SkillFormModel[] }) {
@@ -31,13 +31,18 @@ export function ShowCyclesDialog({ cycleParticipants }: { cycleParticipants: Ski
 					}}
 				/>
 				{openExplanation && (
-					<SimpleDialog
-						style={{ height: "50vh", width: "50vw", overflow: "auto" }}
-						name={"Zyklen - Darstellung"}
+					<Dialog
+						style={{ height: "50vh", width: "50vw"}}
+						title={"Zyklen - Darstellung"}
 						onClose={() => setShowDialog(false)}
 					>
 							<CycleComponents cycles={cycleParticipants} />
-					</SimpleDialog>
+						<div className="bg-white">
+							<div className="absolute right-5 bottom-5">
+							 <button onClick={() => setShowDialog(false)} className="btn btn-primary">Ok</button>
+							</div>
+						</div>
+					</Dialog>
 				)}
 			</>
 		);
@@ -54,7 +59,7 @@ function CycleComponents<S extends { id: string, name: string, children: string[
 	const isCycle = last.children.includes(first.id);
 
 	return (
-		<div className="flex flex-col items-center space-y-4 p-5 bg-gray-50 rounded-lg shadow-lg">
+		<div className="flex flex-col h-2/3 overflow-auto items-center space-y-4 p-5 bg-gray-50 rounded-lg shadow-lg">
 			{cycles.map((cycle, index) => (
 				<div key={cycle.id} className="flex items-center space-x-2">
 					<div
