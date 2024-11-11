@@ -131,8 +131,17 @@ function getStudent(username: string) {
 	});
 }
 
-async function getTouchedLessons(student: Student, numOfLessons: number) {
-	const lessonsFromDiary: any[] = student.learningDiaryEntrys.flatMap(entry =>
+export type DiaryLessonSchema = {
+	id: string;
+	courseSlug: string;
+	courseImgUrl: string | null;
+	entryId: string;
+	lessonId: string;
+	createdAt: Date;
+};
+
+async function loadMostRecentLessons({student, lessonLimit }: { student: Student; lessonLimit: number}) {
+	const lessonsFromDiary: DiaryLessonSchema[] = student.learningDiaryEntrys.flatMap(entry =>
 		entry.lessonsLearned.map(lesson => ({
 			...lesson,
 			courseSlug: entry.courseSlug,
@@ -146,37 +155,42 @@ async function getTouchedLessons(student: Student, numOfLessons: number) {
 		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
 	);
 
-	const newestLessons = sortedLessons.slice(0, numOfLessons);
+	const newestLessons = sortedLessons.slice(0, lessonLimit);
+	const lessonIds = newestLessons.map(lesson => lesson.lessonId)
 
-	const lessonWithDetails = await Promise.all(
-		newestLessons.map(async lesson => {
-			const lessonDetails = await database.lesson.findUnique({
-				where: { lessonId: lesson.lessonId },
-				select: {
-					title: true,
-					slug: true,
-					completions: true
-				}
-			});
+	const lessonsArray= await database.lesson.findMany({
+		where: {lessonId: {in: lessonIds}},
+		select: {
+			lessonId: true,
+			title: true,
+			slug: true,
+			completions: true
+		}
+	})
 
-			return {
-				lessonId: lesson.lessonId,
-				title: lessonDetails?.title || "",
-				slug: lessonDetails?.slug || "",
-				courseImgUrl: lesson.courseImgUrl || "",
-				courseSlug: lesson.courseSlug || "",
-				touchedAt: lesson.createdAt || null,
-				entryId: lesson.entryId || "",
-				completed: false
-			};
-		})
-	);
+	const lessonDetailsMap = new Map(
+		lessonsArray.map(detail => [detail.lessonId, detail])
+	)
+	const lessonsWithDetails = newestLessons.map(lesson => {
+		const lessonDetails = lessonDetailsMap.get(lesson.lessonId)
+
+		return {
+			lessonId: lesson.lessonId,
+			title: lessonDetails?.title || "",
+			slug: lessonDetails?.slug || "",
+			courseImgUrl: lesson.courseImgUrl || "",
+			courseSlug: lesson.courseSlug || "",
+			touchedAt: lesson.createdAt || null,
+			entryId: lesson.entryId || "",
+			compeleted: false
+		}
+	})
 
 	const completedLessonsTitleSet = new Set(
 		student.completedLessons.map(lesson => lesson.lesson.title)
 	);
 
-	return lessonWithDetails.map(lesson => ({
+	return lessonsWithDetails.map(lesson => ({
 		...lesson,
 		completed: completedLessonsTitleSet.has(lesson.title)
 	}));
@@ -194,7 +208,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 	}
 
 	const student = await getStudent(user.name);
-	const touchedLessons = await getTouchedLessons(student, 6);
+	const touchedLessons = await loadMostRecentLessons({student, lessonLimit:6});
 
 	return {
 		props: {
