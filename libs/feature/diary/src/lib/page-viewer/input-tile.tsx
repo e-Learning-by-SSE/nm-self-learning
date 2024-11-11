@@ -4,7 +4,7 @@ import { ButtonSmallX, Dialog, LoadingBox, StarRating } from "@self-learning/ui/
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
-import { Location } from "../access-learning-diary";
+import { Location } from "@self-learning/diary";
 import { LearningGoal } from "@self-learning/types";
 import { IdSet } from "@self-learning/util/common";
 import { StatusUpdateCallback } from "../util/types";
