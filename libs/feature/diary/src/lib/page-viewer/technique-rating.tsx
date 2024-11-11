@@ -250,7 +250,7 @@ function TechniqueRatingDialog({
 
 	const submitRating = () => {
 		if (selectedTechnique.score === undefined) {
-			const techniqueWithScore = { ...selectedTechnique, score: 0 };
+			const techniqueWithScore = { ...selectedTechnique, score: 1 };
 			onSubmit(techniqueWithScore);
 			return;
 		}
