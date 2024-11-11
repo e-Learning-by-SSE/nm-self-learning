@@ -249,6 +249,11 @@ function TechniqueRatingDialog({
 	};
 
 	const submitRating = () => {
+		if (selectedTechnique.score === undefined) {
+			const techniqueWithScore = { ...selectedTechnique, score: 0 };
+			onSubmit(techniqueWithScore);
+			return;
+		}
 		onSubmit(selectedTechnique);
 	};
 
@@ -270,7 +275,11 @@ function TechniqueRatingDialog({
 				</div>
 			</div>
 			<div className="relative h-10 bg-white">
-				<button className="btn-primary absolute bottom-0 right-3" onClick={submitRating}>
+				<button
+					className="btn-primary absolute bottom-0 right-3"
+					onClick={submitRating}
+					disabled={!selectedTechnique.score}
+				>
 					<span>Fertig</span>
 				</button>
 			</div>
