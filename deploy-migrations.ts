@@ -89,7 +89,7 @@ function migrateDatabase(migration: string) {
  * @param migration The currently applied migration
  * @param migrationApplied Status of the database migration
  */
-async function migrateData(migration: string, migrationApplied: boolean) {
+function migrateData(migration: string, migrationApplied: boolean) {
 	const dataMigrationFile = join(migrationsPath, migration, dataMigration);
 	if (migrationApplied && existsSync(dataMigrationFile)) {
 		console.log(`⮡ Applying ${info}data migration${normal}`);
@@ -111,7 +111,7 @@ async function migrateData(migration: string, migrationApplied: boolean) {
 	return false;
 }
 
-async function main() {
+function main() {
 	// Step 1: Rename  Migrations folder and copy all non-migration files and folders
 	moveSync(migrationsPath, migrationsTempPath);
 	mkdirSync(migrationsPath, { recursive: true });
@@ -141,8 +141,7 @@ async function main() {
 		let { migrationApplied, result } = migrateDatabase(migration);
 
 		// Apply data migration if exists
-		dataMigrationApplied =
-			dataMigrationApplied || (await migrateData(migration, migrationApplied));
+		dataMigrationApplied = dataMigrationApplied || migrateData(migration, migrationApplied);
 
 		if (i === migrations.length - 1) {
 			// Print log of last migration
@@ -158,15 +157,10 @@ async function main() {
 	}
 }
 
-main().catch(async e => {
-	console.error(e);
-	process.exit(1);
-});
-
 /**
  * Alternative to `renameSync` that moves directories recursively, because Docker file systems do not support it.
- * @param source
- * @param destination
+ * @param source file or directory to move
+ * @param destination file or directory to move to
  */
 function moveSync(source: string, destination: string) {
 	if (!existsSync(source)) {
@@ -203,4 +197,11 @@ function moveSync(source: string, destination: string) {
 		// Remove the source directory after all contents have been moved
 		rmdirSync(source);
 	}
+}
+
+try {
+	main();
+} catch (e) {
+	console.error(e);
+	process.exit(1);
 }
