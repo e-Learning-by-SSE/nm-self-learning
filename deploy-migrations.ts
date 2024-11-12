@@ -1,5 +1,15 @@
 import { execSync } from "child_process";
-import { readdirSync, existsSync, mkdirSync, renameSync, rmSync, statSync, copyFileSync } from "fs";
+import {
+	readdirSync,
+	existsSync,
+	mkdirSync,
+	rmSync,
+	statSync,
+	copyFileSync,
+	lstatSync,
+	unlinkSync,
+	rmdirSync
+} from "fs";
 import { join } from "path";
 
 // Color scheme definitions
@@ -29,7 +39,7 @@ function isMigration(path: string) {
  * @param file The relative path of the file or folder to move.
  */
 function moveToMigrationDir(file: string) {
-	renameSync(join(migrationsTempPath, file), join(migrationsPath, file));
+	moveSync(join(migrationsTempPath, file), join(migrationsPath, file));
 }
 
 /*
@@ -103,7 +113,7 @@ async function migrateData(migration: string, migrationApplied: boolean) {
 
 async function main() {
 	// Step 1: Rename  Migrations folder and copy all non-migration files and folders
-	renameSync(migrationsPath, migrationsTempPath);
+	moveSync(migrationsPath, migrationsTempPath);
 	mkdirSync(migrationsPath, { recursive: true });
 	const files = readdirSync(migrationsTempPath);
 	files.filter(file => !isMigration(join(migrationsTempPath, file))).forEach(moveToMigrationDir);
@@ -152,3 +162,45 @@ main().catch(async e => {
 	console.error(e);
 	process.exit(1);
 });
+
+/**
+ * Alternative to `renameSync` that moves directories recursively, because Docker file systems do not support it.
+ * @param source
+ * @param destination
+ */
+function moveSync(source: string, destination: string) {
+	if (!existsSync(source)) {
+		throw new Error(`Source ${source} does not exist.`);
+	}
+
+	if (!lstatSync(source).isDirectory()) {
+		// Move files
+		copyFileSync(source, destination);
+		// Remove original file after copying
+		unlinkSync(source);
+	} else {
+		// Create destination folder if it does not exist
+		if (!existsSync(destination)) {
+			mkdirSync(destination, { recursive: true });
+		}
+
+		// Get the contents of the source directory
+		readdirSync(source).forEach(file => {
+			const sourcePath = join(source, file);
+			const destinationPath = join(destination, file);
+
+			if (lstatSync(sourcePath).isDirectory()) {
+				// Recursively move subdirectories
+				moveSync(sourcePath, destinationPath);
+			} else {
+				// Move files
+				copyFileSync(sourcePath, destinationPath);
+				// Remove original file after copying
+				unlinkSync(sourcePath);
+			}
+		});
+
+		// Remove the source directory after all contents have been moved
+		rmdirSync(source);
+	}
+}
