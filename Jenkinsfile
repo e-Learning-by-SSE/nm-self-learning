@@ -56,8 +56,6 @@ pipeline {
             }
             steps {
                 sh 'git fetch --no-tags --force --progress origin master:master' // for nx affected
-                sh 'git clean -d -f -e .npm -e build-caches/npm' // we need to ignore mounted file systems here
-                sh 'git reset --hard'
                 sh 'cp -f .npmrc.example .npmrc'
                 sh 'cp -f .env.example .env'
                 sh 'npm install --force' // force for permission errors
@@ -94,7 +92,7 @@ pipeline {
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run format:check'
                                     sh 'npm run prisma:seed'
-                                    sh "env CI=true env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci --output-style=static"
+                                    sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci"
                                 }
                         }
                         ssedocker {
@@ -131,7 +129,7 @@ pipeline {
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run format:check'
                                 sh 'npm run prisma:seed'
-                                sh "env CI=true env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-ci --output-style=static --parallel=1"
+                                sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-ci"
                             }
                         }
                         ssedocker {
@@ -141,11 +139,6 @@ pipeline {
                         }
                     }
                     post {
-                        always {
-                            catchError(buildResult: 'FAILURE', stageResult: 'SUCCESS') {
-                                junit testResults: 'output/test/junit*.xml', skipPublishingChecks: true
-                            }
-                        }
                         success {
                             catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                                 sshagent(['STM-SSH-DEMO']) {
@@ -169,8 +162,8 @@ pipeline {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                sh 'npx nx migrate reset' // this will test migrations too
-                                sh "env CI=true env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
+                                sh 'npm run prisma:seed'
+                                sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
                             }
                             if (params.RELEASE) {
                                 def apiVersion = ''
@@ -194,11 +187,6 @@ pipeline {
                                     }
                                 }
                             }
-                        }
-                    } 
-                    post {
-                        always {
-                            junit testResults: 'output/test/junit*.xml', skipPublishingChecks: true
                         }
                     }
                 }
