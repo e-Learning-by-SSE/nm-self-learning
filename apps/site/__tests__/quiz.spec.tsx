@@ -77,7 +77,7 @@ describe("QuizHeader", () => {
 			/>
 		);
 
-		const tab = screen.getByText("Question 2");
+		const tab = screen.getByText("Frage 2");
 		fireEvent.click(tab);
 
 		expect(mockNewEvent).toHaveBeenCalledWith({
