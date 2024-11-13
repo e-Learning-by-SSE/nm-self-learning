@@ -85,7 +85,7 @@ describe("useLessonDetails", () => {
 			isLoading: false
 		});
 	});
-	it("Solved Task IDs", () => {
+	it("should return unique taskIds", () => {
 		const { result } = renderHook(() => useLessonDetails({ page: mockPage, endDate: now }));
 
 		const { lessonDetails } = result.current;
@@ -93,14 +93,14 @@ describe("useLessonDetails", () => {
 
 		expect(taskIds).toEqual(["task1", "task2"]);
 	});
-	it("Hints Used", () => {
+	it("should return hints used", () => {
 		const { result } = renderHook(() => useLessonDetails({ page: mockPage, endDate: now }));
 
 		const { lessonDetails } = result.current;
 		const hintsUsed = lessonDetails[0].hintsUsed;
 		expect(hintsUsed).toEqual(7);
 	});
-	it("Success Rate", () => {
+	it("should return retry ratio", () => {
 		const { result } = renderHook(() => useLessonDetails({ page: mockPage, endDate: now }));
 
 		const { lessonDetails } = result.current;
