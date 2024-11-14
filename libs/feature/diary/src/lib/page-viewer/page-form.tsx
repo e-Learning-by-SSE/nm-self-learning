@@ -17,7 +17,6 @@ import {
 	StarInputTile
 } from "./input-tile";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
-import { LearningTechnique } from "@prisma/client";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
