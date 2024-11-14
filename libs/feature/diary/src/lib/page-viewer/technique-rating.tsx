@@ -6,7 +6,7 @@ import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Tile } from "./input-tile";
+import { Tile, TileLayout } from "./input-tile";
 
 type Technique = {
 	name: string;
@@ -33,15 +33,15 @@ function findRatedTechniques(strategies: Strategy[]) {
 
 export function PersonalTechniqueRatingTile({
 	strategies,
-	onChange
+	onChange,
+	isCompact
 }: {
 	strategies: Strategy[];
 	onChange: (technique: Technique) => void;
+	isCompact: boolean;
 }) {
 	const [strategyDialogOpen, setStrategyDialogOpen] = useState(false);
-
 	const [evalTarget, setEvalTarget] = useState<Technique | null>(null);
-
 	const techniquesWithRating = findRatedTechniques(strategies);
 
 	const handleTileClick = () => {
@@ -62,23 +62,22 @@ export function PersonalTechniqueRatingTile({
 		"Welche Lernstrategie/-technik hast du genutzt? Und wie schätzt du den Nutzen ein?";
 
 	return (
-		<div>
-			<Tile
-				tileName="Genutzte Techniken"
-				isFilled={techniquesWithRating.length > 0}
-				onToggleEdit={handleTileClick}
-				tooltip={toolTipText}
-			>
-				<UsedTechniqueList techniques={techniquesWithRating} />
-			</Tile>
+		<TileLayout
+			isCompact={isCompact}
+			onClick={handleTileClick}
+			isFilled={techniquesWithRating.length > 0}
+			tileDescription={toolTipText}
+			tileName="Genutzte Techniken"
+		>
+			{/* Strategy List Dialog */}
 			{strategyDialogOpen && (
 				<Dialog
 					title="Lernstrategien"
 					onClose={() => setStrategyDialogOpen(false)}
-					className="w-4/5 h-4/5 flex items-center justify-center"
+					className="w-4/5 h-4/5 flex flex-col items-center justify-center overflow-hidden"
 				>
-					<span className="text-lg">{toolTipText}</span>
-					<div className="grid grid-flow-* grid-cols-1 gap-4 w-full h-full overflow-y-auto">
+					<span className="text-lg mb-4">{toolTipText}</span>
+					<div className="grid grid-flow-row grid-cols-1 gap-4 w-full h-full overflow-y-auto p-4">
 						<StrategyList
 							onTechniqueClick={technique => setEvalTarget(technique)}
 							strategies={strategies}
@@ -94,6 +93,8 @@ export function PersonalTechniqueRatingTile({
 					</div>
 				</Dialog>
 			)}
+
+			{/* Technique Rating Dialog */}
 			{evalTarget && (
 				<TechniqueRatingDialog
 					technique={evalTarget}
@@ -101,27 +102,27 @@ export function PersonalTechniqueRatingTile({
 					onSubmit={handleTechniqueRatingSubmit}
 				/>
 			)}
-		</div>
+
+			{/* Display List of Used Techniques */}
+			<div className="mt-4 py-2 min-h-40 max-h-40 overflow-y-auto">
+				<UsedTechniqueList techniques={techniquesWithRating} />
+			</div>
+		</TileLayout>
 	);
 }
 
-function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
+export function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 	return (
-		<div className="flex items-center justify-center max-h-[140px] min-h-40 w-full overflow-y-auto">
-			<ul className="space-y-4">
+		<div className="flex items-center justify-center w-full ">
+			<ul className="space-y-4 w-full">
 				{techniques.map(technique => (
 					<li key={technique.id} className="flex items-center justify-between">
-						<span className="flex-grow whitespace-normal break-words">
+						<span className="flex-grow whitespace-normal break-words text-gray-800">
 							{technique.name}
 						</span>
 						{technique.score !== undefined && (
 							<div className="flex items-center space-x-2 ml-4">
-								<StarRating
-									rating={technique.score}
-									onChange={() => {
-										/* Nothing; user is not able to change rating from this view */
-									}}
-								/>
+								<StarRating rating={technique.score} onChange={() => {}} />
 							</div>
 						)}
 					</li>

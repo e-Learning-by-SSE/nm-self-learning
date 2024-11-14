@@ -12,35 +12,106 @@ import { GoalStatus } from "../goals/status";
 import { LearningGoalEditorDialog } from "../goals/goal-editor";
 
 export function Tile({
-	onToggleEdit,
-	tileName,
+	onClick,
 	isFilled,
-	children,
-	tooltip
+	children
 }: PropsWithChildren<{
-	onToggleEdit: (open: boolean) => void;
-	tileName: string;
+	onClick: (open: boolean) => void;
 	isFilled: boolean;
-	tooltip: string;
 }>) {
 	return (
 		<div
-			className="flex flex-col xl:flex-row max-h-[400px] min-h-[200px] cursor-pointer xl:space-x-4"
-			onClick={() => onToggleEdit(true)}
+			className={`flex justify-center items-center w-full min-h-48 max-h-48 px-4 py-2 rounded-lg cursor-pointer ${
+				isFilled ? "bg-green-100" : "bg-gray-100"
+			}`}
+			onClick={() => onClick(true)}
 		>
-			<div className="flex flex-col xl:w-1/4 bg-gray-200 rounded-lg text-center">
-				<span className="text-gray-800 pt-2">{tileName}:</span>
-				<span className="text-gray-600 mt-1 justify-center items-center py-6 px-2">
-					{tooltip}
-				</span>
+			{children}
+		</div>
+	);
+}
+
+export function TileLayout({
+	children,
+	isCompact,
+	onClick,
+	isFilled,
+	tileDescription,
+	tileName
+}: PropsWithChildren<{
+	isCompact: boolean;
+	onClick: (open: boolean) => void;
+	isFilled: boolean;
+	tileDescription: string;
+	tileName: string;
+}>) {
+	return (
+		<div>
+			{isCompact && (
+				<CompactTile onClick={onClick} isFilled={isFilled} tileName={tileName}>
+					{children}
+				</CompactTile>
+			)}
+			{!isCompact && (
+				<InfoTile
+					onClick={onClick}
+					isFilled={isFilled}
+					tileDescription={tileDescription}
+					tileName={tileName}
+				>
+					{children}
+				</InfoTile>
+			)}
+		</div>
+	);
+}
+
+export function CompactTile({
+	children,
+	onClick,
+	isFilled,
+	tileName
+}: PropsWithChildren<{
+	onClick: (open: boolean) => void;
+	isFilled: boolean;
+	tileName: string;
+}>) {
+	return (
+		<div className="relative">
+			<span className="absolute top-2 left-2 px-2 py-1 rounded text-gray-800 z-10">
+				{tileName}:
+			</span>
+
+			<Tile onClick={onClick} isFilled={isFilled}>
+				{children}
+			</Tile>
+		</div>
+	);
+}
+
+export function InfoTile({
+	children,
+	onClick,
+	isFilled,
+	tileDescription,
+	tileName
+}: PropsWithChildren<{
+	onClick: (open: boolean) => void;
+	isFilled: boolean;
+	tileDescription: string;
+	tileName: string;
+}>) {
+	return (
+		<div className="flex flex-col xl:flex-row items-stretch w-full h-full space-y-1 xl:space-y-0 xl:space-x-4">
+			<div className="flex flex-col xl:w-1/4 bg-gray-200 rounded-lg text-center p-4 min-h-48 max-h-48">
+				<span className="text-gray-800 font-semibold">{tileName}:</span>
+				<span className="text-gray-600 mt-1 py-4">{tileDescription}</span>
 			</div>
 
-			<div
-				className={`flex justify-center items-center w-full xl:w-3/4 px-4 xl:py-2 mt-2 xl:mt-0 rounded-lg ${
-					isFilled ? "bg-green-100" : "bg-gray-100"
-				}`}
-			>
-				{children}
+			<div className="flex-grow flex items-stretch">
+				<Tile onClick={onClick} isFilled={isFilled}>
+					{children}
+				</Tile>
 			</div>
 		</div>
 	);
@@ -143,10 +214,12 @@ export function Tile({
 
 export function LocationInputTile({
 	initialSelection,
-	onChange
+	onChange,
+	isCompact
 }: {
 	initialSelection?: Partial<Location>; // show what is available.
 	onChange?: (location: Location) => void;
+	isCompact: boolean;
 }) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 	const { data: learningLocations } = trpc.learningLocation.findMany.useQuery();
@@ -160,15 +233,16 @@ export function LocationInputTile({
 		onChange && onChange(location);
 	};
 
-	const tooltipText =
+	const description =
 		"Notiere deinen Lernort! Wenn du deinen Lernort einträgst, kannst du später leicht herausfinden, wo du am besten lernst.";
 
 	return (
-		<Tile
-			onToggleEdit={setDialogOpen}
-			tileName={"Lernort"}
+		<TileLayout
+			isCompact={isCompact}
+			onClick={setDialogOpen}
 			isFilled={!!initialSelection}
-			tooltip={tooltipText}
+			tileDescription={description}
+			tileName={"Lernort"}
 		>
 			<div className="p-4 min-h-40 xl:min-h-0">
 				{initialSelection ? (
@@ -187,11 +261,11 @@ export function LocationInputTile({
 						learningLocations={learningLocations}
 						onClose={closeDialog}
 						onSubmit={handleChange}
-						description={tooltipText}
+						description={description}
 					/>
 				)}
 			</div>
-		</Tile>
+		</TileLayout>
 	);
 }
 
@@ -288,45 +362,40 @@ export function StarInputTile({
 	name,
 	initialRating = 0,
 	onChange,
-	description
+	description,
+	isCompact
 }: {
 	name: string;
 	initialRating?: number;
 	onChange: (rating: number) => void;
 	description: string;
+	isCompact: boolean;
 }) {
 	return (
-		<Tile
-			tileName={name}
+		<TileLayout
+			isCompact={isCompact}
+			onClick={() => {}}
 			isFilled={initialRating > 0}
-			// expandedContent={
-			// 	<div className="max-w-md py-4 px-6 bg-white shadow-md rounded-lg">
-			// 		<span className="block text-lg font-semibold text-gray-800 mb-2">
-			// 			Gebe durch klicken deine Bewertung ab aus.
-			// 		</span>
-			// 		<span className="block text-sm text-gray-500">
-			// 			{description}.
-			// 		</span>
-			// 	</div>
-			// }
-			onToggleEdit={() => {}}
-			tooltip={description}
+			tileDescription={description}
+			tileName={name}
 		>
 			<div className="flex items-center justify-center overflow-y-auto min-h-40 xl:min-h-0">
 				<div className="space-y-4">
 					<StarRating rating={initialRating ?? 0} onChange={onChange} />
 				</div>
 			</div>
-		</Tile>
+		</TileLayout>
 	);
 }
 
 export function MarkDownInputTile({
 	initialNote,
-	onSubmit
+	onSubmit,
+	isCompact
 }: {
 	initialNote?: string;
 	onSubmit: (note: string) => void;
+	isCompact: boolean;
 }) {
 	const [displayedNotes, setDisplayedNotes] = useState<string | null>(initialNote ?? null);
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -340,23 +409,23 @@ export function MarkDownInputTile({
 	};
 
 	return (
-		<div>
-			<Tile
-				onToggleEdit={setDialogOpen}
-				tileName={"Notizen"}
-				isFilled={initialNote !== ""}
-				tooltip={"Platz für persönliche Anmerkungen."}
-			>
-				<div className="flex items-center min-h-40">
-					{initialNote === "" ? (
-						<span>Bisher wurden noch keine Notizen erstellt.</span>
-					) : (
-						<div className={"max-w-5xl truncate"}>
-							<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
-						</div>
-					)}
-				</div>
-			</Tile>
+		<TileLayout
+			isCompact={isCompact}
+			onClick={setDialogOpen}
+			isFilled={initialNote !== ""}
+			tileDescription={"Platz für persönliche Anmerkungen."}
+			tileName={"Notizen"}
+		>
+			<div className="flex items-center min-h-40">
+				{initialNote === "" ? (
+					<span>Bisher wurden noch keine Notizen erstellt.</span>
+				) : (
+					<div className={"max-w-5xl truncate"}>
+						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
+					</div>
+				)}
+			</div>
+
 			{dialogOpen && (
 				<MarkdownEditorDialog
 					title={"Notizen"}
@@ -364,16 +433,18 @@ export function MarkDownInputTile({
 					onClose={onClose}
 				/>
 			)}
-		</div>
+		</TileLayout>
 	);
 }
 
 export function LearningGoalInputTile({
 	goals: displayGoals,
-	onChange
+	onChange,
+	isCompact
 }: {
 	goals: LearningGoal[];
 	onChange: (goal: LearningGoal[]) => void;
+	isCompact: boolean;
 }) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
@@ -391,39 +462,38 @@ export function LearningGoalInputTile({
 		[displayGoals, onChange]
 	);
 
-	const tooltip =
+	const description =
 		"Ziele helfen dir eine Richtung zu finden, die du einschlagen möchtest, und bietet dir eine Checkliste, um deine Fortschritte zu überprüfen.";
 
 	return (
-		<div>
-			<Tile
-				onToggleEdit={setDialogOpen}
-				tileName={"Lernziele"}
-				isFilled={displayGoals.length > 0}
-				tooltip={tooltip}
-			>
-				<div>
-					<div className="flex flex-wrap p-4 min-h-40 xl:min-h-0">
-						{displayGoals.length === 0 && <span>Keine Lernziele vorhanden</span>}
-						{displayGoals.map(goal => (
-							<div
-								key={goal.id}
-								className="flex items-center p-2 border border-gray-300 rounded bg-gray-50 m-2"
-							>
-								<GoalStatus goal={goal} editable={false} />
-								<span className="ml-2">{goal.description}</span>
-							</div>
-						))}
-					</div>
+		<TileLayout
+			isCompact={isCompact}
+			onClick={setDialogOpen}
+			isFilled={displayGoals.length > 0}
+			tileDescription={description}
+			tileName={"Lernziele"}
+		>
+			<div>
+				<div className="flex flex-wrap p-4 min-h-40 xl:min-h-0">
+					{displayGoals.length === 0 && <span>Keine Lernziele vorhanden</span>}
+					{displayGoals.map(goal => (
+						<div
+							key={goal.id}
+							className="flex items-center p-2 border border-gray-300 rounded bg-gray-50 m-2"
+						>
+							<GoalStatus goal={goal} editable={false} />
+							<span className="ml-2">{goal.description}</span>
+						</div>
+					))}
 				</div>
-			</Tile>
+			</div>
 			{dialogOpen && (
 				<LearningGoalEditorDialog
 					onClose={onClose}
 					onStatusUpdate={handleGoalStatusUpdate}
-					description={tooltip}
+					description={description}
 				/>
 			)}
-		</div>
+		</TileLayout>
 	);
 }

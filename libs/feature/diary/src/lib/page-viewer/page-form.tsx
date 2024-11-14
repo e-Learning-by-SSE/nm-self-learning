@@ -4,7 +4,7 @@ import {
 	learningDiaryPageSchema
 } from "@self-learning/types";
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { trpc } from "@self-learning/api-client";
@@ -97,16 +97,17 @@ function usePageForm({
 export function DiaryContentForm({
 	diaryId,
 	availableStrategies,
-	endDate
+	endDate,
+	isCompact
 }: {
 	diaryId: string;
 	availableStrategies: Strategy[];
 	endDate: Date;
+	isCompact: boolean;
 }) {
 	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
-
 	// add "rating" prop
 	const itemsWithRatings = availableStrategies.map(strategy => {
 		const updatedStrategy = strategy.techniques.map(technique => {
@@ -149,76 +150,90 @@ export function DiaryContentForm({
 			<Divider />
 			<FormProvider {...form}>
 				<form className=" space-y-6 xl:space-y-4">
-					<Controller
-						name="learningGoals"
-						control={form.control}
-						render={({ field }) => (
-							<LearningGoalInputTile
-								goals={field.value ?? []}
-								onChange={field.onChange}
-							/>
-						)}
-					/>
-					<Controller
-						name="learningLocation"
-						control={form.control}
-						render={({ field }) => (
-							<LocationInputTile
-								initialSelection={field.value}
-								onChange={field.onChange}
-							/>
-						)}
-					/>
-					<Controller
-						name="effortLevel"
-						control={form.control}
-						render={({ field }) => (
-							<StarInputTile
-								name={"Bemühungen"}
-								initialRating={field.value}
-								onChange={field.onChange}
-								description={
-									"Hier kannst du deine eigenen Bemühungen einschätzen. Dies kann dir helfen deine Lernstrategien zu optimieren."
-								}
-							/>
-						)}
-					/>
-					<Controller
-						name="distractionLevel"
-						control={form.control}
-						render={({ field }) => (
-							<StarInputTile
-								name={"Ablenkungen"}
-								initialRating={field.value}
-								onChange={field.onChange}
-								description={
-									"Wie stark waren deine Ablenkungen beim Lernen? Hier kannst du deine Ablenkungen einschätzen und das kann dir helfen deine Lernstrategien zu optimieren."
-								}
-							/>
-						)}
-					/>
-					<Controller
-						name="techniqueRatings"
-						control={form.control}
-						render={({ field }) => (
-							<PersonalTechniqueRatingTile
-								strategies={itemsWithRatings}
-								onChange={updatedTechnique => {
-									onTechniqueChange(updatedTechnique, field);
-								}}
-							/>
-						)}
-					/>
-					<Controller
-						name="notes"
-						control={form.control}
-						render={({ field }) => (
-							<MarkDownInputTile
-								initialNote={field.value}
-								onSubmit={field.onChange}
-							/>
-						)}
-					/>
+					<div
+						className={
+							isCompact
+								? "grid grid-cols-1 2xl:grid-cols-2 gap-4"
+								: "flex flex-col gap-4"
+						}
+					>
+						<Controller
+							name="learningGoals"
+							control={form.control}
+							render={({ field }) => (
+								<LearningGoalInputTile
+									goals={field.value ?? []}
+									onChange={field.onChange}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="learningLocation"
+							control={form.control}
+							render={({ field }) => (
+								<LocationInputTile
+									initialSelection={field.value}
+									onChange={field.onChange}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="effortLevel"
+							control={form.control}
+							render={({ field }) => (
+								<StarInputTile
+									name={"Bemühungen"}
+									initialRating={field.value}
+									onChange={field.onChange}
+									description={
+										"Hier kannst du deine eigenen Bemühungen einschätzen. Dies kann dir helfen deine Lernstrategien zu optimieren."
+									}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="distractionLevel"
+							control={form.control}
+							render={({ field }) => (
+								<StarInputTile
+									name={"Ablenkungen"}
+									initialRating={field.value}
+									onChange={field.onChange}
+									description={
+										"Wie stark waren deine Ablenkungen beim Lernen? Hier kannst du deine Ablenkungen einschätzen und das kann dir helfen deine Lernstrategien zu optimieren."
+									}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="techniqueRatings"
+							control={form.control}
+							render={({ field }) => (
+								<PersonalTechniqueRatingTile
+									strategies={itemsWithRatings}
+									onChange={updatedTechnique => {
+										onTechniqueChange(updatedTechnique, field);
+									}}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="notes"
+							control={form.control}
+							render={({ field }) => (
+								<MarkDownInputTile
+									initialNote={field.value}
+									onSubmit={field.onChange}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+					</div>
 				</form>
 			</FormProvider>
 		</div>
