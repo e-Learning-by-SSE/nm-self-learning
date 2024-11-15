@@ -48,7 +48,7 @@ model LearningLocation {
 model LearningStrategy {
   id         String              @id @default(uuid())
   name       String              @unique
-  description String
+  description String			 @default("")
   techniques LearningTechnique[]
 
   @@map("LearningStrategie")
@@ -94,7 +94,7 @@ model LearningDiaryLearnedLessons {
 
 model LearningGoal {
   id                  String             @id @default(cuid())
-  description         String
+  description         String			 @default("")
   status              LearningGoalStatus @default(value: INACTIVE)
   createdAt           DateTime           @default(now())
   lastProgressUpdate  DateTime?

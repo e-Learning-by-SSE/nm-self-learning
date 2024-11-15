@@ -62,7 +62,6 @@ export function StudentSettingsForm({
 					onChange={value => {
 						onChange("hasLearningDiary", value);
 					}}
-					disabled={!learningStatistics}
 					label="Lerntagebuch"
 				/>
 			</div>
