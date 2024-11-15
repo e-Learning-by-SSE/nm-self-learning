@@ -51,7 +51,7 @@ type LearningDiaryEntryLessonWithDetails = {
 
 type Props = {
 	student: Student;
-	touchedLessons: LearningDiaryEntryLessonWithDetails[];
+	recentLessons: LearningDiaryEntryLessonWithDetails[];
 };
 
 function getStudent(username: string) {
@@ -140,7 +140,13 @@ export type DiaryLessonSchema = {
 	createdAt: Date;
 };
 
-async function loadMostRecentLessons({student, lessonLimit }: { student: Student; lessonLimit: number}) {
+async function loadMostRecentLessons({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}) {
 	const lessonsFromDiary: DiaryLessonSchema[] = student.learningDiaryEntrys.flatMap(entry =>
 		entry.lessonsLearned.map(lesson => ({
 			...lesson,
@@ -156,23 +162,21 @@ async function loadMostRecentLessons({student, lessonLimit }: { student: Student
 	);
 
 	const newestLessons = sortedLessons.slice(0, lessonLimit);
-	const lessonIds = newestLessons.map(lesson => lesson.lessonId)
+	const lessonIds = newestLessons.map(lesson => lesson.lessonId);
 
-	const lessonsArray= await database.lesson.findMany({
-		where: {lessonId: {in: lessonIds}},
+	const lessonsArray = await database.lesson.findMany({
+		where: { lessonId: { in: lessonIds } },
 		select: {
 			lessonId: true,
 			title: true,
 			slug: true,
 			completions: true
 		}
-	})
+	});
 
-	const lessonDetailsMap = new Map(
-		lessonsArray.map(detail => [detail.lessonId, detail])
-	)
+	const lessonDetailsMap = new Map(lessonsArray.map(detail => [detail.lessonId, detail]));
 	const lessonsWithDetails = newestLessons.map(lesson => {
-		const lessonDetails = lessonDetailsMap.get(lesson.lessonId)
+		const lessonDetails = lessonDetailsMap.get(lesson.lessonId);
 
 		return {
 			lessonId: lesson.lessonId,
@@ -183,8 +187,8 @@ async function loadMostRecentLessons({student, lessonLimit }: { student: Student
 			touchedAt: lesson.createdAt || null,
 			entryId: lesson.entryId || "",
 			compeleted: false
-		}
-	})
+		};
+	});
 
 	const completedLessonsTitleSet = new Set(
 		student.completedLessons.map(lesson => lesson.lesson.title)
@@ -208,12 +212,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 	}
 
 	const student = await getStudent(user.name);
-	const touchedLessons = await loadMostRecentLessons({student, lessonLimit:6});
+	const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
 
 	return {
 		props: {
 			student,
-			touchedLessons
+			recentLessons
 		}
 	};
 };
@@ -333,7 +337,7 @@ function DashboardPage(props: Props) {
 						) : (
 							<>
 								<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
-								<LastTouchedLessons touchedLessons={props.touchedLessons} />
+								<LessonList lessons={props.recentLessons} />
 							</>
 						)}
 					</div>
@@ -355,7 +359,7 @@ function DashboardPage(props: Props) {
 							<Card
 								href="/learning-diary"
 								imageElement={<TutorialSvg />}
-								title="Lerntagebuchübersicht einsehen"
+								title="Übersicht des Lerntagebuchs"
 							/>
 
 							<Card
@@ -461,20 +465,14 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	);
 }
 
-function LastTouchedLessons({
-	touchedLessons
-}: {
-	touchedLessons: LearningDiaryEntryLessonWithDetails[];
-}) {
+function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[] }) {
 	return (
 		<>
-			{touchedLessons.length === 0 ? (
-				<span className="text-sm text-light">
-					Du hast noch keine Lerneinheiten bearbeitet.
-				</span>
+			{lessons.length === 0 ? (
+				<span className="text-sm text-light">Du hast keine Lerneinheiten bearbeitet.</span>
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
-					{touchedLessons.map((lesson, index) => (
+					{lessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"
 							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
@@ -488,7 +486,7 @@ function LastTouchedLessons({
 									src={lesson.courseImgUrl}
 									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 								/>
-								<div className="flex w-full grid grid-rows-2 justify-between gap-2 px-4">
+								<div className="flex w-full grid-rows-2 justify-between gap-2 px-4">
 									<span className="flex gap-3 ">
 										<span className="truncate max-w-xs">{lesson.title}</span>
 
