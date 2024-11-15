@@ -94,7 +94,7 @@ describe("QuizHeader", () => {
 		});
 	});
 
-	it("should open the success dialog", async () => {
+	it("should open the completion dialog when quiz is completed ", async () => {
 		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "completed" });
 
 		render(
@@ -111,7 +111,7 @@ describe("QuizHeader", () => {
 		await waitFor(() => expect(successDialog).toBeInTheDocument());
 	});
 
-	it("should open the failed dialog", async () => {
+	it("should open the failed dialog when quiz ist failed", async () => {
 		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "failed" });
 
 		render(
@@ -129,7 +129,7 @@ describe("QuizHeader", () => {
 		await waitFor(() => expect(failDialog).toBeInTheDocument());
 	});
 
-	it("should not open any dialog", async () => {
+	it("should not open completion dialog when quiz is in-progress", async () => {
 		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "in-progress" });
 
 		render(
