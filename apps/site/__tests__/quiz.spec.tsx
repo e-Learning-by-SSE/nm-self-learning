@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useLessonContext } from "@self-learning/lesson";
-import { useQuiz } from "@self-learning/quiz";
 import { useEventLog } from "@self-learning/util/common";
 import { QuizHeader } from "../pages/courses/[courseSlug]/[lessonSlug]/quiz";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { useQuiz } from "@self-learning/quiz";
+import "@testing-library/jest-dom";
 
 jest.mock("@self-learning/util/common");
 jest.mock("@self-learning/lesson");
@@ -45,7 +46,7 @@ describe("QuizHeader", () => {
 		jest.clearAllMocks();
 	});
 
-	it("should call newEvent when the quiz starts", () => {
+	it("should call newEvent when the quiz starts", async () => {
 		render(
 			<QuizHeader
 				lesson={mockLesson}
@@ -55,18 +56,19 @@ describe("QuizHeader", () => {
 				goToQuestion={jest.fn()}
 			/>
 		);
-
-		expect(mockNewEvent).toHaveBeenCalledWith({
-			type: "LESSON_QUIZ_START",
-			resourceId: "lesson1",
-			payload: {
-				questionId: "question1",
-				type: "multiple-choice"
-			}
+		await waitFor(() => {
+			expect(mockNewEvent).toHaveBeenCalledWith({
+				type: "LESSON_QUIZ_START",
+				resourceId: "lesson1",
+				payload: {
+					questionId: "question1",
+					type: "multiple-choice"
+				}
+			});
 		});
 	});
 
-	it("should call newEvent when a tab is clicked", () => {
+	it("should call newEvent when a tab is clicked", async () => {
 		render(
 			<QuizHeader
 				lesson={mockLesson}
@@ -80,13 +82,71 @@ describe("QuizHeader", () => {
 		const tab = screen.getByText("Frage 2");
 		fireEvent.click(tab);
 
-		expect(mockNewEvent).toHaveBeenCalledWith({
-			type: "LESSON_QUIZ_START",
-			resourceId: "lesson1",
-			payload: {
-				questionId: "question2",
-				type: "multiple-choice"
-			}
+		await waitFor(() => {
+			expect(mockNewEvent).toHaveBeenCalledWith({
+				type: "LESSON_QUIZ_START",
+				resourceId: "lesson1",
+				payload: {
+					questionId: "question2",
+					type: "multiple-choice"
+				}
+			});
+		});
+	});
+
+	it("should open the completion dialog when quiz is completed ", async () => {
+		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "completed" });
+
+		render(
+			<QuizHeader
+				lesson={mockLesson}
+				course={mockCourse}
+				questions={mockQuestions}
+				currentIndex={0}
+				goToQuestion={jest.fn()}
+			/>
+		);
+
+		const successDialog = screen.getByText("Geschafft!");
+		await waitFor(() => expect(successDialog).toBeInTheDocument());
+	});
+
+	it("should open the failed dialog when quiz ist failed", async () => {
+		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "failed" });
+
+		render(
+			<QuizHeader
+				lesson={mockLesson}
+				course={mockCourse}
+				questions={mockQuestions}
+				currentIndex={0}
+				goToQuestion={jest.fn()}
+			/>
+		);
+
+		const failDialog = screen.getByText("Nicht Bestanden");
+
+		await waitFor(() => expect(failDialog).toBeInTheDocument());
+	});
+
+	it("should not open completion dialog when quiz is in-progress", async () => {
+		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "in-progress" });
+
+		render(
+			<QuizHeader
+				lesson={mockLesson}
+				course={mockCourse}
+				questions={mockQuestions}
+				currentIndex={0}
+				goToQuestion={jest.fn()}
+			/>
+		);
+
+		await waitFor(() => {
+			expect([
+				screen.queryByText("Geschafft!"),
+				screen.queryByText("Nicht Bestanden")
+			]).toEqual([null, null]);
 		});
 	});
 });
