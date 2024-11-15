@@ -19,7 +19,7 @@ const error = "\x1b[1m\x1b[31m";
 const neutral = "\x1b[1m\x1b[33m";
 const info = "\x1b[1m\x1b[34m";
 
-const prismaPath = join(__dirname, "libs", "data-access", "database", "prisma");
+const prismaPath = __dirname;
 const migrationsPath = join(prismaPath, "migrations");
 const migrationsTempPath = join(prismaPath, "migrations_temp");
 const schemaPath = join(prismaPath, "schema");
@@ -98,7 +98,7 @@ function migrateData(migration: string, migrationApplied: boolean) {
 		execSync(`npx prisma generate`);
 		try {
 			// Execute the data migration in a separate process (to support alternative versions of Prisma Client)
-			execSync(`npx ts-node --skipProject ${dataMigrationFile}`);
+			execSync(`npx ts-node --esm --skipProject ${dataMigrationFile}`);
 			return true;
 		} catch (error) {
 			console.error(`⮡ Data migration ${error}failed.${normal}`);
@@ -138,7 +138,7 @@ function main() {
 		moveToMigrationDir(migration);
 
 		// Execute the DB migration
-		let { migrationApplied, result } = migrateDatabase(migration);
+		const { migrationApplied, result } = migrateDatabase(migration);
 
 		// Apply data migration if exists
 		dataMigrationApplied = dataMigrationApplied || migrateData(migration, migrationApplied);
