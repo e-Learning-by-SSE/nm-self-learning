@@ -85,23 +85,11 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
 
-	// const hasPrevious = nextIndex > 1;
-	// const hasNext = nextIndex < questions.length;
-
 	const goToNextQuestion = useCallback(() => {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true
 		});
 	}, [nextIndex, course.slug, lesson.slug, router]);
-	// function goToPreviousQuestion() {
-	// 	router.push(
-	// 		`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
-	// 		undefined,
-	// 		{
-	// 			shallow: true
-	// 		}
-	// 	);
-	// }
 
 	function goToQuestion(index: number) {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${index}`, undefined, {
@@ -196,6 +184,8 @@ export function QuizHeader({
 	const { newEvent } = useEventLog();
 	const [suppressDialog, setSuppressDialog] = useState(false);
 
+	// we need to reset the warning dialog when the quiz is in progress since the user can retry and
+	// the state is kept in this case
 	if (completionState === "in-progress" && suppressDialog) {
 		setSuppressDialog(false);
 	}
