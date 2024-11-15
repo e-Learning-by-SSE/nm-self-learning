@@ -2,7 +2,7 @@
 import { useLessonContext } from "@self-learning/lesson";
 import { useEventLog } from "@self-learning/util/common";
 import { QuizHeader } from "../pages/courses/[courseSlug]/[lessonSlug]/quiz";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useQuiz } from "@self-learning/quiz";
 import "@testing-library/jest-dom";
 
@@ -46,7 +46,7 @@ describe("QuizHeader", () => {
 		jest.clearAllMocks();
 	});
 
-	it("should call newEvent when the quiz starts", () => {
+	it("should call newEvent when the quiz starts", async () => {
 		render(
 			<QuizHeader
 				lesson={mockLesson}
@@ -56,18 +56,19 @@ describe("QuizHeader", () => {
 				goToQuestion={jest.fn()}
 			/>
 		);
-
-		expect(mockNewEvent).toHaveBeenCalledWith({
-			type: "LESSON_QUIZ_START",
-			resourceId: "lesson1",
-			payload: {
-				questionId: "question1",
-				type: "multiple-choice"
-			}
+		await waitFor(() => {
+			expect(mockNewEvent).toHaveBeenCalledWith({
+				type: "LESSON_QUIZ_START",
+				resourceId: "lesson1",
+				payload: {
+					questionId: "question1",
+					type: "multiple-choice"
+				}
+			});
 		});
 	});
 
-	it("should call newEvent when a tab is clicked", () => {
+	it("should call newEvent when a tab is clicked", async () => {
 		render(
 			<QuizHeader
 				lesson={mockLesson}
@@ -81,17 +82,19 @@ describe("QuizHeader", () => {
 		const tab = screen.getByText("Frage 2");
 		fireEvent.click(tab);
 
-		expect(mockNewEvent).toHaveBeenCalledWith({
-			type: "LESSON_QUIZ_START",
-			resourceId: "lesson1",
-			payload: {
-				questionId: "question2",
-				type: "multiple-choice"
-			}
+		await waitFor(() => {
+			expect(mockNewEvent).toHaveBeenCalledWith({
+				type: "LESSON_QUIZ_START",
+				resourceId: "lesson1",
+				payload: {
+					questionId: "question2",
+					type: "multiple-choice"
+				}
+			});
 		});
 	});
 
-	it("should open the success dialog", () => {
+	it("should open the success dialog", async () => {
 		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "completed" });
 
 		render(
@@ -105,10 +108,10 @@ describe("QuizHeader", () => {
 		);
 
 		const successDialog = screen.getByText("Geschafft!");
-		expect(successDialog).toBeInTheDocument();
+		await waitFor(() => expect(successDialog).toBeInTheDocument());
 	});
 
-	it("should open the failed dialog", () => {
+	it("should open the failed dialog", async () => {
 		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "failed" });
 
 		render(
@@ -122,10 +125,11 @@ describe("QuizHeader", () => {
 		);
 
 		const failDialog = screen.getByText("Nicht Bestanden");
-		expect(failDialog).toBeInTheDocument();
+
+		await waitFor(() => expect(failDialog).toBeInTheDocument());
 	});
 
-	it("should not open any dialog", () => {
+	it("should not open any dialog", async () => {
 		mockUseQuiz.mockReturnValue({ evaluations: {}, completionState: "in-progress" });
 
 		render(
@@ -138,9 +142,11 @@ describe("QuizHeader", () => {
 			/>
 		);
 
-		expect([screen.queryByText("Geschafft!"), screen.queryByText("Nicht Bestanden")]).toEqual([
-			null,
-			null
-		]);
+		await waitFor(() => {
+			expect([
+				screen.queryByText("Geschafft!"),
+				screen.queryByText("Nicht Bestanden")
+			]).toEqual([null, null]);
+		});
 	});
 });
