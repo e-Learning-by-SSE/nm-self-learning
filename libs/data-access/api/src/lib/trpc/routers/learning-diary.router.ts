@@ -79,8 +79,9 @@ export const learningDiaryPageRouter = t.router({
 		.input(z.object({ courseSlug: z.string(), date: z.date().optional() }))
 		.mutation(async ({ input, ctx }) => {
 			const ltbEntryThreshold = 1000 * 60 * 6 * 60; // 6 hours
-			const [latestEntry] = await database.$transaction([
-				database.learningDiaryPage.findFirst({
+
+			const transactionResult = await database.$transaction(async prisma => {
+				let latestEntry = await prisma.learningDiaryPage.findFirst({
 					where: {
 						studentName: ctx.user.name
 					},
@@ -88,35 +89,43 @@ export const learningDiaryPageRouter = t.router({
 					orderBy: {
 						createdAt: "desc"
 					}
-				})
-			]);
-			if (latestEntry?.courseSlug === input.courseSlug) {
-				// Reset hasRead flag if the user updates the learning diary
-				database.learningDiaryPage.update({
-					where: {
-						id: latestEntry.id
-					},
-					data: {
-						hasRead: false
-					}
 				});
-				if (new Date().getTime() - latestEntry.createdAt.getTime() < ltbEntryThreshold) {
-					return;
+
+				if (latestEntry?.courseSlug === input.courseSlug) {
+					latestEntry = await prisma.learningDiaryPage.update({
+						where: {
+							id: latestEntry.id
+						},
+						data: {
+							hasRead: false
+						}
+					});
+
+					if (
+						new Date().getTime() - latestEntry.createdAt.getTime() <
+						ltbEntryThreshold
+					) {
+						return latestEntry;
+					}
 				}
-			}
-			return database.learningDiaryPage.create({
-				data: {
-					student: {
-						connect: { username: ctx.user.name }
+
+				return prisma.learningDiaryPage.create({
+					data: {
+						student: {
+							connect: { username: ctx.user.name }
+						},
+						course: {
+							connect: { slug: input.courseSlug }
+						},
+						createdAt: input.date
 					},
-					course: {
-						connect: { slug: input.courseSlug }
-					},
-					createdAt: input.date
-				},
-				select: { id: true }
+					select: { id: true }
+				});
 			});
+
+			return transactionResult;
 		}),
+
 	update: authProcedure.input(learningDiaryPageSchema).mutation(async ({ input, ctx }) => {
 		const ratings = input.techniqueRatings;
 

@@ -49,25 +49,21 @@ export default function DiaryPageDetail({
 
 	return (
 		<div className="flex flex-col">
-			<div className="mx-auto flex w-full flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-				<div>
-					<Sidebar selectedPageId={diaryId} pages={pages} />
-				</div>
+			<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+				<Sidebar selectedPageId={diaryId} pages={pages} />
 
-				<div>
-					<div className="w-2/3 py-4">
-						<div className="mb-4 flex justify-center">
-							<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
-						</div>
-
-						<Divider />
-						<DiaryContentForm
-							key={diaryId}
-							diaryId={diaryId}
-							availableStrategies={availableStrategies}
-							endDate={endDate}
-						/>
+				<div className="w-2/3 py-4">
+					<div className="mb-4 flex justify-center">
+						<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
 					</div>
+
+					<Divider />
+					<DiaryContentForm
+						key={diaryId}
+						diaryId={diaryId}
+						availableStrategies={availableStrategies}
+						endDate={endDate}
+					/>
 				</div>
 			</div>
 		</div>

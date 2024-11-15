@@ -1,5 +1,5 @@
 //import { serialize } from "next-mdx-remote/serialize";
-import * as matter from "gray-matter";
+import { default as matter } from "gray-matter";
 
 const separator = "---";
 

@@ -90,7 +90,6 @@ export function StudentDeleteForm() {
 					>
 						Userdaten löschen
 					</button>
-					<PersonalDataTooltip />
 				</div>
 
 				<div className="flex items-center gap-2">
@@ -111,38 +110,12 @@ export function StudentDeleteForm() {
 					>
 						Alle Daten löschen
 					</button>
-					<AllDataTooltip />
 				</div>
 			</div>
 		</div>
 	);
 }
 
-export function PersonalDataTooltip() {
-	return (
-		<Tooltip
-			content={
-				"This will delete the following:" +
-				"profile information, account settings, saved preferences"
-			}
-		>
-			<QuestionMarkTooltip content="Here you can delete your personal data." />
-		</Tooltip>
-	);
-}
-
-function AllDataTooltip() {
-	return (
-		<Tooltip
-			content={
-				"This will delete the following:" +
-				"profile information, account settings, saved preferences, skill repositorys, created courses, created lessons"
-			}
-		>
-			<QuestionMarkTooltip content="Here you can delete all your data." />
-		</Tooltip>
-	);
-}
 
 function StudentDeleteDialog({
 	user,
@@ -218,16 +191,15 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 		<CenteredContainer>
 			<Dialog
 				style={{
-					height: "45vh",
+					height: "80vh",
 					width: "35vw",
-					overflow: "auto",
 					minHeight: "200px",
 					minWidth: "300px"
 				}}
 				title={"Delete Student"}
 				onClose={onClose}
 			>
-				<CenteredContainer>
+				<CenteredContainer className="overflow-auto">
 					<div className="flex min-h-screen flex-col items-center space-y-6 bg-gray-50 p-6">
 						<h2 className="text-xl font-semibold text-gray-800">Was wird gelöscht?</h2>
 
@@ -340,7 +312,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 						</div>
 					</div>
 				</CenteredContainer>
-				<div className="mt-auto">
+				<div>
 					<DialogActions onClose={onClose}>
 						<button className="btn-primary" onClick={onClose}>
 							Weiter
@@ -357,10 +329,9 @@ function StudentAllDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 		<CenteredContainer>
 			<Dialog
 				style={{
-					height: "25vh",
+					height: "30vh",
 					width: "35vw",
-					overflow: "auto",
-					minHeight: "100px",
+					minHeight: "150px",
 					minWidth: "300px"
 				}}
 				title={"Delete Student"}
@@ -368,7 +339,7 @@ function StudentAllDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 			>
 				<CenteredContainer>
 					<div>
-						<div className="flex items-center">
+						<div className="flex items-center overflow-auto">
 							<span>
 								Es werden alle Daten inklusive der erstellen Kurse und Lerneinheiten
 								gelöscht
@@ -379,7 +350,7 @@ function StudentAllDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 						</div>
 					</div>
 				</CenteredContainer>
-				<div className="mt-auto">
+				<div className="absolute bottom-5 right-5">
 					<DialogActions
 						onClose={() => {
 							if (onClose) {

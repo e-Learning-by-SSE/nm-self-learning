@@ -162,7 +162,7 @@ pipeline {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                sh 'npx nx migrate reset' // this will test migrations too
+                                sh 'npm run prisma:seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
                             }
                             if (params.RELEASE) {

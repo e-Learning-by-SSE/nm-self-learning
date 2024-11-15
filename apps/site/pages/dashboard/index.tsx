@@ -1,4 +1,4 @@
-import { CogIcon } from "@heroicons/react/24/solid";
+import { CogIcon, CheckIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getAuthenticatedUser } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -38,8 +38,20 @@ import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
+type LearningDiaryEntryLessonWithDetails = {
+	entryId: string;
+	lessonId: string;
+	title: string;
+	slug: string;
+	courseImgUrl?: string;
+	courseSlug: string;
+	touchedAt: Date;
+	completed: boolean;
+};
+
 type Props = {
 	student: Student;
+	recentLessons: LearningDiaryEntryLessonWithDetails[];
 };
 
 function getStudent(username: string) {
@@ -107,13 +119,85 @@ function getStudent(username: string) {
 					course: {
 						select: {
 							courseId: true,
-							title: true
+							title: true,
+							imgUrl: true
 						}
-					}
+					},
+					lessonsLearned: true,
+					courseSlug: true
 				}
 			}
 		}
 	});
+}
+
+export type DiaryLessonSchema = {
+	id: string;
+	courseSlug: string;
+	courseImgUrl: string | null;
+	entryId: string;
+	lessonId: string;
+	createdAt: Date;
+};
+
+async function loadMostRecentLessons({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}) {
+	const lessonsFromDiary: DiaryLessonSchema[] = student.learningDiaryEntrys.flatMap(entry =>
+		entry.lessonsLearned.map(lesson => ({
+			...lesson,
+			courseSlug: entry.courseSlug,
+			courseImgUrl: entry.course?.imgUrl,
+			entryId: lesson.id,
+			createdAt: entry.createdAt
+		}))
+	);
+
+	const sortedLessons = lessonsFromDiary.sort(
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+	);
+
+	const newestLessons = sortedLessons.slice(0, lessonLimit);
+	const lessonIds = newestLessons.map(lesson => lesson.lessonId);
+
+	const lessonsArray = await database.lesson.findMany({
+		where: { lessonId: { in: lessonIds } },
+		select: {
+			lessonId: true,
+			title: true,
+			slug: true,
+			completions: true
+		}
+	});
+
+	const lessonDetailsMap = new Map(lessonsArray.map(detail => [detail.lessonId, detail]));
+	const lessonsWithDetails = newestLessons.map(lesson => {
+		const lessonDetails = lessonDetailsMap.get(lesson.lessonId);
+
+		return {
+			lessonId: lesson.lessonId,
+			title: lessonDetails?.title || "",
+			slug: lessonDetails?.slug || "",
+			courseImgUrl: lesson.courseImgUrl || "",
+			courseSlug: lesson.courseSlug || "",
+			touchedAt: lesson.createdAt || null,
+			entryId: lesson.entryId || "",
+			compeleted: false
+		};
+	});
+
+	const completedLessonsTitleSet = new Set(
+		student.completedLessons.map(lesson => lesson.lesson.title)
+	);
+
+	return lessonsWithDetails.map(lesson => ({
+		...lesson,
+		completed: completedLessonsTitleSet.has(lesson.title)
+	}));
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
@@ -128,10 +212,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 	}
 
 	const student = await getStudent(user.name);
+	const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
 
 	return {
 		props: {
-			student
+			student,
+			recentLessons
 		}
 	};
 };
@@ -198,14 +284,6 @@ function DashboardPage(props: Props) {
 							</span>
 						</div>
 
-						<button
-							className="self-start rounded-full p-2 hover:bg-gray-100"
-							title="Bearbeiten"
-							onClick={() => setEditStudentDialog(true)}
-						>
-							<CogIcon className="h-5 text-gray-400" />
-						</button>
-
 						{editStudentDialog && (
 							<EditStudentDialog
 								student={{ user: { displayName: props.student.user.displayName } }}
@@ -214,12 +292,24 @@ function DashboardPage(props: Props) {
 						)}
 					</section>
 
-					<div className="mt-4 flex items-end gap-2 justify-self-end">
-						<TagebuchToggle
-							onChange={value => {
-								setStudentSettings(value);
-							}}
-						/>
+					<div className="grid grid-rows-2">
+						<div className="flex justify-end items-start">
+							<button
+								className="rounded-full p-2 hover:bg-gray-100"
+								title="Bearbeiten"
+								onClick={() => setEditStudentDialog(true)}
+							>
+								<CogIcon className="h-6 text-gray-500" />
+							</button>
+						</div>
+
+						<div className="flex items-end justify-end">
+							<TagebuchToggle
+								onChange={value => {
+									setStudentSettings(value);
+								}}
+							/>
+						</div>
 					</div>
 				</div>
 
@@ -247,20 +337,19 @@ function DashboardPage(props: Props) {
 						) : (
 							<>
 								<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
-								<Activity enrollments={props.student.enrollments} />
+								<LessonList lessons={props.recentLessons} />
 							</>
 						)}
 					</div>
 				</div>
-
 				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
-					{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics && (
+					<Card
+						href="/dashboard/courseOverview"
+						imageElement={<TutorialSvg />}
+						title="Kursübersicht"
+					/>
+					{studentSettings?.hasLearningDiary && (
 						<>
-							<Card
-								href="/dashboard/courseOverview"
-								imageElement={<TutorialSvg />}
-								title="Kursübersicht"
-							/>
 							<Card
 								href="/learning-diary"
 								imageElement={<TutorialSvg />}
@@ -270,7 +359,7 @@ function DashboardPage(props: Props) {
 							<Card
 								href="/learning-diary"
 								imageElement={<TutorialSvg />}
-								title="Lerntagebuchübersicht einsehen"
+								title="Übersicht des Lerntagebuchs"
 							/>
 
 							<Card
@@ -376,21 +465,17 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	);
 }
 
-function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
-	const notCompletedCourses = enrollments.filter(enrollment => enrollment.status === "ACTIVE");
-
+function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[] }) {
 	return (
 		<>
-			{notCompletedCourses.length === 0 ? (
-				<span className="text-sm text-light">
-					Du bist momentan in keinem Kurs eingeschrieben.
-				</span>
+			{lessons.length === 0 ? (
+				<span className="text-sm text-light">Du hast keine Lerneinheiten bearbeitet.</span>
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
-					{notCompletedCourses.map((completion, index) => (
+					{lessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"
-							href={`/courses/${completion.course?.slug}`}
+							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
 							key={"course-" + index}
 						>
 							<li
@@ -398,17 +483,20 @@ function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
 							>
 								<ImageOrPlaceholder
-									src={completion.course?.imgUrl ?? undefined}
+									src={lesson.courseImgUrl}
 									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 								/>
+								<div className="flex w-full grid-rows-2 justify-between gap-2 px-4">
+									<span className="flex gap-3 ">
+										<span className="truncate max-w-xs">{lesson.title}</span>
 
-								<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-									<div className="flex flex-col gap-1">
-										{completion.course?.title}
-									</div>
-									<ProgressFooter progress={completion.progress} />
-									<span className="hidden text-sm text-light md:block">
-										{formatDateAgo(completion.lastProgressUpdate)}
+										{lesson.completed && (
+											<CheckIcon className="icon h-5 text-green-500" />
+										)}
+									</span>
+
+									<span className="hidden text-xs text-light md:block">
+										{formatDateAgo(lesson.touchedAt)}
 									</span>
 								</div>
 							</li>
