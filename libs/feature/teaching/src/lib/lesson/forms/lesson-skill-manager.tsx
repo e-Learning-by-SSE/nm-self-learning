@@ -11,7 +11,10 @@ import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-s
 
 type SkillModalIdentifier = "teachingGoals" | "requirements";
 
-export function SkillForm() {
+/**
+ * Area to add and remove skills to a lesson
+ */
+export function LessonSkillManager() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {

@@ -11,10 +11,10 @@ import {
 import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { SkillForm } from "./skills-form";
 import { lessonSchema } from "@self-learning/types";
 import { LabeledCheckbox } from "@self-learning/ui/forms";
 import { GreyBoarderButton } from "@self-learning/ui/common";
+import { LessonSkillManager } from "./lesson-skill-manager";
 
 export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	const form = useFormContext<LessonFormModel>();
@@ -135,7 +135,7 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 
 				<LicenseForm />
 
-				<SkillForm />
+				<LessonSkillManager />
 			</div>
 		</Form.SidebarSection>
 	);

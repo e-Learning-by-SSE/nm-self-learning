@@ -1,7 +1,7 @@
 import { PencilIcon } from "@heroicons/react/24/solid";
 import React, { PropsWithChildren, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
-import { ButtonSmallX, Dialog, LoadingBox, StarRating } from "@self-learning/ui/common";
+import { Dialog, LoadingBox, StarRating, XButton } from "@self-learning/ui/common";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
@@ -41,101 +41,6 @@ export function Tile({
 		</div>
 	);
 }
-
-// import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-// import React, { useState } from "react";
-
-// export function Tile({
-// 	children,
-// 	tileName,
-// 	isFilled,
-// 	expandedContent
-// }: {
-// 	children: React.ReactNode;
-// 	tileName: string;
-// 	isFilled: boolean;
-// 	expandedContent?: React.ReactNode;
-// }) {
-// 	const [isExpanded, setIsExpanded] = useState(false);
-
-// 	const handleToggleExpand = () => {
-// 		if (expandedContent) {
-// 			setIsExpanded(!isExpanded);
-// 		}
-// 	};
-
-// 	return (
-// 		<div
-// 			className={`relative flex flex-col items-center justify-center rounded border transition-all cursor-pointer hover:bg-gray-100  duration-300 ${
-// 				isExpanded ? "max-h-[400px] min-h-[400px]" : "max-h-[200px] min-h-[200px]"
-// 			} ${isFilled ? "bg-green-100" : "bg-gray-100"}`}
-// 			onClick={handleToggleExpand}
-// 		>
-// 			<div className="absolute top-2 left-2 text-gray-800 font-bold">{tileName}</div>
-// 			<div className="absolute top-2 right-2 flex space-x-2">
-// 				{isExpanded ? (
-// 					<ChevronUpIcon className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-// 				) : (
-// 					<ChevronDownIcon className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-// 				)}
-// 			</div>
-// 			<div className={`flex flex-col items-center justify-center`}>
-// 				{children}
-// 				{isExpanded && <div className="overflow-y-auto mt-4">{expandedContent}</div>}
-// 			</div>
-// 		</div>
-// 	);
-// }
-
-// ###############################################################################################
-
-// import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-// import React, { useState } from "react";
-
-// export function Tile({
-// 	children,
-// 	tileName,
-// 	isFilled,
-// 	expandedContent
-// }: {
-// 	children: React.ReactNode;
-// 	tileName: string;
-// 	isFilled: boolean;
-// 	expandedContent?: React.ReactNode;
-// }) {
-// 	const [isExpanded, setIsExpanded] = useState(false);
-
-// 	const handleToggleExpand = () => {
-// 		setIsExpanded(!isExpanded);
-// 	};
-
-// 	const handleChildClick = (event: React.MouseEvent) => {
-// 		event.stopPropagation();
-// 	};
-
-// 	return (
-// 		<div
-// 			className={`relative flex flex-col items-center justify-center rounded border transition-all cursor-pointer hover:bg-gray-100 duration-300 ${
-// 				isExpanded ? "max-h-[400px] min-h-[400px]" : "max-h-[200px] min-h-[200px]"
-// 			} ${isFilled ? "bg-green-100" : "bg-gray-100"}`}
-// 			onClick={handleToggleExpand}
-// 		>
-// 			<div className="absolute top-2 left-2 text-gray-800 font-bold">{tileName}</div>
-// 			<div className="absolute top-2 right-2 flex space-x-2">
-// 				{isExpanded ? (
-// 					<ChevronUpIcon className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-// 				) : (
-// 					<ChevronDownIcon className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-// 				)}
-// 			</div>
-// 			<div className="flex flex-col items-center justify-center" onClick={handleChildClick}>
-// 				{children}
-// 				{isExpanded && <div className="overflow-y-auto mt-4">{expandedContent}</div>}
-// 			</div>
-// 		</div>
-// 	);
-// }
-// TODO diary
 
 export function LocationInputTile({
 	initialSelection,
@@ -230,12 +135,13 @@ export function LocationChooseDialog({
 								)}
 								<span className="text-gray-800 flex-grow">{location.name}</span>
 								{!location.defaultLocation && (
-									<ButtonSmallX
+									<XButton
 										onClick={e => {
 											e.stopPropagation();
 											deleteLearningLocationAsync(location.id);
 										}}
 										className="ml-auto text-red-500 hover:text-red-700"
+										size="small"
 									/>
 								)}
 							</div>
@@ -281,21 +187,7 @@ export function StarInputTile({
 	description?: string;
 }) {
 	return (
-		<Tile
-			tileName={name}
-			isFilled={initialRating > 0}
-			// expandedContent={
-			// 	<div className="max-w-md py-4 px-6 bg-white shadow-md rounded-lg">
-			// 		<span className="block text-lg font-semibold text-gray-800 mb-2">
-			// 			Gebe durch klicken deine Bewertung ab aus.
-			// 		</span>
-			// 		<span className="block text-sm text-gray-500">
-			// 			{description}.
-			// 		</span>
-			// 	</div>
-			// }
-			onToggleEdit={() => {}}
-		>
+		<Tile tileName={name} isFilled={initialRating > 0} onToggleEdit={() => {}}>
 			<div className="overflow-y-auto">
 				<div className="space-y-4">
 					<StarRating rating={initialRating ?? 0} onChange={onChange} />

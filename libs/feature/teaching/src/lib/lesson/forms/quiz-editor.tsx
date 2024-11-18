@@ -6,13 +6,13 @@ import {
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
-	AddButton,
-	AddDropDownButton,
-	DeleteButton,
+	PlusButton,
+	TrashcanButton,
 	Divider,
 	RemovableTab,
 	SectionHeader,
-	Tabs
+	Tabs,
+	DropdownButton
 } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
@@ -93,11 +93,17 @@ export function QuizEditor() {
 		<section className="flex flex-col gap-8">
 			<SectionHeader
 				title="Aufgaben"
-				subtitle="Aufgaben, die Studierenden nach Bearbeitung der Lernheit angezeigt werden sollen.
-					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lernheit
+				subtitle="Aufgaben, die Studierenden nach Bearbeitung der Lerneinheit angezeigt werden sollen.
+					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lerneinheit
 					erfolgreich abzuschließen."
 				button={
-					<AddDropDownButton label={"Aufgabe Hinzufügen"}>
+					<DropdownButton
+						title="Aufgabentyp hinzufügen"
+						backgroundColor={"btn-primary"}
+						hover={"hover:bg-emerald-700"}
+						chevronColor={"text-white"}
+					>
+						<span className={"text-white"}>Aufgabe Hinzufügen</span>
 						<div className={"bg-white"}>
 							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 								<Button
@@ -114,7 +120,7 @@ export function QuizEditor() {
 								</Button>
 							))}
 						</div>
-					</AddDropDownButton>
+					</DropdownButton>
 				}
 			/>
 
@@ -329,7 +335,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
 
-				<AddButton
+				<PlusButton
 					onAdd={addHint}
 					title={"Hinweis Hinzufügen"}
 					label={<span>Hinweis hinzufügen</span>}
@@ -346,7 +352,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 					key={hint.hintId}
 					className="flex flex-col gap-4 rounded-lg border border-yellow-500 bg-yellow-100  p-4"
 				>
-					<DeleteButton
+					<TrashcanButton
 						onClick={() => removeHint(hintIndex)}
 						additionalClassNames={"self-end"}
 						title={"Hinweis Entfernen"}

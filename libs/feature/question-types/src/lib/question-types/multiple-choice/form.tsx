@@ -3,7 +3,7 @@ import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { MultipleChoiceQuestion } from "./schema";
-import { AddButton, DeleteButton } from "@self-learning/ui/common";
+import { PlusButton, TrashcanButton } from "@self-learning/ui/common";
 
 export default function MultipleChoiceForm({
 	index
@@ -42,7 +42,7 @@ export default function MultipleChoiceForm({
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
 
-				<AddButton
+				<PlusButton
 					onAdd={addAnswer}
 					title={"Antwort Hinzufügen"}
 					label={<span>Antwort hinzufügen</span>}
@@ -70,7 +70,7 @@ export default function MultipleChoiceForm({
 							Diese Antwort ist korrekt.
 						</label>
 
-						<DeleteButton
+						<TrashcanButton
 							onClick={() => removeAnswer(answerIndex)}
 							title={"Antwort entfernen"}
 						/>

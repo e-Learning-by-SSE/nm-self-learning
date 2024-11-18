@@ -5,16 +5,16 @@ import { QuestionTypeForm } from "../../base-question";
 import { ArrangeItem, ArrangeQuestion } from "./schema";
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
 import {
-	AddButton,
-	DeleteButton,
+	PlusButton,
+	TrashcanButton,
 	Dialog,
 	DialogActions,
 	Divider,
-	EditButton,
+	PencilButton,
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
-	TransparentDeleteButton
+	XButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
 
@@ -46,7 +46,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 		if (!title || title.length === 0) return;
 
 		if (items[title]) {
-			showToast({ type: "warning", title: "Kategorie exisitert bereits", subtitle: title });
+			showToast({ type: "warning", title: "Kategorie existiert bereits", subtitle: title });
 			return;
 		}
 
@@ -106,7 +106,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 			<SectionHeader
 				title={"Kategorien"}
 				button={
-					<AddButton
+					<PlusButton
 						title={"Kategorie Hinzufügen"}
 						onAdd={() => setAddCategoryDialog(true)}
 						additionalClassNames={"w-fit"}
@@ -129,12 +129,12 @@ export default function ArrangeForm({ index }: { index: number }) {
 									<span className="flex items-center justify-between gap-4 font-semibold">
 										<span>{containerId}</span>
 										<div className="flex gap-2">
-											<AddButton
+											<PlusButton
 												onAdd={() => setEditItemDialog({ containerId })}
 												title={"Element hinzufügen"}
 											/>
 
-											<DeleteButton
+											<TrashcanButton
 												onClick={() => onDeleteContainer(containerId)}
 												title={"Kategorie entfernen"}
 											/>
@@ -194,7 +194,7 @@ function DraggableContent({
 					className="prose prose-emerald flex h-fit w-fit flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
 				>
 					<div className="flex justify-end gap-2">
-						<EditButton
+						<PencilButton
 							onClick={() =>
 								setEditItemDialog({
 									containerId,
@@ -204,7 +204,7 @@ function DraggableContent({
 							title={"Editieren"}
 						/>
 
-						<TransparentDeleteButton
+						<XButton
 							onClick={() => onDeleteItem(containerId, item.id)}
 							title="Löschen"
 						/>

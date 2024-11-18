@@ -2,7 +2,7 @@ import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ExactQuestion } from "./schema";
-import { AddButton, DeleteButton } from "@self-learning/ui/common";
+import { PlusButton, TrashcanButton } from "@self-learning/ui/common";
 
 export default function ExactForm({
 	index
@@ -37,7 +37,7 @@ export default function ExactForm({
 				<div className="flex items-center gap-4">
 					<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
 
-					<AddButton
+					<PlusButton
 						onAdd={addAnswer}
 						title={"Antwort hinzufügen"}
 						additionalClassNames={" h-fit w-fit items-center"}
@@ -72,7 +72,7 @@ export default function ExactForm({
 								autoComplete="off"
 							/>
 
-							<DeleteButton
+							<TrashcanButton
 								onClick={() => removeAnswer(acceptedAnswerIndex)}
 								title={"Antwort entfernen"}
 							/>

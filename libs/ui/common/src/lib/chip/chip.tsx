@@ -1,5 +1,5 @@
+import { XButton } from "../button/icon-only-button";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
-import { TransparentDeleteButton } from "../button/delete-button";
 
 export function Chip({
 	children,
@@ -22,13 +22,9 @@ export function Chip({
 			)}
 
 			<span className="flex w-full flex-col px-4">{children}</span>
-			<div className={"px-2"}>
+			<div className={"px-2 pr-4 mr-2"}>
 				{onRemove && (
-					<TransparentDeleteButton
-						onClick={onRemove}
-						data-testid={"remove"}
-						title="Author Entfernen"
-					/>
+					<XButton onClick={onRemove} data-testid={"remove"} title="Author Entfernen" />
 				)}
 			</div>
 		</li>

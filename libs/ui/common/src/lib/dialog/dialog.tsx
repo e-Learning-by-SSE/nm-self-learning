@@ -1,7 +1,6 @@
 import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { CSSProperties, ReactNode } from "react";
-import { GreyBoarderButton } from "../button/grey-boarder-button";
-
+import { GreyBoarderButton } from "../button/button";
 export type OnDialogCloseFn<T> = (result?: T) => void;
 
 export function Dialog<TResult>({

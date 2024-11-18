@@ -1,6 +1,5 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { AddButton, ImageChip, OnDialogCloseFn } from "@self-learning/ui/common";
+import { PlusButton, ImageChip, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
@@ -42,7 +41,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle}>
-				<AddButton
+				<PlusButton
 					onAdd={() => setOpenAddDialog(true)}
 					title="Autor Hinzufügen"
 					data-testid="author-add"

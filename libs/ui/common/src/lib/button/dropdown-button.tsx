@@ -9,9 +9,9 @@ export function DropdownButton({
 	children
 }: {
 	title: string;
-	backgroundColor: string;
-	chevronColor: string;
-	hover: string;
+	backgroundColor?: string;
+	chevronColor?: string;
+	hover?: string;
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);

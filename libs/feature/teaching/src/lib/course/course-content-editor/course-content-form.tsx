@@ -11,7 +11,7 @@ import {
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
-import { OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
+import { OnDialogCloseFn, SectionHeader, XButton } from "@self-learning/ui/common";
 import React, { useState } from "react";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
@@ -175,15 +175,7 @@ function LessonNode({
 						Lernkontrolle
 					</span>
 				)}
-
-				<button
-					type="button"
-					className="text-gray-400 hover:text-red-500"
-					title="Entfernen"
-					onClick={onRemove}
-				>
-					<XMarkIcon className="h-4 " />
-				</button>
+				<XButton onClick={onRemove} title="Entfernen" size="medium" />
 			</div>
 		</span>
 	);

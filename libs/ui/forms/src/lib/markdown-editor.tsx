@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, EditButton, OnDialogCloseFn } from "@self-learning/ui/common";
+import { Dialog, DialogActions, PencilButton, OnDialogCloseFn } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
@@ -27,7 +27,7 @@ export function MarkdownField({
 		<div className={inline ? "flex flex-col gap-1" : ""}>
 			{!inline && (
 				<div className="mb-2 flex items-end justify-end">
-					<EditButton
+					<PencilButton
 						buttonTitle={"Bearbeiten"}
 						onClick={() => setOpenEditor(true)}
 						title={"Beschreibung bearbeiten"}

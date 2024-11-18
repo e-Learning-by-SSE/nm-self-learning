@@ -1,6 +1,6 @@
-import { Tab as HeadlessTab } from "@headlessui/react";
+import { Tab as HeadlessTab, TabGroup, TabList } from "@headlessui/react";
 import { Fragment, ReactNode } from "react";
-import { TransparentDeleteButton } from "../button/delete-button";
+import { XButton } from "../button/icon-only-button";
 
 export function Tabs({
 	children,
@@ -59,11 +59,7 @@ export function RemovableTab({
 		<Tab>
 			<span className="flex items-end gap-4 hover:text-secondary">
 				<span>{children}</span>
-				<TransparentDeleteButton
-					onClick={onRemove}
-					title="Entfernen"
-					additionalClassNames="flex items-center"
-				/>
+				<XButton onClick={onRemove} title="Entfernen" className="flex items-center" />
 			</span>
 		</Tab>
 	);
@@ -79,9 +75,9 @@ export function VerticalTabs({
 	onChange: (index: number) => void;
 }) {
 	return (
-		<HeadlessTab.Group vertical={true} selectedIndex={selectedIndex} onChange={onChange}>
-			<HeadlessTab.List className="flex flex-col gap-2">{children}</HeadlessTab.List>
-		</HeadlessTab.Group>
+		<TabGroup vertical={true} selectedIndex={selectedIndex} onChange={onChange}>
+			<TabList className="flex flex-col gap-2">{children}</TabList>
+		</TabGroup>
 	);
 }
 
