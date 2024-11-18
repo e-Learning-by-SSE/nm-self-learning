@@ -25,6 +25,7 @@ type Strategy = {
 type StrategiesProps = {
 	strategies: Strategy[];
 	onTechniqueClick: (technique: Technique) => void;
+	onCreateTechniqueClick: (learningStrategyId: string) => void;
 };
 
 function findRatedTechniques(strategies: Strategy[]) {
@@ -42,6 +43,9 @@ export function PersonalTechniqueRatingTile({
 }) {
 	const [strategyDialogOpen, setStrategyDialogOpen] = useState(false);
 	const [evalTarget, setEvalTarget] = useState<Technique | null>(null);
+	const [createNewTechnique, setCreateNewTechnique] = useState<{
+		learningStrategyId: string;
+	} | null>(null);
 	const techniquesWithRating = findRatedTechniques(strategies);
 
 	const handleTileClick = () => {
@@ -80,6 +84,9 @@ export function PersonalTechniqueRatingTile({
 					<div className="grid grid-flow-row grid-cols-1 gap-4 w-full h-full overflow-y-auto p-4">
 						<StrategyList
 							onTechniqueClick={technique => setEvalTarget(technique)}
+							onCreateTechniqueClick={learningStrategyId =>
+								setCreateNewTechnique({ learningStrategyId })
+							}
 							strategies={strategies}
 						/>
 					</div>
@@ -102,7 +109,16 @@ export function PersonalTechniqueRatingTile({
 					onSubmit={handleTechniqueRatingSubmit}
 				/>
 			)}
-
+			{createNewTechnique && (
+				<CreateOwnTechniqueDialog
+					learningStrategieId={createNewTechnique.learningStrategyId}
+					onClose={() => setCreateNewTechnique(null)}
+					onSubmit={technique => {
+						setCreateNewTechnique(null);
+						onChange(technique);
+					}}
+				/>
+			)}
 			{/* Display List of Used Techniques */}
 			<div className="mt-4 py-2 min-h-40 max-h-40 overflow-y-auto">
 				<UsedTechniqueList techniques={techniquesWithRating} />
@@ -132,7 +148,7 @@ export function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 	);
 }
 
-function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
+function StrategyList({ strategies, onTechniqueClick, onCreateTechniqueClick }: StrategiesProps) {
 	const [infoDialogOpen, setInfoDialogOpen] = useState<Strategy | null>(null);
 	const handleInfoClick = (strategy: Strategy) => {
 		setInfoDialogOpen(strategy);
@@ -167,6 +183,13 @@ function StrategyList({ strategies, onTechniqueClick }: StrategiesProps) {
 								)}
 							</li>
 						))}
+						<li
+							key={"createTechnique" + strategy.id}
+							className="flex items-center justify-between cursor-pointer mb-2 hover:text-green-500"
+							onClick={() => onCreateTechniqueClick(strategy.id)}
+						>
+							<span>Eigene Technik erstellen</span>
+						</li>
 					</ul>
 				</div>
 			))}
@@ -230,6 +253,66 @@ function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClos
 			</Dialog>
 		);
 	}
+}
+
+function CreateOwnTechniqueDialog({
+	learningStrategieId,
+	onClose,
+	onSubmit
+}: {
+	learningStrategieId: string;
+	onClose: OnDialogCloseFn<void>;
+	onSubmit: (technique: Technique) => void;
+}) {
+	const { mutateAsync: saveNewTechnique } =
+		trpc.learningTechniqueRating.createNewTechnique.useMutation();
+	const [selectedTechnique, setSelectedTechnique] = useState<Technique>({
+		name: "",
+		description: "",
+		id: "",
+		score: 0
+	});
+
+	const submit = async () => {
+		if (selectedTechnique.name !== "") {
+			const newTechnique = await saveNewTechnique({
+				...selectedTechnique,
+				learningStrategieId
+			});
+			onSubmit({ ...selectedTechnique, ...newTechnique });
+		}
+	};
+
+	return (
+		<Dialog title={`Neu Technik erstellen`} onClose={onClose} className="fixed inset-0 z-10">
+			<div className="flex flex-col justify-start items-start overflow-y-auto">
+				<div className="w-full max-w-md  text-l prose prose-emerald p-2">
+					<input
+						className="textfield w-full"
+						type={"text"}
+						onChange={e =>
+							setSelectedTechnique({ ...selectedTechnique, name: e.target.value })
+						}
+					/>
+				</div>
+				<div className="p-2">
+					<StarRating
+						rating={selectedTechnique.score ?? 0}
+						onChange={score => setSelectedTechnique({ ...selectedTechnique, score })}
+					/>
+				</div>
+			</div>
+			<div className="relative h-10 bg-white">
+				<button
+					className="btn-primary absolute bottom-0 right-3"
+					onClick={submit}
+					disabled={!selectedTechnique.score}
+				>
+					<span>Fertig</span>
+				</button>
+			</div>
+		</Dialog>
+	);
 }
 
 function TechniqueRatingDialog({

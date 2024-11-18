@@ -44,10 +44,6 @@ Wiederholungsstrategien sind kognitive Lernstrategien, bei denen Inhalte wiederh
 					name: "Überlernen",
 					description:
 						"**Wiederholen:** Überlernen (das, was man bereits 100%ig beherrscht, nochmals üben)"
-				},
-				{
-					name: "[offenes Eingabefeld]",
-					description: "**Wiederholen:** [offenes Eingabefeld]"
 				}
 			]
 		},
@@ -70,10 +66,6 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 				{
 					name: "W-Fragen entwickeln und beantworten",
 					description: "**Elaboration:** W-Fragen entwickeln und beantworten"
-				},
-				{
-					name: "[offenes Eingabefeld]",
-					description: "**Elaboration:** [offenes Eingabefeld]"
 				}
 			]
 		},
@@ -95,11 +87,7 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 					name: "Individuelle Visualisierung erstellen",
 					description: "**Organisation:** individuelle Visualisierung erstellen"
 				},
-				{ name: "Mind-Map erstellen", description: "**Organisation:** Mind-Map erstellen" },
-				{
-					name: "[offenes Eingabefeld]",
-					description: "**Organisation:** [offenes Eingabefeld]"
-				}
+				{ name: "Mind-Map erstellen", description: "**Organisation:** Mind-Map erstellen" }
 			]
 		},
 		{
@@ -152,8 +140,7 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 					name: "Ziele priorisieren (Pendenzenliste)",
 					description:
 						"**Planen:** Ziele priorisieren (Pendenzenliste) \n [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/wie-sollte-der-lernprozess-vorbereitet-werden/ziele-priorisieren)"
-				},
-				{ name: "[offenes Eingabefeld]", description: "**Planen:** [offenes Eingabefeld]" }
+				}
 			]
 		},
 		{
@@ -192,10 +179,6 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 				{
 					name: "Strategisches Vorgehen anpassen",
 					description: "**Überwachung:** Strategisches Vorgehen anpassen"
-				},
-				{
-					name: "[offenes Eingabefeld]",
-					description: "**Überwachung:** [offenes Eingabefeld]"
 				}
 			]
 		},
@@ -242,10 +225,6 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 				{
 					name: "Emotionen nach dem Lernen",
 					description: "**Bewertung:** Emotionen nach dem Lernen"
-				},
-				{
-					name: "[offenes Eingabefeld]",
-					description: "**Bewertung:** [offenes Eingabefeld]"
 				}
 			]
 		},
@@ -288,10 +267,6 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 				{
 					name: "Zeitmanagement anpassen",
 					description: "**Ressourcenmanagement:** Zeitmanagement anpassen"
-				},
-				{
-					name: "[offenes Eingabefeld]",
-					description: "**Ressourcenmanagement:** [offenes Eingabefeld]"
 				}
 			]
 		},
@@ -358,10 +333,6 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 					name: "Motivation und Prokrastination",
 					description:
 						"****Motivation:** Motivation und Prokrastination  \n [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/wie-sollte-der-lernprozess-vorbereitet-werden/motivation-und-prokrastination)"
-				},
-				{
-					name: "[offenes Eingabefeld]",
-					description: "**Motivation:** [offenes Eingabefeld]"
 				}
 			]
 		}
