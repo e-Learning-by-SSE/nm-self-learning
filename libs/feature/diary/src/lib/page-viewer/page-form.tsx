@@ -150,9 +150,9 @@ export function DiaryContentForm({
 		field: ControllerRenderProps<LearningDiaryPageOutput, "techniqueRatings">
 	) {
 		const updatedArray = field.value?.some(
-			(technique: LearningTechnique) => technique.id === updatedTechnique.id
+			(technique: { id: string; score: number }) => technique.id === updatedTechnique.id
 		)
-			? field.value.map((technique: LearningTechnique) =>
+			? field.value.map((technique: { id: string; score: number }) =>
 					technique.id === updatedTechnique.id ? updatedTechnique : technique
 				)
 			: [...(field.value || []), updatedTechnique];
