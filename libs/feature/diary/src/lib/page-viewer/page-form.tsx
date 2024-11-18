@@ -1,23 +1,24 @@
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LearningTechnique } from "@prisma/client";
+import { trpc } from "@self-learning/api-client";
 import {
 	LearningDiaryPageInput,
 	LearningDiaryPageOutput,
 	learningDiaryPageSchema
 } from "@self-learning/types";
+import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
-import { useEffect, useMemo, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, FormProvider, useForm } from "react-hook-form";
-import { trpc } from "@self-learning/api-client";
-import { Divider, LoadingCircleCorner } from "@self-learning/ui/common";
-import { DiaryLearnedContent } from "./page-details";
 import {
 	LearningGoalInputTile,
 	LocationInputTile,
 	MarkDownInputTile,
 	StarInputTile
 } from "./input-tile";
+import { DiaryLearnedContent } from "./page-details";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
-import { LearningTechnique } from "@prisma/client";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -94,20 +95,43 @@ function usePageForm({
 	return { ...form };
 }
 
+function useCompactView() {
+	const [isCompact, setIsCompact] = useState<boolean>(false);
+
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const savedState = localStorage.getItem("is-diary-page-compact");
+			setIsCompact(savedState !== null ? JSON.parse(savedState) : false);
+		}
+	}, []);
+
+	const toggleCompactView = useCallback((): void => {
+		setIsCompact((prev: boolean): boolean => {
+			const newState = !prev;
+			if (typeof window !== "undefined") {
+				localStorage.setItem("is-diary-page-compact", JSON.stringify(newState));
+			}
+			return newState;
+		});
+	}, [setIsCompact]);
+
+	return { isCompact, toggleCompactView };
+}
+
 export function DiaryContentForm({
 	diaryId,
 	availableStrategies,
-	endDate,
-	isCompact
+	endDate
 }: {
 	diaryId: string;
 	availableStrategies: Strategy[];
 	endDate: Date;
-	isCompact: boolean;
 }) {
 	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
+	const { isCompact, toggleCompactView } = useCompactView();
+
 	// add "rating" prop
 	const itemsWithRatings = availableStrategies.map(strategy => {
 		const updatedStrategy = strategy.techniques.map(technique => {
@@ -148,6 +172,19 @@ export function DiaryContentForm({
 				<DiaryLearnedContent page={pageDetails} endDate={endDate} />
 			</div>
 			<Divider />
+
+			<div className="flex justify-end">
+				<Tooltip content={"Wechselt zwischen der normalen und der kompakten Ansicht."}>
+					<button onClick={toggleCompactView}>
+						{isCompact ? (
+							<ArrowsPointingOutIcon className="h-6 w-6 text-gray-500" />
+						) : (
+							<ArrowsPointingInIcon className="h-6 w-6 text-gray-500" />
+						)}
+					</button>
+				</Tooltip>
+			</div>
+
 			<FormProvider {...form}>
 				<form className=" space-y-6 xl:space-y-4">
 					<div

@@ -1,4 +1,3 @@
-import { Square3Stack3DIcon, Squares2X2Icon } from "@heroicons/react/24/solid";
 import { withAuth } from "@self-learning/api";
 import {
 	allPages,
@@ -9,10 +8,9 @@ import {
 	Sidebar,
 	Strategy
 } from "@self-learning/diary";
-import { Divider, Tooltip } from "@self-learning/ui/common";
+import { Divider } from "@self-learning/ui/common";
 import { subMilliseconds } from "date-fns";
 import { GetServerSideProps } from "next";
-import React, { useEffect, useState } from "react";
 
 export const getServerSideProps: GetServerSideProps = withAuth(async (context, user) => {
 	const pageId = context.params?.pageId;
@@ -44,25 +42,6 @@ export default function DiaryPageDetail({
 	pages: PagesMeta;
 	availableStrategies: Strategy[];
 }) {
-	const [isCompact, setIsCompact] = useState<boolean>(false);
-
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const savedState = localStorage.getItem("is-diary-page-compact");
-			setIsCompact(savedState !== null ? JSON.parse(savedState) : false);
-		}
-	}, []);
-
-	function toggleIsCompact() {
-		setIsCompact(prev => {
-			const newState = !prev;
-			if (typeof window !== "undefined") {
-				localStorage.setItem("is-diary-page-compact", JSON.stringify(newState));
-			}
-			return newState;
-		});
-	}
-
 	// Identify the end date of the page, required for computations / filtering of details
 	const index = pages.findIndex(page => page.id === diaryId);
 	let endDate = index >= 0 && index < pages.length - 1 ? pages[index + 1].createdAt : new Date();
@@ -79,19 +58,6 @@ export default function DiaryPageDetail({
 					<div className="w-full py-4 sm:w-2/3 mx-auto">
 						<div className="mb-4 flex justify-center">
 							<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
-							<Tooltip
-								content={
-									"Wechselt zwischen der normalen und der kompakten Ansicht."
-								}
-							>
-								<button onClick={toggleIsCompact}>
-									{isCompact ? (
-										<Square3Stack3DIcon className="h-6 w-6 text-gray-500" />
-									) : (
-										<Squares2X2Icon className="h-6 w-6 text-gray-500" />
-									)}
-								</button>
-							</Tooltip>
 						</div>
 
 						<Divider />
@@ -100,7 +66,6 @@ export default function DiaryPageDetail({
 							diaryId={diaryId}
 							availableStrategies={availableStrategies}
 							endDate={endDate}
-							isCompact={isCompact}
 						/>
 					</div>
 				</div>
