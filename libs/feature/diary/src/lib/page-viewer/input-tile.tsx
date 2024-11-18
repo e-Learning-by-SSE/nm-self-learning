@@ -412,7 +412,7 @@ export function MarkDownInputTile({
 		<TileLayout
 			isCompact={isCompact}
 			onClick={setDialogOpen}
-			isFilled={initialNote !== ""}
+			isFilled={false}
 			tileDescription={"Platz für persönliche Anmerkungen."}
 			tileName={"Notizen"}
 		>
