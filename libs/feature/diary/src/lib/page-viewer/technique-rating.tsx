@@ -6,7 +6,7 @@ import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Tile, TileLayout } from "./input-tile";
+import { TileLayout } from "./input-tile";
 
 type Technique = {
 	name: string;

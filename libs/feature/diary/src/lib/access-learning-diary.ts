@@ -117,12 +117,6 @@ async function updateDiaryDetails(username: string, id: string, endDate: Date) {
 }
 
 export async function getDiaryPage(ltbId: string) {
-	await database.learningDiaryPage.update({
-		where: { id: ltbId },
-		data: {
-			hasRead: true
-		}
-	});
 	const ltbPage = await database.learningDiaryPage.findUnique({
 		where: { id: ltbId },
 		select: {
@@ -184,7 +178,10 @@ export async function getDiaryPage(ltbId: string) {
 					score: true,
 					technique: {
 						select: {
-							id: true
+							id: true,
+							name: true,
+							description: true,
+							learningStrategieId: true
 						}
 					}
 				}
@@ -202,7 +199,6 @@ export async function getUserLocations(username: string) {
 		select: { id: true, name: true, iconURL: true, defaultLocation: true }
 	});
 }
-
 export async function getAllStrategies() {
 	return database.learningStrategy.findMany({
 		select: {
@@ -210,6 +206,7 @@ export async function getAllStrategies() {
 			name: true,
 			description: true,
 			techniques: {
+				where: { creatorName: null },
 				select: {
 					id: true,
 					description: true,
@@ -219,6 +216,5 @@ export async function getAllStrategies() {
 		}
 	});
 }
-
 export type Strategy = ResolvedValue<typeof getAllStrategies>[number];
 export type Location = ResolvedValue<typeof getUserLocations>[number];

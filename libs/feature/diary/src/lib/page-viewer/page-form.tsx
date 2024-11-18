@@ -19,6 +19,7 @@ import {
 } from "./input-tile";
 import { DiaryLearnedContent } from "./page-details";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
+import { isTruthy } from "@self-learning/util/common";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -118,6 +119,34 @@ function useCompactView() {
 	return { isCompact, toggleCompactView };
 }
 
+function addRatingProp(
+	availableStrategies: Strategy[],
+	pageDetails: LearningDiaryPageDetail | null | undefined
+) {
+	const techniques = availableStrategies.map(strategy => {
+		const missingTechniques = pageDetails?.techniqueRatings
+			?.filter(rating =>
+				strategy.techniques.every(technique => technique.id !== rating.technique.id)
+			)
+			.map(rating => ({
+				...rating,
+				score: rating.score
+			}));
+
+		const ratings = [pageDetails?.techniqueRatings, missingTechniques].filter(isTruthy).flat();
+		const updatedStrategy = strategy.techniques.map(technique => {
+			const score = ratings.find(
+				evaluation => evaluation.technique.id === technique.id
+			)?.score;
+			return { ...technique, score };
+		});
+
+		return { ...strategy, techniques: [...updatedStrategy, ...missingTechniques] };
+	});
+
+	return techniques;
+}
+
 export function DiaryContentForm({
 	diaryId,
 	availableStrategies,
@@ -132,19 +161,9 @@ export function DiaryContentForm({
 	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
 	const { isCompact, toggleCompactView } = useCompactView();
 
-	// add "rating" prop
-	const itemsWithRatings = availableStrategies.map(strategy => {
-		const updatedStrategy = strategy.techniques.map(technique => {
-			const score = pageDetails?.techniqueRatings.find(
-				evaluation => evaluation.technique.id === technique.id
-			)?.score;
-			return { ...technique, score };
-		});
-		return { ...strategy, techniques: updatedStrategy };
-	});
+	const techniques = addRatingProp(availableStrategies, pageDetails);
 
 	type Technique = { name: string; id: string; score?: number };
-
 	function onTechniqueChange(
 		updatedTechnique: Technique,
 		field: ControllerRenderProps<LearningDiaryPageOutput, "techniqueRatings">
@@ -251,7 +270,7 @@ export function DiaryContentForm({
 							control={form.control}
 							render={({ field }) => (
 								<PersonalTechniqueRatingTile
-									strategies={itemsWithRatings}
+									strategies={techniques}
 									onChange={updatedTechnique => {
 										onTechniqueChange(updatedTechnique, field);
 									}}
