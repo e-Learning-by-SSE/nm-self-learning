@@ -15,7 +15,6 @@ import { GetServerSideProps } from "next";
 export const getServerSideProps: GetServerSideProps = withAuth(async (context, user) => {
 	const pageId = context.params?.pageId;
 	const pages = await allPages(user.name);
-	const availableStrategies = await getAllStrategies();
 
 	const pageExists = pages.some(page => page.id === pageId);
 	if (!pageExists) {
@@ -27,8 +26,7 @@ export const getServerSideProps: GetServerSideProps = withAuth(async (context, u
 	return {
 		props: {
 			diaryId: pageId,
-			pages,
-			availableStrategies
+			pages
 		}
 	};
 });
@@ -36,7 +34,6 @@ export const getServerSideProps: GetServerSideProps = withAuth(async (context, u
 export default function DiaryPageDetail({
 	diaryId,
 	pages,
-	availableStrategies
 }: {
 	diaryId: string;
 	pages: PagesMeta;
@@ -64,7 +61,6 @@ export default function DiaryPageDetail({
 						<DiaryContentForm
 							key={diaryId}
 							diaryId={diaryId}
-							availableStrategies={availableStrategies}
 							endDate={endDate}
 						/>
 					</div>

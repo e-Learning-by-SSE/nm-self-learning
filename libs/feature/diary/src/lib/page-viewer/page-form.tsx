@@ -1,6 +1,5 @@
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LearningTechnique } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import {
 	LearningDiaryPageInput,
@@ -120,28 +119,33 @@ function useCompactView() {
 
 export function DiaryContentForm({
 	diaryId,
-	availableStrategies,
 	endDate
 }: {
 	diaryId: string;
-	availableStrategies: Strategy[];
 	endDate: Date;
 }) {
-	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
+	const {
+		data: pageDetails,
+		isLoading
+	} = trpc.learningDiary.get.useQuery({ id: diaryId });
+	const { data: availableStrategies, refetch } = trpc.learningTechniqueRating.getAllStrategies.useQuery();
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
 	const { isCompact, toggleCompactView } = useCompactView();
 
 	// add "rating" prop
-	const itemsWithRatings = availableStrategies.map(strategy => {
-		const updatedStrategy = strategy.techniques.map(technique => {
-			const score = pageDetails?.techniqueRatings.find(
-				evaluation => evaluation.technique.id === technique.id
-			)?.score;
-			return { ...technique, score };
-		});
-		return { ...strategy, techniques: updatedStrategy };
-	});
+	const itemsWithRatings = useMemo(() => {
+		if(!availableStrategies) return [];
+        return availableStrategies.map(strategy => {
+            const updatedStrategy = strategy.techniques.map(technique => {
+                const score = pageDetails?.techniqueRatings.find(
+                    evaluation => evaluation.technique.id === technique.id
+                )?.score;
+                return { ...technique, score };
+            });
+            return { ...strategy, techniques: updatedStrategy };
+        });
+    }, [availableStrategies, pageDetails]);
 
 	type Technique = { name: string; id: string; score?: number };
 
@@ -158,6 +162,7 @@ export function DiaryContentForm({
 			: [...(field.value || []), updatedTechnique];
 
 		field.onChange(updatedArray.length > 0 ? updatedArray : [updatedTechnique]);
+		refetch();
 	}
 
 	if (isLoading) {
@@ -166,6 +171,7 @@ export function DiaryContentForm({
 		// should not happen since we are fetching the pages in SSR and return 404 if not found
 		return null;
 	}
+
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-center">
@@ -249,15 +255,17 @@ export function DiaryContentForm({
 						<Controller
 							name="techniqueRatings"
 							control={form.control}
-							render={({ field }) => (
+							render={({ field }) => {
+								if(!availableStrategies) return <LoadingCircleCorner />;
+								return(
 								<PersonalTechniqueRatingTile
 									strategies={itemsWithRatings}
 									onChange={updatedTechnique => {
 										onTechniqueChange(updatedTechnique, field);
 									}}
 									isCompact={isCompact}
-								/>
-							)}
+								/>)
+							}}
 						/>
 						<Controller
 							name="notes"
