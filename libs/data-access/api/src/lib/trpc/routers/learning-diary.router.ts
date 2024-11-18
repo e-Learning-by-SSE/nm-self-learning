@@ -6,7 +6,8 @@ import {
 	learningLocationSchema,
 	techniqueRatingSchema,
 	lessonStartSchema,
-	learningStrategySchema
+	learningStrategySchema,
+	learningTechniqueCreateSchema
 } from "@self-learning/types";
 import { getDiaryPage, getUserLocations } from "@self-learning/diary";
 
@@ -43,7 +44,22 @@ export const learningLocationRouter = t.router({
 });
 
 export const learningTechniqueRouter = t.router({
-	create: authProcedure.input(techniqueRatingSchema).mutation(async ({ input, ctx }) => {
+	createNewTechnique: authProcedure.input(learningTechniqueCreateSchema).mutation(async ({ input, ctx }) => {
+		return database.learningTechnique.create({
+			data: {
+				name: input.name,
+				description: input.description,
+				creatorName: ctx.user.name,
+				learningStrategieId: input.learningStrategieId
+			},
+			select: {
+				id: true,
+				name: true,
+				description: true,
+			}
+		});
+	}),
+	upsert: authProcedure.input(techniqueRatingSchema).mutation(async ({ input, ctx }) => {
 		return database.techniqueRating.upsert({
 			where: {
 				evalId: {
