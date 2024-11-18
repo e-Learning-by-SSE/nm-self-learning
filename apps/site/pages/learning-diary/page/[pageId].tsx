@@ -1,3 +1,4 @@
+import { Square3Stack3DIcon, Squares2X2Icon } from "@heroicons/react/24/solid";
 import { withAuth } from "@self-learning/api";
 import {
 	allPages,
@@ -8,7 +9,7 @@ import {
 	Sidebar,
 	Strategy
 } from "@self-learning/diary";
-import { Divider } from "@self-learning/ui/common";
+import { Divider, Tooltip } from "@self-learning/ui/common";
 import { subMilliseconds } from "date-fns";
 import { GetServerSideProps } from "next";
 import React, { useEffect, useState } from "react";
@@ -77,13 +78,20 @@ export default function DiaryPageDetail({
 				<div className="w-full">
 					<div className="w-full py-4 sm:w-2/3 mx-auto">
 						<div className="mb-4 flex justify-center">
-							<PageChanger
-								key={diaryId}
-								pages={pages}
-								currentPageId={diaryId}
-								toggleIsCompact={toggleIsCompact}
-								isCompact={isCompact}
-							/>
+							<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
+							<Tooltip
+								content={
+									"Wechselt zwischen der normalen und der kompakten Ansicht."
+								}
+							>
+								<button onClick={toggleIsCompact}>
+									{isCompact ? (
+										<Square3Stack3DIcon className="h-6 w-6 text-gray-500" />
+									) : (
+										<Squares2X2Icon className="h-6 w-6 text-gray-500" />
+									)}
+								</button>
+							</Tooltip>
 						</div>
 
 						<Divider />

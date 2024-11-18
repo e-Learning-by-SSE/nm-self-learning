@@ -55,17 +55,7 @@ function useDiaryPage({ pages, diaryId }: { pages: { id: string }[]; diaryId: st
 }
 
 /** This component relies on the LearningDiaryPages list being sorted in ascending manner (refer to the database function)  */
-export function PageChanger({
-	pages,
-	currentPageId,
-	toggleIsCompact,
-	isCompact
-}: {
-	pages: PagesMeta;
-	currentPageId: string;
-	toggleIsCompact: () => void;
-	isCompact: boolean;
-}) {
+export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; currentPageId: string }) {
 	const currentPageIndex = pages.findIndex(page => page.id === currentPageId);
 	const [pageInput, setPageInput] = useState(currentPageIndex + 1);
 
@@ -83,68 +73,55 @@ export function PageChanger({
 
 	return (
 		<div className="flex flex-row justify-between items-center space-x-4">
-			<div className="flex flex-row space-x-4 items-center">
-				<Tooltip placement={"bottom"} content="Zum ersten Eintrag springen">
-					<button
-						className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
-						onClick={jumpToFirstEntry}
-						disabled={currentPageIndex === 0}
-					>
-						<ChevronDoubleLeftIcon className="h-10 w-10 xl:h-4 xl:w-4" />
-					</button>
-				</Tooltip>
-				<Tooltip placement={"bottom"} content="Zum vorherigen Eintrag springen">
-					<button
-						className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
-						onClick={updateToPreviousId}
-						disabled={currentPageIndex === 0}
-					>
-						<ChevronLeftIcon className="h-10 w-10 xl:h-4 xl:w-4" />
-						<span className="hidden sm:inline">Vorheriger Eintrag</span>
-					</button>
-				</Tooltip>
-				<form className="flex items-center">
-					<input
-						type="number"
-						value={pageInput}
-						onInput={handlePageInputChange}
-						className="w-12 sm:w-16 text-center border rounded"
-						min={1}
-						max={pages.length}
-					/>
-					<span className="ml-2">/ {pages.length}</span>
-				</form>
-				<Tooltip placement={"bottom"} content="Zum nächsten Eintrag springen">
-					<button
-						className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
-						onClick={updateToNextId}
-						disabled={currentPageIndex === pages.length - 1}
-					>
-						<span className="hidden sm:inline">Nächster Eintrag</span>
-						<ChevronRightIcon className="h-10 w-10 xl:h-4 xl:w-4" />
-					</button>
-				</Tooltip>
-				<Tooltip placement={"bottom"} content="Zum letzten Eintrag springen">
-					<button
-						className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
-						onClick={jumpToLastEntry}
-						disabled={currentPageIndex === pages.length - 1}
-					>
-						<ChevronDoubleRightIcon className="h-10 w-10 xl:h-4 xl:w-4" />
-					</button>
-				</Tooltip>
-			</div>
-			<div>
-				<Tooltip content={"Wechselt zwischen der normalen und der kompakten Ansicht."}>
-					<button onClick={toggleIsCompact}>
-						{isCompact ? (
-							<Square3Stack3DIcon className="h-6 w-6 text-gray-500" />
-						) : (
-							<Squares2X2Icon className="h-6 w-6 text-gray-500" />
-						)}
-					</button>
-				</Tooltip>
-			</div>
+			<Tooltip placement={"bottom"} content="Zum ersten Eintrag springen">
+				<button
+					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
+					onClick={jumpToFirstEntry}
+					disabled={currentPageIndex === 0}
+				>
+					<ChevronDoubleLeftIcon className="h-10 w-10 xl:h-4 xl:w-4" />
+				</button>
+			</Tooltip>
+			<Tooltip placement={"bottom"} content="Zum vorherigen Eintrag springen">
+				<button
+					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
+					onClick={updateToPreviousId}
+					disabled={currentPageIndex === 0}
+				>
+					<ChevronLeftIcon className="h-10 w-10 xl:h-4 xl:w-4" />
+					<span className="hidden sm:inline">Vorheriger Eintrag</span>
+				</button>
+			</Tooltip>
+			<form className="flex items-center">
+				<input
+					type="number"
+					value={pageInput}
+					onInput={handlePageInputChange}
+					className="w-12 sm:w-16 text-center border rounded"
+					min={1}
+					max={pages.length}
+				/>
+				<span className="ml-2">/ {pages.length}</span>
+			</form>
+			<Tooltip placement={"bottom"} content="Zum nächsten Eintrag springen">
+				<button
+					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
+					onClick={updateToNextId}
+					disabled={currentPageIndex === pages.length - 1}
+				>
+					<span className="hidden sm:inline">Nächster Eintrag</span>
+					<ChevronRightIcon className="h-10 w-10 xl:h-4 xl:w-4" />
+				</button>
+			</Tooltip>
+			<Tooltip placement={"bottom"} content="Zum letzten Eintrag springen">
+				<button
+					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
+					onClick={jumpToLastEntry}
+					disabled={currentPageIndex === pages.length - 1}
+				>
+					<ChevronDoubleRightIcon className="h-10 w-10 xl:h-4 xl:w-4" />
+				</button>
+			</Tooltip>
 		</div>
 	);
 }
