@@ -36,7 +36,7 @@ export function Footer() {
 					}}
 					initialSettings={{
 						hasLearningDiary: false,
-						learningStatistics: false,
+						learningStatistics: true,
 						...studentSettings
 					}}
 				/>

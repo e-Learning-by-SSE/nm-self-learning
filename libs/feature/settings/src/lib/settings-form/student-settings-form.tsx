@@ -66,16 +66,17 @@ export function StudentSettingsForm({
 				/>
 			</div>
 			<ExpandableSettingsSection
-				text="Lorem ipsum dolor sit amet, consetetur sadipscing elitr"
+				text="Lernaktivitäten und Lernstrategien dokumentieren"
 				title="Check this for learning diary"
 			>
-				sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed
-				diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita
-				kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum
-				dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt
-				ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
-				et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus
-				est Lorem ipsum dolor sit amet.{" "}
+				Werde mit dem interaktiven Lerntagebuch zur Expert*in deines eigenen Lernens! Setze
+				individuelle Ziele und dokumentiere deine Lernaktivitäten sowie die Lernstrategien,
+				die du zur Bearbeitung angewendet hast. Verfolge deinen Fortschritt anschaulich:
+				Durch die Auswertung deiner Lernstatistiken erkennst du schnell, wo deine Stärken
+				liegen und in welchen Bereichen du dich optimieren oder verbessern kannst. Basierend
+				auf den Lernstatistiken werden dir neue, individuelle Lernpfade vorgeschlagen. Es
+				werden keine Daten an Dritte weitergegeben und du kannst die gesammelten Daten
+				jederzeit löschen
 			</ExpandableSettingsSection>
 		</div>
 	);
