@@ -1,25 +1,17 @@
-import { useMemo, useState } from "react";
-import { StudentSettingsForm } from "@self-learning/settings";
-import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
-import { StudentSettings } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
+import { StudentSettingsForm } from "@self-learning/settings";
+import { StudentSettings } from "@self-learning/types";
+import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
+import { useState } from "react";
 
 export function StudentSettingsDialog({
 	initialSettings,
 	onClose
 }: {
-	initialSettings?: StudentSettings;
+	initialSettings: StudentSettings;
 	onClose: (settings: StudentSettings) => void;
 }) {
-	const defaultSetting = useMemo(
-		() =>
-			initialSettings ?? {
-				learningStatistics: false,
-				hasLearningDiary: false
-			},
-		[initialSettings]
-	);
-	const [settings, setSettings] = useState(defaultSetting);
+	const [settings, setSettings] = useState(initialSettings);
 	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
 
 	const onSave = async () => {
@@ -58,14 +50,14 @@ export function StudentSettingsDialog({
 		<Dialog
 			style={{ height: "50vh", width: "60vw" }}
 			title={"Einstellungen"}
-			onClose={() => onClose(defaultSetting)}
+			onClose={() => onClose(initialSettings)}
 		>
 			<div className="overflow-x-auto p-5">
 				<StudentSettingsForm {...settings} onChange={onChange} />
 			</div>
 			<div className="pt-14" />
 			<div className="absolute right-4 bottom-5">
-				<DialogActions onClose={() => onClose(defaultSetting)}>
+				<DialogActions onClose={() => onClose(initialSettings)}>
 					<button className="btn-primary" onClick={onSave}>
 						Speichern
 					</button>
