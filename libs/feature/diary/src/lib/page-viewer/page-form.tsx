@@ -125,21 +125,25 @@ function useCompactView() {
 	return { isCompact, toggleCompactView };
 }
 
-function addRatingProp(
+export function addRatingProp(
 	availableStrategies: Strategy[],
 	pageDetails: LearningDiaryPageDetail | null | undefined
 ) {
 	const techniques = availableStrategies.map(strategy => {
-		const missingTechniques = pageDetails?.techniqueRatings
-			?.filter(rating =>
-				strategy.techniques.every(technique => technique.id !== rating.technique.id)
-			)
-			.map(rating => ({
-				...rating,
-				score: rating.score
-			}));
+		const missingTechniques =
+			pageDetails?.techniqueRatings
+				?.filter(rating => strategy.id === rating.technique.learningStrategieId)
+				.map(rating => ({
+					...rating.technique,
+					score: rating.score
+				})) ?? [];
 
-		const ratings = [pageDetails?.techniqueRatings, missingTechniques].filter(isTruthy).flat();
+		const ratings = [
+			pageDetails?.techniqueRatings,
+			missingTechniques.map(value => ({ score: value.score, technique: { ...value } }))
+		]
+			.filter(isTruthy)
+			.flat();
 		const updatedStrategy = strategy.techniques.map(technique => {
 			const score = ratings.find(
 				evaluation => evaluation.technique.id === technique.id
@@ -147,9 +151,8 @@ function addRatingProp(
 			return { ...technique, score };
 		});
 
-		return { ...strategy, techniques: [...updatedStrategy, ...missingTechniques] };
+		return { ...strategy, techniques: [...updatedStrategy, ...(missingTechniques ?? [])] };
 	});
-
 	return techniques;
 }
 
