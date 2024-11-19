@@ -14,9 +14,11 @@ import {
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
-	XButton
+	XButton,
+	IconButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
@@ -106,11 +108,10 @@ export default function ArrangeForm({ index }: { index: number }) {
 			<SectionHeader
 				title={"Kategorien"}
 				button={
-					<PlusButton
-						title={"Kategorie Hinzufügen"}
-						onAdd={() => setAddCategoryDialog(true)}
-						additionalClassNames={"w-fit"}
-						label={<span>Kategorie hinzufügen</span>}
+					<IconButton
+						text="Kategorie Hinzufügen"
+						icon={<PlusIcon className="icon w-5" />}
+						onClick={() => setAddCategoryDialog(true)}
 					/>
 				}
 			/>

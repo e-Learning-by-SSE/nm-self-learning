@@ -40,8 +40,7 @@ export default function ExactForm({
 					<PlusButton
 						onAdd={addAnswer}
 						title={"Antwort hinzufügen"}
-						additionalClassNames={" h-fit w-fit items-center"}
-						label={<span>Antwort hinzufügen</span>}
+						additionalClassNames={"h-fit w-fit items-center"}
 					/>
 				</div>
 

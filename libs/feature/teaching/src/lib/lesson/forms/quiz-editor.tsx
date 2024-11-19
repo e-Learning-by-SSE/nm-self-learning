@@ -335,11 +335,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
 
-				<PlusButton
-					onAdd={addHint}
-					title={"Hinweis Hinzufügen"}
-					label={<span>Hinweis hinzufügen</span>}
-				/>
+				<PlusButton onAdd={addHint} title={"Hinweis Hinzufügen"} />
 			</div>
 
 			<p className="text-sm text-light">

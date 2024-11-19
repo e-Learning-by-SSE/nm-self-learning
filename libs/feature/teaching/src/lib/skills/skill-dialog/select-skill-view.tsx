@@ -1,9 +1,9 @@
-import { IconButton, PlusButton, XButton } from "@self-learning/ui/common";
-import { SelectSkillDialog } from "./select-skill-dialog";
-import { useState } from "react";
-import { SkillFormModel } from "@self-learning/types";
-import { LabeledField } from "@self-learning/ui/forms";
 import { PlusIcon } from "@heroicons/react/24/solid";
+import { SkillFormModel } from "@self-learning/types";
+import { getButtonSizeClass, IconButton, XButton } from "@self-learning/ui/common";
+import { LabeledField } from "@self-learning/ui/forms";
+import { useState } from "react";
+import { SelectSkillDialog } from "./select-skill-dialog";
 
 export function LabeledFieldSelectSkillsView({
 	skills,
@@ -26,7 +26,7 @@ export function LabeledFieldSelectSkillsView({
 			button={
 				<IconButton
 					text="Hinzufügen"
-					icon={<PlusIcon />}
+					icon={<PlusIcon className={getButtonSizeClass("medium")} />}
 					onClick={() => setSelectSkillModal(true)}
 					title={"Hinzufügen"}
 					data-testid="BenoetigteSkills-add"
@@ -61,11 +61,12 @@ export function SelectSkillsView({
 
 	return (
 		<>
-			<PlusButton
-				onAdd={() => setSelectSkillModal(true)}
+			<IconButton
+				text="Hinzufügen"
+				icon={<PlusIcon className={getButtonSizeClass("medium")} />}
+				onClick={() => setSelectSkillModal(true)}
 				title={"Hinzufügen"}
 				data-testid="BenoetigteSkills-add"
-				label={<span>Hinzufügen</span>}
 			/>
 			<SkillManagementComponent
 				skills={skills}

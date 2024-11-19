@@ -2,36 +2,49 @@ import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/
 import { ReactNode } from "react";
 import { GreyBoarderButton } from "./button";
 
+type Size = "small" | "medium" | "large";
+/**
+ * A method to get the size class for the icon.
+ */
+export function getButtonSizeClass(size: Size): string {
+	let iconClass;
+	switch (size) {
+		case "small":
+			iconClass = "h-3 w-3";
+			break;
+		case "medium":
+			iconClass = "h-5 w-5";
+			break;
+		case "large":
+			iconClass = "h-7 w-7";
+			break;
+		default:
+			iconClass = "h-5 w-5";
+			break;
+	}
+
+	return iconClass;
+}
+
 export function PlusButton({
 	onAdd,
 	title,
-	size,
-	label,
-	additionalClassNames
+	additionalClassNames,
+	size = "medium"
 }: {
 	onAdd: () => void;
 	title: string;
-	size?: string;
-	label?: ReactNode;
 	additionalClassNames?: string;
+	size?: Size;
 }) {
 	return (
 		<button
 			type="button"
 			onClick={onAdd}
 			title={title || "Hinzufügen"}
-			className={`btn-primary rounded-md border border-transparent hover:bg-emerald-700 ${
-				size ? size : "px-4 py-2"
-			} ${additionalClassNames}`}
+			className={`btn-small-highlight ${additionalClassNames}`}
 		>
-			{label ? (
-				<div className="flex items-center space-x-2E">
-					<PlusIcon className="h-5 w-5" />
-					<div>{label}</div>
-				</div>
-			) : (
-				<PlusIcon className="h-5 w-5" />
-			)}
+			<PlusIcon className={getButtonSizeClass(size)} />
 		</button>
 	);
 }
@@ -70,22 +83,6 @@ export function XButton({
 	title?: string;
 	size?: "small" | "medium" | "large";
 }) {
-	let iconClass;
-	switch (size) {
-		case "small":
-			iconClass = "h-3 w-3";
-			break;
-		case "medium":
-			iconClass = "h-5 w-5";
-			break;
-		case "large":
-			iconClass = "h-7 w-7";
-			break;
-		default:
-			iconClass = "h-5 w-5";
-			break;
-	}
-
 	return (
 		<button
 			type="button"
@@ -94,7 +91,7 @@ export function XButton({
 			className={`rounded-full text-gray-400 hover:bg-gray-50 hover:text-red-500 ${className}`}
 			onClick={onClick}
 		>
-			<XMarkIcon className={iconClass} />
+			<XMarkIcon className={getButtonSizeClass(size)} />
 		</button>
 	);
 }
