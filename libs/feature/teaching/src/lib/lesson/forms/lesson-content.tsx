@@ -9,11 +9,13 @@ import {
 import { RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
 import { Reorder } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Control, useFieldArray, useFormContext } from "react-hook-form";
+import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { ArticleInput } from "../content-types/article";
 import { IFrameInput } from "../content-types/iframe";
 import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
+import { LessonFormModel } from "@self-learning/teaching";
+import { Form, MarkdownField } from "@self-learning/ui/forms";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -132,6 +134,9 @@ export function LessonContentEditor() {
 
 	return (
 		<section>
+			<div className="mb-8">
+				<LessonDescriptionForm />
+			</div>
 			<SectionHeader
 				title="Inhalt"
 				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
@@ -225,5 +230,27 @@ function RenderContentType({ index, content }: { index: number; content: LessonC
 		<span className="text-red-500">
 			Error: Unknown content type ({(content as { type: string | undefined }).type})
 		</span>
+	);
+}
+
+function LessonDescriptionForm() {
+	const { control } = useFormContext<LessonFormModel>();
+
+	return (
+		<section>
+			<SectionHeader
+				title="Beschreibung"
+				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
+			/>
+			<Form.MarkdownWithPreviewContainer>
+				<Controller
+					control={control}
+					name="description"
+					render={({ field }) => (
+						<MarkdownField content={field.value as string} setValue={field.onChange} />
+					)}
+				></Controller>
+			</Form.MarkdownWithPreviewContainer>
+		</section>
 	);
 }

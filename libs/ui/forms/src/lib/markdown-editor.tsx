@@ -1,12 +1,12 @@
-import { ChevronDownIcon, PencilIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
-import { useCallback, useRef, useState } from "react";
+import { Dialog, DialogActions, PencilButton, OnDialogCloseFn } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
 import { editor } from "monaco-editor";
 import { ListBulletIcon, NumberedListIcon } from "@heroicons/react/24/outline";
+import { useCallback, useRef, useState } from "react";
 
 export function MarkdownField({
 	content,
@@ -26,16 +26,12 @@ export function MarkdownField({
 	return (
 		<div className={inline ? "flex flex-col gap-1" : ""}>
 			{!inline && (
-				<div className="flex items-end justify-between">
-					<span className="text-sm font-semibold">{label ?? "Markdown"}</span>
-					<button
-						type="button"
-						className="btn-stroked w-fit self-end"
+				<div className="mb-2 flex items-end justify-end">
+					<PencilButton
+						buttonTitle={"Bearbeiten"}
 						onClick={() => setOpenEditor(true)}
-					>
-						<PencilIcon className="icon" />
-						<span>Bearbeiten</span>
-					</button>
+						title={"Beschreibung bearbeiten"}
+					/>
 				</div>
 			)}
 

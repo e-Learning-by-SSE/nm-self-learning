@@ -7,11 +7,14 @@ import { memo, useEffect, useState } from "react";
 import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { SelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
+import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
 
 type SkillModalIdentifier = "teachingGoals" | "requirements";
 
-export default function SkillForm() {
+/**
+ * Area to add and remove skills to a lesson
+ */
+export function LessonSkillManager() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {
@@ -50,30 +53,29 @@ export default function SkillForm() {
 			<LinkedSkillRepositoryMemorized selectRepository={selectRepository} />
 			{selectedRepository && (
 				<>
-					<LabeledField label="Vermittelte Skills">
-						<SelectSkillsView
-							skills={watchingSkills["teachingGoals"]}
-							onDeleteSkill={skill => {
-								deleteSkill(skill, "teachingGoals");
-							}}
-							onAddSkill={skill => {
-								addSkills(skill, "teachingGoals");
-							}}
-							repoId={selectedRepository.id}
-						/>
-					</LabeledField>
-					<LabeledField label="Benötigte Skills">
-						<SelectSkillsView
-							skills={watchingSkills["requirements"]}
-							onDeleteSkill={skill => {
-								deleteSkill(skill, "requirements");
-							}}
-							onAddSkill={skill => {
-								addSkills(skill, "requirements");
-							}}
-							repoId={selectedRepository.id}
-						/>
-					</LabeledField>
+					<LabeledFieldSelectSkillsView
+						lable={"Vermittelte Skills"}
+						skills={watchingSkills["teachingGoals"]}
+						onDeleteSkill={skill => {
+							deleteSkill(skill, "teachingGoals");
+						}}
+						onAddSkill={skill => {
+							addSkills(skill, "teachingGoals");
+						}}
+						repoId={selectedRepository.id}
+					/>
+
+					<LabeledFieldSelectSkillsView
+						lable={"Benötigte Skills"}
+						skills={watchingSkills["requirements"]}
+						onDeleteSkill={skill => {
+							deleteSkill(skill, "requirements");
+						}}
+						onAddSkill={skill => {
+							addSkills(skill, "requirements");
+						}}
+						repoId={selectedRepository.id}
+					/>
 					{selectSkillModal && (
 						<SelectSkillDialog
 							onClose={skill => {

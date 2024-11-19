@@ -291,7 +291,7 @@ function QuestionTab(props: {
 					<CheckCircleIconOutline className="h-5 text-gray-400" />
 				</QuestionTabIcon>
 			)}
-			<span data-testid="questionTab">Frage {props.index + 1}</span>
+			<span data-testid="questionTab">Aufgabe {props.index + 1}</span>
 		</span>
 	);
 }
