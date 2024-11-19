@@ -79,7 +79,8 @@ describe("QuizHeader", () => {
 			/>
 		);
 
-		const tab = screen.getByText("Frage 2");
+		screen.debug();
+		const tab = screen.getByText("Aufgabe 2");
 		fireEvent.click(tab);
 
 		await waitFor(() => {
