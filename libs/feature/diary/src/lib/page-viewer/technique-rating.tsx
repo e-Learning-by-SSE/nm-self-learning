@@ -188,7 +188,7 @@ function StrategyList({ strategies, onTechniqueClick, onCreateTechniqueClick }: 
 							className="flex items-center justify-between cursor-pointer mb-2 hover:text-green-500"
 							onClick={() => onCreateTechniqueClick(strategy.id)}
 						>
-							<span>Eigene Technik erstellen</span>
+							<span className="font-bold italic">Eigene Technik erstellen</span>
 						</li>
 					</ul>
 				</div>

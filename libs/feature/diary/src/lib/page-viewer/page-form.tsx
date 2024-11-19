@@ -1,6 +1,5 @@
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LearningTechnique } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import {
 	LearningDiaryPageInput,
@@ -8,15 +7,10 @@ import {
 	learningDiaryPageSchema
 } from "@self-learning/types";
 import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
+import { isTruthy } from "@self-learning/util/common";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
-import { useEffect, useMemo } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
-import { trpc } from "@self-learning/api-client";
-import { Divider, LoadingCircleCorner } from "@self-learning/ui/common";
-import { DiaryLearnedContent } from "./page-details";
 import {
 	LearningGoalInputTile,
 	LocationInputTile,
@@ -25,7 +19,6 @@ import {
 } from "./input-tile";
 import { DiaryLearnedContent } from "./page-details";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
-import { isTruthy } from "@self-learning/util/common";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -130,9 +123,13 @@ export function addRatingProp(
 	pageDetails: LearningDiaryPageDetail | null | undefined
 ) {
 	const techniques = availableStrategies.map(strategy => {
+		const strategyTechniquesMap: Map<string, Strategy["techniques"][0]> = new Map(
+			strategy.techniques.map(technique => [technique.id, technique])
+		);
+		// Filter out techniques that are not in the strategy but int the page ratings
 		const missingTechniques =
 			pageDetails?.techniqueRatings
-				?.filter(rating => strategy.id === rating.technique.learningStrategieId)
+				?.filter(rating => strategy.id === rating.technique.learningStrategieId && !strategyTechniquesMap.has(rating.technique.id))
 				.map(rating => ({
 					...rating.technique,
 					score: rating.score
