@@ -8,7 +8,7 @@
 		#a19f9f34 4px,
 		#a19f9f34 6px
 	);
-	background-size: calc(var(--depth) * 0.5rem) 100%;
+	background-size: calc(var(--depth) * 6px);
 	background-repeat: no-repeat;
 	background-position: 1rem 0;
 }
