@@ -9,7 +9,7 @@ import {
 import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
-import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
+import { LearningDiaryPageDetail } from "../access-learning-diary";
 import {
 	LearningGoalInputTile,
 	LocationInputTile,
@@ -128,7 +128,7 @@ export function DiaryContentForm({
 		data: pageDetails,
 		isLoading
 	} = trpc.learningDiary.get.useQuery({ id: diaryId });
-	const { data: availableStrategies, refetch } = trpc.learningTechniqueRating.getAllStrategies.useQuery();
+	const { data: availableStrategies, refetch } = trpc.learningTechniqueRating.getAllStrategiesForAUser.useQuery();
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
 	const { isCompact, toggleCompactView } = useCompactView();

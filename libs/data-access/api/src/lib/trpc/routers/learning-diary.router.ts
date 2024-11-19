@@ -59,8 +59,24 @@ export const learningTechniqueRouter = t.router({
 			}
 		});
 	}),
-	getAllStrategies: authProcedure.query(async () => {
-		return getAllStrategies();
+	getAllStrategiesForAUser: authProcedure.query(async ({ctx}) => {
+		return database.learningStrategy.findMany({
+			select: {
+				id: true,
+				name: true,
+				description: true,
+				techniques: {
+					// Only fetch techniques that are global or created by the user
+					where: { OR: [{ creatorName: null }, { creatorName: ctx.user.name }] },
+					select: {
+						id: true,
+						description: true,
+						name: true
+					}
+				}
+			}
+		});
+		
 	}),
 	upsert: authProcedure.input(techniqueRatingSchema).mutation(async ({ input, ctx }) => {
 		return database.techniqueRating.upsert({

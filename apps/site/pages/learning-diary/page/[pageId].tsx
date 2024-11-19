@@ -2,7 +2,6 @@ import { withAuth } from "@self-learning/api";
 import {
 	allPages,
 	DiaryContentForm,
-	getAllStrategies,
 	PageChanger,
 	PagesMeta,
 	Sidebar,

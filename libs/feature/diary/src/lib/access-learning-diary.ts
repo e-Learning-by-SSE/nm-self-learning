@@ -210,6 +210,8 @@ export async function getAllStrategies() {
 			name: true,
 			description: true,
 			techniques: {
+				// Only fetch techniques that are not created by a user
+				where: { creatorName: null },
 				select: {
 					id: true,
 					description: true,
