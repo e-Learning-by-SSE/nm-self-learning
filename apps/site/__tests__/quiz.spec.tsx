@@ -79,7 +79,6 @@ describe("QuizHeader", () => {
 			/>
 		);
 
-		screen.debug();
 		const tab = screen.getByText("Aufgabe 2");
 		fireEvent.click(tab);
 
