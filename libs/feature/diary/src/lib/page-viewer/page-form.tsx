@@ -11,6 +11,12 @@ import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common"
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
+import { useEffect, useMemo } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
+import { trpc } from "@self-learning/api-client";
+import { Divider, LoadingCircleCorner } from "@self-learning/ui/common";
+import { DiaryLearnedContent } from "./page-details";
 import {
 	LearningGoalInputTile,
 	LocationInputTile,

@@ -6,6 +6,7 @@ import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
 import {
 	Divider,
+	IconButton,
 	ImageChip,
 	ImageOrPlaceholder,
 	LoadingBox,
@@ -175,12 +176,11 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor in den folgenden Kursen:"
 							/>
 
-							<Link
-								href="/teaching/courses/create"
-								className="btn-primary h-fit w-fit"
-							>
-								<PlusIcon className="icon" />
-								<span>Neuen Kurs erstellen</span>
+							<Link href="/teaching/courses/create">
+								<IconButton
+									text="Neuen Kurs erstellen"
+									icon={<PlusIcon className="icon h-5" />}
+								/>
 							</Link>
 						</div>
 
@@ -241,12 +241,11 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Lerneinheiten:"
 							/>
 
-							<Link
-								href="/teaching/lessons/create"
-								className="btn-primary h-fit w-fit"
-							>
-								<PlusIcon className="icon" />
-								<span>Neuen Lerneinheit erstellen</span>
+							<Link href="/teaching/lessons/create">
+								<IconButton
+									text="Neue Lerneinheit erstellen"
+									icon={<PlusIcon className="icon h-5" />}
+								/>
 							</Link>
 						</div>
 
@@ -260,12 +259,11 @@ function AuthorDashboardPage({ author }: Props) {
 								title="Skillkarten"
 								subtitle="Besitzer der folgenden Repositories"
 							/>
-							<Link
-								href="/skills/repository/create"
-								className="btn-primary h-fit w-fit"
-							>
-								<PlusIcon className="icon h-5" />
-								<span>Skillkarten anlegen</span>
+							<Link href="/skills/repository/create">
+								<IconButton
+									icon={<PlusIcon className="icon h-5" />}
+									text="Skillkarten anlegen"
+								/>
 							</Link>
 						</div>
 						<SkillRepositoryOverview />

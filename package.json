@@ -10,13 +10,15 @@
 		"build:affected": "nx affected:build --parallel",
 		"test": "env TZ='Europe/Berlin' nx run-many --target=test --all",
 		"test:ci:affected": "env TZ='Europe/Berlin' nx affected:test --parallel --maxParallel=4",
-		"test:ci:full": "env TZ='Europe/Berlin' nx run-many --target=test --all --parallel --maxParallel=4 --coverage --coverageDirectory=output/test/coverage",
+		"test:ci:full": "env TZ='Europe/Berlin' nx run-many --target=test --all --parallel --maxParallel=4",
 		"cypress": "cypress open --project=apps/site-e2e",
-		"format:check":	"nx format:check --files '{apps,libs}/**/*.{ts,tsx}'",
+		"format:check": "nx format:check --files '{apps,libs}/**/*.{ts,tsx}'",
 		"format:write": "nx format:write --files '{apps,libs}/**/*.{ts,tsx}'",
 		"prisma": "prisma",
 		"prisma:seed": "prisma generate && prisma db push --accept-data-loss && prisma db seed",
-		"start:prod": "cd dist/apps/site && npm start"
+		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts",
+		"prestart:prod": "npm run migrate",
+        "start:prod": "cd dist/apps/site && npm start"
 	},
 	"private": true,
 	"prisma": {
@@ -60,6 +62,7 @@
 		"next-plausible": "^3.12.0",
 		"next-superjson-plugin": "^0.6.3",
 		"npm-check-updates": "^17.0.0",
+		"prisma-mock": "^0.10.3",
 		"react": "18.3.1",
 		"react-chartjs-2": "^5.2.0",
 		"react-cookie": "^7.2.0",
@@ -149,7 +152,6 @@
 		"prisma": "^5.19.1",
 		"slugify": "^1.6.6",
 		"tailwindcss": "3.4.7",
-		"ts-node": "10.9.1",
 		"tsx": "^4.19.0",
 		"typescript": "5.5.4",
 		"url-loader": "^4.1.1"

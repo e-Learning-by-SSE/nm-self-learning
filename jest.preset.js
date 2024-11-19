@@ -3,6 +3,7 @@ const nxPreset = require("@nx/jest/preset").default;
 const path = require("path");
 
 const projectRoot = path.resolve(__dirname, "./");
+process.env.TZ = "Europe/Berlin";
 
 module.exports = {
 	...nxPreset,
@@ -27,7 +28,18 @@ module.exports = {
 	coverageDirectory: "output/test/coverage",
 	reporters: [
 		"default",
-		["jest-junit", { outputDirectory: "output/test", outputName: "junit.xml" }]
+		[
+			"jest-junit",
+			{
+				outputName: `junit-${new Date().getTime()}.xml`, // Setzt einen Zeitstempel, um Überschreiben zu vermeiden
+				outputDirectory: "output/test",
+				suiteName: "Test Suite",
+				classNameTemplate: "{classname}",
+				titleTemplate: "{title}",
+				ancestorSeparator: " › ",
+				usePathForSuiteName: "true"
+			}
+		]
 	],
 	transform: {
 		"^.+\\.[tj]sx?$": [

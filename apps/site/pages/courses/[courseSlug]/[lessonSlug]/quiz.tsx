@@ -85,23 +85,11 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
 
-	// const hasPrevious = nextIndex > 1;
-	// const hasNext = nextIndex < questions.length;
-
 	const goToNextQuestion = useCallback(() => {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
 			shallow: true
 		});
 	}, [nextIndex, course.slug, lesson.slug, router]);
-	// function goToPreviousQuestion() {
-	// 	router.push(
-	// 		`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex - 2}`,
-	// 		undefined,
-	// 		{
-	// 			shallow: true
-	// 		}
-	// 	);
-	// }
 
 	function goToQuestion(index: number) {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${index}`, undefined, {
@@ -193,12 +181,18 @@ export function QuizHeader({
 }) {
 	const { chapterName, nextLesson } = useLessonContext(lesson.lessonId, course.slug);
 	const { evaluations, completionState } = useQuiz();
-	const successDialogOpenedRef = useRef(false);
-	const failureDialogOpenedRef = useRef(false);
-	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-	const [showFailureDialog, setShowFailureDialog] = useState(false);
-
 	const { newEvent } = useEventLog();
+	const [suppressDialog, setSuppressDialog] = useState(false);
+
+	// we need to reset the warning dialog when the quiz is in progress since the user can retry and
+	// the state is kept in this case
+	if (completionState === "in-progress" && suppressDialog) {
+		setSuppressDialog(false);
+	}
+
+	const showSuccessDialog = completionState === "completed" && !suppressDialog;
+	const showFailureDialog = completionState === "failed" && !suppressDialog;
+
 	const logQuizStart = useCallback(
 		(lesson: QuestionProps["lesson"], question: QuizContent[number]) => {
 			newEvent({
@@ -213,16 +207,6 @@ export function QuizHeader({
 		},
 		[newEvent, course.courseId]
 	);
-
-	if (!successDialogOpenedRef.current && completionState === "completed") {
-		successDialogOpenedRef.current = true;
-		setShowSuccessDialog(true);
-	}
-
-	if (!failureDialogOpenedRef.current && completionState === "failed") {
-		failureDialogOpenedRef.current = true;
-		setShowFailureDialog(true);
-	}
 
 	useEffect(() => {
 		// TODO diary: check if the useEffect is necessary
@@ -261,16 +245,18 @@ export function QuizHeader({
 					lesson={lesson}
 					nextLesson={nextLesson}
 					onClose={() => {
-						setShowSuccessDialog(false);
+						setSuppressDialog(true);
 					}}
 				/>
 			)}
 
 			{showFailureDialog && (
 				<QuizFailedDialog
+					course={course}
 					lesson={lesson}
+					nextLesson={nextLesson}
 					onClose={() => {
-						setShowFailureDialog(false);
+						setSuppressDialog(true);
 					}}
 				/>
 			)}
@@ -305,7 +291,7 @@ function QuestionTab(props: {
 					<CheckCircleIconOutline className="h-5 text-gray-400" />
 				</QuestionTabIcon>
 			)}
-			<span data-testid="questionTab">Frage {props.index + 1}</span>
+			<span data-testid="questionTab">Aufgabe {props.index + 1}</span>
 		</span>
 	);
 }
@@ -324,6 +310,21 @@ function QuestionTabIcon({
 		</div>
 	) : (
 		<div>{children}</div>
+	);
+}
+
+function NextLessonButton({
+	courseSlug,
+	nextLessonSlug
+}: {
+	courseSlug: string;
+	nextLessonSlug: string;
+}) {
+	return (
+		<Link href={`/courses/${courseSlug}/${nextLessonSlug}`} className="btn-primary">
+			<span>Zur nächsten Lerneinheit</span>
+			<PlayIcon className="h-5 shrink-0" />
+		</Link>
 	);
 }
 
@@ -365,13 +366,7 @@ function QuizCompletionDialog({
 
 			<DialogActions onClose={onClose}>
 				{nextLesson && (
-					<Link
-						href={`/courses/${course.slug}/${nextLesson.slug}`}
-						className="btn-primary"
-					>
-						<span>Zur nächsten Lerneinheit</span>
-						<PlayIcon className="h-5 shrink-0" />
-					</Link>
+					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
 				)}
 			</DialogActions>
 		</Dialog>
@@ -379,10 +374,14 @@ function QuizCompletionDialog({
 }
 
 function QuizFailedDialog({
+	course,
 	lesson,
+	nextLesson,
 	onClose
 }: {
+	course: QuestionProps["course"];
 	lesson: QuestionProps["lesson"];
+	nextLesson: { title: string; slug: string } | null;
 	onClose: OnDialogCloseFn<void>;
 }) {
 	const { reload } = useQuiz();
@@ -402,6 +401,10 @@ function QuizFailedDialog({
 					<span>Erneut probieren</span>
 					<ArrowPathIcon className="h-5 shrink-0" />
 				</button>
+
+				{nextLesson && (
+					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
+				)}
 			</DialogActions>
 		</Dialog>
 	);

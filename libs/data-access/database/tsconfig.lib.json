@@ -5,6 +5,6 @@
 		"declaration": true,
 		"types": ["node", "jest"]
 	},
-	"include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "../../../index.d.ts"],
+	"include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "../../../index.d.ts", "prisma/deploy-migrations.mts"],
 	"exclude": ["**/*.spec.ts", "jest.config.ts"]
 }

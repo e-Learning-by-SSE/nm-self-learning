@@ -1,4 +1,5 @@
 import { ExampleDataGenerator } from "./example-data-generator";
+jest.mock("superjson", () => ({ superjson: { create: jest.fn() } }));
 
 xdescribe("Example Data", () => {
 	it("Lessons", () => {
