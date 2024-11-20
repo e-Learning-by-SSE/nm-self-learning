@@ -57,6 +57,7 @@ model LearningStrategy {
 model LearningTechnique {
   id                  String            @id @default(uuid())
   name                String
+  description         String
   creatorName         String?
   creator             Student?          @relation(fields: [creatorName], references: [username], onDelete: Cascade)
   defaultTechnique    Boolean           @default(false)

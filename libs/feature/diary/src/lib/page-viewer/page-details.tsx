@@ -167,38 +167,66 @@ function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate
 
 	return (
 		<div className="flex w-full flex-col space-y-4 mt-4">
-			<Table
-				head={
-					<>
-						<TableHeaderColumn>Titel</TableHeaderColumn>
-						<TableHeaderColumn>Dauer</TableHeaderColumn>
-						<TableHeaderColumn>Aufgaben gelöst</TableHeaderColumn>
-						<TableHeaderColumn>Erfolgsrate</TableHeaderColumn>
-						<TableHeaderColumn>Hinweise verwendet</TableHeaderColumn>
-					</>
-				}
-			>
+			<div className="hidden xl:block">
+				<Table
+					head={
+						<>
+							<TableHeaderColumn>Titel</TableHeaderColumn>
+							<TableHeaderColumn>Dauer</TableHeaderColumn>
+							<TableHeaderColumn>Aufgaben gelöst</TableHeaderColumn>
+							<TableHeaderColumn>Erfolgsrate</TableHeaderColumn>
+							<TableHeaderColumn>Hinweise verwendet</TableHeaderColumn>
+						</>
+					}
+				>
+					{lessonDetails.map((lessonDetail, index) => (
+						<tr key={index}>
+							<TableDataColumn>
+								<Link
+									href={`/courses/${lessonDetail.slug}`}
+									className="hover:text-blue-300"
+								>
+									{lessonDetail.title}
+								</Link>
+							</TableDataColumn>
+							<TableDataColumn>
+								{formatTimeIntervalToString(lessonDetail.duration)}
+							</TableDataColumn>
+							<TableDataColumn>
+								{lessonDetail.tasksSolved}/{lessonDetail.tasks.length}
+							</TableDataColumn>
+							<TableDataColumn>
+								{" "}
+								{toPercentage(lessonDetail.successRate)}
+							</TableDataColumn>
+							<TableDataColumn>{lessonDetail.hintsUsed}</TableDataColumn>
+						</tr>
+					))}
+				</Table>
+			</div>
+			<div className="block xl:hidden">
 				{lessonDetails.map((lessonDetail, index) => (
-					<tr key={index}>
-						<TableDataColumn>
-							<Link
-								href={`/courses/${lessonDetail.slug}`}
-								className="hover:text-blue-300"
-							>
-								{lessonDetail.title}
-							</Link>
-						</TableDataColumn>
-						<TableDataColumn>
+					<div key={index} className="border rounded-lg p-4 mb-4">
+						<div className="mb-2">
+							<strong>Titel:</strong> {lessonDetail.title}
+						</div>
+						<div className="mb-2">
+							<strong>Dauer:</strong>{" "}
 							{formatTimeIntervalToString(lessonDetail.duration)}
-						</TableDataColumn>
-						<TableDataColumn>
-							{lessonDetail.tasksSolved}/{lessonDetail.tasks.length}
-						</TableDataColumn>
-						<TableDataColumn> {toPercentage(lessonDetail.successRate)}</TableDataColumn>
-						<TableDataColumn>{lessonDetail.hintsUsed}</TableDataColumn>
-					</tr>
+						</div>
+						<div className="mb-2">
+							<strong>Aufgaben gelöst:</strong> {lessonDetail.tasksSolved}/
+							{lessonDetail.tasks.length}
+						</div>
+						<div className="mb-2">
+							<strong>Erfolgsrate:</strong> {toPercentage(lessonDetail.successRate)}
+						</div>
+						<div className="mb-2">
+							<strong>Hinweise verwendet:</strong> {lessonDetail.hintsUsed}
+						</div>
+					</div>
 				))}
-			</Table>
+			</div>
 		</div>
 	);
 }

@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusButton, TrashcanButton } from "@self-learning/ui/common";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
@@ -41,15 +41,7 @@ export default function MultipleChoiceForm({
 		<section className="flex flex-col gap-8">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
-
-				<button
-					type="button"
-					className="btn-primary h-fit w-fit items-center"
-					onClick={addAnswer}
-				>
-					<PlusIcon className="h-5" />
-					<span>Antwort hinzufügen</span>
-				</button>
+				<PlusButton onAdd={addAnswer} title={"Antwort hinzufügen"} />
 			</div>
 
 			{answers.map((answer, answerIndex) => (
@@ -72,13 +64,11 @@ export default function MultipleChoiceForm({
 							/>
 							Diese Antwort ist korrekt.
 						</label>
-						<button
-							type="button"
-							className="absolute top-2 right-2 text-xs text-red-500"
+
+						<TrashcanButton
 							onClick={() => removeAnswer(answerIndex)}
-						>
-							Entfernen
-						</button>
+							title={"Antwort entfernen"}
+						/>
 					</div>
 
 					<Controller
