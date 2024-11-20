@@ -31,7 +31,7 @@ export function SearchUserDialog({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onClose={() => {}}>
+			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={name}
 					setFilter={setName}
