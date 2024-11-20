@@ -45,9 +45,7 @@ export function MarkdownField({
 			>
 				<div className={"prose prose-emerald max-w-full" + (inline && " text-sm")}>
 					{content !== "" ? (
-						<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
-							{content ?? ""}
-						</ReactMarkdown>
+						<MarkdownViewer content={content ?? ""} />
 					) : (
 						<div className="text-gray-400">{placeholder}</div>
 					)}

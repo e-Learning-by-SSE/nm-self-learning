@@ -6,6 +6,12 @@ export const techniqueRatingSchema = z.object({
 	score: z.number().int()
 });
 
+export const learningTechniqueCreateSchema = z.object({
+	learningStrategieId: z.string().uuid(),
+	name: z.string(),
+	description: z.string()
+});
+
 const learningGoalStatusSchema = z.nativeEnum(LearningGoalStatus);
 
 export const learningSubGoalSchema = z.object({
@@ -50,4 +56,10 @@ export const lessonStartSchema = z.object({
 	entryId: z.string(),
 	lessonId: z.string(),
 	createdAt: z.date().optional()
+});
+
+export const learningStrategySchema = z.object({
+	id: z.string().uuid().optional(),
+	name: z.string(),
+	description: z.string()
 });

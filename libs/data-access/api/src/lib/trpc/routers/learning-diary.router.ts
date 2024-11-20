@@ -1,11 +1,13 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
-import { authProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 import {
 	learningDiaryPageSchema,
 	learningLocationSchema,
 	techniqueRatingSchema,
-	lessonStartSchema
+	lessonStartSchema,
+	learningStrategySchema,
+	learningTechniqueCreateSchema
 } from "@self-learning/types";
 import { getDiaryPage, getUserLocations } from "@self-learning/diary";
 
@@ -42,7 +44,22 @@ export const learningLocationRouter = t.router({
 });
 
 export const learningTechniqueRouter = t.router({
-	create: authProcedure.input(techniqueRatingSchema).mutation(async ({ input, ctx }) => {
+	createNewTechnique: authProcedure.input(learningTechniqueCreateSchema).mutation(async ({ input, ctx }) => {
+		return database.learningTechnique.create({
+			data: {
+				name: input.name,
+				description: input.description,
+				creatorName: ctx.user.name,
+				learningStrategieId: input.learningStrategieId
+			},
+			select: {
+				id: true,
+				name: true,
+				description: true,
+			}
+		});
+	}),
+	upsert: authProcedure.input(techniqueRatingSchema).mutation(async ({ input, ctx }) => {
 		return database.techniqueRating.upsert({
 			where: {
 				evalId: {
@@ -229,5 +246,18 @@ export const learningDiaryPageRouter = t.router({
 		});
 
 		return getDiaryPage(input.id);
+	}),
+	updateStrategy: adminProcedure.input(learningStrategySchema).mutation(async ({ input }) => {
+		return database.learningStrategy.upsert({
+			where: {
+				id: input.id
+			},
+			update: {
+				...input
+			},
+			create: {
+				...input
+			}
+		});
 	})
 });

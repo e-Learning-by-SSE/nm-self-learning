@@ -29,7 +29,7 @@ export function Dialog<TResult>({
 						className={`relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8 ${
 							className ?? ""
 						}`}
-						style={style ?? { minWidth: 624, maxHeight: "80vh" }}
+						style={style ?? { minWidth: 420, maxHeight: "80vh" }}
 						data-testid="Dialog"
 					>
 						<HeadlessDialog.Title className="mb-8 text-2xl">

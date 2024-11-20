@@ -49,10 +49,12 @@ export default function DiaryPageDetail({
 
 	return (
 		<div className="flex flex-col">
-			<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-				<Sidebar selectedPageId={diaryId} pages={pages} />
+			<div className="mx-auto flex w-full flex-col gap-8 px-4 sm:flex-col-reverse xl:grid xl:grid-cols-[400px_1fr]">
+				<div className="w-full">
+					<Sidebar selectedPageId={diaryId} pages={pages} />
+				</div>
 
-				<div className="w-2/3 py-4">
+				<div className="w-full py-4 sm:w-2/3 mx-auto">
 					<div className="mb-4 flex justify-center">
 						<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
 					</div>

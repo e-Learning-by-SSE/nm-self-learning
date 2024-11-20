@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 import { PagesMeta } from "../access-learning-diary";
 import { Tooltip } from "@self-learning/ui/common";
+import { Square3Stack3DIcon, Squares2X2Icon } from "@heroicons/react/20/solid";
 
 export function useDiaryPageRouter() {
 	const router = useRouter();
@@ -71,34 +72,32 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 	};
 
 	return (
-		<div className="flex space-x-4 items-center">
+		<div className="flex flex-row justify-between items-center space-x-4">
 			<Tooltip placement={"bottom"} content="Zum ersten Eintrag springen">
 				<button
-					className="btn btn-primary flex items-center"
+					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={jumpToFirstEntry}
 					disabled={currentPageIndex === 0}
 				>
-					<ChevronDoubleLeftIcon className="h-4 w-4" />
+					<ChevronDoubleLeftIcon className="h-10 w-10 xl:h-4 xl:w-4" />
 				</button>
 			</Tooltip>
 			<Tooltip placement={"bottom"} content="Zum vorherigen Eintrag springen">
 				<button
-					className="btn btn-primary flex items-center"
+					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={updateToPreviousId}
 					disabled={currentPageIndex === 0}
 				>
-					<ChevronLeftIcon className="h-5 w-5 mr-2" />
-					Vorheriger Eintrag
+					<ChevronLeftIcon className="h-10 w-10 xl:h-4 xl:w-4" />
+					<span className="hidden sm:inline">Vorheriger Eintrag</span>
 				</button>
 			</Tooltip>
 			<form className="flex items-center">
 				<input
 					type="number"
-					// ref={inputRef}
 					value={pageInput}
-					// instead of using the submit event, this enables live updating while switching "pages"
 					onInput={handlePageInputChange}
-					className="w-16 text-center border rounded"
+					className="w-12 sm:w-16 text-center border rounded"
 					min={1}
 					max={pages.length}
 				/>
@@ -106,21 +105,21 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 			</form>
 			<Tooltip placement={"bottom"} content="Zum nächsten Eintrag springen">
 				<button
-					className="btn btn-primary flex items-center"
+					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={updateToNextId}
 					disabled={currentPageIndex === pages.length - 1}
 				>
-					Nächster Eintrag
-					<ChevronRightIcon className="h-5 w-5 ml-2" />
+					<span className="hidden sm:inline">Nächster Eintrag</span>
+					<ChevronRightIcon className="h-10 w-10 xl:h-4 xl:w-4" />
 				</button>
 			</Tooltip>
 			<Tooltip placement={"bottom"} content="Zum letzten Eintrag springen">
 				<button
-					className="btn btn-primary flex items-center"
+					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={jumpToLastEntry}
 					disabled={currentPageIndex === pages.length - 1}
 				>
-					<ChevronDoubleRightIcon className="h-4 w-4" />
+					<ChevronDoubleRightIcon className="h-10 w-10 xl:h-4 xl:w-4" />
 				</button>
 			</Tooltip>
 		</div>
