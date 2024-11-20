@@ -35,7 +35,7 @@ describe("searchUserDialog", () => {
 		};
 	});
 
-	it("should add new user to the authorList", async () => {
+	it("should return user name in onClose", async () => {
 		// Arrange
 		const name = "NotAnAuthor";
 		const onCloseMock = jest.fn();
