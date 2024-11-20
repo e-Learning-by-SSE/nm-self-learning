@@ -118,7 +118,7 @@ function useCompactView() {
 	return { isCompact, toggleCompactView };
 }
 
-export function addRatingProp(
+function addRatingProp(
 	availableStrategies: Strategy[],
 	pageDetails: LearningDiaryPageDetail | null | undefined
 ) {
@@ -129,7 +129,11 @@ export function addRatingProp(
 		// Filter out techniques that are not in the strategy but int the page ratings
 		const missingTechniques =
 			pageDetails?.techniqueRatings
-				?.filter(rating => strategy.id === rating.technique.learningStrategieId && !strategyTechniquesMap.has(rating.technique.id))
+				?.filter(
+					rating =>
+						strategy.id === rating.technique.learningStrategieId &&
+						!strategyTechniquesMap.has(rating.technique.id)
+				)
 				.map(rating => ({
 					...rating.technique,
 					score: rating.score

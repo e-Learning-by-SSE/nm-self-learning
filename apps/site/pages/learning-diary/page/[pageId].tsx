@@ -54,20 +54,18 @@ export default function DiaryPageDetail({
 					<Sidebar selectedPageId={diaryId} pages={pages} />
 				</div>
 
-				<div className="w-full">
-					<div className="w-full py-4 sm:w-2/3 mx-auto">
-						<div className="mb-4 flex justify-center">
-							<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
-						</div>
-
-						<Divider />
-						<DiaryContentForm
-							key={diaryId}
-							diaryId={diaryId}
-							availableStrategies={availableStrategies}
-							endDate={endDate}
-						/>
+				<div className="w-full py-4 sm:w-2/3 mx-auto">
+					<div className="mb-4 flex justify-center">
+						<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
 					</div>
+
+					<Divider />
+					<DiaryContentForm
+						key={diaryId}
+						diaryId={diaryId}
+						availableStrategies={availableStrategies}
+						endDate={endDate}
+					/>
 				</div>
 			</div>
 		</div>
