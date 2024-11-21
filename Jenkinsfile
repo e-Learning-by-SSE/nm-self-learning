@@ -83,7 +83,7 @@ pipeline {
                         script {
                             def projectName = env.JOB_NAME.split('/')[0]
                             def branchJobName = env.JOB_NAME.split('/')[1]
-                            def jobUrl = "${env.JENKINS_URL}job/${projectName}/job/${branchJobName}/lastSuccessfulBuild/git-2/api/json" // be aware /git/ is the git data of the jenkins library
+                            def jobUrl = "${env.JENKINS_URL}job/${projectName}/job/${branchJobName}/lastSuccessfulBuild/git-2/api/json" // be aware /git/ is the git data of the Jenkins library
                             lastSuccessSHA = sh(
                                 script: "curl ${jobUrl} | jq '.lastBuiltRevision.SHA1'",
                                 returnStdout: true
@@ -104,7 +104,7 @@ pipeline {
                     post {
                         success {
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                                staging02ssh "bash /opt/update-compose-project.sh selflearn-staging"
+                                staging02ssh "bash /opt/update-compose-project.sh selflearn-unstable"
                             }
                         }
                     }

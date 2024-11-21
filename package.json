@@ -4,12 +4,12 @@
 	"license": "MIT",
 	"scripts": {
 		"postinstall": "prisma generate --no-hints",
-
+		
 		"start": "nx serve",
 		"start:dev": "node scripts/dev-start.js",
 		"start:standalone": "cd dist/apps/site && npm start",
         "start:prod": "npm run migrate && npm run start:standalone",
-		"start:demo": "npm run prisma:seed && npm run start:standalone",
+		"start:demo": "npm run seed && npm run start:standalone",
 		
 		"cypress": "cypress open --project=apps/site-e2e",
 		"jest": "env TZ='Europe/Berlin' jest",
