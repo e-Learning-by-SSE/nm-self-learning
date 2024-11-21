@@ -31,7 +31,7 @@ export function SearchUserDialog({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onClose={onClose}>
+			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={name}
 					setFilter={setName}
@@ -52,6 +52,9 @@ export function SearchUserDialog({
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
 										focus ? "bg-secondary text-white" : ""
 									}`}
+									onClick={() => {
+										onClose(user.name);
+									}}
 								>
 									<ImageOrPlaceholder
 										src={user.image ?? undefined}
