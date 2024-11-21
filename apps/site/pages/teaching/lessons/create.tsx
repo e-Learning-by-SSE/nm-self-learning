@@ -19,7 +19,7 @@ export default function CreateLessonPage() {
 	async function handleCreateClose(lesson?: LessonFormModel) {
 		await onLessonCreatorSubmit(
 			() => {
-				router.push("/overview");
+				router.push("/dashboard/author");
 			},
 			createLessonAsync,
 			lesson

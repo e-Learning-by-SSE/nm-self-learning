@@ -94,7 +94,7 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
 		await onLessonEditorSubmit(
 			() => {
-				router.push("/overview");
+				router.push("/dashboard/author");
 			},
 			editLessonAsync,
 			updatedLesson
