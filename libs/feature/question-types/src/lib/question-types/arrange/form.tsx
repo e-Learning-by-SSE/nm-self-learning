@@ -30,7 +30,6 @@ export default function ArrangeForm({ index }: { index: number }) {
 	} | null>(null);
 
 	const onDragEnd: OnDragEndResponder = result => {
-		console.log(result);
 		const { source, destination } = result;
 
 		if (!destination) return;
@@ -98,15 +97,10 @@ export default function ArrangeForm({ index }: { index: number }) {
 		}
 	}
 
-	console.log(items);
-
 	return (
 		<div className="flex flex-col gap-8 pr-4">
-			{/*<button type="button" className="btn-primary w-fit" onClick={}>*/}
-			{/*	<PlusIcon className="icon h-5" />*/}
-			{/*</button>*/}
 			<SectionHeader
-				title={"Kategorien"}
+				title="Kategorien"
 				button={
 					<IconButton
 						text="Kategorie Hinzufügen"
@@ -118,15 +112,12 @@ export default function ArrangeForm({ index }: { index: number }) {
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
 			<DragDropContext onDragEnd={onDragEnd}>
-				<ul className="grid w-full gap-4 sm:grid-cols-1 md:grid-cols-2">
+				<div className="grid w-full gap-4 sm:grid-cols-1 md:grid-cols-2">
 					{Object.entries(items).map(([containerId, items]) => (
 						// eslint-disable-next-line react/jsx-no-useless-fragment
 						<Fragment key={containerId}>
 							{containerId === "_init" ? null : (
-								<li
-									key={containerId}
-									className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4"
-								>
+								<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4">
 									<span className="flex items-center justify-between gap-4 font-semibold">
 										<span>{containerId}</span>
 										<div className="flex gap-2">
@@ -142,15 +133,16 @@ export default function ArrangeForm({ index }: { index: number }) {
 										</div>
 									</span>
 
-									<Droppable droppableId={containerId}>
+									<Droppable droppableId={containerId} direction="horizontal">
 										{provided => (
 											<ul
 												ref={provided.innerRef}
 												{...provided.droppableProps}
-												className="flex h-full min-h-[128px] flex-col gap-4 rounded-lg bg-gray-100 p-4"
+												className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-gray-100 p-4"
 											>
 												{items.map((item, index) => (
 													<DraggableContent
+														key={item.id}
 														item={item}
 														index={index}
 														onDeleteItem={onDeleteItem}
@@ -162,11 +154,11 @@ export default function ArrangeForm({ index }: { index: number }) {
 											</ul>
 										)}
 									</Droppable>
-								</li>
+								</div>
 							)}
 						</Fragment>
 					))}
-				</ul>
+				</div>
 			</DragDropContext>
 		</div>
 	);
