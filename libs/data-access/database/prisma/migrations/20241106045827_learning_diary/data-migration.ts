@@ -7,7 +7,6 @@ async function main() {
 		await prisma.$transaction(async tx => {
 			const repositories = await tx.skillRepository.findMany({
 				include: {
-					// @ts-expect-error User was renamed to owner
 					User: true
 				}
 			});
@@ -15,7 +14,6 @@ async function main() {
 				await tx.skillRepository.update({
 					where: { id: repository.id },
 					data: {
-						// @ts-expect-error User was renamed to owner
 						ownerName: repository.User.name
 					}
 				});

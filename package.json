@@ -18,7 +18,8 @@
 		"prisma:seed": "prisma generate && prisma db push --accept-data-loss && prisma db seed",
 		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts",
 		"prestart:prod": "npm run migrate",
-        "start:prod": "cd dist/apps/site && npm start"
+        "start:prod": "cd dist/apps/site && npm start",
+		"start:demo": "prisma db execute --file=libs/data-access/database/prisma/reset.sql --schema libs/data-access/database/prisma/schema && npm run migrate && prisma db seed && cd dist/apps/site && npm start"
 	},
 	"private": true,
 	"prisma": {
