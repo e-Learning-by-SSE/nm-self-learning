@@ -1,24 +1,32 @@
 {
 	"name": "self-learning",
-	"version": "0.3.4",
+	"version": "0.4.0-SNAPSHOT",
 	"license": "MIT",
 	"scripts": {
+		"postinstall": "prisma generate --no-hints",
+
 		"start": "nx serve",
-		"dev": "node scripts/dev-start.js",
-		"prebuild": "npm run prisma generate",
-		"build": "nx build --skip-nx-cache",
-		"build:affected": "nx affected:build --parallel",
-		"test": "env TZ='Europe/Berlin' nx run-many --target=test --all",
-		"test:ci:affected": "env TZ='Europe/Berlin' nx affected:test --parallel --maxParallel=4",
-		"test:ci:full": "env TZ='Europe/Berlin' nx run-many --target=test --all --parallel --maxParallel=4",
+		"start:dev": "node scripts/dev-start.js",
+		"start:standalone": "cd dist/apps/site && npm start",
+        "start:prod": "npm run migrate && npm run start:standalone",
+		"start:demo": "npm run prisma:seed && npm run start:standalone",
+		
 		"cypress": "cypress open --project=apps/site-e2e",
+		"jest": "env TZ='Europe/Berlin' jest",
+		
 		"format:check": "nx format:check --files '{apps,libs}/**/*.{ts,tsx}'",
 		"format:write": "nx format:write --files '{apps,libs}/**/*.{ts,tsx}'",
+		
+		"prebuild": "npm run prisma generate --no-hints",
+		"build": "nx build",
+		
+		"test": "env TZ='Europe/Berlin' nx run-many --target=test --all --parallel --maxParallel=4",
+		"test:pr": "nx affected --base origin/master -t lint build test",
+		"posttest:pr": "echo 'If this fails, run the failed task to see errors.", 
+
 		"prisma": "prisma",
-		"prisma:seed": "prisma generate && prisma db push --accept-data-loss && prisma db seed",
-		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts",
-		"prestart:prod": "npm run migrate",
-        "start:prod": "cd dist/apps/site && npm start"
+		"seed": "prisma generate && prisma db push --accept-data-loss && prisma db seed",
+		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts"
 	},
 	"private": true,
 	"prisma": {
@@ -62,7 +70,6 @@
 		"next-plausible": "^3.12.0",
 		"next-superjson-plugin": "^0.6.3",
 		"npm-check-updates": "^17.0.0",
-		"prisma-mock": "^0.10.3",
 		"react": "18.3.1",
 		"react-chartjs-2": "^5.2.0",
 		"react-cookie": "^7.2.0",
