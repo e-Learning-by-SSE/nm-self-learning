@@ -8,7 +8,6 @@ import { AppProps } from "next/app";
 import Head from "next/head";
 import { Toaster } from "react-hot-toast";
 import { useRouter } from "next/router";
-// import { ReactQueryDevtools } from "react-query/devtools";
 import "./styles.css";
 import "katex/dist/katex.css";
 import { useEffect } from "react";
@@ -60,27 +59,31 @@ function CustomApp({ Component, pageProps }: AppProps) {
 	const globalMessage = process.env.NEXT_PUBLIC_SYSTEM_MSG;
 
 	return (
-		<PlausibleProvider
-			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
-			customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
-			trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
-		>
-			<SessionProvider
-				session={pageProps.session}
-				basePath={useRouter().basePath + "/api/auth"}
+		<>
+			{process.env.NODE_ENV === "development" && (
+				<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
+			)}
+			<PlausibleProvider
+				domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
+				customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
+				trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
 			>
-				<Head>
-					<title>Self-Learning</title>
-				</Head>
-				{globalMessage && <MessagePortal htmlMessage={globalMessage} />}
-				<Navbar />
-				<main className="grid grow">
-					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-				</main>
-				<Toaster containerStyle={{ top: 96 }} position="top-right" />
-				<Footer />
-				{/* <ReactQueryDevtools position="bottom-right" /> */}
-			</SessionProvider>
-		</PlausibleProvider>
+				<SessionProvider
+					session={pageProps.session}
+					basePath={useRouter().basePath + "/api/auth"}
+				>
+					<Head>
+						<title>Self-Learning</title>
+					</Head>
+					{globalMessage && <MessagePortal htmlMessage={globalMessage} />}
+					<Navbar />
+					<main className="grid grow">
+						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
+					</main>
+					<Toaster containerStyle={{ top: 96 }} position="top-right" />
+					<Footer />
+				</SessionProvider>
+			</PlausibleProvider>
+		</>
 	);
 }
