@@ -1,5 +1,5 @@
 import { trpc } from "@self-learning/api-client";
-import { StudentSettingsForm } from "@self-learning/settings";
+import { FeatureSettingsForm } from "@self-learning/settings";
 import { StudentSettings } from "@self-learning/types";
 import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
 import { useState } from "react";
@@ -53,7 +53,7 @@ export function StudentSettingsDialog({
 			onClose={() => onClose(initialSettings)}
 		>
 			<div className="overflow-x-auto p-5">
-				<StudentSettingsForm {...settings} onChange={onChange} />
+				<FeatureSettingsForm {...settings} onChange={onChange} />
 			</div>
 			<div className="pt-14" />
 			<div className="absolute right-4 bottom-5">

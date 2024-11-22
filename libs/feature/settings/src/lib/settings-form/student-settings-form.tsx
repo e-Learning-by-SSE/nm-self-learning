@@ -1,7 +1,41 @@
-import { Toggle } from "@self-learning/ui/common";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { OnDialogCloseFn, Toggle } from "@self-learning/ui/common";
+import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-export function StudentSettingsForm({
+const editStudentProfileSchema = z.object({
+	user: z.object({ displayName: z.string().min(3).max(50) })
+});
+type EditStudentProfile = z.infer<typeof editStudentProfileSchema>;
+
+export function PersonalSettingsForm({
+	student,
+	onSubmit
+}: {
+	student: EditStudentProfile;
+	onSubmit: OnDialogCloseFn<EditStudentProfile>;
+}) {
+	const form = useForm({
+		defaultValues: student,
+		resolver: zodResolver(editStudentProfileSchema)
+	});
+
+	return (
+		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+			<LabeledField label="Name" error={form.formState.errors.user?.displayName?.message}>
+				<input {...form.register("user.displayName")} type="text" className="textfield" />
+			</LabeledField>
+
+			<button className="btn-primary" disabled={!form.formState.isValid}>
+				Profile Speichern
+			</button>
+		</form>
+	);
+}
+
+export function FeatureSettingsForm({
 	learningStatistics,
 	hasLearningDiary,
 	onChange
@@ -11,73 +45,82 @@ export function StudentSettingsForm({
 	onChange: (checkbox: string, value: boolean) => void;
 }) {
 	return (
-		<div>
-			<h2 className="text-lg font-bold">Lernen</h2>
-			<div className="mt-6 flex items-center gap-2">
-				<Toggle
+		<div className="space-y-8">
+			<div className="space-y-2">
+				<ToggleSetting
 					value={learningStatistics}
-					onChange={value => {
-						onChange("learningStatistics", value);
-					}}
+					onChange={value => onChange("learningStatistics", value)}
 					label="Lernstatistiken"
 				/>
+
+				<ExpandableSettingsSection
+					text="Erfassung und Speicherung von Sitzungsdaten zur Auswertung des persönlichen Lernverhalten"
+					title="Check this for learning statistics"
+				>
+					<p>
+						Es werden alle Daten zum Lernverhalten erfasst und ausschließlich dir
+						zugänglich gemacht. Dabei werden nur jene Informationen erhoben, die für die
+						Nutzung unserer Plattform erforderlich sind. Dies umfasst unter anderem:
+					</p>
+					<ul className="list-disc list-inside space-y-2">
+						<li>
+							Aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern
+						</li>
+						<li>Starten, pausieren und anhalten von Videos</li>
+						<li>Abgabeversuche von Lernzielkontrollen</li>
+					</ul>
+					<p>
+						Diese Funktion dient deiner persönlichen Analyse und unterstützt dich dabei,
+						dein Lernverhalten zu optimieren. Sie wird zudem für das Lerntagebuch
+						benötigt, weitere Funktionen werden in Zukunft ergänzt. Darüber hinaus
+						werden die Daten in aggregierter und/oder anonymisierter Form den Lehrenden
+						zu Forschungszwecken sowie zur Verbesserung der Kurse bereitgestellt. Dabei
+						gilt:
+					</p>
+					<ul className="list-disc list-inside space-y-2">
+						<li>
+							Es werden Daten nur angezeigt wenn min. 10 Studierende am Kurs
+							teilgenommen haben, um die Anonymität zu gewährleisten.
+						</li>
+						<li>
+							Es werden Funktionen angeboten, die Nachfrage und den Umgang mit den
+							bereitgestellten Kursinhalten anzeigen.
+						</li>
+						<li>
+							Gegebenenfalls werden aggregierte und anonymisierte Daten für die
+							Forschung bereitgestellt.
+						</li>
+					</ul>
+					<p>
+						Es werden keine Daten an Dritte weitergegeben und du kannst jederzeit die
+						gesammelten Daten löschen.
+					</p>
+				</ExpandableSettingsSection>
 			</div>
-			<ExpandableSettingsSection
-				text="Erfassung und Speicherung von Sitzungsdaten zur Auswertung des persönlichen Lernverhalten"
-				title="Check this for learning statistics"
-			>
-				Es werden alle Daten zum Lernverhalten erfasst und ausschließlich dir zugänglich
-				gemacht. Dabei werden nur jene Informationen erhoben, die für die Nutzung unserer
-				Plattform erforderlich sind. Dies umfasst unter anderem:
-				<ul className="text-md my-2 flex list-inside list-disc flex-col gap-2 px-2">
-					<li>Aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern</li>
-					<li>Starten, pausieren und anhalten von Videos</li>
-					<li>Abgabeversuche von Lernzielkontrollen</li>
-				</ul>
-				Diese Funktion dient deiner persönlichen Analyse und unterstützt dich dabei, dein
-				Lernverhalten zu optimieren. Sie wird zudem für das Lerntagebuch benötigt, weitere
-				Funktionen werden in Zukunft ergänzt. Darüber hinaus werden die Daten in
-				aggregierter und/oder anonymisierter Form den Lehrenden zu Forschungszwecken sowie
-				zur Verbesserung der Kurse bereitgestellt. Dabei gilt:
-				<ul className="text-md my-2 flex list-inside list-disc flex-col gap-2 px-2">
-					<li>
-						Es werden Daten nur angezeigt wenn min. 10 Studierende am Kurs teilgenommen
-						haben, um die Anonymität zu gewährleisten.
-					</li>
-					<li>
-						Es werden Funktionen angeboten, die Nachfrage und den Umgang mit den
-						bereitgestellten Kursinhalten anzeigen.
-					</li>
-					<li>
-						Gegebenenfalls werden aggregierte und anonymisierte Daten für die Forschung
-						bereit gestellt.
-					</li>
-				</ul>
-				Es werden keine Daten an Dritte weitergegeben und du kannst jederzeit die
-				gesammelten Daten löschen.{" "}
-			</ExpandableSettingsSection>
-			<div className="mt-4 flex items-center gap-2">
-				<Toggle
+			<div className="space-y-2">
+				<ToggleSetting
 					value={hasLearningDiary}
-					onChange={value => {
-						onChange("hasLearningDiary", value);
-					}}
+					onChange={value => onChange("hasLearningDiary", value)}
 					label="Lerntagebuch"
 				/>
+
+				<ExpandableSettingsSection
+					text="Lernaktivitäten und Lernstrategien dokumentieren"
+					title="Check this for learning diary"
+				>
+					<p>
+						Werde mit dem interaktiven Lerntagebuch zur Expert*in deines eigenen
+						Lernens! Setze individuelle Ziele und dokumentiere deine Lernaktivitäten
+						sowie die Lernstrategien, die du zur Bearbeitung angewendet hast. Verfolge
+						deinen Fortschritt anschaulich: Durch die Auswertung deiner Lernstatistiken
+						erkennst du schnell, wo deine Stärken liegen und in welchen Bereichen du
+						dich optimieren oder verbessern kannst. Basierend auf den Lernstatistiken
+						werden dir neue, individuelle Lernpfade vorgeschlagen. Es werden keine Daten
+						an Dritte weitergegeben und du kannst die gesammelten Daten jederzeit
+						löschen.
+					</p>
+				</ExpandableSettingsSection>
 			</div>
-			<ExpandableSettingsSection
-				text="Lernaktivitäten und Lernstrategien dokumentieren"
-				title="Check this for learning diary"
-			>
-				Werde mit dem interaktiven Lerntagebuch zur Expert*in deines eigenen Lernens! Setze
-				individuelle Ziele und dokumentiere deine Lernaktivitäten sowie die Lernstrategien,
-				die du zur Bearbeitung angewendet hast. Verfolge deinen Fortschritt anschaulich:
-				Durch die Auswertung deiner Lernstatistiken erkennst du schnell, wo deine Stärken
-				liegen und in welchen Bereichen du dich optimieren oder verbessern kannst. Basierend
-				auf den Lernstatistiken werden dir neue, individuelle Lernpfade vorgeschlagen. Es
-				werden keine Daten an Dritte weitergegeben und du kannst die gesammelten Daten
-				jederzeit löschen
-			</ExpandableSettingsSection>
 		</div>
 	);
 }
@@ -111,5 +154,21 @@ function ExpandableSettingsSection({
 				{isExpanded ? "Weniger anzeigen" : "Mehr anzeigen"}
 			</button>
 		</section>
+	);
+}
+
+function ToggleSetting({
+	value,
+	onChange,
+	label
+}: {
+	value: boolean;
+	onChange: (value: boolean) => void;
+	label: string;
+}) {
+	return (
+		<div className="flex items-center gap-2">
+			<Toggle value={value} onChange={onChange} label={label} />
+		</div>
 	);
 }

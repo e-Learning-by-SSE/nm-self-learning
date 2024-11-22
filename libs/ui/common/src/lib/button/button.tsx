@@ -14,18 +14,19 @@ export function StrokedButton(
 
 export function RedButton({
 	label,
-	props,
-	className
+	onClick,
+	className = "",
+	...props
 }: {
 	label: string;
-	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;
-	className?: string;
-}) {
+	onClick: () => void;
+	className: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
 	return (
 		<button
+			className={`btn rounded-full bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring-4 focus:ring-red-300 ${className}`}
+			onClick={onClick}
 			{...props}
-			type="button"
-			className={`rounded-md border border-transparent bg-red-500 px-4 py-2 hover:bg-red-600 ${className}`}
 		>
 			{label}
 		</button>

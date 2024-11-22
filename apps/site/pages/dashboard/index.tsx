@@ -227,36 +227,14 @@ export default function Start(props: Props) {
 }
 
 function DashboardPage(props: Props) {
-	const [editStudentDialog, setEditStudentDialog] = useState(false);
 	const [studentSettings, setStudentSettings] = useState<StudentSettings>({
 		hasLearningDiary: props.student.settings?.hasLearningDiary ?? false,
 		learningStatistics: props.student.settings?.learningStatistics ?? false
 	});
-	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
 	const router = useRouter();
 
-	const onEditStudentClose: Parameters<
-		typeof EditStudentDialog
-	>[0]["onClose"] = async updated => {
-		setEditStudentDialog(false);
-
-		if (updated) {
-			try {
-				await updateStudent(updated);
-				showToast({
-					type: "success",
-					title: "Informationen aktualisiert",
-					subtitle: updated.user.displayName
-				});
-				router.replace(router.asPath);
-			} catch (error) {
-				console.error(error);
-
-				if (error instanceof TRPCClientError) {
-					showToast({ type: "error", title: "Fehler", subtitle: error.message });
-				}
-			}
-		}
+	const openSettings = () => {
+		router.push("/user-settings");
 	};
 
 	return (
@@ -283,13 +261,6 @@ function DashboardPage(props: Props) {
 								abgeschlossen.
 							</span>
 						</div>
-
-						{editStudentDialog && (
-							<EditStudentDialog
-								student={{ user: { displayName: props.student.user.displayName } }}
-								onClose={onEditStudentClose}
-							/>
-						)}
 					</section>
 
 					<div className="grid grid-rows-2">
@@ -297,7 +268,7 @@ function DashboardPage(props: Props) {
 							<button
 								className="rounded-full p-2 hover:bg-gray-100"
 								title="Bearbeiten"
-								onClick={() => setEditStudentDialog(true)}
+								onClick={openSettings}
 							>
 								<CogIcon className="h-6 text-gray-500" />
 							</button>
@@ -569,44 +540,5 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 				</Link>
 			)}
 		</div>
-	);
-}
-
-const editStudentSchema = z.object({
-	user: z.object({ displayName: z.string().min(3).max(50) })
-});
-
-type EditStudent = z.infer<typeof editStudentSchema>;
-
-function EditStudentDialog({
-	student,
-	onClose
-}: {
-	student: EditStudent;
-	onClose: OnDialogCloseFn<EditStudent>;
-}) {
-	const form = useForm({
-		defaultValues: student,
-		resolver: zodResolver(editStudentSchema)
-	});
-
-	return (
-		<Dialog title={student.user.displayName} onClose={onClose}>
-			<form onSubmit={form.handleSubmit(onClose)}>
-				<LabeledField label="Name" error={form.formState.errors.user?.displayName?.message}>
-					<input
-						{...form.register("user.displayName")}
-						type="text"
-						className="textfield"
-					/>
-				</LabeledField>
-
-				<DialogActions onClose={onClose}>
-					<button className="btn-primary" disabled={!form.formState.isValid}>
-						Speichern
-					</button>
-				</DialogActions>
-			</form>
-		</Dialog>
 	);
 }

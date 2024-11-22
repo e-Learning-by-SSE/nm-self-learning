@@ -6,16 +6,15 @@ import {
 	dispatchDialog,
 	freeDialog,
 	ImageOrPlaceholder,
-	QuestionMarkTooltip,
-	showToast,
-	Tooltip
+	RedButton,
+	showToast
 } from "@self-learning/ui/common";
 import { CenteredContainer, redirectToLogin, useRequiredSession } from "@self-learning/ui/layouts";
 import { AuthorSvg, DiarySvg, StatisticSvg } from "@self-learning/ui/static";
 import { Session } from "next-auth";
 import { useState } from "react";
 
-export function StudentDeleteForm() {
+export function DeleteMeForm() {
 	const { mutateAsync: deleteMe } = trpc.me.delete.useMutation();
 	const session = useRequiredSession();
 	const user = session.data?.user;
@@ -24,7 +23,7 @@ export function StudentDeleteForm() {
 	const afterPersonalDeleteInfoDialog = () => {
 		freeDialog("student-delete-form");
 		dispatchDialog(
-			<StudentDeleteDialog
+			<DeleteMeDialog
 				user={{ ...user }}
 				onClose={async accepted => {
 					if (accepted) {
@@ -55,69 +54,56 @@ export function StudentDeleteForm() {
 
 	const afterAllDeleteInfoDialog = () => {
 		freeDialog("student-delete-form");
+		// open mailto here
 	};
 
 	return (
-		<div className="mt-8 rounded-lg border border-red-300 bg-red-50 p-6">
-			<h2 className="text-lg font-bold text-red-700">
-				{" "}
+		<>
+			<p className="mt-2 text-sm">
 				<span role="img" aria-label="Warning">
 					⚠️
 				</span>{" "}
-				Danger Zone
-			</h2>
-			<p className="mt-2 text-sm text-red-600">
 				Sei vorsichtig! Diese Aktionen können nicht rückgängig gemacht werden.
 			</p>
 			<DialogHandler id="student-delete-form" />
 
 			<div className="mt-6 flex flex-col gap-4">
-				<div className="flex items-center gap-2">
-					<button
-						className="btn rounded-full bg-red-500 p-2 text-white hover:bg-red-600 focus:ring-4 focus:ring-red-300"
-						title="Nutzerdaten löschen"
-						onClick={() => {
-							dispatchDialog(
-								<StudentDeleteInfoDialog
-									onClose={() => {
-										freeDialog("student-delete-form");
-										afterPersonalDeleteInfoDialog();
-									}}
-								/>,
-								"student-delete-form"
-							);
-						}}
-					>
-						Userdaten löschen
-					</button>
-				</div>
-
-				<div className="flex items-center gap-2">
-					<button
-						className="btn rounded-full bg-red-500 p-2 text-white hover:bg-red-600 focus:ring-4 focus:ring-red-300"
-						title="Alle Daten löschen"
-						onClick={() => {
-							dispatchDialog(
-								<StudentAllDeleteInfoDialog
-									onClose={() => {
-										freeDialog("student-delete-form");
-										afterAllDeleteInfoDialog();
-									}}
-								/>,
-								"student-delete-form"
-							);
-						}}
-					>
-						Alle Daten löschen
-					</button>
-				</div>
+				<RedButton
+					label="Nutzerdaten löschen"
+					onClick={() => {
+						dispatchDialog(
+							<StudentDeleteInfoDialog
+								onClose={() => {
+									freeDialog("student-delete-form");
+									afterPersonalDeleteInfoDialog();
+								}}
+							/>,
+							"student-delete-form"
+						);
+					}}
+					className="w-full max-w-52"
+				/>
+				<RedButton
+					label="Autorenprofil löschen"
+					onClick={() => {
+						dispatchDialog(
+							<StudentAllDeleteInfoDialog
+								onClose={() => {
+									freeDialog("student-delete-form");
+									afterAllDeleteInfoDialog();
+								}}
+							/>,
+							"student-delete-form"
+						);
+					}}
+					className="w-full max-w-52"
+				/>
 			</div>
-		</div>
+		</>
 	);
 }
 
-
-function StudentDeleteDialog({
+function DeleteMeDialog({
 	user,
 	onClose
 }: {
@@ -338,16 +324,19 @@ function StudentAllDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 				onClose={onClose}
 			>
 				<CenteredContainer>
-					<div>
-						<div className="flex items-center overflow-auto">
-							<span>
-								Es werden alle Daten inklusive der erstellen Kurse und Lerneinheiten
-								gelöscht
-								<br />
-								Wenden sie sich an den Systemadministrator um ihre gesamten Daten zu
-								löschen
-							</span>
-						</div>
+					<div className="flex flex-col items-center justify-center p-6 overflow-auto">
+						<p className="mb-4 text-lg font-semibold">
+							Es werden alle Daten inklusive der erstellen Kurse und Lerneinheiten
+							gelöscht.
+						</p>
+						<p className="text-md ">
+							Wenn nur deine Nutzerdaten löschen möchtest, klicke auf "Nutzerdaten
+							löschen".{" "}
+						</p>
+						<span className="text-red-300">
+							Diese Funktion steht aktuell nicht zur Verfügung. Wenden sie sich an den
+							Systemadministrator um ihre gesamten Daten zu löschen.
+						</span>
 					</div>
 				</CenteredContainer>
 				<div className="absolute bottom-5 right-5">

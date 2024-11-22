@@ -1,12 +1,14 @@
 import { getAuthenticatedUser } from "@self-learning/api";
 import { StudentSettings } from "@self-learning/types";
-import { StudentDeleteForm, StudentSettingsForm } from "@self-learning/settings";
+import { DeleteMeForm, FeatureSettingsForm, PersonalSettingsForm } from "@self-learning/settings";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { GetServerSideProps } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { database } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
+import { useRouter } from "next/router";
+import { TRPCClientError } from "@trpc/client";
 
 interface Props {
 	learningStatistics: boolean;
@@ -45,7 +47,6 @@ export default function Start(props: Props) {
 	return (
 		<CenteredSection className="bg-gray-50">
 			<StudentSettingPage {...props} />
-			<StudentDeleteForm />
 		</CenteredSection>
 	);
 }
@@ -53,6 +54,8 @@ export default function Start(props: Props) {
 function StudentSettingPage(initialSettings: StudentSettings) {
 	const [settings, setSettings] = useState(initialSettings);
 	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
+	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
+	const router = useRouter();
 
 	const onSave = useCallback(async () => {
 		try {
@@ -79,6 +82,28 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 		setSettings(newSettings);
 	};
 
+	const onProfileUpdateSubmit: Parameters<
+		typeof PersonalSettingsForm
+	>[0]["onSubmit"] = async updated => {
+		if (updated) {
+			try {
+				await updateStudent(updated);
+				showToast({
+					type: "success",
+					title: "Informationen aktualisiert",
+					subtitle: updated.user.displayName
+				});
+				router.replace(router.asPath);
+			} catch (error) {
+				console.error(error);
+
+				if (error instanceof TRPCClientError) {
+					showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				}
+			}
+		}
+	};
+
 	useEffect(() => {
 		onSave();
 	}, [onSave, settings]);
@@ -86,7 +111,27 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 	return (
 		<>
 			<h1 className="text-2xl font-bold">Einstellungen</h1>
-			<StudentSettingsForm {...settings} onChange={onChange} />
+			<SettingSection title="Profil">
+				<PersonalSettingsForm
+					student={{ user: { displayName: "Max Mustermann" } }}
+					onSubmit={onProfileUpdateSubmit}
+				/>
+			</SettingSection>
+			<SettingSection title="Funktionen">
+				<FeatureSettingsForm {...settings} onChange={onChange} />
+			</SettingSection>
+			<SettingSection title="Kritischer Bereich">
+				<DeleteMeForm />
+			</SettingSection>
 		</>
+	);
+}
+
+function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
+	return (
+		<section className="space-y-4 mt-8 rounded-lg border border-slate-400 bg-white p-6">
+			<h3>{title}</h3>
+			{children}
+		</section>
 	);
 }
