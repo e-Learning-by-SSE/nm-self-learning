@@ -309,7 +309,7 @@ function GenerateSubtileDialog({
 	const [socket, setSocket] = useState<Socket | null>(null);
 
 	useEffect(() => {
-		const socket = io("http://localhost:5000");
+		const socket = io(process.env["TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000");
 		setSocket(socket);
 
 		socket.emit("transcribe", { video_url });

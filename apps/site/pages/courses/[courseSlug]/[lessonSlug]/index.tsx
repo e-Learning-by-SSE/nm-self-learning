@@ -6,6 +6,7 @@ import {
 	getStaticPropsForLayout,
 	LessonLayout,
 	LessonLayoutProps,
+	TranscriptDialog,
 	useLessonContext
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -16,7 +17,14 @@ import {
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
+import {
+	AuthorsList,
+	Dialog,
+	DialogHandler,
+	LicenseChip,
+	Tab,
+	Tabs
+} from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -115,6 +123,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 
 export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
+	const [showTranscript, setShowTranscript] = useState(false);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
@@ -135,13 +144,31 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	return (
 		<article className="flex flex-col gap-4">
 			{preferredMediaType === "video" && (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
-					{video?.value.url ? (
-						<VideoPlayer url={video.value.url} subtitle={video.value.subtitle}/>
-					) : (
-						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
+				<>
+					<div className="aspect-video w-full xl:max-h-[75vh]">
+						{video?.value.url ? (
+							<VideoPlayer url={video.value.url} subtitle={video.value.subtitle} />
+						) : (
+							<div className="py-16 text-center text-red-500">Error: Missing URL</div>
+						)}
+					</div>
+					{video?.value.subtitle && (
+						<>
+							<span
+								className="text-lg text-center text-gray-500 hover:text-secondary cursor-pointer"
+								onClick={() => setShowTranscript(true)}
+							>
+								Video Transkript anzeigen
+							</span>
+							{showTranscript && (
+								<TranscriptDialog
+									onClose={() => setShowTranscript(false)}
+									webVTTtranscript={video.value.subtitle.src}
+								/>
+							)}
+						</>
 					)}
-				</div>
+				</>
 			)}
 
 			<LessonHeader
