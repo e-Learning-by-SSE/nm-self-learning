@@ -1,40 +1,30 @@
-import { CogIcon, CheckIcon } from "@heroicons/react/24/solid";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { getAuthenticatedUser } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { StudentSettingsDialog } from "@self-learning/settings";
+import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import { EditFeatureSettings, FirstLoginDialog } from "@self-learning/settings";
 import {
 	Card,
-	Dialog,
-	DialogActions,
 	DialogHandler,
 	dispatchDialog,
 	freeDialog,
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	OnDialogCloseFn,
-	showToast,
 	Toggle
 } from "@self-learning/ui/common";
-import { LabeledField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { TutorialSvg } from "@self-learning/ui/static";
 import {
 	formatDateAgo,
 	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
-import { TRPCClientError } from "@trpc/client";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { StudentSettings } from "@self-learning/types";
-import { TutorialSvg } from "@self-learning/ui/static";
-import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -63,12 +53,13 @@ function getStudent(username: string) {
 					completedLessons: true
 				}
 			},
-			settings: true,
 			user: {
 				select: {
 					displayName: true,
 					name: true,
-					image: true
+					image: true,
+					enabledFeatureLearningDiary: true,
+					enabledLearningStatistics: true
 				}
 			},
 			completedLessons: {
@@ -227,11 +218,9 @@ export default function Start(props: Props) {
 }
 
 function DashboardPage(props: Props) {
-	const [studentSettings, setStudentSettings] = useState<StudentSettings>({
-		hasLearningDiary: props.student.settings?.hasLearningDiary ?? false,
-		learningStatistics: props.student.settings?.learningStatistics ?? false
-	});
+	const [openLearningDiarySettings, setOpenLearningDiarySettings] = useState(false);
 	const router = useRouter();
+	const learningDiary = props.student.user.enabledFeatureLearningDiary;
 
 	const openSettings = () => {
 		router.push("/user-settings");
@@ -276,9 +265,7 @@ function DashboardPage(props: Props) {
 
 						<div className="flex items-end justify-end">
 							<TagebuchToggle
-								onChange={value => {
-									setStudentSettings(value);
-								}}
+								onChange={value => setOpenLearningDiarySettings(value)}
 							/>
 						</div>
 					</div>
@@ -299,8 +286,7 @@ function DashboardPage(props: Props) {
 					</div>
 
 					<div className="rounded bg-white p-4 shadow">
-						{studentSettings?.hasLearningDiary &&
-						studentSettings?.learningStatistics ? (
+						{learningDiary ? (
 							<>
 								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
 								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
@@ -319,7 +305,7 @@ function DashboardPage(props: Props) {
 						imageElement={<TutorialSvg />}
 						title="Kursübersicht"
 					/>
-					{studentSettings?.hasLearningDiary && (
+					{learningDiary && (
 						<>
 							<Card
 								href="/learning-diary"
@@ -347,7 +333,9 @@ function DashboardPage(props: Props) {
 	);
 }
 
-function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => void }) {
+// function TagebuchToggle({ onChange }: { onChange: (value: EditFeatureSettings) => void }) {}
+
+function TagebuchToggle({ onChange }: { onChange: (value: EditStudentSettings) => void }) {
 	const { data: studentSettings, isLoading, refetch } = trpc.settings.getMySetting.useQuery();
 	const hasLearningDiary = studentSettings?.hasLearningDiary || false;
 	const hasLearningStatistics = studentSettings?.learningStatistics || false;
@@ -359,7 +347,7 @@ function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => vo
 					value={hasLearningDiary && hasLearningStatistics}
 					onChange={() => {
 						dispatchDialog(
-							<StudentSettingsDialog
+							<FirstLoginDialog
 								initialSettings={{
 									hasLearningDiary: false,
 									learningStatistics: false,

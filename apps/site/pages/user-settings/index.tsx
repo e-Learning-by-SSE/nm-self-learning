@@ -1,66 +1,88 @@
-import { getAuthenticatedUser } from "@self-learning/api";
-import { StudentSettings } from "@self-learning/types";
-import { DeleteMeForm, FeatureSettingsForm, PersonalSettingsForm } from "@self-learning/settings";
-import { CenteredSection } from "@self-learning/ui/layouts";
-import { GetServerSideProps } from "next";
-import { useCallback, useEffect, useState } from "react";
-import { database } from "@self-learning/database";
+import { withAuth } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import { database } from "@self-learning/database";
+import { DeleteMeForm, FeatureSettingsForm, PersonalSettingsForm } from "@self-learning/settings";
+import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { useRouter } from "next/router";
+import { CenteredSection } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
+import { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
-interface Props {
-	learningStatistics: boolean;
-	hasLearningDiary: boolean;
-}
-
-async function getStudentSettings(username: string) {
-	return database.studentSettings.findFirst({
+async function getUserWithSettings(username: string) {
+	return await database.user.findUnique({
 		where: {
-			username
+			name: username
+		},
+		select: {
+			name: true,
+			displayName: true,
+			email: true,
+			image: true,
+			enabledLearningStatistics: true,
+			enabledFeatureLearningDiary: true
 		}
 	});
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
-	const user = await getAuthenticatedUser(ctx);
-	if (!user || !user.name) {
-		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
-			}
-		};
-	}
-	const settings = await getStudentSettings(user.name);
-
-	return {
-		props: {
-			learningStatistics: settings?.learningStatistics ?? false,
-			hasLearningDiary: settings?.hasLearningDiary ?? false
-		}
-	};
-};
-
-export default function Start(props: Props) {
-	return (
-		<CenteredSection className="bg-gray-50">
-			<StudentSettingPage {...props} />
-		</CenteredSection>
-	);
+interface PageProps {
+	settings: NonNullable<ResolvedValue<typeof getUserWithSettings>>;
 }
 
-function StudentSettingPage(initialSettings: StudentSettings) {
-	const [settings, setSettings] = useState(initialSettings);
-	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
-	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
+export const getServerSideProps: GetServerSideProps = withAuth<PageProps>(async (_, user) => {
+	const settings = await getUserWithSettings(user.name);
+
+	if (!settings) {
+		return {
+			notFound: true
+		};
+	}
+
+	return {
+		props: { settings }
+	};
+});
+
+export default function SettingsPage(props: PageProps) {
+	const [settings, setSettings] = useState(props.settings);
+	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+
 	const router = useRouter();
 
-	const onSave = useCallback(async () => {
+	const onPersonalSettingSubmit: Parameters<
+		typeof PersonalSettingsForm
+	>[0]["onSubmit"] = async update => {
+		if (!update) return;
 		try {
-			await updateSettings({
-				settings
+			setSettings(prev => {
+				const newSettings = { ...prev, ...update };
+				updateSettings({ user: newSettings });
+				return newSettings;
+			});
+			showToast({
+				type: "success",
+				title: "Informationen aktualisiert",
+				subtitle: update.displayName
+			});
+			router.replace(router.asPath);
+		} catch (error) {
+			console.error(error);
+
+			if (error instanceof TRPCClientError) {
+				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+			}
+		}
+	};
+
+	const onFeatureChange: Parameters<typeof FeatureSettingsForm>[0]["onChange"] = async update => {
+		try {
+			if (!update) return;
+
+			setSettings(prev => {
+				const newSettings = { ...prev, ...update };
+				updateSettings({ user: newSettings });
+				return newSettings;
 			});
 		} catch (error) {
 			if (error instanceof Error) {
@@ -71,59 +93,24 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 				});
 			}
 		}
-	}, [settings, updateSettings]);
-
-	const onChange = async (checkbox: string, value: boolean) => {
-		const newSettings = { ...settings, [checkbox]: value };
-		// Automatically disable learning diary if learning statistics are disabled
-		if (checkbox === "learningStatistics" && value === false) {
-			newSettings.hasLearningDiary = false;
-		}
-		setSettings(newSettings);
 	};
-
-	const onProfileUpdateSubmit: Parameters<
-		typeof PersonalSettingsForm
-	>[0]["onSubmit"] = async updated => {
-		if (updated) {
-			try {
-				await updateStudent(updated);
-				showToast({
-					type: "success",
-					title: "Informationen aktualisiert",
-					subtitle: updated.user.displayName
-				});
-				router.replace(router.asPath);
-			} catch (error) {
-				console.error(error);
-
-				if (error instanceof TRPCClientError) {
-					showToast({ type: "error", title: "Fehler", subtitle: error.message });
-				}
-			}
-		}
-	};
-
-	useEffect(() => {
-		onSave();
-	}, [onSave, settings]);
-
+	console.log("settings", settings);
 	return (
-		<>
+		<CenteredSection className="bg-gray-50">
 			<h1 className="text-2xl font-bold">Einstellungen</h1>
 			<SettingSection title="Profil">
 				<PersonalSettingsForm
-					student={{ user: { displayName: "Max Mustermann" } }}
-					onSubmit={onProfileUpdateSubmit}
+					personalSettings={settings}
+					onSubmit={onPersonalSettingSubmit}
 				/>
 			</SettingSection>
 			<SettingSection title="Funktionen">
-				<FeatureSettingsForm {...settings} onChange={onChange} />
+				<FeatureSettingsForm featureSettings={settings} onChange={onFeatureChange} />
 			</SettingSection>
 			<SettingSection title="Kritischer Bereich">
 				<DeleteMeForm />
 			</SettingSection>
-		</>
+		</CenteredSection>
 	);
 }
 

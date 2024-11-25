@@ -39,6 +39,10 @@ model User {
     student           Student?
     uploadedAssets    UploadedAssets[]
     skillRepositories SkillRepository[]
+
+    enabledLearningStatistics Boolean @default(false)
+    enabledFeatureLearningDiary  Boolean  @default(false)
+    firstLoginRoutine Boolean @default(false)
 }
 
 model VerificationToken {

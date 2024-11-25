@@ -1,31 +1,30 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	EditFeatureSettings,
+	EditPersonalSettings,
+	editPersonalSettingSchema
+} from "@self-learning/types";
 import { OnDialogCloseFn, Toggle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-const editStudentProfileSchema = z.object({
-	user: z.object({ displayName: z.string().min(3).max(50) })
-});
-type EditStudentProfile = z.infer<typeof editStudentProfileSchema>;
 
 export function PersonalSettingsForm({
-	student,
+	personalSettings,
 	onSubmit
 }: {
-	student: EditStudentProfile;
-	onSubmit: OnDialogCloseFn<EditStudentProfile>;
+	personalSettings: EditPersonalSettings;
+	onSubmit: OnDialogCloseFn<EditPersonalSettings>;
 }) {
 	const form = useForm({
-		defaultValues: student,
-		resolver: zodResolver(editStudentProfileSchema)
+		defaultValues: personalSettings,
+		resolver: zodResolver(editPersonalSettingSchema)
 	});
 
 	return (
 		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-			<LabeledField label="Name" error={form.formState.errors.user?.displayName?.message}>
-				<input {...form.register("user.displayName")} type="text" className="textfield" />
+			<LabeledField label="Name" error={form.formState.errors.displayName?.message}>
+				<input {...form.register("displayName")} type="text" className="textfield" />
 			</LabeledField>
 
 			<button className="btn-primary" disabled={!form.formState.isValid}>
@@ -36,20 +35,19 @@ export function PersonalSettingsForm({
 }
 
 export function FeatureSettingsForm({
-	learningStatistics,
-	hasLearningDiary,
+	featureSettings,
 	onChange
 }: {
-	learningStatistics: boolean;
-	hasLearningDiary: boolean;
-	onChange: (checkbox: string, value: boolean) => void;
+	featureSettings: EditFeatureSettings;
+	onChange: OnDialogCloseFn<Partial<EditFeatureSettings>>;
 }) {
+	const { enabledFeatureLearningDiary, enabledLearningStatistics } = featureSettings;
 	return (
 		<div className="space-y-8">
 			<div className="space-y-2">
 				<ToggleSetting
-					value={learningStatistics}
-					onChange={value => onChange("learningStatistics", value)}
+					value={enabledLearningStatistics}
+					onChange={(value: boolean) => onChange({ enabledLearningStatistics: value })}
 					label="Lernstatistiken"
 				/>
 
@@ -99,8 +97,8 @@ export function FeatureSettingsForm({
 			</div>
 			<div className="space-y-2">
 				<ToggleSetting
-					value={hasLearningDiary}
-					onChange={value => onChange("hasLearningDiary", value)}
+					value={enabledFeatureLearningDiary}
+					onChange={(value: boolean) => onChange({ enabledFeatureLearningDiary: value })}
 					label="Lerntagebuch"
 				/>
 

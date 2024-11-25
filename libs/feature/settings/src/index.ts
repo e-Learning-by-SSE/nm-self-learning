@@ -1,3 +1,3 @@
-export * from "./lib/settings-form/student-settings-form";
-export * from "./lib/settings-dialog/student-settings-dialog";
-export * from "./lib/settings-form/student-delete-form";
+export * from "./lib/settings-form/settings-form";
+export * from "./lib/settings-form/delete-form";
+export * from "./lib/onboarding/first-login-dialog";

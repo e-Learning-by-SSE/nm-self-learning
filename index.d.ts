@@ -34,6 +34,8 @@ declare module "next-auth" {
 			role: "USER" | "ADMIN";
 			isAuthor: boolean;
 			avatarUrl?: string | null;
+			enabledLearningStatistics: boolean;
+			enabledFeatureLearningDiary: boolean;
 		};
 	}
 }
