@@ -23,14 +23,14 @@ export function StudentSettingsForm({
 				/>
 			</div>
 			<ExpandableSettingsSection
-				text="Erfassung und Speicherung von Sitzungsdaten zur Auswertung des persönlichen Lernverhalten"
+				text="Erfassung und Speicherung von Sitzungsdaten zur Auswertung des persönlichen Lernverhaltens"
 				title="Check this for learning statistics"
 			>
 				Es werden alle Daten zum Lernverhalten erfasst und ausschließlich dir zugänglich
 				gemacht. Dabei werden nur jene Informationen erhoben, die für die Nutzung unserer
 				Plattform erforderlich sind. Dies umfasst unter anderem:
 				<ul className="text-md my-2 flex list-inside list-disc flex-col gap-2 px-2">
-					<li>Aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern</li>
+					<li>aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern</li>
 					<li>Starten, pausieren und anhalten von Videos</li>
 					<li>Abgabeversuche von Lernzielkontrollen</li>
 				</ul>
@@ -50,7 +50,7 @@ export function StudentSettingsForm({
 					</li>
 					<li>
 						Gegebenenfalls werden aggregierte und anonymisierte Daten für die Forschung
-						bereit gestellt.
+						bereitgestellt.
 					</li>
 				</ul>
 				Es werden keine Daten an Dritte weitergegeben und du kannst jederzeit die
@@ -76,7 +76,7 @@ export function StudentSettingsForm({
 				liegen und in welchen Bereichen du dich optimieren oder verbessern kannst. Basierend
 				auf den Lernstatistiken werden dir neue, individuelle Lernpfade vorgeschlagen. Es
 				werden keine Daten an Dritte weitergegeben und du kannst die gesammelten Daten
-				jederzeit löschen
+				jederzeit löschen.{" "}
 			</ExpandableSettingsSection>
 		</div>
 	);
@@ -97,7 +97,7 @@ function ExpandableSettingsSection({
 		setIsExpanded(!isExpanded);
 	};
 
-	const btnClass = "mt-2 text-blue-500 hover:underline" + (isExpanded ? "" : " px-2");
+	const btnClass = "text-blue-500 hover:underline" + (isExpanded ? "" : " px-2");
 
 	return (
 		<section className="mt-5 rounded-lg bg-white p-3.5">
