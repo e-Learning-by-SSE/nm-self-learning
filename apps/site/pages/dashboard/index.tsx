@@ -33,7 +33,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { StudentSettings } from "@self-learning/types";
-import { TutorialSvg } from "@self-learning/ui/static";
+import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
 import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
@@ -345,26 +345,26 @@ function DashboardPage(props: Props) {
 				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
 					<Card
 						href="/dashboard/courseOverview"
-						imageElement={<TutorialSvg />}
+						imageElement={<OverviewSvg />}
 						title="Kursübersicht"
 					/>
 					{studentSettings?.hasLearningDiary && (
 						<>
 							<Card
 								href="/learning-diary"
-								imageElement={<TutorialSvg />}
+								imageElement={<MarketingSvg />}
 								title="Lerntagebucheinträge verwalten"
 							/>
 
 							<Card
 								href="/learning-diary"
-								imageElement={<TutorialSvg />}
+								imageElement={<ProgressSvg />}
 								title="Übersicht des Lerntagebuchs"
 							/>
 
 							<Card
 								href="/learning-diary/goals"
-								imageElement={<TutorialSvg />}
+								imageElement={<TargetSvg />}
 								title="Lernziele verwalten"
 							/>
 						</>
