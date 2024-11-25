@@ -19,7 +19,6 @@ import {
 	XMarkIcon
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
-import { FirstLoginDialog } from "@self-learning/settings";
 import { Divider } from "@self-learning/ui/common";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -32,7 +31,6 @@ import { SearchBar } from "./search-bar";
 export function Navbar() {
 	const session = useSession();
 	const user = session.data?.user;
-	const [studentSettingsDialogOpen, setStudentSettingsDialogOpen] = useState(true);
 
 	return (
 		<Disclosure
@@ -41,13 +39,6 @@ export function Navbar() {
 		>
 			{({ open }) => (
 				<>
-					{studentSettingsDialogOpen && (
-						<FirstLoginDialog
-							onClose={() => {
-								setStudentSettingsDialogOpen(false);
-							}}
-						/>
-					)}
 					<div className="mx-auto px-2 lg:px-6 xl:px-8">
 						<div className="relative flex h-16 items-center justify-between">
 							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
