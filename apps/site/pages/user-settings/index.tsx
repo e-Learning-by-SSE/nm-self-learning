@@ -116,7 +116,7 @@ export default function SettingsPage(props: PageProps) {
 
 function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
 	return (
-		<section className="space-y-4 mt-8 rounded-lg border border-slate-400 bg-white p-6">
+		<section className="space-y-4 mt-8 rounded-lg border bg-gray-100 p-6">
 			<h3>{title}</h3>
 			{children}
 		</section>
