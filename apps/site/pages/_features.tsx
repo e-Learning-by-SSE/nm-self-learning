@@ -1,6 +1,9 @@
+"use client";
+import { trpc } from "@self-learning/api-client";
 import { FirstLoginDialog } from "@self-learning/settings";
 import { MessagePortal } from "@self-learning/ui/notifications";
 import { init } from "@socialgouv/matomo-next";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 
@@ -15,13 +18,28 @@ export function GlobalFeatures() {
 	);
 }
 
-function ControlledFirstLoginDialog() {
-	const [studentSettingsDialogOpen, setStudentSettingsDialogOpen] = useState(true);
+export function ControlledFirstLoginDialog() {
+	const session = useSession();
+	const { data, isLoading } = trpc.me.registrationStatus.useQuery(undefined, {
+		enabled: session.data?.user?.name !== undefined
+	});
+	const [onboardingDialogClosed, setDialogClosed] = useState<boolean | null>(null);
 
-	if (!studentSettingsDialogOpen) {
+	if (isLoading) {
 		return null;
 	}
-	return <FirstLoginDialog onClose={() => setStudentSettingsDialogOpen(false)} />;
+
+	if (onboardingDialogClosed === null && data) {
+		setDialogClosed(data.registrationCompleted ?? false);
+	}
+
+	const registrationCompleted = data?.registrationCompleted ?? true;
+
+	if (registrationCompleted || onboardingDialogClosed) {
+		return null;
+	}
+
+	return <FirstLoginDialog onClose={() => setDialogClosed(true)} />;
 }
 
 function ControlledMsgPortal() {

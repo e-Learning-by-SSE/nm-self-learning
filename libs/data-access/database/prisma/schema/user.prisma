@@ -42,7 +42,7 @@ model User {
 
     enabledLearningStatistics Boolean @default(false)
     enabledFeatureLearningDiary  Boolean  @default(false)
-    firstLoginRoutine Boolean @default(false)
+    registrationCompleted      Boolean  @default(false)
 }
 
 model VerificationToken {

@@ -12,27 +12,15 @@ export const editPersonalSettingSchema = z.object({
 });
 export type EditPersonalSettings = z.infer<typeof editPersonalSettingSchema>;
 
-// export const editPersonalSettingSchema = z.object({
-// 	displayName: z.string().min(3).max(50)
-// });
-// type EditPersonalSettings = z.infer<typeof editPersonalSettingSchema>;
-
-// export const editUserSettingsSchema = z.object({
-// 	user: z.object({
-// 		displayName: z.string().min(3).max(50),
-// 		enabledLearningStatistics: z.boolean(),
-// 		enabledFeatureLearningDiary: z.boolean()
-// 	})
-// });
-
-// export type EditUserSettings = z.infer<typeof editUserSettingsSchema>;
-
 export const editUserSettingsSchema = z
 	.object({
-		user: z.object({
-			...editPersonalSettingSchema.shape,
-			...editFeatureSettingsSchema.shape
-		})
+		user: z
+			.object({
+				...editPersonalSettingSchema.shape,
+				...editFeatureSettingsSchema.shape,
+				registrationCompleted: z.boolean()
+			})
+			.partial()
 	})
 	.partial();
 

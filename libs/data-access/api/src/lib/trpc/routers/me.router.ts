@@ -125,5 +125,13 @@ export const meRouter = t.router({
 				data: updateData
 			});
 		});
+	}),
+	registrationStatus: authProcedure.query(async ({ ctx }) => {
+		return await database.user.findUnique({
+			where: { name: ctx.user.name },
+			select: {
+				registrationCompleted: true
+			}
+		});
 	})
 });
