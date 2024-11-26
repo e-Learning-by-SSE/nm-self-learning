@@ -39,14 +39,20 @@ export function EnableLearningDiaryDialog({
 
 	return (
 		<Dialog
-			style={{ height: "50vh", width: "60vw" }}
-			title={`Klicke auf speichern`}
+			className="fixed inset-0 flex overflow-y-auto"
+			title={`Lerntagebuch aktivieren`}
 			onClose={onClose}
 		>
-			<FeatureSettingsForm featureSettings={settingSuggestion} onChange={updateSetting} />
+			<div className="w-full max-w-3xl h-3/4 p-6 ">
+				<p className="my-8">
+					Durch das Nutzen des Lerntagebuchs, werden die unten stehenden Funktionen der
+					Plattform aktivierst. Hierbei stimmst du den jeweiligen Bedingungen zu.
+				</p>
+				<FeatureSettingsForm featureSettings={settingSuggestion} onChange={updateSetting} />
+			</div>
 			<DialogActions onClose={onClose}>
 				<button className="btn-primary" onClick={save}>
-					Lerntagebuch aktivieren
+					Speichern & Aktivieren
 				</button>
 			</DialogActions>
 		</Dialog>
