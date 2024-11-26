@@ -49,12 +49,20 @@ export function FeatureSettingsForm({
 		}
 		onChange({ enabledFeatureLearningDiary: value });
 	};
+
+	const onChangeStatistics = (value: boolean) => {
+		if (!value) {
+			onChange({ enabledLearningStatistics: false, enabledFeatureLearningDiary: false });
+		}
+		onChange({ enabledLearningStatistics: value });
+	};
+
 	return (
 		<div className="space-y-8">
 			<div className="space-y-2">
 				<ToggleSetting
 					value={enabledLearningStatistics}
-					onChange={(value: boolean) => onChange({ enabledLearningStatistics: value })}
+					onChange={onChangeStatistics}
 					label="Lernstatistiken"
 				/>
 
