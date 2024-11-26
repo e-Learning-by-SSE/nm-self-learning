@@ -85,7 +85,7 @@ export function getAuthor(username: string) {
 	});
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = withAuth(async (_, user) => {
+export const getServerSideProps: GetServerSideProps<Props> = withAuth<Props>(async (_, user) => {
 	if (user.isAuthor) {
 		return {
 			props: { author: await getAuthor(user.name) }

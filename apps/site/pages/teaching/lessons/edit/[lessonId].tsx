@@ -12,7 +12,7 @@ type EditLessonProps = {
 	lesson: LessonFormModel;
 };
 
-export const getServerSideProps: GetServerSideProps<EditLessonProps> = withAuth(
+export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 	async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
 
