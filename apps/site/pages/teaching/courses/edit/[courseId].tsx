@@ -14,7 +14,7 @@ type EditCourseProps = {
 	lessons: { title: string; lessonId: string; slug: string; meta: Prisma.JsonValue }[];
 };
 
-export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth(
+export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth<EditCourseProps>(
 	async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 
