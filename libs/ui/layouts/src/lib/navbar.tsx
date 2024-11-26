@@ -1,3 +1,4 @@
+"use client";
 import {
 	Disclosure,
 	DisclosureButton,
@@ -89,9 +90,11 @@ export function Navbar() {
 												<StarIcon className="h-5 text-secondary" />
 											</span>
 										)}
-										<span className="invisible w-0 text-sm lg:visible lg:w-fit">
-											{user.name}
-										</span>
+										<Link href="/dashboard">
+											<span className="invisible w-0 text-sm lg:visible lg:w-fit">
+												{user.name}
+											</span>
+										</Link>
 										<NavbarDropdownMenu
 											avatarUrl={user.avatarUrl}
 											isAuthor={user.isAuthor}
