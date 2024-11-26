@@ -42,6 +42,13 @@ export function FeatureSettingsForm({
 	onChange: OnDialogCloseFn<Partial<EditFeatureSettings>>;
 }) {
 	const { enabledFeatureLearningDiary, enabledLearningStatistics } = featureSettings;
+
+	const onChangeLtb = (value: boolean) => {
+		if (value) {
+			onChange({ enabledFeatureLearningDiary: true, enabledLearningStatistics: true });
+		}
+		onChange({ enabledFeatureLearningDiary: value });
+	};
 	return (
 		<div className="space-y-8">
 			<div className="space-y-2">
@@ -98,7 +105,7 @@ export function FeatureSettingsForm({
 			<div className="space-y-2">
 				<ToggleSetting
 					value={enabledFeatureLearningDiary}
-					onChange={(value: boolean) => onChange({ enabledFeatureLearningDiary: value })}
+					onChange={onChangeLtb}
 					label="Lerntagebuch"
 				/>
 
