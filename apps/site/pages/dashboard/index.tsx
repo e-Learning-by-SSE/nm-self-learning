@@ -2,13 +2,10 @@ import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { getAuthenticatedUser } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
-import { EditFeatureSettings, FirstLoginDialog } from "@self-learning/settings";
+import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 import {
 	Card,
 	DialogHandler,
-	dispatchDialog,
-	freeDialog,
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
@@ -218,12 +215,22 @@ export default function Start(props: Props) {
 }
 
 function DashboardPage(props: Props) {
-	const [openLearningDiarySettings, setOpenLearningDiarySettings] = useState(false);
+	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+	const [enableLTBDialog, setOpenLTBDialog] = useState(false);
+	const [ltbEnabled, setLtbEnabled] = useState(props.student.user.enabledFeatureLearningDiary);
 	const router = useRouter();
-	const learningDiary = props.student.user.enabledFeatureLearningDiary;
 
 	const openSettings = () => {
 		router.push("/user-settings");
+	};
+
+	const handleClickLtbToggle = async () => {
+		if (ltbEnabled) {
+			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
+			setLtbEnabled(false);
+		} else {
+			setOpenLTBDialog(true);
+		}
 	};
 
 	return (
@@ -264,8 +271,10 @@ function DashboardPage(props: Props) {
 						</div>
 
 						<div className="flex items-end justify-end">
-							<TagebuchToggle
-								onChange={value => setOpenLearningDiarySettings(value)}
+							<Toggle
+								label="Lerntagebuch"
+								value={ltbEnabled}
+								onChange={handleClickLtbToggle}
 							/>
 						</div>
 					</div>
@@ -286,7 +295,7 @@ function DashboardPage(props: Props) {
 					</div>
 
 					<div className="rounded bg-white p-4 shadow">
-						{learningDiary ? (
+						{ltbEnabled ? (
 							<>
 								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
 								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
@@ -305,7 +314,7 @@ function DashboardPage(props: Props) {
 						imageElement={<TutorialSvg />}
 						title="Kursübersicht"
 					/>
-					{learningDiary && (
+					{ltbEnabled && (
 						<>
 							<Card
 								href="/learning-diary"
@@ -329,46 +338,13 @@ function DashboardPage(props: Props) {
 				</div>
 			</CenteredSection>
 			<DialogHandler id="studentSettingsDialogDashboard" />
-		</div>
-	);
-}
-
-// function TagebuchToggle({ onChange }: { onChange: (value: EditFeatureSettings) => void }) {}
-
-function TagebuchToggle({ onChange }: { onChange: (value: EditStudentSettings) => void }) {
-	const { data: studentSettings, isLoading, refetch } = trpc.settings.getMySetting.useQuery();
-	const hasLearningDiary = studentSettings?.hasLearningDiary || false;
-	const hasLearningStatistics = studentSettings?.learningStatistics || false;
-
-	return (
-		<>
-			{!isLoading && (
-				<Toggle
-					value={hasLearningDiary && hasLearningStatistics}
-					onChange={() => {
-						dispatchDialog(
-							<FirstLoginDialog
-								initialSettings={{
-									hasLearningDiary: false,
-									learningStatistics: false,
-									...studentSettings
-								}}
-								onClose={value => {
-									refetch();
-									onChange({
-										hasLearningDiary: value.hasLearningDiary,
-										learningStatistics: value.learningStatistics
-									});
-									freeDialog("studentSettingsDialogDashboard");
-								}}
-							/>,
-							"studentSettingsDialogDashboard"
-						);
-					}}
-					label="Lerntagebuch"
+			{enableLTBDialog && (
+				<EnableLearningDiaryDialog
+					onClose={_ => setOpenLTBDialog(false)}
+					onSubmit={() => setLtbEnabled(true)}
 				/>
 			)}
-		</>
+		</div>
 	);
 }
 
