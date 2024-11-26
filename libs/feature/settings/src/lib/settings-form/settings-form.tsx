@@ -2,18 +2,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	EditFeatureSettings,
 	EditPersonalSettings,
-	editPersonalSettingSchema
+	editPersonalSettingSchema,
+	ResolvedValue
 } from "@self-learning/types";
 import { OnDialogCloseFn, Toggle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { getUserWithSettings } from "../crud-settings";
+
+type SettingsProps = NonNullable<ResolvedValue<typeof getUserWithSettings>>;
 
 export function PersonalSettingsForm({
 	personalSettings,
 	onSubmit
 }: {
-	personalSettings: EditPersonalSettings;
+	personalSettings: SettingsProps;
 	onSubmit: OnDialogCloseFn<EditPersonalSettings>;
 }) {
 	const form = useForm({
@@ -25,6 +29,14 @@ export function PersonalSettingsForm({
 		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
 			<LabeledField label="Name" error={form.formState.errors.displayName?.message}>
 				<input {...form.register("displayName")} type="text" className="textfield" />
+			</LabeledField>
+			<LabeledField label="E-Mail">
+				<input
+					type="email"
+					disabled
+					className="textfield"
+					value={personalSettings.email ?? ""}
+				/>
 			</LabeledField>
 
 			<button className="btn-primary" disabled={!form.formState.isValid}>

@@ -1,7 +1,11 @@
 import { withAuth } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { database } from "@self-learning/database";
-import { DeleteMeForm, FeatureSettingsForm, PersonalSettingsForm } from "@self-learning/settings";
+import {
+	DeleteMeForm,
+	FeatureSettingsForm,
+	getUserWithSettings,
+	PersonalSettingsForm
+} from "@self-learning/settings";
 import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -9,22 +13,6 @@ import { TRPCClientError } from "@trpc/client";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-
-async function getUserWithSettings(username: string) {
-	return await database.user.findUnique({
-		where: {
-			name: username
-		},
-		select: {
-			name: true,
-			displayName: true,
-			email: true,
-			image: true,
-			enabledLearningStatistics: true,
-			enabledFeatureLearningDiary: true
-		}
-	});
-}
 
 interface PageProps {
 	settings: NonNullable<ResolvedValue<typeof getUserWithSettings>>;
