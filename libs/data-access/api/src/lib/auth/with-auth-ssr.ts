@@ -1,4 +1,10 @@
-import { GetServerSidePropsContext, PreviewData } from "next";
+import type {
+	PreviewData,
+	GetServerSideProps,
+	GetServerSidePropsContext,
+	GetServerSidePropsResult
+} from "next";
+
 import { getServerSession } from "next-auth";
 import { getSession } from "next-auth/react";
 import { ParsedUrlQuery } from "querystring";
@@ -40,15 +46,22 @@ export async function getAuthenticatedUser(
  *   return <div>Welcome, {user.name}!</div>;
  * }
  * ```
+ *
+ * If you want to use redirect or the notFound property, you must set the type in the withAuth for correct inference.
+ * @example
+ * ```typescript
+ * const getServerSideProps: GetServerSideProps<PageProps> = withAuth<PageProps>(async (context, user) => { ...}
+ * ```
  */
-export function withAuth(
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function withAuth<Prop extends { [key: string]: any }>(
 	gssp: (
-		context: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>,
+		context: GetServerSidePropsContext,
 		user: UserFromSession
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	) => Promise<any>
-) {
-	return async (context: GetServerSidePropsContext) => {
+	) => Promise<GetServerSidePropsResult<Prop>>
+): GetServerSideProps<Prop> {
+	return async context => {
 		const session = await getServerSession(context.req, context.res, authOptions);
 		const sessionUser = session?.user;
 
@@ -61,7 +74,6 @@ export function withAuth(
 				}
 			};
 		}
-
-		return await gssp(context, sessionUser);
+		return gssp(context, sessionUser);
 	};
 }
