@@ -23,6 +23,7 @@ export function FirstLoginDialog({ onClose }: { onClose: () => void }) {
 	const handleSettingSave = async () => {
 		try {
 			await updateSettings({});
+			onClose();
 		} catch (error) {
 			if (error instanceof Error) {
 				showToast({
