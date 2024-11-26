@@ -10,19 +10,20 @@ import { useState } from "react";
  * Fully controlled and updates the settings on the server.
  */
 export function FirstLoginDialog({ onClose }: { onClose: () => void }) {
-	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
 	const session = useSession();
+	const user = session.data?.user;
+	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
 
-	const sessionSettings = session.data?.user ?? {
+	const settingSuggestion = {
 		enabledLearningStatistics: true,
 		enabledFeatureLearningDiary: false
 	};
 
-	const [settings, setSettings] = useState<EditFeatureSettings>(sessionSettings);
+	const [settings, setSettings] = useState<EditFeatureSettings>(settingSuggestion);
 
 	const handleSettingSave = async () => {
 		try {
-			await updateSettings({});
+			await updateSettings({ user: { ...settings, registrationCompleted: true } });
 			onClose();
 		} catch (error) {
 			if (error instanceof Error) {
@@ -45,7 +46,17 @@ export function FirstLoginDialog({ onClose }: { onClose: () => void }) {
 	};
 
 	return (
-		<Dialog style={{ height: "50vh", width: "60vw" }} title={"Einstellungen"} onClose={onClose}>
+		<Dialog
+			style={{ height: "50vh", width: "60vw" }}
+			title={`Willkommen ${user?.name}!`}
+			onClose={onClose}
+		>
+			<div className="p-5">
+				<p className="mt-2">
+					Wir sehen, du bist das erste mal bei uns. Bitte wähle die Einstellungen, die du
+					für die Nutzung der Plattform bevorzugst. Du kannst sie jederzeit wieder ändern.
+				</p>
+			</div>
 			<div className="overflow-x-auto p-5">
 				<FeatureSettingsForm featureSettings={settings} onChange={handleSettingChange} />
 			</div>
