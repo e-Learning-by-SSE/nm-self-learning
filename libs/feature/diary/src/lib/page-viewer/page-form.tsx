@@ -80,6 +80,9 @@ function usePageForm({
 		values
 	});
 
+	console.log("form1", pageDetails);
+	console.log("form2", values);
+
 	// useEffect to avoid render loops
 	useEffect(() => {
 		const subscription = form.watch((value, _) => {

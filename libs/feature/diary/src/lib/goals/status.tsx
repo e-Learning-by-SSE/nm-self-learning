@@ -3,7 +3,6 @@ import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
 import { useState } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
-import { sub } from "date-fns";
 
 /**
  * Component to display and change the status of a learning goal or sub-goal. Shows the status and on click opens the three option for a status.
@@ -26,10 +25,6 @@ export function GoalStatus({
 }>) {
 	const { mutateAsync: editSubGoal } = trpc.learningGoal.editSubGoalStatus.useMutation();
 	const { mutateAsync: editGoal } = trpc.learningGoal.editGoalStatus.useMutation();
-
-	// Be safe and use a state to trigger rerender when user changes something.
-	// We could assume that executing "onEdit" will lead to a rerender (e.g. because the "goal" prop changes), but this is not guaranteed.
-	// Drawback is double render when the user changes the status.
 	const [status, setStatus] = useState(
 		subGoal?.status ?? goal.status ?? LearningGoalStatus.INACTIVE
 	);
@@ -59,51 +54,58 @@ export function GoalStatus({
 	const onClickStatus = () => {
 		// If top-level goal, allow COMPLETION only if all sub-goals are completed
 		// If sub-goal, allow changing status only if parent goal is NOT completed
-
 		if ((editable && !subGoal) || (editable && subGoal && goal.status !== "COMPLETED")) {
-			// Bad practice, but the new status is also needed in the onStatusUpdate callback
-			// and status is not updated immediately (setState is async)
+			// Set new status based on current status and use newStatus to update goal
 			const newStatus = (() => {
 				switch (status) {
 					case "INACTIVE":
 						return "ACTIVE";
 					case "ACTIVE":
-						return "COMPLETED";
+						if (goal && !subGoal && !areSubGoalsCompleted()) {
+							return "INACTIVE";
+						} else {
+							return "COMPLETED";
+						}
 					default:
 						return "INACTIVE";
 				}
 			})();
 
-			if (newStatus === "COMPLETED" && goal && !subGoal && !areSubGoalsCompleted()) {
-				return;
-			}
-
 			setStatus(newStatus);
 
-			if (!subGoal && goal) {
-				editGoal({ goalId: goal.id, status: newStatus });
-			} else if (subGoal && goal) {
-				editSubGoal({
-					subGoalId: subGoal.id,
-					status: newStatus,
-					learningGoalId: subGoal.learningGoalId
-				});
+			if (newStatus !== status) {
+				if (!subGoal && goal) {
+					editGoal({ goalId: goal.id, status: newStatus });
+				} else if (subGoal && goal) {
+					editSubGoal({
+						subGoalId: subGoal.id,
+						status: newStatus,
+						learningGoalId: subGoal.learningGoalId
+					});
+				}
+				onStatusUpdate && onStatusUpdate(goal, newStatus);
 			}
-			onStatusUpdate && onStatusUpdate(goal, newStatus);
 		}
 	};
 
-	// Do not allow top level goal to be completed if sub-goals are not completed
-	const goalDisabled =
-		!editable || (goal && !areSubGoalsCompleted() && goal.status !== "COMPLETED");
+	// Top level goal: Do not allow change after marked as completed
+	const goalDisabled = !editable || (goal && !subGoal && goal.status === "COMPLETED");
 	// Do not allow sub goals to be changed if top level goal is completed
 	const subGoalDisabled = !editable || (subGoal && goal && goal.status === "COMPLETED");
 	const disabled = subGoal ? subGoalDisabled : goalDisabled;
+	if (!editable && !subGoal) {
+		console.log("Goal:", goal.description, "Status:", goal.status);
+	}
 
 	return (
 		<div className="relative flex flex-col items-center">
 			<div className="relative inline-block">
-				<TristateButton status={status} onChange={onClickStatus} disabled={disabled} />
+				<TristateButton
+					status={status}
+					onChange={onClickStatus}
+					disabled={disabled}
+					goalId={subGoal ? subGoal.id : goal.id}
+				/>
 			</div>
 		</div>
 	);
@@ -112,26 +114,30 @@ export function GoalStatus({
 function TristateButton({
 	status,
 	onChange,
-	disabled
+	disabled,
+	goalId
 }: {
 	status: LearningGoalStatus;
 	onChange: () => void;
+	goalId: string;
 	disabled?: boolean;
 }) {
 	let statusColorSettings: string;
 	switch (status) {
 		case "ACTIVE":
 			statusColorSettings = disabled
-				? "text-orange-200 focus:ring-orange-100 dark:focus:ring-orange-200"
+				? "disabled:cursor-not-allowed text-orange-200 focus:ring-orange-100 dark:focus:ring-orange-200"
 				: "text-orange-400 focus:ring-orange-300 dark:focus:ring-orange-400";
 			break;
 		case "COMPLETED":
 			statusColorSettings = disabled
-				? "text-green-200 focus:ring-green-100 dark:focus:ring-green-200"
+				? "disabled:cursor-not-allowed text-green-200 focus:ring-green-100 dark:focus:ring-green-200"
 				: "text-green-400 focus:ring-green-300 dark:focus:ring-green-400";
 			break;
 		default:
-			statusColorSettings = "focus:ring-red-400  dark:focus:ring-red-400";
+			statusColorSettings = disabled
+				? "disabled:cursor-not-allowed focus:ring-red-400 dark:focus:ring-red-400"
+				: "focus:ring-red-400 dark:focus:ring-red-400";
 	}
 
 	const checked = status === "COMPLETED" || status === "ACTIVE";
@@ -144,6 +150,7 @@ function TristateButton({
 				disabled={disabled}
 				className={`w-4 h-4 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${statusColorSettings}`}
 				onChange={onChange}
+				data-testid={`goal_status:${goalId}`}
 			/>
 		</div>
 	);
