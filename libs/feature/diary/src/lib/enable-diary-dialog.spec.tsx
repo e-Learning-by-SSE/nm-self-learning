@@ -2,47 +2,28 @@ import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { EnableLearningDiaryDialog } from "./enable-diary-dialog";
-import { trpc } from "@self-learning/api-client";
-
-jest.mock("@self-learning/api-client", () => ({
-	trpc: {
-		me: {
-			updateSettings: {
-				useMutation: jest.fn()
-			}
-		}
-	}
-}));
-
-const mockMutateAsync = jest.fn();
-(trpc.me.updateSettings.useMutation as jest.Mock).mockReturnValue({
-	mutateAsync: mockMutateAsync
-});
 
 describe("EnableLearningDiaryDialog", () => {
-	it('should update the toggle when "Lerntagebuch aktivieren" is pressed', async () => {
+	it("should update the toggle when save is pressed", async () => {
+		const mockOnSubmit = jest.fn();
 		const mockOnClose = jest.fn();
 
 		const { getByText } = render(
-			<EnableLearningDiaryDialog onClose={mockOnClose} onSubmit={() => {}} />
+			<EnableLearningDiaryDialog onClose={mockOnClose} onSubmit={mockOnSubmit} />
 		);
 
-		const activateButton = getByText("Lerntagebuch aktivieren");
+		const activateButton = getByText("Speichern & Aktivieren");
 		fireEvent.click(activateButton);
 
 		await waitFor(() => {
-			expect(mockMutateAsync).toHaveBeenCalledWith({
-				user: {
-					enabledLearningStatistics: true,
-					enabledFeatureLearningDiary: true
-				}
+			expect(mockOnSubmit).toHaveBeenCalledWith({
+				enabledLearningStatistics: true,
+				enabledFeatureLearningDiary: true
 			});
 		});
-
-		expect(mockOnClose).toHaveBeenCalled();
 	});
 
-	it('should call onSubmit when the "Lerntagebuch aktivieren" button is pressed', async () => {
+	it("should call onSubmit & onClose when the save button is pressed", async () => {
 		const mockOnClose = jest.fn();
 		const mockOnSubmit = jest.fn();
 
@@ -50,17 +31,8 @@ describe("EnableLearningDiaryDialog", () => {
 			<EnableLearningDiaryDialog onClose={mockOnClose} onSubmit={mockOnSubmit} />
 		);
 
-		const activateButton = getByText("Lerntagebuch aktivieren");
+		const activateButton = getByText("Speichern & Aktivieren");
 		fireEvent.click(activateButton);
-
-		await waitFor(() => {
-			expect(mockMutateAsync).toHaveBeenCalledWith({
-				user: {
-					enabledLearningStatistics: true,
-					enabledFeatureLearningDiary: true
-				}
-			});
-		});
 
 		expect(mockOnSubmit).toHaveBeenCalled();
 		expect(mockOnClose).toHaveBeenCalled();

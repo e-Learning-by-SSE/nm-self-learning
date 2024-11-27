@@ -1,4 +1,3 @@
-import { trpc } from "@self-learning/api-client";
 import { FeatureSettingsForm } from "@self-learning/settings";
 import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
@@ -16,7 +15,6 @@ export function EnableLearningDiaryDialog({
 	onClose: OnDialogCloseFn<EditFeatureSettings>;
 	onSubmit: OnDialogCloseFn<EditFeatureSettings>;
 }) {
-	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
 	const settingSuggestion: EditFeatureSettings = {
 		enabledLearningStatistics: true,
 		enabledFeatureLearningDiary: true
@@ -32,9 +30,8 @@ export function EnableLearningDiaryDialog({
 	};
 
 	const save = async () => {
-		await updateSettings({ user: { ...settingSuggestion } });
-		onSubmit();
-		onClose();
+		onSubmit(settingSuggestion);
+		onClose(settingSuggestion);
 	};
 
 	return (

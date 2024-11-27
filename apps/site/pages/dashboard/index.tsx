@@ -21,7 +21,7 @@ import {
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useReducer } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -214,23 +214,56 @@ export default function Start(props: Props) {
 	return <DashboardPage {...props} />;
 }
 
+type LtbState = {
+	enabled: boolean;
+	dialogOpen: boolean;
+};
+
+type LtbFeatureAction =
+	| { type: "TOGGLE_LTB"; enabled: boolean }
+	| { type: "OPEN_DIALOG" }
+	| { type: "CLOSE_DIALOG" };
+
+function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
+	switch (action.type) {
+		case "TOGGLE_LTB":
+			return { ...state, enabled: action.enabled };
+		case "OPEN_DIALOG":
+			return { ...state, dialogOpen: true };
+		case "CLOSE_DIALOG":
+			return { ...state, dialogOpen: false };
+		default:
+			return state;
+	}
+}
+
 function DashboardPage(props: Props) {
 	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
-	const [enableLTBDialog, setOpenLTBDialog] = useState(false);
-	const [ltbEnabled, setLtbEnabled] = useState(props.student.user.enabledFeatureLearningDiary);
 	const router = useRouter();
+	const [ltb, dispatch] = useReducer(ltbReducer, {
+		dialogOpen: false,
+		enabled: props.student.user.enabledFeatureLearningDiary
+	});
 
 	const openSettings = () => {
 		router.push("/user-settings");
 	};
 
 	const handleClickLtbToggle = async () => {
-		if (ltbEnabled) {
+		if (ltb.enabled) {
 			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
-			setLtbEnabled(false);
+			dispatch({ type: "TOGGLE_LTB", enabled: false });
 		} else {
-			setOpenLTBDialog(true);
+			dispatch({ type: "OPEN_DIALOG" });
 		}
+	};
+
+	const handleDialogSubmit: Parameters<
+		typeof EnableLearningDiaryDialog
+	>[0]["onSubmit"] = async update => {
+		await updateSettings({ user: { ...update } });
+		dispatch({ type: "TOGGLE_LTB", enabled: true });
+		dispatch({ type: "CLOSE_DIALOG" });
 	};
 
 	return (
@@ -273,7 +306,7 @@ function DashboardPage(props: Props) {
 						<div className="flex items-end justify-end">
 							<Toggle
 								label="Lerntagebuch"
-								value={ltbEnabled}
+								value={ltb.enabled}
 								onChange={handleClickLtbToggle}
 							/>
 						</div>
@@ -295,7 +328,7 @@ function DashboardPage(props: Props) {
 					</div>
 
 					<div className="rounded bg-white p-4 shadow">
-						{ltbEnabled ? (
+						{ltb.enabled ? (
 							<>
 								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
 								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
@@ -314,7 +347,7 @@ function DashboardPage(props: Props) {
 						imageElement={<TutorialSvg />}
 						title="Kursübersicht"
 					/>
-					{ltbEnabled && (
+					{ltb.enabled && (
 						<>
 							<Card
 								href="/learning-diary"
@@ -338,10 +371,10 @@ function DashboardPage(props: Props) {
 				</div>
 			</CenteredSection>
 			<DialogHandler id="studentSettingsDialogDashboard" />
-			{enableLTBDialog && (
+			{ltb.dialogOpen && (
 				<EnableLearningDiaryDialog
-					onClose={_ => setOpenLTBDialog(false)}
-					onSubmit={() => setLtbEnabled(true)}
+					onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
+					onSubmit={handleDialogSubmit}
 				/>
 			)}
 		</div>
