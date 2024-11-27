@@ -10,7 +10,7 @@ import { AppProps } from "next/app";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import superjson from "superjson";
-import { GlobalFeatures } from "./_features";
+import { GlobalFeatures } from "../../_features";
 import "./styles.css";
 
 export default withTRPC<AppRouter>({

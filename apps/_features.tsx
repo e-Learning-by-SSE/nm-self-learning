@@ -7,6 +7,8 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 
+// TODO find a better place for this file - should be easy if we migrate to app router.
+
 export function GlobalFeatures() {
 	useMatomo();
 	return (
