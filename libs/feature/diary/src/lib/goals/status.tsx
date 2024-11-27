@@ -93,9 +93,6 @@ export function GoalStatus({
 	// Do not allow sub goals to be changed if top level goal is completed
 	const subGoalDisabled = !editable || (subGoal && goal && goal.status === "COMPLETED");
 	const disabled = subGoal ? subGoalDisabled : goalDisabled;
-	if (!editable && !subGoal) {
-		console.log("Goal:", goal.description, "Status:", goal.status);
-	}
 
 	return (
 		<div className="relative flex flex-col items-center">
