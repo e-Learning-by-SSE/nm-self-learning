@@ -98,7 +98,7 @@ function migrateData(migration: string, migrationApplied: boolean) {
 		execSync(`npx prisma generate`);
 		try {
 			// Execute the data migration in a separate process (to support alternative versions of Prisma Client)
-			execSync(`npx ts-node --esm --skipProject ${dataMigrationFile}`);
+			execSync(`npx tsx ${dataMigrationFile}`);
 			return true;
 		} catch (error) {
 			console.error(`⮡ Data migration ${error}failed.${normal}`);

@@ -12,7 +12,7 @@ import {
 	Toggle
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { TutorialSvg } from "@self-learning/ui/static";
+import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
 import {
 	formatDateAgo,
 	formatDateStringShort,
@@ -344,26 +344,26 @@ function DashboardPage(props: Props) {
 				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
 					<Card
 						href="/dashboard/courseOverview"
-						imageElement={<TutorialSvg />}
+						imageElement={<OverviewSvg />}
 						title="Kursübersicht"
 					/>
 					{ltb.enabled && (
 						<>
 							<Card
 								href="/learning-diary"
-								imageElement={<TutorialSvg />}
+								imageElement={<MarketingSvg />}
 								title="Lerntagebucheinträge verwalten"
 							/>
 
 							<Card
 								href="/learning-diary"
-								imageElement={<TutorialSvg />}
+								imageElement={<ProgressSvg />}
 								title="Übersicht des Lerntagebuchs"
 							/>
 
 							<Card
 								href="/learning-diary/goals"
-								imageElement={<TutorialSvg />}
+								imageElement={<TargetSvg />}
 								title="Lernziele verwalten"
 							/>
 						</>

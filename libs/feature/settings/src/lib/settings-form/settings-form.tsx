@@ -79,7 +79,7 @@ export function FeatureSettingsForm({
 				/>
 
 				<ExpandableSettingsSection
-					text="Erfassung und Speicherung von Sitzungsdaten zur Auswertung des persönlichen Lernverhalten"
+					text="Erfassung und Speicherung von Sitzungsdaten zur Auswertung des persönlichen Lernverhaltens"
 					title="Check this for learning statistics"
 				>
 					<p>
@@ -89,7 +89,7 @@ export function FeatureSettingsForm({
 					</p>
 					<ul className="list-disc list-inside space-y-2">
 						<li>
-							Aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern
+							aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern
 						</li>
 						<li>Starten, pausieren und anhalten von Videos</li>
 						<li>Abgabeversuche von Lernzielkontrollen</li>
@@ -165,7 +165,7 @@ function ExpandableSettingsSection({
 		setIsExpanded(!isExpanded);
 	};
 
-	const btnClass = "mt-2 text-blue-500 hover:underline" + (isExpanded ? "" : " px-2");
+	const btnClass = "text-blue-500 hover:underline" + (isExpanded ? "" : " px-2");
 
 	return (
 		<section className="mt-5 rounded-lg bg-white p-3.5">

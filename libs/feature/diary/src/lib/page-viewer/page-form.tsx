@@ -41,10 +41,12 @@ function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | u
 			pageDetails.learningGoals?.map(goal => ({
 				id: goal.id,
 				description: goal.description,
+				status: goal.status,
 				learningSubGoals: goal.learningSubGoals.map(subGoal => ({
 					id: subGoal.id,
 					description: subGoal.description,
 					priority: subGoal.priority,
+					status: subGoal.status,
 					learningGoalId: goal.id // rename
 				}))
 			})) ?? undefined,
@@ -56,6 +58,7 @@ function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | u
 				learningDiaryEntryId: pageDetails.id // rename
 			})) ?? undefined
 	} satisfies LearningDiaryPageInput;
+
 	return learningDiaryPageSchema.parse(inputType); // parse to add defaults
 }
 
@@ -195,13 +198,13 @@ export function DiaryContentForm({
 		// should not happen since we are fetching the pages in SSR and return 404 if not found
 		return null;
 	}
+
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-center">
 				<DiaryLearnedContent page={pageDetails} endDate={endDate} />
 			</div>
 			<Divider />
-
 			<div className="flex justify-end">
 				<Tooltip content={"Wechselt zwischen der normalen und der kompakten Ansicht."}>
 					<button onClick={toggleCompactView}>
@@ -213,7 +216,6 @@ export function DiaryContentForm({
 					</button>
 				</Tooltip>
 			</div>
-
 			<FormProvider {...form}>
 				<form className=" space-y-6 xl:space-y-4">
 					<div
