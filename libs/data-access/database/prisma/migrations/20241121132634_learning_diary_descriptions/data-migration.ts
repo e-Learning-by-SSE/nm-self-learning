@@ -1,7 +1,15 @@
 import { PrismaClient } from "@prisma/client";
-import { LearningStrategyCategory } from "../../src/lib/seed-functions";
 
 const prisma = new PrismaClient();
+
+export type LearningStrategyCategory = {
+	strategyName: string;
+	strategyDescription: string;
+	techniques: {
+		name: string;
+		description: string;
+	}[];
+};
 
 const data: LearningStrategyCategory[] = [
 	{
