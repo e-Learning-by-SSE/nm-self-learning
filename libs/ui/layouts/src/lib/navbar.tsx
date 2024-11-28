@@ -1,16 +1,4 @@
-import {
-	AcademicCapIcon,
-	UserIcon,
-	Bars4Icon,
-	XMarkIcon,
-	ArrowRightStartOnRectangleIcon,
-	WrenchIcon
-} from "@heroicons/react/24/outline";
-import { ChevronDownIcon, RectangleGroupIcon, StarIcon } from "@heroicons/react/24/solid";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
-import { Fragment, useCallback, useEffect, useState } from "react";
+"use client";
 import {
 	Disclosure,
 	DisclosureButton,
@@ -21,9 +9,25 @@ import {
 	MenuItems,
 	Transition
 } from "@headlessui/react";
-import { SearchBar } from "./search-bar";
+import {
+	AcademicCapIcon,
+	AdjustmentsHorizontalIcon,
+	ArrowRightStartOnRectangleIcon,
+	Bars4Icon,
+	PencilSquareIcon,
+	UserIcon,
+	WrenchIcon,
+	XMarkIcon
+} from "@heroicons/react/24/outline";
+import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
+import { Divider } from "@self-learning/ui/common";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
+import { Fragment, useCallback, useEffect, useState } from "react";
+import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
+import { SearchBar } from "./search-bar";
 
 export function Navbar() {
 	const session = useSession();
@@ -86,9 +90,11 @@ export function Navbar() {
 												<StarIcon className="h-5 text-secondary" />
 											</span>
 										)}
-										<span className="invisible w-0 text-sm lg:visible lg:w-fit">
-											{user.name}
-										</span>
+										<Link href="/dashboard">
+											<span className="invisible w-0 text-sm lg:visible lg:w-fit">
+												{user.name}
+											</span>
+										</Link>
 										<NavbarDropdownMenu
 											avatarUrl={user.avatarUrl}
 											isAuthor={user.isAuthor}
@@ -223,21 +229,6 @@ export function NavbarDropdownMenu({
 					as="div"
 					className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 				>
-					{isAdmin && (
-						<MenuItem as="div" className="p-1">
-							{({ focus }) => (
-								<Link
-									href="/admin"
-									className={`${
-										focus ? "bg-emerald-500 text-white" : ""
-									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
-								>
-									<RectangleGroupIcon className="h-5" />
-									<span>Adminbereich</span>
-								</Link>
-							)}
-						</MenuItem>
-					)}
 					<MenuItem as="div" className="p-1">
 						{({ focus }) => (
 							<Link
@@ -251,6 +242,22 @@ export function NavbarDropdownMenu({
 							</Link>
 						)}
 					</MenuItem>
+					<MenuItem as="div" className="p-1">
+						{({ focus }) => (
+							<Link
+								href="/user-settings"
+								className={`${
+									focus ? "bg-emerald-500 text-white" : ""
+								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+							>
+								<AdjustmentsHorizontalIcon className="h-5" />
+								<span>Einstellungen</span>
+							</Link>
+						)}
+					</MenuItem>
+					<MenuItem as="div" className="p-1">
+						<Divider />
+					</MenuItem>
 					{isAuthor && (
 						<MenuItem as="div" className="p-1">
 							{({ focus }) => (
@@ -260,25 +267,28 @@ export function NavbarDropdownMenu({
 										focus ? "bg-emerald-500 text-white" : ""
 									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
 								>
-									<AcademicCapIcon className="h-5" />
-									<span>Autoren - Profil</span>
+									<PencilSquareIcon className="h-5" />
+									<span>Autorenbereich</span>
 								</Link>
 							)}
 						</MenuItem>
 					)}
-					<MenuItem as="div" className="p-1">
-						{({ focus }) => (
-							<Link
-								href="/user-settings"
-								className={`${
-									focus ? "bg-emerald-500 text-white" : ""
-								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
-							>
-								<WrenchIcon className="h-5" />
-								<span>Einstellungen</span>
-							</Link>
-						)}
-					</MenuItem>
+
+					{isAdmin && (
+						<MenuItem as="div" className="p-1">
+							{({ focus }) => (
+								<Link
+									href="/admin"
+									className={`${
+										focus ? "bg-emerald-500 text-white" : ""
+									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+								>
+									<WrenchIcon className="h-5" />
+									<span>Adminbereich</span>
+								</Link>
+							)}
+						</MenuItem>
+					)}
 					<MenuItem as="div" className="p-1">
 						{({ focus }) => (
 							<button

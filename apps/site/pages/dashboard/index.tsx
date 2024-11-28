@@ -1,40 +1,27 @@
-import { CogIcon, CheckIcon } from "@heroicons/react/24/solid";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { getAuthenticatedUser } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { StudentSettingsDialog } from "@self-learning/settings";
+import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 import {
 	Card,
-	Dialog,
-	DialogActions,
 	DialogHandler,
-	dispatchDialog,
-	freeDialog,
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	OnDialogCloseFn,
-	showToast,
 	Toggle
 } from "@self-learning/ui/common";
-import { LabeledField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
 import {
 	formatDateAgo,
 	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
-import { TRPCClientError } from "@trpc/client";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { StudentSettings } from "@self-learning/types";
-import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
-import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import { useReducer } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -63,12 +50,13 @@ function getStudent(username: string) {
 					completedLessons: true
 				}
 			},
-			settings: true,
 			user: {
 				select: {
 					displayName: true,
 					name: true,
-					image: true
+					image: true,
+					enabledFeatureLearningDiary: true,
+					enabledLearningStatistics: true
 				}
 			},
 			completedLessons: {
@@ -226,37 +214,56 @@ export default function Start(props: Props) {
 	return <DashboardPage {...props} />;
 }
 
+type LtbState = {
+	enabled: boolean;
+	dialogOpen: boolean;
+};
+
+type LtbFeatureAction =
+	| { type: "TOGGLE_LTB"; enabled: boolean }
+	| { type: "OPEN_DIALOG" }
+	| { type: "CLOSE_DIALOG" };
+
+function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
+	switch (action.type) {
+		case "TOGGLE_LTB":
+			return { ...state, enabled: action.enabled };
+		case "OPEN_DIALOG":
+			return { ...state, dialogOpen: true };
+		case "CLOSE_DIALOG":
+			return { ...state, dialogOpen: false };
+		default:
+			return state;
+	}
+}
+
 function DashboardPage(props: Props) {
-	const [editStudentDialog, setEditStudentDialog] = useState(false);
-	const [studentSettings, setStudentSettings] = useState<StudentSettings>({
-		hasLearningDiary: props.student.settings?.hasLearningDiary ?? false,
-		learningStatistics: props.student.settings?.learningStatistics ?? false
-	});
-	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
+	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
 	const router = useRouter();
+	const [ltb, dispatch] = useReducer(ltbReducer, {
+		dialogOpen: false,
+		enabled: props.student.user.enabledFeatureLearningDiary
+	});
 
-	const onEditStudentClose: Parameters<
-		typeof EditStudentDialog
-	>[0]["onClose"] = async updated => {
-		setEditStudentDialog(false);
+	const openSettings = () => {
+		router.push("/user-settings");
+	};
 
-		if (updated) {
-			try {
-				await updateStudent(updated);
-				showToast({
-					type: "success",
-					title: "Informationen aktualisiert",
-					subtitle: updated.user.displayName
-				});
-				router.replace(router.asPath);
-			} catch (error) {
-				console.error(error);
-
-				if (error instanceof TRPCClientError) {
-					showToast({ type: "error", title: "Fehler", subtitle: error.message });
-				}
-			}
+	const handleClickLtbToggle = async () => {
+		if (ltb.enabled) {
+			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
+			dispatch({ type: "TOGGLE_LTB", enabled: false });
+		} else {
+			dispatch({ type: "OPEN_DIALOG" });
 		}
+	};
+
+	const handleDialogSubmit: Parameters<
+		typeof EnableLearningDiaryDialog
+	>[0]["onSubmit"] = async update => {
+		await updateSettings({ user: { ...update } });
+		dispatch({ type: "TOGGLE_LTB", enabled: true });
+		dispatch({ type: "CLOSE_DIALOG" });
 	};
 
 	return (
@@ -283,13 +290,6 @@ function DashboardPage(props: Props) {
 								abgeschlossen.
 							</span>
 						</div>
-
-						{editStudentDialog && (
-							<EditStudentDialog
-								student={{ user: { displayName: props.student.user.displayName } }}
-								onClose={onEditStudentClose}
-							/>
-						)}
 					</section>
 
 					<div className="grid grid-rows-2">
@@ -297,17 +297,17 @@ function DashboardPage(props: Props) {
 							<button
 								className="rounded-full p-2 hover:bg-gray-100"
 								title="Bearbeiten"
-								onClick={() => setEditStudentDialog(true)}
+								onClick={openSettings}
 							>
 								<CogIcon className="h-6 text-gray-500" />
 							</button>
 						</div>
 
 						<div className="flex items-end justify-end">
-							<TagebuchToggle
-								onChange={value => {
-									setStudentSettings(value);
-								}}
+							<Toggle
+								label="Lerntagebuch"
+								value={ltb.enabled}
+								onChange={handleClickLtbToggle}
 							/>
 						</div>
 					</div>
@@ -328,8 +328,7 @@ function DashboardPage(props: Props) {
 					</div>
 
 					<div className="rounded bg-white p-4 shadow">
-						{studentSettings?.hasLearningDiary &&
-						studentSettings?.learningStatistics ? (
+						{ltb.enabled ? (
 							<>
 								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
 								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
@@ -348,7 +347,7 @@ function DashboardPage(props: Props) {
 						imageElement={<OverviewSvg />}
 						title="Kursübersicht"
 					/>
-					{studentSettings?.hasLearningDiary && (
+					{ltb.enabled && (
 						<>
 							<Card
 								href="/learning-diary"
@@ -372,44 +371,13 @@ function DashboardPage(props: Props) {
 				</div>
 			</CenteredSection>
 			<DialogHandler id="studentSettingsDialogDashboard" />
-		</div>
-	);
-}
-
-function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => void }) {
-	const { data: studentSettings, isLoading, refetch } = trpc.settings.getMySetting.useQuery();
-	const hasLearningDiary = studentSettings?.hasLearningDiary || false;
-	const hasLearningStatistics = studentSettings?.learningStatistics || false;
-
-	return (
-		<>
-			{!isLoading && (
-				<Toggle
-					value={hasLearningDiary && hasLearningStatistics}
-					onChange={() => {
-						dispatchDialog(
-							<StudentSettingsDialog
-								initialSettings={{
-									hasLearningDiary: false,
-									learningStatistics: false,
-									...studentSettings
-								}}
-								onClose={value => {
-									refetch();
-									onChange({
-										hasLearningDiary: value.hasLearningDiary,
-										learningStatistics: value.learningStatistics
-									});
-									freeDialog("studentSettingsDialogDashboard");
-								}}
-							/>,
-							"studentSettingsDialogDashboard"
-						);
-					}}
-					label="Lerntagebuch"
+			{ltb.dialogOpen && (
+				<EnableLearningDiaryDialog
+					onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
+					onSubmit={handleDialogSubmit}
 				/>
 			)}
-		</>
+		</div>
 	);
 }
 
@@ -569,44 +537,5 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 				</Link>
 			)}
 		</div>
-	);
-}
-
-const editStudentSchema = z.object({
-	user: z.object({ displayName: z.string().min(3).max(50) })
-});
-
-type EditStudent = z.infer<typeof editStudentSchema>;
-
-function EditStudentDialog({
-	student,
-	onClose
-}: {
-	student: EditStudent;
-	onClose: OnDialogCloseFn<EditStudent>;
-}) {
-	const form = useForm({
-		defaultValues: student,
-		resolver: zodResolver(editStudentSchema)
-	});
-
-	return (
-		<Dialog title={student.user.displayName} onClose={onClose}>
-			<form onSubmit={form.handleSubmit(onClose)}>
-				<LabeledField label="Name" error={form.formState.errors.user?.displayName?.message}>
-					<input
-						{...form.register("user.displayName")}
-						type="text"
-						className="textfield"
-					/>
-				</LabeledField>
-
-				<DialogActions onClose={onClose}>
-					<button className="btn-primary" disabled={!form.formState.isValid}>
-						Speichern
-					</button>
-				</DialogActions>
-			</form>
-		</Dialog>
 	);
 }

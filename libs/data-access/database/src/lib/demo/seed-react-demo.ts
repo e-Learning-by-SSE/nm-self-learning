@@ -415,6 +415,8 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		displayName: "Albus Dumbledore",
 		role: "ADMIN",
 		image: "https://i.imgur.com/UWMVO8m.jpeg",
+		enabledFeatureLearningDiary: false,
+		enabledLearningStatistics: true,
 		accounts: {
 			create: [
 				{

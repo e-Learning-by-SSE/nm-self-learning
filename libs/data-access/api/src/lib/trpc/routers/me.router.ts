@@ -1,7 +1,7 @@
 import { database } from "@self-learning/database";
-import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { findLessons } from "./lesson.router";
+import { editUserSettingsSchema } from "@self-learning/types";
 import { randomUUID } from "crypto";
 
 export const meRouter = t.router({
@@ -92,27 +92,46 @@ export const meRouter = t.router({
 
 		return result;
 	}),
-	updateStudent: authProcedure
-		.input(
-			z.object({
-				user: z.object({
-					displayName: z.string().min(3).max(50)
-				})
-			})
-		)
-		.mutation(async ({ ctx, input }) => {
-			const updated = await database.user.update({
-				where: { name: ctx.user.name },
-				data: {
-					displayName: input.user.displayName
-				},
-				select: {
-					name: true,
-					displayName: true
+	updateSettings: authProcedure.input(editUserSettingsSchema).mutation(async ({ ctx, input }) => {
+		await database.$transaction(async tx => {
+			const dbSettings = await tx.user.findUnique({
+				where: {
+					name: ctx.user.name
 				}
 			});
+			const { user } = input;
+			if (
+				(user &&
+					dbSettings?.enabledFeatureLearningDiary !== user.enabledFeatureLearningDiary) ??
+				dbSettings?.enabledFeatureLearningDiary
+			) {
+				await tx.eventLog.create({
+					data: {
+						type: "LTB_TOGGLE",
+						payload: { enabled: user!.enabledFeatureLearningDiary },
+						username: ctx.user.name,
+						resourceId: ctx.user.name
+					}
+				});
+			}
+			const updateData = Object.fromEntries(
+				Object.entries(user ?? {}).filter(([_, value]) => value !== undefined)
+			);
 
-			console.log("[meRouter.updateStudent] Student updated", updated);
-			return updated;
-		})
+			return await tx.user.update({
+				where: {
+					name: ctx.user.name
+				},
+				data: updateData
+			});
+		});
+	}),
+	registrationStatus: authProcedure.query(async ({ ctx }) => {
+		return await database.user.findUnique({
+			where: { name: ctx.user.name },
+			select: {
+				registrationCompleted: true
+			}
+		});
+	})
 });

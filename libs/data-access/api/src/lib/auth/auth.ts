@@ -225,7 +225,9 @@ export const authOptions: NextAuthOptions = {
 					id: true,
 					role: true,
 					image: true,
-					author: { select: { username: true } }
+					author: { select: { username: true } },
+					enabledFeatureLearningDiary: true,
+					enabledLearningStatistics: true
 				}
 			});
 
@@ -238,7 +240,9 @@ export const authOptions: NextAuthOptions = {
 						id: true,
 						role: true,
 						image: true,
-						author: { select: { username: true } }
+						author: { select: { username: true } },
+						enabledFeatureLearningDiary: true,
+						enabledLearningStatistics: true
 					}
 				});
 			} else if (userFromDb.role !== "ADMIN" && token["isAdmin"] === true) {
@@ -250,7 +254,9 @@ export const authOptions: NextAuthOptions = {
 						id: true,
 						role: true,
 						image: true,
-						author: { select: { username: true } }
+						author: { select: { username: true } },
+						enabledFeatureLearningDiary: true,
+						enabledLearningStatistics: true
 					}
 				});
 			}
@@ -260,7 +266,9 @@ export const authOptions: NextAuthOptions = {
 				name: username,
 				role: userFromDb.role,
 				isAuthor: !!userFromDb.author,
-				avatarUrl: userFromDb.image
+				avatarUrl: userFromDb.image,
+				enabledLearningStatistics: userFromDb.enabledLearningStatistics,
+				enabledFeatureLearningDiary: userFromDb.enabledFeatureLearningDiary
 			};
 
 			return session;
