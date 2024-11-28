@@ -113,7 +113,12 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	return preferredMediaType;
 }
 
-export default function Lesson({ lesson, course, markdown }: LessonProps) {
+export default function LessonPage({ lesson, course, markdown }: LessonProps) {
+	// Specify key property to reset page when a new lesson is loaded
+	return <Lesson lesson={lesson} course={course} markdown={markdown} key={lesson.lessonId} />;
+}
+
+function Lesson({ lesson, course, markdown }: LessonProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
@@ -181,7 +186,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	);
 }
 
-Lesson.getLayout = LessonLayout;
+LessonPage.getLayout = LessonLayout;
 
 function LessonHeader({
 	course,
