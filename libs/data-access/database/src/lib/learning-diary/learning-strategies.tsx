@@ -5,8 +5,8 @@ export async function seedStrategiesAndTechniques() {
 
 	const data: LearningStrategyCategory[] = [
 		{
-			strategieName: "Wiederholung (Kognition)",
-			strategieDescription: `
+			strategyName: "Wiederholung (Kognition)",
+			strategyDescription: `
 Wiederholungsstrategien sind kognitive Lernstrategien, bei denen Inhalte wiederholt und reflektiert werden, um sie langfristig zu speichern.  
 [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/was-sollte-man-waehrend-des-lernens-beachten/wiederholungsstrategien)
             `,
@@ -48,8 +48,8 @@ Wiederholungsstrategien sind kognitive Lernstrategien, bei denen Inhalte wiederh
 			]
 		},
 		{
-			strategieName: "Elaboration (Kognition)",
-			strategieDescription: `
+			strategyName: "Elaboration (Kognition)",
+			strategyDescription: `
 Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informationen mit bereits bekanntem Wissen verbindet, um sie zu verstehen und zu speichern.  
 [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/was-sollte-man-waehrend-des-lernens-beachten/elaborationsstrategien)`,
 			techniques: [
@@ -70,8 +70,8 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 			]
 		},
 		{
-			strategieName: "Organisation (Kognition)",
-			strategieDescription: `Organisationsstrategien sind kognitive Lernstrategien, bei denen man neue Informationen in einem geordneten und strukturierten System speichert, um sie leichter wiederzuerkennen und abrufen zu können.  
+			strategyName: "Organisation (Kognition)",
+			strategyDescription: `Organisationsstrategien sind kognitive Lernstrategien, bei denen man neue Informationen in einem geordneten und strukturierten System speichert, um sie leichter wiederzuerkennen und abrufen zu können.  
 [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/was-sollte-man-waehrend-des-lernens-beachten/organisationsstrategien)`,
 			techniques: [
 				{
@@ -91,8 +91,8 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 			]
 		},
 		{
-			strategieName: "Planung (Metakognition)",
-			strategieDescription: `Metakognitive Planungsstrategien sind Lernstrategien, bei denen man vor dem Lernen einen Plan erstellt, um Ziele zu setzen, Aufgaben zu priorisieren und den Lernprozess zu organisieren.  
+			strategyName: "Planung (Metakognition)",
+			strategyDescription: `Metakognitive Planungsstrategien sind Lernstrategien, bei denen man vor dem Lernen einen Plan erstellt, um Ziele zu setzen, Aufgaben zu priorisieren und den Lernprozess zu organisieren.  
 [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/was-sollte-man-waehrend-des-lernens-beachten/organisationsstrategien)`,
 			techniques: [
 				{
@@ -144,8 +144,8 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 			]
 		},
 		{
-			strategieName: "Überwachung (Metakognition)",
-			strategieDescription: `Metakognitive Überwachungsstrategien sind Lernstrategien, bei denen man während des Lernens über den eigenen Lernprozess reflektiert, um zu überprüfen, ob Ziele erreicht werden, welche Schwierigkeiten auftreten und wie man sie überwinden kann.  
+			strategyName: "Überwachung (Metakognition)",
+			strategyDescription: `Metakognitive Überwachungsstrategien sind Lernstrategien, bei denen man während des Lernens über den eigenen Lernprozess reflektiert, um zu überprüfen, ob Ziele erreicht werden, welche Schwierigkeiten auftreten und wie man sie überwinden kann.  
 [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/was-sollte-man-waehrend-des-lernens-beachten/metakognitive-strategien)`,
 			techniques: [
 				{
@@ -183,8 +183,8 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 			]
 		},
 		{
-			strategieName: "Bewertung (Metakognition)",
-			strategieDescription: `Metakognitive Bewertungsstrategien sind Lernstrategien, bei denen man nach dem Lernen über die eigenen Leistungen reflektiert, um zu bewerten, ob Ziele erreicht wurden, welche Stärken und Schwächen vorhanden sind und wie man sich verbessern kann.  
+			strategyName: "Bewertung (Metakognition)",
+			strategyDescription: `Metakognitive Bewertungsstrategien sind Lernstrategien, bei denen man nach dem Lernen über die eigenen Leistungen reflektiert, um zu bewerten, ob Ziele erreicht wurden, welche Stärken und Schwächen vorhanden sind und wie man sich verbessern kann.  
 [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/was-sollte-man-beim-abschluss-des-lernenprozesses-beachten/inhalte-und-ablaeufe-der-postaktionalen-phase-im-detail)`,
 			techniques: [
 				{ name: "Selbstreflexion", description: "**Bewertung:** Selbstreflexion" },
@@ -229,8 +229,8 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 			]
 		},
 		{
-			strategieName: "Ressourcenmanagement",
-			strategieDescription: `Ressourcenmanagementstrategien sind Lernstrategien, bei denen man die eigenen kognitiven, emotionalen und zeitlichen Ressourcen bewusst einsetzt, um den Lernprozess zu optimieren und Hindernisse zu überwinden.  
+			strategyName: "Ressourcenmanagement",
+			strategyDescription: `Ressourcenmanagementstrategien sind Lernstrategien, bei denen man die eigenen kognitiven, emotionalen und zeitlichen Ressourcen bewusst einsetzt, um den Lernprozess zu optimieren und Hindernisse zu überwinden.  
 [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/was-sollte-man-waehrend-des-lernens-beachten/ressourcenmanagement)`,
 			techniques: [
 				{
@@ -271,8 +271,8 @@ Elaborationsstrategien sind kognitive Lernstrategien, bei denen man neue Informa
 			]
 		},
 		{
-			strategieName: "Motivation",
-			strategieDescription: `Motivationale Strategien sind Lernstrategien, bei denen man sich selbst motiviert, indem man Ziele setzt, sich selbst belohnt, die eigenen Stärken und Schwächen erkennt und sich auf die Herausforderungen des Lernprozesses einstellt.  
+			strategyName: "Motivation",
+			strategyDescription: `Motivationale Strategien sind Lernstrategien, bei denen man sich selbst motiviert, indem man Ziele setzt, sich selbst belohnt, die eigenen Stärken und Schwächen erkennt und sich auf die Herausforderungen des Lernprozesses einstellt.  
 [Weitere Informationen](https://www.uni-hildesheim.de/selflearn/courses/wie-sollte-der-lernprozess-vorbereitet-werden/selbstmotivation)`,
 			techniques: [
 				{

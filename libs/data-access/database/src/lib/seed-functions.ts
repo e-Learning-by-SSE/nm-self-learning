@@ -506,20 +506,20 @@ export function getRandomTimeIntervalInMs(): number {
 }
 
 export type LearningStrategyCategory = {
-	strategieName: string;
-	strategieDescription: string;
+	strategyName: string;
+	strategyDescription: string;
 	techniques: {
 		name: string;
 		description: string;
-	}[]
-}
+	}[];
+};
 
 export async function createStrategiesAndTechniques(input: LearningStrategyCategory[]) {
 	for (const category of input) {
-		const strat = await prisma.learningStrategy.create({
+		const strategy = await prisma.learningStrategy.create({
 			data: {
-				name: category.strategieName,
-				description: category.strategieDescription
+				name: category.strategyName,
+				description: category.strategyDescription
 			}
 		});
 
@@ -529,7 +529,7 @@ export async function createStrategiesAndTechniques(input: LearningStrategyCateg
 					name: technique.name,
 					description: technique.description,
 					defaultTechnique: true,
-					strategy: { connect: { id: strat.id } }
+					strategy: { connect: { id: strategy.id } }
 				}
 			});
 		}
