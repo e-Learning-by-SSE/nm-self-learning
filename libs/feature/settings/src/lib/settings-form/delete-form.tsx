@@ -83,11 +83,12 @@ export function DeleteMeForm() {
 					}}
 					className="w-full max-w-52"
 				/>
+
 				<RedButton
 					label="Autorenprofil löschen"
 					onClick={() => {
 						dispatchDialog(
-							<StudentAllDeleteInfoDialog
+							<AuthorDeleteDialog
 								onClose={() => {
 									freeDialog("student-delete-form");
 									afterAllDeleteInfoDialog();
@@ -96,6 +97,7 @@ export function DeleteMeForm() {
 							"student-delete-form"
 						);
 					}}
+					disabled={!user.isAuthor}
 					className="w-full max-w-52"
 				/>
 			</div>
@@ -129,14 +131,14 @@ function DeleteMeDialog({
 			>
 				<CenteredContainer>
 					<div>
-						Bist du die sicher {user.name} zu löschen? Zum Bestätigen bitte den Namen
-						des Accounts eingeben.
+						Bist du dir sicher dass du dein Profil mit dem Namen {user.name} löschen
+						möchtest? Zum Bestätigen bitte den Namen des Accounts eingeben.
 					</div>
 					<div>
 						<input
 							className="textfield mt-5"
 							type="text"
-							placeholder={user.name ?? "Student's name"}
+							placeholder={user.name}
 							onChange={value => {
 								setUserTyped(value.target.value);
 							}}
@@ -150,18 +152,11 @@ function DeleteMeDialog({
 						}}
 					>
 						<button
-							className={`btn ${
-								userTyped !== user.name ? "disabled bg-red-500" : "bg-secondary"
-							}`}
-							onClick={() => {
-								const accepted = userTyped === user.name;
-								if (!accepted) {
-									return;
-								}
-								onClose(accepted);
-							}}
+							className={`btn-primary`}
+							disabled={userTyped !== user.name}
+							onClick={() => onClose(true)}
 						>
-							{userTyped !== user.name ? "Blockiert" : "OK"}
+							Löschen
 						</button>
 					</DialogActions>
 				</div>
@@ -231,7 +226,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
 									<p className="text-gray-600">
-										Learntagebuch, sowie alle Lernfortschritte werden gelöscht.
+										Lerntagebuch, sowie alle Lernfortschritte werden gelöscht.
 									</p>
 								</div>
 							</div>
@@ -263,7 +258,8 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
 									<p className="text-gray-600">
-										Dein Autorenprofil bleibt bestehen.
+										Dein Autorenprofil bleibt bestehen. Das beinhaltete deinen
+										angezeigten Autorennamen und dein Profilbild.
 									</p>
 								</div>
 							</div>
@@ -278,8 +274,8 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
 									<p className="text-gray-600">
-										Sämtliche erstellen Kurse und Lerneinheiten bleiben
-										erhalten. Das beinhaltet auch erstellte Skillrepositories.
+										Alle erstellen Kurse und Lerneinheiten. Das beinhaltet die
+										damit verbundenen Kompetenzen/Skills.
 									</p>
 								</div>
 							</div>
@@ -291,8 +287,11 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 							<div className="flex-1 rounded-lg border bg-slate-200 p-4 shadow">
 								<span className="text-gray-700">
 									<strong>Wichtig! </strong> <br />
-									Erstellte Kurse und Lerneinheiten bleiben erhalten. Möchtest du
-									diese löschen, klicke auf den Button "Alle Daten löschen".
+									Solltest du als Autor tätig gewesen sein, bleiben deine
+									erstellten Kurse und Lerneinheiten erhalten. Möchtest du diese
+									löschen, klicke auf den Button "Autorenprofil löschen". Wenn du
+									später dein Autorenprofil löschen möchtest, musst du dich an den
+									Systemadministrator wenden.
 								</span>
 							</div>
 						</div>
@@ -310,7 +309,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 	);
 }
 
-function StudentAllDeleteInfoDialog({ onClose }: { onClose: () => void }) {
+function AuthorDeleteDialog({ onClose }: { onClose: () => void }) {
 	return (
 		<CenteredContainer>
 			<Dialog
@@ -320,19 +319,17 @@ function StudentAllDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 					minHeight: "150px",
 					minWidth: "300px"
 				}}
-				title={"Delete Student"}
+				title={"Daten löschen"}
 				onClose={onClose}
 			>
 				<CenteredContainer>
 					<div className="flex flex-col items-center justify-center p-6 overflow-auto">
 						<p className="mb-4 text-lg font-semibold">
 							Es werden alle Daten inklusive der erstellen Kurse und Lerneinheiten
-							gelöscht.
+							gelöscht. Wenn nur deine Nutzerdaten löschen möchtest, klicke auf
+							"Nutzerdaten löschen".{" "}
 						</p>
-						<p className="text-md ">
-							Wenn nur deine Nutzerdaten löschen möchtest, klicke auf "Nutzerdaten
-							löschen".{" "}
-						</p>
+						<p className="text-md "></p>
 						<span className="text-red-300">
 							Diese Funktion steht aktuell nicht zur Verfügung. Wenden sie sich an den
 							Systemadministrator um ihre gesamten Daten zu löschen.

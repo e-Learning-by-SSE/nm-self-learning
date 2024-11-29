@@ -34,8 +34,11 @@ export function PersonalSettingsForm({
 				<input
 					type="email"
 					disabled
-					className="textfield"
-					value={personalSettings.email ?? ""}
+					className="textfield "
+					value={
+						personalSettings.email ??
+						"hier kannst du bald deine E-Mail Adresse hinterlegen"
+					}
 				/>
 			</LabeledField>
 
@@ -83,11 +86,12 @@ export function FeatureSettingsForm({
 					title="Check this for learning statistics"
 				>
 					<p>
-						Es werden alle Daten zum Lernverhalten erfasst und ausschließlich dir
-						zugänglich gemacht. Dabei werden nur jene Informationen erhoben, die für die
-						Nutzung unserer Plattform erforderlich sind. Dies umfasst unter anderem:
+						Mit dieser Einstellung analysieren wir dein Lernverhalten, um dir
+						individuelles Feedback zu geben und personalisierte Statistiken anzuzeigen.
+						Hierbei wird nur dein Lernverhalten auf dieser Plattform erfasst und
+						gespeichert. Beispielsweise werden dann folgende Information erfasst:
 					</p>
-					<ul className="list-disc list-inside space-y-2">
+					<ul className="list-disc list-inside space-y-2 ml-6">
 						<li>
 							aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern
 						</li>
@@ -96,29 +100,60 @@ export function FeatureSettingsForm({
 					</ul>
 					<p>
 						Diese Funktion dient deiner persönlichen Analyse und unterstützt dich dabei,
-						dein Lernverhalten zu optimieren. Sie wird zudem für das Lerntagebuch
-						benötigt, weitere Funktionen werden in Zukunft ergänzt. Darüber hinaus
-						werden die Daten in aggregierter und/oder anonymisierter Form den Lehrenden
-						zu Forschungszwecken sowie zur Verbesserung der Kurse bereitgestellt. Dabei
-						gilt:
-					</p>
-					<ul className="list-disc list-inside space-y-2">
-						<li>
-							Es werden Daten nur angezeigt wenn min. 10 Studierende am Kurs
-							teilgenommen haben, um die Anonymität zu gewährleisten.
-						</li>
-						<li>
-							Es werden Funktionen angeboten, die Nachfrage und den Umgang mit den
-							bereitgestellten Kursinhalten anzeigen.
-						</li>
-						<li>
-							Gegebenenfalls werden aggregierte und anonymisierte Daten für die
-							Forschung bereitgestellt.
-						</li>
-					</ul>
-					<p>
-						Es werden keine Daten an Dritte weitergegeben und du kannst jederzeit die
-						gesammelten Daten löschen.
+						dein Lernverhalten zu optimieren. Für die folgenden Zwecke werden diese
+						Daten verwendet:
+						<ul className="list-disc list-inside space-y-2 ml-6">
+							<li>
+								<span className="font-bold">
+									Anzeige von eigenen Lernstatistiken:
+								</span>
+								<span className="italic">
+									{" "}
+									Du wirst in Zukunft einen Abschnitt erhalten, in dem du deine
+									Informationen einsehen kannst.
+								</span>
+							</li>
+							<li>
+								<span className="font-bold">Optimierung der Lernplattform:</span>
+								<span className="italic">
+									{" "}
+									Wir verwenden die Informationen um unsere Plattform weiter zu
+									verbessern.
+								</span>
+							</li>
+							<li>
+								<span className="font-bold">Personalisierung der Lerninhalte:</span>
+								<span className="italic">
+									{" "}
+									Das Verhalten der Plattform verändert sich möglicherweise, um
+									dir ein besseres Erlebnis zu bieten.
+								</span>
+							</li>
+							<li>
+								<span className="font-bold">
+									Bereitstellung von Daten für Forschungszwecke:
+								</span>
+								<span className="italic">
+									{" "}
+									Diese Daten werden pseudo-anonymisiert für Forschungszwecke
+									verwendet.
+								</span>
+							</li>
+							<li>
+								<span className="font-bold">
+									Bereitstellung von aggregierten Daten für Lehrende:
+								</span>
+								<span className="italic">
+									{" "}
+									Lehrende erhalten aggregierte Daten mit Übersichten zu den
+									eigenen Kursen.
+								</span>
+							</li>
+						</ul>
+						Dabei gilt, dass wir deine Informationen gegenüber anderen stets vertraulich
+						behandeln und keine Rückschlüsse auf deine Person zulassen. Weiterhin werden
+						keine Daten an Dritte weitergegeben und du kannst die gesammelten Daten
+						jederzeit löschen.
 					</p>
 				</ExpandableSettingsSection>
 			</div>
