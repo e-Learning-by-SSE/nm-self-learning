@@ -4,6 +4,7 @@ import { FirstLoginDialog } from "@self-learning/settings";
 import { MessagePortal } from "@self-learning/ui/notifications";
 import { init } from "@socialgouv/matomo-next";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 
@@ -25,6 +26,7 @@ export function ControlledFirstLoginDialog() {
 	const { data, isLoading } = trpc.me.registrationStatus.useQuery(undefined, {
 		enabled: session.data?.user?.name !== undefined
 	});
+	const router = useRouter();
 	const [onboardingDialogClosed, setDialogClosed] = useState<boolean | null>(null);
 
 	if (isLoading) {
@@ -41,7 +43,14 @@ export function ControlledFirstLoginDialog() {
 		return null;
 	}
 
-	return <FirstLoginDialog onClose={() => setDialogClosed(true)} />;
+	return (
+		<FirstLoginDialog
+			onClose={() => {
+				setDialogClosed(true);
+				router.reload();
+			}}
+		/>
+	);
 }
 
 function ControlledMsgPortal() {
