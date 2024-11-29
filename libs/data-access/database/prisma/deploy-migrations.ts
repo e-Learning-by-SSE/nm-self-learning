@@ -93,6 +93,7 @@ function migrateData(migration: string, migrationApplied: boolean) {
 	const dataMigrationFile = join(migrationsPath, migration, dataMigration);
 	if (migrationApplied && existsSync(dataMigrationFile)) {
 		console.log(`⮡ Applying ${info}data migration${normal}`);
+
 		// Create a Prisma client based on current database schema
 		execSync(`npx prisma db pull`);
 		execSync(`npx prisma generate`);
@@ -141,7 +142,8 @@ function main() {
 		const { migrationApplied, result } = migrateDatabase(migration);
 
 		// Apply data migration if exists
-		dataMigrationApplied = dataMigrationApplied || migrateData(migration, migrationApplied);
+		const dataMigration = migrateData(migration, migrationApplied);
+		dataMigrationApplied = dataMigrationApplied || dataMigration;
 
 		if (i === migrations.length - 1) {
 			// Print log of last migration
