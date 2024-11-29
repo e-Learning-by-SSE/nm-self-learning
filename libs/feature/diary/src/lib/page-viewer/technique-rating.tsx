@@ -10,7 +10,7 @@ import { TileLayout } from "./input-tile";
 
 type Technique = {
 	name: string;
-	description: string;
+	description: string | null;
 	id: string;
 	score?: number;
 };
@@ -268,7 +268,7 @@ function CreateOwnTechniqueDialog({
 		trpc.learningTechniqueRating.createNewTechnique.useMutation();
 	const [selectedTechnique, setSelectedTechnique] = useState<Technique>({
 		name: "",
-		description: "",
+		description: null,
 		id: "",
 		score: 0
 	});
@@ -277,6 +277,7 @@ function CreateOwnTechniqueDialog({
 		if (selectedTechnique.name !== "") {
 			const newTechnique = await saveNewTechnique({
 				...selectedTechnique,
+				description: selectedTechnique.description ?? undefined,
 				learningStrategieId
 			});
 			onSubmit({ ...selectedTechnique, ...newTechnique });
@@ -349,7 +350,7 @@ function TechniqueRatingDialog({
 		>
 			<div className="flex flex-col justify-start items-start overflow-y-auto">
 				<div className="w-full max-w-md pb-5 text-l prose prose-emerald">
-					<MarkdownViewer content={selectedTechnique.description} />
+					<MarkdownViewer content={selectedTechnique.description ?? ""} />
 				</div>
 				<div className="">
 					<StarRating

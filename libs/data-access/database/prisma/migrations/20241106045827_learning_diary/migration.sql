@@ -49,12 +49,12 @@ CREATE TABLE "LearningLocation" (
 );
 
 -- CreateTable
-CREATE TABLE "LearningStrategie" (
+CREATE TABLE "LearningStrategy" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
 
-    CONSTRAINT "LearningStrategie_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "LearningStrategy_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -64,6 +64,7 @@ CREATE TABLE "LearningTechnique" (
     "creatorName" TEXT,
     "defaultTechnique" BOOLEAN NOT NULL DEFAULT false,
     "learningStrategieId" TEXT NOT NULL,
+    "description" TEXT,
 
     CONSTRAINT "LearningTechnique_pkey" PRIMARY KEY ("id")
 );
@@ -91,7 +92,7 @@ CREATE TABLE "LearningDiaryLearnedLessons" (
 -- CreateTable
 CREATE TABLE "LearningGoal" (
     "id" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
     "status" "LearningGoalStatus" NOT NULL DEFAULT 'INACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastProgressUpdate" TIMESTAMP(3),
@@ -104,7 +105,7 @@ CREATE TABLE "LearningGoal" (
 -- CreateTable
 CREATE TABLE "LearningSubGoal" (
     "id" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
     "status" "LearningGoalStatus" NOT NULL DEFAULT 'INACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastProgressUpdate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
@@ -140,7 +141,7 @@ CREATE TABLE "EventLog" (
 CREATE UNIQUE INDEX "LearningLocation_name_creatorName_key" ON "LearningLocation"("name", "creatorName");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LearningStrategie_name_key" ON "LearningStrategie"("name");
+CREATE UNIQUE INDEX "LearningStrategy_name_key" ON "LearningStrategy"("name");
 
 -- AddForeignKey
 ALTER TABLE "LearningDiaryPage" ADD CONSTRAINT "LearningDiaryPage_studentName_fkey" FOREIGN KEY ("studentName") REFERENCES "Student"("username") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -158,7 +159,7 @@ ALTER TABLE "LearningLocation" ADD CONSTRAINT "LearningLocation_creatorName_fkey
 ALTER TABLE "LearningTechnique" ADD CONSTRAINT "LearningTechnique_creatorName_fkey" FOREIGN KEY ("creatorName") REFERENCES "Student"("username") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LearningTechnique" ADD CONSTRAINT "LearningTechnique_learningStrategieId_fkey" FOREIGN KEY ("learningStrategieId") REFERENCES "LearningStrategie"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "LearningTechnique" ADD CONSTRAINT "LearningTechnique_learningStrategieId_fkey" FOREIGN KEY ("learningStrategieId") REFERENCES "LearningStrategy"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TechniqueRating" ADD CONSTRAINT "TechniqueRating_techniqueId_fkey" FOREIGN KEY ("techniqueId") REFERENCES "LearningTechnique"("id") ON DELETE CASCADE ON UPDATE CASCADE;

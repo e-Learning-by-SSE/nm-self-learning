@@ -9,14 +9,14 @@ export const techniqueRatingSchema = z.object({
 export const learningTechniqueCreateSchema = z.object({
 	learningStrategieId: z.string().uuid(),
 	name: z.string(),
-	description: z.string()
+	description: z.string().optional()
 });
 
 const learningGoalStatusSchema = z.nativeEnum(LearningGoalStatus);
 
 export const learningSubGoalSchema = z.object({
 	id: z.string().cuid(),
-	description: z.string().min(1),
+	description: z.string().optional().nullable(),
 	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
 	priority: z.number().int(),
 	learningGoalId: z.string().cuid()
@@ -24,7 +24,7 @@ export const learningSubGoalSchema = z.object({
 
 export const learningGoalSchema = z.object({
 	id: z.string().cuid(),
-	description: z.string().min(1),
+	description: z.string().optional().nullable(),
 	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
 	learningSubGoals: z.array(learningSubGoalSchema)
 });
