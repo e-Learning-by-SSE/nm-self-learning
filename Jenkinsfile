@@ -9,19 +9,19 @@ pipeline {
             description: 'Perform a full build without using any caches. This may take longer but ensures a clean build.'
         )
         booleanParam(
-            name: 'RELEASE',
+            name: 'PUBLISH',
             defaultValue: false,
-            description: 'Indicate if this build should be treated as a release. If true, the container image will be uploaded.'
+            description: 'Indicate if this build should be published to ghcr.io. When true, the settings with PUBLISH_ prefix are used'
         )
         choice(
-            name: 'RELEASE_IMAGE_TAG',
+            name: 'PUBLISH_IMAGE_TAG',
             choices: ['NONE', 'UNSTABLE', 'LATEST', 'TESTING'],
-            description: 'Select the Docker tag to be used for the release image. Choose NONE if not releasing.'
+            description: 'Select the Docker tag to be used for the image. Only used in case PUBLISH is true'
         )
         string(
-            name: 'RELEASE_API_VERSION',
+            name: 'PUBLISH_API_VERSION',
             defaultValue: '',
-            description: 'Manually specify a tag for the Docker image. This tag will be preferred over the package version if set. Only used in case RELEASE is true'
+            description: 'Manually specify an tag for the Docker image. This tag will be preferred over the package version if set. If it is not set, the version inside the package.json is used as tag. This does not override PUBLISH_IMAGE_TAG and will used as an additional tag. Only used in case PUBLISH is true.'
         )
     }
     environment {
@@ -164,18 +164,18 @@ pipeline {
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
                             }
-                            if (params.RELEASE) {
+                            if (params.PUBLISH) {
                                 def apiVersion = ''
-                                if (params.RELEASE_API_VERSION == '') {
+                                if (params.PUBLISH_API_VERSION == '') {
                                     apiVersion = "${env.API_VERSION}"
                                 } else {
-                                    apiVersion = "${params.RELEASE_API_VERSION}"
+                                    apiVersion = "${params.PUBLISH_API_VERSION}"
                                 }
                                 def releaseTag = ''
-                                if (params.RELEASE_IMAGE_TAG == 'NONE') {
+                                if (params.PUBLISH_IMAGE_TAG == 'NONE') {
                                     releaseTag = "${apiVersion}" 
                                 } else {
-                                    releaseTag = "${params.RELEASE_IMAGE_TAG}"
+                                    releaseTag = "${params.PUBLISH_IMAGE_TAG}"
                                 }
                                 ssedocker {
                                     create {
