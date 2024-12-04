@@ -46,7 +46,7 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 
 		if (
 			user.role !== "ADMIN" &&
-			(user.isAuthor || !lesson.authors.some(a => a.username === user.name))
+			!(user.isAuthor && lesson.authors.some(a => a.username === user.name))
 		) {
 			return {
 				redirect: {
