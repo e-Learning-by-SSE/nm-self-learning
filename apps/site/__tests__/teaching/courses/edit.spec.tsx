@@ -24,10 +24,6 @@ jest.mock("@self-learning/database", () => ({
 describe("getServerSideProps", () => {
 	const mockCtx = createMockContext({ params: { courseId: "course1" } });
 
-	beforeEach(() => {
-		jest.clearAllMocks();
-	});
-
 	describe("Authorization", () => {
 		// For te test required properties of Lesson
 		const dummySkill: Skill = {
