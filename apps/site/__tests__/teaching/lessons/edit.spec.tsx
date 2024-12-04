@@ -22,10 +22,6 @@ jest.mock("@self-learning/database", () => ({
 describe("getServerSideProps", () => {
 	const mockCtx = createMockContext({ params: { lessonId: "lesson1" } });
 
-	beforeEach(() => {
-		jest.clearAllMocks();
-	});
-
 	describe("Authorization", () => {
 		const lessonMock = createLessonMock({
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
