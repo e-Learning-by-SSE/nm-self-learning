@@ -3,6 +3,8 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { CenteredSection } from "./containers/centered-section";
 import { redirectToLogin } from "./redirect-to-login";
+import { useRouter } from "next/router";
+import { useCallback } from "react";
 
 /**
  * Wrapper for `useSession` from `next-auth` that redirects the user to the login page if they are not authenticated.
@@ -115,4 +117,27 @@ export function Unauthorized({ children }: { children?: React.ReactNode }) {
 			</div>
 		</CenteredSection>
 	);
+}
+
+export function useAuthentication() {
+	const router = useRouter();
+	const callbackUrl = encodeURIComponent(router.asPath);
+	const redirectLogin = useCallback(() => {
+		router.push(`/api/auth/signin?callbackUrl=${callbackUrl}`);
+	}, [router, callbackUrl]);
+	const session = useSession({ required: false });
+	const isAuthorized = session.data?.user != null;
+
+	const withAuth = useCallback(
+		(closure: () => void) => {
+			if (isAuthorized) {
+				closure();
+			} else {
+				redirectLogin();
+			}
+		},
+		[isAuthorized, redirectLogin]
+	);
+
+	return { withAuth, isAuthorized };
 }
