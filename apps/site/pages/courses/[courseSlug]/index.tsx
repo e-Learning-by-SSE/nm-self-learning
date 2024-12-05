@@ -20,6 +20,7 @@ import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { useSession } from "next-auth/react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -191,6 +192,8 @@ function CourseHeader({
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
 }) {
+	const session = useSession({ required: false });
+	const isAuthorized = session.data?.user != null;
 	const enrollments = useEnrollments();
 	const { enroll } = useEnrollmentMutations();
 	const completion = useCourseCompletion(course.slug);
@@ -289,7 +292,7 @@ function CourseHeader({
 						</Link>
 					)}
 
-					{!isEnrolled && (
+					{!isEnrolled && isAuthorized && (
 						<button
 							className="btn-primary disabled:opacity-50"
 							onClick={() => enroll({ courseId: course.courseId })}
@@ -297,6 +300,11 @@ function CourseHeader({
 							<span>Zum Lernplan hinzufügen</span>
 							<PlusCircleIcon className="h-5" />
 						</button>
+					)}
+					{!isEnrolled && !isAuthorized && (
+						<span className="bg-gray-600 text-white rounded-lg px-3">
+							Lernplan nach Login verfügbar
+						</span>
 					)}
 				</div>
 			</div>
@@ -345,6 +353,22 @@ function Lesson({
 	href: string;
 	isCompleted: boolean;
 }) {
+	const session = useSession({ required: false });
+	const isAuthorized = session.data?.user != null;
+
+	if (!isAuthorized) {
+		return (
+			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
+				<span className="flex">
+					<span className="w-8 shrink-0 self-center font-medium text-secondary">
+						{lesson.lessonNr}
+					</span>
+					<span>{lesson.title}</span>
+				</span>
+			</div>
+		);
+	}
+
 	return (
 		<Link
 			href={href}
