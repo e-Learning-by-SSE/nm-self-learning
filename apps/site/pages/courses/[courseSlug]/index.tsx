@@ -359,12 +359,7 @@ function Lesson({
 	if (!isAuthorized) {
 		return (
 			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
-				<span className="flex">
-					<span className="w-8 shrink-0 self-center font-medium text-secondary">
-						{lesson.lessonNr}
-					</span>
-					<span>{lesson.title}</span>
-				</span>
+				<LessonEntry lesson={lesson} />
 			</div>
 		);
 	}
@@ -376,13 +371,19 @@ function Lesson({
 				isCompleted ? "border-emerald-500" : "border-gray-300"
 			}`}
 		>
-			<span className="flex">
-				<span className="w-8 shrink-0 self-center font-medium text-secondary">
-					{lesson.lessonNr}
-				</span>
-				<span>{lesson.title}</span>
-			</span>
+			<LessonEntry lesson={lesson} />
 		</Link>
+	);
+}
+
+function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
+	return (
+		<span className="flex">
+			<span className="w-8 shrink-0 self-center font-medium text-secondary">
+				{lesson.lessonNr}
+			</span>
+			<span>{lesson.title}</span>
+		</span>
 	);
 }
 
