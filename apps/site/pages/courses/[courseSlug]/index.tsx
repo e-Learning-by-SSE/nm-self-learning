@@ -1,8 +1,3 @@
-import { GetServerSideProps } from "next";
-import { MDXRemote } from "next-mdx-remote";
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo } from "react";
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useCourseCompletion } from "@self-learning/completion";
@@ -18,8 +13,13 @@ import {
 } from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
-import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { GetServerSideProps } from "next";
+import { MDXRemote } from "next-mdx-remote";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -191,6 +191,8 @@ function CourseHeader({
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
 }) {
+	const { withAuth, isAuthenticated } = useAuthentication();
+
 	const enrollments = useEnrollments();
 	const { enroll } = useEnrollmentMutations();
 	const completion = useCourseCompletion(course.slug);
@@ -292,10 +294,19 @@ function CourseHeader({
 					{!isEnrolled && (
 						<button
 							className="btn-primary disabled:opacity-50"
-							onClick={() => enroll({ courseId: course.courseId })}
+							onClick={() => {
+								withAuth(() => {
+									enroll({ courseId: course.courseId });
+								});
+							}}
 						>
-							<span>Zum Lernplan hinzufügen</span>
-							<PlusCircleIcon className="h-5" />
+							{isAuthenticated && (
+								<>
+									<span>Zum Lernplan hinzufügen</span>
+									<PlusCircleIcon className="h-5" />
+								</>
+							)}
+							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
 				</div>
@@ -345,6 +356,16 @@ function Lesson({
 	href: string;
 	isCompleted: boolean;
 }) {
+	const { isAuthenticated } = useAuthentication();
+
+	if (!isAuthenticated) {
+		return (
+			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
+				<LessonEntry lesson={lesson} />
+			</div>
+		);
+	}
+
 	return (
 		<Link
 			href={href}
@@ -352,13 +373,19 @@ function Lesson({
 				isCompleted ? "border-emerald-500" : "border-gray-300"
 			}`}
 		>
-			<span className="flex">
-				<span className="w-8 shrink-0 self-center font-medium text-secondary">
-					{lesson.lessonNr}
-				</span>
-				<span>{lesson.title}</span>
-			</span>
+			<LessonEntry lesson={lesson} />
 		</Link>
+	);
+}
+
+function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
+	return (
+		<span className="flex">
+			<span className="w-8 shrink-0 self-center font-medium text-secondary">
+				{lesson.lessonNr}
+			</span>
+			<span>{lesson.title}</span>
+		</span>
 	);
 }
 

@@ -8,6 +8,7 @@ import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useRef } from "react";
+import { hasAuthorPermission } from "@self-learning/ui/layouts";
 
 type EditCourseProps = {
 	course: CourseFormModel;
@@ -46,10 +47,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth<
 			};
 		}
 
-		if (
-			user.role !== "ADMIN" &&
-			(user.isAuthor || !course.authors.some(author => author.username === user.name))
-		) {
+		if (!hasAuthorPermission({ user, permittedAuthors: course.authors.map(a => a.username) })) {
 			return {
 				redirect: {
 					destination: "/403",
