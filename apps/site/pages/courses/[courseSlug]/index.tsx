@@ -1,8 +1,3 @@
-import { GetServerSideProps } from "next";
-import { MDXRemote } from "next-mdx-remote";
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo } from "react";
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useCourseCompletion } from "@self-learning/completion";
@@ -20,7 +15,11 @@ import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
-import { useSession } from "next-auth/react";
+import { GetServerSideProps } from "next";
+import { MDXRemote } from "next-mdx-remote";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -357,10 +356,9 @@ function Lesson({
 	href: string;
 	isCompleted: boolean;
 }) {
-	const session = useSession({ required: false });
-	const isAuthorized = session.data?.user != null;
+	const { isAuthenticated } = useAuthentication();
 
-	if (!isAuthorized) {
+	if (!isAuthenticated) {
 		return (
 			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
 				<LessonEntry lesson={lesson} />
