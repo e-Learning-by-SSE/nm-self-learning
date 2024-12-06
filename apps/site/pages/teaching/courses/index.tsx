@@ -1,4 +1,5 @@
 import { authOptions } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import {
 	CourseBasicInformation,
@@ -44,12 +45,16 @@ export default function CourseCreationEditor() {
 		setSelectedIndex(index);
 	}
 
+	const { data: repositories, isLoading } = trpc.skill.getRepositories.useQuery();
+
+	const repository = repositories?.find(repository => repository.id === "1");
+
 	const renderContent = (index: number) => {
 		switch (index) {
 			case 0:
 				return <CourseBasicInformation />;
 			case 1:
-				return <CourseSkillView />;
+				return <CourseSkillView repository={repository} />;
 			case 2:
 				return <CourseModulView />;
 			case 3:
