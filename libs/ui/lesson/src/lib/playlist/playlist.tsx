@@ -5,13 +5,12 @@ import {
 	ChevronLeftIcon,
 	PlayIcon
 } from "@heroicons/react/24/solid";
+import { trpc } from "@self-learning/api-client";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { Divider, ProgressBar, useTimeout } from "@self-learning/ui/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { trpc } from "@self-learning/api-client";
-import { z } from "zod";
 
 export type PlaylistChapter = {
 	title: string;
@@ -49,9 +48,10 @@ function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
 	const { mutateAsync: createLearningDiaryLearnedLesson } =
 		trpc.learningDiary.addLearningDiaryLearnedLessons.useMutation();
 	// Exact starting time is required, otherwise we miss some events during the learning analysis
-	const creationDate = new Date();
 
 	const log = useCallback(async () => {
+		const creationDate = new Date();
+
 		try {
 			const page = await createLearningDiaryEntry({
 				courseSlug: courseSlug,
@@ -63,17 +63,14 @@ function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
 				lessonId
 			});
 		} catch (e) {}
-	}, [createLearningDiaryEntry, courseSlug]);
+	}, [createLearningDiaryEntry, courseSlug, createLearningDiaryLearnedLesson, lessonId]);
 	useTimeout({ callback: log, delayInMilliseconds: 60000 });
-}
-
-function Writer({ courseSlug, lessonId }: { courseSlug: string; lessonId: string }) {
-	useLearningDiaryRecording(courseSlug, lessonId);
-	return <></>;
 }
 
 export function Playlist({ content, course, lesson, completion }: PlaylistProps) {
 	const [contentWithCompletion, setContentWithCompletion] = useState(content);
+	useLearningDiaryRecording(course.slug, lesson.lessonId);
+
 	useEffect(() => {
 		if (!completion) {
 			return;
@@ -90,7 +87,6 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 
 	return (
 		<>
-			<Writer courseSlug={course.slug} lessonId={lesson.lessonId} />
 			<PlaylistHeader
 				content={content}
 				course={course}
