@@ -5,23 +5,22 @@ import {
 	ChevronLeftIcon,
 	LinkIcon,
 	PencilIcon,
-	PlusIcon,
-	XMarkIcon
+	PlusIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
-import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
-import { OnDialogCloseFn, SectionHeader, XButton } from "@self-learning/ui/common";
-import React, { useState } from "react";
-import { ChapterDialog } from "./dialogs/chapter-dialog";
-import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
-import { useCourseContentForm } from "./use-content-form";
-import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
 import {
 	LessonFormModel,
 	onLessonCreatorSubmit,
 	onLessonEditorSubmit
 } from "@self-learning/teaching";
+import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
+import { OnDialogCloseFn, SectionHeader, XButton } from "@self-learning/ui/common";
+import { useState } from "react";
+import { ChapterDialog } from "./dialogs/chapter-dialog";
+import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
+import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
+import { useCourseContentForm } from "./use-content-form";
 
 type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
 
