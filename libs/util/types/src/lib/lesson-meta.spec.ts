@@ -11,7 +11,7 @@ describe("createLessonMeta", () => {
 
 	it("Empty Quiz -> hasQuiz: false", () => {
 		const lesson = createEmptyLesson();
-		lesson.quiz = { questions: [], config: null as any };
+		lesson.quiz = { questions: [], config: null };
 		const meta = createLessonMeta(lesson);
 		expect(meta.hasQuiz).toEqual(false);
 	});

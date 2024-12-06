@@ -253,7 +253,7 @@ export function QuestionFormRenderer({
 	}
 
 	if (question.type === "programming") {
-		return <ProgrammingForm question={question} index={index} />;
+		return <ProgrammingForm index={index} />;
 	}
 
 	if (question.type === "text") {

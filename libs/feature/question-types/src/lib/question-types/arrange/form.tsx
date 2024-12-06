@@ -256,7 +256,7 @@ function EditItemDialog({
 
 	return (
 		<Dialog className="w-[80vw]" title={item ? "Bearbeiten" : "Hinzufügen"} onClose={onClose}>
-			<MarkdownField content={content} setValue={setContent as any} />
+			<MarkdownField content={content} setValue={value => setContent(value ?? "")} />
 
 			<DialogActions onClose={onClose}>
 				<button

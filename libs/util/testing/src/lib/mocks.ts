@@ -22,6 +22,7 @@ export function createExampleCourse(
 		meta: {}
 	};
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	course.meta = createCourseMeta(course as any);
 
 	return course;
@@ -79,6 +80,7 @@ lorem ipsum dolor sit amet.`
 		meta: Prisma.JsonNull
 	};
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	lesson.meta = createLessonMeta(lesson as any);
 
 	return lesson;

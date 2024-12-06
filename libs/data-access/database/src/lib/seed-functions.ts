@@ -10,11 +10,11 @@ import {
 	LessonContent /* eslint-disable quotes */,
 	LessonContentType
 } from "@self-learning/types";
+import { slugify } from "@self-learning/util/common";
+import { subDays, subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { slugify } from "@self-learning/util/common";
-import { defaultLicence } from "./license";
-import { subDays, subHours } from "date-fns";
+import { defaultLicense } from "./license";
 
 const prisma = new PrismaClient();
 
@@ -54,7 +54,7 @@ export function createLessonWithRandomContentAndDemoQuestions({
 		description: faker.lorem.paragraphs(3),
 		content,
 		questions,
-		licenseId: defaultLicence.licenseId
+		licenseId: defaultLicense.licenseId
 	});
 }
 
@@ -94,6 +94,7 @@ export function createLesson({
 		licenseId: licenseId ?? 0
 	};
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	lesson.meta = createLessonMeta(lesson as any) as unknown as Prisma.JsonObject;
 
 	return lesson;
@@ -361,7 +362,7 @@ export async function seedCaseStudy(
 
 	const license = await prisma.license.findFirst({
 		where: {
-			name: defaultLicence.name
+			name: defaultLicense.name
 		},
 		select: {
 			licenseId: true

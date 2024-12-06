@@ -1,7 +1,4 @@
-import { PrismaClient } from "@prisma/client";
 import { createRepositories, createSkillGroups, createSkills } from "../seed-functions";
-
-const prisma = new PrismaClient();
 
 const skills = [
 	{

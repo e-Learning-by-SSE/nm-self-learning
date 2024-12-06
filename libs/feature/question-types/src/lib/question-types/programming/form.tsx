@@ -3,13 +3,7 @@ import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ProgrammingQuestion } from "./schema";
 
-export default function ProgrammingForm({
-	question,
-	index
-}: {
-	question: ProgrammingQuestion;
-	index: number;
-}) {
+export default function ProgrammingForm({ index }: { index: number }) {
 	const { control, watch, getValues } = useFormContext<QuestionTypeForm<ProgrammingQuestion>>();
 	const { update } = useFieldArray({ control, name: "quiz.questions" });
 

@@ -32,14 +32,14 @@ export const license: Prisma.LicenseCreateManyInput[] = [
 	}
 ];
 
-export const defaultLicence = license[0];
+export const defaultLicense = license[0];
 
-export async function defaultLicenceId(): Promise<number> {
+export async function defaultLicenseId(): Promise<number> {
 	const prisma = new PrismaClient();
 
 	try {
 		const license = await prisma.license.findFirst({
-			where: { name: defaultLicence.name }
+			where: { name: defaultLicense.name }
 		});
 		return license?.licenseId ?? 0;
 	} finally {

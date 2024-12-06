@@ -1,13 +1,12 @@
 /* eslint-disable quotes */
 import { PrismaClient } from "@prisma/client";
-import { seedJavaDemo } from "./seed-java-demo";
 import { softwareentwicklungDemoSpecialization } from "../seedSpecializations";
 import { demoSubjects } from "../seedSubjects";
-import { seedReactDemo } from "./seed-react-demo";
+import { generateEventlogDate } from "./event-log/seed-event-log";
 import { seedEvents } from "./event-seed";
 import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
-import { generateEventlogDate } from "./event-log/seed-event-log";
-import { license } from "./license";
+import { seedJavaDemo } from "./seed-java-demo";
+import { seedReactDemo } from "./seed-react-demo";
 
 const prisma = new PrismaClient();
 
