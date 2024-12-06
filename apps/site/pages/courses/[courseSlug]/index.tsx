@@ -192,7 +192,7 @@ function CourseHeader({
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
 }) {
-	const { withAuth, isAuthorized } = useAuthentication();
+	const { withAuth, isAuthenticated } = useAuthentication();
 
 	const enrollments = useEnrollments();
 	const { enroll } = useEnrollmentMutations();
@@ -301,13 +301,13 @@ function CourseHeader({
 								});
 							}}
 						>
-							{isAuthorized && (
+							{isAuthenticated && (
 								<>
 									<span>Zum Lernplan hinzufügen</span>
 									<PlusCircleIcon className="h-5" />
 								</>
 							)}
-							{!isAuthorized && <span>Lernplan nach Login verfügbar</span>}
+							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
 				</div>

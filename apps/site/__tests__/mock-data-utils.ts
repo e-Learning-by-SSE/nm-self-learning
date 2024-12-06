@@ -1,5 +1,5 @@
 import { Author, Course, Lesson, Skill } from "@prisma/client";
-import { CourseContent } from "../../../libs/util/types/src";
+import { CourseContent } from "@self-learning/types";
 
 export function createLessonMock({
 	lessonId,
@@ -67,7 +67,7 @@ export function createCourseMock({
 	slug?: string;
 	title?: string;
 	description?: string;
-}): Partial<Course & { authors: Pick<Author, "username">[] } & { content: CourseContent }> {
+}): Partial<Course> & { authors: Pick<Author, "username">[] } & { content: CourseContent } {
 	return {
 		courseId,
 		slug: slug ?? courseId,

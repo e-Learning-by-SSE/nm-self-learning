@@ -126,18 +126,41 @@ export function useAuthentication() {
 		router.push(`/api/auth/signin?callbackUrl=${callbackUrl}`);
 	}, [router, callbackUrl]);
 	const session = useSession({ required: false });
-	const isAuthorized = session.data?.user != null;
+	const isAuthenticated = session.data?.user != null;
 
 	const withAuth = useCallback(
 		(closure: () => void) => {
-			if (isAuthorized) {
+			if (isAuthenticated) {
 				closure();
 			} else {
 				redirectLogin();
 			}
 		},
-		[isAuthorized, redirectLogin]
+		[isAuthenticated, redirectLogin]
 	);
 
-	return { withAuth, isAuthorized };
+	return { withAuth, isAuthenticated };
+}
+
+/**
+ * Checks if a user has editing permission on a educational resource:
+ * - Admins have full access
+ * - Authors have access if they are in the list of permitted authors
+ *
+ * @example
+ * Redirect Non privileged authors
+ * ```typescript
+ * if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
+ *     redirectTo("/403");
+ * }
+ * ```
+ */
+export function hasAuthorPermission({
+	user,
+	permittedAuthors
+}: {
+	user: { role: "ADMIN" | "USER"; isAuthor: boolean; name: string };
+	permittedAuthors: string[];
+}) {
+	return user.role === "ADMIN" || (user.isAuthor && permittedAuthors.includes(user.name));
 }
