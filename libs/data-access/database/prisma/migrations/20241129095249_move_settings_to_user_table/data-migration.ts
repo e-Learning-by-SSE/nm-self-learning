@@ -1,11 +1,6 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-
-const creator = {
-	displayName: "SelfLearn",
-	username: "selflearn"
-};
 
 /*
  * ICONS from https://uxwing.com/
@@ -50,19 +45,6 @@ const learningLocations = [
 async function main() {
 	try {
 		await prisma.$transaction(async tx => {
-			// // Create dummy student as creator of the learning locations
-			// tx.user.create({
-			// 	data: {
-			// 		name: creator.username,
-			// 		displayName: creator.displayName,
-			// 		student: {
-			// 			create: {
-			// 				username: creator.username
-			// 			}
-			// 		}
-			// 	}
-			// });
-
 			// Create learning locations
 			await tx.learningLocation.createMany({ data: learningLocations });
 		});
