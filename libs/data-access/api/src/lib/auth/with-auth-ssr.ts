@@ -74,6 +74,15 @@ export function withAuth<Prop extends { [key: string]: any }>(
 				}
 			};
 		}
-		return gssp(context, sessionUser);
+		const { req } = context;
+		if (req.url?.includes("/admin")) {
+			if (sessionUser.role !== "ADMIN") {
+				return {
+					notFound: true
+				};
+			}
+		}
+
+		return await gssp(context, sessionUser);
 	};
 }
