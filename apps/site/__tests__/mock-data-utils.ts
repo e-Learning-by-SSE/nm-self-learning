@@ -19,7 +19,6 @@ export function createLessonMock({
 	Pick<Lesson, "lessonId"> & { authors: Pick<Author, "username">[] } & {
 		requirements: Skill[];
 	} & { teachingGoals: Skill[] } {
-	// For te test required properties of Lesson
 	const defaultSkill: Skill = {
 		id: "skill:1",
 		name: "Skill1",
