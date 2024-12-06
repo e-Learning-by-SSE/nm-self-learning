@@ -14,6 +14,75 @@ import { authProcedure, isCourseAuthorProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
 
 export const courseRouter = t.router({
+	listAvailableCourses: t.procedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/courses/",
+				tags: ["Courses"],
+				summary: "List available courses"
+			}
+		})
+		.input(
+			paginationSchema.extend({
+				title: z.string().optional(),
+				specializationId: z.string().optional(),
+				authorId: z.string().optional()
+			})
+		)
+		.output(
+			z.object({
+				result: z.array(z.object({ title: z.string(), slug: z.string() })),
+				pageSize: z.number(),
+				page: z.number(),
+				totalCount: z.number()
+			})
+		)
+		.query(async ({ input }) => {
+			const pageSize = 15;
+
+			const where: Prisma.CourseWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined,
+				specializations: input.specializationId
+					? {
+							some: {
+								specializationId: input.specializationId
+							}
+						}
+					: undefined,
+				authors: input.authorId
+					? {
+							some: {
+								username: input.authorId
+							}
+						}
+					: undefined
+			};
+
+			const [result, count] = await database.$transaction([
+				database.course.findMany({
+					select: {
+						slug: true,
+						title: true
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { title: "asc" },
+					where
+				}),
+				database.course.count({ where })
+			]);
+
+			return {
+				result,
+				pageSize: pageSize,
+				page: input.page,
+				totalCount: count
+			} satisfies Paginated<{ title: string; slug: string }>;
+		}),
 	findMany: t.procedure
 		.input(
 			paginationSchema.extend({
