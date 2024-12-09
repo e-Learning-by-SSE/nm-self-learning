@@ -184,7 +184,7 @@ function DraggableContent({
 					ref={provided.innerRef}
 					{...provided.draggableProps}
 					{...provided.dragHandleProps}
-					className="prose prose-emerald flex h-fit w-fit flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
+					className="flex h-fit w-fit flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
 				>
 					<div className="flex justify-end gap-2">
 						<PencilButton

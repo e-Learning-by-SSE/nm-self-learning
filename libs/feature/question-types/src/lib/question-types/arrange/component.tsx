@@ -57,7 +57,7 @@ export default function ArrangeQuestion() {
 																ref={provided.innerRef}
 																{...provided.draggableProps}
 																{...provided.dragHandleProps}
-																className="prose prose-emerald h-fit w-fit max-w-[50ch] rounded-lg bg-white p-4 shadow-lg"
+																className="h-fit w-fit max-w-[50ch] rounded-lg bg-white p-4 shadow-lg"
 															>
 																<MarkdownViewer
 																	content={item.content}
@@ -102,7 +102,7 @@ export default function ArrangeQuestion() {
 												ref={provided.innerRef}
 												{...provided.draggableProps}
 												{...provided.dragHandleProps}
-												className="prose prose-emerald h-fit w-fit max-w-[50ch] rounded-lg bg-white p-4 shadow-lg"
+												className="h-fit w-fit max-w-[50ch] rounded-lg bg-white p-4 shadow-lg"
 											>
 												<MarkdownViewer content={item.content} />
 											</li>
