@@ -20,6 +20,11 @@ export async function getAuthenticatedUser(
 	return session.user;
 }
 
+export type ServerSidePropsWithAuthUser<Prop> = (
+	context: GetServerSidePropsContext,
+	user: UserFromSession
+) => Promise<GetServerSidePropsResult<Prop>>;
+
 /**
  * Higher-order function to wrap a `getServerSideProps` function with authentication.
  *
@@ -53,13 +58,9 @@ export async function getAuthenticatedUser(
  * const getServerSideProps: GetServerSideProps<PageProps> = withAuth<PageProps>(async (context, user) => { ...}
  * ```
  */
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withAuth<Prop extends { [key: string]: any }>(
-	gssp: (
-		context: GetServerSidePropsContext,
-		user: UserFromSession
-	) => Promise<GetServerSidePropsResult<Prop>>
+	gssp: ServerSidePropsWithAuthUser<Prop>
 ): GetServerSideProps<Prop> {
 	return async context => {
 		const session = await getServerSession(context.req, context.res, authOptions);
@@ -74,6 +75,15 @@ export function withAuth<Prop extends { [key: string]: any }>(
 				}
 			};
 		}
-		return gssp(context, sessionUser);
+		const { req } = context;
+		if (req.url?.includes("/admin")) {
+			if (sessionUser.role !== "ADMIN") {
+				return {
+					notFound: true
+				};
+			}
+		}
+
+		return await gssp(context, sessionUser);
 	};
 }
