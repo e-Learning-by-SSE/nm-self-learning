@@ -43,7 +43,7 @@ export function MarkdownField({
 				style={{ minHeight: 32 }}
 				onClick={() => setOpenEditor(true)}
 			>
-				<div className={"prose prose-emerald max-w-full" + (inline && " text-sm")}>
+				<div className={"max-w-full" + (inline && " text-sm")}>
 					{content !== "" ? (
 						<MarkdownViewer content={content ?? ""} />
 					) : (
@@ -364,8 +364,10 @@ function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string
  */
 export function MarkdownViewer({ content }: { content: string }) {
 	return (
-		<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
-			{content ?? ""}
-		</ReactMarkdown>
+		<div className="prose prose-emerald">
+			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+				{content ?? ""}
+			</ReactMarkdown>
+		</div>
 	);
 }
