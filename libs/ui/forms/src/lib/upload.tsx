@@ -192,7 +192,7 @@ export function ModifySubtile({
 		if (lines[0].startsWith("WEBVTT")) {
 			metadata = lines.shift() || "";
 		} else {
-			//throw new Error("Invalid VTT format");
+			throw new Error("Invalid VTT format");
 		}
 		const subtitleLines = lines.map(line => {
 			const [timestamp, ...text] = line.split("\n");
@@ -252,9 +252,11 @@ export function ModifySubtile({
 
 export function GenerateSubtile({
 	video_url,
+	lessonId,
 	onTranscribitionCompleted
 }: {
 	video_url: string;
+	lessonId: string;
 	onTranscribitionCompleted: (subtitle: Subtitle) => void;
 }) {
 	const [showDialog, setShowDialog] = useState(false);
@@ -264,6 +266,7 @@ export function GenerateSubtile({
 			{showDialog && (
 				<GenerateSubtileDialog
 					video_url={video_url}
+					lessonId={lessonId}
 					onClose={async transcription => {
 						setShowDialog(false);
 						if (!transcription) return;
@@ -299,9 +302,11 @@ export function GenerateSubtile({
 
 function GenerateSubtileDialog({
 	video_url,
+	lessonId,
 	onClose
 }: {
 	video_url: string;
+	lessonId: string;
 	onClose: OnDialogCloseFn<SubtitleSrc>;
 }) {
 	const [progress, setProgress] = useState<string>("Initializing...");
@@ -312,7 +317,7 @@ function GenerateSubtileDialog({
 		const socket = io(process.env["TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000");
 		setSocket(socket);
 
-		socket.emit("transcribe", { video_url });
+		socket.emit("transcribe", { video_url , realtime: true, lessonId: lessonId });
 
 		socket.on("progress", (data: { message: string }) => {
 			setProgress(data.message);

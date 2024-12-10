@@ -12,6 +12,7 @@ export function VideoInput({ index }: { index: number }) {
 	const { update } = useFieldArray<{ content: Video[] }>({
 		name: "content"
 	});
+	const { watch } = useFormContext<{ lessonId: string }>();
 	const reactPlayer = useRef<ReactPlayer | null>(null);
 
 	const {
@@ -108,6 +109,7 @@ export function VideoInput({ index }: { index: number }) {
 					{url && !subtitle && (
 						<GenerateSubtile
 							video_url={url}
+							lessonId={watch().lessonId}
 							onTranscribitionCompleted={createdSubtitle => {
 								update(index, {
 									type: "video",
