@@ -1,5 +1,8 @@
 import { LinkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useScroll } from "framer-motion";
+import { useState } from "react";
+import { DropdownButton } from "@self-learning/ui/common";
 
 function FooterElement({
 	href,
@@ -18,6 +21,31 @@ function FooterElement({
 }
 
 export function Footer() {
+	const i18next = require("i18next");
+
+	i18next
+		.init({
+			resources: {
+				en: {
+					translation: {
+						welcome: "Welcome to our application!",
+						description: "This is a localized message."
+					}
+				},
+				de: {
+					translation: {
+						welcome: "Willkommen in unserer Anwendung!",
+						description: "Dies ist eine lokalisierte Nachricht."
+					}
+				}
+			},
+			lng: "en",
+			fallbackLng: "en"
+		})
+		.then(() => {
+			console.log(i18next.t("welcome"));
+		});
+
 	return (
 		<footer className="border-t-gray border-t bg-white px-6 py-2 text-light">
 			<div
@@ -49,8 +77,21 @@ export function Footer() {
 						href="https://www.uni-hildesheim.de/impressum/"
 						text="Impressum"
 					/>
+					<LanguageSwitcher />
 				</div>
 			</div>
 		</footer>
+	);
+}
+
+function LanguageSwitcher() {
+	return (
+		<DropdownButton position="top" title="Test" backgroundColor="flex">
+			<span>Sprache Wählen</span>
+			<div className="flex flex-col bg-white">
+				<button>German</button>
+				<button>English</button>
+			</div>
+		</DropdownButton>
 	);
 }
