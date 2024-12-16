@@ -12,6 +12,9 @@ import { useRouter } from "next/router";
 import superjson from "superjson";
 import { GlobalFeatures } from "../../_features";
 import "./styles.css";
+import i18next from "./i18next";
+import { I18nextProvider } from "react-i18next";
+import { appWithTranslation } from "next-i18next";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -37,40 +40,40 @@ export default withTRPC<AppRouter>({
 			}
 		};
 	}
-})(CustomApp);
+})(appWithTranslation(CustomApp));
 
 function CustomApp({ Component, pageProps }: AppProps) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const Layout = (Component as any).getLayout
-		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(Component as any).getLayout(Component, pageProps)
+		? (Component as any).getLayout(Component, pageProps)
 		: null;
 
 	return (
 		<>
-			{process.env.NODE_ENV === "development" && (
-				<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
-			)}
-			<PlausibleProvider
-				domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
-				customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
-				trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
-			>
-				<SessionProvider
-					session={pageProps.session}
-					basePath={useRouter().basePath + "/api/auth"}
+			<I18nextProvider i18n={i18next}>
+				{process.env.NODE_ENV === "development" && (
+					<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
+				)}
+				<PlausibleProvider
+					domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
+					customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
+					trackLocalhost={process.env.NODE_ENV === "development"}
 				>
-					<Head>
-						<title>Self-Learning</title>
-					</Head>
-					<GlobalFeatures />
-					<Navbar />
-					<main className="grid grow">
-						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-					</main>
-					<Footer />
-				</SessionProvider>
-			</PlausibleProvider>
+					<SessionProvider
+						session={pageProps.session}
+						basePath={useRouter().basePath + "/api/auth"}
+					>
+						<Head>
+							<title>Self-Learning</title>
+						</Head>
+						<GlobalFeatures />
+						<Navbar />
+						<main className="grid grow">
+							{Layout ? <>{Layout}</> : <Component {...pageProps} />}
+						</main>
+						<Footer />
+					</SessionProvider>
+				</PlausibleProvider>
+			</I18nextProvider>
 		</>
 	);
 }

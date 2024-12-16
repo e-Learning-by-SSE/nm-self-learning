@@ -1,8 +1,8 @@
 import { LinkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { useScroll } from "framer-motion";
-import { useState } from "react";
 import { DropdownButton } from "@self-learning/ui/common";
+import { useTranslation } from "next-i18next";
+import { FlagIcon } from "@heroicons/react/20/solid";
 
 function FooterElement({
 	href,
@@ -21,30 +21,7 @@ function FooterElement({
 }
 
 export function Footer() {
-	const i18next = require("i18next");
-
-	i18next
-		.init({
-			resources: {
-				en: {
-					translation: {
-						welcome: "Welcome to our application!",
-						description: "This is a localized message."
-					}
-				},
-				de: {
-					translation: {
-						welcome: "Willkommen in unserer Anwendung!",
-						description: "Dies ist eine lokalisierte Nachricht."
-					}
-				}
-			},
-			lng: "en",
-			fallbackLng: "en"
-		})
-		.then(() => {
-			console.log(i18next.t("welcome"));
-		});
+	const { t } = useTranslation("common");
 
 	return (
 		<footer className="border-t-gray border-t bg-white px-6 py-2 text-light">
@@ -78,6 +55,7 @@ export function Footer() {
 						text="Impressum"
 					/>
 					<LanguageSwitcher />
+					{t("languageEnglish")}
 				</div>
 			</div>
 		</footer>
@@ -85,12 +63,14 @@ export function Footer() {
 }
 
 function LanguageSwitcher() {
+	const { i18n, t } = useTranslation("common");
+
 	return (
 		<DropdownButton position="top" title="Test" backgroundColor="flex">
-			<span>Sprache Wählen</span>
+			<span className={"text-sm font-medium"}>Sprache wählen</span>
 			<div className="flex flex-col bg-white">
-				<button>German</button>
-				<button>English</button>
+				<button onClick={() => i18n.changeLanguage("de")}>{t("languageGerman")}</button>
+				<button onClick={() => i18n.changeLanguage("en")}> {t("languageEnglish")}</button>
 			</div>
 		</DropdownButton>
 	);
