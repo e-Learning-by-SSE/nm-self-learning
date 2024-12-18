@@ -6,7 +6,7 @@ import {
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
-import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
+import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -28,7 +28,8 @@ export const courseRouter = t.router({
 			paginationSchema.extend({
 				title: z.string().optional(),
 				specializationId: z.string().optional(),
-				authorId: z.string().optional()
+				authorId: z.string().optional(),
+				pageSize: z.number().optional()
 			})
 		)
 		.output(
@@ -40,7 +41,7 @@ export const courseRouter = t.router({
 			})
 		)
 		.query(async ({ input }) => {
-			const pageSize = 15;
+			const pageSize = input.pageSize ?? 20;
 
 			const where: Prisma.CourseWhereInput = {
 				title:
@@ -48,19 +49,9 @@ export const courseRouter = t.router({
 						? { contains: input.title, mode: "insensitive" }
 						: undefined,
 				specializations: input.specializationId
-					? {
-							some: {
-								specializationId: input.specializationId
-							}
-						}
+					? { some: { specializationId: input.specializationId } }
 					: undefined,
-				authors: input.authorId
-					? {
-							some: {
-								username: input.authorId
-							}
-						}
-					: undefined
+				authors: input.authorId ? { some: { username: input.authorId } } : undefined
 			};
 
 			const [result, count] = await database.$transaction([
@@ -82,6 +73,52 @@ export const courseRouter = t.router({
 				page: input.page,
 				totalCount: count
 			} satisfies Paginated<{ title: string; slug: string }>;
+		}),
+	getCourseData: t.procedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/courses/{slug}",
+				tags: ["Courses"],
+				summary: "List available courses"
+			}
+		})
+		.input(
+			z.object({
+				slug: z.string()
+			})
+		)
+		.output(
+			z.object({
+				title: z.string(),
+				subtitle: z.string(),
+				slug: z.string(),
+				lessons: z.number(),
+				description: z.string().nullable()
+			})
+		)
+		.query(async ({ input }) => {
+			const course = await database.course.findUnique({
+				where: {
+					slug: input.slug
+				}
+			});
+
+			if (!course) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course not found for slug: ${input.slug}`
+				});
+			}
+
+			return {
+				title: course.title,
+				subtitle: course.subtitle,
+				slug: course.slug,
+				lessons: (course.meta as CourseMeta).lessonCount,
+				description: course.description
+			};
 		}),
 	findMany: t.procedure
 		.input(
