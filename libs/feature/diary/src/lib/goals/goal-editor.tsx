@@ -83,12 +83,12 @@ export function GoalEditorDialog({
 			</div>
 		);
 	else {
-		const goals: { id: number; description: string | null; goalId: string }[] = [
+		const goals: { id: number; description: string; goalId: string }[] = [
 			{ id: 1, description: "Kein Ziel ausgewählt", goalId: "" }
 		];
 		let index = 2;
 
-		_goals?.forEach((goal: { status: string; description: string | null; id: string }) => {
+		_goals?.forEach((goal: { status: string; description: string; id: string }) => {
 			if (goal.status !== "COMPLETED") {
 				goals.push({ id: index, description: goal.description, goalId: goal.id });
 				index++;
@@ -150,7 +150,7 @@ function MyCombobox({
 	pSelectedGoal,
 	onChange
 }: Readonly<{
-	goals: { id: number; description: string | null; goalId: string }[];
+	goals: { id: number; description: string; goalId: string }[];
 	pSelectedGoal: number;
 	onChange: (id: string) => void;
 }>) {
@@ -161,7 +161,7 @@ function MyCombobox({
 		query === ""
 			? goals
 			: goals.filter(goals => {
-					return goals.description?.toLowerCase().includes(query.toLowerCase());
+					return goals.description.toLowerCase().includes(query.toLowerCase());
 				});
 
 	function onSelectedGoalChange(e: { id: number; description: string; goalId: string }) {
@@ -192,7 +192,7 @@ function MyCombobox({
 									active ? "bg-emerald-500 text-white" : "bg-white text-black"
 								}`}
 							>
-								{goal.description ?? ""}
+								{goal.description}
 							</li>
 						)}
 					</Combobox.Option>

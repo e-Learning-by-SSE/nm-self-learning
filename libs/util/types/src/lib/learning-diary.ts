@@ -16,7 +16,7 @@ const learningGoalStatusSchema = z.nativeEnum(LearningGoalStatus);
 
 export const learningSubGoalSchema = z.object({
 	id: z.string().cuid(),
-	description: z.string().optional().nullable(),
+	description: z.string().min(5),
 	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
 	priority: z.number().int(),
 	learningGoalId: z.string().cuid()
@@ -24,7 +24,7 @@ export const learningSubGoalSchema = z.object({
 
 export const learningGoalSchema = z.object({
 	id: z.string().cuid(),
-	description: z.string().optional().nullable(),
+	description: z.string().min(5),
 	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
 	learningSubGoals: z.array(learningSubGoalSchema)
 });
