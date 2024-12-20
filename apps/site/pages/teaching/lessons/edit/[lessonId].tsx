@@ -7,6 +7,7 @@ import { GetServerSideProps } from "next";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
+import { hasAuthorPermission } from "@self-learning/ui/layouts";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -44,10 +45,7 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 			return { notFound: true };
 		}
 
-		if (
-			user.role !== "ADMIN" &&
-			(user.isAuthor || !lesson.authors.some(a => a.username === user.name))
-		) {
+		if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
 			return {
 				redirect: {
 					destination: "/403",
