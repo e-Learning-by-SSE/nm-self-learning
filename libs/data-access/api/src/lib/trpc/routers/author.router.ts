@@ -108,16 +108,14 @@ export const authorRouter = t.router({
 	getCoursesAndSubjects: authorProcedure.query(async ({ ctx }) => {
 		return getCoursesAndSubjects(ctx.user.name);
 	}),
-	courseParticipation: authorProcedure
-		.input(participantsInputSchema)
-		.query(async ({ ctx, input }) => {
-			return courseParticipation({
-				courseIds: input.courseId,
-				start: input.start,
-				end: input.end,
-				threshold: 10
-			});
-		}),
+	courseParticipation: authorProcedure.input(participantsInputSchema).query(async ({ input }) => {
+		return courseParticipation({
+			courseIds: input.courseId,
+			start: input.start,
+			end: input.end,
+			threshold: 10
+		});
+	}),
 	findMany: authProcedure
 		.input(
 			paginationSchema.extend({

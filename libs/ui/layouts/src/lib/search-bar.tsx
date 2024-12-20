@@ -58,12 +58,12 @@ function SearchResults({
 	const search = { title: searchQuery, page: 1 };
 	const isUserAdmin = user?.role === "ADMIN";
 
-	const { data: lessons, isLoading: lessonLoading } = trpc.lesson.findMany.useQuery(search);
+	const { data: lessons } = trpc.lesson.findMany.useQuery(search);
 
-	const { data: authors, isLoading: authorLoading } = trpc.author.findMany.useQuery(search);
+	const { data: authors } = trpc.author.findMany.useQuery(search);
 	const authorResults = authors?.result.map(({ displayName: title, slug }) => ({ title, slug }));
 
-	const { data: courses, isLoading: coursesLoading } = trpc.course.findMany.useQuery(search);
+	const { data: courses } = trpc.course.findMany.useQuery(search);
 
 	const hasResults =
 		(lessons && lessons?.result?.length > 0) ||

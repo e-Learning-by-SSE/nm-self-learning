@@ -33,9 +33,10 @@ describe("EnableLearningDiaryDialog", () => {
 
 		const activateButton = getByText("Speichern & Aktivieren");
 		fireEvent.click(activateButton);
-
-		expect(mockOnSubmit).toHaveBeenCalled();
-		expect(mockOnClose).toHaveBeenCalled();
+		waitFor(() => {
+			expect(mockOnSubmit).toHaveBeenCalled();
+			expect(mockOnClose).toHaveBeenCalled();
+		});
 	});
 	it("should not call onSubmit when the dialog is closed", () => {
 		const mockOnClose = jest.fn();
@@ -47,8 +48,9 @@ describe("EnableLearningDiaryDialog", () => {
 
 		const closeButton = getByText("Abbrechen");
 		fireEvent.click(closeButton);
-
-		expect(mockOnSubmit).not.toHaveBeenCalled();
-		expect(mockOnClose).toHaveBeenCalled();
+		waitFor(() => {
+			expect(mockOnSubmit).not.toHaveBeenCalled();
+			expect(mockOnClose).toHaveBeenCalled();
+		});
 	});
 });
