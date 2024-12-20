@@ -15,7 +15,7 @@ pipeline {
         )
         choice(
             name: 'PUBLISH_IMAGE_TAG',
-            choices: ['NONE', 'UNSTABLE', 'LATEST', 'TESTING'],
+            choices: ['NONE', 'unstable', 'latest', 'testing'],
             description: 'Select the Docker tag to be used for the image. Only used in case PUBLISH is true'
         )
         string(
