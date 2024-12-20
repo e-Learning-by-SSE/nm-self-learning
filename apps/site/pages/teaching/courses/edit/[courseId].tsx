@@ -98,7 +98,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth<
 export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
 	const router = useRouter();
-	const trpcContext = trpc.useContext();
+	const trpcContext = trpc.useUtils();
 	const isInitialRender = useRef(true);
 
 	if (isInitialRender.current) {
@@ -107,7 +107,7 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 		// Populate query cache with existing lessons
 		// This way, we only need to fetch newly added lessons
 		for (const lesson of lessons) {
-			trpcContext.lesson.findOne.setData({ lessonId: lesson.lessonId }, lesson as any);
+			trpcContext.lesson.findOne.setData({ lessonId: lesson.lessonId }, lesson);
 		}
 	}
 
