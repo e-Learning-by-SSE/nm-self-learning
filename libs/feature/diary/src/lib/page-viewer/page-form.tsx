@@ -40,11 +40,11 @@ function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | u
 		learningGoals:
 			pageDetails.learningGoals?.map(goal => ({
 				id: goal.id,
-				description: goal.description ?? undefined,
+				description: goal.description,
 				status: goal.status,
 				learningSubGoals: goal.learningSubGoals.map(subGoal => ({
 					id: subGoal.id,
-					description: subGoal.description ?? undefined,
+					description: subGoal.description,
 					priority: subGoal.priority,
 					status: subGoal.status,
 					learningGoalId: goal.id // rename
