@@ -1,6 +1,7 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
+import jwt from "jsonwebtoken";
 
 export const meRouter = t.router({
 	permissions: authProcedure.query(({ ctx }) => {
@@ -47,5 +48,32 @@ export const meRouter = t.router({
 
 			console.log("[meRouter.updateStudent] Student updated", updated);
 			return updated;
-		})
+		}),
+	getJWTTokens: authProcedure.query(async ({ ctx }) => {
+		const user = await database.user.findUnique({
+			where: { name: ctx.user.name },
+			select: {
+				name: true,
+				role: true
+			}
+		});
+
+		if(!user) {
+			throw new Error("User not found");
+		}
+
+		const sharedPrivateKey = "1a1alhi05+wZcfAaPA8R2GTM5ay2xUMsr/DKJJkS6Fw=";
+
+		const token = jwt.sign(
+			{
+				name: user.name,
+				role: user.role
+			},
+			sharedPrivateKey,
+			{
+				expiresIn: "1d"
+			}
+		);
+		return token;
+	})
 });

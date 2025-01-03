@@ -312,12 +312,15 @@ function GenerateSubtileDialog({
 	const [progress, setProgress] = useState<string>("Initializing...");
 	const [transcription, setTranscription] = useState<string | null>(null);
 	const [socket, setSocket] = useState<Socket | null>(null);
+	const { data: sessionToken, isLoading } = trpc.me.getJWTTokens.useQuery();
+
+	console.log(sessionToken);
 
 	useEffect(() => {
 		const socket = io(process.env["TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000");
 		setSocket(socket);
 
-		socket.emit("transcribe", { video_url , realtime: true, lessonId: lessonId });
+		socket.emit("transcribe", { video_url , realtime: true, lessonId: lessonId, bearer_token: sessionToken  });
 
 		socket.on("progress", (data: { message: string }) => {
 			setProgress(data.message);
@@ -328,14 +331,14 @@ function GenerateSubtileDialog({
 			setProgress("Transcription complete!");
 		});
 
-		socket.on("error", (data: { error: string }) => {
-			setProgress(`Error: ${data.error}`);
+		socket.on("error", (data: { message: string }) => {
+			setProgress(`Error: ${data.message}`);
 		});
 
 		return () => {
 			socket.disconnect();
 		};
-	}, [video_url]);
+	}, [lessonId, sessionToken, video_url]);
 
 	return (
 		<CenteredContainer>
@@ -352,8 +355,7 @@ function GenerateSubtileDialog({
 						)}
 						{transcription && (
 							<div>
-								<h3>Transcription Result</h3>
-								<p>Hallo</p>
+								<h3>Transkription ist abgeschlossen</h3>
 							</div>
 						)}
 					</div>
@@ -365,13 +367,17 @@ function GenerateSubtileDialog({
 							className="btn-primary"
 							onClick={() => {
 								if (transcription) {
+									if(socket) socket.disconnect();
 									onClose(subtitleSrcSchema.parse(transcription));
 								} else {
+									if(socket) {
+										socket.disconnect();
+									}
 									onClose();
 								}
 							}}
 						>
-							OK
+							{transcription ? "Speichern" : "Im Hintergrund laufen lassen"}
 						</button>
 					</DialogActions>
 				</div>
