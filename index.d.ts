@@ -20,6 +20,7 @@ declare var process: {
 		KEYCLOAK_CLIENT_ID: string;
 		NEXTAUTH_URL: string;
 		NEXTAUTH_SECRET: string;
+		APP_VERSION: string;
 	};
 };
 
