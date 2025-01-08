@@ -6,6 +6,7 @@ import { CenteredSection } from "@self-learning/ui/layouts";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type Team = ResolvedValue<typeof getTeam>;
 
@@ -43,12 +44,13 @@ export const getStaticProps: GetStaticProps<TeamPageProps> = async ({ params }) 
 	};
 };
 
-export const getStaticPaths: GetStaticPaths = () => {
+export async function getStaticPaths({ locale }: { locale: string }) {
 	return {
+		...(await serverSideTranslations(locale, ["common"])),
 		fallback: "blocking",
 		paths: []
 	};
-};
+}
 
 async function getTeam(slug: string) {
 	return await database.team.findUnique({
