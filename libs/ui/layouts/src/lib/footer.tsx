@@ -1,8 +1,8 @@
 import { LinkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { DropdownButton } from "@self-learning/ui/common";
-import { useTranslation } from "next-i18next";
 import { FlagIcon } from "@heroicons/react/20/solid";
+import { useTranslation } from "next-i18next";
 
 function FooterElement({
 	href,

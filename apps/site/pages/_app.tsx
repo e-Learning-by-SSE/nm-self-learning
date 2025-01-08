@@ -12,8 +12,6 @@ import { useRouter } from "next/router";
 import superjson from "superjson";
 import { GlobalFeatures } from "../../_features";
 import "./styles.css";
-import i18next from "./i18next";
-import { I18nextProvider } from "react-i18next";
 import { appWithTranslation } from "next-i18next";
 
 export default withTRPC<AppRouter>({
@@ -49,31 +47,29 @@ function CustomApp({ Component, pageProps }: AppProps) {
 
 	return (
 		<>
-			<I18nextProvider i18n={i18next}>
-				{process.env.NODE_ENV === "development" && (
-					<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
-				)}
-				<PlausibleProvider
-					domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
-					customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
-					trackLocalhost={process.env.NODE_ENV === "development"}
+			{process.env.NODE_ENV === "development" && (
+				<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
+			)}
+			<PlausibleProvider
+				domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
+				customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
+				trackLocalhost={process.env.NODE_ENV === "development"}
+			>
+				<SessionProvider
+					session={pageProps.session}
+					basePath={useRouter().basePath + "/api/auth"}
 				>
-					<SessionProvider
-						session={pageProps.session}
-						basePath={useRouter().basePath + "/api/auth"}
-					>
-						<Head>
-							<title>Self-Learning</title>
-						</Head>
-						<GlobalFeatures />
-						<Navbar />
-						<main className="grid grow">
-							{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-						</main>
-						<Footer />
-					</SessionProvider>
-				</PlausibleProvider>
-			</I18nextProvider>
+					<Head>
+						<title>Self-Learning</title>
+					</Head>
+					<GlobalFeatures />
+					<Navbar />
+					<main className="grid grow">
+						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
+					</main>
+					<Footer />
+				</SessionProvider>
+			</PlausibleProvider>
 		</>
 	);
 }
