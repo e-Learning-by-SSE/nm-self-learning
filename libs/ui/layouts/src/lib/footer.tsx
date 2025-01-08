@@ -55,7 +55,6 @@ export function Footer() {
 						text="Impressum"
 					/>
 					<LanguageSwitcher />
-					{t("languageEnglish")}
 				</div>
 			</div>
 		</footer>
@@ -67,7 +66,7 @@ function LanguageSwitcher() {
 
 	return (
 		<DropdownButton position="top" title="Test" backgroundColor="flex">
-			<span className={"text-sm font-medium hover:text-secondary"}>Sprache wählen</span>
+			<span className={"text-sm font-medium hover:text-secondary"}>{t("pickLanguage")}</span>
 			<div className="flex flex-col bg-white">
 				<button
 					className={"hover:text-secondary"}
