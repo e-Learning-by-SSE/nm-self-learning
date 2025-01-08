@@ -99,16 +99,17 @@ export const meRouter = t.router({
 					name: ctx.user.name
 				}
 			});
+
 			const { user } = input;
-			if (
-				(user &&
-					dbSettings?.enabledFeatureLearningDiary !== user.enabledFeatureLearningDiary) ??
-				dbSettings?.enabledFeatureLearningDiary
-			) {
+			const isUserDefined = user !== undefined;
+			const isFeatureLearningDiaryChanged =
+				dbSettings?.enabledFeatureLearningDiary !== user?.enabledFeatureLearningDiary;
+			const shouldLogEvent = isUserDefined && isFeatureLearningDiaryChanged;
+			if (shouldLogEvent) {
 				await tx.eventLog.create({
 					data: {
 						type: "LTB_TOGGLE",
-						payload: { enabled: user!.enabledFeatureLearningDiary },
+						payload: { enabled: user.enabledFeatureLearningDiary },
 						username: ctx.user.name,
 						resourceId: ctx.user.name
 					}

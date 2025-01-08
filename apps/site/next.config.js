@@ -3,6 +3,8 @@ const { withNx } = require("@nx/next");
 const { withPlausibleProxy } = require("next-plausible");
 const { i18n } = require("./next-i18next.config.js");
 
+const packageJson = require("../../package.json");
+
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
@@ -28,6 +30,9 @@ const nextConfig = {
 	productionBrowserSourceMaps: process.env.NODE_ENV === "development",
 	experimental: {
 		swcPlugins: [["next-superjson-plugin", {}]]
+	},
+	env: {
+		APP_VERSION: packageJson.version
 	}
 };
 

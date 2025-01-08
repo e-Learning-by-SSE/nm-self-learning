@@ -11,11 +11,9 @@ import { useCallback, useRef, useState } from "react";
 export function MarkdownField({
 	content,
 	setValue,
-	label,
 	inline,
 	placeholder
 }: {
-	label?: string;
 	content: string | undefined;
 	setValue: (v: string | undefined) => void;
 	inline?: boolean;

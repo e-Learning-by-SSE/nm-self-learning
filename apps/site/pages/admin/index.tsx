@@ -8,6 +8,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 export default function AdminPage() {
 	const session = useRequiredSession();
+	const appVersion = process.env.APP_VERSION || "Version not available";
 
 	if (session.data?.user.role !== "ADMIN") {
 		return <AdminGuard></AdminGuard>;
@@ -51,6 +52,9 @@ export default function AdminPage() {
 					imageElement={<PersonalInformationSvg />}
 					title="Nutzer:innen verwalten"
 				/>
+			</div>
+			<div className="text-center text-sm text-gray-500 mt-8">
+				{`App Version: ${appVersion}`}
 			</div>
 		</CenteredSection>
 	);
