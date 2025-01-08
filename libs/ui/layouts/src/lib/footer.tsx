@@ -67,10 +67,21 @@ function LanguageSwitcher() {
 
 	return (
 		<DropdownButton position="top" title="Test" backgroundColor="flex">
-			<span className={"text-sm font-medium"}>Sprache wählen</span>
+			<span className={"text-sm font-medium hover:text-secondary"}>Sprache wählen</span>
 			<div className="flex flex-col bg-white">
-				<button onClick={() => i18n.changeLanguage("de")}>{t("languageGerman")}</button>
-				<button onClick={() => i18n.changeLanguage("en")}> {t("languageEnglish")}</button>
+				<button
+					className={"hover:text-secondary"}
+					onClick={() => i18n.changeLanguage("de")}
+				>
+					{t("languageGerman")}
+				</button>
+				<button
+					className={"hover:text-secondary"}
+					onClick={() => i18n.changeLanguage("en")}
+				>
+					{" "}
+					{t("languageEnglish")}
+				</button>
 			</div>
 		</DropdownButton>
 	);
