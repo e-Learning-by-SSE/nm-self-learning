@@ -60,6 +60,9 @@ export default function AdminPage() {
 			<div className="text-center text-sm text-gray-500 mt-8">
 				{`App Version: ${appVersion}`}
 			</div>
+			<div className="text-center text-sm text-gray-500 mt-8">
+				{`App Version: ${appVersion}`}
+			</div>
 		</CenteredSection>
 	);
 }
