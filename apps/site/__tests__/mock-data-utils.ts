@@ -1,5 +1,5 @@
 import { Author, Course, Lesson, Skill } from "@prisma/client";
-import { CourseContent } from "@self-learning/types";
+import { CourseContent, CourseMeta } from "@self-learning/types";
 
 export function createLessonMock({
 	lessonId,
@@ -59,24 +59,32 @@ export function createCourseMock({
 	content,
 	slug,
 	title,
-	description
+	subtitle,
+	description,
+	meta
 }: {
 	courseId: string;
 	authors: string[];
 	content: ContentMockDefinition;
 	slug?: string;
 	title?: string;
+	subtitle?: string;
 	description?: string;
+	meta?: CourseMeta;
 }): Partial<Course> & { authors: Pick<Author, "username">[] } & { content: CourseContent } {
 	return {
 		courseId,
 		slug: slug ?? courseId,
 		title: title ?? courseId,
+		subtitle: subtitle ?? undefined,
 		description: description ?? null,
 		authors: authors.map(author => ({ username: author })),
 		content: content.map(chapter => ({
 			title: chapter.chapterTitle,
 			content: chapter.lessons.map(lessonId => ({ lessonId }))
-		}))
+		})),
+		meta: meta ?? {
+			lessonCount: content.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
+		}
 	};
 }

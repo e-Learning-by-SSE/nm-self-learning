@@ -11,7 +11,7 @@ function getBaseUrl() {
 
 export const openApiDocument = generateOpenApiDocument(appRouter, {
 	title: "REST API of SelfLearn",
-	version: "0.1.0",
+	version: process.env.APP_VERSION || "0.1.0",
 	description: `OpenAPI Specification available at: <a href="${getBaseUrl()}/api/openapi">${getBaseUrl()}/api/openapi</a>`,
 	baseUrl: "/api/rest",
 	docsUrl: "/api-docs"

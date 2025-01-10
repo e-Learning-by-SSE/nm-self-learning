@@ -8,6 +8,7 @@ process.env.TZ = "Europe/Berlin";
 module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
+	setupFilesAfterEnv: ["<rootDir>/../../jest.setup.ts"],
 	globals: {},
 	/* TODO: Update to latest Jest snapshotFormat
 	 * By default Nx has kept the older style of Jest Snapshot formats
