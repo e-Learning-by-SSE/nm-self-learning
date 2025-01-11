@@ -93,7 +93,7 @@ model LearningDiaryLearnedLessons {
 
 model LearningGoal {
   id                  String             @id @default(cuid())
-  description         String?			 
+  description         String			 
   status              LearningGoalStatus @default(value: INACTIVE)
   createdAt           DateTime           @default(now())
   lastProgressUpdate  DateTime?
@@ -106,7 +106,7 @@ model LearningGoal {
 
 model LearningSubGoal {
   id                 String             @id @default(cuid())
-  description        String?
+  description        String
   status             LearningGoalStatus @default(value: INACTIVE)
   createdAt          DateTime           @default(now())
   lastProgressUpdate DateTime?          @default(now())
