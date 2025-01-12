@@ -12,9 +12,7 @@ export function DiaryLayout(
 	Component: NextComponentType<NextPageContext, unknown, DiaryProps>,
 	pageProps: DiaryProps
 ) {
-	console.log(
-		"-----------------------------------DiaryLayout-----------------------------------"
-	);
+	
 	return (
 		<div className="flex flex-col">
 			<div className="mx-auto flex w-full flex-col gap-8 px-4 sm:flex-col-reverse xl:grid xl:grid-cols-[400px_1fr]">
