@@ -95,18 +95,16 @@ describe("REST API of Course Router", () => {
 				}
 			});
 
-			const filteredCourses = [
-				...coursesMock.slice(0, 5), // Author 1
-				...coursesMock.slice(10, 15) // Author 1 and Author 2
-			].slice(0, pageSize);
+			// Remove courses without "Author1": [5, 6, 7, 8, 9]
+			coursesMock.splice(5, 5);
 			const expected = {
-				result: filteredCourses.map(course => ({
+				result: coursesMock.map(course => ({
 					title: course.title,
 					slug: course.slug
 				})),
 				pageSize,
 				page: 1,
-				totalCount: filteredCourses.length
+				totalCount: Math.min(coursesMock.length, pageSize)
 			};
 
 			expect(response.statusCode).toBe(200);
