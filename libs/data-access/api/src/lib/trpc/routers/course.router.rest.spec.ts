@@ -1,5 +1,4 @@
-import { createCourseMock } from "../../mock-data-utils";
-import { restQuery } from "./openapi-utils";
+import { restQuery, createCourseMock } from "@self-learning/util/testing";
 import { database } from "@self-learning/database";
 
 // Mock the database
