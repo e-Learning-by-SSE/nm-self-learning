@@ -8,20 +8,21 @@ import { TRPCError } from "@trpc/server";
  * Creates a REST API handler for TRPC to process all REST API requests under /api/rest/*.
  * @param useContext Must be set to `true`for production and `false` for testing.
  * @returns OpenAPI handler for REST API.
- * @author Sascha El-Sharkawy
  */
 export function restApiHandler(useContext = true) {
 	return createOpenApiNextHandler({
 		router: appRouter,
 		createContext: useContext ? createTrpcContext : undefined,
-		onError({ error }) {
-			// console.error("Error:", {
-			// 	error,
-			// 	type,
-			// 	path,
-			// 	input,
-			// 	ctx: ctx ? "has context" : "no context"
-			// });
+		onError({ error, type, path, input, ctx }) {
+			if (process.env.NODE_ENV === "development") {
+				console.error("Error:", {
+					error,
+					type,
+					path,
+					input,
+					ctx: ctx ? "has context" : "no context"
+				});
+			}
 
 			// Return HTTP error code based on TRPC error
 			if (error instanceof TRPCError) {
