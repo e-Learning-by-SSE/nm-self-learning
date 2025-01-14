@@ -1,14 +1,13 @@
 const nxPreset = require("@nx/jest/preset").default;
 
 const path = require("path");
-const { workspaceRoot } = require("nx/src/utils/workspace-root");
 
 const projectRoot = path.resolve(__dirname, "./");
 process.env.TZ = "Europe/Berlin";
 
 module.exports = {
 	...nxPreset,
-	setupFiles: ["dotenv/config", path.join(workspaceRoot, "jest.setup.ts")],
+	setupFiles: ["dotenv/config"],
 	globals: {},
 	/* TODO: Update to latest Jest snapshotFormat
 	 * By default Nx has kept the older style of Jest Snapshot formats
