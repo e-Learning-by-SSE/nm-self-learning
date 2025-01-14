@@ -42,7 +42,7 @@ export const restQuery = (req: {
 		};
 
 		try {
-			await restApiHandler(false)(
+			await restApiHandler()(
 				req as unknown as NextApiRequest,
 				res as unknown as NextApiResponse
 			);

@@ -1,18 +1,21 @@
 import { createOpenApiNextHandler } from "trpc-openapi";
-import { createTrpcContext } from "./context";
+import { Context } from "./context";
 import { appRouter } from "./app.router";
 import { TRPCError } from "@trpc/server";
+import * as trpcNext from "@trpc/server/adapters/next";
 
 // This handler will process all REST API requests under /api/rest/*
 /**
  * Creates a REST API handler for TRPC to process all REST API requests under /api/rest/*.
- * @param useContext Must be set to `true`for production and `false` for testing.
+ * @param contextHandler For production use `createTrpcContext` of `@self-learning/api`; for testing keep unspecified.
  * @returns OpenAPI handler for REST API.
  */
-export function restApiHandler(useContext = true) {
+type ContextHandler = ({ req, res }: trpcNext.CreateNextContextOptions) => Promise<Context>;
+
+export function restApiHandler(contextHandler?: ContextHandler) {
 	return createOpenApiNextHandler({
 		router: appRouter,
-		createContext: useContext ? createTrpcContext : undefined,
+		createContext: contextHandler,
 		onError({ error, type, path, input, ctx }) {
 			if (process.env.NODE_ENV === "development") {
 				console.error("Error:", {
