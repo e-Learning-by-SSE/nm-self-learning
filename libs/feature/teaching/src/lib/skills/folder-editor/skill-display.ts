@@ -19,6 +19,7 @@ export type SkillFolderVisualization = {
 	numberChildren: number;
 	shortHighlight: boolean;
 	isFolder: boolean;
+	isRepository: boolean;
 	displayName?: string; // alt name for display. Preffered over skill.name
 	massSelected?: boolean;
 };
@@ -35,6 +36,7 @@ export const visualSkillDefaultValues = {
 const inferInformationFromSkill = (skill: SkillFormModel) => {
 	return {
 		isFolder: skill.children.length > 0,
+		isRepository: skill.parents.length === 0,
 		numberChildren: skill.children.length,
 		id: skill.id,
 		skill

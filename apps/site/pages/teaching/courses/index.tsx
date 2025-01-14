@@ -49,12 +49,16 @@ export default function CourseCreationEditor() {
 
 	const repository = repositories?.find(repository => repository.id === "1");
 
+	if (!repositories || !repository) {
+		return <div>No repository</div>;
+	}
+
 	const renderContent = (index: number) => {
 		switch (index) {
 			case 0:
 				return <CourseBasicInformation />;
 			case 1:
-				return <CourseSkillView repository={repository} />;
+				return <CourseSkillView repositories={repositories} repository={repository} />;
 			case 2:
 				return <CourseModulView />;
 			case 3:

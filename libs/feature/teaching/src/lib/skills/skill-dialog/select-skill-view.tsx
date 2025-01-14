@@ -72,6 +72,12 @@ function InlineRemoveButton({
 				>
 					{label}
 				</button>
+				<XMarkIcon
+					type="button"
+					onClick={onRemove}
+					title={"Skill entfernen"}
+					className="h-7 w-7 hover:text-secondary"
+				/>
 			</div>
 		</div>
 	);

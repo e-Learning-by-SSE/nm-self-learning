@@ -1,7 +1,7 @@
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { useCallback, useMemo, useState } from "react";
 import { DialogHandler, Divider } from "@self-learning/ui/common";
-import { SkillFormModel } from "@self-learning/types";
+import { SkillFormModel, SkillRepositoryModel } from "@self-learning/types";
 import { RepositoryInfoMemorized } from "../repository/repository-edit-form";
 
 import { SelectedSkillsInfoForm } from "./skill-edit-form";
@@ -19,13 +19,18 @@ import { SkillRepository } from "@prisma/client";
 import { SkillFolderTable } from "./folder-table";
 
 export function SkillFolderEditor({
+	repositories,
 	repository,
-	skills
+	skills,
+	updateSelectedRepository
 }: {
+	repositories: SkillRepository[];
 	repository: SkillRepository;
 	skills: Map<string, SkillFormModel>;
+	updateSelectedRepository: (repositoryId: SkillRepositoryModel) => void;
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
+	const [selectedRepository, setSelectedRepository] = useState(repository);
 
 	const [selectedItem, setSelectedItem] = useState<{
 		previousSkill?: string;
@@ -44,17 +49,38 @@ export function SkillFolderEditor({
 
 	const changeEditTarget = useCallback(
 		(skillId?: string) => {
-			setSelectedItem(({ currentSkill: previousSelection }) => {
-				const visualsToUpdate = switchSelectionDisplayValue(previousSelection, skillId);
-				updateSkillDisplay(visualsToUpdate);
+			if (skillId?.startsWith("RPO.")) {
+				const repoId = skillId.replace("RPO.", "");
+				const repository = repositories.find(repository => repository.id === repoId);
+				if (repository) {
+					updateSelectedRepository(repository);
+					setSelectedRepository({ ...repository });
+					changeEditTarget(undefined);
+				}
+			} else {
+				setSelectedItem(({ currentSkill: previousSelection }) => {
+					const visualsToUpdate = switchSelectionDisplayValue(previousSelection, skillId);
+					updateSkillDisplay(visualsToUpdate);
 
-				return {
-					previousSkill: previousSelection,
-					currentSkill: skillId
-				};
-			});
+					if (skillId) {
+						const repoId = skills.get(skillId)?.repositoryId;
+						const repository = repositories.find(
+							repository => repository.id === repoId
+						);
+						if (repository) {
+							updateSelectedRepository(repository);
+							setSelectedRepository({ ...repository });
+						}
+					}
+
+					return {
+						previousSkill: previousSelection,
+						currentSkill: skillId
+					};
+				});
+			}
 		},
-		[updateSkillDisplay]
+		[updateSkillDisplay, repositories, updateSelectedRepository]
 	);
 
 	return (
@@ -64,7 +90,7 @@ export function SkillFolderEditor({
 					<SidebarContentEditor
 						skill={selectedSkill}
 						changeEditTarget={changeEditTarget}
-						repository={repository}
+						repository={selectedRepository}
 					/>
 				}
 			>
@@ -72,6 +98,7 @@ export function SkillFolderEditor({
 				<SkillFolderTable
 					repository={repository}
 					skillDisplayData={skillDisplayData}
+					selectedSkill={selectedSkill}
 					onSkillSelect={changeEditTarget}
 					updateSkillDisplay={updateSkillDisplay}
 				/>

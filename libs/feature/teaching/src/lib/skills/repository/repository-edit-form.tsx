@@ -3,7 +3,7 @@ import { trpc } from "@self-learning/api-client";
 import { SkillRepositoryModel, skillRepositorySchema } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 function RepositoryInfoForm({ repository }: { repository: SkillRepositoryModel }) {
@@ -11,6 +11,11 @@ function RepositoryInfoForm({ repository }: { repository: SkillRepositoryModel }
 		defaultValues: repository,
 		resolver: zodResolver(skillRepositorySchema)
 	});
+
+	useEffect(() => {
+		form.reset({ ...repository });
+	}, [form, repository]);
+
 	const errors = form.formState.errors;
 
 	const { mutateAsync: changeRep } = trpc.skill.updateRepo.useMutation();
