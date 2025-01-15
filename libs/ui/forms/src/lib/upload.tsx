@@ -316,6 +316,7 @@ function GenerateSubtileDialog({
 	const [progress, setProgress] = useState<string>("Initializing...");
 	const [transcription, setTranscription] = useState<string | null>(null);
 	const [socket, setSocket] = useState<Socket | null>(null);
+	const [isSocketConnected, setIsSocketConnected] = useState(false);
 	const { data: sessionToken, isLoading } = trpc.me.getJWTToken.useQuery();
 
 
@@ -330,13 +331,17 @@ function GenerateSubtileDialog({
 			bearer_token: sessionToken
 		});
 
+		socket.on("connect", () => {
+            setIsSocketConnected(true);
+        });
+
 		socket.on("progress", (data: { message: string }) => {
 			setProgress(data.message);
 		});
 
 		socket.on("complete", (data: { transcription: string }) => {
 			setTranscription(data.transcription);
-			setProgress("Transcription complete!");
+			setProgress("Transkription übermittelt");
 		});
 
 		socket.on("error", (data: { message: string }) => {
@@ -372,6 +377,7 @@ function GenerateSubtileDialog({
 				<div className="mt-auto">
 					<DialogActions onClose={onClose}>
 						<button
+							disabled={!isSocketConnected && !transcription}
 							className="btn-primary"
 							onClick={() => {
 								if (transcription) {
