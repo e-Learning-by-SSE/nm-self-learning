@@ -8,11 +8,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	if (req.method === "POST") {
 		try {
 			const transcription = req.body.transcription;
-			const token = req.headers.authorization;
+			const token = req.headers.authorization?.replace('Bearer ', '');
 			const lessonId = req.body.lessonId;
-
+			
 			try {
-				jwt.verify(token ?? "", process.env.NEXTAUTH_SECRET ?? "");
+				const secret = process.env.NEXTAUTH_SECRET ?? "";
+				jwt.verify(token ?? "", secret);
 			} catch (e) {
 				return res.status(401).json({ message: "Unauthorized" });
 			}

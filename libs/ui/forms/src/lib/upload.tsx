@@ -318,7 +318,6 @@ function GenerateSubtileDialog({
 	const [socket, setSocket] = useState<Socket | null>(null);
 	const { data: sessionToken, isLoading } = trpc.me.getJWTToken.useQuery();
 
-	console.log(sessionToken);
 
 	useEffect(() => {
 		const socket = io(process.env["TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000");
