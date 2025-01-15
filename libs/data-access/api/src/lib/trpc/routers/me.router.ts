@@ -49,7 +49,7 @@ export const meRouter = t.router({
 			console.log("[meRouter.updateStudent] Student updated", updated);
 			return updated;
 		}),
-	getJWTTokens: authProcedure.query(async ({ ctx }) => {
+	getJWTToken: authProcedure.query(async ({ ctx }) => {
 		const user = await database.user.findUnique({
 			where: { name: ctx.user.name },
 			select: {
@@ -58,7 +58,7 @@ export const meRouter = t.router({
 			}
 		});
 
-		if(!user) {
+		if (!user) {
 			throw new Error("User not found");
 		}
 

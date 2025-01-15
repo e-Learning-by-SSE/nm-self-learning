@@ -212,7 +212,6 @@ export function ModifySubtile({
 			subtitles: updatedSubtitles
 		});
 
-	
 		const updatedSubtitleContent = updatedSubtitles
 			.map(({ timestamp, text }) => `${timestamp}\n${text}`)
 			.join("\n\n");
@@ -234,7 +233,12 @@ export function ModifySubtile({
 			<ul>
 				{subtitles.subtitles.map((subtitle, index) => (
 					<li key={index} className="flex items-center mb-2 p-2">
-						<span className="w-1/4 text-right pr-4 hover:text-secondary hover:cursor-pointer" onClick={() => {onClickTimeStamp(subtitle.timestamp)}}>
+						<span
+							className="w-1/4 text-right pr-4 hover:text-secondary hover:cursor-pointer"
+							onClick={() => {
+								onClickTimeStamp(subtitle.timestamp);
+							}}
+						>
 							{subtitle.timestamp}
 						</span>
 
@@ -312,7 +316,7 @@ function GenerateSubtileDialog({
 	const [progress, setProgress] = useState<string>("Initializing...");
 	const [transcription, setTranscription] = useState<string | null>(null);
 	const [socket, setSocket] = useState<Socket | null>(null);
-	const { data: sessionToken, isLoading } = trpc.me.getJWTTokens.useQuery();
+	const { data: sessionToken, isLoading } = trpc.me.getJWTToken.useQuery();
 
 	console.log(sessionToken);
 
@@ -320,7 +324,12 @@ function GenerateSubtileDialog({
 		const socket = io(process.env["TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000");
 		setSocket(socket);
 
-		socket.emit("transcribe", { video_url , realtime: true, lessonId: lessonId, bearer_token: sessionToken  });
+		socket.emit("transcribe", {
+			video_url,
+			realtime: true,
+			lessonId: lessonId,
+			bearer_token: sessionToken
+		});
 
 		socket.on("progress", (data: { message: string }) => {
 			setProgress(data.message);
@@ -367,10 +376,10 @@ function GenerateSubtileDialog({
 							className="btn-primary"
 							onClick={() => {
 								if (transcription) {
-									if(socket) socket.disconnect();
+									if (socket) socket.disconnect();
 									onClose(subtitleSrcSchema.parse(transcription));
 								} else {
-									if(socket) {
+									if (socket) {
 										socket.disconnect();
 									}
 									onClose();
