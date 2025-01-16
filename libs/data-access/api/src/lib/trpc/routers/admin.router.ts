@@ -54,7 +54,10 @@ export const adminRouter = t.router({
 				role: true,
 				image: true,
 				author: true,
-				student: true
+				student: true,
+				enabledFeatureLearningDiary: true,
+				enabledLearningStatistics: true,
+				registrationCompleted: true
 			}
 		});
 	}),

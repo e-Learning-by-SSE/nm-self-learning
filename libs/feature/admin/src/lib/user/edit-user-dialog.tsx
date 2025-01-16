@@ -33,13 +33,8 @@ export function EditUserDialog({
 					{user && (
 						<UserForm
 							initialUser={{
-								id: user.id,
-								name: user.name,
-								displayName: user.displayName,
-								email: user.email,
-								role: user.role,
-								emailVerified: new Date(user.emailVerified ?? ""),
-								image: user.image
+								...user,
+								emailVerified: new Date(user.emailVerified ?? "")
 							}}
 							username={username}
 							onClose={onClose}

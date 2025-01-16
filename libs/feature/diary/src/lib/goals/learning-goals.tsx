@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
 	ButtonActions,
 	DialogHandler,
@@ -191,25 +191,26 @@ function GoalRow({
 	goal: Goal;
 	onClick: (editedGoal: Goal) => void;
 }>) {
-	const { onStatusUpdate } = useLearningGoalContext();
-	const lastToastTime = useRef<number>(Date.now() - 500);
+	const [showTooltip, setShowTooltip] = useState(false);
 
-	const currentTime = Date.now();
-	if (goal.status !== "COMPLETED" && goal.learningSubGoals.length > 0) {
-		if (currentTime - lastToastTime.current >= 500) {
+	useEffect(() => {
+		// let timer: Timeout;
+		if (goal.status !== "COMPLETED" && goal.learningSubGoals.length > 0) {
 			const index = goal.learningSubGoals.findIndex(
 				subGoal => subGoal.status === "INACTIVE" || subGoal.status === "ACTIVE"
 			);
 			if (index < 0) {
-				showToast({
-					type: "success",
-					title: `"${goal.description}" kann abgeschlossen werden!`,
-					subtitle: "Alle Feinziele erreicht!"
-				});
+				setShowTooltip(true);
+				setTimeout(() => {
+					setShowTooltip(false);
+				}, 5000);
+			} else {
+				setShowTooltip(false);
 			}
-			lastToastTime.current = currentTime;
 		}
-	}
+	}, [goal]);
+
+	const { onStatusUpdate } = useLearningGoalContext();
 
 	return (
 		<section>
@@ -228,8 +229,15 @@ function GoalRow({
 							</div>
 						)}
 					</div>
-					<div className="mr-4 flex justify-end">
+					<div className="relative mr-4 flex justify-end">
 						<GoalStatus goal={goal} editable={editable} onChange={onStatusUpdate} />
+						{showTooltip && (
+							<div className="absolute top-1/10 min-w-[262px] right-7 -top-1 -translate-y-2/3 px-3 py-1 text-sm text-white bg-gray-700 rounded shadow">
+								Lernziel kann abgeschlossen werden.
+								<br />
+								Alle Feinziele erreicht.
+							</div>
+						)}
 					</div>
 				</div>
 				<ul className="flex flex-col gap-1">

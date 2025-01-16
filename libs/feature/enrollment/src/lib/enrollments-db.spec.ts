@@ -45,7 +45,7 @@ describe("enrollUser", () => {
 		expect(result).toEqual(mockEnrollment);
 		expect(createUserEvent).toHaveBeenCalledWith({
 			username,
-			action: "COURSE_ENROLL",
+			type: "COURSE_ENROLL",
 			resourceId: courseId,
 			payload: undefined
 		});
@@ -58,7 +58,15 @@ describe("enrollUser", () => {
 			enrollments: [{ createdAt }]
 		});
 
-		// await expect(enrollUser({ courseId, username })).rejects.toThrow(ApiError); // TODO this does not work in testing
+		try {
+			await enrollUser({ courseId, username });
+			fail(`No Exception thrown`);
+		} catch (e) {
+			if (!(e instanceof ApiError)) {
+				fail(`Wrong exception thrown: ${e}`);
+			}
+		}
+		// await expect(enrollUser({ courseId, username })).rejects.toBeInstanceOf(ApiError); // TODO this does not work in testing
 
 		expect(createUserEvent).not.toHaveBeenCalled();
 	});

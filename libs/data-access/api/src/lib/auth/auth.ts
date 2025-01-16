@@ -3,7 +3,7 @@ import { database } from "@self-learning/database";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import NextAuth, { NextAuthOptions } from "next-auth";
-import { Adapter } from "next-auth/adapters";
+import { Adapter, AdapterAccount } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
@@ -60,7 +60,7 @@ const customPrismaAdapter: Adapter = {
 
 	// We overwrite the linkAccount method, because some auth providers may send additional properties
 	// that do not exist in the Account model.
-	async linkAccount(account): Promise<void> {
+	async linkAccount(account: AdapterAccount): Promise<void> {
 		const user = await database.user.findUniqueOrThrow({
 			where: { id: account.userId }
 		});
@@ -225,7 +225,9 @@ export const authOptions: NextAuthOptions = {
 					id: true,
 					role: true,
 					image: true,
-					author: { select: { username: true } }
+					author: { select: { username: true } },
+					enabledFeatureLearningDiary: true,
+					enabledLearningStatistics: true
 				}
 			});
 
@@ -238,7 +240,9 @@ export const authOptions: NextAuthOptions = {
 						id: true,
 						role: true,
 						image: true,
-						author: { select: { username: true } }
+						author: { select: { username: true } },
+						enabledFeatureLearningDiary: true,
+						enabledLearningStatistics: true
 					}
 				});
 			} else if (userFromDb.role !== "ADMIN" && token["isAdmin"] === true) {
@@ -250,7 +254,9 @@ export const authOptions: NextAuthOptions = {
 						id: true,
 						role: true,
 						image: true,
-						author: { select: { username: true } }
+						author: { select: { username: true } },
+						enabledFeatureLearningDiary: true,
+						enabledLearningStatistics: true
 					}
 				});
 			}
@@ -260,7 +266,9 @@ export const authOptions: NextAuthOptions = {
 				name: username,
 				role: userFromDb.role,
 				isAuthor: !!userFromDb.author,
-				avatarUrl: userFromDb.image
+				avatarUrl: userFromDb.image,
+				enabledLearningStatistics: userFromDb.enabledLearningStatistics,
+				enabledFeatureLearningDiary: userFromDb.enabledFeatureLearningDiary
 			};
 
 			return session;

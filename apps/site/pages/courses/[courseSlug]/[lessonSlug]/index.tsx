@@ -26,6 +26,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { withAuth } from "@self-learning/api";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -36,53 +37,55 @@ export type LessonProps = LessonLayoutProps & {
 	};
 };
 
-export const getServerSideProps: GetServerSideProps<LessonProps> = async ({ params }) => {
-	const props = await getStaticPropsForLayout(params);
+export const getServerSideProps: GetServerSideProps<LessonProps> = withAuth<LessonProps>(
+	async (context, _user) => {
+		const props = await getStaticPropsForLayout(context.params);
 
-	if ("notFound" in props) return { notFound: true };
+		if ("notFound" in props) return { notFound: true };
 
-	const { lesson } = props;
+		const { lesson } = props;
 
-	lesson.quiz = null; // Not needed on this page, but on /quiz
-	let mdDescription = null;
-	let mdArticle = null;
-	let mdQuestion = null;
-	let mdSubtitle = null;
+		lesson.quiz = null; // Not needed on this page, but on /quiz
+		let mdDescription = null;
+		let mdArticle = null;
+		let mdQuestion = null;
+		let mdSubtitle = null;
 
-	if (lesson.description) {
-		mdDescription = await compileMarkdown(lesson.description);
-	}
-
-	if (lesson.subtitle && lesson.subtitle.length > 0) {
-		mdSubtitle = await compileMarkdown(lesson.subtitle);
-	}
-
-	const { content: article } = findContentType("article", lesson.content as LessonContent);
-
-	if (article) {
-		mdArticle = await compileMarkdown(article.value.content ?? "Kein Inhalt.");
-
-		// Remove article content to avoid duplication
-		article.value.content = "(replaced)";
-	}
-
-	// TODO change to check if the lesson is self requlated
-	if (lesson.lessonType === LessonType.SELF_REGULATED) {
-		mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
-	}
-
-	return {
-		props: {
-			...props,
-			markdown: {
-				article: mdArticle,
-				description: mdDescription,
-				preQuestion: mdQuestion,
-				subtitle: mdSubtitle
-			}
+		if (lesson.description) {
+			mdDescription = await compileMarkdown(lesson.description);
 		}
-	};
-};
+
+		if (lesson.subtitle && lesson.subtitle.length > 0) {
+			mdSubtitle = await compileMarkdown(lesson.subtitle);
+		}
+
+		const { content: article } = findContentType("article", lesson.content as LessonContent);
+
+		if (article) {
+			mdArticle = await compileMarkdown(article.value.content ?? "Kein Inhalt.");
+
+			// Remove article content to avoid duplication
+			article.value.content = "(replaced)";
+		}
+
+		// TODO change to check if the lesson is self requlated
+		if (lesson.lessonType === LessonType.SELF_REGULATED) {
+			mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
+		}
+
+		return {
+			props: {
+				...props,
+				markdown: {
+					article: mdArticle,
+					description: mdDescription,
+					preQuestion: mdQuestion,
+					subtitle: mdSubtitle
+				}
+			}
+		};
+	}
+);
 
 function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	// Handle situations that content creator may created an empty lesson (to add content later)
@@ -113,7 +116,12 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	return preferredMediaType;
 }
 
-export default function Lesson({ lesson, course, markdown }: LessonProps) {
+export default function LessonPage({ lesson, course, markdown }: LessonProps) {
+	// Specify key property to reset page when a new lesson is loaded
+	return <Lesson lesson={lesson} course={course} markdown={markdown} key={lesson.lessonId} />;
+}
+
+function Lesson({ lesson, course, markdown }: LessonProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
@@ -181,7 +189,7 @@ export default function Lesson({ lesson, course, markdown }: LessonProps) {
 	);
 }
 
-Lesson.getLayout = LessonLayout;
+LessonPage.getLayout = LessonLayout;
 
 function LessonHeader({
 	course,

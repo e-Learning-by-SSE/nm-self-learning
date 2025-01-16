@@ -1,6 +1,6 @@
 import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { CSSProperties, ReactNode } from "react";
-
+import { GreyBoarderButton } from "../button/button";
 export type OnDialogCloseFn<T> = (result?: T) => void;
 
 export function Dialog<TResult>({
@@ -29,7 +29,7 @@ export function Dialog<TResult>({
 						className={`relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8 ${
 							className ?? ""
 						}`}
-						style={style ?? { minWidth: 624, maxHeight: "80vh" }}
+						style={style ?? { minWidth: 420, maxHeight: "80vh" }}
 						data-testid="Dialog"
 					>
 						<HeadlessDialog.Title className="mb-8 text-2xl">
@@ -92,15 +92,10 @@ export function DialogActions({
 	children?: React.ReactNode;
 }) {
 	return (
-		<div className="mt-8 flex justify-end gap-2">
-			<button
-				type="button"
-				tabIndex={-1}
-				className="btn-stroked"
-				onClick={() => onClose(undefined)}
-			>
-				Abbrechen
-			</button>
+		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
+			<GreyBoarderButton onClick={() => onClose(undefined)}>
+				<span className={"text-gray-600"}>Abbrechen</span>
+			</GreyBoarderButton>
 			{children}
 		</div>
 	);

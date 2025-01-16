@@ -22,7 +22,9 @@ function prepare() {
 			id: "user-id",
 			name: "john",
 			role: "USER",
-			isAuthor: false
+			isAuthor: false,
+			enabledFeatureLearningDiary: false,
+			enabledLearningStatistics: true
 		}
 	};
 	const mockLoadUserEvent = loadUserEvents as jest.MockedFunction<typeof loadUserEvents>;

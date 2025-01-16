@@ -83,7 +83,9 @@ export function GoalEditorDialog({
 			</div>
 		);
 	else {
-		const goals = [{ id: 1, description: "Kein Ziel ausgewählt", goalId: "" }];
+		const goals: { id: number; description: string; goalId: string }[] = [
+			{ id: 1, description: "Kein Ziel ausgewählt", goalId: "" }
+		];
 		let index = 2;
 
 		_goals?.forEach((goal: { status: string; description: string; id: string }) => {
@@ -202,10 +204,12 @@ function MyCombobox({
 
 export function LearningGoalEditorDialog({
 	onClose,
-	onStatusUpdate
+	onStatusUpdate,
+	description
 }: {
 	onClose: () => void;
 	onStatusUpdate: StatusUpdateCallback;
+	description: string;
 }) {
 	const { data: learningGoals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
 
@@ -217,7 +221,7 @@ export function LearningGoalEditorDialog({
 			<div className="overflow-y-auto mb-2">
 				<div className="space-y-4">
 					<div className="max-w-md py-2">
-						<span>{"Hier muss noch ein Text rein!!!!!!!!!!!!!!!"}</span>
+						<span>{description}</span>
 					</div>
 				</div>
 				<div className={"flex justify-center py-4"}>
