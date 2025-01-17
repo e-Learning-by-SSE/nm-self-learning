@@ -1,21 +1,17 @@
 import type { AppRouter } from "@self-learning/api";
-import { Navbar, Footer } from "@self-learning/ui/layouts";
+import { Footer, Navbar } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
+import "katex/dist/katex.css";
 import { SessionProvider } from "next-auth/react";
+import PlausibleProvider from "next-plausible";
 import { AppProps } from "next/app";
 import Head from "next/head";
-import { Toaster } from "react-hot-toast";
 import { useRouter } from "next/router";
-// import { ReactQueryDevtools } from "react-query/devtools";
-import "./styles.css";
-import "katex/dist/katex.css";
-import { useEffect } from "react";
-import { init } from "@socialgouv/matomo-next";
-import PlausibleProvider from "next-plausible";
-import { MessagePortal } from "@self-learning/ui/notifications";
 import superjson from "superjson";
+import { GlobalFeatures } from "../../_features";
+import "./styles.css";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -50,37 +46,31 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			(Component as any).getLayout(Component, pageProps)
 		: null;
 
-	useEffect(() => {
-		const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
-		const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
-		if (MATOMO_URL && MATOMO_SITE_ID) {
-			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
-		}
-	}, []);
-	const globalMessage = process.env.NEXT_PUBLIC_SYSTEM_MSG;
-
 	return (
-		<PlausibleProvider
-			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
-			customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
-			trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
-		>
-			<SessionProvider
-				session={pageProps.session}
-				basePath={useRouter().basePath + "/api/auth"}
+		<>
+			{process.env.NODE_ENV === "development" && (
+				<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
+			)}
+			<PlausibleProvider
+				domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
+				customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
+				trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
 			>
-				<Head>
-					<title>Self-Learning</title>
-				</Head>
-				{globalMessage && <MessagePortal htmlMessage={globalMessage} />}
-				<Navbar />
-				<main className="grid grow">
-					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-				</main>
-				<Toaster containerStyle={{ top: 96 }} position="top-right" />
-				<Footer />
-				{/* <ReactQueryDevtools position="bottom-right" /> */}
-			</SessionProvider>
-		</PlausibleProvider>
+				<SessionProvider
+					session={pageProps.session}
+					basePath={useRouter().basePath + "/api/auth"}
+				>
+					<Head>
+						<title>Self-Learning</title>
+					</Head>
+					<GlobalFeatures />
+					<Navbar />
+					<main className="grid grow">
+						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
+					</main>
+					<Footer />
+				</SessionProvider>
+			</PlausibleProvider>
+		</>
 	);
 }

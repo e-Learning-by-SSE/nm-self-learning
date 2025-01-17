@@ -1,8 +1,8 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
 import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ExactQuestion } from "./schema";
+import { PlusButton, TrashcanButton } from "@self-learning/ui/common";
 
 export default function ExactForm({
 	index
@@ -37,14 +37,11 @@ export default function ExactForm({
 				<div className="flex items-center gap-4">
 					<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
 
-					<button
-						type="button"
-						className="btn-stroked h-fit w-fit items-center"
-						onClick={addAnswer}
-					>
-						<PlusIcon className="h-5" />
-						<span>Antwort hinzufügen</span>
-					</button>
+					<PlusButton
+						onAdd={addAnswer}
+						title={"Antwort hinzufügen"}
+						additionalClassNames={"h-fit w-fit items-center"}
+					/>
 				</div>
 
 				<span className="flex items-center gap-4">
@@ -73,13 +70,11 @@ export default function ExactForm({
 								placeholder="Antwort"
 								autoComplete="off"
 							/>
-							<button
-								type="button"
-								className="text-xs text-red-500"
+
+							<TrashcanButton
 								onClick={() => removeAnswer(acceptedAnswerIndex)}
-							>
-								Entfernen
-							</button>
+								title={"Antwort entfernen"}
+							/>
 						</div>
 					))}
 				</div>

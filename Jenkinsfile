@@ -9,19 +9,19 @@ pipeline {
             description: 'Perform a full build without using any caches. This may take longer but ensures a clean build.'
         )
         booleanParam(
-            name: 'RELEASE',
+            name: 'PUBLISH',
             defaultValue: false,
-            description: 'Indicate if this build should be treated as a release. If true, the container image will be uploaded.'
+            description: 'Indicate if this build should be published to ghcr.io. When true, the settings with PUBLISH_ prefix are used'
         )
         choice(
-            name: 'RELEASE_IMAGE_TAG',
-            choices: ['NONE', 'UNSTABLE', 'LATEST', 'TESTING'],
-            description: 'Select the Docker tag to be used for the release image. Choose NONE if not releasing.'
+            name: 'PUBLISH_IMAGE_TAG',
+            choices: ['NONE', 'unstable', 'latest', 'testing'],
+            description: 'Select the Docker tag to be used for the image. Only used in case PUBLISH is true'
         )
         string(
-            name: 'RELEASE_API_VERSION',
+            name: 'PUBLISH_API_VERSION',
             defaultValue: '',
-            description: 'Manually specify a tag for the Docker image. This tag will be preferred over the package version if set. Only used in case RELEASE is true'
+            description: 'Manually specify an tag for the Docker image. This tag will be preferred over the package version if set. If it is not set, the version inside the package.json is used as tag. This does not override PUBLISH_IMAGE_TAG and will used as an additional tag. Only used in case PUBLISH is true.'
         )
     }
     environment {
@@ -34,7 +34,7 @@ pipeline {
         NX_REJECT_UNKNOWN_LOCAL_CACHE = 0
         
         NODE_DOCKER_IMAGE = 'node:21-bullseye'
-        TARGET_PREFIX = 'e-learning-by-sse/nm-self-learning'
+        TARGET_PREFIX = 'ghcr.io/e-learning-by-sse/nm-self-learning'
         // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
         DOCKER_ARGS = "--tmpfs /.npm -v ${env.WORKSPACE}/build-caches/npm:${env.WORKSPACE}/.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
     }
@@ -83,15 +83,14 @@ pipeline {
                         script {
                             def projectName = env.JOB_NAME.split('/')[0]
                             def branchJobName = env.JOB_NAME.split('/')[1]
-                            def jobUrl = "${env.JENKINS_URL}job/${projectName}/job/${branchJobName}/lastSuccessfulBuild/git-2/api/json" // be aware /git/ is the git data of the jenkins library
+                            def jobUrl = "${env.JENKINS_URL}job/${projectName}/job/${branchJobName}/lastSuccessfulBuild/git-2/api/json" // be aware /git/ is the git data of the Jenkins library
                             lastSuccessSHA = sh(
                                 script: "curl ${jobUrl} | jq '.lastBuiltRevision.SHA1'",
                                 returnStdout: true
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                    sh 'npm run format:check'
-                                    sh 'npm run prisma:seed'
+                                    sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint test build e2e-ci"
                                 }
                         }
@@ -105,7 +104,7 @@ pipeline {
                     post {
                         success {
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                                staging02ssh "bash /opt/update-compose-project.sh selflearn-staging"
+                                staging02ssh "bash /opt/update-compose-project.sh selflearn-unstable"
                             }
                         }
                     }
@@ -128,7 +127,7 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run format:check'
-                                sh 'npm run prisma:seed'
+                                sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint test build e2e-ci"
                             }
                         }
@@ -162,21 +161,21 @@ pipeline {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                sh 'npx nx migrate reset' // this will test migrations too
+                                sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
                             }
-                            if (params.RELEASE) {
+                            if (params.PUBLISH) {
                                 def apiVersion = ''
-                                if (params.RELEASE_API_VERSION == '') {
+                                if (params.PUBLISH_API_VERSION == '') {
                                     apiVersion = "${env.API_VERSION}"
                                 } else {
-                                    apiVersion = "${params.RELEASE_API_VERSION}"
+                                    apiVersion = "${params.PUBLISH_API_VERSION}"
                                 }
                                 def releaseTag = ''
-                                if (params.RELEASE_IMAGE_TAG == 'NONE') {
+                                if (params.PUBLISH_IMAGE_TAG == 'NONE') {
                                     releaseTag = "${apiVersion}" 
                                 } else {
-                                    releaseTag = "${params.RELEASE_IMAGE_TAG}"
+                                    releaseTag = "${params.PUBLISH_IMAGE_TAG}"
                                 }
                                 ssedocker {
                                     create {

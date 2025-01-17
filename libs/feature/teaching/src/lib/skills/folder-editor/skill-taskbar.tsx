@@ -3,8 +3,10 @@ import {
 	ButtonActions,
 	dispatchDialog,
 	freeDialog,
+	IconButton,
 	showToast,
-	SimpleDialog
+	SimpleDialog,
+	TrashcanButton
 } from "@self-learning/ui/common";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
@@ -88,11 +90,11 @@ export function AddChildButton({
 
 export function SkillDeleteOption({
 	skillIds,
-	className,
+	inline = false,
 	onDeleteSuccess
 }: {
 	skillIds: SkillFormModel["id"][];
-	className?: string;
+	inline?: boolean;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 }) {
 	const { mutateAsync: deleteSkills } = trpc.skill.deleteSkills.useMutation();
@@ -124,19 +126,15 @@ export function SkillDeleteOption({
 		);
 	};
 
-	return (
-		<button
-			type="button"
-			className={` ${
-				className
-					? className
-					: "rounded-lg border border-light-border bg-red-400 px-2 py-2 hover:bg-red-600"
-			}`}
-			onClick={handleDelete}
-		>
-			<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
-		</button>
-	);
+	if (!inline) {
+		return <TrashcanButton onClick={handleDelete} />;
+	} else {
+		return (
+			<button type="button" className={"px-2 hover:text-secondary"} onClick={handleDelete}>
+				<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
+			</button>
+		);
+	}
 }
 
 export function NewSkillButton({
@@ -167,9 +165,10 @@ export function NewSkillButton({
 		await onSuccess?.(createdSkill ?? null);
 	};
 	return (
-		<button className="btn-primary" onClick={onCreateSkill}>
-			<PlusIcon className="icon h-5" />
-			<span>Skill hinzufügen</span>
-		</button>
+		<IconButton
+			text="Skill hinzufügen"
+			icon={<PlusIcon className="icon h-5" />}
+			onClick={onCreateSkill}
+		/>
 	);
 }

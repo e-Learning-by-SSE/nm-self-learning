@@ -17,7 +17,8 @@
 			"outputs": ["{workspaceRoot}/coverage/libs/feature/completion"],
 			"options": {
 				"jestConfig": "libs/feature/completion/jest.config.ts",
-				"passWithNoTests": true
+				"passWithNoTests": true,
+				"parallel": false
 			}
 		}
 	}

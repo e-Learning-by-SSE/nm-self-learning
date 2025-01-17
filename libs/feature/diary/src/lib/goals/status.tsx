@@ -1,8 +1,7 @@
-import { ArrowDownRightIcon, ArrowPathIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
 
 /**
@@ -26,48 +25,9 @@ export function GoalStatus({
 }>) {
 	const { mutateAsync: editSubGoal } = trpc.learningGoal.editSubGoalStatus.useMutation();
 	const { mutateAsync: editGoal } = trpc.learningGoal.editGoalStatus.useMutation();
-	const [showDialog, setShowDialog] = useState(false);
-
-	// Be safe and use a state to trigger rerender when user changes something.
-	// We could assume that executing "onEdit" will lead to a rerender (e.g. because the "goal" prop changes), but this is not guaranteed.
-	// Drawback is double render when the user changes the status.
 	const [status, setStatus] = useState(
 		subGoal?.status ?? goal.status ?? LearningGoalStatus.INACTIVE
 	);
-
-	const myRef = useRef<HTMLInputElement>(null);
-	// Handling clicks outside of the three status options and close the option area.
-	const handleClickOutside = (e: { target: any }) => {
-		if (myRef.current && !myRef.current.contains(e.target)) {
-			setShowDialog(false);
-		}
-	};
-
-	// Hook that managed the mousedown eventListener for handling clicks outside of the status options.
-	useEffect(() => {
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	});
-
-	/**
-	 * Function on change of a goal or sub-goal status. Close the three options
-	 *
-	 * @param pStatus Selected new status value
-	 */
-	function onChange(pStatus: LearningGoalStatus) {
-		setStatus(pStatus);
-		setShowDialog(false);
-		if (!subGoal && goal) {
-			editGoal({ goalId: goal.id, status: pStatus });
-		} else if (subGoal && goal) {
-			editSubGoal({
-				subGoalId: subGoal.id,
-				status: pStatus,
-				learningGoalId: subGoal.learningGoalId
-			});
-		}
-		onStatusUpdate && onStatusUpdate(goal, pStatus);
-	}
 
 	/**
 	 * Checks if all sub-goals of a learning goal are completed.
@@ -87,102 +47,108 @@ export function GoalStatus({
 		return result;
 	}
 
-	const disable = (goal && !areSubGoalsCompleted() && !subGoal) || !editable;
-
-	let statusBgColor = "";
-	if (disable) {
-		statusBgColor = " bg-gray-300";
-	} else {
-		switch (status) {
-			case "ACTIVE":
-				statusBgColor = " bg-orange-300";
-				break;
-			case "COMPLETED":
-				statusBgColor = " bg-green-300";
-				break;
-			case "INACTIVE":
-				statusBgColor = " bg-red-300";
-				break;
-		}
-	}
-	const [showPopup, setShowPopup] = useState(false);
-
+	/**
+	 * Function on change of a goal or sub-goal status. Close the three options
+	 *
+	 */
 	const onClickStatus = () => {
-		if (disable) {
-			setShowPopup(true);
-			setTimeout(() => setShowPopup(false), 2000); // Hide popup after 2 seconds
-		} else {
-			setShowDialog(true);
+		// If top-level goal, allow COMPLETION only if all sub-goals are completed
+		// If sub-goal, allow changing status only if parent goal is NOT completed
+		if ((editable && !subGoal) || (editable && subGoal && goal.status !== "COMPLETED")) {
+			// Set new status based on current status and use newStatus to update goal
+			const newStatus = (() => {
+				switch (status) {
+					case "INACTIVE":
+						return "ACTIVE";
+					case "ACTIVE":
+						if (goal && !subGoal && !areSubGoalsCompleted()) {
+							return "INACTIVE";
+						} else {
+							return "COMPLETED";
+						}
+					default:
+						return "INACTIVE";
+				}
+			})();
+
+			setStatus(newStatus);
+
+			if (newStatus !== status) {
+				if (!subGoal && goal) {
+					editGoal({ goalId: goal.id, status: newStatus });
+				} else if (subGoal && goal) {
+					editSubGoal({
+						subGoalId: subGoal.id,
+						status: newStatus,
+						learningGoalId: subGoal.learningGoalId
+					});
+				}
+				onStatusUpdate && onStatusUpdate(goal, newStatus);
+			}
 		}
 	};
 
+	// Top level goal: Do not allow change after marked as completed
+	const goalDisabled = !editable || (goal && !subGoal && goal.status === "COMPLETED");
+	// Do not allow sub goals to be changed if top level goal is completed
+	const subGoalDisabled = !editable || (subGoal && goal && goal.status === "COMPLETED");
+	const disabled = subGoal ? subGoalDisabled : goalDisabled;
+
 	return (
 		<div className="relative flex flex-col items-center">
-			{!showDialog && (
-				<div className="relative inline-block">
-					<button
-						data-testid="status-button"
-						className={"h-5 w-10 rounded-md border-gray-400 " + statusBgColor}
-						onClick={onClickStatus}
-						title={"Hauptziel bearbeiten"}
-					>
-						<ProgressStatusIcon status={status} className="h-4 ml-3" />
-					</button>
-					{showPopup && (
-						<div className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-red-100 text-red-700 border border-red-400 rounded-md p-2 z-50">
-							Feinziele müssen Bearbeitet sein
-						</div>
-					)}
-				</div>
-			)}
-			{showDialog && (
-				<div className="flex flex-row" ref={myRef}>
-					<button
-						className="h-5 w-10 rounded-md border-gray-400 bg-red-300"
-						onClick={() => onChange("INACTIVE")}
-						title="Nicht bearbeitet"
-					>
-						<ProgressStatusIcon status="INACTIVE" className="h-4 ml-3" />
-					</button>
-					<button
-						className="h-5 w-10 rounded-md border-gray-400 bg-orange-300"
-						onClick={() => onChange("ACTIVE")}
-						title="Teilweise bearbeitet"
-					>
-						<ProgressStatusIcon status="ACTIVE" className="h-4 ml-3" />
-					</button>
-					<button
-						className="h-5 w-10 rounded-md border-gray-400 bg-green-300"
-						onClick={() => onChange("COMPLETED")}
-						title="Bearbeitet"
-					>
-						<ProgressStatusIcon status="COMPLETED" className="h-4 ml-3" />
-					</button>
-				</div>
-			)}
+			<div className="relative inline-block">
+				<TristateButton
+					status={status}
+					onChange={onClickStatus}
+					disabled={disabled}
+					goalId={subGoal ? subGoal.id : goal.id}
+				/>
+			</div>
 		</div>
 	);
 }
-function ProgressStatusIcon({
+
+function TristateButton({
 	status,
-	className
+	onChange,
+	disabled,
+	goalId
 }: {
 	status: LearningGoalStatus;
-	className: string;
+	onChange: () => void;
+	goalId: string;
+	disabled?: boolean;
 }) {
-	let icon = null;
+	let statusColorSettings: string;
 	switch (status) {
-		case "INACTIVE":
-			icon = <XMarkIcon className={className} />;
-			break;
 		case "ACTIVE":
-			icon = <ArrowPathIcon className={className} />;
+			statusColorSettings = disabled
+				? "disabled:cursor-not-allowed text-orange-200 focus:ring-orange-100 dark:focus:ring-orange-200"
+				: "text-orange-400 focus:ring-orange-300 dark:focus:ring-orange-400";
 			break;
 		case "COMPLETED":
-			icon = <CheckIcon className={className} />;
+			statusColorSettings = disabled
+				? "disabled:cursor-not-allowed text-green-200 focus:ring-green-100 dark:focus:ring-green-200"
+				: "text-green-400 focus:ring-green-300 dark:focus:ring-green-400";
 			break;
 		default:
-			icon = <ArrowDownRightIcon className={className} />;
+			statusColorSettings = disabled
+				? "disabled:cursor-not-allowed focus:ring-red-400 dark:focus:ring-red-400"
+				: "focus:ring-red-400 dark:focus:ring-red-400";
 	}
-	return icon;
+
+	const checked = status === "COMPLETED" || status === "ACTIVE";
+
+	return (
+		<div className="flex items-center me-4">
+			<input
+				type="checkbox"
+				checked={checked}
+				disabled={disabled}
+				className={`w-4 h-4 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${statusColorSettings}`}
+				onChange={onChange}
+				data-testid={`goal_status:${goalId}`}
+			/>
+		</div>
+	);
 }

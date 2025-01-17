@@ -83,9 +83,8 @@ export const skillRouter = t.router({
 		return await database.skillRepository.findMany();
 	}),
 	getRepositoriesByUser: authorProcedure.query(async ({ ctx }) => {
-		const { id: userId } = ctx.user;
 		const repositories = await database.skillRepository.findMany({
-			where: { ownerName: userId }
+			where: { ownerName: ctx.user.name }
 		});
 		return repositories;
 	}),

@@ -22,7 +22,7 @@ jest.mock("@self-learning/api-client", () => ({
 }));
 
 describe("GoalStatus", () => {
-	it("status-button should open status menu when all sub-goals are completed", async () => {
+	it("No sub goals, mark as completed -> goal completed", async () => {
 		const mockOnChange = jest.fn();
 		const goal = {
 			id: "1",
@@ -33,17 +33,17 @@ describe("GoalStatus", () => {
 		render(<GoalStatus goal={goal} editable={true} onChange={mockOnChange} />);
 
 		// Simulate clicking the first buttons
-		const button = screen.getByTestId("status-button");
+		const button = screen.getByTestId(`goal_status:${goal.id}`);
+		// INACTIVE -> ACTIVE
 		fireEvent.click(button);
-
-		// Simulate clicking the "INACTIVE" status button
-		const inactiveButton = screen.getByTitle("Bearbeitet");
-		fireEvent.click(inactiveButton);
+		// ACTIVE -> COMPLETED
+		fireEvent.click(button);
 
 		// Check if the onChange function was called with the correct arguments
 		expect(mockOnChange).toHaveBeenCalledWith(goal, LearningGoalStatus.COMPLETED);
 	});
-	it("status-button should not be clickable when there are sub-goals that are not COMPLETED", async () => {
+
+	it("Incomplete sub goals -> goal cannot be completed", async () => {
 		const mockOnChange = jest.fn();
 		const goal = {
 			id: "1",
@@ -57,11 +57,13 @@ describe("GoalStatus", () => {
 		render(<GoalStatus goal={goal} editable={true} onChange={mockOnChange} />);
 
 		// Simulate clicking the first button
-		const button = screen.getByTestId("status-button");
+		const button = screen.getByTestId(`goal_status:${goal.id}`);
+		// INACTIVE -> ACTIVE
+		fireEvent.click(button);
+		// ACTIVE -> INACTIVE
 		fireEvent.click(button);
 
-		// Check if the message is displayed
-		const message = screen.getByText("Feinziele müssen Bearbeitet sein");
-		expect(message).toBeInTheDocument();
+		// Check that goal was NOT completed
+		expect(mockOnChange).not.toHaveBeenCalledWith(goal, LearningGoalStatus.COMPLETED);
 	});
 });

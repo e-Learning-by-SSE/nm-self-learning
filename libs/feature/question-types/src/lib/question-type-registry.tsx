@@ -1,12 +1,12 @@
 /*
 	ALL QUESTION TYPES MUST BE REGISTERED IN THIS FILE!
-	
+
 	1. Add the question's type to the `QuestionTypeUnion` type
-	   - This will enable type inference for the question type and the compiler will complain, if 
+	   - This will enable type inference for the question type and the compiler will complain, if
 		 some of the following steps are missing
 	   - Type must have the following structure:
 		 {
-		 	type: "my-question-type"; // String Literal, must be unique across all question types 
+		 	type: "my-question-type"; // String Literal, must be unique across all question types
 		 	question: BaseQuestion & { myCustomProperty: string }; // contains question statement and config
 		 	answer: MyAnswerType; // defines the intended shape of the student's answer
 		 	evaluation: BaseEvaluation & MyEvaluationType; // Defines shape of evaluation result, i.e., whether the answer is correct and feedback
@@ -20,7 +20,7 @@
 	   to the `QuestionAnswerRenderer` and `QuestionFormRenderer` component
 		- Advice: Use a `default export` to export these components to reduce boilerplate
 
-	4. Add the new question type to the `EVALUATION_FUNCTIONS`, `INITIAL_ANSWER_VALUE_FUNCTIONS` and 
+	4. Add the new question type to the `EVALUATION_FUNCTIONS`, `INITIAL_ANSWER_VALUE_FUNCTIONS` and
 	   `INITIAL_QUESTION_CONFIGURATION_FUNCTIONS` objects and implement the required functions.
 */
 
@@ -253,7 +253,7 @@ export function QuestionFormRenderer({
 	}
 
 	if (question.type === "programming") {
-		return <ProgrammingForm question={question} index={index} />;
+		return <ProgrammingForm index={index} />;
 	}
 
 	if (question.type === "text") {
@@ -265,7 +265,7 @@ export function QuestionFormRenderer({
 	}
 
 	if (question.type === "arrange") {
-		return <ArrangeForm question={question} index={index} />;
+		return <ArrangeForm index={index} />;
 	}
 
 	return (

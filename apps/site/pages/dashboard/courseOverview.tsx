@@ -16,7 +16,28 @@ import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollme
 import { formatDateAgo } from "@self-learning/util/common";
 import { withAuth } from "@self-learning/api";
 
-function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
+interface CourseOverviewProps {
+	enrollments: EnrollmentDetails[] | null;
+}
+export const getServerSideProps: GetServerSideProps = withAuth<CourseOverviewProps>(
+	async (_, user) => {
+		try {
+			return {
+				props: {
+					enrollments: await getEnrollmentDetails(user.name)
+				}
+			};
+		} catch (error) {
+			console.error("Error fetching enrollments:", error);
+			return {
+				props: {
+					enrollments: null
+				}
+			};
+		}
+	}
+);
+export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
 	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
@@ -270,22 +291,3 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 		</Table>
 	);
 }
-
-export const getServerSideProps: GetServerSideProps = withAuth(async (_, user) => {
-	try {
-		return {
-			props: {
-				enrollments: await getEnrollmentDetails(user.name)
-			}
-		};
-	} catch (error) {
-		console.error("Error fetching enrollments:", error);
-		return {
-			props: {
-				enrollments: null
-			}
-		};
-	}
-});
-
-export default CourseOverview;

@@ -7,6 +7,10 @@ import { ReactComponent as PersonalInformationSvg } from "./assets/svg/teams.svg
 import { ReactComponent as TutorialSvg } from "./assets/svg/tutorial.svg";
 import { ReactComponent as StudyingSvg } from "./assets/svg/studying.svg";
 import { ReactComponent as VoidSvg } from "./assets/svg/void.svg";
+import { ReactComponent as MarketingSvg } from "./assets/svg/marketing.svg";
+import { ReactComponent as OverviewSvg } from "./assets/svg/overview.svg";
+import { ReactComponent as ProgressSvg } from "./assets/svg/progress.svg";
+import { ReactComponent as TargetSvg } from "./assets/svg/target.svg";
 
 export {
 	AuthorSvg,
@@ -17,5 +21,9 @@ export {
 	PersonalInformationSvg,
 	TutorialSvg,
 	StudyingSvg,
-	VoidSvg
+	VoidSvg,
+	MarketingSvg,
+	OverviewSvg,
+	ProgressSvg,
+	TargetSvg
 };

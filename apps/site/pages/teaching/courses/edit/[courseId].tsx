@@ -8,13 +8,14 @@ import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useRef } from "react";
+import { hasAuthorPermission } from "@self-learning/ui/layouts";
 
 type EditCourseProps = {
 	course: CourseFormModel;
 	lessons: { title: string; lessonId: string; slug: string; meta: Prisma.JsonValue }[];
 };
 
-export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth(
+export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth<EditCourseProps>(
 	async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 
@@ -46,10 +47,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth(
 			};
 		}
 
-		if (
-			user.role !== "ADMIN" &&
-			(user.isAuthor || !course.authors.some(author => author.username === user.name))
-		) {
+		if (!hasAuthorPermission({ user, permittedAuthors: course.authors.map(a => a.username) })) {
 			return {
 				redirect: {
 					destination: "/403",
@@ -100,7 +98,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth(
 export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
 	const router = useRouter();
-	const trpcContext = trpc.useContext();
+	const trpcContext = trpc.useUtils();
 	const isInitialRender = useRef(true);
 
 	if (isInitialRender.current) {
@@ -109,7 +107,7 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 		// Populate query cache with existing lessons
 		// This way, we only need to fetch newly added lessons
 		for (const lesson of lessons) {
-			trpcContext.lesson.findOne.setData({ lessonId: lesson.lessonId }, lesson as any);
+			trpcContext.lesson.findOne.setData({ lessonId: lesson.lessonId }, lesson);
 		}
 	}
 

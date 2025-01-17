@@ -15,7 +15,6 @@ model Student {
     completedLessons            CompletedLesson[]
     enrollments                 Enrollment[]
     customLearningLocations     LearningLocation[]
-    settings                    StudentSettings?
     quizAttempts                QuizAttempt[]
     user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
     learningDiaryEntrys         LearningDiaryPage[]
@@ -24,12 +23,6 @@ model Student {
 	learningGoals				LearningGoal[]
 }
 
-model StudentSettings {
-  username          String  @id
-  learningStatistics Boolean @default(true)
-  hasLearningDiary  Boolean  @default(false)
-  student           Student @relation(fields: [username], references: [username], onDelete: Cascade)
-}
 
 model Author {
     id                  Int                   @id @default(autoincrement())
