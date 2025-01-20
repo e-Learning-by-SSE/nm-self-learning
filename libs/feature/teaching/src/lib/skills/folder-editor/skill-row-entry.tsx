@@ -10,7 +10,12 @@ import {
 import { PencilIcon, PuzzlePieceIcon } from "@heroicons/react/24/outline";
 import { AddChildButton } from "./skill-taskbar";
 import styles from "./folder-table.module.css";
-import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
+import {
+	isSkillFormModel,
+	SkillFolderVisualization,
+	SkillSelectHandler,
+	UpdateVisuals
+} from "./skill-display";
 import { isTruthy } from "@self-learning/util/common";
 
 export function ListSkillEntryWithChildren({
@@ -41,7 +46,7 @@ export function ListSkillEntryWithChildren({
 				updateSkillDisplay={updateSkillDisplay}
 			/>
 			{showChildren &&
-				skillDisplayData.skill.children
+				skillDisplayData.children
 					.map(childId => skillResolver(childId))
 					.sort(byChildrenLength)
 					.filter(isTruthy)
@@ -71,10 +76,7 @@ const byChildrenLength = (
 	b: SkillFolderVisualization | undefined
 ) => {
 	if (a && b) {
-		return (
-			b.skill.children.length - a.skill.children.length ||
-			a.skill.name.localeCompare(b.skill.name)
-		);
+		return b.numberChildren - a.numberChildren || a.skill.name.localeCompare(b.skill.name);
 	}
 	return 0;
 };
@@ -95,7 +97,7 @@ function SkillRow({
 	} as React.CSSProperties;
 	const onOpen = () => {
 		// disables highlight effect after user interacted with the element
-		const childrenDisplays = skill.skill.children.map(cid => ({
+		const childrenDisplays = skill.children.map(cid => ({
 			id: cid,
 			shortHighlight: false
 		}));
@@ -182,6 +184,7 @@ function SkillRow({
 						{/* <QuickEditButton onClick={() => handleSelection(skill.id)} skill={skill} /> */}
 						<AddChildButton
 							parentSkill={skill.skill}
+							childrenNumber={skill.numberChildren}
 							updateSkillDisplay={updateSkillDisplay}
 							handleSelection={handleSelection}
 						/>

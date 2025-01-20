@@ -6,7 +6,13 @@ import { Form, LabeledField } from "@self-learning/ui/forms";
 import { memo, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
-function RepositoryInfoForm({ repository }: { repository: SkillRepositoryModel }) {
+function RepositoryInfoForm({
+	repository,
+	updateSelectedRepository
+}: {
+	repository: SkillRepositoryModel;
+	updateSelectedRepository: (repositoryId: SkillRepositoryModel) => void;
+}) {
 	const form = useForm({
 		defaultValues: repository,
 		resolver: zodResolver(skillRepositorySchema)

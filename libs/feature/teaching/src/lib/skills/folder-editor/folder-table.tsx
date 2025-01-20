@@ -148,17 +148,19 @@ export function SkillFolderTable({
 }
 
 const byChildrenLength = (a: SkillFolderVisualization, b: SkillFolderVisualization) => {
-	return (
-		b.skill.children.length - a.skill.children.length ||
-		a.skill.name.localeCompare(b.skill.name)
-	);
+	return b.numberChildren - a.numberChildren || a.skill.name.localeCompare(b.skill.name);
 };
 
 const isTopLevelSkill = (skill: SkillFolderVisualization) => {
 	// Remove "&& skill.hasNestedCycleMembers" from (skill.isCycleMember && skill.hasNestedCycleMembers)
 	// To show the cycled skills in case no starting skill for the cycle
-	// Ex: Skill1 => Skill2 => Skill3 => Skill1
-	return skill.skill.parents.length === 0 || skill.isCycleMember;
+	// Ex: Skill1 => Skill2 => Skill3 => Skill
+
+	// return skill.skill.parents.length === 0 || (skill.isCycleMember && skill.hasNestedCycleMembers);
+
+	// return skill.skill.parents.length === 0 || skill.isCycleMember;
+
+	return skill.isRepository || skill.isCycleMember;
 };
 
 function RepositoryInfo({ repository }: { repository: SkillRepository }) {
