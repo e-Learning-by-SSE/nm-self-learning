@@ -3,10 +3,10 @@ import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { ResolvedValue } from "@self-learning/types";
 import { AuthorChip } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { GetServerSideProps } from "next";
 
 type Team = ResolvedValue<typeof getTeam>;
 
