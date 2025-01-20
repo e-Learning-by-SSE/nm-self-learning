@@ -24,12 +24,12 @@ export default function ArrangeQuestion() {
 					});
 				}}
 			>
-				<ul className="grid auto-cols-fr grid-flow-col gap-4">
+				<div className="grid auto-rows-fr gap-4 grid-flow-row xl:grid-flow-col">
 					{Object.entries(answer.value).map(([containerId, items]) => (
 						// eslint-disable-next-line react/jsx-no-useless-fragment
 						<Fragment key={containerId}>
 							{containerId === "_init" ? null : (
-								<li
+								<ul
 									key={containerId}
 									className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-gray-200 p-4"
 								>
@@ -43,7 +43,7 @@ export default function ArrangeQuestion() {
 											<ul
 												ref={provided.innerRef}
 												{...provided.droppableProps}
-												className="flex h-full min-h-[128px] flex-col gap-4 rounded-lg bg-gray-100 p-4"
+												className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-100 p-4"
 											>
 												{items.map((item, index) => (
 													<Draggable
@@ -70,11 +70,11 @@ export default function ArrangeQuestion() {
 											</ul>
 										)}
 									</Droppable>
-								</li>
+								</ul>
 							)}
 						</Fragment>
 					))}
-				</ul>
+				</div>
 
 				<div className="flex min-h-[128px] flex-col gap-4 rounded-lg bg-gray-200 p-4">
 					<span className="font-semibold">Nicht zugeordnet</span>
