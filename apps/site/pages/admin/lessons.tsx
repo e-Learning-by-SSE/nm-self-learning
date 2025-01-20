@@ -102,7 +102,7 @@ export default function LessonManagementPage() {
 	);
 }
 
-export async function getStaticProps({ locale }: { locale: string }) {
+export async function getServerSideProps({ locale }: { locale: string }) {
 	return {
 		props: {
 			...(await serverSideTranslations(locale, ["common"]))

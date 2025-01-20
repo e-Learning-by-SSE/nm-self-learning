@@ -1,7 +1,8 @@
 import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-export async function getStaticProps({ locale }: { locale: string }) {
+
+export async function getServerSideProps({ locale }: { locale: string }) {
 	return {
 		props: {
 			...(await serverSideTranslations(locale, ["common"]))

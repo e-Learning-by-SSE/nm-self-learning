@@ -120,7 +120,7 @@ function RoleLabel({ role }: { role: string }) {
 	return <span className={`rounded-full ${roleColor} px-3 py-[2px] text-white`}>{role}</span>;
 }
 
-export async function getStaticProps({ locale }: { locale: string }) {
+export async function getServerSideProps({ locale }: { locale: string }) {
 	return {
 		props: {
 			...(await serverSideTranslations(locale, ["common"]))

@@ -30,7 +30,7 @@ export default function CreateLessonPage() {
 	return <LessonEditor onSubmit={handleCreateClose} isFullScreen={true} />;
 }
 
-export async function getStaticProps({ locale }: { locale: string }) {
+export async function getServerSideProps({ locale }: { locale: string }) {
 	return {
 		props: {
 			...(await serverSideTranslations(locale, ["common"]))
