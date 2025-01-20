@@ -15,7 +15,7 @@ type TeamPageProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getStaticProps: GetStaticProps<TeamPageProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<TeamPageProps> = async ({ params, locale }) => {
 	const slug = params?.teamSlug;
 
 	if (typeof slug !== "string") {
@@ -25,32 +25,30 @@ export const getStaticProps: GetStaticProps<TeamPageProps> = async ({ params }) 
 	const team = await getTeam(slug);
 
 	if (!team) {
+		// Return a 404 if no matching team was found
 		return { notFound: true };
 	}
 
 	let markdownDescription = null;
 
 	if (team.description && team.description.length > 0) {
+		// Compile markdown if present
 		markdownDescription = await compileMarkdown(team.description);
+		// Remove the original description so it's not duplicated
 		team.description = null;
 	}
 
 	return {
 		props: {
+			// The `team` data you want to use in your page
 			team: team as Team,
-			markdownDescription
-		},
-		notFound: !team
+			// The compiled markdown string (or null)
+			markdownDescription,
+			// Include translations for SSR
+			...(await serverSideTranslations(locale ?? "en", ["common"]))
+		}
 	};
 };
-
-export async function getStaticPaths({ locale }: { locale: string }) {
-	return {
-		...(await serverSideTranslations(locale, ["common"])),
-		fallback: "blocking",
-		paths: []
-	};
-}
 
 async function getTeam(slug: string) {
 	return await database.team.findUnique({
