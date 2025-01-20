@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { withNx } = require("@nx/next");
 const { withPlausibleProxy } = require("next-plausible");
-const { i18n } = require("../../next-i18next.config.js");
+const { i18n } = require("./next-i18next.config.js");
 
 const packageJson = require("../../package.json");
 
