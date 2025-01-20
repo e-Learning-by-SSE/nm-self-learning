@@ -1,45 +1,44 @@
-import { CogIcon } from "@heroicons/react/24/solid";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { getAuthenticatedUser } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { StudentSettingsDialog } from "@self-learning/settings";
+import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 import {
 	Card,
-	Dialog,
-	DialogActions,
 	DialogHandler,
-	dispatchDialog,
-	freeDialog,
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	OnDialogCloseFn,
-	showToast,
 	Toggle
 } from "@self-learning/ui/common";
-import { LabeledField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
 import {
 	formatDateAgo,
 	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
-import { TRPCClientError } from "@trpc/client";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { StudentSettings } from "@self-learning/types";
-import { TutorialSvg } from "@self-learning/ui/static";
-import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import { useReducer } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
+type LearningDiaryEntryLessonWithDetails = {
+	entryId: string;
+	lessonId: string;
+	title: string;
+	slug: string;
+	courseImgUrl?: string;
+	courseSlug: string;
+	touchedAt: Date;
+	completed: boolean;
+};
+
 type Props = {
 	student: Student;
+	recentLessons: LearningDiaryEntryLessonWithDetails[];
 };
 
 function getStudent(username: string) {
@@ -51,12 +50,13 @@ function getStudent(username: string) {
 					completedLessons: true
 				}
 			},
-			settings: true,
 			user: {
 				select: {
 					displayName: true,
 					name: true,
-					image: true
+					image: true,
+					enabledFeatureLearningDiary: true,
+					enabledLearningStatistics: true
 				}
 			},
 			completedLessons: {
@@ -107,13 +107,85 @@ function getStudent(username: string) {
 					course: {
 						select: {
 							courseId: true,
-							title: true
+							title: true,
+							imgUrl: true
 						}
-					}
+					},
+					lessonsLearned: true,
+					courseSlug: true
 				}
 			}
 		}
 	});
+}
+
+export type DiaryLessonSchema = {
+	id: string;
+	courseSlug: string;
+	courseImgUrl: string | null;
+	entryId: string;
+	lessonId: string;
+	createdAt: Date;
+};
+
+async function loadMostRecentLessons({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}) {
+	const lessonsFromDiary: DiaryLessonSchema[] = student.learningDiaryEntrys.flatMap(entry =>
+		entry.lessonsLearned.map(lesson => ({
+			...lesson,
+			courseSlug: entry.courseSlug,
+			courseImgUrl: entry.course?.imgUrl,
+			entryId: lesson.id,
+			createdAt: entry.createdAt
+		}))
+	);
+
+	const sortedLessons = lessonsFromDiary.sort(
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+	);
+
+	const newestLessons = sortedLessons.slice(0, lessonLimit);
+	const lessonIds = newestLessons.map(lesson => lesson.lessonId);
+
+	const lessonsArray = await database.lesson.findMany({
+		where: { lessonId: { in: lessonIds } },
+		select: {
+			lessonId: true,
+			title: true,
+			slug: true,
+			completions: true
+		}
+	});
+
+	const lessonDetailsMap = new Map(lessonsArray.map(detail => [detail.lessonId, detail]));
+	const lessonsWithDetails = newestLessons.map(lesson => {
+		const lessonDetails = lessonDetailsMap.get(lesson.lessonId);
+
+		return {
+			lessonId: lesson.lessonId,
+			title: lessonDetails?.title || "",
+			slug: lessonDetails?.slug || "",
+			courseImgUrl: lesson.courseImgUrl || "",
+			courseSlug: lesson.courseSlug || "",
+			touchedAt: lesson.createdAt || null,
+			entryId: lesson.entryId || "",
+			compeleted: false
+		};
+	});
+
+	const completedLessonsTitleSet = new Set(
+		student.completedLessons.map(lesson => lesson.lesson.title)
+	);
+
+	return lessonsWithDetails.map(lesson => ({
+		...lesson,
+		completed: completedLessonsTitleSet.has(lesson.title)
+	}));
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
@@ -128,10 +200,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 	}
 
 	const student = await getStudent(user.name);
+	const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
 
 	return {
 		props: {
-			student
+			student,
+			recentLessons
 		}
 	};
 };
@@ -140,37 +214,56 @@ export default function Start(props: Props) {
 	return <DashboardPage {...props} />;
 }
 
+type LtbState = {
+	enabled: boolean;
+	dialogOpen: boolean;
+};
+
+type LtbFeatureAction =
+	| { type: "TOGGLE_LTB"; enabled: boolean }
+	| { type: "OPEN_DIALOG" }
+	| { type: "CLOSE_DIALOG" };
+
+function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
+	switch (action.type) {
+		case "TOGGLE_LTB":
+			return { ...state, enabled: action.enabled };
+		case "OPEN_DIALOG":
+			return { ...state, dialogOpen: true };
+		case "CLOSE_DIALOG":
+			return { ...state, dialogOpen: false };
+		default:
+			return state;
+	}
+}
+
 function DashboardPage(props: Props) {
-	const [editStudentDialog, setEditStudentDialog] = useState(false);
-	const [studentSettings, setStudentSettings] = useState<StudentSettings>({
-		hasLearningDiary: props.student.settings?.hasLearningDiary ?? false,
-		learningStatistics: props.student.settings?.learningStatistics ?? false
-	});
-	const { mutateAsync: updateStudent } = trpc.me.updateStudent.useMutation();
+	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
 	const router = useRouter();
+	const [ltb, dispatch] = useReducer(ltbReducer, {
+		dialogOpen: false,
+		enabled: props.student.user.enabledFeatureLearningDiary
+	});
 
-	const onEditStudentClose: Parameters<
-		typeof EditStudentDialog
-	>[0]["onClose"] = async updated => {
-		setEditStudentDialog(false);
+	const openSettings = () => {
+		router.push("/user-settings");
+	};
 
-		if (updated) {
-			try {
-				await updateStudent(updated);
-				showToast({
-					type: "success",
-					title: "Informationen aktualisiert",
-					subtitle: updated.user.displayName
-				});
-				router.replace(router.asPath);
-			} catch (error) {
-				console.error(error);
-
-				if (error instanceof TRPCClientError) {
-					showToast({ type: "error", title: "Fehler", subtitle: error.message });
-				}
-			}
+	const handleClickLtbToggle = async () => {
+		if (ltb.enabled) {
+			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
+			dispatch({ type: "TOGGLE_LTB", enabled: false });
+		} else {
+			dispatch({ type: "OPEN_DIALOG" });
 		}
+	};
+
+	const handleDialogSubmit: Parameters<
+		typeof EnableLearningDiaryDialog
+	>[0]["onSubmit"] = async update => {
+		await updateSettings({ user: { ...update } });
+		dispatch({ type: "TOGGLE_LTB", enabled: true });
+		dispatch({ type: "CLOSE_DIALOG" });
 	};
 
 	return (
@@ -197,29 +290,26 @@ function DashboardPage(props: Props) {
 								abgeschlossen.
 							</span>
 						</div>
-
-						<button
-							className="self-start rounded-full p-2 hover:bg-gray-100"
-							title="Bearbeiten"
-							onClick={() => setEditStudentDialog(true)}
-						>
-							<CogIcon className="h-5 text-gray-400" />
-						</button>
-
-						{editStudentDialog && (
-							<EditStudentDialog
-								student={{ user: { displayName: props.student.user.displayName } }}
-								onClose={onEditStudentClose}
-							/>
-						)}
 					</section>
 
-					<div className="mt-4 flex items-end gap-2 justify-self-end">
-						<TagebuchToggle
-							onChange={value => {
-								setStudentSettings(value);
-							}}
-						/>
+					<div className="grid grid-rows-2">
+						<div className="flex justify-end items-start">
+							<button
+								className="rounded-full p-2 hover:bg-gray-100"
+								title="Bearbeiten"
+								onClick={openSettings}
+							>
+								<CogIcon className="h-6 text-gray-500" />
+							</button>
+						</div>
+
+						<div className="flex items-end justify-end">
+							<Toggle
+								label="Lerntagebuch"
+								value={ltb.enabled}
+								onChange={handleClickLtbToggle}
+							/>
+						</div>
 					</div>
 				</div>
 
@@ -238,8 +328,7 @@ function DashboardPage(props: Props) {
 					</div>
 
 					<div className="rounded bg-white p-4 shadow">
-						{studentSettings?.hasLearningDiary &&
-						studentSettings?.learningStatistics ? (
+						{ltb.enabled ? (
 							<>
 								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
 								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
@@ -247,35 +336,34 @@ function DashboardPage(props: Props) {
 						) : (
 							<>
 								<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
-								<Activity enrollments={props.student.enrollments} />
+								<LessonList lessons={props.recentLessons} />
 							</>
 						)}
 					</div>
 				</div>
-
 				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
-					{studentSettings?.hasLearningDiary && studentSettings?.learningStatistics && (
+					<Card
+						href="/dashboard/courseOverview"
+						imageElement={<OverviewSvg />}
+						title="Kursübersicht"
+					/>
+					{ltb.enabled && (
 						<>
 							<Card
-								href="/dashboard/courseOverview"
-								imageElement={<TutorialSvg />}
-								title="Kursübersicht"
-							/>
-							<Card
 								href="/learning-diary"
-								imageElement={<TutorialSvg />}
+								imageElement={<MarketingSvg />}
 								title="Lerntagebucheinträge verwalten"
 							/>
 
 							<Card
 								href="/learning-diary"
-								imageElement={<TutorialSvg />}
-								title="Lerntagebuchübersicht einsehen"
+								imageElement={<ProgressSvg />}
+								title="Übersicht des Lerntagebuchs"
 							/>
 
 							<Card
 								href="/learning-diary/goals"
-								imageElement={<TutorialSvg />}
+								imageElement={<TargetSvg />}
 								title="Lernziele verwalten"
 							/>
 						</>
@@ -283,44 +371,13 @@ function DashboardPage(props: Props) {
 				</div>
 			</CenteredSection>
 			<DialogHandler id="studentSettingsDialogDashboard" />
-		</div>
-	);
-}
-
-function TagebuchToggle({ onChange }: { onChange: (value: StudentSettings) => void }) {
-	const { data: studentSettings, isLoading, refetch } = trpc.settings.getMySetting.useQuery();
-	const hasLearningDiary = studentSettings?.hasLearningDiary || false;
-	const hasLearningStatistics = studentSettings?.learningStatistics || false;
-
-	return (
-		<>
-			{!isLoading && (
-				<Toggle
-					value={hasLearningDiary && hasLearningStatistics}
-					onChange={() => {
-						dispatchDialog(
-							<StudentSettingsDialog
-								initialSettings={{
-									hasLearningDiary: false,
-									learningStatistics: false,
-									...studentSettings
-								}}
-								onClose={value => {
-									refetch();
-									onChange({
-										hasLearningDiary: value.hasLearningDiary,
-										learningStatistics: value.learningStatistics
-									});
-									freeDialog("studentSettingsDialogDashboard");
-								}}
-							/>,
-							"studentSettingsDialogDashboard"
-						);
-					}}
-					label="Lerntagebuch"
+			{ltb.dialogOpen && (
+				<EnableLearningDiaryDialog
+					onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
+					onSubmit={handleDialogSubmit}
 				/>
 			)}
-		</>
+		</div>
 	);
 }
 
@@ -376,21 +433,17 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	);
 }
 
-function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
-	const notCompletedCourses = enrollments.filter(enrollment => enrollment.status === "ACTIVE");
-
+function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[] }) {
 	return (
 		<>
-			{notCompletedCourses.length === 0 ? (
-				<span className="text-sm text-light">
-					Du bist momentan in keinem Kurs eingeschrieben.
-				</span>
+			{lessons.length === 0 ? (
+				<span className="text-sm text-light">Du hast keine Lerneinheiten bearbeitet.</span>
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
-					{notCompletedCourses.map((completion, index) => (
+					{lessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"
-							href={`/courses/${completion.course?.slug}`}
+							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
 							key={"course-" + index}
 						>
 							<li
@@ -398,17 +451,20 @@ function Activity({ enrollments }: { enrollments: Student["enrollments"] }) {
 							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
 							>
 								<ImageOrPlaceholder
-									src={completion.course?.imgUrl ?? undefined}
+									src={lesson.courseImgUrl}
 									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 								/>
+								<div className="flex w-full grid-rows-2 justify-between gap-2 px-4">
+									<span className="flex gap-3 ">
+										<span className="truncate max-w-xs">{lesson.title}</span>
 
-								<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-									<div className="flex flex-col gap-1">
-										{completion.course?.title}
-									</div>
-									<ProgressFooter progress={completion.progress} />
-									<span className="hidden text-sm text-light md:block">
-										{formatDateAgo(completion.lastProgressUpdate)}
+										{lesson.completed && (
+											<CheckIcon className="icon h-5 text-green-500" />
+										)}
+									</span>
+
+									<span className="hidden text-xs text-light md:block">
+										{formatDateAgo(lesson.touchedAt)}
 									</span>
 								</div>
 							</li>
@@ -481,44 +537,5 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 				</Link>
 			)}
 		</div>
-	);
-}
-
-const editStudentSchema = z.object({
-	user: z.object({ displayName: z.string().min(3).max(50) })
-});
-
-type EditStudent = z.infer<typeof editStudentSchema>;
-
-function EditStudentDialog({
-	student,
-	onClose
-}: {
-	student: EditStudent;
-	onClose: OnDialogCloseFn<EditStudent>;
-}) {
-	const form = useForm({
-		defaultValues: student,
-		resolver: zodResolver(editStudentSchema)
-	});
-
-	return (
-		<Dialog title={student.user.displayName} onClose={onClose}>
-			<form onSubmit={form.handleSubmit(onClose)}>
-				<LabeledField label="Name" error={form.formState.errors.user?.displayName?.message}>
-					<input
-						{...form.register("user.displayName")}
-						type="text"
-						className="textfield"
-					/>
-				</LabeledField>
-
-				<DialogActions onClose={onClose}>
-					<button className="btn-primary" disabled={!form.formState.isValid}>
-						Speichern
-					</button>
-				</DialogActions>
-			</form>
-		</Dialog>
 	);
 }

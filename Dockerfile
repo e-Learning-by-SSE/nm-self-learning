@@ -9,6 +9,7 @@ COPY . ./
 RUN mv .env.example .env
 
 # Generate Prisma client
+ADD node_modules /app/node_modules
 RUN npm run prisma generate
 # Allow runnig prisma commands, based on: https://stackoverflow.com/a/72602624
 # RUN chown nextjs:nodejs -R node_modules/.prisma
@@ -36,4 +37,5 @@ RUN chmod +x /entry.sh
 
 # Start the server using the production build
 ENTRYPOINT ["/entry.sh"]
+CMD [ "start:prod" ]
 EXPOSE 3000

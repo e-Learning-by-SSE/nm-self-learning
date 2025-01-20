@@ -1,11 +1,12 @@
 import Link from "next/link";
+import React, { ReactElement } from "react";
 
 export function Card({
 	imageElement,
 	title,
 	href
 }: {
-	imageElement: React.ReactNode;
+	imageElement: ReactElement;
 	title: string;
 	href: string;
 }) {
@@ -14,7 +15,11 @@ export function Card({
 			href={href}
 			className="flex flex-col place-items-center gap-4 rounded-lg border border-light-border bg-white pt-4"
 		>
-			<div className="flex aspect-square h-32 w-32">{imageElement}</div>
+			<div className="flex aspect-square h-32 w-32 items-center justify-center">
+				{React.cloneElement(imageElement, {
+					className: "h-full w-full object-contain"
+				})}
+			</div>
 			<span className="w-full rounded-b-lg bg-secondary p-4 text-center font-semibold text-white">
 				{title}
 			</span>

@@ -5,7 +5,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
 import { createCourseContent, createCourseMeta, extractLessonIds } from "@self-learning/types";
 import { subHours } from "date-fns";
-import { defaultLicenceId } from "../license";
+import { defaultLicenseId } from "../license";
 
 faker.seed(1);
 
@@ -415,6 +415,8 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		displayName: "Albus Dumbledore",
 		role: "ADMIN",
 		image: "https://i.imgur.com/UWMVO8m.jpeg",
+		enabledFeatureLearningDiary: false,
+		enabledLearningStatistics: true,
 		accounts: {
 			create: [
 				{
@@ -527,7 +529,7 @@ export async function seedReactDemo() {
 	await prisma.course.createMany({ data: reactCourses });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
-	const licenceId = await defaultLicenceId();
+	const licenceId = await defaultLicenseId();
 
 	await prisma.lesson.createMany({
 		data: reactLessons.flatMap(chapter =>

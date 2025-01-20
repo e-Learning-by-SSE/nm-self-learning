@@ -1,18 +1,19 @@
 import { withAuth } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
-import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
+import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
-import { showToast } from "@self-learning/ui/common";
 import { GetServerSideProps } from "next";
+import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
+import { trpc } from "@self-learning/api-client";
+import { hasAuthorPermission } from "@self-learning/ui/layouts";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
 };
 
-export const getServerSideProps: GetServerSideProps<EditLessonProps> = withAuth(
+export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 	async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
 
@@ -44,10 +45,7 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = withAuth(
 			return { notFound: true };
 		}
 
-		if (
-			user.role !== "ADMIN" &&
-			(user.isAuthor || !lesson.authors.some(a => a.username === user.name))
-		) {
+		if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
 			return {
 				redirect: {
 					destination: "/403",
@@ -89,32 +87,17 @@ export const getServerSideProps: GetServerSideProps<EditLessonProps> = withAuth(
 );
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
+	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
-	const { mutateAsync: updateLesson } = trpc.lesson.edit.useMutation();
+	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
+		await onLessonEditorSubmit(
+			() => {
+				router.push("/dashboard/author");
+			},
+			editLessonAsync,
+			updatedLesson
+		);
+	};
 
-	async function onConfirm(updatedLesson: LessonFormModel) {
-		try {
-			const result = await updateLesson({
-				lesson: updatedLesson,
-				lessonId: lesson.lessonId as string
-			});
-
-			showToast({
-				type: "success",
-				title: "Änderungen gespeichert!",
-				subtitle: result.title
-			});
-
-			router.replace(router.asPath, undefined, { scroll: false });
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle:
-					"Das Speichern der Lerneinheit ist fehlgeschlagen. Siehe Konsole für mehr Informationen."
-			});
-		}
-	}
-
-	return <LessonEditor lesson={lesson} onConfirm={onConfirm} />;
+	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />;
 }

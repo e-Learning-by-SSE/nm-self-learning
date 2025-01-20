@@ -2,6 +2,6 @@
 export default {
 	displayName: "feature-enrollment",
 	preset: "../../../jest.preset.js",
-	testEnvironment: "jsdom",
+	testEnvironment: "node",
 	coverageDirectory: "../../../coverage/libs/feature/enrollment"
 };

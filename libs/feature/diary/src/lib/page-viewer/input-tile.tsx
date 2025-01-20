@@ -1,152 +1,133 @@
-import { PencilIcon } from "@heroicons/react/24/solid";
 import React, { PropsWithChildren, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
-import { ButtonSmallX, Dialog, LoadingBox, StarRating } from "@self-learning/ui/common";
+import { Dialog, LoadingBox, StarRating, XButton } from "@self-learning/ui/common";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
-import { Location } from "../access-learning-diary";
 import { LearningGoal } from "@self-learning/types";
 import { IdSet } from "@self-learning/util/common";
 import { StatusUpdateCallback } from "../util/types";
 import { GoalStatus } from "../goals/status";
 import { LearningGoalEditorDialog } from "../goals/goal-editor";
+import { Location } from "../access-learning-diary";
 
 export function Tile({
-	onToggleEdit,
-	tileName,
+	onClick,
 	isFilled,
 	children
 }: PropsWithChildren<{
-	onToggleEdit: (open: boolean) => void;
-	tileName: string;
+	onClick: (open: boolean) => void;
 	isFilled: boolean;
 }>) {
 	return (
 		<div
-			className={`relative flex max-h-[200px] min-h-[200px] items-center justify-center rounded border cursor-pointer ${
+			className={`flex justify-center items-center w-full min-h-48 max-h-48 px-4 py-2 rounded-lg cursor-pointer ${
 				isFilled ? "bg-green-100" : "bg-gray-100"
 			}`}
-			onClick={() => onToggleEdit(true)}
+			onClick={() => onClick(true)}
 		>
-			<div className="absolute top-2 left-2 text-gray-800">{tileName}</div>
-			<div className="absolute top-2 right-2">
-				<PencilIcon
-					className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700"
-					onClick={() => onToggleEdit(true)}
-				/>
-			</div>
-
 			{children}
 		</div>
 	);
 }
 
-// import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-// import React, { useState } from "react";
+export function TileLayout({
+	children,
+	isCompact,
+	onClick,
+	isFilled,
+	tileDescription,
+	tileName
+}: PropsWithChildren<{
+	isCompact: boolean;
+	onClick: (open: boolean) => void;
+	isFilled: boolean;
+	tileDescription: string;
+	tileName: string;
+}>) {
+	return (
+		<div>
+			{isCompact && (
+				<CompactTile onClick={onClick} isFilled={isFilled} tileName={tileName}>
+					{children}
+				</CompactTile>
+			)}
+			{!isCompact && (
+				<InfoTile
+					onClick={onClick}
+					isFilled={isFilled}
+					tileDescription={tileDescription}
+					tileName={tileName}
+				>
+					{children}
+				</InfoTile>
+			)}
+		</div>
+	);
+}
 
-// export function Tile({
-// 	children,
-// 	tileName,
-// 	isFilled,
-// 	expandedContent
-// }: {
-// 	children: React.ReactNode;
-// 	tileName: string;
-// 	isFilled: boolean;
-// 	expandedContent?: React.ReactNode;
-// }) {
-// 	const [isExpanded, setIsExpanded] = useState(false);
+export function CompactTile({
+	children,
+	onClick,
+	isFilled,
+	tileName
+}: PropsWithChildren<{
+	onClick: (open: boolean) => void;
+	isFilled: boolean;
+	tileName: string;
+}>) {
+	return (
+		<div className="relative">
+			<span className="absolute top-2 left-2 px-2 py-1 rounded text-gray-800 z-10">
+				{tileName}:
+			</span>
 
-// 	const handleToggleExpand = () => {
-// 		if (expandedContent) {
-// 			setIsExpanded(!isExpanded);
-// 		}
-// 	};
+			<Tile onClick={onClick} isFilled={isFilled}>
+				{children}
+			</Tile>
+		</div>
+	);
+}
 
-// 	return (
-// 		<div
-// 			className={`relative flex flex-col items-center justify-center rounded border transition-all cursor-pointer hover:bg-gray-100  duration-300 ${
-// 				isExpanded ? "max-h-[400px] min-h-[400px]" : "max-h-[200px] min-h-[200px]"
-// 			} ${isFilled ? "bg-green-100" : "bg-gray-100"}`}
-// 			onClick={handleToggleExpand}
-// 		>
-// 			<div className="absolute top-2 left-2 text-gray-800 font-bold">{tileName}</div>
-// 			<div className="absolute top-2 right-2 flex space-x-2">
-// 				{isExpanded ? (
-// 					<ChevronUpIcon className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-// 				) : (
-// 					<ChevronDownIcon className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-// 				)}
-// 			</div>
-// 			<div className={`flex flex-col items-center justify-center`}>
-// 				{children}
-// 				{isExpanded && <div className="overflow-y-auto mt-4">{expandedContent}</div>}
-// 			</div>
-// 		</div>
-// 	);
-// }
+export function InfoTile({
+	children,
+	onClick,
+	isFilled,
+	tileDescription,
+	tileName
+}: PropsWithChildren<{
+	onClick: (open: boolean) => void;
+	isFilled: boolean;
+	tileDescription: string;
+	tileName: string;
+}>) {
+	return (
+		<div className="flex flex-col xl:flex-row items-stretch w-full h-full space-y-1 xl:space-y-0 xl:space-x-4">
+			<div className="flex flex-col xl:w-1/4 bg-gray-200 rounded-lg text-center p-4 min-h-48 max-h-48">
+				<span className="text-gray-800 font-semibold">{tileName}:</span>
+				<span className="text-gray-600 mt-1 py-4">{tileDescription}</span>
+			</div>
 
-// ###############################################################################################
-
-// import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-// import React, { useState } from "react";
-
-// export function Tile({
-// 	children,
-// 	tileName,
-// 	isFilled,
-// 	expandedContent
-// }: {
-// 	children: React.ReactNode;
-// 	tileName: string;
-// 	isFilled: boolean;
-// 	expandedContent?: React.ReactNode;
-// }) {
-// 	const [isExpanded, setIsExpanded] = useState(false);
-
-// 	const handleToggleExpand = () => {
-// 		setIsExpanded(!isExpanded);
-// 	};
-
-// 	const handleChildClick = (event: React.MouseEvent) => {
-// 		event.stopPropagation();
-// 	};
-
-// 	return (
-// 		<div
-// 			className={`relative flex flex-col items-center justify-center rounded border transition-all cursor-pointer hover:bg-gray-100 duration-300 ${
-// 				isExpanded ? "max-h-[400px] min-h-[400px]" : "max-h-[200px] min-h-[200px]"
-// 			} ${isFilled ? "bg-green-100" : "bg-gray-100"}`}
-// 			onClick={handleToggleExpand}
-// 		>
-// 			<div className="absolute top-2 left-2 text-gray-800 font-bold">{tileName}</div>
-// 			<div className="absolute top-2 right-2 flex space-x-2">
-// 				{isExpanded ? (
-// 					<ChevronUpIcon className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-// 				) : (
-// 					<ChevronDownIcon className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-// 				)}
-// 			</div>
-// 			<div className="flex flex-col items-center justify-center" onClick={handleChildClick}>
-// 				{children}
-// 				{isExpanded && <div className="overflow-y-auto mt-4">{expandedContent}</div>}
-// 			</div>
-// 		</div>
-// 	);
-// }
-// TODO diary
+			<div className="flex-grow flex items-stretch">
+				<Tile onClick={onClick} isFilled={isFilled}>
+					{children}
+				</Tile>
+			</div>
+		</div>
+	);
+}
 
 export function LocationInputTile({
 	initialSelection,
-	onChange
+	onChange,
+	isCompact
 }: {
 	initialSelection?: Partial<Location>; // show what is available.
 	onChange?: (location: Location) => void;
+	isCompact: boolean;
 }) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 	const { data: learningLocations } = trpc.learningLocation.findMany.useQuery();
-	const [selectedLocation, setSelectedLocation] = useState(initialSelection);
 
 	const closeDialog = () => setDialogOpen(false);
 
@@ -154,19 +135,27 @@ export function LocationInputTile({
 		return <LoadingBox />;
 	}
 	const handleChange = (location: Location) => {
-		setSelectedLocation(location);
 		onChange && onChange(location);
 	};
 
-	return (
-		<Tile onToggleEdit={setDialogOpen} tileName={"Lernort"} isFilled={!!initialSelection}>
-			<div className="p-4">
-				{selectedLocation ? (
-					<div>
-						<p>{selectedLocation.name ?? ""}</p>
+	const description =
+		"Notiere deinen Lernort! Wenn du deinen Lernort einträgst, kannst du später leicht herausfinden, wo du am besten lernst.";
 
-						{selectedLocation.iconURL && selectedLocation.iconURL !== "" && (
-							<Image src={selectedLocation.iconURL} alt={""} width={48} height={48} />
+	return (
+		<TileLayout
+			isCompact={isCompact}
+			onClick={setDialogOpen}
+			isFilled={!!initialSelection}
+			tileDescription={description}
+			tileName={"Lernort"}
+		>
+			<div className="p-4 min-h-40 xl:min-h-0">
+				{initialSelection ? (
+					<div>
+						<p>{initialSelection?.name ?? ""}</p>
+
+						{initialSelection.iconURL && initialSelection.iconURL !== "" && (
+							<Image src={initialSelection.iconURL} alt={""} width={48} height={48} />
 						)}
 					</div>
 				) : (
@@ -177,21 +166,24 @@ export function LocationInputTile({
 						learningLocations={learningLocations}
 						onClose={closeDialog}
 						onSubmit={handleChange}
+						description={description}
 					/>
 				)}
 			</div>
-		</Tile>
+		</TileLayout>
 	);
 }
 
 export function LocationChooseDialog({
 	learningLocations,
 	onClose,
-	onSubmit
+	onSubmit,
+	description
 }: {
 	learningLocations: Location[];
 	onClose: () => void;
 	onSubmit: (location: Location) => void;
+	description: string;
 }) {
 	const { mutateAsync: createLearningLocationAsync } = trpc.learningLocation.create.useMutation();
 	const { mutateAsync: deleteLearningLocationAsync } = trpc.learningLocation.delete.useMutation();
@@ -218,7 +210,7 @@ export function LocationChooseDialog({
 	return (
 		<Dialog title={"Lernort:"} onClose={onClose} className={"max-w-md"}>
 			<div className="space-y-4 max-h-96 overflow-y-auto">
-				<span>Bitte wähle deinen Lernort aus oder trage deinen eigenen Lernort ein.</span>
+				<span>{description}</span>
 
 				{learningLocations.map(location => {
 					return (
@@ -232,9 +224,13 @@ export function LocationChooseDialog({
 								)}
 								<span className="text-gray-800 flex-grow">{location.name}</span>
 								{!location.defaultLocation && (
-									<ButtonSmallX
-										onClick={() => deleteLearningLocationAsync(location.id)}
+									<XButton
+										onClick={e => {
+											e.stopPropagation();
+											deleteLearningLocationAsync(location.id);
+										}}
 										className="ml-auto text-red-500 hover:text-red-700"
+										size="small"
 									/>
 								)}
 							</div>
@@ -272,44 +268,40 @@ export function StarInputTile({
 	name,
 	initialRating = 0,
 	onChange,
-	description
+	description,
+	isCompact
 }: {
 	name: string;
 	initialRating?: number;
 	onChange: (rating: number) => void;
-	description?: string;
+	description: string;
+	isCompact: boolean;
 }) {
 	return (
-		<Tile
-			tileName={name}
+		<TileLayout
+			isCompact={isCompact}
+			onClick={() => {}}
 			isFilled={initialRating > 0}
-			// expandedContent={
-			// 	<div className="max-w-md py-4 px-6 bg-white shadow-md rounded-lg">
-			// 		<span className="block text-lg font-semibold text-gray-800 mb-2">
-			// 			Gebe durch klicken deine Bewertung ab aus.
-			// 		</span>
-			// 		<span className="block text-sm text-gray-500">
-			// 			{description}.
-			// 		</span>
-			// 	</div>
-			// }
-			onToggleEdit={() => {}}
+			tileDescription={description}
+			tileName={name}
 		>
-			<div className="overflow-y-auto">
+			<div className="flex items-center justify-center overflow-y-auto min-h-40 xl:min-h-0">
 				<div className="space-y-4">
 					<StarRating rating={initialRating ?? 0} onChange={onChange} />
 				</div>
 			</div>
-		</Tile>
+		</TileLayout>
 	);
 }
 
 export function MarkDownInputTile({
 	initialNote,
-	onSubmit
+	onSubmit,
+	isCompact
 }: {
 	initialNote?: string;
 	onSubmit: (note: string) => void;
+	isCompact: boolean;
 }) {
 	const [displayedNotes, setDisplayedNotes] = useState<string | null>(initialNote ?? null);
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -323,8 +315,14 @@ export function MarkDownInputTile({
 	};
 
 	return (
-		<div>
-			<Tile onToggleEdit={setDialogOpen} tileName={"Notizen"} isFilled={initialNote !== ""}>
+		<TileLayout
+			isCompact={isCompact}
+			onClick={setDialogOpen}
+			isFilled={false}
+			tileDescription={"Platz für persönliche Anmerkungen."}
+			tileName={"Notizen"}
+		>
+			<div className="flex items-center min-h-40">
 				{initialNote === "" ? (
 					<span>Bisher wurden noch keine Notizen erstellt.</span>
 				) : (
@@ -332,7 +330,8 @@ export function MarkDownInputTile({
 						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
 					</div>
 				)}
-			</Tile>
+			</div>
+
 			{dialogOpen && (
 				<MarkdownEditorDialog
 					title={"Notizen"}
@@ -340,16 +339,18 @@ export function MarkDownInputTile({
 					onClose={onClose}
 				/>
 			)}
-		</div>
+		</TileLayout>
 	);
 }
 
 export function LearningGoalInputTile({
 	goals: displayGoals,
-	onChange
+	onChange,
+	isCompact
 }: {
 	goals: LearningGoal[];
 	onChange: (goal: LearningGoal[]) => void;
+	isCompact: boolean;
 }) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
@@ -367,34 +368,38 @@ export function LearningGoalInputTile({
 		[displayGoals, onChange]
 	);
 
+	const description =
+		"Ziele helfen dir eine Richtung zu finden, die du einschlagen möchtest, und bietet dir eine Checkliste, um deine Fortschritte zu überprüfen.";
+
 	return (
-		<div>
-			<Tile
-				onToggleEdit={setDialogOpen}
-				tileName={"Lernziele"}
-				isFilled={displayGoals.length > 0}
-			>
-				<div>
-					<div className="flex flex-wrap">
-						{displayGoals.length === 0 && <span>Keine Lernziele vorhanden</span>}
-						{displayGoals.map(goal => (
-							<div
-								key={goal.id}
-								className="flex items-center p-2 border border-gray-300 rounded bg-gray-50 m-2"
-							>
-								<GoalStatus goal={goal} editable={false} />
-								<span className="ml-2">{goal.description}</span>
-							</div>
-						))}
-					</div>
+		<TileLayout
+			isCompact={isCompact}
+			onClick={setDialogOpen}
+			isFilled={displayGoals.length > 0}
+			tileDescription={description}
+			tileName={"Lernziele"}
+		>
+			<div>
+				<div className="flex flex-wrap p-4 min-h-40 xl:min-h-0">
+					{displayGoals.length === 0 && <span>Keine Lernziele vorhanden</span>}
+					{displayGoals.map(goal => (
+						<div
+							key={goal.id}
+							className="flex items-center p-2 border border-gray-300 rounded bg-gray-50 m-2"
+						>
+							<GoalStatus goal={goal} editable={false} />
+							<span className="ml-2">{goal.description}</span>
+						</div>
+					))}
 				</div>
-			</Tile>
+			</div>
 			{dialogOpen && (
 				<LearningGoalEditorDialog
 					onClose={onClose}
 					onStatusUpdate={handleGoalStatusUpdate}
+					description={description}
 				/>
 			)}
-		</div>
+		</TileLayout>
 	);
 }

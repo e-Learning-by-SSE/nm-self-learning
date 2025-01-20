@@ -1,23 +1,24 @@
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { trpc } from "@self-learning/api-client";
 import {
 	LearningDiaryPageInput,
 	LearningDiaryPageOutput,
 	learningDiaryPageSchema
 } from "@self-learning/types";
+import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
+import { isTruthy } from "@self-learning/util/common";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
-import { useEffect, useMemo } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, FormProvider, useForm } from "react-hook-form";
-import { trpc } from "@self-learning/api-client";
-import { Divider, LoadingCircleCorner } from "@self-learning/ui/common";
-import { DiaryLearnedContent } from "./page-details";
 import {
 	LearningGoalInputTile,
 	LocationInputTile,
 	MarkDownInputTile,
 	StarInputTile
 } from "./input-tile";
+import { DiaryLearnedContent } from "./page-details";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
-import { LearningTechnique } from "@prisma/client";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -40,10 +41,12 @@ function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | u
 			pageDetails.learningGoals?.map(goal => ({
 				id: goal.id,
 				description: goal.description,
+				status: goal.status,
 				learningSubGoals: goal.learningSubGoals.map(subGoal => ({
 					id: subGoal.id,
 					description: subGoal.description,
 					priority: subGoal.priority,
+					status: subGoal.status,
 					learningGoalId: goal.id // rename
 				}))
 			})) ?? undefined,
@@ -55,6 +58,7 @@ function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | u
 				learningDiaryEntryId: pageDetails.id // rename
 			})) ?? undefined
 	} satisfies LearningDiaryPageInput;
+
 	return learningDiaryPageSchema.parse(inputType); // parse to add defaults
 }
 
@@ -94,6 +98,68 @@ function usePageForm({
 	return { ...form };
 }
 
+function useCompactView() {
+	const [isCompact, setIsCompact] = useState<boolean>(false);
+
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const savedState = localStorage.getItem("is-diary-page-compact");
+			setIsCompact(savedState !== null ? JSON.parse(savedState) : false);
+		}
+	}, []);
+
+	const toggleCompactView = useCallback((): void => {
+		setIsCompact((prev: boolean): boolean => {
+			const newState = !prev;
+			if (typeof window !== "undefined") {
+				localStorage.setItem("is-diary-page-compact", JSON.stringify(newState));
+			}
+			return newState;
+		});
+	}, [setIsCompact]);
+
+	return { isCompact, toggleCompactView };
+}
+
+function addRatingProp(
+	availableStrategies: Strategy[],
+	pageDetails: LearningDiaryPageDetail | null | undefined
+) {
+	const techniques = availableStrategies.map(strategy => {
+		const strategyTechniquesMap: Map<string, Strategy["techniques"][0]> = new Map(
+			strategy.techniques.map(technique => [technique.id, technique])
+		);
+		// Filter out techniques that are not in the strategy but int the page ratings
+		const missingTechniques =
+			pageDetails?.techniqueRatings
+				?.filter(
+					rating =>
+						strategy.id === rating.technique.learningStrategieId &&
+						!strategyTechniquesMap.has(rating.technique.id)
+				)
+				.map(rating => ({
+					...rating.technique,
+					score: rating.score
+				})) ?? [];
+
+		const ratings = [
+			pageDetails?.techniqueRatings,
+			missingTechniques.map(value => ({ score: value.score, technique: { ...value } }))
+		]
+			.filter(isTruthy)
+			.flat();
+		const updatedStrategy = strategy.techniques.map(technique => {
+			const score = ratings.find(
+				evaluation => evaluation.technique.id === technique.id
+			)?.score;
+			return { ...technique, score };
+		});
+
+		return { ...strategy, techniques: [...updatedStrategy, ...(missingTechniques ?? [])] };
+	});
+	return techniques;
+}
+
 export function DiaryContentForm({
 	diaryId,
 	availableStrategies,
@@ -106,28 +172,19 @@ export function DiaryContentForm({
 	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
+	const { isCompact, toggleCompactView } = useCompactView();
 
-	// add "rating" prop
-	const itemsWithRatings = availableStrategies.map(strategy => {
-		const updatedStrategy = strategy.techniques.map(technique => {
-			const score = pageDetails?.techniqueRatings.find(
-				evaluation => evaluation.technique.id === technique.id
-			)?.score;
-			return { ...technique, score };
-		});
-		return { ...strategy, techniques: updatedStrategy };
-	});
+	const techniques = addRatingProp(availableStrategies, pageDetails);
 
 	type Technique = { name: string; id: string; score?: number };
-
 	function onTechniqueChange(
 		updatedTechnique: Technique,
 		field: ControllerRenderProps<LearningDiaryPageOutput, "techniqueRatings">
 	) {
 		const updatedArray = field.value?.some(
-			(technique: LearningTechnique) => technique.id === updatedTechnique.id
+			(technique: { id: string; score: number }) => technique.id === updatedTechnique.id
 		)
-			? field.value.map((technique: LearningTechnique) =>
+			? field.value.map((technique: { id: string; score: number }) =>
 					technique.id === updatedTechnique.id ? updatedTechnique : technique
 				)
 			: [...(field.value || []), updatedTechnique];
@@ -141,90 +198,110 @@ export function DiaryContentForm({
 		// should not happen since we are fetching the pages in SSR and return 404 if not found
 		return null;
 	}
+
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-center">
 				<DiaryLearnedContent page={pageDetails} endDate={endDate} />
 			</div>
 			<Divider />
+			<div className="flex justify-end">
+				<Tooltip content={"Wechselt zwischen der normalen und der kompakten Ansicht."}>
+					<button onClick={toggleCompactView}>
+						{isCompact ? (
+							<ArrowsPointingOutIcon className="h-6 w-6 text-gray-500" />
+						) : (
+							<ArrowsPointingInIcon className="h-6 w-6 text-gray-500" />
+						)}
+					</button>
+				</Tooltip>
+			</div>
 			<FormProvider {...form}>
-				<form className="space-y-4">
-					<Controller
-						name="learningGoals"
-						control={form.control}
-						render={({ field }) => (
-							<LearningGoalInputTile
-								goals={field.value ?? []}
-								onChange={field.onChange}
-							/>
-						)}
-					/>
-					<Controller
-						name="learningLocation"
-						control={form.control}
-						render={({ field }) => (
-							<LocationInputTile
-								initialSelection={field.value}
-								onChange={field.onChange}
-							/>
-						)}
-					/>
-					<Controller
-						name="effortLevel"
-						control={form.control}
-						render={({ field }) => (
-							<StarInputTile
-								name={"Bemühungen:"}
-								initialRating={field.value}
-								onChange={field.onChange}
-								description={
-									"Bitte bewerte deine Bemühungen während der\n" +
-									"Lernsession. Bemühungen können ... sein. Mehr\n" +
-									"Sterne bedeutet du hast dich mehr bemüht."
-								}
-							/>
-						)}
-					/>
-					<Controller
-						name="distractionLevel"
-						control={form.control}
-						render={({ field }) => (
-							<StarInputTile
-								name={"Ablenkungen:"}
-								initialRating={field.value}
-								onChange={field.onChange}
-								description={
-									"Bitte bewerte deine Ablenkungen während der\n" +
-									"Lernsession. Ablenkungen können z.B. eine hohe\n" +
-									"Geräuschkulisse, Unterbrechungen, Anrufe,\n" +
-									"Mitbewohner, etc. sein. Mehr Sterne zeigen eine\n" +
-									"größere Ablenkung an.\n"
-								}
-							/>
-						)}
-					/>
-					<Controller
-						name="techniqueRatings"
-						control={form.control}
-						render={({ field }) => (
-							<PersonalTechniqueRatingTile
-								strategies={itemsWithRatings}
-								onChange={updatedTechnique => {
-									onTechniqueChange(updatedTechnique, field);
-								}}
-							/>
-						)}
-					/>
-					<Controller
-						name="notes"
-						control={form.control}
-						render={({ field }) => (
-							<MarkDownInputTile
-								initialNote={field.value}
-								onSubmit={field.onChange}
-							/>
-						)}
-					/>
+				<form className=" space-y-6 xl:space-y-4">
+					<div
+						className={
+							isCompact
+								? "grid grid-cols-1 2xl:grid-cols-2 gap-4"
+								: "flex flex-col gap-4"
+						}
+					>
+						<Controller
+							name="learningGoals"
+							control={form.control}
+							render={({ field }) => (
+								<LearningGoalInputTile
+									goals={field.value ?? []}
+									onChange={field.onChange}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="learningLocation"
+							control={form.control}
+							render={({ field }) => (
+								<LocationInputTile
+									initialSelection={field.value}
+									onChange={field.onChange}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="effortLevel"
+							control={form.control}
+							render={({ field }) => (
+								<StarInputTile
+									name={"Bemühungen"}
+									initialRating={field.value}
+									onChange={field.onChange}
+									description={
+										"Hier kannst du deine eigenen Bemühungen einschätzen. Dies kann dir helfen deine Lernstrategien zu optimieren."
+									}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="distractionLevel"
+							control={form.control}
+							render={({ field }) => (
+								<StarInputTile
+									name={"Ablenkungen"}
+									initialRating={field.value}
+									onChange={field.onChange}
+									description={
+										"Wie stark waren deine Ablenkungen beim Lernen? Hier kannst du deine Ablenkungen einschätzen und das kann dir helfen deine Lernstrategien zu optimieren."
+									}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="techniqueRatings"
+							control={form.control}
+							render={({ field }) => (
+								<PersonalTechniqueRatingTile
+									strategies={techniques}
+									onChange={updatedTechnique => {
+										onTechniqueChange(updatedTechnique, field);
+									}}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+						<Controller
+							name="notes"
+							control={form.control}
+							render={({ field }) => (
+								<MarkDownInputTile
+									initialNote={field.value}
+									onSubmit={field.onChange}
+									isCompact={isCompact}
+								/>
+							)}
+						/>
+					</div>
 				</form>
 			</FormProvider>
 		</div>

@@ -3,6 +3,8 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { CenteredSection } from "./containers/centered-section";
 import { redirectToLogin } from "./redirect-to-login";
+import { useRouter } from "next/router";
+import { useCallback } from "react";
 
 /**
  * Wrapper for `useSession` from `next-auth` that redirects the user to the login page if they are not authenticated.
@@ -115,4 +117,50 @@ export function Unauthorized({ children }: { children?: React.ReactNode }) {
 			</div>
 		</CenteredSection>
 	);
+}
+
+export function useAuthentication() {
+	const router = useRouter();
+	const callbackUrl = encodeURIComponent(router.asPath);
+	const redirectLogin = useCallback(() => {
+		router.push(`/api/auth/signin?callbackUrl=${callbackUrl}`);
+	}, [router, callbackUrl]);
+	const session = useSession({ required: false });
+	const isAuthenticated = session.data?.user != null;
+
+	const withAuth = useCallback(
+		(closure: () => void) => {
+			if (isAuthenticated) {
+				closure();
+			} else {
+				redirectLogin();
+			}
+		},
+		[isAuthenticated, redirectLogin]
+	);
+
+	return { withAuth, isAuthenticated };
+}
+
+/**
+ * Checks if a user has editing permission on a educational resource:
+ * - Admins have full access
+ * - Authors have access if they are in the list of permitted authors
+ *
+ * @example
+ * Redirect Non privileged authors
+ * ```typescript
+ * if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
+ *     redirectTo("/403");
+ * }
+ * ```
+ */
+export function hasAuthorPermission({
+	user,
+	permittedAuthors
+}: {
+	user: { role: "ADMIN" | "USER"; isAuthor: boolean; name: string };
+	permittedAuthors: string[];
+}) {
+	return user.role === "ADMIN" || (user.isAuthor && permittedAuthors.includes(user.name));
 }

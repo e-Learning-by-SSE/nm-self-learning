@@ -11,5 +11,5 @@ export * from "./lib/subject";
 export * from "./lib/user";
 export * from "./lib/skill";
 export * from "./lib/learning-diary";
-export * from "./lib/student";
+export * from "./lib/settings";
 export * from "./lib/event-log";

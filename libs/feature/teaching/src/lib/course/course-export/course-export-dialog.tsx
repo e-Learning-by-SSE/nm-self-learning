@@ -26,6 +26,7 @@ export function ExportCourseDialog({
 		onClose();
 	}
 
+	console.log("errorReport", errorReport);
 	if (userClosed) return null;
 	return (
 		<CenteredContainer>
@@ -38,14 +39,11 @@ export function ExportCourseDialog({
 				/>
 			)}
 			{isFinished && errorReport.length > 0 && (
-				<>
-					{console.log("errorReport", errorReport)}
-					<ErrorReportDialog
-						report={errorReport}
-						course={course}
-						onClose={() => setUserClosed(true)}
-					/>
-				</>
+				<ErrorReportDialog
+					report={errorReport}
+					course={course}
+					onClose={() => setUserClosed(true)}
+				/>
 			)}
 		</CenteredContainer>
 	);

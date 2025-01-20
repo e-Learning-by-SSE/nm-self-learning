@@ -7,42 +7,37 @@ import { memo, useEffect, useState } from "react";
 import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { SelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
-import { CourseFormModel, ExtendedCourseFormModel } from "../../course/course-form-model";
+import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
+import { ExtendedCourseFormModel } from "../../course/course-form-model";
 
 type SkillModalIdentifier = "teachingGoals" | "requirements";
+
 type CourseSkillModalIdentifier = "courseTeachingGoals" | "courseRequirements";
 
 export function CourseSkillForm() {
 	const { setValue, watch } = useFormContext<ExtendedCourseFormModel>();
-
 	const watchingSkills = {
 		courseRequirements: watch("courseRequirements"),
 		courseTeachingGoals: watch("courseTeachingGoals")
 	};
-
 	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
 	const [selectSkillModal, setSelectSkillModal] = useState<{
 		id: CourseSkillModalIdentifier;
 	} | null>(null);
-
 	const selectRepository = (id: SkillRepositoryModel) => {
 		setSelectedRepository(id);
 	};
-
 	const addSkills = (skill: SkillFormModel[] | undefined, id: CourseSkillModalIdentifier) => {
 		if (!skill) return;
 		skill = skill.map(skill => ({ ...skill, children: [], parents: [] }));
 		setValue(id, [...watchingSkills[id], ...skill]);
 	};
-
 	const deleteSkill = (skill: SkillFormModel, id: CourseSkillModalIdentifier) => {
 		setValue(
 			id,
 			watchingSkills[id].filter(s => s.id !== skill.id)
 		);
 	};
-
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle
@@ -52,31 +47,28 @@ export function CourseSkillForm() {
 			<LinkedSkillRepositoryMemorized selectRepository={selectRepository} />
 			{selectedRepository && (
 				<>
-					<LabeledField label="Vermittelte Skills">
-						<SelectSkillsView
-							skills={watchingSkills["courseTeachingGoals"]}
-							onDeleteSkill={skill => {
-								deleteSkill(skill, "courseTeachingGoals");
-							}}
-							onAddSkill={skill => {
-								addSkills(skill, "courseTeachingGoals");
-							}}
-							repoId={selectedRepository.id}
-						/>
-					</LabeledField>
-					<LabeledField label="Benötigte Skills">
-						<SelectSkillsView
-							skills={watchingSkills["courseRequirements"]}
-							onDeleteSkill={skill => {
-								deleteSkill(skill, "courseRequirements");
-							}}
-							onAddSkill={skill => {
-								addSkills(skill, "courseRequirements");
-							}}
-							repoId={selectedRepository.id}
-						/>
-					</LabeledField>
-
+					<LabeledFieldSelectSkillsView
+						label="Vermittelte Skills"
+						skills={watchingSkills["courseTeachingGoals"]}
+						onDeleteSkill={skill => {
+							deleteSkill(skill, "courseTeachingGoals");
+						}}
+						onAddSkill={skill => {
+							addSkills(skill, "courseTeachingGoals");
+						}}
+						repoId={selectedRepository.id}
+					/>
+					<LabeledFieldSelectSkillsView
+						label="Benötigte Skills"
+						skills={watchingSkills["courseRequirements"]}
+						onDeleteSkill={skill => {
+							deleteSkill(skill, "courseRequirements");
+						}}
+						onAddSkill={skill => {
+							addSkills(skill, "courseRequirements");
+						}}
+						repoId={selectedRepository.id}
+					/>
 					{selectSkillModal && (
 						<SelectSkillDialog
 							onClose={skill => {
@@ -91,8 +83,10 @@ export function CourseSkillForm() {
 		</Form.SidebarSection>
 	);
 }
-
-export default function SkillForm() {
+/**
+ * Area to add and remove skills to a lesson
+ */
+export function LessonSkillManager() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {
@@ -101,9 +95,9 @@ export default function SkillForm() {
 	};
 
 	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
-	const [selectSkillModal, setSelectSkillModal] = useState<{ id: SkillModalIdentifier } | null>(
-		null
-	);
+	const [selectSkillModal, setSelectSkillModal] = useState<{
+		id: SkillModalIdentifier;
+	} | null>(null);
 
 	const selectRepository = (id: SkillRepositoryModel) => {
 		setSelectedRepository(id);
@@ -131,30 +125,29 @@ export default function SkillForm() {
 			<LinkedSkillRepositoryMemorized selectRepository={selectRepository} />
 			{selectedRepository && (
 				<>
-					<LabeledField label="Vermittelte Skills">
-						<SelectSkillsView
-							skills={watchingSkills["teachingGoals"]}
-							onDeleteSkill={skill => {
-								deleteSkill(skill, "teachingGoals");
-							}}
-							onAddSkill={skill => {
-								addSkills(skill, "teachingGoals");
-							}}
-							repoId={selectedRepository.id}
-						/>
-					</LabeledField>
-					<LabeledField label="Benötigte Skills">
-						<SelectSkillsView
-							skills={watchingSkills["requirements"]}
-							onDeleteSkill={skill => {
-								deleteSkill(skill, "requirements");
-							}}
-							onAddSkill={skill => {
-								addSkills(skill, "requirements");
-							}}
-							repoId={selectedRepository.id}
-						/>
-					</LabeledField>
+					<LabeledFieldSelectSkillsView
+						label={"Vermittelte Skills"}
+						skills={watchingSkills["teachingGoals"]}
+						onDeleteSkill={skill => {
+							deleteSkill(skill, "teachingGoals");
+						}}
+						onAddSkill={skill => {
+							addSkills(skill, "teachingGoals");
+						}}
+						repoId={selectedRepository.id}
+					/>
+
+					<LabeledFieldSelectSkillsView
+						label={"Benötigte Skills"}
+						skills={watchingSkills["requirements"]}
+						onDeleteSkill={skill => {
+							deleteSkill(skill, "requirements");
+						}}
+						onAddSkill={skill => {
+							addSkills(skill, "requirements");
+						}}
+						repoId={selectedRepository.id}
+					/>
 					{selectSkillModal && (
 						<SelectSkillDialog
 							onClose={skill => {
@@ -169,7 +162,6 @@ export default function SkillForm() {
 		</Form.SidebarSection>
 	);
 }
-
 const LinkedSkillRepositoryMemorized = memo(LinkedSkillRepository);
 
 function LinkedSkillRepository({

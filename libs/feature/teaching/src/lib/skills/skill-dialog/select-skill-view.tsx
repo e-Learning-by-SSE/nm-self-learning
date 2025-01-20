@@ -1,9 +1,51 @@
-import { IconButton } from "@self-learning/ui/common";
-import { SelectSkillDialog } from "./select-skill-dialog";
-import { useState } from "react";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { getButtonSizeClass, IconButton, XButton } from "@self-learning/ui/common";
+import { LabeledField } from "@self-learning/ui/forms";
+import { useState } from "react";
+import { SelectSkillDialog } from "./select-skill-dialog";
 
+export function LabeledFieldSelectSkillsView({
+	skills,
+	onDeleteSkill,
+	onAddSkill,
+	repoId,
+	label
+}: {
+	skills: SkillFormModel[];
+	onDeleteSkill: (skill: SkillFormModel) => void;
+	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
+	repoId: string;
+	label: string;
+}) {
+	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
+
+	return (
+		<LabeledField
+			label={label}
+			button={
+				<IconButton
+					text="Hinzufügen"
+					icon={<PlusIcon className={getButtonSizeClass("medium")} />}
+					onClick={() => setSelectSkillModal(true)}
+					title={"Hinzufügen"}
+					data-testid="BenoetigteSkills-add"
+				/>
+			}
+		>
+			<SkillManagementComponent
+				skills={skills}
+				setSelectSkillModal={setSelectSkillModal}
+				onAddSkill={onAddSkill}
+				selectSkillModal={selectSkillModal}
+				onDeleteSkill={onDeleteSkill}
+				repoId={repoId}
+			/>
+		</LabeledField>
+	);
+}
+
+// TODO looks like a duplicate of the above component
 export function SelectSkillsView({
 	skills,
 	onDeleteSkill,
@@ -18,15 +60,43 @@ export function SelectSkillsView({
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
 
 	return (
-		<div className="flex flex-col">
+		<>
 			<IconButton
-				type="button"
-				data-testid="BenoetigteSkills-add"
-				onClick={() => setSelectSkillModal(true)}
-				title="Hinzufügen"
 				text="Hinzufügen"
-				icon={<PlusIcon className="h-5" />}
+				icon={<PlusIcon className={getButtonSizeClass("medium")} />}
+				onClick={() => setSelectSkillModal(true)}
+				title={"Hinzufügen"}
+				data-testid="BenoetigteSkills-add"
 			/>
+			<SkillManagementComponent
+				skills={skills}
+				setSelectSkillModal={setSelectSkillModal}
+				onAddSkill={onAddSkill}
+				selectSkillModal={selectSkillModal}
+				onDeleteSkill={onDeleteSkill}
+				repoId={repoId}
+			/>
+		</>
+	);
+}
+
+function SkillManagementComponent({
+	skills,
+	onDeleteSkill,
+	onAddSkill,
+	repoId,
+	setSelectSkillModal,
+	selectSkillModal
+}: {
+	skills: SkillFormModel[];
+	onDeleteSkill: (skill: SkillFormModel) => void;
+	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
+	repoId: string;
+	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+	selectSkillModal: boolean;
+}) {
+	return (
+		<div className="flex flex-col">
 			{skills.length === 0 && (
 				<div className="mt-3 text-sm text-gray-500">Keine Skills vorhanden</div>
 			)}

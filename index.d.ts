@@ -20,6 +20,7 @@ declare var process: {
 		KEYCLOAK_CLIENT_ID: string;
 		NEXTAUTH_URL: string;
 		NEXTAUTH_SECRET: string;
+		APP_VERSION: string;
 	};
 };
 
@@ -34,6 +35,8 @@ declare module "next-auth" {
 			role: "USER" | "ADMIN";
 			isAuthor: boolean;
 			avatarUrl?: string | null;
+			enabledLearningStatistics: boolean;
+			enabledFeatureLearningDiary: boolean;
 		};
 	}
 }

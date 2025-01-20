@@ -1,5 +1,4 @@
-import { XMarkIcon } from "@heroicons/react/24/solid";
-import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
+import { ButtonHTMLAttributes, DetailedHTMLProps, PropsWithChildren } from "react";
 
 export function PrimaryButton(
 	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
@@ -13,6 +12,40 @@ export function StrokedButton(
 	return <button {...props} type="button" className="btn-stroked" />;
 }
 
+export function RedButton({
+	label,
+	onClick,
+	className = "",
+	...props
+}: {
+	label: string;
+	onClick: () => void;
+	className: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+	return (
+		<button
+			className={`btn rounded-full bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring-4 focus:ring-red-300 ${className}`}
+			onClick={onClick}
+			{...props}
+		>
+			{label}
+		</button>
+	);
+}
+
+export function GreyBoarderButton(
+	props: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>
+) {
+	const cl = props.className ? props.className : "px-2 py-2"; // done for compatiblity
+	return (
+		<button
+			{...props}
+			className={`border-1 border-gray-150 inline-flex items-center justify-center rounded-md border bg-white font-medium text-black hover:bg-gray-100 ${cl}`}
+		>
+			{props.children}
+		</button>
+	);
+}
 /**
  * Button with an icon
  *
@@ -33,25 +66,6 @@ export function IconButton(
 		>
 			{props.icon}
 			<span className="text-sm">{props.text}</span>
-		</button>
-	);
-}
-
-export function ButtonSmallX({
-	onClick,
-	className = ""
-}: {
-	onClick: () => void;
-	className?: string;
-}) {
-	return (
-		<button
-			type="button"
-			data-testid="remove"
-			className={`mr-2 rounded-full p-2 hover:bg-gray-50 hover:text-red-500 ${className}`}
-			onClick={onClick}
-		>
-			<XMarkIcon className="h-3" />
 		</button>
 	);
 }

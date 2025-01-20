@@ -8,6 +8,7 @@
 		"KEYCLOAK",
 		"Lernen",
 		"markdownify",
+		"Matomo",
 		"MATOMO",
 		"minio",
 		"Nanomodul",
@@ -23,8 +24,10 @@
 		"trpc"
 	],
 	"cSpell.language": "en,de-de",
+	"cSpell.ignorePaths" : [
+		"package.json"
+	],
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.formatOnSave": true,
 	"editor.formatOnPaste": false,
-	"codetogether.virtualCursorJoin": "sharedVirtualCursor"
 }
