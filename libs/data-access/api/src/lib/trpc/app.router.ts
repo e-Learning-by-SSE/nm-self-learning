@@ -20,6 +20,7 @@ import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 
 import { userEventRouter } from "./routers/event-log.router";
+import { lessonDraftRouter } from "./routers/lesson-draft.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -32,6 +33,7 @@ export const appRouter = t.router({
 	learningDiary: learningDiaryPageRouter,
 	learningTechniqueRating: learningTechniqueRouter,
 	lesson: lessonRouter,
+	lessonDraft: lessonDraftRouter,
 	licenseRouter: licenseRouter,
 	me: meRouter,
 	storage: storageRouter,
