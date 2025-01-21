@@ -153,6 +153,30 @@ model Lesson {
     lessonStart           LearningDiaryLearnedLessons[] // TODO check if this is necessary
 }
 
+model LessonDraft {
+  id                    String      @id @default(cuid())
+  lessonId              String?
+  slug                  String?
+  title                 String?
+  subtitle              String?
+  description           String?
+  imgUrl                String?
+  content               Json?
+  quiz                  Json?
+  meta                  Json?
+  license               Json?
+  licenseId             Int?
+  teachingGoals         Json?
+  requirements          Json?
+  lessonType            LessonType? @default(TRADITIONAL)
+  selfRegulatedQuestion String?
+  updatedAt             DateTime    @updatedAt // TODO: maybe not needed
+  createdAt             DateTime    @default(now())
+  authors               Json //Author[]    @relation("AuthorToLessonDraft")
+
+  @@index([lessonId])
+}
+
 model CompletedLesson {
     completedLessonId Int      @id @default(autoincrement())
     courseId          String?
