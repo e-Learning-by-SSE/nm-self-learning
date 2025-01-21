@@ -7,6 +7,7 @@ export function DropdownButton({
 	chevronColor,
 	hover,
 	children,
+	//The position property determines whether the dropdown appears above or below the button.
 	position = "bottom"
 }: {
 	title: string;

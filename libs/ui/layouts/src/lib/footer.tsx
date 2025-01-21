@@ -78,7 +78,6 @@ function LanguageSwitcher() {
 					className={"hover:text-secondary"}
 					onClick={() => i18n.changeLanguage("en")}
 				>
-					{" "}
 					{t("languageEnglish")}
 				</button>
 			</div>
