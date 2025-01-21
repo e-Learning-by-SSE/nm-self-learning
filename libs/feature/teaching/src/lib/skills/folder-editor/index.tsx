@@ -92,7 +92,6 @@ export function SkillFolderEditor({
 						skill={selectedSkill}
 						changeEditTarget={changeEditTarget}
 						repository={repository}
-						updateSelectedRepository={updateSelectedRepository}
 					/>
 				}
 			>
@@ -158,22 +157,17 @@ function useTableSkillDisplay(skills: Map<string, SkillRepositoryTreeNodeModel>)
 function SidebarContentEditor({
 	skill,
 	changeEditTarget,
-	repository,
-	updateSelectedRepository
+	repository
 }: {
 	skill?: SkillRepositoryTreeNodeModel;
 	changeEditTarget: SkillSelectHandler;
 	repository: SkillRepository;
-	updateSelectedRepository: (repositoryId: SkillRepositoryModel) => void;
 }) {
 	return (
 		<>
 			<span className="text-2xl font-semibold text-secondary">Skillkarten editieren</span>
 
-			<RepositoryInfoMemorized
-				repository={repository}
-				updateSelectedRepository={updateSelectedRepository}
-			/>
+			<RepositoryInfoMemorized repository={repository} />
 			<Divider />
 
 			{skill
