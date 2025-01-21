@@ -7,15 +7,10 @@ import {
 	ShieldExclamationIcon,
 	CircleStackIcon
 } from "@heroicons/react/24/solid";
-import { PencilIcon, PuzzlePieceIcon } from "@heroicons/react/24/outline";
+import { /*PencilIcon,*/ PuzzlePieceIcon } from "@heroicons/react/24/outline";
 import { AddChildButton } from "./skill-taskbar";
 import styles from "./folder-table.module.css";
-import {
-	isSkillFormModel,
-	SkillFolderVisualization,
-	SkillSelectHandler,
-	UpdateVisuals
-} from "./skill-display";
+import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { isTruthy } from "@self-learning/util/common";
 
 export function ListSkillEntryWithChildren({
@@ -200,42 +195,42 @@ function SkillRow({
 	);
 }
 
-function QuickEditButton({
-	onClick,
-	skill
-}: {
-	onClick: () => void;
-	skill: SkillFolderVisualization;
-}) {
-	return (
-		<button
-			title="Bearbeiten"
-			className="mr-3 px-2 hover:text-secondary"
-			onClick={onClick}
-			disabled={skill.isSelected}
-		>
-			<PencilIcon className="ml-1 h-5 text-lg" />
-		</button>
-	);
-}
+// function QuickEditButton({
+// 	onClick,
+// 	skill
+// }: {
+// 	onClick: () => void;
+// 	skill: SkillFolderVisualization;
+// }) {
+// 	return (
+// 		<button
+// 			title="Bearbeiten"
+// 			className="mr-3 px-2 hover:text-secondary"
+// 			onClick={onClick}
+// 			disabled={skill.isSelected}
+// 		>
+// 			<PencilIcon className="ml-1 h-5 text-lg" />
+// 		</button>
+// 	);
+// }
 
-const IconWithNumber: React.FC<{
-	number: number;
-	children: React.ReactNode;
-	style?: React.CSSProperties;
-}> = ({ number, children, style }) => (
-	<div style={{ position: "relative" }}>
-		{children}
-		<span
-			style={{
-				position: "absolute",
-				top: "50%",
-				left: "10%",
-				transform: "translate(-50%, -50%)",
-				...style
-			}}
-		>
-			{number}
-		</span>
-	</div>
-);
+// const IconWithNumber: React.FC<{
+// 	number: number;
+// 	children: React.ReactNode;
+// 	style?: React.CSSProperties;
+// }> = ({ number, children, style }) => (
+// 	<div style={{ position: "relative" }}>
+// 		{children}
+// 		<span
+// 			style={{
+// 				position: "absolute",
+// 				top: "50%",
+// 				left: "10%",
+// 				transform: "translate(-50%, -50%)",
+// 				...style
+// 			}}
+// 		>
+// 			{number}
+// 		</span>
+// 	</div>
+// );

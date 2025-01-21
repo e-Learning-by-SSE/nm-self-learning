@@ -1,11 +1,7 @@
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { useCallback, useMemo, useState } from "react";
 import { DialogHandler, Divider } from "@self-learning/ui/common";
-import {
-	SkillFormModel,
-	SkillRepositoryModel,
-	SkillRepositoryTreeNodeModel
-} from "@self-learning/types";
+import { SkillRepositoryModel, SkillRepositoryTreeNodeModel } from "@self-learning/types";
 import { RepositoryInfoMemorized } from "../repository/repository-edit-form";
 
 import { SelectedSkillsInfoForm } from "./skill-edit-form";
@@ -85,7 +81,7 @@ export function SkillFolderEditor({
 				};
 			});
 		},
-		[updateSkillDisplay, repositories, updateSelectedRepository, skills]
+		[updateSkillDisplay, repositories, updateSelectedRepository, skills, repository]
 	);
 
 	return (

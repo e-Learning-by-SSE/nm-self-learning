@@ -1,6 +1,6 @@
 import { authOptions } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
+import { LoadingBox, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import {
 	CourseBasicInformation,
 	CourseSkillView,
@@ -47,10 +47,14 @@ export default function CourseCreationEditor() {
 
 	const { data: repositories, isLoading } = trpc.skill.getRepositories.useQuery();
 
+	if (isLoading) {
+		return <LoadingBox />;
+	}
+
 	const repository = repositories?.find(repository => repository.id === "1");
 
 	if (!repositories || !repository) {
-		return <div>No repository</div>;
+		return <LoadingBox />;
 	}
 
 	const renderContent = (index: number) => {
