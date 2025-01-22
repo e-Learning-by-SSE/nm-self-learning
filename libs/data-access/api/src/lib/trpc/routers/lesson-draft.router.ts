@@ -64,18 +64,7 @@ export const lessonDraftRouter = t.router({
 				select: {
 					id: true,
 					title: true,
-					subtitle: true,
 					lessonId: true,
-					slug: true,
-					description: true,
-					imgUrl: true,
-					authors: true,
-					lessonType: true,
-					licenseId: true,
-					selfRegulatedQuestion: true,
-					content: true,
-					requirements: true,
-					teachingGoals: true,
 					createdAt: true
 				}
 			});

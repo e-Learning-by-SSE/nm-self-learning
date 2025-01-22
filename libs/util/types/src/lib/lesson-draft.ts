@@ -27,7 +27,13 @@ export const lessonDraftSchema = z.object({
 		.nullable()
 		.optional(),
 	updatedAt: z.date().optional(),
-	createdAt: z.date().optional()
+	createdAt: z.date()
 });
 
-export type LessonDraft = z.infer<typeof lessonContentSchema>;
+export type LessonDraft = z.infer<typeof lessonDraftSchema>;
+
+export type LessonDraftOverview = {
+	id: string;
+	lessonId: string | null;
+	createdAt: Date;
+};
