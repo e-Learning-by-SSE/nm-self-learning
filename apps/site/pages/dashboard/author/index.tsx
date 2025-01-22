@@ -1,9 +1,10 @@
-import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withAuth } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
+import { LessonDraftOverview, LessonOverview, LessonWithDraftInfo } from "@self-learning/types";
 import {
 	Divider,
 	IconButton,
@@ -286,6 +287,44 @@ function AuthorDashboardPage({ author }: Props) {
 	);
 }
 
+function convertToLessonWithDraftInfo(lessons: LessonOverview[]): LessonWithDraftInfo[] {
+	return lessons.map(lesson => ({
+		lessonId: lesson.lessonId,
+		title: lesson.title,
+		updatedAt: lesson.updatedAt,
+		draftId: undefined
+	}));
+}
+
+function findNewestDrafts(drafts: LessonDraftOverview[]): LessonDraftOverview[] {
+	const newestDraftsMap = new Map<string, LessonDraftOverview>();
+
+	drafts.forEach(draft => {
+		const existingDraft = newestDraftsMap.get(draft.lessonId || "");
+		if (!existingDraft || draft.createdAt > existingDraft.createdAt) {
+			newestDraftsMap.set(draft.lessonId || "", draft);
+		}
+	});
+
+	return Array.from(newestDraftsMap.values());
+}
+
+function addDraftInfo(
+	lessons: LessonWithDraftInfo[],
+	drafts: LessonDraftOverview[]
+): LessonWithDraftInfo[] {
+	return lessons.map(lesson => {
+		const matchingDraft = drafts.find(draft => draft.lessonId === lesson.lessonId);
+
+		return {
+			title: lesson.title,
+			lessonId: lesson.lessonId,
+			updatedAt: lesson.updatedAt,
+			draftId: matchingDraft?.id
+		};
+	});
+}
+
 function Lessons({ authorName }: { authorName: string }) {
 	const router = useRouter();
 	const { title = "", page = 1 } = router.query;
@@ -301,6 +340,19 @@ function Lessons({ authorName }: { authorName: string }) {
 			staleTime: 10_000
 		}
 	);
+
+	const { data: drafts } = trpc.lessonDraft.getByAuthor.useQuery({ username: authorName });
+
+	let lessonsWithDraftInfo = [] as LessonWithDraftInfo[];
+
+	if (lessons) {
+		lessonsWithDraftInfo = convertToLessonWithDraftInfo(lessons.result);
+	}
+
+	if (drafts) {
+		const newestDrafts = findNewestDrafts(drafts);
+		lessonsWithDraftInfo = addDraftInfo(lessonsWithDraftInfo, newestDrafts);
+	}
 
 	return (
 		<div className="flex min-h-[200px] flex-col">
@@ -333,14 +385,23 @@ function Lessons({ authorName }: { authorName: string }) {
 							</>
 						}
 					>
-						{lessons.result.map(lesson => (
+						{lessonsWithDraftInfo.map(lesson => (
 							<tr key={lesson.lessonId}>
 								<TableDataColumn>
 									<Link
-										href={`/teaching/lessons/edit/${lesson.lessonId}`}
+										href={
+											lesson.draftId
+												? `/teaching/lessons/edit/${lesson.lessonId}?draft=${lesson.draftId}`
+												: `/teaching/lessons/edit/${lesson.lessonId}`
+										}
 										className="font-medium hover:text-secondary"
 									>
-										{lesson.title}
+										<span className="flex gap-3">
+											{lesson.title}
+											{lesson.draftId && (
+												<ExclamationCircleIcon className="icon h-5 text-red-500" />
+											)}
+										</span>
 									</Link>
 								</TableDataColumn>
 								<TableDataColumn>
