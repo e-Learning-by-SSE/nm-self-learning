@@ -16,6 +16,60 @@ type EditLessonProps = {
 export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 	async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
+		const draftId = ctx.query.draft;
+
+		if (draftId && typeof draftId === "string") {
+			const draft = await database.lessonDraft.findUnique({
+				where: { id: draftId },
+				select: {
+					id: true,
+					lessonId: true,
+					slug: true,
+					title: true,
+					subtitle: true,
+					description: true,
+					content: true,
+					quiz: true,
+					imgUrl: true,
+					licenseId: true,
+					requirements: true,
+					teachingGoals: true,
+					authors: true,
+					lessonType: true,
+					selfRegulatedQuestion: true
+				}
+			});
+
+			// if there is no draft in DB for given draftId
+			if (!draft) {
+				return { notFound: true };
+			}
+
+			const lessonForm: LessonFormModel = {
+				lessonId: draft.lessonId,
+				slug: draft.slug ?? "",
+				title: draft.title ?? "",
+				subtitle: draft.subtitle,
+				description: draft.description,
+				imgUrl: draft.imgUrl,
+				authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
+				licenseId: draft.licenseId,
+				requirements: Array.isArray(draft.requirements)
+					? draft.requirements
+					: [JSON.parse("[]")],
+				teachingGoals: Array.isArray(draft.teachingGoals)
+					? draft.teachingGoals
+					: JSON.parse("[]"),
+				content: (draft.content ?? []) as LessonContent,
+				quiz: draft.quiz as Quiz,
+				lessonType: draft.lessonType ?? "TRADITIONAL",
+				selfRegulatedQuestion: draft.selfRegulatedQuestion
+			};
+
+			return {
+				props: { lesson: lessonForm }
+			};
+		}
 
 		if (typeof lessonId !== "string") {
 			throw new Error("No [lessonId] provided.");
