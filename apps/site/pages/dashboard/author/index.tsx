@@ -314,7 +314,11 @@ function addDraftInfo(
 	drafts: LessonDraftOverview[]
 ): LessonWithDraftInfo[] {
 	return lessons.map(lesson => {
-		const matchingDraft = drafts.find(draft => draft.lessonId === lesson.lessonId);
+		const matchingDraft = drafts.find(
+			draft =>
+				draft.lessonId === lesson.lessonId &&
+				new Date(draft.createdAt) > new Date(lesson.updatedAt)
+		);
 
 		return {
 			title: lesson.title,
