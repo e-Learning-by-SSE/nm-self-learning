@@ -172,7 +172,7 @@ model LessonDraft {
   selfRegulatedQuestion String?
   updatedAt             DateTime    @updatedAt // TODO: maybe not needed
   createdAt             DateTime    @default(now())
-  authors               Json //Author[]    @relation("AuthorToLessonDraft")
+  authors               Json
 
   @@index([lessonId])
 }
