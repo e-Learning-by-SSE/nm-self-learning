@@ -1,13 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createEmptyLesson, lessonSchema } from "@self-learning/types";
+import {
+	createEmptyLesson,
+	lessonDraftSchema,
+	lessonSchema,
+	LessonDraft
+} from "@self-learning/types";
 import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { trpc } from "@self-learning/api-client";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -82,6 +88,47 @@ export function LessonEditor({
 		},
 		resolver: zodResolver(lessonSchema)
 	});
+
+	const { mutateAsync: create } = trpc.lessonDraft.create.useMutation();
+
+	const lastSavedDraftRef = useRef<LessonDraft | null>(null);
+
+	const autosaveLessonDraft = async () => {
+		const formValues = form.getValues();
+		const validatedDraft = lessonDraftSchema.parse(formValues);
+
+		const draft = {
+			...validatedDraft,
+			id: undefined
+		};
+
+		if (JSON.stringify(draft) === JSON.stringify(lastSavedDraftRef.current)) {
+			console.log("Draft is unchanged. Skipping autosave.");
+			return;
+		}
+
+		console.log("Autosaving draft: ", draft);
+
+		try {
+			await create(draft);
+			lastSavedDraftRef.current = draft;
+		} catch (err) {
+			console.log("Error during autosave", err);
+		}
+	};
+
+	useEffect(() => {
+		console.log("Setting up autosave interval");
+		const interval = setInterval(() => {
+			console.log("Autosave triggered");
+			autosaveLessonDraft();
+		}, 3000); // 3 seconds
+
+		return () => {
+			console.log("Clearing autosave interval");
+			clearInterval(interval);
+		};
+	}, []);
 
 	return (
 		<FormProvider {...form}>
