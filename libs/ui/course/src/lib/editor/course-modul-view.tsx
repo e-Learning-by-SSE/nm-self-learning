@@ -50,24 +50,28 @@ export function CourseModulView({
 	};
 
 	return (
-		<div>
-			<Sidebar
-				content={<div>Content</div>}
-				footer={<div>footer</div>}
-				header={<div>header</div>}
-			/>
-			<FormProvider {...form}>
-				<form id="lessonform" onSubmit={() => {}}>
-					<div className="ml-64 m-3">
-						<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
-							{tabs.map((content, idx) => (
-								<Tab key={idx}>{content}</Tab>
-							))}
-						</Tabs>
-						<div>{renderContent(selectedIndex)}</div>
+		<div className={"py-4 mx-auto"}>
+			<div>
+				<Sidebar
+					content={<div>Content</div>}
+					footer={<div>footer</div>}
+					header={<div>header</div>}
+				/>
+			</div>
+			<div className="ml-64 m-3 px-4 max-w-[75%]">
+				<FormProvider {...form}>
+					<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
+						{tabs.map((content, idx) => (
+							<Tab key={idx}>{content}</Tab>
+						))}
+					</Tabs>
+					<div className={"items-center justify-center"}>
+						{renderContent(selectedIndex)}
 					</div>
-				</form>
-			</FormProvider>
+
+					<form id="lessonform" onSubmit={() => {}}></form>
+				</FormProvider>
+			</div>
 		</div>
 	);
 }
@@ -94,7 +98,7 @@ export function Sidebar({
 	footer: ReactNode;
 }) {
 	return (
-		<div className="fixed left-0 z-10 flex h-full w-full flex-col overflow-hidden bg-white sm:w-64">
+		<div className="fixed left-0 z-10 flex h-full w-full flex-col overflow-hidden bg-white sm:w-64 border-2 max-w-[25%]">
 			{header}
 			{content}
 			{footer}

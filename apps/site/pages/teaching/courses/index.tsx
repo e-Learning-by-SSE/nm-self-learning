@@ -51,7 +51,7 @@ export default function CourseCreationEditor() {
 			case 1:
 				return <CourseSkillView />;
 			case 2:
-				return <CourseModulView />;
+				return <CourseModulView onSubmit={() => {}} />;
 			case 3:
 				return <CoursePreview />;
 			default:
