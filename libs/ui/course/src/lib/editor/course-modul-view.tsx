@@ -1,9 +1,31 @@
 import React, { ReactNode, useState } from "react";
-import { Tab, Tabs } from "@self-learning/ui/common";
+import { OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
+import { FormProvider, useForm } from "react-hook-form";
+import { LessonFormModel } from "@self-learning/teaching";
+import { createEmptyLesson, lessonSchema } from "@self-learning/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRequiredSession } from "@self-learning/ui/layouts";
+import "../../../../../../index";
 
-export function CourseModulView() {
+export function CourseModulView({
+	onSubmit,
+	initialLesson
+}: {
+	onSubmit: OnDialogCloseFn<LessonFormModel>;
+	initialLesson?: LessonFormModel;
+}) {
+	const session = useRequiredSession();
 	const tabs = ["Basis Daten", "Lerninhalt", "Lernkontrolle"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
+
+	const form = useForm<LessonFormModel>({
+		context: undefined,
+		defaultValues: initialLesson ?? {
+			...createEmptyLesson(),
+			authors: session.data?.user.isAuthor ? [{ username: session.data.user.name }] : []
+		},
+		resolver: zodResolver(lessonSchema)
+	});
 
 	function switchTab(index: number) {
 		setSelectedIndex(index);
@@ -23,26 +45,30 @@ export function CourseModulView() {
 	};
 
 	return (
-		<>
+		<div>
 			<Sidebar
 				content={<div>Content</div>}
 				footer={<div>footer</div>}
 				header={<div>header</div>}
 			/>
-			<div className="ml-64 m-3">
-				<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
-					{tabs.map((content, idx) => (
-						<Tab key={idx}>{content}</Tab>
-					))}
-				</Tabs>
-				<div>{renderContent(selectedIndex)}</div>
-			</div>
-		</>
+			<FormProvider {...form}>
+				<form id="lessonform" onSubmit={}>
+					<div className="ml-64 m-3">
+						<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
+							{tabs.map((content, idx) => (
+								<Tab key={idx}>{content}</Tab>
+							))}
+						</Tabs>
+						<div>{renderContent(selectedIndex)}</div>
+					</div>
+				</form>
+			</FormProvider>
+		</div>
 	);
 }
 
 function BasicData() {
-	return <div>Basis Daten</div>;
+	return <div></div>;
 }
 
 function LearningContent() {
