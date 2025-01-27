@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -30,7 +31,7 @@ type QuestionProps = LessonLayoutProps & {
 	};
 };
 
-export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params, locale }) => {
 	const parentProps = await getStaticPropsForLayout(params);
 
 	if ("notFound" in parentProps) return { notFound: true };
@@ -67,6 +68,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 
 	return {
 		props: {
+			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			...parentProps,
 			quiz,
 			markdown: {
