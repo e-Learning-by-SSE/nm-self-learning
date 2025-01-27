@@ -38,7 +38,7 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
 
 export default function CourseCreationEditor() {
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
-	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [selectedIndex, setSelectedIndex] = useState(2);
 
 	function switchTab(index: number) {
 		setSelectedIndex(index);
@@ -51,7 +51,7 @@ export default function CourseCreationEditor() {
 			case 1:
 				return <CourseSkillView />;
 			case 2:
-				return <CourseModulView />;
+				return <CourseModulView onSubmit={() => {}} />;
 			case 3:
 				return <CoursePreview />;
 			default:
