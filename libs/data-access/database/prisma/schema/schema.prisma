@@ -170,9 +170,10 @@ model LessonDraft {
   requirements          Json?
   lessonType            LessonType? @default(TRADITIONAL)
   selfRegulatedQuestion String?
-  updatedAt             DateTime    @updatedAt // TODO: maybe not needed
+  updatedAt             DateTime    @updatedAt
   createdAt             DateTime    @default(now())
   authors               Json
+  owner					Json
 
   @@index([lessonId])
 }

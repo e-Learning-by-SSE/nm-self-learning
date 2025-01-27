@@ -95,11 +95,13 @@ export function LessonEditor({
 
 	const autosaveLessonDraft = async () => {
 		const formValues = form.getValues();
-		const validatedDraft = lessonDraftSchema.parse(formValues);
 
 		const draft = {
-			...validatedDraft,
-			id: undefined
+			...formValues,
+			id: undefined,
+			owner: session.data?.user.isAuthor
+				? { username: session.data?.user.name }
+				: { username: "" } // TODO: some better solution ?
 		};
 
 		if (JSON.stringify(draft) === JSON.stringify(lastSavedDraftRef.current)) {
@@ -122,13 +124,13 @@ export function LessonEditor({
 		const interval = setInterval(() => {
 			console.log("Autosave triggered");
 			autosaveLessonDraft();
-		}, 3000); // 3 seconds
+		}, 5000); // 5 seconds
 
 		return () => {
 			console.log("Clearing autosave interval");
 			clearInterval(interval);
 		};
-	}, []);
+	}, [session.data]);
 
 	return (
 		<FormProvider {...form}>

@@ -3,7 +3,7 @@ import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
 
-// TODO: who is allowed to create drafts?
+// TODO: who is allowed to create drafts -> authors (not admin)?
 export const lessonDraftRouter = t.router({
 	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
 		const data = {
@@ -13,7 +13,8 @@ export const lessonDraftRouter = t.router({
 			license: input.license ?? undefined,
 			teachingGoals: input.teachingGoals ?? undefined,
 			requirements: input.requirements ?? undefined,
-			authors: input.authors ?? []
+			authors: input.authors ?? [],
+			owner: input.owner ?? undefined
 		};
 		await database.lessonDraft.create({
 			data: data
@@ -51,6 +52,7 @@ export const lessonDraftRouter = t.router({
 			}
 		});
 	}),
+	// TODO: do we need this?
 	getByAuthor: authProcedure
 		.input(z.object({ username: z.string() }))
 		.query(async ({ input }) => {
@@ -69,5 +71,23 @@ export const lessonDraftRouter = t.router({
 				}
 			});
 			return lessonDrafts;
-		})
+		}),
+	getByOwner: authProcedure.input(z.object({ username: z.string() })).query(async ({ input }) => {
+		const username = input.username;
+		const drafts = await database.lessonDraft.findMany({
+			where: {
+				owner: {
+					path: ["username"],
+					equals: username
+				}
+			},
+			select: {
+				id: true,
+				title: true,
+				lessonId: true,
+				createdAt: true
+			}
+		});
+		return drafts;
+	})
 });
