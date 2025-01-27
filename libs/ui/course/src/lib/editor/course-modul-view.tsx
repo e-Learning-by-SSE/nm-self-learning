@@ -5,7 +5,9 @@ import { LessonFormModel } from "@self-learning/teaching";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRequiredSession } from "@self-learning/ui/layouts";
-import "../../../../../../index";
+import { LessonInfoEditor } from "../../../../../feature/teaching/src/lib/lesson/forms/lesson-info";
+import { LessonContentEditor } from "../../../../../feature/teaching/src/lib/lesson/forms/lesson-content";
+import { QuizEditor } from "../../../../../feature/teaching/src/lib/lesson/forms/quiz-editor";
 
 export function CourseModulView({
 	onSubmit,
@@ -15,14 +17,15 @@ export function CourseModulView({
 	initialLesson?: LessonFormModel;
 }) {
 	const session = useRequiredSession();
-	const tabs = ["Basis Daten", "Lerninhalt", "Lernkontrolle"];
+	const tabs = ["Basisdaten", "Lerninhalt", "Lernkontrolle"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
 
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
 			...createEmptyLesson(),
-			authors: session.data?.user.isAuthor ? [{ username: session.data.user.name }] : []
+			//TODO input author here
+			authors: []
 		},
 		resolver: zodResolver(lessonSchema)
 	});
@@ -52,7 +55,7 @@ export function CourseModulView({
 				header={<div>header</div>}
 			/>
 			<FormProvider {...form}>
-				<form id="lessonform" onSubmit={}>
+				<form id="lessonform" onSubmit={() => {}}>
 					<div className="ml-64 m-3">
 						<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
 							{tabs.map((content, idx) => (
@@ -68,15 +71,15 @@ export function CourseModulView({
 }
 
 function BasicData() {
-	return <div></div>;
+	return <LessonInfoEditor />;
 }
 
 function LearningContent() {
-	return <div>Lerninhalt</div>;
+	return <LessonContentEditor />;
 }
 
 function LearningAssessment() {
-	return <div>Lernkontrolle</div>;
+	return <QuizEditor />;
 }
 
 export function Sidebar({
