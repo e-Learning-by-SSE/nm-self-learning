@@ -5,7 +5,8 @@ import {
 	FolderIcon,
 	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon,
-	CircleStackIcon
+	CircleStackIcon,
+	ChevronRightIcon
 } from "@heroicons/react/24/solid";
 import { /*PencilIcon,*/ PuzzlePieceIcon } from "@heroicons/react/24/outline";
 import { AddChildButton } from "./skill-taskbar";
@@ -146,7 +147,7 @@ function SkillRow({
 												onClickCapture={() => onOpen()}
 											/>
 										) : (
-											<ChevronDownIcon
+											<ChevronRightIcon
 												className="icon h-5 text-lg"
 												onClickCapture={() => onOpen()}
 											/>
