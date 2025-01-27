@@ -1,4 +1,5 @@
-import { PencilIcon, PlusIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import { TeacherView } from "@self-learning/analysis";
 import { withAuth } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -403,7 +404,7 @@ function Lessons({ authorName }: { authorName: string }) {
 										<span className="flex gap-3">
 											{lesson.title}
 											{lesson.draftId && (
-												<ExclamationCircleIcon className="icon h-5 text-red-500" />
+												<ExclamationCircleIcon className="icon h-5 text-red-500 pl-1" />
 											)}
 										</span>
 									</Link>
