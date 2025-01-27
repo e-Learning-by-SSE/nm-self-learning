@@ -1,13 +1,15 @@
 import React, { ReactNode, useState } from "react";
 import { OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import { FormProvider, useForm } from "react-hook-form";
-import { LessonFormModel } from "@self-learning/teaching";
+import {
+	LessonContentEditor,
+	LessonFormModel,
+	LessonInfoEditor,
+	QuizEditor
+} from "@self-learning/teaching";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRequiredSession } from "@self-learning/ui/layouts";
-import { LessonInfoEditor } from "../../../../../feature/teaching/src/lib/lesson/forms/lesson-info";
-import { LessonContentEditor } from "../../../../../feature/teaching/src/lib/lesson/forms/lesson-content";
-import { QuizEditor } from "../../../../../feature/teaching/src/lib/lesson/forms/quiz-editor";
 
 export function CourseModulView({
 	onSubmit,
