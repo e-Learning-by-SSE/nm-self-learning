@@ -10,8 +10,14 @@ import {
 import { /*PencilIcon,*/ PuzzlePieceIcon } from "@heroicons/react/24/outline";
 import { AddChildButton } from "./skill-taskbar";
 import styles from "./folder-table.module.css";
-import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
+import {
+	isSkillFormModel,
+	SkillFolderVisualization,
+	SkillSelectHandler,
+	UpdateVisuals
+} from "./skill-display";
 import { isTruthy } from "@self-learning/util/common";
+import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@hello-pangea/dnd";
 
 export function ListSkillEntryWithChildren({
 	skillResolver,
@@ -19,7 +25,8 @@ export function ListSkillEntryWithChildren({
 	depth = 0,
 	handleSelection,
 	updateSkillDisplay,
-	renderedIds = new Set()
+	renderedIds = new Set(),
+	index
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
@@ -27,6 +34,7 @@ export function ListSkillEntryWithChildren({
 	handleSelection: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
 	renderedIds?: Set<string>;
+	index: number;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
@@ -46,7 +54,7 @@ export function ListSkillEntryWithChildren({
 					.sort(byChildrenLength)
 					.filter(isTruthy)
 					.filter(wasNotRendered)
-					.map(element => {
+					.map((element, index) => {
 						// recursive structure to add <SkillRow /> for each child
 						const newSet = new Set(renderedIds);
 						newSet.add(element.id);
@@ -59,6 +67,7 @@ export function ListSkillEntryWithChildren({
 								handleSelection={handleSelection}
 								depth={depth + 1}
 								renderedIds={newSet}
+								index={index}
 							/>
 						);
 					})}
@@ -110,6 +119,32 @@ function SkillRow({
 	}
 	const cycleError = skill.isCycleMember;
 	const cycleWarning = skill.hasNestedCycleMembers && !skill.isSelected && !skill.isCycleMember;
+
+	// Stop move over the Repository
+	// https://github.com/atlassian/react-beautiful-dnd/issues/374#issuecomment-569817782
+	function getStyle(
+		style: DraggableStyle | undefined,
+		snapshot: DraggableStateSnapshot
+	): React.CSSProperties | undefined {
+		if (!snapshot.isDragging) return {};
+		if (!snapshot.isDropAnimating) {
+			return style;
+		}
+
+		return {
+			...style,
+			// cannot be 0, but make it super tiny
+			transitionDuration: `0.001s`
+		};
+	}
+
+	function checkDraggableSetting(skill: SkillFolderVisualization): boolean {
+		if (skill.isRepository) {
+			return true;
+		}
+		return false;
+	}
+
 	return (
 		<tr
 			style={depthCssStyle}
@@ -131,64 +166,88 @@ function SkillRow({
 					skill.shortHighlight ? "animate-highlight rounded-md" : ""
 				} text-sm font-medium`}
 			>
-				<div className={`flex px-2`}>
-					<div
-						className={`flex ${skill.isFolder && "hover:text-secondary"}`}
-						onClick={() => handleSelection(skill.id)}
-					>
-						<div className="flex px-3">
-							{skill.isFolder ? (
-								<>
-									<div className="mr-1">
-										{skill.isExpanded ? (
-											<ChevronDownIcon
-												className=" icon h-5 text-lg"
-												onClickCapture={() => onOpen()}
+				<Droppable droppableId={skill.id} direction="vertical">
+					{provided => (
+						<div ref={provided.innerRef} {...provided.droppableProps}>
+							<Draggable
+								key={skill.id}
+								draggableId={skill.id}
+								index={1}
+								isDragDisabled={checkDraggableSetting(skill)}
+							>
+								{(provided, snapshot) => (
+									<div
+										className={`flex px-2`}
+										ref={provided.innerRef}
+										{...provided.draggableProps}
+										{...provided.dragHandleProps}
+										style={getStyle(provided.draggableProps.style, snapshot)}
+									>
+										<div
+											className={`flex ${skill.isFolder && "hover:text-secondary"}`}
+											onClick={() => handleSelection(skill.id)}
+										>
+											<div className="flex px-3">
+												{skill.isFolder ? (
+													<>
+														<div className="mr-1">
+															{skill.isExpanded ? (
+																<ChevronDownIcon
+																	className=" icon h-5 text-lg"
+																	onClickCapture={() => onOpen()}
+																/>
+															) : (
+																<ChevronDownIcon
+																	className="icon h-5 text-lg"
+																	onClickCapture={() => onOpen()}
+																/>
+															)}
+														</div>
+														{skill.isRepository ? (
+															<CircleStackIcon className="icon h-5 text-lg" />
+														) : (
+															<FolderIcon className="icon h-5 text-lg" />
+														)}
+													</>
+												) : (
+													<div className="ml-6">
+														<PuzzlePieceIcon className="icon h-5 text-lg" />
+													</div>
+												)}
+											</div>
+											{cycleError && (
+												<ArrowPathRoundedSquareIcon className="icon h-5 text-lg text-red-500" />
+											)}
+											{cycleWarning && (
+												<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
+											)}
+											<span
+												className={`${skill.isSelected ? "text-secondary" : ""}`}
+											>
+												{skill.displayName ?? skill.skill.name}
+											</span>
+											{/* <span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span> */}
+										</div>
+										<div className="invisible  group-hover:visible">
+											{/* <QuickEditButton onClick={() => handleSelection(skill.id)} skill={skill} /> */}
+											<AddChildButton
+												parentSkill={skill.skill}
+												childrenNumber={skill.numberChildren}
+												updateSkillDisplay={updateSkillDisplay}
+												handleSelection={handleSelection}
 											/>
-										) : (
-											<ChevronDownIcon
-												className="icon h-5 text-lg"
-												onClickCapture={() => onOpen()}
-											/>
-										)}
-									</div>
-									{skill.isRepository ? (
-										<CircleStackIcon className="icon h-5 text-lg" />
-									) : (
-										<FolderIcon className="icon h-5 text-lg" />
-									)}
-								</>
-							) : (
-								<div className="ml-6">
-									<PuzzlePieceIcon className="icon h-5 text-lg" />
-								</div>
-							)}
-						</div>
-						{cycleError && (
-							<ArrowPathRoundedSquareIcon className="icon h-5 text-lg text-red-500" />
-						)}
-						{cycleWarning && (
-							<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
-						)}
-						<span className={`${skill.isSelected ? "text-secondary" : ""}`}>
-							{skill.displayName ?? skill.skill.name}
-						</span>
-						{/* <span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span> */}
-					</div>
-					<div className="invisible  group-hover:visible">
-						{/* <QuickEditButton onClick={() => handleSelection(skill.id)} skill={skill} /> */}
-						<AddChildButton
-							parentSkill={skill.skill}
-							childrenNumber={skill.numberChildren}
-							updateSkillDisplay={updateSkillDisplay}
-							handleSelection={handleSelection}
-						/>
-						{/* <SkillDeleteOption
+											{/* <SkillDeleteOption
 							skillIds={[skill.id]}
 							className="px-2 hover:text-secondary"
 						/> */}
-					</div>
-				</div>
+										</div>
+									</div>
+								)}
+							</Draggable>
+							{provided.placeholder}
+						</div>
+					)}
+				</Droppable>
 			</TableDataColumn>
 			{/* <TableDataColumn>{"nicht vorhanden"}</TableDataColumn> */}
 		</tr>

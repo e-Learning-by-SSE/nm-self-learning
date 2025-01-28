@@ -4,11 +4,17 @@ import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import { SkillRepository } from "@prisma/client";
 import { ListSkillEntryWithChildren } from "./skill-row-entry";
-import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
+import {
+	isSkillFormModel,
+	SkillFolderVisualization,
+	SkillSelectHandler,
+	UpdateVisuals
+} from "./skill-display";
 import { Skill } from "@prisma/client";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { AddSkillDialog } from "../skill-dialog/add-skill-dialog";
 import { trpc } from "@self-learning/api-client";
+import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
 
 export function SkillFolderTable({
 	repository,
@@ -39,6 +45,7 @@ export function SkillFolderTable({
 	const [openNewSkillDialog, setOpenNewSkillDialog] = useState(false);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
+	const { mutateAsync: updateSkillParent } = trpc.skill.updateSkill.useMutation();
 
 	function handleAddSkillDialogClose(result?: {
 		name: string;
@@ -80,6 +87,36 @@ export function SkillFolderTable({
 
 	// const setShortHighlight = (skill: Skill) =>
 	// 	updateSkillDisplay([{ id: skill.id, shortHighlight: true }]);
+
+	const onDragEnd: OnDragEndResponder = result => {
+		const { source, destination } = result;
+
+		if (!destination) return;
+		if (source.droppableId === destination.droppableId) return;
+
+		const sourceSkill = skillDisplayData.get(source.droppableId)?.skill;
+		const destinationSkill = skillDisplayData.get(destination.droppableId)?.skill;
+
+		if (sourceSkill && isSkillFormModel(sourceSkill)) {
+			if (destinationSkill) {
+				if (!sourceSkill.parents.includes(destinationSkill.id)) {
+					if (isSkillFormModel(destinationSkill)) {
+						sourceSkill.parents = [destinationSkill.id];
+					} else {
+						sourceSkill.parents = [];
+					}
+
+					const updateSkill = async () => await updateSkillParent({ skill: sourceSkill });
+					updateSkill();
+				}
+			}
+		}
+
+		// console.log(`Source droppableId ${source.droppableId} with index ${source.index}`);
+		// console.log(
+		// 	`destination droppableId ${destination.droppableId} with index ${destination.index}`
+		// );
+	};
 
 	return (
 		<div>
@@ -132,14 +169,17 @@ export function SkillFolderTable({
 					{skillsToDisplay
 						.sort(byChildrenLength)
 						.filter(isTopLevelSkill)
-						.map(element => (
-							<ListSkillEntryWithChildren
-								key={`${element.id}-0`}
-								skillDisplayData={element}
-								updateSkillDisplay={updateSkillDisplay}
-								handleSelection={handleSelection}
-								skillResolver={skillId => skillDisplayData.get(skillId)}
-							/>
+						.map((element, index) => (
+							<DragDropContext onDragEnd={onDragEnd} key={element.id}>
+								<ListSkillEntryWithChildren
+									key={`${element.id}-0`}
+									skillDisplayData={element}
+									updateSkillDisplay={updateSkillDisplay}
+									handleSelection={handleSelection}
+									skillResolver={skillId => skillDisplayData.get(skillId)}
+									index={index}
+								/>
+							</DragDropContext>
 						))}
 				</Table>
 			</CenteredSection>
