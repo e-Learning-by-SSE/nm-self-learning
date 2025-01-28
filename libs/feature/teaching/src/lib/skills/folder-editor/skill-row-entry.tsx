@@ -48,6 +48,7 @@ export function ListSkillEntryWithChildren({
 				depth={depth}
 				handleSelection={handleSelection}
 				updateSkillDisplay={updateSkillDisplay}
+				index={index}
 			/>
 			{showChildren &&
 				skillDisplayData.children
@@ -90,12 +91,14 @@ function SkillRow({
 	skill,
 	depth,
 	handleSelection,
-	updateSkillDisplay
+	updateSkillDisplay,
+	index
 }: {
 	skill: SkillFolderVisualization;
 	depth: number;
 	handleSelection: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
+	index: number;
 }) {
 	const depthCssStyle = {
 		"--depth": depth
@@ -173,7 +176,7 @@ function SkillRow({
 							<Draggable
 								key={skill.id}
 								draggableId={skill.id}
-								index={1}
+								index={index}
 								isDragDisabled={checkDraggableSetting(skill)}
 							>
 								{(provided, snapshot) => (
