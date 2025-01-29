@@ -32,7 +32,8 @@ function BearerToken() {
 		<CollapsibleBox title="Bearer Token">
 			<p className="font-bold">Hinweis:</p> Der Bearer Token wird nur zum Testen mit externen
 			Tools benötigt, auf dieser Seite erfolgt die Authentifizierung über die Session.
-			<p className="font-bold">Token:</p> <div className="break-all">{data.access_token}</div>
+			<p className="font-bold pt-2">Token:</p>{" "}
+			<div className="break-all">{data.access_token}</div>
 		</CollapsibleBox>
 	);
 }
