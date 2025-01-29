@@ -14,13 +14,14 @@ import { authProcedure, isCourseAuthorProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
 
 export const courseRouter = t.router({
-	listAvailableCourses: t.procedure
+	listAvailableCourses: authProcedure
 		.meta({
 			openapi: {
 				enabled: true,
 				method: "GET",
 				path: "/courses",
 				tags: ["Courses"],
+				protect: true,
 				summary: "Search available courses"
 			}
 		})
@@ -79,13 +80,14 @@ export const courseRouter = t.router({
 				totalCount: result.length
 			} satisfies Paginated<{ title: string; slug: string }>;
 		}),
-	getCourseData: t.procedure
+	getCourseData: authProcedure
 		.meta({
 			openapi: {
 				enabled: true,
 				method: "GET",
 				path: "/courses/{slug}",
 				tags: ["Courses"],
+				protect: true,
 				summary: "Get course description by slug"
 			}
 		})
