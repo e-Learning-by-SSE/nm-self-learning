@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { restApiHandler } from "@self-learning/api";
+import { ContextHandler, restApiHandler, UserFromSession } from "@self-learning/api";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ZodIssue } from "zod";
 import { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
@@ -24,6 +24,7 @@ export const restQuery = (req: {
 	method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 	query: Record<string, any>;
 	body?: any;
+	user?: UserFromSession;
 }) => {
 	return new Promise<{
 		statusCode: number;
@@ -41,8 +42,15 @@ export const restQuery = (req: {
 			}
 		};
 
+		let contextHandler: ContextHandler | undefined = undefined;
+		if (req.user) {
+			contextHandler = async () => ({
+				user: req.user
+			});
+		}
+
 		try {
-			await restApiHandler()(
+			await restApiHandler(contextHandler)(
 				req as unknown as NextApiRequest,
 				res as unknown as NextApiResponse
 			);

@@ -1,5 +1,6 @@
 import { restQuery, createCourseMock } from "@self-learning/util/testing";
 import { database } from "@self-learning/database";
+import { UserFromSession } from "../context";
 
 // Mock the database
 jest.mock("@self-learning/database", () => ({
@@ -13,6 +14,16 @@ jest.mock("@self-learning/database", () => ({
 }));
 
 describe("REST API of Course Router", () => {
+	const privilegedUser: UserFromSession = {
+		id: "1",
+		name: "user",
+		role: "ADMIN",
+		isAuthor: true,
+		avatarUrl: null,
+		enabledFeatureLearningDiary: false,
+		enabledLearningStatistics: false
+	};
+
 	describe("[GET]: /courses", () => {
 		const coursesMock = Array(15)
 			.fill(null)
@@ -62,7 +73,8 @@ describe("REST API of Course Router", () => {
 					trpc: ["courses"],
 					page: JSON.stringify(1),
 					pageSize: JSON.stringify(pageSize)
-				}
+				},
+				user: privilegedUser
 			});
 
 			const expected = {
@@ -91,7 +103,8 @@ describe("REST API of Course Router", () => {
 					page: JSON.stringify(1),
 					pageSize: JSON.stringify(pageSize),
 					authorId: "Author1"
-				}
+				},
+				user: privilegedUser
 			});
 
 			// Remove courses without "Author1": [5, 6, 7, 8, 9]
@@ -108,6 +121,23 @@ describe("REST API of Course Router", () => {
 
 			expect(response.statusCode).toBe(200);
 			expect(response.body).toEqual(expected);
+		});
+
+		it("should return 404 on unauthorized calls", async () => {
+			const pageSize = 20;
+
+			// Query parameters must use JSON.stringify
+			// See: https://trpc.io/docs/rpc#methods---type-mapping
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses"],
+					page: JSON.stringify(1),
+					pageSize: JSON.stringify(pageSize)
+				}
+			});
+
+			expect(response.statusCode).toBe(401);
 		});
 	});
 
@@ -143,7 +173,8 @@ describe("REST API of Course Router", () => {
 		it("should return course information for valid slug", async () => {
 			const response = await restQuery({
 				method: "GET",
-				query: { trpc: ["courses", courseMock.slug] }
+				query: { trpc: ["courses", courseMock.slug] },
+				user: privilegedUser
 			});
 
 			expect(response.statusCode).toBe(200);
@@ -162,10 +193,20 @@ describe("REST API of Course Router", () => {
 		it("should return 404 for invalid slug", async () => {
 			const response = await restQuery({
 				method: "GET",
-				query: { trpc: ["courses", "invalid-slug-id"] }
+				query: { trpc: ["courses", "invalid-slug-id"] },
+				user: privilegedUser
 			});
 
 			expect(response.statusCode).toBe(404);
+		});
+
+		it("should return 401 on unauthorized calls", async () => {
+			const response = await restQuery({
+				method: "GET",
+				query: { trpc: ["courses", courseMock.slug] }
+			});
+
+			expect(response.statusCode).toBe(401);
 		});
 	});
 });

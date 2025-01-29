@@ -10,7 +10,7 @@ import * as trpcNext from "@trpc/server/adapters/next";
  * @param contextHandler For production use `createTrpcContext` of `@self-learning/api`; for testing keep unspecified.
  * @returns OpenAPI handler for REST API.
  */
-type ContextHandler = ({ req, res }: trpcNext.CreateNextContextOptions) => Promise<Context>;
+export type ContextHandler = ({ req, res }: trpcNext.CreateNextContextOptions) => Promise<Context>;
 
 export function restApiHandler(contextHandler?: ContextHandler) {
 	return createOpenApiNextHandler({
