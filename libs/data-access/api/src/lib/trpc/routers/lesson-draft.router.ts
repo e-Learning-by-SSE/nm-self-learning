@@ -89,5 +89,20 @@ export const lessonDraftRouter = t.router({
 			}
 		});
 		return drafts;
+	}),
+	delete: authProcedure.input(z.object({ draftId: z.string() })).mutation(async ({ input }) => {
+		try {
+			const deletedDraft = await database.lessonDraft.delete({
+				where: { id: input.draftId }
+			});
+
+			return {
+				success: true,
+				message: "Draft successfully deleted.",
+				draft: deletedDraft
+			};
+		} catch (err) {
+			console.error("Error while deleting draft: ", err);
+		}
 	})
 });
