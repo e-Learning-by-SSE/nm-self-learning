@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema, LessonDraft } from "@self-learning/types";
-import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import { OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -9,6 +9,7 @@ import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
+import { useRouter } from "next/router";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -75,6 +76,7 @@ export function LessonEditor({
 	draftId?: string | undefined;
 }) {
 	const session = useRequiredSession();
+	const router = useRouter();
 	const [selectedTab, setSelectedTab] = useState(0);
 	const form = useForm<LessonFormModel>({
 		context: undefined,
@@ -89,8 +91,9 @@ export function LessonEditor({
 	const { mutateAsync: create } = trpc.lessonDraft.create.useMutation();
 
 	const lastSavedDraftRef = useRef<LessonDraft | null>(null);
+	const toastShownRef = useRef(false);
 
-	const autosaveLessonDraft = async () => {
+	const saveLessonDraft = async () => {
 		const formValues = form.getValues();
 
 		const draft = {
@@ -98,7 +101,7 @@ export function LessonEditor({
 			id: undefined,
 			owner: session.data?.user.isAuthor
 				? { username: session.data?.user.name }
-				: { username: "" } // TODO: some better solution ?
+				: { username: "" }
 		};
 
 		if (JSON.stringify(draft) === JSON.stringify(lastSavedDraftRef.current)) {
@@ -118,21 +121,44 @@ export function LessonEditor({
 
 	useEffect(() => {
 		if (!draftId) {
-			console.log("Setting up autosave interval");
 			const interval = setInterval(() => {
-				console.log("Autosave triggered");
-				autosaveLessonDraft();
+				saveLessonDraft();
 			}, 5000); // 5 seconds
 
 			return () => {
-				console.log("Clearing autosave interval");
 				clearInterval(interval);
 			};
 		} else {
-			showToast({ type: "info", title: "Das ist ein Entwurf", subtitle: "" });
+			if (!toastShownRef.current) {
+				showToast({ type: "info", title: "Das ist ein Entwurf", subtitle: "" });
+				toastShownRef.current = true;
+			}
 			console.log("Draft loaded -> no autosave. ", draftId);
 		}
 	}, [session.data]);
+
+	const [showSaveOptions, setShowSaveOptions] = useState(false);
+
+	const handleSave = () => {
+		form.handleSubmit(onSubmit)();
+		setShowSaveOptions(false);
+	};
+
+	const handleSaveAsDraft = () => {
+		setShowSaveOptions(false);
+		saveLessonDraft();
+		router.back();
+	};
+
+	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
+
+	const handleCancel = async () => {
+		if (draftId) {
+			await deleteDraft({ draftId: draftId });
+		}
+
+		router.back();
+	};
 
 	return (
 		<FormProvider {...form}>
@@ -161,14 +187,44 @@ export function LessonEditor({
 				<div
 					className={`${
 						isFullScreen ? "fixed" : ""
-					} pointer-events-none bottom-0 flex w-full items-end justify-end`}
+					} bottom-0 flex w-full items-end justify-end`}
 				>
-					<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
-						<DialogActions onClose={onSubmit}>
-							<button type="submit" className="btn-primary pointer-events-auto">
-								Speichern
+					<div className={`${isFullScreen ? "absolute" : "fixed"} z-50 pr-5 pb-5`}>
+						<div className="flex justify-end space-x-2 mt-4">
+							<button type="button" onClick={handleCancel} className="btn-secondary">
+								Abbrechen
 							</button>
-						</DialogActions>
+							<button
+								type="button"
+								onClick={() => setShowSaveOptions(!showSaveOptions)}
+								className="btn-primary pointer-events-auto flex items-center gap-2"
+							>
+								Speichern
+								<span
+									className={`transform transition-transform ${showSaveOptions ? "rotate-180" : ""}`}
+								>
+									&#x25BC;
+								</span>
+							</button>
+							{showSaveOptions && (
+								<div className="mt-2 ml-4 space-y-2">
+									<button
+										type="button"
+										onClick={handleSave}
+										className="btn-primary pointer-events-auto w-full"
+									>
+										Speichern
+									</button>
+									<button
+										type="button"
+										onClick={handleSaveAsDraft}
+										className="btn-primary pointer-events-auto w-full"
+									>
+										Als Entwurf Speichern
+									</button>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			</form>
