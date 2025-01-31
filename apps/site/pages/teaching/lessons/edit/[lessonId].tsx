@@ -143,22 +143,15 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 
 export default function EditLessonPage({ lesson, draftId }: EditLessonProps) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
-	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
 	const router = useRouter();
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		if (draftId) {
-			await deleteDraft({ draftId: draftId });
-			router.push("/dashboard/author");
-		} else {
-			console.log("saving triggered");
-			await onLessonEditorSubmit(
-				() => {
-					router.push("/dashboard/author");
-				},
-				editLessonAsync,
-				updatedLesson
-			);
-		}
+		await onLessonEditorSubmit(
+			() => {
+				router.push("/dashboard/author");
+			},
+			editLessonAsync,
+			updatedLesson
+		);
 	};
 
 	return (
