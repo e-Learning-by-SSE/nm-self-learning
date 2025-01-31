@@ -88,7 +88,7 @@ export function LessonEditor({
 		resolver: zodResolver(lessonSchema)
 	});
 
-	const { mutateAsync: create } = trpc.lessonDraft.create.useMutation();
+	const { mutateAsync: upsert } = trpc.lessonDraft.upsert.useMutation();
 
 	const lastSavedDraftRef = useRef<LessonDraft | null>(null);
 	const toastShownRef = useRef(false);
@@ -112,7 +112,7 @@ export function LessonEditor({
 		console.log("Autosaving draft: ", draft);
 
 		try {
-			await create(draft);
+			await upsert(draft);
 			lastSavedDraftRef.current = draft;
 		} catch (err) {
 			console.log("Error during autosave", err);
@@ -120,20 +120,20 @@ export function LessonEditor({
 	};
 
 	useEffect(() => {
-		if (!draftId) {
-			const interval = setInterval(() => {
-				saveLessonDraft();
-			}, 5000); // 5 seconds
+		const interval = setInterval(() => {
+			saveLessonDraft();
+		}, 5000); // 5 seconds
 
-			return () => {
-				clearInterval(interval);
-			};
-		} else {
+		return () => {
+			clearInterval(interval);
+		};
+
+		if (draftId) {
 			if (!toastShownRef.current) {
 				showToast({ type: "info", title: "Das ist ein Entwurf", subtitle: "" });
 				toastShownRef.current = true;
 			}
-			console.log("Draft loaded -> no autosave. ", draftId);
+			console.log("Draft loaded: ", draftId);
 		}
 	}, [session.data]);
 

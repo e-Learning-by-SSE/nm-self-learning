@@ -3,7 +3,6 @@ import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
 
-// TODO: who is allowed to create drafts -> authors (not admin)?
 export const lessonDraftRouter = t.router({
 	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
 		const data = {
@@ -20,58 +19,6 @@ export const lessonDraftRouter = t.router({
 			data: data
 		});
 	}),
-	getByLessonId: authProcedure
-		.input(z.object({ lessonId: z.string() }))
-		.query(async ({ input }) => {
-			const { lessonId } = input;
-
-			const lessonDrafts = await database.lessonDraft.findMany({
-				where: { lessonId }
-			});
-
-			return lessonDrafts;
-		}),
-	findOne: authProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
-		return database.lessonDraft.findUniqueOrThrow({
-			where: { id: input.id },
-			select: {
-				id: true,
-				title: true,
-				subtitle: true,
-				lessonId: true,
-				slug: true,
-				description: true,
-				imgUrl: true,
-				authors: true,
-				lessonType: true,
-				licenseId: true,
-				selfRegulatedQuestion: true,
-				content: true,
-				requirements: true,
-				teachingGoals: true
-			}
-		});
-	}),
-	// TODO: do we need this?
-	getByAuthor: authProcedure
-		.input(z.object({ username: z.string() }))
-		.query(async ({ input }) => {
-			const username = input.username;
-			const lessonDrafts = await database.lessonDraft.findMany({
-				where: {
-					authors: {
-						array_contains: [{ username }]
-					}
-				},
-				select: {
-					id: true,
-					title: true,
-					lessonId: true,
-					createdAt: true
-				}
-			});
-			return lessonDrafts;
-		}),
 	getByOwner: authProcedure.input(z.object({ username: z.string() })).query(async ({ input }) => {
 		const username = input.username;
 		const drafts = await database.lessonDraft.findMany({
@@ -103,6 +50,54 @@ export const lessonDraftRouter = t.router({
 			};
 		} catch (err) {
 			console.error("Error while deleting draft: ", err);
+		}
+	}),
+	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
+		const lessonId = input.lessonId;
+		const draftData = {
+			...input,
+			content: input.content ?? "",
+			quiz: input.quiz ?? undefined,
+			license: input.license ?? undefined,
+			teachingGoals: input.teachingGoals ?? undefined,
+			requirements: input.requirements ?? undefined,
+			authors: input.authors ?? [],
+			owner: input.owner ?? undefined
+		};
+		const user = input.owner;
+		console.log("\nUser is ", user);
+		const existingDraft = lessonId
+			? await database.lessonDraft.findFirst({
+					where: {
+						lessonId: lessonId,
+						owner: {
+							path: ["username"],
+							equals: user.username
+						}
+					}
+				})
+			: null;
+
+		if (existingDraft) {
+			console.log("updating a new draft");
+			return await database.lessonDraft.update({
+				where: { id: existingDraft.id },
+				data: {
+					...draftData,
+					updatedAt: new Date()
+				}
+			});
+		} else {
+			console.log("createing a new draft");
+			return await database.lessonDraft.create({
+				data: {
+					...draftData,
+					lessonId: lessonId ?? null,
+					owner: user,
+					createdAt: new Date(),
+					updatedAt: new Date()
+				}
+			});
 		}
 	})
 });
