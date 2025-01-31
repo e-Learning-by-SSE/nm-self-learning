@@ -346,7 +346,7 @@ function Lessons({ authorName }: { authorName: string }) {
 		}
 	);
 
-	const { data: drafts } = trpc.lessonDraft.getByAuthor.useQuery({ username: authorName });
+	const { data: drafts } = trpc.lessonDraft.getByOwner.useQuery({ username: authorName });
 
 	let lessonsWithDraftInfo = [] as LessonWithDraftInfo[];
 
