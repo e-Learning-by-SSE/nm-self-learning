@@ -11,6 +11,7 @@ import { hasAuthorPermission } from "@self-learning/ui/layouts";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
+	draftId?: string;
 };
 
 export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
@@ -67,7 +68,7 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 			};
 
 			return {
-				props: { lesson: lessonForm }
+				props: { lesson: lessonForm, draftId: draft.id }
 			};
 		}
 
@@ -140,18 +141,32 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 	}
 );
 
-export default function EditLessonPage({ lesson }: EditLessonProps) {
+export default function EditLessonPage({ lesson, draftId }: EditLessonProps) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
+	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
 	const router = useRouter();
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		await onLessonEditorSubmit(
-			() => {
-				router.push("/dashboard/author");
-			},
-			editLessonAsync,
-			updatedLesson
-		);
+		if (draftId) {
+			await deleteDraft({ draftId: draftId });
+			router.push("/dashboard/author");
+		} else {
+			console.log("saving triggered");
+			await onLessonEditorSubmit(
+				() => {
+					router.push("/dashboard/author");
+				},
+				editLessonAsync,
+				updatedLesson
+			);
+		}
 	};
 
-	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />;
+	return (
+		<LessonEditor
+			initialLesson={lesson}
+			onSubmit={handleEditClose}
+			isFullScreen={true}
+			draftId={draftId}
+		/>
+	);
 }

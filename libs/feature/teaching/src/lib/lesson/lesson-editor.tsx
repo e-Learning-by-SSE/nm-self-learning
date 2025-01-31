@@ -1,10 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	createEmptyLesson,
-	lessonDraftSchema,
-	lessonSchema,
-	LessonDraft
-} from "@self-learning/types";
+import { createEmptyLesson, lessonSchema, LessonDraft } from "@self-learning/types";
 import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -25,7 +20,7 @@ export async function onLessonCreatorSubmit(
 	try {
 		if (lesson) {
 			const result = await createLessonAsync(lesson);
-			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
+			showToast({ type: "success", title: "Lerneinheit erstellt", subtitle: result.title });
 		}
 		onClose();
 	} catch (error) {
@@ -71,11 +66,13 @@ export async function onLessonEditorSubmit(
 export function LessonEditor({
 	onSubmit,
 	initialLesson,
-	isFullScreen
+	isFullScreen,
+	draftId
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
+	draftId?: string | undefined;
 }) {
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -120,16 +117,21 @@ export function LessonEditor({
 	};
 
 	useEffect(() => {
-		console.log("Setting up autosave interval");
-		const interval = setInterval(() => {
-			console.log("Autosave triggered");
-			autosaveLessonDraft();
-		}, 5000); // 5 seconds
+		if (!draftId) {
+			console.log("Setting up autosave interval");
+			const interval = setInterval(() => {
+				console.log("Autosave triggered");
+				autosaveLessonDraft();
+			}, 5000); // 5 seconds
 
-		return () => {
-			console.log("Clearing autosave interval");
-			clearInterval(interval);
-		};
+			return () => {
+				console.log("Clearing autosave interval");
+				clearInterval(interval);
+			};
+		} else {
+			showToast({ type: "info", title: "Das ist ein Entwurf", subtitle: "" });
+			console.log("Draft loaded -> no autosave. ", draftId);
+		}
 	}, [session.data]);
 
 	return (
