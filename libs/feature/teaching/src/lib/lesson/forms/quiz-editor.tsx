@@ -39,16 +39,15 @@ export function useQuizEditorForm() {
 	const currentQuestion = quiz[questionIndex];
 
 	function appendQuestion(type: QuestionType["type"]) {
-		setQuestionIndex(old => old + 1);
-
 		const initialConfigFn = INITIAL_QUESTION_CONFIGURATION_FUNCTIONS[type];
 
 		if (!initialConfigFn) {
 			console.error("No initial configuration function found for question type", type);
 			return;
 		}
-
 		append(initialConfigFn());
+
+		setQuestionIndex(quiz.length);
 	}
 
 	function removeQuestion(index: number) {
