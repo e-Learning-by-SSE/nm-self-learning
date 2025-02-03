@@ -15,7 +15,7 @@ export function AddAuthorDialog({
 	open
 }: {
 	open: boolean;
-	onClose: (author?: AuthorFromGetAllQuery) => void;
+	onClose: (author: AuthorFromGetAllQuery | null | undefined) => void;
 }) {
 	const { data: _authors } = trpc.author.getAll.useQuery();
 	const [filter, setFilter] = useState("");
@@ -33,7 +33,7 @@ export function AddAuthorDialog({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onClose={onClose}>
+			<Combobox value={null} onChange={onClose}>
 				<DropdownDialog.SearchInput
 					filter={filter}
 					setFilter={setFilter}
