@@ -40,6 +40,7 @@ export function GreyBoarderButton(
 	return (
 		<button
 			type="button"
+			data-testid="author-option"
 			{...props}
 			className={`border-1 border-gray-150 inline-flex items-center justify-center rounded-md border bg-white font-medium text-black hover:bg-gray-100 ${cl}`}
 		>
