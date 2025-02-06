@@ -3,14 +3,6 @@ import { AddAuthorDialog } from "./add-author-dialog";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-global.ResizeObserver = class {
-	observe() {}
-
-	unobserve() {}
-
-	disconnect() {}
-};
-
 jest.mock("@self-learning/api-client", () => {
 	return {
 		trpc: {
@@ -24,8 +16,18 @@ jest.mock("@self-learning/api-client", () => {
 });
 
 describe("add-author-dialog", () => {
+	beforeAll(() => {
+		global.ResizeObserver = class {
+			observe() {}
+
+			unobserve() {}
+
+			disconnect() {}
+		};
+	});
+
 	describe("combobox-onChange", () => {
-		it("should return the name of the pressed author", async () => {
+		it("should return the name of the pressed author #267", async () => {
 			//arrange
 			const fakeAuthors = [
 				{

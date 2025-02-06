@@ -1,43 +1,75 @@
+jest.mock("@self-learning/api-client", () => ({
+	trpc: {
+		author: {
+			getAll: {
+				useQuery: jest.fn(() => ({
+					data: [
+						{
+							username: "mmuster",
+							displayName: "Max Mustermann",
+							slug: "muster-mann",
+							imgUrl: null
+						}
+					]
+				}))
+			}
+		},
+		skill: {
+			getRepositories: {
+				useQuery: jest.fn(() => ({ data: [] }))
+			}
+		},
+		licenseRouter: {
+			getAll: {
+				useQuery: jest.fn(() => ({
+					data: [
+						{
+							name: "Uni Hi Intern",
+							licenseText:
+								"Nur für die interne Verwendung an der Universität Hildesheim (Moodle, Selflernplattform, Handreichungen) erlaubt. Weitere Verwendung, Anpassung und Verbreitung sind nicht gestattet.",
+							oerCompatible: false,
+							selectable: true
+						}
+					]
+				}))
+			}
+		}
+	}
+}));
+
+jest.mock("@self-learning/teaching", () => ({
+	LicenseForm: () => <div data-testid="license-form-mock" />
+}));
+
+jest.mock("next-auth/react", () => ({
+	...jest.requireActual("next-auth/react"),
+	signIn: jest.fn(() => Promise.resolve()),
+	signOut: jest.fn(() => Promise.resolve()),
+	getProviders: jest.fn(() => Promise.resolve({}))
+}));
+
+/* eslint-disable import/first */
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LessonInfoEditor } from "./lesson-info";
-import { LessonFormModel } from "@self-learning/teaching";
+import { LessonFormModel, LicenseForm } from "@self-learning/teaching";
 import { FormProvider, useForm } from "react-hook-form";
 import { SessionProvider } from "next-auth/react";
 
-global.ResizeObserver = class {
-	observe() {}
-
-	unobserve() {}
-
-	disconnect() {}
-};
-
-jest.mock("@self-learning/api-client", () => {
-	return {
-		trpc: {
-			author: {
-				getAll: {
-					useQuery: jest.fn(() => ({ data: [] }))
-				}
-			},
-			license: {
-				getAll: {
-					useQuery: jest.fn(() => ({ data: [] }))
-				}
-			},
-			repository: {
-				getRepositories: {
-					useQuery: jest.fn(() => ({ data: [] }))
-				}
-			}
-		}
-	};
-});
-
 describe("lesson-info-editor", () => {
+	beforeAll(() => {
+		// Provide a no-op ResizeObserver so it doesn't crash in jsdom
+		global.ResizeObserver = class {
+			observe() {}
+
+			unobserve() {}
+
+			disconnect() {}
+		};
+	});
+
 	describe("combobox-onChange", () => {
-		it("should return the name of the pressed author", async () => {
+		it("should not submit form when pressing non submit button", async () => {
 			// Arrange
 			const onSubmitMock = jest.fn();
 
@@ -49,8 +81,10 @@ describe("lesson-info-editor", () => {
 				</SessionProvider>
 			);
 
+			render(<LicenseForm />);
+
 			// Act
-			const buttons = await screen.findAllByTestId("author-option");
+			const buttons = await screen.findAllByTestId("gray-border-button");
 			for (const button of buttons) {
 				await userEvent.click(button);
 			}
