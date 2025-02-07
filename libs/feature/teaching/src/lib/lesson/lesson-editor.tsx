@@ -124,17 +124,15 @@ export function LessonEditor({
 			saveLessonDraft();
 		}, 5000); // 5 seconds
 
-		return () => {
-			clearInterval(interval);
-		};
-
 		if (draftId) {
 			if (!toastShownRef.current) {
 				showToast({ type: "info", title: "Das ist ein Entwurf", subtitle: "" });
 				toastShownRef.current = true;
 			}
-			console.log("Draft loaded: ", draftId);
 		}
+		return () => {
+			clearInterval(interval);
+		};
 	}, [session.data]);
 
 	const [showSaveOptions, setShowSaveOptions] = useState(false);

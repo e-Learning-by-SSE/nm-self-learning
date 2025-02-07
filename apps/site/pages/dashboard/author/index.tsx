@@ -1,13 +1,18 @@
-import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, PlusIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withAuth } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
-import { LessonDraftOverview, LessonOverview, LessonWithDraftInfo } from "@self-learning/types";
+import {
+	LessonDraft,
+	LessonDraftOverview,
+	LessonOverview,
+	LessonWithDraftInfo
+} from "@self-learning/types";
 import {
 	Divider,
+	Dialog,
 	IconButton,
 	ImageChip,
 	ImageOrPlaceholder,
@@ -25,6 +30,7 @@ import { formatDateAgo } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -106,9 +112,96 @@ export default function Start(props: Props) {
 	return <AuthorDashboardPage {...props} />;
 }
 
+function DraftsDialog({ onClose, drafts }: { onClose: () => void; drafts: LessonDraft[] }) {
+	const { mutateAsync: createLesson } = trpc.lesson.create.useMutation();
+	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
+
+	const handleClick = () => {
+		const draft = drafts[0];
+		let slug = draft.slug ?? "default-slug";
+		slug = `${slug}-${Date.now()}`;
+		createLesson({
+			lessonId: null,
+			slug,
+			title: draft.title ?? "title",
+			subtitle: draft.subtitle ?? "",
+			description: draft.description ?? "",
+			imgUrl: draft.imgUrl ?? "",
+			content: draft.content ?? [],
+			authors: draft.authors ?? [],
+			licenseId: draft.licenseId ?? null,
+			requirements: draft.requirements ?? [],
+			teachingGoals: draft.teachingGoals ?? [],
+			lessonType: "TRADITIONAL",
+			selfRegulatedQuestion: draft.selfRegulatedQuestion ?? null,
+			quiz: draft.quiz
+				? {
+						questions: draft.quiz.questions ?? [],
+						config: draft.quiz.config ?? null
+					}
+				: null
+		});
+		if (draft.id) {
+			deleteDraft({ draftId: draft.id });
+		}
+		onClose();
+	};
+
+	const handleCancel = () => {
+		const draftId = drafts[0].id;
+
+		if (draftId) {
+			deleteDraft({ draftId: draftId });
+		}
+
+		onClose();
+	};
+
+	return (
+		<Dialog onClose={onClose} title={"Nicht gespeicherte Veränderungen"}>
+			<span className="text-sm text-light">
+				Wir habe nicht gespeicherte Änderungen von Ihrer letzten Sitzung festgestellt.
+				<br></br>
+				Möchten Sie diese wiederherstellen?
+			</span>
+			<div className="flex gap-2 pt-3 justify-end">
+				<button className="btn-stroked" onClick={handleCancel}>
+					Verwerfen
+				</button>
+				<button className="btn-primary" onClick={handleClick}>
+					Wiederherstellen
+				</button>
+			</div>
+		</Dialog>
+	);
+}
+
 function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
 	const authorName = session.data?.user.name;
+
+	const { data: drafts } = trpc.lessonDraft.getByOwner.useQuery(
+		{ username: authorName ?? "" },
+		{ enabled: !!authorName }
+	);
+	const [openDraftsDialog, setOpenDraftsDialog] = useState(false);
+
+	let draftsWithoutLesson: LessonDraft[] = [];
+
+	if (drafts) {
+		draftsWithoutLesson = drafts.filter(draft => draft.lessonId === null);
+	}
+
+	const handleClick = (e: { preventDefault: () => void }) => {
+		if (draftsWithoutLesson?.length > 0) {
+			e.preventDefault();
+			setOpenDraftsDialog(true);
+		}
+	};
+
+	const handleClose = () => {
+		setOpenDraftsDialog(false);
+	};
 
 	return (
 		<div className="bg-gray-50">
@@ -243,15 +336,23 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Lerneinheiten:"
 							/>
 
-							<Link href="/teaching/lessons/create">
-								<IconButton
-									text="Neue Lerneinheit erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
+							<Link href="/teaching/lessons/create" onClick={handleClick}>
+								<div className="relative inline-block">
+									<IconButton
+										text="Neue Lerneinheit erstellen"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+									{draftsWithoutLesson?.length > 0 && (
+										<ExclamationCircleIcon className="absolute top-0 right-0 h-7 text-red-500 transform translate-x-1/2 -translate-y-1/2" />
+									)}
+								</div>
 							</Link>
 						</div>
 
 						{authorName && <Lessons authorName={authorName} />}
+						{openDraftsDialog && (
+							<DraftsDialog onClose={handleClose} drafts={draftsWithoutLesson} />
+						)}
 					</section>
 
 					<Divider />
@@ -346,7 +447,7 @@ function Lessons({ authorName }: { authorName: string }) {
 		}
 	);
 
-	const { data: drafts } = trpc.lessonDraft.getByOwner.useQuery({ username: authorName });
+	const { data: drafts } = trpc.lessonDraft.getOverviewByOwner.useQuery({ username: authorName });
 
 	let lessonsWithDraftInfo = [] as LessonWithDraftInfo[];
 

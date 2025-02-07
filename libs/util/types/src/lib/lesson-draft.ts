@@ -37,4 +37,5 @@ export type LessonDraftOverview = {
 	id: string;
 	lessonId: string | null;
 	createdAt: Date;
+	title: string | null;
 };
