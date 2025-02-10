@@ -26,8 +26,6 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 
-	const currentLessonType = form.watch("lessonType");
-
 	return (
 		<Form.SidebarSection>
 			<div>
@@ -129,26 +127,6 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 						)}
 					></Controller>
 				</LabeledField>
-
-				{currentLessonType === "SELF_REGULATED" && (
-					<LabeledField
-						label={"Aktivierungsfrage"}
-						error={errors.description?.message}
-						optional={false}
-					>
-						<Controller
-							control={control}
-							name={"selfRegulatedQuestion"}
-							render={({ field }) => (
-								<MarkdownField
-									content={field.value as string}
-									setValue={field.onChange}
-									inline={true}
-								></MarkdownField>
-							)}
-						></Controller>
-					</LabeledField>
-				)}
 
 				<AuthorsForm
 					subtitle="Autoren dieser Lerneinheit."
