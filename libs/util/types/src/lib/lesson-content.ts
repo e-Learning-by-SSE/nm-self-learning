@@ -40,11 +40,17 @@ export const iframeSchema = z.object({
 	})
 });
 
+const selfRegulatedQuestionSchema = z.object({
+	type: z.literal("selfRegulatedQuestion"),
+	selfRegulatedQuestion: z.string()
+});
+
 export const lessonContentSchema = z.discriminatedUnion("type", [
 	videoSchema,
 	articleSchema,
 	pdfSchema,
-	iframeSchema
+	iframeSchema,
+	selfRegulatedQuestionSchema
 ]);
 
 export function getContentTypeDisplayName(contentType: LessonContentMediaType): string {
@@ -52,7 +58,8 @@ export function getContentTypeDisplayName(contentType: LessonContentMediaType): 
 		video: "Video",
 		article: "Artikel",
 		pdf: "PDF",
-		iframe: "Externe Webseite"
+		iframe: "Externe Webseite",
+		selfRegulatedQuestion: "Self Regulated Question"
 	};
 
 	return names[contentType] ?? "Unknown Type";
@@ -76,10 +83,10 @@ type InferContentType<
 	: never;
 
 export type ValueByContentType<CType extends LessonContentType["type"]> =
-	InferContentType<CType>["value"];
+	InferContentType<CType>["type"];
 
 export type MetaByContentType<CType extends LessonContentType["type"]> =
-	InferContentType<CType>["meta"];
+	InferContentType<CType>["type"];
 
 export function findContentType<CType extends LessonContentType["type"]>(
 	type: CType,

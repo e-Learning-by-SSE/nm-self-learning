@@ -80,7 +80,9 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 					type: "iframe",
 					value: { url: "" },
 					meta: { estimatedDuration: 0 }
-				})
+				}),
+			selfRegulatedQuestion: () =>
+				append({ type: "selfRegulatedQuestion", selfRegulatedQuestion: "" })
 		};
 
 		const fn = addActions[type];
