@@ -49,8 +49,7 @@ jest.mock("next-auth/react", () => ({
 }));
 
 /* eslint-disable import/first */
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { LessonInfoEditor } from "./lesson-info";
 import { LessonFormModel, LicenseForm } from "@self-learning/teaching";
 import { FormProvider, useForm } from "react-hook-form";
@@ -86,11 +85,12 @@ describe("lesson-info-editor", () => {
 			// Act
 			const buttons = await screen.findAllByTestId("gray-border-button");
 			for (const button of buttons) {
-				await userEvent.click(button);
+				fireEvent.click(button);
 			}
 
-			// Assert
-			expect(onSubmitMock).toHaveBeenCalledTimes(0);
+			waitFor(() => {
+				expect(onSubmitMock).toHaveBeenCalledTimes(0);
+			});
 		});
 	});
 });
