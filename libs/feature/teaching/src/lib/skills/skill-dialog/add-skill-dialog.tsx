@@ -1,106 +1,74 @@
 import { Dialog, DialogActions } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { useState } from "react";
 import { Skill } from "@prisma/client";
-import { trpc } from "@self-learning/api-client";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SkillFormModel } from "@self-learning/types";
+
+const skillSchema = z.object({
+	name: z.string().min(1, "Name is required"),
+	description: z.string(),
+	parent: z.string().optional()
+});
+
+type SkillFormData = z.infer<typeof skillSchema>;
 
 export function AddSkillDialog({
 	onClose,
-	skill,
 	selectedSkill,
-	repositoryId
+	skills
 }: {
-	skill?: Skill;
 	selectedSkill?: Skill;
-	repositoryId: string;
-	onClose: (result?: { name: string; description: string | null; parent?: string }) => void;
+	skills: SkillFormModel[];
+	onClose: (result?: SkillFormData) => void;
 }) {
-	const [name, setName] = useState(skill?.name ?? "");
-	const [description, setDescription] = useState(skill?.description ?? "");
-	const [parentSkill, setParentSkill] = useState(selectedSkill?.id);
-	const { data: skills } = trpc.skill.getUnresolvedSkillsFromRepo.useQuery({
-		repoId: repositoryId
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isValid }
+	} = useForm<SkillFormData>({
+		resolver: zodResolver(skillSchema),
+		mode: "onChange" // Enable live validation
 	});
+
+	const onSubmit = (data: SkillFormData) => {
+		onClose(data);
+	};
 
 	return (
 		<Dialog title="Skill hinzufügen" onClose={onClose}>
-			<div className="flex flex-col gap-4">
-				<LabeledField label="name">
+			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+				<LabeledField label="Name">
 					<input
 						type="text"
-						className="textfield"
-						value={name}
-						onChange={e => setName(e.target.value)}
-						onKeyUp={e => {
-							if (e.key === "Enter" && name.length > 0) {
-								onClose({
-									name: name,
-									description: description,
-									parent: parentSkill
-								});
-							}
-						}}
+						className={`textfield ${errors.name ? "border-red-500" : ""}`}
+						{...register("name")}
 					/>
+					{errors.name && <span className="text-red-500">{errors.name.message}</span>}
 				</LabeledField>
 
 				<LabeledField label="Beschreibung" optional={true}>
-					<input
-						type="text"
-						className="textfield"
-						value={description}
-						onChange={e => setDescription(e.target.value)}
-						onKeyUp={e => {
-							if (e.key === "Enter" && name.length > 0) {
-								onClose({
-									name: name,
-									description: description,
-									parent: parentSkill
-								});
-							}
-						}}
-					/>
+					<input type="text" className="textfield" {...register("description")} />
 				</LabeledField>
 
 				<LabeledField label="Parent">
-					<select
-						value={parentSkill}
-						onChange={e => setParentSkill(e.target.value)}
-						onKeyUp={e => {
-							if (e.key === "Enter" && name.length > 0) {
-								onClose({
-									name: name,
-									description: description,
-									parent: parentSkill
-								});
-							}
-						}}
-					>
-						<option value=""></option>
-						{skills?.map(skill => (
+					<select value={selectedSkill?.id} className="textfield" {...register("parent")}>
+						<option value="">None</option>
+						{skills.map(skill => (
 							<option key={skill.id} value={skill.id}>
 								{skill.name}
 							</option>
 						))}
 					</select>
 				</LabeledField>
-			</div>
 
-			<DialogActions onClose={onClose}>
-				<button
-					type="button"
-					className="btn-primary"
-					disabled={name.length === 0}
-					onClick={() =>
-						onClose({
-							name: name,
-							description: description,
-							parent: parentSkill
-						})
-					}
-				>
-					Bestätigen
-				</button>
-			</DialogActions>
+				<DialogActions onClose={onClose}>
+					<button type="submit" className="btn-primary" disabled={!isValid}>
+						Bestätigen
+					</button>
+				</DialogActions>
+			</form>
 		</Dialog>
 	);
 }

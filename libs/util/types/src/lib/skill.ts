@@ -41,5 +41,5 @@ export const createSkillFormModelFromSkillResolved = (skill: SkillResolved): Ski
 		parents: skill.parents.map(parent => parent.id)
 	};
 };
-z;
+
 export type SkillRepositoryTreeNodeModel = SkillFormModel | SkillRepositoryModel;

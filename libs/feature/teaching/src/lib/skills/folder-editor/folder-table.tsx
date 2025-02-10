@@ -132,11 +132,6 @@ export function SkillFolderTable({
 		if (isSkillFormModel(sourceSkill)) {
 			if (!sourceSkill.parents.includes(destinationSkill.id)) {
 				if (isHotkeyPressed("ctrl") || isHotkeyPressed("alt")) {
-					if (isHotkeyPressed("ctrl")) {
-						console.log(`Copying the skill, pressing ctrl`);
-					} else {
-						console.log(`Moving the skill, pressing alt`);
-					}
 					updateSourceSkillParents(
 						sourceSkill,
 						sourceParentId,
@@ -170,6 +165,11 @@ export function SkillFolderTable({
 		}
 	};
 
+	const skills = Array.from(skillDisplayData.values())
+		.map(skill => skill.skill)
+		.filter(skill => isSkillFormModel(skill))
+		.filter(skill => skill.repositoryId === repository.id);
+
 	return (
 		<div>
 			<CenteredSection>
@@ -181,7 +181,7 @@ export function SkillFolderTable({
 					</button>
 					{openNewSkillDialog && (
 						<AddSkillDialog
-							repositoryId={repository.id}
+							skills={skills}
 							selectedSkill={selectedSkill}
 							onClose={handleAddSkillDialogClose}
 						/>

@@ -25,37 +25,6 @@ export function SelectedSkillsInfoForm({
 	}
 }
 
-// export function MassSelectedInfo(
-// 	skills,
-// 	onSelectItem
-// }: {
-// 	skills: SkillFormModel[];
-// 	onSelectItem: SkillSelectHandler;
-// }) {
-// 	return (
-// 		<>
-// 			<h2 className="text-xl">Ausgewählte Skills:</h2>
-// 			<span className="pb-4 text-sm text-light">Die rechts ausgewählten Skills</span>
-
-// 			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-light-border">
-// 				<div className="flex flex-col">
-// 					{skills.map((skill, index) => (
-// 						<span
-// 							key={"span: " + skill.id + index}
-// 							className="flex items-center gap-2 pl-1"
-// 						>
-// 							{skill.name}
-// 						</span>
-// 					))}
-// 				</div>
-// 			</section>
-// 			<div className="pt-4" />
-// 			<Divider />
-// 			<SkillDeleteOption skills={skills} classname={"py-2 px-8"} onChange={() => {}} />
-// 		</>
-// 	);
-// }
-
 export function SkillInfoForm({
 	skill,
 	handleSelection
