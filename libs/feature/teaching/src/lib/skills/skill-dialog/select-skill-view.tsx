@@ -1,6 +1,6 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
-import { getButtonSizeClass, IconButton, XButton } from "@self-learning/ui/common";
+import { getButtonSizeClass, IconButton } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
@@ -142,7 +142,12 @@ function InlineRemoveButton({
 				>
 					{label}
 				</button>
-				<XButton onClick={onRemove} title={"Skill entfernen"} className="p-2 mr-2" />
+				<XMarkIcon
+					type="button"
+					onClick={onRemove}
+					title={"Skill entfernen"}
+					className="h-7 w-7 hover:text-secondary"
+				/>
 			</div>
 		</div>
 	);
