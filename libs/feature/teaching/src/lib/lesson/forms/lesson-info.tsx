@@ -3,6 +3,7 @@ import {
 	FieldHint,
 	Form,
 	InputWithButton,
+	LabeledCheckbox,
 	LabeledField,
 	MarkdownField,
 	OpenAsJsonButton,
@@ -12,7 +13,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { lessonSchema } from "@self-learning/types";
-import { LabeledCheckbox } from "@self-learning/ui/forms";
 import { GreyBoarderButton } from "@self-learning/ui/common";
 import { LessonSkillManager } from "./lesson-skill-manager";
 
@@ -25,6 +25,8 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	} = form;
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
+
+	const currentLessonType = form.watch("lessonType");
 
 	return (
 		<Form.SidebarSection>
@@ -127,6 +129,26 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 						)}
 					></Controller>
 				</LabeledField>
+
+				{currentLessonType === "SELF_REGULATED" && (
+					<LabeledField
+						label={"Aktivierungsfrage"}
+						error={errors.description?.message}
+						optional={false}
+					>
+						<Controller
+							control={control}
+							name={"selfRegulatedQuestion"}
+							render={({ field }) => (
+								<MarkdownField
+									content={field.value as string}
+									setValue={field.onChange}
+									inline={true}
+								></MarkdownField>
+							)}
+						></Controller>
+					</LabeledField>
+				)}
 
 				<AuthorsForm
 					subtitle="Autoren dieser Lerneinheit."
