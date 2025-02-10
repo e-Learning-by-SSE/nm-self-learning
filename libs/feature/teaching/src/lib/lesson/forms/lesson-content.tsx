@@ -6,7 +6,7 @@ import {
 	LessonContentType,
 	ValueByContentType
 } from "@self-learning/types";
-import { Divider, RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
+import { RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
 import { Reorder } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
@@ -16,7 +16,6 @@ import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
 import { LessonFormModel } from "@self-learning/teaching";
 import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
-import { Do_Hyeon } from "next/dist/compiled/@next/font/dist/google";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -81,9 +80,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 					type: "iframe",
 					value: { url: "" },
 					meta: { estimatedDuration: 0 }
-				}),
-			selfRegulatedQuestion: () =>
-				append({ type: "selfRegulatedQuestion", selfRegulatedQuestion: "" })
+				})
 		};
 
 		const fn = addActions[type];
@@ -267,7 +264,6 @@ function LessonDescriptionForm() {
 									<MarkdownField
 										content={field.value as string}
 										setValue={field.onChange}
-										inline={true}
 									/>
 								)}
 							/>

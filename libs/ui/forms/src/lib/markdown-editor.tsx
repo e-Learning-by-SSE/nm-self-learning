@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, PencilButton, OnDialogCloseFn } from "@self-learning/ui/common";
+import { Dialog, DialogActions, OnDialogCloseFn, PencilButton } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
@@ -22,22 +22,9 @@ export function MarkdownField({
 	const [openEditor, setOpenEditor] = useState(false);
 
 	return (
-		<div className={inline ? "flex flex-col gap-1" : ""}>
-			{!inline && (
-				<div className="mb-2 flex items-end justify-end">
-					<PencilButton
-						buttonTitle={"Bearbeiten"}
-						onClick={() => setOpenEditor(true)}
-						title={"Beschreibung bearbeiten"}
-					/>
-				</div>
-			)}
-
+		<div className="flex items-center gap-2">
 			<div
-				className={
-					"cursor-pointer rounded-lg border border-light-border bg-white " +
-					(inline ? "p-2" : "flex p-4")
-				}
+				className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2"
 				style={{ minHeight: 32 }}
 				onClick={() => setOpenEditor(true)}
 			>
@@ -49,6 +36,14 @@ export function MarkdownField({
 					)}
 				</div>
 			</div>
+
+			{!inline && (
+				<PencilButton
+					buttonTitle="Bearbeiten"
+					onClick={() => setOpenEditor(true)}
+					title="Beschreibung bearbeiten"
+				/>
+			)}
 
 			{openEditor && (
 				<MarkdownEditorDialog
