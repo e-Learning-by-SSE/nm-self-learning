@@ -8,15 +8,10 @@ import {
 	CircleStackIcon,
 	ChevronRightIcon
 } from "@heroicons/react/24/solid";
-import { /*PencilIcon,*/ PuzzlePieceIcon } from "@heroicons/react/24/outline";
+import { PuzzlePieceIcon } from "@heroicons/react/24/outline";
 import { AddChildButton } from "./skill-taskbar";
 import styles from "./folder-table.module.css";
-import {
-	isSkillFormModel,
-	SkillFolderVisualization,
-	SkillSelectHandler,
-	UpdateVisuals
-} from "./skill-display";
+import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { isTruthy } from "@self-learning/util/common";
 import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@hello-pangea/dnd";
 
@@ -27,7 +22,7 @@ export function ListSkillEntryWithChildren({
 	handleSelection,
 	updateSkillDisplay,
 	renderedIds = new Set(),
-	index
+	parentNodeId
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
@@ -35,10 +30,12 @@ export function ListSkillEntryWithChildren({
 	handleSelection: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
 	renderedIds?: Set<string>;
-	index: number;
+	parentNodeId: string;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
+
+	const nodeId = generateNodeId(parentNodeId, skillDisplayData.id);
 
 	return (
 		<>
@@ -48,7 +45,7 @@ export function ListSkillEntryWithChildren({
 				depth={depth}
 				handleSelection={handleSelection}
 				updateSkillDisplay={updateSkillDisplay}
-				index={index}
+				nodeId={nodeId}
 			/>
 			{showChildren &&
 				skillDisplayData.children
@@ -56,7 +53,7 @@ export function ListSkillEntryWithChildren({
 					.sort(byChildrenLength)
 					.filter(isTruthy)
 					.filter(wasNotRendered)
-					.map((element, index) => {
+					.map(element => {
 						// recursive structure to add <SkillRow /> for each child
 						const newSet = new Set(renderedIds);
 						newSet.add(element.id);
@@ -69,13 +66,17 @@ export function ListSkillEntryWithChildren({
 								handleSelection={handleSelection}
 								depth={depth + 1}
 								renderedIds={newSet}
-								index={index}
+								parentNodeId={nodeId}
 							/>
 						);
 					})}
 		</>
 	);
 }
+
+const generateNodeId = (parentsId: string, skillId: string) => {
+	return parentsId.length > 0 ? parentsId + ":::" + skillId : skillId;
+};
 
 const byChildrenLength = (
 	a: SkillFolderVisualization | undefined,
@@ -92,13 +93,13 @@ function SkillRow({
 	depth,
 	handleSelection,
 	updateSkillDisplay,
-	index
+	nodeId
 }: {
 	skill: SkillFolderVisualization;
 	depth: number;
 	handleSelection: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
-	index: number;
+	nodeId: string;
 }) {
 	const depthCssStyle = {
 		"--depth": depth
@@ -157,26 +158,18 @@ function SkillRow({
 				${cycleWarning ? "bg-yellow-100" : ""}
 				${skill.isSelected ? "bg-gray-200" : ""} `}
 		>
-			{/* <TableDataColumn className={"text-center align-middle"}>
-				<input
-					className="secondary form-checkbox rounded text-secondary focus:ring-secondary"
-					type="checkbox"
-					defaultChecked={false} // TODO mass select
-				/>
-			</TableDataColumn> */}
-
 			<TableDataColumn
 				className={`${styles["folder-line"]} ${
 					skill.shortHighlight ? "animate-highlight rounded-md" : ""
 				} text-sm font-medium`}
 			>
-				<Droppable droppableId={skill.id} direction="vertical">
+				<Droppable droppableId={nodeId} direction="vertical">
 					{provided => (
 						<div ref={provided.innerRef} {...provided.droppableProps}>
 							<Draggable
 								key={skill.id}
-								draggableId={skill.id}
-								index={index}
+								draggableId={nodeId}
+								index={1}
 								isDragDisabled={checkDraggableSetting(skill)}
 							>
 								{(provided, snapshot) => (
@@ -230,20 +223,14 @@ function SkillRow({
 											>
 												{skill.displayName ?? skill.skill.name}
 											</span>
-											{/* <span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span> */}
 										</div>
 										<div className="invisible  group-hover:visible">
-											{/* <QuickEditButton onClick={() => handleSelection(skill.id)} skill={skill} /> */}
 											<AddChildButton
 												parentSkill={skill.skill}
 												childrenNumber={skill.numberChildren}
 												updateSkillDisplay={updateSkillDisplay}
 												handleSelection={handleSelection}
 											/>
-											{/* <SkillDeleteOption
-							skillIds={[skill.id]}
-							className="px-2 hover:text-secondary"
-						/> */}
 										</div>
 									</div>
 								)}
@@ -253,47 +240,6 @@ function SkillRow({
 					)}
 				</Droppable>
 			</TableDataColumn>
-			{/* <TableDataColumn>{"nicht vorhanden"}</TableDataColumn> */}
 		</tr>
 	);
 }
-
-// function QuickEditButton({
-// 	onClick,
-// 	skill
-// }: {
-// 	onClick: () => void;
-// 	skill: SkillFolderVisualization;
-// }) {
-// 	return (
-// 		<button
-// 			title="Bearbeiten"
-// 			className="mr-3 px-2 hover:text-secondary"
-// 			onClick={onClick}
-// 			disabled={skill.isSelected}
-// 		>
-// 			<PencilIcon className="ml-1 h-5 text-lg" />
-// 		</button>
-// 	);
-// }
-
-// const IconWithNumber: React.FC<{
-// 	number: number;
-// 	children: React.ReactNode;
-// 	style?: React.CSSProperties;
-// }> = ({ number, children, style }) => (
-// 	<div style={{ position: "relative" }}>
-// 		{children}
-// 		<span
-// 			style={{
-// 				position: "absolute",
-// 				top: "50%",
-// 				left: "10%",
-// 				transform: "translate(-50%, -50%)",
-// 				...style
-// 			}}
-// 		>
-// 			{number}
-// 		</span>
-// 	</div>
-// );

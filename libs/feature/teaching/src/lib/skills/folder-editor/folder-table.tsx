@@ -1,4 +1,12 @@
-import { DialogHandler, Table, TableHeaderColumn } from "@self-learning/ui/common";
+import {
+	CopyMoveButtonActions,
+	CopyMoveDialog,
+	DialogHandler,
+	dispatchDialog,
+	freeDialog,
+	Table,
+	TableHeaderColumn
+} from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
@@ -15,6 +23,8 @@ import { PlusIcon } from "@heroicons/react/24/solid";
 import { AddSkillDialog } from "../skill-dialog/add-skill-dialog";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
+import { isHotkeyPressed } from "react-hotkeys-hook";
+import { SkillFormModel, SkillRepositoryTreeNodeModel } from "@self-learning/types";
 
 export function SkillFolderTable({
 	repository,
@@ -85,37 +95,79 @@ export function SkillFolderTable({
 		setOpenNewSkillDialog(false);
 	}
 
-	// const setShortHighlight = (skill: Skill) =>
-	// 	updateSkillDisplay([{ id: skill.id, shortHighlight: true }]);
+	function updateSourceSkillParents(
+		sourceSkill: SkillFormModel,
+		sourceParentId: string | undefined,
+		destinationSkill: SkillRepositoryTreeNodeModel,
+		isMoving: boolean
+	) {
+		if (isMoving) {
+			sourceSkill.parents = sourceSkill.parents.filter(parent => parent !== sourceParentId);
+		}
+
+		if (isSkillFormModel(destinationSkill)) {
+			sourceSkill.parents.push(destinationSkill.id);
+		}
+
+		const updateSkill = async () => await updateSkillParent({ skill: sourceSkill });
+		updateSkill();
+	}
 
 	const onDragEnd: OnDragEndResponder = result => {
 		const { source, destination } = result;
-
 		if (!destination) return;
+
+		const sourceNodeId = DecodeNodeId(source.droppableId, "Node");
+		const sourceParentId = DecodeNodeId(source.droppableId, "Parent");
+		const destinationNodeId = DecodeNodeId(destination.droppableId, "Node");
+
 		if (source.droppableId === destination.droppableId) return;
+		if (!sourceNodeId || !destinationNodeId) return;
 
-		const sourceSkill = skillDisplayData.get(source.droppableId)?.skill;
-		const destinationSkill = skillDisplayData.get(destination.droppableId)?.skill;
+		const sourceSkill = skillDisplayData.get(sourceNodeId)?.skill;
+		const destinationSkill = skillDisplayData.get(destinationNodeId)?.skill;
 
-		if (sourceSkill && isSkillFormModel(sourceSkill)) {
-			if (destinationSkill) {
-				if (!sourceSkill.parents.includes(destinationSkill.id)) {
-					if (isSkillFormModel(destinationSkill)) {
-						sourceSkill.parents = [destinationSkill.id];
+		if (!sourceSkill || !destinationSkill) return;
+
+		if (isSkillFormModel(sourceSkill)) {
+			if (!sourceSkill.parents.includes(destinationSkill.id)) {
+				if (isHotkeyPressed("ctrl") || isHotkeyPressed("alt")) {
+					if (isHotkeyPressed("ctrl")) {
+						console.log(`Copying the skill, pressing ctrl`);
 					} else {
-						sourceSkill.parents = [];
+						console.log(`Moving the skill, pressing alt`);
 					}
-
-					const updateSkill = async () => await updateSkillParent({ skill: sourceSkill });
-					updateSkill();
+					updateSourceSkillParents(
+						sourceSkill,
+						sourceParentId,
+						destinationSkill,
+						isHotkeyPressed("alt")
+					);
+				} else {
+					dispatchDialog(
+						<CopyMoveDialog
+							name="Warnung"
+							onClose={async (type: CopyMoveButtonActions) => {
+								if (type !== CopyMoveButtonActions.CANCEL) {
+									updateSourceSkillParents(
+										sourceSkill,
+										sourceParentId,
+										destinationSkill,
+										type === CopyMoveButtonActions.MOVE
+									);
+									freeDialog("copyMoveDialog");
+								}
+								freeDialog("copyMoveDialog");
+							}}
+						>
+							Which action would you like to perform on {sourceSkill.name}? Copy or
+							Move To {destinationSkill.name}?
+						</CopyMoveDialog>,
+						"copyMoveDialog"
+					);
 				}
 			}
 		}
-
-		// console.log(`Source droppableId ${source.droppableId} with index ${source.index}`);
-		// console.log(
-		// 	`destination droppableId ${destination.droppableId} with index ${destination.index}`
-		// );
 	};
 
 	return (
@@ -134,7 +186,6 @@ export function SkillFolderTable({
 							onClose={handleAddSkillDialogClose}
 						/>
 					)}
-					{/* <NewSkillButton repoId={repository.id} onSuccess={setShortHighlight} /> */}
 				</div>
 
 				<SearchField
@@ -146,30 +197,11 @@ export function SkillFolderTable({
 
 				<DialogHandler id={"alert"} />
 				<div className="pt-4" />
-				<Table
-					head={
-						<>
-							{/* <th
-								className={
-									"font-semi-bold border-y border-light-border py-4 text-center text-sm"
-								}
-							>
-								<input
-									className="secondary form-checkbox rounded text-secondary focus:ring-secondary"
-									type="checkbox"
-									onChange={() => {}}
-									checked={false}
-								/>
-							</th> */}
-							<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
-							{/* <TableHeaderColumn>Fremd-Skill</TableHeaderColumn> */}
-						</>
-					}
-				>
+				<Table head={<TableHeaderColumn>Bezeichnung</TableHeaderColumn>}>
 					{skillsToDisplay
 						.sort(byChildrenLength)
 						.filter(isTopLevelSkill)
-						.map((element, index) => (
+						.map(element => (
 							<DragDropContext onDragEnd={onDragEnd} key={element.id}>
 								<ListSkillEntryWithChildren
 									key={`${element.id}-0`}
@@ -177,29 +209,33 @@ export function SkillFolderTable({
 									updateSkillDisplay={updateSkillDisplay}
 									handleSelection={handleSelection}
 									skillResolver={skillId => skillDisplayData.get(skillId)}
-									index={index}
+									parentNodeId="" // No parent for the top level - Repositories
 								/>
 							</DragDropContext>
 						))}
 				</Table>
+				<DialogHandler id={"copyMoveDialog"} />
 			</CenteredSection>
 		</div>
 	);
 }
+
+const DecodeNodeId = (nodeId: string, nodeType: string) => {
+	const nodeIds = nodeId.split(":::");
+	if (nodeType === "Node") {
+		return nodeIds.pop();
+	} else if (nodeType === "Parent") {
+		nodeIds.pop();
+		return nodeIds.pop();
+	}
+	return nodeId;
+};
 
 const byChildrenLength = (a: SkillFolderVisualization, b: SkillFolderVisualization) => {
 	return b.numberChildren - a.numberChildren || a.skill.name.localeCompare(b.skill.name);
 };
 
 const isTopLevelSkill = (skill: SkillFolderVisualization) => {
-	// Remove "&& skill.hasNestedCycleMembers" from (skill.isCycleMember && skill.hasNestedCycleMembers)
-	// To show the cycled skills in case no starting skill for the cycle
-	// Ex: Skill1 => Skill2 => Skill3 => Skill
-
-	// return skill.skill.parents.length === 0 || (skill.isCycleMember && skill.hasNestedCycleMembers);
-
-	// return skill.skill.parents.length === 0 || skill.isCycleMember;
-
 	return skill.isRepository || skill.isCycleMember;
 };
 
