@@ -137,7 +137,6 @@ export function LessonEditor({
 			showToast({ type: msgType, title: msg, subtitle: "" });
 			toastShownRef.current = true;
 		}
-
 		return () => {
 			clearInterval(interval);
 		};

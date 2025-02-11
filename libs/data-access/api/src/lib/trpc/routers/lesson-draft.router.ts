@@ -96,6 +96,7 @@ export const lessonDraftRouter = t.router({
 			console.error("Error while deleting draft: ", err);
 		}
 	}),
+
 	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input }) => {
 		const lessonId = input.lessonId;
 		const draftData = {
