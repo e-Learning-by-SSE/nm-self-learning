@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Quiz } from "@self-learning/quiz";
 
 export const lessonDraftRouter = t.router({
-	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
+	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input }) => {
 		const data = {
 			...input,
 			content: input.content ?? "",
@@ -96,7 +96,7 @@ export const lessonDraftRouter = t.router({
 			console.error("Error while deleting draft: ", err);
 		}
 	}),
-	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
+	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input }) => {
 		const lessonId = input.lessonId;
 		const draftData = {
 			...input,
@@ -109,7 +109,6 @@ export const lessonDraftRouter = t.router({
 			owner: input.owner ?? undefined
 		};
 		const user = input.owner;
-		console.log("\nUser is ", user);
 		const existingDraft = lessonId
 			? await database.lessonDraft.findFirst({
 					where: {
@@ -123,7 +122,6 @@ export const lessonDraftRouter = t.router({
 			: null;
 
 		if (existingDraft) {
-			console.log("updating a new draft");
 			return await database.lessonDraft.update({
 				where: { id: existingDraft.id },
 				data: {
@@ -132,7 +130,6 @@ export const lessonDraftRouter = t.router({
 				}
 			});
 		} else {
-			console.log("createing a new draft");
 			return await database.lessonDraft.create({
 				data: {
 					...draftData,

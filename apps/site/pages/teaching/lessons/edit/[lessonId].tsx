@@ -12,6 +12,7 @@ import { hasAuthorPermission } from "@self-learning/ui/layouts";
 type EditLessonProps = {
 	lesson: LessonFormModel;
 	draftId?: string;
+	isOverwritten?: boolean;
 };
 
 export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
@@ -20,6 +21,8 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 		const draftId = ctx.query.draft;
 
 		if (draftId && typeof draftId === "string") {
+			const isOverwritten = ctx.query.isOverwritten === "true";
+
 			const draft = await database.lessonDraft.findUnique({
 				where: { id: draftId },
 				select: {
@@ -41,7 +44,6 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 				}
 			});
 
-			// if there is no draft in DB for given draftId
 			if (!draft) {
 				return { notFound: true };
 			}
@@ -68,7 +70,7 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 			};
 
 			return {
-				props: { lesson: lessonForm, draftId: draft.id }
+				props: { lesson: lessonForm, draftId: draft.id, isOverwritten: isOverwritten }
 			};
 		}
 
@@ -141,7 +143,7 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 	}
 );
 
-export default function EditLessonPage({ lesson, draftId }: EditLessonProps) {
+export default function EditLessonPage({ lesson, draftId, isOverwritten }: EditLessonProps) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
@@ -160,6 +162,7 @@ export default function EditLessonPage({ lesson, draftId }: EditLessonProps) {
 			onSubmit={handleEditClose}
 			isFullScreen={true}
 			draftId={draftId}
+			isOverwritten={isOverwritten}
 		/>
 	);
 }

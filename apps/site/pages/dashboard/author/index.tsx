@@ -394,21 +394,9 @@ function convertToLessonWithDraftInfo(lessons: LessonOverview[]): LessonWithDraf
 		lessonId: lesson.lessonId,
 		title: lesson.title,
 		updatedAt: lesson.updatedAt,
-		draftId: undefined
+		draftId: undefined,
+		draftOverwritten: false
 	}));
-}
-
-function findNewestDrafts(drafts: LessonDraftOverview[]): LessonDraftOverview[] {
-	const newestDraftsMap = new Map<string, LessonDraftOverview>();
-
-	drafts.forEach(draft => {
-		const existingDraft = newestDraftsMap.get(draft.lessonId || "");
-		if (!existingDraft || draft.createdAt > existingDraft.createdAt) {
-			newestDraftsMap.set(draft.lessonId || "", draft);
-		}
-	});
-
-	return Array.from(newestDraftsMap.values());
 }
 
 function addDraftInfo(
@@ -416,17 +404,21 @@ function addDraftInfo(
 	drafts: LessonDraftOverview[]
 ): LessonWithDraftInfo[] {
 	return lessons.map(lesson => {
-		const matchingDraft = drafts.find(
-			draft =>
-				draft.lessonId === lesson.lessonId &&
-				new Date(draft.createdAt) > new Date(lesson.updatedAt)
-		);
+		const matchingDraft = drafts.find(draft => draft.lessonId === lesson.lessonId);
+
+		let isOverwritten = false;
+		if (matchingDraft) {
+			if (new Date(matchingDraft.createdAt) < new Date(lesson.updatedAt)) {
+				isOverwritten = true;
+			}
+		}
 
 		return {
 			title: lesson.title,
 			lessonId: lesson.lessonId,
 			updatedAt: lesson.updatedAt,
-			draftId: matchingDraft?.id
+			draftId: matchingDraft?.id,
+			draftOverwritten: isOverwritten
 		};
 	});
 }
@@ -456,8 +448,7 @@ function Lessons({ authorName }: { authorName: string }) {
 	}
 
 	if (drafts) {
-		const newestDrafts = findNewestDrafts(drafts);
-		lessonsWithDraftInfo = addDraftInfo(lessonsWithDraftInfo, newestDrafts);
+		lessonsWithDraftInfo = addDraftInfo(lessonsWithDraftInfo, drafts);
 	}
 
 	return (
@@ -497,7 +488,7 @@ function Lessons({ authorName }: { authorName: string }) {
 									<Link
 										href={
 											lesson.draftId
-												? `/teaching/lessons/edit/${lesson.lessonId}?draft=${lesson.draftId}`
+												? `/teaching/lessons/edit/${lesson.lessonId}?draft=${lesson.draftId}&isOverwritten=${lesson.draftOverwritten}`
 												: `/teaching/lessons/edit/${lesson.lessonId}`
 										}
 										className="font-medium hover:text-secondary"

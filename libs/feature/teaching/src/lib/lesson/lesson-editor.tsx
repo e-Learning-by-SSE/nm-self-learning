@@ -68,12 +68,14 @@ export function LessonEditor({
 	onSubmit,
 	initialLesson,
 	isFullScreen,
-	draftId
+	draftId,
+	isOverwritten
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
 	draftId?: string | undefined;
+	isOverwritten?: boolean | undefined;
 }) {
 	const session = useRequiredSession();
 	const router = useRouter();
@@ -124,12 +126,18 @@ export function LessonEditor({
 			saveLessonDraft();
 		}, 5000); // 5 seconds
 
-		if (draftId) {
-			if (!toastShownRef.current) {
-				showToast({ type: "info", title: "Das ist ein Entwurf", subtitle: "" });
-				toastShownRef.current = true;
-			}
+		let msgType: "success" | "info" | "error" | "warning" = "info";
+		let msg = "Das ist ein Entwurf";
+		if (isOverwritten) {
+			msgType = "warning";
+			msg = "Entwurf wurde überschrieben";
 		}
+
+		if (draftId && !toastShownRef.current) {
+			showToast({ type: msgType, title: msg, subtitle: "" });
+			toastShownRef.current = true;
+		}
+
 		return () => {
 			clearInterval(interval);
 		};
@@ -181,44 +189,47 @@ export function LessonEditor({
 						/>
 					)}
 				</div>
-
 				<div
 					className={`${
 						isFullScreen ? "fixed" : ""
 					} bottom-0 flex w-full items-end justify-end`}
 				>
-					<div className={`${isFullScreen ? "absolute" : "fixed"} z-50 pr-5 pb-5`}>
-						<div className="flex justify-end space-x-2 mt-4">
-							<button type="button" onClick={handleCancel} className="btn-secondary">
-								Abbrechen
-							</button>
+					<div
+						className={`${isFullScreen ? "absolute" : "fixed"} flex space-x-2  mt-4 z-50 pr-5 pb-5`}
+					>
+						<button type="button" onClick={handleCancel} className="btn-secondary">
+							Abbrechen
+						</button>
+
+						<div className="relative">
 							<button
 								type="button"
 								onClick={() => setShowSaveOptions(!showSaveOptions)}
 								className="btn-primary pointer-events-auto flex items-center gap-2"
 							>
-								Speichern
+								Speichern als
 								<span
 									className={`transform transition-transform ${showSaveOptions ? "rotate-180" : ""}`}
 								>
 									&#x25BC;
 								</span>
 							</button>
+
 							{showSaveOptions && (
-								<div className="mt-2 ml-4 space-y-2">
+								<div className="absolute bottom-full left-0 w-full bg-gray-200 shadow-md rounded-lg p-2 space-y-2">
 									<button
 										type="button"
 										onClick={handleSave}
-										className="btn-primary pointer-events-auto w-full"
+										className="btn-secondary w-full"
 									>
-										Speichern
+										Lerneinheit
 									</button>
 									<button
 										type="button"
 										onClick={handleSaveAsDraft}
-										className="btn-primary pointer-events-auto w-full"
+										className="btn-secondary w-full "
 									>
-										Als Entwurf Speichern
+										Entwurf
 									</button>
 								</div>
 							)}

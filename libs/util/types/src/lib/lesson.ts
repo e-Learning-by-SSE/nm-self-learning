@@ -71,4 +71,5 @@ export type LessonWithDraftInfo = {
 	lessonId: string;
 	updatedAt: Date;
 	draftId: string | undefined;
+	draftOverwritten: boolean;
 };
