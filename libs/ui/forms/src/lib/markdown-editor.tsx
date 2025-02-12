@@ -26,9 +26,9 @@ export function MarkdownField({
 			{!inline && (
 				<div className="mb-2 flex items-end justify-end">
 					<PencilButton
-						buttonTitle={"Bearbeiten"}
+						buttonTitle="Bearbeiten"
 						onClick={() => setOpenEditor(true)}
-						title={"Beschreibung bearbeiten"}
+						title="Beschreibung bearbeiten"
 					/>
 				</div>
 			)}
