@@ -52,12 +52,9 @@ export const subjectRouter = t.router({
 			}
 		});
 	}),
-	getAllSubjects: t.procedure.query(() => {
-		return database.subject.findMany({
-			select: {
-				subjectId: true,
-				title: true
-			}
+	getAllSubjects: t.procedure.query(async () => {
+		return await database.subject.findMany({
+			select: { subjectId: true, title: true }
 		});
 	}),
 	getForEdit: authProcedure.input(z.object({ subjectId: z.string() })).query(({ input }) => {

@@ -40,8 +40,8 @@ export const specializationRouter = t.router({
 				}
 			});
 		}),
-	getAll: authProcedure.query(() => {
-		return database.specialization.findMany({
+	getAll: authProcedure.query(async () => {
+		return await database.specialization.findMany({
 			select: {
 				specializationId: true,
 				title: true

@@ -1,34 +1,11 @@
 import { ExtendedCourseFormValues } from "@self-learning/teaching";
 import { Controller, useFormContext } from "react-hook-form";
-import { memo, useEffect, useState } from "react";
-import {
-	InputWithButton,
-	LabeledField,
-	SearchField,
-	Upload,
-	useSlugify
-} from "@self-learning/ui/forms";
+import { useEffect, useState } from "react";
+import { InputWithButton, LabeledField, Upload, useSlugify } from "@self-learning/ui/forms";
 import { AuthorsForm } from "libs/feature/teaching/src/lib/author/authors-form";
-import { CourseSkillForm } from "libs/feature/teaching/src/lib/lesson/forms/skills-form";
 import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
-import {
-	Dialog,
-	DialogActions,
-	IconButton,
-	ImageOrPlaceholder,
-	LoadingBox,
-	OnDialogCloseFn
-} from "@self-learning/ui/common";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { ImageOrPlaceholder, OnDialogCloseFn } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
-//import { Author } from "@self-learning/types";
-/*
-import {
-	InlineRemoveButton,
-	SelectSkillsView
-} from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-view";
-*/
-//import { SelectSkillDialog } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-dialog";
 
 export function CourseBasicInformation() {
 	const form = useFormContext<ExtendedCourseFormValues>();
@@ -67,216 +44,6 @@ export function CourseBasicInformation() {
 	);
 }
 
-type AuthorSelector = {
-	displayName: string;
-	slug: string; // TODO: is slug unique?
-};
-
-function Selectors({
-	authors,
-	onAddAuthor,
-	onDeleteAuthor
-}: {
-	authors: AuthorSelector[];
-	onAddAuthor: (authorSlug: AuthorSelector[] | undefined) => void;
-	onDeleteAuthor: (author: AuthorSelector) => void;
-}) {
-	const [selectAuthorSelector, setSelectAuthorSelectorModal] = useState(false);
-
-	return (
-		<>
-			<SidebarSectionTitle title="Selektoren" subtitle={"TODO"} />
-			<LabeledField label="Authoren">
-				<div className="flex flex-col">
-					<IconButton
-						type="button"
-						data-testid="BenoetigteSkills-add"
-						onClick={() => setSelectAuthorSelectorModal(true)}
-						title="Hinzufügen"
-						text="Hinzufügen"
-						icon={<PlusIcon className="h-5" />}
-					/>
-
-					{authors.length === 0 && (
-						<div className="mt-3 text-sm text-gray-500">Keine Authoren vorhanden</div>
-					)}
-					{/**
-					<div className="mt-3 max-h-40 overflow-auto">
-						{authors.map((author, index) => (
-							<InlineRemoveButton
-								key={index}
-								label={author.displayName}
-								onRemove={() => onDeleteAuthor(author)}
-								onClick={() => {}} //TODO
-							/>
-						))}
-					</div>
-					*/}
-
-					{selectAuthorSelector && (
-						<SelectAuthorSelectorDialog
-							onClose={author => {
-								setSelectAuthorSelectorModal(false);
-								onAddAuthor(author);
-							}}
-						/>
-					)}
-				</div>
-			</LabeledField>
-		</>
-	);
-}
-
-export function SelectAuthorSelectorDialog({
-	onClose
-}: {
-	onClose: OnDialogCloseFn<AuthorSelector[]>;
-}) {
-	return <AuthorSelectorModal onClose={onClose} />;
-}
-
-function AuthorSelectorModal({ onClose }: { onClose: OnDialogCloseFn<AuthorSelector[]> }) {
-	const { data: authors, isLoading } = trpc.author.getAll.useQuery();
-
-	return (
-		<Dialog onClose={() => onClose(undefined)} title={"Füge die Skills hinzu"}>
-			{isLoading ? (
-				<LoadingBox />
-			) : (
-				<>
-					{authors && (
-						<SelectSelectorForm
-							onClose={onClose}
-							//skills is missing some properties here
-							authors={authors as AuthorSelector[]}
-						/>
-					)}
-				</>
-			)}
-		</Dialog>
-	);
-}
-function SelectSelectorForm({
-	onClose,
-	authors
-}: {
-	onClose: OnDialogCloseFn<AuthorSelector[]>;
-	authors: AuthorSelector[];
-}) {
-	const [search, setSearch] = useState("");
-	const [checkBoxMap, setCheckBoxMap] = useState(new Map<AuthorSelector, boolean>());
-	useEffect(() => {
-		const map = new Map<AuthorSelector, boolean>();
-		authors.forEach(author => {
-			map.set(author, false);
-		});
-		setCheckBoxMap(map);
-	}, [authors]);
-
-	const setAuthor = (author: AuthorSelector) => {
-		checkBoxMap.set(author, !checkBoxMap.get(author));
-	};
-
-	const filteredSelectors =
-		search !== ""
-			? authors.filter(skill =>
-					skill.displayName.toLowerCase().includes(search.toLowerCase())
-				)
-			: authors;
-
-	return (
-		<>
-			<SearchField
-				placeholder="Suche nach Skills"
-				onChange={e => {
-					setSearch(e.target.value);
-				}}
-			/>
-			<div className="flex flex-col justify-between overflow-auto">
-				<section className="flex h-64 flex-col rounded-lg border border-light-border p-4">
-					<div className="flex flex-col">
-						{authors.length === 0 && <p>Keine Skills vorhanden</p>}
-						{authors.length > 0 && (
-							<>
-								{filteredSelectors
-									.sort((a, b) => a.displayName.localeCompare(b.displayName))
-									.map((skill, index) => (
-										<span
-											key={"span: " + skill.slug + index}
-											className="flex items-center gap-2"
-										>
-											<SelectorElementMemorized
-												key={skill.slug + index}
-												skill={skill}
-												value={checkBoxMap.get(skill) ?? false}
-												setSkill={setAuthor}
-											/>
-										</span>
-									))}
-							</>
-						)}
-					</div>
-				</section>
-			</div>
-			<DialogActions onClose={onClose}>
-				<button
-					className="btn-primary"
-					onClick={() => {
-						onClose(authors.filter(skill => checkBoxMap.get(skill)));
-					}}
-				>
-					Speichern
-				</button>
-			</DialogActions>
-		</>
-	);
-}
-const SelectorElementMemorized = memo(SelectorElement);
-
-function SelectorElement({
-	skill,
-	setSkill,
-	value
-}: {
-	skill: AuthorSelector;
-	setSkill: (skill: AuthorSelector) => void;
-	value: boolean;
-}) {
-	const [checked, setChecked] = useState(value);
-
-	useEffect(() => {
-		setChecked(value);
-	}, [value]);
-
-	return (
-		<>
-			<input
-				id={"checkbox:" + skill.slug}
-				type={"checkbox"}
-				className="checkbox"
-				checked={checked}
-				onChange={() => {
-					setChecked(!checked);
-					setSkill(skill);
-				}}
-			/>
-			<label htmlFor={"checkbox:" + skill.slug} className="text-sm font-semibold">
-				{skill.displayName}
-			</label>
-		</>
-	);
-}
-//----------------------------------------------- here are good things not so experimata
-function Skills() {
-	const form = useFormContext<ExtendedCourseFormValues>();
-	const {
-		register,
-		control,
-		formState: { errors }
-	} = form;
-	return <CourseSkillForm />;
-}
-
 function BasicInfo() {
 	const form = useFormContext<ExtendedCourseFormValues>();
 
@@ -288,23 +55,20 @@ function BasicInfo() {
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 
-	const { data: subjects = [] } = trpc.subject.getAllSubjects.useQuery();
+	const { data: subjects } = trpc.subject.getAllSubjects.useQuery();
+	const { data: specializations } = trpc.specialization.getAll.useQuery();
+
 	useEffect(() => {
-		if (subjects.length > 0) {
-			setValue("subjectId", subjects[0]?.subjectId || "");
-		} else {
-			console.error("Failed to fetch subjects from DB!");
+		if (specializations && specializations.length > 0) {
+			setValue("specializationId", specializations[0]?.specializationId);
+		}
+	}, [specializations]); // TODO do we need this?
+
+	useEffect(() => {
+		if (subjects && subjects.length > 0) {
+			setValue("subjectId", subjects[0].subjectId);
 		}
 	}, [subjects, setValue]);
-
-	const { data: specializations = [] } = trpc.specialization.getAll.useQuery();
-	useEffect(() => {
-		if (specializations.length > 0) {
-			setValue("specializationId", specializations[0]?.specializationId || "");
-		} else {
-			console.error("Failed to fetch specializations from DB!");
-		}
-	});
 
 	const onSubjectChange = (subjectId: string) => {
 		setValue("subjectId", subjectId);
@@ -312,6 +76,8 @@ function BasicInfo() {
 	const onSpecializationChange = (specializationId: string) => {
 		setValue("specializationId", specializationId);
 	};
+
+	console.log("form", form.getValues());
 
 	return (
 		<>
@@ -341,22 +107,22 @@ function BasicInfo() {
 					}
 				/>
 			</LabeledField>
-
 			<LabeledField label="Beschreibung" error={errors.description?.message}>
 				<textarea {...register("description")} placeholder="" className="h-full" />
 			</LabeledField>
 
 			<LabeledField label="Fachgebiet" error={errors.subjectId?.message}>
-				<SubjectDropDown subjects={subjects} onChange={onSubjectChange} />
+				{subjects && <SubjectDropDown subjects={subjects} onChange={onSubjectChange} />}
 			</LabeledField>
 
 			<LabeledField label="Spezialisierung" error={errors.specializationId?.message}>
-				<SpecializationDropDown
-					specializations={specializations}
-					onChange={onSpecializationChange}
-				/>
+				{specializations && (
+					<SpecializationDropDown
+						specializations={specializations}
+						onChange={onSpecializationChange}
+					/>
+				)}
 			</LabeledField>
-
 			{/** TODO: who knows if it works - cannot connect to MinIO */}
 			<Controller
 				control={form.control}
@@ -380,12 +146,69 @@ function BasicInfo() {
 					</LabeledField>
 				)}
 			></Controller>
-
 			<div className="my-5 border-t border-gray-200">
 				<AuthorsForm
 					subtitle="Die Autoren dieses Kurses."
 					emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."
 				/>
+			</div>
+		</>
+	);
+}
+
+function Skills() {
+	const form = useFormContext<ExtendedCourseFormValues>();
+	const {
+		register,
+		control,
+		formState: { errors }
+	} = form;
+	return (
+		<>
+			<div className="p-3">
+				<SidebarSectionTitle
+					title="Skills bearbeiten"
+					subtitle={"Kursziele und Voraussetzungen dieses Kurses."}
+				/>
+			</div>
+
+			<div className="p-3">
+				<LabeledField label="Verlinkte Skill-Repositories"></LabeledField>
+			</div>
+			<div className="p-3">
+				<LabeledField label="Kursziele"></LabeledField>
+			</div>
+			<div className="p-3">
+				<LabeledField label="Voraussetzungen"></LabeledField>
+			</div>
+		</>
+	);
+}
+
+type AuthorSelector = {
+	displayName: string;
+	slug: string; // TODO: is slug unique?
+};
+
+function Selectors({
+	authors,
+	onAddAuthor,
+	onDeleteAuthor
+}: {
+	authors: AuthorSelector[];
+	onAddAuthor: (authorSlug: AuthorSelector[] | undefined) => void;
+	onDeleteAuthor: (author: AuthorSelector) => void;
+}) {
+	const [selectAuthorSelector, setSelectAuthorSelectorModal] = useState(false);
+
+	return (
+		<>
+			<div className="p-3 border-t border-gray-200">
+				<SidebarSectionTitle title="Selektoren" subtitle={""} />
+			</div>
+			<div className="p-3">
+				<LabeledField label="Authoren"></LabeledField>
+				<LabeledField label="Fachgebiet"></LabeledField>
 			</div>
 		</>
 	);
@@ -477,52 +300,3 @@ function SpecializationDropDown({
 		</div>
 	);
 }
-/*
-function Selectors({ authors, onChange }: { authors: Author[]; onChange: (id: string) => void }) {
-	const [openAddDialog, setOpenAddDialog] = useState(false);
-
-	const handleAdd = () => {
-		// TODO
-		setOpenAddDialog(false);
-	};
-	const [selectedSpecialization, setSelectedSpecialization] = useState<string>(
-		authors?.[0]?.displayName ?? ""
-	);
-
-	const changeDisplaySelectedRepository = (slug: string) => {
-		setSelectedSpecialization(slug);
-	};
-	return (
-		<div className="my-5">
-			<SidebarSectionTitle
-				title="Selektoren"
-				subtitle="Begrenzung der Menge berücksichtigter Module"
-			/>
-			<div className="my-2 flex flex-col">
-				<IconButton
-					type="button"
-					data-testid="author-add"
-					onClick={() => setOpenAddDialog(true)}
-					title="Hinzufügen"
-					text="Hinzufügen"
-					icon={<PlusIcon className="h-5" />}
-				/>
-			</div>
-			<div className="flex flex-col">
-				<select
-					className="textfield"
-					value={selectedSpecialization ?? authors[0].slug}
-					onChange={e => {
-						changeDisplaySelectedRepository(e.target.value);
-					}}
-				>
-					{authors.map(author => (
-						<option key={author.displayName} value={author.displayName}>
-							{author.displayName}
-						</option>
-					))}
-				</select>
-			</div>
-		</div>
-	);
-}*/
