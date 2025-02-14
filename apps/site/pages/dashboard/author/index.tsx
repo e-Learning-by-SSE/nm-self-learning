@@ -23,7 +23,7 @@ import { formatDateAgo } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withTranslations } from "../../../../../libs/feature/internationalization/withTranslation";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -86,27 +86,24 @@ export function getAuthor(username: string) {
 	});
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = withAuth<Props>(
-	async (context, user) => {
-		const { locale } = context;
-
-		if (user.isAuthor) {
-			return {
-				props: {
-					...(await serverSideTranslations(locale ?? "en", ["common"])),
-					author: await getAuthor(user.name)
-				}
-			};
-		}
-
+const serverSideProps: GetServerSideProps<Props> = withAuth<Props>(async (context, user) => {
+	if (user.isAuthor) {
 		return {
-			redirect: {
-				destination: "/",
-				permanent: false
+			props: {
+				author: await getAuthor(user.name)
 			}
 		};
 	}
-);
+
+	return {
+		redirect: {
+			destination: "/",
+			permanent: false
+		}
+	};
+});
+
+export const getServerSideProps = withTranslations(["common"], serverSideProps);
 
 export default function Start(props: Props) {
 	return <AuthorDashboardPage {...props} />;
