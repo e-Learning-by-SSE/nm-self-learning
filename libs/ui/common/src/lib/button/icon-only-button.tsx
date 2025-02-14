@@ -106,7 +106,7 @@ export function PencilButton({
 	buttonTitle?: string;
 }) {
 	return (
-		<GreyBoarderButton onClick={onClick} title={title}>
+		<GreyBoarderButton onClick={onClick} title={title} type="button">
 			{buttonTitle && buttonTitle !== "" ? (
 				<div className="flex items-center space-x-2">
 					<PencilIcon className="h-5 w-5 text-gray-500" />
