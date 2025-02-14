@@ -158,6 +158,15 @@ function BasicInfo() {
 					onBlur={slugifyIfEmpty}
 				/>
 			</LabeledField>
+			<LabeledField label="Untertitle" error={errors.subtitle?.message}>
+				<input
+					{...register("subtitle")}
+					type="text"
+					className="textfield"
+					placeholder=""
+					onBlur={slugifyIfEmpty}
+				/>
+			</LabeledField>
 			<LabeledField label="Slug" error={errors.slug?.message}>
 				<InputWithButton
 					input={
