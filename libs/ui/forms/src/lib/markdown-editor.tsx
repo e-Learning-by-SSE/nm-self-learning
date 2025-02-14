@@ -38,11 +38,13 @@ export function MarkdownField({
 			</div>
 
 			{!inline && (
-				<PencilButton
-					buttonTitle="Bearbeiten"
-					onClick={() => setOpenEditor(true)}
-					title="Beschreibung bearbeiten"
-				/>
+				<div className="mb-2 flex items-end justify-end">
+					<PencilButton
+						buttonTitle="Bearbeiten"
+						onClick={() => setOpenEditor(true)}
+						title="Beschreibung bearbeiten"
+					/>
+				</div>
 			)}
 
 			{openEditor && (
