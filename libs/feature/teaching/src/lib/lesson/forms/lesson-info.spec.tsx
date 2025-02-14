@@ -1,3 +1,10 @@
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { LessonInfoEditor } from "./lesson-info";
+import { LessonFormModel, LicenseForm } from "@self-learning/teaching";
+import { FormProvider, useForm } from "react-hook-form";
+import { SessionProvider } from "next-auth/react";
+import React from "react";
+
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
 		author: {
@@ -48,13 +55,6 @@ jest.mock("next-auth/react", () => ({
 	getProviders: jest.fn(() => Promise.resolve({}))
 }));
 
-/* eslint-disable import/first */
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { LessonInfoEditor } from "./lesson-info";
-import { LessonFormModel, LicenseForm } from "@self-learning/teaching";
-import { FormProvider, useForm } from "react-hook-form";
-import { SessionProvider } from "next-auth/react";
-
 describe("lesson-info-editor", () => {
 	beforeAll(() => {
 		// Provide a no-op ResizeObserver so it doesn't crash in jsdom
@@ -88,7 +88,7 @@ describe("lesson-info-editor", () => {
 				fireEvent.click(button);
 			}
 
-			waitFor(() => {
+			await waitFor(() => {
 				expect(onSubmitMock).toHaveBeenCalledTimes(0);
 			});
 		});
