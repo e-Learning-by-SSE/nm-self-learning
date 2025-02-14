@@ -91,20 +91,18 @@ export function LessonEditor({
 				className="flex h-full flex-col overflow-hidden"
 			>
 				<div className="flex h-full overflow-y-auto overflow-x-hidden">
-					{selectedTab === 0 && (
-						<FirstTabContent
-							initialLesson={initialLesson}
-							selectedTab={selectedTab}
-							setSelectedTab={setSelectedTab}
-						/>
-					)}
-					{selectedTab === 1 && (
-						<SecondTabContent
-							initialLesson={initialLesson}
-							selectedTab={selectedTab}
-							setSelectedTab={setSelectedTab}
-						/>
-					)}
+					<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
+						<LessonInfoEditor lesson={initialLesson} />
+
+						<div>
+							<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+								<Tab>Lerninhalt</Tab>
+								<Tab>Lernkontrolle</Tab>
+							</Tabs>
+							{selectedTab === 0 && <LessonContentEditor />}
+							{selectedTab === 1 && <QuizEditor />}
+						</div>
+					</div>
 				</div>
 
 				<div
@@ -122,53 +120,5 @@ export function LessonEditor({
 				</div>
 			</form>
 		</FormProvider>
-	);
-}
-
-function FirstTabContent({
-	initialLesson,
-	selectedTab,
-	setSelectedTab
-}: {
-	initialLesson?: LessonFormModel;
-	selectedTab: number;
-	setSelectedTab: (v: number) => void;
-}) {
-	return (
-		<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-			<LessonInfoEditor lesson={initialLesson} />
-
-			<div>
-				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-					<Tab>Lerninhalt</Tab>
-					<Tab>Lernkontrolle</Tab>
-				</Tabs>
-				<LessonContentEditor />
-			</div>
-		</div>
-	);
-}
-
-function SecondTabContent({
-	initialLesson,
-	selectedTab,
-	setSelectedTab
-}: {
-	initialLesson?: LessonFormModel;
-	selectedTab: number;
-	setSelectedTab: (v: number) => void;
-}) {
-	return (
-		<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-			<LessonInfoEditor lesson={initialLesson} />
-
-			<div>
-				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-					<Tab>Lerninhalt</Tab>
-					<Tab>Lernkontrolle</Tab>
-				</Tabs>
-				<QuizEditor />
-			</div>
-		</div>
 	);
 }
