@@ -15,7 +15,7 @@ import { IFrameInput } from "../content-types/iframe";
 import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
 import { LessonFormModel } from "@self-learning/teaching";
-import { Form, MarkdownField } from "@self-learning/ui/forms";
+import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -234,7 +234,10 @@ function RenderContentType({ index, content }: { index: number; content: LessonC
 }
 
 function LessonDescriptionForm() {
-	const { control } = useFormContext<LessonFormModel>();
+	const form = useFormContext<LessonFormModel>();
+	const control = form.control;
+
+	const currentLessonType = form.watch("lessonType");
 
 	return (
 		<section>
@@ -249,7 +252,24 @@ function LessonDescriptionForm() {
 					render={({ field }) => (
 						<MarkdownField content={field.value as string} setValue={field.onChange} />
 					)}
-				></Controller>
+				/>
+
+				<div className={"py-4"}>
+					{currentLessonType === "SELF_REGULATED" && (
+						<LabeledField label="Aktivierungsfrage" optional={false}>
+							<Controller
+								control={control}
+								name="selfRegulatedQuestion"
+								render={({ field }) => (
+									<MarkdownField
+										content={field.value as string}
+										setValue={field.onChange}
+									/>
+								)}
+							/>
+						</LabeledField>
+					)}
+				</div>
 			</Form.MarkdownWithPreviewContainer>
 		</section>
 	);
