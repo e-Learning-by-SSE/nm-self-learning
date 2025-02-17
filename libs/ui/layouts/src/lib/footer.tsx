@@ -1,5 +1,8 @@
 import { LinkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { DropdownButton } from "@self-learning/ui/common";
+import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 
 function FooterElement({
 	href,
@@ -49,8 +52,39 @@ export function Footer() {
 						href="https://www.uni-hildesheim.de/impressum/"
 						text="Impressum"
 					/>
+					<LanguageSwitcher />
 				</div>
 			</div>
 		</footer>
+	);
+}
+
+function LanguageSwitcher() {
+	const router = useRouter();
+	const { t } = useTranslation("common");
+
+	return (
+		<DropdownButton position="top" title="Sprache ändern" backgroundColor="flex">
+			<span className="text-sm font-medium hover:text-secondary">{t("pickLanguage")}</span>
+			<div className="flex flex-col bg-white">
+				<button
+					className="hover:text-secondary"
+					onClick={() => {
+						router.push(router.pathname, router.asPath, { locale: "de" });
+					}}
+				>
+					{t("languageGerman")}
+				</button>
+
+				<button
+					className="hover:text-secondary"
+					onClick={() => {
+						router.push(router.pathname, router.asPath, { locale: "en" });
+					}}
+				>
+					{t("languageEnglish")}
+				</button>
+			</div>
+		</DropdownButton>
 	);
 }
