@@ -2,7 +2,7 @@ import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { SSRConfig } from "next-i18next";
 
-export function withTranslations<P extends {} = {}>(
+export function withTranslations<P extends object = object>(
 	namespaces: string[],
 	handler?: (
 		context: GetServerSidePropsContext
