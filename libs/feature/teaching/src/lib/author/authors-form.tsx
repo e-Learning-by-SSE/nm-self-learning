@@ -1,10 +1,10 @@
 import { trpc } from "@self-learning/api-client";
-import { ImageChip, OnDialogCloseFn, IconButton } from "@self-learning/ui/common";
+import { IconButton, ImageChip } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { CourseFormModel } from "../course/course-form-model";
+import { CourseFormModel } from "@self-learning/teaching";
 import { AddAuthorDialog } from "./add-author-dialog";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { PlusIcon } from "@heroicons/react/24/solid";
@@ -23,7 +23,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 		name: "authors"
 	});
 
-	const handleAdd: OnDialogCloseFn<CourseFormModel["authors"][0]> = result => {
+	function handleAdd(result: CourseFormModel["authors"][0] | undefined | null): void {
 		if (result) {
 			if (authors.find(a => a.username === result.username)) {
 				console.log(`Author ${result.username} is already added.`);
@@ -33,7 +33,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 			append({ username: result.username });
 		}
 		setOpenAddDialog(false);
-	};
+	}
 
 	function handleRemove(index: number) {
 		window.confirm("Autor entfernen?") && remove(index);
