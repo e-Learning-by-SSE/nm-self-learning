@@ -1,8 +1,8 @@
 import { LinkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { DropdownButton } from "@self-learning/ui/common";
-import { FlagIcon } from "@heroicons/react/20/solid";
 import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 
 function FooterElement({
 	href,
@@ -21,8 +21,6 @@ function FooterElement({
 }
 
 export function Footer() {
-	const { t } = useTranslation("common");
-
 	return (
 		<footer className="border-t-gray border-t bg-white px-6 py-2 text-light">
 			<div
@@ -62,21 +60,27 @@ export function Footer() {
 }
 
 function LanguageSwitcher() {
-	const { i18n, t } = useTranslation("common");
+	const router = useRouter();
+	const { t } = useTranslation("common");
 
 	return (
-		<DropdownButton position="top" title="Test" backgroundColor="flex">
-			<span className={"text-sm font-medium hover:text-secondary"}>{t("pickLanguage")}</span>
+		<DropdownButton position="top" title="Sprache ändern" backgroundColor="flex">
+			<span className="text-sm font-medium hover:text-secondary">{t("pickLanguage")}</span>
 			<div className="flex flex-col bg-white">
 				<button
-					className={"hover:text-secondary"}
-					onClick={() => i18n.changeLanguage("de")}
+					className="hover:text-secondary"
+					onClick={() => {
+						router.push(router.pathname, router.asPath, { locale: "de" });
+					}}
 				>
 					{t("languageGerman")}
 				</button>
+
 				<button
-					className={"hover:text-secondary"}
-					onClick={() => i18n.changeLanguage("en")}
+					className="hover:text-secondary"
+					onClick={() => {
+						router.push(router.pathname, router.asPath, { locale: "en" });
+					}}
 				>
 					{t("languageEnglish")}
 				</button>
