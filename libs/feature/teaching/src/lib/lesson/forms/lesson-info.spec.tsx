@@ -1,8 +1,9 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { LessonInfoEditor } from "./lesson-info";
 import { LessonFormModel, LicenseForm } from "@self-learning/teaching";
 import { FormProvider, useForm } from "react-hook-form";
 import { SessionProvider } from "next-auth/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 
 jest.mock("@self-learning/api-client", () => ({
@@ -85,12 +86,11 @@ describe("lesson-info-editor", () => {
 			// Act
 			const buttons = await screen.findAllByTestId("gray-border-button");
 			for (const button of buttons) {
-				fireEvent.click(button);
+				await userEvent.click(button);
 			}
 
-			await waitFor(() => {
-				expect(onSubmitMock).toHaveBeenCalledTimes(0);
-			});
+			// Assert
+			expect(onSubmitMock).toHaveBeenCalledTimes(0);
 		});
 	});
 });

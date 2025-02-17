@@ -1,6 +1,7 @@
 import { trpc } from "@self-learning/api-client";
 import { AddAuthorDialog } from "./add-author-dialog";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 jest.mock("@self-learning/api-client", () => {
 	return {
@@ -44,12 +45,13 @@ describe("add-author-dialog", () => {
 			});
 
 			render(<AddAuthorDialog open={true} onClose={onCloseMock} />);
-			const button = await screen.findByTestId("author-option");
-			fireEvent.click(button);
 
-			waitFor(() => {
-				expect(onCloseMock).toHaveBeenCalledWith(fakeAuthors[0]);
-			});
+			//act
+			const button = await screen.findByTestId("author-option");
+			await userEvent.click(button);
+
+			//assert
+			expect(onCloseMock).toHaveBeenCalledWith(fakeAuthors[0]);
 		});
 	});
 });
