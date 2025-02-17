@@ -1,9 +1,9 @@
 import {
-	TableDataColumn,
-	Table,
-	TableHeaderColumn,
+	ImageOrPlaceholder,
 	Paginator,
-	ImageOrPlaceholder
+	Table,
+	TableDataColumn,
+	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
@@ -11,7 +11,7 @@ import { Fragment, useState } from "react";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { EditUserDialog } from "@self-learning/admin";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withTranslations } from "@self-learning/api";
 
 export default function UsersPage() {
 	useRequiredSession();
@@ -120,10 +120,4 @@ function RoleLabel({ role }: { role: string }) {
 	return <span className={`rounded-full ${roleColor} px-3 py-[2px] text-white`}>{role}</span>;
 }
 
-export async function getServerSideProps({ locale }: { locale: string }) {
-	return {
-		props: {
-			...(await serverSideTranslations(locale, ["common"]))
-		}
-	};
-}
+export const getServerSideProps = withTranslations(["common"]);

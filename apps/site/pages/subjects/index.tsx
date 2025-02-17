@@ -3,9 +3,8 @@ import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard } from "@self-learning/ui/common";
 import { ItemCardGrid } from "@self-learning/ui/layouts";
-import { GetServerSideProps } from "next";
 import Link from "next/link";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withTranslations } from "@self-learning/api";
 
 async function getSubjects() {
 	return await database.subject.findMany({
@@ -27,17 +26,15 @@ type SubjectsProps = {
 	subjects: ResolvedValue<typeof getSubjects>;
 };
 
-export const getServerSideProps: GetServerSideProps<SubjectsProps> = async context => {
+export const getServerSideProps = withTranslations(["common"], async context => {
 	const subjects = await getSubjects();
-	const { locale } = context;
 
 	return {
 		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			subjects
 		}
 	};
-};
+});
 
 export default function Subjects({ subjects }: SubjectsProps) {
 	return (

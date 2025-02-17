@@ -1,4 +1,4 @@
-import { withAuth } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
 	DeleteMeForm,
@@ -10,19 +10,17 @@ import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
-import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 interface PageProps {
 	settings: NonNullable<ResolvedValue<typeof getUserWithSettings>>;
 }
 
-export const getServerSideProps: GetServerSideProps<PageProps> = withAuth<PageProps>(
-	async (context, user) => {
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<PageProps>(async (context, user) => {
 		const settings = await getUserWithSettings(user.name);
-		const { locale } = context;
 
 		if (!settings) {
 			return {
@@ -32,11 +30,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = withAuth<PagePr
 
 		return {
 			props: {
-				...(await serverSideTranslations(locale ?? "en", ["common"])),
 				settings
 			}
 		};
-	}
+	})
 );
 
 export default function SettingsPage(props: PageProps) {

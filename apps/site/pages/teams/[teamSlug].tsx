@@ -5,8 +5,7 @@ import { AuthorChip } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { GetServerSideProps } from "next";
+import { withTranslations } from "@self-learning/api";
 
 type Team = ResolvedValue<typeof getTeam>;
 
@@ -15,7 +14,7 @@ type TeamPageProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps: GetServerSideProps<TeamPageProps> = async ({ params, locale }) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
 	const slug = params?.teamSlug;
 
 	if (typeof slug !== "string") {
@@ -25,30 +24,23 @@ export const getServerSideProps: GetServerSideProps<TeamPageProps> = async ({ pa
 	const team = await getTeam(slug);
 
 	if (!team) {
-		// Return a 404 if no matching team was found
 		return { notFound: true };
 	}
 
 	let markdownDescription = null;
 
 	if (team.description && team.description.length > 0) {
-		// Compile markdown if present
 		markdownDescription = await compileMarkdown(team.description);
-		// Remove the original description so it's not duplicated
 		team.description = null;
 	}
 
 	return {
 		props: {
-			// The `team` data you want to use in your page
 			team: team as Team,
-			// The compiled markdown string (or null)
-			markdownDescription,
-			// Include translations for SSR
-			...(await serverSideTranslations(locale ?? "en", ["common"]))
+			markdownDescription
 		}
 	};
-};
+});
 
 async function getTeam(slug: string) {
 	return await database.team.findUnique({

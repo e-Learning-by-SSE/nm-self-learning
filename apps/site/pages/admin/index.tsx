@@ -4,7 +4,7 @@ import { SoftwareEngineerSvg } from "@self-learning/ui/static";
 import { PersonalInformationSvg } from "@self-learning/ui/static";
 import { TutorialSvg } from "@self-learning/ui/static";
 import { Card } from "@self-learning/ui/common";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withTranslations } from "@self-learning/api";
 
 export default function AdminPage() {
 	const session = useRequiredSession();
@@ -60,10 +60,4 @@ export default function AdminPage() {
 	);
 }
 
-export async function getServerSideProps({ locale }: { locale: string }) {
-	return {
-		props: {
-			...(await serverSideTranslations(locale, ["common"]))
-		}
-	};
-}
+export const getServerSideProps = withTranslations(["common"]);

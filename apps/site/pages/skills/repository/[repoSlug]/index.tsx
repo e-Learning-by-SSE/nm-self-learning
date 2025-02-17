@@ -1,13 +1,11 @@
-import { GetServerSideProps } from "next";
 import { database } from "@self-learning/database";
-import { getAuthenticatedUser } from "@self-learning/api";
+import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { getSkills } from "libs/data-access/api/src/lib/trpc/routers/skill.router"; // TODO change
 import { LoadingBox } from "@self-learning/ui/common";
 import { SkillFormModel } from "@self-learning/types";
 import { SkillRepository } from "@prisma/client";
 import { SkillFolderEditor } from "@self-learning/teaching";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 interface CreateAndViewRepositoryProps {
 	repository: SkillRepository;
@@ -33,10 +31,9 @@ async function createNewRepository(userName: string) {
 	};
 }
 
-export const getServerSideProps: GetServerSideProps<CreateAndViewRepositoryProps> = async ctx => {
+export const getServerSideProps = withTranslations(["common"], async ctx => {
 	const repoId = ctx.query.repoSlug as string;
 	const user = await getAuthenticatedUser(ctx);
-	const { locale } = ctx;
 
 	if (!user) {
 		return {
@@ -63,10 +60,9 @@ export const getServerSideProps: GetServerSideProps<CreateAndViewRepositoryProps
 			repository: repo,
 			initialSkills: transformedSkill
 		},
-		...(await serverSideTranslations(locale ?? "en", ["common"])),
 		notFound: false
 	};
-};
+});
 
 export default function CreateAndViewRepository({
 	repository,

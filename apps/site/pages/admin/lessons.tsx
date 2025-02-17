@@ -7,8 +7,7 @@ import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { withTranslations } from "../../../../libs/data-access/api/src/lib/internationalization/withTranslation";
+import { withTranslations } from "@self-learning/api";
 
 export default function LessonManagementPage() {
 	const router = useRouter();

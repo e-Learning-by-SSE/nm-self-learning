@@ -1,11 +1,10 @@
 import { Prisma } from "@prisma/client";
-import { withAuth } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useRef } from "react";
 import { hasAuthorPermission } from "@self-learning/ui/layouts";
@@ -16,8 +15,9 @@ type EditCourseProps = {
 	lessons: { title: string; lessonId: string; slug: string; meta: Prisma.JsonValue }[];
 };
 
-export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth<EditCourseProps>(
-	async (ctx, user) => {
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<EditCourseProps>(async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;
 
@@ -98,7 +98,7 @@ export const getServerSideProps: GetServerSideProps<EditCourseProps> = withAuth<
 				...(await serverSideTranslations(locale ?? "en", ["common"]))
 			}
 		};
-	}
+	})
 );
 
 export default function EditCoursePage({ course, lessons }: EditCourseProps) {

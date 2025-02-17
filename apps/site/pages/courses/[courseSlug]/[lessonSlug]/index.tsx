@@ -21,14 +21,11 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/common";
-import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { withAuth } from "@self-learning/api";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { User } from "next-auth";
+import { withAuth, withTranslations } from "@self-learning/api";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -39,12 +36,8 @@ export type LessonProps = LessonLayoutProps & {
 	};
 };
 
-export function getServerSideProps(
-	context: GetServerSidePropsContext,
-	_user: User,
-	locale: string
-) {
-	return withAuth(async (context, _user) => {
+export const getServerSideProps = withTranslations(["common"], async context => {
+	return withAuth(async _user => {
 		const props = await getStaticPropsForLayout(context.params);
 
 		if ("notFound" in props) return { notFound: true };
@@ -82,7 +75,6 @@ export function getServerSideProps(
 		return {
 			props: {
 				...props,
-				...(await serverSideTranslations(locale ?? "en", ["common"])),
 				markdown: {
 					article: mdArticle,
 					description: mdDescription,
@@ -92,7 +84,7 @@ export function getServerSideProps(
 			}
 		};
 	})(context);
-}
+});
 
 function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	// Handle situations that content creator may created an empty lesson (to add content later)

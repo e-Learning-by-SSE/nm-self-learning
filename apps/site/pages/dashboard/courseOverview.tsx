@@ -1,4 +1,3 @@
-import { GetServerSideProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
@@ -14,21 +13,18 @@ import {
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import { formatDateAgo } from "@self-learning/util/common";
-import { withAuth } from "@self-learning/api";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withAuth, withTranslations } from "@self-learning/api";
 
 interface CourseOverviewProps {
 	enrollments: EnrollmentDetails[] | null;
 }
 
-export const getServerSideProps: GetServerSideProps = withAuth<CourseOverviewProps>(
-	async (context, user) => {
-		const { locale } = context;
-
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<CourseOverviewProps>(async (context, user) => {
 		try {
 			return {
 				props: {
-					...(await serverSideTranslations(locale ?? "en", ["common"])),
 					enrollments: await getEnrollmentDetails(user.name)
 				}
 			};
@@ -36,12 +32,11 @@ export const getServerSideProps: GetServerSideProps = withAuth<CourseOverviewPro
 			console.error("Error fetching enrollments:", error);
 			return {
 				props: {
-					...(await serverSideTranslations(locale ?? "en", ["common"])),
 					enrollments: null
 				}
 			};
 		}
-	}
+	})
 );
 
 export default function CourseOverview({ enrollments }: CourseOverviewProps) {

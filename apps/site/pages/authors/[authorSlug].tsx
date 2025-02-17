@@ -3,11 +3,10 @@ import { CompiledMarkdown } from "@self-learning/markdown";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
-import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withTranslations } from "@self-learning/api";
 
 type Author = ResolvedValue<typeof getAuthor>;
 
@@ -16,10 +15,7 @@ type AuthorPageProps = {
 	aboutMeMarkdown: CompiledMarkdown | null;
 };
 
-export const getServerSideProps: GetServerSideProps<AuthorPageProps> = async ({
-	params,
-	locale
-}) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
 	const slug = params?.authorSlug as string | undefined;
 	if (!slug) {
 		throw new Error("No slug provided.");
@@ -41,12 +37,11 @@ export const getServerSideProps: GetServerSideProps<AuthorPageProps> = async ({
 
 	return {
 		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			author,
 			aboutMeMarkdown
 		}
 	};
-};
+});
 
 function getAuthor(slug: string | undefined) {
 	return database.author.findUnique({

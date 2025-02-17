@@ -1,4 +1,4 @@
-import type { AppRouter } from "@self-learning/api";
+import { AppRouter, withTranslations } from "@self-learning/api";
 import { Footer, Navbar } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
@@ -73,3 +73,5 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		</>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

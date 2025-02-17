@@ -15,12 +15,11 @@ import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
-import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withTranslations } from "@self-learning/api";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -109,7 +108,7 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ params, locale }) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
 	if (!courseSlug) {
 		throw new Error("No slug provided.");
@@ -132,7 +131,6 @@ export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ para
 
 	return {
 		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
 			summary,
 			content,
@@ -140,7 +138,7 @@ export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ para
 		},
 		notFound: !course
 	};
-};
+});
 
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({

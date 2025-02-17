@@ -1,9 +1,8 @@
-import { withAuth } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
-import { GetServerSideProps } from "next";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
@@ -14,8 +13,9 @@ type EditLessonProps = {
 	lesson: LessonFormModel;
 };
 
-export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
-	async (ctx, user) => {
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<EditLessonProps>(async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
 		const { locale } = ctx;
 
@@ -88,7 +88,7 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 				...(await serverSideTranslations(locale ?? "en", ["common"]))
 			}
 		};
-	}
+	})
 );
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {

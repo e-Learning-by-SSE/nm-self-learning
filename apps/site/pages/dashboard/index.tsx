@@ -1,5 +1,5 @@
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
-import { getAuthenticatedUser } from "@self-learning/api";
+import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
@@ -18,11 +18,9 @@ import {
 	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
-import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useReducer } from "react";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -189,8 +187,7 @@ async function loadMostRecentLessons({
 	}));
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
-	const { locale } = ctx;
+export const getServerSideProps = withTranslations(["common"], async ctx => {
 	const user = await getAuthenticatedUser(ctx);
 
 	if (!user || !user.name) {
@@ -207,12 +204,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 
 	return {
 		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			student,
 			recentLessons
 		}
 	};
-};
+});
 
 export default function Start(props: Props) {
 	return <DashboardPage {...props} />;
