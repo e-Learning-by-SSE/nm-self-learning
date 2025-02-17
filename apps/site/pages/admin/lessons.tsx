@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { withTranslations } from "../../../../libs/feature/internationalization/withTranslation";
+import { withTranslations } from "../../../../libs/data-access/api/src/lib/internationalization/withTranslation";
 
 export default function LessonManagementPage() {
 	const router = useRouter();

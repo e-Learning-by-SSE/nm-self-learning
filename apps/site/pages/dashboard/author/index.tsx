@@ -23,7 +23,7 @@ import { formatDateAgo } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { withTranslations } from "../../../../../libs/feature/internationalization/withTranslation";
+import { withTranslations } from "@self-learning/api";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
