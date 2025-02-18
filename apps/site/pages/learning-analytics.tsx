@@ -1,7 +1,10 @@
 import { LearningHeatmap, TeacherView, VideoDuration } from "@self-learning/analysis";
 import { useState } from "react";
+import { withTranslations } from "@self-learning/api";
 
 const PreviewTypes = ["Videos", "Heatmap", "Teacher"] as const;
+
+export const getServerSideProps = withTranslations(["common"]);
 
 export default function Page() {
 	const [metricSelection, setMetricSelection] = useState("Heatmap");
