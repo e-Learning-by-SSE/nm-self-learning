@@ -70,7 +70,7 @@ export function SpecializationPermissionsDialog({
 	const { mutateAsync: updateSpecAdmins } =
 		trpc.subject.setSpecializationPermissions.useMutation();
 
-	const onAddAuthorDialogClosed: OnDialogCloseFn<AuthorFromGetAllQuery> = author => {
+	function handleAddAuthor(author: AuthorFromGetAllQuery | null | undefined): void {
 		setOpenAddAuthorDialog(false);
 		if (!author) return;
 
@@ -83,10 +83,8 @@ export function SpecializationPermissionsDialog({
 			return;
 		}
 
-		setAuthors(prev => {
-			return [author, ...prev];
-		});
-	};
+		setAuthors(prev => [author, ...prev]);
+	}
 
 	function onChecked(specId: string, username: string, checked: boolean) {
 		setSpecMap(prev => ({
@@ -145,7 +143,10 @@ export function SpecializationPermissionsDialog({
 				</button>
 
 				{openAddAuthorDialog && (
-					<AddAuthorDialog open={openAddAuthorDialog} onClose={onAddAuthorDialogClosed} />
+					<AddAuthorDialog
+						open={openAddAuthorDialog}
+						onAuthorSelected={handleAddAuthor}
+					/>
 				)}
 
 				<Table
@@ -185,8 +186,7 @@ export function SpecializationPermissionsDialog({
 											type={"checkbox"}
 											className="checkbox"
 											checked={
-												specMap[spec.specializationId][author.username] ===
-												true
+												specMap[spec.specializationId][author.username]
 											}
 											onChange={e => {
 												onChecked(
