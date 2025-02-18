@@ -20,6 +20,8 @@ import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
 import { withTranslations } from "@self-learning/api";
+import { GetServerSideProps } from "next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -30,7 +32,8 @@ type QuestionProps = LessonLayoutProps & {
 	};
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
+// Cant use withTranslation hook for some reason. Test will fail otherwise.
+export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params, locale }) => {
 	const parentProps = await getStaticPropsForLayout(params);
 
 	if ("notFound" in parentProps) return { notFound: true };
@@ -67,6 +70,7 @@ export const getServerSideProps = withTranslations(["common"], async ({ params }
 
 	return {
 		props: {
+			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			...parentProps,
 			quiz,
 			markdown: {
@@ -76,7 +80,7 @@ export const getServerSideProps = withTranslations(["common"], async ({ params }
 			}
 		}
 	};
-});
+};
 
 export default function QuestionsPage({ course, lesson, quiz, markdown }: QuestionProps) {
 	const { questions, config } = quiz;
