@@ -67,7 +67,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 				</ul>
 			)}
 
-			{openAddDialog && <AddAuthorDialog open={openAddDialog} onClose={handleAdd} />}
+			{openAddDialog && <AddAuthorDialog open={openAddDialog} onAuthorSelected={handleAdd} />}
 		</Form.SidebarSection>
 	);
 }

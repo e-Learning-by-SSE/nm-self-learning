@@ -143,7 +143,10 @@ export function SpecializationPermissionsDialog({
 				</button>
 
 				{openAddAuthorDialog && (
-					<AddAuthorDialog open={openAddAuthorDialog} onClose={onAddAuthorDialogClosed} />
+					<AddAuthorDialog
+						open={openAddAuthorDialog}
+						onAuthorSelected={onAddAuthorDialogClosed}
+					/>
 				)}
 
 				<Table

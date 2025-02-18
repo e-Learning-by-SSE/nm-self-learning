@@ -44,7 +44,7 @@ describe("add-author-dialog", () => {
 				data: fakeAuthors
 			});
 
-			render(<AddAuthorDialog open={true} onClose={onCloseMock} />);
+			render(<AddAuthorDialog open={true} onAuthorSelected={onCloseMock} />);
 
 			//act
 			const button = await screen.findByTestId("author-option");

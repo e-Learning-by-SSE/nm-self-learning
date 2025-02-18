@@ -11,11 +11,11 @@ export type AuthorFromGetAllQuery = inferRouterOutputs<AppRouter>["author"]["get
  * Dialog that allows the user to select an author from a list of authors.
  */
 export function AddAuthorDialog({
-	onClose,
+	onAuthorSelected,
 	open
 }: {
 	open: boolean;
-	onClose: (author: AuthorFromGetAllQuery | null | undefined) => void;
+	onAuthorSelected: (author: AuthorFromGetAllQuery | null | undefined) => void;
 }) {
 	const { data: _authors } = trpc.author.getAll.useQuery();
 	const [filter, setFilter] = useState("");
@@ -32,8 +32,8 @@ export function AddAuthorDialog({
 	}, [_authors, filter]);
 
 	return (
-		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onChange={onClose}>
+		<DropdownDialog.Dialog open={open} onClose={onAuthorSelected}>
+			<Combobox value={null} onChange={onAuthorSelected}>
 				<DropdownDialog.SearchInput
 					filter={filter}
 					setFilter={setFilter}
