@@ -23,7 +23,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 		name: "authors"
 	});
 
-	function handleAdd(result: CourseFormModel["authors"][0] | undefined | null): void {
+	function handleAddAuthor(result: CourseFormModel["authors"][0] | undefined | null): void {
 		if (result) {
 			if (authors.find(a => a.username === result.username)) {
 				console.log(`Author ${result.username} is already added.`);
@@ -35,7 +35,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 		setOpenAddDialog(false);
 	}
 
-	function handleRemove(index: number) {
+	function handleRemoveAuthor(index: number) {
 		window.confirm("Autor entfernen?") && remove(index);
 	}
 
@@ -59,7 +59,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 							username={username}
 							onRemove={
 								authors.length >= 2 || isAdminUser
-									? () => handleRemove(index)
+									? () => handleRemoveAuthor(index)
 									: undefined
 							}
 						/>
@@ -67,7 +67,9 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 				</ul>
 			)}
 
-			{openAddDialog && <AddAuthorDialog open={openAddDialog} onAuthorSelected={handleAdd} />}
+			{openAddDialog && (
+				<AddAuthorDialog open={openAddDialog} onAuthorSelected={handleAddAuthor} />
+			)}
 		</Form.SidebarSection>
 	);
 }

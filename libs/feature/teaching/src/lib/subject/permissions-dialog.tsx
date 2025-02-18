@@ -70,7 +70,7 @@ export function SpecializationPermissionsDialog({
 	const { mutateAsync: updateSpecAdmins } =
 		trpc.subject.setSpecializationPermissions.useMutation();
 
-	function onAddAuthorDialogClosed(author: AuthorFromGetAllQuery | null | undefined): void {
+	function handleAddAuthor(author: AuthorFromGetAllQuery | null | undefined): void {
 		setOpenAddAuthorDialog(false);
 		if (!author) return;
 
@@ -145,7 +145,7 @@ export function SpecializationPermissionsDialog({
 				{openAddAuthorDialog && (
 					<AddAuthorDialog
 						open={openAddAuthorDialog}
-						onAuthorSelected={onAddAuthorDialogClosed}
+						onAuthorSelected={handleAddAuthor}
 					/>
 				)}
 
