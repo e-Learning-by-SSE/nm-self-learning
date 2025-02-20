@@ -1,7 +1,3 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom";
-import { SearchUserDialog } from "@self-learning/admin";
-
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
 		admin: {
@@ -25,6 +21,9 @@ jest.mock("@self-learning/api-client", () => ({
 		}
 	}
 }));
+
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { SearchUserDialog } from "@self-learning/admin";
 
 describe("searchUserDialog", () => {
 	beforeAll(() => {
