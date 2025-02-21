@@ -4,7 +4,7 @@ import { DropdownDialog, ImageOrPlaceholder, OnDialogCloseFn } from "@self-learn
 import { Fragment, useMemo, useState } from "react";
 
 /**
- * Dialog that allows the user to select an author from a list of authors.
+ * Dialog to select an existing specialization.
  */
 export function SpecializationSelector({
 	onClose,
@@ -35,7 +35,7 @@ export function SpecializationSelector({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onClose={onClose}>
+			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={filter}
 					setFilter={setFilter}
@@ -58,6 +58,7 @@ export function SpecializationSelector({
 										{({ focus }) => (
 											<button
 												type="button"
+												onClick={() => onClose(spec)}
 												className={`flex items-center gap-4 rounded pr-4 ${
 													focus ? "bg-secondary text-white" : ""
 												}`}
