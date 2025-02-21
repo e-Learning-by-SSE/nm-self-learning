@@ -1,4 +1,5 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
+import { LessonFormModel } from "@self-learning/teaching";
 import {
 	getContentTypeDisplayName,
 	LessonContent,
@@ -6,7 +7,8 @@ import {
 	LessonContentType,
 	ValueByContentType
 } from "@self-learning/types";
-import { RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
+import { RemovableTab, SectionHeader, Tabs, useIsFirstRender } from "@self-learning/ui/common";
+import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { Reorder } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
@@ -14,8 +16,6 @@ import { ArticleInput } from "../content-types/article";
 import { IFrameInput } from "../content-types/iframe";
 import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
-import { LessonFormModel } from "@self-learning/teaching";
-import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -236,26 +236,16 @@ function RenderContentType({ index, content }: { index: number; content: LessonC
 function LessonDescriptionForm() {
 	const form = useFormContext<LessonFormModel>();
 	const control = form.control;
-
 	const currentLessonType = form.watch("lessonType");
+	const suppressHighlight = useIsFirstRender();
 
 	return (
 		<section>
-			<SectionHeader
-				title="Beschreibung"
-				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
-			/>
-			<Form.MarkdownWithPreviewContainer>
-				<Controller
-					control={control}
-					name="description"
-					render={({ field }) => (
-						<MarkdownField content={field.value as string} setValue={field.onChange} />
-					)}
-				/>
-
-				<div className={"py-4"}>
-					{currentLessonType === "SELF_REGULATED" && (
+			<div className="py-4">
+				{currentLessonType === "SELF_REGULATED" && (
+					<div
+						className={`p-4 rounded-md ${!suppressHighlight ? "animate-highlight" : ""}`}
+					>
 						<LabeledField label="Aktivierungsfrage" optional={false}>
 							<Controller
 								control={control}
@@ -268,8 +258,21 @@ function LessonDescriptionForm() {
 								)}
 							/>
 						</LabeledField>
+					</div>
+				)}
+			</div>
+			<SectionHeader
+				title="Beschreibung"
+				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
+			/>
+			<Form.MarkdownWithPreviewContainer>
+				<Controller
+					control={control}
+					name="description"
+					render={({ field }) => (
+						<MarkdownField content={field.value as string} setValue={field.onChange} />
 					)}
-				</div>
+				/>
 			</Form.MarkdownWithPreviewContainer>
 		</section>
 	);
