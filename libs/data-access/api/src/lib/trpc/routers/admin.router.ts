@@ -119,5 +119,14 @@ export const adminRouter = t.router({
 
 			console.log("[adminRouter.promoteToAuthor] Created author:", created);
 			return created;
-		})
+		}),
+	getAccessToken: adminProcedure.query(async input => {
+		console.log("[adminRouter.getAccessToken] input.ctx.user", input.ctx.user);
+		return database.account.findFirst({
+			where: { userId: input.ctx.user.id },
+			select: {
+				access_token: true
+			}
+		});
+	})
 });
