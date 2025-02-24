@@ -57,3 +57,19 @@ export function createEmptyLesson(): Lesson {
 		selfRegulatedQuestion: null
 	};
 }
+
+export type LessonOverview = {
+	slug: string;
+	title: string;
+	updatedAt: Date;
+	authors: { displayName: string; slug: string; imgUrl: string | null }[];
+	lessonId: string;
+};
+
+export type LessonWithDraftInfo = {
+	title: string;
+	lessonId: string;
+	updatedAt: Date;
+	draftId: string | undefined;
+	draftOverwritten: boolean;
+};
