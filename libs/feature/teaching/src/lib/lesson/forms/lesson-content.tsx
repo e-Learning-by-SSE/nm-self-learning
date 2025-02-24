@@ -233,7 +233,7 @@ function RenderContentType({ index, content }: { index: number; content: LessonC
 	);
 }
 
-function LessonDescriptionForm() {
+export function LessonDescriptionForm() {
 	const form = useFormContext<LessonFormModel>();
 	const control = form.control;
 	const currentLessonType = form.watch("lessonType");
@@ -244,6 +244,7 @@ function LessonDescriptionForm() {
 			<div className="py-4">
 				{currentLessonType === "SELF_REGULATED" && (
 					<div
+						data-testid="aktivierungsfrage-element"
 						className={`p-4 rounded-md ${!suppressHighlight ? "animate-highlight" : ""}`}
 					>
 						<LabeledField label="Aktivierungsfrage" optional={false}>
