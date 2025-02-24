@@ -1,8 +1,9 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { FirstLoginDialog } from "./first-login-dialog";
+import { FirstLoginDialog } from "settings";
 import { trpc } from "@self-learning/api-client";
+import userEvent from "@testing-library/user-event";
 
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
@@ -30,7 +31,7 @@ describe("FirstLoginDialog", () => {
 		const { getByText } = render(<FirstLoginDialog onClose={mockOnClose} />);
 
 		const saveButton = getByText("Speichern");
-		fireEvent.click(saveButton);
+		await userEvent.click(saveButton);
 
 		await waitFor(() => {
 			expect(mockMutateAsync).toHaveBeenCalledWith({
