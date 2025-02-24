@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema, LessonDraft } from "@self-learning/types";
 import { OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
@@ -95,7 +95,7 @@ export function LessonEditor({
 	const lastSavedDraftRef = useRef<LessonDraft | null>(null);
 	const toastShownRef = useRef(false);
 
-	const saveLessonDraft = async () => {
+	const saveLessonDraft = useCallback(async () => {
 		const formValues = form.getValues();
 
 		const draft = {
@@ -119,7 +119,7 @@ export function LessonEditor({
 		} catch (err) {
 			console.log("Error during autosave", err);
 		}
-	};
+	}, [form, session.data, upsert]);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -140,7 +140,7 @@ export function LessonEditor({
 		return () => {
 			clearInterval(interval);
 		};
-	}, [session.data]);
+	}, [draftId, isOverwritten, saveLessonDraft, session.data]);
 
 	const [showSaveOptions, setShowSaveOptions] = useState(false);
 
