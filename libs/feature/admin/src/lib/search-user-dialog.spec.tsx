@@ -1,6 +1,7 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { SearchUserDialog } from "@self-learning/admin";
+import userEvent from "@testing-library/user-event";
 
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
@@ -44,7 +45,7 @@ describe("searchUserDialog", () => {
 
 		// Act
 		const userButton = screen.getByText(name);
-		fireEvent.click(userButton);
+		await userEvent.click(userButton);
 
 		// Assert
 		await waitFor(() => {

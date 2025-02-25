@@ -1,8 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { GoalStatus } from "./status";
 import { LearningGoalStatus } from "@prisma/client";
 import { Goal } from "../util/types";
+import userEvent from "@testing-library/user-event";
 
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
@@ -33,11 +34,12 @@ describe("GoalStatus", () => {
 		render(<GoalStatus goal={goal} editable={true} onChange={mockOnChange} />);
 
 		// Simulate clicking the first buttons
-		const button = screen.getByTestId(`goal_status:${goal.id}`);
+		const button = await screen.findByTestId(`goal_status:${goal.id}`);
 		// INACTIVE -> ACTIVE
-		fireEvent.click(button);
+		await userEvent.click(button);
+
 		// ACTIVE -> COMPLETED
-		fireEvent.click(button);
+		await userEvent.click(button);
 
 		// Check if the onChange function was called with the correct arguments
 		expect(mockOnChange).toHaveBeenCalledWith(goal, LearningGoalStatus.COMPLETED);
@@ -57,11 +59,11 @@ describe("GoalStatus", () => {
 		render(<GoalStatus goal={goal} editable={true} onChange={mockOnChange} />);
 
 		// Simulate clicking the first button
-		const button = screen.getByTestId(`goal_status:${goal.id}`);
+		const button = await screen.findByTestId(`goal_status:${goal.id}`);
 		// INACTIVE -> ACTIVE
-		fireEvent.click(button);
+		await userEvent.click(button);
 		// ACTIVE -> INACTIVE
-		fireEvent.click(button);
+		await userEvent.click(button);
 
 		// Check that goal was NOT completed
 		expect(mockOnChange).not.toHaveBeenCalledWith(goal, LearningGoalStatus.COMPLETED);
