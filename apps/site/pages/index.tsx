@@ -1,5 +1,8 @@
 import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
+import { withTranslations } from "@self-learning/api";
+
+export const getServerSideProps = withTranslations(["common"]);
 
 export function LandingPage() {
 	return (

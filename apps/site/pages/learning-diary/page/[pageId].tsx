@@ -1,4 +1,4 @@
-import { withAuth } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import {
 	allPages,
 	DiaryContentForm,
@@ -6,33 +6,30 @@ import {
 	getAllStrategies,
 	PageChanger,
 	PagesMeta,
-	Sidebar,
 	Strategy
 } from "@self-learning/diary";
 import { Divider } from "@self-learning/ui/common";
 import { subMilliseconds } from "date-fns";
-import { GetServerSideProps } from "next";
 
-export const getServerSideProps: GetServerSideProps = withAuth(async (context, user) => {
-	const pageId = context.params?.pageId;
-	const pages = await allPages(user.name);
-	const availableStrategies = await getAllStrategies();
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth(async (context, user) => {
+		const pageId = context.params?.pageId;
+		const pages = await allPages(user.name);
+		const availableStrategies = await getAllStrategies();
 
-	const pageExists = pages.some(page => page.id === pageId);
-	if (!pageExists) {
-		return {
-			notFound: true
-		};
-	}
-
-	return {
-		props: {
-			diaryId: pageId,
-			pages,
-			availableStrategies
+		const pageExists = pages.some(page => page.id === pageId);
+		if (!pageExists) {
+			return {
+				notFound: true
+			};
 		}
-	};
-});
+
+		return {
+			props: { diaryId: pageId, pages, availableStrategies }
+		};
+	})
+);
 
 DiaryPageDetail.getLayout = DiaryLayout;
 
