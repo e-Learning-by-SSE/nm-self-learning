@@ -22,42 +22,44 @@ export function MarkdownField({
 	const [openEditor, setOpenEditor] = useState(false);
 
 	return (
-		<div className="flex items-center gap-2">
-			<div
-				className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2"
-				style={{ minHeight: 32 }}
-				onClick={() => setOpenEditor(true)}
-			>
-				<div className={"max-w-full" + (inline && " text-sm")}>
-					{content !== "" ? (
-						<MarkdownViewer content={content ?? ""} />
-					) : (
-						<div className="text-gray-400">{placeholder}</div>
-					)}
+		<div>
+			<div className="flex items-center gap-2">
+				<div
+					className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2"
+					style={{ minHeight: 32 }}
+					onClick={() => setOpenEditor(true)}
+				>
+					<div className={"max-w-full" + (inline && " text-sm")}>
+						{content !== "" ? (
+							<MarkdownViewer content={content ?? ""} />
+						) : (
+							<div className="text-gray-400">{placeholder}</div>
+						)}
+					</div>
 				</div>
+
+				{openEditor && (
+					<MarkdownEditorDialog
+						initialValue={content ?? ""}
+						title="Bearbeiten"
+						onClose={changes => {
+							setOpenEditor(false);
+							if (changes !== undefined) {
+								setValue(changes);
+							}
+						}}
+					/>
+				)}
 			</div>
 
 			{!inline && (
-				<div className="2flex items-end justify-end">
+				<div className="flex justify-end bottom-0 right-0 py-2">
 					<PencilButton
 						buttonTitle="Bearbeiten"
 						onClick={() => setOpenEditor(true)}
 						title="Beschreibung bearbeiten"
 					/>
 				</div>
-			)}
-
-			{openEditor && (
-				<MarkdownEditorDialog
-					initialValue={content ?? ""}
-					title="Bearbeiten"
-					onClose={changes => {
-						setOpenEditor(false);
-						if (changes !== undefined) {
-							setValue(changes);
-						}
-					}}
-				/>
 			)}
 		</div>
 	);

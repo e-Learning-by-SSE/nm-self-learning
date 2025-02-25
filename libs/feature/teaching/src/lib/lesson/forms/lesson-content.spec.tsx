@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonDescriptionForm } from "./lesson-content";
 
-// Define a wrapper component that initializes the form context
 function FormWrapper({
 	defaultValues,
 	children
@@ -16,8 +15,8 @@ function FormWrapper({
 }
 
 describe("LessonDescriptionForm", () => {
-	test('renders "aktivierungsfrage-element" when lessonType is "SELF_REGULATED"', () => {
-		//arrange
+	it('should show "aktivierungsfrage" input when lessonType is SELF_REGULATED', () => {
+		// Arrange
 		render(
 			<FormWrapper
 				defaultValues={{
@@ -30,15 +29,15 @@ describe("LessonDescriptionForm", () => {
 			</FormWrapper>
 		);
 
-		//act
+		// Act
 		const element = screen.getByTestId("aktivierungsfrage-element");
 
-		//assert
+		// Assert
 		expect(element).toBeDefined();
 	});
 
-	test('does not render "aktivierungsfrage-element" when lessonType is not "SELF_REGULATED"', () => {
-		//arrange
+	it('should not show "aktivierungsfrage" input when lessonType is TRADITIONAL', () => {
+		// Arrange
 		render(
 			<FormWrapper
 				defaultValues={{
@@ -51,10 +50,10 @@ describe("LessonDescriptionForm", () => {
 			</FormWrapper>
 		);
 
-		//act
+		// Act
 		const element = screen.queryByTestId("aktivierungsfrage-element");
 
-		//assert
+		// Assert
 		expect(element).toBeNull();
 	});
 });
