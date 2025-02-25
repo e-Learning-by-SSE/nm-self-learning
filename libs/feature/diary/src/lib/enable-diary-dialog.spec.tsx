@@ -1,7 +1,7 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { EnableLearningDiaryDialog } from "./enable-diary-dialog";
+import { EnableLearningDiaryDialog } from "@self-learning/diary";
 
 describe("EnableLearningDiaryDialog", () => {
 	it("should update the toggle when save is pressed", async () => {

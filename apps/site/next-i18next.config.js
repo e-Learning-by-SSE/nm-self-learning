@@ -8,7 +8,9 @@ module.exports = {
 
 	/** To avoid issues when deploying to some paas (vercel...) */
 	localePath:
-		typeof window === "undefined" ? require("path").resolve("./public/locales") : "/locales",
+		typeof window === "undefined"
+			? require("path").resolve("./public/locales")
+			: "./public/locales",
 
 	reloadOnPrerender: process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true"
 
