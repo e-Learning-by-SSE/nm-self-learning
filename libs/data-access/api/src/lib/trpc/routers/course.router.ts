@@ -10,7 +10,7 @@ import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/type
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, isCourseAuthorProcedure, t } from "../trpc";
+import { authorProcedure, authProcedure, isCourseAuthorProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
 
 export const courseRouter = t.router({
@@ -172,6 +172,30 @@ export const courseRouter = t.router({
 
 			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
 			return updated;
+		}),
+	deleteCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.mutation(async ({ input }) => {
+			return await database.course.delete({
+				where: { slug: input.slug }
+			});
+		}),
+	getCourseUsage: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ input }) => {
+			return await database.course.findUnique({
+				where: {
+					slug: input.slug
+				},
+				select: {
+					subject: true,
+					specializations: {
+						include: {
+							subject: true
+						}
+					}
+				}
+			});
 		})
 });
 
