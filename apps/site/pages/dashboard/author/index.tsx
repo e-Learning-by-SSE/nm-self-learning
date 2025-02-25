@@ -1,6 +1,6 @@
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
-import { withAuth } from "@self-learning/api";
+import { t, withAuth } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
@@ -297,9 +297,12 @@ function CourseDeleteOption({ slug }: { slug: string }) {
 	const { mutateAsync: deleteCourse } = trpc.course.deleteCourse.useMutation();
 	const { data: usage, isLoading } = trpc.course.getCourseUsage.useQuery({ slug });
 	const [showConfirmation, setShowConfirmation] = useState(false);
+	const router = useRouter();
 
 	const handleDelete = async () => {
 		await deleteCourse({ slug });
+		// Refresh page
+		router.replace(router.asPath);
 	};
 
 	const handleConfirm = () => {
