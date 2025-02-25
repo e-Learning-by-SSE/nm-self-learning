@@ -10,7 +10,7 @@ module.exports = {
 	localePath:
 		typeof window === "undefined"
 			? require("path").resolve("./public/locales")
-			: "./public/locales",
+			: "./apps/site/public/locales",
 
 	reloadOnPrerender: process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true"
 
