@@ -19,7 +19,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
-import { withTranslations } from "@self-learning/api";
 import { GetServerSideProps } from "next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 

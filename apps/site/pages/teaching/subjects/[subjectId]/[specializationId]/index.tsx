@@ -18,7 +18,6 @@ import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withTranslations } from "@self-learning/api";
 
 export default function SpecializationManagementPage() {

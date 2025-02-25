@@ -6,7 +6,6 @@ import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/u
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withTranslations } from "@self-learning/api";
 
 export default function SubjectManagementPage() {

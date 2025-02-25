@@ -7,7 +7,6 @@ import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { hasAuthorPermission } from "@self-learning/ui/layouts";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -84,8 +83,7 @@ export const getServerSideProps = withTranslations(
 
 		return {
 			props: {
-				lesson: lessonForm,
-				...(await serverSideTranslations(locale ?? "en", ["common"]))
+				lesson: lessonForm
 			}
 		};
 	})

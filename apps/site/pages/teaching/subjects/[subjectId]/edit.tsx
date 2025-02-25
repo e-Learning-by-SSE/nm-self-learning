@@ -3,7 +3,6 @@ import { SubjectEditor } from "@self-learning/teaching";
 import { Subject, subjectSchema } from "@self-learning/types";
 import { LoadingBox, showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withTranslations } from "@self-learning/api";
 
 export default function SubjectEditPage() {
