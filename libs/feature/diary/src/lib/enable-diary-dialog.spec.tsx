@@ -1,7 +1,8 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { EnableLearningDiaryDialog } from "@self-learning/diary";
+import userEvent from "@testing-library/user-event";
 
 describe("EnableLearningDiaryDialog", () => {
 	it("should update the toggle when save is pressed", async () => {
@@ -13,7 +14,7 @@ describe("EnableLearningDiaryDialog", () => {
 		);
 
 		const activateButton = getByText("Speichern & Aktivieren");
-		fireEvent.click(activateButton);
+		await userEvent.click(activateButton);
 
 		await waitFor(() => {
 			expect(mockOnSubmit).toHaveBeenCalledWith({
@@ -32,13 +33,13 @@ describe("EnableLearningDiaryDialog", () => {
 		);
 
 		const activateButton = getByText("Speichern & Aktivieren");
-		fireEvent.click(activateButton);
-		waitFor(() => {
+		await userEvent.click(activateButton);
+		await waitFor(() => {
 			expect(mockOnSubmit).toHaveBeenCalled();
 			expect(mockOnClose).toHaveBeenCalled();
 		});
 	});
-	it("should not call onSubmit when the dialog is closed", () => {
+	it("should not call onSubmit when the dialog is closed", async () => {
 		const mockOnClose = jest.fn();
 		const mockOnSubmit = jest.fn();
 
@@ -47,8 +48,8 @@ describe("EnableLearningDiaryDialog", () => {
 		);
 
 		const closeButton = getByText("Abbrechen");
-		fireEvent.click(closeButton);
-		waitFor(() => {
+		await userEvent.click(closeButton);
+		await waitFor(() => {
 			expect(mockOnSubmit).not.toHaveBeenCalled();
 			expect(mockOnClose).toHaveBeenCalled();
 		});
