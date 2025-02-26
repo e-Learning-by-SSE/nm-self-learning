@@ -2,14 +2,22 @@ import { EventType, EventLogQueryInput, ResolvedValue } from "@self-learning/typ
 import { database } from "@self-learning/database";
 import { Prisma } from "@prisma/client";
 
-export function createUserEvent<K extends keyof EventType>(event: {
+export async function createUserEvent<K extends keyof EventType>(event: {
 	username: string;
 	type: K;
 	resourceId?: string;
 	courseId?: string;
 	payload: EventType[K];
 }) {
-	return database.eventLog.create({ data: event });
+	const enabledLearningStatistics = (
+		await database.user.findUnique({ where: { name: event.username } })
+	)?.enabledLearningStatistics;
+
+	if (enabledLearningStatistics) {
+		return database.eventLog.create({ data: event });
+	}
+
+	return null;
 }
 
 export async function loadUserEvents(input: EventLogQueryInput) {
@@ -52,4 +60,5 @@ export async function loadUserEvents(input: EventLogQueryInput) {
 	// type Result = (typeof results)[0];
 	return results as Result[];
 }
+
 export type UserEvent = ResolvedValue<typeof loadUserEvents>[number];
