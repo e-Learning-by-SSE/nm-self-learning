@@ -15,7 +15,7 @@ export const userEventRouter = t.router({
 		const schema = evenTypePayloadSchema.shape[input.type];
 		schema.parse(input.payload);
 
-		return createUserEvent({
+		return await createUserEvent({
 			username: ctx.user.name,
 			...input,
 			payload: input.payload satisfies EventType[typeof input.type]
