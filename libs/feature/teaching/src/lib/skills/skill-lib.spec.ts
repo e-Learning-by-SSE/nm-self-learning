@@ -5,25 +5,16 @@ import {
 	Empty,
 	getPath,
 	isCompositeGuard,
-	SkillExpression,
+	LearningUnit,
+	Skill,
 	Unit,
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
-import { database } from "@self-learning/database";
-
-// Copied from Skill-Lib for documentation purpose
-type Skill = {
-	id: string;
-	repositoryId: string;
-	nestedSkills: string[];
-};
-
-type LearningUnit = {
-	id: string;
-	requiredSkills: SkillExpression;
-	teachingGoals: Skill[];
-	suggestedSkills: { weight: number; skill: Skill }[];
-};
+import {
+	skills as SkillDb,
+	unitsOfExample1A as UnitsDbA,
+	unitsOfExample1B as UnitsDbB
+} from "../../../../../data-access/database/src/lib/demo/skill-based-modelling";
 
 describe("Skill-Lib", () => {
 	// All skills of the platform, may be filtered if there is a good strategy
@@ -32,8 +23,8 @@ describe("Skill-Lib", () => {
 	let nano_modules: LearningUnit[];
 
 	beforeAll(async () => {
-		skills = await loadSkills();
-		nano_modules = await loadLearningUnits(skills);
+		skills = loadSkills();
+		nano_modules = loadLearningUnits(skills);
 	});
 
 	describe("getPath", () => {
@@ -46,7 +37,7 @@ describe("Skill-Lib", () => {
 		};
 
 		// Cost function: How to measure the cost of learning a unit.
-		// Treat each unit same for now, will optimize for the minimum number (not overall time)
+		// Here: Treat each unit same -> Will optimize for the minimum number (not overall time)
 		const fnCost = () => 1;
 
 		it("find path, w/o knowledge, w/o filter, w/o composites", () => {
@@ -65,6 +56,15 @@ describe("Skill-Lib", () => {
 				isComposite: guard,
 				costOptions: DefaultCostParameter
 			});
+
+			console.log(
+				"Arbitrary Path:",
+
+				path?.path
+					.map(segment => segment.origin)
+					.filter(unit => unit != null)
+					.map(unit => unit.id)
+			);
 
 			expect(path).not.toBeNull();
 			// Example 1, Variation A has 26 NMs
@@ -96,6 +96,14 @@ describe("Skill-Lib", () => {
 				costOptions: DefaultCostParameter,
 				selectors: [selector]
 			});
+
+			console.log(
+				"Path A:",
+				path?.path
+					.map(segment => segment.origin)
+					.filter(unit => unit != null)
+					.map(unit => unit.id)
+			);
 
 			expect(path).not.toBeNull();
 			// Example 1, Variation A has 26 NMs
@@ -129,6 +137,14 @@ describe("Skill-Lib", () => {
 				selectors: [selector]
 			});
 
+			console.log(
+				"Path with background knowledge:",
+				path?.path
+					.map(segment => segment.origin)
+					.filter(unit => unit != null)
+					.map(unit => unit.id)
+			);
+
 			expect(path).not.toBeNull();
 			// Example 1, Variation A has 26 NMs (2 Skills <-> NMs already known)
 			// Example 1, Variation B has 10 NMs (should be excluded by selector)
@@ -137,42 +153,50 @@ describe("Skill-Lib", () => {
 	});
 });
 
-async function loadSkills(): Promise<Skill[]> {
-	// All skills of the platform, may be filtered if there is a good strategy
-	const skills = (await database.skill.findMany({ include: { children: true } })).map(skill => ({
-		id: skill.id,
-		repositoryId: skill.repositoryId,
-		nestedSkills: skill.children.map(child => child.id)
-	}));
+/**
+ * Loads mocked Skills of Demo Seed.
+ * @returns Mocked Skills
+ */
+function loadSkills(): Skill[] {
+	const nestedSkills = SkillDb.filter(skill => skill.parents !== undefined) as {
+		id: string;
+		parents: string[];
+	}[];
 
+	const skills = SkillDb.map(skill => ({
+		id: skill.id,
+		repositoryId: "A fictive repository",
+		nestedSkills: nestedSkills
+			.filter(child => child.parents.includes(skill.id))
+			.map(child => child.id)
+	}));
 	return skills;
 }
 
-async function loadLearningUnits(allSkills: Skill[]): Promise<LearningUnit[]> {
+/**
+ * Loads mocked LearningUnits of Demo Seed.
+ * @returns Mocked LearningUnits
+ */
+function loadLearningUnits(allSkills: Skill[]): LearningUnit[] {
 	const findSkill = (id: string) => allSkills.find(skill => skill.id === id);
-	const convertToExpression = (skills: { id: string }[]) =>
+	const convertToExpression = (skills?: string[]) =>
 		skills && skills.length > 0
 			? new And(
 					skills
-						.map(skill => findSkill(skill.id))
+						.map(skill => findSkill(skill))
 						.filter((s): s is Skill => s !== undefined)
 						.map(skill => new Variable(skill))
 				)
 			: new Empty();
 
 	// All (relevant) nano modules and composites
-	const nano_modules: LearningUnit[] = (
-		await database.lesson.findMany({
-			include: { requirements: true, teachingGoals: true }
-		})
-	).map(lesson => ({
-		id: lesson.lessonId,
-		requiredSkills: convertToExpression(lesson.requirements),
-		teachingGoals: lesson.teachingGoals
-			.map(goal => findSkill(goal.id))
+	return [...UnitsDbA, ...UnitsDbB].map(unit => ({
+		id: unit.lessonId,
+		title: unit.title,
+		requiredSkills: convertToExpression(unit.requirements),
+		teachingGoals: unit.teachingGoals
+			.map(goal => findSkill(goal))
 			.filter((s): s is Skill => s !== undefined),
 		suggestedSkills: []
 	}));
-
-	return nano_modules;
 }
