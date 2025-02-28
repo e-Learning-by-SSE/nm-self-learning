@@ -21,7 +21,8 @@ async function updateSkill(skill: SkillFormModel) {
 			description: skill.description,
 			children: { set: children },
 			parents: { set: parents },
-			repository: { connect: { id: skill.repositoryId } }
+			repository: { connect: { id: skill.repositoryId } },
+			author: { connect: { id: skill.authorId } }
 		},
 		include: {
 			children: true,
@@ -34,11 +35,13 @@ async function updateSkill(skill: SkillFormModel) {
 async function createSkill(input: {
 	skill: { children: string[]; name: string; description: string | null };
 	repoId: string;
+	authorId: number;
 }) {
 	return await database.skill.create({
 		data: {
 			...input.skill,
 			repository: { connect: { id: input.repoId } },
+			author: { connect: { id: input.authorId } },
 			children: {
 				connect: input.skill.children.map(id => ({ id }))
 			}
@@ -59,6 +62,7 @@ export async function getSkills(repoId: string) {
 			name: true,
 			description: true,
 			repositoryId: true,
+			authorId: true,
 			children: { select: { id: true } },
 			parents: { select: { id: true } },
 			repository: true
@@ -71,6 +75,36 @@ export async function getSkills(repoId: string) {
 			name: skill.name,
 			description: skill.description,
 			repositoryId: skill.repositoryId,
+			authorId: skill.authorId,
+			children: skill.children.map(child => child.id),
+			parents: skill.parents.map(parent => parent.id)
+		};
+	});
+	return transformedSkill;
+}
+
+export async function getSkillsByAuthorId(authorId: number) {
+	const skills = await database.skill.findMany({
+		where: { authorId: authorId },
+		select: {
+			id: true,
+			name: true,
+			description: true,
+			repositoryId: true,
+			authorId: true,
+			children: { select: { id: true } },
+			parents: { select: { id: true } },
+			repository: true
+		}
+	});
+
+	const transformedSkill = skills.map(skill => {
+		return {
+			id: skill.id,
+			name: skill.name,
+			description: skill.description,
+			repositoryId: skill.repositoryId,
+			authorId: skill.authorId,
 			children: skill.children.map(child => child.id),
 			parents: skill.parents.map(parent => parent.id)
 		};
@@ -131,6 +165,15 @@ export const skillRouter = t.router({
 		.query(async ({ input }) => {
 			return await getSkills(input.repoId);
 		}),
+	getSkillsByAuthorId: authorProcedure
+		.input(
+			z.object({
+				authorId: z.number()
+			})
+		)
+		.query(async ({ input }) => {
+			return await getSkillsByAuthorId(input.authorId);
+		}),
 	updateSkill: authorProcedure
 		.input(
 			z.object({
@@ -145,6 +188,7 @@ export const skillRouter = t.router({
 		.input(
 			z.object({
 				repoId: z.string(),
+				authorId: z.number(),
 				skill: skillCreationFormSchema
 			})
 		)
@@ -155,6 +199,7 @@ export const skillRouter = t.router({
 		.input(
 			z.object({
 				repoId: z.string(),
+				authorId: z.number(),
 				parentSkillId: z.string(),
 				skill: skillCreationFormSchema
 			})
@@ -164,6 +209,7 @@ export const skillRouter = t.router({
 			if (!parentSkill) return null;
 			const createdSkill = await createSkill({
 				repoId: input.repoId,
+				authorId: input.authorId,
 				skill: input.skill
 			});
 			const parentSkillFormModel = createSkillFormModelFromSkillResolved(parentSkill);

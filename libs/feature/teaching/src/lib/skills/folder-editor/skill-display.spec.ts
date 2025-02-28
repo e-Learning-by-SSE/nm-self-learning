@@ -1,4 +1,5 @@
 //
+import { SkillFormModel } from "@self-learning/types";
 import { switchSelectionDisplayValue } from "./skill-display";
 import { createDisplayData } from "./skill-display";
 import { visualSkillDefaultValues } from "./skill-display";
@@ -8,6 +9,7 @@ const skill = {
 	name: "Skill Name",
 	children: [],
 	repositoryId: "repoId",
+	authorId: 42,
 	description: "description",
 	parents: []
 };
@@ -54,12 +56,16 @@ describe("switchSelectionDisplayValue", () => {
 
 describe("createDisplayData", () => {
 	it("should create display data with default values when no existing data is provided", () => {
+		const skills = new Map<string, SkillFormModel>();
+		skills.set(skill.id, skill);
+
 		const result = createDisplayData(skill);
 
 		expect(result).toEqual({
 			...visualSkillDefaultValues,
 			isFolder: false,
 			numberChildren: 0,
+			children: [],
 			id: skill.id,
 			skill
 		});
@@ -76,6 +82,8 @@ describe("createDisplayData", () => {
 			extraProperty: "Extra"
 		};
 
+		const skills = new Map<string, SkillFormModel>();
+		skills.set(skill.id, skill);
 		const result = createDisplayData(folderSkill, existingData);
 
 		expect(result).toEqual({
@@ -83,6 +91,7 @@ describe("createDisplayData", () => {
 			...existingData,
 			isFolder: true,
 			numberChildren: 2,
+			children: ["childId", "childId2"],
 			id: skill.id,
 			skill: folderSkill
 		});
