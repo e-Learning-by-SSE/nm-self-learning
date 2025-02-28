@@ -1,9 +1,5 @@
 import { findParentsOfCycledSkills } from "@e-learning-by-sse/nm-skill-lib";
-import {
-	SkillFormModel,
-	skillFormSchema,
-	SkillRepositoryTreeNodeModel
-} from "@self-learning/types";
+import { SkillFormModel } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 
 export type SkillSelectHandler = OnDialogCloseFn<string>;
@@ -18,13 +14,12 @@ export type SkillFolderVisualization = {
 	isSelected: boolean;
 	isCycleMember: boolean;
 	hasNestedCycleMembers: boolean;
-	skill: SkillRepositoryTreeNodeModel;
+	skill: SkillFormModel;
 	isExpanded: boolean;
 	children: string[];
 	numberChildren: number;
 	shortHighlight: boolean;
 	isFolder: boolean;
-	isRepository: boolean;
 	displayName?: string; // alt name for display. Preffered over skill.name
 	massSelected?: boolean;
 };
@@ -38,28 +33,12 @@ export const visualSkillDefaultValues = {
 	shortHighlight: false
 };
 
-export const isSkillFormModel = (skill: SkillRepositoryTreeNodeModel): skill is SkillFormModel => {
-	return skillFormSchema.safeParse(skill).success;
-};
-
-const inferInformationFromSkill = (
-	skill: SkillRepositoryTreeNodeModel,
-	skills: Map<string, SkillRepositoryTreeNodeModel>
-) => {
-	const children = isSkillFormModel(skill)
-		? skill.children
-		: Array.from(skills.values())
-				.filter(sk => isSkillFormModel(sk))
-				.filter(sk => sk.parents.length === 0)
-				.filter(sk => sk.repositoryId === skill.id)
-				.map(sk => sk.id);
-
+const inferInformationFromSkill = (skill: SkillFormModel) => {
 	return {
-		isFolder: isSkillFormModel(skill) ? skill.children.length > 0 : true,
-		isRepository: !isSkillFormModel(skill),
-		numberChildren: children.length,
+		isFolder: skill.children.length > 0,
+		numberChildren: skill.children ? skill.children.length : 0,
 		id: skill.id,
-		children: children,
+		children: skill.children,
 		skill
 	};
 };
@@ -71,14 +50,13 @@ const inferInformationFromSkill = (
  * @returns
  */
 export const createDisplayData = (
-	skill: SkillRepositoryTreeNodeModel,
-	skills: Map<string, SkillRepositoryTreeNodeModel>,
+	skill: SkillFormModel,
 	existingData?: Partial<SkillFolderVisualization>
 ): SkillFolderVisualization => {
 	return {
 		...visualSkillDefaultValues,
 		...existingData,
-		...inferInformationFromSkill(skill, skills)
+		...inferInformationFromSkill(skill)
 	};
 };
 
@@ -88,7 +66,7 @@ export function changeDisplay({
 	historicDisplayData
 }: {
 	displayUpdate: OptionalVisualizationWithRequiredId[] | null;
-	skills: Map<string, SkillRepositoryTreeNodeModel>;
+	skills: Map<string, SkillFormModel>;
 	historicDisplayData: Map<string, SkillFolderVisualization>;
 }) {
 	const initialData = {
@@ -106,7 +84,7 @@ export function changeDisplay({
 		if (skillData) {
 			acc.displayData.set(
 				updateData.id,
-				createDisplayData(skillData, skills, { ...oldVisual, ...updateData })
+				createDisplayData(skillData, { ...oldVisual, ...updateData })
 			);
 		} else {
 			acc.ignoredData.push(updateData);
@@ -132,12 +110,14 @@ export const switchSelectionDisplayValue = (
 	return Object.entries(idPropertiesMap).map(([id, properties]) => ({ id, ...properties }));
 };
 
-export function getCycleDisplayInformation(skills: Map<string, SkillRepositoryTreeNodeModel>) {
-	const justSkills = Array.from(skills.values()).filter(skill => isSkillFormModel(skill));
-	const libSkills = justSkills.map(skill => ({
+export function getCycleDisplayInformation(skills: Map<string, SkillFormModel>) {
+	const libSkills = Array.from(skills.values()).map(skill => ({
 		...skill,
 		nestedSkills: skill.children
 	}));
+	console.log(`libSkills is length of ${libSkills.length}`);
+
+	if (!libSkills) return [];
 	const cycleParents = findParentsOfCycledSkills(libSkills);
 	if (!cycleParents) return [];
 	const children = cycleParents.nestingSkills.map(cycle => ({

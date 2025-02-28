@@ -5,7 +5,6 @@ import {
 	FolderIcon,
 	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon,
-	CircleStackIcon,
 	ChevronRightIcon
 } from "@heroicons/react/24/solid";
 import { PuzzlePieceIcon } from "@heroicons/react/24/outline";
@@ -22,7 +21,8 @@ export function ListSkillEntryWithChildren({
 	handleSelection,
 	updateSkillDisplay,
 	renderedIds = new Set(),
-	parentNodeId
+	parentNodeId,
+	authorId
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
@@ -31,6 +31,7 @@ export function ListSkillEntryWithChildren({
 	updateSkillDisplay: UpdateVisuals;
 	renderedIds?: Set<string>;
 	parentNodeId: string;
+	authorId: number;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
@@ -46,6 +47,7 @@ export function ListSkillEntryWithChildren({
 				handleSelection={handleSelection}
 				updateSkillDisplay={updateSkillDisplay}
 				nodeId={nodeId}
+				authorId={authorId}
 			/>
 			{showChildren &&
 				skillDisplayData.children
@@ -67,6 +69,7 @@ export function ListSkillEntryWithChildren({
 								depth={depth + 1}
 								renderedIds={newSet}
 								parentNodeId={nodeId}
+								authorId={authorId}
 							/>
 						);
 					})}
@@ -93,13 +96,15 @@ function SkillRow({
 	depth,
 	handleSelection,
 	updateSkillDisplay,
-	nodeId
+	nodeId,
+	authorId
 }: {
 	skill: SkillFolderVisualization;
 	depth: number;
 	handleSelection: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
 	nodeId: string;
+	authorId: number;
 }) {
 	const depthCssStyle = {
 		"--depth": depth
@@ -144,7 +149,7 @@ function SkillRow({
 	}
 
 	function checkDraggableSetting(skill: SkillFolderVisualization): boolean {
-		if (skill.isRepository) {
+		if (skill.skill.children.length > 0 && skill.skill.parents.length === 0) {
 			return true;
 		}
 		return false;
@@ -200,11 +205,7 @@ function SkillRow({
 																/>
 															)}
 														</div>
-														{skill.isRepository ? (
-															<CircleStackIcon className="icon h-5 text-lg" />
-														) : (
-															<FolderIcon className="icon h-5 text-lg" />
-														)}
+														<FolderIcon className="icon h-5 text-lg" />
 													</>
 												) : (
 													<div className="ml-6">
@@ -230,6 +231,7 @@ function SkillRow({
 												childrenNumber={skill.numberChildren}
 												updateSkillDisplay={updateSkillDisplay}
 												handleSelection={handleSelection}
+												authorId={authorId}
 											/>
 										</div>
 									</div>

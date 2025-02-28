@@ -36,6 +36,7 @@ model Author {
     courses             Course[]              @relation("AuthorToCourse")
     lessons             Lesson[]              @relation("AuthorToLesson")
     teams               Team[]                @relation("AuthorToTeam")
+    skills              Skill[]
 }
 
 model SubjectAdmin {
@@ -252,6 +253,8 @@ model Skill {
     name           String
     description    String?
     repositoryId   String
+    authorId       Int
+    author         Author          @relation(fields: [authorId], references: [id], onDelete: Cascade)
     repository     SkillRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
     children       Skill[]         @relation("parent")
     parents        Skill[]         @relation("parent")

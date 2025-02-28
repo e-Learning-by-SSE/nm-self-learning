@@ -197,13 +197,18 @@ const repository = {
 	description: "Example to demonstrate competence modelling capabilities"
 };
 
+const author = {
+	id: 42,
+	DisplayName: "Albus Dumbledore"
+};
+
 export async function seedJavaDemoSkills() {
 	await createRepositories(repository);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Repositories");
 
-	await createSkills(skills, repository.id);
+	await createSkills(skills, repository.id, author.id);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
 
-	await createSkillGroups(skillGroups, repository);
+	await createSkillGroups(skillGroups, repository, author.id);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skill Groups");
 }

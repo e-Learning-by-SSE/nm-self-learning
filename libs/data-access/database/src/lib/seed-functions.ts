@@ -431,11 +431,12 @@ export type Skill = {
 	description: string;
 };
 
-export async function createSkills(skills: Skill[], repositoryId: string) {
+export async function createSkills(skills: Skill[], repositoryId: string, authorId: number) {
 	await Promise.all(
 		skills.map(async skill => {
 			const input: Prisma.SkillUncheckedCreateInput = {
 				repositoryId: repositoryId,
+				authorId: authorId,
 				...skill
 			};
 
@@ -453,7 +454,11 @@ export type SkillGroup = {
 	children: string[];
 };
 
-export async function createSkillGroups(skillGroups: SkillGroup[], repository: Repository) {
+export async function createSkillGroups(
+	skillGroups: SkillGroup[],
+	repository: Repository,
+	authorId: number
+) {
 	// Need to preserve ordering and wait to be finished before creating the next one!
 	for (const skill of skillGroups) {
 		const nested = skill.children?.map(i => ({ id: i }));
@@ -462,6 +467,7 @@ export async function createSkillGroups(skillGroups: SkillGroup[], repository: R
 			data: {
 				id: skill.id,
 				repositoryId: repository.id,
+				authorId: authorId,
 				name: skill.name,
 				description: skill.description,
 				children: {

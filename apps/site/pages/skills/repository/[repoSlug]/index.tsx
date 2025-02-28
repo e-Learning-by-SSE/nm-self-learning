@@ -2,11 +2,12 @@ import { GetServerSideProps } from "next";
 import { database } from "@self-learning/database";
 import { getAuthenticatedUser } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { getSkills } from "libs/data-access/api/src/lib/trpc/routers/skill.router"; // TODO change
 import { LoadingBox } from "@self-learning/ui/common";
-import { SkillFormModel, SkillRepositoryTreeNodeModel } from "@self-learning/types";
+import { SkillFormModel } from "@self-learning/types";
 import { SkillRepository } from "@prisma/client";
 import { SkillFolderEditor } from "@self-learning/teaching";
+import { getSkills } from "libs/data-access/api/src/lib/trpc/routers/skill.router";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 
 interface CreateAndViewRepositoryProps {
 	repository: SkillRepository;
@@ -68,9 +69,22 @@ export default function CreateAndViewRepository({
 		{ initialData: initialSkills }
 	);
 
-	const treeContent = new Map<string, SkillRepositoryTreeNodeModel>();
+	const session = useRequiredSession();
+	const username = session.data?.user.name;
 
-	treeContent.set(repository.id, repository);
+	const { data: author } = trpc.author.getByUsername.useQuery({
+		username: username ?? ""
+	});
+
+	if (isLoading) {
+		<LoadingBox />;
+	}
+
+	if (!author) {
+		return <div>Author Missing</div>;
+	}
+
+	const treeContent = new Map<string, SkillFormModel>();
 
 	skills?.forEach(skill => {
 		treeContent.set(skill.id, skill);
@@ -80,12 +94,5 @@ export default function CreateAndViewRepository({
 		return <LoadingBox />;
 	}
 
-	return (
-		<SkillFolderEditor
-			updateSelectedRepository={() => null}
-			skills={treeContent}
-			repository={repository}
-			repositories={[repository]}
-		/>
-	);
+	return <SkillFolderEditor skills={treeContent} authorId={author.id} />;
 }
