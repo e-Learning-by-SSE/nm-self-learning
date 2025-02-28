@@ -198,7 +198,7 @@ const repository = {
 };
 
 const author = {
-	id: 42,
+	id: 6,
 	DisplayName: "Albus Dumbledore"
 };
 
