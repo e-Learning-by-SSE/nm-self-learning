@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema, LessonDraft } from "@self-learning/types";
-import { OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import { OnDialogCloseFn, showToast, Tab, Tabs, ToastProps } from "@self-learning/ui/common";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -69,13 +69,15 @@ export function LessonEditor({
 	initialLesson,
 	isFullScreen,
 	draftId,
-	isOverwritten
+	isOverwritten,
+	redirectPath
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
 	draftId?: string | undefined;
 	isOverwritten?: boolean | undefined;
+	redirectPath?: string;
 }) {
 	const session = useRequiredSession();
 	const router = useRouter();
@@ -98,7 +100,7 @@ export function LessonEditor({
 	const saveLessonDraft = useCallback(async () => {
 		const formValues = form.getValues();
 
-		const draft = {
+		const draft: LessonDraft = {
 			...formValues,
 			id: undefined,
 			owner: session.data?.user.isAuthor
@@ -107,14 +109,15 @@ export function LessonEditor({
 		};
 
 		if (JSON.stringify(draft) === JSON.stringify(lastSavedDraftRef.current)) {
-			console.log("Draft is unchanged. Skipping autosave.");
 			return;
 		}
 
-		console.log("Autosaving draft: ", draft);
-
 		try {
-			await upsert(draft);
+			if (lastSavedDraftRef.current?.id) {
+				draft.id = lastSavedDraftRef.current.id;
+			}
+			const updatedDraft = await upsert(draft);
+			draft.id = updatedDraft.id;
 			lastSavedDraftRef.current = draft;
 		} catch (err) {
 			console.log("Error during autosave", err);
@@ -124,9 +127,9 @@ export function LessonEditor({
 	useEffect(() => {
 		const interval = setInterval(() => {
 			saveLessonDraft();
-		}, 5000); // 5 seconds
+		}, 10000); // 10 seconds
 
-		let msgType: "success" | "info" | "error" | "warning" = "info";
+		let msgType: ToastProps["type"] = "info";
 		let msg = "Das ist ein Entwurf";
 		if (isOverwritten) {
 			msgType = "warning";
@@ -144,15 +147,18 @@ export function LessonEditor({
 
 	const [showSaveOptions, setShowSaveOptions] = useState(false);
 
-	const handleSave = () => {
+	const handleSave = async () => {
 		form.handleSubmit(onSubmit)();
+		if (lastSavedDraftRef.current?.id) {
+			await deleteDraft({ draftId: lastSavedDraftRef.current.id });
+		}
 		setShowSaveOptions(false);
 	};
 
 	const handleSaveAsDraft = () => {
 		setShowSaveOptions(false);
 		saveLessonDraft();
-		router.back();
+		router.push(redirectPath ?? "/");
 	};
 
 	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
@@ -161,8 +167,7 @@ export function LessonEditor({
 		if (draftId) {
 			await deleteDraft({ draftId: draftId });
 		}
-
-		router.back();
+		router.push(redirectPath ?? "/");
 	};
 
 	return (

@@ -96,9 +96,11 @@ export const lessonDraftRouter = t.router({
 			console.error("Error while deleting draft: ", err);
 		}
 	}),
-
 	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input }) => {
 		const lessonId = input.lessonId;
+		const user = input.owner;
+		const draftId = input.id;
+
 		const draftData = {
 			...input,
 			content: input.content ?? "",
@@ -109,8 +111,8 @@ export const lessonDraftRouter = t.router({
 			authors: input.authors ?? [],
 			owner: input.owner ?? undefined
 		};
-		const user = input.owner;
-		const existingDraft = lessonId
+
+		const existingDraftForLesson = lessonId
 			? await database.lessonDraft.findFirst({
 					where: {
 						lessonId: lessonId,
@@ -122,16 +124,40 @@ export const lessonDraftRouter = t.router({
 				})
 			: null;
 
-		if (existingDraft) {
-			return await database.lessonDraft.update({
-				where: { id: existingDraft.id },
+		if (existingDraftForLesson) {
+			const updatedDraft = await database.lessonDraft.update({
+				where: { id: existingDraftForLesson.id },
 				data: {
 					...draftData,
 					updatedAt: new Date()
 				}
 			});
+			return updatedDraft;
+		}
+
+		const existingDraft = draftId
+			? await database.lessonDraft.findFirst({
+					where: {
+						id: draftId,
+						owner: {
+							path: ["username"],
+							equals: user.username
+						}
+					}
+				})
+			: null;
+
+		if (existingDraft) {
+			const updatedDraft = await database.lessonDraft.update({
+				where: { id: draftId },
+				data: {
+					...draftData,
+					updatedAt: new Date()
+				}
+			});
+			return updatedDraft;
 		} else {
-			return await database.lessonDraft.create({
+			const newDraft = await database.lessonDraft.create({
 				data: {
 					...draftData,
 					lessonId: lessonId ?? null,
@@ -140,6 +166,7 @@ export const lessonDraftRouter = t.router({
 					updatedAt: new Date()
 				}
 			});
+			return newDraft;
 		}
 	})
 });

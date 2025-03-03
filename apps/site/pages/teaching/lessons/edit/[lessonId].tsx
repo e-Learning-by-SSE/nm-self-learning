@@ -163,6 +163,7 @@ export default function EditLessonPage({ lesson, draftId, isOverwritten }: EditL
 			isFullScreen={true}
 			draftId={draftId}
 			isOverwritten={isOverwritten}
+			redirectPath="/dashboard/author"
 		/>
 	);
 }
