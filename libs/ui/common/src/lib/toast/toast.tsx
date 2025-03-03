@@ -7,7 +7,7 @@ import {
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 
-type ToastProps = {
+export type ToastProps = {
 	type: "success" | "info" | "error" | "warning";
 	title: string;
 	subtitle: string;

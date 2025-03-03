@@ -11,11 +11,68 @@ import { hasAuthorPermission } from "@self-learning/ui/layouts";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
+	draftId?: string;
+	isOverwritten?: boolean;
 };
 
 export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 	async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
+		const draftId = ctx.query.draft;
+
+		if (draftId && typeof draftId === "string") {
+			const isOverwritten = ctx.query.isOverwritten === "true";
+
+			const draft = await database.lessonDraft.findUnique({
+				where: { id: draftId },
+				select: {
+					id: true,
+					lessonId: true,
+					slug: true,
+					title: true,
+					subtitle: true,
+					description: true,
+					content: true,
+					quiz: true,
+					imgUrl: true,
+					licenseId: true,
+					requirements: true,
+					teachingGoals: true,
+					authors: true,
+					lessonType: true,
+					selfRegulatedQuestion: true
+				}
+			});
+
+			if (!draft) {
+				return { notFound: true };
+			}
+
+			const lessonForm: LessonFormModel = {
+				lessonId: draft.lessonId,
+				slug: draft.slug ?? "",
+				title: draft.title ?? "",
+				subtitle: draft.subtitle,
+				description: draft.description,
+				imgUrl: draft.imgUrl,
+				authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
+				licenseId: draft.licenseId,
+				requirements: Array.isArray(draft.requirements)
+					? draft.requirements
+					: [JSON.parse("[]")],
+				teachingGoals: Array.isArray(draft.teachingGoals)
+					? draft.teachingGoals
+					: JSON.parse("[]"),
+				content: (draft.content ?? []) as LessonContent,
+				quiz: draft.quiz as Quiz,
+				lessonType: draft.lessonType ?? "TRADITIONAL",
+				selfRegulatedQuestion: draft.selfRegulatedQuestion
+			};
+
+			return {
+				props: { lesson: lessonForm, draftId: draft.id, isOverwritten: isOverwritten }
+			};
+		}
 
 		if (typeof lessonId !== "string") {
 			throw new Error("No [lessonId] provided.");
@@ -86,7 +143,7 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 	}
 );
 
-export default function EditLessonPage({ lesson }: EditLessonProps) {
+export default function EditLessonPage({ lesson, draftId, isOverwritten }: EditLessonProps) {
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
@@ -99,5 +156,14 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		);
 	};
 
-	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />;
+	return (
+		<LessonEditor
+			initialLesson={lesson}
+			onSubmit={handleEditClose}
+			isFullScreen={true}
+			draftId={draftId}
+			isOverwritten={isOverwritten}
+			redirectPath="/dashboard/author"
+		/>
+	);
 }

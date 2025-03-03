@@ -25,6 +25,11 @@ export default function CreateLessonPage() {
 			lesson
 		);
 	}
-
-	return <LessonEditor onSubmit={handleCreateClose} isFullScreen={true} />;
+	return (
+		<LessonEditor
+			onSubmit={handleCreateClose}
+			isFullScreen={true}
+			redirectPath="/dashboard/author"
+		/>
+	);
 }
