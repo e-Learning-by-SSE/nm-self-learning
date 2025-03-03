@@ -1,6 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema, LessonDraft } from "@self-learning/types";
-import { OnDialogCloseFn, showToast, Tab, Tabs, ToastProps } from "@self-learning/ui/common";
+import {
+	OnDialogCloseFn,
+	showToast,
+	Tab,
+	Tabs,
+	ToastProps,
+	useInterval
+} from "@self-learning/ui/common";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -124,11 +131,12 @@ export function LessonEditor({
 		}
 	}, [form, session.data, upsert]);
 
-	useEffect(() => {
-		const interval = setInterval(() => {
-			saveLessonDraft();
-		}, 10000); // 10 seconds
+	useInterval({
+		callback: saveLessonDraft,
+		interval: 10000 // 10 seconds
+	});
 
+	useEffect(() => {
 		let msgType: ToastProps["type"] = "info";
 		let msg = "Das ist ein Entwurf";
 		if (isOverwritten) {
@@ -140,10 +148,7 @@ export function LessonEditor({
 			showToast({ type: msgType, title: msg, subtitle: "" });
 			toastShownRef.current = true;
 		}
-		return () => {
-			clearInterval(interval);
-		};
-	}, [draftId, isOverwritten, saveLessonDraft, session.data]);
+	}, [draftId, isOverwritten]);
 
 	const [showSaveOptions, setShowSaveOptions] = useState(false);
 
