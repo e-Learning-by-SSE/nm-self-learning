@@ -3,6 +3,7 @@ import { baseAnswerSchema, BaseEvaluation, baseQuestionSchema } from "../../base
 
 export const languageTreeQuestionSchema = baseQuestionSchema.extend({
     type: z.literal("language-tree"),
+    caseSensitive: z.boolean(),
     answer: z.string(),
     initialTree: z.string(),
 });

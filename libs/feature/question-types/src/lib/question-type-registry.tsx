@@ -187,6 +187,7 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	"language-tree": () => ({
 		...createBaseQuestion(),
 		type: "language-tree",
+		caseSensitive: false,
 		initialTree: "",
 		answer: ""
 	})
