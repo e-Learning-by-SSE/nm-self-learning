@@ -1,6 +1,7 @@
 module.exports = {
 	// https://www.i18next.com/overview/configuration-options#logging
-	debug: process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true",
+	// debug: process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true",
+	debug: false,
 	i18n: {
 		defaultLocale: "de" + "",
 		locales: ["en", "de"]
