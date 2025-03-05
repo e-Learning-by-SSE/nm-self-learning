@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
 	ButtonActions,
 	DialogHandler,
-	SectionHeader,
-	SimpleDialog,
-	Tab,
-	Tabs,
 	dispatchDialog,
 	freeDialog,
-	showToast
+	SectionHeader,
+	showToast,
+	SimpleDialog,
+	Tab,
+	Tabs
 } from "@self-learning/ui/common";
 import { LearningSubGoal } from "@self-learning/types";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -38,12 +38,70 @@ export function LearningGoals({
 	const [editTarget, setEditTarget] = useState<Goal | null>(null);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
-	const inProgress = goals.filter(g => g.status === "INACTIVE" || g.status === "ACTIVE");
+	const { mutateAsync: editSubGoalPriority } =
+		trpc.learningGoal.editSubGoalPriority.useMutation();
+
+	// eslint does not understand it is used in moveSubGoal()
+	// eslint-disable-next-line prefer-const
+	let inProgress = goals.filter(g => g.status === "INACTIVE" || g.status === "ACTIVE");
 	const complete = goals.filter(g => g.status === "COMPLETED");
 
 	const handleEditTarget = (editedGoal: Goal) => {
 		setEditTarget(editedGoal);
 	};
+
+	/**
+	 * function to move a sub-goal up or down.
+	 *
+	 * @param subGoal Sub-goal data
+	 * @param direction Direction of the move "up" or "down"
+	 * @param subGoals All sub-goals data of the parent goal
+	 */
+	function moveSubGoal(subGoal: LearningSubGoal, direction: string, subGoals: LearningSubGoal[]) {
+		function switchGoals(subGoalA: LearningSubGoal, subGoalB: LearningSubGoal) {
+			const goalIndex = inProgress.findIndex(goal => goal.learningSubGoals === subGoals);
+			const learningSubGoals = inProgress[goalIndex].learningSubGoals;
+
+			const indexA = learningSubGoals.indexOf(subGoalA);
+			const indexB = learningSubGoals.indexOf(subGoalB);
+
+			const subGoalAItem = learningSubGoals[indexA];
+			const subGoalBItem = learningSubGoals[indexB];
+
+			const tempPriority = subGoalAItem.priority;
+			subGoalAItem.priority = subGoalBItem.priority;
+			subGoalBItem.priority = tempPriority;
+
+			inProgress[goalIndex].learningSubGoals.sort((a, b) =>
+				a.priority <= b.priority ? -1 : 1
+			);
+
+			editSubGoalPriority({ priority: subGoalAItem.priority, subGoalId: subGoalBItem.id });
+			editSubGoalPriority({ priority: subGoalBItem.priority, subGoalId: subGoalAItem.id });
+		}
+
+		let found;
+		// If up identify the goal with the next higher priority and switch priorities.
+		if (direction === "up") {
+			subGoals.sort((a, b) => (a.priority > b.priority ? -1 : 1));
+			found = subGoals.find(goal => {
+				return goal.priority <= subGoal.priority - 1;
+			});
+			if (found) {
+				switchGoals(found, subGoal);
+			}
+
+			// If down identify the goal with the next lower priority and switch priorities.
+		} else if (direction === "down") {
+			subGoals.sort((a, b) => (a.priority < b.priority ? -1 : 1));
+			found = subGoals.find(goal => {
+				return goal.priority >= subGoal.priority + 1;
+			});
+			if (found) {
+				switchGoals(found, subGoal);
+			}
+		}
+	}
 
 	return (
 		<CenteredSection className="overflow-y-auto bg-gray-50 pb-32 px-5">
@@ -57,7 +115,11 @@ export function LearningGoals({
 				</div>
 
 				<div className="py-2 ">
-					<LearningGoalProvider userGoals={inProgress} onStatusUpdate={onStatusUpdate}>
+					<LearningGoalProvider
+						userGoals={inProgress}
+						onStatusUpdate={onStatusUpdate}
+						moveSubGoal={moveSubGoal}
+					>
 						{selectedTab === 0 && (
 							<TabContent
 								selectedTab={selectedTab}
@@ -68,7 +130,11 @@ export function LearningGoals({
 							/>
 						)}
 					</LearningGoalProvider>
-					<LearningGoalProvider userGoals={complete} onStatusUpdate={onStatusUpdate}>
+					<LearningGoalProvider
+						userGoals={complete}
+						onStatusUpdate={onStatusUpdate}
+						moveSubGoal={moveSubGoal}
+					>
 						{selectedTab === 1 && (
 							<TabContent
 								selectedTab={selectedTab}
@@ -273,41 +339,7 @@ function SubGoalRow({
 	goal: Goal;
 }>) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
-	const { mutateAsync: editSubGoalPriority } =
-		trpc.learningGoal.editSubGoalPriority.useMutation();
-
-	const { userGoals: goals, onStatusUpdate } = useLearningGoalContext();
-	/**
-	 * function to move a sub-goal up or down.
-	 *
-	 * @param subGoal Sub-goal data
-	 * @param direction Direction of the move "up" or "down"
-	 * @param subGoals All sub-goals data of the parent goal
-	 */
-	function moveSubGoal(subGoal: LearningSubGoal, direction: string, subGoals: LearningSubGoal[]) {
-		let found;
-		// If up identify the goal with the next higher priority and switch priorities.
-		if (direction === "up") {
-			subGoals.sort((a, b) => (a.priority > b.priority ? -1 : 1));
-			found = subGoals.find(goal => {
-				return goal.priority <= subGoal.priority - 1;
-			});
-			if (found) {
-				editSubGoalPriority({ priority: found.priority, subGoalId: subGoal.id });
-				editSubGoalPriority({ priority: subGoal.priority, subGoalId: found.id });
-			}
-			// If down identify the goal with the next lower priority and switch priorities.
-		} else if (direction === "down") {
-			subGoals.sort((a, b) => (a.priority < b.priority ? -1 : 1));
-			found = subGoals.find(goal => {
-				return goal.priority >= subGoal.priority + 1;
-			});
-			if (found) {
-				editSubGoalPriority({ priority: found.priority, subGoalId: subGoal.id });
-				editSubGoalPriority({ priority: subGoal.priority, subGoalId: found.id });
-			}
-		}
-	}
+	const { userGoals: goals, onStatusUpdate, moveSubGoal } = useLearningGoalContext();
 
 	const result = goals.filter(goal => {
 		return goal.id === subGoal.learningGoalId;

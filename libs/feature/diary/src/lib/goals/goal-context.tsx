@@ -1,9 +1,11 @@
 import { createContext, ReactNode, useContext } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
+import { LearningSubGoal } from "@self-learning/types";
 
 type LearningGoalContextType = {
 	userGoals: Goal[];
 	onStatusUpdate: StatusUpdateCallback;
+	moveSubGoal: (subGoal: LearningSubGoal, direction: string, subGoals: LearningSubGoal[]) => void;
 };
 
 const LearningGoalContext = createContext<LearningGoalContextType | undefined>(undefined);
@@ -20,15 +22,17 @@ type LearningGoalProviderProps = {
 	children: ReactNode;
 	userGoals: Goal[];
 	onStatusUpdate: StatusUpdateCallback;
+	moveSubGoal: (subGoal: LearningSubGoal, direction: string, subGoals: LearningSubGoal[]) => void;
 };
 
 export const LearningGoalProvider = ({
 	children,
 	userGoals,
-	onStatusUpdate
+	onStatusUpdate,
+	moveSubGoal
 }: LearningGoalProviderProps) => {
 	return (
-		<LearningGoalContext.Provider value={{ userGoals, onStatusUpdate }}>
+		<LearningGoalContext.Provider value={{ userGoals, onStatusUpdate, moveSubGoal }}>
 			{children}
 		</LearningGoalContext.Provider>
 	);

@@ -221,6 +221,11 @@ export async function generateLearningDiaryDemoData() {
 							description: "Learn about interfaces",
 							status: "INACTIVE",
 							createdAt: new Date()
+						},
+						{
+							description: "Understand basic loops",
+							status: "ACTIVE",
+							createdAt: new Date()
 						}
 					]
 				}
