@@ -1,7 +1,7 @@
 import { getServerSession, Session } from "next-auth";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { authOptions } from "../auth/auth";
-import { database } from "@self-learning/database";
+import { createUserSession } from "../auth/data-access";
 
 export type UserFromSession = Session["user"];
 
@@ -50,28 +50,11 @@ export async function createTrpcContext({
 		try {
 			const claims = await introspectToken(token);
 			if (claims.preferred_username) {
-				const userFromDb = await database.user.findUniqueOrThrow({
-					where: { name: claims.preferred_username },
-					select: {
-						id: true,
-						role: true,
-						image: true,
-						author: { select: { username: true } },
-						enabledFeatureLearningDiary: true,
-						enabledLearningStatistics: true
-					}
+				const userSession = await createUserSession({
+					username: claims.preferred_username
 				});
-				const user: UserFromSession = {
-					id: userFromDb.id,
-					name: claims.preferred_username,
-					role: userFromDb.role,
-					isAuthor: !!userFromDb.author,
-					avatarUrl: userFromDb.image,
-					enabledLearningStatistics: userFromDb.enabledLearningStatistics,
-					enabledFeatureLearningDiary: userFromDb.enabledFeatureLearningDiary
-				};
 				return {
-					user
+					user: userSession
 				};
 			}
 		} catch (error) {
