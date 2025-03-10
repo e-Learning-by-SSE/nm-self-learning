@@ -1,7 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl"]
-  previewFeatures = ["prismaSchemaFolder"]
+    provider        = "prisma-client-js"
+    binaryTargets   = ["native", "linux-musl"]
+    previewFeatures = ["prismaSchemaFolder"]
 }
 
 datasource db {
@@ -9,20 +9,32 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Student {
-    userId                      String                        @unique
-    username                    String                        @id
-    completedLessons            CompletedLesson[]
-    enrollments                 Enrollment[]
-    customLearningLocations     LearningLocation[]
-    quizAttempts                QuizAttempt[]
-    user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
-    learningDiaryEntrys         LearningDiaryPage[]
-    personalLearningTechniques  LearningTechnique[]
-    learningTechniqueRatings    TechniqueRating[]
-	learningGoals				LearningGoal[]
+model OllamaCredentials {
+    id           String         @id @default(uuid())
+    token        String
+    endpointUrl  String         @unique
+    OllamaModels OllamaModels[]
 }
 
+model OllamaModels {
+    id                  String            @id @default(uuid())
+    ollamaCredentialsId String
+    ollamaCredentials   OllamaCredentials @relation(fields: [ollamaCredentialsId], references: [id])
+}
+
+model Student {
+    userId                     String              @unique
+    username                   String              @id
+    completedLessons           CompletedLesson[]
+    enrollments                Enrollment[]
+    customLearningLocations    LearningLocation[]
+    quizAttempts               QuizAttempt[]
+    user                       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    learningDiaryEntrys        LearningDiaryPage[]
+    personalLearningTechniques LearningTechnique[]
+    learningTechniqueRatings   TechniqueRating[]
+    learningGoals              LearningGoal[]
+}
 
 model Author {
     id                  Int                   @id @default(autoincrement())
@@ -91,22 +103,22 @@ model Specialization {
 }
 
 model Course {
-    courseId             String               @id
-    slug                 String               @unique
+    courseId             String              @id
+    slug                 String              @unique
     title                String
     subtitle             String
     description          String?
     imgUrl               String?
     content              Json
     meta                 Json
-    createdAt            DateTime             @default(now())
-    updatedAt            DateTime             @updatedAt
+    createdAt            DateTime            @default(now())
+    updatedAt            DateTime            @updatedAt
     subjectId            String?
     completions          CompletedLesson[]
-    subject              Subject?             @relation(fields: [subjectId], references: [subjectId])
+    subject              Subject?            @relation(fields: [subjectId], references: [subjectId])
     enrollments          Enrollment[]
-    authors              Author[]             @relation("AuthorToCourse")
-    specializations      Specialization[]     @relation("CourseToSpecialization")
+    authors              Author[]            @relation("AuthorToCourse")
+    specializations      Specialization[]    @relation("CourseToSpecialization")
     learningDiaryEntries LearningDiaryPage[]
 }
 
@@ -196,7 +208,6 @@ model QuizAnswer {
 //     student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
 // }
 
-
 model UploadedAssets {
     objectName String   @id
     fileName   String
@@ -236,15 +247,15 @@ model License {
 }
 
 model SkillRepository {
-  id            String        @id @default(cuid())
-  name          String
-  description   String?
-  skills        Skill[]
-  ownerName     String
-  owner         User     @relation(fields: [ownerName], references: [name])
+    id          String  @id @default(cuid())
+    name        String
+    description String?
+    skills      Skill[]
+    ownerName   String
+    owner       User    @relation(fields: [ownerName], references: [name])
 
-  @@unique([ownerName, name])
-  @@map("skill-repositories")
+    @@unique([ownerName, name])
+    @@map("skill-repositories")
 }
 
 model Skill {
@@ -263,12 +274,12 @@ model Skill {
 }
 
 model EventLog {
-  id          Int    @id @default(autoincrement())
-  createdAt   DateTime  @default(now())
-  username    String
-  resourceId  String?
-  courseId    String?
-  type        String
-  payload     Json?
-  // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now())
+    username   String
+    resourceId String?
+    courseId   String?
+    type       String
+    payload    Json?
+    // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
 }
