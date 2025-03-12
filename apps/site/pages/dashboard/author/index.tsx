@@ -473,7 +473,12 @@ function Lessons({ authorName }: { authorName: string }) {
 							);
 						}}
 					/>
-
+					<Link
+						href={`/teaching/lessons/edit/draft/${"cm7ywaglc0000qkb8b3xvpvjs"}`}
+						className="font-medium hover:text-secondary"
+					>
+						<span className="flex gap-3">TUTAJ</span>
+					</Link>
 					<Table
 						head={
 							<>

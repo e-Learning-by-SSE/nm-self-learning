@@ -61,6 +61,47 @@ export const lessonDraftRouter = t.router({
 				selfRegulatedQuestion: draft.selfRegulatedQuestion
 			}));
 		}),
+	getById: authProcedure
+		.input(z.object({ draftId: z.string() }))
+		.query(async ({ input }): Promise<LessonDraft | undefined> => {
+			const draftId = input.draftId;
+			const draft = await database.lessonDraft.findUnique({
+				where: {
+					id: draftId
+				}
+			});
+			if (draft) {
+				return {
+					id: draft.id,
+					lessonId: draft.lessonId,
+					slug: draft.slug ?? "",
+					title: draft.title ?? "",
+					subtitle: draft.subtitle,
+					description: draft.description,
+					imgUrl: draft.imgUrl,
+					authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
+					owner:
+						typeof draft.owner === "object" &&
+						draft.owner !== null &&
+						"username" in draft.owner
+							? { username: String(draft.owner.username) }
+							: { username: "" },
+
+					licenseId: draft.licenseId,
+					requirements: Array.isArray(draft.requirements)
+						? draft.requirements
+						: [JSON.parse("[]")],
+					teachingGoals: Array.isArray(draft.teachingGoals)
+						? draft.teachingGoals
+						: JSON.parse("[]"),
+					content: (draft.content ?? []) as LessonContent,
+					quiz: draft.quiz as Quiz,
+					lessonType: draft.lessonType ?? "TRADITIONAL",
+					selfRegulatedQuestion: draft.selfRegulatedQuestion
+				};
+			}
+			return undefined; // TODO
+		}),
 	getOverviewByOwner: authProcedure
 		.input(z.object({ username: z.string() }))
 		.query(async ({ input }) => {
