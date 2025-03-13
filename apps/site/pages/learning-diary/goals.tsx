@@ -1,19 +1,18 @@
-import { withAuth, withTranslations } from "@self-learning/api";
-import { getLearningGoals, LearningGoals } from "@self-learning/diary";
-import { ResolvedValue } from "@self-learning/types";
+import { withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
+import { LearningGoals } from "@self-learning/diary";
+import { LoadingCircle } from "@self-learning/ui/common";
 
-type Goals = ResolvedValue<typeof getLearningGoals>;
+export const getServerSideProps = withTranslations(["common"]);
 
-export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth(async (context, user) => {
-		const goals = await getLearningGoals(user.name);
-		return {
-			props: { goals }
-		};
-	})
-);
 
-export default function LearningGoal({ goals }: { goals: Goals }) {
-	return <LearningGoals goals={goals} onStatusUpdate={_ => {}} />;
+export default function LearningGoal() {
+	const { data: goals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
+
+
+	if(isLoading) {
+		return <LoadingCircle />
+	}
+
+	return goals && <LearningGoals goals={goals} onStatusUpdate={_ => {}} />;
 }
