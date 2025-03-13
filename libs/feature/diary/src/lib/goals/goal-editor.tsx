@@ -44,7 +44,7 @@ export function GoalEditorDialog({
 	 * The combobox is only displayed for new learning goals or sub-goals.
 	 */
 	function save() {
-		if (description.length > 0) {
+		if (description.length > 4) {
 			const goalId = goal?.id ?? "";
 			const subGoalId = subGoal?.id ?? "";
 
@@ -126,7 +126,12 @@ export function GoalEditorDialog({
 					<button
 						type="button"
 						className="btn-primary"
-						disabled={description.length === 0}
+						title={
+							description.length < 5
+								? "Description must be at least 5 characters long"
+								: "Speichern"
+						}
+						disabled={description.length < 5}
 						onClick={() => save()}
 					>
 						Speichern
