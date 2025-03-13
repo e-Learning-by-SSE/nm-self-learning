@@ -7,6 +7,7 @@ import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { withTranslations } from "@self-learning/api";
 
 export default function LessonManagementPage() {
 	const router = useRouter();
@@ -100,3 +101,5 @@ export default function LessonManagementPage() {
 		</CenteredSection>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

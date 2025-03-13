@@ -3,6 +3,7 @@ import { SubjectEditor } from "@self-learning/teaching";
 import { Subject, subjectSchema } from "@self-learning/types";
 import { LoadingBox, showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
+import { withTranslations } from "@self-learning/api";
 
 export default function SubjectEditPage() {
 	const { subjectId } = useRouter().query;
@@ -40,3 +41,5 @@ export default function SubjectEditPage() {
 		</div>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);
