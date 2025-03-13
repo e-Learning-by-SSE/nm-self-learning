@@ -9,32 +9,35 @@ export interface TreeNode {
     let pos = 0
   
     function parseNode(): TreeNode | null {
- 
+
+      // Skip whitespace characters
       while (pos < input.length && /\s/.test(input[pos])) pos++
-  
+
+      // If end of input is reached, return null
       if (pos >= input.length) return null
   
-
+      // Check for the opening bracket '['
       if (input[pos] !== "[") {
         throw new Error(`Expected '[' at position ${pos}`)
       }
       pos++
   
-    
+      // Skip any whitespace characters after the opening bracket
       while (pos < input.length && /\s/.test(input[pos])) pos++
   
-  
+      // Parse the node value, which consists of alphanumeric characters and underscores
       let value = ""
       while (pos < input.length && /[A-Za-z0-9_]/.test(input[pos])) {
         value += input[pos]
         pos++
       }
-  
+      
+      // If no value is found, throw an error
       if (!value) {
         throw new Error(`Expected node value at position ${pos}`)
       }
   
-     
+      // Parse the text content of the node
       let text = ""
       let textBuffer = ""
       while (pos < input.length && input[pos] !== "[" && input[pos] !== "]") {
@@ -42,9 +45,10 @@ export interface TreeNode {
         pos++
       }
   
-     
+     // Trim any leading or trailing whitespace from the text
       text = textBuffer.trim()
-  
+      
+      // Initialize an array to hold child nodes
       const children: TreeNode[] = []
   
       if (text) {
@@ -77,11 +81,8 @@ export interface TreeNode {
       }
     }
   
-    try {
       return parseNode()
-    } catch (error) {
-      throw error
-    }
+    
   }
   
   export function validateBrackets(input: string): boolean {

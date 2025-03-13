@@ -4,7 +4,6 @@ import { LanguageTreeQuestion } from "./schema";
 import { useState } from "react";
 import { parseTree, TreeNode, validateBrackets } from "./tree-parser";
 import { TreeVisualization } from "./tree-visualization";
-import { Switch } from "@headlessui/react";
 import { Toggle } from "@self-learning/ui/common";
 
 export default function LanguageTreeForm({ index }: { index: number }) {

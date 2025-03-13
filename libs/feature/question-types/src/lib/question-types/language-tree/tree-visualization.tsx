@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import dagre from "@dagrejs/dagre";

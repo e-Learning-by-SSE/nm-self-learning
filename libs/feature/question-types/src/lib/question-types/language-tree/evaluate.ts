@@ -9,7 +9,7 @@ export const evaluateLanguageTreeAnswer: EvaluationFn<"language-tree"> = (questi
         correctAnswer = correctAnswer.toLowerCase();
     }
 
-    let isCorrect = studentAnswer === correctAnswer;
+    const isCorrect = studentAnswer === correctAnswer;
 
     return {
         isCorrect: isCorrect,
