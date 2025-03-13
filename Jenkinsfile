@@ -27,12 +27,12 @@ pipeline {
     environment {
         API_VERSION = packageJson.getVersion() // package.json must be in the root level in order for this to work
         TZ = 'Europe/Berlin'
-        
+
         NX_BASE = 'master'
         NX_HEAD = 'HEAD'
         NX_BRANCH = env.BRANCH_NAME.replace('PR-', '')
         NX_REJECT_UNKNOWN_LOCAL_CACHE = 0
-        
+
         NODE_DOCKER_IMAGE = 'node:21-bullseye'
         TARGET_PREFIX = 'ghcr.io/e-learning-by-sse/nm-self-learning'
         // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
@@ -83,7 +83,7 @@ pipeline {
                         script {
                             def projectName = env.JOB_NAME.split('/')[0]
                             def branchJobName = env.JOB_NAME.split('/')[1]
-                            def jobUrl = "${env.JENKINS_URL}job/${projectName}/job/${branchJobName}/lastSuccessfulBuild/git-2/api/json" // be aware /git/ is the git data of the Jenkins library
+                            def jobUrl = "${env.JENKINS_URL}job/${projectName}/job/${branchJobName}/lastSuccessfulBuild/api/json" // be aware /git/ is the git data of the Jenkins library
                             lastSuccessSHA = sh(
                                 script: "curl ${jobUrl} | jq '.lastBuiltRevision.SHA1'",
                                 returnStdout: true
@@ -173,7 +173,7 @@ pipeline {
                                 }
                                 def releaseTag = ''
                                 if (params.PUBLISH_IMAGE_TAG == 'NONE') {
-                                    releaseTag = "${apiVersion}" 
+                                    releaseTag = "${apiVersion}"
                                 } else {
                                     releaseTag = "${params.PUBLISH_IMAGE_TAG}"
                                 }
