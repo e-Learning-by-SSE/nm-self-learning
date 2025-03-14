@@ -1,6 +1,6 @@
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
-import { t, withAuth } from "@self-learning/api";
+import { t, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
@@ -22,7 +22,6 @@ import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { formatDateAgo } from "@self-learning/util/common";
-import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -89,20 +88,25 @@ export function getAuthor(username: string) {
 	});
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = withAuth<Props>(async (_, user) => {
-	if (user.isAuthor) {
-		return {
-			props: { author: await getAuthor(user.name) }
-		};
-	}
-
-	return {
-		redirect: {
-			destination: "/",
-			permanent: false
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<Props>(async (context, user) => {
+		if (user.isAuthor) {
+			return {
+				props: {
+					author: await getAuthor(user.name)
+				}
+			};
 		}
-	};
-});
+
+		return {
+			redirect: {
+				destination: "/",
+				permanent: false
+			}
+		};
+	})
+);
 
 export default function Start(props: Props) {
 	return <AuthorDashboardPage {...props} />;

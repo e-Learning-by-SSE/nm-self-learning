@@ -58,6 +58,7 @@ export const evenTypePayloadSchema = z.object({
 
 export type EventType = z.infer<typeof evenTypePayloadSchema>;
 export type EventTypeKeys = keyof EventType;
+export const EventTypesToAlwaysSave = ["ERROR"];
 
 const typeSchema = z.enum(
 	Object.keys(evenTypePayloadSchema.shape) as [EventTypeKeys, ...EventTypeKeys[]]

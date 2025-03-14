@@ -2,6 +2,7 @@ import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { LessonEditor, LessonFormModel, onLessonCreatorSubmit } from "@self-learning/teaching";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
+import { withTranslations } from "@self-learning/api";
 
 export default function CreateLessonPage() {
 	const session = useRequiredSession();
@@ -28,3 +29,5 @@ export default function CreateLessonPage() {
 
 	return <LessonEditor onSubmit={handleCreateClose} isFullScreen={true} />;
 }
+
+export const getServerSideProps = withTranslations(["common"]);
