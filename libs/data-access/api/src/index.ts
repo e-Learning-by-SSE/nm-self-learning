@@ -6,3 +6,4 @@ export * from "./lib/auth/with-auth-ssr";
 export * from "./lib/trpc/rest-api.handler";
 export type { UserFromSession } from "./lib/trpc/context";
 export * from "./lib/auth/data-access";
+export * from "./lib/internationalization/withTranslation";
