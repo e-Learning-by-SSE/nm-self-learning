@@ -29,12 +29,39 @@ export function ControlledFirstLoginDialog() {
 	const router = useRouter();
 	const [onboardingDialogClosed, setDialogClosed] = useState<boolean | null>(null);
 
+	if (onboardingDialogClosed === null && data) {
+		setDialogClosed(data.registrationCompleted ?? false);
+	}
+	const [shouldRender, setShouldRender] = useState<boolean>(false);
+
+	useEffect(() => {
+		const storageKey = "lastRenderTime";
+
+		const now = Date.now();
+
+		const twentyFourHours = 24 * 60 * 60 * 1000; // 86,400,000 ms in a day
+
+		const lastRenderTime = localStorage.getItem(storageKey);
+
+		if (!lastRenderTime) {
+			setShouldRender(true);
+			localStorage.setItem(storageKey, now.toString());
+		} else {
+			const lastTime: number = parseInt(lastRenderTime, 10);
+
+			if (now - lastTime >= twentyFourHours) {
+				setShouldRender(true);
+				localStorage.setItem(storageKey, now.toString());
+			}
+		}
+	}, []);
+
 	if (isLoading) {
 		return null;
 	}
 
-	if (onboardingDialogClosed === null && data) {
-		setDialogClosed(data.registrationCompleted ?? false);
+	if (!shouldRender) {
+		return null;
 	}
 
 	const registrationCompleted = data?.registrationCompleted ?? true;
