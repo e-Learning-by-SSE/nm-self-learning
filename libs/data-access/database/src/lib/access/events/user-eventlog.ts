@@ -1,14 +1,35 @@
-import { EventType, EventLogQueryInput, ResolvedValue } from "@self-learning/types";
+import {
+	EventLogQueryInput,
+	EventType,
+	EventTypesToAlwaysSave,
+	ResolvedValue
+} from "@self-learning/types";
 import { database } from "@self-learning/database";
 import { Prisma } from "@prisma/client";
+import { createHash } from "crypto";
 
-export function createUserEvent<K extends keyof EventType>(event: {
+export async function createUserEvent<K extends keyof EventType>(event: {
 	username: string;
 	type: K;
 	resourceId?: string;
 	courseId?: string;
 	payload: EventType[K];
 }) {
+	const enabledLearningStatistics = (
+		await database.user.findUnique({ where: { name: event.username } })
+	)?.enabledLearningStatistics;
+
+	// Return null if the user or setting is not found
+	if (enabledLearningStatistics === undefined || enabledLearningStatistics === null) {
+		return null;
+	}
+
+	// Anonymizes the username using SHA-256 when user event tracking is disabled,
+	// unless the event type is in the list of events that should always be saved (e.g., error events).
+	if (!enabledLearningStatistics && !EventTypesToAlwaysSave.includes(event.type)) {
+		event.username = createHash("sha256").update(event.username).digest("hex");
+	}
+
 	return database.eventLog.create({ data: event });
 }
 
@@ -52,4 +73,5 @@ export async function loadUserEvents(input: EventLogQueryInput) {
 	// type Result = (typeof results)[0];
 	return results as Result[];
 }
+
 export type UserEvent = ResolvedValue<typeof loadUserEvents>[number];

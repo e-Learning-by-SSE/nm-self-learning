@@ -1,9 +1,9 @@
-import { getServerSideProps } from "../../../../pages/courses/[courseSlug]/[lessonSlug]/index";
+import { getServerSideProps } from "../../../../pages/courses/[courseSlug]/[lessonSlug]";
 import { database } from "@self-learning/database";
 import { getServerSession } from "next-auth";
 import { createMockContext } from "../../../context-utils";
 import { compileMarkdown } from "@self-learning/markdown";
-import { createCourseMock, createLessonMock } from "../../../mock-data-utils";
+import { createCourseMock, createLessonMock } from "@self-learning/util/testing";
 
 // Mocks getServerSession of withAuth procedure to mock User object
 // ESM support & default mock required by NextAuth
@@ -29,14 +29,14 @@ describe("getServerSideProps", () => {
 	const mockCtx = createMockContext({ params: { courseSlug: "course1", lessonSlug: "lesson1" } });
 
 	describe("Authorization", () => {
-		// For te test required properties of Lesson
+		// For the test required properties of Lesson
 		const lessonMock = createLessonMock({
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			lessonId: mockCtx.params!.lessonId as string,
 			authors: ["Author1", "Author2"]
 		});
 
-		// For the test required properties of Course
+		// For the test required properties, of Course
 		const courseMock = createCourseMock({
 			courseId: "course1",
 			authors: ["Author1"],

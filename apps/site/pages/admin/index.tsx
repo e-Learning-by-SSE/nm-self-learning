@@ -1,9 +1,10 @@
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { EnvStudySvg } from "@self-learning/ui/static";
+import { CodingSvg, EnvStudySvg } from "@self-learning/ui/static";
 import { SoftwareEngineerSvg } from "@self-learning/ui/static";
 import { PersonalInformationSvg } from "@self-learning/ui/static";
 import { TutorialSvg } from "@self-learning/ui/static";
 import { Card } from "@self-learning/ui/common";
+import { withTranslations } from "@self-learning/api";
 
 export default function AdminPage() {
 	const session = useRequiredSession();
@@ -51,6 +52,11 @@ export default function AdminPage() {
 					imageElement={<PersonalInformationSvg />}
 					title="Nutzer:innen verwalten"
 				/>
+				<Card
+					href="/admin/api-docs"
+					imageElement={<CodingSvg />}
+					title="REST API Dokumentation (OpenAPI)"
+				/>
 			</div>
 			<div className="text-center text-sm text-gray-500 mt-8">
 				{`App Version: ${appVersion}`}
@@ -58,3 +64,5 @@ export default function AdminPage() {
 		</CenteredSection>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);
