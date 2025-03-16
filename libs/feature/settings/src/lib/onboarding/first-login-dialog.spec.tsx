@@ -6,6 +6,8 @@ import userEvent from "@testing-library/user-event";
 import { renderHook } from "@testing-library/react";
 import { useFirstLoginDialog } from "./first-login-dialog";
 import "@testing-library/jest-dom";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
+import { subDays } from "date-fns";
 
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
@@ -68,12 +70,12 @@ describe("useFirstLoginDialog", () => {
 		});
 
 		expect(result.current).toBe(true);
-		expect(localStorage.getItem("lastRenderTime")).not.toBeNull();
+		expect(localStorage.getItem("settings_firstLoginDialog_lastRendered")).not.toBeNull();
 	});
 
 	it("should return false if the last render time is within 24 hours", () => {
-		const now = Date.now();
-		localStorage.setItem("lastRenderTime", now.toString());
+		const now = new Date();
+		saveToLocalStorage("settings_firstLoginDialog_lastRendered", now);
 
 		const { result } = renderHook(() => useFirstLoginDialog());
 
@@ -85,8 +87,8 @@ describe("useFirstLoginDialog", () => {
 	});
 
 	it("should return true and update localStorage if the last render time is older than 24 hours", () => {
-		const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000 - 1; // Slightly more than 24 hours ago
-		localStorage.setItem("lastRenderTime", twentyFourHoursAgo.toString());
+		const twoDaysAgo = subDays(new Date(), 2);
+		saveToLocalStorage("settings_firstLoginDialog_lastRendered", twoDaysAgo);
 
 		const { result } = renderHook(() => useFirstLoginDialog());
 
@@ -95,8 +97,11 @@ describe("useFirstLoginDialog", () => {
 		});
 
 		expect(result.current).toBe(true);
-		const updatedTime = localStorage.getItem("lastRenderTime");
+		const updatedTime: Date | null = loadFromLocalStorage(
+			"settings_firstLoginDialog_lastRendered"
+		);
 		expect(updatedTime).not.toBeNull();
-		expect(parseInt(updatedTime, 10)).toBeGreaterThan(twentyFourHoursAgo);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		expect(updatedTime!.getTime()).toBeGreaterThan(twoDaysAgo.getTime());
 	});
 });

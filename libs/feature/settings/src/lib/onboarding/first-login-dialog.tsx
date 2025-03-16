@@ -1,29 +1,29 @@
 import { trpc } from "@self-learning/api-client";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { FeatureSettingsForm } from "@self-learning/settings";
 import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
+import { isBefore, subDays } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-export const useFirstLoginDialog = (storageKey: string = "lastRenderTime") => {
+export const useFirstLoginDialog = (): boolean => {
 	const [shouldRender, setShouldRender] = useState<boolean>(false);
 
 	useEffect(() => {
-		const now = Date.now();
-		const twentyFourHours = 24 * 60 * 60 * 1000; // 86,400,000 ms in a day
-		const lastRenderTime = localStorage.getItem(storageKey);
+		const lastShown: Date | null = loadFromLocalStorage(
+			"settings_firstLoginDialog_lastRendered"
+		);
+		const oneDayAgo = subDays(new Date(), 1);
 
-		if (!lastRenderTime) {
+		if (!lastShown) {
 			setShouldRender(true);
-			localStorage.setItem(storageKey, now.toString());
-		} else {
-			const lastTime: number = parseInt(lastRenderTime, 10);
-			if (now - lastTime >= twentyFourHours) {
-				setShouldRender(true);
-				localStorage.setItem(storageKey, now.toString());
-			}
+			saveToLocalStorage("settings_firstLoginDialog_lastRendered", new Date());
+		} else if (isBefore(lastShown, oneDayAgo)) {
+			setShouldRender(true);
+			saveToLocalStorage("settings_firstLoginDialog_lastRendered", new Date());
 		}
-	}, [storageKey]);
+	}, []);
 
 	return shouldRender;
 };
