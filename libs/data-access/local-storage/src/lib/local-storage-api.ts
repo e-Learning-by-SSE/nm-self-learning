@@ -4,7 +4,7 @@ import { LocalStorageKeys, LocalStorageKeyTypeMap } from "./local-storage-schema
 export function loadFromLocalStorage<K extends keyof LocalStorageKeyTypeMap>(
 	key: K
 ): LocalStorageKeyTypeMap[K] | null {
-	const rawData = localStorage.getItem(key);
+	const rawData = window?.localStorage.getItem(key);
 	if (rawData) {
 		return SuperJSON.parse<LocalStorageKeyTypeMap[K]>(rawData);
 	}
@@ -19,5 +19,5 @@ export function saveToLocalStorage<K extends LocalStorageKeys>(
 }
 
 export async function removeFromLocalStorage<K extends LocalStorageKeys>(key: K) {
-	window.localStorage.removeItem(key);
+	window?.localStorage.removeItem(key);
 }

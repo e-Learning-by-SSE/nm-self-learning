@@ -27,6 +27,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { withAuth } from "@self-learning/api";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -98,11 +99,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 		const availableMediaTypes = content.map(c => c.type);
 
 		const { type: typeFromRoute } = router.query;
-		let typeFromStorage: string | null = null;
-
-		if (typeof window !== "undefined") {
-			typeFromStorage = window.localStorage.getItem("preferredMediaType");
-		}
+		const typeFromStorage = loadFromLocalStorage("user_preferredMediaType");
 
 		const { isIncluded, type } = includesMediaType(
 			availableMediaTypes,
@@ -345,8 +342,7 @@ function MediaTypeSelector({
 
 	function changeMediaType(index: number) {
 		const type = lessonContent[index].type;
-
-		window.localStorage.setItem("preferredMediaType", type);
+		saveToLocalStorage("user_preferredMediaType", type);
 
 		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
 			shallow: true

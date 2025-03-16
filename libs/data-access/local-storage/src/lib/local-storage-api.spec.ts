@@ -9,6 +9,10 @@ import SuperJSON from "superjson";
 import { object } from "zod";
 
 describe("localStorageApi", () => {
+	beforeEach(() => {
+		localStorage.clear();
+	});
+
 	it("should return a parsed date object which is stored in localStorage", () => {
 		const mockValue = new Date();
 		const mockKey = "test_key" as LocalStorageKeys;
