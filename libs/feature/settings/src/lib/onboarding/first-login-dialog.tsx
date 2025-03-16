@@ -3,7 +3,30 @@ import { FeatureSettingsForm } from "@self-learning/settings";
 import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+export const useFirstLoginDialog = (storageKey: string = "lastRenderTime") => {
+	const [shouldRender, setShouldRender] = useState<boolean>(false);
+
+	useEffect(() => {
+		const now = Date.now();
+		const twentyFourHours = 24 * 60 * 60 * 1000; // 86,400,000 ms in a day
+		const lastRenderTime = localStorage.getItem(storageKey);
+
+		if (!lastRenderTime) {
+			setShouldRender(true);
+			localStorage.setItem(storageKey, now.toString());
+		} else {
+			const lastTime: number = parseInt(lastRenderTime, 10);
+			if (now - lastTime >= twentyFourHours) {
+				setShouldRender(true);
+				localStorage.setItem(storageKey, now.toString());
+			}
+		}
+	}, [storageKey]);
+
+	return shouldRender;
+};
 
 /**
  * Dialog for the first login of a user. The user can set his settings here.

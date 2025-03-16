@@ -1,6 +1,7 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
-import { FirstLoginDialog } from "@self-learning/settings";
+import { FirstLoginDialog, useFirstLoginDialog } from "@self-learning/settings";
+import { showToast } from "@self-learning/ui/common";
 import { MessagePortal } from "@self-learning/ui/notifications";
 import { init } from "@socialgouv/matomo-next";
 import { useSession } from "next-auth/react";
@@ -29,38 +30,13 @@ export function ControlledFirstLoginDialog() {
 	const router = useRouter();
 	const [onboardingDialogClosed, setDialogClosed] = useState<boolean | null>(null);
 
+	const shouldRender = useFirstLoginDialog();
+
 	if (onboardingDialogClosed === null && data) {
 		setDialogClosed(data.registrationCompleted ?? false);
 	}
-	const [shouldRender, setShouldRender] = useState<boolean>(false);
 
-	useEffect(() => {
-		const storageKey = "lastRenderTime";
-
-		const now = Date.now();
-
-		const twentyFourHours = 24 * 60 * 60 * 1000; // 86,400,000 ms in a day
-
-		const lastRenderTime = localStorage.getItem(storageKey);
-
-		if (!lastRenderTime) {
-			setShouldRender(true);
-			localStorage.setItem(storageKey, now.toString());
-		} else {
-			const lastTime: number = parseInt(lastRenderTime, 10);
-
-			if (now - lastTime >= twentyFourHours) {
-				setShouldRender(true);
-				localStorage.setItem(storageKey, now.toString());
-			}
-		}
-	}, []);
-
-	if (isLoading) {
-		return null;
-	}
-
-	if (!shouldRender) {
+	if (isLoading || !shouldRender) {
 		return null;
 	}
 
