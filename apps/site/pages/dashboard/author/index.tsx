@@ -299,14 +299,14 @@ function AuthorDashboardPage({ author }: Props) {
 
 function CourseDeleteOption({ slug }: { slug: string }) {
 	const { mutateAsync: deleteCourse } = trpc.course.deleteCourse.useMutation();
-	const { data: usage, isLoading } = trpc.course.getCourseUsage.useQuery({ slug });
+	const { data: linkedEntities, isLoading } = trpc.course.findLinkedEntities.useQuery({ slug });
 	const [showConfirmation, setShowConfirmation] = useState(false);
-	const router = useRouter();
+	const { reload } = useRouter();
 
 	const handleDelete = async () => {
 		await deleteCourse({ slug });
 		// Refresh page
-		router.replace(router.asPath);
+		reload();
 	};
 
 	const handleConfirm = () => {
@@ -335,49 +335,49 @@ function CourseDeleteOption({ slug }: { slug: string }) {
 			</button>
 			{showConfirmation && (
 				<CourseDeletionDialog
-					handleCancel={handleCancel}
-					handleConfirm={handleConfirm}
-					usage={usage}
+					onCancel={handleCancel}
+					onSubmit={handleConfirm}
+					linkedEntities={linkedEntities}
 				/>
 			)}
 		</>
 	);
 }
 
-type CourseUsage = {
+type CourseLinkedEntities = {
 	subject: Subject | null;
 	specializations: (Specialization & { subject: Subject })[];
 };
 
 function CourseDeletionDialog({
-	handleCancel,
-	handleConfirm,
-	usage
+	onCancel,
+	onSubmit,
+	linkedEntities
 }: {
-	handleCancel: () => void;
-	handleConfirm: () => void;
-	usage?: CourseUsage | null;
+	onCancel: () => void;
+	onSubmit: () => void;
+	linkedEntities?: CourseLinkedEntities | null;
 }) {
-	if (usage && (usage.subject || usage.specializations.length > 0)) {
+	if (linkedEntities && (linkedEntities.subject || linkedEntities.specializations.length > 0)) {
 		return (
-			<Dialog title={"Löschen nicht möglich"} onClose={handleCancel}>
+			<Dialog title={"Löschen nicht möglich"} onClose={onCancel}>
 				Kurs kann nicht gelöscht werden.
-				{usage.subject && (
+				{linkedEntities.subject && (
 					<>
 						<br />
 						Er wird im folgenden Fachgebiet verwendet:{" "}
 						<Link
-							href={`/subjects/${usage.subject.slug}`}
+							href={`/subjects/${linkedEntities.subject.slug}`}
 							className="hover:text-secondary"
 						>
-							{usage.subject.title}
+							{linkedEntities.subject.title}
 						</Link>
 					</>
 				)}
 				<br />
 				Er wird in folgenden Fachgebieten genutzt:
 				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
-					{usage.specializations.map(specialization => (
+					{linkedEntities.specializations.map(specialization => (
 						<li key={specialization.slug}>
 							<Link
 								href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
@@ -388,16 +388,16 @@ function CourseDeletionDialog({
 						</li>
 					))}
 				</ul>
-				<DialogActions onClose={handleCancel} />
+				<DialogActions onClose={onCancel} />
 			</Dialog>
 		);
 	}
 
 	return (
-		<Dialog title={"Löschen"} onClose={handleCancel}>
+		<Dialog title={"Löschen"} onClose={onCancel}>
 			Möchten Sie diesen Kurs wirklich löschen?
-			<DialogActions onClose={handleCancel}>
-				<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
+			<DialogActions onClose={onCancel}>
+				<button className="btn-primary hover:bg-red-500" onClick={onSubmit}>
 					Löschen
 				</button>
 			</DialogActions>
@@ -421,7 +421,9 @@ function LessonTaskbar({ lessonId }: { lessonId: string }) {
 
 function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 	const { mutateAsync: deleteLesson } = trpc.lesson.deleteLesson.useMutation();
-	const { data: usage, isLoading } = trpc.lesson.getLessonUsage.useQuery({ lessonId });
+	const { data: linkedEntities, isLoading } = trpc.lesson.findLinkedLessonEntities.useQuery({
+		lessonId
+	});
 	const [showConfirmation, setShowConfirmation] = useState(false);
 
 	const handleDelete = async () => {
@@ -456,7 +458,7 @@ function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 				<LessonDeletionDialog
 					handleCancel={handleCancel}
 					handleConfirm={handleConfirm}
-					courseUsage={usage}
+					linkedEntities={linkedEntities}
 				/>
 			)}
 		</>
@@ -466,19 +468,19 @@ function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 function LessonDeletionDialog({
 	handleCancel,
 	handleConfirm,
-	courseUsage
+	linkedEntities
 }: {
 	handleCancel: () => void;
 	handleConfirm: () => void;
-	courseUsage?: { slug: string; title: string }[];
+	linkedEntities?: { slug: string; title: string }[];
 }) {
-	if (courseUsage && courseUsage.length > 0) {
+	if (linkedEntities && linkedEntities.length > 0) {
 		return (
 			<Dialog title={"Löschen nicht möglich"} onClose={handleCancel}>
 				Lerneinheit kann nicht gelöscht werden, da sie in den folgenden Kursen Anwendung
 				findet:
 				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
-					{courseUsage.map(course => (
+					{linkedEntities.map(course => (
 						<li key={course.slug}>
 							<Link href={`/courses/${course.slug}`} className="hover:text-secondary">
 								{course.title}

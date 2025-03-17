@@ -132,9 +132,10 @@ export const lessonRouter = t.router({
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;
 		}),
-	getLessonUsage: authorProcedure
+	findLinkedLessonEntities: authorProcedure
 		.input(z.object({ lessonId: z.string() }))
 		.query(async ({ input }) => {
+			// Preferable method how to filter by JSON data, but does currently not work -> please fix
 			// const courses = await database.course.findMany({
 			// 	where: {
 			// 		content: {
@@ -157,7 +158,7 @@ export const lessonRouter = t.router({
 	deleteLesson: authorProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ input }) => {
-			return await database.lesson.delete({
+			return database.lesson.delete({
 				where: { lessonId: input.id }
 			});
 		})

@@ -289,14 +289,14 @@ export const courseRouter = t.router({
 	deleteCourse: authorProcedure
 		.input(z.object({ slug: z.string() }))
 		.mutation(async ({ input }) => {
-			return await database.course.delete({
+			return database.course.delete({
 				where: { slug: input.slug }
 			});
 		}),
-	getCourseUsage: authorProcedure
+	findLinkedEntities: authorProcedure
 		.input(z.object({ slug: z.string() }))
 		.query(async ({ input }) => {
-			return await database.course.findUnique({
+			return database.course.findUnique({
 				where: {
 					slug: input.slug
 				},
