@@ -4,16 +4,15 @@ import { CourseMeta, Defined, ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
-import { GetServerSideProps } from "next";
 import Link from "next/link";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withTranslations } from "@self-learning/api";
 
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
 };
 
-export const getServerSideProps: GetServerSideProps<SpecializationPageProps> = async ({
-	params
-}) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params, locale }) => {
 	const specializationSlug = params?.specializationSlug;
 
 	if (typeof specializationSlug !== "string") {
@@ -24,11 +23,12 @@ export const getServerSideProps: GetServerSideProps<SpecializationPageProps> = a
 
 	return {
 		props: {
+			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			specialization: specialization as Defined<typeof specialization>
 		},
 		notFound: !specialization
 	};
-};
+});
 
 async function getSpecialization(specializationSlug: string) {
 	return await database.specialization.findUnique({

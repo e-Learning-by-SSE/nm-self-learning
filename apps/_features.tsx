@@ -1,6 +1,7 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
-import { FirstLoginDialog } from "@self-learning/settings";
+import { FirstLoginDialog, useFirstLoginDialog } from "@self-learning/settings";
+import { showToast } from "@self-learning/ui/common";
 import { MessagePortal } from "@self-learning/ui/notifications";
 import { init } from "@socialgouv/matomo-next";
 import { useSession } from "next-auth/react";
@@ -29,12 +30,14 @@ export function ControlledFirstLoginDialog() {
 	const router = useRouter();
 	const [onboardingDialogClosed, setDialogClosed] = useState<boolean | null>(null);
 
-	if (isLoading) {
-		return null;
-	}
+	const shouldRender = useFirstLoginDialog();
 
 	if (onboardingDialogClosed === null && data) {
 		setDialogClosed(data.registrationCompleted ?? false);
+	}
+
+	if (isLoading || !shouldRender) {
+		return null;
 	}
 
 	const registrationCompleted = data?.registrationCompleted ?? true;

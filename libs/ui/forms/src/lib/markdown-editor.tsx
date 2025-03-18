@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, PencilButton, OnDialogCloseFn } from "@self-learning/ui/common";
+import { Dialog, DialogActions, OnDialogCloseFn, PencilButton } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
@@ -22,45 +22,44 @@ export function MarkdownField({
 	const [openEditor, setOpenEditor] = useState(false);
 
 	return (
-		<div className={inline ? "flex flex-col gap-1" : ""}>
+		<div>
+			<div className="flex items-center gap-2">
+				<div
+					className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2"
+					style={{ minHeight: 32 }}
+					onClick={() => setOpenEditor(true)}
+				>
+					<div className={"max-w-full" + (inline && " text-sm")}>
+						{content !== "" ? (
+							<MarkdownViewer content={content ?? ""} />
+						) : (
+							<div className="text-gray-400">{placeholder}</div>
+						)}
+					</div>
+				</div>
+
+				{openEditor && (
+					<MarkdownEditorDialog
+						initialValue={content ?? ""}
+						title="Bearbeiten"
+						onClose={changes => {
+							setOpenEditor(false);
+							if (changes !== undefined) {
+								setValue(changes);
+							}
+						}}
+					/>
+				)}
+			</div>
+
 			{!inline && (
-				<div className="mb-2 flex items-end justify-end">
+				<div className="flex justify-end bottom-0 right-0 py-2">
 					<PencilButton
 						buttonTitle="Bearbeiten"
 						onClick={() => setOpenEditor(true)}
 						title="Beschreibung bearbeiten"
 					/>
 				</div>
-			)}
-
-			<div
-				className={
-					"cursor-pointer rounded-lg border border-light-border bg-white " +
-					(inline ? "p-2" : "flex p-4")
-				}
-				style={{ minHeight: 32 }}
-				onClick={() => setOpenEditor(true)}
-			>
-				<div className={"max-w-full" + (inline && " text-sm")}>
-					{content !== "" ? (
-						<MarkdownViewer content={content ?? ""} />
-					) : (
-						<div className="text-gray-400">{placeholder}</div>
-					)}
-				</div>
-			</div>
-
-			{openEditor && (
-				<MarkdownEditorDialog
-					initialValue={content ?? ""}
-					title="Bearbeiten"
-					onClose={changes => {
-						setOpenEditor(false);
-						if (changes !== undefined) {
-							setValue(changes);
-						}
-					}}
-				/>
 			)}
 		</div>
 	);

@@ -21,12 +21,12 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/common";
-import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { withAuth } from "@self-learning/api";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
+import { withAuth, withTranslations } from "@self-learning/api";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -37,8 +37,8 @@ export type LessonProps = LessonLayoutProps & {
 	};
 };
 
-export const getServerSideProps: GetServerSideProps<LessonProps> = withAuth<LessonProps>(
-	async (context, _user) => {
+export const getServerSideProps = withTranslations(["common"], async context => {
+	return withAuth(async _user => {
 		const props = await getStaticPropsForLayout(context.params);
 
 		if ("notFound" in props) return { notFound: true };
@@ -68,7 +68,7 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = withAuth<Less
 			article.value.content = "(replaced)";
 		}
 
-		// TODO change to check if the lesson is self requlated
+		// TODO change to check if the lesson is self regulated
 		if (lesson.lessonType === LessonType.SELF_REGULATED) {
 			mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
 		}
@@ -84,8 +84,8 @@ export const getServerSideProps: GetServerSideProps<LessonProps> = withAuth<Less
 				}
 			}
 		};
-	}
-);
+	})(context);
+});
 
 function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	// Handle situations that content creator may created an empty lesson (to add content later)
@@ -98,11 +98,7 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 		const availableMediaTypes = content.map(c => c.type);
 
 		const { type: typeFromRoute } = router.query;
-		let typeFromStorage: string | null = null;
-
-		if (typeof window !== "undefined") {
-			typeFromStorage = window.localStorage.getItem("preferredMediaType");
-		}
+		const typeFromStorage = loadFromLocalStorage("user_preferredMediaType");
 
 		const { isIncluded, type } = includesMediaType(
 			availableMediaTypes,
@@ -345,8 +341,7 @@ function MediaTypeSelector({
 
 	function changeMediaType(index: number) {
 		const type = lessonContent[index].type;
-
-		window.localStorage.setItem("preferredMediaType", type);
+		saveToLocalStorage("user_preferredMediaType", type);
 
 		router.push(`/courses/${course.slug}/${lesson.slug}?type=${type}`, undefined, {
 			shallow: true
