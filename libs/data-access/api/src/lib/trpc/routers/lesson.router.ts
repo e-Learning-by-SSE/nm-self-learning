@@ -135,24 +135,14 @@ export const lessonRouter = t.router({
 	findLinkedLessonEntities: authorProcedure
 		.input(z.object({ lessonId: z.string() }))
 		.query(async ({ input }) => {
-			// Preferable method how to filter by JSON data, but does currently not work -> please fix
-			// const courses = await database.course.findMany({
-			// 	where: {
-			// 		content: {
-			// 			path: ["content", "lessonId"],
-			// 			array_contains: [input.lessonId]
-			// 		}
-			// 	}
-			// });
 			const courses = await database.$queryRaw`
 							SELECT * FROM "Course"
 							WHERE EXISTS (
-								SELECT 1 FROM jsonb_array_elements("Course".content) AS chapter
-								CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
-								WHERE lesson->>'lessonId' = ${input.lessonId}
-							)
-						`;
-
+									SELECT 1 FROM jsonb_array_elements("Course".content) AS chapter
+									CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
+									WHERE lesson->>'lessonId' = ${input.lessonId}
+								)
+							`;
 			return courses as Course[];
 		}),
 	deleteLesson: authorProcedure
