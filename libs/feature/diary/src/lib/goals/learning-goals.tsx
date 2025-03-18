@@ -34,17 +34,13 @@ export function LearningGoals({
 	goals: LearningGoalType[];
 	onStatusUpdate: StatusUpdateCallback;
 }) {
-	const [stateGoals, setStateGoals] = useState(goals);
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [editTarget, setEditTarget] = useState<Goal | null>(null);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
-	if (goals !== stateGoals) {
-		setStateGoals(goals);
-	}
 
-	const inProgress = stateGoals.filter(g => g.status === "INACTIVE" || g.status === "ACTIVE");
-	const complete = stateGoals.filter(g => g.status === "COMPLETED");
+	const inProgress = goals.filter(g => g.status === "INACTIVE" || g.status === "ACTIVE");
+	const complete = goals.filter(g => g.status === "COMPLETED");
 
 	const handleEditTarget = (editedGoal: Goal) => {
 		setEditTarget(editedGoal);
