@@ -1,9 +1,9 @@
-import { Prisma } from "@prisma/client";
+import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { createLessonMeta, lessonSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
-import { authProcedure, t } from "../trpc";
+import { authorProcedure, authProcedure, t } from "../trpc";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -131,6 +131,26 @@ export const lessonRouter = t.router({
 
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;
+		}),
+	findLinkedLessonEntities: authorProcedure
+		.input(z.object({ lessonId: z.string() }))
+		.query(async ({ input }) => {
+			const courses = await database.$queryRaw`
+							SELECT * FROM "Course"
+							WHERE EXISTS (
+									SELECT 1 FROM jsonb_array_elements("Course".content) AS chapter
+									CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
+									WHERE lesson->>'lessonId' = ${input.lessonId}
+								)
+							`;
+			return courses as Course[];
+		}),
+	deleteLesson: authorProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ input }) => {
+			return database.lesson.delete({
+				where: { lessonId: input.id }
+			});
 		})
 });
 

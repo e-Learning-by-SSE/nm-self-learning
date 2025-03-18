@@ -1,6 +1,6 @@
-import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { t, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
@@ -14,7 +14,9 @@ import {
 	SectionHeader,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	Dialog,
+	DialogActions
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
@@ -22,6 +24,8 @@ import { VoidSvg } from "@self-learning/ui/static";
 import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { Specialization, Subject } from "@self-learning/types";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -222,13 +226,16 @@ function AuthorDashboardPage({ author }: Props) {
 												</Link>
 											</div>
 
-											<Link
-												href={`/teaching/courses/edit/${course.courseId}`}
-												className="btn-stroked h-fit w-fit"
-											>
-												<PencilIcon className="icon" />
-												<span>Bearbeiten</span>
-											</Link>
+											<div className="flex flex-wrap justify-end gap-4">
+												<Link
+													href={`/teaching/courses/edit/${course.courseId}`}
+													className="btn-stroked h-fit w-fit"
+												>
+													<PencilIcon className="icon" />
+													<span>Bearbeiten</span>
+												</Link>
+												<CourseDeleteOption slug={course.slug} />
+											</div>
 										</div>
 									</li>
 								))
@@ -290,6 +297,214 @@ function AuthorDashboardPage({ author }: Props) {
 	);
 }
 
+function CourseDeleteOption({ slug }: { slug: string }) {
+	const { mutateAsync: deleteCourse } = trpc.course.deleteCourse.useMutation();
+	const { data: linkedEntities, isLoading } = trpc.course.findLinkedEntities.useQuery({ slug });
+	const [showConfirmation, setShowConfirmation] = useState(false);
+	const { reload } = useRouter();
+
+	const handleDelete = async () => {
+		await deleteCourse({ slug });
+		// Refresh page
+		reload();
+	};
+
+	const handleConfirm = () => {
+		handleDelete();
+		setShowConfirmation(false);
+	};
+
+	const handleCancel = () => {
+		setShowConfirmation(false);
+	};
+
+	// Don't show delete button -> Empty option
+	if (isLoading) {
+		return <></>;
+	}
+
+	return (
+		<>
+			<button
+				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
+				onClick={() => setShowConfirmation(true)}
+			>
+				<div className="ml-4">
+					<TrashIcon className="icon " />
+				</div>
+			</button>
+			{showConfirmation && (
+				<CourseDeletionDialog
+					onCancel={handleCancel}
+					onSubmit={handleConfirm}
+					linkedEntities={linkedEntities}
+				/>
+			)}
+		</>
+	);
+}
+
+type CourseLinkedEntities = {
+	subject: Subject | null;
+	specializations: (Specialization & { subject: Subject })[];
+};
+
+function CourseDeletionDialog({
+	onCancel,
+	onSubmit,
+	linkedEntities
+}: {
+	onCancel: () => void;
+	onSubmit: () => void;
+	linkedEntities?: CourseLinkedEntities | null;
+}) {
+	if (linkedEntities && (linkedEntities.subject || linkedEntities.specializations.length > 0)) {
+		return (
+			<Dialog title={"Löschen nicht möglich"} onClose={onCancel}>
+				Kurs kann nicht gelöscht werden.
+				{linkedEntities.subject && (
+					<>
+						<br />
+						Er wird im folgenden Fachgebiet verwendet:{" "}
+						<Link
+							href={`/subjects/${linkedEntities.subject.slug}`}
+							className="hover:text-secondary"
+						>
+							{linkedEntities.subject.title}
+						</Link>
+					</>
+				)}
+				<br />
+				Er wird in folgenden Fachgebieten genutzt:
+				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
+					{linkedEntities.specializations.map(specialization => (
+						<li key={specialization.slug}>
+							<Link
+								href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
+								className="hover:text-secondary"
+							>
+								{specialization.subject.title} / {specialization.title}
+							</Link>
+						</li>
+					))}
+				</ul>
+				<DialogActions onClose={onCancel} />
+			</Dialog>
+		);
+	}
+
+	return (
+		<Dialog title={"Löschen"} onClose={onCancel}>
+			Möchten Sie diesen Kurs wirklich löschen?
+			<DialogActions onClose={onCancel}>
+				<button className="btn-primary hover:bg-red-500" onClick={onSubmit}>
+					Löschen
+				</button>
+			</DialogActions>
+		</Dialog>
+	);
+}
+
+function LessonTaskbar({ lessonId }: { lessonId: string }) {
+	return (
+		<div className="flex flex-wrap justify-end gap-4">
+			<Link href={`/teaching/lessons/edit/${lessonId}`}>
+				<button type="button" className="btn-stroked w-fit self-end">
+					<PencilIcon className="icon" />
+					<span>Bearbeiten</span>
+				</button>
+			</Link>
+			<LessonDeleteOption lessonId={lessonId} />
+		</div>
+	);
+}
+
+function LessonDeleteOption({ lessonId }: { lessonId: string }) {
+	const { mutateAsync: deleteLesson } = trpc.lesson.deleteLesson.useMutation();
+	const { data: linkedEntities, isLoading } = trpc.lesson.findLinkedLessonEntities.useQuery({
+		lessonId
+	});
+	const [showConfirmation, setShowConfirmation] = useState(false);
+
+	const handleDelete = async () => {
+		await deleteLesson({ id: lessonId });
+	};
+
+	const handleConfirm = () => {
+		handleDelete();
+		setShowConfirmation(false);
+	};
+
+	const handleCancel = () => {
+		setShowConfirmation(false);
+	};
+
+	// Don't show delete button -> Empty option
+	if (isLoading) {
+		return <></>;
+	}
+
+	return (
+		<>
+			<button
+				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
+				onClick={() => setShowConfirmation(true)}
+			>
+				<div className="ml-4">
+					<TrashIcon className="icon " />
+				</div>
+			</button>
+			{showConfirmation && (
+				<LessonDeletionDialog
+					handleCancel={handleCancel}
+					handleConfirm={handleConfirm}
+					linkedEntities={linkedEntities}
+				/>
+			)}
+		</>
+	);
+}
+
+function LessonDeletionDialog({
+	handleCancel,
+	handleConfirm,
+	linkedEntities
+}: {
+	handleCancel: () => void;
+	handleConfirm: () => void;
+	linkedEntities?: { slug: string; title: string }[];
+}) {
+	if (linkedEntities && linkedEntities.length > 0) {
+		return (
+			<Dialog title={"Löschen nicht möglich"} onClose={handleCancel}>
+				Lerneinheit kann nicht gelöscht werden, da sie in den folgenden Kursen Anwendung
+				findet:
+				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
+					{linkedEntities.map(course => (
+						<li key={course.slug}>
+							<Link href={`/courses/${course.slug}`} className="hover:text-secondary">
+								{course.title}
+							</Link>
+						</li>
+					))}
+				</ul>
+				<DialogActions onClose={handleCancel} />
+			</Dialog>
+		);
+	}
+
+	return (
+		<Dialog title={"Löschen"} onClose={handleCancel}>
+			Möchten Sie diese Lerneinheit wirklich löschen?
+			<DialogActions onClose={handleCancel}>
+				<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
+					Löschen
+				</button>
+			</DialogActions>
+		</Dialog>
+	);
+}
+
 function Lessons({ authorName }: { authorName: string }) {
 	const router = useRouter();
 	const { title = "", page = 1 } = router.query;
@@ -334,6 +549,7 @@ function Lessons({ authorName }: { authorName: string }) {
 							<>
 								<TableHeaderColumn>Titel</TableHeaderColumn>
 								<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
+								<TableHeaderColumn></TableHeaderColumn>
 							</>
 						}
 					>
@@ -351,6 +567,9 @@ function Lessons({ authorName }: { authorName: string }) {
 									<span className="text-light">
 										{formatDateAgo(lesson.updatedAt)}
 									</span>
+								</TableDataColumn>
+								<TableDataColumn>
+									<LessonTaskbar lessonId={lesson.lessonId} />
 								</TableDataColumn>
 							</tr>
 						))}
