@@ -141,7 +141,7 @@ export function LessonEditor({
 
 	useInterval({
 		callback: saveLessonDraft,
-		interval: 10000 // 10 seconds
+		interval: 3000 // 10 seconds
 	});
 
 	useEffect(() => {
