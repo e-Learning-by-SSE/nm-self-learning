@@ -34,7 +34,7 @@ export const lessonDraftRouter = t.router({
 			});
 			return drafts.map(draft => ({
 				id: draft.id,
-				lessonId: draft.lessonId,
+				lessonId: draft.lessonId ?? null,
 				slug: draft.slug ?? "",
 				title: draft.title ?? "",
 				subtitle: draft.subtitle,
@@ -100,7 +100,7 @@ export const lessonDraftRouter = t.router({
 					selfRegulatedQuestion: draft.selfRegulatedQuestion
 				};
 			}
-			return undefined; // TODO
+			return undefined;
 		}),
 	getOverviewByOwner: authProcedure
 		.input(z.object({ username: z.string() }))
@@ -144,7 +144,7 @@ export const lessonDraftRouter = t.router({
 
 		const draftData = {
 			...input,
-			content: input.content ?? "",
+			content: input.content ?? undefined,
 			quiz: input.quiz ?? undefined,
 			license: input.license ?? undefined,
 			teachingGoals: input.teachingGoals ?? undefined,
@@ -152,28 +152,29 @@ export const lessonDraftRouter = t.router({
 			authors: input.authors ?? [],
 			owner: input.owner ?? undefined
 		};
-
-		const existingDraftForLesson = lessonId
-			? await database.lessonDraft.findFirst({
-					where: {
-						lessonId: lessonId,
-						owner: {
-							path: ["username"],
-							equals: user.username
+		if (lessonId) {
+			const existingDraftForLesson = lessonId
+				? await database.lessonDraft.findFirst({
+						where: {
+							lessonId: lessonId,
+							owner: {
+								path: ["username"],
+								equals: user.username
+							}
 						}
-					}
-				})
-			: null;
+					})
+				: null;
 
-		if (existingDraftForLesson) {
-			const updatedDraft = await database.lessonDraft.update({
-				where: { id: existingDraftForLesson.id },
-				data: {
-					...draftData,
-					updatedAt: new Date()
-				}
-			});
-			return updatedDraft;
+			if (existingDraftForLesson) {
+				const updatedDraft = await database.lessonDraft.update({
+					where: { id: existingDraftForLesson.id },
+					data: {
+						...draftData,
+						updatedAt: new Date()
+					}
+				});
+				return updatedDraft;
+			}
 		}
 
 		const existingDraft = draftId
@@ -201,7 +202,7 @@ export const lessonDraftRouter = t.router({
 			const newDraft = await database.lessonDraft.create({
 				data: {
 					...draftData,
-					lessonId: lessonId ?? null,
+					lessonId: lessonId ?? undefined,
 					owner: user,
 					createdAt: new Date(),
 					updatedAt: new Date()

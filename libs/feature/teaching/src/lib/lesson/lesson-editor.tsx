@@ -102,6 +102,7 @@ export function LessonEditor({
 	const { mutateAsync: upsert } = trpc.lessonDraft.upsert.useMutation();
 
 	const lastSavedDraftRef = useRef<LessonDraft | null>(null);
+	const lastSavedDraftIdRef = useRef<string | null>(null);
 	const toastShownRef = useRef(false);
 
 	const saveLessonDraft = useCallback(async () => {
@@ -120,16 +121,23 @@ export function LessonEditor({
 		}
 
 		try {
-			if (lastSavedDraftRef.current?.id) {
-				draft.id = lastSavedDraftRef.current.id;
+			const objectToUpsert: LessonDraft = draft;
+			if (lastSavedDraftIdRef.current) {
+				objectToUpsert.id = lastSavedDraftIdRef.current;
 			}
-			const updatedDraft = await upsert(draft);
-			draft.id = updatedDraft.id;
+			if (draftId) {
+				objectToUpsert.id = draftId;
+			}
+
+			const updatedDraft = await upsert(objectToUpsert);
+
+			lastSavedDraftIdRef.current = updatedDraft.id;
+			delete draft.id;
 			lastSavedDraftRef.current = draft;
 		} catch (err) {
 			console.log("Error during autosave", err);
 		}
-	}, [form, session.data, upsert]);
+	}, [form, session.data, upsert, draftId]);
 
 	useInterval({
 		callback: saveLessonDraft,

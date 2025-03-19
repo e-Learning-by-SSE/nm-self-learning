@@ -113,38 +113,12 @@ export default function Start(props: Props) {
 }
 
 function DraftsDialog({ onClose, drafts }: { onClose: () => void; drafts: LessonDraft[] }) {
-	const { mutateAsync: createLesson } = trpc.lesson.create.useMutation();
 	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
+	const router = useRouter();
 
 	const handleClick = () => {
-		const draft = drafts[0];
-		let slug = draft.slug ?? "default-slug";
-		slug = `${slug}-${Date.now()}`;
-		createLesson({
-			lessonId: null,
-			slug,
-			title: draft.title ?? "title",
-			subtitle: draft.subtitle ?? "",
-			description: draft.description ?? "",
-			imgUrl: draft.imgUrl ?? "",
-			content: draft.content ?? [],
-			authors: draft.authors ?? [],
-			licenseId: draft.licenseId ?? null,
-			requirements: draft.requirements ?? [],
-			teachingGoals: draft.teachingGoals ?? [],
-			lessonType: "TRADITIONAL",
-			selfRegulatedQuestion: draft.selfRegulatedQuestion ?? null,
-			quiz: draft.quiz
-				? {
-						questions: draft.quiz.questions ?? [],
-						config: draft.quiz.config ?? null
-					}
-				: null
-		});
-		if (draft.id) {
-			deleteDraft({ draftId: draft.id });
-		}
-		onClose();
+		const draftId = drafts[0].id;
+		router.push(`/teaching/lessons/edit/draft/${draftId}`);
 	};
 
 	const handleCancel = () => {
@@ -473,12 +447,6 @@ function Lessons({ authorName }: { authorName: string }) {
 							);
 						}}
 					/>
-					<Link
-						href={`/teaching/lessons/edit/draft/${"cm7ywaglc0000qkb8b3xvpvjs"}`}
-						className="font-medium hover:text-secondary"
-					>
-						<span className="flex gap-3">TUTAJ</span>
-					</Link>
 					<Table
 						head={
 							<>
@@ -493,7 +461,7 @@ function Lessons({ authorName }: { authorName: string }) {
 									<Link
 										href={
 											lesson.draftId
-												? `/teaching/lessons/edit/${lesson.lessonId}?draft=${lesson.draftId}&isOverwritten=${lesson.draftOverwritten}`
+												? `/teaching/lessons/edit/draft/${lesson.draftId}`
 												: `/teaching/lessons/edit/${lesson.lessonId}`
 										}
 										className="font-medium hover:text-secondary"
