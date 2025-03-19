@@ -211,7 +211,7 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
-	const firstLessonFromChapter = content[0].content[0];
+	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 	return (
 		<section className="flex flex-col gap-16">
@@ -270,9 +270,13 @@ function CourseHeader({
 
 					{isEnrolled && (
 						<Link
-							href={`/courses/${course.slug}/${
-								nextLessonSlug ?? firstLessonFromChapter.slug
-							}`}
+							href={
+								firstLessonFromChapter
+									? `/courses/${course.slug}/${
+											nextLessonSlug ?? firstLessonFromChapter.slug
+										}`
+									: `/courses/${course.slug}`
+							}
 							className="btn-primary"
 						>
 							<span>
@@ -312,6 +316,21 @@ function CourseHeader({
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
 	const completion = useCourseCompletion(course.slug);
+	const hasContent = content.length > 0;
+
+	if (!hasContent) {
+		return (
+			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+				<h3 className="heading flex gap-4 text-2xl">
+					<span>1.</span>
+					<span className="text-secondary">Kein Inhalt verfügbar</span>
+				</h3>
+				<span className="mt-4 text-light">
+					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
+				</span>
+			</div>
+		);
+	}
 
 	return (
 		<section className="flex flex-col gap-8">
@@ -347,7 +366,7 @@ function Lesson({
 	href,
 	isCompleted
 }: {
-	lesson: ToC.Content[0]["content"][0];
+	lesson?: ToC.Content[0]["content"][0];
 	href: string;
 	isCompleted: boolean;
 }) {
@@ -360,20 +379,28 @@ function Lesson({
 			</div>
 		);
 	}
+	if (lesson) {
+		return (
+			<Link
+				href={href}
+				className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
+					isCompleted ? "border-emerald-500" : "border-gray-300"
+				}`}
+			>
+				<LessonEntry lesson={lesson} />
+			</Link>
+		);
+	}
 
 	return (
-		<Link
-			href={href}
-			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
-				isCompleted ? "border-emerald-500" : "border-gray-300"
-			}`}
-		>
-			<LessonEntry lesson={lesson} />
-		</Link>
+		<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
+			<LessonEntry />
+		</div>
 	);
 }
 
-function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
+function LessonEntry({ lesson }: { lesson?: ToC.Content[0]["content"][0] }) {
+	if (!lesson) return;
 	return (
 		<span className="flex">
 			<span className="w-8 shrink-0 self-center font-medium text-secondary">
