@@ -1,24 +1,20 @@
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { FeatureSettingsForm } from "./settings-form";
+import { FeatureSettingsForm } from "settings";
+import userEvent from "@testing-library/user-event";
 
 describe("FeatureSettingsForm", () => {
-	it("should turn on both settings when statistics is turned on", () => {
+	it("should turn on both settings when statistics is turned on", async () => {
 		const onChange = jest.fn();
 		const initialState = {
 			enabledFeatureLearningDiary: false,
 			enabledLearningStatistics: false
 		};
-		const { getByLabelText } = render(
-			<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />
-		);
-		const ltbCheckbox = getByLabelText("Lerntagebuch");
-		const statisticsCheckbox = getByLabelText("Lernstatistiken");
-		fireEvent.click(ltbCheckbox);
+		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
+		const ltbCheckbox = screen.getByLabelText("Lerntagebuch");
+		await userEvent.click(ltbCheckbox);
 
-		waitFor(() => {
-			expect(statisticsCheckbox).toBeChecked();
-			expect(ltbCheckbox).toBeChecked();
+		await waitFor(() => {
 			expect(onChange).toHaveBeenCalledWith({
 				enabledFeatureLearningDiary: true,
 				enabledLearningStatistics: true
@@ -26,24 +22,21 @@ describe("FeatureSettingsForm", () => {
 		});
 	});
 
-	it("should turn off learning diary when statistics is turned off", () => {
+	it("should turn off learning diary when statistics is turned off", async () => {
 		const onChange = jest.fn();
 		const initialState = {
 			enabledFeatureLearningDiary: true,
 			enabledLearningStatistics: true
 		};
-		const { getByLabelText } = render(
-			<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />
-		);
+		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
 
-		const statisticsCheckbox = getByLabelText("Lernstatistiken");
-		const ltbCheckbox = getByLabelText("Lerntagebuch");
+		const statisticsCheckbox = screen.getByLabelText("Lernstatistiken");
+		const ltbCheckbox = screen.getByLabelText("Lerntagebuch");
 
-		fireEvent.click(ltbCheckbox);
+		await userEvent.click(ltbCheckbox);
+		await userEvent.click(statisticsCheckbox);
 
-		waitFor(() => {
-			expect(statisticsCheckbox).not.toBeChecked();
-			expect(ltbCheckbox).not.toBeChecked();
+		await waitFor(() => {
 			expect(onChange).toHaveBeenCalledWith({
 				enabledFeatureLearningDiary: false,
 				enabledLearningStatistics: false

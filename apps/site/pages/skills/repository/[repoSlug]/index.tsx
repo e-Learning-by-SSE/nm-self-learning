@@ -1,6 +1,5 @@
-import { GetServerSideProps } from "next";
 import { database } from "@self-learning/database";
-import { getAuthenticatedUser } from "@self-learning/api";
+import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { getSkills } from "libs/data-access/api/src/lib/trpc/routers/skill.router"; // TODO change
 import { LoadingBox } from "@self-learning/ui/common";
@@ -32,7 +31,7 @@ async function createNewRepository(userName: string) {
 	};
 }
 
-export const getServerSideProps: GetServerSideProps<CreateAndViewRepositoryProps> = async ctx => {
+export const getServerSideProps = withTranslations(["common"], async ctx => {
 	const repoId = ctx.query.repoSlug as string;
 	const user = await getAuthenticatedUser(ctx);
 
@@ -56,8 +55,14 @@ export const getServerSideProps: GetServerSideProps<CreateAndViewRepositoryProps
 
 	const transformedSkill = await getSkills(repoId);
 
-	return { props: { repository: repo, initialSkills: transformedSkill }, notFound: false };
-};
+	return {
+		props: {
+			repository: repo,
+			initialSkills: transformedSkill
+		},
+		notFound: false
+	};
+});
 
 export default function CreateAndViewRepository({
 	repository,

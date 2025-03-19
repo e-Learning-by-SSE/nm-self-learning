@@ -3,6 +3,7 @@ import {
 	FieldHint,
 	Form,
 	InputWithButton,
+	LabeledCheckbox,
 	LabeledField,
 	MarkdownField,
 	OpenAsJsonButton,
@@ -12,7 +13,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { lessonSchema } from "@self-learning/types";
-import { LabeledCheckbox } from "@self-learning/ui/forms";
 import { GreyBoarderButton } from "@self-learning/ui/common";
 import { LessonSkillManager } from "./lesson-skill-manager";
 

@@ -30,7 +30,7 @@ export function SearchCourseDialog({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onClose={onClose}>
+			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={title}
 					setFilter={setTitle}
@@ -47,6 +47,7 @@ export function SearchCourseDialog({
 							{({ focus }) => (
 								<button
 									type="button"
+									onClick={() => onClose(course)}
 									data-testid="course-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
 										focus ? "bg-secondary text-white" : ""

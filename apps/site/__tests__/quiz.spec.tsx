@@ -2,9 +2,10 @@
 import { useLessonContext } from "@self-learning/lesson";
 import { useEventLog } from "@self-learning/util/common";
 import { QuizHeader } from "../pages/courses/[courseSlug]/[lessonSlug]/quiz";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { useQuiz } from "@self-learning/quiz";
 import "@testing-library/jest-dom";
+import userEvent from "@testing-library/user-event";
 
 jest.mock("@self-learning/util/common");
 jest.mock("@self-learning/lesson");
@@ -80,7 +81,7 @@ describe("QuizHeader", () => {
 		);
 
 		const tab = screen.getByText("Aufgabe 2");
-		fireEvent.click(tab);
+		await userEvent.click(tab);
 
 		await waitFor(() => {
 			expect(mockNewEvent).toHaveBeenCalledWith({

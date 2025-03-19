@@ -33,7 +33,7 @@ export function AddAuthorDialog({
 
 	return (
 		<DropdownDialog.Dialog open={open} onClose={onClose}>
-			<Combobox value={null} onClose={onClose}>
+			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={filter}
 					setFilter={setFilter}
@@ -46,6 +46,7 @@ export function AddAuthorDialog({
 							{({ focus }) => (
 								<button
 									type="button"
+									onClick={() => onClose(author)}
 									data-testid="author-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
 										focus ? "bg-secondary text-white" : ""
