@@ -77,8 +77,8 @@ export type LessonWithDraftInfo = {
 export const lessonDraftSchema = z.object({
 	id: z.string().optional(), // automatically created by prisma (cuid)
 	lessonId: z.string().nullable().optional(),
-	slug: z.string().min(3).optional(),
-	title: z.string().min(3).nullable().optional(),
+	slug: z.string().optional(),
+	title: z.string().nullable().optional(),
 	subtitle: z.string().nullable().optional(),
 	description: z.string().nullable().optional(),
 	imgUrl: z.string().nullable().optional(),
