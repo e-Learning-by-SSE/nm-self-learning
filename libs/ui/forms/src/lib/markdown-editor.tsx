@@ -1,11 +1,17 @@
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, ItalicIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import { Dialog, DialogActions, OnDialogCloseFn, PencilButton } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
 import { editor } from "monaco-editor";
-import { ListBulletIcon, NumberedListIcon } from "@heroicons/react/24/outline";
+import {
+	ListBulletIcon,
+	NumberedListIcon,
+	PhotoIcon,
+	BoldIcon,
+	LinkIcon
+} from "@heroicons/react/24/outline";
 import { useCallback, useRef, useState } from "react";
 
 export function MarkdownField({
@@ -87,7 +93,7 @@ export function MarkdownEditorDialog({
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			title={title}
 		>
-			<div className="grid h-full grid-cols-2 items-start gap-8 overflow-hidden pt-4">
+			<div className="grid h-full grid-cols-2 items-start gap-8 overflow-hidden">
 				<div className="flex h-full w-full flex-col gap-2">
 					<label className="text-sm font-semibold">Markdown</label>
 					{editorInstance && <EditorQuickActions editor={editorInstance} />}
@@ -103,14 +109,6 @@ export function MarkdownEditorDialog({
 				<div className="flex h-full w-full flex-col gap-2 overflow-auto">
 					<span className="relative flex justify-between">
 						<label className="text-sm font-semibold">Preview</label>
-						<div className="absolute right-0 -top-4 flex gap-4">
-							<AssetPickerButton
-								copyToClipboard={true}
-								onClose={() => {
-									/** NOOP */
-								}}
-							/>
-						</div>
 					</span>
 					<div className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
@@ -134,7 +132,15 @@ export function MarkdownEditorDialog({
 	);
 }
 
-type FORMAT_TYPES = "BOLD" | "ITALIC" | "ORDERED_LIST" | "UNORDERED_LIST" | "HEADER" | "LANGUAGE";
+type FORMAT_TYPES =
+	| "BOLD"
+	| "ITALIC"
+	| "ORDERED_LIST"
+	| "UNORDERED_LIST"
+	| "HEADER"
+	| "LANGUAGE"
+	| "LINK"
+	| "IMAGE";
 
 function createFormattedList(type: "ordered" | "unordered", text: string) {
 	return text
@@ -213,6 +219,22 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 						formattedText = `${MD_LANG_BLOCK}${selectedLanguage.current}\n${selectedText}\n${MD_LANG_BLOCK}`;
 					}
 					break;
+				case "LINK":
+					if (!selectedText) {
+						formattedText = `[your-description](your-link)`;
+						setCursorPos(2); // TODO does not change anything
+					} else {
+						formattedText = `[your-description](${selectedText})`;
+					}
+					break;
+				case "IMAGE":
+					if (!selectedText) {
+						formattedText = `![your-description](link-to-your-img)`;
+						setCursorPos(2); // TODO does not change anything
+					} else {
+						formattedText = `![your-description](${selectedText})`;
+					}
+					break;
 				default:
 					break;
 			}
@@ -222,33 +244,48 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 		},
 		[editor]
 	);
+
+	const handleCloseUploadDialog = async () => {};
+
 	return (
-		<div className="mb-2 flex flex-col rounded-xl bg-gray-200 p-2">
+		<div className="mb-2 rounded-xl bg-gray-200 p-2">
 			<div className="flex flex-wrap gap-1">
 				{[
-					{ title: "Bold", format: "BOLD", content: <strong>B</strong> },
-					{ title: "Italic", format: "ITALIC", content: <em>I</em> },
+					{ title: "Bold", format: "BOLD", content: <BoldIcon className="h-5" /> },
+					{ title: "Italic", format: "ITALIC", content: <ItalicIcon className="h-5" /> },
 					{
 						title: "Unordered List",
 						format: "UNORDERED_LIST",
-						content: <ListBulletIcon className="icon h-5 w-5" />
+						content: <ListBulletIcon className="h-5" />
 					},
 					{
 						title: "Ordered List",
 						format: "ORDERED_LIST",
-						content: <NumberedListIcon className="icon h-5 w-5" />
+						content: <NumberedListIcon className="h-5" />
+					},
+					{
+						title: "Link",
+						format: "LINK",
+						content: <LinkIcon className="h-5" />
+					},
+					{
+						title: "Image",
+						format: "IMAGE",
+						content: <PhotoIcon className="h-5" />
 					}
 				].map(({ title, format, content }) => (
 					<button
 						key={format}
 						title={title}
 						type="button"
-						className="btn-stroked"
+						className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
 						onClick={() => applyMarkdownFormat(format as FORMAT_TYPES)}
 					>
 						{content}
 					</button>
 				))}
+
+				<AssetPickerButton copyToClipboard={true} onClose={handleCloseUploadDialog} />
 
 				<EditorQuickActionsHeaderDropdown
 					onChange={value => {

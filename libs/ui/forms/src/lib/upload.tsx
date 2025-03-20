@@ -1,5 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { CloudArrowDownIcon } from "@heroicons/react/24/outline";
+import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -235,7 +235,7 @@ export function AssetPickerButton({
 			title="Aus hochgeladenen Dateien auswählen"
 			onClick={() => setShowAssetPicker(true)}
 		>
-			<CloudArrowDownIcon className="h-5" />
+			<CloudArrowUpIcon className="h-5" />
 
 			{showAssetPicker && (
 				<AssetPickerDialog
