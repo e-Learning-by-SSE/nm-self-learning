@@ -322,7 +322,6 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 		return (
 			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
 				<h3 className="heading flex gap-4 text-2xl">
-					<span>1.</span>
 					<span className="text-secondary">Kein Inhalt verfügbar</span>
 				</h3>
 				<span className="mt-4 text-light">
@@ -366,7 +365,7 @@ function Lesson({
 	href,
 	isCompleted
 }: {
-	lesson?: ToC.Content[0]["content"][0];
+	lesson: ToC.Content[0]["content"][0];
 	href: string;
 	isCompleted: boolean;
 }) {
@@ -391,16 +390,9 @@ function Lesson({
 			</Link>
 		);
 	}
-
-	return (
-		<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
-			<LessonEntry />
-		</div>
-	);
 }
 
-function LessonEntry({ lesson }: { lesson?: ToC.Content[0]["content"][0] }) {
-	if (!lesson) return;
+function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
 	return (
 		<span className="flex">
 			<span className="w-8 shrink-0 self-center font-medium text-secondary">
