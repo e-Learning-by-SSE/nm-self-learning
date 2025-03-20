@@ -378,18 +378,16 @@ function Lesson({
 			</div>
 		);
 	}
-	if (lesson) {
-		return (
-			<Link
-				href={href}
-				className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
-					isCompleted ? "border-emerald-500" : "border-gray-300"
-				}`}
-			>
-				<LessonEntry lesson={lesson} />
-			</Link>
-		);
-	}
+	return (
+		<Link
+			href={href}
+			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
+				isCompleted ? "border-emerald-500" : "border-gray-300"
+			}`}
+		>
+			<LessonEntry lesson={lesson} />
+		</Link>
+	);
 }
 
 function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
