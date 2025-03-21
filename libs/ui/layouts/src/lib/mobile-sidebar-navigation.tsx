@@ -9,7 +9,7 @@ export function MobileSidebarNavigation({
 }: {
 	next: () => void;
 	prev: () => void;
-	content: React.ReactNode;
+	content: (onSelect: () => void) => React.ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
   
@@ -52,7 +52,7 @@ export function MobileSidebarNavigation({
 							exit={{ y: 50, opacity: 0 }}
 							onClick={e => e.stopPropagation()}
 						>
-							{content}
+							{content(() =>{setIsOpen(false)})}
 						</motion.div>
 					</motion.div>
 				)}

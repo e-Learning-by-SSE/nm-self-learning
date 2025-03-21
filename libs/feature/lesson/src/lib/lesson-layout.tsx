@@ -2,12 +2,19 @@ import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { CourseContent, LessonMeta, ResolvedValue } from "@self-learning/types";
-import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/lesson";
+import {
+	Playlist,
+	PlaylistContent,
+	PlaylistLesson,
+	MobilePlayList
+} from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { LessonContent, getLesson } from "./lesson-data-access";
+import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
+import { useLessonNavigation } from "@self-learning/ui/lesson";
 
 export type LessonLayoutProps = {
 	lesson: LessonContent;
@@ -78,8 +85,23 @@ function mapToPlaylistContent(
 
 export function LessonLayout(
 	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
-	pageProps: LessonLayoutProps
+	pageProps: LessonLayoutProps & { isMobile: boolean }
 ) {
+	const { isMobile } = pageProps;
+
+	if (isMobile) {
+		return (
+			<>
+				<MobilePlaylistArea {...pageProps} />
+				<div className="p-5 pt-8 bg-gray-100 pb-16">
+					<div className="w-full">
+						<Component {...pageProps} />
+					</div>
+				</div>
+			</>
+		);
+	}
+
 	return (
 		<>
 			<Head>
@@ -107,7 +129,7 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 	);
 
 	return (
-		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 rounded-lg xl:rounded-none pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
 			{content ? (
 				<Playlist
 					content={playlistContent}
@@ -121,5 +143,42 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 				</div>
 			)}
 		</aside>
+	);
+}
+
+function MobilePlaylistArea(pageProps: LessonLayoutProps) {
+	const { data: content } = trpc.course.getContent.useQuery({ slug: pageProps.course.slug });
+	const playlistContent = useMemo(
+		() => (!content ? [] : mapToPlaylistContent(content.content, content.lessonMap)),
+		[content]
+	);
+	const { navigateToNextLesson, navigateToPreviousLesson } = useLessonNavigation({
+		content: playlistContent,
+		lesson: { ...pageProps.lesson, meta: pageProps.lesson.meta as LessonMeta },
+		course: pageProps.course
+	});
+
+	return (
+		<>
+			<Head>
+				<title>{pageProps.lesson.title}</title>
+			</Head>
+			<MobileSidebarNavigation
+				next={() => {
+					navigateToNextLesson();
+				}}
+				prev={() => {
+					navigateToPreviousLesson();
+				}}
+				content={onSelect => (
+					<MobilePlayList
+						{...pageProps}
+						lesson={{ ...pageProps.lesson, meta: pageProps.lesson.meta as LessonMeta }}
+						content={playlistContent}
+						onSelect={onSelect}
+					/>
+				)}
+			/>
+		</>
 	);
 }
