@@ -10,7 +10,6 @@ import { LearningGoals } from "./learning-goals";
 
 /**
  * Component to display an editor dialog for a learning goal or sub-goal.
- * Author Fabian Kneer
  *
  * @param goal Learning goal data
  * @param subGoal Sub-goal data
@@ -33,7 +32,11 @@ export function GoalEditorDialog({
 	const { mutateAsync: createGoal } = trpc.learningGoal.createGoal.useMutation();
 	const { mutateAsync: createGoalFromSubGoal } =
 		trpc.learningGoal.createGoalFromSubGoal.useMutation();
-	const [description, setDescription] = useState(goal?.description ?? subGoal?.description ?? "");
+	const [description, setDescriptionState] = useState(
+		goal?.description.trim() ?? subGoal?.description.trim() ?? ""
+	);
+	const setDescription = (desc: string) => setDescriptionState(desc.trim());
+
 	const [learningGoalId, setLearningGoalId] = useState(subGoal?.learningGoalId ?? "");
 
 	// Different label for creating or editing of a goal or sub-goal
@@ -44,7 +47,7 @@ export function GoalEditorDialog({
 	 * The combobox is only displayed for new learning goals or sub-goals.
 	 */
 	function save() {
-		if (description.length > 0) {
+		if (description.length > 4) {
 			const goalId = goal?.id ?? "";
 			const subGoalId = subGoal?.id ?? "";
 
@@ -126,7 +129,12 @@ export function GoalEditorDialog({
 					<button
 						type="button"
 						className="btn-primary"
-						disabled={description.length === 0}
+						title={
+							description.length < 5
+								? "Description must be at least 5 characters long"
+								: "Speichern"
+						}
+						disabled={description.length < 5}
 						onClick={() => save()}
 					>
 						Speichern
