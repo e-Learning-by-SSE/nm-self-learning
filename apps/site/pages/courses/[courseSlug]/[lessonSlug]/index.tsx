@@ -27,6 +27,7 @@ import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { withAuth, withTranslations } from "@self-learning/api";
+import { parse } from "next-useragent";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -73,9 +74,14 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 			mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
 		}
 
+		const ua = parse(context.req.headers["user-agent"] || "");
+        const isMobile = ua.isMobile;
+
+
 		return {
 			props: {
 				...props,
+				isMobile,
 				markdown: {
 					article: mdArticle,
 					description: mdDescription,

@@ -69,6 +69,7 @@
 		"next-mdx-remote": "^5.0.0",
 		"next-plausible": "^3.12.0",
 		"next-superjson-plugin": "^0.6.3",
+		"next-useragent": "^2.8.0",
 		"npm-check-updates": "^17.0.0",
 		"react": "18.3.1",
 		"react-chartjs-2": "^5.2.0",
