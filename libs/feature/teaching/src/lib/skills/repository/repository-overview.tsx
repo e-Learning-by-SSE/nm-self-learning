@@ -96,9 +96,9 @@ export function SkillRepositoryOverview() {
 
 function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
 	return (
-		<div className="flex flex-wrap justify-end gap-4">
+		<div className="flex flex-row justify-end gap-4">
 			<Link href={`/skills/repository/${repositoryId}`}>
-				<button type="button" className="btn-stroked w-fit self-end">
+				<button type="button" className="btn-stroked w-fit self-end px-2 py-2">
 					<PencilIcon className="icon" />
 					<span>Bearbeiten</span>
 				</button>
