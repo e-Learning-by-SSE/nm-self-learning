@@ -62,7 +62,7 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 							/>
 						}
 						button={
-							<GreyBoarderButton onClick={slugifyField} title={"Generiere Slug"}>
+							<GreyBoarderButton type="button" onClick={slugifyField} title={"Generiere Slug"}>
 								<span className={"text-gray-600"}>Generieren</span>
 							</GreyBoarderButton>
 						}
