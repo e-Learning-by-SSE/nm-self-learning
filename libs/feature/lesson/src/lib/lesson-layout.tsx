@@ -11,7 +11,7 @@ import {
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import { LessonContent, getLesson } from "./lesson-data-access";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import { useLessonNavigation } from "@self-learning/ui/lesson";
