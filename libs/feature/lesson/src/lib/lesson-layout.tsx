@@ -152,7 +152,7 @@ function MobilePlaylistArea(pageProps: LessonLayoutProps) {
 		() => (!content ? [] : mapToPlaylistContent(content.content, content.lessonMap)),
 		[content]
 	);
-	const { navigateToNextLesson, navigateToPreviousLesson } = useLessonNavigation({
+	const { navigateToNextLesson, navigateToPreviousLesson, previous, next } = useLessonNavigation({
 		content: playlistContent,
 		lesson: { ...pageProps.lesson, meta: pageProps.lesson.meta as LessonMeta },
 		course: pageProps.course
@@ -170,6 +170,8 @@ function MobilePlaylistArea(pageProps: LessonLayoutProps) {
 				prev={() => {
 					navigateToPreviousLesson();
 				}}
+				hasNext={!!next}
+				hasPrev={!!previous}
 				content={onSelect => (
 					<MobilePlayList
 						{...pageProps}

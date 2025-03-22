@@ -217,7 +217,7 @@ function LessonHeader({
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
 							<span className="font-semibold text-secondary">{chapterName}</span>
-							<h1 className="text-4xl">{lesson.title}</h1>
+							<h1 className="text-xl lg:text-4xl">{lesson.title}</h1>
 						</span>
 						<LessonControls course={course} lesson={lesson} />
 					</span>
@@ -231,7 +231,7 @@ function LessonHeader({
 						<span className="flex flex-col gap-3">
 							<Authors authors={lesson.authors} />
 						</span>
-						<div className="-mt-3">
+						<div className="-mt-3 hidden lg:inline">
 							{!lesson.license ? (
 								<DefaultLicenseLabel />
 							) : (
