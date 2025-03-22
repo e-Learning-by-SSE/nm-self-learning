@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
+import { parse } from "next-useragent";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -30,7 +31,7 @@ type QuestionProps = LessonLayoutProps & {
 	};
 };
 
-export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params, req }) => {
 	const parentProps = await getStaticPropsForLayout(params);
 
 	if ("notFound" in parentProps) return { notFound: true };
@@ -65,9 +66,13 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 
 	quiz.questions = processedQuestions;
 
+	const ua = parse(req.headers["user-agent"] || "");
+	const isMobile = ua.isMobile;
+
 	return {
 		props: {
 			...parentProps,
+			isMobile,
 			quiz,
 			markdown: {
 				questionsMd,
