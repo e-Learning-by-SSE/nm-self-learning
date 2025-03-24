@@ -3,6 +3,7 @@ import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { Quiz } from "@self-learning/quiz";
+import { Prisma } from "@prisma/client";
 
 export const lessonDraftRouter = t.router({
 	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input }) => {
@@ -141,11 +142,10 @@ export const lessonDraftRouter = t.router({
 		const lessonId = input.lessonId;
 		const user = input.owner;
 		const draftId = input.id;
-
 		const draftData = {
 			...input,
-			content: input.content ?? undefined,
-			quiz: input.quiz ?? undefined,
+			content: input.content ? (input.content as Prisma.InputJsonArray) : undefined,
+			quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : undefined,
 			license: input.license ?? undefined,
 			teachingGoals: input.teachingGoals ?? undefined,
 			requirements: input.requirements ?? undefined,
@@ -174,6 +174,8 @@ export const lessonDraftRouter = t.router({
 					}
 				});
 				return updatedDraft;
+			} else {
+				console.error("Draft is assigned to non-existing lesson!");
 			}
 		}
 

@@ -107,7 +107,6 @@ export function LessonEditor({
 
 	const saveLessonDraft = useCallback(async () => {
 		const formValues = form.getValues();
-
 		const draft: LessonDraft = {
 			...formValues,
 			id: undefined,
@@ -116,9 +115,10 @@ export function LessonEditor({
 				: { username: "" }
 		};
 
+		/*
 		if (JSON.stringify(draft) === JSON.stringify(lastSavedDraftRef.current)) {
 			return;
-		}
+		}*/
 
 		try {
 			const objectToUpsert: LessonDraft = draft;
@@ -128,7 +128,6 @@ export function LessonEditor({
 			if (draftId) {
 				objectToUpsert.id = draftId;
 			}
-
 			const updatedDraft = await upsert(objectToUpsert);
 
 			lastSavedDraftIdRef.current = updatedDraft.id;
@@ -141,7 +140,7 @@ export function LessonEditor({
 
 	useInterval({
 		callback: saveLessonDraft,
-		interval: 3000 // 10 seconds
+		interval: 6000 // 10 seconds
 	});
 
 	useEffect(() => {
