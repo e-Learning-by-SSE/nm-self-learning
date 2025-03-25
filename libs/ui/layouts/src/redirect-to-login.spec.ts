@@ -32,6 +32,5 @@ describe("basePathTests", () => {
 	test("Base path undefined -> empty string", () => {
 		process.env.NEXT_PUBLIC_BASE_PATH = undefined;
 		expect(testExportGetRelativeBasePath()).toBe(expectedOrigin);
-		// maybe the trailing slash should be removed?
 	});
 });
