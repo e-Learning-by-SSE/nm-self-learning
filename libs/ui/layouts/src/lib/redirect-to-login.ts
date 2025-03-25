@@ -1,8 +1,6 @@
 import { signIn, signOut } from "next-auth/react";
 
 function getRelativeBasePath(): string {
-	console.log("window.location.origin", window.location.origin);
-
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 	if (basePath === "") {
