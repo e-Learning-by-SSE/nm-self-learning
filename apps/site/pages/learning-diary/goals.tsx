@@ -11,7 +11,7 @@ export default function LearningGoal() {
 	useRequiredSession();
 
 	if(isLoading) {
-		return <LoadingCircle />
+		return <LoadingCircle className="h-8 w-8" />
 	}
 
 	return goals && <LearningGoals goals={goals} onStatusUpdate={_ => {}} />;
