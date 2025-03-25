@@ -25,7 +25,7 @@ describe("basePathTests", () => {
 	});
 
 	test("Base path defined -> is added to window.location.origin base path", () => {
-		process.env.NEXT_PUBLIC_BASE_PATH = "test";
+		process.env.NEXT_PUBLIC_BASE_PATH = "/test";
 		expect(testExportGetRelativeBasePath()).toBe(expectedOrigin + "/test");
 	});
 
