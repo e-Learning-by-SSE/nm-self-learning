@@ -19,7 +19,7 @@ export function TopicHeader({
 	return (
 		<div className="flex flex-col">
 			{imgUrlBanner && (
-				<div className="relative h-48 w-full bg-white">
+				<div className="relative h-20 lg:h-48 w-full bg-white">
 					<Image
 						priority
 						className="object-cover"
