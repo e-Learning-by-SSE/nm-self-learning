@@ -1,9 +1,9 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, PropsWithChildren, useContext } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
 
 type LearningGoalContextType = {
 	userGoals: Goal[];
-	onStatusUpdate: StatusUpdateCallback;
+	onStatusUpdate?: StatusUpdateCallback;
 };
 
 const LearningGoalContext = createContext<LearningGoalContextType | undefined>(undefined);
@@ -16,11 +16,7 @@ export const useLearningGoalContext = () => {
 	return context;
 };
 
-type LearningGoalProviderProps = {
-	children: ReactNode;
-	userGoals: Goal[];
-	onStatusUpdate: StatusUpdateCallback;
-};
+type LearningGoalProviderProps = PropsWithChildren<LearningGoalContextType>;
 
 export const LearningGoalProvider = ({
 	children,

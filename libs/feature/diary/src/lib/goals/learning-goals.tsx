@@ -11,20 +11,20 @@ import {
 	showToast
 } from "@self-learning/ui/common";
 import { LearningSubGoal } from "@self-learning/types";
-import { CenteredSection } from "@self-learning/ui/layouts";
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { GoalEditorDialog } from "./goal-editor";
 import { GoalStatus } from "./status";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import { Goal, LearningGoalType, StatusUpdateCallback } from "../util/types";
 import { LearningGoalProvider, useLearningGoalContext } from "./goal-context";
+import { CreateGoalDialog, EditGoalDialog, EditSubGoalDialog } from "./goal-editor";
 
 /**
  * Component for displaying learning goals. It contains dialogs for creating and editing of learning goals and sub-goals (Grob-/ Feinziel).
  * For every goal the status is displayed and all sub-goals.
  *
  * @param goals Learning goal data
+ * @param onStatusUpdate Function is called when a goal is modified. For changes which needs to be updated when trpc reloads aren't sufficient.
  * @returns A component to display learning goals
  */
 export function LearningGoals({
@@ -32,12 +32,11 @@ export function LearningGoals({
 	onStatusUpdate
 }: {
 	goals: LearningGoalType[];
-	onStatusUpdate: StatusUpdateCallback;
+	onStatusUpdate?: StatusUpdateCallback;
 }) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [editTarget, setEditTarget] = useState<Goal | null>(null);
 	const [openAddDialog, setOpenAddDialog] = useState(false);
-
 
 	const inProgress = goals.filter(g => g.status === "INACTIVE" || g.status === "ACTIVE");
 	const complete = goals.filter(g => g.status === "COMPLETED");
@@ -47,47 +46,43 @@ export function LearningGoals({
 	};
 
 	return (
-		<CenteredSection className="overflow-y-auto bg-gray-50 pb-32 px-5">
-			<section>
-				<div className="flex items-center justify-between gap-4">
-					<SectionHeader title="Meine Lernziele" />
-					<button className="btn-primary -mt-8" onClick={() => setOpenAddDialog(true)}>
-						<PlusIcon className="icon h-5" />
-						<span>Lernziel hinzufügen</span>
-					</button>
-				</div>
+		<>
+			<div className="flex items-center justify-between gap-4">
+				<SectionHeader title="Meine Lernziele" />
+				<button className="btn-primary -mt-8" onClick={() => setOpenAddDialog(true)}>
+					<PlusIcon className="icon h-5" />
+					<span>Lernziel hinzufügen</span>
+				</button>
+			</div>
 
-				<div className="py-2 ">
-					<LearningGoalProvider userGoals={inProgress} onStatusUpdate={onStatusUpdate}>
-						{selectedTab === 0 && (
-							<TabContent
-								selectedTab={selectedTab}
-								setSelectedTab={setSelectedTab}
-								notFoundMessage={"Derzeit ist kein Ziel erstellt worden."}
-								editable={true}
-								onRowClick={handleEditTarget}
-							/>
-						)}
-					</LearningGoalProvider>
-					<LearningGoalProvider userGoals={complete} onStatusUpdate={onStatusUpdate}>
-						{selectedTab === 1 && (
-							<TabContent
-								selectedTab={selectedTab}
-								setSelectedTab={setSelectedTab}
-								notFoundMessage={"Derzeit ist kein Ziel abgeschlossen."}
-								editable={false}
-								onRowClick={handleEditTarget}
-							/>
-						)}
-					</LearningGoalProvider>
-				</div>
-			</section>
-			{openAddDialog && <GoalEditorDialog onClose={() => setOpenAddDialog(false)} />}
-			{editTarget && (
-				<GoalEditorDialog goal={editTarget} onClose={() => setEditTarget(null)} />
-			)}
+			<div className="py-2 ">
+				<LearningGoalProvider userGoals={inProgress} onStatusUpdate={onStatusUpdate}>
+					{selectedTab === 0 && (
+						<TabContent
+							selectedTab={selectedTab}
+							setSelectedTab={setSelectedTab}
+							notFoundMessage={"Derzeit ist kein Ziel erstellt worden."}
+							editable={true}
+							onRowClick={handleEditTarget}
+						/>
+					)}
+				</LearningGoalProvider>
+				<LearningGoalProvider userGoals={complete} onStatusUpdate={onStatusUpdate}>
+					{selectedTab === 1 && (
+						<TabContent
+							selectedTab={selectedTab}
+							setSelectedTab={setSelectedTab}
+							notFoundMessage={"Derzeit ist kein Ziel abgeschlossen."}
+							editable={false}
+							onRowClick={handleEditTarget}
+						/>
+					)}
+				</LearningGoalProvider>
+			</div>
+			{openAddDialog && <CreateGoalDialog onClose={() => setOpenAddDialog(false)} />}
+			{editTarget && <EditGoalDialog goal={editTarget} onClose={() => setEditTarget(null)} />}
 			<DialogHandler id={"simpleGoalDialog"} />
-		</CenteredSection>
+		</>
 	);
 }
 
@@ -273,7 +268,7 @@ function SubGoalRow({
 	editable: boolean;
 	goal: Goal;
 }>) {
-	const [openAddDialog, setOpenAddDialog] = useState(false);
+	const [openEditDialog, setOpenEditDialog] = useState(false);
 	const { mutateAsync: editSubGoalPriority } =
 		trpc.learningGoal.editSubGoalPriority.useMutation();
 
@@ -360,7 +355,7 @@ function SubGoalRow({
 
 							{editable && (
 								<div className="invisible group-hover:visible">
-									<QuickEditButton onClick={() => setOpenAddDialog(true)} />
+									<QuickEditButton onClick={() => setOpenEditDialog(true)} />
 									<GoalDeleteOption
 										goalId={subGoal.id}
 										isSubGoal={true}
@@ -380,8 +375,8 @@ function SubGoalRow({
 					</div>
 				</div>
 			</div>
-			{openAddDialog && (
-				<GoalEditorDialog subGoal={subGoal} onClose={() => setOpenAddDialog(false)} />
+			{openEditDialog && (
+				<EditSubGoalDialog subGoal={subGoal} onClose={() => setOpenEditDialog(false)} />
 			)}
 		</span>
 	);
