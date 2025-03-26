@@ -27,6 +27,7 @@ import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { withAuth, withTranslations } from "@self-learning/api";
+import { parse } from "next-useragent";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -73,9 +74,14 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 			mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
 		}
 
+		const ua = parse(context.req.headers["user-agent"] || "");
+        const isMobile = ua.isMobile;
+
+
 		return {
 			props: {
 				...props,
+				isMobile,
 				markdown: {
 					article: mdArticle,
 					description: mdDescription,
@@ -207,7 +213,7 @@ function LessonHeader({
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
 							<span className="font-semibold text-secondary">{chapterName}</span>
-							<h1 className="text-4xl">{lesson.title}</h1>
+							<h1 className="text-xl lg:text-4xl">{lesson.title}</h1>
 						</span>
 						<LessonControls course={course} lesson={lesson} />
 					</span>
@@ -221,7 +227,7 @@ function LessonHeader({
 						<span className="flex flex-col gap-3">
 							<Authors authors={lesson.authors} />
 						</span>
-						<div className="-mt-3">
+						<div className="-mt-3 hidden lg:inline">
 							{!lesson.license ? (
 								<DefaultLicenseLabel />
 							) : (

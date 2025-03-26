@@ -10,6 +10,7 @@ import {
 } from "@self-learning/diary";
 import { Divider } from "@self-learning/ui/common";
 import { subMilliseconds } from "date-fns";
+import { parse } from "next-useragent";
 
 export const getServerSideProps = withTranslations(
 	["common"],
@@ -25,8 +26,16 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
+		const ua = parse(context.req.headers["user-agent"] || "");
+		const isMobile = ua.isMobile;
+
 		return {
-			props: { diaryId: pageId, pages, availableStrategies }
+			props: {
+				isMobile,
+				diaryId: pageId,
+				pages,
+				availableStrategies
+			}
 		};
 	})
 );
@@ -36,11 +45,13 @@ DiaryPageDetail.getLayout = DiaryLayout;
 export default function DiaryPageDetail({
 	diaryId,
 	pages,
-	availableStrategies
+	availableStrategies,
+	isMobile
 }: {
 	diaryId: string;
 	pages: PagesMeta;
 	availableStrategies: Strategy[];
+	isMobile: boolean;
 }) {
 	// Identify the end date of the page, required for computations / filtering of details
 	const index = pages.findIndex(page => page.id === diaryId);
@@ -49,9 +60,11 @@ export default function DiaryPageDetail({
 
 	return (
 		<div className="w-full py-4 sm:w-2/3 mx-auto">
-			<div className="mb-4 flex justify-center">
-				<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
-			</div>
+			{!isMobile && (
+				<div className="mb-4 flex justify-center">
+					<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
+				</div>
+			)}
 
 			<Divider />
 			<DiaryContentForm
