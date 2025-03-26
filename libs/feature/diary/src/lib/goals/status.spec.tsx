@@ -24,25 +24,38 @@ jest.mock("@self-learning/api-client", () => ({
 
 describe("GoalStatus", () => {
 	it("No sub goals, mark as completed -> goal completed", async () => {
-		const mockOnChange = jest.fn();
-		const goal = {
+		const mockOnFirstChange = jest.fn();
+		const mockOnSecondChange = jest.fn();
+		const firstGoal = {
 			id: "1",
 			status: LearningGoalStatus.INACTIVE,
 			learningSubGoals: []
 		} as unknown as Goal;
+		const secondGoal = {
+			id: "2",
+			status: LearningGoalStatus.ACTIVE,
+			learningSubGoals: []
+		} as unknown as Goal;
 
-		render(<GoalStatus goal={goal} editable={true} onChange={mockOnChange} />);
+		render(<GoalStatus goal={firstGoal} editable={true} onChange={mockOnFirstChange} />);
 
 		// Simulate clicking the first buttons
-		const button = await screen.findByTestId(`goal_status:${goal.id}`);
+		let button = await screen.findByTestId(`goal_status:${firstGoal.id}`);
+
 		// INACTIVE -> ACTIVE
 		await userEvent.click(button);
 
+	
+		render(<GoalStatus goal={secondGoal} editable={true} onChange={mockOnSecondChange} />);
+
+		button = await screen.findByTestId(`goal_status:${secondGoal.id}`);
+		
 		// ACTIVE -> COMPLETED
 		await userEvent.click(button);
 
 		// Check if the onChange function was called with the correct arguments
-		expect(mockOnChange).toHaveBeenCalledWith(goal, LearningGoalStatus.COMPLETED);
+		expect(mockOnFirstChange).toHaveBeenCalledWith(firstGoal, LearningGoalStatus.ACTIVE);
+		expect(mockOnSecondChange).toHaveBeenCalledWith(secondGoal, LearningGoalStatus.COMPLETED);
 	});
 
 	it("Incomplete sub goals -> goal cannot be completed", async () => {
