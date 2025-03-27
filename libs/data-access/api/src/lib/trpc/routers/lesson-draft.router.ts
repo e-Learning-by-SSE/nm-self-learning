@@ -59,7 +59,9 @@ export const lessonDraftRouter = t.router({
 				content: (draft.content ?? []) as LessonContent,
 				quiz: draft.quiz as Quiz,
 				lessonType: draft.lessonType ?? "TRADITIONAL",
-				selfRegulatedQuestion: draft.selfRegulatedQuestion
+				selfRegulatedQuestion: draft.selfRegulatedQuestion,
+				createdAt: draft.createdAt,
+				updatedAt: draft.updatedAt
 			}));
 		}),
 	getById: authProcedure
