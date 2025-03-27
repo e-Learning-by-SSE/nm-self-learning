@@ -1,13 +1,12 @@
 import { signIn, signOut } from "next-auth/react";
 
 function getRelativeBasePath(): string {
-	const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
-	if (basePath === "") {
+	const basePath = process.env.NEXT_PUBLIC_BASE_PATH;
+	if (basePath) {
+		return `${window.location.origin}${basePath}`;
+	} else {
 		return window.location.origin;
 	}
-	//NEXT_PUBLIC_BASE_PATH is always a path starting with a slash
-	return `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ""}`;
 }
 export const testExportGetRelativeBasePath = getRelativeBasePath;
 
