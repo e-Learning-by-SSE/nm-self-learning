@@ -516,16 +516,22 @@ function CourseDeletionDialog({
 	);
 }
 
-function LessonTaskbar({ lessonId }: { lessonId: string }) {
+function LessonTaskbar({ lesson }: { lesson: LessonWithDraftInfo }) {
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
-			<Link href={`/teaching/lessons/edit/${lessonId}`}>
+			<Link
+				href={
+					lesson.draftId
+						? `/teaching/lessons/edit/draft/${lesson.draftId}`
+						: `/teaching/lessons/edit/${lesson.lessonId}`
+				}
+			>
 				<button type="button" className="btn-stroked w-fit self-end">
 					<PencilIcon className="icon" />
 					<span>Bearbeiten</span>
 				</button>
 			</Link>
-			<LessonDeleteOption lessonId={lessonId} />
+			<LessonDeleteOption lessonId={lesson.lessonId} />
 		</div>
 	);
 }
@@ -702,7 +708,7 @@ function Lessons({ authorName }: { authorName: string }) {
 									</span>
 								</TableDataColumn>
 								<TableDataColumn>
-									<LessonTaskbar lessonId={lesson.lessonId} />
+									<LessonTaskbar lesson={lesson} />
 								</TableDataColumn>
 							</tr>
 						))}

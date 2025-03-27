@@ -101,7 +101,6 @@ export function LessonEditor({
 
 	const { mutateAsync: upsert } = trpc.lessonDraft.upsert.useMutation();
 
-	const lastSavedDraftRef = useRef<LessonDraft | null>(null);
 	const lastSavedDraftIdRef = useRef<string | null>(null);
 	const toastShownRef = useRef(false);
 
@@ -115,11 +114,6 @@ export function LessonEditor({
 				: { username: "" }
 		};
 
-		/*
-		if (JSON.stringify(draft) === JSON.stringify(lastSavedDraftRef.current)) {
-			return;
-		}*/
-
 		try {
 			const objectToUpsert: LessonDraft = draft;
 			if (lastSavedDraftIdRef.current) {
@@ -129,10 +123,7 @@ export function LessonEditor({
 				objectToUpsert.id = draftId;
 			}
 			const updatedDraft = await upsert(objectToUpsert);
-
 			lastSavedDraftIdRef.current = updatedDraft.id;
-			delete draft.id;
-			lastSavedDraftRef.current = draft;
 		} catch (err) {
 			console.log("Error during autosave", err);
 		}
@@ -140,7 +131,7 @@ export function LessonEditor({
 
 	useInterval({
 		callback: saveLessonDraft,
-		interval: 6000 // 10 seconds
+		interval: 3000 // 3 sec
 	});
 
 	useEffect(() => {
@@ -161,8 +152,8 @@ export function LessonEditor({
 
 	const handleSave = async () => {
 		form.handleSubmit(onSubmit)();
-		if (lastSavedDraftRef.current?.id) {
-			await deleteDraft({ draftId: lastSavedDraftRef.current.id });
+		if (lastSavedDraftIdRef.current) {
+			await deleteDraft({ draftId: lastSavedDraftIdRef.current });
 		}
 		setShowSaveOptions(false);
 	};

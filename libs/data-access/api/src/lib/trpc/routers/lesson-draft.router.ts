@@ -64,7 +64,7 @@ export const lessonDraftRouter = t.router({
 		}),
 	getById: authProcedure
 		.input(z.object({ draftId: z.string() }))
-		.query(async ({ input }): Promise<LessonDraft | undefined> => {
+		.query(async ({ input }): Promise<LessonDraft | null> => {
 			const draftId = input.draftId;
 			const draft = await database.lessonDraft.findUnique({
 				where: {
@@ -101,7 +101,7 @@ export const lessonDraftRouter = t.router({
 					selfRegulatedQuestion: draft.selfRegulatedQuestion
 				};
 			}
-			return undefined;
+			return null;
 		}),
 	getOverviewByOwner: authProcedure
 		.input(z.object({ username: z.string() }))
