@@ -147,16 +147,19 @@ function DraftsDialog({ onClose, drafts }: { onClose: () => void; drafts: Lesson
 							<strong>Lerneinheit:</strong> {drafts[0].title}
 						</div>
 					)}
-					<div>
-						<strong>Letzte Aktualisierung: </strong>{" "}
-						{new Date(drafts[0].updatedAt).toLocaleDateString("de-DE", {
-							day: "2-digit",
-							month: "long",
-							year: "numeric",
-							hour: "2-digit",
-							minute: "2-digit"
-						})}
-					</div>
+
+					{drafts[0].updatedAt && (
+						<div>
+							<strong>Letzte Aktualisierung: </strong>{" "}
+							{new Date(drafts[0].updatedAt).toLocaleDateString("de-DE", {
+								day: "2-digit",
+								month: "long",
+								year: "numeric",
+								hour: "2-digit",
+								minute: "2-digit"
+							})}
+						</div>
+					)}
 				</div>
 				Möchten Sie diese wiederherstellen? Nicht gespeicherte Änderungen gehen verloren!
 			</span>
