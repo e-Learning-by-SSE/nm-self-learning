@@ -4,6 +4,7 @@ import { Goal, StatusUpdateCallback } from "../util/types";
 type LearningGoalContextType = {
 	userGoals: Goal[];
 	onStatusUpdate?: StatusUpdateCallback;
+	onCreateGoal?: (parent?: Goal) => void;
 };
 
 const LearningGoalContext = createContext<LearningGoalContextType | undefined>(undefined);
@@ -18,14 +19,8 @@ export const useLearningGoalContext = () => {
 
 type LearningGoalProviderProps = PropsWithChildren<LearningGoalContextType>;
 
-export const LearningGoalProvider = ({
-	children,
-	userGoals,
-	onStatusUpdate
-}: LearningGoalProviderProps) => {
+export const LearningGoalProvider = ({ children, ...rest }: LearningGoalProviderProps) => {
 	return (
-		<LearningGoalContext.Provider value={{ userGoals, onStatusUpdate }}>
-			{children}
-		</LearningGoalContext.Provider>
+		<LearningGoalContext.Provider value={{ ...rest }}>{children}</LearningGoalContext.Provider>
 	);
 };

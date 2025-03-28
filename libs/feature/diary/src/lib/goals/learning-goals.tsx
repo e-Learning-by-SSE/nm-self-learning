@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
 	ButtonActions,
 	DialogHandler,
+	PlusButton,
 	SectionHeader,
 	SimpleDialog,
 	Tab,
@@ -18,6 +19,7 @@ import { PencilIcon } from "@heroicons/react/24/outline";
 import { Goal, LearningGoalType, StatusUpdateCallback } from "../util/types";
 import { LearningGoalProvider, useLearningGoalContext } from "./goal-context";
 import { CreateGoalDialog, EditGoalDialog, EditSubGoalDialog } from "./goal-editor";
+import { useTranslation } from "react-i18next";
 
 /**
  * Component for displaying learning goals. It contains dialogs for creating and editing of learning goals and sub-goals (Grob-/ Feinziel).
@@ -36,13 +38,20 @@ export function LearningGoals({
 }) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [editTarget, setEditTarget] = useState<Goal | null>(null);
-	const [openAddDialog, setOpenAddDialog] = useState(false);
+	const [openAddDialog, setOpenAddDialog] = useState<boolean>(false);
+	const [newGoalParent, setNewGoalParent] = useState<Goal | undefined>(undefined);
 
 	const inProgress = goals.filter(g => g.status === "INACTIVE" || g.status === "ACTIVE");
 	const complete = goals.filter(g => g.status === "COMPLETED");
 
 	const handleEditTarget = (editedGoal: Goal) => {
 		setEditTarget(editedGoal);
+	};
+
+	const handleCreateGoal = (parent?: Goal) => {
+		console.log(parent);
+		setOpenAddDialog(true);
+		setNewGoalParent(parent);
 	};
 
 	return (
@@ -56,7 +65,11 @@ export function LearningGoals({
 			</div>
 
 			<div className="py-2 ">
-				<LearningGoalProvider userGoals={inProgress} onStatusUpdate={onStatusUpdate}>
+				<LearningGoalProvider
+					userGoals={inProgress}
+					onStatusUpdate={onStatusUpdate}
+					onCreateGoal={handleCreateGoal}
+				>
 					{selectedTab === 0 && (
 						<TabContent
 							selectedTab={selectedTab}
@@ -67,7 +80,11 @@ export function LearningGoals({
 						/>
 					)}
 				</LearningGoalProvider>
-				<LearningGoalProvider userGoals={complete} onStatusUpdate={onStatusUpdate}>
+				<LearningGoalProvider
+					userGoals={complete}
+					onStatusUpdate={onStatusUpdate}
+					onCreateGoal={handleCreateGoal}
+				>
 					{selectedTab === 1 && (
 						<TabContent
 							selectedTab={selectedTab}
@@ -79,7 +96,12 @@ export function LearningGoals({
 					)}
 				</LearningGoalProvider>
 			</div>
-			{openAddDialog && <CreateGoalDialog onClose={() => setOpenAddDialog(false)} />}
+			{openAddDialog && (
+				<CreateGoalDialog
+					onClose={() => setOpenAddDialog(false)}
+					parentGoal={newGoalParent}
+				/>
+			)}
 			{editTarget && <EditGoalDialog goal={editTarget} onClose={() => setEditTarget(null)} />}
 			<DialogHandler id={"simpleGoalDialog"} />
 		</>
@@ -188,6 +210,7 @@ function GoalRow({
 	onClick: (editedGoal: Goal) => void;
 }>) {
 	const [showTooltip, setShowTooltip] = useState(false);
+	const { t } = useTranslation("common");
 
 	useEffect(() => {
 		// let timer: Timeout;
@@ -206,7 +229,7 @@ function GoalRow({
 		}
 	}, [goal]);
 
-	const { onStatusUpdate } = useLearningGoalContext();
+	const { onStatusUpdate, onCreateGoal } = useLearningGoalContext();
 
 	return (
 		<section>
@@ -216,6 +239,11 @@ function GoalRow({
 						<div className="mb-2 text-xl font-semibold">{goal.description}</div>
 						{goal.status !== "COMPLETED" && editable && (
 							<div className="invisible flex flex-row group-hover:visible">
+								<PlusButton
+									title={t("create")}
+									onClick={() => onCreateGoal?.(goal)}
+									size="small"
+								/>
 								<QuickEditButton onClick={() => onClick(goal)} />
 								<GoalDeleteOption
 									goalId={goal.id}
