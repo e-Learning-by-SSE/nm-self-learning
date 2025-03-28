@@ -122,7 +122,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 										<span>{containerId}</span>
 										<div className="flex gap-2">
 											<PlusButton
-												onAdd={() => setEditItemDialog({ containerId })}
+												onClick={() => setEditItemDialog({ containerId })}
 												title={"Element hinzufügen"}
 											/>
 

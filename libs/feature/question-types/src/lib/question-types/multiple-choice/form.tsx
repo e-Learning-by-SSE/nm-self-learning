@@ -41,7 +41,7 @@ export default function MultipleChoiceForm({
 		<section className="flex flex-col gap-8">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
-				<PlusButton onAdd={addAnswer} title={"Antwort hinzufügen"} />
+				<PlusButton onClick={addAnswer} title={"Antwort hinzufügen"} />
 			</div>
 
 			{answers.map((answer, answerIndex) => (
