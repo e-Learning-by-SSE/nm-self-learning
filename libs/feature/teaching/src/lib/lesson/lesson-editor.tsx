@@ -206,39 +206,17 @@ export function LessonEditor({
 							Abbrechen
 						</button>
 
-						<div className="relative">
-							<button
-								type="button"
-								onClick={() => setShowSaveOptions(!showSaveOptions)}
-								className="btn-primary pointer-events-auto flex items-center gap-2"
-							>
-								Speichern als
-								<span
-									className={`transform transition-transform ${showSaveOptions ? "rotate-180" : ""}`}
-								>
-									&#x25BC;
-								</span>
-							</button>
+						<button type="button" onClick={handleSaveAsDraft} className="btn-secondary">
+							Bearbeitung Später Fortsetzen
+						</button>
 
-							{showSaveOptions && (
-								<div className="absolute bottom-full left-0 w-full bg-gray-200 shadow-md rounded-lg p-2 space-y-2">
-									<button
-										type="button"
-										onClick={handleSave}
-										className="btn-secondary w-full"
-									>
-										Lerneinheit
-									</button>
-									<button
-										type="button"
-										onClick={handleSaveAsDraft}
-										className="btn-secondary w-full "
-									>
-										Entwurf
-									</button>
-								</div>
-							)}
-						</div>
+						<button
+							type="button"
+							onClick={handleSave}
+							className="btn-primary pointer-events-auto flex items-center gap-2"
+						>
+							Speichern
+						</button>
 					</div>
 				</div>
 			</form>
