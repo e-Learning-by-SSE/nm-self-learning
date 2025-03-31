@@ -1,11 +1,18 @@
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, ExclamationCircleIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { t, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
 import {
+	LessonDraft,
+	LessonDraftOverview,
+	LessonOverview,
+	LessonWithDraftInfo
+} from "@self-learning/types";
+import {
 	Divider,
+	Dialog,
 	IconButton,
 	ImageChip,
 	ImageOrPlaceholder,
@@ -15,7 +22,6 @@ import {
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
-	Dialog,
 	DialogActions
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
@@ -112,9 +118,89 @@ export default function Start(props: Props) {
 	return <AuthorDashboardPage {...props} />;
 }
 
+function DraftsDialog({ onClose, drafts }: { onClose: () => void; drafts: LessonDraft[] }) {
+	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
+	const router = useRouter();
+
+	const handleClick = () => {
+		const draftId = drafts[0].id;
+		router.push(`/teaching/lessons/edit/draft/${draftId}`);
+	};
+
+	const handleCancel = () => {
+		const draftId = drafts[0].id;
+
+		if (draftId) {
+			deleteDraft({ draftId: draftId });
+		}
+
+		onClose();
+	};
+
+	return (
+		<Dialog onClose={onClose} title={"Nicht gespeicherte Veränderungen"}>
+			<span className="text-sm text-light">
+				Wir haben nicht gespeicherte Änderungen von Ihrer letzten Sitzung festgestellt.
+				<div className="py-3">
+					{drafts[0].title && (
+						<div>
+							<strong>Lerneinheit:</strong> {drafts[0].title}
+						</div>
+					)}
+
+					{drafts[0].updatedAt && (
+						<div>
+							<strong>Letzte Aktualisierung: </strong>{" "}
+							{new Date(drafts[0].updatedAt).toLocaleDateString("de-DE", {
+								day: "2-digit",
+								month: "long",
+								year: "numeric",
+								hour: "2-digit",
+								minute: "2-digit"
+							})}
+						</div>
+					)}
+				</div>
+				Möchten Sie diese wiederherstellen? Nicht gespeicherte Änderungen gehen verloren!
+			</span>
+			<div className="flex gap-2 pt-3 justify-end">
+				<button className="btn-stroked" onClick={handleCancel}>
+					Verwerfen
+				</button>
+				<button className="btn-primary" onClick={handleClick}>
+					Wiederherstellen
+				</button>
+			</div>
+		</Dialog>
+	);
+}
+
 function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
 	const authorName = session.data?.user.name;
+
+	const { data: drafts } = trpc.lessonDraft.getByOwner.useQuery(
+		{ username: authorName ?? "" },
+		{ enabled: !!authorName }
+	);
+	const [openDraftsDialog, setOpenDraftsDialog] = useState(false);
+
+	let draftsWithoutLesson: LessonDraft[] = [];
+
+	if (drafts) {
+		draftsWithoutLesson = drafts.filter(draft => draft.lessonId === null);
+	}
+
+	const handleClick = (e: { preventDefault: () => void }) => {
+		if (draftsWithoutLesson?.length > 0) {
+			e.preventDefault();
+			setOpenDraftsDialog(true);
+		}
+	};
+
+	const handleClose = () => {
+		setOpenDraftsDialog(false);
+	};
 
 	return (
 		<div className="bg-gray-50">
@@ -252,15 +338,23 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Lerneinheiten:"
 							/>
 
-							<Link href="/teaching/lessons/create">
-								<IconButton
-									text="Neue Lerneinheit erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
+							<Link href="/teaching/lessons/create" onClick={handleClick}>
+								<div className="relative inline-block">
+									<IconButton
+										text="Neue Lerneinheit erstellen"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+									{draftsWithoutLesson?.length > 0 && (
+										<ExclamationCircleIcon className="absolute top-0 right-0 h-7 text-red-500 transform translate-x-1/2 -translate-y-1/2" />
+									)}
+								</div>
 							</Link>
 						</div>
 
 						{authorName && <Lessons authorName={authorName} />}
+						{openDraftsDialog && (
+							<DraftsDialog onClose={handleClose} drafts={draftsWithoutLesson} />
+						)}
 					</section>
 
 					<Divider />
@@ -297,9 +391,45 @@ function AuthorDashboardPage({ author }: Props) {
 	);
 }
 
+function convertToLessonWithDraftInfo(lessons: LessonOverview[]): LessonWithDraftInfo[] {
+	return lessons.map(lesson => ({
+		lessonId: lesson.lessonId,
+		title: lesson.title,
+		updatedAt: lesson.updatedAt,
+		draftId: undefined,
+		draftOverwritten: false
+	}));
+}
+
+function addDraftInfo(
+	lessons: LessonWithDraftInfo[],
+	drafts: LessonDraftOverview[]
+): LessonWithDraftInfo[] {
+	return lessons.map(lesson => {
+		const matchingDraft = drafts.find(draft => draft.lessonId === lesson.lessonId);
+
+		let isOverwritten = false;
+		if (matchingDraft) {
+			if (new Date(matchingDraft.createdAt) < new Date(lesson.updatedAt)) {
+				isOverwritten = true;
+			}
+		}
+
+		return {
+			title: lesson.title,
+			lessonId: lesson.lessonId,
+			updatedAt: lesson.updatedAt,
+			draftId: matchingDraft?.id,
+			draftOverwritten: isOverwritten
+		};
+	});
+}
+
 function CourseDeleteOption({ slug }: { slug: string }) {
 	const { mutateAsync: deleteCourse } = trpc.course.deleteCourse.useMutation();
-	const { data: linkedEntities, isLoading } = trpc.course.findLinkedEntities.useQuery({ slug });
+	const { data: linkedEntities, isLoading } = trpc.course.findLinkedEntities.useQuery({
+		slug
+	});
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const { reload } = useRouter();
 
@@ -405,16 +535,22 @@ function CourseDeletionDialog({
 	);
 }
 
-function LessonTaskbar({ lessonId }: { lessonId: string }) {
+function LessonTaskbar({ lesson }: { lesson: LessonWithDraftInfo }) {
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
-			<Link href={`/teaching/lessons/edit/${lessonId}`}>
+			<Link
+				href={
+					lesson.draftId
+						? `/teaching/lessons/edit/draft/${lesson.draftId}`
+						: `/teaching/lessons/edit/${lesson.lessonId}`
+				}
+			>
 				<button type="button" className="btn-stroked w-fit self-end">
 					<PencilIcon className="icon" />
 					<span>Bearbeiten</span>
 				</button>
 			</Link>
-			<LessonDeleteOption lessonId={lessonId} />
+			<LessonDeleteOption lessonId={lesson.lessonId} />
 		</div>
 	);
 }
@@ -521,6 +657,20 @@ function Lessons({ authorName }: { authorName: string }) {
 		}
 	);
 
+	const { data: drafts } = trpc.lessonDraft.getOverviewByOwner.useQuery({
+		username: authorName
+	});
+
+	let lessonsWithDraftInfo = [] as LessonWithDraftInfo[];
+
+	if (lessons) {
+		lessonsWithDraftInfo = convertToLessonWithDraftInfo(lessons.result);
+	}
+
+	if (drafts) {
+		lessonsWithDraftInfo = addDraftInfo(lessonsWithDraftInfo, drafts);
+	}
+
 	return (
 		<div className="flex min-h-[200px] flex-col">
 			{!lessons ? (
@@ -543,7 +693,6 @@ function Lessons({ authorName }: { authorName: string }) {
 							);
 						}}
 					/>
-
 					<Table
 						head={
 							<>
@@ -553,14 +702,23 @@ function Lessons({ authorName }: { authorName: string }) {
 							</>
 						}
 					>
-						{lessons.result.map(lesson => (
+						{lessonsWithDraftInfo.map(lesson => (
 							<tr key={lesson.lessonId}>
 								<TableDataColumn>
 									<Link
-										href={`/teaching/lessons/edit/${lesson.lessonId}`}
+										href={
+											lesson.draftId
+												? `/teaching/lessons/edit/draft/${lesson.draftId}`
+												: `/teaching/lessons/edit/${lesson.lessonId}`
+										}
 										className="font-medium hover:text-secondary"
 									>
-										{lesson.title}
+										<span className="flex gap-3">
+											{lesson.title}
+											{lesson.draftId && (
+												<ExclamationCircleIcon className="icon h-5 text-red-500 pl-1" />
+											)}
+										</span>
 									</Link>
 								</TableDataColumn>
 								<TableDataColumn>
@@ -569,7 +727,7 @@ function Lessons({ authorName }: { authorName: string }) {
 									</span>
 								</TableDataColumn>
 								<TableDataColumn>
-									<LessonTaskbar lessonId={lesson.lessonId} />
+									<LessonTaskbar lesson={lesson} />
 								</TableDataColumn>
 							</tr>
 						))}
