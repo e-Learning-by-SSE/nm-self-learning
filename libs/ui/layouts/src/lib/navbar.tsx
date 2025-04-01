@@ -73,7 +73,7 @@ export function Navbar() {
 									{user && <NavbarNavigationLink />}
 								</div>
 							</div>
-							{user && <SearchBar />}
+							{ <SearchBar />}
 							<div className="absolute inset-y-0 right-0 flex items-center pr-2 lg:static lg:inset-auto lg:ml-6 lg:pr-0">
 								{/* Profile dropdown */}
 								{!user ? (
