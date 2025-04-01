@@ -39,3 +39,34 @@ export function SearchSection({
 		</>
 	);
 }
+
+export function getSearchSections({
+	courses = [],
+	lessons = [],
+	authors = []
+}: {
+	courses?: SearchResultInfo[];
+	lessons?: SearchResultInfo[];
+	authors?: SearchResultInfo[];
+}) {
+	return [
+		{
+			title: "Kurse",
+			results: courses,
+			baseLink: "courses",
+			show: !!courses
+		},
+		{
+			title: "Lerneinheiten",
+			results: lessons,
+			baseLink: "teaching/lessons/edit",
+			show: !!lessons
+		},
+		{
+			title: "Autoren",
+			results: authors,
+			baseLink: "authors",
+			show: !!authors
+		}
+	];
+}
