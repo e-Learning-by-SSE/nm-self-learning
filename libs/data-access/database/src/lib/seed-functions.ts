@@ -466,7 +466,7 @@ export async function createSkillGroups(skillGroups: SkillGroup[], repository: R
 				description: skill.description,
 				children: {
 					connect: nested
-				}
+				},
 			}
 		});
 	}

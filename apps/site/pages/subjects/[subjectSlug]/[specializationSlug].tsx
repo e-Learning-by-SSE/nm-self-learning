@@ -48,6 +48,16 @@ async function getSpecialization(specializationSlug: string) {
 					meta: true
 				}
 			},
+			newCourses: {
+				orderBy: { title: "asc" },
+				select: {
+					slug: true,
+					imgUrl: true,
+					title: true,
+					subtitle: true,
+					meta: true
+				}
+			},
 			subject: {
 				select: {
 					slug: true,
@@ -59,7 +69,7 @@ async function getSpecialization(specializationSlug: string) {
 }
 
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
-	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
+	const { title, subtitle, imgUrlBanner, subject, courses, newCourses } = specialization;
 
 	return (
 		<div className="bg-gray-50 pb-32">
@@ -74,6 +84,24 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 				{courses.length > 0 ? (
 					<ItemCardGrid>
 						{courses.map(course => (
+							<CourseCard key={course.slug} course={course} />
+						))}
+					</ItemCardGrid>
+				) : (
+					<div className="grid gap-16 pt-16">
+						<span className="mx-auto font-semibold">
+							Leider gibt es hier noch keine Inhalte.
+						</span>
+						<div className="mx-auto w-full max-w-md ">
+							<VoidSvg />
+						</div>
+					</div>
+				)}
+			</div>
+			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
+				{newCourses.length > 0 ? (
+					<ItemCardGrid>
+						{newCourses.map(course => (
 							<CourseCard key={course.slug} course={course} />
 						))}
 					</ItemCardGrid>
