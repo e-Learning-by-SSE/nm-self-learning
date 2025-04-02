@@ -162,9 +162,10 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 			const model = editor.getModel();
 			if (!selection || !model) return;
 
+			let newCursorPosition = null;
 			const setCursorPos = (lineColumn: number) => {
 				const insertPosition = selection.getStartPosition().delta(0, lineColumn);
-				editor.setPosition(insertPosition);
+				newCursorPosition = insertPosition;
 			};
 
 			const selectedText = model.getValueInRange(selection).trim();
@@ -222,15 +223,18 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 				case "LINK":
 					if (!selectedText) {
 						formattedText = `[your-description](your-link)`;
-						setCursorPos(2); // TODO does not change anything
 					} else {
-						formattedText = `[your-description](${selectedText})`;
+						const url = selectedText.startsWith("http")
+							? selectedText
+							: `https://${selectedText}`;
+						formattedText = `[your-description](${url})`;
 					}
+					setCursorPos(1);
 					break;
 				case "IMAGE":
 					if (!selectedText) {
 						formattedText = `![your-description](link-to-your-img)`;
-						setCursorPos(2); // TODO does not change anything
+						setCursorPos(2);
 					} else {
 						formattedText = `![your-description](${selectedText})`;
 					}
@@ -240,6 +244,10 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 			}
 
 			editor.executeEdits("", [{ range, text: formattedText, forceMoveMarkers: true }]);
+			if (newCursorPosition) {
+				editor.setPosition(newCursorPosition);
+				newCursorPosition = null;
+			}
 			editor.focus();
 		},
 		[editor]
