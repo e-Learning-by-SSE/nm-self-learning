@@ -1,7 +1,6 @@
 import { LearningGoalStatus } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
-import { useState } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
 
 /**
@@ -25,9 +24,7 @@ export function GoalStatus({
 }>) {
 	const { mutateAsync: editSubGoal } = trpc.learningGoal.editSubGoalStatus.useMutation();
 	const { mutateAsync: editGoal } = trpc.learningGoal.editGoalStatus.useMutation();
-	const [status, setStatus] = useState(
-		subGoal?.status ?? goal.status ?? LearningGoalStatus.INACTIVE
-	);
+	const status = subGoal?.status ?? goal.status ?? LearningGoalStatus.INACTIVE;
 
 	/**
 	 * Checks if all sub-goals of a learning goal are completed.
@@ -70,8 +67,6 @@ export function GoalStatus({
 						return "INACTIVE";
 				}
 			})();
-
-			setStatus(newStatus);
 
 			if (newStatus !== status) {
 				if (!subGoal && goal) {
