@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
@@ -6,12 +6,31 @@ import {
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
-import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
+import {
+	CourseChapter,
+	CourseContent,
+	CourseMeta,
+	createCourseMeta,
+	extractLessonIds,
+	LessonMeta
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authorProcedure, authProcedure, isCourseAuthorProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
+import {
+	And,
+	CompositeUnit,
+	DefaultCostParameter,
+	Empty,
+	getPath,
+	isCompositeGuard,
+	LearningUnit as LibLearningUnit,
+	Unit,
+	Variable,
+	Skill as LibSkill
+} from "@e-learning-by-sse/nm-skill-lib";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -184,37 +203,207 @@ export const courseRouter = t.router({
 				totalCount: count
 			} satisfies Paginated<unknown>;
 		}),
-	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
-		const course = await database.course.findUniqueOrThrow({
-			where: { slug: input.slug },
-			select: {
-				content: true
+	getContent: authProcedure
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ input, ctx }) => {
+			let course = await database.course.findUnique({
+				where: { slug: input.slug },
+				select: {
+					courseId: true,
+					content: true
+				}
+			});
+
+			if (!course) {
+				course = {
+					courseId: "",
+					...(await database.newCourse.findUnique({
+						where: { slug: input.slug },
+						select: {
+							courseId: true
+						}
+					})),
+					content: []
+				};
+
+				course = {
+					...course,
+					...await database.generatedLessonPath.findUnique({
+						where: { lessonPathId: `${course?.courseId} - ${ctx.user.name}` },
+						select: {
+							content: true
+						}
+					})
+				};
 			}
-		});
 
-		const content = (course.content ?? []) as CourseContent;
-		const lessonIds = extractLessonIds(content);
+			const content = (course.content ?? []) as CourseContent;
 
-		const lessons = await database.lesson.findMany({
-			where: { lessonId: { in: lessonIds } },
-			select: {
-				lessonId: true,
-				slug: true,
-				title: true,
-				meta: true
+			const lessonIds = extractLessonIds(content);
+
+			const lessons = await database.lesson.findMany({
+				where: { lessonId: { in: lessonIds } },
+				select: {
+					lessonId: true,
+					slug: true,
+					title: true,
+					meta: true
+				}
+			});
+
+			const lessonMap: {
+				[lessonId: string]: {
+					title: string;
+					lessonId: string;
+					slug: string;
+					meta: LessonMeta;
+				};
+			} = {};
+
+			for (const lesson of lessons) {
+				lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
 			}
-		});
 
-		const lessonMap: {
-			[lessonId: string]: { title: string; lessonId: string; slug: string; meta: LessonMeta };
-		} = {};
+			return { content, lessonMap };
+		}),
+	generateCoursePreview: authProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const course = await database.newCourse.findUniqueOrThrow({
+				where: { courseId: input.courseId },
+				select: {
+					teachingGoals: {
+						select: {
+							id: true,
+							repositoryId: true,
+							children: {
+								// Needed for nestedSkills
+								select: { id: true }
+							}
+						}
+					}
+				}
+			});
 
-		for (const lesson of lessons) {
-			lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
-		}
+			const dbSkills = await database.skill.findMany({
+				select: {
+					id: true,
+					repositoryId: true,
+					children: {
+						select: { id: true }
+					}
+				}
+			});
 
-		return { content, lessonMap };
-	}),
+			const libSkills: LibSkill[] = dbSkills.map(skill => ({
+				id: skill.id,
+				repositoryId: skill.repositoryId,
+				nestedSkills: skill.children.map(child => child.id)
+			}));
+
+			const findSkill = (id: string) => libSkills.find(skill => skill.id === id);
+
+			const goalLibSkills: LibSkill[] = course.teachingGoals.map(goal => ({
+				id: goal.id,
+				repositoryId: goal.repositoryId,
+				nestedSkills: goal.children.map(child => child.id)
+			}));
+
+			const knowledgeLibSkills: LibSkill[] = input.knowledge
+				.map(skillId => findSkill(skillId))
+				.filter((skill): skill is LibSkill => !!skill);
+
+			const lessons = await database.lesson.findMany({
+				select: {
+					lessonId: true,
+					requirements: {
+						select: {
+							id: true
+						}
+					},
+					teachingGoals: {
+						select: {
+							id: true
+						}
+					}
+				}
+			});
+
+			const convertToExpression = (skillIds?: string[]): And | Empty => {
+				if (!skillIds || skillIds.length === 0) {
+					return new Empty();
+				}
+				const skills = skillIds
+					.map(id => findSkill(id))
+					.filter((s): s is LibSkill => s !== undefined);
+
+				if (skills.length === 0) {
+					return new Empty();
+				}
+				const variables = skills.map(skill => new Variable(skill));
+				return new And(variables);
+			};
+
+			const learningUnits: LibLearningUnit[] = lessons.map(lesson => ({
+				id: lesson.lessonId,
+				requiredSkills: convertToExpression(lesson.requirements.map(req => req.id)),
+				teachingGoals: lesson.teachingGoals
+					.map(tg => findSkill(tg.id))
+					.filter((s): s is LibSkill => s !== undefined),
+				suggestedSkills: []
+			}));
+
+			const guard: isCompositeGuard<LibLearningUnit> = (
+				element: Unit<LibLearningUnit>
+			): element is CompositeUnit<LibLearningUnit> => {
+				return false;
+			};
+
+			const fnCost = () => 1;
+
+			const path = getPath({
+				skills: libSkills,
+				learningUnits: learningUnits,
+				goal: goalLibSkills,
+				knowledge: knowledgeLibSkills,
+				fnCost: fnCost,
+				isComposite: guard,
+				costOptions: DefaultCostParameter
+			});
+
+			console.log("[courseRouter.generateCoursePreview]: Path", path);
+			console.log("[courseRouter.generateCoursePreview]: Path path", path?.path);
+
+			const courseChapter = [
+				{
+					title: "",
+					description: "",
+					content: path?.path.map(unit => ({
+						lessonId: unit.origin?.id ?? ""
+					}))
+				} as CourseChapter
+			];
+
+			const courseContent: CourseContent = courseChapter;
+
+			const generatedCourse = database.generatedLessonPath.create({
+				data: {
+					lessonPathId: `${input.courseId} - ${ctx.user.name}`,
+					content: courseContent,
+					meta: createCourseMeta({ content: courseContent }),
+					username: ctx.user.name,
+					createdAt: new Date(),
+					updatedAt: new Date()
+				}
+			});
+
+			return generatedCourse;
+		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
 
