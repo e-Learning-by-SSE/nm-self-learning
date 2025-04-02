@@ -223,20 +223,20 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 				case "LINK":
 					if (!selectedText) {
 						formattedText = `[your-description](your-link)`;
+						setCursorPos(1);
 					} else {
-						const url = selectedText.startsWith("http")
-							? selectedText
-							: `https://${selectedText}`;
-						formattedText = `[your-description](${url})`;
+						formattedText = `[${selectedText}](url)`;
+						const selectedTextLength = selectedText.length;
+						setCursorPos(selectedTextLength + 3);
 					}
-					setCursorPos(1);
 					break;
 				case "IMAGE":
 					if (!selectedText) {
 						formattedText = `![your-description](link-to-your-img)`;
 						setCursorPos(2);
 					} else {
-						formattedText = `![your-description](${selectedText})`;
+						formattedText = `![${selectedText}](url)`;
+						setCursorPos(selectedText.length + 3);
 					}
 					break;
 				default:
