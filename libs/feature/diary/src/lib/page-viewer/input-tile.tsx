@@ -1,15 +1,14 @@
-import React, { PropsWithChildren, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
-import { Dialog, LoadingBox, StarRating, XButton } from "@self-learning/ui/common";
-import Image from "next/image";
-import { useRef, useState } from "react";
-import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { LearningGoal } from "@self-learning/types";
+import { Dialog, LoadingBox, StarRating, XButton } from "@self-learning/ui/common";
+import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { IdSet } from "@self-learning/util/common";
-import { StatusUpdateCallback } from "../util/types";
-import { GoalStatus } from "../goals/status";
-import { LearningGoalEditorDialog } from "../goals/goal-editor";
+import Image from "next/image";
+import { PropsWithChildren, useCallback, useRef, useState } from "react";
 import { Location } from "../access-learning-diary";
+import { LearningGoalsDialog } from "../goals/learning-goals";
+import { GoalStatusCheckbox } from "../goals/status-checkbox";
+import { StatusUpdateCallback } from "../util/types";
 
 export function Tile({
 	onClick,
@@ -344,12 +343,12 @@ export function MarkDownInputTile({
 }
 
 export function LearningGoalInputTile({
-	goals: displayGoals,
+	goals,
 	onChange,
 	isCompact
 }: {
-	goals: LearningGoal[];
-	onChange: (goal: LearningGoal[]) => void;
+	goals: IdSet<LearningGoal>;
+	onChange: (goal: LearningGoal[]) => void; // don'use IdSet here, because it is not serializable and will cause zod validation error
 	isCompact: boolean;
 }) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -359,14 +358,21 @@ export function LearningGoalInputTile({
 	};
 
 	const handleGoalStatusUpdate: StatusUpdateCallback = useCallback(
-		(goal, _) => {
-			// this is handled by form.field.onChange. so push all learning goals with the appended changed one.
-			const a = new IdSet(displayGoals);
-			a.add(goal as LearningGoal); // TODO goals: make this type safe
-			onChange(Array.from(a));
+		goal => {
+			// avoid duplicates via sets
+			const copy = new IdSet([...goals.entries(), goal]);
+			onChange(copy.entries());
 		},
-		[displayGoals, onChange]
+		[goals, onChange]
 	);
+
+	const completedParents = new IdSet<LearningGoal>();
+
+	goals.forEach(goal => {
+		if (!goal.parentId) {
+			completedParents.add(goal);
+		}
+	});
 
 	const description =
 		"Ziele helfen dir eine Richtung zu finden, die du einschlagen möchtest, und bietet dir eine Checkliste, um deine Fortschritte zu überprüfen.";
@@ -375,29 +381,32 @@ export function LearningGoalInputTile({
 		<TileLayout
 			isCompact={isCompact}
 			onClick={setDialogOpen}
-			isFilled={displayGoals.length > 0}
+			isFilled={goals.size > 0}
 			tileDescription={description}
 			tileName={"Lernziele"}
 		>
 			<div>
 				<div className="flex flex-wrap p-4 min-h-40 xl:min-h-0">
-					{displayGoals.length === 0 && <span>Keine Lernziele vorhanden</span>}
-					{displayGoals.map(goal => (
+					{goals.size === 0 && <span>Keine Lernziele vorhanden</span>}
+					{goals.entries().map(goal => (
 						<div
 							key={goal.id}
 							className="flex items-center p-2 border border-gray-300 rounded bg-gray-50 m-2"
 						>
-							<GoalStatus goal={goal} editable={false} />
+							<GoalStatusCheckbox goal={goal} editable={false} />
 							<span className="ml-2">{goal.description}</span>
 						</div>
 					))}
 				</div>
+				{/* <LearningGoalProvider userGoals={goals}>
+					<GoalsOverview notFoundMessage={""} editable={false} onRowClick={() => {}} />
+				</LearningGoalProvider> */}
 			</div>
 			{dialogOpen && (
-				<LearningGoalEditorDialog
+				<LearningGoalsDialog
 					onClose={onClose}
+					description={"Lernziele bearbeiten"}
 					onStatusUpdate={handleGoalStatusUpdate}
-					description={description}
 				/>
 			)}
 		</TileLayout>

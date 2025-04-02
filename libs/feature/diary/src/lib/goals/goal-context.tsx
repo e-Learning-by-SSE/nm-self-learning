@@ -1,10 +1,11 @@
 import { createContext, PropsWithChildren, useContext } from "react";
-import { Goal, StatusUpdateCallback } from "../util/types";
+import { GoalFormModel, StatusUpdateCallback } from "../util/types";
+import { IdSet } from "@self-learning/util/common";
 
 type LearningGoalContextType = {
-	userGoals: Goal[];
+	userGoals: IdSet<GoalFormModel>;
 	onStatusUpdate?: StatusUpdateCallback;
-	onCreateGoal?: (parent?: Goal) => void;
+	onCreateGoal?: (parent?: GoalFormModel) => void;
 };
 
 const LearningGoalContext = createContext<LearningGoalContextType | undefined>(undefined);
