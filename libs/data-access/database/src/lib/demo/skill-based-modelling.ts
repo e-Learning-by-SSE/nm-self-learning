@@ -12,8 +12,8 @@ type SkillOfRepository = {
 type LearningUnit = {
 	lessonId: string;
 	title: string;
-	requirements?: string[];
-	teachingGoals: string[];
+	requires?: string[];
+	provides: string[];
 };
 
 const authors: Prisma.UserCreateInput[] = [
@@ -257,17 +257,17 @@ export const unitsOfExample1A: LearningUnit[] = [
 	{
 		lessonId: "LU::SRL-1::A::1",
 		title: "Bedeutung: Selbstreguliertes Lernen",
-		teachingGoals: ["SK::SRL-1::A::2"]
+		provides: ["SK::SRL-1::A::2"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::2",
 		title: "Bedeutung: Eigenverantwortung",
-		teachingGoals: ["SK::SRL-1::A::3"]
+		provides: ["SK::SRL-1::A::3"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::3",
 		title: "SLR als mehrschrittiger zyklischer Prozess",
-		requirements: [
+		requires: [
 			// Präaktionale Phase
 			"SK::SRL-1::A::6",
 			"SK::SRL-1::A::7",
@@ -295,74 +295,74 @@ export const unitsOfExample1A: LearningUnit[] = [
 			// Postaktionale Phase
 			"SK::SRL-1::A::36"
 		],
-		teachingGoals: ["SK::SRL-1::A::4"]
+		provides: ["SK::SRL-1::A::4"]
 	},
 	// Präaktionale Phase
 	{
 		lessonId: "LU::SRL-1::A::4",
 		title: "Definition: Präaktionale Phase",
-		requirements: ["SK::SRL-1::A::2", "SK::SRL-1::A::3"],
-		teachingGoals: ["SK::SRL-1::A::6"]
+		requires: ["SK::SRL-1::A::2", "SK::SRL-1::A::3"],
+		provides: ["SK::SRL-1::A::6"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::5",
 		title: "Bedeutung: Zielsetzung & Planung",
-		requirements: ["SK::SRL-1::A::6"],
-		teachingGoals: ["SK::SRL-1::A::7"]
+		requires: ["SK::SRL-1::A::6"],
+		provides: ["SK::SRL-1::A::7"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::6",
 		title: "SMART-Methode",
-		requirements: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"],
-		teachingGoals: ["SK::SRL-1::A::9"]
+		requires: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"],
+		provides: ["SK::SRL-1::A::9"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::7",
 		title: "Eisenhower-Prinzip",
-		requirements: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"],
-		teachingGoals: ["SK::SRL-1::A::10"]
+		requires: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"],
+		provides: ["SK::SRL-1::A::10"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::8",
 		title: "Überblick über die Lernzeit",
-		requirements: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"],
-		teachingGoals: ["SK::SRL-1::A::12"]
+		requires: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"],
+		provides: ["SK::SRL-1::A::12"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::9",
 		title: "Gantt-Diagramm",
-		requirements: ["SK::SRL-1::A::12"],
-		teachingGoals: ["SK::SRL-1::A::14"]
+		requires: ["SK::SRL-1::A::12"],
+		provides: ["SK::SRL-1::A::14"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::10",
 		title: "Alpen-Methode",
-		requirements: ["SK::SRL-1::A::12"],
-		teachingGoals: ["SK::SRL-1::A::15"]
+		requires: ["SK::SRL-1::A::12"],
+		provides: ["SK::SRL-1::A::15"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::11",
 		title: "Verteiltes Lernen",
-		requirements: ["SK::SRL-1::A::12"],
-		teachingGoals: ["SK::SRL-1::A::16"]
+		requires: ["SK::SRL-1::A::12"],
+		provides: ["SK::SRL-1::A::16"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::12",
 		title: "Motivation & Prokrastination",
-		requirements: [
+		requires: [
 			"SK::SRL-1::A::6",
 			"SK::SRL-1::A::7",
 			"SK::SRL-1::A::9",
 			"SK::SRL-1::A::10",
 			"SK::SRL-1::A::12"
 		],
-		teachingGoals: ["SK::SRL-1::A::17"]
+		provides: ["SK::SRL-1::A::17"]
 	},
 	// Aktionale Phase
 	{
 		lessonId: "LU::SRL-1::A::13",
 		title: "Lernzeit effektiv nutzen",
-		requirements: [
+		requires: [
 			"SK::SRL-1::A::2",
 			"SK::SRL-1::A::3",
 			// Präaktionale Phase
@@ -376,87 +376,87 @@ export const unitsOfExample1A: LearningUnit[] = [
 			"SK::SRL-1::A::16",
 			"SK::SRL-1::A::17"
 		],
-		teachingGoals: ["SK::SRL-1::A::19"]
+		provides: ["SK::SRL-1::A::19"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::14",
 		title: "Bedeutung: Lernstrategien",
-		requirements: ["SK::SRL-1::A::19"],
-		teachingGoals: ["SK::SRL-1::A::21"]
+		requires: ["SK::SRL-1::A::19"],
+		provides: ["SK::SRL-1::A::21"]
 	},
 	// Aktionale Phase -> Lernstrategien
 	{
 		lessonId: "LU::SRL-1::A::15",
 		title: "Kognitive Lernstrategien",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::23"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::23"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::16",
 		title: "Elaboration",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::24"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::24"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::17",
 		title: "Wiederhollungen",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::25"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::25"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::18",
 		title: "Organisation",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::26"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::26"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::19",
 		title: "Metakognitive Lernstrategien",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::27"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::27"]
 	},
 	// Aktionale Phase -> Aspekte von Lernstrategien
 	{
 		lessonId: "LU::SRL-1::A::20",
 		title: "Aufmerksamkeit",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::29"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::29"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::21",
 		title: "Ressourcemanagement",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::30"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::30"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::22",
 		title: "Anstrengungsmanagement",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::31"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::31"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::23",
 		title: "Prüfungsangst",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::32"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::32"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::24",
 		title: "Prüfungsstress",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::33"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::33"]
 	},
 	{
 		lessonId: "LU::SRL-1::A::25",
 		title: "Arbeiten mit Nanomodulen",
-		requirements: ["SK::SRL-1::A::21"],
-		teachingGoals: ["SK::SRL-1::A::34"]
+		requires: ["SK::SRL-1::A::21"],
+		provides: ["SK::SRL-1::A::34"]
 	},
 	// Postaktionale Phase
 	{
 		lessonId: "LU::SRL-1::A::26",
 		title: "Reflexion",
-		requirements: [
+		requires: [
 			// Präaktionale Phase
 			"SK::SRL-1::A::6",
 			"SK::SRL-1::A::7",
@@ -482,19 +482,19 @@ export const unitsOfExample1A: LearningUnit[] = [
 			"SK::SRL-1::A::33",
 			"SK::SRL-1::A::34"
 		],
-		teachingGoals: ["SK::SRL-1::A::36"]
+		provides: ["SK::SRL-1::A::36"]
 	}
 ];
 export const unitsOfExample1B: LearningUnit[] = [
 	{
 		lessonId: "LU::SRL-1::B::1",
 		title: "Einführungs: Selbstreguliertes Lernen",
-		teachingGoals: ["SK::SRL-1::A::2", "SK::SRL-1::A::3"]
+		provides: ["SK::SRL-1::A::2", "SK::SRL-1::A::3"]
 	},
 	{
 		lessonId: "LU::SRL-1::B::10",
 		title: "SLR als mehrschrittiger zyklischer Prozess",
-		requirements: [
+		requires: [
 			// Präaktionale Phase
 			"SK::SRL-1::A::6",
 			"SK::SRL-1::A::7",
@@ -522,32 +522,32 @@ export const unitsOfExample1B: LearningUnit[] = [
 			// Postaktionale Phase
 			"SK::SRL-1::A::36"
 		],
-		teachingGoals: ["SK::SRL-1::A::4"]
+		provides: ["SK::SRL-1::A::4"]
 	},
 	// Präaktionale Phase
 	{
 		lessonId: "LU::SRL-1::B::2",
 		title: "Einführung: Präaktionale Phase",
-		requirements: ["SK::SRL-1::A::2", "SK::SRL-1::A::3"],
-		teachingGoals: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"]
+		requires: ["SK::SRL-1::A::2", "SK::SRL-1::A::3"],
+		provides: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"]
 	},
 	{
 		lessonId: "LU::SRL-1::B::3",
 		title: "Ziele",
-		requirements: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"],
-		teachingGoals: ["SK::SRL-1::A::8", "SK::SRL-1::A::9", "SK::SRL-1::A::10"]
+		requires: ["SK::SRL-1::A::6", "SK::SRL-1::A::7"],
+		provides: ["SK::SRL-1::A::8", "SK::SRL-1::A::9", "SK::SRL-1::A::10"]
 	},
 	{
 		lessonId: "LU::SRL-1::B::4",
 		title: "Zeitmanagement",
-		requirements: [
+		requires: [
 			"SK::SRL-1::A::6",
 			"SK::SRL-1::A::7",
 			"SK::SRL-1::A::8",
 			"SK::SRL-1::A::9",
 			"SK::SRL-1::A::10"
 		],
-		teachingGoals: [
+		provides: [
 			"SK::SRL-1::A::11",
 			"SK::SRL-1::A::12",
 			"SK::SRL-1::A::13",
@@ -559,14 +559,14 @@ export const unitsOfExample1B: LearningUnit[] = [
 	{
 		lessonId: "LU::SRL-1::B::5",
 		title: "Motivation & Prokrastination",
-		requirements: ["SK::SRL-1::A::4", "SK::SRL-1::A::5", "SK::SRL-1::A::8", "SK::SRL-1::A::11"],
-		teachingGoals: ["SK::SRL-1::A::17"]
+		requires: ["SK::SRL-1::A::4", "SK::SRL-1::A::5", "SK::SRL-1::A::8", "SK::SRL-1::A::11"],
+		provides: ["SK::SRL-1::A::17"]
 	},
 	// Aktionale Phase
 	{
 		lessonId: "LU::SRL-1::B::6",
 		title: "Einführung Aktionale Phase",
-		requirements: [
+		requires: [
 			"SK::SRL-1::A::2",
 			"SK::SRL-1::A::3",
 			// Präaktionale Phase
@@ -580,13 +580,13 @@ export const unitsOfExample1B: LearningUnit[] = [
 			"SK::SRL-1::A::16",
 			"SK::SRL-1::A::17"
 		],
-		teachingGoals: ["SK::SRL-1::A::19"]
+		provides: ["SK::SRL-1::A::19"]
 	},
 	{
 		lessonId: "LU::SRL-1::B::7",
 		title: "Lernstrategien",
-		requirements: ["SK::SRL-1::A::19"],
-		teachingGoals: [
+		requires: ["SK::SRL-1::A::19"],
+		provides: [
 			"SK::SRL-1::A::20",
 			"SK::SRL-1::A::21",
 			"SK::SRL-1::A::22",
@@ -600,8 +600,8 @@ export const unitsOfExample1B: LearningUnit[] = [
 	{
 		lessonId: "LU::SRL-1::B::8",
 		title: "Aspekte von Lernstrategien",
-		requirements: ["SK::SRL-1::A::19", "SK::SRL-1::A::21"],
-		teachingGoals: [
+		requires: ["SK::SRL-1::A::19", "SK::SRL-1::A::21"],
+		provides: [
 			"SK::SRL-1::A::28",
 			"SK::SRL-1::A::29",
 			"SK::SRL-1::A::30",
@@ -615,7 +615,7 @@ export const unitsOfExample1B: LearningUnit[] = [
 	{
 		lessonId: "LU::SRL-1::B::9",
 		title: "Postaktionale Phase",
-		requirements: [
+		requires: [
 			// Präaktionale Phase
 			"SK::SRL-1::A::6",
 			"SK::SRL-1::A::7",
@@ -641,7 +641,7 @@ export const unitsOfExample1B: LearningUnit[] = [
 			"SK::SRL-1::A::33",
 			"SK::SRL-1::A::34"
 		],
-		teachingGoals: ["SK::SRL-1::A::35", "SK::SRL-1::A::36"]
+		provides: ["SK::SRL-1::A::35", "SK::SRL-1::A::36"]
 	}
 ];
 
@@ -676,11 +676,11 @@ export async function seedSkillbasedModelling() {
 			data: {
 				title: unit.title,
 				lessonId: unit.lessonId,
-				requirements: {
-					connect: unit.requirements?.map(id => ({ id })) || []
+				requires: {
+					connect: unit.requires?.map(id => ({ id })) || []
 				},
-				teachingGoals: {
-					connect: unit.teachingGoals.map(id => ({ id }))
+				provides: {
+					connect: unit.provides.map(id => ({ id }))
 				},
 				slug: slugify(unit.title),
 				content: Prisma.JsonNull,
@@ -695,11 +695,11 @@ export async function seedSkillbasedModelling() {
 			data: {
 				title: unit.title,
 				lessonId: unit.lessonId,
-				requirements: {
-					connect: unit.requirements?.map(id => ({ id })) || []
+				requires: {
+					connect: unit.requires?.map(id => ({ id })) || []
 				},
-				teachingGoals: {
-					connect: unit.teachingGoals.map(id => ({ id }))
+				provides: {
+					connect: unit.provides.map(id => ({ id }))
 				},
 				slug: slugify(unit.lessonId),
 				content: Prisma.JsonNull,

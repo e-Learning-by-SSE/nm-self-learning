@@ -148,8 +148,8 @@ model Lesson {
     licenseId             Int?
     lessonType            LessonType                    @default(TRADITIONAL)
     selfRegulatedQuestion String?
-    requirements          Skill[]                       @relation("requirements")
-    teachingGoals         Skill[]                       @relation("teachingGoals")
+    requires              Skill[]                       @relation("requiredSkills")
+    provides              Skill[]                       @relation("providedSkills")
     lessonStart           LearningDiaryLearnedLessons[] // TODO check if this is necessary
 }
 
@@ -255,8 +255,8 @@ model Skill {
     repository     SkillRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
     children       Skill[]         @relation("parent")
     parents        Skill[]         @relation("parent")
-    goalsOf        Lesson[]        @relation("teachingGoals")
-    requirementsOf Lesson[]        @relation("requirements")
+    goalsOf        Lesson[]        @relation("providedSkills")
+    requirementsOf Lesson[]        @relation("requiredSkills")
 
     @@unique([repositoryId, name])
     @@map("skills")
@@ -270,5 +270,5 @@ model EventLog {
   courseId    String?
   type        String
   payload     Json?
-  // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
+  // @@id([userId, createdAt, action]) // todo check if optimization is needed
 }
