@@ -25,7 +25,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { ElementType, Fragment, useCallback, useEffect, useState } from "react";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { SearchBar } from "./search-bar";
 
@@ -209,13 +209,14 @@ export function NavbarDropdownMenu({
 							src={avatarUrl}
 							width={42}
 							height={42}
-						></img>
+						/>
 					) : (
 						<div className="h-[42px] w-[42px] rounded-full bg-gray-200"></div>
 					)}
 					<ChevronDownIcon className="h-6 text-gray-400" />
 				</MenuButton>
 			</div>
+
 			<Transition
 				as={Fragment}
 				enter="transition ease-out duration-100"
@@ -229,70 +230,36 @@ export function NavbarDropdownMenu({
 					as="div"
 					className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 				>
-					<MenuItem as="div" className="p-1">
-						{({ focus }) => (
-							<Link
-								href="/dashboard"
-								className={`${
-									focus ? "bg-emerald-500 text-white" : ""
-								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
-							>
-								<UserIcon className="h-5" />
-								<span>Profil</span>
-							</Link>
-						)}
-					</MenuItem>
-					<MenuItem as="div" className="p-1">
-						{({ focus }) => (
-							<Link
-								href="/user-settings"
-								className={`${
-									focus ? "bg-emerald-500 text-white" : ""
-								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
-							>
-								<AdjustmentsHorizontalIcon className="h-5" />
-								<span>Einstellungen</span>
-							</Link>
-						)}
-					</MenuItem>
-					<MenuItem as="div" className="p-1">
+					<DropdownLink href="/dashboard" icon={UserIcon}>
+						Profil
+					</DropdownLink>
+					<DropdownLink href="/user-settings" icon={AdjustmentsHorizontalIcon}>
+						Einstellungen
+					</DropdownLink>
+
+					<div className="p-1">
 						<Divider />
-					</MenuItem>
+					</div>
+
 					{isAuthor && (
-						<MenuItem as="div" className="p-1">
-							{({ focus }) => (
-								<Link
-									href="/dashboard/author"
-									className={`${
-										focus ? "bg-emerald-500 text-white" : ""
-									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
-								>
-									<PencilSquareIcon className="h-5" />
-									<span>Autorenbereich</span>
-								</Link>
-							)}
-						</MenuItem>
+						<DropdownLink href="/dashboard/author" icon={PencilSquareIcon}>
+							Autorenbereich
+						</DropdownLink>
 					)}
 
 					{isAdmin && (
-						<MenuItem as="div" className="p-1">
-							{({ focus }) => (
-								<Link
-									href="/admin"
-									className={`${
-										focus ? "bg-emerald-500 text-white" : ""
-									} flex w-full items-center gap-2 rounded-md px-2 py-2`}
-								>
-									<WrenchIcon className="h-5" />
-									<span>Adminbereich</span>
-								</Link>
-							)}
-						</MenuItem>
+						<DropdownLink href="/admin" icon={WrenchIcon}>
+							Adminbereich
+						</DropdownLink>
 					)}
+
 					<MenuItem as="div" className="p-1">
-						{({ focus }) => (
+						{({ focus, close }) => (
 							<button
-								onClick={signOut}
+								onClick={() => {
+									signOut();
+									close(); // close the dropdown manually
+								}}
 								className={`${
 									focus ? "bg-emerald-500 text-white" : ""
 								} flex w-full items-center gap-2 rounded-md px-2 py-2`}
@@ -305,5 +272,32 @@ export function NavbarDropdownMenu({
 				</MenuItems>
 			</Transition>
 		</Menu>
+	);
+}
+
+export function DropdownLink({
+	href,
+	icon: Icon,
+	children
+}: {
+	href: string;
+	icon: ElementType;
+	children: React.ReactNode;
+}) {
+	return (
+		<MenuItem as="div" className="p-1">
+			{({ focus, close }) => (
+				<Link
+					href={href}
+					onClick={() => close()}
+					className={`${
+						focus ? "bg-emerald-500 text-white" : ""
+					} flex w-full items-center gap-2 rounded-md px-2 py-2`}
+				>
+					<Icon className="h-5" />
+					<span>{children}</span>
+				</Link>
+			)}
+		</MenuItem>
 	);
 }

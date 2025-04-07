@@ -19,7 +19,8 @@ import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { Button } from "@headlessui/react";
+import { Button, MenuItem } from "@headlessui/react";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
@@ -98,27 +99,42 @@ export function QuizEditor() {
 				button={
 					<DropdownButton
 						title="Aufgabentyp hinzufügen"
-						backgroundColor={"btn-primary"}
-						hover={"hover:bg-emerald-700"}
-						chevronColor={"text-white"}
+						backgroundColor="border border-secondary text-secondary bg-white"
+						hover="hover:bg-emerald-50"
+						chevronColor="text-emerald-500"
 					>
-						<span className={"text-white"}>Aufgabe Hinzufügen</span>
-						<div className={"bg-white"}>
-							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
-								<Button
-									title={"Aufgabe Hinzufügen"}
-									onClick={() => appendQuestion(type as QuestionType["type"])}
-									key={type as QuestionType["type"]}
-									className={
-										"hover:bg-secondary hover:text-white border rounded-md p-2 w-full"
-									}
-								>
-									<span>
-										{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
-									</span>
-								</Button>
-							))}
+						<div className="flex items-center gap-2">
+							<PlusIcon className="w-4 h-4" />
+							<span className="font-semibold">Hinzufügen</span>
 						</div>
+
+						<>
+							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+								<MenuItem key={type}>
+									{({ focus }) => (
+										<Button
+											title="Aufgabe Hinzufügen"
+											onClick={() =>
+												appendQuestion(type as QuestionType["type"])
+											}
+											className={`p-2 w-full ${
+												focus
+													? "bg-secondary text-white"
+													: "hover:bg-secondary hover:text-white"
+											}`}
+										>
+											<span>
+												{
+													QUESTION_TYPE_DISPLAY_NAMES[
+														type as QuestionType["type"]
+													]
+												}
+											</span>
+										</Button>
+									)}
+								</MenuItem>
+							))}
+						</>
 					</DropdownButton>
 				}
 			/>
