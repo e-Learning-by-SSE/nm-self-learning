@@ -54,7 +54,7 @@ export function LessonSkillManager() {
 			{selectedRepository && (
 				<>
 					<LabeledFieldSelectSkillsView
-						lable={"Vermittelte Skills"}
+						label={"Vermittelte Skills"}
 						skills={watchingSkills["provides"]}
 						onDeleteSkill={skill => {
 							deleteSkill(skill, "provides");
@@ -66,7 +66,7 @@ export function LessonSkillManager() {
 					/>
 
 					<LabeledFieldSelectSkillsView
-						lable={"Benötigte Skills"}
+						label={"Benötigte Skills"}
 						skills={watchingSkills["requires"]}
 						onDeleteSkill={skill => {
 							deleteSkill(skill, "requires");
