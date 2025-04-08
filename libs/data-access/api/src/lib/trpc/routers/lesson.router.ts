@@ -75,10 +75,10 @@ export const lessonRouter = t.router({
 				},
 				licenseId: input.licenseId,
 				requires: {
-					connect: input.requirements.map(r => ({ id: r.id }))
+					connect: input.requires.map(r => ({ id: r.id }))
 				},
 				provides: {
-					connect: input.teachingGoals.map(r => ({ id: r.id }))
+					connect: input.provides.map(r => ({ id: r.id }))
 				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
@@ -115,10 +115,10 @@ export const lessonRouter = t.router({
 					},
 					licenseId: input.lesson.licenseId,
 					requires: {
-						set: input.lesson.requirements.map(r => ({ id: r.id }))
+						set: input.lesson.requires.map(r => ({ id: r.id }))
 					},
 					provides: {
-						set: input.lesson.teachingGoals.map(r => ({ id: r.id }))
+						set: input.lesson.provides.map(r => ({ id: r.id }))
 					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},

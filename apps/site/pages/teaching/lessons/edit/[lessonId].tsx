@@ -64,12 +64,12 @@ export const getServerSideProps = withTranslations(
 			imgUrl: lesson.imgUrl,
 			authors: lesson.authors.map(a => ({ username: a.username })),
 			licenseId: lesson.licenseId,
-			requirements: lesson.requires.map(r => ({
+			requires: lesson.requires.map(r => ({
 				...r,
 				children: [],
 				parents: []
 			})),
-			teachingGoals: lesson.provides.map(t => ({
+			provides: lesson.provides.map(t => ({
 				...t,
 				children: [],
 				parents: []
