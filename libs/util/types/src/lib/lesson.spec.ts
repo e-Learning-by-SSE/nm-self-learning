@@ -11,8 +11,8 @@ const minValidLesson: Lesson = {
 	authors: [],
 	lessonType: LessonType.TRADITIONAL,
 	selfRegulatedQuestion: null,
-	requirements: [],
-	teachingGoals: []
+	requires: [],
+	provides: []
 };
 
 describe("lessonSchema", () => {
@@ -97,11 +97,11 @@ describe("lessonSchema", () => {
 			    "lessonId": "id-1",
 			    "lessonType": "TRADITIONAL",
 			    "licenseId": 1,
+			    "provides": Array [],
 			    "quiz": null,
-			    "requirements": Array [],
+			    "requires": Array [],
 			    "selfRegulatedQuestion": null,
 			    "slug": "slug-1",
-			    "teachingGoals": Array [],
 			    "title": "The Title",
 			  },
 			  "success": true,
