@@ -6,6 +6,7 @@ export async function createTestUser(username: string) {
 		name: username,
 		id: username,
 		displayName: username,
+		enabledLearningStatistics: true,
 		accounts: {
 			create: [
 				{

@@ -364,12 +364,12 @@ function EditExistingLessonDialog({
 			onClose={handleEditDialogClose}
 			initialLesson={{
 				...data,
-				requirements: data.requirements.map(req => ({
+				requirements: data.requires.map(req => ({
 					...req,
 					children: req.children.map(c => c.name),
 					parents: req.parents.map(p => p.name)
 				})),
-				teachingGoals: data.teachingGoals.map(goal => ({
+				teachingGoals: data.provides.map(goal => ({
 					...goal,
 					children: goal.children.map(c => c.name),
 					parents: goal.parents.map(p => p.name)
