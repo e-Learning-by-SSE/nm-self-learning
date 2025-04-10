@@ -231,7 +231,7 @@ export function AssetPickerButton({
 	return (
 		<button
 			type="button"
-			className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
+			className="btn-square"
 			title="Aus hochgeladenen Dateien auswählen"
 			onClick={() => setShowAssetPicker(true)}
 		>

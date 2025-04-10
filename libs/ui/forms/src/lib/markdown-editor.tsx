@@ -164,8 +164,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 
 			let newCursorPosition = null;
 			const setCursorPos = (lineColumn: number) => {
-				const insertPosition = selection.getStartPosition().delta(0, lineColumn);
-				newCursorPosition = insertPosition;
+				newCursorPosition = selection.getStartPosition().delta(0, lineColumn);
 			};
 
 			const selectedText = model.getValueInRange(selection).trim();
@@ -246,7 +245,6 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 			editor.executeEdits("", [{ range, text: formattedText, forceMoveMarkers: true }]);
 			if (newCursorPosition) {
 				editor.setPosition(newCursorPosition);
-				newCursorPosition = null;
 			}
 			editor.focus();
 		},
@@ -255,38 +253,44 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 
 	const handleCloseUploadDialog = async () => {};
 
+	const iconSize = "h-5";
+
 	return (
 		<div className="mb-2 rounded-xl bg-gray-200 p-2">
 			<div className="flex flex-wrap gap-1">
 				{[
-					{ title: "Bold", format: "BOLD", content: <BoldIcon className="h-5" /> },
-					{ title: "Italic", format: "ITALIC", content: <ItalicIcon className="h-5" /> },
+					{ title: "Bold", format: "BOLD", content: <BoldIcon className={iconSize} /> },
+					{
+						title: "Italic",
+						format: "ITALIC",
+						content: <ItalicIcon className={iconSize} />
+					},
 					{
 						title: "Unordered List",
 						format: "UNORDERED_LIST",
-						content: <ListBulletIcon className="h-5" />
+						content: <ListBulletIcon className={iconSize} />
 					},
 					{
 						title: "Ordered List",
 						format: "ORDERED_LIST",
-						content: <NumberedListIcon className="h-5" />
+						content: <NumberedListIcon className={iconSize} />
 					},
 					{
 						title: "Link",
 						format: "LINK",
-						content: <LinkIcon className="h-5" />
+						content: <LinkIcon className={iconSize} />
 					},
 					{
 						title: "Image",
 						format: "IMAGE",
-						content: <PhotoIcon className="h-5" />
+						content: <PhotoIcon className={iconSize} />
 					}
 				].map(({ title, format, content }) => (
 					<button
 						key={format}
 						title={title}
 						type="button"
-						className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
+						className="btn-square"
 						onClick={() => applyMarkdownFormat(format as FORMAT_TYPES)}
 					>
 						{content}
