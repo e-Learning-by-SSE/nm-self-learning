@@ -1,29 +1,28 @@
-import { CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
+import { PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
-import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
-	Authors,
-	DefaultLicenseLabel,
-	getStaticPropsForLayout,
-	LessonLayout,
-	LessonLayoutProps,
+	getStaticPropsForStandaloneLessonLayout,
 	LicenseLabel,
-	MediaTypeSelector,
-	SelfRegulatedPreQuestion,
-	useLessonContext,
-	usePreferredMediaType
+	StandaloneLessonLayout,
+	StandaloneLessonLayoutProps
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { findContentType, LessonContent, LessonMeta } from "@self-learning/types";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
-import { useEventLog } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { withAuth, withTranslations } from "@self-learning/api";
+import {
+	Authors,
+	DefaultLicenseLabel,
+	MediaTypeSelector,
+	SelfRegulatedPreQuestion,
+	usePreferredMediaType
+} from "@self-learning/lesson";
 
-export type LessonProps = LessonLayoutProps & {
+export type StandaloneLessonProps = StandaloneLessonLayoutProps & {
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
@@ -34,13 +33,13 @@ export type LessonProps = LessonLayoutProps & {
 
 export const getServerSideProps = withTranslations(["common"], async context => {
 	return withAuth(async _user => {
-		const props = await getStaticPropsForLayout(context.params);
+		const props = await getStaticPropsForStandaloneLessonLayout(context.params);
 
 		if ("notFound" in props) return { notFound: true };
 
 		const { lesson } = props;
 
-		lesson.quiz = null; // Not needed on this page, but on /quiz
+		lesson.quiz = null;
 		let mdDescription = null;
 		let mdArticle = null;
 		let mdQuestion = null;
@@ -58,12 +57,9 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 
 		if (article) {
 			mdArticle = await compileMarkdown(article.value.content ?? "Kein Inhalt.");
-
-			// Remove article content to avoid duplication
 			article.value.content = "(replaced)";
 		}
 
-		// TODO change to check if the lesson is self regulated
 		if (lesson.lessonType === LessonType.SELF_REGULATED) {
 			mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
 		}
@@ -82,27 +78,11 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 	})(context);
 });
 
-export default function LessonPage({ lesson, course, markdown }: LessonProps) {
-	// Specify key property to reset page when a new lesson is loaded
-	return <Lesson lesson={lesson} course={course} markdown={markdown} key={lesson.lessonId} />;
-}
-
-function Lesson({ lesson, course, markdown }: LessonProps) {
+export default function StandaloneLessonPage({ lesson, markdown }: StandaloneLessonProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
-
-	const { newEvent } = useEventLog();
-	useEffect(() => {
-		// TODO check if useEffect can be removed
-		newEvent({
-			type: "LESSON_OPEN",
-			resourceId: lesson.lessonId,
-			courseId: course.courseId,
-			payload: undefined
-		});
-	}, [newEvent, lesson.lessonId, course.courseId]);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
@@ -122,20 +102,15 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 			{preferredMediaType === "video" && (
 				<div className="aspect-video w-full xl:max-h-[75vh]">
 					{video?.value.url ? (
-						<VideoPlayer
-							parentLessonId={lesson.lessonId}
-							url={video.value.url}
-							courseId={course.courseId}
-						/>
+						<VideoPlayer parentLessonId={lesson.lessonId} url={video.value.url} />
 					) : (
-						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
+						<div className="py-16 text-center text-red-500">Error: Missing URL 2y</div>
 					)}
 				</div>
 			)}
 
-			<LessonHeader
+			<StandaloneLessonHeader
 				lesson={lesson}
-				course={course}
 				mdDescription={markdown.description}
 				mdSubtitle={markdown.subtitle}
 			/>
@@ -155,31 +130,26 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 	);
 }
 
-LessonPage.getLayout = LessonLayout;
+StandaloneLessonPage.getLayout = StandaloneLessonLayout;
 
-function LessonHeader({
-	course,
+function StandaloneLessonHeader({
 	lesson,
 	mdDescription,
 	mdSubtitle
 }: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
+	lesson: StandaloneLessonProps["lesson"];
 	mdDescription?: CompiledMarkdown | null;
 	mdSubtitle?: CompiledMarkdown | null;
 }) {
-	const { chapterName } = useLessonContext(lesson.lessonId, course.slug);
-
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-wrap justify-between gap-4">
 				<div className="flex w-full flex-col">
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
-							<span className="font-semibold text-secondary">{chapterName}</span>
 							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
-						<LessonControls course={course} lesson={lesson} />
+						<StandaloneLessonControls lesson={lesson} />
 					</span>
 					{mdSubtitle && (
 						<MarkdownContainer className="mt-2 text-light">
@@ -191,7 +161,7 @@ function LessonHeader({
 						<span className="flex flex-col gap-3">
 							<Authors authors={lesson.authors} />
 						</span>
-						<div className="-mt-3">
+						<div className="mt-3">
 							{!lesson.license ? (
 								<DefaultLicenseLabel />
 							) : (
@@ -201,7 +171,7 @@ function LessonHeader({
 					</span>
 
 					<div className="pt-4">
-						<MediaTypeSelector lesson={lesson} course={course} />
+						<MediaTypeSelector lesson={lesson} />
 					</div>
 				</div>
 			</div>
@@ -215,39 +185,20 @@ function LessonHeader({
 	);
 }
 
-function LessonControls({
-	course,
-	lesson
-}: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
-}) {
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
-	const completion = useCourseCompletion(course.slug);
-	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
+function StandaloneLessonControls({ lesson }: { lesson: StandaloneLessonProps["lesson"] }) {
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			{hasQuiz && (
 				<Link
-					href={`/courses/${course.slug}/${lesson.slug}/quiz`}
+					href={`/lessons/${lesson.slug}/quiz`}
 					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					data-testid="quizLink"
 				>
 					<span>Zur Lernkontrolle</span>
 					<PlayIcon className="h-6 shrink-0" />
 				</Link>
-			)}
-
-			{!hasQuiz && !isCompletedLesson && (
-				<button
-					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
-					onClick={markAsCompleted}
-				>
-					<span>Als abgeschlossen markieren</span>
-					<CheckCircleIcon className="h-6 shrink-0" />
-				</button>
 			)}
 		</div>
 	);
