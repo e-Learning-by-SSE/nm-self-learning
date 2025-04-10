@@ -113,8 +113,17 @@
 		"@nx/linter": "19.5.6",
 		"@nx/next": "19.5.6",
 		"@nx/react": "19.5.6",
+		"@nx/storybook": "19.5.6",
+		"@nx/vite": "19.5.6",
 		"@nx/web": "19.5.6",
 		"@nx/workspace": "19.5.6",
+		"@storybook/addon-essentials": "^7.5.3",
+		"@storybook/addon-interactions": "^7.5.3",
+		"@storybook/core-server": "^7.5.3",
+		"@storybook/jest": "^0.2.3",
+		"@storybook/react-vite": "^7.5.3",
+		"@storybook/test-runner": "^0.13.0",
+		"@storybook/testing-library": "^0.2.2",
 		"@svgr/webpack": "^8.1.0",
 		"@swc-node/register": "~1.9.1",
 		"@swc/cli": "~0.3.12",
@@ -162,9 +171,12 @@
 		"prettier-plugin-tailwindcss": "^0.6.5",
 		"prisma": "^5.19.1",
 		"slugify": "^1.6.6",
+		"storybook": "^7.5.3",
 		"tailwindcss": "3.4.7",
+		"ts-node": "10.9.1",
 		"tsx": "^4.19.0",
 		"typescript": "^5.7.2",
-		"url-loader": "^4.1.1"
+		"url-loader": "^4.1.1",
+		"vite": "~5.0.0"
 	}
 }

@@ -68,7 +68,9 @@
 			"!{projectRoot}/jest.config.[jt]s",
 			"!{projectRoot}/.eslintrc.json",
 			"!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
-			"!{projectRoot}/src/test-setup.[jt]s"
+			"!{projectRoot}/src/test-setup.[jt]s",
+			"!{projectRoot}/.storybook/**/*",
+			"!{projectRoot}/tsconfig.storybook.json"
 		]
 	},
 	"plugins": [
@@ -85,6 +87,15 @@
 			"plugin": "@nx/eslint/plugin",
 			"options": {
 				"targetName": "eslint:lint"
+			}
+		},
+		{
+			"plugin": "@nx/storybook/plugin",
+			"options": {
+				"serveStorybookTargetName": "storybook",
+				"buildStorybookTargetName": "build-storybook",
+				"testStorybookTargetName": "test-storybook",
+				"staticStorybookTargetName": "static-storybook"
 			}
 		}
 	]

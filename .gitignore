@@ -56,3 +56,5 @@ data.db
 .env.local
 
 /docs/markdown-examples
+
+storybook-static
