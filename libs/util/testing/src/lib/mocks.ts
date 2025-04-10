@@ -75,19 +75,19 @@ export function createLessonMock({
 	authors,
 	slug,
 	title,
-	requirements,
-	teachingGoals
+	requires,
+	provides
 }: {
 	lessonId: string;
 	authors: string[];
 	slug?: string;
 	title?: string;
-	requirements?: Skill[];
-	teachingGoals?: Skill[];
+	requires?: Skill[];
+	provides?: Skill[];
 }): Partial<Lesson> &
 	Pick<Lesson, "lessonId"> & { authors: Pick<Author, "username">[] } & {
-		requirements: Skill[];
-	} & { teachingGoals: Skill[] } {
+		requires: Skill[];
+	} & { provides: Skill[] } {
 	const defaultSkill: Skill = {
 		id: "skill:1",
 		name: "Skill1",
@@ -110,8 +110,8 @@ export function createLessonMock({
 		quiz: "Quiz",
 		imgUrl: "imgUrl",
 		licenseId: 1,
-		requirements: requirements ?? [defaultSkill],
-		teachingGoals: teachingGoals ?? [defaultSkill],
+		requires: requires ?? [defaultSkill],
+		provides: provides ?? [defaultSkill],
 		authors: authors.map(author => ({ username: author })),
 		selfRegulatedQuestion: null
 	};
