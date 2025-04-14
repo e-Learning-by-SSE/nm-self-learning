@@ -290,7 +290,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 						key={format}
 						title={title}
 						type="button"
-						className="btn-square"
+						className="btn-icon"
 						onClick={() => applyMarkdownFormat(format as FORMAT_TYPES)}
 					>
 						{content}

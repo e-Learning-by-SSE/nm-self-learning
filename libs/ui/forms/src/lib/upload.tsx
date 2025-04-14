@@ -231,7 +231,7 @@ export function AssetPickerButton({
 	return (
 		<button
 			type="button"
-			className="btn-square"
+			className="btn-icon"
 			title="Aus hochgeladenen Dateien auswählen"
 			onClick={() => setShowAssetPicker(true)}
 		>
