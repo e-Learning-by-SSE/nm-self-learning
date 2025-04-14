@@ -211,7 +211,7 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
-	const firstLessonFromChapter = content[0].content[0];
+	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 	return (
 		<section className="flex flex-col gap-16">
@@ -270,9 +270,13 @@ function CourseHeader({
 
 					{isEnrolled && (
 						<Link
-							href={`/courses/${course.slug}/${
-								nextLessonSlug ?? firstLessonFromChapter.slug
-							}`}
+							href={
+								firstLessonFromChapter
+									? `/courses/${course.slug}/${
+											nextLessonSlug ?? firstLessonFromChapter.slug
+										}`
+									: `/courses/${course.slug}`
+							}
 							className="btn-primary"
 						>
 							<span>
@@ -312,6 +316,20 @@ function CourseHeader({
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
 	const completion = useCourseCompletion(course.slug);
+	const hasContent = content.length > 0;
+
+	if (!hasContent) {
+		return (
+			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+				<h3 className="heading flex gap-4 text-2xl">
+					<span className="text-secondary">Kein Inhalt verfügbar</span>
+				</h3>
+				<span className="mt-4 text-light">
+					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
+				</span>
+			</div>
+		);
+	}
 
 	return (
 		<section className="flex flex-col gap-8">
@@ -360,7 +378,6 @@ function Lesson({
 			</div>
 		);
 	}
-
 	return (
 		<Link
 			href={href}
