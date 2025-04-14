@@ -1,4 +1,4 @@
-import { Course, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
@@ -303,7 +303,7 @@ export const courseRouter = t.router({
 			const libSkills: LibSkill[] = dbSkills.map(skill => ({
 				id: skill.id,
 				repositoryId: skill.repositoryId,
-				nestedSkills: skill.children.map(child => child.id)
+				children: skill.children.map(child => child.id)
 			}));
 
 			const findSkill = (id: string) => libSkills.find(skill => skill.id === id);
@@ -311,7 +311,7 @@ export const courseRouter = t.router({
 			const goalLibSkills: LibSkill[] = course.teachingGoals.map(goal => ({
 				id: goal.id,
 				repositoryId: goal.repositoryId,
-				nestedSkills: goal.children.map(child => child.id)
+				children: goal.children.map(child => child.id)
 			}));
 
 			const knowledgeLibSkills: LibSkill[] = input.knowledge
@@ -351,8 +351,8 @@ export const courseRouter = t.router({
 
 			const learningUnits: LibLearningUnit[] = lessons.map(lesson => ({
 				id: lesson.lessonId,
-				requiredSkills: convertToExpression(lesson.requirements.map(req => req.id)),
-				teachingGoals: lesson.teachingGoals
+				requires: convertToExpression(lesson.requirements.map(req => req.id)),
+				provides: lesson.teachingGoals
 					.map(tg => findSkill(tg.id))
 					.filter((s): s is LibSkill => s !== undefined),
 				suggestedSkills: []
@@ -376,8 +376,6 @@ export const courseRouter = t.router({
 				costOptions: DefaultCostParameter
 			});
 
-			console.log("[courseRouter.generateCoursePreview]: Path", path);
-			console.log("[courseRouter.generateCoursePreview]: Path path", path?.path);
 
 			const courseChapter = [
 				{
