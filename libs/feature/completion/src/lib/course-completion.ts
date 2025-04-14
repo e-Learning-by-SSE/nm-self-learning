@@ -11,12 +11,20 @@ export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
 ): Promise<CourseCompletion> {
-	const course = await database.course.findUniqueOrThrow({
+	const course = await database.newCourse.findUniqueOrThrow({
 		where: { slug: courseSlug }
 	});
 
-	const content = (course.content ?? []) as CourseContent;
+	const courseData = await database.generatedLessonPath.findUniqueOrThrow({
+		where: {  lessonPathId: `${course?.courseId} - ${username}`},
+		select: {
+			content: true,
+		}
+	});
+
+	const content = (courseData.content ?? []) as CourseContent;
 	const lessonIds = extractLessonIds(content);
+
 
 	const completedLessons = await database.completedLesson.findMany({
 		select: {

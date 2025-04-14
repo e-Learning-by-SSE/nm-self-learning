@@ -358,7 +358,7 @@ function CourseHeader({
 							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
-					{<CoursePath />}
+					{<CoursePath courseId={course.courseId} />}
 				</div>
 			</div>
 		</section>
@@ -476,7 +476,7 @@ function Description({ content }: { content: CompiledMarkdown }) {
 	);
 }
 
-function CoursePath() {
+function CoursePath({courseId}:{courseId: string}) {
 	const { mutateAsync } = trpc.course.generateCoursePreview.useMutation();
 	const [selectedPath, setSelectedPath] = useState("");
 	const [openDialog, setOpenDialog] = useState<React.JSX.Element | null>(null);
@@ -485,7 +485,7 @@ function CoursePath() {
 	const onSelectedKnowledge = async (skills: SkillFormModel[]) =>{
 		try {
 			const generatedCourse = await mutateAsync({
-				courseId: "bitteBrigitte",
+				courseId: courseId,
 				knowledge: skills.map(skill => skill.id),
 			});
 
