@@ -10,19 +10,19 @@ export function LabeledFieldSelectSkillsView({
 	onDeleteSkill,
 	onAddSkill,
 	repoId,
-	lable
+	label
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	repoId: string;
-	lable: string;
+	label: string;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
 	return (
 		<LabeledField
-			label={lable}
+			label={label}
 			button={
 				<IconButton
 					text="Hinzufügen"

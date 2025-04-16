@@ -93,7 +93,7 @@ export function MarkdownEditorDialog({
 					{editorInstance && <EditorQuickActions editor={editorInstance} />}
 					<EditorField
 						language="markdown"
-						onChange={value => value && setValue(value)}
+						onChange={value => setValue(value ?? "")}
 						onMount={handleEditorDidMount}
 						value={value}
 						height={"100%"}
