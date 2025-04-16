@@ -80,8 +80,9 @@ describe("QuizHeader", () => {
 			/>
 		);
 
-		const tab = screen.getByText("Aufgabe 2");
-		await userEvent.click(tab);
+		const tabs = screen.getAllByRole("tab");
+
+		await userEvent.click(tabs[1]);
 
 		await waitFor(() => {
 			expect(mockNewEvent).toHaveBeenCalledWith({
