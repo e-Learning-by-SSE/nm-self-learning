@@ -1,8 +1,4 @@
-import {
-	CheckCircleIcon as CheckCircleIconOutline,
-	XCircleIcon
-} from "@heroicons/react/24/outline";
-import { ArrowPathIcon, CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
@@ -11,9 +7,17 @@ import {
 	LessonLayoutProps,
 	useLessonContext
 } from "@self-learning/lesson";
-import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
+import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
-import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
+import {
+	compileQuizMarkdown,
+	defaultQuizConfig,
+	Question,
+	QuestionTab,
+	Quiz,
+	QuizProvider,
+	useQuiz
+} from "@self-learning/quiz";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -31,7 +35,6 @@ type QuestionProps = LessonLayoutProps & {
 	};
 };
 
-// Cant use withTranslation hook for some reason. Test will fail otherwise.
 export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params, locale }) => {
 	const parentProps = await getStaticPropsForLayout(params);
 
@@ -40,31 +43,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 	const quiz = parentProps.lesson.quiz as Quiz | null;
 	if (!quiz) return { notFound: true };
 
-	const questionsMd: MdLookup = {};
-	const answersMd: MdLookup = {};
-	const hintsMd: MdLookupArray = {};
-	type QuestionList = typeof quiz.questions;
-	const processedQuestions: QuestionList = [];
-
-	for (const question of quiz.questions) {
-		questionsMd[question.questionId] = await compileMarkdown(question.statement);
-
-		if (question.hints?.length > 0) {
-			hintsMd[question.questionId] = [];
-
-			for (const hint of question.hints) {
-				hintsMd[question.questionId].push(await compileMarkdown(hint.content));
-			}
-		}
-
-		if (question.type === "multiple-choice") {
-			for (const answer of question.answers) {
-				answersMd[answer.answerId] = await compileMarkdown(answer.content);
-			}
-		}
-		processedQuestions.push(question);
-	}
-
+	const { questionsMd, answersMd, hintsMd, processedQuestions } = await compileQuizMarkdown(quiz);
 	quiz.questions = processedQuestions;
 
 	return {
@@ -72,11 +51,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			...parentProps,
 			quiz,
-			markdown: {
-				questionsMd,
-				answersMd,
-				hintsMd
-			}
+			markdown: { questionsMd, answersMd, hintsMd }
 		}
 	};
 };
@@ -264,55 +239,6 @@ export function QuizHeader({
 				/>
 			)}
 		</div>
-	);
-}
-
-function QuestionTab(props: {
-	evaluation: { isCorrect: boolean } | null;
-	index: number;
-	isMultiStep: boolean;
-}) {
-	const isCorrect = props.evaluation?.isCorrect === true;
-	const isIncorrect = props.evaluation?.isCorrect === false;
-
-	{
-		props.isMultiStep && <CheckCircleIcon className="h-5 text-secondary" />;
-	}
-
-	return (
-		<span className="flex items-center gap-4">
-			{isCorrect ? (
-				<QuestionTabIcon isMultiStep={props.isMultiStep}>
-					<CheckCircleIcon className="h-5 text-secondary" />
-				</QuestionTabIcon>
-			) : isIncorrect ? (
-				<QuestionTabIcon isMultiStep={props.isMultiStep}>
-					<XCircleIcon className="h-5 text-red-500" />
-				</QuestionTabIcon>
-			) : (
-				<QuestionTabIcon isMultiStep={props.isMultiStep}>
-					<CheckCircleIconOutline className="h-5 text-gray-400" />
-				</QuestionTabIcon>
-			)}
-			<span data-testid="questionTab">Aufgabe {props.index + 1}</span>
-		</span>
-	);
-}
-
-function QuestionTabIcon({
-	children,
-	isMultiStep
-}: {
-	children: React.ReactNode;
-	isMultiStep: boolean;
-}) {
-	return isMultiStep ? (
-		<div className="flex overflow-hidden">
-			{children}
-			{children}
-		</div>
-	) : (
-		<div>{children}</div>
 	);
 }
 

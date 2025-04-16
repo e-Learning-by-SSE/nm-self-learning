@@ -14,6 +14,16 @@ export type LessonLayoutProps = {
 	course: ResolvedValue<typeof getCourse>;
 };
 
+export type StandaloneLessonLayoutProps = {
+	lesson: LessonContent;
+};
+
+type BaseLessonLayoutProps = {
+	title: string;
+	playlistArea: React.ReactNode;
+	children: React.ReactNode;
+};
+
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 
 function getCourse(slug: string) {
@@ -46,6 +56,24 @@ export async function getStaticPropsForLayout(
 	return { lesson, course };
 }
 
+export async function getStaticPropsForStandaloneLessonLayout(
+	params?: ParsedUrlQuery | undefined
+): Promise<StandaloneLessonLayoutProps | { notFound: true }> {
+	const lessonSlug = params?.["lessonSlug"] as string;
+
+	if (!lessonSlug) {
+		throw new Error("No lesson slug provided.");
+	}
+
+	const lesson = await getLesson(lessonSlug);
+
+	if (!lesson) {
+		return { notFound: true };
+	}
+
+	return { lesson };
+}
+
 function mapToPlaylistContent(
 	content: CourseContent,
 	lessons: { [lessonId: string]: LessonInfo }
@@ -76,25 +104,46 @@ function mapToPlaylistContent(
 	return playlistContent;
 }
 
-export function LessonLayout(
-	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
-	pageProps: LessonLayoutProps
-) {
+export function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {
 	return (
 		<>
 			<Head>
-				<title>{pageProps.lesson.title}</title>
+				<title>{title}</title>
 			</Head>
 
 			<div className="flex flex-col bg-gray-100">
 				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-					<PlaylistArea {...pageProps} />
-					<div className="w-full pt-8 pb-16">
-						<Component {...pageProps} />
-					</div>
+					{playlistArea}
+					<div className="w-full pt-8 pb-16">{children}</div>
 				</div>
 			</div>
 		</>
+	);
+}
+
+export function LessonLayout(
+	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
+	pageProps: LessonLayoutProps
+) {
+	const playlistArea = <PlaylistArea {...pageProps} />;
+
+	return (
+		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+			<Component {...pageProps} />
+		</BaseLessonLayout>
+	);
+}
+
+export function StandaloneLessonLayout(
+	Component: NextComponentType<NextPageContext, unknown, StandaloneLessonLayoutProps>,
+	pageProps: StandaloneLessonLayoutProps
+) {
+	const playlistArea = <StandaloneLessonPlaylistArea {...pageProps} />;
+
+	return (
+		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+			<Component {...pageProps} />
+		</BaseLessonLayout>
 	);
 }
 
@@ -120,6 +169,14 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 					<div className="h-full animate-pulse rounded-lg bg-gray-200"></div>
 				</div>
 			)}
+		</aside>
+	);
+}
+
+function StandaloneLessonPlaylistArea({ lesson }: StandaloneLessonLayoutProps) {
+	return (
+		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+			{/* to be implemented */}
 		</aside>
 	);
 }
