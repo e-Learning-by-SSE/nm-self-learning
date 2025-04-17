@@ -5,8 +5,7 @@ import { createCloze, Gap } from "./cloze-parser";
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
-
-type SetAnswerFn = (index: number, answer: string) => void;
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 export default function ClozeAnswer() {
 	const { question, answer, setAnswer, evaluation } = useQuestion("cloze");
@@ -40,13 +39,15 @@ export default function ClozeAnswer() {
 							{segment ?? ""}
 						</ReactMarkdown>
 						{cloze.gaps[index] && (
-							<RenderGapType
-								gap={cloze.gaps[index]}
-								index={index}
-								setAnswer={onUpdateAnswer}
-								value={answer.value[index] ?? ""}
-								disabled={!!evaluation}
-							/>
+							<span className="ml-1 inline-block align-middle">
+								<RenderGapType
+									gap={cloze.gaps[index]}
+									index={index}
+									setAnswer={onUpdateAnswer}
+									value={answer.value[index] ?? ""}
+									disabled={!!evaluation}
+								/>
+							</span>
 						)}
 					</Fragment>
 				))}
@@ -88,11 +89,14 @@ export function RenderGapType({
 		return (
 			<Menu as="span" className="relative inline-block align-baseline">
 				<MenuButton
-					className="inline-flex items-center px-2 py-1 text-sm border border-gray-300 bg-white rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+					className="inline-flex items-center px-2 py-1 text-sm border border-gray-300 bg-white rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1  disabled:opacity-50"
 					disabled={disabled}
 				>
 					{value === "" ? (
-						<span className="text-gray-400 italic">Auswahl...</span>
+						<div className={"flex"}>
+							<ChevronDownIcon className={"w-5 h-5"} />
+							<span className="text-gray-400">Auswahl...</span>
+						</div>
 					) : (
 						<ReactMarkdown
 							remarkPlugins={remarkPlugins}
@@ -116,7 +120,7 @@ export function RenderGapType({
 					leaveFrom="transform opacity-100 scale-100"
 					leaveTo="transform opacity-0 scale-95"
 				>
-					<MenuItems className="absolute z-10 mt-1 w-max min-w-[8rem] max-w-xs rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+					<MenuItems className="absolute z-10 mt-1 w-max min-w-[8rem] max-w-xs rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
 						<div className="py-1 max-h-48 overflow-auto text-sm">
 							{gap.values.map((v, i) => (
 								<MenuItem key={i}>
@@ -133,9 +137,6 @@ export function RenderGapType({
 												remarkPlugins={remarkPlugins}
 												rehypePlugins={rehypePlugins}
 												className="prose prose-sm max-w-none"
-												components={{
-													p: ({ children }) => <span>{children}</span>
-												}}
 											>
 												{v.text ?? ""}
 											</ReactMarkdown>
@@ -154,7 +155,7 @@ export function RenderGapType({
 		return (
 			<input
 				type="text"
-				className="inline-block border border-gray-300 rounded px-2 py-1 text-sm mx-1 focus:ring-1 focus:ring-blue-500"
+				className="inline-block border border-gray-300 rounded px-2 py-1 text-sm mx-1 focus:ring-1 "
 				value={value}
 				onChange={e => setAnswer(index, e.target.value)}
 				disabled={disabled}
