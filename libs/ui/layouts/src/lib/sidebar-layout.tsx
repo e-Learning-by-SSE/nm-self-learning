@@ -1,6 +1,7 @@
 import { Bars4Icon } from "@heroicons/react/24/outline";
 import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 import { DefaultSidebar } from "./sidebar";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 
 /**
  * Returns a component that can be used to embed page content into a layout with a collapsible sidebar.
@@ -46,16 +47,16 @@ function useSidebarState(): [open: boolean, setOpen: (open: boolean) => void] {
 	const [open, _setOpen] = useState(true);
 
 	useEffect(() => {
-		const hideSidebar = localStorage.getItem("hideSidebar");
+		const hideSidebar = loadFromLocalStorage("user_hideSidebar");
 		if (hideSidebar) _setOpen(false);
 	}, []);
 
 	const setOpen = useCallback((open: boolean) => {
 		if (open) {
-			localStorage.removeItem("hideSidebar");
+			saveToLocalStorage("user_hideSidebar", open);
 			_setOpen(true);
 		} else {
-			localStorage.setItem("hideSidebar", JSON.stringify(true));
+			saveToLocalStorage("user_hideSidebar", open);
 			_setOpen(false);
 		}
 	}, []);

@@ -3,6 +3,7 @@ import {
 	FieldHint,
 	Form,
 	InputWithButton,
+	LabeledCheckbox,
 	LabeledField,
 	MarkdownField,
 	OpenAsJsonButton,
@@ -12,7 +13,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { lessonSchema } from "@self-learning/types";
-import { LabeledCheckbox } from "@self-learning/ui/forms";
 import { GreyBoarderButton } from "@self-learning/ui/common";
 import { LessonSkillManager } from "./lesson-skill-manager";
 
@@ -62,7 +62,7 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 							/>
 						}
 						button={
-							<GreyBoarderButton onClick={slugifyField} title={"Generiere Slug"}>
+							<GreyBoarderButton type="button" onClick={slugifyField} title={"Generiere Slug"}>
 								<span className={"text-gray-600"}>Generieren</span>
 							</GreyBoarderButton>
 						}

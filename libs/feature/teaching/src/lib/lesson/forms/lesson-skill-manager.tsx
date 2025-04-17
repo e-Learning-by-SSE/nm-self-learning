@@ -10,7 +10,7 @@ import { LessonFormModel } from "../lesson-form-model";
 import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
 import { ExtendedCourseFormModel } from "../../course/course-form-model";
 
-type SkillModalIdentifier = "teachingGoals" | "requirements";
+type SkillModalIdentifier = "provides" | "requires";
 
 type CourseSkillModalIdentifier = "courseTeachingGoals" | "courseRequirements";
 
@@ -90,8 +90,8 @@ export function LessonSkillManager() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {
-		requirements: watch("requirements"),
-		teachingGoals: watch("teachingGoals")
+		requires: watch("requires"),
+		provides: watch("provides")
 	};
 
 	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
@@ -127,24 +127,24 @@ export function LessonSkillManager() {
 				<>
 					<LabeledFieldSelectSkillsView
 						label={"Vermittelte Skills"}
-						skills={watchingSkills["teachingGoals"]}
+						skills={watchingSkills["provides"]}
 						onDeleteSkill={skill => {
-							deleteSkill(skill, "teachingGoals");
+							deleteSkill(skill, "provides");
 						}}
 						onAddSkill={skill => {
-							addSkills(skill, "teachingGoals");
+							addSkills(skill, "provides");
 						}}
 						repoId={selectedRepository.id}
 					/>
 
 					<LabeledFieldSelectSkillsView
 						label={"Benötigte Skills"}
-						skills={watchingSkills["requirements"]}
+						skills={watchingSkills["requires"]}
 						onDeleteSkill={skill => {
-							deleteSkill(skill, "requirements");
+							deleteSkill(skill, "requires");
 						}}
 						onAddSkill={skill => {
-							addSkills(skill, "requirements");
+							addSkills(skill, "requires");
 						}}
 						repoId={selectedRepository.id}
 					/>

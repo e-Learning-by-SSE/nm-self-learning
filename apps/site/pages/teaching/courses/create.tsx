@@ -3,13 +3,13 @@ import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
+import { withTranslations } from "@self-learning/api";
 
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
 	const { mutateAsync: addCourse } = trpc.specialization.addCourse.useMutation();
 	const router = useRouter();
-	const { specializationId } = router.query;
-	const { subjectId } = router.query;
+	const { subjectId, specializationId } = router.query;
 	const session = useRequiredSession();
 	const author = session.data?.user.name;
 
@@ -17,12 +17,13 @@ export default function CreateCoursePage() {
 		try {
 			const { title, slug, courseId } = await createCourse(course);
 
-			await addCourse({
-				subjectId: subjectId as string,
-				specializationId: specializationId as string,
-				courseId: courseId
-			});
-
+			if (subjectId && specializationId) {
+				await addCourse({
+					subjectId: subjectId as string,
+					specializationId: specializationId as string,
+					courseId: courseId
+				});
+			}
 			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
 			router.push(`/courses/${slug}`);
 		} catch (error) {
@@ -60,3 +61,5 @@ export default function CreateCoursePage() {
 		</>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

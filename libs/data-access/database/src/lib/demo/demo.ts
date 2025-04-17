@@ -7,6 +7,7 @@ import { seedEvents } from "./event-seed";
 import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
 import { seedJavaDemo } from "./seed-java-demo";
 import { seedReactDemo } from "./seed-react-demo";
+import { seedSkillbasedModelling } from "./skill-based-modelling";
 
 const prisma = new PrismaClient();
 
@@ -28,4 +29,6 @@ export async function seedDemos(): Promise<void> {
 	await generateLearningDiaryDemoData();
 
 	await generateEventlogDate();
+
+	await seedSkillbasedModelling();
 }

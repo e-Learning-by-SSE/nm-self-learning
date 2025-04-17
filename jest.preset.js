@@ -51,6 +51,7 @@ module.exports = {
 				}
 			}
 		],
+		// "^.+\\.[tj]sx?$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.spec.json" }],
 		"^.+\\.svg$": path.join(projectRoot, "jest.svgTransform.js")
 	},
 	transformIgnorePatterns: [],
