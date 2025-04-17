@@ -209,7 +209,7 @@ export function NavbarDropdownMenu({
 							src={avatarUrl}
 							width={42}
 							height={42}
-						></img>
+						/>
 					) : (
 						<div className="h-[42px] w-[42px] rounded-full bg-gray-200"></div>
 					)}
