@@ -175,237 +175,182 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 ];
 
 const reactLessons = [
-	{
-		title: "Installation",
-		description: faker.lorem.paragraphs(3),
-		content: [
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Start a New React Project",
-				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Add React to a Website",
-				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Editor Setup",
-				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "React Developer Tools",
-				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
-			})
-		]
-	},
-	{
-		title: "Describing the UI",
-		description: faker.lorem.paragraphs(3),
-		content: [
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Your First Component",
-				questions: reactDemoQuestions,
-				teachingGoals: ["103"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Importing and Exporting Components",
-				questions: reactDemoQuestions,
-				teachingGoals: ["211"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Writing Markup with JSX",
-				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "JavaScript in JSX with Curly Braces",
-				questions: reactDemoQuestions,
-				teachingGoals: ["102"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Passing Props to a Component",
-				questions: reactDemoQuestions,
-				teachingGoals: ["104"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Conditional Rendering",
-				questions: reactDemoQuestions,
-				teachingGoals: ["107"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Rendering Lists",
-				questions: reactDemoQuestions,
-				teachingGoals: ["108"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Keeping Components Pure",
-				questions: reactDemoQuestions,
-				teachingGoals: ["103"]
-			})
-		]
-	},
-	{
-		title: "Adding Interactivity",
-		description: faker.lorem.paragraphs(3),
-		content: [
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Responding to Events",
-				questions: reactDemoQuestions,
-				teachingGoals: ["106"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "State: A Component's Memory",
-				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Render and Commit",
-				questions: reactDemoQuestions,
-				teachingGoals: ["210"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "State as a Snapshot",
-				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Queueing a Series of State Updates",
-				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Updating Objects in State",
-				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Updating Arrays in State",
-				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
-			})
-		]
-	},
-	{
-		title: "Managing State",
-		description: faker.lorem.paragraphs(3),
-		content: [
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Reacting to Input with State",
-				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Choosing the State Structure",
-				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Sharing State Between Components",
-				questions: reactDemoQuestions,
-				teachingGoals: ["211"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Preserving and Resetting State",
-				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Extracting State Logic into a Reducer",
-				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Passing Data Deeply with Context",
-				questions: reactDemoQuestions,
-				teachingGoals: ["214"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Scaling Up with Reducer and Context",
-				questions: reactDemoQuestions,
-				teachingGoals: ["214"]
-			})
-		]
-	},
-	{
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Start a New React Project",
+		questions: reactDemoQuestions,
+		teachingGoals: ["101"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Add React to a Website",
+		questions: reactDemoQuestions,
+		teachingGoals: ["101"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Editor Setup",
+		questions: reactDemoQuestions,
+		teachingGoals: ["101"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "React Developer Tools",
+		questions: reactDemoQuestions,
+		teachingGoals: ["101"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Your First Component",
+		questions: reactDemoQuestions,
+		teachingGoals: ["103"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Importing and Exporting Components",
+		questions: reactDemoQuestions,
+		teachingGoals: ["211"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Writing Markup with JSX",
+		questions: reactDemoQuestions,
+		teachingGoals: ["101"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "JavaScript in JSX with Curly Braces",
+		questions: reactDemoQuestions,
+		teachingGoals: ["102"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Passing Props to a Component",
+		questions: reactDemoQuestions,
+		teachingGoals: ["104"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Conditional Rendering",
+		questions: reactDemoQuestions,
+		teachingGoals: ["107"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Rendering Lists",
+		questions: reactDemoQuestions,
+		teachingGoals: ["108"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Keeping Components Pure",
+		questions: reactDemoQuestions,
+		teachingGoals: ["103"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Responding to Events",
+		questions: reactDemoQuestions,
+		teachingGoals: ["106"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "State: A Component's Memory",
+		questions: reactDemoQuestions,
+		teachingGoals: ["105"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Render and Commit",
+		questions: reactDemoQuestions,
+		teachingGoals: ["210"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "State as a Snapshot",
+		questions: reactDemoQuestions,
+		teachingGoals: ["105"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Queueing a Series of State Updates",
+		questions: reactDemoQuestions,
+		teachingGoals: ["105"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Updating Objects in State",
+		questions: reactDemoQuestions,
+		teachingGoals: ["105"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Updating Arrays in State",
+		questions: reactDemoQuestions,
+		teachingGoals: ["105"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Reacting to Input with State",
+		questions: reactDemoQuestions,
+		teachingGoals: ["105"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Choosing the State Structure",
+		questions: reactDemoQuestions,
+		teachingGoals: ["105"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Sharing State Between Components",
+		questions: reactDemoQuestions,
+		teachingGoals: ["211"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Preserving and Resetting State",
+		questions: reactDemoQuestions,
+		teachingGoals: ["105"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Extracting State Logic into a Reducer",
+		questions: reactDemoQuestions,
+		teachingGoals: ["213"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Passing Data Deeply with Context",
+		questions: reactDemoQuestions,
+		teachingGoals: ["214"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Scaling Up with Reducer and Context",
+		questions: reactDemoQuestions,
+		teachingGoals: ["214"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
 		title: "Escape Hatches",
-		description: faker.lorem.paragraphs(3),
-		content: [
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Escape Hatches",
-				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Referencing Values with Refs",
-				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Manipulating the DOM with Refs",
-				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Synchronizing with Effects",
-				questions: reactDemoQuestions,
-				teachingGoals: ["109"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "You Might Not Need an Effect",
-				questions: reactDemoQuestions,
-				teachingGoals: ["109"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Lifecycle of Reactive Effects",
-				questions: reactDemoQuestions,
-				teachingGoals: ["210"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Separating Events from Effects",
-				questions: reactDemoQuestions,
-				teachingGoals: ["109"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Removing Effect Dependencies",
-				questions: reactDemoQuestions,
-				teachingGoals: ["109"]
-			}),
-			createLessonWithRandomContentAndDemoQuestions({
-				title: "Reusing Logic with Custom Hooks",
-				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
-			})
-		]
-	}
+		questions: reactDemoQuestions,
+		teachingGoals: ["213"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Referencing Values with Refs",
+		questions: reactDemoQuestions,
+		teachingGoals: ["213"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Manipulating the DOM with Refs",
+		questions: reactDemoQuestions,
+		teachingGoals: ["213"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Synchronizing with Effects",
+		questions: reactDemoQuestions,
+		teachingGoals: ["109"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "You Might Not Need an Effect",
+		questions: reactDemoQuestions,
+		teachingGoals: ["109"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Lifecycle of Reactive Effects",
+		questions: reactDemoQuestions,
+		teachingGoals: ["210"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Separating Events from Effects",
+		questions: reactDemoQuestions,
+		teachingGoals: ["109"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Removing Effect Dependencies",
+		questions: reactDemoQuestions,
+		teachingGoals: ["109"]
+	}),
+	createLessonWithRandomContentAndDemoQuestions({
+		title: "Reusing Logic with Custom Hooks",
+		questions: reactDemoQuestions,
+		teachingGoals: ["213"]
+	})
 ];
-
-export const reactCourses: Prisma.CourseCreateManyInput[] = [
-	{
-		courseId: faker.random.alphaNumeric(8),
-		title: "The Beginner's Guide to React",
-		slug: "the-beginners-guide-to-react",
-		subtitle: faker.lorem.paragraph(2),
-		description: faker.lorem.paragraphs(3),
-		imgUrl: "https://images.unsplash.com/photo-1579403124614-197f69d8187b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1064&q=80",
-		subjectId: "informatik",
-		createdAt: new Date(2022, 4, 20),
-		updatedAt: new Date(2022, 5, 1),
-		content: createCourseContent(
-			reactLessons.map(chapter => ({
-				title: chapter.title,
-				description: chapter.description,
-				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
-			}))	
-		),
-		meta: {}
-	}
-].map(course => ({
-	...course,
-	meta: createCourseMeta(course)
-}));
 
 const reactAuthors: Prisma.UserCreateInput[] = [
 	{
@@ -512,26 +457,6 @@ const reactStudents = [
 		image: "https://i.pinimg.com/474x/d7/80/52/d7805247faaf18ef746e6d2e7d7c646a.jpg"
 	}
 ];
-
-const enrollments: Prisma.EnrollmentCreateManyInput[] = [
-	{
-		status: "ACTIVE",
-		createdAt: new Date(2022, 4, 20),
-		courseId: reactCourses[0].courseId,
-		username: reactStudents[0].username
-	}
-];
-
-const completedReactLessons: Prisma.CompletedLessonCreateManyInput[] = extractLessonIds(
-	reactLessons
-)
-	.slice(0, 7)
-	.map((lessonId, index) => ({
-		lessonId: lessonId,
-		courseId: reactCourses[0].courseId,
-		username: reactStudents[0].username,
-		createdAt: subHours(Date.now(), index * 4)
-	}));
 
 const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 	name: student.username,
@@ -658,56 +583,61 @@ async function seedReactDemoSkills() {
 }
 
 export async function seedReactDemo() {
-	
 	await createUsers(users);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
-	
+
 	for (const author of reactAuthors) {
 		await prisma.user.create({ data: author });
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
-	await prisma.course.createMany({ data: reactCourses });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
-
 	await seedReactDemoSkills();
+
+	const course = await prisma.course.create({
+		data: {
+			courseId: faker.random.alphaNumeric(8),
+			title: "The Beginner's Guide to React",
+			slug: "the-beginners-guide-to-react",
+			subtitle: faker.lorem.paragraph(2),
+			description: faker.lorem.paragraphs(3),
+			imgUrl: "https://images.unsplash.com/photo-1579403124614-197f69d8187b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1064&q=80",
+			subjectId: "informatik",
+			createdAt: new Date(2022, 4, 20),
+			updatedAt: new Date(2022, 5, 1),
+			teachingGoals: {
+				connect: skillGroups.map(group => ({ id: group.id }))
+			}
+		}
+	});
+
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
 	const licenseId = await defaultLicenseId();
 
 	await Promise.all(
-		reactLessons.map(async chapter => {
-			await Promise.all(
-				chapter.content.map(async lesson => {
-					try {
-					await prisma.lesson.create({
-						data: {
-							...lesson, 
-							license: {
-								connect: { licenseId } 
-							}
+		reactLessons.map(async lesson => {
+			try {
+				await prisma.lesson.create({
+					data: {
+						...lesson,
+						license: {
+							connect: { licenseId }
 						}
-					});
-				} catch(error) {
-					console.error("Error creating lesson:", error);
-				}
-				})
-			);
+					}
+				});
+			} catch (error) {
+				console.error("Error creating lesson:", error);
+			}
 		})
 	);
 
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
-	await prisma.enrollment.createMany({ data: enrollments });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Enrollments");
-
-	await prisma.completedLesson.createMany({ data: completedReactLessons });
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Completed Lessons");
-
 	await prisma.specialization.update({
 		where: { specializationId: "softwareentwicklung" },
 		data: {
 			courses: {
-				connect: reactCourses.map(course => ({ courseId: course.courseId }))
+				connect: { courseId: course.courseId }
 			}
 		}
 	});

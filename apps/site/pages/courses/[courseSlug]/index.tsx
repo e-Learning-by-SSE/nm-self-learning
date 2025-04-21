@@ -121,18 +121,10 @@ export const getServerSideProps = withTranslations(
 			throw new Error("No slug provided.");
 		}
 
-		let course = await getCourse(courseSlug);
-		if (!course) {
-			course = {
-				authors: [],
-				...(await getNewCourse(courseSlug, ctx.name))
-			} as Course;
-			if (!course) {
-				return { notFound: true };
-			}
-		}
+		const course = await getCourse(courseSlug, ctx.name);
 
 		const content = await mapCourseContent(course.content as CourseContent);
+
 		let markdownDescription = null;
 
 		if (course.description && course.description.length > 0) {
@@ -154,23 +146,9 @@ export const getServerSideProps = withTranslations(
 	})
 );
 
-async function getCourse(courseSlug: string) {
-	return database.course.findUnique({
-		where: { slug: courseSlug },
-		include: {
-			authors: {
-				select: {
-					slug: true,
-					displayName: true,
-					imgUrl: true
-				}
-			}
-		}
-	});
-}
 
-async function getNewCourse(courseSlug: string, username: string) {
-	const course = await database.newCourse.findUnique({
+async function getCourse(courseSlug: string, username: string) {
+	const course = await database.course.findUniqueOrThrow({
 		where: { slug: courseSlug },
 		select: {
 			courseId: true,
@@ -181,7 +159,6 @@ async function getNewCourse(courseSlug: string, username: string) {
 			imgUrl: true,
 			createdAt: true,
 			updatedAt: true,
-			meta: true,
 			subjectId: true,
 			authors: {
 				select: {
@@ -189,20 +166,18 @@ async function getNewCourse(courseSlug: string, username: string) {
 					displayName: true,
 					imgUrl: true
 				}
+			},
+			generatedLessonPaths: {
+				where: {
+					username: username
+				}
 			}
-		}
-	});
-
-	const courseContent = await database.generatedLessonPath.findUnique({
-		where: { lessonPathId: `${course?.courseId} - ${username}` },
-		select: {
-			content: true
 		}
 	});
 
 	return {
 		...course,
-		content: courseContent?.content ?? []
+		content: course?.generatedLessonPaths[0]?.content ?? []
 	};
 }
 
@@ -391,7 +366,7 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 					<span className="text-secondary">Kein Inhalt verfügbar</span>
 				</h3>
 				<span className="mt-4 text-light">
-					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
+					Du hast dir noch keinen Kurspfad generiert. Bitte wähle einen Kurspfad aus.
 				</span>
 			</div>
 		);
@@ -590,7 +565,7 @@ function HandleChosenPath({
 							onClose(skills ?? []);
 							setIsOpen(false);
 						}}
-						repositoryId={"1"}
+						repositoryId={"2"}
 					/>
 				)}
 			</>
