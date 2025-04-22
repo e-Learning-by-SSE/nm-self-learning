@@ -153,7 +153,7 @@ export function RenderGapType({
 		return (
 			<input
 				type="text"
-				className="inline-block border border-gray-300 rounded px-2 py-1 text-sm mx-1 focus:ring-1 "
+				className="textfield mx-1 "
 				value={value}
 				onChange={e => setAnswer(index, e.target.value)}
 				disabled={disabled}

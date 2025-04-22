@@ -146,7 +146,6 @@ export function GoalEditorDialog({
 }
 
 
-
 /**
  * Dropdown menu component for selecting the parent learning goal of a sub-goal.
  * If no goal is selected, a new learning goal will be created.
