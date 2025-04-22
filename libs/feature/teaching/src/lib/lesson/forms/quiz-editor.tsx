@@ -108,6 +108,7 @@ export function QuizEditor() {
 					>
 						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 							<Button
+								key={type}
 								type={"button"}
 								title="Aufgabe Hinzufügen"
 								onClick={() => appendQuestion(type as QuestionType["type"])}
