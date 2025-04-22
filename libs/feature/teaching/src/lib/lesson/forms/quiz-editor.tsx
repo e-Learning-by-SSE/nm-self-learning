@@ -100,9 +100,11 @@ export function QuizEditor() {
 					<DropdownButton
 						title="Aufgabentyp hinzufügen"
 						button={
-							<div className="flex place-content-center items-center gap-4 rounded-lg border border-emerald-500 bg-transparent py-2 pl-4 pr-6 font-semibold text-emerald-600 transition-colors hover:bg-emerald-50 disabled:border-opacity-25 disabled:text-opacity-25">
+							<div className="btn-add btn-add:hover">
 								<PlusIcon className="w-4 h-4 text-emerald-500" />
-								<span className="font-semibold text-emerald-500">Aufgabe hinzufügen</span>
+								<span className="font-semibold text-emerald-500">
+									Aufgabe hinzufügen
+								</span>
 							</div>
 						}
 					>
