@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DropdownButton } from "@self-learning/ui/common";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 function FooterElement({
 	href,
@@ -64,27 +65,31 @@ function LanguageSwitcher() {
 	const { t } = useTranslation("common");
 
 	return (
-		<DropdownButton position="top" title="Sprache ändern" backgroundColor="flex">
-			<span className="text-sm font-medium hover:text-secondary">{t("pickLanguage")}</span>
-			<div className="flex flex-col bg-white">
-				<button
-					className="hover:text-secondary"
-					onClick={() => {
-						router.push(router.pathname, router.asPath, { locale: "de" });
-					}}
-				>
-					{t("languageGerman")}
-				</button>
+		<DropdownButton
+			dropdownPosition="top"
+			title="Sprache ändern"
+			button={
+				<span className="text-sm font-medium hover:text-secondary flex items-center gap-1">
+					<ChevronDownIcon className="w-4 h-4" />
+					{t("pickLanguage")}
+				</span>
+			}
+		>
+			<button
+				onClick={() => {
+					router.push(router.pathname, router.asPath, { locale: "de" });
+				}}
+			>
+				{t("languageGerman")}
+			</button>
 
-				<button
-					className="hover:text-secondary"
-					onClick={() => {
-						router.push(router.pathname, router.asPath, { locale: "en" });
-					}}
-				>
-					{t("languageEnglish")}
-				</button>
-			</div>
+			<button
+				onClick={() => {
+					router.push(router.pathname, router.asPath, { locale: "en" });
+				}}
+			>
+				{t("languageEnglish")}
+			</button>
 		</DropdownButton>
 	);
 }

@@ -102,9 +102,6 @@ export function RenderGapType({
 							remarkPlugins={remarkPlugins}
 							rehypePlugins={rehypePlugins}
 							className="text-left prose prose-sm max-w-none"
-							components={{
-								p: ({ children }) => <span>{children}</span>
-							}}
 						>
 							{value}
 						</ReactMarkdown>
@@ -126,6 +123,7 @@ export function RenderGapType({
 								<MenuItem key={i}>
 									{({ focus }) => (
 										<button
+											type={"button"}
 											onClick={() => setAnswer(index, v.text)}
 											className={`${
 												focus

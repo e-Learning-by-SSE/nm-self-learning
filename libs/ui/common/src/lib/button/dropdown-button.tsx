@@ -1,27 +1,20 @@
 import React, { ReactNode } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-import { Menu, MenuButton, MenuItems } from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 export function DropdownButton({
 	title,
-	backgroundColor = "",
-	chevronColor = "",
-	hover = "",
-	position = "bottom",
+	dropdownPosition = "bottom",
+	button,
 	children
 }: {
 	title: string;
-	backgroundColor?: string;
-	chevronColor?: string;
-	hover?: string;
-	position?: "top" | "bottom";
+	dropdownPosition?: "top" | "bottom";
+	button: ReactNode;
 	children: ReactNode;
 }) {
 	const childrenArray = React.Children.toArray(children);
-	const buttonContent = childrenArray[0];
-	const dropdownContent = childrenArray[1];
 
-	const positionClasses = position === "top" ? "bottom-full mb-2" : "top-full mt-2";
+	const positionClasses = dropdownPosition === "top" ? "bottom-full mb-2" : "top-full mt-2";
 
 	return (
 		<Menu as="div" className="relative inline-block w-full text-left">
@@ -29,20 +22,31 @@ export function DropdownButton({
 				<>
 					<MenuButton
 						title={title}
-						className={`inline-flex items-center gap-2 rounded-md px-4 py-2 ${backgroundColor} ${hover}`}
+						className={`inline-flex items-center gap-2 rounded-md px-4 py-2`}
 					>
-						{open ? (
-							<ChevronUpIcon className={`h-5 w-5 ${chevronColor}`} />
-						) : (
-							<ChevronDownIcon className={`h-5 w-5 ${chevronColor}`} />
-						)}
-						{buttonContent}
+						{button}
 					</MenuButton>
 
 					<MenuItems
-						className={`absolute z-20 ${positionClasses} w-full rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
+						className={`absolute z-10 ${positionClasses} w-max min-w-[8rem] max-w-xs rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
 					>
-						<div className="flex flex-col p-2 gap-2">{dropdownContent}</div>
+						<div className="py-1 max-h-48 overflow-auto text-sm">
+							{childrenArray.map((element, i) => (
+								<MenuItem key={i}>
+									{({ focus }) => (
+										<div
+											className={`w-full text-left px-3 py-1 ${
+												focus
+													? "bg-gray-100 text-gray-900"
+													: "text-gray-700"
+											}`}
+										>
+											{element}
+										</div>
+									)}
+								</MenuItem>
+							))}
+						</div>
 					</MenuItems>
 				</>
 			)}

@@ -99,42 +99,24 @@ export function QuizEditor() {
 				button={
 					<DropdownButton
 						title="Aufgabentyp hinzufügen"
-						backgroundColor="border border-secondary text-secondary bg-white"
-						hover="hover:bg-emerald-50"
-						chevronColor="text-emerald-500"
+						button={
+							<div className="flex place-content-center items-center gap-4 rounded-lg border border-emerald-500 bg-transparent py-2 pl-4 pr-6 font-semibold text-emerald-600 transition-colors hover:bg-emerald-50 disabled:border-opacity-25 disabled:text-opacity-25">
+								<PlusIcon className="w-4 h-4 text-emerald-500" />
+								<span className="font-semibold text-emerald-500">Aufgabe hinzufügen</span>
+							</div>
+						}
 					>
-						<div className="flex items-center gap-2">
-							<PlusIcon className="w-4 h-4" />
-							<span className="font-semibold">Hinzufügen</span>
-						</div>
-
-						<>
-							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
-								<MenuItem key={type}>
-									{({ focus }) => (
-										<Button
-											title="Aufgabe Hinzufügen"
-											onClick={() =>
-												appendQuestion(type as QuestionType["type"])
-											}
-											className={`p-2 w-full ${
-												focus
-													? "bg-secondary text-white"
-													: "hover:bg-secondary hover:text-white"
-											}`}
-										>
-											<span>
-												{
-													QUESTION_TYPE_DISPLAY_NAMES[
-														type as QuestionType["type"]
-													]
-												}
-											</span>
-										</Button>
-									)}
-								</MenuItem>
-							))}
-						</>
+						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+							<Button
+								type={"button"}
+								title="Aufgabe Hinzufügen"
+								onClick={() => appendQuestion(type as QuestionType["type"])}
+							>
+								<span>
+									{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
+								</span>
+							</Button>
+						))}
 					</DropdownButton>
 				}
 			/>

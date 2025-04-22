@@ -179,11 +179,12 @@ export function GoalDropDownSelector({
 					<MenuItems className="absolute right-0 z-10 mt-2 w-full origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
 						{goals.map(goal => (
 							<MenuItem key={goal.id}>
-								{({ active }) => (
+								{({ focus }) => (
 									<button
+										type={"button"}
 										onClick={() => onSelectedGoalChange(goal)}
 										className={`${
-											active ? "bg-emerald-500 text-white" : "text-gray-900"
+											focus ? "bg-emerald-500 text-white" : "text-gray-900"
 										} group flex rounded-md items-center w-full px-2 py-2 text-sm`}
 									>
 										{goal.description}
