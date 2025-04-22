@@ -110,7 +110,7 @@ export function QuizEditor() {
 							<Button
 								key={type}
 								type={"button"}
-								title="Aufgabe Hinzufügen"
+								title="Aufgabentyp Hinzufügen"
 								onClick={() => appendQuestion(type as QuestionType["type"])}
 							>
 								<span>
