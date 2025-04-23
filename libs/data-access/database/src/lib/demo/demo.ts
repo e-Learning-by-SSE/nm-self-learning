@@ -22,7 +22,7 @@ export async function seedDemos(): Promise<void> {
 
 	await seedReactDemo();
 
-	//await seedJavaDemo();
+	await seedJavaDemo();
 
 	await seedEvents();
 

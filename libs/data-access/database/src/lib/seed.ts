@@ -44,9 +44,9 @@ async function seed(): Promise<void> {
 	await prisma.specialization.createMany({ data: specializations });
 
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Specialities");
-	//await psychologyExample();
+	await psychologyExample();
 
-	//await mathExample();
+	await mathExample();
 
 	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
 		faker.seed(1);
