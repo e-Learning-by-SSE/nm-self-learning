@@ -27,6 +27,18 @@ function getCourse(slug: string) {
 	});
 }
 
+async function getNewCourse(courseSlug: string) {
+	return await database.newCourse.findUnique({
+		where: { slug: courseSlug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true,
+		}
+	});
+
+}
+
 export async function getStaticPropsForLayout(
 	params?: ParsedUrlQuery | undefined
 ): Promise<LessonLayoutProps | { notFound: true }> {
@@ -37,8 +49,13 @@ export async function getStaticPropsForLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const course = await getCourse(courseSlug);
+	let course = await getCourse(courseSlug);
 	const lesson = await getLesson(lessonSlug);
+
+	if (!course) {
+		course = await getNewCourse(courseSlug);
+	}
+
 
 	if (!course || !lesson) {
 		return { notFound: true };

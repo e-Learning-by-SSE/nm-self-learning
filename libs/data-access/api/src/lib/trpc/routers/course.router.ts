@@ -1,5 +1,4 @@
-import { Course, Prisma } from "@prisma/client";
-import { randomUUID } from 'crypto';
+import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
@@ -125,23 +124,13 @@ export const courseRouter = t.router({
 				description: z.string().nullable()
 			})
 		)
-		.query(async ({ input, ctx }) => {
+		.query(async ({ input }) => {
 			const course = await database.course.findUnique({
 				where: {
 					slug: input.slug
-				},
-				select: {
-					title: true,
-					subtitle: true,
-					slug: true,
-					description: true,
-					generatedLessonPaths: {
-						where: {
-							username: ctx.user.name
-						}
-					},
 				}
 			});
+
 			if (!course) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
@@ -153,7 +142,7 @@ export const courseRouter = t.router({
 				title: course.title,
 				subtitle: course.subtitle,
 				slug: course.slug,
-				lessons: (course.generatedLessonPaths[0].meta as CourseMeta).lessonCount,
+				lessons: (course.meta as CourseMeta).lessonCount,
 				description: course.description
 			};
 		}),
@@ -217,24 +206,38 @@ export const courseRouter = t.router({
 	getContent: authProcedure
 		.input(z.object({ slug: z.string() }))
 		.query(async ({ input, ctx }) => {
-
-			const course = await database.course.findUniqueOrThrow({
+			let course = await database.course.findUnique({
 				where: { slug: input.slug },
 				select: {
-					generatedLessonPaths: {
-						where: {
-							username: ctx.user.name
-						},
-						select: {
-							content: true,
-						}
-					},
+					courseId: true,
+					content: true
 				}
 			});
 
-			const lessonPath = course.generatedLessonPaths[0];
+			if (!course) {
+				course = {
+					courseId: "",
+					...(await database.newCourse.findUnique({
+						where: { slug: input.slug },
+						select: {
+							courseId: true
+						}
+					})),
+					content: []
+				};
 
-			const content = (lessonPath.content ?? []) as CourseContent;
+				course = {
+					...course,
+					...await database.generatedLessonPath.findUnique({
+						where: { lessonPathId: `${course?.courseId} - ${ctx.user.name}` },
+						select: {
+							content: true
+						}
+					})
+				};
+			}
+
+			const content = (course.content ?? []) as CourseContent;
 
 			const lessonIds = extractLessonIds(content);
 
@@ -271,7 +274,7 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const course = await database.course.findUniqueOrThrow({
+			const course = await database.newCourse.findUniqueOrThrow({
 				where: { courseId: input.courseId },
 				select: {
 					teachingGoals: {
@@ -360,9 +363,9 @@ export const courseRouter = t.router({
 			): element is CompositeUnit<LibLearningUnit> => {
 				return false;
 			};
-			
+
 			const fnCost = () => 1;
-			console.log("Vor getPath", libSkills);
+
 			const path = getPath({
 				skills: libSkills,
 				learningUnits: learningUnits,
@@ -372,7 +375,7 @@ export const courseRouter = t.router({
 				isComposite: guard,
 				costOptions: DefaultCostParameter
 			});
-			console.log("Path",path);
+
 
 			const courseChapter = [
 				{
@@ -386,11 +389,10 @@ export const courseRouter = t.router({
 
 			const courseContent: CourseContent = courseChapter;
 
-			const generatedCourse = await database.generatedLessonPath.create({
+			const generatedCourse = database.generatedLessonPath.create({
 				data: {
+					lessonPathId: `${input.courseId} - ${ctx.user.name}`,
 					content: courseContent,
-					slug: randomUUID(),
-					courseId: input.courseId,
 					meta: createCourseMeta({ content: courseContent }),
 					username: ctx.user.name,
 					createdAt: new Date(),
