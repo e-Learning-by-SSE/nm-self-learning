@@ -1,5 +1,7 @@
 {
 	"languageGerman": "German",
 	"languageEnglish": "English",
-	"pickLanguage": "Select language"
+	"pickLanguage": "Select language",
+	"courseCreationTitle": "The New Course",
+	"courseCreationSlug": "the-new-course"
 }
