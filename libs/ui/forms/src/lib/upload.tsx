@@ -1,3 +1,4 @@
+"use client";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";

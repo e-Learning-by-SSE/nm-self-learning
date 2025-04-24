@@ -1,3 +1,4 @@
+"use client";
 import { ChevronDownIcon, ItalicIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import { Dialog, DialogActions, OnDialogCloseFn, PencilButton } from "@self-learning/ui/common";

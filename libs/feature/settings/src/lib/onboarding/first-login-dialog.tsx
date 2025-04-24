@@ -1,3 +1,4 @@
+"use client";
 import { trpc } from "@self-learning/api-client";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { FeatureSettingsForm } from "@self-learning/settings";
