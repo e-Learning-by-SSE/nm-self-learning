@@ -222,13 +222,17 @@ function ChapterNode({
 	}
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
-		await onLessonCreatorSubmit(
+		let createdLesson = await onLessonCreatorSubmit(
 			() => {
 				setCreateLessonDialogOpen(false);
 			},
 			createLessonAsync,
 			lesson
 		);
+
+		if (createdLesson) {
+			onLessonAdded(index, createdLesson.);
+		}
 	}
 
 	return (
