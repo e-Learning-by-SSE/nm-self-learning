@@ -4,8 +4,7 @@ import { useQuestion } from "../../use-question-hook";
 import { createCloze, Gap } from "./cloze-parser";
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { MarkdownListboxMenu } from "@self-learning/ui/common";
 
 export default function ClozeAnswer() {
 	const { question, answer, setAnswer, evaluation } = useQuestion("cloze");
@@ -86,66 +85,21 @@ export function RenderGapType({
 	disabled: boolean;
 }) {
 	if (gap.type === "C") {
-		return (
-			<Menu as="span" className="relative inline-block align-baseline">
-				<MenuButton
-					className="inline-flex items-center px-2 py-1 text-sm border border-gray-300 bg-white rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1  disabled:opacity-50"
-					disabled={disabled}
-				>
-					{value === "" ? (
-						<div className={"flex"}>
-							<ChevronDownIcon className={"w-5 h-5"} />
-							<span className="text-gray-400">Auswahl...</span>
-						</div>
-					) : (
-						<ReactMarkdown
-							remarkPlugins={remarkPlugins}
-							rehypePlugins={rehypePlugins}
-							className="text-left prose prose-sm max-w-none"
-						>
-							{value}
-						</ReactMarkdown>
-					)}
-				</MenuButton>
+		const renderedValue = (
+			<ReactMarkdown
+				remarkPlugins={remarkPlugins}
+				rehypePlugins={rehypePlugins}
+			></ReactMarkdown>
+		);
 
-				<Transition
-					as={Fragment}
-					enter="transition ease-out duration-100"
-					enterFrom="transform opacity-0 scale-95"
-					enterTo="transform opacity-100 scale-100"
-					leave="transition ease-in duration-75"
-					leaveFrom="transform opacity-100 scale-100"
-					leaveTo="transform opacity-0 scale-95"
-				>
-					<MenuItems className="absolute z-10 mt-1 w-max min-w-[8rem] max-w-xs rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-						<div className="py-1 max-h-48 overflow-auto text-sm">
-							{gap.values.map((v, i) => (
-								<MenuItem key={i}>
-									{({ focus }) => (
-										<button
-											type={"button"}
-											onClick={() => setAnswer(index, v.text)}
-											className={`${
-												focus
-													? "bg-gray-100 text-gray-900"
-													: "text-gray-700"
-											} w-full text-left px-3 py-1`}
-										>
-											<ReactMarkdown
-												remarkPlugins={remarkPlugins}
-												rehypePlugins={rehypePlugins}
-												className="prose prose-sm max-w-none"
-											>
-												{v.text ?? ""}
-											</ReactMarkdown>
-										</button>
-									)}
-								</MenuItem>
-							))}
-						</div>
-					</MenuItems>
-				</Transition>
-			</Menu>
+		return (
+			<MarkdownListboxMenu
+				onChange={option => setAnswer(index, option)}
+				title={""}
+				dropdownPosition={"bottom"}
+				value={value}
+				options={gap.values.map(value => value.text)}
+			/>
 		);
 	}
 

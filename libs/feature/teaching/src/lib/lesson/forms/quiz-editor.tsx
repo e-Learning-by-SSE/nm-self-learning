@@ -12,7 +12,7 @@ import {
 	RemovableTab,
 	SectionHeader,
 	Tabs,
-	DropdownButton
+	DropdownMenu
 } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
@@ -97,7 +97,7 @@ export function QuizEditor() {
 					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lerneinheit
 					erfolgreich abzuschließen."
 				button={
-					<DropdownButton
+					<DropdownMenu
 						title="Aufgabentyp hinzufügen"
 						button={
 							<div className="btn-add btn-add:hover">
@@ -120,7 +120,7 @@ export function QuizEditor() {
 								</span>
 							</Button>
 						))}
-					</DropdownButton>
+					</DropdownMenu>
 				}
 			/>
 

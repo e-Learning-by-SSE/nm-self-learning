@@ -147,7 +147,7 @@ export function GoalEditorDialog({
 
 
 /**
- * Dropdown menu component for selecting the parent learning goal of a sub-goal.
+ * Dropdown dropdown-menu component for selecting the parent learning goal of a sub-goal.
  * If no goal is selected, a new learning goal will be created.
  *
  * This component uses Headless UI's Menu for rendering the dropdown.
@@ -157,7 +157,7 @@ export function GoalEditorDialog({
  * @param pSelectedGoal - Index of the currently selected goal for a sub-goal.
  * @param onChange - Callback triggered when a goal is selected. Receives the goalId.
  *
- * @returns A dropdown menu listing all in-progress learning goals.
+ * @returns A dropdown dropdown-menu listing all in-progress learning goals.
  */
 export function GoalDropDownSelector({
 	goals,

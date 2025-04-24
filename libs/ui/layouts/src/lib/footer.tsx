@@ -1,6 +1,6 @@
 import { LinkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { DropdownButton } from "@self-learning/ui/common";
+import { DropdownMenu } from "@self-learning/ui/common";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
@@ -65,7 +65,7 @@ function LanguageSwitcher() {
 	const { t } = useTranslation("common");
 
 	return (
-		<DropdownButton
+		<DropdownMenu
 			dropdownPosition="top"
 			title="Sprache ändern"
 			button={
@@ -90,6 +90,6 @@ function LanguageSwitcher() {
 			>
 				{t("languageEnglish")}
 			</button>
-		</DropdownButton>
+		</DropdownMenu>
 	);
 }
