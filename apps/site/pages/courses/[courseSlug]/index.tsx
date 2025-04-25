@@ -211,7 +211,7 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
-	const firstLessonFromChapter = content[0]?.content[0];
+	const firstLessonFromChapter = content[0].content[0];
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 	return (
 		<section className="flex flex-col gap-16">

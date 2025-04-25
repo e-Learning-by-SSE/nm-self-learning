@@ -13,6 +13,8 @@ export async function onLessonCreatorSubmit(
 	onClose: () => void,
 	createLessonAsync: (lesson: LessonFormModel) => Promise<{
 		title: string;
+		lessonId: string;
+		slug: string;
 	}>,
 	lesson?: LessonFormModel
 ) {

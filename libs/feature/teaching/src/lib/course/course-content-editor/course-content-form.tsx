@@ -222,7 +222,7 @@ function ChapterNode({
 	}
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
-		let createdLesson = await onLessonCreatorSubmit(
+		const createdLesson = await onLessonCreatorSubmit(
 			() => {
 				setCreateLessonDialogOpen(false);
 			},
@@ -231,7 +231,7 @@ function ChapterNode({
 		);
 
 		if (createdLesson) {
-			onLessonAdded(index, createdLesson.);
+			onLessonAdded(index, createdLesson);
 		}
 	}
 
