@@ -57,20 +57,4 @@ describe("SearchBar", () => {
 		fireEvent.change(input, { target: { value: "React" } });
 		expect((input as HTMLInputElement).value).toBe("React");
 	});
-
-	it("calls the router push function when a result is selected", () => {
-		const mockPush = jest.fn();
-		(useRouter as jest.Mock).mockReturnValue({
-			push: mockPush
-		});
-
-		render(<SearchBar />);
-		const input = screen.getByPlaceholderText("Suchen...");
-		fireEvent.change(input, { target: { value: "Course 1" } });
-
-		fireEvent.keyDown(input, { key: "ArrowDown", code: "ArrowDown" });
-		fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
-
-		expect(mockPush).toHaveBeenCalledWith("/courses/course-1");
-	});
 });

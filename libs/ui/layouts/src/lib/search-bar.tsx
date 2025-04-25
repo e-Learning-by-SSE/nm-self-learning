@@ -207,26 +207,26 @@ export function SearchBar() {
 					{isLoading ? (
 						<LoadingCircle className="h-5 w-5 mx-auto" />
 					) : searchSections.length > 0 && isUser ? (
-						searchSections.slice(0, 12).map((result, index) => (
+						searchSections.slice(0, 10).map((result, index) => (
 							<ComboboxOption
 								key={index}
 								value={result}
 								className={({ active }) =>
-									`flex items-center justify-between w-full overflow-hidden text-ellipsis p-2 ${
+									`flex flex-col items-start w-full overflow-hidden text-ellipsis p-2 ${
 										active ? "bg-emerald-500 text-white" : "text-gray-900"
 									}`
 								}
 							>
-								<span>{result.title}</span>
-								{result.type === "course" && (
-									<BookOpenIcon className="h-5 w-5 text-gray-500" />
-								)}
-								{result.type === "lesson" && (
-									<AcademicCapIcon className="h-5 w-5 text-gray-500" />
-								)}
-								{result.type === "author" && (
-									<UserIcon className="h-5 w-5 text-gray-500" />
-								)}
+								<span className="font-medium">{result.title}</span>
+								<span className="text-xs">
+									{result.type === "course"
+										? "Kurs"
+										: result.type === "lesson"
+										? "Lerneinheit"
+										: result.type === "author"
+										? "Autor"
+										: ""}
+								</span>
 							</ComboboxOption>
 						))
 					) : (
