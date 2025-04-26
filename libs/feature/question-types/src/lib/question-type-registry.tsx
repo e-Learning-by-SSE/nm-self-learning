@@ -114,7 +114,20 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 	[QType in QuestionType["type"]]: InitialAnswerFn<QType>;
 } = {
-	"multiple-choice": () => ({}),
+	"multiple-choice": question => {
+		const answer: MultipleChoice["answer"]["value"] = {};
+
+		// Check if randomization is enabled
+		const answersToProcess = question.randomizeAnswers
+			? question.answers.sort(() => Math.random() - 0.5) 
+			: question.answers; 
+
+		for (const answerId of answersToProcess.map(a => a.answerId)) {
+			answer[answerId] = false;
+		}
+
+		return answer;
+	},
 	exact: () => "",
 	programming: question => ({
 		solution: question.custom.solutionTemplate,
@@ -134,8 +147,10 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 			answer._init.push(...items);
 		}
 
-		// randomize order
-		answer._init.sort(() => Math.random() - 0.5);
+		if (question.randomizeItems) {
+			// randomize order
+			answer._init.sort(() => Math.random() - 0.5);
+		}
 
 		return answer;
 	},
@@ -152,7 +167,8 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		...createBaseQuestion(),
 		type: "multiple-choice",
 		answers: [],
-		questionStep: 1
+		questionStep: 1,
+		randomizeAnswers: false
 	}),
 	exact: () => ({
 		...createBaseQuestion(),
@@ -182,7 +198,8 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	arrange: () => ({
 		...createBaseQuestion(),
 		type: "arrange",
-		items: {}
+		items: {},
+		randomizeItems: false
 	}),
 	"language-tree": () => ({
 		...createBaseQuestion(),
