@@ -20,6 +20,7 @@ import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
+import { PencilIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
@@ -150,9 +151,11 @@ export function QuizEditor() {
 								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
 									<div className="flex flex-col">
 										<span className="text-xs font-normal">
+											Aufgabe {index + 1} von {quiz.length}
+										</span>
+										<span className="flex">
 											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
 										</span>
-										<span>Aufgabe {index + 1}</span>
 									</div>
 								</RemovableTab>
 							</Reorder.Item>
