@@ -44,9 +44,9 @@ export function DropdownMenu({
 										<div
 											className={`w-full text-left px-3 py-1 ${
 												focus
-													? "bg-secondary text-gray-900"
-													: "text-gray-700"
-											}`}
+													? "text-secondary border border-secondary"
+													: "border border-transparent text-gray-700"
+											} flex items-center`}
 										>
 											{element}
 										</div>

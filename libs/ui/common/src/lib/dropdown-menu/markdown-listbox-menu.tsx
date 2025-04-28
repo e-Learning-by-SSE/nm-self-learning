@@ -63,7 +63,7 @@ export function MarkdownListboxMenu({
 							{({ focus, selected }) => (
 								<div
 									className={`w-full text-left px-3 py-1 ${
-										focus ? "bg-secondary text-gray-900" : "text-gray-700"
+										focus ? "text-secondary border border-secondary" : "border border-transparent text-gray-700"
 									} flex items-center`}
 								>
 									{selected ? (
@@ -78,7 +78,8 @@ export function MarkdownListboxMenu({
 									<ReactMarkdown
 										remarkPlugins={remarkPlugins}
 										rehypePlugins={rehypePlugins}
-										className="prose prose-sm max-w-none ml-2"
+										className={`prose prose-sm max-w-none ml-2 ${
+											focus ? "text-secondary" : ""}`}
 									>
 										{option}
 									</ReactMarkdown>
