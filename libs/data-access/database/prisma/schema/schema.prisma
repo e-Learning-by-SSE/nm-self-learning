@@ -293,8 +293,8 @@ model Skill {
     requirementsOfNewCourse NewCourse[]     @relation("NewCourseRequirements") 
 
     // Existing references
-    goalsOf        Lesson[]        @relation("teachingGoals")
-    requirementsOf Lesson[]        @relation("requirements")
+    goalsOf        Lesson[]        @relation("providedSkills")
+    requirementsOf Lesson[]        @relation("requiredSkills")
 
     @@unique([repositoryId, name])
     @@map("skills")
