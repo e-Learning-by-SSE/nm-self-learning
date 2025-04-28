@@ -29,7 +29,7 @@ export function useQuizEditorForm() {
 		append,
 		remove,
 		fields: quiz,
-		replace: setQuiz
+		replace
 	} = useFieldArray({
 		control,
 		name: "quiz.questions"
@@ -60,6 +60,18 @@ export function useQuizEditorForm() {
 				setQuestionIndex(quiz.length - 2); // set to last index or -1 if no questions exist
 			}
 		}
+	}
+
+	function setQuiz(questions: QuizForm["quiz"]["questions"]) {
+		const currentQuestionIndex = questions.findIndex(
+			question => question.questionId === currentQuestion?.questionId
+		);
+		if (currentQuestionIndex !== -1) {
+			setQuestionIndex(currentQuestionIndex);
+		} else {
+			setQuestionIndex(questions.length > 0 ? 0 : -1);
+		}
+		replace(questions);
 	}
 
 	return {
