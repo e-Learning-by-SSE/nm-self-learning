@@ -201,7 +201,7 @@ export function NavbarDropdownMenu({
 		<DropdownMenu
 			title="Nutzermenü"
 			button={
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 py-2">
 					<span className="sr-only">Nutzermenü Öffnen</span>
 					{avatarUrl ? (
 						<img

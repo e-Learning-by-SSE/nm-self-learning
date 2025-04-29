@@ -1,25 +1,29 @@
-import React, { Fragment, ReactNode } from "react";
+import React, { Fragment, ReactNode, useRef } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
 
 export function DropdownMenu({
 	title,
 	dropdownPosition = "bottom",
+	customFocusStyle,
 	button,
 	children
 }: {
 	title: string;
 	dropdownPosition?: "top" | "bottom";
+	customFocusStyle?: (focus: boolean) => string;
 	button: ReactNode;
 	children: ReactNode;
 }) {
 	const childrenArray = React.Children.toArray(children);
+	const buttonRef = useRef<HTMLButtonElement>(null);
 
 	return (
-		<Menu as="div" className="relative inline-block w-full text-left">
+		<Menu as="div" className="relative inline-block text-left w-fit">
 			<>
 				<MenuButton
+					ref={buttonRef}
 					title={title}
-					className={`inline-flex items-center gap-2 rounded-md px-4 py-2`}
+					className="inline-flex items-center rounded-md px-4"
 				>
 					{button}
 				</MenuButton>
@@ -35,7 +39,10 @@ export function DropdownMenu({
 				>
 					<MenuItems
 						anchor={dropdownPosition}
-						className={`z-10 w-max min-w-[8rem] max-w-xs rounded-md bg-white shadow-lg`}
+						style={{
+							minWidth: buttonRef.current?.offsetWidth || "auto",
+						}}
+						className="absolute z-10 rounded-md bg-white shadow-lg overflow-hidden"
 					>
 						<div className="py-1 max-h-48 overflow-auto text-sm">
 							{childrenArray.map((element, i) => (
@@ -43,9 +50,11 @@ export function DropdownMenu({
 									{({ focus }) => (
 										<div
 											className={`w-full text-left px-3 py-1 ${
-												focus
-													? "text-secondary border border-secondary"
-													: "border border-transparent text-gray-700"
+												customFocusStyle
+													? customFocusStyle(focus)
+													: focus
+														? "bg-emerald-500 text-white"
+														: ""
 											} flex items-center`}
 										>
 											{element}

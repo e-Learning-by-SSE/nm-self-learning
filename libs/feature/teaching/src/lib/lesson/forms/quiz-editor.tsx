@@ -107,6 +107,11 @@ export function QuizEditor() {
 								</span>
 							</div>
 						}
+						customFocusStyle={focus =>
+							focus
+								? "text-secondary border border-secondary"
+								: "border border-transparent text-gray-700"
+						}
 					>
 						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 							<Button
