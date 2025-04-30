@@ -211,9 +211,9 @@ export function SearchBar() {
 							<ComboboxOption
 								key={index}
 								value={result}
-								className={({ active }) =>
-									`flex flex-col items-start w-full overflow-hidden text-ellipsis p-2 ${
-										active ? "bg-emerald-500 text-white" : "text-gray-900"
+								className={({ focus }) =>
+									`flex flex-col items-start w-full overflow-hidden text-ellipsis p-2 cursor-pointer ${
+										focus ? "bg-emerald-500 text-white " : "text-gray-900"
 									}`
 								}
 							>
@@ -222,10 +222,10 @@ export function SearchBar() {
 									{result.type === "course"
 										? "Kurs"
 										: result.type === "lesson"
-										? "Lerneinheit"
-										: result.type === "author"
-										? "Autor"
-										: ""}
+											? "Lerneinheit"
+											: result.type === "author"
+												? "Autor"
+												: ""}
 								</span>
 							</ComboboxOption>
 						))
