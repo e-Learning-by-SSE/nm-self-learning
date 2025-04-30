@@ -1,3 +1,4 @@
+"use client";
 import { trpc } from "@self-learning/api-client";
 import {
 	Dialog,

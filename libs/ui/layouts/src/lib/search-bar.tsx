@@ -1,3 +1,4 @@
+"use client";
 import {
 	Combobox,
 	ComboboxInput,
@@ -5,6 +6,7 @@ import {
 	ComboboxOption,
 	Transition
 } from "@headlessui/react";
+import { Transition } from "@headlessui/react";
 import { FaceFrownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";

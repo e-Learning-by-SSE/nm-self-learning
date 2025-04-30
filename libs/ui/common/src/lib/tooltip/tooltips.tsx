@@ -1,3 +1,4 @@
+"use client";
 import { QuestionMarkCircleIcon as QuestionMarcOutline } from "@heroicons/react/24/outline";
 import { QuestionMarkCircleIcon as QuestionMarcSolid } from "@heroicons/react/24/solid";
 import { useRef, useState } from "react";

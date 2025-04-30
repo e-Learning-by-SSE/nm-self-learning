@@ -1,3 +1,4 @@
+"use client";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";

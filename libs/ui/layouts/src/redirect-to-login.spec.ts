@@ -25,13 +25,12 @@ describe("basePathTests", () => {
 	});
 
 	test("Base path defined -> is added to window.location.origin base path", () => {
-		process.env.NEXT_PUBLIC_BASE_PATH = "test";
+		process.env.NEXT_PUBLIC_BASE_PATH = "/test";
 		expect(testExportGetRelativeBasePath()).toBe(expectedOrigin + "/test");
 	});
 
 	test("Base path undefined -> empty string", () => {
 		process.env.NEXT_PUBLIC_BASE_PATH = undefined;
-		expect(testExportGetRelativeBasePath()).toBe(expectedOrigin + "/");
-		// maybe the trailing slash should be removed?
+		expect(testExportGetRelativeBasePath()).toBe(expectedOrigin);
 	});
 });

@@ -91,7 +91,7 @@ export function Navbar() {
 											</span>
 										)}
 										<Link href="/dashboard">
-											<span className="invisible w-0 text-sm lg:visible lg:w-fit">
+											<span className="hidden lg:inline w-0 text-sm lg:w-fit">
 												{user.name}
 											</span>
 										</Link>
