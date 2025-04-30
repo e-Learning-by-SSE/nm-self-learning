@@ -2,7 +2,7 @@ import { Combobox, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/rea
 import { ChevronDownIcon, ChevronUpDownIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
-import { Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
+import { ComboboxMenu, Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
@@ -145,7 +145,6 @@ export function GoalEditorDialog({
 	}
 }
 
-
 /**
  * Dropdown dropdown-menu component for selecting the parent learning goal of a sub-goal.
  * If no goal is selected, a new learning goal will be created.
@@ -170,46 +169,22 @@ export function GoalDropDownSelector({
 }) {
 	const [selectedGoal, setSelectedGoal] = useState(goals[pSelectedGoal]);
 
-	function onSelectedGoalChange(goal: { id: number; description: string; goalId: string }) {
-		setSelectedGoal(goal);
-		onChange(goal.goalId);
+	function onSelectedGoalChange(goalName: string) {
+		const goal = goals.find(goal => goal.description === goalName);
+		if (goal) {
+			setSelectedGoal(goal);
+			onChange(goal.goalId);
+		}
 	}
 
 	return (
-		<Menu>
-			{({ open }) => (
-				<>
-					<div>
-						<MenuButton className="inline-flex justify-between w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
-							{selectedGoal.description}
-							<ChevronDownIcon
-								className={`w-5 h-5 ml-2 -mr-1 text-gray-400 transform transition-transform ${
-									open ? "rotate-180" : "rotate-0"
-								}`}
-								aria-hidden="true"
-							/>
-						</MenuButton>
-					</div>
-					<MenuItems className="absolute right-0 z-10 mt-2 w-full origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-						{goals.map(goal => (
-							<MenuItem key={goal.id}>
-								{({ focus }) => (
-									<button
-										type={"button"}
-										onClick={() => onSelectedGoalChange(goal)}
-										className={`${
-											focus ? "bg-emerald-500 text-white" : "text-gray-900"
-										} group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-									>
-										{goal.description}
-									</button>
-								)}
-							</MenuItem>
-						))}
-					</MenuItems>
-				</>
-			)}
-		</Menu>
+		<ComboboxMenu
+			title={""}
+			dropdownPosition={"top"}
+			onChange={selection => onSelectedGoalChange(selection)}
+			value={selectedGoal.description}
+			options={goals.map(goal => goal.description)}
+		></ComboboxMenu>
 	);
 }
 
