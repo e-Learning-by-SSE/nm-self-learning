@@ -85,15 +85,31 @@ video {
 }
 
 .btn {
-	@apply flex place-content-center items-center gap-2 rounded-lg px-8 py-2 text-sm font-semibold text-white transition-colors disabled:bg-opacity-25;
+	@apply rounded-lg text-sm font-semibold transition-colors disabled:bg-opacity-25;
+}
+
+.btn-with-icon {
+	@apply flex items-center justify-center gap-2 py-2 pl-4 pr-6;
 }
 
 .btn-primary {
-	@apply flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25;
+	@apply bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-2;
 }
 
 .btn-secondary {
-	@apply glass flex place-content-center items-center gap-2 rounded-lg py-2 px-8 text-sm font-semibold transition-colors hover:bg-opacity-90;
+	@apply flex justify-center gap-2 rounded-lg border border-emerald-500 bg-transparent py-2 pl-4 pr-6 text-sm font-semibold text-emerald-600 transition-colors hover:bg-emerald-50 disabled:bg-opacity-25;
+}
+
+.btn-tertiary {
+	@apply flex place-content-center items-center gap-4 rounded-lg border border-gray-200 bg-transparent py-2 pl-4 pr-6 text-sm font-medium transition-colors hover:bg-slate-50 disabled:bg-opacity-25;
+}
+
+.btn-destructive {
+	@apply flex place-content-center items-center gap-2 rounded-lg bg-red-500 py-2 pl-4 pr-6 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:bg-opacity-25;
+}
+
+.btn-edit {
+	@apply lg:flex rounded-lg lg:border lg:place-content-center lg:items-center border-gray-200 bg-white lg:w-fit lg:self-end p-2 lg:px-8 lg:py-2;
 }
 
 .btn-stroked {

@@ -46,6 +46,14 @@ export function LandingPage() {
 							Lerninhalte entdecken
 						</Link>
 
+						<div className="flex flex-wrap gap-4">
+							<button className="btn btn-primary">Save</button>
+							<button className="btn-secondary">Add</button>
+							<button className="btn-tertiary">Cancel</button>
+							<button className="btn-destructive">Delete</button>
+						</div>
+						<button className="btn btn-primary">Save</button>
+
 						<ul className="text-md mt-12 flex list-inside list-disc flex-col gap-6">
 							<li>
 								Auf der Plattform werden dir studiengangbezogene Lerninhalte in

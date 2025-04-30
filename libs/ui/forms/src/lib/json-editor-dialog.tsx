@@ -74,21 +74,21 @@ export function JsonEditorDialog<T>({
 							onChange={value => setJsonValue(value ?? "{}")}
 						/>
 
-						<div className="mt-8 flex gap-4">
-							<button
-								type="button"
-								className="btn-primary  w-fit"
-								onClick={closeWithReturn}
-							>
-								Übernehmen
-							</button>
-
+						<div className="mt-8 flex justify-end gap-4">
 							<button
 								type="button"
 								className="btn-stroked w-fit"
 								onClick={() => onClose(undefined)}
 							>
 								Abbrechen
+							</button>
+
+							<button
+								type="button"
+								className="btn-primary w-fit"
+								onClick={closeWithReturn}
+							>
+								Speichern
 							</button>
 						</div>
 					</Dialog.Panel>

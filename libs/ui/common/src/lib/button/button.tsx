@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps, PropsWithChildren } from "react";
+import { PlusIcon, PencilIcon } from "@heroicons/react/24/outline";
 
 export function PrimaryButton(
 	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
@@ -59,13 +60,64 @@ export function IconButton(
 	}
 ) {
 	return (
-		<button
-			type="button"
-			className="flex place-content-center items-center gap-4 rounded-lg bg-emerald-500 py-2 pl-4 pr-6 font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
-			{...props}
-		>
+		<button type="button" className="btn-secondary" {...props}>
 			{props.icon}
 			<span className="text-sm">{props.text}</span>
 		</button>
 	);
 }
+
+/**
+ * Add button with a default Plus icon
+ *
+ * @example
+ * <AddButton/>
+ */
+export function AddButton(
+	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
+) {
+	return (
+		<button type="button" className="btn-add btn-add:hover disabled:bg-opacity-25" {...props}>
+			<PlusIcon className="icon" />
+			<span className="text-sm">Hinzufügen</span>
+		</button>
+	);
+}
+
+/**
+ * Add button with a default Pencil icon
+ *
+ * @example
+ * <EditButton/>
+ */
+export function EditButton(
+	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
+) {
+	return (
+		<button type="button" className="btn-edit" {...props}>
+			<PencilIcon className="icon" />
+			<span className="text-sm">Bearbeiten</span>
+		</button>
+	);
+}
+
+/**
+ * Add button with green background
+ *
+ * @example
+ * <CreateButton/>
+ */
+export function CreateButton(
+	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
+		text: string;
+	}
+) {
+	return (
+		<button type="button" className="btn-primary" {...props}>
+			<span className="text-sm">{props.text} erstellen</span>
+		</button>
+	);
+}
+
+// Cancel button uses:
+// Save button uses: btn-primary
