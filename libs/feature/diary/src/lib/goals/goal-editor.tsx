@@ -1,10 +1,8 @@
-import { Combobox, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { ChevronDownIcon, ChevronUpDownIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
 import { ComboboxMenu, Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
 import { LearningGoals } from "./learning-goals";
 
@@ -171,6 +169,9 @@ export function GoalDropDownSelector({
 
 	function onSelectedGoalChange(goalName: string) {
 		const goal = goals.find(goal => goal.description === goalName);
+
+		console.log(goal);
+
 		if (goal) {
 			setSelectedGoal(goal);
 			onChange(goal.goalId);
@@ -180,7 +181,7 @@ export function GoalDropDownSelector({
 	return (
 		<ComboboxMenu
 			title={""}
-			dropdownPosition={"top"}
+			dropdownPosition={"bottom"}
 			onChange={selection => onSelectedGoalChange(selection)}
 			value={selectedGoal.description}
 			options={goals.map(goal => goal.description)}
