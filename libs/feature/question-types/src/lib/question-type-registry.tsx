@@ -139,7 +139,7 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 
 		return answer;
 	},
-	"language-tree": () => ""
+	"language-tree": question => question.initialTree
 };
 
 /**
