@@ -55,7 +55,7 @@ export function TreeEditor({
 			node.children = [oldLeafNode]; // Move the old text as a child node
 		} else {
 			// Regular non-leaf node: Add a new child normally
-			node.children.push({ value: "NewNode", children: [] });
+			node.children.push({ value: "", children: [] });
 		}
 		updateTree({ ...tree });
 	};

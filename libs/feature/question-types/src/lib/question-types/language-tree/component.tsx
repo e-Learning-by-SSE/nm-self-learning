@@ -8,6 +8,7 @@ import { Feedback } from "../../feedback";
 export default function LanguageTreeAnswer() {
 	const { question,  setAnswer, evaluation } = useQuestion("language-tree");
 	const [input, setInput] = useState(question.initialTree);
+	const [error, setError] = useState<string | null>(null);
 	const [tree, setTree] = useState(() => {
 		try {
 			return parseTree(input);
@@ -16,7 +17,7 @@ export default function LanguageTreeAnswer() {
 			return null;
 		}
 	});
-    const [error, setError] = useState<string | null>(null);
+    
 
 
     const onInputChange = (value: string) => {

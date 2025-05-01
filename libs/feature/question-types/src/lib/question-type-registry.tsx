@@ -189,7 +189,7 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		type: "language-tree",
 		caseSensitive: false,
 		initialTree: "",
-		answer: ""
+		answer: []
 	})
 };
 
