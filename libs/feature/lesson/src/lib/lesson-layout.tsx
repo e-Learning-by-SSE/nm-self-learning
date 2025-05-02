@@ -7,15 +7,15 @@ import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
 import { useMemo } from "react";
-import { LessonContent, getLesson } from "./lesson-data-access";
+import { LessonData, getLesson } from "./lesson-data-access";
 
 export type LessonLayoutProps = {
-	lesson: LessonContent;
+	lesson: LessonData;
 	course: ResolvedValue<typeof getCourse>;
 };
 
 export type StandaloneLessonLayoutProps = {
-	lesson: LessonContent;
+	lesson: LessonData;
 };
 
 type BaseLessonLayoutProps = {
@@ -60,7 +60,6 @@ export async function getStaticPropsForStandaloneLessonLayout(
 	params?: ParsedUrlQuery | undefined
 ): Promise<StandaloneLessonLayoutProps | { notFound: true }> {
 	const lessonSlug = params?.["lessonSlug"] as string;
-
 	if (!lessonSlug) {
 		throw new Error("No lesson slug provided.");
 	}
@@ -104,7 +103,7 @@ function mapToPlaylistContent(
 	return playlistContent;
 }
 
-export function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {
+function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {
 	return (
 		<>
 			<Head>
@@ -125,7 +124,10 @@ export function LessonLayout(
 	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
 	pageProps: LessonLayoutProps
 ) {
-	const playlistArea = <PlaylistArea {...pageProps} />;
+	if (!pageProps.course) {
+		throw new Error("LessonLayout expects course");
+	}
+	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
 
 	return (
 		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
@@ -176,7 +178,7 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 function StandaloneLessonPlaylistArea({ lesson }: StandaloneLessonLayoutProps) {
 	return (
 		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
-			{/* to be implemented */}
+			{/** to be implemented */}
 		</aside>
 	);
 }
