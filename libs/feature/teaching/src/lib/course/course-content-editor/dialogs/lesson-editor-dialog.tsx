@@ -1,8 +1,7 @@
+import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
-import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
 export function LessonEditorDialogWithGuard({
 	onClose,
@@ -40,8 +39,6 @@ function LessonEditorDialog({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
-	const router = useRouter();
-
 	return (
 		<Dialog
 			title={!initialLesson ? "Neue Lerneinheit erstellen" : "Lerneinheit anpassen"}
@@ -55,8 +52,8 @@ function LessonEditorDialog({
 					rel="noreferrer"
 					href={
 						initialLesson
-							? `/${router.basePath}/teaching/lessons/edit/${initialLesson?.lessonId}`
-							: `/${router.basePath}/teaching/lessons/create`
+							? `/teaching/lessons/edit/${initialLesson?.lessonId}`
+							: `/teaching/lessons/create`
 					}
 					title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
 				>
