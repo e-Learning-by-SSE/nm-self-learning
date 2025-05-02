@@ -119,10 +119,10 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 
 		// Check if randomization is enabled
 		const answersToProcess = question.randomizeAnswers
-			? question.answers.sort(() => Math.random() - 0.5) 
-			: question.answers; 
+			? [...question.answers].sort(() => Math.random() - 0.5)
+			: question.answers;
 
-		for (const answerId of answersToProcess.map(a => a.answerId)) {
+		for (const { answerId } of answersToProcess) {
 			answer[answerId] = false;
 		}
 
