@@ -54,7 +54,7 @@ export function Navbar() {
 								</DisclosureButton>
 							</div>
 							<div className="flex flex-1 items-center justify-center lg:items-stretch lg:justify-start">
-								<div className="flex flex-shrink-0 items-center">
+								<div className="flex shrink-0 items-center">
 									<Link href="/" className="flex items-center gap-4">
 										<div className="rounded-full bg-secondary p-1">
 											<AcademicCapIcon className="h-8 shrink-0 text-white" />

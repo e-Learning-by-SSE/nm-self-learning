@@ -80,7 +80,7 @@ function SidebarHeader({ setOpen }: { setOpen: (open: boolean) => void }) {
 }
 
 function ScrollableContent({ children }: PropsWithChildren<unknown>) {
-	return <div className="Sidebar scroll flex-grow overflow-auto">{children}</div>;
+	return <div className="Sidebar scroll grow overflow-auto">{children}</div>;
 }
 
 function SidebarLinks() {
@@ -125,7 +125,7 @@ function SidebarFooter() {
 function UserInformation({ name }: { name: string }) {
 	return (
 		<div className="flex items-center gap-4 px-4">
-			<div className="flex aspect-square h-10 rounded-full bg-gradient-to-br from-purple-600 to-orange-500">
+			<div className="flex aspect-square h-10 rounded-full bg-linear-to-br from-purple-600 to-orange-500">
 				<span className="m-auto text-white">
 					{name[0]}
 					{name[1]}

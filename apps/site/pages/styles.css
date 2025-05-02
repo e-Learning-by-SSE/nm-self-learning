@@ -1,20 +1,37 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer utilities {
-	.animation-delay-3000 {
-		animation-delay: 3s;
-	}
-	.animation-delay-5000 {
-		animation-delay: 5s;
+@config '../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentcolor);
 	}
 }
 
+@utility animation-delay-3000 {
+	animation-delay: 3s;
+}
+
+@utility animation-delay-5000 {
+	animation-delay: 5s;
+}
+
 :root {
-	--color-secondary: theme("colors.emerald.500");
-	--color-light: theme("colors.slate.500");
-	--color-light-border: theme("colors.slate.200");
+	--color-secondary: var(--color-emerald-500);
+	--color-light: var(--color-slate-500);
+	--color-light-border: var(--color-slate-200);
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
 }
 
@@ -30,11 +47,11 @@
 }
 
 .sidenav::-webkit-scrollbar-track {
-	background-color: theme("colors.transparent");
+	background-color: transparent;
 }
 
 .sidenav::-webkit-scrollbar-thumb {
-	background-color: theme("colors.slate.600");
+	background-color: var(--color-slate-600);
 }
 
 .playlist-scroll::-webkit-scrollbar {
@@ -43,11 +60,11 @@
 }
 
 .playlist-scroll::-webkit-scrollbar-track {
-	background-color: theme("colors.transparent");
+	background-color: transparent;
 }
 
 .playlist-scroll::-webkit-scrollbar-thumb {
-	background-color: theme("colors.neutral.400");
+	background-color: var(--color-neutral-400);
 }
 
 html {
@@ -58,7 +75,7 @@ html {
 	-moz-osx-font-smoothing: auto;
 	background-repeat: no-repeat;
 	background-attachment: fixed;
-	color: theme("colors.slate.700");
+	color: var(--color-slate-700);
 	accent-color: var(--color-secondary);
 }
 
@@ -71,110 +88,125 @@ h2,
 h3 {
 	font-weight: 700;
 	letter-spacing: -0.05em;
-	color: theme("colors.slate.800");
+	color: var(--color-slate-800);
 }
 
 video {
-	border-radius: theme("borderRadius.lg");
+	border-radius: var(--radius-lg);
 }
 
 .heading {
 	font-weight: 700;
 	letter-spacing: -0.05em;
-	color: theme("colors.slate.800");
+	color: var(--color-slate-800);
 }
 
-.btn {
-	@apply flex place-content-center items-center gap-2 rounded-lg px-8 py-2 text-sm font-semibold text-white transition-colors disabled:bg-opacity-25;
+/* Font size utility classes introduced through migration from tailwindcss v3 to v4 to maintain compatibility */
+.max-w-screen-xl {
+	max-width: 1280px;
 }
 
-.btn-primary {
-	@apply flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25;
+.max-w-screen-2xl {
+	max-width: 1536px;
 }
 
-.btn-secondary {
-	@apply glass flex place-content-center items-center gap-2 rounded-lg py-2 px-8 text-sm font-semibold transition-colors hover:bg-opacity-90;
+.max-w-screen-lg {
+	max-width: 1024px;
 }
 
-.btn-stroked {
-	@apply flex place-content-center items-center gap-2 rounded-lg border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
-}
+@layer components {
+	.glass {
+		@apply bg-white shadow-lg;
+	}
 
-.btn-small {
-	@apply rounded border border-light-border p-1 disabled:text-slate-200;
-}
+	.glass-hover {
+		@apply transition-colors hover:bg-[rgba(0,0,0,0.05)];
+	}
 
-.btn-small-highlight {
-	@apply p-1 disabled:text-slate-200 bg-emerald-500 text-white hover:bg-emerald-700 gap-2 rounded-lg px-2 py-2;
-}
+	.btn {
+		@apply flex place-content-center items-center gap-2 rounded-lg px-8 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-25;
+	}
 
-.btn-icon {
-	@apply h-fit rounded-lg border border-light-border bg-white px-2 py-2;
-}
+	.btn-primary {
+		@apply flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:opacity-25;
+	}
 
-.icon {
-	@apply mr-2 -ml-2 h-5 shrink-0;
-}
+	.btn-secondary {
+		@apply bg-white shadow-lg flex place-content-center items-center gap-2 rounded-lg py-2 px-8 text-sm font-semibold transition-colors hover:bg-[rgba(0,0,0,0.05)];
+	}
 
-.checkbox {
-	@apply rounded text-secondary accent-secondary focus:ring-secondary;
-}
+	.btn-stroked {
+		@apply flex place-content-center items-center gap-2 rounded-lg border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
+	}
 
-.select {
-	@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
-}
+	.btn-small {
+		@apply rounded-sm border border-light-border p-1 disabled:text-slate-200;
+	}
 
-input,
-textarea,
-select,
-.textfield {
-	@apply h-fit rounded-lg border border-light-border p-2 text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
-}
+	.btn-small-highlight {
+		@apply p-1 disabled:text-slate-200 bg-emerald-500 text-white hover:bg-emerald-700 gap-2 rounded-lg px-2 py-2;
+	}
 
-.glass {
-	@apply bg-white shadow-lg;
-}
+	.btn-icon {
+		@apply h-fit rounded-lg border border-light-border bg-white px-2 py-2;
+	}
 
-.glass-hover {
-	@apply transition-colors hover:bg-opacity-90;
-}
+	.icon {
+		@apply mr-2 -ml-2 h-5 shrink-0;
+	}
 
-.border-card {
-	@apply rounded-lg border border-light-border;
-}
+	.checkbox {
+		@apply rounded-sm text-secondary accent-secondary focus:ring-secondary;
+	}
 
-.card {
-	@apply rounded-lg p-8;
-}
+	.select {
+		@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+	}
 
-.gradient {
-	background: var(--gradient);
-}
+	input,
+	textarea,
+	select,
+	.textfield {
+		@apply h-fit rounded-lg border border-light-border p-2 text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+	}
 
-/* Code block styles */
-.code-highlight {
-	@apply float-left min-w-full;
-}
+	.border-card {
+		@apply rounded-lg border border-light-border;
+	}
 
-.code-line {
-	@apply -mx-4 block border-l-4 border-transparent pl-4 pr-4;
-}
+	.card {
+		@apply rounded-lg p-8;
+	}
 
-.code-line.inserted {
-	@apply bg-green-500 bg-opacity-20;
-}
+	.gradient {
+		background: var(--gradient);
+	}
 
-.code-line.deleted {
-	@apply bg-red-500 bg-opacity-20;
-}
+	/* Code block styles */
+	.code-highlight {
+		@apply float-left min-w-full;
+	}
 
-.highlight-line {
-	@apply -mx-4 border-l-4 border-sky-400  bg-sky-900 bg-opacity-20;
-}
+	.code-line {
+		@apply -mx-4 block border-l-4 border-transparent pl-4 pr-4;
+	}
 
-.line-number::before {
-	@apply mr-4 -ml-2 inline-block w-4 text-right text-gray-400;
-	content: attr(line);
+	.code-line.inserted {
+		@apply bg-green-500 opacity-20;
+	}
+
+	.code-line.deleted {
+		@apply bg-red-500 opacity-20;
+	}
+
+	.highlight-line {
+		@apply -mx-4 border-l-4 border-sky-400  bg-sky-900 opacity-20;
+	}
+
+	.line-number::before {
+		@apply mr-4 -ml-2 inline-block w-4 text-right text-gray-400;
+		content: attr(line);
+	}
 }
 
 /* Prism-Theme for Syntax Highlighting */

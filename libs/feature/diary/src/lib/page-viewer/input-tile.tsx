@@ -108,7 +108,7 @@ export function InfoTile({
 				<span className="text-gray-600 mt-1 py-4">{tileDescription}</span>
 			</div>
 
-			<div className="flex-grow flex items-stretch">
+			<div className="grow flex items-stretch">
 				<Tile onClick={onClick} isFilled={isFilled}>
 					{children}
 				</Tile>
@@ -222,7 +222,7 @@ export function LocationChooseDialog({
 								{location.iconURL && location.iconURL !== "" && (
 									<Image src={location.iconURL} alt={""} width={48} height={48} />
 								)}
-								<span className="text-gray-800 flex-grow">{location.name}</span>
+								<span className="text-gray-800 grow">{location.name}</span>
 								{!location.defaultLocation && (
 									<XButton
 										onClick={e => {

@@ -65,7 +65,7 @@ function DetailRow({
 	className: string;
 }) {
 	return (
-		<div className={`flex flex-shrink-0 flex-grow className-${className} flex-col`}>
+		<div className={`flex shrink-0 grow className-${className} flex-col`}>
 			<span className="font-semibold">{label}:</span>
 			<span>{value}</span>
 		</div>

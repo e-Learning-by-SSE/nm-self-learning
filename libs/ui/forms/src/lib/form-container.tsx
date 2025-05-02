@@ -98,7 +98,7 @@ export function SidebarSectionTitle({
 			<div className={"flex items-center justify-between"}>
 				<h2 className="text-xl">{title}</h2>
 
-				{children && <div className="flex-shrink-0">{children}</div>}
+				{children && <div className="shrink-0">{children}</div>}
 			</div>
 			<span className="text-sm text-light">{subtitle}</span>
 		</div>

@@ -133,7 +133,7 @@ export function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 			<ul className="space-y-4 w-full">
 				{techniques.map(technique => (
 					<li key={technique.id} className="flex items-center justify-between">
-						<span className="flex-grow whitespace-normal break-words text-gray-800">
+						<span className="grow whitespace-normal break-words text-gray-800">
 							{technique.name}
 						</span>
 						{technique.score !== undefined && (
