@@ -1,4 +1,8 @@
-import { LabeledField, MarkdownField, MarkdownViewer } from "@self-learning/ui/forms";
+import {
+	LabeledField,
+	MarkdownEditorDialog,
+	MarkdownViewer
+} from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
@@ -252,26 +256,22 @@ function EditItemDialog({
 	item?: ArrangeItem;
 	onClose: OnDialogCloseFn<ArrangeItem>;
 }) {
-	const [content, setContent] = useState(item?.content ?? "");
-
+	const [isEditorOpen, setIsEditorOpen] = useState(true);
+	
 	return (
-		<Dialog className="w-[80vw]" title={item ? "Bearbeiten" : "Hinzufügen"} onClose={onClose}>
-			<MarkdownField content={content} setValue={value => setContent(value ?? "")} />
-
-			<DialogActions onClose={onClose}>
-				<button
-					type="button"
-					className="btn-primary"
-					onClick={() =>
-						onClose({
-							id: item?.id ?? getRandomId(),
-							content
-						})
+		isEditorOpen && (
+			<MarkdownEditorDialog
+				title="Markdown bearbeiten"
+				initialValue={item?.content ?? ""}
+				onClose={newValue => {
+					setIsEditorOpen(false);
+					if (newValue !== undefined) {
+						onClose({ id: item?.id ?? getRandomId(), content: newValue });
+					} else {
+						onClose(undefined);
 					}
-				>
-					{item ? "Übernehmen" : "Hinzufügen"}
-				</button>
-			</DialogActions>
-		</Dialog>
+				}}
+			/>
+		)
 	);
 }
