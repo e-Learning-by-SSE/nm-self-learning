@@ -51,7 +51,7 @@ export function ComboboxMenu({
 					title={title}
 					displayValue={() => value ?? ""}
 					onChange={e => setQuery(e.target.value)}
-					className="w-full outline-none"
+					className="w-full focus:outline-none focus:ring-0 focus:ring-offset-0 focus:shadow-none focus:border-gray-300 border-gray-300"
 				/>
 				<ComboboxButton className="ml-2 text-gray-500 hover:text-gray-700">
 					<ChevronUpDownIcon className="w-5 h-5" />
