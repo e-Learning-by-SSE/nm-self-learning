@@ -14,7 +14,7 @@ export function DropdownMenu({
 	button: ReactNode;
 	children: ReactNode;
 }) {
-	const buttonRef = useRef<HTMLButtonElement>(null);
+	const buttonRef = useRef<HTMLDivElement>(null);
 	const [menuWidth, setMenuWidth] = useState<number | null>(null);
 
 	const childrenArray = React.Children.toArray(children);
@@ -28,12 +28,8 @@ export function DropdownMenu({
 	return (
 		<Menu as="div" className="relative inline-block text-left w-fit">
 			<>
-				<MenuButton
-					ref={buttonRef}
-					title={title}
-					className="inline-flex items-center rounded-md px-4"
-				>
-					{button}
+				<MenuButton title={title} className="inline-flex items-center rounded-md px-4">
+					<div ref={buttonRef}>{button}</div>
 				</MenuButton>
 
 				<Transition

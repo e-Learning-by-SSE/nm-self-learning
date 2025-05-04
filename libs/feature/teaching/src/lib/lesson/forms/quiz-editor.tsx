@@ -19,7 +19,7 @@ import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { Button, MenuItem } from "@headlessui/react";
+import { Button } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
@@ -98,19 +98,12 @@ export function QuizEditor() {
 					erfolgreich abzuschließen."
 				button={
 					<DropdownMenu
-						title="Aufgabentyp hinzufügen"
+						title="Aufgabe erstellen"
 						button={
-							<div className="btn-add btn-add:hover">
-								<PlusIcon className="w-4 h-4 text-emerald-500" />
-								<span className="font-semibold text-emerald-500">
-									Aufgabe hinzufügen
-								</span>
+							<div className="btn-primary">
+								<PlusIcon className="w-4 h-4 text-white" />
+								<span className="font-semibold text-white">Aufgabe erstellen</span>
 							</div>
-						}
-						customFocusStyle={focus =>
-							focus
-								? "text-secondary border border-secondary"
-								: "border border-transparent text-gray-700"
 						}
 					>
 						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
