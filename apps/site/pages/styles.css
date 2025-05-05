@@ -117,6 +117,10 @@ video {
 	@apply p-1 disabled:text-slate-200 bg-emerald-500 text-white hover:bg-emerald-700 gap-2 rounded-lg px-2 py-2;
 }
 
+.btn-icon {
+	@apply h-fit rounded-lg border border-light-border bg-white px-2 py-2;
+}
+
 .icon {
 	@apply mr-2 -ml-2 h-5 shrink-0;
 }

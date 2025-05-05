@@ -20,7 +20,7 @@ import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, PencilIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
@@ -30,7 +30,7 @@ export function useQuizEditorForm() {
 		append,
 		remove,
 		fields: quiz,
-		replace: setQuiz
+		replace
 	} = useFieldArray({
 		control,
 		name: "quiz.questions"
@@ -61,6 +61,18 @@ export function useQuizEditorForm() {
 				setQuestionIndex(quiz.length - 2); // set to last index or -1 if no questions exist
 			}
 		}
+	}
+
+	function setQuiz(questions: QuizForm["quiz"]["questions"]) {
+		const currentQuestionIndex = questions.findIndex(
+			question => question.questionId === currentQuestion?.questionId
+		);
+		if (currentQuestionIndex !== -1) {
+			setQuestionIndex(currentQuestionIndex);
+		} else {
+			setQuestionIndex(questions.length > 0 ? 0 : -1);
+		}
+		replace(questions);
 	}
 
 	return {
@@ -137,9 +149,11 @@ export function QuizEditor() {
 								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
 									<div className="flex flex-col">
 										<span className="text-xs font-normal">
+											Aufgabe {index + 1} von {quiz.length}
+										</span>
+										<span className="flex">
 											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
 										</span>
-										<span>Aufgabe {index + 1}</span>
 									</div>
 								</RemovableTab>
 							</Reorder.Item>
@@ -150,7 +164,7 @@ export function QuizEditor() {
 
 			{currentQuestion && (
 				<BaseQuestionForm
-					key={currentQuestion.id}
+					key={currentQuestion.questionId}
 					currentQuestion={currentQuestion}
 					control={control}
 					index={questionIndex}

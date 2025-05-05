@@ -1,3 +1,4 @@
+"use client";
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn, SortIndicator } from "@self-learning/ui/common";
 import { getSemester } from "./aggregation-functions";
