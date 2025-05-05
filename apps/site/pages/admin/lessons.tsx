@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { LessonDeleteOption } from "@self-learning/ui/lesson";
 
 export default function LessonManagementPage() {
 	const router = useRouter();
@@ -30,6 +31,8 @@ export default function LessonManagementPage() {
 	if (session.data?.user.role !== "ADMIN") {
 		return <AdminGuard></AdminGuard>;
 	}
+
+	console.log(data?.result);
 
 	return (
 		<CenteredSection className="bg-gray-50">
@@ -63,6 +66,7 @@ export default function LessonManagementPage() {
 						<TableHeaderColumn>Titel</TableHeaderColumn>
 						<TableHeaderColumn>Von</TableHeaderColumn>
 						<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
+						<TableHeaderColumn></TableHeaderColumn>
 					</>
 				}
 			>
@@ -90,6 +94,9 @@ export default function LessonManagementPage() {
 							>
 								{formatDateAgo(lesson.updatedAt)}
 							</span>
+						</TableDataColumn>
+						<TableDataColumn>
+							<LessonDeleteOption lessonId={lesson.lessonId} />
 						</TableDataColumn>
 					</tr>
 				))}
