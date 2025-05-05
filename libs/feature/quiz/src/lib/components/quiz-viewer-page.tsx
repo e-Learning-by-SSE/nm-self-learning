@@ -1,4 +1,3 @@
-//import { Course } from "@prisma/client";
 import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
