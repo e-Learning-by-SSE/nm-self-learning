@@ -20,7 +20,7 @@ import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
-import { PlusIcon, PencilIcon } from "@heroicons/react/24/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
