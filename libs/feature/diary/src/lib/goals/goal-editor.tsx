@@ -170,8 +170,6 @@ export function GoalDropDownSelector({
 	function onSelectedGoalChange(goalName: string) {
 		const goal = goals.find(goal => goal.description === goalName);
 
-		console.log(goal);
-
 		if (goal) {
 			setSelectedGoal(goal);
 			onChange(goal.goalId);
