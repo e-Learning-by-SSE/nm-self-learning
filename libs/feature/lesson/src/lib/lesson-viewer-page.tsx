@@ -3,8 +3,8 @@ import { LessonData } from "./lesson-data-access";
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { useLessonContext } from "@self-learning/lesson";
-import { LessonMeta } from "@self-learning/types";
+import { getCourse, useLessonContext } from "@self-learning/lesson";
+import { LessonMeta, ResolvedValue } from "@self-learning/types";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/common";
 import Link from "next/link";
@@ -26,7 +26,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 export type LessonProps = {
 	lesson: LessonData;
-	course?: Course;
+	course?: ResolvedValue<typeof getCourse>;
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
@@ -192,7 +192,7 @@ function LessonHeader({
 	);
 }
 
-function ChapterName({
+export function ChapterName({
 	course,
 	lesson
 }: {
