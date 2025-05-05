@@ -32,8 +32,6 @@ export default function LessonManagementPage() {
 		return <AdminGuard></AdminGuard>;
 	}
 
-	console.log(data?.result);
-
 	return (
 		<CenteredSection className="bg-gray-50">
 			<div className="mb-16 flex items-center justify-between gap-4 ">
