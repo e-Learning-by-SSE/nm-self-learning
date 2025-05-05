@@ -66,7 +66,6 @@ export default function LessonManagementPage() {
 						<TableHeaderColumn>Titel</TableHeaderColumn>
 						<TableHeaderColumn>Von</TableHeaderColumn>
 						<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
-						<TableHeaderColumn></TableHeaderColumn>
 					</>
 				}
 			>
@@ -88,15 +87,15 @@ export default function LessonManagementPage() {
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<span
-								className="text-light"
-								title={new Date(lesson.updatedAt).toLocaleString()}
-							>
-								{formatDateAgo(lesson.updatedAt)}
-							</span>
-						</TableDataColumn>
-						<TableDataColumn>
-							<LessonDeleteOption lessonId={lesson.lessonId} />
+							<div className="flex items-right gap-4">
+								<span
+									className="text-light"
+									title={new Date(lesson.updatedAt).toLocaleString()}
+								>
+									{formatDateAgo(lesson.updatedAt)}
+								</span>
+								<LessonDeleteOption lessonId={lesson.lessonId} />
+							</div>
 						</TableDataColumn>
 					</tr>
 				))}
