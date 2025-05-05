@@ -25,7 +25,6 @@ export * from "./lib/section-card/section-card";
 export * from "./lib/tabs/tabs";
 export * from "./lib/toast/toast";
 export * from "./lib/license/license-chip";
-export * from "./lib/custom-selection/selection";
 export * from "./lib/progress-bar/progress-bar";
 export * from "./lib/toggle/toggle";
 export * from "./lib/tooltip/tooltips";
