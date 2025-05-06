@@ -181,9 +181,9 @@ export function GoalDropDownSelector({
 			title={""}
 			dropdownPosition={"bottom"}
 			onChange={selection => onSelectedGoalChange(selection)}
-			value={selectedGoal.description}
+			displayValue={selectedGoal.description}
 			options={goals.map(goal => goal.description)}
-		></ComboboxMenu>
+		/>
 	);
 }
 

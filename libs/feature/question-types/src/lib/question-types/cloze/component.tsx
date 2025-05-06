@@ -3,8 +3,7 @@ import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 import { createCloze, Gap } from "./cloze-parser";
 import ReactMarkdown from "react-markdown";
-import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { MarkdownListboxMenu } from "@self-learning/ui/common";
+import { rehypePlugins, remarkPlugins, MarkdownListboxMenu } from "@self-learning/markdown";
 
 export default function ClozeAnswer() {
 	const { question, answer, setAnswer, evaluation } = useQuestion("cloze");
@@ -85,19 +84,12 @@ export function RenderGapType({
 	disabled: boolean;
 }) {
 	if (gap.type === "C") {
-		const renderedValue = (
-			<ReactMarkdown
-				remarkPlugins={remarkPlugins}
-				rehypePlugins={rehypePlugins}
-			></ReactMarkdown>
-		);
-
 		return (
 			<MarkdownListboxMenu
 				onChange={option => setAnswer(index, option)}
 				title={""}
 				dropdownPosition={"bottom"}
-				value={value}
+				displayValue={value}
 				options={gap.values.map(value => value.text)}
 			/>
 		);
@@ -107,7 +99,7 @@ export function RenderGapType({
 		return (
 			<input
 				type="text"
-				className="textfield mx-1 "
+				className="textfield mx-1"
 				value={value}
 				onChange={e => setAnswer(index, e.target.value)}
 				disabled={disabled}

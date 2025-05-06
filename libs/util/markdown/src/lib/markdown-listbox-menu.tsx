@@ -14,7 +14,7 @@ export function MarkdownListboxMenu({
 	title,
 	dropdownPosition = "bottom",
 	customFocusStyle,
-	value,
+	displayValue,
 	options,
 	onChange
 }: {
@@ -22,13 +22,13 @@ export function MarkdownListboxMenu({
 	dropdownPosition: "top" | "bottom";
 	onChange: (option: string) => void;
 	customFocusStyle?: (focus: boolean) => string;
-	value: string | null | undefined;
+	displayValue: string | null | undefined;
 	options: string[];
 }) {
 	const buttonRef = useRef<HTMLButtonElement>(null);
 
 	return (
-		<Listbox onChange={onChange} value={value}>
+		<Listbox onChange={onChange} value={displayValue}>
 			<ListboxButton
 				ref={buttonRef}
 				as="button"
@@ -42,7 +42,7 @@ export function MarkdownListboxMenu({
 							rehypePlugins={rehypePlugins}
 							className="prose prose-sm max-w-none"
 						>
-							{value === "" ? "Select an option" : value}
+							{displayValue === "" ? "Select an option" : displayValue}
 						</ReactMarkdown>
 						{open ? (
 							<ChevronUpIcon className="h-5 w-5" aria-hidden="true" />

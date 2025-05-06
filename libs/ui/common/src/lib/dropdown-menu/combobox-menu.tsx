@@ -12,7 +12,7 @@ export function ComboboxMenu({
 	title,
 	dropdownPosition = "bottom",
 	customFocusStyle,
-	value,
+	displayValue,
 	options,
 	onChange
 }: {
@@ -20,7 +20,7 @@ export function ComboboxMenu({
 	dropdownPosition?: "top" | "bottom";
 	onChange: (option: string) => void;
 	customFocusStyle?: (focus: boolean) => string;
-	value: string | null | undefined;
+	displayValue: string | null | undefined;
 	options: string[];
 }) {
 	const menuRef = useRef<HTMLInputElement>(null);
@@ -42,14 +42,14 @@ export function ComboboxMenu({
 		<Combobox
 			as="div"
 			onChange={onChange}
-			value={value}
+			value={displayValue}
 			className="relative inline-block w-full text-left"
 		>
 			<div className="inline-flex w-full items-center rounded-md border px-4 py-2">
 				<ComboboxInput
 					ref={menuRef}
 					title={title}
-					displayValue={() => value ?? ""}
+					displayValue={() => displayValue ?? ""}
 					onChange={e => setQuery(e.target.value)}
 					className="w-full focus:outline-none focus:ring-0 focus:ring-offset-0 focus:shadow-none focus:border-gray-300 border-gray-300"
 				/>
