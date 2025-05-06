@@ -1,14 +1,9 @@
-import {
-	Listbox,
-	ListboxButton,
-	ListboxOption,
-	ListboxOptions,
-	Transition
-} from "@headlessui/react";
-import React, { Fragment, useRef } from "react";
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
+import React, { useRef } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "./markdown";
+import { DropwdownTransition } from "@self-learning/ui/common";
 
 export function MarkdownListboxMenu({
 	title,
@@ -53,15 +48,7 @@ export function MarkdownListboxMenu({
 				)}
 			</ListboxButton>
 
-			<Transition
-				as={Fragment}
-				enter="transition ease-out duration-100"
-				enterFrom="opacity-0 scale-95"
-				enterTo="opacity-100 scale-100"
-				leave="transition ease-in duration-75"
-				leaveFrom="opacity-100 scale-100"
-				leaveTo="opacity-0 scale-95"
-			>
+			<DropwdownTransition>
 				<ListboxOptions
 					anchor={dropdownPosition}
 					className="z-10 w-max min-w-[8rem] max-w-xs rounded-md bg-white shadow-lg cursor-default"
@@ -111,7 +98,7 @@ export function MarkdownListboxMenu({
 						</ListboxOption>
 					))}
 				</ListboxOptions>
-			</Transition>
+			</DropwdownTransition>
 		</Listbox>
 	);
 }

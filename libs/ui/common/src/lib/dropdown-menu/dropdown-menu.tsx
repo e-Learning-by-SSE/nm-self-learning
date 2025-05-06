@@ -1,5 +1,6 @@
-import React, { Fragment, ReactNode, useEffect, useRef, useState } from "react";
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { DropwdownTransition } from "@self-learning/ui/common";
 
 export function DropdownMenu({
 	title,
@@ -32,15 +33,7 @@ export function DropdownMenu({
 					<div ref={buttonRef}>{button}</div>
 				</MenuButton>
 
-				<Transition
-					as={Fragment}
-					enter="transition ease-out duration-100"
-					enterFrom="opacity-0 scale-95"
-					enterTo="opacity-100 scale-100"
-					leave="transition ease-in duration-75"
-					leaveFrom="opacity-100 scale-100"
-					leaveTo="opacity-0 scale-95"
-				>
+				<DropwdownTransition>
 					{menuWidth && (
 						<MenuItems
 							anchor={dropdownPosition}
@@ -70,7 +63,7 @@ export function DropdownMenu({
 							</div>
 						</MenuItems>
 					)}
-				</Transition>
+				</DropwdownTransition>
 			</>
 		</Menu>
 	);

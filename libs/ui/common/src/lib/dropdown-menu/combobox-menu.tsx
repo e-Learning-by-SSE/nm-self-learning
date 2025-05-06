@@ -7,6 +7,7 @@ import {
 } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { DropwdownTransition } from "@self-learning/ui/common";
 
 export function ComboboxMenu({
 	title,
@@ -59,29 +60,31 @@ export function ComboboxMenu({
 			</div>
 
 			{menuWidth && filteredOptions.length > 0 && (
-				<ComboboxOptions
-					anchor={dropdownPosition}
-					style={{ minWidth: menuWidth }}
-					className="z-10 rounded-md bg-white shadow-lg overflow-auto"
-				>
-					{filteredOptions.map((option, i) => (
-						<ComboboxOption key={i} value={option}>
-							{({ focus, selected }) => (
-								<div
-									className={`w-full text-left px-3 py-1 flex items-center cursor-default ${
-										customFocusStyle
-											? customFocusStyle(focus)
-											: focus
-												? "bg-emerald-500 text-white"
-												: ""
-									} ${selected ? "font-medium" : ""}`}
-								>
-									{option}
-								</div>
-							)}
-						</ComboboxOption>
-					))}
-				</ComboboxOptions>
+				<DropwdownTransition>
+					<ComboboxOptions
+						anchor={dropdownPosition}
+						style={{ minWidth: menuWidth }}
+						className="z-10 rounded-md bg-white shadow-lg overflow-auto"
+					>
+						{filteredOptions.map((option, i) => (
+							<ComboboxOption key={i} value={option}>
+								{({ focus, selected }) => (
+									<div
+										className={`w-full text-left px-3 py-1 flex items-center cursor-default ${
+											customFocusStyle
+												? customFocusStyle(focus)
+												: focus
+													? "bg-emerald-500 text-white"
+													: ""
+										} ${selected ? "font-medium" : ""}`}
+									>
+										{option}
+									</div>
+								)}
+							</ComboboxOption>
+						))}
+					</ComboboxOptions>
+				</DropwdownTransition>
 			)}
 		</Combobox>
 	);
