@@ -10,7 +10,8 @@ export const multipleChoiceQuestionSchema = baseQuestionSchema.extend({
 			isCorrect: z.boolean()
 		})
 	),
-	questionStep: z.number()
+	questionStep: z.number(),
+	randomizeAnswers: z.boolean().optional().default(false)
 });
 
 export type MultipleChoiceQuestion = z.infer<typeof multipleChoiceQuestionSchema>;

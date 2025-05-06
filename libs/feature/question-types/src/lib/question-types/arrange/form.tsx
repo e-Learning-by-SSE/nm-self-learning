@@ -15,13 +15,14 @@ import {
 	SectionHeader,
 	showToast,
 	XButton,
-	IconButton
+	IconButton,
+	Toggle
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
 import { PlusIcon } from "@heroicons/react/24/solid";
 
 export default function ArrangeForm({ index }: { index: number }) {
-	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
+	const { watch, setValue} = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
 	const items = watch(`quiz.questions.${index}.items`);
 	const [addCategoryDialog, setAddCategoryDialog] = useState(false);
 	const [editItemDialog, setEditItemDialog] = useState<{
@@ -109,6 +110,13 @@ export default function ArrangeForm({ index }: { index: number }) {
 					/>
 				}
 			/>
+			<div className="flex items-center gap-2">
+				<Toggle
+					value={watch(`quiz.questions.${index}.randomizeItems`)}
+					onChange={value => setValue(`quiz.questions.${index}.randomizeItems`, value)}
+					label="Antworten dem Nutzer zufällig anordnen"
+				/>
+			</div>
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
 			<DragDropContext onDragEnd={onDragEnd}>
