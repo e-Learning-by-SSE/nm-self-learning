@@ -130,16 +130,20 @@ model NewCourse {
     authors              Author[]             @relation("AuthorToNewCourse")
     subject              Subject?             @relation(fields: [subjectId], references: [subjectId])
     specializations      Specialization[]     @relation("NewCourseToSpecialization")
+    generatedLessonPaths GeneratedLessonPath[]
 }
 
 model GeneratedLessonPath {
-    lessonPathId         String               @id
+    lessonPathId         String               @id@default(cuid())
     content              Json
     meta                 Json
     username             String
+    slug                 String               @unique
+    courseId             String
     createdAt            DateTime             @default(now())
     updatedAt            DateTime             @updatedAt
     student              Student              @relation(fields: [username], references: [username], onDelete: Cascade)
+    course               NewCourse           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
 }
 
 model Enrollment {

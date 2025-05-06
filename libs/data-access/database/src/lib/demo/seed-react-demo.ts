@@ -182,22 +182,22 @@ const reactLessons = [
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Start a New React Project",
 				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
+				provides: ["101"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Add React to a Website",
 				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
+				provides: ["101"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Editor Setup",
 				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
+				provides: ["101"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "React Developer Tools",
 				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
+				provides: ["101"]
 			})
 		]
 	},
@@ -208,42 +208,42 @@ const reactLessons = [
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Your First Component",
 				questions: reactDemoQuestions,
-				teachingGoals: ["103"]
+				provides: ["103"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Importing and Exporting Components",
 				questions: reactDemoQuestions,
-				teachingGoals: ["211"]
+				provides: ["211"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Writing Markup with JSX",
 				questions: reactDemoQuestions,
-				teachingGoals: ["101"]
+				provides: ["101"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "JavaScript in JSX with Curly Braces",
 				questions: reactDemoQuestions,
-				teachingGoals: ["102"]
+				provides: ["102"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Passing Props to a Component",
 				questions: reactDemoQuestions,
-				teachingGoals: ["104"]
+				provides: ["104"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Conditional Rendering",
 				questions: reactDemoQuestions,
-				teachingGoals: ["107"]
+				provides: ["107"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Rendering Lists",
 				questions: reactDemoQuestions,
-				teachingGoals: ["108"]
+				provides: ["108"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Keeping Components Pure",
 				questions: reactDemoQuestions,
-				teachingGoals: ["103"]
+				provides: ["103"]
 			})
 		]
 	},
@@ -254,37 +254,37 @@ const reactLessons = [
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Responding to Events",
 				questions: reactDemoQuestions,
-				teachingGoals: ["106"]
+				provides: ["106"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "State: A Component's Memory",
 				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Render and Commit",
 				questions: reactDemoQuestions,
-				teachingGoals: ["210"]
+				provides: ["210"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "State as a Snapshot",
 				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Queueing a Series of State Updates",
 				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Updating Objects in State",
 				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Updating Arrays in State",
 				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
+				provides: ["105"]
 			})
 		]
 	},
@@ -295,37 +295,37 @@ const reactLessons = [
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Reacting to Input with State",
 				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Choosing the State Structure",
 				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Sharing State Between Components",
 				questions: reactDemoQuestions,
-				teachingGoals: ["211"]
+				provides: ["211"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Preserving and Resetting State",
 				questions: reactDemoQuestions,
-				teachingGoals: ["105"]
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Extracting State Logic into a Reducer",
 				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
+				provides: ["213"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Passing Data Deeply with Context",
 				questions: reactDemoQuestions,
-				teachingGoals: ["214"]
+				provides: ["214"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Scaling Up with Reducer and Context",
 				questions: reactDemoQuestions,
-				teachingGoals: ["214"]
+				provides: ["214"]
 			})
 		]
 	},
@@ -336,47 +336,47 @@ const reactLessons = [
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Escape Hatches",
 				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
+				provides: ["213"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Referencing Values with Refs",
 				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
+				provides: ["213"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Manipulating the DOM with Refs",
 				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
+				provides: ["213"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Synchronizing with Effects",
 				questions: reactDemoQuestions,
-				teachingGoals: ["109"]
+				provides: ["109"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "You Might Not Need an Effect",
 				questions: reactDemoQuestions,
-				teachingGoals: ["109"]
+				provides: ["109"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Lifecycle of Reactive Effects",
 				questions: reactDemoQuestions,
-				teachingGoals: ["210"]
+				provides: ["210"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Separating Events from Effects",
 				questions: reactDemoQuestions,
-				teachingGoals: ["109"]
+				provides: ["109"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Removing Effect Dependencies",
 				questions: reactDemoQuestions,
-				teachingGoals: ["109"]
+				provides: ["109"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
 				title: "Reusing Logic with Custom Hooks",
 				questions: reactDemoQuestions,
-				teachingGoals: ["213"]
+				provides: ["213"]
 			})
 		]
 	}

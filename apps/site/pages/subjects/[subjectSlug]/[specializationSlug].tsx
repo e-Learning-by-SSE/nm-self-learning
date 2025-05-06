@@ -6,31 +6,34 @@ import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { withTranslations } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params, locale }) => {
-	const specializationSlug = params?.specializationSlug;
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<SpecializationPageProps>(async (ctx, user) => {
+		const specializationSlug = ctx.params?.specializationSlug;
 
-	if (typeof specializationSlug !== "string") {
-		throw new Error("[specializationSlug] must be a string.");
-	}
+		if (typeof specializationSlug !== "string") {
+			throw new Error("[specializationSlug] must be a string.");
+		}
 
-	const specialization = await getSpecialization(specializationSlug);
+		const specialization = await getSpecialization(specializationSlug, user.name);
 
-	return {
-		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
-			specialization: specialization as Defined<typeof specialization>
-		},
-		notFound: !specialization
-	};
-});
+		return {
+			props: {
+				...(await serverSideTranslations(ctx.locale ?? "en", ["common"])),
+				specialization: specialization as Defined<typeof specialization>
+			},
+			notFound: !specialization
+		};
+	})
+);
 
-async function getSpecialization(specializationSlug: string) {
+async function getSpecialization(specializationSlug: string, username: string) {
 	return await database.specialization.findUnique({
 		where: { slug: specializationSlug },
 		select: {
@@ -51,6 +54,11 @@ async function getSpecialization(specializationSlug: string) {
 			newCourses: {
 				orderBy: { title: "asc" },
 				select: {
+					generatedLessonPaths: {
+						where: {
+							username: username
+						}
+					},
 					slug: true,
 					imgUrl: true,
 					title: true,

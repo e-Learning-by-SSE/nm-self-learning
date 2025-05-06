@@ -31,6 +31,7 @@ import {
 	Variable,
 	Skill as LibSkill
 } from "@e-learning-by-sse/nm-skill-lib";
+import { randomUUID } from "crypto";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -215,25 +216,24 @@ export const courseRouter = t.router({
 			});
 
 			if (!course) {
-				course = {
-					courseId: "",
-					...(await database.newCourse.findUnique({
-						where: { slug: input.slug },
-						select: {
-							courseId: true
+				const newCourse = await database.newCourse.findUniqueOrThrow({
+					where: { slug: input.slug },
+					select: {
+						courseId: true,
+						generatedLessonPaths: {
+							where: {
+								username: ctx.user.name
+							},
+							select: {
+								content: true
+							}
 						}
-					})),
-					content: []
-				};
+					}
+				});
 
 				course = {
-					...course,
-					...await database.generatedLessonPath.findUnique({
-						where: { lessonPathId: `${course?.courseId} - ${ctx.user.name}` },
-						select: {
-							content: true
-						}
-					})
+					...newCourse,
+					content: newCourse.generatedLessonPaths[0]?.content ?? []
 				};
 			}
 
@@ -321,12 +321,12 @@ export const courseRouter = t.router({
 			const lessons = await database.lesson.findMany({
 				select: {
 					lessonId: true,
-					requirements: {
+					requires: {
 						select: {
 							id: true
 						}
 					},
-					teachingGoals: {
+					provides: {
 						select: {
 							id: true
 						}
@@ -351,8 +351,8 @@ export const courseRouter = t.router({
 
 			const learningUnits: LibLearningUnit[] = lessons.map(lesson => ({
 				id: lesson.lessonId,
-				requires: convertToExpression(lesson.requirements.map(req => req.id)),
-				provides: lesson.teachingGoals
+				requires: convertToExpression(lesson.requires.map(req => req.id)),
+				provides: lesson.provides
 					.map(tg => findSkill(tg.id))
 					.filter((s): s is LibSkill => s !== undefined),
 				suggestedSkills: []
@@ -376,7 +376,6 @@ export const courseRouter = t.router({
 				costOptions: DefaultCostParameter
 			});
 
-
 			const courseChapter = [
 				{
 					title: "",
@@ -391,8 +390,9 @@ export const courseRouter = t.router({
 
 			const generatedCourse = database.generatedLessonPath.create({
 				data: {
-					lessonPathId: `${input.courseId} - ${ctx.user.name}`,
 					content: courseContent,
+					slug: randomUUID(),
+					courseId: input.courseId,
 					meta: createCourseMeta({ content: courseContent }),
 					username: ctx.user.name,
 					createdAt: new Date(),

@@ -23,11 +23,11 @@ const adminName = "dumbledore";
 export function createLessonWithRandomContentAndDemoQuestions({
 	title,
 	questions,
-	teachingGoals
+	provides
 }: {
 	title: string;
 	questions: QuizContent;
-	teachingGoals?: string[]
+	provides?: string[]
 }) {
 	const content = [
 		{
@@ -57,7 +57,7 @@ export function createLessonWithRandomContentAndDemoQuestions({
 		content,
 		questions,
 		licenseId: defaultLicense.licenseId,
-		teachingGoals
+		provides
 	});
 }
 
@@ -70,7 +70,7 @@ export function createLesson({
 	licenseId,
 	lessonType,
 	selfRegulatedQuestion,
-	teachingGoals
+	provides
 }: {
 	title: string;
 	subtitle: string | null;
@@ -80,7 +80,7 @@ export function createLesson({
 	licenseId?: number | null;
 	lessonType?: LessonType;
 	selfRegulatedQuestion?: string;
-	teachingGoals?: string[];
+	provides?: string[];
 }) {
 	const lesson: Prisma.LessonCreateInput = {
 		title,
@@ -97,8 +97,8 @@ export function createLesson({
 		},
 		meta: {},
 		license: licenseId ? { connect: { licenseId: licenseId } } : undefined,
-		teachingGoals: teachingGoals
-		? { connect: teachingGoals.map(goalId => ({ id: goalId })) }
+		provides: provides
+		? { connect: provides.map(goalId => ({ id: goalId })) }
 		: undefined,
 	};
 

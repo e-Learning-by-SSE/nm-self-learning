@@ -107,6 +107,7 @@ function createCourseSummary(content: ToC.Content): Summary {
 }
 
 type CourseProps = {
+	isGenerated: boolean;
 	course: Course;
 	summary: Summary;
 	content: ToC.Content;
@@ -121,12 +122,15 @@ export const getServerSideProps = withTranslations(
 			throw new Error("No slug provided.");
 		}
 
+		let isGenerated = false;
+
 		let course = await getCourse(courseSlug);
 		if (!course) {
 			course = {
 				authors: [],
 				...(await getNewCourse(courseSlug, ctx.name))
 			} as Course;
+			isGenerated = true;
 			if (!course) {
 				return { notFound: true };
 			}
@@ -144,6 +148,7 @@ export const getServerSideProps = withTranslations(
 
 		return {
 			props: {
+				isGenerated,
 				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
 				summary,
 				content,
@@ -189,28 +194,26 @@ async function getNewCourse(courseSlug: string, username: string) {
 					displayName: true,
 					imgUrl: true
 				}
+			},
+			generatedLessonPaths: {
+				where: {
+					username: username
+				}
 			}
-		}
-	});
-
-	const courseContent = await database.generatedLessonPath.findUnique({
-		where: { lessonPathId: `${course?.courseId} - ${username}` },
-		select: {
-			content: true
 		}
 	});
 
 	return {
 		...course,
-		content: courseContent?.content ?? []
+		content: course?.generatedLessonPaths[0]?.content ?? []
 	};
 }
 
-export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
+export default function Course({ course, summary, content, markdownDescription, isGenerated }: CourseProps) {
 	return (
 		<div className="bg-gray-50 pb-32">
 			<CenteredSection className="bg-gray-50">
-				<CourseHeader course={course} content={content} summary={summary} />
+				<CourseHeader course={course} content={content} summary={summary} isGenerated={isGenerated}/>
 			</CenteredSection>
 
 			{markdownDescription && (
@@ -229,10 +232,12 @@ export default function Course({ course, summary, content, markdownDescription }
 }
 
 function CourseHeader({
+	isGenerated,
 	course,
 	summary,
 	content
 }: {
+	isGenerated: boolean;
 	course: CourseProps["course"];
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
@@ -358,7 +363,7 @@ function CourseHeader({
 							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
-					{<CoursePath courseId={course.courseId} />}
+					{isGenerated && course?.content.length === 0 && <CoursePath courseId={course.courseId} />}
 				</div>
 			</div>
 		</section>
@@ -376,26 +381,12 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 					<span className="text-secondary">Kein Inhalt verfügbar</span>
 				</h3>
 				<span className="mt-4 text-light">
-					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
+				Du hast dir noch keinen Kurspfad generiert. Bitte wähle einen Kurspfad aus.
 				</span>
 			</div>
 		);
 	}
 
-	const hasContent = content.length > 0;
-
-	if (!hasContent) {
-		return (
-			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
-				<h3 className="heading flex gap-4 text-2xl">
-					<span className="text-secondary">Kein Inhalt verfügbar</span>
-				</h3>
-				<span className="mt-4 text-light">
-					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
-				</span>
-			</div>
-		);
-	}
 
 	return (
 		<section className="flex flex-col gap-8">
@@ -489,17 +480,17 @@ function Description({ content }: { content: CompiledMarkdown }) {
 	);
 }
 
-function CoursePath({courseId}:{courseId: string}) {
+function CoursePath({ courseId }: { courseId: string }) {
 	const { mutateAsync } = trpc.course.generateCoursePreview.useMutation();
 	const [selectedPath, setSelectedPath] = useState("");
 	const [openDialog, setOpenDialog] = useState<React.JSX.Element | null>(null);
 	const router = useRouter();
 
-	const onSelectedKnowledge = async (skills: SkillFormModel[]) =>{
+	const onSelectedKnowledge = async (skills: SkillFormModel[]) => {
 		try {
 			const generatedCourse = await mutateAsync({
 				courseId: courseId,
-				knowledge: skills.map(skill => skill.id),
+				knowledge: skills.map(skill => skill.id)
 			});
 
 			setOpenDialog(<ShowGeneratedPath selectedSkills={skills} />);
@@ -513,7 +504,7 @@ function CoursePath({courseId}:{courseId: string}) {
 				subtitle: "Der Kurs konnte nicht generiert werden."
 			});
 		}
-	}
+	};
 
 	return (
 		<div>
@@ -558,12 +549,12 @@ function CoursePath({courseId}:{courseId: string}) {
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
 				onClick={async () => {
-					setOpenDialog(<HandleChosenPath
-						selectedPath={selectedPath}
-						onClose={async skills => 
-							await onSelectedKnowledge(skills)
-						}
-					/>);
+					setOpenDialog(
+						<HandleChosenPath
+							selectedPath={selectedPath}
+							onClose={async skills => await onSelectedKnowledge(skills)}
+						/>
+					);
 				}}
 			>
 				Starten
@@ -600,12 +591,8 @@ function HandleChosenPath({
 	return null;
 }
 
-function ShowGeneratedPath({
-	selectedSkills
-}: {
-	selectedSkills: SkillFormModel[];
-}) {
-	const randomTime = (Math.random()* selectedSkills.length) * 1.5;
+function ShowGeneratedPath({ selectedSkills }: { selectedSkills: SkillFormModel[] }) {
+	const randomTime = Math.random() * selectedSkills.length * 1.5;
 
 	return (
 		<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
@@ -616,7 +603,7 @@ function ShowGeneratedPath({
 				Der Kurs wurde erfolgreich generiert. Die Lerneinheiten sind nun verfügbar.
 			</span>
 			<span className="mt-4 text-light">
-				Du hast dir durch dein Vorwissen { Math.floor(randomTime) } Module gespart.
+				Du hast dir durch dein Vorwissen {Math.floor(randomTime)} Module gespart.
 			</span>
 			<p className="mt-4 text-light">
 				Du kannst den Kurs jetzt starten und dein Wissen erweitern.
