@@ -1,14 +1,5 @@
 "use client";
-import {
-	Disclosure,
-	DisclosureButton,
-	DisclosurePanel,
-	Menu,
-	MenuButton,
-	MenuItem,
-	MenuItems,
-	Transition
-} from "@headlessui/react";
+import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import {
 	AcademicCapIcon,
 	AdjustmentsHorizontalIcon,
@@ -20,12 +11,12 @@ import {
 	XMarkIcon
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
-import { Divider, DropdownMenu } from "@self-learning/ui/common";
+import { DropdownMenu } from "@self-learning/ui/common";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { SearchBar } from "./search-bar";
 
