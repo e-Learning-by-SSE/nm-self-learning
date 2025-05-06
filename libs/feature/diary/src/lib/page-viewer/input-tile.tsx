@@ -9,7 +9,7 @@ import { IdSet } from "@self-learning/util/common";
 import { StatusUpdateCallback } from "../util/types";
 import { GoalStatus } from "../goals/status";
 import { LearningGoalEditorDialog } from "../goals/goal-editor";
-import { Location } from "../access-learning-diary";
+import { Location } from "@self-learning/diary";
 
 export function Tile({
 	onClick,
@@ -21,7 +21,7 @@ export function Tile({
 }>) {
 	return (
 		<div
-			className={`flex justify-center items-center w-full min-h-48 max-h-48 px-4 py-2 rounded-lg cursor-pointer ${
+			className={`flex justify-center items-center w-full min-h-48 max-h-64 px-4 py-2 rounded-lg cursor-pointer ${
 				isFilled ? "bg-green-100" : "bg-gray-100"
 			}`}
 			onClick={() => onClick(true)}
@@ -103,7 +103,7 @@ export function InfoTile({
 }>) {
 	return (
 		<div className="flex flex-col xl:flex-row items-stretch w-full h-full space-y-1 xl:space-y-0 xl:space-x-4">
-			<div className="flex flex-col xl:w-1/4 bg-gray-200 rounded-lg text-center p-4 min-h-48 max-h-48">
+			<div className="flex flex-col xl:w-1/4 bg-gray-200 rounded-lg text-center p-4 min-h-40 max-h-64">
 				<span className="text-gray-800 font-semibold">{tileName}:</span>
 				<span className="text-gray-600 mt-1 py-4">{tileDescription}</span>
 			</div>
