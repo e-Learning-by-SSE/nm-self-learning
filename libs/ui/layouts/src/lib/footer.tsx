@@ -76,6 +76,7 @@ function LanguageSwitcher() {
 			}
 		>
 			<button
+				className={"px-3 py-1"}
 				onClick={() => {
 					router.push(router.pathname, router.asPath, { locale: "de" });
 				}}
@@ -84,6 +85,7 @@ function LanguageSwitcher() {
 			</button>
 
 			<button
+				className={"px-3 py-1"}
 				onClick={() => {
 					router.push(router.pathname, router.asPath, { locale: "en" });
 				}}

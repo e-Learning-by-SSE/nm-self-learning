@@ -123,11 +123,10 @@ export function QuizEditor() {
 								key={type}
 								type={"button"}
 								title="Aufgabentyp Hinzufügen"
+								className={"w-full text-left px-3 py-1"}
 								onClick={() => appendQuestion(type as QuestionType["type"])}
 							>
-								<span>
-									{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
-								</span>
+								{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
 							</Button>
 						))}
 					</DropdownMenu>

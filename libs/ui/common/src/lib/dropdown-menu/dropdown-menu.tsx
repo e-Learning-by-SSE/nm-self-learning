@@ -49,12 +49,12 @@ export function DropdownMenu({
 							}}
 							className="absolute z-10 rounded-md bg-white shadow-lg overflow-hidden"
 						>
-							<div className="py-1 max-h-48 overflow-auto text-sm">
+							<div className="py-1 max-h-64 overflow-auto text-sm">
 								{childrenArray.map((element, i) => (
 									<MenuItem key={i}>
 										{({ focus }) => (
 											<div
-												className={`w-full text-left px-3 py-1 ${
+												className={`text-left ${
 													customFocusStyle
 														? customFocusStyle(focus)
 														: focus

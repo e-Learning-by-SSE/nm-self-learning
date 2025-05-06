@@ -220,7 +220,7 @@ export function NavbarDropdownMenu({
 		>
 			<Link
 				href="/dashboard"
-				className={`flex w-full items-center gap-2 rounded-md px-2 py-2`}
+				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<UserIcon className="h-5" />
 				<span>Profil</span>
@@ -228,7 +228,7 @@ export function NavbarDropdownMenu({
 
 			<Link
 				href="/user-settings"
-				className={` flex w-full items-center gap-2 rounded-md px-2 py-2`}
+				className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<AdjustmentsHorizontalIcon className="h-5" />
 				<span>Einstellungen</span>
@@ -237,7 +237,7 @@ export function NavbarDropdownMenu({
 			{isAuthor && (
 				<Link
 					href="/dashboard/author"
-					className={`flex w-full items-center gap-2 rounded-md px-2 py-2`}
+					className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 				>
 					<PencilSquareIcon className="h-5" />
 					<span>Autorenbereich</span>
@@ -247,7 +247,7 @@ export function NavbarDropdownMenu({
 			{isAdmin && (
 				<Link
 					href="/admin"
-					className={`flex w-full items-center gap-2 rounded-md px-2 py-2`}
+					className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 				>
 					<WrenchIcon className="h-5" />
 					<span>Adminbereich</span>
@@ -256,7 +256,7 @@ export function NavbarDropdownMenu({
 
 			<button
 				onClick={signOut}
-				className={`flex w-full items-center gap-2 rounded-md px-2 py-2`}
+				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<ArrowRightStartOnRectangleIcon className="h-5" />
 				<span>Logout</span>
