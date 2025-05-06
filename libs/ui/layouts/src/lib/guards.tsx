@@ -1,3 +1,4 @@
+"use client";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
