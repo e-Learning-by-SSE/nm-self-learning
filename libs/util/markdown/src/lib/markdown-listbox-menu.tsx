@@ -7,8 +7,8 @@ import {
 } from "@headlessui/react";
 import React, { Fragment, useRef } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import ReactMarkdown from "react-markdown";
+import { rehypePlugins, remarkPlugins } from "./markdown";
 
 export function MarkdownListboxMenu({
 	title,

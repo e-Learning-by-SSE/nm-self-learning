@@ -3,7 +3,7 @@ import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 import { createCloze, Gap } from "./cloze-parser";
 import ReactMarkdown from "react-markdown";
-import { rehypePlugins, remarkPlugins, MarkdownListboxMenu } from "@self-learning/markdown";
+import { MarkdownListboxMenu, rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 
 export default function ClozeAnswer() {
 	const { question, answer, setAnswer, evaluation } = useQuestion("cloze");
