@@ -23,8 +23,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 	const addAnswer = (value: string) => {
 		setAnswerTreeInput([...answerTreeInput, value]);
 	};
-	const removeAnswer = (e: React.MouseEvent<HTMLButtonElement> ,index: number) => {
-		e.stopPropagation();
+	const removeAnswer = (index: number) => {
 		const newAnswerTreeInput = [...answerTreeInput];
 		newAnswerTreeInput.splice(index, 1);
 		setAnswerTreeInput(newAnswerTreeInput);
@@ -116,7 +115,11 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 									<li
 										key={index}
 										className="flex items-start w-full justify-start rounded-lg border border-light-border bg-white p-2 hover:cursor-pointer hover:bg-gray-100"
-										onClick={() => {
+										onClick={(e) => {
+											// Prevent opening the dialog when clicking on the delete button
+											if ((e.target as HTMLElement).closest('button')) {
+												return; // Do nothing if the click is from the delete button
+											}
 											setEditDialog(
 												<TreeEditDialog
 													value={answer}
@@ -145,7 +148,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 											<div className="flex flex-wrap justify-end gap-4">
 												<button
 													className="rounded-lg bg-red-500 font-medium text-white p-1 hover:bg-red-600"
-													onClick={(e) => removeAnswer(e, index)}
+													onClick={() => removeAnswer(index)}
 												>
 													<div className="ml-4">
 														<TrashIcon className="icon w-5 h-5" />
