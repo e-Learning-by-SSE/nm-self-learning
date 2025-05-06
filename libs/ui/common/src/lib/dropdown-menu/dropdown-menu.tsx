@@ -40,27 +40,25 @@ export function DropdownMenu({
 							style={{
 								minWidth: buttonRef.current?.offsetWidth || "auto"
 							}}
-							className="absolute z-10 rounded-md bg-white shadow-lg overflow-hidden"
+							className="absolute z-10 rounded-md bg-white shadow-lg  max-h-64 overflow-auto text-sm"
 						>
-							<div className="py-1 max-h-64 overflow-auto text-sm">
-								{childrenArray.map((element, i) => (
-									<MenuItem key={i}>
-										{({ focus }) => (
-											<div
-												className={`text-left ${
-													customFocusStyle
-														? customFocusStyle(focus)
-														: focus
-															? "bg-emerald-500 text-white"
-															: ""
-												} flex items-center`}
-											>
-												{element}
-											</div>
-										)}
-									</MenuItem>
-								))}
-							</div>
+							{childrenArray.map((element, i) => (
+								<MenuItem key={i}>
+									{({ focus }) => (
+										<div
+											className={`w-full text-left ${
+												customFocusStyle
+													? customFocusStyle(focus)
+													: focus
+														? "bg-emerald-500 text-white"
+														: ""
+											} flex items-center`}
+										>
+											{element}
+										</div>
+									)}
+								</MenuItem>
+							))}
 						</MenuItems>
 					)}
 				</DropwdownTransition>

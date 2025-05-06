@@ -64,8 +64,8 @@ export function MarkdownListboxMenu({
 										customFocusStyle
 											? customFocusStyle(focus)
 											: focus
-												? "text-secondary border border-secondary"
-												: "border border-transparent text-gray-700"
+												? "text-white bg-secondary"
+												: "text-gray-700"
 									}`}
 								>
 									{selected ? (
@@ -87,7 +87,7 @@ export function MarkdownListboxMenu({
 											customFocusStyle
 												? customFocusStyle(focus)
 												: focus
-													? "text-secondary"
+													? "text-white"
 													: ""
 										}`}
 									>
