@@ -1,6 +1,6 @@
 {
 	"name": "self-learning",
-	"version": "unstable",
+	"version": "0.5.0",
 	"license": "MIT",
 	"scripts": {
 		"postinstall": "prisma generate --no-hints",
