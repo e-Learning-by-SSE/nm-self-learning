@@ -76,7 +76,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 
 				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
-						<h5 className="text-xl font-semibold">Initiale Baum Struktur</h5>
+						<h5 className="text-xl font-semibold">Anfängliche Baumstruktur</h5>
 						<PlusButton
 							additionalClassNames={`${initialTreeInput ? "invisible" : "visible"}`}
 							onAdd={addInitialTree}
@@ -105,7 +105,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 				</div>
 				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
-						<h5 className="text-xl font-semibold">Anworten</h5>
+						<h5 className="text-xl font-semibold">Antworten</h5>
 						<PlusButton onAdd={addAnswerTree} title={"Antwort Hinzufügen"} />
 					</div>
 					<div className="flex justify-center w-full min-h-[150px] max-h-[300px] overflow-y-auto">
@@ -209,7 +209,7 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 	return (
 		<Dialog
 			style={{ height: "600", width: "30vw", overflow: "auto" }}
-			title={"Baum Struktur bearbeiten"}
+			title={"Baumstruktur bearbeiten"}
 			onClose={() => {
 				onClose();
 			}}
@@ -227,7 +227,7 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 						</div>
 					)}
 				</div>
-				<div className="py-2 mt-2">Baum Struktur eingeben</div>
+				<div className="py-2 mt-2">Baumstruktur eingeben</div>
 				<textarea
 					aria-label="tree initial input"
 					id="tree-input-initial"
