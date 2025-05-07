@@ -4,6 +4,7 @@ import { createLessonMeta, lessonSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
+import { randomUUID } from "crypto";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -90,6 +91,33 @@ export const lessonRouter = t.router({
 				title: true
 			}
 		});
+
+		
+		const providedSkillIds = input.provides.map(s => s.id);
+
+		const relevantCourses = await database.newCourse.findMany({
+			where: {
+				teachingGoals: {
+					some: {
+						id: { in: providedSkillIds }
+					}
+				}
+			},
+			select: {
+				courseId: true,
+			}
+		});
+
+
+		for (const course of relevantCourses) {
+			await database.newCourse.update({
+				where: { courseId: course.courseId },
+				data: {
+					courseVersionUID: randomUUID(),
+				}
+			});
+		}
+
 
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		return createdLesson;

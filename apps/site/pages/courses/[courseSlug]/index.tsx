@@ -107,6 +107,7 @@ function createCourseSummary(content: ToC.Content): Summary {
 }
 
 type CourseProps = {
+	needsARefresh: boolean;
 	isGenerated: boolean;
 	course: Course;
 	summary: Summary;
@@ -123,14 +124,22 @@ export const getServerSideProps = withTranslations(
 		}
 
 		let isGenerated = false;
+		let needsARefresh = false;
 
 		let course = await getCourse(courseSlug);
 		if (!course) {
+			const [newCourse, courseVersionUID] = await getNewCourse(courseSlug, ctx.name);
+
+			if (!newCourse) {
+				return { notFound: true };
+			}
 			course = {
-				authors: [],
-				...(await getNewCourse(courseSlug, ctx.name))
+				...newCourse
 			} as Course;
+
 			isGenerated = true;
+			needsARefresh = newCourse.courseVersionUID !== courseVersionUID;
+
 			if (!course) {
 				return { notFound: true };
 			}
@@ -148,6 +157,7 @@ export const getServerSideProps = withTranslations(
 
 		return {
 			props: {
+				needsARefresh,
 				isGenerated,
 				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
 				summary,
@@ -175,10 +185,11 @@ async function getCourse(courseSlug: string) {
 }
 
 async function getNewCourse(courseSlug: string, username: string) {
-	const course = await database.newCourse.findUnique({
+	const course = await database.newCourse.findUniqueOrThrow({
 		where: { slug: courseSlug },
 		select: {
 			courseId: true,
+			courseVersionUID: true,
 			title: true,
 			subtitle: true,
 			description: true,
@@ -203,17 +214,33 @@ async function getNewCourse(courseSlug: string, username: string) {
 		}
 	});
 
-	return {
-		...course,
-		content: course?.generatedLessonPaths[0]?.content ?? []
-	};
+	return [
+		{
+			...course,
+			content: course.generatedLessonPaths?.[0]?.content ?? []
+		} as typeof course & { content: unknown[] },
+		course.generatedLessonPaths?.[0]?.courseVersionUID ?? null
+	] as const;
 }
 
-export default function Course({ course, summary, content, markdownDescription, isGenerated }: CourseProps) {
+export default function Course({
+	needsARefresh,
+	course,
+	summary,
+	content,
+	markdownDescription,
+	isGenerated
+}: CourseProps) {
 	return (
 		<div className="bg-gray-50 pb-32">
 			<CenteredSection className="bg-gray-50">
-				<CourseHeader course={course} content={content} summary={summary} isGenerated={isGenerated}/>
+				<CourseHeader
+					course={course}
+					content={content}
+					summary={summary}
+					needsARefresh={needsARefresh}
+					isGenerated={isGenerated}
+				/>
 			</CenteredSection>
 
 			{markdownDescription && (
@@ -233,11 +260,13 @@ export default function Course({ course, summary, content, markdownDescription, 
 
 function CourseHeader({
 	isGenerated,
+	needsARefresh,
 	course,
 	summary,
 	content
 }: {
 	isGenerated: boolean;
+	needsARefresh: boolean;
 	course: CourseProps["course"];
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
@@ -363,7 +392,7 @@ function CourseHeader({
 							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
-					{isGenerated && course?.content.length === 0 && <CoursePath courseId={course.courseId} />}
+					{isGenerated && (<CoursePath course={course} needsARefresh={needsARefresh} />)}
 				</div>
 			</div>
 		</section>
@@ -381,12 +410,11 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 					<span className="text-secondary">Kein Inhalt verfügbar</span>
 				</h3>
 				<span className="mt-4 text-light">
-				Du hast dir noch keinen Kurspfad generiert. Bitte wähle einen Kurspfad aus.
+					Du hast dir noch keinen Kurspfad generiert. Bitte wähle einen Kurspfad aus.
 				</span>
 			</div>
 		);
 	}
-
 
 	return (
 		<section className="flex flex-col gap-8">
@@ -480,7 +508,30 @@ function Description({ content }: { content: CompiledMarkdown }) {
 	);
 }
 
-function CoursePath({ courseId }: { courseId: string }) {
+function RefreshGeneratedCourse() {
+	return (
+		<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+			<h3 className="heading flex gap-4 text-2xl">
+				<span className="text-secondary">Kurs aktualisieren</span>
+			</h3>
+			<span className="mt-4 text-light">
+				Der Kurs wurde aktualisiert. Du kannst den Kurs jetzt starten und dein Wissen
+				erweitern.
+			</span>
+			<p className="mt-4 text-light">
+				Um den Kurs zu aktualisieren, klicke auf den Button unten.
+			</p>
+			<button
+				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
+				onClick={() => {}}
+			>
+				Kurs aktualisieren
+			</button>
+		</div>
+	);
+}
+
+function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: boolean }) {
 	const { mutateAsync } = trpc.course.generateCoursePreview.useMutation();
 	const [selectedPath, setSelectedPath] = useState("");
 	const [openDialog, setOpenDialog] = useState<React.JSX.Element | null>(null);
@@ -489,7 +540,7 @@ function CoursePath({ courseId }: { courseId: string }) {
 	const onSelectedKnowledge = async (skills: SkillFormModel[]) => {
 		try {
 			const generatedCourse = await mutateAsync({
-				courseId: courseId,
+				courseId: course.courseId,
 				knowledge: skills.map(skill => skill.id)
 			});
 
@@ -505,6 +556,14 @@ function CoursePath({ courseId }: { courseId: string }) {
 			});
 		}
 	};
+
+	if (course.content.length !== 0 && needsARefresh) {
+		return <RefreshGeneratedCourse />;
+	}
+
+	if (course.content.length !== 0) {
+		return null;
+	}
 
 	return (
 		<div>

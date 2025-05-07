@@ -54,6 +54,7 @@ async function getSpecialization(specializationSlug: string, username: string) {
 			newCourses: {
 				orderBy: { title: "asc" },
 				select: {
+					courseVersionUID: true,
 					generatedLessonPaths: {
 						where: {
 							username: username

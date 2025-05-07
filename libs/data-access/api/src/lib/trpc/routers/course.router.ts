@@ -277,6 +277,7 @@ export const courseRouter = t.router({
 			const course = await database.newCourse.findUniqueOrThrow({
 				where: { courseId: input.courseId },
 				select: {
+					courseVersionUID: true,
 					teachingGoals: {
 						select: {
 							id: true,
@@ -391,6 +392,7 @@ export const courseRouter = t.router({
 			const generatedCourse = database.generatedLessonPath.create({
 				data: {
 					content: courseContent,
+					courseVersionUID: course.courseVersionUID,
 					slug: randomUUID(),
 					courseId: input.courseId,
 					meta: createCourseMeta({ content: courseContent }),

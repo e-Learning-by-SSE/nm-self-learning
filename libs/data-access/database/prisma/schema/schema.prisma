@@ -119,6 +119,7 @@ model NewCourse {
     slug                 String               @unique
     title                String
     subtitle             String
+    courseVersionUID     String               @default(cuid())
     description          String?
     imgUrl               String?
     teachingGoals        Skill[]              @relation("NewCourseTeachingGoals") 
@@ -137,6 +138,7 @@ model GeneratedLessonPath {
     lessonPathId         String               @id@default(cuid())
     content              Json
     meta                 Json
+    courseVersionUID     String
     username             String
     slug                 String               @unique
     courseId             String
