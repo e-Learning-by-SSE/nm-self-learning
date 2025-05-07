@@ -6,13 +6,13 @@ import {
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
-	PlusButton,
-	TrashcanButton,
 	Divider,
+	DropdownMenu,
+	PlusButton,
 	RemovableTab,
 	SectionHeader,
 	Tabs,
-	DropdownMenu
+	TrashcanButton
 } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
@@ -20,7 +20,6 @@ import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
@@ -113,7 +112,6 @@ export function QuizEditor() {
 						title="Aufgabe erstellen"
 						button={
 							<div className="btn-primary">
-								<PlusIcon className="w-4 h-4 text-white" />
 								<span className="font-semibold text-white">Aufgabe erstellen</span>
 							</div>
 						}
