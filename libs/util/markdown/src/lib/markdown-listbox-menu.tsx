@@ -51,7 +51,9 @@ export function MarkdownListboxMenu({
 			<DropwdownTransition>
 				<ListboxOptions
 					anchor={dropdownPosition}
-					className="z-10 w-max min-w-[8rem] max-w-xs rounded-md bg-white shadow-lg cursor-default"
+					className={`z-10 w-max min-w-[8rem] max-w-xs ${
+						dropdownPosition === "top" ? "rounded-t" : "rounded-b"
+					} bg-white shadow-lg cursor-default`}
 					style={{
 						minWidth: buttonRef.current?.offsetWidth || "auto"
 					}}

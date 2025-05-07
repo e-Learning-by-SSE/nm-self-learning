@@ -1,9 +1,9 @@
 import {
 	Combobox,
+	ComboboxButton,
 	ComboboxInput,
 	ComboboxOption,
-	ComboboxOptions,
-	ComboboxButton
+	ComboboxOptions
 } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -64,7 +64,9 @@ export function ComboboxMenu({
 					<ComboboxOptions
 						anchor={dropdownPosition}
 						style={{ minWidth: menuWidth }}
-						className="z-10 rounded-md bg-white shadow-lg overflow-auto"
+						className={`z-10 ${
+							dropdownPosition === "top" ? "rounded-t" : "rounded-b"
+						} bg-white shadow-lg overflow-auto`}
 					>
 						{filteredOptions.map((option, i) => (
 							<ComboboxOption key={i} value={option}>
