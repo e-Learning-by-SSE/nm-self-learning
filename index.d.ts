@@ -6,6 +6,7 @@ declare var process: {
 		NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
 		NEXT_PUBLIC_BASE_PATH: string | undefined;
 		NEXT_TRAILING_SLASH: Boolean | undefined;
+		NEXT_PUBLIC_FAVICON_URL: string | undefined;
 		NEXT_PUBLIC_MATOMO_ULR: string | undefined;
 		NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;
 		DATABASE_URL: string;
@@ -18,6 +19,7 @@ declare var process: {
 		PISTON_URL: string;
 		KEYCLOAK_ISSUER_URL: string;
 		KEYCLOAK_CLIENT_ID: string;
+		KEYCLOAK_PROVIDER_NAME: string | undefined;
 		NEXTAUTH_URL: string;
 		NEXTAUTH_SECRET: string;
 		APP_VERSION: string;
