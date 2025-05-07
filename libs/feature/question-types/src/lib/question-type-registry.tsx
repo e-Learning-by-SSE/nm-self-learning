@@ -154,7 +154,7 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 
 		return answer;
 	},
-	"language-tree": () => ""
+	"language-tree": question => question.initialTree
 };
 
 /**
@@ -206,7 +206,7 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		type: "language-tree",
 		caseSensitive: false,
 		initialTree: "",
-		answer: ""
+		answer: []
 	})
 };
 
