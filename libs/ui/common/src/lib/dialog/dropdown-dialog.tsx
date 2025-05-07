@@ -1,3 +1,4 @@
+"use client";
 import { ComboboxInput, ComboboxOptions, Dialog as HeadlessDialog } from "@headlessui/react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { OnDialogCloseFn } from "./dialog";

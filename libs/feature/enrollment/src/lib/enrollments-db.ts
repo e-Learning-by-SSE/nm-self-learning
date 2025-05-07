@@ -43,7 +43,7 @@ export async function getEnrollmentDetails(username: string) {
 
 type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
 
-export type EnrollmentDetails = ArrayElement<Awaited<ResolvedValue<typeof getEnrollmentDetails>>>;
+export type EnrollmentDetails = ArrayElement<ResolvedValue<typeof getEnrollmentDetails>>;
 
 export async function getEnrollmentsOfUser(username: string): Promise<CourseEnrollment[]> {
 	return await database.enrollment.findMany({

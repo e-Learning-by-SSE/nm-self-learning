@@ -1,3 +1,4 @@
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SectionHeader } from "@self-learning/ui/common";
 import { Form, MarkdownField, OpenAsJsonButton } from "@self-learning/ui/forms";

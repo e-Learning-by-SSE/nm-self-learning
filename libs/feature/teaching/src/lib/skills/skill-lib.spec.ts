@@ -158,7 +158,7 @@ describe("Skill-Lib", () => {
  * @returns Mocked Skills
  */
 function loadSkills(): Skill[] {
-	const nestedSkills = SkillDb.filter(skill => skill.parents !== undefined) as {
+	const children = SkillDb.filter(skill => skill.parents !== undefined) as {
 		id: string;
 		parents: string[];
 	}[];
@@ -166,9 +166,7 @@ function loadSkills(): Skill[] {
 	const skills = SkillDb.map(skill => ({
 		id: skill.id,
 		repositoryId: "A fictive repository",
-		nestedSkills: nestedSkills
-			.filter(child => child.parents.includes(skill.id))
-			.map(child => child.id)
+		children: children.filter(child => child.parents.includes(skill.id)).map(child => child.id)
 	}));
 	return skills;
 }
@@ -193,8 +191,8 @@ function loadLearningUnits(allSkills: Skill[]): LearningUnit[] {
 	return [...UnitsDbA, ...UnitsDbB].map(unit => ({
 		id: unit.lessonId,
 		title: unit.title,
-		requiredSkills: convertToExpression(unit.requirements),
-		teachingGoals: unit.teachingGoals
+		requires: convertToExpression(unit.requires),
+		provides: unit.provides
 			.map(goal => findSkill(goal))
 			.filter((s): s is Skill => s !== undefined),
 		suggestedSkills: []

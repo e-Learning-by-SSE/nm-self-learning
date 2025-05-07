@@ -1,3 +1,4 @@
+"use client";
 import { Dialog, DialogActions } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import React, { useState } from "react";

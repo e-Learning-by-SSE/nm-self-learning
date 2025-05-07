@@ -1,3 +1,4 @@
+"use client";
 import { Transition } from "@headlessui/react";
 import { FaceFrownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { trpc } from "@self-learning/api-client";
