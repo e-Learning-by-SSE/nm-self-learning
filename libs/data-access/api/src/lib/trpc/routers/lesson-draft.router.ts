@@ -12,8 +12,8 @@ export const lessonDraftRouter = t.router({
 			content: input.content ?? "",
 			quiz: input.quiz ?? undefined,
 			license: input.license ?? undefined,
-			teachingGoals: input.teachingGoals ?? undefined,
-			requirements: input.requirements ?? undefined,
+			provides: input.provides ?? undefined,
+			requires: input.requires ?? undefined,
 			authors: input.authors ?? [],
 			owner: input.owner ?? undefined
 		};
@@ -50,12 +50,8 @@ export const lessonDraftRouter = t.router({
 						: { username: "" },
 
 				licenseId: draft.licenseId,
-				requirements: Array.isArray(draft.requirements)
-					? draft.requirements
-					: [JSON.parse("[]")],
-				teachingGoals: Array.isArray(draft.teachingGoals)
-					? draft.teachingGoals
-					: JSON.parse("[]"),
+				requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
+				provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
 				content: (draft.content ?? []) as LessonContent,
 				quiz: draft.quiz as Quiz,
 				lessonType: draft.lessonType ?? "TRADITIONAL",
@@ -91,12 +87,8 @@ export const lessonDraftRouter = t.router({
 							: { username: "" },
 
 					licenseId: draft.licenseId,
-					requirements: Array.isArray(draft.requirements)
-						? draft.requirements
-						: [JSON.parse("[]")],
-					teachingGoals: Array.isArray(draft.teachingGoals)
-						? draft.teachingGoals
-						: JSON.parse("[]"),
+					requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
+					provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
 					content: (draft.content ?? []) as LessonContent,
 					quiz: draft.quiz as Quiz,
 					lessonType: draft.lessonType ?? "TRADITIONAL",
@@ -149,11 +141,12 @@ export const lessonDraftRouter = t.router({
 			content: input.content ? (input.content as Prisma.InputJsonArray) : undefined,
 			quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : undefined,
 			license: input.license ?? undefined,
-			teachingGoals: input.teachingGoals ?? undefined,
-			requirements: input.requirements ?? undefined,
+			provides: input.provides ?? undefined,
+			requires: input.requires ?? undefined,
 			authors: input.authors ?? [],
 			owner: input.owner ?? undefined
 		};
+
 		if (lessonId) {
 			const existingDraftForLesson = lessonId
 				? await database.lessonDraft.findFirst({

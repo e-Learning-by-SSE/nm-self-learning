@@ -77,12 +77,8 @@ export default function EditDraftPage({ draftId }: EditLessonDraftProps) {
 			imgUrl: draft.imgUrl,
 			authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
 			licenseId: draft.licenseId ?? null,
-			requirements: Array.isArray(draft.requirements)
-				? draft.requirements
-				: [JSON.parse("[]")],
-			teachingGoals: Array.isArray(draft.teachingGoals)
-				? draft.teachingGoals
-				: JSON.parse("[]"),
+			requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
+			provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
 			content: (draft.content ?? []) as LessonContent,
 			quiz: draft.quiz as Quiz,
 			lessonType: draft.lessonType ?? "TRADITIONAL",

@@ -87,8 +87,8 @@ export const lessonDraftSchema = z.object({
 	owner: z.object({ username: z.string() }),
 	license: z.object({}).nullable().optional(),
 	licenseId: z.number().nullable().optional(),
-	teachingGoals: z.array(skillFormSchema).nullable().optional(),
-	requirements: z.array(skillFormSchema).nullable().optional(),
+	provides: z.array(skillFormSchema).nullable().optional(),
+	requires: z.array(skillFormSchema).nullable().optional(),
 	lessonType: z.nativeEnum(LessonType).optional().default(LessonType.TRADITIONAL),
 	selfRegulatedQuestion: z.string().nullable().optional(),
 	quiz: z

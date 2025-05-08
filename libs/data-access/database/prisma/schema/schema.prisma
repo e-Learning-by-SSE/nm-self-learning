@@ -166,8 +166,8 @@ model LessonDraft {
   meta                  Json?
   license               Json?
   licenseId             Int?
-  teachingGoals         Json?
-  requirements          Json?
+  provides		        Json?
+  requires		        Json?
   lessonType            LessonType? @default(TRADITIONAL)
   selfRegulatedQuestion String?
   updatedAt             DateTime    @updatedAt
