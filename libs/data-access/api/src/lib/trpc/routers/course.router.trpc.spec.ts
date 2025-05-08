@@ -15,7 +15,7 @@ jest.mock("@self-learning/database", () => ({
 }));
 
 function prepare(user: Partial<UserFromSession>) {
-	const ctx: Context = {
+	const ctx: Context & { user: UserFromSession } = {
 		user: {
 			id: "user-id",
 			name: "john",
@@ -27,11 +27,23 @@ function prepare(user: Partial<UserFromSession>) {
 		}
 	};
 	const caller = t.createCallerFactory(courseRouter)(ctx);
-	return caller;
+	return { caller, ctx };
 }
 
 describe("tRPC API of Course Router", () => {
 	describe("deleteCourse", () => {
+		function assertWhereClause(slug: string, author: string) {
+			expect(database.course.delete).toHaveBeenCalledTimes(1);
+
+			const whereClause = (database.course.delete as jest.Mock).mock.calls[0][0];
+
+			expect(whereClause).toEqual({
+				where: {
+					slug,
+					authors: { some: { username: author } }
+				}
+			});
+		}
 		beforeEach(() => {
 			jest.clearAllMocks();
 			(database.course.delete as jest.Mock).mockImplementation(({ where }) => {
@@ -57,7 +69,7 @@ describe("tRPC API of Course Router", () => {
 		});
 
 		it("should delete a course if user is author", async () => {
-			const caller = prepare({
+			const { caller, ctx } = prepare({
 				isAuthor: true,
 				name: "author1"
 			});
@@ -65,10 +77,11 @@ describe("tRPC API of Course Router", () => {
 
 			// Course exists; user is author -> Success
 			await expect(caller.deleteCourse(input)).resolves.not.toThrow();
+			assertWhereClause(input.slug, ctx.user.name);
 		});
 
 		it("should delete a course if user second author", async () => {
-			const caller = prepare({
+			const { caller, ctx } = prepare({
 				isAuthor: true,
 				name: "author2"
 			});
@@ -76,10 +89,11 @@ describe("tRPC API of Course Router", () => {
 
 			// Course exists; user is author -> Success
 			await expect(caller.deleteCourse(input)).resolves.not.toThrow();
+			assertWhereClause(input.slug, ctx.user.name);
 		});
 
 		it("should throw error if user is not author", async () => {
-			const caller = prepare({
+			const { caller } = prepare({
 				isAuthor: false,
 				name: "author1"
 			});
@@ -87,10 +101,12 @@ describe("tRPC API of Course Router", () => {
 
 			// Course exists; user is no author -> TRPCError
 			await expect(caller.deleteCourse(input)).rejects.toThrow(TRPCError);
+			// Author procedure should prevent the call to database
+			expect(database.course.delete).not.toHaveBeenCalled();
 		});
 
 		it("should throw error if user is wrong author", async () => {
-			const caller = prepare({
+			const { caller, ctx } = prepare({
 				isAuthor: true,
 				name: "author3"
 			});
@@ -98,10 +114,11 @@ describe("tRPC API of Course Router", () => {
 
 			// Course exists; user is foreign author -> TRPCError
 			await expect(caller.deleteCourse(input)).rejects.toThrow(TRPCError);
+			assertWhereClause(input.slug, ctx.user.name);
 		});
 
 		it("should throw error if course does not exist", async () => {
-			const caller = prepare({
+			const { caller, ctx } = prepare({
 				isAuthor: true,
 				name: "author1"
 			});
@@ -109,6 +126,7 @@ describe("tRPC API of Course Router", () => {
 
 			// Course doesn't exists; user is author -> TRPCError
 			await expect(caller.deleteCourse(input)).rejects.toThrow(TRPCError);
+			assertWhereClause(input.slug, ctx.user.name);
 		});
 	});
 });
