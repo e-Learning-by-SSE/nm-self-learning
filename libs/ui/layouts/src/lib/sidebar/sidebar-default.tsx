@@ -7,58 +7,14 @@ import { AcademicCapIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { PropsWithChildren, ReactNode } from "react";
-
-export function Sidebar({
-	header,
-	content,
-	footer
-}: {
-	header: ReactNode;
-	content: ReactNode;
-	footer: ReactNode;
-}) {
-	return (
-		<div className="fixed top-0 left-0 z-10 flex h-full w-full flex-col overflow-hidden bg-white sm:w-64">
-			{header}
-			<ScrollableContent>{content}</ScrollableContent>
-			{footer}
-		</div>
-	);
-}
+import { SidebarLink } from "./sidebar-layout";
 
 export function DefaultSidebar({ setOpen }: { setOpen: (open: boolean) => void }) {
-	return (
-		<Sidebar
-			header={<SidebarHeader setOpen={setOpen} />}
-			content={<SidebarLinks />}
-			footer={<SidebarFooter />}
-		/>
-	);
-}
-
-function SidebarLink({
-	href,
-	text,
-	icon,
-	isActive
-}: {
-	href: string;
-	text: string;
-	icon: JSX.Element;
-	isActive: boolean;
-}) {
-	return (
-		<Link
-			href={href}
-			className={`flex items-center gap-4 rounded py-2 px-2 ${
-				isActive ? "bg-secondary text-white" : "text-light hover:bg-indigo-50"
-			}`}
-		>
-			{icon}
-			<span className={`text-sm ${isActive && "font-semibold"}`}>{text}</span>
-		</Link>
-	);
+	return {
+		header: <SidebarHeader setOpen={setOpen} />,
+		content: <SidebarLinks />,
+		footer: <SidebarFooter />
+	};
 }
 
 function SidebarHeader({ setOpen }: { setOpen: (open: boolean) => void }) {
@@ -69,7 +25,7 @@ function SidebarHeader({ setOpen }: { setOpen: (open: boolean) => void }) {
 				<span className="text-lg font-semibold">SELF LEARNING</span>
 			</Link>
 			<button
-				className="absolute right-0 top-0 text-slate-900 hover:text-white"
+				className="absolute right-0 top-0 text-slate-90"
 				title="Close Sidebar"
 				onClick={() => setOpen(false)}
 			>
@@ -77,10 +33,6 @@ function SidebarHeader({ setOpen }: { setOpen: (open: boolean) => void }) {
 			</button>
 		</div>
 	);
-}
-
-function ScrollableContent({ children }: PropsWithChildren<unknown>) {
-	return <div className="Sidebar scroll flex-grow overflow-auto">{children}</div>;
 }
 
 function SidebarLinks() {

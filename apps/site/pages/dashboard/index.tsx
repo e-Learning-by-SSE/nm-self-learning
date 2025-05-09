@@ -3,24 +3,26 @@ import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import { StreakIndicatorCircle, StreakSlotMachineDialog } from "@self-learning/settings";
+import { GamificationProfileMeta } from "@self-learning/types";
 import {
-	Card,
-	DialogHandler,
+	Divider,
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	Toggle
+	ProgressBar
 } from "@self-learning/ui/common";
-import { CenteredSection } from "@self-learning/ui/layouts";
-import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
+import { DashboardSidebarLayout } from "@self-learning/ui/layouts";
 import {
 	formatDateAgo,
 	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
+import { NextComponentType, NextPageContext } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -40,13 +42,15 @@ type Props = {
 	recentLessons: LearningDiaryEntryLessonWithDetails[];
 };
 
-function getStudent(username: string) {
-	return database.student.findUniqueOrThrow({
+async function getStudent(username: string) {
+	const student = await database.student.findUniqueOrThrow({
 		where: { username },
 		select: {
 			_count: {
 				select: {
-					completedLessons: true
+					completedLessons: true,
+					enrollments: true,
+					learningDiaryEntrys: true
 				}
 			},
 			user: {
@@ -54,8 +58,15 @@ function getStudent(username: string) {
 					displayName: true,
 					name: true,
 					image: true,
+					email: true,
 					enabledFeatureLearningDiary: true,
-					enabledLearningStatistics: true
+					enabledLearningStatistics: true,
+					gamificationProfile: {
+						select: {
+							loginStreak: true,
+							meta: true
+						}
+					}
 				}
 			},
 			completedLessons: {
@@ -116,6 +127,19 @@ function getStudent(username: string) {
 			}
 		}
 	});
+
+	// add default values and type schema for meta
+	return {
+		...student,
+		user: {
+			...student.user,
+			gamificationProfile: {
+				loginStreak: student.user.gamificationProfile?.loginStreak ?? 0,
+				meta: student.user.gamificationProfile?.meta as unknown as GamificationProfileMeta
+				// meta: gamificationProfileMetaSchema.parse(student.user.gamificationProfile?.meta)
+			}
+		}
+	};
 }
 
 export type DiaryLessonSchema = {
@@ -187,33 +211,6 @@ async function loadMostRecentLessons({
 	}));
 }
 
-export const getServerSideProps = withTranslations(["common"], async ctx => {
-	const user = await getAuthenticatedUser(ctx);
-
-	if (!user || !user.name) {
-		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
-			}
-		};
-	}
-
-	const student = await getStudent(user.name);
-	const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
-
-	return {
-		props: {
-			student,
-			recentLessons
-		}
-	};
-});
-
-export default function Start(props: Props) {
-	return <DashboardPage {...props} />;
-}
-
 type LtbState = {
 	enabled: boolean;
 	dialogOpen: boolean;
@@ -237,18 +234,56 @@ function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
 	}
 }
 
-function DashboardPage(props: Props) {
-	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+function DashboardLayout(
+	Component: NextComponentType<NextPageContext, unknown, Props>,
+	pageProps: Props
+) {
+	return (
+		<DashboardSidebarLayout>
+			<Component {...pageProps} />
+		</DashboardSidebarLayout>
+	);
+}
+DashboardPage.getLayout = DashboardLayout;
+
+export const getServerSideProps = withTranslations(["common"], async ctx => {
+	const user = await getAuthenticatedUser(ctx);
+
+	if (!user || !user.name) {
+		return {
+			redirect: {
+				destination: "/login",
+				permanent: false
+			}
+		};
+	}
+
+	const student = await getStudent(user.name);
+	const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
+
+	return {
+		props: {
+			student,
+			recentLessons
+		}
+	};
+});
+
+export default function DashboardPage(props: Props) {
 	const router = useRouter();
+	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
 	const [ltb, dispatch] = useReducer(ltbReducer, {
 		dialogOpen: false,
 		enabled: props.student.user.enabledFeatureLearningDiary
 	});
 
-	const openSettings = () => {
-		router.push("/user-settings");
+	const handleDialogSubmit: Parameters<
+		typeof EnableLearningDiaryDialog
+	>[0]["onSubmit"] = async update => {
+		await updateSettings({ user: { ...update } });
+		dispatch({ type: "TOGGLE_LTB", enabled: true });
+		dispatch({ type: "CLOSE_DIALOG" });
 	};
-
 	const handleClickLtbToggle = async () => {
 		if (ltb.enabled) {
 			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
@@ -258,125 +293,102 @@ function DashboardPage(props: Props) {
 		}
 	};
 
-	const handleDialogSubmit: Parameters<
-		typeof EnableLearningDiaryDialog
-	>[0]["onSubmit"] = async update => {
-		await updateSettings({ user: { ...update } });
-		dispatch({ type: "TOGGLE_LTB", enabled: true });
-		dispatch({ type: "CLOSE_DIALOG" });
+	const openSettings = () => {
+		router.push("/user-settings");
 	};
 
+	const { user, _count: completionCount, enrollments, learningDiaryEntrys } = props.student;
+	const gamificationProfile = user.gamificationProfile;
+
+	const [streakInfoOpen, setStreakInfoOpen] = useState(false);
+	const { t } = useTranslation(["common", "pages/dashboard"]);
 	return (
-		<div className="bg-gray-50">
-			<CenteredSection>
-				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-[2fr_1fr]">
-					<section className="flex items-center">
-						<ImageOrPlaceholder
-							src={props.student.user.image ?? undefined}
-							className="h-24 w-24 rounded-lg object-cover"
-						/>
-						<div className="flex flex-col gap-4 pl-8 pr-4">
-							<h1 className=" text-3xl lg:text-6xl">
-								{props.student.user.displayName}
-							</h1>
-							<span>
-								Du hast bereits{" "}
-								<span className="mx-1 font-semibold text-secondary">
-									{props.student._count.completedLessons}
-								</span>{" "}
-								{props.student._count.completedLessons === 1
-									? "Lerneinheit"
-									: "Lerneinheiten"}{" "}
-								abgeschlossen.
-							</span>
-						</div>
-					</section>
-
-					<div className="grid grid-rows-2">
-						<div className="flex justify-end items-start">
-							<button
-								className="rounded-full p-2 hover:bg-gray-100"
-								title="Bearbeiten"
-								onClick={openSettings}
-							>
-								<CogIcon className="h-6 text-gray-500" />
-							</button>
-						</div>
-
-						<div className="flex items-end justify-end">
-							<Toggle
-								label="Lerntagebuch"
-								value={ltb.enabled}
-								onChange={handleClickLtbToggle}
-							/>
-						</div>
-					</div>
-				</div>
-
-				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
-					<div className="rounded bg-white p-4 shadow">
-						<h2 className="mb-4 text-xl">Letzter Kurs</h2>
-						<LastCourseProgress
-							lastEnrollment={
-								props.student.enrollments.sort(
-									(a, b) =>
-										new Date(a.lastProgressUpdate).getTime() -
-										new Date(b.lastProgressUpdate).getTime()
-								)[0]
-							}
-						/>
-					</div>
-
-					<div className="rounded bg-white p-4 shadow">
-						{ltb.enabled ? (
-							<>
-								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
-								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
-							</>
-						) : (
-							<>
-								<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
-								<LessonList lessons={props.recentLessons} />
-							</>
-						)}
-					</div>
-				</div>
-				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
-					<Card
-						href="/dashboard/courseOverview"
-						imageElement={<OverviewSvg />}
-						title="Kursübersicht"
+		// <div className="flex h-screen bg-gray-50">
+		<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+			<section className="relative rounded-lg bg-white shadow p-4 space-y-2">
+				<div className="absolute -top-4 -right-4 h-14 w-14">
+					<StreakIndicatorCircle
+						streakCount={gamificationProfile.loginStreak}
+						onClick={() => setStreakInfoOpen(true)}
 					/>
-					{ltb.enabled && (
-						<>
-							<Card
-								href="/learning-diary"
-								imageElement={<MarketingSvg />}
-								title="Lerntagebucheinträge verwalten"
-							/>
+				</div>
+				<div className="flex justify-between items-center mb-4">
+					<button
+						onClick={openSettings}
+						className="rounded-full p-2 hover:bg-gray-100"
+						title="Einstellungen"
+					>
+						<CogIcon className="h-5 w-5 text-gray-500" />
+					</button>
+					{/* <Toggle label="" value={ltb.enabled} onChange={handleClickLtbToggle} /> */}
+				</div>
 
-							<Card
-								href="/learning-diary"
-								imageElement={<ProgressSvg />}
-								title="Übersicht des Lerntagebuchs"
-							/>
+				<div className="flex flex-col items-center text-center">
+					<ImageOrPlaceholder
+						src={user.image ?? undefined}
+						className="h-20 w-20 rounded-full object-cover mb-2"
+					/>
+					<h1 className="text-lg font-bold">{user.name}</h1>
+					<p className="text-sm text-gray-500">{user.email}</p>
+				</div>
 
-							<Card
-								href="/learning-diary/goals"
-								imageElement={<TargetSvg />}
-								title="Lernziele verwalten"
-							/>
-						</>
+				<Divider />
+
+				<div className="text-sm space-y-1">
+					<p>
+						<strong>{t("Units learned")}</strong> {completionCount.completedLessons}
+					</p>
+					<p>
+						<strong>Kurse:</strong> {10}
+					</p>
+					<p>
+						<strong>Fachgebiet:</strong> {user.name ?? "–"}
+					</p>
+					<p>
+						<strong>Tage in Folge aktiv:</strong> {5}
+					</p>
+				</div>
+			</section>
+
+			{/* Course and Diary Section */}
+			<section className="grid gap-6 mt-6">
+				<div className="rounded-lg bg-white p-6 shadow">
+					<h2 className="mb-4 text-lg font-semibold">Letzter Kurs</h2>
+					<LastCourseProgress
+						lastEnrollment={
+							enrollments.sort(
+								(a, b) =>
+									new Date(b.lastProgressUpdate).getTime() -
+									new Date(a.lastProgressUpdate).getTime()
+							)[0]
+						}
+					/>
+				</div>
+
+				<div className="rounded-lg bg-white p-6 shadow">
+					<h2 className="mb-4 text-lg font-semibold">
+						{ltb.enabled
+							? "Letzter Lerntagebucheintrag"
+							: "Zuletzt bearbeitete Lerneinheiten"}
+					</h2>
+					{ltb.enabled ? (
+						<LastLearningDiaryEntry pages={learningDiaryEntrys} />
+					) : (
+						<LessonList lessons={props.recentLessons} />
 					)}
 				</div>
-			</CenteredSection>
-			<DialogHandler id="studentSettingsDialogDashboard" />
+			</section>
+
 			{ltb.dialogOpen && (
 				<EnableLearningDiaryDialog
 					onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
 					onSubmit={handleDialogSubmit}
 				/>
 			)}
+			<StreakSlotMachineDialog
+				open={streakInfoOpen}
+				onClose={() => setStreakInfoOpen(false)}
+			/>
 		</div>
 	);
 }
@@ -399,7 +411,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 							>
 								<li
 									className="hover: flex items-center rounded-lg border border-light-border
-							p-3 transition-transform hover:bg-slate-100"
+                            p-3 transition-transform hover:bg-slate-100"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
 										<div className="flex items-center gap-2">
@@ -448,7 +460,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 						>
 							<li
 								className="hover: flex items-center rounded-lg border border-light-border
-							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+                            pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl}
@@ -473,24 +485,6 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 				</ul>
 			)}
 		</>
-	);
-}
-
-function ProgressFooter({ progress }: { progress: number }) {
-	return (
-		<span className="relative h-5 w-full rounded-lg bg-gray-200">
-			<span
-				className="absolute left-0 h-5 rounded-lg bg-secondary"
-				style={{ width: `${progress}%` }}
-			></span>
-			<span
-				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
-					progress === 0 ? "text-secondary" : "text-white"
-				}`}
-			>
-				{progress}%
-			</span>
-		</span>
 	);
 }
 
@@ -532,7 +526,7 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 								<></>
 							)
 						}
-						footer={<ProgressFooter progress={lastEnrollment.progress} />}
+						footer={<ProgressBar completionPercentage={lastEnrollment.progress} />}
 					/>
 				</Link>
 			)}

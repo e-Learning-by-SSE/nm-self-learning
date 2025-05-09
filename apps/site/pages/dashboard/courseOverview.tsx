@@ -1,6 +1,5 @@
-import Image from "next/image";
-import Link from "next/link";
-import React, { useMemo, useState } from "react";
+import { withAuth, withTranslations } from "@self-learning/api";
+import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import {
 	ProgressBar,
 	SortIndicator,
@@ -10,10 +9,12 @@ import {
 	TableHeaderColumn,
 	Tabs
 } from "@self-learning/ui/common";
-import { UniversalSearchBar } from "@self-learning/ui/layouts";
-import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
+import { DashboardSidebarLayout, UniversalSearchBar } from "@self-learning/ui/layouts";
 import { formatDateAgo } from "@self-learning/util/common";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { NextComponentType, NextPageContext } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 interface CourseOverviewProps {
 	enrollments: EnrollmentDetails[] | null;
@@ -38,6 +39,18 @@ export const getServerSideProps = withTranslations(
 		}
 	})
 );
+
+function CourseOverviewLayout(
+	Component: NextComponentType<NextPageContext, unknown, CourseOverviewProps>,
+	pageProps: CourseOverviewProps
+) {
+	return (
+		<DashboardSidebarLayout>
+			<Component {...pageProps} />
+		</DashboardSidebarLayout>
+	);
+}
+CourseOverview.getLayout = CourseOverviewLayout;
 
 export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 	const [selectedTab, setSelectedTab] = useState(0);
