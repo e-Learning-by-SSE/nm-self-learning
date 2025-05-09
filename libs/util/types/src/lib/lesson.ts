@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { authorsRelationSchema } from "./author";
-import { lessonContentSchema } from "./lesson-content";
+import { LessonContent, lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 import { LessonType } from "@prisma/client";
 import { skillFormSchema } from "./skill";
+import { LessonFormModel } from "@self-learning/teaching";
+import { Quiz } from "@self-learning/quiz";
 
 export type LessonInfo = {
 	lessonId: string;
@@ -92,3 +94,22 @@ export type LessonDraftOverview = {
 	createdAt: Date;
 	title: string | null;
 };
+
+export function mapDraftToLessonForm(draft: LessonDraft): LessonFormModel {
+	return {
+		lessonId: draft.lessonId ?? null,
+		slug: draft.slug ?? "",
+		title: draft.title ?? "",
+		subtitle: draft.subtitle,
+		description: draft.description,
+		imgUrl: draft.imgUrl,
+		authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
+		licenseId: draft.licenseId ?? null,
+		requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
+		provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
+		content: (draft.content ?? []) as LessonContent,
+		quiz: draft.quiz as Quiz,
+		lessonType: draft.lessonType ?? "TRADITIONAL",
+		selfRegulatedQuestion: draft.selfRegulatedQuestion ?? null
+	};
+}

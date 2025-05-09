@@ -5,13 +5,11 @@ import {
 	onLessonCreatorSubmit,
 	onLessonEditorSubmit
 } from "@self-learning/teaching";
-import { LessonContent } from "@self-learning/types";
+import { mapDraftToLessonForm } from "@self-learning/types";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { withAuth } from "@self-learning/api";
-import { Quiz } from "@self-learning/quiz";
 import { createEmptyLesson } from "@self-learning/types";
-import { useRequiredSession } from "@self-learning/ui/layouts";
 import { useMemo } from "react";
 
 type EditLessonDraftProps = {
@@ -45,23 +43,7 @@ export default function EditDraftPage({ draftId }: EditLessonDraftProps) {
 
 	const lessonForm = useMemo(() => {
 		if (!draft) return createEmptyLesson();
-
-		return {
-			lessonId: draft.lessonId ?? null,
-			slug: draft.slug ?? "",
-			title: draft.title ?? "",
-			subtitle: draft.subtitle,
-			description: draft.description,
-			imgUrl: draft.imgUrl,
-			authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
-			licenseId: draft.licenseId ?? null,
-			requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
-			provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
-			content: (draft.content ?? []) as LessonContent,
-			quiz: draft.quiz as Quiz,
-			lessonType: draft.lessonType ?? "TRADITIONAL",
-			selfRegulatedQuestion: draft.selfRegulatedQuestion ?? null
-		};
+		return mapDraftToLessonForm(draft);
 	}, [draft]);
 
 	async function handleEditClose(lesson?: LessonFormModel) {

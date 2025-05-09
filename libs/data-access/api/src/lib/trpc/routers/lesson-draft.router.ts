@@ -68,6 +68,7 @@ export const lessonDraftRouter = t.router({
 					createdAt: true
 				}
 			});
+
 			return drafts;
 		}),
 	delete: authProcedure

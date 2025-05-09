@@ -2,11 +2,12 @@ import { withAuth, withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
-import { LessonContent } from "@self-learning/types";
+import { LessonContent, LessonDraft, lessonDraftSchema } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { hasAuthorPermission } from "@self-learning/ui/layouts";
+import { mapDraftToLessonForm } from "@self-learning/types";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -23,7 +24,7 @@ export const getServerSideProps = withTranslations(
 		if (draftId && typeof draftId === "string") {
 			const isOverwritten = ctx.query.isOverwritten === "true";
 
-			const draft = await database.lessonDraft.findUnique({
+			const rawDraft = await database.lessonDraft.findUnique({
 				where: { id: draftId },
 				select: {
 					id: true,
@@ -44,26 +45,11 @@ export const getServerSideProps = withTranslations(
 				}
 			});
 
-			if (!draft) {
+			if (!rawDraft) {
 				return { notFound: true };
 			}
-
-			const lessonForm: LessonFormModel = {
-				lessonId: draft.lessonId,
-				slug: draft.slug ?? "",
-				title: draft.title ?? "",
-				subtitle: draft.subtitle,
-				description: draft.description,
-				imgUrl: draft.imgUrl,
-				authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
-				licenseId: draft.licenseId,
-				requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
-				provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
-				content: (draft.content ?? []) as LessonContent,
-				quiz: draft.quiz as Quiz,
-				lessonType: draft.lessonType ?? "TRADITIONAL",
-				selfRegulatedQuestion: draft.selfRegulatedQuestion
-			};
+			const draft: LessonDraft = lessonDraftSchema.parse(rawDraft);
+			const lessonForm: LessonFormModel = mapDraftToLessonForm(draft);
 
 			return {
 				props: { lesson: lessonForm, draftId: draft.id, isOverwritten: isOverwritten }
