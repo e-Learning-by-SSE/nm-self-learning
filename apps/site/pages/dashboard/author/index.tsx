@@ -32,6 +32,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Specialization, Subject } from "@self-learning/types";
+import { isBefore } from "date-fns";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -360,19 +361,15 @@ function convertToLessonWithDraftInfo(lessons: LessonOverview[]): LessonWithDraf
 	}));
 }
 
-function addDraftInfo(
+function annotateLessonsWithDraftInfo(
 	lessons: LessonWithDraftInfo[],
 	drafts: LessonDraftOverview[]
 ): LessonWithDraftInfo[] {
 	return lessons.map(lesson => {
 		const matchingDraft = drafts.find(draft => draft.lessonId === lesson.lessonId);
-
-		let isOverwritten = false;
-		if (matchingDraft) {
-			if (new Date(matchingDraft.createdAt) < new Date(lesson.updatedAt)) {
-				isOverwritten = true;
-			}
-		}
+		const isOverwritten =
+			!!matchingDraft &&
+			isBefore(new Date(matchingDraft.createdAt), new Date(lesson.updatedAt));
 
 		return {
 			title: lesson.title,
@@ -639,7 +636,7 @@ function Lessons({ authorName }: { authorName: string }) {
 
 	// prevents using old drafts data
 	if (drafts && !isFetching) {
-		lessonsWithDraftInfo = addDraftInfo(lessonsWithDraftInfo, drafts);
+		lessonsWithDraftInfo = annotateLessonsWithDraftInfo(lessonsWithDraftInfo, drafts);
 	}
 
 	if (isLoading) {
