@@ -88,7 +88,6 @@ export function CourseEditor({
 							</>
 						}
 					>
-						<CourseDescriptionForm />
 						<CourseContentForm />
 					</SidebarEditorLayout>
 				</form>
@@ -103,27 +102,5 @@ export function CourseEditor({
 				/>
 			)}
 		</div>
-	);
-}
-
-function CourseDescriptionForm() {
-	const { control } = useFormContext<{ description: CourseFormModel["description"] }>();
-
-	return (
-		<section>
-			<SectionHeader
-				title="Beschreibung"
-				subtitle="Ausführliche Beschreibung dieses Kurses. Unterstützt Markdown."
-			/>
-			<Form.MarkdownWithPreviewContainer>
-				<Controller
-					control={control}
-					name="description"
-					render={({ field }) => (
-						<MarkdownField content={field.value as string} setValue={field.onChange} />
-					)}
-				></Controller>
-			</Form.MarkdownWithPreviewContainer>
-		</section>
 	);
 }

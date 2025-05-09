@@ -100,7 +100,7 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 								content={field.value as string}
 								setValue={field.onChange}
 								inline={true}
-								placeholder={"1-2 Sätze welche diese Lerneinheit beschreibt."}
+								placeholder={"1-2 Sätze welche diese Lerneinheit beschreiben."}
 							></MarkdownField>
 						)}
 					></Controller>

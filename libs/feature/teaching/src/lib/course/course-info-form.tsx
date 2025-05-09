@@ -1,5 +1,12 @@
 import { ImageOrPlaceholder } from "@self-learning/ui/common";
-import { Form, InputWithButton, LabeledField, Upload, useSlugify } from "@self-learning/ui/forms";
+import {
+	Form,
+	InputWithButton,
+	LabeledField,
+	MarkdownField,
+	Upload,
+	useSlugify
+} from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
 
@@ -67,6 +74,27 @@ export function CourseInfoForm() {
 						placeholder="1-2 Sätze über diesen Kurs."
 						className="h-full"
 					/>
+				</LabeledField>
+
+				<LabeledField
+					label={"Beschreibung"}
+					error={errors.description?.message}
+					optional={true}
+				>
+					<Controller
+						control={control}
+						name={"description"}
+						render={({ field }) => (
+							<MarkdownField
+								content={field.value as string}
+								setValue={field.onChange}
+								inline={true}
+								placeholder={
+									"Ausführliche Beschreibung dieses Kurses. Unterstützt Markdown."
+								}
+							></MarkdownField>
+						)}
+					></Controller>
 				</LabeledField>
 
 				<LabeledField label="Bild" error={errors.imgUrl?.message} optional={true}>
