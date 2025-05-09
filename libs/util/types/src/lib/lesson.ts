@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { authorsRelationSchema } from "./author";
-import { lessonContentSchema } from "./lesson-content";
+import { LessonContent, lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 import { LessonType } from "@prisma/client";
 import { skillFormSchema } from "./skill";
+import { LessonFormModel } from "@self-learning/teaching";
+import { Quiz } from "@self-learning/quiz";
 
 export type LessonInfo = {
 	lessonId: string;
@@ -55,5 +57,59 @@ export function createEmptyLesson(): Lesson {
 		authors: [],
 		lessonType: LessonType.TRADITIONAL,
 		selfRegulatedQuestion: null
+	};
+}
+
+export type LessonOverview = {
+	slug: string;
+	title: string;
+	updatedAt: Date;
+	authors: { displayName: string; slug: string; imgUrl: string | null }[];
+	lessonId: string;
+};
+
+export type LessonWithDraftInfo = LessonOverview & {
+	draftId?: string;
+	draftOverwritten: boolean;
+};
+
+const baseDraftSchema = lessonSchema.partial();
+
+export const lessonDraftSchema = baseDraftSchema.extend({
+	id: z.string().optional(),
+	slug: z.string().optional(),
+	title: z.string().nullable().optional(),
+	authors: z.array(z.object({ username: z.string() })),
+	owner: z.object({ username: z.string() }),
+	license: z.object({}).nullable().optional(),
+	updatedAt: z.date().optional(),
+	createdAt: z.date().optional()
+});
+
+export type LessonDraft = z.infer<typeof lessonDraftSchema>;
+
+export type LessonDraftOverview = {
+	id: string | undefined;
+	lessonId: string | null;
+	createdAt: Date;
+	title: string | null;
+};
+
+export function mapDraftToLessonForm(draft: LessonDraft): LessonFormModel {
+	return {
+		lessonId: draft.lessonId ?? null,
+		slug: draft.slug ?? "",
+		title: draft.title ?? "",
+		subtitle: draft.subtitle,
+		description: draft.description,
+		imgUrl: draft.imgUrl,
+		authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
+		licenseId: draft.licenseId ?? null,
+		requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
+		provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
+		content: (draft.content ?? []) as LessonContent,
+		quiz: draft.quiz as Quiz,
+		lessonType: draft.lessonType ?? "TRADITIONAL",
+		selfRegulatedQuestion: draft.selfRegulatedQuestion ?? null
 	};
 }

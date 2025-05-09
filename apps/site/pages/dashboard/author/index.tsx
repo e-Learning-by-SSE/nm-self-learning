@@ -1,11 +1,18 @@
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, ExclamationCircleIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { t, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { SkillRepositoryOverview } from "@self-learning/teaching";
+import { DraftsDialog, SkillRepositoryOverview } from "@self-learning/teaching";
+import {
+	LessonDraft,
+	LessonDraftOverview,
+	LessonOverview,
+	LessonWithDraftInfo
+} from "@self-learning/types";
 import {
 	Divider,
+	Dialog,
 	IconButton,
 	ImageChip,
 	ImageOrPlaceholder,
@@ -15,7 +22,6 @@ import {
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
-	Dialog,
 	DialogActions
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
@@ -24,8 +30,9 @@ import { VoidSvg } from "@self-learning/ui/static";
 import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Specialization, Subject } from "@self-learning/types";
+import { isBefore } from "date-fns";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -115,6 +122,45 @@ export default function Start(props: Props) {
 function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
 	const authorName = session.data?.user.name;
+	const [openDraftsDialog, setOpenDraftsDialog] = useState(false);
+
+	const {
+		data: drafts,
+		isLoading,
+		isError
+	} = trpc.lessonDraft.getByOwner.useQuery(
+		{ username: authorName ?? "" },
+		{
+			enabled: Boolean(authorName),
+			refetchOnMount: "always", // <-- ensures refetch after navigation
+			staleTime: 0 // <-- disable aggressive caching (optional)
+		}
+	);
+
+	let draftsWithoutLesson: LessonDraft[] = [];
+
+	if (drafts) {
+		draftsWithoutLesson = drafts.filter(draft => draft.lessonId === null);
+	}
+
+	const handleClick = (e: { preventDefault: () => void }) => {
+		if (draftsWithoutLesson?.length > 0) {
+			e.preventDefault();
+			setOpenDraftsDialog(true);
+		}
+	};
+
+	const handleClose = () => {
+		setOpenDraftsDialog(false);
+	};
+
+	if (isLoading) {
+		return <div></div>;
+	}
+
+	if (isError) {
+		return <div>Lerneinheit-Entwürfe konnten nicht geladen werden.</div>;
+	}
 
 	return (
 		<div className="bg-gray-50">
@@ -252,15 +298,23 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Lerneinheiten:"
 							/>
 
-							<Link href="/teaching/lessons/create">
-								<IconButton
-									text="Neue Lerneinheit erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
+							<Link href="/teaching/lessons/create" onClick={handleClick}>
+								<div className="relative inline-block">
+									<IconButton
+										text="Neue Lerneinheit erstellen"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+									{draftsWithoutLesson?.length > 0 && (
+										<ExclamationCircleIcon className="absolute top-0 right-0 h-7 text-red-500 transform translate-x-1/2 -translate-y-1/2" />
+									)}
+								</div>
 							</Link>
 						</div>
 
 						{authorName && <Lessons authorName={authorName} />}
+						{openDraftsDialog && (
+							<DraftsDialog onClose={handleClose} drafts={draftsWithoutLesson} />
+						)}
 					</section>
 
 					<Divider />
@@ -297,9 +351,37 @@ function AuthorDashboardPage({ author }: Props) {
 	);
 }
 
+function convertToLessonWithDraftInfo(lessons: LessonOverview[]): LessonWithDraftInfo[] {
+	return lessons.map(lesson => ({
+		...lesson,
+		draftId: undefined,
+		draftOverwritten: false
+	}));
+}
+
+function annotateLessonsWithDraftInfo(
+	lessons: LessonWithDraftInfo[],
+	drafts: LessonDraftOverview[]
+): LessonWithDraftInfo[] {
+	return lessons.map(lesson => {
+		const matchingDraft = drafts.find(draft => draft.lessonId === lesson.lessonId);
+		const isOverwritten =
+			!!matchingDraft &&
+			isBefore(new Date(matchingDraft.createdAt), new Date(lesson.updatedAt));
+
+		return {
+			...lesson,
+			draftId: matchingDraft?.id,
+			draftOverwritten: isOverwritten
+		};
+	});
+}
+
 function CourseDeleteOption({ slug }: { slug: string }) {
 	const { mutateAsync: deleteCourse } = trpc.course.deleteCourse.useMutation();
-	const { data: linkedEntities, isLoading } = trpc.course.findLinkedEntities.useQuery({ slug });
+	const { data: linkedEntities, isLoading } = trpc.course.findLinkedEntities.useQuery({
+		slug
+	});
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const { reload } = useRouter();
 
@@ -405,16 +487,22 @@ function CourseDeletionDialog({
 	);
 }
 
-function LessonTaskbar({ lessonId }: { lessonId: string }) {
+function LessonTaskbar({ lesson }: { lesson: LessonWithDraftInfo }) {
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
-			<Link href={`/teaching/lessons/edit/${lessonId}`}>
+			<Link
+				href={
+					lesson.draftId
+						? `/teaching/lessons/edit/draft/${lesson.draftId}`
+						: `/teaching/lessons/edit/${lesson.lessonId}`
+				}
+			>
 				<button type="button" className="btn-stroked w-fit self-end">
 					<PencilIcon className="icon" />
 					<span>Bearbeiten</span>
 				</button>
 			</Link>
-			<LessonDeleteOption lessonId={lessonId} />
+			<LessonDeleteOption lessonId={lesson.lessonId} />
 		</div>
 	);
 }
@@ -521,6 +609,40 @@ function Lessons({ authorName }: { authorName: string }) {
 		}
 	);
 
+	const {
+		data: drafts,
+		isLoading,
+		isFetching,
+		isError,
+		refetch
+	} = trpc.lessonDraft.getOverviewByOwner.useQuery({
+		username: authorName
+	});
+
+	// ensures the drafts will be re-fetched after component is mounted
+	useEffect(() => {
+		refetch();
+	}, [authorName, refetch]);
+
+	let lessonsWithDraftInfo = [] as LessonWithDraftInfo[];
+
+	if (lessons) {
+		lessonsWithDraftInfo = convertToLessonWithDraftInfo(lessons.result);
+	}
+
+	// prevents using old drafts data
+	if (drafts && !isFetching) {
+		lessonsWithDraftInfo = annotateLessonsWithDraftInfo(lessonsWithDraftInfo, drafts);
+	}
+
+	if (isLoading) {
+		return <div></div>;
+	}
+
+	if (isError) {
+		return <div>Lerneinheit-Entwürfe konnten nicht geladen werden.</div>;
+	}
+
 	return (
 		<div className="flex min-h-[200px] flex-col">
 			{!lessons ? (
@@ -543,7 +665,6 @@ function Lessons({ authorName }: { authorName: string }) {
 							);
 						}}
 					/>
-
 					<Table
 						head={
 							<>
@@ -553,14 +674,23 @@ function Lessons({ authorName }: { authorName: string }) {
 							</>
 						}
 					>
-						{lessons.result.map(lesson => (
+						{lessonsWithDraftInfo.map(lesson => (
 							<tr key={lesson.lessonId}>
 								<TableDataColumn>
 									<Link
-										href={`/teaching/lessons/edit/${lesson.lessonId}`}
+										href={
+											lesson.draftId
+												? `/teaching/lessons/edit/draft/${lesson.draftId}`
+												: `/teaching/lessons/edit/${lesson.lessonId}`
+										}
 										className="font-medium hover:text-secondary"
 									>
-										{lesson.title}
+										<span className="flex gap-3">
+											{lesson.title}
+											{lesson.draftId && (
+												<ExclamationCircleIcon className="icon h-5 text-red-500 pl-1" />
+											)}
+										</span>
 									</Link>
 								</TableDataColumn>
 								<TableDataColumn>
@@ -569,7 +699,7 @@ function Lessons({ authorName }: { authorName: string }) {
 									</span>
 								</TableDataColumn>
 								<TableDataColumn>
-									<LessonTaskbar lessonId={lesson.lessonId} />
+									<LessonTaskbar lesson={lesson} />
 								</TableDataColumn>
 							</tr>
 						))}

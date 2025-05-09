@@ -29,3 +29,12 @@ export function useTimeout({
 		return () => clearTimeout(timer);
 	}, [callback, delayInMilliseconds]);
 }
+
+// Custom hook that calls the provided callback repeatedly every `interval` milliseconds.
+export function useInterval({ callback, interval }: { callback: () => void; interval: number }) {
+	useEffect(() => {
+		const timer = setInterval(callback, interval);
+
+		return () => clearInterval(timer);
+	}, [callback, interval]);
+}
