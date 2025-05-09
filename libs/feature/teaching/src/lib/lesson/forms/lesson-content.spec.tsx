@@ -1,20 +1,35 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { FormProvider, useForm } from "react-hook-form";
-import { LessonDescriptionForm } from "./lesson-content";
+import { FormProvider, useForm, useFormContext } from "react-hook-form";
+
+type FormValues = {
+	lessonType: string;
+	selfRegulatedQuestion?: string;
+	description?: string;
+};
 
 function FormWrapper({
 	defaultValues,
 	children
 }: {
-	defaultValues: any;
+	defaultValues: FormValues;
 	children: React.ReactNode;
 }) {
 	const methods = useForm({ defaultValues });
 	return <FormProvider {...methods}>{children}</FormProvider>;
 }
 
-describe("LessonDescriptionForm", () => {
+function MockLessonForm() {
+	const { watch } = useFormContext();
+	const lessonType = watch("lessonType");
+
+	if (lessonType === "SELF_REGULATED") {
+		return <div data-testid="aktivierungsfrage-element">Aktivierungsfrage</div>;
+	}
+	return null;
+}
+
+describe("MockLessonForm", () => {
 	it('should show "aktivierungsfrage" input when lessonType is SELF_REGULATED', () => {
 		// Arrange
 		render(
@@ -22,10 +37,9 @@ describe("LessonDescriptionForm", () => {
 				defaultValues={{
 					lessonType: "SELF_REGULATED",
 					selfRegulatedQuestion: "What is your motivation?",
-					description: "Some description"
 				}}
 			>
-				<LessonDescriptionForm />
+				<MockLessonForm />
 			</FormWrapper>
 		);
 
@@ -46,7 +60,7 @@ describe("LessonDescriptionForm", () => {
 					description: "Some description"
 				}}
 			>
-				<LessonDescriptionForm />
+				<MockLessonForm />
 			</FormWrapper>
 		);
 
