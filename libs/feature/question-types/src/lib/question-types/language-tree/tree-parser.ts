@@ -27,7 +27,7 @@ export interface TreeNode {
   
       // Parse the node value, which consists of alphanumeric characters and underscores
       let value = ""
-      while (pos < input.length && /[A-Za-z0-9_]/.test(input[pos])) {
+      while (pos < input.length && /[A-Za-z0-9_äüöÄÖÜß]/.test(input[pos])) {
         value += input[pos]
         pos++
       }

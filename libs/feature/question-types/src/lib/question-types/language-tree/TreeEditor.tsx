@@ -55,7 +55,7 @@ export function TreeEditor({
 			node.children = [oldLeafNode]; // Move the old text as a child node
 		} else {
 			// Regular non-leaf node: Add a new child normally
-			node.children.push({ value: "NewNode", children: [] });
+			node.children.push({ value: "Node", children: [] });
 		}
 		updateTree({ ...tree });
 	};
@@ -133,15 +133,15 @@ export function TreeEditor({
 		);
 	};
 
-	return <div>{renderNode(tree,null , 1)}</div>;
+	return <div>{renderNode(tree, null, 1)}</div>;
 }
 
 function serializeTree(node: TreeNode): string {
 	if (node.children.length === 0) {
-		return node.value; // Base case: Leaf node
+		return `[${node.value}]`;
 	}
 
 	const childrenText = node.children.map(serializeTree).join(" ");
-
+	
 	return `[${node.value} ${childrenText}]`;
 }

@@ -2,6 +2,7 @@ import type React from "react";
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import dagre from "@dagrejs/dagre";
 import type { TreeNode } from "./tree-parser";
+import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
 interface NodePosition {
 	id: string;
@@ -71,7 +72,13 @@ function calculateViewBox(nodes: NodePosition[]): {
 	};
 }
 
-export function TreeVisualization({ root }: { root: TreeNode }): React.ReactElement {
+export function TreeVisualization({
+	root,
+	className
+}: {
+	root: TreeNode;
+	className?: string;
+}): React.ReactElement {
 	const { nodes, edges } = useMemo(() => createGraph(root), [root]);
 	const viewBox = useMemo(() => calculateViewBox(nodes), [nodes]);
 
@@ -94,11 +101,15 @@ export function TreeVisualization({ root }: { root: TreeNode }): React.ReactElem
 		};
 	}, []);
 
+	const handleResetView = useCallback(() => {
+		setTransform({ x: 0, y: 0, scale: 1 });
+	}, []);
+
 	const handleWheel = useCallback(
 		(event: React.WheelEvent) => {
 			if (!event.ctrlKey) return;
 			const scaleChange = event.deltaY * -0.001;
-			const newScale = Math.max(0.1, Math.min(transform.scale + scaleChange, 4));
+			const newScale = Math.max(0.5, Math.min(transform.scale + scaleChange, 4));
 
 			setTransform(prev => ({
 				...prev,
@@ -176,27 +187,30 @@ export function TreeVisualization({ root }: { root: TreeNode }): React.ReactElem
 	}
 
 	return (
-		<div className={`${ isDragging.current ? "cursor-grabbing" : "cursor-grab" }`}>
-			<span className="text-base p-2">strg + wheel to zoom</span>
-				<svg
-					ref={svgRef}
-					width="100%"
-					height="100%"
-					viewBox={`${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`}
-					preserveAspectRatio="xMidYMid meet"
-					onWheel={handleWheel}
-					onMouseDown={handleMouseDown}
-					onMouseMove={handleMouseMove}
-					onMouseUp={handleMouseUp}
-					onMouseLeave={handleMouseUp}
-				>
-					<g
-						transform={`translate(${transform.x},${transform.y}) scale(${transform.scale})`}
-					>
-						{edges.map(renderEdge)}
-						{nodes.map(renderNode)}
-					</g>
-				</svg>
+		<div className={`${isDragging.current ? "cursor-grabbing" : "cursor-grab"} ${className} relative`}>
+			<div className="absolute flex justify-between w-full">
+				<span className="text-base p-2">strg + wheel to zoom</span>
+				<div className="p-2 mr-5">
+					<ArrowPathIcon className="h-6 w-6 cursor-pointer" onClick={handleResetView} />
+				</div>
+			</div>
+			<svg
+				ref={svgRef}
+				width="100%"
+				height="100%"
+				viewBox={`${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`}
+				preserveAspectRatio="xMidYMid meet"
+				onWheel={handleWheel}
+				onMouseDown={handleMouseDown}
+				onMouseMove={handleMouseMove}
+				onMouseUp={handleMouseUp}
+				onMouseLeave={handleMouseUp}
+			>
+				<g transform={`translate(${transform.x},${transform.y}) scale(${transform.scale})`}>
+					{edges.map(renderEdge)}
+					{nodes.map(renderNode)}
+				</g>
+			</svg>
 		</div>
 	);
 }
