@@ -683,10 +683,10 @@ function Lessons({ authorName }: { authorName: string }) {
 		username: authorName
 	});
 
-	// ensures the drafts will be refetched after component is mounted
+	// ensures the drafts will be re-fetched after component is mounted
 	useEffect(() => {
 		refetch();
-	}, [authorName]);
+	}, [authorName, refetch]);
 
 	let lessonsWithDraftInfo = [] as LessonWithDraftInfo[];
 

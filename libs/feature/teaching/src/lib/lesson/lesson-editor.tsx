@@ -100,11 +100,17 @@ export function LessonEditor({
 		resolver: zodResolver(lessonSchema)
 	});
 
-	const { mutateAsync: upsert } = trpc.lessonDraft.upsert.useMutation();
+	const { mutateAsync: upsert } = trpc.lessonDraft.upsert.useMutation({
+		meta: {
+			context: {
+				skipInvalidate: true
+			}
+		}
+	});
+	console.log("lesson editor, init lesson", initialLesson);
 
 	const lastSavedDraftIdRef = useRef<string | null>(null);
 	const toastShownRef = useRef(false);
-
 	const saveLessonDraft = useCallback(async () => {
 		const formValues = form.getValues();
 		const draft: LessonDraft = {
