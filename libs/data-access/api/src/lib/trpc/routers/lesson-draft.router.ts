@@ -6,7 +6,7 @@ import { Quiz } from "@self-learning/quiz";
 import { Prisma } from "@prisma/client";
 
 export const lessonDraftRouter = t.router({
-	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input }) => {
+	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
 		const data = {
 			...input,
 			content: input.content ?? "",
@@ -15,7 +15,7 @@ export const lessonDraftRouter = t.router({
 			provides: input.provides ?? undefined,
 			requires: input.requires ?? undefined,
 			authors: input.authors ?? [],
-			owner: input.owner ?? undefined
+			owner: { username: ctx.user.name } //{"username": ctx.session.user.username}
 		};
 		await database.lessonDraft.create({
 			data: data
@@ -23,8 +23,8 @@ export const lessonDraftRouter = t.router({
 	}),
 	getByOwner: authProcedure
 		.input(z.object({ username: z.string() }))
-		.query(async ({ input }): Promise<LessonDraft[]> => {
-			const username = input.username;
+		.query(async ({ input, ctx }): Promise<LessonDraft[]> => {
+			const username = ctx.user.name;
 			const drafts = await database.lessonDraft.findMany({
 				where: {
 					owner: {
@@ -33,79 +33,32 @@ export const lessonDraftRouter = t.router({
 					}
 				}
 			});
-			return drafts.map(draft => ({
-				id: draft.id,
-				lessonId: draft.lessonId ?? null,
-				slug: draft.slug ?? "",
-				title: draft.title ?? "",
-				subtitle: draft.subtitle,
-				description: draft.description,
-				imgUrl: draft.imgUrl,
-				authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
-				owner:
-					typeof draft.owner === "object" &&
-					draft.owner !== null &&
-					"username" in draft.owner
-						? { username: String(draft.owner.username) }
-						: { username: "" },
 
-				licenseId: draft.licenseId,
-				requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
-				provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
-				content: (draft.content ?? []) as LessonContent,
-				quiz: draft.quiz as Quiz,
-				lessonType: draft.lessonType ?? "TRADITIONAL",
-				selfRegulatedQuestion: draft.selfRegulatedQuestion,
-				createdAt: draft.createdAt,
-				updatedAt: draft.updatedAt
-			}));
+			return drafts.map(mapToLessonDraft);
 		}),
 	getById: authProcedure
 		.input(z.object({ draftId: z.string() }))
-		.query(async ({ input }): Promise<LessonDraft | null> => {
+		.query(async ({ input, ctx }): Promise<LessonDraft | null> => {
 			const draftId = input.draftId;
 			const draft = await database.lessonDraft.findUnique({
 				where: {
-					id: draftId
+					id: draftId,
+					owner: {
+						path: ["username"],
+						equals: ctx.user.name
+					}
 				}
 			});
-			if (draft) {
-				return {
-					id: draft.id,
-					lessonId: draft.lessonId,
-					slug: draft.slug ?? "",
-					title: draft.title ?? "",
-					subtitle: draft.subtitle,
-					description: draft.description,
-					imgUrl: draft.imgUrl,
-					authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
-					owner:
-						typeof draft.owner === "object" &&
-						draft.owner !== null &&
-						"username" in draft.owner
-							? { username: String(draft.owner.username) }
-							: { username: "" },
-
-					licenseId: draft.licenseId,
-					requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
-					provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
-					content: (draft.content ?? []) as LessonContent,
-					quiz: draft.quiz as Quiz,
-					lessonType: draft.lessonType ?? "TRADITIONAL",
-					selfRegulatedQuestion: draft.selfRegulatedQuestion
-				};
-			}
-			return null;
+			return draft ? mapToLessonDraft(draft) : null;
 		}),
 	getOverviewByOwner: authProcedure
 		.input(z.object({ username: z.string() }))
-		.query(async ({ input }) => {
-			const username = input.username;
+		.query(async ({ input, ctx }) => {
 			const drafts = await database.lessonDraft.findMany({
 				where: {
 					owner: {
 						path: ["username"],
-						equals: username
+						equals: ctx.user.name
 					}
 				},
 				select: {
@@ -117,21 +70,29 @@ export const lessonDraftRouter = t.router({
 			});
 			return drafts;
 		}),
-	delete: authProcedure.input(z.object({ draftId: z.string() })).mutation(async ({ input }) => {
-		try {
-			const deletedDraft = await database.lessonDraft.delete({
-				where: { id: input.draftId }
-			});
+	delete: authProcedure
+		.input(z.object({ draftId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			try {
+				const deletedDraft = await database.lessonDraft.delete({
+					where: {
+						id: input.draftId,
+						owner: {
+							path: ["username"],
+							equals: ctx.user.name
+						}
+					}
+				});
 
-			return {
-				success: true,
-				message: "Draft successfully deleted.",
-				draft: deletedDraft
-			};
-		} catch (err) {
-			console.error("Error while deleting draft: ", err);
-		}
-	}),
+				return {
+					success: true,
+					message: "Draft successfully deleted.",
+					draft: deletedDraft
+				};
+			} catch (err) {
+				console.error("Error while deleting draft: ", err);
+			}
+		}),
 	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input }) => {
 		const lessonId = input.lessonId;
 		const user = input.owner;
@@ -146,7 +107,6 @@ export const lessonDraftRouter = t.router({
 			authors: input.authors ?? [],
 			owner: input.owner ?? undefined
 		};
-
 		if (lessonId) {
 			const existingDraftForLesson = lessonId
 				? await database.lessonDraft.findFirst({
@@ -209,3 +169,30 @@ export const lessonDraftRouter = t.router({
 		}
 	})
 });
+
+function mapToLessonDraft(draft: any): LessonDraft {
+	return {
+		id: draft.id,
+		lessonId: draft.lessonId ?? null,
+		slug: draft.slug ?? "",
+		title: draft.title ?? "",
+		subtitle: draft.subtitle,
+		description: draft.description,
+		imgUrl: draft.imgUrl,
+		authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
+		owner:
+			typeof draft.owner === "object" && draft.owner !== null && "username" in draft.owner
+				? { username: String(draft.owner.username) }
+				: { username: "" },
+
+		licenseId: draft.licenseId,
+		requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
+		provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
+		content: (draft.content ?? []) as LessonContent,
+		quiz: draft.quiz as Quiz,
+		lessonType: draft.lessonType ?? "TRADITIONAL",
+		selfRegulatedQuestion: draft.selfRegulatedQuestion,
+		createdAt: draft.createdAt,
+		updatedAt: draft.updatedAt
+	};
+}

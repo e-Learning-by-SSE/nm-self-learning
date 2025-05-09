@@ -353,9 +353,7 @@ function AuthorDashboardPage({ author }: Props) {
 
 function convertToLessonWithDraftInfo(lessons: LessonOverview[]): LessonWithDraftInfo[] {
 	return lessons.map(lesson => ({
-		lessonId: lesson.lessonId,
-		title: lesson.title,
-		updatedAt: lesson.updatedAt,
+		...lesson,
 		draftId: undefined,
 		draftOverwritten: false
 	}));
@@ -372,9 +370,7 @@ function annotateLessonsWithDraftInfo(
 			isBefore(new Date(matchingDraft.createdAt), new Date(lesson.updatedAt));
 
 		return {
-			title: lesson.title,
-			lessonId: lesson.lessonId,
-			updatedAt: lesson.updatedAt,
+			...lesson,
 			draftId: matchingDraft?.id,
 			draftOverwritten: isOverwritten
 		};

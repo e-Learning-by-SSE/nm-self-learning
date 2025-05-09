@@ -39,10 +39,7 @@ export default function EditDraftPage({ draftId }: EditLessonDraftProps) {
 			refetchOnWindowFocus: false,
 			refetchOnReconnect: false,
 			refetchInterval: false,
-			staleTime: 5 * 60 * 1000,
-			onSuccess(data) {
-				console.log("getById query result (fetched/refetched):", data);
-			}
+			staleTime: 5 * 60 * 1000
 		}
 	);
 
