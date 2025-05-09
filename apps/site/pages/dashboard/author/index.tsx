@@ -3,7 +3,7 @@ import { TeacherView } from "@self-learning/analysis";
 import { t, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { SkillRepositoryOverview } from "@self-learning/teaching";
+import { DraftsDialog, SkillRepositoryOverview } from "@self-learning/teaching";
 import {
 	LessonDraft,
 	LessonDraftOverview,
@@ -116,63 +116,6 @@ export const getServerSideProps = withTranslations(
 
 export default function Start(props: Props) {
 	return <AuthorDashboardPage {...props} />;
-}
-
-function DraftsDialog({ onClose, drafts }: { onClose: () => void; drafts: LessonDraft[] }) {
-	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
-	const router = useRouter();
-
-	const handleClick = () => {
-		const draftId = drafts[0].id;
-		router.push(`/teaching/lessons/edit/draft/${draftId}`);
-	};
-
-	const handleCancel = () => {
-		const draftId = drafts[0].id;
-
-		if (draftId) {
-			deleteDraft({ draftId: draftId });
-		}
-
-		onClose();
-	};
-
-	return (
-		<Dialog onClose={onClose} title={"Nicht gespeicherte Veränderungen"}>
-			<span className="text-sm text-light">
-				Wir haben nicht gespeicherte Änderungen von Ihrer letzten Sitzung festgestellt.
-				<div className="py-3">
-					{drafts[0].title && (
-						<div>
-							<strong>Lerneinheit:</strong> {drafts[0].title}
-						</div>
-					)}
-
-					{drafts[0].updatedAt && (
-						<div>
-							<strong>Letzte Aktualisierung: </strong>{" "}
-							{new Date(drafts[0].updatedAt).toLocaleDateString("de-DE", {
-								day: "2-digit",
-								month: "long",
-								year: "numeric",
-								hour: "2-digit",
-								minute: "2-digit"
-							})}
-						</div>
-					)}
-				</div>
-				Möchten Sie diese wiederherstellen? Nicht gespeicherte Änderungen gehen verloren!
-			</span>
-			<div className="flex gap-2 pt-3 justify-end">
-				<button className="btn-stroked" onClick={handleCancel}>
-					Verwerfen
-				</button>
-				<button className="btn-primary" onClick={handleClick}>
-					Wiederherstellen
-				</button>
-			</div>
-		</Dialog>
-	);
 }
 
 function AuthorDashboardPage({ author }: Props) {

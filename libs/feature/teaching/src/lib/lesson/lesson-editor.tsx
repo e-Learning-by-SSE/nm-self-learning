@@ -107,7 +107,6 @@ export function LessonEditor({
 			}
 		}
 	});
-	console.log("lesson editor, init lesson", initialLesson);
 
 	const lastSavedDraftIdRef = useRef<string | null>(null);
 	const toastShownRef = useRef(false);
