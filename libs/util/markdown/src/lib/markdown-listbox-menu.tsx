@@ -14,7 +14,7 @@ export function MarkdownListboxMenu({
 	onChange
 }: {
 	title: string;
-	dropdownPosition: "top" | "bottom";
+	dropdownPosition?: "top" | "bottom";
 	onChange: (option: string) => void;
 	customFocusStyle?: (focus: boolean) => string;
 	displayValue: string | null | undefined;
@@ -28,21 +28,23 @@ export function MarkdownListboxMenu({
 				ref={buttonRef}
 				as="button"
 				title={title}
-				className="items-center justify-between px-3 py-2 border rounded space-x-2"
+				className="items-center justify-between px-3 py-2 border rounded space-x-2 w-full"
 			>
 				{({ open }) => (
-					<div className={"flex items-center gap-1"}>
-						<ReactMarkdown
-							remarkPlugins={remarkPlugins}
-							rehypePlugins={rehypePlugins}
-							className="prose prose-sm max-w-none"
-						>
-							{displayValue === "" ? "Select an option" : displayValue}
-						</ReactMarkdown>
+					<div className={"flex flex-row justify-between gap-1"}>
+						<div className={"justify-start"}>
+							<ReactMarkdown
+								remarkPlugins={remarkPlugins}
+								rehypePlugins={rehypePlugins}
+								className="prose prose-sm max-w-none"
+							>
+								{displayValue === "" ? "Select an option" : displayValue}
+							</ReactMarkdown>
+						</div>
 						{open ? (
-							<ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
+							<ChevronUpIcon className="h-5 w-5 justify-end" aria-hidden="true" />
 						) : (
-							<ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+							<ChevronDownIcon className="h-5 w-5 justify-end" aria-hidden="true" />
 						)}
 					</div>
 				)}
