@@ -22,10 +22,12 @@ const adminName = "dumbledore";
 
 export function createLessonWithRandomContentAndDemoQuestions({
 	title,
-	questions
+	questions,
+	provides
 }: {
 	title: string;
 	questions: QuizContent;
+	provides?: string[]
 }) {
 	const content = [
 		{
@@ -54,7 +56,8 @@ export function createLessonWithRandomContentAndDemoQuestions({
 		description: faker.lorem.paragraphs(3),
 		content,
 		questions,
-		licenseId: defaultLicense.licenseId
+		licenseId: defaultLicense.licenseId,
+		provides
 	});
 }
 
@@ -66,7 +69,8 @@ export function createLesson({
 	questions,
 	licenseId,
 	lessonType,
-	selfRegulatedQuestion
+	selfRegulatedQuestion,
+	provides
 }: {
 	title: string;
 	subtitle: string | null;
@@ -76,8 +80,9 @@ export function createLesson({
 	licenseId?: number | null;
 	lessonType?: LessonType;
 	selfRegulatedQuestion?: string;
+	provides?: string[];
 }) {
-	const lesson: Prisma.LessonCreateManyInput = {
+	const lesson: Prisma.LessonCreateInput = {
 		title,
 		lessonId: faker.string.uuid(),
 		slug: slugify(faker.string.alphanumeric(8) + title, { lower: true, strict: true }),
@@ -91,7 +96,10 @@ export function createLesson({
 			config: null
 		},
 		meta: {},
-		licenseId: licenseId ?? 0
+		license: licenseId ? { connect: { licenseId: licenseId } } : undefined,
+		provides: provides
+		? { connect: provides.map(goalId => ({ id: goalId })) }
+		: undefined,
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -466,7 +474,7 @@ export async function createSkillGroups(skillGroups: SkillGroup[], repository: R
 				description: skill.description,
 				children: {
 					connect: nested
-				}
+				},
 			}
 		});
 	}
