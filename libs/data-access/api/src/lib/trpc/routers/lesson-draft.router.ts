@@ -94,9 +94,9 @@ export const lessonDraftRouter = t.router({
 				console.error("Error while deleting draft: ", err);
 			}
 		}),
-	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input }) => {
+	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
 		const lessonId = input.lessonId;
-		const user = input.owner;
+		const owner = ctx.user.name;
 		const draftId = input.id;
 		const draftData = {
 			...input,
@@ -108,6 +108,7 @@ export const lessonDraftRouter = t.router({
 			authors: input.authors ?? [],
 			owner: input.owner ?? undefined
 		};
+
 		if (lessonId) {
 			const existingDraftForLesson = lessonId
 				? await database.lessonDraft.findFirst({
@@ -115,7 +116,7 @@ export const lessonDraftRouter = t.router({
 							lessonId: lessonId,
 							owner: {
 								path: ["username"],
-								equals: user.username
+								equals: owner
 							}
 						}
 					})
@@ -141,7 +142,7 @@ export const lessonDraftRouter = t.router({
 						id: draftId,
 						owner: {
 							path: ["username"],
-							equals: user.username
+							equals: owner
 						}
 					}
 				})
@@ -161,7 +162,7 @@ export const lessonDraftRouter = t.router({
 				data: {
 					...draftData,
 					lessonId: lessonId ?? undefined,
-					owner: user,
+					owner: { username: owner },
 					createdAt: new Date(),
 					updatedAt: new Date()
 				}
