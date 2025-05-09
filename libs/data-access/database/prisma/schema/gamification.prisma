@@ -1,0 +1,40 @@
+model GamificationProfile {
+    userId                      String                        @unique
+    username                    String                        @id
+    loginStreak Int @default(0)
+    meta                       Json?
+    lastLogin         DateTime @default(now())
+
+    user         User     @relation(fields: [username], references: [name], onDelete: Cascade)
+    achievements Achievement[]
+    earnedAchievements EarnedAchievement[] // Added opposite relation field
+}
+
+model Achievement {
+  id          String               @id @default(uuid())
+  code        String               @unique
+  title       String
+  description String
+  xpReward    Int
+  category    String
+  createdAt   DateTime             @default(now())
+  meta        Json?
+
+  users       EarnedAchievement[]
+  gamificationProfiles GamificationProfile[]
+}
+
+
+model EarnedAchievement {
+  id             String              @id @default(uuid())
+  userId         String
+  achievementId  String
+  obtainedAt     DateTime            @default(now())
+  meta           Json?
+
+  gamificationProfile                GamificationProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  achievement    Achievement         @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+}
+

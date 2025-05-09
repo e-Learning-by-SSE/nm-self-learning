@@ -13,3 +13,5 @@ export * from "./lib/skill";
 export * from "./lib/learning-diary";
 export * from "./lib/settings";
 export * from "./lib/event-log";
+export * from "./lib/notification";
+export * from "./lib/gamificationProfile";

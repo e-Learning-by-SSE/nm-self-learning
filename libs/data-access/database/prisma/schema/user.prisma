@@ -37,9 +37,13 @@ model User {
     author            Author?
     sessions          Session[]
     student           Student?
+    gamificationProfile  GamificationProfile?
     uploadedAssets    UploadedAssets[]
     skillRepositories SkillRepository[]
+    notifications     NotificationUser[]
 
+
+    notificationSettings Json?
     enabledLearningStatistics Boolean @default(false)
     enabledFeatureLearningDiary  Boolean  @default(false)
     registrationCompleted      Boolean  @default(false)

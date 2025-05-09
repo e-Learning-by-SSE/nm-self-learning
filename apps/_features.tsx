@@ -1,8 +1,7 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
 import { FirstLoginDialog, useFirstLoginDialog } from "@self-learning/settings";
-import { showToast } from "@self-learning/ui/common";
-import { MessagePortal } from "@self-learning/ui/notifications";
+import { MessagePortal, NotificationsRenderer } from "@self-learning/ui/notifications";
 import { init } from "@socialgouv/matomo-next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -18,6 +17,7 @@ export function GlobalFeatures() {
 			<ControlledMsgPortal />
 			<ControlledFirstLoginDialog />
 			<Toaster containerStyle={{ top: 96 }} position="top-right" />
+			<NotificationsRenderer />
 		</>
 	);
 }

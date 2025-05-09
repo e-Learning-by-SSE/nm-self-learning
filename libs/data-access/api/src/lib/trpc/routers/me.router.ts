@@ -115,6 +115,7 @@ export const meRouter = t.router({
 					}
 				});
 			}
+			editUserSettingsSchema;
 			const updateData = Object.fromEntries(
 				Object.entries(user ?? {}).filter(([_, value]) => value !== undefined)
 			);
@@ -127,6 +128,7 @@ export const meRouter = t.router({
 			});
 		});
 	}),
+
 	registrationStatus: authProcedure.query(async ({ ctx }) => {
 		return await database.user.findUnique({
 			where: { name: ctx.user.name },

@@ -9,6 +9,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { jwtDecode } from "jwt-decode";
 import { createUserSession } from "./data-access";
+import { loginCallbacks } from "./on-login";
 
 type KeyCloakClaims = {
 	realm_access?: {
@@ -224,7 +225,19 @@ export const authOptions: NextAuthOptions = {
 	session: {
 		strategy: "jwt"
 	},
-	providers: getProviders()
+	providers: getProviders(),
+	events: {
+		signIn: async ({ user, account, isNewUser, profile }) => {
+			// Create a new user session
+			// if (account?.provider === "keycloak") {
+			// 	const username = mailToUsername(user.email ?? user.name);
+			// 	await createUserSession({ username, token: account.access_token });
+			// }
+			for (const call of loginCallbacks) {
+				await call({ user, account, profile, isNewUser });
+			}
+		}
+	}
 };
 
 export const NextAuthPage = NextAuth(authOptions);

@@ -20,6 +20,8 @@ import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 
 import { userEventRouter } from "./routers/event-log.router";
+import { notificationRouter } from "./routers/notification.router";
+import { gamificationRouter } from "./routers/gamification.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -33,13 +35,14 @@ export const appRouter = t.router({
 	learningTechniqueRating: learningTechniqueRouter,
 	lesson: lessonRouter,
 	licenseRouter: licenseRouter,
-	me: meRouter,
+	me: t.mergeRouters(meRouter, gamificationRouter),
 	storage: storageRouter,
 	specialization: specializationRouter,
 	subject: subjectRouter,
 	programming: programmingRouter,
 	skill: skillRouter,
-	events: userEventRouter
+	events: userEventRouter,
+	notification: notificationRouter
 });
 
 // export type definition of API
