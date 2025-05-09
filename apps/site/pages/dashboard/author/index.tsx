@@ -30,7 +30,7 @@ import { VoidSvg } from "@self-learning/ui/static";
 import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Specialization, Subject } from "@self-learning/types";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
@@ -178,12 +178,20 @@ function DraftsDialog({ onClose, drafts }: { onClose: () => void; drafts: Lesson
 function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
 	const authorName = session.data?.user.name;
-
-	const { data: drafts } = trpc.lessonDraft.getByOwner.useQuery(
-		{ username: authorName ?? "" },
-		{ enabled: !!authorName }
-	);
 	const [openDraftsDialog, setOpenDraftsDialog] = useState(false);
+
+	const {
+		data: drafts,
+		isLoading,
+		isError
+	} = trpc.lessonDraft.getByOwner.useQuery(
+		{ username: authorName ?? "" },
+		{
+			enabled: Boolean(authorName),
+			refetchOnMount: "always", // <-- ensures refetch after navigation
+			staleTime: 0 // <-- disable aggressive caching (optional)
+		}
+	);
 
 	let draftsWithoutLesson: LessonDraft[] = [];
 
@@ -201,6 +209,14 @@ function AuthorDashboardPage({ author }: Props) {
 	const handleClose = () => {
 		setOpenDraftsDialog(false);
 	};
+
+	if (isLoading) {
+		return <div></div>;
+	}
+
+	if (isError) {
+		return <div>Lerneinheit-Entwürfe konnten nicht geladen werden.</div>;
+	}
 
 	return (
 		<div className="bg-gray-50">
@@ -657,9 +673,20 @@ function Lessons({ authorName }: { authorName: string }) {
 		}
 	);
 
-	const { data: drafts } = trpc.lessonDraft.getOverviewByOwner.useQuery({
+	const {
+		data: drafts,
+		isLoading,
+		isFetching,
+		isError,
+		refetch
+	} = trpc.lessonDraft.getOverviewByOwner.useQuery({
 		username: authorName
 	});
+
+	// ensures the drafts will be refetched after component is mounted
+	useEffect(() => {
+		refetch();
+	}, [authorName]);
 
 	let lessonsWithDraftInfo = [] as LessonWithDraftInfo[];
 
@@ -667,8 +694,17 @@ function Lessons({ authorName }: { authorName: string }) {
 		lessonsWithDraftInfo = convertToLessonWithDraftInfo(lessons.result);
 	}
 
-	if (drafts) {
+	// prevents using old drafts data
+	if (drafts && !isFetching) {
 		lessonsWithDraftInfo = addDraftInfo(lessonsWithDraftInfo, drafts);
+	}
+
+	if (isLoading) {
+		return <div></div>;
+	}
+
+	if (isError) {
+		return <div>Lerneinheit-Entwürfe konnten nicht geladen werden.</div>;
 	}
 
 	return (

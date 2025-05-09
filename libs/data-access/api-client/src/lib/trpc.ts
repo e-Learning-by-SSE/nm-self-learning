@@ -26,6 +26,14 @@ export const trpc = createTRPCNext<AppRouter>({
 				 **/
 				// Calls the `onSuccess` defined in the `useQuery()`-options:
 				await opts.originalFn();
+
+				// Check mutation context — skip invalidate if explicitly set
+				const ctx = opts.meta?.context as { skipInvalidate?: boolean } | undefined;
+
+				if (ctx?.skipInvalidate) {
+					return;
+				}
+
 				// Invalidate all queries in the react-query cache:
 				await opts.queryClient.invalidateQueries();
 			}

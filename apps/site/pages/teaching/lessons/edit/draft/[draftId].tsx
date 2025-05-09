@@ -11,6 +11,8 @@ import { useRouter } from "next/router";
 import { withAuth } from "@self-learning/api";
 import { Quiz } from "@self-learning/quiz";
 import { createEmptyLesson } from "@self-learning/types";
+import { useRequiredSession } from "@self-learning/ui/layouts";
+import { useMemo } from "react";
 
 type EditLessonDraftProps = {
 	draftId: string;
@@ -30,6 +32,40 @@ export default function EditDraftPage({ draftId }: EditLessonDraftProps) {
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
 	const router = useRouter();
+
+	const { data: draft, isLoading } = trpc.lessonDraft.getById.useQuery(
+		{ draftId: draftId ?? "" },
+		{
+			refetchOnWindowFocus: false,
+			refetchOnReconnect: false,
+			refetchInterval: false,
+			staleTime: 5 * 60 * 1000,
+			onSuccess(data) {
+				console.log("getById query result (fetched/refetched):", data);
+			}
+		}
+	);
+
+	const lessonForm = useMemo(() => {
+		if (!draft) return createEmptyLesson();
+
+		return {
+			lessonId: draft.lessonId ?? null,
+			slug: draft.slug ?? "",
+			title: draft.title ?? "",
+			subtitle: draft.subtitle,
+			description: draft.description,
+			imgUrl: draft.imgUrl,
+			authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
+			licenseId: draft.licenseId ?? null,
+			requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
+			provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
+			content: (draft.content ?? []) as LessonContent,
+			quiz: draft.quiz as Quiz,
+			lessonType: draft.lessonType ?? "TRADITIONAL",
+			selfRegulatedQuestion: draft.selfRegulatedQuestion ?? null
+		};
+	}, [draft]);
 
 	async function handleEditClose(lesson?: LessonFormModel) {
 		if (lesson) {
@@ -54,36 +90,12 @@ export default function EditDraftPage({ draftId }: EditLessonDraftProps) {
 		}
 	}
 
-	const { data: draft, isLoading } = trpc.lessonDraft.getById.useQuery({
-		draftId: draftId ?? ""
-	});
-
 	if (isLoading) {
 		return <p>Loading...</p>;
 	}
 
 	if (!draft) {
 		return <p>No draft found.</p>;
-	}
-
-	let lessonForm: LessonFormModel = createEmptyLesson();
-	if (draft) {
-		lessonForm = {
-			lessonId: draft.lessonId ?? null,
-			slug: draft.slug ?? "",
-			title: draft.title ?? "",
-			subtitle: draft.subtitle,
-			description: draft.description,
-			imgUrl: draft.imgUrl,
-			authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
-			licenseId: draft.licenseId ?? null,
-			requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
-			provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
-			content: (draft.content ?? []) as LessonContent,
-			quiz: draft.quiz as Quiz,
-			lessonType: draft.lessonType ?? "TRADITIONAL",
-			selfRegulatedQuestion: draft.selfRegulatedQuestion ?? null
-		};
 	}
 
 	return (
