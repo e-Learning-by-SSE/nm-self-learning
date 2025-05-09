@@ -6,7 +6,10 @@ import {
 	getStaticPropsForLayout,
 	LessonLayout,
 	LessonLayoutProps,
-	useLessonContext
+	useLessonContext,
+	hasAnsweredSelfRegulated,
+	markSelfRegulatedAnswered,
+	clearSelfRegulatedAnswered
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -118,7 +121,22 @@ export default function LessonPage({ lesson, course, markdown }: LessonProps) {
 }
 
 function Lesson({ lesson, course, markdown }: LessonProps) {
-	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
+	const [showDialog, setShowDialog] = useState(
+		lesson.lessonType === LessonType.SELF_REGULATED &&
+			!hasAnsweredSelfRegulated(lesson.lessonId)
+	);
+
+	// Clear sessionStorage on back if the dialog is not shown
+	useEffect(() => {
+		const handlePopState = () => {
+			if (!showDialog) {
+				clearSelfRegulatedAnswered(lesson.lessonId);
+			}
+		};
+
+		window.addEventListener("popstate", handlePopState);
+		return () => window.removeEventListener("popstate", handlePopState);
+	}, [lesson.lessonId, showDialog]);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
@@ -136,11 +154,16 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
+	const handleCloseDialog = () => {
+		setShowDialog(false);
+		markSelfRegulatedAnswered(lesson.lessonId);
+	};
+
 	if (showDialog && markdown.preQuestion) {
 		return (
 			<article className="flex flex-col gap-4">
 				<SelfRegulatedPreQuestion
-					setShowDialog={setShowDialog}
+					onClose={handleCloseDialog}
 					question={markdown.preQuestion}
 				/>
 			</article>
@@ -375,10 +398,10 @@ function MediaTypeSelector({
 
 function SelfRegulatedPreQuestion({
 	question,
-	setShowDialog
+	onClose
 }: {
 	question: CompiledMarkdown;
-	setShowDialog: Dispatch<SetStateAction<boolean>>;
+	onClose: () => void;
 }) {
 	const [userAnswer, setUserAnswer] = useState("");
 
@@ -401,9 +424,7 @@ function SelfRegulatedPreQuestion({
 					<button
 						type="button"
 						className="btn-primary"
-						onClick={() => {
-							setShowDialog(false);
-						}}
+						onClick={onClose}
 						disabled={userAnswer.length == 0}
 					>
 						Antwort Speichern
