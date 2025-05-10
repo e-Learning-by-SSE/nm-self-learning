@@ -14,7 +14,6 @@ export function GlobalFeatures() {
 	useMatomo();
 	return (
 		<>
-			<ControlledMsgPortal />
 			<ControlledFirstLoginDialog />
 			<Toaster containerStyle={{ top: 96 }} position="top-right" />
 			<NotificationsRenderer />
@@ -54,12 +53,6 @@ export function ControlledFirstLoginDialog() {
 			}}
 		/>
 	);
-}
-
-function ControlledMsgPortal() {
-	const globalMessage = process.env.NEXT_PUBLIC_SYSTEM_MSG;
-	if (!globalMessage) return null;
-	return <MessagePortal htmlMessage={globalMessage} />;
 }
 
 function useMatomo() {
