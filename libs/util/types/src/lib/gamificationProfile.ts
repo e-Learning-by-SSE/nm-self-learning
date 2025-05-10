@@ -48,3 +48,55 @@ export const defaultGamificationProfileMeta = {
 		pauseUntil: null
 	}
 } satisfies GamificationProfileMeta;
+
+// achievement types
+
+export const achievementMetaSchema = z.discriminatedUnion("group", [
+	z.object({
+		group: z.literal("perfect_lessons"),
+		level: z.number().int().positive(),
+		requiredCount: z.number().int().positive()
+	}),
+	z.object({
+		group: z.literal("streak"),
+		level: z.number().int().positive(),
+		requiredDays: z.number().int().positive()
+	}),
+	z.object({
+		group: z.literal("focus"),
+		level: z.number().int().positive(),
+		requiredMinutes: z.number().int().positive()
+	})
+]);
+
+export type AchievementMeta = z.infer<typeof achievementMetaSchema>;
+
+export const achievementTriggerEnum = z.enum([
+	"lesson_completed",
+	"daily_login",
+	"session_time",
+	"streak_check",
+	"manual"
+]);
+
+export const achievementSchema = z.object({
+	id: z.string().uuid(),
+	code: z.string().min(1),
+	title: z.string().min(1),
+	description: z.string().min(1),
+	xpReward: z.number().int().nonnegative(),
+	category: z.string().min(1),
+	createdAt: z.coerce.date(),
+	trigger: achievementTriggerEnum,
+	meta: achievementMetaSchema.optional()
+});
+
+export type Achievement = z.infer<typeof achievementSchema>;
+
+export type ConditionCheckerContext = Record<string, unknown>;
+
+export type ConditionChecker = (
+	achievement: Achievement,
+	userId: string,
+	context: ConditionCheckerContext
+) => Promise<boolean>;

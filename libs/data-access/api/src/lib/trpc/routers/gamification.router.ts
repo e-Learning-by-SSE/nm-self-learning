@@ -9,6 +9,7 @@ import { authProcedure, t } from "../trpc";
 
 // type GamifyProfile = GamificationProfile & { meta: GamificationProfileMeta };
 
+// TODO - remove this when we have a zod type for the profile
 type GamifyProfile = Omit<GamificationProfile, "meta"> & {
 	meta: GamificationProfileMeta;
 };

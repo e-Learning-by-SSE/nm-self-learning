@@ -11,17 +11,26 @@ model GamificationProfile {
 }
 
 model Achievement {
-  id          String               @id @default(uuid())
-  code        String               @unique
+  id          String     @id @default(uuid())
+  code        String     @unique
   title       String
   description String
   xpReward    Int
   category    String
-  createdAt   DateTime             @default(now())
+  createdAt   DateTime   @default(now())
+  trigger     AchievementTrigger
   meta        Json?
 
   users       EarnedAchievement[]
   gamificationProfiles GamificationProfile[]
+}
+
+enum AchievementTrigger {
+  lesson_completed
+  daily_login
+  session_time
+  streak_check
+  manual
 }
 
 
@@ -29,7 +38,7 @@ model EarnedAchievement {
   id             String              @id @default(uuid())
   userId         String
   achievementId  String
-  obtainedAt     DateTime            @default(now())
+  earnedAt     DateTime            @default(now())
   meta           Json?
 
   gamificationProfile                GamificationProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
