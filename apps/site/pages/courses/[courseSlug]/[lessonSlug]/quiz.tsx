@@ -14,7 +14,14 @@ import {
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
-import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	OnDialogCloseFn,
+	Tab,
+	Tabs,
+	useIsFirstRender
+} from "@self-learning/ui/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -211,10 +218,11 @@ export function QuizHeader({
 		[newEvent, course.courseId]
 	);
 
+	const isFirstRender = useIsFirstRender();
 	useEffect(() => {
-		// TODO diary: check if the useEffect is necessary
+		if (!isFirstRender) return;
 		logQuizStart(lesson, questions[currentIndex]);
-	}, [questions, currentIndex, logQuizStart, lesson]);
+	}, [currentIndex, isFirstRender, lesson, logQuizStart, questions]);
 
 	return (
 		<div className="flex flex-col gap-4">

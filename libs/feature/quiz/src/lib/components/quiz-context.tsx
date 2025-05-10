@@ -36,6 +36,8 @@ export type QuizContextValue = {
 	config: QuizConfig;
 	completionState: QuizCompletionState;
 	usedHints: MdLookupArray;
+	attempts: number;
+	setAttempts: Dispatch<SetStateAction<number>>;
 	setUsedHints: Dispatch<SetStateAction<MdLookupArray>>;
 	goToNextQuestion: () => void;
 	reload: () => void;
@@ -84,6 +86,8 @@ export function QuizProvider({
 		return ans;
 	});
 
+	const [attempts, setAttempts] = useState(0);
+
 	const [evaluations, setEvaluations] = useState(() => {
 		const evals: QuizContextValue["evaluations"] = {};
 
@@ -121,7 +125,9 @@ export function QuizProvider({
 				setUsedHints,
 				goToNextQuestion,
 				completionState,
-				reload
+				reload,
+				attempts,
+				setAttempts
 			}}
 		>
 			{children}

@@ -36,9 +36,17 @@ export function Question({
 	lesson: LessonLayoutProps["lesson"];
 	courseId?: string;
 }) {
-	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } =
-		useQuiz();
-	const { newEvent: writeEvent } = useEventLog();
+	const {
+		goToNextQuestion,
+		answers,
+		setAnswers,
+		evaluations,
+		setEvaluations,
+		config,
+		attempts,
+		setAttempts
+	} = useQuiz();
+	const { newEvent } = useEventLog();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
 	const [currentStep, setCurrentStep] = useState(
@@ -57,7 +65,6 @@ export function Question({
 
 	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
-
 		setAnswers(prev => {
 			const updatedAnswers = {
 				...prev,
@@ -82,21 +89,26 @@ export function Question({
 			...prev,
 			[question.questionId]: e
 		}));
-
-		await writeEvent({
-			type: "LESSON_QUIZ_SUBMISSION",
-			resourceId: lesson.lessonId,
-			courseId: courseId,
-			payload: {
-				questionId: question.questionId,
-				totalQuestionPool: totalSteps,
-				questionPoolIndex: currentStep,
-				type: question.type,
-				hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
-				attempts: 1,
-				solved: e?.isCorrect ?? false
-			}
-		});
+		if (e) {
+			setAttempts(prev => {
+				const newAttempts = prev + 1;
+				void newEvent({
+					type: "LESSON_QUIZ_SUBMISSION",
+					resourceId: lesson.lessonId,
+					courseId: courseId,
+					payload: {
+						questionId: question.questionId,
+						totalQuestionPool: totalSteps,
+						questionPoolIndex: currentStep,
+						type: question.type,
+						hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
+						attempts: newAttempts,
+						solved: e?.isCorrect ?? false
+					}
+				});
+				return newAttempts;
+			});
+		}
 	}
 
 	function nextQuestionStep() {
@@ -105,6 +117,15 @@ export function Question({
 		} else {
 			goToNextQuestion();
 		}
+		void newEvent({
+			type: "LESSON_QUIZ_START",
+			resourceId: lesson.lessonId,
+			courseId: courseId,
+			payload: {
+				questionId: question.questionId,
+				type: question.type
+			}
+		});
 	}
 
 	return (
@@ -178,6 +199,7 @@ function CheckResult({
 		console.debug("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
 		setEvaluation(evaluation);
+		//here?
 	}
 	if (!currentEvaluation) {
 		<span className="text-red-500">No question state found for this question.</span>;
