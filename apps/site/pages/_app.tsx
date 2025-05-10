@@ -61,6 +61,9 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				>
 					<Head>
 						<title>Self-Learning</title>
+						{process.env.NEXT_PUBLIC_FAVICON_URL && (
+							<link rel="icon" href={process.env.NEXT_PUBLIC_FAVICON_URL} />
+						)}
 					</Head>
 					<GlobalFeatures />
 					<Navbar />
