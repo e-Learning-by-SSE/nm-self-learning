@@ -29,7 +29,7 @@ export function CourseInfoForm() {
 		formState: { errors }
 	} = form;
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-	const { t } = useTranslation("common");
+	const { t } = useTranslation("pages-course-info");
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Daten" subtitle="Informationen über diesen Kurs." />

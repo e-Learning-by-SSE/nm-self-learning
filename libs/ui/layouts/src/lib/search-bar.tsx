@@ -10,8 +10,7 @@ import { FaceFrownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { LoadingCircle } from "@self-learning/ui/common";
-import { BookOpenIcon, AcademicCapIcon, UserIcon } from "@heroicons/react/24/outline";
+import { LoadingBox } from "@self-learning/ui/common";
 import { SearchResultInfo } from "./search-section";
 import { useRouter } from "next/router";
 
@@ -71,53 +70,41 @@ function getSearchSections({
 	lessons?: SearchResultInfo[];
 	authors?: SearchResultInfo[];
 }) {
-	const searchSections = [
-		{
-			title: "Kurse",
-			results: courses,
-			baseLink: "courses",
+	const searchSections: {
+		type: string;
+		title: string;
+		slug: string;
+		baselink: string;
+		show: boolean;
+	}[] = [
+		...(courses?.map(({ title, slug }) => ({
+			type: "course",
+			title,
+			slug,
+			baselink: "courses",
 			show: !!courses
-		},
-		{
-			title: "Lerneinheiten",
-			results: lessons,
-			baseLink: "teaching/lessons/edit",
+		})) ?? []),
+		...(lessons?.map(({ title, slug }) => ({
+			type: "lesson",
+			title,
+			slug,
+			baselink: "lessons",
 			show: !!lessons
-		},
-		{
-			title: "Autoren",
-			results: authors,
-			baseLink: "authors",
+		})) ?? []),
+		...(authors?.map(({ title, slug }) => ({
+			type: "author",
+			title,
+			slug,
+			baselink: "authors",
 			show: !!authors
-		}
+		})) ?? [])
 	];
 
-	const allResults = searchSections.flatMap(section =>
-		section.title === "Kurse"
-			? section.results.map(result => ({
-					...result,
-					baseLink: section.baseLink,
-					type: "course"
-				}))
-			: section.title === "Lerneinheiten"
-				? section.results.map(result => ({
-						...result,
-						baseLink: section.baseLink,
-						type: "lesson"
-					}))
-				: section.title === "Autoren"
-					? section.results.map(result => ({
-							...result,
-							baseLink: section.baseLink,
-							type: "author"
-						}))
-					: section.results.map(result => ({ ...result, baseLink: section.baseLink }))
-	);
-	return allResults;
+	return searchSections;
 }
 
 export function SearchBar() {
-	const isUser = useSession().status === "authenticated";
+	const isAuthenticated = useSession().status === "authenticated";
 	const [filterText, setFilterText] = useState("");
 	const titleSearchParams = { title: filterText, page: 1 };
 	const authorSearchParams = { displayName: filterText, page: 1 };
@@ -129,14 +116,8 @@ export function SearchBar() {
 	const handleBlur = () => {
 		setIsFocused(false);
 	};
-	type SearchResultItem = {
-		baseLink: string;
-		title: string;
-		slug: string;
-		type?: "course" | "lesson" | "author";
-	};
 
-	const [selectedResult, setSelectedResult] = useState<SearchResultItem>();
+	const [selectedResult, setSelectedResult] = useState<SearchResultInfo>();
 
 	const { data: lessons, isLoading: lessonsLoading } =
 		trpc.lesson.findMany.useQuery(titleSearchParams);
@@ -148,14 +129,20 @@ export function SearchBar() {
 	const { data: courses, isLoading: coursesLoading } =
 		trpc.course.findMany.useQuery(titleSearchParams);
 
-	const searchSections: SearchResultItem[] = getSearchSections({
+	const searchSections: {
+		type: string;
+		title: string;
+		slug: string;
+		baselink: string;
+		show: boolean;
+	}[] = getSearchSections({
 		courses: courses?.result,
 		lessons: lessons?.result,
 		authors: authorResults
 	});
 	const isLoading = lessonsLoading || authorsLoading || coursesLoading;
 
-	const HandleSelect = (item: { baseLink: string; title: string; slug: string }) => {
+	const handleSelect = (item: { baseLink: string; title: string; slug: string }) => {
 		if (!item) {
 			return;
 		}
@@ -175,7 +162,7 @@ export function SearchBar() {
 	return (
 		<Combobox
 			value={selectedResult}
-			onChange={HandleSelect}
+			onChange={handleSelect}
 			as="div"
 			className="relative w-full max-w-xs hidden lg:block"
 		>
@@ -204,11 +191,11 @@ export function SearchBar() {
 				leaveFrom="transform opacity-100 scale-100"
 				leaveTo="transform opacity-0 scale-95"
 			>
-				<ComboboxOptions className="absolute z-10 mt-2 w-full origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+				<ComboboxOptions className="absolute z-10 mt-2 w-full origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none max-h-[550px] overflow-y-auto">
 					{isLoading ? (
-						<LoadingCircle className="h-5 w-5 mx-auto" />
-					) : searchSections.length > 0 && isUser ? (
-						searchSections.slice(0, 10).map((result, index) => (
+						<LoadingBox height={200} />
+					) : searchSections.length > 0 && isAuthenticated ? (
+						searchSections.map((result, index) => (
 							<ComboboxOption
 								key={index}
 								value={result}
