@@ -9,6 +9,7 @@ export function MarkdownListboxMenu({
 	title,
 	dropdownPosition = "bottom",
 	customFocusStyle,
+	constomButtonStyle,
 	displayValue,
 	options,
 	onChange
@@ -17,6 +18,7 @@ export function MarkdownListboxMenu({
 	dropdownPosition?: "top" | "bottom";
 	onChange: (option: string) => void;
 	customFocusStyle?: (focus: boolean) => string;
+	constomButtonStyle?: string;
 	displayValue: string | null | undefined;
 	options: string[];
 }) {
@@ -28,7 +30,11 @@ export function MarkdownListboxMenu({
 				ref={buttonRef}
 				as="button"
 				title={title}
-				className="items-center justify-between px-3 py-2 border rounded space-x-2 w-full"
+				className={
+					constomButtonStyle
+						? constomButtonStyle
+						: "items-center justify-between px-3 py-2 border rounded space-x-2 w-full"
+				}
 			>
 				{({ open }) => (
 					<div className={"flex flex-row justify-between gap-1"}>
