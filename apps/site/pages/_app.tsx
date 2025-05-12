@@ -45,6 +45,8 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		? (Component as any).getLayout(Component, pageProps)
 		: null;
 
+	const basePath = useRouter().basePath;
+
 	return (
 		<>
 			{process.env.NODE_ENV === "development" && (
@@ -55,14 +57,29 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
 				trackLocalhost={process.env.NODE_ENV === "development"}
 			>
-				<SessionProvider
-					session={pageProps.session}
-					basePath={useRouter().basePath + "/api/auth"}
-				>
+				<SessionProvider session={pageProps.session} basePath={basePath + "/api/auth"}>
 					<Head>
 						<title>Self-Learning</title>
-						{process.env.NEXT_PUBLIC_FAVICON_URL && (
-							<link rel="icon" href={process.env.NEXT_PUBLIC_FAVICON_URL} />
+						{process.env.NEXT_PUBLIC_FAVICON === "true" && (
+							<>
+								{/* Favicon setup based on recommendation of:
+								 *  https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
+								 */}
+								<link
+									rel="icon"
+									href={basePath + "/selflearn-favicon.ico"}
+									sizes="32x32"
+								/>
+								<link
+									rel="icon"
+									href={basePath + "/selflearn-icon.svg"}
+									type="image/svg+xml"
+								/>
+								<link
+									rel="apple-touch-icon"
+									href={basePath + "/selflearn-apple-touch-icon.png"}
+								/>
+							</>
 						)}
 					</Head>
 					<GlobalFeatures />
