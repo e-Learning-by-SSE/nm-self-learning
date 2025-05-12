@@ -14,15 +14,19 @@ export async function onLessonCreatorSubmit(
 	onClose: () => void,
 	createLessonAsync: (lesson: LessonFormModel) => Promise<{
 		title: string;
+		lessonId: string;
+		slug: string;
 	}>,
 	lesson?: LessonFormModel
 ) {
 	try {
+		let result = null;
 		if (lesson) {
-			const result = await createLessonAsync(lesson);
+			result = await createLessonAsync(lesson);
 			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
 		}
 		onClose();
+		return result;
 	} catch (error) {
 		console.error(error);
 		showToast({
@@ -30,6 +34,8 @@ export async function onLessonCreatorSubmit(
 			title: "Fehler",
 			subtitle: "Lerneinheit konnte nicht erstellt werden."
 		});
+
+		return null;
 	}
 }
 
