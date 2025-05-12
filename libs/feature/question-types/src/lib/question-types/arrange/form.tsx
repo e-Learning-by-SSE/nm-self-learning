@@ -1,4 +1,8 @@
-import { LabeledField, MarkdownField, MarkdownViewer } from "@self-learning/ui/forms";
+import {
+	LabeledField,
+	MarkdownEditorDialog,
+	MarkdownViewer
+} from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
@@ -25,6 +29,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue} = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
 	const items = watch(`quiz.questions.${index}.items`);
 	const [addCategoryDialog, setAddCategoryDialog] = useState(false);
+	const [editCategoryDialog, setEditCategoryDialog] = useState<string | null>(null);
 	const [editItemDialog, setEditItemDialog] = useState<{
 		item?: ArrangeItem;
 		containerId: string;
@@ -77,6 +82,21 @@ export default function ArrangeForm({ index }: { index: number }) {
 		setValue(`quiz.questions.${index}.items`, value);
 	};
 
+	const onEditContainer: OnDialogCloseFn<string> = title => {
+		setEditCategoryDialog(null);
+		const currentContainerId = editCategoryDialog;
+		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId) return;
+		if (items[title]) {
+			showToast({ type: "warning", title: "Kategorie existiert bereits", subtitle: title });
+			return;
+		}
+		const updatedItems = { ...items };
+		updatedItems[title] = updatedItems[currentContainerId];
+		delete updatedItems[currentContainerId];
+
+		setValue(`quiz.questions.${index}.items`, updatedItems);
+	};
+
 	function onDeleteItem(containerId: string, itemId: string): void {
 		if (window.confirm("Element wirklich entfernen?")) {
 			setValue(`quiz.questions.${index}.items`, {
@@ -117,8 +137,9 @@ export default function ArrangeForm({ index }: { index: number }) {
 					label="Antworten dem Nutzer zufällig anordnen"
 				/>
 			</div>
-			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
-			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
+				{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
+				{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
+				{editCategoryDialog && <EditCategoryDialog onClose={onEditContainer} category= { editCategoryDialog } />}
 			<DragDropContext onDragEnd={onDragEnd}>
 				<div className="grid w-full gap-4 sm:grid-cols-1 md:grid-cols-2">
 					{Object.entries(items).map(([containerId, items]) => (
@@ -129,6 +150,10 @@ export default function ArrangeForm({ index }: { index: number }) {
 									<span className="flex items-center justify-between gap-4 font-semibold">
 										<span>{containerId}</span>
 										<div className="flex gap-2">
+											<PencilButton
+												onClick={() => setEditCategoryDialog(containerId)}
+												title={"Kategorie editieren"}
+											/>
 											<PlusButton
 												onAdd={() => setEditItemDialog({ containerId })}
 												title={"Element hinzufügen"}
@@ -253,6 +278,45 @@ function AddCategoryDialog({ onClose }: { onClose: OnDialogCloseFn<string> }) {
 	);
 }
 
+function EditCategoryDialog({
+	onClose,
+	category
+}: {
+	onClose: OnDialogCloseFn<string>;
+	category: string|undefined;
+}) {
+	const [title, setTitle] = useState(category);
+	return (
+		<Dialog title="Kategorie bearbeiten" onClose={onClose}>
+			<LabeledField label="Titel">
+				<input
+					type="text"
+					className="textfield"
+					value={title}
+					onChange={e => setTitle(e.target.value)}
+					onKeyDown={e => {
+						if (e.key === "Enter") {
+							onClose(title?.trim());
+							e.preventDefault();
+						}
+					}}
+				/>
+			</LabeledField>
+
+			<DialogActions onClose={onClose}>
+				<button
+					type="button"
+					className="btn-primary"
+					onClick={() => onClose(title?.trim())}
+					disabled={title?.length === 0}
+				>
+					Übernehmen
+				</button>
+			</DialogActions>
+		</Dialog>
+	);
+}
+
 function EditItemDialog({
 	item,
 	onClose
@@ -260,26 +324,22 @@ function EditItemDialog({
 	item?: ArrangeItem;
 	onClose: OnDialogCloseFn<ArrangeItem>;
 }) {
-	const [content, setContent] = useState(item?.content ?? "");
-
+	const [isEditorOpen, setIsEditorOpen] = useState(true);
+	
 	return (
-		<Dialog className="w-[80vw]" title={item ? "Bearbeiten" : "Hinzufügen"} onClose={onClose}>
-			<MarkdownField content={content} setValue={value => setContent(value ?? "")} />
-
-			<DialogActions onClose={onClose}>
-				<button
-					type="button"
-					className="btn-primary"
-					onClick={() =>
-						onClose({
-							id: item?.id ?? getRandomId(),
-							content
-						})
+		isEditorOpen && (
+			<MarkdownEditorDialog
+				title="Markdown bearbeiten"
+				initialValue={item?.content ?? ""}
+				onClose={newValue => {
+					setIsEditorOpen(false);
+					if (newValue !== undefined) {
+						onClose({ id: item?.id ?? getRandomId(), content: newValue });
+					} else {
+						onClose(undefined);
 					}
-				>
-					{item ? "Übernehmen" : "Hinzufügen"}
-				</button>
-			</DialogActions>
-		</Dialog>
+				}}
+			/>
+		)
 	);
 }
