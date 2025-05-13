@@ -45,19 +45,15 @@ export function GoalStatusCheckbox({
 
 	const checked = goal.status === "COMPLETED" || goal.status === "ACTIVE";
 	return (
-		<div className="relative flex flex-col items-center">
-			<div className="relative inline-block">
-				<div className="flex items-center me-4">
-					<input
-						type="checkbox"
-						checked={checked}
-						disabled={disabled}
-						className={`w-4 h-4 bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${statusColorSettings}`}
-						onChange={() => onChange?.(goal)}
-						data-testid={`goal_status:${goal.id}`}
-					/>
-				</div>
-			</div>
+		<div className="flex p-1">
+			<input
+				type="checkbox"
+				checked={checked}
+				disabled={disabled}
+				className={`flex flex-grow aspect-square bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${statusColorSettings}`}
+				onChange={() => onChange?.(goal)}
+				data-testid={`goal_status:${goal.id}`}
+			/>
 		</div>
 	);
 }

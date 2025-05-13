@@ -72,8 +72,8 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 	};
 
 	return (
-		<div className="flex flex-row justify-between items-center space-x-4">
-			<Tooltip placement={"bottom"} content="Zum ersten Eintrag springen">
+		<div className="flex flex-row flex-grow justify-between items-stretch space-x-4">
+			<Tooltip className="flex" placement={"bottom"} content="Zum ersten Eintrag springen">
 				<button
 					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={jumpToFirstEntry}
@@ -82,7 +82,11 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 					<ChevronDoubleLeftIcon className="h-10 w-10 xl:h-4 xl:w-4" />
 				</button>
 			</Tooltip>
-			<Tooltip placement={"bottom"} content="Zum vorherigen Eintrag springen">
+			<Tooltip
+				className="flex"
+				placement={"bottom"}
+				content="Zum vorherigen Eintrag springen"
+			>
 				<button
 					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={updateToPreviousId}
@@ -92,18 +96,18 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 					<span className="hidden sm:inline">Vorheriger Eintrag</span>
 				</button>
 			</Tooltip>
-			<form className="flex items-center">
+			<form className="flex items-stretch">
 				<input
 					type="number"
 					value={pageInput}
 					onInput={handlePageInputChange}
-					className="w-12 sm:w-16 text-center border rounded"
+					className="flex w-12 sm:w-16 h-full text-center border rounded"
 					min={1}
 					max={pages.length}
 				/>
-				<span className="ml-2">/ {pages.length}</span>
+				<span className="flex items-center ml-2 flex-shrink-0">/ {pages.length}</span>
 			</form>
-			<Tooltip placement={"bottom"} content="Zum nächsten Eintrag springen">
+			<Tooltip className="flex" placement={"bottom"} content="Zum nächsten Eintrag springen">
 				<button
 					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={updateToNextId}
@@ -113,7 +117,7 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 					<ChevronRightIcon className="h-10 w-10 xl:h-4 xl:w-4" />
 				</button>
 			</Tooltip>
-			<Tooltip placement={"bottom"} content="Zum letzten Eintrag springen">
+			<Tooltip className="flex" placement={"bottom"} content="Zum letzten Eintrag springen">
 				<button
 					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={jumpToLastEntry}

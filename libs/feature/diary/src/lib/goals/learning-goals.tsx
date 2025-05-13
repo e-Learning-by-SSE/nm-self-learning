@@ -15,8 +15,8 @@ import {
 	Tab,
 	Tabs
 } from "@self-learning/ui/common";
-import { IdSet, isTruthy } from "@self-learning/util/common";
-import { useEffect, useState } from "react";
+import { IdSet } from "@self-learning/util/common";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { convertLearningGoal, GoalFormModel, StatusUpdateCallback } from "../util/types";
 import { LearningGoalProvider, useLearningGoalContext } from "./goal-context";
@@ -92,11 +92,9 @@ export function LearningGoals({
 
 	return (
 		<>
-			<div className="flex items-center justify-between gap-4">
-				<SectionHeader title="Meine Lernziele" />
-				<button className="btn-primary -mt-8" onClick={() => setOpenAddDialog(true)}>
-					<PlusIcon className="icon h-5" />
-					<span>Lernziel hinzufügen</span>
+			<div className="flex items-center justify-end gap-4">
+				<button className="btn-primary" onClick={() => setOpenAddDialog(true)}>
+					<span>Lernziel erstellen</span>
 				</button>
 			</div>
 
@@ -169,7 +167,7 @@ export function LearningGoalsDialog({
 	const { userGoals, isLoading } = useLearningGoals();
 	return (
 		<Dialog title={description} onClose={onClose}>
-			<div className="overflow-y-auto mb-2">
+			<div className="overflow-y-auto mb-2 pr-2" style={{ minWidth: "30vw" }}>
 				{isLoading && <LoadingBox />}
 				{userGoals && <LearningGoals goals={userGoals} onStatusUpdate={onStatusUpdate} />}
 			</div>
@@ -283,12 +281,12 @@ function GoalRow({
 	goal: GoalFormModel;
 	onClick: (editedGoal: GoalFormModel) => void;
 }>) {
-	const [showTooltip, setShowTooltip] = useState(false);
+	const [statusUpdateTriggered, setStatusUpdateTriggered] = useState(false); // NEW
 	const { t } = useTranslation("common");
 	const { userGoals } = useLearningGoalContext();
 
 	useEffect(() => {
-		if (goal.status !== "COMPLETED" && goal.children.length > 0) {
+		if (statusUpdateTriggered && goal.status !== "COMPLETED" && goal.children.length > 0) {
 			// Check if any child goal is still "INACTIVE" or "ACTIVE"
 			const hasActiveOrInactiveSubGoals = goal.children.some(childId => {
 				const childGoal = userGoals.get(childId); // Use the goals map to find the child goal
@@ -296,64 +294,114 @@ function GoalRow({
 			});
 
 			if (!hasActiveOrInactiveSubGoals) {
-				setShowTooltip(true);
-				const timer = setTimeout(() => {
-					setShowTooltip(false);
-				}, 5000);
-
-				// Cleanup the timer on unmount
-				return () => clearTimeout(timer);
-			} else {
-				setShowTooltip(false);
+				showToast({
+					type: "info",
+					title: `Lernziel "${goal.description}" kann abgeschlossen werden.`,
+					subtitle: "Alle Feinziele erreicht."
+				});
+				setStatusUpdateTriggered(false);
 			}
 		}
-	}, [goal, userGoals]);
+	}, [goal, userGoals, statusUpdateTriggered]);
 
 	const { onStatusUpdate, onCreateGoal } = useLearningGoalContext();
+
+	const handleStatusUpdate = useCallback(
+		(updatedGoal: GoalFormModel) => {
+			setStatusUpdateTriggered(true);
+			onStatusUpdate?.(updatedGoal);
+		},
+		[onStatusUpdate, setStatusUpdateTriggered]
+	);
+
+	const { mutateAsync: editGoal } = trpc.learningGoal.editGoal.useMutation();
+	const moveUp = (order: number) => {
+		if ((order ?? 0) > 0) {
+			const goal1 = userGoals.get(goal.children[order] ?? "");
+			const goal2 = userGoals.get(goal.children[order - 1] ?? "");
+			moveSubGoal(goal1, goal2);
+		}
+	};
+
+	const moveDown = (order: number) => {
+		if ((order ?? Number.MAX_SAFE_INTEGER) < goal.children.length - 1) {
+			const goal1 = userGoals.get(goal.children[order] ?? "");
+			const goal2 = userGoals.get(goal.children[order + 1] ?? "");
+			moveSubGoal(goal1, goal2);
+		}
+	};
+
+	async function moveSubGoal(target?: GoalFormModel, toMove?: GoalFormModel) {
+		if (!target || !toMove) {
+			console.log("Warning: trying to swap nonexisting goals!");
+			return;
+		}
+		if (toMove?.order ?? 0 < target.order ?? 0) {
+			// TODO what if one of these fails?
+			await editGoal({ order: toMove.order, id: target.id });
+			await editGoal({ order: target.order, id: toMove.id });
+		} else {
+			await editGoal({ order: toMove.order, id: target.id });
+			await editGoal({ order: target.order, id: toMove.id });
+		}
+	}
 
 	return (
 		<section>
 			<li className="flex flex-col gap-2 rounded-lg bg-gray-100 p-4">
-				<div className="flex w-full flex-row justify-between">
-					<div className="group flex flex-row">
-						<div className="mb-2 text-xl font-semibold">{goal.description}</div>
-						{goal.status !== "COMPLETED" && editable && (
-							<div className="invisible flex flex-row group-hover:visible">
-								<PlusButton
-									title={t("create")}
-									onClick={() => onCreateGoal?.(goal)}
-									size="small"
-								/>
+				<div className="group flex flex-row flex-grow justify-between mb-2">
+					<div className="flex">
+						<div className="relative mr-4 flex">
+							<GoalStatusCheckbox
+								goal={goal}
+								editable={editable}
+								onChange={onStatusUpdate}
+							/>
+						</div>
+						<div className="text-xl font-semibold w justify-end">
+							{goal.description}
+						</div>
+					</div>
+					{goal.status !== "COMPLETED" && editable && (
+						<div className="flex">
+							<div className="flex flex-row">
 								<QuickEditButton onClick={() => onClick(goal)} />
 								<GoalDeleteOption
 									goalId={goal.id}
 									className="px-2 hover:text-secondary"
 								/>
 							</div>
-						)}
-					</div>
-					<div className="relative mr-4 flex justify-end">
-						<GoalStatusCheckbox
-							goal={goal}
-							editable={editable}
-							onChange={onStatusUpdate}
-						/>
-						{showTooltip && (
-							<div className="absolute top-1/10 min-w-[262px] right-7 -top-1 -translate-y-2/3 px-3 py-1 text-sm text-white bg-gray-700 rounded shadow">
-								Lernziel kann abgeschlossen werden.
-								<br />
-								Alle Feinziele erreicht.
-							</div>
-						)}
-					</div>
+							<PlusButton
+								title={t("create")}
+								onClick={() => onCreateGoal?.(goal)}
+								size="small"
+								additionalClassNames="w-14 text-center flex justify-center"
+							/>
+						</div>
+					)}
 				</div>
 				<ul className="flex flex-col gap-1">
-					{goal.children.map(childId => (
+					{goal.children.map((childId, index) => (
 						<SubGoalRow
 							onClick={onClick}
+							onStatusChange={handleStatusUpdate}
 							key={childId}
 							editable={editable}
 							goalId={childId}
+							moveUp={
+								index !== 0
+									? () => {
+											moveUp(index);
+										}
+									: undefined
+							}
+							moveDown={
+								index !== goal.children.length - 1
+									? () => {
+											moveDown(index);
+										}
+									: undefined
+							}
 						/>
 					))}
 				</ul>
@@ -373,101 +421,68 @@ function GoalRow({
 function SubGoalRow({
 	editable,
 	goalId,
-	onClick
+	moveUp,
+	moveDown,
+	onClick,
+	onStatusChange
 }: Readonly<{
 	editable: boolean;
 	goalId: string;
+	moveUp?: () => void;
+	moveDown?: () => void;
 	onClick: (editedGoal: GoalFormModel) => void;
+	onStatusChange?: (goalToChange: GoalFormModel) => void;
 }>) {
-	const { mutateAsync: editGoal } = trpc.learningGoal.editGoal.useMutation();
-	const { userGoals, onStatusUpdate } = useLearningGoalContext();
+	const { userGoals } = useLearningGoalContext();
 	const goal = userGoals.get(goalId);
 	if (!goal) {
 		console.error("Fatal error, goal not found in client memory");
 		return null;
 	}
 
-	const goals = userGoals.entries();
-
-	const parent = userGoals.get(goal.parentId ?? "");
-	const siblings = parent?.children.map(childId => goals.find(goal => goal.id === childId));
-	const sortedSiblings =
-		siblings?.filter(isTruthy).sort((a, b) => (a.order > b.order ? -1 : 1)) ?? [];
-	const targetSiblingIndex = sortedSiblings?.findIndex(sib => sib.id === goal.id);
-
-	const isMinOrder = targetSiblingIndex === 0;
-	const isMaxOrder = targetSiblingIndex === sortedSiblings.length - 1;
-
-	const moveUp = () => {
-		if ((targetSiblingIndex ?? 0) > 0) {
-			moveSubGoal(goal, sortedSiblings[targetSiblingIndex - 1]);
-		}
-	};
-
-	const moveDown = () => {
-		if ((targetSiblingIndex ?? Number.MAX_SAFE_INTEGER) < sortedSiblings.length - 1) {
-			moveSubGoal(goal, sortedSiblings[targetSiblingIndex + 1]);
-		}
-	};
-
-	async function moveSubGoal(target: GoalFormModel, toMove: GoalFormModel) {
-		if (toMove?.order ?? 0 < target.order ?? 0) {
-			await editGoal({ order: toMove.order, id: target.id });
-			await editGoal({ order: target.order, id: toMove.id });
-		} else {
-			await editGoal({ order: toMove.order, id: target.id });
-			await editGoal({ order: target.order, id: toMove.id });
-		}
-	}
-
 	return (
 		<span className="flex w-full justify-between gap-4 rounded-lg bg-white px-4 py-2">
-			<div className="flex w-full gap-8">
-				<div className="flex w-full flex-row justify-between">
-					<div className="group flex flex-row">
-						<div className="flex gap-4">
-							<button
-								type="button"
-								title="Nach oben"
-								className="rounded p-1 hover:bg-gray-200"
-								onClick={moveDown}
-								hidden={isMaxOrder || !editable}
-							>
-								<ArrowUpIcon className="h-3" />
-							</button>
-							{(isMaxOrder || !editable) && <div className="p-2.5" />}
-							<button
-								type="button"
-								title="Nach unten"
-								className="rounded p-1 hover:bg-gray-200"
-								onClick={moveUp}
-								hidden={isMinOrder || !editable}
-							>
-								<ArrowDownIcon className="h-3" />
-							</button>
-							{(isMinOrder || !editable) && <div className="p-2.5" />}
-						</div>
-						<div className="ml-2 flex flex-row">
-							<span>{goal.description}</span>
-
-							{editable && (
-								<div className="invisible group-hover:visible">
-									<QuickEditButton onClick={() => onClick(goal)} />
-									<GoalDeleteOption
-										goalId={goal.id}
-										className="px-2 hover:text-secondary"
-									/>
-								</div>
-							)}
-						</div>
-					</div>
-					<div className="flex justify-end">
+			<div className="group flex flex-row flex-grow justify-between">
+				<div className="flex">
+					<div className="flex mr-2">
 						<GoalStatusCheckbox
 							goal={goal}
 							editable={editable}
-							onChange={onStatusUpdate}
+							onChange={onStatusChange}
 						/>
 					</div>
+					<span>{goal.description}</span>
+				</div>
+				<div className="flex">
+					{editable && (
+						<div className="flex">
+							<QuickEditButton onClick={() => onClick(goal)} />
+							<GoalDeleteOption
+								goalId={goal.id}
+								className="px-2 hover:text-secondary"
+							/>
+						</div>
+					)}
+					<button
+						type="button"
+						title="Priorität erhöhen"
+						className="rounded p-1 hover:bg-gray-200"
+						onClick={moveUp}
+						hidden={!moveUp || !editable}
+					>
+						<ArrowUpIcon className="h-3" />
+					</button>
+					{(!moveUp || !editable) && <div className="p-2.5" />}
+					<button
+						type="button"
+						title="Priorität senken"
+						className="rounded p-1 hover:bg-gray-200"
+						onClick={moveDown}
+						hidden={!moveDown || !editable}
+					>
+						<ArrowDownIcon className="h-3" />
+					</button>
+					{(!moveDown || !editable) && <div className="p-2.5" />}
 				</div>
 			</div>
 		</span>

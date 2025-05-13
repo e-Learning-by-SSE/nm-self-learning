@@ -23,11 +23,13 @@ export function QuestionMarkTooltip({
 export function Tooltip({
 	children,
 	content,
-	placement = "top"
+	placement = "top",
+	className = ""
 }: {
 	children: React.ReactNode;
 	content: string;
 	placement?: "top" | "bottom" | "left" | "right";
+	className?: string;
 }) {
 	const [showTooltip, setShowTooltip] = useState(false);
 	const referenceElement = useRef(null);
@@ -42,7 +44,7 @@ export function Tooltip({
 				ref={referenceElement}
 				onMouseEnter={() => setShowTooltip(true)}
 				onMouseLeave={() => setShowTooltip(false)}
-				className="cursor-pointer"
+				className={`cursor-pointer ${className}`}
 			>
 				{children}
 			</div>

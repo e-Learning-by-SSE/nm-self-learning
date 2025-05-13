@@ -83,11 +83,11 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 
 	return (
 		<aside
-			className="playlist-scroll sticky top-[61px]
-        w-full overflow-auto border-t border-r-gray-200
-        pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
+			className="sticky py-4 flex flex-col overflow-hidden top-[61px]
+        w-full border-t border-r-gray-200
+        xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
 		>
-			<h2 className="text-2xl font-bold mt-4 mb-2">Lerntagebuch Seiten</h2>
+			<h2 className="text-2xl font-bold mb-2">Lerntagebuch Seiten</h2>
 			<div className="max-h-full overflow-y-auto">
 				{Object.entries(categorizedPages).map(([label, pages]) => {
 					if (pages.length === 0) return null; // Skip empty sections
