@@ -26,7 +26,7 @@ export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 
 	// Don't show delete button -> Empty option
 	if (isLoading) {
-		return <></>;
+		return null;
 	}
 
 	return (
