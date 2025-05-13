@@ -3,7 +3,7 @@ import { database } from "@self-learning/database";
 import { createLessonMeta, lessonSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
-import { authorProcedure, authProcedure, t } from "../trpc";
+import { authorProcedure, authProcedure, lessonAuthorProcedure, t } from "../trpc";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -145,13 +145,14 @@ export const lessonRouter = t.router({
 							`;
 			return courses as Course[];
 		}),
-	deleteLesson: authorProcedure
-		.input(z.object({ id: z.string() }))
+	deleteLesson: lessonAuthorProcedure
+		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
+			console.log(input.lessonId, ctx.user.name);
+
 			return database.lesson.delete({
 				where: {
-					lessonId: input.id,
-					authors: { some: { username: ctx.user.name } }
+					lessonId: input.lessonId
 				}
 			});
 		})

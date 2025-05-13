@@ -12,7 +12,7 @@ export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 	const [showConfirmation, setShowConfirmation] = useState(false);
 
 	const handleDelete = async () => {
-		await deleteLesson({ id: lessonId });
+		await deleteLesson({ lessonId: lessonId });
 	};
 
 	const handleConfirm = async () => {
