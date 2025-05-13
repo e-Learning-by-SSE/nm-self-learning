@@ -198,6 +198,9 @@ export function DiaryContentForm({
 
 	return (
 		<div className="space-y-4">
+			<div className="-mb-4">
+				<Divider />
+			</div>
 			<div className="flex justify-center">
 				<DiaryLearnedContent page={pageDetails} endDate={endDate} />
 			</div>

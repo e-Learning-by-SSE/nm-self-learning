@@ -67,7 +67,6 @@ export function DiarySidebarMobile({
 	const currentPageIndex = pages.findIndex(page => page.id === selectedPageId);
 
 	return (
-		<>
 			<MobileSidebarNavigation
 				next={updateToNextId}
 				prev={updateToPreviousId}
@@ -75,7 +74,6 @@ export function DiarySidebarMobile({
 				hasPrev={currentPageIndex > 0}
 				content={(onSelect) => <SidebarContentMobile pages={pages} selectedPageId={selectedPageId} onSelect={onSelect} />}
 			/>
-		</>
 	);
 }
 
