@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { DropwdownTransition } from "@self-learning/ui/common";
+import { MinorScaleFadeIn } from "@self-learning/ui/common";
 
 export function DropdownMenu({
 	title,
@@ -33,7 +33,7 @@ export function DropdownMenu({
 					<div ref={buttonRef}>{button}</div>
 				</MenuButton>
 
-				<DropwdownTransition>
+				<MinorScaleFadeIn>
 					{menuWidth && (
 						<MenuItems
 							anchor={dropdownPosition}
@@ -61,7 +61,7 @@ export function DropdownMenu({
 							))}
 						</MenuItems>
 					)}
-				</DropwdownTransition>
+				</MinorScaleFadeIn>
 			</>
 		</Menu>
 	);

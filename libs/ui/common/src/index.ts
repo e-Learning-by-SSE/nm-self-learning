@@ -35,4 +35,4 @@ export * from "./lib/star-rating/star-rating";
 export * from "./lib/use-first-render";
 export * from "./lib/dropdown-menu/dropdown-menu";
 export * from "./lib/dropdown-menu/combobox-menu";
-export * from "./lib/transition/dropwdown-transition";
+export * from "./lib/transition/minor-scale-fade-in";

@@ -3,7 +3,7 @@ import React, { useRef } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "./markdown";
-import { DropwdownTransition } from "@self-learning/ui/common";
+import { MinorScaleFadeIn } from "@self-learning/ui/common";
 
 export function MarkdownListboxMenu({
 	title,
@@ -56,7 +56,7 @@ export function MarkdownListboxMenu({
 				)}
 			</ListboxButton>
 
-			<DropwdownTransition>
+			<MinorScaleFadeIn>
 				<ListboxOptions
 					anchor={dropdownPosition}
 					className={`z-10 w-max min-w-[8rem] max-w-xs ${
@@ -108,7 +108,7 @@ export function MarkdownListboxMenu({
 						</ListboxOption>
 					))}
 				</ListboxOptions>
-			</DropwdownTransition>
+			</MinorScaleFadeIn>
 		</Listbox>
 	);
 }

@@ -7,7 +7,7 @@ import {
 } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { DropwdownTransition } from "@self-learning/ui/common";
+import { MinorScaleFadeIn } from "../transition/minor-scale-fade-in";
 
 export function ComboboxMenu({
 	title,
@@ -60,7 +60,7 @@ export function ComboboxMenu({
 			</div>
 
 			{menuWidth && filteredOptions.length > 0 && (
-				<DropwdownTransition>
+				<MinorScaleFadeIn>
 					<ComboboxOptions
 						anchor={dropdownPosition}
 						style={{ minWidth: menuWidth }}
@@ -86,7 +86,7 @@ export function ComboboxMenu({
 							</ComboboxOption>
 						))}
 					</ComboboxOptions>
-				</DropwdownTransition>
+				</MinorScaleFadeIn>
 			)}
 		</Combobox>
 	);

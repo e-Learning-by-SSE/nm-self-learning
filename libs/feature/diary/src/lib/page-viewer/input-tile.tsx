@@ -9,7 +9,7 @@ import { IdSet } from "@self-learning/util/common";
 import { StatusUpdateCallback } from "../util/types";
 import { GoalStatus } from "../goals/status";
 import { LearningGoalEditorDialog } from "../goals/goal-editor";
-import { Location } from "@self-learning/diary";
+import { Location } from "../access-learning-diary";
 
 export function Tile({
 	onClick,

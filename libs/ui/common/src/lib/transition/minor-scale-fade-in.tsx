@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { Transition } from "@headlessui/react";
 
-export function DropwdownTransition({ children }: { children: React.ReactNode }) {
+export function MinorScaleFadeIn({ children }: { children: React.ReactNode }) {
 	return (
 		<Transition
 			as={Fragment}
