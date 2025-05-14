@@ -60,27 +60,31 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				<SessionProvider session={pageProps.session} basePath={basePath + "/api/auth"}>
 					<Head>
 						<title>Self-Learning</title>
-						{process.env.NEXT_PUBLIC_FAVICON === "true" && (
-							<>
-								{/* Favicon setup based on recommendation of:
-								 *  https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
-								 */}
-								<link
-									rel="icon"
-									href={basePath + "/selflearn-favicon.ico"}
-									sizes="32x32"
-								/>
-								<link
-									rel="icon"
-									href={basePath + "/selflearn-icon.svg"}
-									type="image/svg+xml"
-								/>
-								<link
-									rel="apple-touch-icon"
-									href={basePath + "/selflearn-apple-touch-icon.png"}
-								/>
-							</>
-						)}
+						{/* Favicon setup based on recommendation of:
+						 *  - https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
+						 *  - https://favicon.io/
+						 */}
+						<link
+							rel="apple-touch-icon"
+							sizes="180x180"
+							href={basePath + "apple-touch-icon.png"}
+						/>
+						<link rel="icon" sizes="48x48" href={basePath + "favicon.ico"} />
+						<link rel="icon" type="image/svg+xml" href={basePath + "icon.svg"} />
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="32x32"
+							href={basePath + "favicon-32x32.png"}
+						/>
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="16x16"
+							href={basePath + "favicon-16x16.png"}
+						/>
+						{/* Only required for /pages, /app will handle this automatically */}
+						<link rel="manifest" href={basePath + "/api/manifest"} />
 					</Head>
 					<GlobalFeatures />
 					<Navbar />
