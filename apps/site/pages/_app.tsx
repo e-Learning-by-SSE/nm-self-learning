@@ -12,7 +12,6 @@ import { useRouter } from "next/router";
 import superjson from "superjson";
 import { GlobalFeatures } from "../../_features";
 import "./styles.css";
-import '../next-i18next.config';
 import { appWithTranslation } from "next-i18next";
 
 export default withTRPC<AppRouter>({
