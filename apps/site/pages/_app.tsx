@@ -45,7 +45,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		? (Component as any).getLayout(Component, pageProps)
 		: null;
 
-	const basePath = useRouter().basePath;
+	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 	return (
 		<>
