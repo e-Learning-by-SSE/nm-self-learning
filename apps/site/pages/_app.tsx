@@ -67,15 +67,15 @@ function CustomApp({ Component, pageProps }: AppProps) {
 						<link
 							rel="apple-touch-icon"
 							sizes="180x180"
-							href={basePath + "apple-touch-icon.png"}
+							href={basePath + "/apple-touch-icon.png"}
 						/>
-						<link rel="icon" sizes="48x48" href={basePath + "favicon.ico"} />
-						<link rel="icon" type="image/svg+xml" href={basePath + "icon.svg"} />
+						<link rel="icon" sizes="48x48" href={basePath + "/favicon.ico"} />
+						<link rel="icon" type="image/svg+xml" href={basePath + "/icon.svg"} />
 						<link
 							rel="icon"
 							type="image/png"
 							sizes="32x32"
-							href={basePath + "favicon-32x32.png"}
+							href={basePath + "/favicon-32x32.png"}
 						/>
 						<link
 							rel="icon"
