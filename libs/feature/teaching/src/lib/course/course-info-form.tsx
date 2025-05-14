@@ -39,7 +39,7 @@ export function CourseInfoForm() {
 						{...register("title")}
 						type="text"
 						className="textfield"
-						placeholder="Die Neue Lerneinheit"
+						placeholder="Der neue Kurs"
 						onBlur={slugifyIfEmpty}
 					/>
 				</LabeledField>
@@ -48,7 +48,7 @@ export function CourseInfoForm() {
 						input={
 							<input
 								className="textfield"
-								placeholder="die-neue-lerneinheit"
+								placeholder="der-neue-kurs"
 								type={"text"}
 								{...register("slug")}
 							/>

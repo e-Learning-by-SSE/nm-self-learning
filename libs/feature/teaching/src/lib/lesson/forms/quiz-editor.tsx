@@ -110,16 +110,16 @@ export function QuizEditor() {
 					erfolgreich abzuschließen."
 				button={
 					<DropdownButton
-						title="Aufgabentyp hinzufügen"
+						title="Aufgabe erstellen"
 						backgroundColor={"btn-primary"}
 						hover={"hover:bg-emerald-700"}
 						chevronColor={"text-white"}
 					>
-						<span className={"text-white"}>Aufgabe Hinzufügen</span>
+						<span className={"text-white"}>Aufgabe erstellen</span>
 						<div className={"bg-white"}>
 							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
 								<Button
-									title={"Aufgabe Hinzufügen"}
+									title={"Aufgabe erstellen"}
 									onClick={() => appendQuestion(type as QuestionType["type"])}
 									key={type as QuestionType["type"]}
 									className={
