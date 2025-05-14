@@ -33,6 +33,11 @@ jest.mock("@self-learning/api-client", () => ({
 		}
 	}
 }));
+jest.mock("react-i18next", () => ({
+	useTranslation: () => ({
+		t: (key: string) => key === "search" ? "Suchen..." : key
+	})
+}));
 
 describe("SearchBar", () => {
 	beforeEach(() => {
