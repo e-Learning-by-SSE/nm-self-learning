@@ -40,7 +40,7 @@ export function CourseInfoForm() {
 						{...register("title")}
 						type="text"
 						className="textfield"
-						placeholder={t("courseCreationTitle")}
+						placeholder={t("The new course")}
 						onBlur={slugifyIfEmpty}
 					/>
 				</LabeledField>
@@ -49,7 +49,7 @@ export function CourseInfoForm() {
 						input={
 							<input
 								className="textfield"
-								placeholder={t("courseCreationSlug")}
+								placeholder={t("the-new-course")}
 								type={"text"}
 								{...register("slug")}
 							/>

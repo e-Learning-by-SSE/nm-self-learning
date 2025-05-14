@@ -13,6 +13,7 @@ import { useState } from "react";
 import { LoadingBox } from "@self-learning/ui/common";
 import { SearchResultInfo } from "./search-section";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 export function SearchInput({
 	searchQuery,
@@ -69,14 +70,14 @@ function getSearchSections({
 	courses?: SearchResultInfo[];
 	lessons?: SearchResultInfo[];
 	authors?: SearchResultInfo[];
-}) {
-	const searchSections: {
+}) : {
 		type: string;
 		title: string;
 		slug: string;
 		baselink: string;
 		show: boolean;
-	}[] = [
+	}[]{
+	const searchSections = [
 		...(courses?.map(({ title, slug }) => ({
 			type: "course",
 			title,
@@ -142,6 +143,8 @@ export function SearchBar() {
 	});
 	const isLoading = lessonsLoading || authorsLoading || coursesLoading;
 
+	const { t } = useTranslation("common");
+
 	const handleSelect = (item: { baseLink: string; title: string; slug: string }) => {
 		if (!item) {
 			return;
@@ -159,6 +162,20 @@ export function SearchBar() {
 		setFilterText("");
 	};
 
+	function getTypeLabel (type: string) {
+		switch (type) {
+			case "course":
+				return "Kurs";
+			case "lesson":
+				return "Lerneinheit";
+			case "author":
+				return "Autor";
+			default:
+				return "";
+		}
+	}
+	
+
 	return (
 		<Combobox
 			value={selectedResult}
@@ -172,7 +189,7 @@ export function SearchBar() {
 				</div>
 				<ComboboxInput
 					autoComplete="off"
-					placeholder={"Suchen..."}
+					placeholder={t("search")}
 					className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-500 lg:text-sm lg:leading-6"
 					value={filterText}
 					onChange={e => setFilterText(e.target.value)}
@@ -207,13 +224,7 @@ export function SearchBar() {
 							>
 								<span className="font-medium">{result.title}</span>
 								<span className="text-xs">
-									{result.type === "course"
-										? "Kurs"
-										: result.type === "lesson"
-											? "Lerneinheit"
-											: result.type === "author"
-												? "Autor"
-												: ""}
+									{getTypeLabel(result.type)}
 								</span>
 							</ComboboxOption>
 						))
