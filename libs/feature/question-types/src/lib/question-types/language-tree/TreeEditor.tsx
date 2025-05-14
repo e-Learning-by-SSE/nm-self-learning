@@ -139,7 +139,7 @@ export function TreeEditor({
 	return <div>{renderNode(tree, null, [])}</div>;
 }
 
-function serializeTree(node: TreeNode): string {
+export function serializeTree(node: TreeNode): string {
 	if (node.children.length === 0) {
 		return `[${node.value}]`;
 	}
