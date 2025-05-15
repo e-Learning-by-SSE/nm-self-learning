@@ -262,7 +262,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 						className="btn-primary text-sm"
 						data-testid="quizLink"
 					>
-						{router.pathname.endsWith("quiz") ? "Zum Lernhinhalt" : "Zur Lernkontrolle"}
+						{router.pathname.endsWith("quiz") ? "Zum Lerninhalt" : "Zur Lernkontrolle"}
 					</Link>
 				)}
 

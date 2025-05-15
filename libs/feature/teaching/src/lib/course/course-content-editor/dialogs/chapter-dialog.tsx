@@ -15,7 +15,7 @@ export function ChapterDialog({
 	const [content] = useState(chapter?.content ?? []);
 
 	return (
-		<Dialog title="Kapitel hinzufügen" onClose={onClose}>
+		<Dialog title={chapter ? "Kapitel bearbeiten" : "Kapitel erstellen"} onClose={onClose}>
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Titel">
 					<input
@@ -53,7 +53,7 @@ export function ChapterDialog({
 					disabled={title.length === 0}
 					onClick={() => onClose({ title, description, content })}
 				>
-					Bestätigen
+					{chapter ? "Speichern" : "Erstellen"}
 				</button>
 			</DialogActions>
 		</Dialog>

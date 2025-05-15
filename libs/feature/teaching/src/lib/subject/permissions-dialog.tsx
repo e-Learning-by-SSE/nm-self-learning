@@ -132,7 +132,7 @@ export function SpecializationPermissionsDialog({
 					<p>
 						In der folgenden Tabelle sind alle Autoren aufgelistet, die mindestens einer
 						Spezialisierung zugeordnet sind. Weitere Autoren können durch den{" "}
-						<strong>Autor hinzufügen</strong>-Button hinzugefügt werden.
+						<strong>Hinzufügen</strong>-Button hinzugefügt werden.
 					</p>
 				</div>
 
@@ -142,7 +142,7 @@ export function SpecializationPermissionsDialog({
 					onClick={() => setOpenAddAuthorDialog(true)}
 				>
 					<PlusIcon className="icon h-5" />
-					<span>Autor hinzufügen</span>
+					<span>Hinzufügen</span>
 				</button>
 
 				{openAddAuthorDialog && (

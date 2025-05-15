@@ -43,7 +43,7 @@ export default function ClozeForm({ index }: { question: { type: Cloze["type"] }
 					/>
 				</LabeledField>
 
-				<LabeledField label="Preview">
+				<LabeledField label="Vorschau">
 					<pre className="prose h-full max-w-full whitespace-pre-line border border-light-border bg-white p-4 font-sans">
 						{cloze.segments.map((segment, index) => (
 							<Fragment key={index}>

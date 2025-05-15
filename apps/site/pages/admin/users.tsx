@@ -85,7 +85,7 @@ export default function UsersPage() {
 													className="btn-stroked"
 													onClick={() => setOpenEditDialog(name)}
 												>
-													Editieren
+													Bearbeiten
 												</button>
 											</div>
 										</TableDataColumn>
