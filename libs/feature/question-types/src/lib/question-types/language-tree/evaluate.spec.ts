@@ -83,7 +83,6 @@ describe("evaluateLanguageTreeAnswer", () => {
 		expect(result.isCorrect).toBe(true);
 	}
 	);
-
 });
 
 describe("Tree parsing and serialization", () => {
