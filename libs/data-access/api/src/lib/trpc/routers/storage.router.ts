@@ -46,14 +46,7 @@ export const storageRouter = t.router({
 		 */
 		.mutation(async ({ input }) => {
 
-			const sanitizedFilename = (filename: string) => {
-				return filename
-					.normalize("NFD")
-					.replace(/[\u0300-\u036f]/g, "")
-					.replace(/[^a-zA-Z0-9.]/g, "_")
-			};
-		
-			const randomizedFilename = `${getRandomId()}-${sanitizedFilename(input.filename)}`;
+			const randomizedFilename = `${getRandomId()}-${input.filename}`;
 			try {
 				const presignedUrl = await getPresignedUrl(randomizedFilename);
 
