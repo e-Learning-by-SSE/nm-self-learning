@@ -62,4 +62,4 @@ export default function CreateCoursePage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(["pages-course-info", "common"]);
