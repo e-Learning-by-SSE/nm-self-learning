@@ -66,11 +66,14 @@ export function TreeEditor({
 		updateTree({ ...tree });
 	};
 
-	const renderNode = (node: TreeNode, parent: TreeNode | null = null, id: number) => {
+	const generateNodeId = (path: number[]) => `node-${path.join("-")}`;
+
+	const renderNode = (node: TreeNode, parent: TreeNode | null = null,  path: number[] = []) => {
 		const isLeaf = node.children.length === 0;
+		const nodeId = generateNodeId(path);
 
 		return (
-			<div key={`node-${id}`} className="ml-4 pl-4 border-l-2 border-gray-300 space-y-2 py-1">
+			<div key={`${nodeId}`} className="ml-4 pl-4 border-l-2 border-gray-300 space-y-2 py-1">
 				<div className="flex items-center space-x-2 bg-gray-100 p-2 rounded-lg shadow-sm">
 					{/* Use a dropdown for non-leaf nodes and text input for leaf nodes */}
 					{isLeaf ? (
@@ -126,17 +129,17 @@ export function TreeEditor({
 
 				{node.children.length > 0 && (
 					<div className="space-y-1">
-						{node.children.map(child => renderNode(child, node, id++))}
+						{node.children.map((child, index) => renderNode(child, node,  [...path, index]))}
 					</div>
 				)}
 			</div>
 		);
 	};
 
-	return <div>{renderNode(tree, null, 1)}</div>;
+	return <div>{renderNode(tree, null, [])}</div>;
 }
 
-function serializeTree(node: TreeNode): string {
+export function serializeTree(node: TreeNode): string {
 	if (node.children.length === 0) {
 		return `[${node.value}]`;
 	}
