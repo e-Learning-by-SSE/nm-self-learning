@@ -6,7 +6,6 @@ import { TRPCError } from "@trpc/server";
 import { Client, ClientOptions } from "minio";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
-import { file } from "jszip";
 
 /**
  * Time in seconds after which the presigned URL expires.
@@ -45,7 +44,6 @@ export const storageRouter = t.router({
 		 * @throws {TRPCError} if an error occurs while generating the presigned URL.
 		 */
 		.mutation(async ({ input }) => {
-
 			const randomizedFilename = `${getRandomId()}-${input.filename}`;
 			try {
 				const presignedUrl = await getPresignedUrl(randomizedFilename);
