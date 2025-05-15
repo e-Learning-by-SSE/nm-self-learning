@@ -3,7 +3,7 @@ import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { Quiz } from "@self-learning/quiz";
-import { Prisma } from "@prisma/client";
+import { LessonDraft as PrismaLessonDraft, Prisma } from "@prisma/client";
 
 export const lessonDraftRouter = t.router({
 	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
@@ -21,21 +21,19 @@ export const lessonDraftRouter = t.router({
 			data: data
 		});
 	}),
-	getByOwner: authProcedure
-		.input(z.object({ username: z.string() }))
-		.query(async ({ input, ctx }): Promise<LessonDraft[]> => {
-			const username = ctx.user.name;
-			const drafts = await database.lessonDraft.findMany({
-				where: {
-					owner: {
-						path: ["username"],
-						equals: username
-					}
+	getByOwner: authProcedure.query(async ({ ctx }): Promise<LessonDraft[]> => {
+		const username = ctx.user.name;
+		const drafts = await database.lessonDraft.findMany({
+			where: {
+				owner: {
+					path: ["username"],
+					equals: username
 				}
-			});
+			}
+		});
 
-			return drafts.map(mapToLessonDraft);
-		}),
+		return drafts.map(mapToLessonDraft);
+	}),
 	getById: authProcedure
 		.input(z.object({ draftId: z.string() }))
 		.query(async ({ input, ctx }): Promise<LessonDraft | null> => {
@@ -49,28 +47,27 @@ export const lessonDraftRouter = t.router({
 					}
 				}
 			});
+
 			return draft ? mapToLessonDraft(draft) : null;
 		}),
-	getOverviewByOwner: authProcedure
-		.input(z.object({ username: z.string() }))
-		.query(async ({ input, ctx }) => {
-			const drafts = await database.lessonDraft.findMany({
-				where: {
-					owner: {
-						path: ["username"],
-						equals: ctx.user.name
-					}
-				},
-				select: {
-					id: true,
-					title: true,
-					lessonId: true,
-					createdAt: true
+	getOverviewByOwner: authProcedure.query(async ({ ctx }) => {
+		const drafts = await database.lessonDraft.findMany({
+			where: {
+				owner: {
+					path: ["username"],
+					equals: ctx.user.name
 				}
-			});
+			},
+			select: {
+				id: true,
+				title: true,
+				lessonId: true,
+				createdAt: true
+			}
+		});
 
-			return drafts;
-		}),
+		return drafts;
+	}),
 	delete: authProcedure
 		.input(z.object({ draftId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
@@ -92,6 +89,11 @@ export const lessonDraftRouter = t.router({
 				};
 			} catch (err) {
 				console.error("Error while deleting draft: ", err);
+				return {
+					success: false,
+					message: "Draft  deletion failed: " + (err as Error).message,
+					draft: null
+				};
 			}
 		}),
 	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
@@ -109,70 +111,33 @@ export const lessonDraftRouter = t.router({
 			owner: input.owner ?? undefined
 		};
 
-		if (lessonId) {
-			const existingDraftForLesson = lessonId
-				? await database.lessonDraft.findFirst({
-						where: {
-							lessonId: lessonId,
-							owner: {
-								path: ["username"],
-								equals: owner
-							}
-						}
-					})
-				: null;
+		if (!draftData.id) {
+			return database.lessonDraft.create({
+				data: { ...draftData }
+			});
+		}
 
-			if (existingDraftForLesson) {
-				const updatedDraft = await database.lessonDraft.update({
-					where: { id: existingDraftForLesson.id },
-					data: {
-						...draftData,
-						updatedAt: new Date()
-					}
-				});
-				return updatedDraft;
-			} else {
-				console.error("Draft is assigned to non-existing lesson!");
+		return database.lessonDraft.upsert({
+			create: {
+				...draftData,
+				lessonId: lessonId ?? undefined,
+				owner: { username: owner }
+			},
+			update: {
+				...draftData
+			},
+			where: {
+				id: draftId,
+				owner: {
+					path: ["username"],
+					equals: owner
+				}
 			}
-		}
-
-		const existingDraft = draftId
-			? await database.lessonDraft.findFirst({
-					where: {
-						id: draftId,
-						owner: {
-							path: ["username"],
-							equals: owner
-						}
-					}
-				})
-			: null;
-
-		if (existingDraft) {
-			const updatedDraft = await database.lessonDraft.update({
-				where: { id: draftId },
-				data: {
-					...draftData,
-					updatedAt: new Date()
-				}
-			});
-			return updatedDraft;
-		} else {
-			const newDraft = await database.lessonDraft.create({
-				data: {
-					...draftData,
-					lessonId: lessonId ?? undefined,
-					owner: { username: owner },
-					createdAt: new Date(),
-					updatedAt: new Date()
-				}
-			});
-			return newDraft;
-		}
+		});
 	})
 });
 
-function mapToLessonDraft(draft: any): LessonDraft {
+function mapToLessonDraft(draft: PrismaLessonDraft): LessonDraft {
 	return {
 		id: draft.id,
 		lessonId: draft.lessonId ?? null,
@@ -189,12 +154,10 @@ function mapToLessonDraft(draft: any): LessonDraft {
 
 		licenseId: draft.licenseId,
 		requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
-		provides: Array.isArray(draft.provides) ? draft.provides : JSON.parse("[]"),
+		provides: Array.isArray(draft.provides) ? draft.provides : [JSON.parse("[]")],
 		content: (draft.content ?? []) as LessonContent,
 		quiz: draft.quiz as Quiz,
-		lessonType: draft.lessonType ?? "TRADITIONAL",
-		selfRegulatedQuestion: draft.selfRegulatedQuestion,
-		createdAt: draft.createdAt,
-		updatedAt: draft.updatedAt
+		lessonType: draft.lessonType ?? undefined,
+		selfRegulatedQuestion: draft.selfRegulatedQuestion
 	};
 }

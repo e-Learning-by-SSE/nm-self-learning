@@ -9,8 +9,6 @@ import { mapDraftToLessonForm } from "@self-learning/types";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { withAuth } from "@self-learning/api";
-import { createEmptyLesson } from "@self-learning/types";
-import { useMemo } from "react";
 
 type EditLessonDraftProps = {
 	draftId: string;
@@ -31,20 +29,7 @@ export default function EditDraftPage({ draftId }: EditLessonDraftProps) {
 	const { mutateAsync: deleteDraft } = trpc.lessonDraft.delete.useMutation();
 	const router = useRouter();
 
-	const { data: draft, isLoading } = trpc.lessonDraft.getById.useQuery(
-		{ draftId: draftId ?? "" },
-		{
-			refetchOnWindowFocus: false,
-			refetchOnReconnect: false,
-			refetchInterval: false,
-			staleTime: 5 * 60 * 1000
-		}
-	);
-
-	const lessonForm = useMemo(() => {
-		if (!draft) return createEmptyLesson();
-		return mapDraftToLessonForm(draft);
-	}, [draft]);
+	const { data: draft, isLoading } = trpc.lessonDraft.getById.useQuery({ draftId });
 
 	async function handleEditClose(lesson?: LessonFormModel) {
 		if (lesson) {
@@ -76,6 +61,8 @@ export default function EditDraftPage({ draftId }: EditLessonDraftProps) {
 	if (!draft) {
 		return <p>No draft found.</p>;
 	}
+
+	const lessonForm = draft ? mapDraftToLessonForm(draft) : undefined;
 
 	return (
 		<LessonEditor

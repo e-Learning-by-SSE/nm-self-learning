@@ -128,14 +128,11 @@ function AuthorDashboardPage({ author }: Props) {
 		data: drafts,
 		isLoading,
 		isError
-	} = trpc.lessonDraft.getByOwner.useQuery(
-		{ username: authorName ?? "" },
-		{
-			enabled: Boolean(authorName),
-			refetchOnMount: "always", // <-- ensures refetch after navigation
-			staleTime: 0 // <-- disable aggressive caching (optional)
-		}
-	);
+	} = trpc.lessonDraft.getByOwner.useQuery(undefined, {
+		enabled: Boolean(authorName),
+		refetchOnMount: "always", // <-- ensures refetch after navigation
+		staleTime: 0 // <-- disable aggressive caching (optional)
+	});
 
 	let draftsWithoutLesson: LessonDraft[] = [];
 
@@ -615,9 +612,7 @@ function Lessons({ authorName }: { authorName: string }) {
 		isFetching,
 		isError,
 		refetch
-	} = trpc.lessonDraft.getOverviewByOwner.useQuery({
-		username: authorName
-	});
+	} = trpc.lessonDraft.getOverviewByOwner.useQuery();
 
 	// ensures the drafts will be re-fetched after component is mounted
 	useEffect(() => {

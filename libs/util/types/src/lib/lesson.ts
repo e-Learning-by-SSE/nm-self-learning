@@ -81,9 +81,7 @@ export const lessonDraftSchema = baseDraftSchema.extend({
 	title: z.string().nullable().optional(),
 	authors: z.array(z.object({ username: z.string() })),
 	owner: z.object({ username: z.string() }),
-	license: z.object({}).nullable().optional(),
-	updatedAt: z.date().optional(),
-	createdAt: z.date().optional()
+	license: z.object({}).nullable().optional()
 });
 
 export type LessonDraft = z.infer<typeof lessonDraftSchema>;
