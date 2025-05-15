@@ -4,6 +4,7 @@ import { LoadingBox } from "@self-learning/ui/common";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { Form } from "@self-learning/ui/forms";
+import { MarkdownListboxMenu } from "@self-learning/markdown";
 
 // Handles loading of licenses and makes them selectable afterwards
 export function LicenseForm() {
@@ -34,31 +35,38 @@ function OptionalLicenseSelector({ licenses }: { licenses?: License[] }) {
 }
 
 // Makes licenses selectable after checking if there are any
-function LicenseSelector({ licenses }: { licenses: License[] }) {
+export function LicenseSelector({ licenses }: { licenses: License[] }) {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
-	const getDefaultLicense = () =>
-		licenses.find(license => license.defaultSuggestion)?.licenseId ?? licenses[0].licenseId;
 	const currentValue = watch("licenseId");
 
+	const defaultLicense =
+		licenses.find(license => license.defaultSuggestion)?.licenseId ?? licenses[0].licenseId;
+
+	const selectedLicense = licenses.find(
+		lic => lic.licenseId === (currentValue ?? defaultLicense)
+	);
+
+	const options = licenses
+		.filter(lic => lic.selectable)
+		.map(lic => (lic.oerCompatible ? lic.name : `~~${lic.name}~~ (Nicht OER-kompatibel)`));
+
+	const handleChange = (selectedName: string) => {
+		const selected = licenses.find(lic => selectedName.includes(lic.name));
+		if (selected) {
+			setValue("licenseId", selected.licenseId);
+		}
+	};
+
 	return (
-		<select
-			className="textfield"
-			value={currentValue ?? getDefaultLicense()}
-			// target.value is a number as string
-			// + operator converts the number: https://www.techiediaries.com/javascript/convert-string-number-array-react-hooks-vuejs/
-			onChange={e => setValue("licenseId", +e.target.value)}
-		>
-			{licenses
-				.filter(license => license.selectable)
-				.map(license => (
-					<option
-						key={license.licenseId}
-						value={license.licenseId}
-						className={license.oerCompatible ? "text-black" : "text-gray-400"}
-					>
-						{license.name}
-					</option>
-				))}
-		</select>
+		<MarkdownListboxMenu
+			title="Lizenz wählen"
+			displayValue={
+				selectedLicense?.oerCompatible
+					? selectedLicense.name
+					: `~~${selectedLicense?.name}~~ (Nicht OER-kompatibel)`
+			}
+			options={options}
+			onChange={handleChange}
+		/>
 	);
 }
