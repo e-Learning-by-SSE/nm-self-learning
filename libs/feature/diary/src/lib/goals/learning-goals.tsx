@@ -1,5 +1,5 @@
 import { PencilIcon } from "@heroicons/react/24/outline";
-import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import {
 	ButtonActions,
@@ -9,7 +9,6 @@ import {
 	freeDialog,
 	LoadingBox,
 	PlusButton,
-	SectionHeader,
 	showToast,
 	SimpleDialog,
 	Tab,
@@ -167,7 +166,7 @@ export function LearningGoalsDialog({
 	const { userGoals, isLoading } = useLearningGoals();
 	return (
 		<Dialog title={description} onClose={onClose}>
-			<div className="overflow-y-auto mb-2 pr-2" style={{ minWidth: "30vw" }}>
+			<div className="overflow-y-auto mb-2 px-2" style={{ minWidth: "30vw" }}>
 				{isLoading && <LoadingBox />}
 				{userGoals && <LearningGoals goals={userGoals} onStatusUpdate={onStatusUpdate} />}
 			</div>
