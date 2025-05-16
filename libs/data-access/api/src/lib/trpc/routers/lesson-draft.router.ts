@@ -3,7 +3,7 @@ import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { Quiz } from "@self-learning/quiz";
-import { LessonDraft as PrismaLessonDraft, Prisma } from "@prisma/client";
+import { LessonDraft as PrismaLessonDraft } from "@prisma/client";
 
 export const lessonDraftRouter = t.router({
 	getByOwner: authProcedure.query(async ({ ctx }): Promise<LessonDraft[]> => {
