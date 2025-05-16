@@ -10,6 +10,9 @@ import userEvent from "@testing-library/user-event";
 jest.mock("@self-learning/util/common");
 jest.mock("@self-learning/lesson");
 jest.mock("@self-learning/quiz");
+jest.mock("@self-learning/api", () => ({
+    withAuth: jest.fn()
+}));
 
 const mockNewEvent = jest.fn();
 const mockUseEventLog = useEventLog as jest.Mock;
@@ -41,6 +44,7 @@ const mockQuestions = [
 		type: "multiple-choice"
 	}
 ] as any[];
+
 
 describe("QuizHeader", () => {
 	beforeEach(() => {
