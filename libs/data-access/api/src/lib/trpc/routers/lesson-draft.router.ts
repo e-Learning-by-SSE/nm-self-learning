@@ -1,4 +1,10 @@
-import { LessonContent, LessonDraft, lessonDraftSchema } from "@self-learning/types";
+import {
+	authorsRelationSchema,
+	LessonContent,
+	LessonDraft,
+	lessonDraftSchema,
+	SkillFormModel
+} from "@self-learning/types";
 import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
@@ -109,6 +115,8 @@ export const lessonDraftRouter = t.router({
 });
 
 function mapToLessonDraft(draft: PrismaLessonDraft): LessonDraft {
+	type Authors = z.infer<typeof authorsRelationSchema>;
+
 	return {
 		id: draft.id,
 		lessonId: draft.lessonId ?? null,
@@ -117,15 +125,15 @@ function mapToLessonDraft(draft: PrismaLessonDraft): LessonDraft {
 		subtitle: draft.subtitle,
 		description: draft.description,
 		imgUrl: draft.imgUrl,
-		authors: Array.isArray(draft.authors) ? draft.authors : [JSON.parse("[]")],
+		authors: Array.isArray(draft.authors) ? (draft.authors as Authors) : [],
 		owner:
 			typeof draft.owner === "object" && draft.owner !== null && "username" in draft.owner
 				? { username: String(draft.owner.username) }
 				: { username: "" },
 
 		licenseId: draft.licenseId,
-		requires: Array.isArray(draft.requires) ? draft.requires : [JSON.parse("[]")],
-		provides: Array.isArray(draft.provides) ? draft.provides : [JSON.parse("[]")],
+		requires: Array.isArray(draft.requires) ? (draft.requires as SkillFormModel[]) : [],
+		provides: Array.isArray(draft.provides) ? (draft.provides as SkillFormModel[]) : [],
 		content: (draft.content ?? []) as LessonContent,
 		quiz: draft.quiz as Quiz,
 		lessonType: draft.lessonType ?? undefined,
