@@ -7,12 +7,11 @@ import { LessonDraft as PrismaLessonDraft, Prisma } from "@prisma/client";
 
 export const lessonDraftRouter = t.router({
 	getByOwner: authProcedure.query(async ({ ctx }): Promise<LessonDraft[]> => {
-		const username = ctx.user.name;
 		const drafts = await database.lessonDraft.findMany({
 			where: {
 				owner: {
 					path: ["username"],
-					equals: username
+					equals: ctx.user.name
 				}
 			}
 		});
@@ -85,12 +84,7 @@ export const lessonDraftRouter = t.router({
 		const { updatedAt: _updatedAt, ...data } = input;
 		const draftData = {
 			...data,
-			content: data.content as Prisma.InputJsonArray,
-			quiz: data.quiz ? (data.quiz as Prisma.JsonObject) : undefined,
-			license: data.license ?? undefined,
-			provides: data.provides ?? undefined,
-			requires: data.requires ?? undefined,
-			authors: data.authors ?? [],
+			quiz: data.quiz ? data.quiz : undefined,
 			owner: { username: ctx.user.name }
 		};
 
@@ -118,8 +112,8 @@ function mapToLessonDraft(draft: PrismaLessonDraft): LessonDraft {
 	return {
 		id: draft.id,
 		lessonId: draft.lessonId ?? null,
-		slug: draft.slug ?? "",
-		title: draft.title ?? "",
+		slug: draft.slug ?? undefined,
+		title: draft.title ?? undefined,
 		subtitle: draft.subtitle,
 		description: draft.description,
 		imgUrl: draft.imgUrl,

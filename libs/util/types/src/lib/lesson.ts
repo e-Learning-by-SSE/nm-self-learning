@@ -78,10 +78,9 @@ const baseDraftSchema = lessonSchema.partial();
 export const lessonDraftSchema = baseDraftSchema.extend({
 	id: z.string().optional(),
 	slug: z.string().optional(),
-	title: z.string().nullable().optional(),
+	title: z.string().optional(),
 	authors: z.array(z.object({ username: z.string() })),
 	owner: z.object({ username: z.string() }),
-	license: z.object({}).nullable().optional(),
 	updatedAt: z.date().optional()
 });
 

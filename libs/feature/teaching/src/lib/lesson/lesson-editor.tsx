@@ -67,7 +67,7 @@ export async function onLessonEditorSubmit(
 		showToast({
 			type: "error",
 			title: "Fehler",
-			subtitle: "Die Lernheit konnte nicht gespeichert werden."
+			subtitle: "Die Lerneinheit konnte nicht gespeichert werden."
 		});
 	}
 }
