@@ -6,21 +6,6 @@ import { Quiz } from "@self-learning/quiz";
 import { LessonDraft as PrismaLessonDraft, Prisma } from "@prisma/client";
 
 export const lessonDraftRouter = t.router({
-	create: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
-		const data = {
-			...input,
-			content: input.content ?? "",
-			quiz: input.quiz ?? undefined,
-			license: input.license ?? undefined,
-			provides: input.provides ?? undefined,
-			requires: input.requires ?? undefined,
-			authors: input.authors ?? [],
-			owner: { username: ctx.user.name } //{"username": ctx.session.user.username}
-		};
-		await database.lessonDraft.create({
-			data: data
-		});
-	}),
 	getByOwner: authProcedure.query(async ({ ctx }): Promise<LessonDraft[]> => {
 		const username = ctx.user.name;
 		const drafts = await database.lessonDraft.findMany({
@@ -97,43 +82,35 @@ export const lessonDraftRouter = t.router({
 			}
 		}),
 	upsert: authProcedure.input(lessonDraftSchema).mutation(async ({ input, ctx }) => {
-		const lessonId = input.lessonId;
-		const owner = ctx.user.name;
-		const draftId = input.id;
+		const { updatedAt: _updatedAt, ...data } = input;
 		const draftData = {
-			...input,
-			content: input.content ? (input.content as Prisma.InputJsonArray) : undefined,
-			quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : undefined,
-			license: input.license ?? undefined,
-			provides: input.provides ?? undefined,
-			requires: input.requires ?? undefined,
-			authors: input.authors ?? [],
-			owner: input.owner ?? undefined
+			...data,
+			content: data.content as Prisma.InputJsonArray,
+			quiz: data.quiz ? (data.quiz as Prisma.JsonObject) : undefined,
+			license: data.license ?? undefined,
+			provides: data.provides ?? undefined,
+			requires: data.requires ?? undefined,
+			authors: data.authors ?? [],
+			owner: { username: ctx.user.name }
 		};
 
-		if (!draftData.id) {
+		if (draftData.id) {
+			return database.lessonDraft.upsert({
+				create: draftData,
+				update: draftData,
+				where: {
+					id: draftData.id,
+					owner: {
+						path: ["username"],
+						equals: ctx.user.name
+					}
+				}
+			});
+		} else {
 			return database.lessonDraft.create({
-				data: { ...draftData }
+				data: draftData
 			});
 		}
-
-		return database.lessonDraft.upsert({
-			create: {
-				...draftData,
-				lessonId: lessonId ?? undefined,
-				owner: { username: owner }
-			},
-			update: {
-				...draftData
-			},
-			where: {
-				id: draftId,
-				owner: {
-					path: ["username"],
-					equals: owner
-				}
-			}
-		});
 	})
 });
 
@@ -158,6 +135,7 @@ function mapToLessonDraft(draft: PrismaLessonDraft): LessonDraft {
 		content: (draft.content ?? []) as LessonContent,
 		quiz: draft.quiz as Quiz,
 		lessonType: draft.lessonType ?? undefined,
-		selfRegulatedQuestion: draft.selfRegulatedQuestion
+		selfRegulatedQuestion: draft.selfRegulatedQuestion,
+		updatedAt: draft.updatedAt
 	};
 }
