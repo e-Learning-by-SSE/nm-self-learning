@@ -2,9 +2,13 @@ import {
 	CheckCircleIcon as CheckCircleIconOutline,
 	XCircleIcon
 } from "@heroicons/react/24/outline";
-import { ArrowPathIcon, CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
-import { useMarkAsCompleted } from "@self-learning/completion";
+import {
+	QuizCompletionDialog,
+	QuizFailedDialog,
+	useMarkAsCompleted
+} from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
@@ -14,20 +18,14 @@ import {
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
-import {
-	Dialog,
-	DialogActions,
-	OnDialogCloseFn,
-	Tab,
-	Tabs,
-	useIsFirstRender
-} from "@self-learning/ui/common";
+import { Tab, Tabs, useIsFirstRender } from "@self-learning/ui/common";
+import { useEventLog } from "@self-learning/util/common";
+import { useLessonGrade } from "libs/feature/completion/src/lib/lesson-grading";
+import { GetServerSideProps } from "next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useEventLog } from "@self-learning/util/common";
-import { GetServerSideProps } from "next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -157,18 +155,19 @@ function QuizCompletionSubscriber({
 	lesson: QuestionProps["lesson"];
 	course: QuestionProps["course"];
 }) {
-	const { completionState } = useQuiz();
+	const { completionState, attempts, answers } = useQuiz();
 	const unsubscribeRef = useRef(false);
 	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
+	const gradeLesson = useLessonGrade(attempts, answers, lesson.lessonId);
 
 	useEffect(() => {
-		// TODO check if this useEffect is necessary
 		if (!unsubscribeRef.current && completionState === "completed") {
 			unsubscribeRef.current = true;
 			console.log("QuizCompletionSubscriber: Marking as completed");
-			markAsCompleted();
+			void markAsCompleted();
+			void gradeLesson();
 		}
-	}, [completionState, markAsCompleted]);
+	}, [completionState, markAsCompleted, gradeLesson]);
 
 	return <></>;
 }
@@ -321,102 +320,5 @@ function QuestionTabIcon({
 		</div>
 	) : (
 		<div>{children}</div>
-	);
-}
-
-function NextLessonButton({
-	courseSlug,
-	nextLessonSlug
-}: {
-	courseSlug: string;
-	nextLessonSlug: string;
-}) {
-	return (
-		<Link href={`/courses/${courseSlug}/${nextLessonSlug}`} className="btn-primary">
-			<span>Zur nächsten Lerneinheit</span>
-			<PlayIcon className="h-5 shrink-0" />
-		</Link>
-	);
-}
-
-function QuizCompletionDialog({
-	course,
-	lesson,
-	nextLesson,
-	onClose
-}: {
-	course: QuestionProps["course"];
-	lesson: QuestionProps["lesson"];
-	nextLesson: { title: string; slug: string } | null;
-	onClose: OnDialogCloseFn<void>;
-}) {
-	return (
-		<Dialog onClose={onClose} title="Geschafft!" style={{ maxWidth: "600px" }}>
-			<div className="flex flex-col text-sm text-light">
-				<p>
-					Du hast die Lerneinheit{" "}
-					<span className="font-semibold text-secondary">{lesson.title}</span> erfolgreich
-					abgeschlossen.
-				</p>
-
-				{nextLesson ? (
-					<div className="flex flex-col">
-						<p>Die nächste Lerneinheit ist ...</p>
-						<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
-							{nextLesson.title}
-						</span>
-					</div>
-				) : (
-					<p>
-						Der Kurs{" "}
-						<span className="font-semibold text-secondary">{course.title}</span> enthält
-						keine weiteren Lerneinheiten für dich.
-					</p>
-				)}
-			</div>
-
-			<DialogActions onClose={onClose}>
-				{nextLesson && (
-					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
-				)}
-			</DialogActions>
-		</Dialog>
-	);
-}
-
-function QuizFailedDialog({
-	course,
-	lesson,
-	nextLesson,
-	onClose
-}: {
-	course: QuestionProps["course"];
-	lesson: QuestionProps["lesson"];
-	nextLesson: { title: string; slug: string } | null;
-	onClose: OnDialogCloseFn<void>;
-}) {
-	const { reload } = useQuiz();
-
-	return (
-		<Dialog onClose={onClose} title="Nicht Bestanden" style={{ maxWidth: "600px" }}>
-			<div className="flex flex-col text-sm text-light">
-				<p>
-					Du hast leider zu viele Fragen falsch beantwortet, um die Lerneinheit{" "}
-					<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
-					abzuschließen.
-				</p>
-			</div>
-
-			<DialogActions onClose={onClose}>
-				<button className="btn-primary" onClick={reload}>
-					<span>Erneut probieren</span>
-					<ArrowPathIcon className="h-5 shrink-0" />
-				</button>
-
-				{nextLesson && (
-					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
-				)}
-			</DialogActions>
-		</Dialog>
 	);
 }

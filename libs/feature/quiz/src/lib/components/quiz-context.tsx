@@ -11,7 +11,6 @@ import { useCookies } from "react-cookie";
 import { QuizSavedAnswers } from "./question";
 
 type QuizCompletionState = "in-progress" | "completed" | "failed";
-
 export type QuizContextValue = {
 	answers: {
 		[questionId: string]: {
@@ -36,9 +35,13 @@ export type QuizContextValue = {
 	config: QuizConfig;
 	completionState: QuizCompletionState;
 	usedHints: MdLookupArray;
-	attempts: number;
-	setAttempts: Dispatch<SetStateAction<number>>;
 	setUsedHints: Dispatch<SetStateAction<MdLookupArray>>;
+	attempts: { [questionId: string]: number };
+	setAttempts: Dispatch<
+		SetStateAction<{
+			[questionId: string]: number;
+		}>
+	>;
 	goToNextQuestion: () => void;
 	reload: () => void;
 };
@@ -86,7 +89,14 @@ export function QuizProvider({
 		return ans;
 	});
 
-	const [attempts, setAttempts] = useState(0);
+	const [attempts, setAttempts] = useState(() => {
+		const atts: QuizContextValue["attempts"] = {};
+
+		for (const q of questions) {
+			atts[q.questionId] = 0;
+		}
+		return atts;
+	});
 
 	const [evaluations, setEvaluations] = useState(() => {
 		const evals: QuizContextValue["evaluations"] = {};
@@ -123,11 +133,11 @@ export function QuizProvider({
 				setEvaluations,
 				usedHints,
 				setUsedHints,
+				attempts,
+				setAttempts,
 				goToNextQuestion,
 				completionState,
-				reload,
-				attempts,
-				setAttempts
+				reload
 			}}
 		>
 			{children}

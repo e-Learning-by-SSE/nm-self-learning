@@ -3,3 +3,5 @@ export * from "./lib/lesson-completion";
 export * from "./lib/mark-as-completed";
 export * from "./lib/use-course-completion";
 export * from "./lib/use-mark-as-completed";
+export * from "./lib/quiz-completion-dialog";
+export { GRADE_THRESHOLD } from "./lib/lesson-grading";

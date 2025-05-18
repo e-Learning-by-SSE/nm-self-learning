@@ -49,6 +49,11 @@ model User {
     registrationCompleted      Boolean  @default(false)
 }
 
+enum UserRole {
+    USER
+    ADMIN
+}
+
 model VerificationToken {
     identifier String
     token      String   @unique

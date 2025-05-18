@@ -5,10 +5,40 @@ model GamificationProfile {
     meta                       Json?
     lastLogin         DateTime @default(now())
 
-    user         User     @relation(fields: [username], references: [name], onDelete: Cascade)
-    achievements Achievement[]
-    earnedAchievements EarnedAchievement[] // Added opposite relation field
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    earnedAchievements AchievementProgress[] // Added opposite relation field
+    coursePerformances CoursePerformance[]
+    lessonPerformances LessonPerformance[]
+    
 }
+
+model CoursePerformance {
+  id            String   @id @default(cuid())
+  userId        String
+  courseId      String
+  errorRate     Float 
+  score         Int // 0-1, 1 is perfect
+  completedAt   DateTime
+
+  profile GamificationProfile   @relation(fields: [userId], references: [userId])
+  course Course @relation(fields: [courseId], references: [courseId])
+
+  @@unique([userId, courseId])
+}
+
+model LessonPerformance {
+  id         String   @id @default(cuid())
+  userId     String
+  lessonId   String
+  score      Float //0-1, 1 is perfect
+  completedAt DateTime
+
+  profile GamificationProfile   @relation(fields: [userId], references: [userId])
+  lesson Lesson @relation(fields: [lessonId], references: [lessonId])
+
+  @@unique([userId, lessonId])
+}
+
 
 model Achievement {
   id          String     @id @default(uuid())
@@ -20,9 +50,9 @@ model Achievement {
   createdAt   DateTime   @default(now())
   trigger     AchievementTrigger
   meta        Json?
+  requiredValue Int @default(1)
 
-  users       EarnedAchievement[]
-  gamificationProfiles GamificationProfile[]
+  earnedBy       AchievementProgress[]
 }
 
 enum AchievementTrigger {
@@ -34,11 +64,12 @@ enum AchievementTrigger {
 }
 
 
-model EarnedAchievement {
+model AchievementProgress {
   id             String              @id @default(uuid())
   userId         String
   achievementId  String
-  earnedAt     DateTime            @default(now())
+  progressValue          Int 
+  updatedAt     DateTime            @default(now())
   meta           Json?
 
   gamificationProfile                GamificationProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)

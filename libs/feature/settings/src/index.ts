@@ -5,3 +5,6 @@ export * from "./lib/crud-settings";
 export * from "./lib/dashboard/streak-slot-machine";
 export * from "./lib/dashboard/streak-indicator-circle";
 export * from "./lib/achievements/earned-dialog";
+export * from "./lib/ms-ma-optin";
+export * from "./lib/achievements/achievement-card";
+export * from "./lib/achievements/award-achievements";

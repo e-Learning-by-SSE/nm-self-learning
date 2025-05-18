@@ -1,13 +1,14 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database } from "@self-learning/database";
+import { defaultGamificationProfileMeta } from "@self-learning/types";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
+import { jwtDecode } from "jwt-decode";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import { Adapter, AdapterAccount } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
-import { jwtDecode } from "jwt-decode";
 import { createUserSession } from "./data-access";
 import { loginCallbacks } from "./on-login";
 
@@ -107,6 +108,19 @@ const customPrismaAdapter: Adapter = {
 					userId: account.userId,
 					username: user.name ?? user.id
 				}
+			}),
+			database.gamificationProfile.upsert({
+				where: {
+					userId: account.userId
+				},
+				create: {
+					userId: account.userId,
+					username: user.name ?? user.id,
+					lastLogin: new Date(),
+					loginStreak: 0,
+					meta: defaultGamificationProfileMeta
+				},
+				update: {}
 			})
 		]);
 	}

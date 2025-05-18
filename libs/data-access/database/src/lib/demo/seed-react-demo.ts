@@ -442,6 +442,18 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 					}
 				}
 			}
+		},
+		gamificationProfile: {
+			create: {
+				username: "dumbledore",
+				lastLogin: new Date(2025, 5, 14),
+				loginStreak: 0,
+				meta: {
+					flames: {
+						count: 0
+					}
+				}
+			}
 		}
 	},
 	{
@@ -521,6 +533,18 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 	student: {
 		create: {
 			username: student.username
+		}
+	},
+	gamificationProfile: {
+		create: {
+			username: student.username,
+			lastLogin: new Date(2025, 5, 14),
+			loginStreak: 11,
+			meta: {
+				flames: {
+					count: 3
+				}
+			}
 		}
 	}
 }));

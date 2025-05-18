@@ -89,9 +89,11 @@ export function Question({
 			...prev,
 			[question.questionId]: e
 		}));
+		// no event on "Reset" click
 		if (e) {
 			setAttempts(prev => {
-				const newAttempts = prev + 1;
+				const attempts = prev[question.questionId];
+				const newAttempts = attempts + 1;
 				void newEvent({
 					type: "LESSON_QUIZ_SUBMISSION",
 					resourceId: lesson.lessonId,
@@ -103,10 +105,10 @@ export function Question({
 						type: question.type,
 						hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
 						attempts: newAttempts,
-						solved: e?.isCorrect ?? false
+						solved: e.isCorrect ?? false
 					}
 				});
-				return newAttempts;
+				return { ...prev, [question.questionId]: newAttempts };
 			});
 		}
 	}

@@ -1,45 +1,35 @@
 // Server-side tRPC router in src/server/api/routers/streak.ts
 
-import { GamificationProfile } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { GamificationProfileMeta, defaultGamificationProfileMeta } from "@self-learning/types";
+import { checkAndAwardAchievements } from "@self-learning/settings";
+import {
+	GamificationProfile,
+	GamificationProfileMeta,
+	achievementTriggerEnum,
+	defaultGamificationProfileMeta
+} from "@self-learning/types";
 import { TRPCError } from "@trpc/server";
 import { addHours } from "date-fns";
+import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 
-// type GamifyProfile = GamificationProfile & { meta: GamificationProfileMeta };
-
-// TODO - remove this when we have a zod type for the profile
-type GamifyProfile = Omit<GamificationProfile, "meta"> & {
-	meta: GamificationProfileMeta;
-};
-
-export async function getProfileMeta(userId: string, tx?: any) {
+export async function getProfileMeta(username: string, tx?: PrismaClient) {
 	const client = tx || database;
-	let profile = await client.gamificationProfile.findUnique({
-		where: { userId }
+	let profile = await client.gamificationProfile.findUniqueOrThrow({
+		where: { username }
 	});
-
-	if (!profile) {
-		profile = await client.gamificationProfile.create({
-			data: {
-				userId,
-				lastLogin: new Date(),
-				loginStreak: 0,
-				user: {
-					connect: { id: userId }
-				},
-				meta: defaultGamificationProfileMeta
-			}
-		});
-	} else if (!profile.meta) {
+	if (!profile.meta) {
 		profile = {
 			...profile,
 			meta: defaultGamificationProfileMeta
 		};
 	}
 
-	return profile as unknown as GamifyProfile;
+	return {
+		...profile,
+		meta: profile.meta as unknown as GamificationProfileMeta
+	} as GamificationProfile;
 }
 
 export const gamificationRouter = t.router({
@@ -81,7 +71,10 @@ export const gamificationRouter = t.router({
 			}
 		});
 
-		return updated as unknown as GamifyProfile;
+		return {
+			...updated,
+			meta: updated.meta as unknown as GamificationProfileMeta
+		} as GamificationProfile;
 	}),
 
 	pauseStreak: authProcedure.mutation(async ({ ctx }) => {
@@ -121,6 +114,17 @@ export const gamificationRouter = t.router({
 			}
 		});
 
-		return updatedStreak as unknown as GamifyProfile;
-	})
+		return {
+			...updatedStreak,
+			meta: updatedStreak.meta as unknown as GamificationProfileMeta
+		} as GamificationProfile;
+	}),
+	earnAchievements: authProcedure
+		.input(z.object({ trigger: achievementTriggerEnum }))
+		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.user.id;
+			const { trigger } = input;
+			const achievements = await checkAndAwardAchievements({ trigger, userId });
+			return achievements;
+		})
 });

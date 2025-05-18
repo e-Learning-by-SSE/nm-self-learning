@@ -1,8 +1,7 @@
 // copied from nm-skill-lib version 0.2.0
 // should be removed as soon as the lib is updated
 // TODO spark-sse
-
-type IdElement = { id: string | number };
+export type IdElement = { id: string | number };
 
 export function duplicateRemover(initialBuffer: (string | number)[] = []) {
 	const alreadyComputedSkillsBuffer = new Set<string | number>(initialBuffer);
@@ -14,6 +13,16 @@ export function duplicateRemover(initialBuffer: (string | number)[] = []) {
 		}
 		return false;
 	};
+}
+
+export function idGuard(element: unknown): element is IdElement {
+	return (
+		typeof element === "object" &&
+		element !== null &&
+		"id" in element &&
+		(typeof (element as IdElement).id === "string" ||
+			typeof (element as IdElement).id === "number")
+	);
 }
 
 export function idChecker(elementA: IdElement) {
@@ -31,14 +40,24 @@ export function sortById(a: IdElement, b: IdElement) {
 
 /**
  * A set that stores elements by their id and ensures that no element is stored twice.
+ *
+ * Can be used as a drop-in replacement for a Set or Map, but is maybe not as efficient in some manners. It's not fully compatible with the Set and Map interface, but provides a similar API.
  * @author Marcel Spark
  */
-export class IdSet<T extends IdElement> {
+
+export class IdSet<T extends IdElement = IdElement> {
 	private items: Record<string, T>;
 
-	constructor(initialValues: T[] = []) {
+	constructor(initialValues: T[] | Set<T> | IdSet<T> = []) {
 		this.items = {};
-		initialValues.forEach(item => this.add(item));
+
+		if (Array.isArray(initialValues)) {
+			initialValues.forEach(item => this.add(item));
+		} else if (initialValues instanceof Set) {
+			initialValues.forEach(item => this.add(item));
+		} else if (initialValues instanceof IdSet) {
+			initialValues.forEach(item => this.add(item));
+		}
 	}
 
 	/**
@@ -65,6 +84,39 @@ export class IdSet<T extends IdElement> {
 	}
 
 	/**
+	 * Returns the element with the same id or *undefined* if it is not in the set.
+	 * @param item The element to get, either as an object with an id or a string id.
+	 * @returns The element with the same id or *undefined* if it is not in the set.
+	 */
+	get(item: T): T | undefined;
+	get(id: T["id"]): T | undefined;
+	get(itemOrId: T | T["id"]): T | undefined {
+		if (idGuard(itemOrId)) {
+			return this.items[itemOrId.id];
+		} else {
+			return this.items[itemOrId.toString()];
+		}
+	}
+
+	/**
+	 * Returns all elements in the set. Keeps compatibility with the Set and Map interface.
+	 * @returns All elements in the set.
+	 */
+	values(): T[] {
+		return this.entries();
+	}
+	entries(): T[] {
+		return Object.values(this.items);
+	}
+
+	/**
+	 * Clears the set.
+	 */
+	clear(): void {
+		this.items = {};
+	}
+
+	/**
 	 * Deletes an element and returns *true* if the element was deleted or *false* if it was not in the set.
 	 * @param item The element to delete.
 	 * @returns *true* if the element was deleted, *false* if it was not in the set.
@@ -83,7 +135,7 @@ export class IdSet<T extends IdElement> {
 	 * @returns The number of stored elements.
 	 */
 	get size(): number {
-		return Object.keys(this.items).length;
+		return Object.keys(this.items).length; //  Access time is O(n) instead of O(1) like a map
 	}
 
 	/**
