@@ -6,7 +6,7 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 		// 🧠 Perfect Lessons
 		// inRow (serial)
 		{
-			code: "PERFECT_LESSON_SERIAL_VERY_GOOD_1",
+			code: "GRADE_LESSON_SERIAL_VERY_GOOD_1",
 			title: "Perfekte Lektion I",
 			description: "1 Lerneinheiten mit mindestens einer A oder S Bewertung abgeschlossen",
 			xpReward: 50,
@@ -14,7 +14,8 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			trigger: AchievementTrigger.lesson_completed,
 			requiredValue: 1,
 			meta: {
-				group: "perfect_lessons_serial",
+				group: "grade_lessons_serial",
+				grade: "PERFECT",
 				level: 1
 			}
 		},
@@ -27,8 +28,9 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			trigger: AchievementTrigger.lesson_completed,
 			requiredValue: 5,
 			meta: {
-				group: "perfect_lessons_serial",
-				level: 2
+				group: "grade_lessons_serial",
+				level: 2,
+				grade: "PERFECT"
 			}
 		},
 		// inTotal

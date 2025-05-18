@@ -6,7 +6,7 @@ model GamificationProfile {
     lastLogin         DateTime @default(now())
 
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    earnedAchievements AchievementProgress[] // Added opposite relation field
+    achievementProgress AchievementProgress[]
     coursePerformances CoursePerformance[]
     lessonPerformances LessonPerformance[]
     
@@ -33,7 +33,7 @@ model LessonPerformance {
   score      Float //0-1, 1 is perfect
   completedAt DateTime
 
-  profile GamificationProfile   @relation(fields: [userId], references: [userId])
+  profile GamificationProfile   @relation(fields: [userId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
   lesson Lesson @relation(fields: [lessonId], references: [lessonId])
 
   @@unique([userId, lessonId])
@@ -48,11 +48,11 @@ model Achievement {
   xpReward    Int
   category    String
   createdAt   DateTime   @default(now())
-  trigger     AchievementTrigger
+  trigger     AchievementTrigger 
   meta        Json?
   requiredValue Int @default(1)
 
-  earnedBy       AchievementProgress[]
+  progressBy       AchievementProgress[]
 }
 
 enum AchievementTrigger {
@@ -69,6 +69,7 @@ model AchievementProgress {
   userId         String
   achievementId  String
   progressValue          Int 
+  completedAt    DateTime?
   updatedAt     DateTime            @default(now())
   meta           Json?
 

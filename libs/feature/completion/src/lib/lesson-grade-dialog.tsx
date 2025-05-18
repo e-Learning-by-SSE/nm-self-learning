@@ -83,7 +83,7 @@ export function QuizCompletedGradeDialog({
 	nextLesson
 }: QuizCompletedGradeDialogProps) {
 	const { attempts, answers } = useQuiz();
-	const { mutateAsync: earnAchievements } = trpc.me.earnAchievements.useMutation();
+	const { mutateAsync: earnAchievements } = trpc.achievement.earnAchievements.useMutation();
 	const [achievements, setAchievements] = useState<IdSet<AchievementWithProgress>>(new IdSet());
 
 	const totalAttempts = Object.values(attempts).reduce((acc, attempt) => acc + attempt, 0);

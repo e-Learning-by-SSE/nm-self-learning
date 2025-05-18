@@ -96,7 +96,6 @@ type GameifyDialogProps = {
 	onClose: (result?: any) => void;
 	children: React.ReactNode;
 	responsive?: boolean;
-	// Consolidate all styling options into a single styling object
 	style?: RequiredSizeProps;
 	className?: string;
 	footer?: React.ReactNode;
@@ -230,9 +229,9 @@ export function DialogActions({
 }) {
 	return (
 		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
-			<GreyBoarderButton onClick={() => onClose(undefined)}>
+			<button onClick={() => onClose(undefined)} className="btn-stroked">
 				<span className={"text-gray-600"}>Abbrechen</span>
-			</GreyBoarderButton>
+			</button>
 			{children}
 		</div>
 	);

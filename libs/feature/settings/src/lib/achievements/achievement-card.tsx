@@ -102,16 +102,16 @@ export function AchievementList({
 	newlyEarnedAchievements = new IdSet(),
 	showProgress = false
 }: {
-	achievements: AchievementWithProgress[];
+	achievements: IdSet<AchievementWithProgress>;
 	earnedAchievements?: IdSet;
 	newlyEarnedAchievements?: IdSet;
 	showProgress?: boolean;
 }) {
-	if (achievements.length === 0) return null;
+	if (achievements.size === 0) return null;
 
 	return (
 		<div className="grid grid-cols-1 gap-4">
-			{achievements.map(achievement => (
+			{achievements.values().map(achievement => (
 				<AchievementCard
 					key={achievement.id}
 					achievement={achievement}
@@ -142,7 +142,7 @@ export function AchievementSection({
 				Errungenschaften
 			</h3>
 			<AchievementList
-				achievements={achievements.values()}
+				achievements={achievements}
 				earnedAchievements={earnedAchievements}
 				newlyEarnedAchievements={newlyEarnedAchievements}
 				showProgress={true}

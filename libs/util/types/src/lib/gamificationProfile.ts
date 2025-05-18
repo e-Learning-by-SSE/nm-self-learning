@@ -95,8 +95,9 @@ export type PerformanceGrade = z.infer<typeof performanceGradeSchema>;
  */
 export const achievementMetaSchema = z.discriminatedUnion("group", [
 	z.object({
-		group: z.literal("perfect_lessons_serial"),
-		level: z.number().int().positive()
+		group: z.literal("grade_lessons_serial"),
+		level: z.number().int().positive(),
+		grade: performanceGradeSchema
 	}),
 	z.object({
 		group: z.literal("grade_lessons_total"),
@@ -150,7 +151,7 @@ export const achievementFullSchema = achievementCreateSchema.extend({
 });
 export type AchievementDb = z.infer<typeof achievementFullSchema>;
 
-export const achievementWIthProgressSchema = achievementFullSchema.extend({
-	progressValue: z.number().int().nonnegative()
+export const achievementWithProgressSchema = achievementFullSchema.extend({
+	progressValue: z.number().nonnegative().default(0)
 });
-export type AchievementWithProgress = z.infer<typeof achievementWIthProgressSchema>;
+export type AchievementWithProgress = z.infer<typeof achievementWithProgressSchema>;

@@ -1,16 +1,11 @@
 "use client";
+import { BookOpenIcon, ViewColumnsIcon } from "@heroicons/react/24/outline";
 import { ChartBarIcon } from "@heroicons/react/24/solid";
-import { usePathname } from "next/navigation";
-import React, { useState } from "react";
-import { SecondarySidebarLayout, SidebarLink } from "./sidebar-layout";
-import { CenteredSection } from "../containers/centered-section";
-import {
-	BookOpenIcon,
-	ChevronRightIcon,
-	LockOpenIcon,
-	ViewColumnsIcon
-} from "@heroicons/react/24/outline";
 import { Divider } from "@self-learning/ui/common";
+import { usePathname } from "next/navigation";
+import React from "react";
+import { CenteredSection } from "../containers/centered-section";
+import { SecondarySidebarLayout, SidebarLink } from "./sidebar-layout";
 
 export function DashboardSidebarLayout({ children }: { children: React.ReactNode }) {
 	return (
@@ -19,11 +14,9 @@ export function DashboardSidebarLayout({ children }: { children: React.ReactNode
 			header={<SidebarHeader />}
 			content={<SidebarLinks />}
 		>
-			<main className="h-screen bg-gray-50">
-				{/* <div className="bg-gray-50"> */}
+			<div className="bg-gray-50">
 				<CenteredSection>{children}</CenteredSection>
-				{/* </div> */}
-			</main>
+			</div>
 		</SecondarySidebarLayout>
 	);
 }

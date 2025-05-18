@@ -21,7 +21,7 @@ import { subjectRouter } from "./routers/subject.router";
 
 import { userEventRouter } from "./routers/event-log.router";
 import { notificationRouter } from "./routers/notification.router";
-import { gamificationRouter } from "./routers/gamification.router";
+import { gamificationRouter } from "./routers/achievement.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -35,7 +35,8 @@ export const appRouter = t.router({
 	learningTechniqueRating: learningTechniqueRouter,
 	lesson: lessonRouter,
 	licenseRouter: licenseRouter,
-	me: t.mergeRouters(meRouter, gamificationRouter),
+	me: meRouter,
+	achievement: gamificationRouter,
 	storage: storageRouter,
 	specialization: specializationRouter,
 	subject: subjectRouter,

@@ -4,11 +4,14 @@ import { PrismaClient } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { checkAndAwardAchievements } from "@self-learning/settings";
 import {
+	AchievementWithProgress,
 	GamificationProfile,
 	GamificationProfileMeta,
+	achievementMetaSchema,
 	achievementTriggerEnum,
 	defaultGamificationProfileMeta
 } from "@self-learning/types";
+import { isTruthy } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { addHours } from "date-fns";
 import { z } from "zod";
@@ -126,5 +129,55 @@ export const gamificationRouter = t.router({
 			const { trigger } = input;
 			const achievements = await checkAndAwardAchievements({ trigger, userId });
 			return achievements;
-		})
+		}),
+	getOwnAchievements: authProcedure.query(async ({ ctx }) => {
+		const userId = ctx.user.id;
+		const achievements = await database.achievement.findMany({
+			include: {
+				progressBy: {
+					where: { userId },
+					select: { progressValue: true }
+				}
+			},
+			orderBy: [{ category: "asc" }, { requiredValue: "asc" }]
+		});
+		const achievmentWithProgress = achievements.map(achievement => {
+			const progressValue = achievement.progressBy[0]?.progressValue ?? 0;
+			const meta = achievementMetaSchema.parse(achievement.meta);
+			return { ...achievement, meta, progressValue };
+		});
+		return achievmentWithProgress as AchievementWithProgress[];
+	}),
+	getOverviewStats: authProcedure.query(async ({ ctx }) => {
+		const userId = ctx.user.id;
+
+		// Alle Achievements mit Progress holen
+		const achievementsWithProgress = await database.achievement.findMany({
+			include: {
+				progressBy: {
+					where: { userId },
+					select: { progressValue: true, completedAt: true }
+				}
+			}
+		});
+
+		// Client-side filtern
+		const unlockedCount = achievementsWithProgress.filter(a =>
+			isTruthy(a.progressBy[0]?.completedAt)
+		).length;
+
+		const categories = await database.achievement.groupBy({
+			by: ["category"],
+			_count: { category: true }
+		});
+
+		return {
+			total: achievementsWithProgress.length,
+			unlocked: unlockedCount,
+			categories: categories.map(cat => ({
+				name: cat.category,
+				count: cat._count.category
+			}))
+		};
+	})
 });

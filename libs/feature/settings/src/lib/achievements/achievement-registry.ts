@@ -12,7 +12,7 @@ type GroupDiscriminators = AchievementMeta["group"];
 
 export const ACHIEVEMENT_CONDITION_CHECKERS: Record<GroupDiscriminators, ConditionChecker> = {
 	streak: checkStreak,
-	perfect_lessons_serial: async () => {
+	grade_lessons_serial: async () => {
 		// TODO Add logic for perfect_lessons_serial condition
 		return { type: "unchanged" };
 	},

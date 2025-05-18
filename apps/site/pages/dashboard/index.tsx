@@ -3,7 +3,11 @@ import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
-import { StreakIndicatorCircle, StreakSlotMachineDialog } from "@self-learning/settings";
+import {
+	DashboardAchievementsSection,
+	StreakIndicatorCircle,
+	StreakSlotMachineDialog
+} from "@self-learning/settings";
 import { GamificationProfileMeta } from "@self-learning/types";
 import {
 	Divider,
@@ -284,6 +288,7 @@ export default function DashboardPage(props: Props) {
 		dispatch({ type: "TOGGLE_LTB", enabled: true });
 		dispatch({ type: "CLOSE_DIALOG" });
 	};
+
 	const handleClickLtbToggle = async () => {
 		if (ltb.enabled) {
 			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
@@ -302,56 +307,63 @@ export default function DashboardPage(props: Props) {
 
 	const [streakInfoOpen, setStreakInfoOpen] = useState(false);
 	const { t } = useTranslation(["common", "pages/dashboard"]);
+
 	return (
-		// <div className="flex h-screen bg-gray-50">
-		<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-			<section className="relative rounded-lg bg-white shadow p-4 space-y-2">
-				<div className="absolute -top-4 -right-4 h-14 w-14">
-					<StreakIndicatorCircle
-						streakCount={gamificationProfile.loginStreak}
-						onClick={() => setStreakInfoOpen(true)}
-					/>
-				</div>
-				<div className="flex justify-between items-center mb-4">
-					<button
-						onClick={openSettings}
-						className="rounded-full p-2 hover:bg-gray-100"
-						title="Einstellungen"
-					>
-						<CogIcon className="h-5 w-5 text-gray-500" />
-					</button>
-					{/* <Toggle label="" value={ltb.enabled} onChange={handleClickLtbToggle} /> */}
-				</div>
+		// Updated grid to accommodate the new achievements section
+		<div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+			{/* First column - Profile and achievements */}
+			<div className="xl:col-span-1 space-y-6">
+				{/* Existing profile section */}
+				<section className="relative rounded-lg bg-white shadow p-4 space-y-2">
+					<div className="absolute -top-4 -right-4 h-14 w-14">
+						<StreakIndicatorCircle
+							streakCount={gamificationProfile.loginStreak}
+							onClick={() => setStreakInfoOpen(true)}
+						/>
+					</div>
+					<div className="flex justify-between items-center mb-4">
+						<button
+							onClick={openSettings}
+							className="rounded-full p-2 hover:bg-gray-100"
+							title="Einstellungen"
+						>
+							<CogIcon className="h-5 w-5 text-gray-500" />
+						</button>
+					</div>
 
-				<div className="flex flex-col items-center text-center">
-					<ImageOrPlaceholder
-						src={user.image ?? undefined}
-						className="h-20 w-20 rounded-full object-cover mb-2"
-					/>
-					<h1 className="text-lg font-bold">{user.name}</h1>
-					<p className="text-sm text-gray-500">{user.email}</p>
-				</div>
+					<div className="flex flex-col items-center text-center">
+						<ImageOrPlaceholder
+							src={user.image ?? undefined}
+							className="h-20 w-20 rounded-full object-cover mb-2"
+						/>
+						<h1 className="text-lg font-bold">{user.name}</h1>
+						<p className="text-sm text-gray-500">{user.email}</p>
+					</div>
 
-				<Divider />
+					<Divider />
 
-				<div className="text-sm space-y-1">
-					<p>
-						<strong>{t("Units learned")}</strong> {completionCount.completedLessons}
-					</p>
-					<p>
-						<strong>Kurse:</strong> {10}
-					</p>
-					<p>
-						<strong>Fachgebiet:</strong> {user.name ?? "–"}
-					</p>
-					<p>
-						<strong>Tage in Folge aktiv:</strong> {5}
-					</p>
-				</div>
-			</section>
+					<div className="text-sm space-y-1">
+						<p>
+							<strong>{t("Units learned")}</strong> {completionCount.completedLessons}
+						</p>
+						<p>
+							<strong>Kurse:</strong> {enrollments.length}
+						</p>
+						<p>
+							<strong>Fachgebiet:</strong> {user.name ?? "–"}
+						</p>
+						<p>
+							<strong>Tage in Folge aktiv:</strong> {gamificationProfile.loginStreak}
+						</p>
+					</div>
+				</section>
 
-			{/* Course and Diary Section */}
-			<section className="grid gap-6 mt-6">
+				{/* Achievements Section */}
+				<DashboardAchievementsSection />
+			</div>
+
+			{/* Second and third columns - Course and Diary Section */}
+			<div className="xl:col-span-2 grid gap-6 lg:grid-cols-2">
 				<div className="rounded-lg bg-white p-6 shadow">
 					<h2 className="mb-4 text-lg font-semibold">Letzter Kurs</h2>
 					<LastCourseProgress
@@ -377,8 +389,9 @@ export default function DashboardPage(props: Props) {
 						<LessonList lessons={props.recentLessons} />
 					)}
 				</div>
-			</section>
+			</div>
 
+			{/* Dialogs */}
 			{ltb.dialogOpen && (
 				<EnableLearningDiaryDialog
 					onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
