@@ -8,11 +8,11 @@ import { SessionProvider } from "next-auth/react";
 import PlausibleProvider from "next-plausible";
 import { AppProps } from "next/app";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import superjson from "superjson";
 import { GlobalFeatures } from "../../_features";
 import "./styles.css";
 import { appWithTranslation } from "next-i18next";
+import Link from "next/link";
 
 export default withTRPC<AppRouter>({
 	config() {
