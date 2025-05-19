@@ -3,9 +3,9 @@ import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import { ResolvedValue } from "@self-learning/types";
 import { AuthorChip } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { GetStaticPaths, GetStaticProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
+import { withTranslations } from "@self-learning/api";
 
 type Team = ResolvedValue<typeof getTeam>;
 
@@ -14,7 +14,7 @@ type TeamPageProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getStaticProps: GetStaticProps<TeamPageProps> = async ({ params }) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
 	const slug = params?.teamSlug;
 
 	if (typeof slug !== "string") {
@@ -38,17 +38,9 @@ export const getStaticProps: GetStaticProps<TeamPageProps> = async ({ params }) 
 		props: {
 			team: team as Team,
 			markdownDescription
-		},
-		notFound: !team
+		}
 	};
-};
-
-export const getStaticPaths: GetStaticPaths = () => {
-	return {
-		fallback: "blocking",
-		paths: []
-	};
-};
+});
 
 async function getTeam(slug: string) {
 	return await database.team.findUnique({

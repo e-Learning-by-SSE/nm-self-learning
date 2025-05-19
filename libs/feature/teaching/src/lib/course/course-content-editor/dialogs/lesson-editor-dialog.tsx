@@ -1,7 +1,6 @@
 import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
-import React from "react";
 
 export function LessonEditorDialogWithGuard({
 	onClose,
@@ -11,9 +10,15 @@ export function LessonEditorDialogWithGuard({
 	initialLesson?: LessonFormModel;
 }) {
 	const session = useRequiredSession();
-	const canEdit =
-		session.data?.user.role === "ADMIN" ||
-		initialLesson?.authors.some(a => a.username === session.data?.user.name);
+	// Admins can edit everything
+	const isAdmin = session.data?.user.role === "ADMIN";
+	// All Authors can edit new lessons
+	const isAuthorOfNewLesson = initialLesson === undefined && session.data?.user.isAuthor;
+	// Authors can edit their own lessons
+	const isAuthorOfLesson = initialLesson?.authors.some(
+		a => a.username === session.data?.user.name
+	);
+	const canEdit = isAdmin || isAuthorOfNewLesson || isAuthorOfLesson;
 
 	return (
 		<div>

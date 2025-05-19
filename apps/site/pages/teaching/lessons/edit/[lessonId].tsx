@@ -1,9 +1,8 @@
-import { withAuth } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
 import { LessonContent } from "@self-learning/types";
-import { GetServerSideProps } from "next";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
@@ -13,9 +12,11 @@ type EditLessonProps = {
 	lesson: LessonFormModel;
 };
 
-export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
-	async (ctx, user) => {
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<EditLessonProps>(async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
+		const { locale } = ctx;
 
 		if (typeof lessonId !== "string") {
 			throw new Error("No [lessonId] provided.");
@@ -33,8 +34,8 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 				quiz: true,
 				imgUrl: true,
 				licenseId: true,
-				requirements: true,
-				teachingGoals: true,
+				requires: true,
+				provides: true,
 				authors: true,
 				lessonType: true,
 				selfRegulatedQuestion: true
@@ -63,12 +64,12 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 			imgUrl: lesson.imgUrl,
 			authors: lesson.authors.map(a => ({ username: a.username })),
 			licenseId: lesson.licenseId,
-			requirements: lesson.requirements.map(r => ({
+			requires: lesson.requires.map(r => ({
 				...r,
 				children: [],
 				parents: []
 			})),
-			teachingGoals: lesson.teachingGoals.map(t => ({
+			provides: lesson.provides.map(t => ({
 				...t,
 				children: [],
 				parents: []
@@ -81,9 +82,11 @@ export const getServerSideProps: GetServerSideProps = withAuth<EditLessonProps>(
 		};
 
 		return {
-			props: { lesson: lessonForm }
+			props: {
+				lesson: lessonForm
+			}
 		};
-	}
+	})
 );
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {

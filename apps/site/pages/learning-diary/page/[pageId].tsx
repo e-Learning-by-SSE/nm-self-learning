@@ -1,37 +1,37 @@
-import { withAuth } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import {
 	allPages,
 	DiaryContentForm,
+	DiaryLayout,
 	getAllStrategies,
 	PageChanger,
 	PagesMeta,
-	Sidebar,
 	Strategy
 } from "@self-learning/diary";
 import { Divider } from "@self-learning/ui/common";
 import { subMilliseconds } from "date-fns";
-import { GetServerSideProps } from "next";
 
-export const getServerSideProps: GetServerSideProps = withAuth(async (context, user) => {
-	const pageId = context.params?.pageId;
-	const pages = await allPages(user.name);
-	const availableStrategies = await getAllStrategies();
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth(async (context, user) => {
+		const pageId = context.params?.pageId;
+		const pages = await allPages(user.name);
+		const availableStrategies = await getAllStrategies();
 
-	const pageExists = pages.some(page => page.id === pageId);
-	if (!pageExists) {
-		return {
-			notFound: true
-		};
-	}
-
-	return {
-		props: {
-			diaryId: pageId,
-			pages,
-			availableStrategies
+		const pageExists = pages.some(page => page.id === pageId);
+		if (!pageExists) {
+			return {
+				notFound: true
+			};
 		}
-	};
-});
+
+		return {
+			props: { diaryId: pageId, pages, availableStrategies }
+		};
+	})
+);
+
+DiaryPageDetail.getLayout = DiaryLayout;
 
 export default function DiaryPageDetail({
 	diaryId,
@@ -48,26 +48,18 @@ export default function DiaryPageDetail({
 	endDate = subMilliseconds(endDate, 1); // subtract 1 ms to avoid fetching data of the next page
 
 	return (
-		<div className="flex flex-col">
-			<div className="mx-auto flex w-full flex-col gap-8 px-4 sm:flex-col-reverse xl:grid xl:grid-cols-[400px_1fr]">
-				<div className="w-full">
-					<Sidebar selectedPageId={diaryId} pages={pages} />
-				</div>
-
-				<div className="w-full py-4 sm:w-2/3 mx-auto">
-					<div className="mb-4 flex justify-center">
-						<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
-					</div>
-
-					<Divider />
-					<DiaryContentForm
-						key={diaryId}
-						diaryId={diaryId}
-						availableStrategies={availableStrategies}
-						endDate={endDate}
-					/>
-				</div>
+		<div className="w-full py-4 sm:w-2/3 mx-auto">
+			<div className="mb-4 flex justify-center">
+				<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
 			</div>
+
+			<Divider />
+			<DiaryContentForm
+				key={diaryId}
+				diaryId={diaryId}
+				availableStrategies={availableStrategies}
+				endDate={endDate}
+			/>
 		</div>
 	);
 }

@@ -240,7 +240,7 @@ function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClos
 				onClose={onClose}
 				className="fixed inset-0 z-10 overflow-y-auto"
 			>
-				<div className={"prose prose-emerald max-w-full"}>
+				<div className={"max-w-full"}>
 					<MarkdownViewer content={strategy.description} />
 				</div>
 				<DialogActions onClose={onClose}>
@@ -349,7 +349,7 @@ function TechniqueRatingDialog({
 			className="fixed inset-0 z-10"
 		>
 			<div className="flex flex-col justify-start items-start overflow-y-auto">
-				<div className="w-full max-w-md pb-5 text-l prose prose-emerald">
+				<div className="w-full max-w-md pb-5 text-l">
 					<MarkdownViewer content={selectedTechnique.description ?? ""} />
 				</div>
 				<div className="">
