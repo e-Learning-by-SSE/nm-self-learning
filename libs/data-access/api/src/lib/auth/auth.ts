@@ -129,6 +129,7 @@ const customPrismaAdapter: Adapter = {
 function getProviders(): Provider[] {
 	const providers = [
 		KeycloakProvider({
+			name: process.env.KEYCLOAK_PROVIDER_NAME ?? "Keycloak",
 			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
 			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
 			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,

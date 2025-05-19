@@ -10,9 +10,9 @@ import {
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	Tab,
+	Toggle,
 	Tabs,
-	Toggle
+	Tab
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
