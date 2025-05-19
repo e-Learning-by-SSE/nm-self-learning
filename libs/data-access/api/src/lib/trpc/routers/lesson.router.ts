@@ -137,12 +137,12 @@ export const lessonRouter = t.router({
 		.input(z.object({ lessonId: z.string() }))
 		.query(async ({ input }) => {
 			const courses = await database.$queryRaw`
-				SELECT *
-				FROM "Course"
-				WHERE EXISTS (SELECT 1
-							  FROM jsonb_array_elements("Course".content) AS chapter
-									   CROSS JOIN jsonb_array_elements(chapter - > 'content') AS lesson
-							  WHERE lesson ->>'lessonId' = ${input.lessonId})
+				SELECT * FROM "Course"
+				WHERE EXISTS (
+					SELECT 1 FROM jsonb_array_elements("Course".content) AS chapter
+									  CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
+					WHERE lesson->>'lessonId' = ${input.lessonId}
+				)
 			`;
 			return courses as Course[];
 		}),
