@@ -6,13 +6,13 @@ import {
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
-	PlusButton,
-	TrashcanButton,
 	Divider,
+	DropdownMenu,
+	PlusButton,
 	RemovableTab,
 	SectionHeader,
 	Tabs,
-	DropdownButton
+	TrashcanButton
 } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
@@ -20,7 +20,6 @@ import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
-import { PencilIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
@@ -109,30 +108,26 @@ export function QuizEditor() {
 					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lerneinheit
 					erfolgreich abzuschließen."
 				button={
-					<DropdownButton
-						title="Aufgabentyp hinzufügen"
-						backgroundColor={"btn-primary"}
-						hover={"hover:bg-emerald-700"}
-						chevronColor={"text-white"}
+					<DropdownMenu
+						title="Aufgabe erstellen"
+						button={
+							<div className="btn-primary">
+								<span className="font-semibold text-white">Aufgabe erstellen</span>
+							</div>
+						}
 					>
-						<span className={"text-white"}>Aufgabe Hinzufügen</span>
-						<div className={"bg-white"}>
-							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
-								<Button
-									title={"Aufgabe Hinzufügen"}
-									onClick={() => appendQuestion(type as QuestionType["type"])}
-									key={type as QuestionType["type"]}
-									className={
-										"hover:bg-secondary hover:text-white border rounded-md p-2 w-full"
-									}
-								>
-									<span>
-										{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
-									</span>
-								</Button>
-							))}
-						</div>
-					</DropdownButton>
+						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+							<Button
+								key={type}
+								type={"button"}
+								title="Aufgabentyp Hinzufügen"
+								className={"w-full text-left px-3 py-1"}
+								onClick={() => appendQuestion(type as QuestionType["type"])}
+							>
+								{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
+							</Button>
+						))}
+					</DropdownMenu>
 				}
 			/>
 
