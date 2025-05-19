@@ -9,6 +9,28 @@ import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MinorScaleFadeIn } from "../transition/minor-scale-fade-in";
 
+/**
+ * A searchable dropdown input built with Headless UI's Combobox.
+ * It displays a list of options filtered by user input and allows selection of a single item.
+ *
+ * @component
+ *
+ * @param {string} title - The title or tooltip for the combobox input.
+ * @param {"top" | "bottom"} [dropdownPosition="bottom"] - Position of the dropdown menu relative to the input.
+ * @param {(option: string) => void} onChange - Callback invoked when the user selects an option.
+ * @param {(focus: boolean) => string} [customFocusStyle] - Optional function to customize the class name when an option is focused.
+ * @param {string | null | undefined} displayValue - The current selected value to be displayed in the input field.
+ * @param {string[]} options - The list of selectable options.
+ *
+ * @example
+ * <ComboboxMenu
+ *   title="Choose a language"
+ *   displayValue={selected}
+ *   options={["English", "Deutsch", "Español"]}
+ *   onChange={setSelected}
+ *   customFocusStyle={(focus) => focus ? "bg-emerald-500 text-white" : ""}
+ * />
+ */
 export function ComboboxMenu({
 	title,
 	dropdownPosition = "bottom",

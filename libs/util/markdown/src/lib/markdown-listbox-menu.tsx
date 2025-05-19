@@ -5,11 +5,35 @@ import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "./markdown";
 import { MinorScaleFadeIn } from "@self-learning/ui/common";
 
+/**
+ * A dropdown listbox component using Headless UI with support for rendering Markdown.
+ * Displays a list of selectable options with optional focus styling and a custom button style.
+ *
+ * @component
+ *
+ * @param {string} title - Tooltip text shown when hovering over the button.
+ * @param {"top" | "bottom"} [dropdownPosition="bottom"] - Position of the dropdown relative to the button.
+ * @param {(option: string) => void} onChange - Callback triggered when an option is selected.
+ * @param {(focus: boolean) => string} [customFocusStyle] - Optional function to provide custom class names for focused items.
+ * @param {string} [customButtonStyle] - Optional Tailwind class string for custom button styling
+ * @param {string | null | undefined} displayValue - The currently selected option to display in the button.
+ * @param {string[]} options - Array of options to display in the dropdown, each rendered as Markdown.
+ *
+ * @example
+ * <MarkdownListboxMenu
+ *   title="Select difficulty"
+ *   displayValue={selectedLevel}
+ *   options={["**Easy**", "**Medium**", "**Hard**"]}
+ *   onChange={setSelectedLevel}
+ *   customFocusStyle={(focus) => (focus ? "bg-blue-500 text-white" : "text-gray-800")}
+ *   constomButtonStyle="w-full border px-4 py-2 text-left rounded"
+ * />
+ */
 export function MarkdownListboxMenu({
 	title,
 	dropdownPosition = "bottom",
 	customFocusStyle,
-	constomButtonStyle,
+	customButtonStyle,
 	displayValue,
 	options,
 	onChange
@@ -18,7 +42,7 @@ export function MarkdownListboxMenu({
 	dropdownPosition?: "top" | "bottom";
 	onChange: (option: string) => void;
 	customFocusStyle?: (focus: boolean) => string;
-	constomButtonStyle?: string;
+	customButtonStyle?: string;
 	displayValue: string | null | undefined;
 	options: string[];
 }) {
@@ -31,8 +55,8 @@ export function MarkdownListboxMenu({
 				as="button"
 				title={title}
 				className={
-					constomButtonStyle
-						? constomButtonStyle
+					customButtonStyle
+						? customButtonStyle
 						: "items-center justify-between px-3 py-2 border rounded space-x-2 w-full"
 				}
 			>

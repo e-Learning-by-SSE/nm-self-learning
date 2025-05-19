@@ -2,6 +2,30 @@ import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { MinorScaleFadeIn } from "@self-learning/ui/common";
 
+/**
+ * A reusable dropdown menu component using Headless UI's Menu.
+ * The dropdown width is dynamically matched to the trigger button.
+ *
+ * @component
+ *
+ * @param {string} title - Tooltip text shown on hover over the menu button.
+ * @param {"top" | "bottom"} [dropdownPosition="bottom"] - Position of the dropdown menu (above or below the button).
+ * @param {(focus: boolean) => string} [customFocusStyle] - Optional function to customize class names for focused items.
+ * @param {ReactNode} button - The button content that triggers the dropdown (e.g., text or icon).
+ * @param {ReactNode} children - Menu items to display inside the dropdown, typically as `<span>` or `<div>`.
+ *
+ * @example
+ * <DropdownMenu
+ *   title="Open user menu"
+ *   dropdownPosition="bottom"
+ *   button={<UserAvatar />}
+ *   customFocusStyle={(focus) => focus ? "bg-gray-100 text-black" : ""}
+ * >
+ *   <span>Profile</span>
+ *   <span>Settings</span>
+ *   <span>Logout</span>
+ * </DropdownMenu>
+ */
 export function DropdownMenu({
 	title,
 	dropdownPosition = "bottom",

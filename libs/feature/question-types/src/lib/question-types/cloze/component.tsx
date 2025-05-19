@@ -91,7 +91,7 @@ export function RenderGapType({
 				dropdownPosition={"bottom"}
 				displayValue={value}
 				options={gap.values.map(value => value.text)}
-				constomButtonStyle={
+				customButtonStyle={
 					"items-center justify-between px-3 py-2 border rounded space-x-2"
 				}
 			/>
