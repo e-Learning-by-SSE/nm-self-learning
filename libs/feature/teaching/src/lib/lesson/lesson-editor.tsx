@@ -18,6 +18,7 @@ import { LessonFormModel } from "./lesson-form-model";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
 import { useRouter } from "next/router";
+import _ from "lodash";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -100,34 +101,46 @@ export function LessonEditor({
 		resolver: zodResolver(lessonSchema)
 	});
 
+	// Stores the last draft, to avoid multiple saves of the same state
+	const lastValuesRef = useRef<LessonFormModel | null>(null);
+
 	const { mutateAsync: upsert } = trpc.lessonDraft.upsert.useMutation();
 
 	const lastSavedDraftIdRef = useRef<string | null>(null);
 	const toastShownRef = useRef(false);
-	const saveLessonDraft = useCallback(async () => {
-		const formValues = form.getValues();
-		const draft: LessonDraft = {
-			...formValues,
-			id: undefined,
-			owner: session.data?.user.isAuthor
-				? { username: session.data?.user.name }
-				: { username: "" }
-		};
+	const saveLessonDraft = useCallback(
+		async (force = false) => {
+			const formValues = form.getValues();
 
-		try {
-			const objectToUpsert: LessonDraft = draft;
-			if (lastSavedDraftIdRef.current) {
-				objectToUpsert.id = lastSavedDraftIdRef.current;
+			if (!force && _.isEqual(formValues, lastValuesRef.current)) {
+				return; // Abort saving in case of no change
 			}
-			if (draftId) {
-				objectToUpsert.id = draftId;
+
+			const draft: LessonDraft = {
+				...formValues,
+				id: undefined,
+				owner: session.data?.user.isAuthor
+					? { username: session.data?.user.name }
+					: { username: "" }
+			};
+
+			try {
+				const objectToUpsert: LessonDraft = draft;
+				if (lastSavedDraftIdRef.current) {
+					objectToUpsert.id = lastSavedDraftIdRef.current;
+				}
+				if (draftId) {
+					objectToUpsert.id = draftId;
+				}
+				const updatedDraft = await upsert(objectToUpsert);
+				lastSavedDraftIdRef.current = updatedDraft.id;
+				lastValuesRef.current = formValues;
+			} catch (err) {
+				console.log("Error during autosave", err);
 			}
-			const updatedDraft = await upsert(objectToUpsert);
-			lastSavedDraftIdRef.current = updatedDraft.id;
-		} catch (err) {
-			console.log("Error during autosave", err);
-		}
-	}, [form, session.data, upsert, draftId]);
+		},
+		[form, session.data, upsert, draftId]
+	);
 
 	useInterval({
 		callback: saveLessonDraft,
@@ -160,7 +173,8 @@ export function LessonEditor({
 
 	const handleSaveAsDraft = () => {
 		setShowSaveOptions(false);
-		saveLessonDraft();
+		// Force save to update "updatedAt" field, to show the user the correct date
+		saveLessonDraft(true);
 		router.push(redirectPath ?? "/");
 	};
 
