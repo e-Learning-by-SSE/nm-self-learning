@@ -2,7 +2,7 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { LanguageTreeQuestion } from "./schema";
 import { ReactNode, useState } from "react";
-import { parseTree, TreeNode, validateBrackets } from "./tree-parser";
+import { parseTree, TreeNode} from "./tree-parser";
 import { TreeVisualization } from "./tree-visualization";
 import { Dialog, DialogActions, PlusButton, Toggle } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
@@ -190,12 +190,6 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 		setTree: (tree: TreeNode | null) => void,
 		setError: (error: string | null) => void
 	) => {
-		if (!validateBrackets(value)) {
-			setError("Invalid bracket structure");
-			setTree(null);
-			return;
-		}
-
 		try {
 			const newTree = parseTree(value);
 			setTree(newTree);
