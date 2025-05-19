@@ -132,7 +132,7 @@ export default function AuthorsPage() {
 													className="btn-stroked"
 													onClick={() => onEdit(name)}
 												>
-													Editieren
+													Bearbeiten
 												</button>
 											</div>
 										</TableDataColumn>

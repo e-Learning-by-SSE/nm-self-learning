@@ -114,7 +114,7 @@ export function Navbar() {
 								href="subjects"
 								className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
 							>
-								Fachgebiete Erkunden
+								Fachgebiete
 							</DisclosureButton>
 						</div>
 					</DisclosurePanel>
@@ -125,15 +125,13 @@ export function Navbar() {
 }
 
 function NavbarNavigationLink() {
-	const [navigation, setNavigation] = useState([
-		{ name: "Fachgebiete Erkunden", href: "/subjects" }
-	]);
+	const [navigation, setNavigation] = useState([{ name: "Fachgebiete", href: "/subjects" }]);
 	const router = useRouter();
 
 	const setNavigationLink = useCallback(
 		(query: ParsedUrlQuery) => {
 			let newNavigation: { name: string; href: string }[] = [];
-			newNavigation.push({ name: "Fachgebiete Erkunden", href: "/subjects" });
+			newNavigation.push({ name: "Fachgebiete", href: "/subjects" });
 
 			if (query.subjectSlug) {
 				newNavigation.push({
@@ -150,7 +148,7 @@ function NavbarNavigationLink() {
 			} else if (query.courseSlug) {
 				newNavigation = JSON.parse(localStorage.getItem("navigation") ?? "[]");
 				if (newNavigation.length < 1) {
-					newNavigation.push({ name: "Fachgebiete Erkunden", href: "/subjects" });
+					newNavigation.push({ name: "Fachgebiete", href: "/subjects" });
 					return;
 				}
 				newNavigation.push({

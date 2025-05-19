@@ -53,7 +53,7 @@ export default function SubjectManagementPage() {
 					className="btn-primary absolute top-8 w-fit self-end"
 				>
 					<PencilIcon className="icon h-5" />
-					<span>Editieren</span>
+					<span>Bearbeiten</span>
 				</Link>
 			</TopicHeader>
 
@@ -69,7 +69,7 @@ export default function SubjectManagementPage() {
 						href={`/teaching/subjects/${subject.subjectId}/create`}
 					>
 						<PlusIcon className="icon h-5" />
-						<span>Hinzufügen</span>
+						<span>Spezialisierung erstellen</span>
 					</Link>
 
 					<button

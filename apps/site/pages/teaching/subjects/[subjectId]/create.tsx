@@ -93,7 +93,7 @@ export function SpecializationEditor({
 									Spezialisierung{" "}
 									{initialSpecialization.specializationId === ""
 										? "erstellen"
-										: "speichern"}
+										: "bearbeiten"}
 								</span>
 
 								<h1 className="text-2xl">

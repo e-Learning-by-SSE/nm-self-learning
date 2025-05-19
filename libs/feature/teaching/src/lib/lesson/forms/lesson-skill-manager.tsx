@@ -48,7 +48,7 @@ export function LessonSkillManager() {
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle
 				title="Skills"
-				subtitle="Vermittelte und Benötigte Skills dieser Lerneinheit"
+				subtitle="Vermittelte und benötigte Skills dieser Lerneinheit"
 			/>
 			<LinkedSkillRepositoryMemorized selectRepository={selectRepository} />
 			{selectedRepository && (

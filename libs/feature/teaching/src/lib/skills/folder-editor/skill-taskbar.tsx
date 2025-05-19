@@ -79,7 +79,7 @@ export function AddChildButton({
 
 	return (
 		<button
-			title="Neuen Skill in dieser Skillgruppe anlegen"
+			title="Neuen Skill in dieser Skillgruppe erstellen"
 			className="hover:text-secondary"
 			onClick={handleAddSkill}
 		>
@@ -166,7 +166,7 @@ export function NewSkillButton({
 	};
 	return (
 		<IconButton
-			text="Skill hinzufügen"
+			text="Skill erstellen"
 			icon={<PlusIcon className="icon h-5" />}
 			onClick={onCreateSkill}
 		/>
