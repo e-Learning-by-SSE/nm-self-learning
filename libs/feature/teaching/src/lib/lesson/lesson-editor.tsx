@@ -102,7 +102,7 @@ export function LessonEditor({
 	});
 
 	// Stores the last draft, to avoid multiple saves of the same state
-	const lastValuesRef = useRef<LessonFormModel | null>(null);
+	const lastValuesRef = useRef<LessonFormModel | null>(initialLesson ?? null);
 
 	const { mutateAsync: upsert } = trpc.lessonDraft.upsert.useMutation();
 

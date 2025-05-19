@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { LessonDraft } from "@self-learning/types";
-import { Dialog, DialogActions } from "@self-learning/ui/common";
+import { Dialog, DialogActions, GreyBoarderButton } from "@self-learning/ui/common";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { useRouter } from "next/router";
@@ -47,9 +47,12 @@ export function DraftsDialog({ onClose, drafts }: { onClose: () => void; drafts:
 				Möchten Sie diese wiederherstellen? Nicht gespeicherte Änderungen gehen verloren!
 			</span>
 			<div className="flex gap-2 pt-3 justify-end">
-				<DialogActions onClose={handleCancel}>
+				<DialogActions onClose={onClose}>
+					<GreyBoarderButton onClick={handleCancel}>
+						<span className={"text-gray-600"}>Draft löschen</span>
+					</GreyBoarderButton>
 					<button className="btn-primary" onClick={handleClick}>
-						Wiederherstellen
+						Bearbeitung fortsetzen
 					</button>
 				</DialogActions>
 			</div>
