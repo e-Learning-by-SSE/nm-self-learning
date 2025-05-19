@@ -29,7 +29,7 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
 	return next({ ctx: ctx as Required<Context> });
 });
 
-export const isAuthorMiddleware = t.middleware(async ({ ctx, next }) => {
+const isAuthorMiddleware = t.middleware(async ({ ctx, next }) => {
 	if (!ctx?.user) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
@@ -41,7 +41,7 @@ export const isAuthorMiddleware = t.middleware(async ({ ctx, next }) => {
 		});
 	}
 
-	return next();
+	return next({ ctx: ctx as Required<Context> });
 });
 
 /** Creates a `t.procedure` that requires an authenticated user. */
@@ -50,43 +50,3 @@ export const authProcedure = t.procedure.use(authMiddleware);
 export const adminProcedure = t.procedure.use(adminMiddleware);
 /** Creates a `t.procedure` that requires an authenticated user with `AUTHOR` role. */
 export const authorProcedure = t.procedure.use(isAuthorMiddleware);
-/** Procedure that valides if user is author of given course. */
-export const isCourseAuthorProcedure = t.procedure
-	.input(z.object({ courseId: z.string() }))
-	.use(async opts => {
-		const { courseId } = opts.input;
-		const { user } = opts.ctx;
-
-		if (!user) {
-			throw new TRPCError({ code: "UNAUTHORIZED" });
-		}
-
-		if (user.role === "ADMIN") {
-			return opts.next();
-		}
-
-		const isAuthor = await checkIfUserIsAuthor(user.name, courseId);
-		if (!isAuthor) {
-			throw new TRPCError({
-				code: "UNAUTHORIZED",
-				message: "User is not author of this course!"
-			});
-		}
-
-		return opts.next();
-	});
-
-async function checkIfUserIsAuthor(username: string, courseId: string) {
-	const course = await database.course.findUniqueOrThrow({
-		where: { courseId },
-		select: {
-			authors: {
-				select: {
-					username: true
-				}
-			}
-		}
-	});
-
-	return course.authors.some(author => author.username === username);
-}
