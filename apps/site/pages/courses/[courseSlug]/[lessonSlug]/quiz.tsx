@@ -21,6 +21,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
 import { GetServerSideProps } from "next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withAuth } from "@self-learning/api";
 import { parse } from "next-useragent";
 
 type QuestionProps = LessonLayoutProps & {
@@ -33,7 +34,7 @@ type QuestionProps = LessonLayoutProps & {
 };
 
 // Cant use withTranslation hook for some reason. Test will fail otherwise.
-export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params, locale, req }) => {
+export const getServerSideProps = withAuth<QuestionProps>(async ({ params, locale, req }) => {
 	const parentProps = await getStaticPropsForLayout(params);
 
 	if ("notFound" in parentProps) return { notFound: true };
@@ -84,7 +85,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 			}
 		}
 	};
-};
+});
 
 export default function QuestionsPage({ course, lesson, quiz, markdown }: QuestionProps) {
 	const { questions, config } = quiz;

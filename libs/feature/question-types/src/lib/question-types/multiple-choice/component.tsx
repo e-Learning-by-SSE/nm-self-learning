@@ -23,15 +23,15 @@ export default function MultipleChoiceAnswer({
 	return (
 		<>
 			<section className="flex flex-col gap-4">
-				{question.answers?.map(option => (
+			{Object.entries(answer.value).map(([answerId]) => (
 					<MultipleChoiceOption
-						key={option.answerId}
+						key={answerId}
 						disabled={!!evaluation}
 						showResult={!!evaluation && config.showSolution}
-						isUserAnswerCorrect={evaluation?.answers[option.answerId] === true}
-						isCorrect={option.isCorrect}
+						isUserAnswerCorrect={evaluation?.answers[answerId] === true}
+						isCorrect={question.answers.find(a => a.answerId === answerId)?.isCorrect ?? false}
 						isSelected={
-							(isJustified ? justifiedAnswer : answer).value[option.answerId] === true
+							(isJustified ? justifiedAnswer : answer).value[answerId] === true
 						}
 						onToggle={() => {
 							const answerSetter = isJustified ? setJustifiedAnswer : setAnswer;
@@ -39,15 +39,15 @@ export default function MultipleChoiceAnswer({
 								...old,
 								value: {
 									...old.value,
-									[option.answerId]: old.value[option.answerId] !== true
+									[answerId]: old.value[answerId] !== true
 								}
 							}));
 						}}
 						justifyChoice={isJustified}
 					>
-						{markdown.answersMd[option.answerId] ? (
+						{markdown.answersMd[answerId] ? (
 							<MarkdownContainer>
-								<MDXRemote {...markdown.answersMd[option.answerId]} />
+								<MDXRemote {...markdown.answersMd[answerId]} />
 							</MarkdownContainer>
 						) : (
 							<span className="text-red-500">Error: No markdown content found.</span>

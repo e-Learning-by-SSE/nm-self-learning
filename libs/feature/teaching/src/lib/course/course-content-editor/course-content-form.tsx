@@ -222,13 +222,17 @@ function ChapterNode({
 	}
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
-		await onLessonCreatorSubmit(
+		const createdLesson = await onLessonCreatorSubmit(
 			() => {
 				setCreateLessonDialogOpen(false);
 			},
 			createLessonAsync,
 			lesson
 		);
+
+		if (createdLesson) {
+			onLessonAdded(index, createdLesson);
+		}
 	}
 
 	return (
@@ -364,12 +368,12 @@ function EditExistingLessonDialog({
 			onClose={handleEditDialogClose}
 			initialLesson={{
 				...data,
-				requirements: data.requirements.map(req => ({
+				requires: data.requires.map(req => ({
 					...req,
 					children: req.children.map(c => c.name),
 					parents: req.parents.map(p => p.name)
 				})),
-				teachingGoals: data.teachingGoals.map(goal => ({
+				provides: data.provides.map(goal => ({
 					...goal,
 					children: goal.children.map(c => c.name),
 					parents: goal.parents.map(p => p.name)

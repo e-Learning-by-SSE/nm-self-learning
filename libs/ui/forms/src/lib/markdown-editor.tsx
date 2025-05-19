@@ -1,11 +1,18 @@
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
+"use client";
+import { ChevronDownIcon, ItalicIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import { Dialog, DialogActions, OnDialogCloseFn, PencilButton } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
 import { editor } from "monaco-editor";
-import { ListBulletIcon, NumberedListIcon } from "@heroicons/react/24/outline";
+import {
+	ListBulletIcon,
+	NumberedListIcon,
+	PhotoIcon,
+	BoldIcon,
+	LinkIcon
+} from "@heroicons/react/24/outline";
 import { useCallback, useRef, useState } from "react";
 
 export function MarkdownField({
@@ -87,13 +94,13 @@ export function MarkdownEditorDialog({
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			title={title}
 		>
-			<div className="grid h-full grid-cols-2 items-start gap-8 overflow-hidden pt-4">
+			<div className="grid h-full grid-cols-2 items-start gap-8 overflow-hidden">
 				<div className="flex h-full w-full flex-col gap-2">
 					<label className="text-sm font-semibold">Markdown</label>
 					{editorInstance && <EditorQuickActions editor={editorInstance} />}
 					<EditorField
 						language="markdown"
-						onChange={value => value && setValue(value)}
+						onChange={value => setValue(value ?? "")}
 						onMount={handleEditorDidMount}
 						value={value}
 						height={"100%"}
@@ -103,14 +110,6 @@ export function MarkdownEditorDialog({
 				<div className="flex h-full w-full flex-col gap-2 overflow-auto">
 					<span className="relative flex justify-between">
 						<label className="text-sm font-semibold">Preview</label>
-						<div className="absolute right-0 -top-4 flex gap-4">
-							<AssetPickerButton
-								copyToClipboard={true}
-								onClose={() => {
-									/** NOOP */
-								}}
-							/>
-						</div>
 					</span>
 					<div className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
@@ -134,7 +133,15 @@ export function MarkdownEditorDialog({
 	);
 }
 
-type FORMAT_TYPES = "BOLD" | "ITALIC" | "ORDERED_LIST" | "UNORDERED_LIST" | "HEADER" | "LANGUAGE";
+type FORMAT_TYPES =
+	| "BOLD"
+	| "ITALIC"
+	| "ORDERED_LIST"
+	| "UNORDERED_LIST"
+	| "HEADER"
+	| "LANGUAGE"
+	| "LINK"
+	| "IMAGE";
 
 function createFormattedList(type: "ordered" | "unordered", text: string) {
 	return text
@@ -156,9 +163,9 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 			const model = editor.getModel();
 			if (!selection || !model) return;
 
+			let newCursorPosition = null;
 			const setCursorPos = (lineColumn: number) => {
-				const insertPosition = selection.getStartPosition().delta(0, lineColumn);
-				editor.setPosition(insertPosition);
+				newCursorPosition = selection.getStartPosition().delta(0, lineColumn);
 			};
 
 			const selectedText = model.getValueInRange(selection).trim();
@@ -213,42 +220,85 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 						formattedText = `${MD_LANG_BLOCK}${selectedLanguage.current}\n${selectedText}\n${MD_LANG_BLOCK}`;
 					}
 					break;
+				case "LINK":
+					if (!selectedText) {
+						formattedText = `[your-description](your-link)`;
+						setCursorPos(1);
+					} else {
+						formattedText = `[${selectedText}](url)`;
+						const selectedTextLength = selectedText.length;
+						setCursorPos(selectedTextLength + 3);
+					}
+					break;
+				case "IMAGE":
+					if (!selectedText) {
+						formattedText = `![your-description](link-to-your-img)`;
+						setCursorPos(2);
+					} else {
+						formattedText = `![${selectedText}](url)`;
+						setCursorPos(selectedText.length + 3);
+					}
+					break;
 				default:
 					break;
 			}
 
 			editor.executeEdits("", [{ range, text: formattedText, forceMoveMarkers: true }]);
+			if (newCursorPosition) {
+				editor.setPosition(newCursorPosition);
+			}
 			editor.focus();
 		},
 		[editor]
 	);
+
+	const handleCloseUploadDialog = async () => {};
+
+	const iconSize = "h-5";
+
 	return (
-		<div className="mb-2 flex flex-col rounded-xl bg-gray-200 p-2">
+		<div className="mb-2 rounded-xl bg-gray-200 p-2">
 			<div className="flex flex-wrap gap-1">
 				{[
-					{ title: "Bold", format: "BOLD", content: <strong>B</strong> },
-					{ title: "Italic", format: "ITALIC", content: <em>I</em> },
+					{ title: "Bold", format: "BOLD", content: <BoldIcon className={iconSize} /> },
+					{
+						title: "Italic",
+						format: "ITALIC",
+						content: <ItalicIcon className={iconSize} />
+					},
 					{
 						title: "Unordered List",
 						format: "UNORDERED_LIST",
-						content: <ListBulletIcon className="icon h-5 w-5" />
+						content: <ListBulletIcon className={iconSize} />
 					},
 					{
 						title: "Ordered List",
 						format: "ORDERED_LIST",
-						content: <NumberedListIcon className="icon h-5 w-5" />
+						content: <NumberedListIcon className={iconSize} />
+					},
+					{
+						title: "Link",
+						format: "LINK",
+						content: <LinkIcon className={iconSize} />
+					},
+					{
+						title: "Image",
+						format: "IMAGE",
+						content: <PhotoIcon className={iconSize} />
 					}
 				].map(({ title, format, content }) => (
 					<button
 						key={format}
 						title={title}
 						type="button"
-						className="btn-stroked"
+						className="btn-icon"
 						onClick={() => applyMarkdownFormat(format as FORMAT_TYPES)}
 					>
 						{content}
 					</button>
 				))}
+
+				<AssetPickerButton copyToClipboard={true} onClose={handleCloseUploadDialog} />
 
 				<EditorQuickActionsHeaderDropdown
 					onChange={value => {

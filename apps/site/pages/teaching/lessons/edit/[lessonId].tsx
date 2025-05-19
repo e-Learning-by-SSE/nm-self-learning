@@ -34,8 +34,8 @@ export const getServerSideProps = withTranslations(
 				quiz: true,
 				imgUrl: true,
 				licenseId: true,
-				requirements: true,
-				teachingGoals: true,
+				requires: true,
+				provides: true,
 				authors: true,
 				lessonType: true,
 				selfRegulatedQuestion: true
@@ -64,12 +64,12 @@ export const getServerSideProps = withTranslations(
 			imgUrl: lesson.imgUrl,
 			authors: lesson.authors.map(a => ({ username: a.username })),
 			licenseId: lesson.licenseId,
-			requirements: lesson.requirements.map(r => ({
+			requires: lesson.requires.map(r => ({
 				...r,
 				children: [],
 				parents: []
 			})),
-			teachingGoals: lesson.teachingGoals.map(t => ({
+			provides: lesson.provides.map(t => ({
 				...t,
 				children: [],
 				parents: []

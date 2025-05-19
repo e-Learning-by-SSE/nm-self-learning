@@ -1,3 +1,4 @@
+"use client";
 import { Menu, MenuItem, Transition } from "@headlessui/react";
 import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/24/solid";
 import React, { Fragment, useState } from "react";

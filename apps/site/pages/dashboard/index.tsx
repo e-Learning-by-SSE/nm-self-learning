@@ -9,7 +9,9 @@ import {
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	Toggle
+	Toggle,
+	Tabs,
+	Tab
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
@@ -20,7 +22,7 @@ import {
 } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -245,6 +247,8 @@ function DashboardPage(props: Props) {
 		enabled: props.student.user.enabledFeatureLearningDiary
 	});
 
+	const [selectedTab, setSelectedTab] = useState(0);
+
 	const openSettings = () => {
 		router.push("/user-settings");
 	};
@@ -315,7 +319,8 @@ function DashboardPage(props: Props) {
 
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
-						<h2 className="mb-4 text-xl">Letzter Kurs</h2>
+						<h2 className="text-xl py-2 px-2">Letzter Kurs</h2>
+						<div className="mb-4 border-b border-light-border h-[6px]"></div>
 						<LastCourseProgress
 							lastEnrollment={
 								props.student.enrollments.sort(
@@ -330,12 +335,30 @@ function DashboardPage(props: Props) {
 					<div className="rounded bg-white p-4 shadow">
 						{ltb.enabled ? (
 							<>
-								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
-								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
+								<Tabs onChange={v => setSelectedTab(v)} selectedIndex={selectedTab}>
+									<Tab>
+										<h2 className="text-xl"> Lerntagebuch </h2>
+									</Tab>
+									<Tab>
+										<h2 className="text-xl"> Lerneinheiten </h2>
+									</Tab>
+								</Tabs>
+								<div className="mb-4" />
+								{selectedTab === 0 && (
+									<LastLearningDiaryEntry
+										pages={props.student.learningDiaryEntrys}
+									/>
+								)}
+								{selectedTab === 1 && <LessonList lessons={props.recentLessons} />}
+
+								{/* <h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2> */}
 							</>
 						) : (
 							<>
-								<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
+								<h2 className="text-xl py-2 px-2">
+									Zuletzt bearbeitete Lerneinheiten
+								</h2>
+								<div className="mb-4 border-b border-light-border h-[6px]"></div>
 								<LessonList lessons={props.recentLessons} />
 							</>
 						)}
@@ -390,7 +413,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 				</span>
 			) : (
 				<>
-					<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
+					<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
 						{pages.map((page, _) => (
 							<Link
 								className="text-sm font-medium"
@@ -399,9 +422,9 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 							>
 								<li
 									className="hover: flex items-center rounded-lg border border-light-border
-							p-3 transition-transform hover:bg-slate-100"
+							p-3 transition-transform hover:bg-slate-100 hover:scale-105"
 								>
-									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
+									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-4">
 										<div className="flex items-center gap-2">
 											<LearningDiaryEntryStatusBadge
 												isDraft={page.isDraft}
@@ -419,7 +442,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 												</span>
 											</div>
 										</div>
-										<span className="hidden text-sm text-light md:block">
+										<span className="hidden text-xs text-light md:block">
 											{formatDateStringShort(page.createdAt)}
 										</span>
 									</div>
@@ -439,7 +462,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 			{lessons.length === 0 ? (
 				<span className="text-sm text-light">Du hast keine Lerneinheiten bearbeitet.</span>
 			) : (
-				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
+				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
 					{lessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"
@@ -448,7 +471,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 						>
 							<li
 								className="hover: flex items-center rounded-lg border border-light-border
-							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+							px-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl}
