@@ -2,14 +2,6 @@ import { z } from "zod";
 import { streakInfoSchema } from "./gamificationProfile";
 
 export const notificationPropSchema = {
-	MotdDialog: z.object({
-		title: z.string(),
-		message: z.string(),
-		imageUrl: z.string().url().optional(),
-		actions: z
-			.array(z.object({ label: z.string(), type: z.literal("link"), url: z.string().url() }))
-			.optional()
-	}),
 	StreakInfoDialog: streakInfoSchema,
 	BannerMessage: z.object({
 		htmlMessage: z.string(),

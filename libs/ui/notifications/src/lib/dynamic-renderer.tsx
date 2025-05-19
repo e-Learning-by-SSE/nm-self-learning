@@ -4,7 +4,6 @@ import { StreakSlotMachineDialog } from "@self-learning/settings";
 import { NotificationEntry, StreakInfo } from "@self-learning/types";
 import { useState } from "react";
 import { MessagePortal } from "./message-portal/message-portal";
-import { MotdDialog } from "./motd/motd-dialog";
 
 export function NotificationsRenderer() {
 	const { data: notifications } = trpc.notification.getOwn.useQuery(undefined, {
@@ -33,8 +32,6 @@ export function NotificationsRenderer() {
 
 export function DynamicNotificationRenderer({ notification }: { notification: NotificationEntry }) {
 	switch (notification.component) {
-		case "MotdDialog":
-			return <MotdDialog {...notification.props} />;
 		case "BannerMessage":
 			return <MessagePortal {...notification.props} />;
 		case "StreakInfoDialog":

@@ -89,7 +89,7 @@ model EventLog {
 
 model Notification {
   id             String   @id @default(uuid())
-  component      String   // z. B. "MotdDialog", "BannerMessage"
+  component      String   // z. B. "BannerMessage"
   props          Json     // enthält die dynamischen Props der Komponente
   displayFrom    DateTime
   displayUntil   DateTime
