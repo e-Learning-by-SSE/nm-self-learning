@@ -68,9 +68,9 @@ model AchievementProgress {
   id             String              @id @default(uuid())
   userId         String
   achievementId  String
-  progressValue          Int 
-  completedAt    DateTime?
-  updatedAt     DateTime            @default(now())
+  progressValue  Int 
+  redeemedAt     DateTime?         
+  updatedAt      DateTime @updatedAt
   meta           Json?
 
   gamificationProfile                GamificationProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
@@ -78,4 +78,3 @@ model AchievementProgress {
 
   @@unique([userId, achievementId])
 }
-

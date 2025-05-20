@@ -1,15 +1,15 @@
 "use client";
 import {
+	Dialog as HeadlessDialog,
 	DialogPanel as HeadlessDialogPanel,
 	DialogTitle as HeadlessDialogTitle,
-	Dialog as HeadlessDialog,
-	Transition
+	Transition,
+	TransitionChild
 } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { CSSProperties, Fragment, ReactNode } from "react";
-import { GreyBoarderButton } from "../button/button";
 import { EaseInTransitionChild } from "../transitions/ease-in-child";
 import { SpringTransitionChild } from "../transitions/spring-in-child";
-import { XMarkIcon } from "@heroicons/react/24/solid";
 export type OnDialogCloseFn<T> = (result?: T) => void;
 
 type RequiredSizeProps = {
@@ -33,7 +33,7 @@ function Backdrop() {
 
 function DialogPanelTransition({ children }: { children: React.ReactNode }) {
 	return (
-		<Transition.Child
+		<TransitionChild
 			as={Fragment}
 			enter="ease-out duration-300"
 			enterFrom="opacity-0 scale-95"
@@ -43,7 +43,7 @@ function DialogPanelTransition({ children }: { children: React.ReactNode }) {
 			leaveTo="opacity-0 scale-95"
 		>
 			{children}
-		</Transition.Child>
+		</TransitionChild>
 	);
 }
 
@@ -219,9 +219,12 @@ export function DialogWithReactNodeTitle<TResult>({
 }
 
 export function DialogActions({
+	abortLabel = "Abbrechen",
 	onClose,
 	children
 }: {
+	/** Label for the `Cancel` button. */
+	abortLabel?: string;
 	/** Function that will be called with `undefined` when the `Cancel` button is clicked. */ // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onClose: OnDialogCloseFn<any>;
 	/** Should include the call to action button.  */
@@ -230,7 +233,7 @@ export function DialogActions({
 	return (
 		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
 			<button onClick={() => onClose(undefined)} className="btn-stroked">
-				<span className={"text-gray-600"}>Abbrechen</span>
+				<span className={"text-gray-600"}>{abortLabel}</span>
 			</button>
 			{children}
 		</div>

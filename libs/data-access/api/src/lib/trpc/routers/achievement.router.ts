@@ -136,15 +136,18 @@ export const gamificationRouter = t.router({
 			include: {
 				progressBy: {
 					where: { userId },
-					select: { progressValue: true }
+					select: { progressValue: true, redeemedAt: true }
 				}
 			},
 			orderBy: [{ category: "asc" }, { requiredValue: "asc" }]
 		});
 		const achievmentWithProgress = achievements.map(achievement => {
-			const progressValue = achievement.progressBy[0]?.progressValue ?? 0;
+			const { progressValue, redeemedAt } = achievement.progressBy[0] || {
+				progressValue: 0,
+				redeemedAt: null
+			};
 			const meta = achievementMetaSchema.parse(achievement.meta);
-			return { ...achievement, meta, progressValue };
+			return { ...achievement, meta, progressValue, redeemedAt };
 		});
 		return achievmentWithProgress as AchievementWithProgress[];
 	}),
@@ -156,14 +159,14 @@ export const gamificationRouter = t.router({
 			include: {
 				progressBy: {
 					where: { userId },
-					select: { progressValue: true, completedAt: true }
+					select: { progressValue: true, redeemedAt: true }
 				}
 			}
 		});
 
 		// Client-side filtern
 		const unlockedCount = achievementsWithProgress.filter(a =>
-			isTruthy(a.progressBy[0]?.completedAt)
+			isTruthy(a.progressBy[0]?.redeemedAt)
 		).length;
 
 		const categories = await database.achievement.groupBy({
@@ -179,5 +182,57 @@ export const gamificationRouter = t.router({
 				count: cat._count.category
 			}))
 		};
-	})
+	}),
+	redeemAchievement: authProcedure
+		.input(
+			z.object({
+				achievementId: z.string()
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { achievementId } = input;
+
+			// Get the achievement details
+			const achievement = await database.achievement.findUniqueOrThrow({
+				where: { id: achievementId },
+				select: { requiredValue: true }
+			});
+
+			// Check if the achievement exists and is earned but not redeemed
+			const achievementProgress = await database.achievementProgress.findUniqueOrThrow({
+				where: {
+					userId_achievementId: {
+						userId: ctx.user.id,
+						achievementId
+					}
+				}
+			});
+
+			// Check if achievement criteria are met but not yet redeemed
+			if (achievementProgress.progressValue < achievement.requiredValue) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Achievement criteria not yet met"
+				});
+			}
+
+			if (achievementProgress.redeemedAt) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Achievement already redeemed"
+				});
+			}
+
+			// Redeem the achievement
+			const updated = await database.achievementProgress.update({
+				where: {
+					id: achievementProgress.id
+				},
+				data: {
+					redeemedAt: new Date()
+				}
+			});
+
+			return { redeemedAt: updated.redeemedAt };
+		})
 });

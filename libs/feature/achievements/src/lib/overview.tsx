@@ -1,9 +1,10 @@
 import { TrophyIcon } from "@heroicons/react/24/outline";
 import { trpc } from "@self-learning/api-client";
-import { AchievementWithProgress, AchievementMeta } from "@self-learning/types";
-import { LoadingBox, SectionHeader } from "@self-learning/ui/common";
-import { AchievementCard } from "./achievement-card";
+import { AchievementMeta, AchievementWithProgress } from "@self-learning/types";
+import { LoadingBox, SectionHeader, showToast } from "@self-learning/ui/common";
 import { useMemo } from "react";
+import { AchievementCard, AchievementList, useAchievementRedemption } from "./achievement-card";
+import { IdSet } from "@self-learning/util/common";
 
 interface AchievementOverviewProps {
 	className?: string;
@@ -46,11 +47,9 @@ interface NestedAchievements {
 	};
 }
 
-// Define achievement status for sorting
-type AchievementStatus = "completed" | "in_progress" | "open";
-
 export function AchievementOverview({ className }: AchievementOverviewProps) {
 	const { data: achievements, isLoading } = trpc.achievement.getOwnAchievements.useQuery();
+	const { handleRedeem } = useAchievementRedemption();
 
 	const nestedAchievements = useMemo(() => {
 		if (!achievements) return null;
@@ -79,30 +78,22 @@ export function AchievementOverview({ className }: AchievementOverviewProps) {
 			return acc;
 		}, {});
 
-		// Sort within each cluster by status: completed -> in_progress -> open
+		// Sort within each cluster
 		Object.keys(nested).forEach(category => {
 			Object.keys(nested[category]).forEach(group => {
 				Object.keys(nested[category][group]).forEach(cluster => {
 					nested[category][group][cluster].sort((a, b) => {
-						const getStatus = (
-							achievement: AchievementWithProgress
-						): AchievementStatus => {
-							if (achievement.progressValue >= achievement.requiredValue)
-								return "completed";
-							if (achievement.progressValue > 0) return "in_progress";
-							return "open";
-						};
+						// First sort by state: redeemed > earned > in-progress
+						if (a.redeemedAt && !b.redeemedAt) return -1;
+						if (!a.redeemedAt && b.redeemedAt) return 1;
 
-						// Define sort order: completed (0), in_progress (1), open (2)
-						const statusOrder = { completed: 0, in_progress: 1, open: 2 };
-						const aStatus = getStatus(a);
-						const bStatus = getStatus(b);
+						const aCompleted = a.progressValue >= a.requiredValue;
+						const bCompleted = b.progressValue >= b.requiredValue;
 
-						if (aStatus !== bStatus) {
-							return statusOrder[aStatus] - statusOrder[bStatus];
-						}
+						if (aCompleted && !bCompleted) return -1;
+						if (!aCompleted && bCompleted) return 1;
 
-						// If same status, sort by progress percentage (highest first)
+						// If same state, sort by progress percentage (highest first)
 						const aProgress = a.progressValue / a.requiredValue;
 						const bProgress = b.progressValue / b.requiredValue;
 						return bProgress - aProgress;
@@ -135,7 +126,12 @@ export function AchievementOverview({ className }: AchievementOverviewProps) {
 
 			<div className="space-y-8">
 				{Object.entries(nestedAchievements).map(([category, groups]) => (
-					<AchievementCategory key={category} category={category} groups={groups} />
+					<AchievementCategory
+						key={category}
+						category={category}
+						groups={groups}
+						onRedeem={handleRedeem}
+					/>
 				))}
 			</div>
 		</div>
@@ -144,16 +140,19 @@ export function AchievementOverview({ className }: AchievementOverviewProps) {
 
 function AchievementCategory({
 	category,
-	groups
+	groups,
+	onRedeem
 }: {
 	category: string;
 	groups: { [group: string]: { [cluster: string]: AchievementWithProgress[] } };
+	onRedeem?: (achievementId: string) => void;
 }) {
 	// Calculate totals across all groups and clusters in this category
 	const allAchievements = Object.values(groups)
 		.flatMap(clusters => Object.values(clusters))
 		.flat();
-	const unlockedCount = allAchievements.filter(a => a.progressValue >= a.requiredValue).length;
+
+	const unlockedCount = allAchievements.filter(a => a.redeemedAt).length;
 	const totalCount = allAchievements.length;
 
 	const categoryDisplayName = getCategoryDisplayName(category);
@@ -176,6 +175,7 @@ function AchievementCategory({
 						key={`${category}-${groupKey}`}
 						groupKey={groupKey}
 						clusters={clusters}
+						onRedeem={onRedeem}
 					/>
 				))}
 			</div>
@@ -185,27 +185,21 @@ function AchievementCategory({
 
 function AchievementGroup({
 	groupKey,
-	clusters
+	clusters,
+	onRedeem
 }: {
 	groupKey: string;
 	clusters: { [cluster: string]: AchievementWithProgress[] };
+	onRedeem?: (achievementId: string) => void;
 }) {
 	return (
 		<div className="space-y-4">
 			{Object.entries(clusters).map(([clusterKey, achievements]) => (
-				<div
+				<AchievementList
 					key={`${groupKey}-${clusterKey}`}
-					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-				>
-					{achievements.map(achievement => (
-						<AchievementCard
-							key={achievement.id}
-							achievement={achievement}
-							isUnlocked={achievement.progressValue >= achievement.requiredValue}
-							showProgress={achievement.progressValue < achievement.requiredValue}
-						/>
-					))}
-				</div>
+					achievements={new IdSet(achievements)}
+					onRedeem={onRedeem}
+				/>
 			))}
 		</div>
 	);

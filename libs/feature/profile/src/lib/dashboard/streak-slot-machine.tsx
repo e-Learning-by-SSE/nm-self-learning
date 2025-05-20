@@ -1,3 +1,4 @@
+"use client";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { ArrowTrendingUpIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import {

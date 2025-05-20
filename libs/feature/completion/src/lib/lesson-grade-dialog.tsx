@@ -1,8 +1,9 @@
+"use client";
 import { PlayIcon } from "@heroicons/react/24/solid";
+import { AchievementSection, useAchievementRedemption } from "@self-learning/achievements";
 import { trpc } from "@self-learning/api-client";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { useQuiz } from "@self-learning/quiz";
-import { AchievementSection } from "@self-learning/achievements";
 import { AchievementWithProgress, PerformanceGrade } from "@self-learning/types";
 import { DialogActions, GameifyDialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
@@ -84,6 +85,7 @@ export function QuizCompletedGradeDialog({
 }: QuizCompletedGradeDialogProps) {
 	const { attempts, answers } = useQuiz();
 	const { mutateAsync: earnAchievements } = trpc.achievement.earnAchievements.useMutation();
+	const { handleRedeem } = useAchievementRedemption();
 	const [achievements, setAchievements] = useState<IdSet<AchievementWithProgress>>(new IdSet());
 
 	const totalAttempts = Object.values(attempts).reduce((acc, attempt) => acc + attempt, 0);
@@ -97,10 +99,6 @@ export function QuizCompletedGradeDialog({
 		}
 		void fetchAchievements();
 	}, [earnAchievements]);
-
-	const newlyEarnedAchievements = new IdSet(
-		achievements.values().filter(a => a.progressValue === a.requiredValue)
-	);
 
 	return (
 		<GameifyDialog
@@ -131,9 +129,9 @@ export function QuizCompletedGradeDialog({
 				{/* Achievements Section `*/}
 				{achievements.size > 0 && (
 					<AchievementSection
+						title="Errungenschaften"
 						achievements={achievements}
-						earnedAchievements={newlyEarnedAchievements}
-						newlyEarnedAchievements={newlyEarnedAchievements}
+						onRedeem={handleRedeem}
 					/>
 				)}
 				<div className="flex flex-col text-sm text-light">
@@ -160,9 +158,8 @@ export function QuizCompletedGradeDialog({
 				</div>
 			</div>
 
-			<DialogActions onClose={onClose}>
+			<DialogActions abortLabel="Schließen" onClose={onClose}>
 				{grade !== "PERFECT" && <button className="btn-stroked">Erneut versuchen</button>}
-				<button className="btn-primary">Weiter</button>
 				{nextLesson && (
 					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
 				)}

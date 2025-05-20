@@ -23,7 +23,7 @@ export async function checkAndAwardAchievements({
 		include: {
 			progressBy: {
 				where: { userId },
-				select: { progressValue: true }
+				select: { progressValue: true, redeemedAt: true }
 			}
 		}
 	});
@@ -45,9 +45,9 @@ export async function checkAndAwardAchievements({
 
 		// Use the progress value directly from the query
 		const progressValue = achievement.progressBy[0]?.progressValue ?? 0;
-		const hasAchievement = progressValue >= achievement.requiredValue;
+		const alreadyRedeemed = !!achievement.progressBy[0]?.redeemedAt;
 
-		if (!hasAchievement) {
+		if (!alreadyRedeemed) {
 			const achievementWithProgress = {
 				...parsedAchievement,
 				progressValue
@@ -58,20 +58,17 @@ export async function checkAndAwardAchievements({
 				console.debug(
 					`Update achievement progress ${achievement.code} (${achievement.id}) to user ${userId}`
 				);
-				const newValue = evaluation.newValue ?? 0; // as an alternative we could use evaluation.type to check on "earned"
-				const completed = newValue >= achievement.requiredValue;
-				const completedAt = completed ? new Date() : null;
+				const newValue = evaluation.newValue ?? 0;
 
 				await database.achievementProgress.upsert({
 					create: {
 						userId,
 						achievementId: achievement.id,
 						progressValue: newValue,
-						completedAt
+						redeemedAt: null
 					},
 					update: {
-						progressValue: evaluation.newValue, // allow undefined
-						completedAt
+						progressValue: evaluation.newValue // allow undefined
 					},
 					where: {
 						userId_achievementId: {
