@@ -121,8 +121,13 @@ export class IdSet<T extends IdElement = IdElement> {
 	 * @param item The element to delete.
 	 * @returns *true* if the element was deleted, *false* if it was not in the set.
 	 */
-	delete(item: T): boolean {
-		const key = item.id.toString();
+	delete(item: T | T["id"]): boolean {
+		let key: string;
+		if (idGuard(item)) {
+			key = item.id.toString();
+		} else {
+			key = item.toString();
+		}
 		if (this.items[key]) {
 			delete this.items[key];
 			return true;

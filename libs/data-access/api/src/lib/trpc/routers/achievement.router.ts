@@ -128,7 +128,7 @@ export const gamificationRouter = t.router({
 			const userId = ctx.user.id;
 			const { trigger } = input;
 			const achievements = await checkAndAwardAchievements({ trigger, userId });
-			return achievements;
+			return achievements satisfies AchievementWithProgress[];
 		}),
 	getOwnAchievements: authProcedure.query(async ({ ctx }) => {
 		const userId = ctx.user.id;

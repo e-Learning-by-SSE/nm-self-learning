@@ -19,7 +19,7 @@ export function AchievementCard({
 
 	// Determine the achievement state
 	const isCompleted = achievement.progressValue >= achievement.requiredValue;
-	const isRedeemed = achievement.redeemedAt !== null;
+	const isRedeemed = !!achievement.redeemedAt;
 	const isRedeemable = isCompleted && !isRedeemed;
 
 	// An achievement is "earned but not redeemed" if it's completed but not redeemed
@@ -97,28 +97,6 @@ export function AchievementList({
 					onRedeem={onRedeem}
 				/>
 			))}
-		</div>
-	);
-}
-
-export function AchievementSection({
-	title,
-	achievements,
-	onRedeem
-}: {
-	title: string;
-	achievements: IdSet<AchievementWithProgress>;
-	onRedeem?: (achievementId: string) => void;
-}) {
-	if (achievements.size === 0) return null;
-
-	return (
-		<div className="bg-gray-50 p-4 rounded-lg">
-			<h3 className="font-bold text-lg mb-4 flex items-center">
-				<TrophyIcon className="w-5 h-5 mr-2 text-yellow-500" />
-				{title}
-			</h3>
-			<AchievementList achievements={achievements} onRedeem={onRedeem} />
 		</div>
 	);
 }

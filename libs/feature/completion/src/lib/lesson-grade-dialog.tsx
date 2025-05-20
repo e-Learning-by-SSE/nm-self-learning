@@ -1,6 +1,6 @@
 "use client";
-import { PlayIcon } from "@heroicons/react/24/solid";
-import { AchievementSection, useAchievementRedemption } from "@self-learning/achievements";
+import { PlayIcon, TrophyIcon } from "@heroicons/react/24/solid";
+import { AchievementList, useAchievementRedemption } from "@self-learning/achievements";
 import { trpc } from "@self-learning/api-client";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { useQuiz } from "@self-learning/quiz";
@@ -8,7 +8,7 @@ import { AchievementWithProgress, PerformanceGrade } from "@self-learning/types"
 import { DialogActions, GameifyDialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { calculateAverageScore, calculateQuizGrade } from "./lesson-grading";
 
 function GradeDisplay({ grade }: { grade: PerformanceGrade }) {
@@ -85,12 +85,26 @@ export function QuizCompletedGradeDialog({
 }: QuizCompletedGradeDialogProps) {
 	const { attempts, answers } = useQuiz();
 	const { mutateAsync: earnAchievements } = trpc.achievement.earnAchievements.useMutation();
-	const { handleRedeem } = useAchievementRedemption();
 	const [achievements, setAchievements] = useState<IdSet<AchievementWithProgress>>(new IdSet());
+	const { handleRedeem } = useAchievementRedemption();
 
 	const totalAttempts = Object.values(attempts).reduce((acc, attempt) => acc + attempt, 0);
 	const averageScore = calculateAverageScore(attempts, answers);
 	const grade = calculateQuizGrade(averageScore);
+
+	const handleRedeemWithStateUpdate = async (achievementId: string) => {
+		void handleRedeem(achievementId);
+		setAchievements(prev => {
+			// this is a workaround to show the user the successful redeeming of the achievement invalidates trpc-achievment querys. But
+			// this does not affect the mutation query used here. So we use a state and update it manually
+			const item = prev.get(achievementId);
+			if (!item) return prev;
+			item.redeemedAt = new Date();
+			const updated = new IdSet(prev);
+			updated.add(item);
+			return updated;
+		});
+	};
 
 	useEffect(() => {
 		async function fetchAchievements() {
@@ -128,10 +142,10 @@ export function QuizCompletedGradeDialog({
 				</div>
 				{/* Achievements Section `*/}
 				{achievements.size > 0 && (
-					<AchievementSection
+					<GradeAchievementSection
 						title="Errungenschaften"
 						achievements={achievements}
-						onRedeem={handleRedeem}
+						onRedeem={handleRedeemWithStateUpdate}
 					/>
 				)}
 				<div className="flex flex-col text-sm text-light">
@@ -165,6 +179,28 @@ export function QuizCompletedGradeDialog({
 				)}
 			</DialogActions>
 		</GameifyDialog>
+	);
+}
+
+function GradeAchievementSection({
+	title,
+	achievements,
+	onRedeem
+}: {
+	title: string;
+	achievements: IdSet<AchievementWithProgress>;
+	onRedeem?: (achievementId: string) => void;
+}) {
+	if (achievements.size === 0) return null;
+
+	return (
+		<div className="bg-gray-50 p-4 rounded-lg">
+			<h3 className="font-bold text-lg mb-4 flex items-center">
+				<TrophyIcon className="w-5 h-5 mr-2 text-yellow-500" />
+				{title}
+			</h3>
+			<AchievementList achievements={achievements} onRedeem={onRedeem} />
+		</div>
 	);
 }
 

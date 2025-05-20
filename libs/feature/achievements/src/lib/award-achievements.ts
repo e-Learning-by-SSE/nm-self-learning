@@ -7,18 +7,54 @@ import {
 } from "@self-learning/types";
 import { ACHIEVEMENT_CONDITION_CHECKERS } from "./achievement-registry";
 
+type CheckAndAwardParams = {
+	trigger: AchievementTrigger;
+	userId: string;
+	context?: Record<string, unknown>;
+};
+
 export async function checkAndAwardAchievements({
 	trigger,
 	userId,
 	context = {}
-}: {
-	trigger: AchievementTrigger;
-	userId: string;
-	context?: Record<string, unknown>;
-}) {
-	const updatedAchievements: AchievementWithProgress[] = [];
+}: CheckAndAwardParams): Promise<AchievementWithProgress[]> {
+	const achievements = await loadAchievementsWithProgress(trigger, userId);
+	const updatedAchievements: AchievementWithProgress[] = []; //return value
 
-	const achievements = await database.achievement.findMany({
+	for (const achievement of achievements) {
+		const parsedAchievement = parseAchievement(achievement);
+		if (!parsedAchievement) continue;
+		if (!parsedAchievement.meta) continue;
+
+		const checker = ACHIEVEMENT_CONDITION_CHECKERS[parsedAchievement.meta.group];
+		if (!checker) continue;
+
+		const progress = achievement.progressBy[0];
+		const alreadyRedeemed = !!progress?.redeemedAt;
+		const currentValue = progress?.progressValue ?? 0;
+
+		if (alreadyRedeemed) continue;
+
+		const achievementWithProgress = { ...parsedAchievement, progressValue: currentValue };
+		const evaluation = await checker(achievementWithProgress, userId, context);
+
+		if (evaluation.type === "unchanged") continue;
+
+		const newValue = evaluation.newValue ?? 0;
+
+		await updateProgress(achievement.id, userId, newValue);
+		updatedAchievements.push({
+			...achievementWithProgress,
+			progressValue: newValue,
+			redeemedAt: achievement.progressBy[0]?.redeemedAt
+		});
+	}
+
+	return updatedAchievements;
+}
+
+async function loadAchievementsWithProgress(trigger: AchievementTrigger, userId: string) {
+	return database.achievement.findMany({
 		where: { trigger },
 		include: {
 			progressBy: {
@@ -27,62 +63,35 @@ export async function checkAndAwardAchievements({
 			}
 		}
 	});
+}
 
-	for (const achievement of achievements) {
-		if (!achievement.meta) continue;
-
-		let parsedAchievement: AchievementDb;
-		try {
-			parsedAchievement = achievementFullSchema.parse(achievement);
-		} catch {
-			console.warn(`Invalid meta for achievement ${achievement.code}`);
-			continue;
+function parseAchievement(raw: unknown): AchievementDb | null {
+	try {
+		const parsed = achievementFullSchema.parse(raw);
+		if (!parsed.meta) return null;
+		return parsed;
+	} catch {
+		if (typeof raw === "object" && raw && "code" in raw) {
+			console.warn(`Invalid meta for achievement ${(raw as any).code}`);
 		}
-		if (!parsedAchievement.meta) continue;
+		return null;
+	}
+}
 
-		const checker = ACHIEVEMENT_CONDITION_CHECKERS[parsedAchievement.meta.group];
-		if (!checker) continue;
-
-		// Use the progress value directly from the query
-		const progressValue = achievement.progressBy[0]?.progressValue ?? 0;
-		const alreadyRedeemed = !!achievement.progressBy[0]?.redeemedAt;
-
-		if (!alreadyRedeemed) {
-			const achievementWithProgress = {
-				...parsedAchievement,
-				progressValue
-			};
-			const evaluation = await checker(achievementWithProgress, userId, context);
-
-			if (evaluation.type !== "unchanged") {
-				console.debug(
-					`Update achievement progress ${achievement.code} (${achievement.id}) to user ${userId}`
-				);
-				const newValue = evaluation.newValue ?? 0;
-
-				await database.achievementProgress.upsert({
-					create: {
-						userId,
-						achievementId: achievement.id,
-						progressValue: newValue,
-						redeemedAt: null
-					},
-					update: {
-						progressValue: evaluation.newValue // allow undefined
-					},
-					where: {
-						userId_achievementId: {
-							userId,
-							achievementId: achievement.id
-						}
-					}
-				});
-				updatedAchievements.push({
-					...achievementWithProgress,
-					progressValue: newValue
-				});
+async function updateProgress(achievementId: string, userId: string, progressValue: number) {
+	console.debug(`Updating progress for achievement ${achievementId} and user ${userId}`);
+	await database.achievementProgress.upsert({
+		create: {
+			userId,
+			achievementId,
+			progressValue
+		},
+		update: { progressValue },
+		where: {
+			userId_achievementId: {
+				userId,
+				achievementId
 			}
 		}
-	}
-	return updatedAchievements;
+	});
 }
