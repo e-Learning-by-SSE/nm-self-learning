@@ -81,8 +81,9 @@ export default function ArrangeForm({ index }: { index: number }) {
 	const onEditContainer: OnDialogCloseFn<string> = title => {
 		setEditCategoryDialog(null);
 		const currentContainerId = editCategoryDialog;
-		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId)
+		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId) {
 			return;
+		}
 		if (items[title]) {
 			showToast({ type: "warning", title: "Kategorie existiert bereits", subtitle: title });
 			return;

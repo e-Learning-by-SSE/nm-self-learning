@@ -406,7 +406,7 @@ function SelfRegulatedPreQuestion({
 						}}
 						disabled={userAnswer.length == 0}
 					>
-						Antwort Speichern
+						Antwort speichern
 					</button>
 				</div>
 			</div>
