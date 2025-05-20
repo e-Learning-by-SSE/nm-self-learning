@@ -354,7 +354,7 @@ function transformMultipleAnswerTextBlock(
 }
 
 const removeSelfLearnAnswerType = /[T|C]:/g; //removes the T or C and the : of the answer type
-const identifyTypeOfAnswer = /C:/; //checks if this is a drop down menu or a free text
+const identifyTypeOfAnswer = /C:/; //checks if this is a drop down dropdown-menu or a free text
 const identifyCorrectAnswersInMultipleChoiceGaps =
 	/(?<=\[\[\s#|,#|\[\[#|,\s#)\s*(.*?)\s*(?=,|\]\]|\s,|\s\]\])/g; //Grabs the correct answers in { C: [#option, option2]} which is denoted by a #
 const removeTheSelfLearnCorrectAnswerMarker =
