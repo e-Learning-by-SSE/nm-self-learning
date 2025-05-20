@@ -6,31 +6,34 @@ import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { withTranslations } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params, locale }) => {
-	const specializationSlug = params?.specializationSlug;
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<SpecializationPageProps>(async (ctx, user) => {
+		const specializationSlug = ctx.params?.specializationSlug;
 
-	if (typeof specializationSlug !== "string") {
-		throw new Error("[specializationSlug] must be a string.");
-	}
+		if (typeof specializationSlug !== "string") {
+			throw new Error("[specializationSlug] must be a string.");
+		}
 
-	const specialization = await getSpecialization(specializationSlug);
+		const specialization = await getSpecialization(specializationSlug, user.name);
 
-	return {
-		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
-			specialization: specialization as Defined<typeof specialization>
-		},
-		notFound: !specialization
-	};
-});
+		return {
+			props: {
+				...(await serverSideTranslations(ctx.locale ?? "en", ["common"])),
+				specialization: specialization as Defined<typeof specialization>
+			},
+			notFound: !specialization
+		};
+	})
+);
 
-async function getSpecialization(specializationSlug: string) {
+async function getSpecialization(specializationSlug: string, username: string) {
 	return await database.specialization.findUnique({
 		where: { slug: specializationSlug },
 		select: {
@@ -41,6 +44,22 @@ async function getSpecialization(specializationSlug: string) {
 			courses: {
 				orderBy: { title: "asc" },
 				select: {
+					slug: true,
+					imgUrl: true,
+					title: true,
+					subtitle: true,
+					meta: true
+				}
+			},
+			newCourses: {
+				orderBy: { title: "asc" },
+				select: {
+					courseVersionUID: true,
+					generatedLessonPaths: {
+						where: {
+							username: username
+						}
+					},
 					slug: true,
 					imgUrl: true,
 					title: true,
@@ -59,7 +78,7 @@ async function getSpecialization(specializationSlug: string) {
 }
 
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
-	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
+	const { title, subtitle, imgUrlBanner, subject, courses, newCourses } = specialization;
 
 	return (
 		<div className="bg-gray-50 pb-32">
@@ -74,6 +93,24 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 				{courses.length > 0 ? (
 					<ItemCardGrid>
 						{courses.map(course => (
+							<CourseCard key={course.slug} course={course} />
+						))}
+					</ItemCardGrid>
+				) : (
+					<div className="grid gap-16 pt-16">
+						<span className="mx-auto font-semibold">
+							Leider gibt es hier noch keine Inhalte.
+						</span>
+						<div className="mx-auto w-full max-w-md ">
+							<VoidSvg />
+						</div>
+					</div>
+				)}
+			</div>
+			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
+				{newCourses.length > 0 ? (
+					<ItemCardGrid>
+						{newCourses.map(course => (
 							<CourseCard key={course.slug} course={course} />
 						))}
 					</ItemCardGrid>
