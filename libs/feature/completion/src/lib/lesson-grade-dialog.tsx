@@ -2,7 +2,7 @@ import { PlayIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { useQuiz } from "@self-learning/quiz";
-import { AchievementSection } from "@self-learning/settings";
+import { AchievementSection } from "@self-learning/achievements";
 import { AchievementWithProgress, PerformanceGrade } from "@self-learning/types";
 import { DialogActions, GameifyDialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";

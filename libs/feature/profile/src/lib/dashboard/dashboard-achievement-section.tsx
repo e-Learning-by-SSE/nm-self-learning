@@ -2,7 +2,7 @@ import { ChevronRightIcon, TrophyIcon } from "@heroicons/react/24/outline";
 import { trpc } from "@self-learning/api-client";
 import { LoadingBox } from "@self-learning/ui/common";
 import Link from "next/link";
-import { AchievementList } from "../achievements/achievement-card";
+import { AchievementList } from "../../../../achievements/src/lib/achievement-card";
 import { IdSet } from "@self-learning/util/common";
 
 interface DashboardAchievementsSectionProps {

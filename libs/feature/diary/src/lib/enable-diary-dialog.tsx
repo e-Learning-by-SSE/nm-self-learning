@@ -1,4 +1,4 @@
-import { FeatureSettingsForm } from "@self-learning/settings";
+import { FeatureSettingsForm } from "@self-learning/profile";
 import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 

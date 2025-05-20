@@ -15,5 +15,5 @@
 		"src/**/*.spec.jsx",
 		"src/**/*.test.jsx"
 	],
-	"include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx", "../../../index.d.ts"]
+	"include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx", "../../../index.d.ts", "../achievements/src/lib/achievement-card.tsx", "../achievements/src/lib/award-achievements.spec.ts", "../achievements/src/lib/achievement-registry.ts", "../achievements/src/lib/earned-dialog.tsx", "../achievements/src/lib/overview.tsx", "../achievements/src/lib/award-achievements.ts"]
 }

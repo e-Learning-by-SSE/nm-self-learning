@@ -1,4 +1,3 @@
-// import { editFeatureSettingsSchema, editPersonalSettingSchema } from "@self-learning/settings";
 import * as z from "zod";
 
 export const editFeatureSettingsSchema = z.object({

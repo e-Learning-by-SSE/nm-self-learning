@@ -8,7 +8,7 @@ import {
 	isGamificationOptInEnabled,
 	StreakIndicatorCircle,
 	StreakSlotMachineDialog
-} from "@self-learning/settings";
+} from "@self-learning/profile";
 import { GamificationProfileMeta } from "@self-learning/types";
 import {
 	Divider,

@@ -1,6 +1,6 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
-import { StreakSlotMachineDialog } from "@self-learning/settings";
+import { StreakSlotMachineDialog } from "@self-learning/profile";
 import { NotificationEntry, StreakInfo } from "@self-learning/types";
 import { useState } from "react";
 import { MessagePortal } from "./message-portal/message-portal";

@@ -5,7 +5,7 @@ import {
 	FeatureSettingsForm,
 	getUserWithSettings,
 	PersonalSettingsForm
-} from "@self-learning/settings";
+} from "@self-learning/profile";
 import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";

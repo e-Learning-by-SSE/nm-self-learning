@@ -1,5 +1,5 @@
 import { withAuth, withTranslations } from "@self-learning/api";
-import { AchievementOverview } from "@self-learning/settings";
+import { AchievementOverview } from "@self-learning/achievements";
 import { DashboardSidebarLayout } from "@self-learning/ui/layouts";
 import { NextComponentType, NextPageContext } from "next";
 

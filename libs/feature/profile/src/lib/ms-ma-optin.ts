@@ -7,5 +7,5 @@ export function useGamificationOptIn() {
 
 export function isGamificationOptInEnabled() {
 	// TODO
-	return true;
+	return process.env.NODE_ENV === "development"; // || process.env.NODE_ENV === "test";
 }

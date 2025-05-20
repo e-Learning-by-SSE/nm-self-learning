@@ -3,7 +3,7 @@ import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
-import { isGamificationOptInEnabled } from "@self-learning/settings";
+import { isGamificationOptInEnabled } from "@self-learning/profile";
 import {
 	Card,
 	DialogHandler,

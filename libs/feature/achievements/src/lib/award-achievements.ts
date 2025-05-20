@@ -3,8 +3,7 @@ import { database } from "@self-learning/database";
 import {
 	AchievementDb,
 	achievementFullSchema,
-	AchievementWithProgress,
-	achievementWithProgressSchema
+	AchievementWithProgress
 } from "@self-learning/types";
 import { ACHIEVEMENT_CONDITION_CHECKERS } from "./achievement-registry";
 

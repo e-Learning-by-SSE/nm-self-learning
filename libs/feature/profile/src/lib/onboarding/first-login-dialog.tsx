@@ -1,7 +1,7 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
-import { FeatureSettingsForm } from "@self-learning/settings";
+import { FeatureSettingsForm } from "@self-learning/profile";
 import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
 import { isBefore, subDays } from "date-fns";

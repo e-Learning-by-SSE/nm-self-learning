@@ -2,7 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { checkAndAwardAchievements } from "@self-learning/settings";
+import { checkAndAwardAchievements } from "@self-learning/achievements";
 import {
 	AchievementWithProgress,
 	GamificationProfile,
