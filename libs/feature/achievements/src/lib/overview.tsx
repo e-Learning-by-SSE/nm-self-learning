@@ -1,10 +1,10 @@
 import { TrophyIcon } from "@heroicons/react/24/outline";
 import { trpc } from "@self-learning/api-client";
 import { AchievementMeta, AchievementWithProgress } from "@self-learning/types";
-import { LoadingBox, SectionHeader, showToast } from "@self-learning/ui/common";
-import { useMemo } from "react";
-import { AchievementCard, AchievementList, useAchievementRedemption } from "./achievement-card";
+import { LoadingBox, SectionHeader } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
+import { useMemo } from "react";
+import { AchievementList, useAchievementRedemption } from "./achievement-card";
 
 interface AchievementOverviewProps {
 	className?: string;

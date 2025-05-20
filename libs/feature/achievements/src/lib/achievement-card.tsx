@@ -1,7 +1,7 @@
 import { CheckCircleIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { AchievementWithProgress } from "@self-learning/types";
-import { showToast } from "@self-learning/ui/common";
+import { FireworkOnClick, showToast } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
 
 export function AchievementCard({
@@ -67,13 +67,15 @@ export function AchievementCard({
 
 			{/* Show redeem button for earned but not redeemed achievements */}
 			{isRedeemable && onRedeem && (
-				<button
-					onClick={() => onRedeem(achievement.id)}
-					className="btn-gamify animate-highlight-shimmering mt-3 w-full"
-					// className="mt-3 w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md transition-colors duration-200 animate-highlight-shimmering"
-				>
-					Einlösen
-				</button>
+				<FireworkOnClick>
+					<button
+						onClick={() => onRedeem(achievement.id)}
+						className="btn-gamify animate-highlight-shimmering mt-3 w-full"
+						// className="mt-3 w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md transition-colors duration-200 animate-highlight-shimmering"
+					>
+						Einlösen
+					</button>
+				</FireworkOnClick>
 			)}
 		</div>
 	);
