@@ -1,6 +1,6 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
-import { FirstLoginDialog, useFirstLoginDialog } from "@self-learning/settings";
+import { FirstLoginDialog, useFirstLoginDialog } from "@self-learning/profile";
 import { MessagePortal, NotificationsRenderer } from "@self-learning/ui/notifications";
 import { init } from "@socialgouv/matomo-next";
 import { useSession } from "next-auth/react";

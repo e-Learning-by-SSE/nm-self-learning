@@ -15,6 +15,7 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
+			"@self-learning/achievements": ["libs/feature/achievements/src/index.ts"],
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
 			"@self-learning/analysis": ["libs/feature/analysis/src/index.ts"],
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
@@ -29,9 +30,9 @@
 			"@self-learning/lia-exporter": ["libs/util/lia-exporter/src/index.ts"],
 			"@self-learning/local-storage": ["libs/data-access/local-storage/src/index.ts"],
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
+			"@self-learning/profile": ["libs/feature/profile/src/index.ts"],
 			"@self-learning/question-types": ["libs/feature/question-types/src/index.ts"],
 			"@self-learning/quiz": ["libs/feature/quiz/src/index.ts"],
-			"@self-learning/settings": ["libs/feature/settings/src/index.ts"],
 			"@self-learning/teaching": ["libs/feature/teaching/src/index.ts"],
 			"@self-learning/types": ["libs/util/types/src/index.ts"],
 			"@self-learning/ui/common": ["libs/ui/common/src/index.ts"],
@@ -47,8 +48,7 @@
 			"@self-learning/util/http": ["libs/util/http/src/index.ts"],
 			"@self-learning/util/testing": ["libs/util/testing/src/index.ts"],
 			"@self-learning/util/validate": ["libs/util/validation/src/index.ts"],
-			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"],
-			"settings": ["libs/feature/settings/src/index.ts"]
+			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]
