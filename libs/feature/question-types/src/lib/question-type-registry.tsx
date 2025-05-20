@@ -205,6 +205,7 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		...createBaseQuestion(),
 		type: "language-tree",
 		caseSensitive: false,
+		customTextInputInParentNodes: true,
 		initialTree: "",
 		answer: []
 	})
