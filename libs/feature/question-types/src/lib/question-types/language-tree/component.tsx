@@ -33,7 +33,7 @@ export default function LanguageTreeAnswer() {
 			{tree && (
 				<div className="flex max-h-600px overflow-hidden">
 					<div className="w-1/2 p-4 border-r  max-h-[500px] overflow-y-auto">
-						<TreeEditor tree={tree} setTree={setTree} setInput={onInputChange} />
+						<TreeEditor tree={tree} setTree={setTree} setInput={onInputChange} allowTextInputForParents={question.customTextInputInParentNodes}  />
 					</div>
 					<div className="w-1/2">
 						<TreeVisualization  className="h-[500px]" root={tree} />

@@ -72,6 +72,15 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 							label={"Groß- und Kleinschreibung beachten"}
 						/>
 					</div>
+					<div className="flex flex-row mt-2">
+						<Toggle
+							value={languageTree.customTextInputInParentNodes}
+							onChange={value =>
+								setValue(`quiz.questions.${index}.customTextInputInParentNodes`, value)
+							}
+							label={"Erlaubt Freitexteingabe in Knoten mit untergeordneten Elementen"}
+						/>
+					</div>
 				</div>
 
 				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">

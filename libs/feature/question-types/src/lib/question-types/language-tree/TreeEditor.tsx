@@ -22,10 +22,12 @@ const wordOptions = [
 
 export function TreeEditor({
 	tree,
+	allowTextInputForParents,
 	setTree,
 	setInput
 }: {
 	tree: TreeNode;
+	allowTextInputForParents: boolean
 	setTree: (tree: TreeNode) => void;
 	setInput: (text: string) => void;
 }) {
@@ -76,7 +78,7 @@ export function TreeEditor({
 			<div key={`${nodeId}`} className="ml-4 pl-4 border-l-2 border-gray-300 space-y-2 py-1">
 				<div className="flex items-center space-x-2 bg-gray-100 p-2 rounded-lg shadow-sm">
 					{/* Use a dropdown for non-leaf nodes and text input for leaf nodes */}
-					{isLeaf ? (
+					{isLeaf || allowTextInputForParents ? (
 						<input
 							type="text"
 							className="border rounded px-3 py-1 text-sm w-32 focus:ring-2 focus:ring-blue-400 outline-none"
