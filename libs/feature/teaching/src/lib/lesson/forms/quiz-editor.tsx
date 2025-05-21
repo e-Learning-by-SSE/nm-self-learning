@@ -6,13 +6,13 @@ import {
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
-	PlusButton,
-	TrashcanButton,
 	Divider,
+	DropdownMenu,
+	PlusButton,
 	RemovableTab,
 	SectionHeader,
 	Tabs,
-	DropdownButton
+	TrashcanButton
 } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
@@ -29,7 +29,7 @@ export function useQuizEditorForm() {
 		append,
 		remove,
 		fields: quiz,
-		replace: setQuiz
+		replace
 	} = useFieldArray({
 		control,
 		name: "quiz.questions"
@@ -60,6 +60,18 @@ export function useQuizEditorForm() {
 				setQuestionIndex(quiz.length - 2); // set to last index or -1 if no questions exist
 			}
 		}
+	}
+
+	function setQuiz(questions: QuizForm["quiz"]["questions"]) {
+		const currentQuestionIndex = questions.findIndex(
+			question => question.questionId === currentQuestion?.questionId
+		);
+		if (currentQuestionIndex !== -1) {
+			setQuestionIndex(currentQuestionIndex);
+		} else {
+			setQuestionIndex(questions.length > 0 ? 0 : -1);
+		}
+		replace(questions);
 	}
 
 	return {
@@ -96,30 +108,26 @@ export function QuizEditor() {
 					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lerneinheit
 					erfolgreich abzuschließen."
 				button={
-					<DropdownButton
-						title="Aufgabentyp hinzufügen"
-						backgroundColor={"btn-primary"}
-						hover={"hover:bg-emerald-700"}
-						chevronColor={"text-white"}
+					<DropdownMenu
+						title="Aufgabe erstellen"
+						button={
+							<div className="btn-primary">
+								<span className="font-semibold text-white">Aufgabe erstellen</span>
+							</div>
+						}
 					>
-						<span className={"text-white"}>Aufgabe Hinzufügen</span>
-						<div className={"bg-white"}>
-							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
-								<Button
-									title={"Aufgabe Hinzufügen"}
-									onClick={() => appendQuestion(type as QuestionType["type"])}
-									key={type as QuestionType["type"]}
-									className={
-										"hover:bg-secondary hover:text-white border rounded-md p-2 w-full"
-									}
-								>
-									<span>
-										{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
-									</span>
-								</Button>
-							))}
-						</div>
-					</DropdownButton>
+						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+							<Button
+								key={type}
+								type={"button"}
+								title="Aufgabentyp Hinzufügen"
+								className={"w-full text-left px-3 py-1"}
+								onClick={() => appendQuestion(type as QuestionType["type"])}
+							>
+								{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
+							</Button>
+						))}
+					</DropdownMenu>
 				}
 			/>
 
@@ -138,9 +146,11 @@ export function QuizEditor() {
 								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
 									<div className="flex flex-col">
 										<span className="text-xs font-normal">
+											Aufgabe {index + 1} von {quiz.length}
+										</span>
+										<span className="flex">
 											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
 										</span>
-										<span>Aufgabe {index + 1}</span>
 									</div>
 								</RemovableTab>
 							</Reorder.Item>
@@ -151,7 +161,7 @@ export function QuizEditor() {
 
 			{currentQuestion && (
 				<BaseQuestionForm
-					key={currentQuestion.id}
+					key={currentQuestion.questionId}
 					currentQuestion={currentQuestion}
 					control={control}
 					index={questionIndex}

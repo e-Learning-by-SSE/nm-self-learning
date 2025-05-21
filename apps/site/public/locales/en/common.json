@@ -1,5 +1,6 @@
 {
 	"languageGerman": "German",
 	"languageEnglish": "English",
-	"pickLanguage": "Select language"
+	"pickLanguage": "Select language",
+	"search": "Search..."
 }

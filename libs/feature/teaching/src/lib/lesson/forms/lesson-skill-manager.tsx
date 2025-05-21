@@ -172,8 +172,12 @@ function LinkedSkillRepository({
 	// TODO Make a method to get a smaller version of the repository
 	const { data: repositories, isLoading } = trpc.skill.getRepositories.useQuery();
 
-	const onChange = (id: string) => {
-		const repository = repositories?.find(repository => repository.id === id);
+	if (isLoading) {
+		return <div />;
+	}
+
+	const onChange = (name: string) => {
+		const repository = repositories?.find(repository => repository.name === name);
 		if (repository) {
 			selectRepository(repository);
 		}
@@ -201,12 +205,12 @@ function RepositoryDropDown({
 	onChange
 }: {
 	repositories: SkillRepositoryModel[];
-	onChange: (id: string) => void;
+	onChange: (name: string) => void;
 }) {
-	const [selectedRepository, setSelectedRepository] = useState<string>(repositories[0].id);
+	const [selectedRepository, setSelectedRepository] = useState<string>(repositories[0].name);
 
-	const changeDisplaySelectedRepository = (id: string) => {
-		setSelectedRepository(id);
+	const changeDisplaySelectedRepository = (name: string) => {
+		setSelectedRepository(name);
 	};
 
 	useEffect(() => {
@@ -214,20 +218,13 @@ function RepositoryDropDown({
 	}, [onChange, selectedRepository]);
 
 	return (
-		<div className="flex flex-col">
-			<select
-				className="textfield"
-				value={selectedRepository ?? repositories[0].id}
-				onChange={e => {
-					changeDisplaySelectedRepository(e.target.value);
-				}}
-			>
-				{repositories.map(repository => (
-					<option key={repository.id} value={repository.id}>
-						{repository.name}
-					</option>
-				))}
-			</select>
+		<div className="flex w-full">
+			<MarkdownListboxMenu
+				title=""
+				onChange={name => changeDisplaySelectedRepository(name)}
+				displayValue={selectedRepository ?? repositories[0].name}
+				options={repositories.map(repository => repository.name)}
+			/>
 		</div>
 	);
 }
