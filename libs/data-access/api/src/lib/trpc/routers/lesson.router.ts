@@ -113,7 +113,7 @@ export const lessonRouter = t.router({
 			await database.newCourse.update({
 				where: { courseId: course.courseId },
 				data: {
-					courseVersionUID: randomUUID(),
+					courseVersion: Date.now().toString(),
 				}
 			});
 		}

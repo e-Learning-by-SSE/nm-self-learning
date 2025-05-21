@@ -128,7 +128,7 @@ export const getServerSideProps = withTranslations(
 
 		let course = await getCourse(courseSlug);
 		if (!course) {
-			const [newCourse, courseVersionUID] = await getNewCourse(courseSlug, ctx.name);
+			const [newCourse, courseVersion] = await getNewCourse(courseSlug, ctx.name);
 
 			if (!newCourse) {
 				return { notFound: true };
@@ -138,7 +138,7 @@ export const getServerSideProps = withTranslations(
 			} as Course;
 
 			isGenerated = true;
-			needsARefresh = newCourse.courseVersionUID !== courseVersionUID;
+			needsARefresh = newCourse.courseVersion > courseVersion;
 
 			if (!course) {
 				return { notFound: true };
@@ -189,7 +189,7 @@ async function getNewCourse(courseSlug: string, username: string) {
 		where: { slug: courseSlug },
 		select: {
 			courseId: true,
-			courseVersionUID: true,
+			courseVersion: true,
 			title: true,
 			subtitle: true,
 			description: true,
@@ -219,7 +219,7 @@ async function getNewCourse(courseSlug: string, username: string) {
 			...course,
 			content: course.generatedLessonPaths?.[0]?.content ?? []
 		} as typeof course & { content: unknown[] },
-		course.generatedLessonPaths?.[0]?.courseVersionUID ?? null
+		course.generatedLessonPaths?.[0]?.courseVersion ?? null
 	] as const;
 }
 
@@ -557,11 +557,11 @@ function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: 
 		}
 	};
 
-	if (course.content.length !== 0 && needsARefresh) {
+	if (course.content?.length !== 0 && needsARefresh) {
 		return <RefreshGeneratedCourse />;
 	}
 
-	if (course.content.length !== 0) {
+	if (course.content?.length !== 0) {
 		return null;
 	}
 

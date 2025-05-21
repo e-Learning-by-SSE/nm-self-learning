@@ -277,7 +277,7 @@ export const courseRouter = t.router({
 			const course = await database.newCourse.findUniqueOrThrow({
 				where: { courseId: input.courseId },
 				select: {
-					courseVersionUID: true,
+					courseVersion: true,
 					teachingGoals: {
 						select: {
 							id: true,
@@ -366,6 +366,34 @@ export const courseRouter = t.router({
 			};
 
 			const fnCost = () => 1;
+			console.log(
+				"[courseRouter.generateCoursePreview]: Generating course preview for",
+				ctx.user.name,
+				"for courseId",
+				input.courseId
+			);
+			console.log(
+				"[courseRouter.generateCoursePreview]: Using knowledge skills",
+				input.knowledge,
+				"and goal skills",
+				course.teachingGoals.map(goal => goal.id)
+			);
+			console.log(
+				"[courseRouter.generateCoursePreview]: Using libSkills",
+				libSkills.map(skill => skill.id)
+			);
+			console.log(
+				"[courseRouter.generateCoursePreview]: Using learningUnits",
+				learningUnits.map(unit => unit.id)
+			);
+			console.log(
+				"[courseRouter.generateCoursePreview]: Using goalLibSkills",
+				goalLibSkills.map(skill => skill.id)
+			);
+			console.log(
+				"[courseRouter.generateCoursePreview]: Using knowledgeLibSkills",
+				knowledgeLibSkills.map(skill => skill.id)
+			);
 
 			const path = getPath({
 				skills: libSkills,
@@ -392,7 +420,7 @@ export const courseRouter = t.router({
 			const generatedCourse = database.generatedLessonPath.create({
 				data: {
 					content: courseContent,
-					courseVersionUID: course.courseVersionUID,
+					courseVersion: course.courseVersion,
 					slug: randomUUID(),
 					courseId: input.courseId,
 					meta: createCourseMeta({ content: courseContent }),
