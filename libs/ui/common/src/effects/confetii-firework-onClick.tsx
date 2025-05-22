@@ -22,7 +22,7 @@ export function FireworkOnClick({ children }: { children: React.ReactNode }) {
 			spread: 160,
 			startVelocity: 30,
 			origin: { x: originX, y: originY },
-			ticks: 60,
+			ticks: 100,
 			gravity: 1,
 			scalar: 1,
 			zIndex: 1000
