@@ -27,7 +27,7 @@ import { useEventLog } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { withAuth, withTranslations } from "@self-learning/api";
 
