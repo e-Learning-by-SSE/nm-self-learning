@@ -9,16 +9,16 @@ import { ACHIEVEMENT_CONDITION_CHECKERS } from "./achievement-registry";
 
 type CheckAndAwardParams = {
 	trigger: AchievementTrigger;
-	userId: string;
+	username: string;
 	context?: Record<string, unknown>;
 };
 
 export async function checkAndAwardAchievements({
 	trigger,
-	userId,
+	username,
 	context = {}
 }: CheckAndAwardParams): Promise<AchievementWithProgress[]> {
-	const achievements = await loadAchievementsWithProgress(trigger, userId);
+	const achievements = await loadAchievementsWithProgress(trigger, username);
 	const updatedAchievements: AchievementWithProgress[] = []; //return value
 
 	for (const achievement of achievements) {
@@ -36,13 +36,13 @@ export async function checkAndAwardAchievements({
 		if (alreadyRedeemed) continue;
 
 		const achievementWithProgress = { ...parsedAchievement, progressValue: currentValue };
-		const evaluation = await checker(achievementWithProgress, userId, context);
+		const evaluation = await checker(achievementWithProgress, username, context);
 
 		if (evaluation.type === "unchanged") continue;
 
 		const newValue = evaluation.newValue ?? 0;
 
-		await updateProgress(achievement.id, userId, newValue);
+		await updateProgress(achievement.id, username, newValue);
 		updatedAchievements.push({
 			...achievementWithProgress,
 			progressValue: newValue,
@@ -53,12 +53,12 @@ export async function checkAndAwardAchievements({
 	return updatedAchievements;
 }
 
-async function loadAchievementsWithProgress(trigger: AchievementTrigger, userId: string) {
+async function loadAchievementsWithProgress(trigger: AchievementTrigger, username: string) {
 	return database.achievement.findMany({
 		where: { trigger },
 		include: {
 			progressBy: {
-				where: { userId },
+				where: { username },
 				select: { progressValue: true, redeemedAt: true }
 			}
 		}
@@ -78,18 +78,18 @@ function parseAchievement(raw: unknown): AchievementDb | null {
 	}
 }
 
-async function updateProgress(achievementId: string, userId: string, progressValue: number) {
-	console.debug(`Updating progress for achievement ${achievementId} and user ${userId}`);
+async function updateProgress(achievementId: string, username: string, progressValue: number) {
+	console.debug(`Updating progress for achievement ${achievementId} and user ${username}`);
 	await database.achievementProgress.upsert({
 		create: {
-			userId,
+			username,
 			achievementId,
 			progressValue
 		},
 		update: { progressValue },
 		where: {
-			userId_achievementId: {
-				userId,
+			username_achievementId: {
+				username,
 				achievementId
 			}
 		}

@@ -4,6 +4,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
+import { withAuth } from "@self-learning/api";
 import {
 	QuizCompletionDialog,
 	QuizFailedDialog,
@@ -20,13 +21,11 @@ import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { Tab, Tabs, useIsFirstRender } from "@self-learning/ui/common";
 import { useEventLog } from "@self-learning/util/common";
-import { useLessonGrade } from "libs/feature/completion/src/lib/lesson-grading";
-import { GetServerSideProps } from "next";
+import { calculateAverageScore } from "libs/feature/completion/src/lib/lesson-grading";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { withAuth } from "@self-learning/api";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -158,17 +157,16 @@ function QuizCompletionSubscriber({
 }) {
 	const { completionState, attempts, answers } = useQuiz();
 	const unsubscribeRef = useRef(false);
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
-	const gradeLesson = useLessonGrade(attempts, answers, lesson.lessonId);
+	const averageScore = calculateAverageScore(attempts, answers);
+	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug, averageScore);
 
 	useEffect(() => {
 		if (!unsubscribeRef.current && completionState === "completed") {
 			unsubscribeRef.current = true;
 			console.log("QuizCompletionSubscriber: Marking as completed");
 			void markAsCompleted();
-			void gradeLesson();
 		}
-	}, [completionState, markAsCompleted, gradeLesson]);
+	}, [completionState, markAsCompleted]);
 
 	return <></>;
 }

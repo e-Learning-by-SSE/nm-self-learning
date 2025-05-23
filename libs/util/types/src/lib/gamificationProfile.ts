@@ -109,7 +109,7 @@ export const achievementMetaSchema = z.discriminatedUnion("group", [
 		level: z.number().int().positive()
 	}),
 	z.object({
-		group: z.literal("focus"),
+		group: z.literal("focus_time"),
 		level: z.number().int().positive()
 	})
 ]);

@@ -4,11 +4,13 @@ import { CourseContent, extractLessonIds } from "@self-learning/types";
 export async function markAsCompleted({
 	lessonId,
 	courseSlug,
-	username
+	username,
+	performanceScore
 }: {
 	lessonId: string;
 	courseSlug: string | null;
 	username: string;
+	performanceScore: number;
 }) {
 	const course = courseSlug
 		? await database.course.findUniqueOrThrow({
@@ -20,11 +22,35 @@ export async function markAsCompleted({
 			})
 		: null;
 
-	const result = await database.completedLesson.create({
-		data: {
+	const oldData = await database.completedLesson.findUnique({
+		where: { username_lessonId: { username, lessonId } },
+		select: {
+			performanceScore: true
+		}
+	});
+
+	const existingPerformance = oldData?.performanceScore ?? 0;
+
+	let updatePerformance = performanceScore;
+	if (existingPerformance > performanceScore) {
+		updatePerformance = performanceScore;
+	}
+
+	const result = await database.completedLesson.upsert({
+		where: {
+			username_lessonId: {
+				username,
+				lessonId
+			}
+		},
+		create: {
 			courseId: course?.courseId,
 			lessonId,
-			username
+			username,
+			performanceScore: updatePerformance
+		},
+		update: {
+			performanceScore: updatePerformance
 		},
 		select: {
 			createdAt: true,

@@ -1,13 +1,13 @@
 import { database } from "@self-learning/database";
 import { ConditionChecker } from "../achievement-registry";
 
-export const checkStreak: ConditionChecker = async (achievement, userId, _context) => {
+export const checkStreak: ConditionChecker = async (achievement, username, _context) => {
 	if (achievement.meta?.group !== "streak") throw new Error("Invalid achievement group");
 
 	const requiredDays = achievement.requiredValue;
 
 	const data = await database.gamificationProfile.findUnique({
-		where: { userId },
+		where: { username },
 		select: {
 			loginStreak: true,
 			meta: true

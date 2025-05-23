@@ -17,7 +17,7 @@ export const ACHIEVEMENT_CONDITION_CHECKERS: Record<GroupDiscriminators, Conditi
 		return { type: "unchanged" };
 	},
 	grade_lessons_total: checkGradeLessonTotal,
-	focus: async () => {
+	focus_time: async () => {
 		// TODO Add logic for focus condition
 		return { type: "unchanged" };
 	}
@@ -34,6 +34,6 @@ export type AchievementProcess = {
 
 export type ConditionChecker = (
 	achievement: AchievementWithProgress,
-	userId: string,
+	username: string,
 	context: ConditionCheckerContext
 ) => Promise<AchievementProcess>;

@@ -2,7 +2,7 @@ import { database } from "@self-learning/database";
 import { ConditionChecker } from "../achievement-registry";
 import { GRADE_THRESHOLD } from "@self-learning/completion";
 
-export const checkGradeLessonTotal: ConditionChecker = async (achievement, userId, _context) => {
+export const checkGradeLessonTotal: ConditionChecker = async (achievement, username, _context) => {
 	if (achievement.meta?.group !== "grade_lessons_total") return { type: "unchanged" };
 	const { grade: achievementGrade } = achievement.meta;
 	const { threshold } = GRADE_THRESHOLD.find(({ grade }) => grade === achievementGrade) ?? {
@@ -15,14 +15,19 @@ export const checkGradeLessonTotal: ConditionChecker = async (achievement, userI
 		return { type: "unchanged" };
 	}
 
-	const count = await database.lessonPerformance.count({
+	const data = await database.completedLesson.findMany({
 		where: {
-			userId,
-			score: {
+			username,
+			performanceScore: {
 				gte: threshold
 			}
-		}
+		},
+		select: {
+			performanceScore: true
+		},
+		distinct: ["username", "performanceScore"]
 	});
+	const count = data.length; // we cant use prisma.count here since it does not support distinct https://github.com/prisma/prisma/issues/4228
 
 	let progressValue = 0;
 	let changeType: "earned" | "progressed" | "unchanged" = "unchanged";
@@ -39,7 +44,7 @@ export const checkGradeLessonTotal: ConditionChecker = async (achievement, userI
 	}
 
 	console.debug(
-		`Checking achievement ${achievement.code} for user ${userId}: ${count} >= ${achievement.requiredValue}`
+		`Checking achievement ${achievement.code} for user ${username}: ${count} >= ${achievement.requiredValue}`
 	);
 
 	return {

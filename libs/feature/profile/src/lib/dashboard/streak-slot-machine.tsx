@@ -195,7 +195,7 @@ export function StreakSlotMachineDialog({
 	onClose: () => void;
 	trigger?: NotificationPropsMap["StreakInfoDialog"]["trigger"];
 }) {
-	const { data, isLoading } = trpc.me.getGamificationProfile.useQuery();
+	const { data, isLoading } = trpc.achievement.getGamificationProfile.useQuery();
 	const profile = { ...data, meta: { ...defaultGamificationProfileMeta, ...data?.meta } };
 	const pausedUntil = profile.meta.loginStreak.pauseUntil ?? new Date();
 
@@ -214,8 +214,8 @@ export function StreakSlotMachineDialog({
 	}
 	const isPaused = streakStatus === "paused";
 
-	const refireStreakMutation = trpc.me.refireStreak.useMutation();
-	const pauseStreakMutation = trpc.me.pauseStreak.useMutation();
+	const refireStreakMutation = trpc.achievement.refireStreak.useMutation();
+	const pauseStreakMutation = trpc.achievement.pauseStreak.useMutation();
 
 	const streakCount = profile.meta.loginStreak.count;
 	const [achievements, setAchievements] = useState([

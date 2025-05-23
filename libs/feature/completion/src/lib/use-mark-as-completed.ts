@@ -5,6 +5,7 @@ import { useCallback } from "react";
 export function useMarkAsCompleted(
 	lessonId: string,
 	courseSlug: string | null,
+	performanceScore: number,
 	onSettled?: () => void
 ) {
 	const session = useSession();
@@ -27,7 +28,7 @@ export function useMarkAsCompleted(
 		}
 
 		return mutate(
-			{ lessonId, courseSlug },
+			{ lessonId, courseSlug, performanceScore },
 			{
 				onSettled: (data, error) => {
 					if (!error) {

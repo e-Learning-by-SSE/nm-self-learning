@@ -125,17 +125,16 @@ export const gamificationRouter = t.router({
 	earnAchievements: authProcedure
 		.input(z.object({ trigger: achievementTriggerEnum }))
 		.mutation(async ({ ctx, input }) => {
-			const userId = ctx.user.id;
+			const username = ctx.user.name;
 			const { trigger } = input;
-			const achievements = await checkAndAwardAchievements({ trigger, userId });
+			const achievements = await checkAndAwardAchievements({ trigger, username });
 			return achievements satisfies AchievementWithProgress[];
 		}),
 	getOwnAchievements: authProcedure.query(async ({ ctx }) => {
-		const userId = ctx.user.id;
 		const achievements = await database.achievement.findMany({
 			include: {
 				progressBy: {
-					where: { userId },
+					where: { username: ctx.user.name },
 					select: { progressValue: true, redeemedAt: true }
 				}
 			},
@@ -152,13 +151,11 @@ export const gamificationRouter = t.router({
 		return achievmentWithProgress as AchievementWithProgress[];
 	}),
 	getOverviewStats: authProcedure.query(async ({ ctx }) => {
-		const userId = ctx.user.id;
-
 		// Alle Achievements mit Progress holen
 		const achievementsWithProgress = await database.achievement.findMany({
 			include: {
 				progressBy: {
-					where: { userId },
+					where: { username: ctx.user.name },
 					select: { progressValue: true, redeemedAt: true }
 				}
 			}
@@ -201,8 +198,8 @@ export const gamificationRouter = t.router({
 			// Check if the achievement exists and is earned but not redeemed
 			const achievementProgress = await database.achievementProgress.findUniqueOrThrow({
 				where: {
-					userId_achievementId: {
-						userId: ctx.user.id,
+					username_achievementId: {
+						username: ctx.user.name,
 						achievementId
 					}
 				}

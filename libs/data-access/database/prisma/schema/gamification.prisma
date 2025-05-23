@@ -1,80 +1,48 @@
 model GamificationProfile {
-    userId                      String                        @unique
-    username                    String                        @id
-    loginStreak Int @default(0)
-    meta                       Json?
-    lastLogin         DateTime @default(now())
+    userId      String   @unique
+    username    String   @id
+    loginStreak Int      @default(0)
+    meta        Json?
+    lastLogin   DateTime @default(now())
 
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
     achievementProgress AchievementProgress[]
-    coursePerformances CoursePerformance[]
-    lessonPerformances LessonPerformance[]
-    
 }
-
-model CoursePerformance {
-  id            String   @id @default(cuid())
-  userId        String
-  courseId      String
-  errorRate     Float 
-  score         Int // 0-1, 1 is perfect
-  completedAt   DateTime
-
-  profile GamificationProfile   @relation(fields: [userId], references: [userId])
-  course Course @relation(fields: [courseId], references: [courseId])
-
-  @@unique([userId, courseId])
-}
-
-model LessonPerformance {
-  id         String   @id @default(cuid())
-  userId     String
-  lessonId   String
-  score      Float //0-1, 1 is perfect
-  completedAt DateTime
-
-  profile GamificationProfile   @relation(fields: [userId], references: [userId], onUpdate: Cascade, onDelete: Cascade)
-  lesson Lesson @relation(fields: [lessonId], references: [lessonId])
-
-  @@unique([userId, lessonId])
-}
-
 
 model Achievement {
-  id          String     @id @default(uuid())
-  code        String     @unique
-  title       String
-  description String
-  xpReward    Int
-  category    String
-  createdAt   DateTime   @default(now())
-  trigger     AchievementTrigger 
-  meta        Json?
-  requiredValue Int @default(1)
+    id            String             @id @default(uuid())
+    code          String             @unique
+    title         String
+    description   String
+    xpReward      Int
+    category      String
+    createdAt     DateTime           @default(now())
+    trigger       AchievementTrigger
+    meta          Json?
+    requiredValue Int                @default(1)
 
-  progressBy       AchievementProgress[]
+    progressBy AchievementProgress[]
 }
 
 enum AchievementTrigger {
-  lesson_completed
-  daily_login
-  session_time
-  streak_check
-  manual
+    lesson_completed
+    daily_login
+    session_time
+    streak_check
+    manual
 }
 
-
 model AchievementProgress {
-  id             String              @id @default(uuid())
-  userId         String
-  achievementId  String
-  progressValue  Int 
-  redeemedAt     DateTime?         
-  updatedAt      DateTime @updatedAt
-  meta           Json?
+    id            String    @id @default(uuid())
+    username      String
+    achievementId String
+    progressValue Int
+    redeemedAt    DateTime?
+    updatedAt     DateTime  @updatedAt
+    meta          Json?
 
-  gamificationProfile                GamificationProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  achievement    Achievement         @relation(fields: [achievementId], references: [id])
+    gamificationProfile GamificationProfile @relation(fields: [username], references: [username], onDelete: Cascade)
+    achievement         Achievement         @relation(fields: [achievementId], references: [id])
 
-  @@unique([userId, achievementId])
+    @@unique([username, achievementId])
 }

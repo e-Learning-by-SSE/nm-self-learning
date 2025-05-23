@@ -94,20 +94,3 @@ export function calculateQuizGrade(averageScore: number): PerformanceGrade {
 	// Fallback (should never be reached)
 	return "SUFFICIENT";
 }
-
-export function useLessonGrade(
-	attempts: QuizContextValue["attempts"],
-	answers: QuizContextValue["answers"],
-	lessonId: string
-) {
-	const { mutateAsync: gradeLesson } = trpc.completion.lessonGrading.useMutation();
-
-	const averageScore = calculateAverageScore(attempts, answers);
-
-	return useCallback(() => {
-		gradeLesson({
-			lessonId,
-			averageScore
-		});
-	}, [gradeLesson, averageScore, lessonId]);
-}

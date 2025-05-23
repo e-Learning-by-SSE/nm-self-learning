@@ -17,7 +17,6 @@ jest.mock("@self-learning/database", () => ({
 }));
 describe("Lesson Completion Achievements", () => {
 	it("should mark achievements as solved and update progressValue when a lesson is completed perfectly", async () => {
-		const userId = "user-1";
 		const trigger: AchievementTrigger = "lesson_completed";
 
 		const mockAchievements: AchievementWithProgress[] = [
@@ -59,7 +58,7 @@ describe("Lesson Completion Achievements", () => {
 
 		const updatedAchievements = await checkAndAwardAchievements({
 			trigger,
-			userId,
+			username: "",
 			context: {}
 		});
 
