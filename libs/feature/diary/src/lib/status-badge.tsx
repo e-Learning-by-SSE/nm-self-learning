@@ -1,3 +1,9 @@
+import {
+	CheckCircleIcon,
+	ExclamationCircleIcon,
+	EllipsisHorizontalCircleIcon
+} from "@heroicons/react/24/solid";
+
 export function LearningDiaryEntryStatusBadge({
 	hasRead,
 	isDraft,
@@ -7,22 +13,20 @@ export function LearningDiaryEntryStatusBadge({
 	isDraft: boolean;
 	className?: string;
 }) {
-	let colorClass = "";
+	let icon;
 	if (isDraft) {
 		if (hasRead) {
-			colorClass = "bg-gray-400";
+			icon = <EllipsisHorizontalCircleIcon className="fill-gray-400" />;
 		} else {
-			colorClass = "bg-blue-400";
+			icon = <ExclamationCircleIcon className="fill-blue-400" />;
 		}
 	} else {
-		colorClass = "bg-green-500";
+		icon = <CheckCircleIcon className="fill-green-500" />;
 	}
 
 	return (
 		<div className="relative w-full">
-			<span
-				className={`absolute left-[-17px] top-1 ${className} transform -translate-y-1/2 ${colorClass} rounded-full h-2 w-2`}
-			></span>
+			<div className={`absolute -left-5 ${className} -translate-y-1/2 h-5 w-5`}>{icon}</div>
 		</div>
 	);
 }

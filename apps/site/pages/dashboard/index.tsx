@@ -401,7 +401,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 									className="hover: flex items-center rounded-lg border border-light-border
 							p-3 transition-transform hover:bg-slate-100"
 								>
-									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
+									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
 										<div className="flex items-center gap-2">
 											<LearningDiaryEntryStatusBadge
 												isDraft={page.isDraft}
