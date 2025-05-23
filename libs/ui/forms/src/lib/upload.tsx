@@ -217,6 +217,8 @@ async function uploadWithProgress(
 	xhr.upload.addEventListener("loadend", onComplete, false);
 
 	// start upload
+	//Returns the filename containing only ASCII letters, numbers and dots.
+	//All other characters (including spaces and special characters) are replaced with underscores.
 	const sanitizedFilename = (filename: string) => {
 		return filename
 			.normalize("NFD")
