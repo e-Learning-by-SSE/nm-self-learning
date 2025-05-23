@@ -1,16 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl"]
-  previewFeatures = ["prismaSchemaFolder"]
+    provider        = "prisma-client-js"
+    binaryTargets   = ["native", "linux-musl"]
+    previewFeatures = ["prismaSchemaFolder"]
 }
 
 datasource db {
     provider = "postgres"
     url      = env("DATABASE_URL")
 }
-
-
-
 
 model UploadedAssets {
     objectName String   @id
@@ -23,8 +20,6 @@ model UploadedAssets {
 
     @@index([fileName])
 }
-
-
 
 model License {
     licenseId         Int      @id @default(autoincrement())
@@ -42,15 +37,15 @@ model License {
 }
 
 model SkillRepository {
-  id            String        @id @default(cuid())
-  name          String
-  description   String?
-  skills        Skill[]
-  ownerName     String
-  owner         User     @relation(fields: [ownerName], references: [name])
+    id          String  @id @default(cuid())
+    name        String
+    description String?
+    skills      Skill[]
+    ownerName   String
+    owner       User    @relation(fields: [ownerName], references: [name])
 
-  @@unique([ownerName, name])
-  @@map("skill-repositories")
+    @@unique([ownerName, name])
+    @@map("skill-repositories")
 }
 
 model Skill {
@@ -69,14 +64,14 @@ model Skill {
 }
 
 model EventLog {
-  id          Int    @id @default(autoincrement())
-  createdAt   DateTime  @default(now())
-  username    String
-  resourceId  String?
-  courseId    String?
-  type        String
-  payload     Json?
-  // @@id([userId, createdAt, action]) // todo check if optimization is needed
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now())
+    username   String
+    resourceId String?
+    courseId   String?
+    type       String
+    payload    Json?
+    // @@id([userId, createdAt, action]) // todo check if optimization is needed
 }
 
 // // das schema beinhaltet daten die aus dem eventlog aggregiert werden. updatedAt ist der letzte zeitpunkt an dem die daten aktualisiert wurden. 
@@ -88,32 +83,52 @@ model EventLog {
 // }
 
 model Notification {
-  id             String   @id @default(uuid())
-  component      String   // z. B. "BannerMessage"
-  props          Json     // enthält die dynamischen Props der Komponente
-  displayFrom    DateTime
-  displayUntil   DateTime
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  targetAudience AudienceType @default(all)
+    id             String       @id @default(uuid())
+    component      String // z. B. "BannerMessage"
+    props          Json // enthält die dynamischen Props der Komponente
+    displayFrom    DateTime
+    displayUntil   DateTime
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+    targetAudience AudienceType @default(all)
 
-  targets        NotificationUser[]
+    targets NotificationUser[]
 }
 
 enum AudienceType {
-  all
-  user
-  admin
-  author
+    all
+    user
+    admin
+    author
 }
 
 model NotificationUser {
-  notificationId String
-  userId         String 
-  dismissed      Boolean  @default(false)
-  seenAt         DateTime? 
+    notificationId String
+    userId         String
+    dismissed      Boolean      @default(false)
+    seenAt         DateTime?
+    notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+    user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@id([notificationId, userId])
+    @@id([notificationId, userId])
+}
+
+model ReminderLog {
+    id          String         @id @default(uuid())
+    user        User           @relation(fields: [userId], references: [id])
+    userId      String
+    templateKey String
+    sentAt      DateTime? // null, wenn geplant aber noch nicht gesendet
+    status      ReminderStatus
+    error       String?
+    metadata    Json?
+
+    @@index([userId, templateKey, sentAt])
+}
+
+enum ReminderStatus {
+    SCHEDULED
+    SENT
+    FAILED
+    SKIPPED
 }
