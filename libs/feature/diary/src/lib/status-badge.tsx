@@ -7,14 +7,21 @@ export function LearningDiaryEntryStatusBadge({
 	isDraft: boolean;
 	className?: string;
 }) {
-	if (!isDraft) {
-		return null;
+	let colorClass = "";
+	if (isDraft) {
+		if (hasRead) {
+			colorClass = "bg-gray-400";
+		} else {
+			colorClass = "bg-blue-400";
+		}
+	} else {
+		colorClass = "bg-green-500";
 	}
 
 	return (
 		<div className="relative w-full">
 			<span
-				className={`absolute left-[-17px] top-1 ${className} transform -translate-y-1/2 ${hasRead ? "bg-gray-200" : "bg-green-500"} rounded-full h-2 w-2`}
+				className={`absolute left-[-17px] top-1 ${className} transform -translate-y-1/2 ${colorClass} rounded-full h-2 w-2`}
 			></span>
 		</div>
 	);
