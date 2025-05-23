@@ -1,9 +1,9 @@
 import { LessonType } from "@prisma/client";
 import {
-	getStaticPropsForLayout,
-	LessonLayout,
+	getStaticPropsForStandaloneLessonLayout,
 	LessonLearnersView,
-	LessonProps
+	LessonProps,
+	StandaloneLessonLayout
 } from "@self-learning/lesson";
 import { compileMarkdown } from "@self-learning/markdown";
 import { findContentType, LessonContent } from "@self-learning/types";
@@ -11,13 +11,13 @@ import { withAuth, withTranslations } from "@self-learning/api";
 
 export const getServerSideProps = withTranslations(["common"], async context => {
 	return withAuth(async _user => {
-		const props = await getStaticPropsForLayout(context.params);
+		const props = await getStaticPropsForStandaloneLessonLayout(context.params);
 
 		if ("notFound" in props) return { notFound: true };
 
 		const { lesson } = props;
 
-		lesson.quiz = null; // Not needed on this page, but on /quiz
+		lesson.quiz = null;
 		let mdDescription = null;
 		let mdArticle = null;
 		let mdQuestion = null;
@@ -35,12 +35,9 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 
 		if (article) {
 			mdArticle = await compileMarkdown(article.value.content ?? "Kein Inhalt.");
-
-			// Remove article content to avoid duplication
 			article.value.content = "(replaced)";
 		}
 
-		// TODO change to check if the lesson is self regulated
 		if (lesson.lessonType === LessonType.SELF_REGULATED) {
 			mdQuestion = await compileMarkdown(lesson.selfRegulatedQuestion ?? "Kein Inhalt.");
 		}
@@ -48,6 +45,7 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 		return {
 			props: {
 				...props,
+				course: null,
 				markdown: {
 					article: mdArticle,
 					description: mdDescription,
@@ -59,15 +57,8 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 	})(context);
 });
 
-export default function LessonPage({ lesson, course, markdown }: LessonProps) {
-	return (
-		<LessonLearnersView
-			lesson={lesson}
-			course={course}
-			markdown={markdown}
-			key={lesson.lessonId}
-		/>
-	);
+export default function StandaloneLessonPage({ lesson, markdown }: LessonProps) {
+	return <LessonLearnersView lesson={lesson} markdown={markdown} />;
 }
 
-LessonPage.getLayout = LessonLayout;
+StandaloneLessonPage.getLayout = StandaloneLessonLayout;

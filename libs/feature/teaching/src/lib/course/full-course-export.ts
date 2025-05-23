@@ -1,6 +1,6 @@
 import { database } from "@self-learning/database";
 import { CourseContent } from "@self-learning/types";
-import { LessonContent, getLessons } from "@self-learning/lesson";
+import { LessonData, getLessons } from "@self-learning/lesson";
 import { ResolvedValue } from "@self-learning/types";
 
 async function loadFullCourse(slug: string) {
@@ -50,7 +50,7 @@ export async function getFullCourseExport(slug: string) {
 	const lessonIds = courseContent.flatMap(chapter =>
 		chapter.content.map(lesson => lesson.lessonId)
 	);
-	const lessons: LessonContent[] = await getLessons(lessonIds);
+	const lessons: LessonData[] = await getLessons(lessonIds);
 
 	return { course: course, lessons: lessons } as const;
 }
