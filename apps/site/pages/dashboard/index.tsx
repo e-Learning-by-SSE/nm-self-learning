@@ -401,7 +401,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 									className="hover: flex items-center rounded-lg border border-light-border
 							p-3 transition-transform hover:bg-slate-100"
 								>
-									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
+									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
 										<div className="flex items-center gap-2">
 											<LearningDiaryEntryStatusBadge
 												isDraft={page.isDraft}
@@ -448,7 +448,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 						>
 							<li
 								className="hover: flex items-center rounded-lg border border-light-border
-							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+							px-3 transition-transform hover:bg-slate-100"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl}
