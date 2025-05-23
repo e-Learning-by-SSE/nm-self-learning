@@ -4,8 +4,7 @@ const API_SECRET = process.env.SCHEDULER_SECRET;
 const API_URL = process.env.SITE_BASE_URL;
 
 function startCronSendEmail() {
-	// Runs every minute
-	cron.schedule("*/5 * * * *", async () => {
+	cron.schedule("0 6,12,18,0 * * *", async () => {
 		console.log("Running cron job at", new Date().toISOString());
 		try {
 			const res = await fetch(API_URL + "/api/schedule/sendEmails", {
