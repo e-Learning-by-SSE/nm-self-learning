@@ -448,7 +448,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 						>
 							<li
 								className="hover: flex items-center rounded-lg border border-light-border
-							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+							px-3 transition-transform hover:bg-slate-100"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl}
