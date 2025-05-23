@@ -3,8 +3,15 @@ import { MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
+import { ArrangeItem } from "./schema";
+import { watch } from "fs";
 
-export default function ArrangeQuestion() {
+type ArrangeQuestionProps = {
+	order: string[];
+}
+
+
+export default function ArrangeQuestion({ order = []}: {order: string[]}) {
 	const { answer, setAnswer, evaluation } = useQuestion("arrange");
 
 	return (
@@ -25,7 +32,9 @@ export default function ArrangeQuestion() {
 				}}
 			>
 				<div className="grid auto-rows-fr gap-4 grid-flow-row xl:grid-flow-col">
-					{Object.entries(answer.value).map(([containerId, items]) => (
+					{order
+						.filter(containerId => containerId !== "_init")
+						.map(containerId => (
 						// eslint-disable-next-line react/jsx-no-useless-fragment
 						<Fragment key={containerId}>
 							{containerId === "_init" ? null : (
@@ -45,7 +54,7 @@ export default function ArrangeQuestion() {
 												{...provided.droppableProps}
 												className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-100 p-4"
 											>
-												{items.map((item, index) => (
+												{answer.value[containerId]?.map((item, index) => (
 													<Draggable
 														key={item.id}
 														draggableId={item.id}

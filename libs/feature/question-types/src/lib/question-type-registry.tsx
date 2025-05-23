@@ -199,7 +199,8 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		...createBaseQuestion(),
 		type: "arrange",
 		items: {},
-		randomizeItems: false
+		randomizeItems: false,
+		categoryOrder: []
 	}),
 	"language-tree": () => ({
 		...createBaseQuestion(),
@@ -259,7 +260,7 @@ export function QuestionAnswerRenderer({
 	}
 
 	if (question.type === "arrange") {
-		return <ArrangeAnswer />;
+		return <ArrangeAnswer order={question.categoryOrder} />;
 	}
 
 	if (question.type === "language-tree") {
