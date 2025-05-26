@@ -1,5 +1,6 @@
-import { createUserEvent, database } from "@self-learning/database";
+import { database } from "@self-learning/database";
 import { createNotification } from "@self-learning/ui/notifications";
+import { createEventLogEntry } from "@self-learning/util/eventlog";
 import { differenceInHours } from "date-fns";
 import { defaultGamificationProfileMeta } from "libs/util/types/src/lib/gamificationProfile";
 import { EventCallbacks } from "next-auth";
@@ -8,7 +9,7 @@ type SigninCallback = EventCallbacks["signIn"];
 
 async function logLogin({ user }: Parameters<SigninCallback>[0]): Promise<void> {
 	if (!user.name || !user.id) return;
-	await createUserEvent({
+	await createEventLogEntry({
 		username: user.name,
 		type: "USER_LOGIN",
 		resourceId: user.id,

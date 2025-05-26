@@ -1,20 +1,17 @@
-import {
-	EventLogQueryInput,
-	EventType,
-	EventTypesToAlwaysSave,
-	ResolvedValue
-} from "@self-learning/types";
-import { database } from "@self-learning/database";
 import { Prisma } from "@prisma/client";
+import { database } from "@self-learning/database";
+import { EventLog, EventLogQueryInput, EventTypeKeys } from "@self-learning/types";
 import { createHash } from "crypto";
+import { EventType } from "next-auth";
+import { ALWAYS_SAVE_EVENT_TYPES } from "./privacy-exceptions.conf";
 
-export async function createUserEvent<K extends keyof EventType>(event: {
+type CreateEventParams<T extends EventTypeKeys> = EventLog<T> & {
 	username: string;
-	type: K;
-	resourceId?: string;
-	courseId?: string;
-	payload: EventType[K];
-}) {
+};
+
+export async function createEventLogEntry<T extends EventTypeKeys>(
+	event: CreateEventParams<T>
+): Promise<EventLog<T> | null> {
 	const enabledLearningStatistics = (
 		await database.user.findUnique({ where: { name: event.username } })
 	)?.enabledLearningStatistics;
@@ -26,14 +23,15 @@ export async function createUserEvent<K extends keyof EventType>(event: {
 
 	// Anonymizes the username using SHA-256 when user event tracking is disabled,
 	// unless the event type is in the list of events that should always be saved (e.g., error events).
-	if (!enabledLearningStatistics && !EventTypesToAlwaysSave.includes(event.type)) {
+	if (!enabledLearningStatistics && !ALWAYS_SAVE_EVENT_TYPES.includes(event.type)) {
 		event.username = createHash("sha256").update(event.username).digest("hex");
 	}
 
-	return database.eventLog.create({ data: event });
+	const data = await database.eventLog.create({ data: event });
+	return data as unknown as EventLog<T>;
 }
 
-export async function loadUserEvents(input: EventLogQueryInput) {
+export async function loadUserEventLogs(input: EventLogQueryInput) {
 	// No query if undefined, equality check if 1 string provided, else in list query for arrays
 	const where = (input: string | string[] | undefined) => {
 		let query: Prisma.StringFilter<"EventLog"> | string | undefined = undefined;
@@ -73,5 +71,3 @@ export async function loadUserEvents(input: EventLogQueryInput) {
 	// type Result = (typeof results)[0];
 	return results as Result[];
 }
-
-export type UserEvent = ResolvedValue<typeof loadUserEvents>[number];

@@ -17,7 +17,7 @@ export type HeatmapEntry = {
 const EVENT_ENDINGS: EventTypeKeys[] = [
 	"USER_LOGOUT",
 	"COURSE_STOP",
-	"LESSON_STOP",
+	"LESSON_EXIT",
 	"LESSON_COMPLETE",
 	"LESSON_VIDEO_END",
 	"LESSON_VIDEO_STOP"

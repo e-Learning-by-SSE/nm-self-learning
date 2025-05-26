@@ -1,7 +1,8 @@
-import { EventType, EventTypesToAlwaysSave } from "@self-learning/types";
 import { database } from "@self-learning/database";
-import { createUserEvent } from "./user-eventlog";
 import { createHash } from "crypto";
+import { createEventLogEntry } from "./crud-eventlog";
+import { EventTypeKeys } from "@self-learning/types";
+import { ALWAYS_SAVE_EVENT_TYPES } from "./privacy-exceptions.conf";
 
 jest.mock("@self-learning/database", () => ({
 	database: {
@@ -32,12 +33,13 @@ const question = { questionId: "question789", type: "multiple-choice" };
 // Base event data used in tests
 const baseEventData = {
 	username: "testUser",
-	type: "LESSON_QUIZ_START" as keyof EventType,
+	type: "LESSON_QUIZ_START" as const,
 	courseId: course.courseId,
 	resourceId: lesson.lessonId,
 	payload: {
 		questionId: question.questionId,
-		type: question.type
+		type: question.type,
+		lessonAttemptId: "lessonAttempt123"
 	}
 };
 
@@ -50,7 +52,7 @@ describe("createUserEvent", () => {
 		(database.user.findUnique as jest.Mock).mockResolvedValue(mockUserEnabled);
 		(database.eventLog.create as jest.Mock).mockResolvedValue(baseEventData);
 
-		const result = await createUserEvent({ ...baseEventData });
+		const result = await createEventLogEntry({ ...baseEventData });
 
 		expect(database.user.findUnique).toHaveBeenCalledWith({
 			where: { name: baseEventData.username }
@@ -63,7 +65,7 @@ describe("createUserEvent", () => {
 		(database.user.findUnique as jest.Mock).mockResolvedValue(mockUserDisabled);
 
 		// Use an event type that is not in the always-saved list
-		const eventData = { ...baseEventData, type: "LESSON_QUIZ_START" as keyof EventType };
+		const eventData = { ...baseEventData, type: "LESSON_QUIZ_START" as const };
 		// Compute the expected anonymized username
 		const anonymizedUsername = createHash("sha256").update(eventData.username).digest("hex");
 
@@ -72,7 +74,7 @@ describe("createUserEvent", () => {
 			username: anonymizedUsername
 		});
 
-		const result = await createUserEvent({ ...eventData });
+		const result = await createEventLogEntry({ ...eventData });
 
 		expect(database.user.findUnique).toHaveBeenCalledWith({
 			where: { name: eventData.username }
@@ -86,12 +88,19 @@ describe("createUserEvent", () => {
 	it("should create an event with the original username when learning statistics are disabled but the event type is always saved", async () => {
 		(database.user.findUnique as jest.Mock).mockResolvedValue(mockUserDisabled);
 
-		// Use an event type that is in the always-saved list, e.g., "ERROR"
-		const eventData = { ...baseEventData, type: "ERROR" as keyof EventType };
+		const eventData = {
+			...baseEventData,
+			type: "ERROR" as const,
+			payload: {
+				...baseEventData.payload,
+				path: "/example/path",
+				error: "Example error message"
+			}
+		};
 
 		(database.eventLog.create as jest.Mock).mockResolvedValue(eventData);
 
-		const result = await createUserEvent({ ...eventData });
+		const result = await createEventLogEntry({ ...eventData });
 
 		expect(database.user.findUnique).toHaveBeenCalledWith({
 			where: { name: eventData.username }
@@ -103,7 +112,7 @@ describe("createUserEvent", () => {
 	it("should return null if the user does not exist", async () => {
 		(database.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-		const result = await createUserEvent({ ...baseEventData });
+		const result = await createEventLogEntry({ ...baseEventData });
 
 		expect(database.user.findUnique).toHaveBeenCalledWith({
 			where: { name: baseEventData.username }
@@ -117,12 +126,12 @@ describe("createUserEvent", () => {
 		it("should not anonymize the username for events that are always saved", async () => {
 			(database.user.findUnique as jest.Mock).mockResolvedValue(mockUserDisabled);
 
-			for (const eventType of EventTypesToAlwaysSave) {
-				const eventData = { ...baseEventData, type: eventType as keyof EventType };
+			for (const eventType of ALWAYS_SAVE_EVENT_TYPES) {
+				const eventData = { ...baseEventData, type: eventType as EventTypeKeys };
 
 				(database.eventLog.create as jest.Mock).mockResolvedValue(eventData);
 
-				const result = await createUserEvent({ ...eventData });
+				const result = await createEventLogEntry({ ...eventData });
 
 				expect(database.user.findUnique).toHaveBeenCalledWith({
 					where: { name: eventData.username }
