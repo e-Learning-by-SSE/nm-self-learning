@@ -24,9 +24,17 @@ import { useEventLog } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { withAuth, withTranslations } from "@self-learning/api";
+
+function hasAnsweredSelfRegulated(lessonId: string) {
+	return sessionStorage.getItem(`selfRegulatedSeen-${lessonId}`) === "true";
+}
+
+function setSelfRegulatedAnswered(lessonId: string) {
+	sessionStorage.setItem(`selfRegulatedSeen-${lessonId}`, "true");
+}
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -118,7 +126,42 @@ export default function LessonPage({ lesson, course, markdown }: LessonProps) {
 }
 
 function Lesson({ lesson, course, markdown }: LessonProps) {
+	/**
+	 * Using router and modal state to simulate 2 different URLs for back/forward navigation.
+	 * window.history.replaceState to overwrite URLs to hide the modal state from the address bar.
+	 * Alternative: Create 2 separate pages for the lesson and the self regulated question.
+	 */
+	const router = useRouter();
+	const path = router.asPath.split("?")[0];
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
+
+	useEffect(() => {
+		if (lesson.lessonType === LessonType.SELF_REGULATED) {
+			if (!router.isReady) return;
+
+			// Initial load: Show self regulated question
+			if (router.query.modal === undefined) {
+				// Push a state with question to be displayed
+				router
+					.replace({ pathname: path, query: { modal: "open" } }, undefined, {
+						shallow: true
+					})
+					.then(() => {
+						// Remove the query param from the address bar
+						window.history.replaceState(
+							{ ...window.history.state, as: path },
+							"",
+							path
+						);
+					});
+			}
+
+			// Double check: Modal + session to prevent query "hacking"
+			const answered =
+				router.query.modal === "closed" && hasAnsweredSelfRegulated(lesson.lessonId);
+			setShowDialog(!answered);
+		}
+	}, [router, lesson.lessonId, lesson.lessonType, path]);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
@@ -136,11 +179,23 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
+	const handleCloseDialog = () => {
+		setShowDialog(false);
+		setSelfRegulatedAnswered(lesson.lessonId);
+		router
+			.push({ pathname: path, query: { modal: "closed" } }, undefined, {
+				shallow: true
+			})
+			.then(() => {
+				window.history.replaceState({ ...window.history.state, as: path }, "", path);
+			});
+	};
+
 	if (showDialog && markdown.preQuestion) {
 		return (
 			<article className="flex flex-col gap-4">
 				<SelfRegulatedPreQuestion
-					setShowDialog={setShowDialog}
+					onClose={handleCloseDialog}
 					question={markdown.preQuestion}
 				/>
 			</article>
@@ -375,10 +430,10 @@ function MediaTypeSelector({
 
 function SelfRegulatedPreQuestion({
 	question,
-	setShowDialog
+	onClose
 }: {
 	question: CompiledMarkdown;
-	setShowDialog: Dispatch<SetStateAction<boolean>>;
+	onClose: () => void;
 }) {
 	const [userAnswer, setUserAnswer] = useState("");
 
@@ -401,9 +456,7 @@ function SelfRegulatedPreQuestion({
 					<button
 						type="button"
 						className="btn-primary"
-						onClick={() => {
-							setShowDialog(false);
-						}}
+						onClick={onClose}
 						disabled={userAnswer.length == 0}
 					>
 						Antwort Speichern
