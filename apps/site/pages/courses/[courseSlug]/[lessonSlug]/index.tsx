@@ -32,7 +32,7 @@ function hasAnsweredSelfRegulated(lessonId: string) {
 	return sessionStorage.getItem(`selfRegulatedSeen-${lessonId}`) === "true";
 }
 
-function markSelfRegulatedAnswered(lessonId: string) {
+function setSelfRegulatedAnswered(lessonId: string) {
 	sessionStorage.setItem(`selfRegulatedSeen-${lessonId}`, "true");
 }
 
@@ -181,7 +181,7 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		markSelfRegulatedAnswered(lesson.lessonId);
+		setSelfRegulatedAnswered(lesson.lessonId);
 		router
 			.push({ pathname: path, query: { modal: "closed" } }, undefined, {
 				shallow: true
