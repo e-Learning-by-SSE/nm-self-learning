@@ -1,11 +1,17 @@
-import { QuizContent } from "@self-learning/question-types";
-import { getRandomId } from "@self-learning/util/common";
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
-import { createCourseContent, createCourseMeta, extractLessonIds } from "@self-learning/types";
+import { QuizContent } from "@self-learning/question-types";
+import {
+	createCourseContent,
+	createCourseMeta,
+	extractLessonIds,
+	Flames,
+	LoginStreak
+} from "@self-learning/types";
+import { getRandomId } from "@self-learning/util/common";
 import { subHours } from "date-fns";
 import { defaultLicenseId } from "../license";
+import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
 
 faker.seed(1);
 
@@ -40,6 +46,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				isCorrect: false
 			}
 		],
+		randomizeAnswers: false,
 		hints: [
 			{
 				hintId: "abc",
@@ -447,12 +454,14 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 			create: {
 				username: "dumbledore",
 				lastLogin: new Date(2025, 5, 14),
-				loginStreak: 0,
-				meta: {
-					flames: {
-						count: 0
-					}
-				}
+				loginStreak: {
+					count: 3,
+					status: "broken"
+				} satisfies LoginStreak,
+				flames: {
+					count: 10,
+					maxCount: 10
+				} satisfies Flames
 			}
 		}
 	},
@@ -539,12 +548,14 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 		create: {
 			username: student.username,
 			lastLogin: new Date(2025, 5, 14),
-			loginStreak: 11,
-			meta: {
-				flames: {
-					count: 3
-				}
-			}
+			loginStreak: {
+				count: 3,
+				status: "active"
+			} satisfies LoginStreak,
+			flames: {
+				count: 3,
+				maxCount: 10
+			} satisfies Flames
 		}
 	}
 }));

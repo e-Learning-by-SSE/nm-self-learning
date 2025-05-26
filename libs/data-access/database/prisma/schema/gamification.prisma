@@ -1,9 +1,9 @@
 model GamificationProfile {
     userId      String   @unique
     username    String   @id
-    loginStreak Int      @default(0)
-    meta        Json?
     lastLogin   DateTime @default(now())
+    loginStreak Json     @default("{\"count\": 0, \"status\": \"active\", \"pauseUntil\": null}")
+    flames      Json     @default("{\"count\": 0, \"maxStatus\": 3}")
 
     user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
     achievementProgress AchievementProgress[]

@@ -1,82 +1,76 @@
 import { z } from "zod";
 
-/**
- * Schema for the gamification profile metadata which is used to validate the data in
- * the meta field of the gamification profile, before writing it to the database.
- */
-export const gamificationProfileMetaSchema = z.object({
-	loginStreak: z.object({
-		/**
-		 * The number of consecutive days the user has logged in.
-		 * Resets to 0 when the streak becomes inactive.
-		 */
-		count: z.number().nonnegative().default(0),
+export const loginStreakSchema = z.object({
+	/**
+	 * The number of consecutive days the user has logged in.
+	 * Resets to 0 when the streak becomes inactive.
+	 */
+	count: z.number().nonnegative().default(0),
 
-		/**
-		 * The current status of the login streak:
-		 * - "active": User is maintaining a daily login streak.
-		 * - "paused": Streak is temporarily protected (e.g., due to a streak freeze item).
-		 * - "inactive": Streak is broken and must start over.
-		 */
-		status: z.enum(["active", "paused", "inactive"]).default("inactive"),
+	/**
+	 * The current status of the login streak:
+	 * - "active": User is maintaining a daily login streak.
+	 * - "paused": Streak is temporarily protected (e.g., due to a streak freeze item).
+	 * - "inactive": Streak is broken and can be refired by using flames
+	 */
+	status: z.enum(["active", "paused", "broken"]).default("active"),
 
-		/**
-		 * If the streak is "paused", this is the date until which the streak is protected.
-		 * After this date, the streak will become "inactive" if not resumed.
-		 * Null or undefined if the streak is not paused.
-		 */
-		pauseUntil: z.date().optional().nullable()
-	}),
-
-	flames: z.object({
-		count: z.number().nonnegative().default(0),
-		maxCount: z.number().nonnegative().default(0)
-	}),
-
-	itemLog: z.array(
-		z.object({
-			type: z.literal("flame"),
-			status: z.union([z.literal("used"), z.literal("acquired")]),
-			usedAt: z.date()
-		})
-	)
-
-	// xp: z.number().nonnegative().optional(),
-	// level: z.number().nonnegative().optional()
+	/**
+	 * If the streak is "paused", this is the date until which the streak is protected.
+	 * After this date, the streak will become "inactive" if not resumed.
+	 * Null or undefined if the streak is not paused.
+	 */
+	pausedUntil: z.date().optional().nullable()
 });
+export type LoginStreak = z.infer<typeof loginStreakSchema>;
 
-export type GamificationProfileMeta = z.infer<typeof gamificationProfileMetaSchema>;
+export const flamesSchema = z.object({
+	count: z.number().nonnegative().default(0),
+	maxCount: z.number().nonnegative().default(0)
+});
+export type Flames = z.infer<typeof flamesSchema>;
 
-export const defaultGamificationProfileMeta = {
-	itemLog: [],
-	flames: {
-		count: 0,
-		maxCount: 3
-	},
-	loginStreak: {
-		count: 0,
-		status: "inactive",
-		pauseUntil: null
-	}
-} satisfies GamificationProfileMeta;
+export const itemLogSchema = z.array(
+	z.object({
+		type: z.literal("flame"),
+		status: z.union([z.literal("used"), z.literal("acquired")]),
+		usedAt: z.date()
+	})
+);
+export type ItemLog = z.infer<typeof itemLogSchema>;
+
+// export type GamificationProfileMeta = z.infer<typeof gamificationProfileMetaSchema>;
+
+// export const defaultGamificationProfileMeta = {
+// 	itemLog: [],
+// 	flames: {
+// 		count: 0,
+// 		maxCount: 3
+// 	},
+// 	loginStreak: {
+// 		count: 0,
+// 		status: "active",
+// 		pauseUntil: null
+// 	}
+// } satisfies GamificationProfileMeta;
+
+export const streakDialogTriggerEnum = z.enum([
+	"dailyIncrease",
+	"attentionRequired",
+	"onBoard",
+	"reset",
+	"dashboard"
+]);
 
 export const gamificationProfileSchema = z.object({
 	userId: z.string(),
 	lastLogin: z.date().optional(),
-	loginStreak: z.number().nonnegative().default(0),
-	meta: gamificationProfileMetaSchema
+	loginStreak: loginStreakSchema,
+	flames: flamesSchema,
+	itemLog: itemLogSchema
 });
 
 export type GamificationProfile = z.infer<typeof gamificationProfileSchema>;
-
-/**
- * Represents the type of change that triggered a streak update.
- */
-export const streakInfoSchema = z.object({
-	trigger: z.enum(["increase", "reset", "attention"])
-});
-
-export type StreakInfo = z.infer<typeof streakInfoSchema>;
 
 /**
  * Grading levels used in achievements.

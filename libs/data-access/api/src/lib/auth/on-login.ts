@@ -1,8 +1,14 @@
+import { createNewProfile } from "@self-learning/achievements";
 import { database } from "@self-learning/database";
+import {
+	Flames,
+	GamificationProfile,
+	LoginStreak,
+	NotificationPropsMap
+} from "@self-learning/types";
 import { createNotification } from "@self-learning/ui/notifications";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
 import { differenceInHours } from "date-fns";
-import { defaultGamificationProfileMeta } from "libs/util/types/src/lib/gamificationProfile";
 import { EventCallbacks } from "next-auth";
 
 type SigninCallback = EventCallbacks["signIn"];
@@ -22,81 +28,62 @@ async function logLogin({ user }: Parameters<SigninCallback>[0]): Promise<void> 
  * Increments streak if last login was more than 24h ago
  */
 async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promise<void> {
-	if (!user?.id) return;
+	const username = user?.name?.trim();
+	if (!username) return;
 
 	const now = new Date();
 
 	return await database.$transaction(async tx => {
 		const profile = await tx.gamificationProfile.findUnique({
 			where: { userId: user.id },
-			select: { lastLogin: true, loginStreak: true, meta: true }
+			select: { lastLogin: true, loginStreak: true, flames: true }
 		});
 
-		const newMeta = structuredClone(defaultGamificationProfileMeta);
-		newMeta.loginStreak.count = 1;
-		newMeta.flames.count = 2;
-
+		let notificationStreakValue: LoginStreak;
+		let notificationFlames: Flames;
+		let notificationTrigger: NotificationPropsMap["StreakInfoDialog"]["trigger"];
 		if (!profile) {
-			await tx.gamificationProfile.create({
+			const newCreatedProfile = await createNewProfile(username, tx);
+			notificationStreakValue = newCreatedProfile.loginStreak;
+			notificationFlames = newCreatedProfile.flames;
+			notificationTrigger = "onBoard";
+		} else {
+			const { lastLogin, loginStreak, flames } = profile as unknown as GamificationProfile;
+			notificationFlames = flames;
+
+			const hoursSinceLastLogin = differenceInHours(now, lastLogin ?? new Date());
+			if (hoursSinceLastLogin >= 24 && hoursSinceLastLogin < 48) {
+				loginStreak.count++;
+				loginStreak.status = "active";
+				notificationTrigger = "dailyIncrease";
+			} else if (hoursSinceLastLogin >= 48 && hoursSinceLastLogin < 72) {
+				loginStreak.status = "broken";
+				notificationTrigger = "attentionRequired";
+			} /*if (hoursSinceLastLogin >= 72)*/ else {
+				loginStreak.count = 1;
+				loginStreak.status = "active";
+				notificationTrigger = "reset";
+			}
+
+			await tx.gamificationProfile.update({
+				where: { userId: user.id },
 				data: {
-					userId: user.id,
 					lastLogin: now,
-					loginStreak: 1,
-					meta: newMeta,
-					user: {
-						connect: { id: user.id }
-					}
+					loginStreak
 				}
 			});
-			await createNotification({
-				tx,
-				component: "StreakInfoDialog",
-				props: {
-					trigger: "attention"
-				},
-				targetAudience: "user",
-				targetUser: user.id
-			});
-			return;
+			notificationStreakValue = loginStreak;
 		}
-
-		const { lastLogin, loginStreak } = profile;
-
-		let newStreakValue = loginStreak;
-		if (lastLogin) {
-			const hoursSinceLastLogin = differenceInHours(now, lastLogin);
-
-			if (hoursSinceLastLogin >= 24 && hoursSinceLastLogin < 48) {
-				newStreakValue = loginStreak + 1;
-				await createNotification({
-					tx,
-					component: "StreakInfoDialog",
-					props: {
-						trigger: "increase"
-					},
-					targetAudience: "user",
-					targetUser: user.id
-				});
-			} else if (hoursSinceLastLogin >= 48) {
-				newStreakValue = 1;
-				await createNotification({
-					tx,
-					component: "StreakInfoDialog",
-					props: {
-						trigger: "reset"
-					},
-					targetAudience: "user",
-					targetUser: user.id
-				});
-			}
-		}
-
-		await tx.gamificationProfile.update({
-			where: { userId: user.id },
-			data: {
-				lastLogin: now,
-				loginStreak: newStreakValue
-			}
+		await createNotification({
+			tx,
+			component: "StreakInfoDialog",
+			props: {
+				flames: notificationFlames,
+				trigger: notificationTrigger,
+				loginStreak: notificationStreakValue
+			},
+			targetAudience: "user",
+			targetUser: user.id
 		});
 	});
 }

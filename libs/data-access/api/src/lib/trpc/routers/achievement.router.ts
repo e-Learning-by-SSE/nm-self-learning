@@ -1,15 +1,11 @@
-// Server-side tRPC router in src/server/api/routers/streak.ts
-
 import { PrismaClient } from "@prisma/client";
-import { database } from "@self-learning/database";
 import { checkAndAwardAchievements } from "@self-learning/achievements";
+import { database } from "@self-learning/database";
 import {
 	AchievementWithProgress,
 	GamificationProfile,
-	GamificationProfileMeta,
 	achievementMetaSchema,
-	achievementTriggerEnum,
-	defaultGamificationProfileMeta
+	achievementTriggerEnum
 } from "@self-learning/types";
 import { isTruthy } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
@@ -17,79 +13,56 @@ import { addHours } from "date-fns";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 
-export async function getProfileMeta(username: string, tx?: PrismaClient) {
+export async function getProfile(username: string, tx?: PrismaClient) {
 	const client = tx || database;
-	let profile = await client.gamificationProfile.findUniqueOrThrow({
+	const profile = await client.gamificationProfile.findUniqueOrThrow({
 		where: { username }
 	});
-	if (!profile.meta) {
-		profile = {
-			...profile,
-			meta: defaultGamificationProfileMeta
-		};
-	}
-
-	return {
-		...profile,
-		meta: profile.meta as unknown as GamificationProfileMeta
-	} as GamificationProfile;
+	return profile as unknown as GamificationProfile;
 }
 
 export const gamificationRouter = t.router({
 	getGamificationProfile: authProcedure.query(async ({ ctx }) => {
-		const userId = ctx.user.id;
-		return getProfileMeta(userId);
+		return getProfile(ctx.user.name);
 	}),
 
 	refireStreak: authProcedure.mutation(async ({ ctx }) => {
-		const userId = ctx.user.id;
-		const profile = await getProfileMeta(userId);
+		const username = ctx.user.name;
+		const profile = await getProfile(username);
 
 		// 2. Check if user has enough flames
-		if (profile.meta.flames.count < 2) {
+		if (profile.flames.count < 2) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message: "Not enough flames to refire streak"
 			});
 		}
 
-		const newStreakProfile = {
-			...profile.meta,
-			flames: {
-				...profile.meta.flames,
-				count: profile.meta.flames.count - 2
-			},
-			loginStreak: {
-				...profile.meta.loginStreak,
-				status: "active",
-				pauseUntil: null
-			}
-		} satisfies GamificationProfileMeta;
-
 		// 3. Update the streak status and flame count
+		const { flames, loginStreak } = profile;
+		flames.count -= 2;
+		loginStreak.status = "active";
+		loginStreak.count += 1;
 		const updated = await database.gamificationProfile.update({
-			where: { userId },
+			where: { username },
 			data: {
-				meta: newStreakProfile
+				flames,
+				loginStreak
 			}
 		});
-
-		return {
-			...updated,
-			meta: updated.meta as unknown as GamificationProfileMeta
-		} as GamificationProfile;
+		return updated;
 	}),
 
 	pauseStreak: authProcedure.mutation(async ({ ctx }) => {
-		const userId = ctx.user.id;
-		const { meta } = await getProfileMeta(userId);
+		const username = ctx.user.name;
+		const { loginStreak, flames } = await getProfile(username);
 
 		// 2. Check if user has enough flames and isn't already paused
-		if (meta.flames.count < 1 || meta.loginStreak.status === "paused") {
+		if (flames.count < 1 || loginStreak.status === "paused") {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message:
-					meta.loginStreak.status === "paused"
+					loginStreak.status === "paused"
 						? "Streak is already paused"
 						: "Not enough flames to pause streak"
 			});
@@ -99,28 +72,18 @@ export const gamificationRouter = t.router({
 		const pauseUntil = addHours(new Date(), 24);
 
 		// 4. Update the streak status, flame count, and set pause end time
+		loginStreak.status = "paused";
+		loginStreak.pausedUntil = pauseUntil;
+		flames.count -= 1;
 		const updatedStreak = await database.gamificationProfile.update({
-			where: { userId },
+			where: { username },
 			data: {
-				meta: {
-					...meta,
-					loginStreak: {
-						...meta.loginStreak,
-						status: "paused",
-						pauseUntil
-					},
-					flames: {
-						...meta.flames,
-						count: meta.flames.count - 1
-					}
-				}
+				loginStreak,
+				flames,
+				lastLogin: new Date()
 			}
 		});
-
-		return {
-			...updatedStreak,
-			meta: updatedStreak.meta as unknown as GamificationProfileMeta
-		} as GamificationProfile;
+		return updatedStreak;
 	}),
 	earnAchievements: authProcedure
 		.input(z.object({ trigger: achievementTriggerEnum }))

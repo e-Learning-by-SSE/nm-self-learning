@@ -1,8 +1,12 @@
 import { z } from "zod";
-import { streakInfoSchema } from "./gamificationProfile";
+import { flamesSchema, loginStreakSchema, streakDialogTriggerEnum } from "./gamificationProfile";
 
 export const notificationPropSchema = {
-	StreakInfoDialog: streakInfoSchema,
+	StreakInfoDialog: z.object({
+		trigger: streakDialogTriggerEnum,
+		loginStreak: loginStreakSchema,
+		flames: flamesSchema
+	}),
 	BannerMessage: z.object({
 		htmlMessage: z.string(),
 		dismissible: z.boolean().optional(),

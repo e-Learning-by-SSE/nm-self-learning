@@ -1,6 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database } from "@self-learning/database";
-import { defaultGamificationProfileMeta } from "@self-learning/types";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import { jwtDecode } from "jwt-decode";
@@ -116,9 +115,7 @@ const customPrismaAdapter: Adapter = {
 				create: {
 					userId: account.userId,
 					username: user.name ?? user.id,
-					lastLogin: new Date(),
-					loginStreak: 0,
-					meta: defaultGamificationProfileMeta
+					lastLogin: new Date()
 				},
 				update: {}
 			})

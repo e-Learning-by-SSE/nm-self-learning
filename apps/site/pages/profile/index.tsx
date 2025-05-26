@@ -9,7 +9,7 @@ import {
 	StreakIndicatorCircle,
 	StreakSlotMachineDialog
 } from "@self-learning/profile";
-import { GamificationProfileMeta } from "@self-learning/types";
+import { Flames, LoginStreak } from "@self-learning/types";
 import {
 	Divider,
 	ImageCard,
@@ -69,7 +69,7 @@ async function getStudent(username: string) {
 					gamificationProfile: {
 						select: {
 							loginStreak: true,
-							meta: true
+							flames: true
 						}
 					}
 				}
@@ -139,9 +139,9 @@ async function getStudent(username: string) {
 		user: {
 			...student.user,
 			gamificationProfile: {
-				loginStreak: student.user.gamificationProfile?.loginStreak ?? 0,
-				meta: student.user.gamificationProfile?.meta as unknown as GamificationProfileMeta
-				// meta: gamificationProfileMetaSchema.parse(student.user.gamificationProfile?.meta)
+				loginStreak: student.user.gamificationProfile
+					?.loginStreak as unknown as LoginStreak,
+				flames: student.user.gamificationProfile?.flames as unknown as Flames
 			}
 		}
 	};
@@ -319,7 +319,7 @@ export default function DashboardPage(props: Props) {
 				<section className="relative rounded-lg bg-white shadow p-4 space-y-2">
 					<div className="absolute -top-4 -right-4 h-14 w-14">
 						<StreakIndicatorCircle
-							streakCount={gamificationProfile.loginStreak}
+							streakCount={gamificationProfile.loginStreak.count}
 							onClick={() => setStreakInfoOpen(true)}
 						/>
 					</div>
@@ -355,7 +355,8 @@ export default function DashboardPage(props: Props) {
 							<strong>Fachgebiet:</strong> {user.name ?? "–"}
 						</p>
 						<p>
-							<strong>Tage in Folge aktiv:</strong> {gamificationProfile.loginStreak}
+							<strong>Tage in Folge aktiv:</strong>{" "}
+							{gamificationProfile.loginStreak.count}
 						</p>
 					</div>
 				</section>
@@ -401,7 +402,10 @@ export default function DashboardPage(props: Props) {
 				/>
 			)}
 			<StreakSlotMachineDialog
+				flames={gamificationProfile.flames}
+				loginStreak={gamificationProfile.loginStreak}
 				open={streakInfoOpen}
+				trigger="dashboard"
 				onClose={() => setStreakInfoOpen(false)}
 			/>
 		</div>
