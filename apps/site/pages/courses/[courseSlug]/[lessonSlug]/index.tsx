@@ -121,22 +121,38 @@ export default function LessonPage({ lesson, course, markdown }: LessonProps) {
 }
 
 function Lesson({ lesson, course, markdown }: LessonProps) {
+	/**
+	 * Using router and model state to simulate 2 different URLs for back/forward navigation.
+	 * window.history.replaceState to overwrite URLs to hide the modal state from the address bar.
+	 */
+	const router = useRouter();
+	const path = router.asPath.split("?")[0];
 	const [showDialog, setShowDialog] = useState(
 		lesson.lessonType === LessonType.SELF_REGULATED &&
 			!hasAnsweredSelfRegulated(lesson.lessonId)
 	);
 
-	// Clear sessionStorage on back if the dialog is not shown
 	useEffect(() => {
-		const handlePopState = () => {
-			if (!showDialog) {
-				clearSelfRegulatedAnswered(lesson.lessonId);
-			}
-		};
+		if (!router.isReady) return;
 
-		window.addEventListener("popstate", handlePopState);
-		return () => window.removeEventListener("popstate", handlePopState);
-	}, [lesson.lessonId, showDialog]);
+		// Initial load: set modal state based on history
+		if (router.query.modal === undefined) {
+			// Push a state with modal open
+			router
+				.replace({ pathname: path, query: { modal: "open" } }, undefined, {
+					shallow: true
+				})
+				.then(() => {
+					// Remove the query param from the address bar
+					window.history.replaceState({ ...window.history.state, as: path }, "", path);
+				});
+		}
+		// hasAnsweredSelfRegulated(lesson.lessonId)
+
+		// Update state on actual query param
+		// setShowDialog(!hasAnsweredSelfRegulated(lesson.lessonId));
+		setShowDialog(router.query.modal !== "closed");
+	}, [router, lesson.lessonId, path]);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
@@ -156,7 +172,14 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		markSelfRegulatedAnswered(lesson.lessonId);
+		// markSelfRegulatedAnswered(lesson.lessonId);
+		router
+			.push({ pathname: path, query: { modal: "closed" } }, undefined, {
+				shallow: true
+			})
+			.then(() => {
+				window.history.replaceState({ ...window.history.state, as: path }, "", path);
+			});
 	};
 
 	if (showDialog && markdown.preQuestion) {
