@@ -44,6 +44,7 @@ export type QuizContextValue = {
 	>;
 	goToNextQuestion: () => void;
 	reload: () => void;
+	lessonAttemptId: string;
 };
 
 const QuizContext = createContext<QuizContextValue>(null as unknown as QuizContextValue);
@@ -57,12 +58,14 @@ export function QuizProvider({
 	questions,
 	config,
 	goToNextQuestion,
-	reload
+	reload,
+	lessonAttemptId
 }: {
 	questions: QuestionType[];
 	config: QuizConfig;
 	goToNextQuestion: () => void;
 	reload: () => void;
+	lessonAttemptId: string;
 	children: React.ReactNode;
 }) {
 	const [cookies] = useCookies(["quiz_answers_save"]);
@@ -137,7 +140,8 @@ export function QuizProvider({
 				setAttempts,
 				goToNextQuestion,
 				completionState,
-				reload
+				reload,
+				lessonAttemptId
 			}}
 		>
 			{children}

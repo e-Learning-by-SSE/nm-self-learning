@@ -122,7 +122,6 @@ export type AchievementMeta = z.infer<typeof achievementMetaSchema>;
 export const achievementTriggerEnum = z.enum([
 	"lesson_completed",
 	"daily_login",
-	"session_time",
 	"streak_check",
 	"manual"
 ]);

@@ -14,13 +14,14 @@ import {
 	getStaticPropsForLayout,
 	LessonLayout,
 	LessonLayoutProps,
-	useLessonContext
+	useLessonContext,
+	useLessonSession
 } from "@self-learning/lesson";
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
-import { Tab, Tabs, useIsFirstRender } from "@self-learning/ui/common";
-import { useEventLog } from "@self-learning/util/common";
+import { LoadingBox, Tab, Tabs, useIsFirstRender } from "@self-learning/ui/common";
+import { useEventLog } from "@self-learning/util/eventlog";
 import { calculateAverageScore } from "libs/feature/completion/src/lib/lesson-grading";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
@@ -92,6 +93,10 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
+	const { lessonAttemptId, submit, reset, setTrackingState } = useLessonSession(
+		lesson.lessonId,
+		course.courseId
+	);
 
 	const goToNextQuestion = useCallback(() => {
 		router.push(`/courses/${course.slug}/${lesson.slug}/quiz?index=${nextIndex}`, undefined, {
@@ -117,12 +122,19 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 		}
 	}, [index, questions]);
 
+	const restart = () => {
+		router.reload();
+		reset();
+	};
+
+	if (lessonAttemptId === null) return <LoadingBox />;
 	return (
 		<QuizProvider
 			questions={questions}
 			config={config ?? defaultQuizConfig}
 			goToNextQuestion={goToNextQuestion}
-			reload={router.reload}
+			reload={restart}
+			lessonAttemptId={lessonAttemptId}
 		>
 			<div className="flex w-full flex-col gap-4">
 				<div className="flex w-full flex-col gap-4">
@@ -140,33 +152,70 @@ export default function QuestionsPage({ course, lesson, quiz, markdown }: Questi
 						lesson={lesson}
 						courseId={course.courseId}
 					/>
-					<QuizCompletionSubscriber lesson={lesson} course={course} />
+					<QuizCompletionStateSubscriber
+						lesson={lesson}
+						course={course}
+						onSubmitAttempt={submit}
+						setTrackingState={setTrackingState}
+					/>
 				</div>
 			</div>
 		</QuizProvider>
 	);
 }
 
-/** Component that listens to the `completionState` and marks lesson as completed, when quiz is `completed`. */
-function QuizCompletionSubscriber({
+/** Component that listens to the `completionState` and marks lesson as completed, or logs the submission. */
+function QuizCompletionStateSubscriber({
 	lesson,
-	course
+	course,
+	onSubmitAttempt,
+	setTrackingState
 }: {
 	lesson: QuestionProps["lesson"];
 	course: QuestionProps["course"];
+	onSubmitAttempt: (
+		completionState: "completed" | "failed",
+		performanceScore: number
+	) => Promise<unknown>;
+	setTrackingState: (state: boolean) => void;
 }) {
 	const { completionState, attempts, answers } = useQuiz();
 	const unsubscribeRef = useRef(false);
-	const averageScore = calculateAverageScore(attempts, answers);
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug, averageScore);
+	const markAsCompleted = useMarkAsCompleted();
 
 	useEffect(() => {
-		if (!unsubscribeRef.current && completionState === "completed") {
-			unsubscribeRef.current = true;
-			console.log("QuizCompletionSubscriber: Marking as completed");
-			void markAsCompleted();
-		}
-	}, [completionState, markAsCompleted]);
+		if (unsubscribeRef.current) return;
+
+		const handleCompletion = async () => {
+			const performanceScore = calculateAverageScore(attempts, answers);
+
+			if (completionState !== "in-progress") {
+				onSubmitAttempt(completionState, performanceScore);
+				setTrackingState(false);
+			}
+
+			if (completionState === "completed") {
+				unsubscribeRef.current = true;
+				console.log("QuizCompletionSubscriber: Marking as completed");
+				markAsCompleted({
+					lessonId: lesson.lessonId,
+					courseSlug: course.slug,
+					performanceScore
+				});
+			}
+		};
+
+		void handleCompletion();
+	}, [
+		answers,
+		attempts,
+		completionState,
+		course.slug,
+		lesson.lessonId,
+		markAsCompleted,
+		onSubmitAttempt,
+		setTrackingState
+	]);
 
 	return <></>;
 }
@@ -188,7 +237,7 @@ export function QuizHeader({
 	goToQuestion: (index: number) => void;
 }) {
 	const { chapterName, nextLesson } = useLessonContext(lesson.lessonId, course.slug);
-	const { evaluations, completionState } = useQuiz();
+	const { evaluations, completionState, lessonAttemptId } = useQuiz();
 	const { newEvent } = useEventLog();
 	const [suppressDialog, setSuppressDialog] = useState(false);
 
@@ -203,23 +252,24 @@ export function QuizHeader({
 
 	const logQuizStart = useCallback(
 		(lesson: QuestionProps["lesson"], question: QuizContent[number]) => {
-			newEvent({
+			return newEvent({
 				type: "LESSON_QUIZ_START",
 				courseId: course.courseId,
 				resourceId: lesson.lessonId,
 				payload: {
 					questionId: question.questionId,
-					type: question.type
+					type: question.type,
+					lessonAttemptId
 				}
 			});
 		},
-		[newEvent, course.courseId]
+		[newEvent, course.courseId, lessonAttemptId]
 	);
 
 	const isFirstRender = useIsFirstRender();
 	useEffect(() => {
 		if (!isFirstRender) return;
-		logQuizStart(lesson, questions[currentIndex]);
+		void logQuizStart(lesson, questions[currentIndex]);
 	}, [currentIndex, isFirstRender, lesson, logQuizStart, questions]);
 
 	return (

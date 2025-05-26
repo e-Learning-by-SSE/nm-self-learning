@@ -1,13 +1,17 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
 	getStaticPropsForLayout,
 	LessonLayout,
 	LessonLayoutProps,
-	useLessonContext
+	loadLessonSessionSafe,
+	useLessonContext,
+	useLessonSession
 } from "@self-learning/lesson";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	findContentType,
@@ -20,13 +24,11 @@ import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
-import { useEventLog } from "@self-learning/util/common";
+import { useEventLog } from "@self-learning/util/eventlog";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -122,18 +124,6 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
-
-	const { newEvent } = useEventLog();
-	useEffect(() => {
-		// TODO check if useEffect can be removed
-		newEvent({
-			type: "LESSON_OPEN",
-			resourceId: lesson.lessonId,
-			courseId: course.courseId,
-			payload: undefined
-		});
-	}, [newEvent, lesson.lessonId, course.courseId]);
-
 	const preferredMediaType = usePreferredMediaType(lesson);
 
 	if (showDialog && markdown.preQuestion) {
@@ -282,10 +272,55 @@ function LessonControls({
 	course: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 }) {
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug);
+	const markAsCompleted = useMarkAsCompleted();
+	const { newEvent } = useEventLog();
 	const completion = useCourseCompletion(course.slug);
 	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
+	const { lessonAttemptId, submit } = useLessonSession(lesson.lessonId, course.courseId);
+
+	useEffect(() => {
+		if (!lessonAttemptId) return;
+		newEvent({
+			type: "LESSON_OPEN",
+			resourceId: lesson.lessonId,
+			courseId: course.courseId,
+			payload: { lessonAttemptId }
+		});
+	}, [newEvent, lesson.lessonId, course.courseId, lessonAttemptId]);
+
+	const handleLessonExit = useCallback(async () => {
+		if (!lessonAttemptId) return;
+		await newEvent({
+			type: "LESSON_EXIT",
+			resourceId: lesson.lessonId,
+			courseId: course.courseId,
+			payload: {
+				lessonAttemptId
+			}
+		});
+	}, [newEvent, lesson.lessonId, course.courseId, lessonAttemptId]);
+
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			void handleLessonExit();
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+	}, [handleLessonExit]);
+
+	const handleMarkCompleted = useCallback(async () => {
+		const finalSession = loadLessonSessionSafe(lesson.lessonId);
+		if (!finalSession) return;
+		await submit("completed", 1.0);
+
+		markAsCompleted({
+			lessonId: lesson.lessonId,
+			courseSlug: course.slug,
+			performanceScore: 1
+		});
+	}, [lesson.lessonId, submit, markAsCompleted, course.slug]);
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
@@ -303,7 +338,7 @@ function LessonControls({
 			{!hasQuiz && !isCompletedLesson && (
 				<button
 					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
-					onClick={markAsCompleted}
+					onClick={handleMarkCompleted}
 				>
 					<span>Als abgeschlossen markieren</span>
 					<CheckCircleIcon className="h-6 shrink-0" />

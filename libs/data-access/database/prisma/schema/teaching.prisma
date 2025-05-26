@@ -140,7 +140,6 @@ model Lesson {
     provides              Skill[]           @relation("providedSkills")
 
     lessonStart LearningDiaryLearnedLessons[]
-    // lessonGrades LessonPerformance[]
 }
 
 model CompletedLesson {

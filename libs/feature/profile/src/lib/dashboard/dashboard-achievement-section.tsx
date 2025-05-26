@@ -109,7 +109,9 @@ export function DashboardAchievementsSection({ className }: DashboardAchievement
 			{/* Redeemed Achievements */}
 			{redeemed.length > 0 && (
 				<div className="mb-4">
-					<h3 className="text-sm font-medium text-gray-700 mb-2">Freigeschaltet</h3>
+					<h3 className="text-sm font-medium text-gray-700 mb-2">
+						zuletzt Freigeschaltet
+					</h3>
 					<AchievementList achievements={new IdSet(redeemed.slice(0, 2))} />
 				</div>
 			)}
@@ -117,7 +119,9 @@ export function DashboardAchievementsSection({ className }: DashboardAchievement
 			{/* In-Progress Achievements */}
 			{inProgress.length > 0 && (
 				<div>
-					<h3 className="text-sm font-medium text-gray-700 mb-2">In Bearbeitung</h3>
+					<h3 className="text-sm font-medium text-gray-700 mb-2">
+						zuletzt in Bearbeitung
+					</h3>
 					<AchievementList achievements={new IdSet(inProgress)} />
 				</div>
 			)}

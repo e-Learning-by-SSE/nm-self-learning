@@ -1,13 +1,12 @@
+import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import { inferRouterInputs } from "@trpc/server";
 import { useSession } from "next-auth/react";
 import { useCallback } from "react";
 
-export function useMarkAsCompleted(
-	lessonId: string,
-	courseSlug: string | null,
-	performanceScore: number,
-	onSettled?: () => void
-) {
+type MarkAsCompletedInput = inferRouterInputs<AppRouter>["completion"]["markAsCompleted"];
+
+export function useMarkAsCompleted<T extends Record<string, unknown>>(onSettled?: () => void) {
 	const session = useSession();
 
 	const { mutate } = trpc.completion.markAsCompleted.useMutation({
@@ -17,34 +16,33 @@ export function useMarkAsCompleted(
 		}
 	});
 
-	const markAsCompleted = useCallback(() => {
-		const username = session.data?.user?.name;
+	const markAsCompleted = useCallback(
+		(input: MarkAsCompletedInput) => {
+			const username = session.data?.user?.name;
 
-		if (!username) {
-			console.error("markAsCompleted was called without a logged in user.");
-			return () => {
-				/** NOOP */
-			};
-		}
+			if (!username) {
+				console.error("markAsCompleted was called without a logged in user.");
+				return () => {
+					/** NOOP */
+				};
+			}
 
-		return mutate(
-			{ lessonId, courseSlug, performanceScore },
-			{
+			return mutate(input, {
 				onSettled: (data, error) => {
 					if (!error) {
-						console.log(`Lesson ${lessonId} marked as completed.`);
-						console.log(data);
+						console.log("Mutation successful:", data);
 					} else {
-						console.error(error);
+						console.error("Mutation error:", error);
 					}
 
 					if (onSettled) {
 						onSettled();
 					}
 				}
-			}
-		);
-	}, [lessonId, courseSlug, session.data?.user?.name, mutate, onSettled]);
+			});
+		},
+		[session.data?.user?.name, mutate, onSettled]
+	);
 
 	return markAsCompleted;
 }

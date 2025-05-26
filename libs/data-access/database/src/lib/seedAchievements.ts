@@ -268,9 +268,9 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			description: "30 Minuten am Stück gelernt",
 			xpReward: 30,
 			category: "Fokus",
-			trigger: "session_time",
+			trigger: "lesson_completed",
 			requiredValue: 30,
-			meta: { group: "focus", level: 1 }
+			meta: { group: "focus_time", level: 1 }
 		},
 		{
 			code: "FOCUS_60",
@@ -278,9 +278,19 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			description: "60 Minuten am Stück gelernt",
 			xpReward: 60,
 			category: "Fokus",
-			trigger: "session_time",
+			trigger: "lesson_completed",
 			requiredValue: 60,
-			meta: { group: "focus", level: 2 }
+			meta: { group: "focus_time", level: 2 }
+		},
+		{
+			code: "FOCUS_1",
+			title: "Das erste mal gelernt.",
+			description: "Du hast auf der Plattform gelernt.",
+			xpReward: 60,
+			category: "Fokus",
+			trigger: "lesson_completed",
+			requiredValue: 1,
+			meta: { group: "focus_time", level: 1 }
 		}
 	];
 

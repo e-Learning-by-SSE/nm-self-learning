@@ -17,7 +17,7 @@ import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
-import { useEventLog } from "@self-learning/util/common";
+import { useEventLog } from "@self-learning/util/eventlog";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
@@ -44,7 +44,8 @@ export function Question({
 		setEvaluations,
 		config,
 		attempts,
-		setAttempts
+		setAttempts,
+		lessonAttemptId
 	} = useQuiz();
 	const { newEvent } = useEventLog();
 	const answer = answers[question.questionId];
@@ -105,7 +106,8 @@ export function Question({
 						type: question.type,
 						hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
 						attempts: newAttempts,
-						solved: e.isCorrect ?? false
+						solved: e.isCorrect ?? false,
+						lessonAttemptId
 					}
 				});
 				return { ...prev, [question.questionId]: newAttempts };
@@ -125,7 +127,8 @@ export function Question({
 			courseId: courseId,
 			payload: {
 				questionId: question.questionId,
-				type: question.type
+				type: question.type,
+				lessonAttemptId
 			}
 		});
 	}

@@ -38,14 +38,20 @@ export async function checkAndAwardAchievements({
 		const achievementWithProgress = { ...parsedAchievement, progressValue: currentValue };
 		const evaluation = await checker(achievementWithProgress, username, context);
 
-		if (evaluation.type === "unchanged") continue;
+		if (!evaluation.newValue) continue; // no changes -> no update
+		// let type = "unchanged";
+		// if (evaluation.newValue >= achievementWithProgress.requiredValue) {
+		// 	type = "earned";
+		// } else if (evaluation.newValue > currentValue) {
+		// 	type = "progressed";
+		// } else if (evaluation.newValue < currentValue) {
+		// 	type = "regressed";
+		// }
 
-		const newValue = evaluation.newValue ?? 0;
-
-		await updateProgress(achievement.id, username, newValue);
+		await updateProgress(achievement.id, username, evaluation.newValue);
 		updatedAchievements.push({
 			...achievementWithProgress,
-			progressValue: newValue,
+			progressValue: evaluation.newValue,
 			redeemedAt: achievement.progressBy[0]?.redeemedAt
 		});
 	}
@@ -79,7 +85,9 @@ function parseAchievement(raw: unknown): AchievementDb | null {
 }
 
 async function updateProgress(achievementId: string, username: string, progressValue: number) {
-	console.debug(`Updating progress for achievement ${achievementId} and user ${username}`);
+	console.debug(
+		`Updating progress for achievement ${achievementId} and user ${username} with progressValue: ${progressValue}`
+	);
 	await database.achievementProgress.upsert({
 		create: {
 			username,

@@ -29,26 +29,7 @@ export const checkGradeLessonTotal: ConditionChecker = async (achievement, usern
 	});
 	const count = data.length; // we cant use prisma.count here since it does not support distinct https://github.com/prisma/prisma/issues/4228
 
-	let progressValue = 0;
-	let changeType: "earned" | "progressed" | "unchanged" = "unchanged";
-
-	if (count > achievement.requiredValue) {
-		changeType = "earned";
-		progressValue = achievement.requiredValue;
-	} else if (count > achievement.progressValue) {
-		changeType = "progressed";
-		progressValue = count;
-	} else {
-		changeType = "unchanged";
-		progressValue = achievement.progressValue;
-	}
-
-	console.debug(
-		`Checking achievement ${achievement.code} for user ${username}: ${count} >= ${achievement.requiredValue}`
-	);
-
 	return {
-		type: changeType,
-		newValue: progressValue
+		newValue: count > achievement.progressValue ? count : null
 	};
 };

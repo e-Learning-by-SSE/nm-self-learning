@@ -1,6 +1,7 @@
 import { AchievementMeta, AchievementWithProgress } from "@self-learning/types";
 import { checkGradeLessonTotal } from "./conditions/grade-lessons-total";
 import { checkStreak } from "./conditions/streak";
+import { checkTimeLearnedToday } from "./conditions/focus-time";
 
 /**
  * Condition checkers for different achievement groups.
@@ -13,23 +14,16 @@ type GroupDiscriminators = AchievementMeta["group"];
 export const ACHIEVEMENT_CONDITION_CHECKERS: Record<GroupDiscriminators, ConditionChecker> = {
 	streak: checkStreak,
 	grade_lessons_serial: async () => {
-		// TODO Add logic for perfect_lessons_serial condition
-		return { type: "unchanged" };
+		return {};
 	},
 	grade_lessons_total: checkGradeLessonTotal,
-	focus_time: async () => {
-		// TODO Add logic for focus condition
-		return { type: "unchanged" };
-	}
+	focus_time: checkTimeLearnedToday
 };
 
 export type ConditionCheckerContext = Record<string, unknown>;
 
-type ProgressMadeType = "earned" | "progressed" | "regressed" | "unchanged";
-
 export type AchievementProcess = {
-	type: ProgressMadeType;
-	newValue?: number;
+	newValue?: number | null;
 };
 
 export type ConditionChecker = (
