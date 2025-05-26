@@ -6,10 +6,7 @@ import {
 	getStaticPropsForLayout,
 	LessonLayout,
 	LessonLayoutProps,
-	useLessonContext,
-	hasAnsweredSelfRegulated,
-	markSelfRegulatedAnswered,
-	clearSelfRegulatedAnswered
+	useLessonContext
 } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -30,6 +27,14 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { withAuth, withTranslations } from "@self-learning/api";
+
+function hasAnsweredSelfRegulated(lessonId: string) {
+	return sessionStorage.getItem(`selfRegulatedSeen-${lessonId}`) === "true";
+}
+
+function markSelfRegulatedAnswered(lessonId: string) {
+	sessionStorage.setItem(`selfRegulatedSeen-${lessonId}`, "true");
+}
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -122,37 +127,41 @@ export default function LessonPage({ lesson, course, markdown }: LessonProps) {
 
 function Lesson({ lesson, course, markdown }: LessonProps) {
 	/**
-	 * Using router and model state to simulate 2 different URLs for back/forward navigation.
+	 * Using router and modal state to simulate 2 different URLs for back/forward navigation.
 	 * window.history.replaceState to overwrite URLs to hide the modal state from the address bar.
+	 * Alternative: Create 2 separate pages for the lesson and the self regulated question.
 	 */
 	const router = useRouter();
 	const path = router.asPath.split("?")[0];
-	const [showDialog, setShowDialog] = useState(
-		lesson.lessonType === LessonType.SELF_REGULATED &&
-			!hasAnsweredSelfRegulated(lesson.lessonId)
-	);
+	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	useEffect(() => {
-		if (!router.isReady) return;
+		if (lesson.lessonType === LessonType.SELF_REGULATED) {
+			if (!router.isReady) return;
 
-		// Initial load: set modal state based on history
-		if (router.query.modal === undefined) {
-			// Push a state with modal open
-			router
-				.replace({ pathname: path, query: { modal: "open" } }, undefined, {
-					shallow: true
-				})
-				.then(() => {
-					// Remove the query param from the address bar
-					window.history.replaceState({ ...window.history.state, as: path }, "", path);
-				});
+			// Initial load: Show self regulated question
+			if (router.query.modal === undefined) {
+				// Push a state with question to be displayed
+				router
+					.replace({ pathname: path, query: { modal: "open" } }, undefined, {
+						shallow: true
+					})
+					.then(() => {
+						// Remove the query param from the address bar
+						window.history.replaceState(
+							{ ...window.history.state, as: path },
+							"",
+							path
+						);
+					});
+			}
+
+			// Double check: Modal + session to prevent query "hacking"
+			const answered =
+				router.query.modal === "closed" && hasAnsweredSelfRegulated(lesson.lessonId);
+			setShowDialog(!answered);
 		}
-		// hasAnsweredSelfRegulated(lesson.lessonId)
-
-		// Update state on actual query param
-		// setShowDialog(!hasAnsweredSelfRegulated(lesson.lessonId));
-		setShowDialog(router.query.modal !== "closed");
-	}, [router, lesson.lessonId, path]);
+	}, [router, lesson.lessonId, lesson.lessonType, path]);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
@@ -172,7 +181,7 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		// markSelfRegulatedAnswered(lesson.lessonId);
+		markSelfRegulatedAnswered(lesson.lessonId);
 		router
 			.push({ pathname: path, query: { modal: "closed" } }, undefined, {
 				shallow: true
