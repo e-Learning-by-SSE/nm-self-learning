@@ -1,16 +1,24 @@
+"use client";
 import { CheckCircleIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { AchievementWithProgress } from "@self-learning/types";
 import { FireworkOnClick, showToast } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
+import { useEffect, useState } from "react";
 
 export function AchievementCard({
 	achievement,
+	animateProgress = false,
 	onRedeem
 }: {
 	achievement: AchievementWithProgress;
+	animateProgress?: boolean; // Optional prop to control progress bar animation
 	onRedeem?: (achievementId: string) => void;
 }) {
+	// State for progress animation
+	const [animatedProgress, setAnimatedProgress] = useState(0);
+	const [showProgressText, setShowProgressText] = useState(false);
+
 	// Calculate progress percentage for the progress bar
 	const progressPercentage = Math.min(
 		(achievement.progressValue / achievement.requiredValue) * 100,
@@ -34,11 +42,39 @@ export function AchievementCard({
 	} else {
 		cardClassName = "border-gray-200 bg-gray-100 opacity-70";
 	}
+
+	// Animation effect for progress bar
+	useEffect(() => {
+		if (animateProgress && !isCompleted) {
+			// Start from 0 and animate to current progress
+			setAnimatedProgress(0);
+			setShowProgressText(false);
+
+			// Small delay before starting animation
+			const startDelay = setTimeout(() => {
+				setAnimatedProgress(progressPercentage);
+
+				// Show progress text after animation starts
+				const textDelay = setTimeout(() => {
+					setShowProgressText(true);
+				}, 200);
+
+				return () => clearTimeout(textDelay);
+			}, 100);
+
+			return () => clearTimeout(startDelay);
+		} else {
+			// No animation - show final state immediately
+			setAnimatedProgress(progressPercentage);
+			setShowProgressText(true);
+		}
+	}, [animateProgress, progressPercentage, isCompleted]);
+
 	return (
 		<div className={`p-4 rounded-lg border ${cardClassName}`}>
 			<div className="flex items-start">
 				{isRedeemed ? (
-					<CheckCircleIcon className=" w-6 h-6 text-green-500 mr-2 flex-shrink-0" />
+					<CheckCircleIcon className="w-6 h-6 text-green-500 mr-2 flex-shrink-0" />
 				) : isEarnedNotRedeemed ? (
 					<TrophyIcon className="w-6 h-6 text-yellow-500 mr-2 flex-shrink-0" />
 				) : (
@@ -53,13 +89,31 @@ export function AchievementCard({
 			{/* Show progress bar for in-progress achievements */}
 			{!isCompleted && (
 				<div className="mt-3">
-					<div className="w-full bg-gray-200 rounded-full h-2.5">
+					<div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
 						<div
-							className="bg-blue-500 h-2.5 rounded-full"
-							style={{ width: `${progressPercentage}%` }}
-						></div>
+							className={`h-2.5 rounded-full ${
+								animateProgress
+									? "bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-1000 ease-out"
+									: "bg-blue-500"
+							}`}
+							style={{
+								width: `${animatedProgress}%`,
+								transition: animateProgress ? "width 1s ease-out" : "none"
+							}}
+						/>
+						{/* Shimmer effect during animation */}
+						{animateProgress && animatedProgress < progressPercentage && (
+							<div
+								className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-highlight-shimmering"
+								style={{ width: `${animatedProgress}%` }}
+							/>
+						)}
 					</div>
-					<p className="text-xs text-gray-500 mt-1">
+					<p
+						className={`text-xs text-gray-500 mt-1 transition-opacity duration-300 ${
+							showProgressText ? "opacity-100" : "opacity-0"
+						}`}
+					>
 						{achievement.progressValue}/{achievement.requiredValue}
 					</p>
 				</div>
