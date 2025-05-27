@@ -1,12 +1,10 @@
-import { getStaticPropsForLayout, LessonLayout } from "@self-learning/lesson";
-import { compileQuizMarkdown, Quiz } from "@self-learning/quiz";
-import { GetServerSideProps } from "next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withAuth } from "@self-learning/api";
-import { QuizLearnersView, QuestionProps } from "@self-learning/quiz";
+import { getStaticPropsForLessonCourseLayout, LessonLayout } from "@self-learning/lesson";
+import { compileQuizMarkdown, QuestionProps, Quiz, QuizLearnersView } from "@self-learning/quiz";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
-export const getServerSideProps = withAuth<QuestionProps>(async ({params, locale}) => {
-	const parentProps = await getStaticPropsForLayout(params);
+export const getServerSideProps = withAuth<QuestionProps>(async ({ params, locale }) => {
+	const parentProps = await getStaticPropsForLessonCourseLayout(params);
 
 	if ("notFound" in parentProps) return { notFound: true };
 

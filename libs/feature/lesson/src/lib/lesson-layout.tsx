@@ -37,23 +37,25 @@ export function getCourse(slug: string) {
 	});
 }
 
-export async function getStaticPropsForLayout(
+export async function getStaticPropsForLessonCourseLayout(
 	params?: ParsedUrlQuery | undefined
 ): Promise<LessonLayoutProps | { notFound: true }> {
-	const courseSlug = params?.["courseSlug"] as string;
-	const lessonSlug = params?.["lessonSlug"] as string;
-
-	if (!courseSlug || !lessonSlug) {
-		throw new Error("No course/lesson slug provided.");
-	}
-
-	const [lesson, course] = await Promise.all([getLesson(lessonSlug), getCourse(courseSlug)]);
-
-	if (!course || !lesson) {
+	const standaloneProps = await getStaticPropsForStandaloneLessonLayout(params);
+	if ("notFound" in standaloneProps) {
 		return { notFound: true };
 	}
 
-	return { lesson, course };
+	const courseSlug = params?.["courseSlug"] as string;
+	if (!courseSlug) {
+		throw new Error("No course/lesson slug provided.");
+	}
+
+	const course = await getCourse(courseSlug);
+	if (!course) {
+		return { notFound: true };
+	}
+
+	return { ...standaloneProps, course };
 }
 
 export async function getStaticPropsForStandaloneLessonLayout(
