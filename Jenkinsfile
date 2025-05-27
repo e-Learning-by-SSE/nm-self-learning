@@ -23,6 +23,11 @@ pipeline {
             defaultValue: '',
             description: 'Manually specify an tag for the Docker image. This tag will be preferred over the package version if set. If it is not set, the version inside the package.json is used as tag. This does not override PUBLISH_IMAGE_TAG and will used as an additional tag. Only used in case PUBLISH is true.'
         )
+        string(
+            name: 'RELEASE_LATEST_VERSION',
+            defaultValue: '',
+            description: '!WARNING! - When set, the creates a new TAG and a new latest Docker Image for your. Use a natural number without a "v" prefix. Don\'t combine this with PUBLISH parameters, otherwise you get multiple images for the same tags.'
+        )
     }
     environment {
         API_VERSION = packageJson.getVersion() // package.json must be in the root level in order for this to work
@@ -75,7 +80,7 @@ pipeline {
                         allOf {
                             branch 'master'
                             expression {
-                                return !params.FULL_BUILD
+                                return (!params.FULL_BUILD || !buildingTag()) && RELEASE_LATEST_VERSION == ""
                             }
                         }
                     }
@@ -184,6 +189,39 @@ pipeline {
                                     publish {
                                         tag "${releaseTag}"
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('Create Latest Release') {
+                    when {
+                        expression {
+                            return params.RELEASE_LATEST_VERSION != ''
+                        }
+                    }
+                    steps {
+                        script {
+                            def newVersion = params.RELEASE_LATEST_VERSION
+                            currentBuild.displayName = "Release ${newVersion}"
+
+                            git restore . // we need a clean state for npm version cmd
+
+                            withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
+                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                sh 'npm run seed'
+                                sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
+                                sh "npm version ${newVersion}"
+                            }
+
+                            git push origin v${newVersion}
+
+                            ssedocker {
+                                create {
+                                    target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
+                                }
+                                publish {
+                                    tag "latest"
                                 }
                             }
                         }
