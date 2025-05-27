@@ -1,8 +1,6 @@
 import * as _DropdownDialog from "./lib/dialog/dropdown-dialog";
 
-export const DropdownDialog = {
-	..._DropdownDialog
-};
+export const DropdownDialog = { ..._DropdownDialog };
 
 export * from "./lib/author/author-chip";
 export * from "./lib/alert/alert";
@@ -35,3 +33,4 @@ export * from "./lib/progress-bar/progress-bar";
 export * from "./lib/table/table-menu";
 export * from "./lib/star-rating/star-rating";
 export * from "./lib/use-first-render";
+export * from "./lib/markdown-viewer";

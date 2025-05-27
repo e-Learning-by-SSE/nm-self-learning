@@ -3,22 +3,20 @@ import { trpc } from "@self-learning/api-client";
 import { Dialog, LoadingBox, StarRating, XButton } from "@self-learning/ui/common";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
+import { MarkdownEditorDialog } from "@self-learning/ui/forms";
 import { LearningGoal } from "@self-learning/types";
 import { IdSet } from "@self-learning/util/common";
 import { StatusUpdateCallback } from "../util/types";
 import { GoalStatus } from "../goals/status";
 import { LearningGoalEditorDialog } from "../goals/goal-editor";
 import { Location } from "../access-learning-diary";
+import { MarkdownViewer } from "@self-learning/ui/common";
 
 export function Tile({
 	onClick,
 	isFilled,
 	children
-}: PropsWithChildren<{
-	onClick: (open: boolean) => void;
-	isFilled: boolean;
-}>) {
+}: PropsWithChildren<{ onClick: (open: boolean) => void; isFilled: boolean }>) {
 	return (
 		<div
 			className={`flex justify-center items-center w-full min-h-48 max-h-48 px-4 py-2 rounded-lg cursor-pointer ${
@@ -71,11 +69,7 @@ export function CompactTile({
 	onClick,
 	isFilled,
 	tileName
-}: PropsWithChildren<{
-	onClick: (open: boolean) => void;
-	isFilled: boolean;
-	tileName: string;
-}>) {
+}: PropsWithChildren<{ onClick: (open: boolean) => void; isFilled: boolean; tileName: string }>) {
 	return (
 		<div className="relative">
 			<span className="absolute top-2 left-2 px-2 py-1 rounded text-gray-800 z-10">

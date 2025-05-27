@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { DialogWithReactNodeTitle } from "../dialog/dialog";
-import { MarkdownViewer } from "@self-learning/ui/forms";
+import { MarkdownViewer } from "../markdown-viewer";
 
 export function LicenseChip({
 	name,

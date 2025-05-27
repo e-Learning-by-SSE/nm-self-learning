@@ -2,25 +2,16 @@ import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Dialog, DialogActions, OnDialogCloseFn, StarRating } from "@self-learning/ui/common";
-import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
+import { MarkdownEditorDialog } from "@self-learning/ui/forms";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { TileLayout } from "./input-tile";
+import { MarkdownViewer } from "@self-learning/ui/common";
 
-type Technique = {
-	name: string;
-	description: string | null;
-	id: string;
-	score?: number;
-};
+type Technique = { name: string; description: string | null; id: string; score?: number };
 
-type Strategy = {
-	techniques: Technique[];
-	id: string;
-	name: string;
-	description: string;
-};
+type Strategy = { techniques: Technique[]; id: string; name: string; description: string };
 
 type StrategiesProps = {
 	strategies: Strategy[];
@@ -213,10 +204,7 @@ function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClos
 
 	const handleSaveStrategy = async (updatedDesc: string | undefined) => {
 		if (updatedDesc) {
-			await saveStrategy({
-				...strategy,
-				description: updatedDesc
-			});
+			await saveStrategy({ ...strategy, description: updatedDesc });
 		}
 		setShowEditDialog(false);
 		reload();
