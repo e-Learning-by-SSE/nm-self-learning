@@ -108,8 +108,13 @@ export const gamificationRouter = t.router({
 				progressValue: 0,
 				redeemedAt: null
 			};
-			const meta = achievementMetaSchema.parse(achievement.meta);
-			return { ...achievement, meta, progressValue, redeemedAt };
+			const meta = achievementMetaSchema.safeParse(achievement.meta);
+			if (meta.success) {
+				return { ...achievement, meta: meta.data, progressValue, redeemedAt };
+			} else {
+				console.warn("Invalid achievement meta; skipping:", achievement.meta);
+				return;
+			}
 		});
 		return achievmentWithProgress as AchievementWithProgress[];
 	}),
