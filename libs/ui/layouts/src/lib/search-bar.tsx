@@ -117,18 +117,17 @@ export function SearchBar() {
 	const handleBlur = () => {
 		setIsFocused(false);
 	};
-
+	const shouldFetch = filterText.length > 0 && isFocused;
 	const [selectedResult, setSelectedResult] = useState<SearchResultInfo>();
-
 	const { data: lessons, isLoading: lessonsLoading } =
-		trpc.lesson.findMany.useQuery(titleSearchParams);
+		trpc.lesson.findMany.useQuery(titleSearchParams, {enabled: shouldFetch });
 	const { data: authors, isLoading: authorsLoading } =
-		trpc.author.findMany.useQuery(authorSearchParams);
+		trpc.author.findMany.useQuery(authorSearchParams, {enabled: shouldFetch });
 	const authorResults = authors?.result.map(({ displayName: title, slug }) => {
 		return { title, slug };
 	});
 	const { data: courses, isLoading: coursesLoading } =
-		trpc.course.findMany.useQuery(titleSearchParams);
+		trpc.course.findMany.useQuery(titleSearchParams, {enabled: shouldFetch });
 
 	const searchSections: {
 		type: string;
