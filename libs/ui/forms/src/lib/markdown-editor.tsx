@@ -14,6 +14,7 @@ import {
 	LinkIcon
 } from "@heroicons/react/24/outline";
 import { useCallback, useRef, useState } from "react";
+import { MarkdownViewer } from "../../../common/src/lib/markdown-viewer";
 
 export function MarkdownField({
 	content,
@@ -276,16 +277,8 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 						format: "ORDERED_LIST",
 						content: <NumberedListIcon className={iconSize} />
 					},
-					{
-						title: "Link",
-						format: "LINK",
-						content: <LinkIcon className={iconSize} />
-					},
-					{
-						title: "Image",
-						format: "IMAGE",
-						content: <PhotoIcon className={iconSize} />
-					}
+					{ title: "Link", format: "LINK", content: <LinkIcon className={iconSize} /> },
+					{ title: "Image", format: "IMAGE", content: <PhotoIcon className={iconSize} /> }
 				].map(({ title, format, content }) => (
 					<button
 						key={format}
@@ -409,12 +402,12 @@ function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string
  *
  * If possible, prefer server-side rendering instead of using this component.
  */
-export function MarkdownViewer({ content }: { content: string }) {
-	return (
-		<div className="prose prose-emerald">
-			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
-				{content ?? ""}
-			</ReactMarkdown>
-		</div>
-	);
-}
+// export function MarkdownViewer({ content }: { content: string }) {
+// 	return (
+// 		<div className="prose prose-emerald">
+// 			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+// 				{content ?? ""}
+// 			</ReactMarkdown>
+// 		</div>
+// 	);
+// }
