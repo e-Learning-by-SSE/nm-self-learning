@@ -321,7 +321,7 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			category: "Fokus",
 			trigger: "lesson_completed",
 			requiredValue: 30,
-			meta: { group: "focus_time", level: 1 }
+			meta: { group: "focus_time", level: 2 }
 		},
 		{
 			code: "FOCUS_60",
@@ -331,7 +331,7 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			category: "Fokus",
 			trigger: "lesson_completed",
 			requiredValue: 60,
-			meta: { group: "focus_time", level: 2 }
+			meta: { group: "focus_time", level: 3 }
 		},
 		{
 			code: "FOCUS_1",

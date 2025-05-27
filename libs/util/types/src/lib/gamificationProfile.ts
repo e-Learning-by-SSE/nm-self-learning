@@ -99,7 +99,7 @@ export const achievementMetaSchema = z.discriminatedUnion("group", [
 		grade: performanceGradeSchema
 	}),
 	z.object({
-		group: z.literal("streak"),
+		group: z.literal("daily_streak"),
 		level: z.number().int().positive()
 	}),
 	z.object({

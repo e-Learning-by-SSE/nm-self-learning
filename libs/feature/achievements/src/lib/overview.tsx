@@ -6,10 +6,6 @@ import { IdSet } from "@self-learning/util/common";
 import { useMemo } from "react";
 import { AchievementList, useAchievementRedemption } from "./achievement-card";
 
-interface AchievementOverviewProps {
-	className?: string;
-}
-
 // Semantic clustering strategies for different groups
 type SemanticClusterKey = string;
 
@@ -47,6 +43,9 @@ interface NestedAchievements {
 	};
 }
 
+interface AchievementOverviewProps {
+	className?: string;
+}
 export function AchievementOverview({ className }: AchievementOverviewProps) {
 	const { data: achievements, isLoading } = trpc.achievement.getOwnAchievements.useQuery();
 	const { handleRedeem } = useAchievementRedemption();

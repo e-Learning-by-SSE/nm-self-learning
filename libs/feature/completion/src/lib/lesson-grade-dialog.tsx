@@ -8,7 +8,7 @@ import { AchievementWithProgress, PerformanceGrade } from "@self-learning/types"
 import { DialogActions, GameifyDialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { calculateAverageScore, calculateQuizGrade } from "./lesson-grading";
 
 function GradeDisplay({ grade }: { grade: PerformanceGrade }) {
@@ -109,7 +109,8 @@ export function QuizCompletedGradeDialog({
 	useEffect(() => {
 		async function fetchAchievements() {
 			const achieved = await earnAchievements({ trigger: "lesson_completed" });
-			setAchievements(new IdSet(achieved));
+			const filteredAchievements = filterAchievementsByLevel(achieved);
+			setAchievements(filteredAchievements);
 		}
 		void fetchAchievements();
 	}, [earnAchievements]);
@@ -180,6 +181,28 @@ export function QuizCompletedGradeDialog({
 			</DialogActions>
 		</GameifyDialog>
 	);
+}
+
+function filterAchievementsByLevel(achievements: AchievementWithProgress[]) {
+	const result = new IdSet<AchievementWithProgress>();
+	if (achievements.length === 0) return result;
+
+	// Finde alle abgeschlossenen Achievements
+	const completedAchievements = achievements.filter(
+		achievement => achievement.progressValue === achievement.requiredValue
+	);
+
+	// Finde das Achievement mit dem niedrigsten Level
+	const lowestLevelAchievement = achievements.reduce((lowest, current) => {
+		return (current.meta?.level ?? Infinity) < (lowest.meta?.level ?? Infinity)
+			? current
+			: lowest;
+	});
+
+	result.add(lowestLevelAchievement);
+	completedAchievements.forEach(a => result.add(a));
+
+	return result;
 }
 
 function GradeAchievementSection({
