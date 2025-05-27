@@ -20,7 +20,7 @@ import {
 	SlotCounter,
 	useIsAtLeastLargeScreen
 } from "@self-learning/ui/common";
-import { intervalToDuration, isBefore } from "date-fns";
+import { addHours, intervalToDuration, isBefore } from "date-fns";
 import { useEffect, useState } from "react";
 
 type StreakStatus = "active" | "broken" | "refire" | "paused";
@@ -198,12 +198,17 @@ export function StreakSlotMachineDialog({
 	loginStreak: NotificationPropsMap["StreakInfoDialog"]["loginStreak"];
 	flames: NotificationPropsMap["StreakInfoDialog"]["flames"];
 }) {
-	const { pausedUntil, status: initialStreakStatus, count: streakCount } = loginStreak;
+	const {
+		pausedUntil: initialPausedUntil,
+		status: initialStreakStatus,
+		count: streakCount
+	} = loginStreak;
 
 	const isLargeScreen = useIsAtLeastLargeScreen();
 	const [isRefireDisclosureOpen, setRefireDisclosureOpen] = useState(false);
 	const [showAchievements, setShowAchievements] = useState(false);
 	const [streakStatus, setStreakStatus] = useState<StreakStatus>(initialStreakStatus);
+	const [pausedUntil, setPausedUntil] = useState(initialPausedUntil ?? new Date());
 	const { mutateAsync: pauseStreakMutation } = trpc.achievement.pauseStreak.useMutation();
 	const { mutateAsync: refireStreakMutation } = trpc.achievement.refireStreak.useMutation();
 
@@ -259,6 +264,7 @@ export function StreakSlotMachineDialog({
 	const handlePauseStreak = async (): Promise<void> => {
 		if (remainingFlames >= 1 && !isPaused) {
 			setStreakStatus("paused");
+			setPausedUntil(addHours(new Date(), 24));
 			await pauseStreakMutation();
 		}
 	};
