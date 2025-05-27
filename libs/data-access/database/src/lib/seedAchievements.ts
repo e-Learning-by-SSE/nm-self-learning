@@ -220,45 +220,96 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 		},
 
 		/* ─────────────────────────── 🔁 Learning Streaks ─────────────────────────── */
+		// {
+		// 	code: "STREAK_5",
+		// 	title: "Lernserie I",
+		// 	description: "5 Tage in Folge gelernt",
+		// 	xpReward: 75,
+		// 	category: "Kontinuität",
+		// 	trigger: "daily_login",
+		// 	requiredValue: 5,
+		// 	meta: { group: "streak", level: 1 }
+		// },
+		// {
+		// 	code: "STREAK_10",
+		// 	title: "Lernserie II",
+		// 	description: "10 Tage in Folge gelernt",
+		// 	xpReward: 150,
+		// 	category: "Kontinuität",
+		// 	trigger: "daily_login",
+		// 	requiredValue: 10,
+		// 	meta: { group: "streak", level: 2 }
+		// },
+		// {
+		// 	code: "STREAK_20",
+		// 	title: "Lernserie III",
+		// 	description: "20 Tage in Folge gelernt",
+		// 	xpReward: 300,
+		// 	category: "Kontinuität",
+		// 	trigger: "daily_login",
+		// 	requiredValue: 20,
+		// 	meta: { group: "streak", level: 3 }
+		// },
+		// {
+		// 	code: "STREAK_30",
+		// 	title: "Lernserie IV",
+		// 	description: "30 Tage in Folge gelernt",
+		// 	xpReward: 450,
+		// 	category: "Kontinuität",
+		// 	trigger: "daily_login",
+		// 	requiredValue: 30,
+		// 	meta: { group: "streak", level: 4 }
+		// },
+		/* ───────────────────────────── ⏳ Daily Login Streak ──────────────────────────── */
 		{
-			code: "STREAK_5",
-			title: "Lernserie I",
-			description: "5 Tage in Folge gelernt",
-			xpReward: 75,
-			category: "Kontinuität",
+			code: "STREAK_3",
+			title: "Anfänger",
+			description: "3 Tage in Folge aktiv",
+			xpReward: 10,
+			category: "Streak",
 			trigger: "daily_login",
-			requiredValue: 5,
-			meta: { group: "streak", level: 1 }
+			requiredValue: 3,
+			meta: { group: "daily_streak", level: 1 }
 		},
 		{
-			code: "STREAK_10",
-			title: "Lernserie II",
-			description: "10 Tage in Folge gelernt",
-			xpReward: 150,
-			category: "Kontinuität",
+			code: "STREAK_7",
+			title: "Engagiert",
+			description: "7 Tage in Folge aktiv",
+			xpReward: 20,
+			category: "Streak",
 			trigger: "daily_login",
-			requiredValue: 10,
-			meta: { group: "streak", level: 2 }
+			requiredValue: 7,
+			meta: { group: "daily_streak", level: 2 }
 		},
 		{
-			code: "STREAK_20",
-			title: "Lernserie III",
-			description: "20 Tage in Folge gelernt",
-			xpReward: 300,
-			category: "Kontinuität",
+			code: "STREAK_14",
+			title: "Beständig",
+			description: "14 Tage in Folge aktiv",
+			xpReward: 40,
+			category: "Streak",
 			trigger: "daily_login",
-			requiredValue: 20,
-			meta: { group: "streak", level: 3 }
+			requiredValue: 14,
+			meta: { group: "daily_streak", level: 3 }
 		},
 		{
 			code: "STREAK_30",
-			title: "Lernserie IV",
-			description: "30 Tage in Folge gelernt",
-			xpReward: 450,
-			category: "Kontinuität",
+			title: "Diszipliniert",
+			description: "30 Tage in Folge aktiv",
+			xpReward: 80,
+			category: "Streak",
 			trigger: "daily_login",
 			requiredValue: 30,
-			meta: { group: "streak", level: 4 }
+			meta: { group: "daily_streak", level: 4 }
+		},
+		{
+			code: "STREAK_90",
+			title: "Meister",
+			description: "90 Tage in Folge aktiv",
+			xpReward: 150,
+			category: "Streak",
+			trigger: "daily_login",
+			requiredValue: 90,
+			meta: { group: "daily_streak", level: 5 }
 		},
 
 		/* ─────────────────────────────── ⏳ Focus ─────────────────────────────── */
