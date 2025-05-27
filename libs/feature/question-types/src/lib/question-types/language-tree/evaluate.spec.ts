@@ -41,7 +41,7 @@ describe("evaluateLanguageTreeAnswer", () => {
 		const answer = {
 			type: "language-tree" as const,
 			questionId: "question-id",
-			value: "[s [np [art [the]] [vp [v [sleeps]]]]"
+			value: "[s [np [art [the]] [nn [cat]]] [vp [v [sleeps]]]]"
 		};
 
 		const result = evaluateLanguageTreeAnswer(question, answer);
@@ -53,12 +53,36 @@ describe("evaluateLanguageTreeAnswer", () => {
 		const answer = {
 			type: "language-tree" as const,
 			questionId: "question-id",
-			value: "[s [np [art [the]]] [vp [v [sleeps]]]]"
+			value: "[s [np [art [the]] [nn [cat]]] [vp [v [sleeps]]]]"
 		};
 
 		const result = evaluateLanguageTreeAnswer(question, answer);
 		expect(result.isCorrect).toBe(false);
 	});
+
+	it("Correct Answer but with extra spaces", () => {
+		const answer = {
+			type: "language-tree" as const,
+			questionId: "question-id",
+			value: "[S [NP [ART [the]] [NN [cat]]]  [VP  [V  [sleeps]]]]"
+		};
+
+		const result = evaluateLanguageTreeAnswer(defaultQuestion, answer);
+		expect(result.isCorrect).toBe(true);
+	}
+	);
+
+	it("Correct Answer but without spaces", () => {
+		const answer = {
+			type: "language-tree" as const,
+			questionId: "question-id",
+			value: "[S[NP[ART[the]][NN[cat]]][VP[V[sleeps]]]]"
+		};
+
+		const result = evaluateLanguageTreeAnswer(defaultQuestion, answer);
+		expect(result.isCorrect).toBe(true);
+	}
+	);
 });
 
 describe("Tree parsing and serialization", () => {
