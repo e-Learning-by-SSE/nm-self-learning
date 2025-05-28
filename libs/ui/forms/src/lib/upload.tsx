@@ -217,8 +217,17 @@ async function uploadWithProgress(
 	xhr.upload.addEventListener("loadend", onComplete, false);
 
 	// start upload
+	//Returns the filename containing only ASCII letters, numbers and dots.
+	//All other characters (including spaces and special characters) are replaced with underscores.
+	const sanitizedFilename = (filename: string) => {
+		return filename
+			.normalize("NFD")
+			.replace(/[\u0300-\u036f]/g, "")
+			.replace(/[^\x20-\x7E]/g, "")
+			.replace(/[^a-zA-Z0-9.]/g, "_");
+	};
 	xhr.open("PUT", url, true);
-	xhr.setRequestHeader("X-FILENAME", file.name);
+	xhr.setRequestHeader("X-FILENAME", sanitizedFilename(file.name));
 	xhr.send(file);
 }
 
