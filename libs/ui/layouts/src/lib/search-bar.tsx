@@ -71,11 +71,11 @@ function getSearchSections({
 	lessons?: SearchResultInfo[];
 	authors?: SearchResultInfo[];
 }) : {
-		type: string;
-		title: string;
-		slug: string;
-		baselink: string;
-		show: boolean;
+	type: string;
+	title: string;
+	slug: string;
+	baselink: string;
+	show: boolean;
 	}[]{
 	const searchSections = [
 		...(courses?.map(({ title, slug }) => ({
@@ -145,24 +145,35 @@ export function SearchBar() {
 
 	const { t } = useTranslation("common");
 
-	const handleSelect = (item: { baseLink: string; title: string; slug: string }) => {
+	const handleSelect = (item: {
+		baseLink: string;
+		title: string;
+		slug: string;
+		type: string;
+	}) => {
 		if (!item) {
 			return;
 		}
 
 		setSelectedResult(item);
 
-		if (item.baseLink && item.slug) {
-			const url = item.baseLink.startsWith("http")
-				? `${item.baseLink}/${item.slug}`
-				: `/${item.baseLink}/${item.slug}`;
+		if (item.type === "lesson" && item.slug) {
+			const url = `/lessons/${item.slug}`;
+			router.push(url);
+		}
+		if (item.type === "course" && item.slug) {
+			const url = `/courses/${item.slug}`;
+			router.push(url);
+		}
+		if (item.type === "author" && item.slug) {
+			const url = `/authors/${item.slug}`;
 			router.push(url);
 		}
 
 		setFilterText("");
 	};
 
-	function getTypeLabel (type: string) {
+	function getTypeLabel(type: string) {
 		switch (type) {
 			case "course":
 				return "Kurs";
@@ -174,7 +185,6 @@ export function SearchBar() {
 				return "";
 		}
 	}
-	
 
 	return (
 		<Combobox
@@ -223,9 +233,7 @@ export function SearchBar() {
 								}
 							>
 								<span className="font-medium">{result.title}</span>
-								<span className="text-xs">
-									{getTypeLabel(result.type)}
-								</span>
+								<span className="text-xs">{getTypeLabel(result.type)}</span>
 							</ComboboxOption>
 						))
 					) : (
