@@ -84,7 +84,7 @@ video {
 	color: theme("colors.slate.800");
 }
 
-.btn {
+/* .btn {
 	@apply flex place-content-center items-center gap-2 rounded-lg px-8 py-2 text-sm font-semibold text-white transition-colors disabled:bg-opacity-25;
 }
 
@@ -110,6 +110,46 @@ video {
 
 .btn-icon {
 	@apply h-fit rounded-lg border border-light-border bg-white px-2 py-2;
+} */
+
+/* Base button style */
+.btn {
+	@apply flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:bg-opacity-25;
+}
+
+/* Primary: green background, white text */
+.btn-primary {
+	@apply bg-emerald-500 text-white hover:bg-emerald-600;
+}
+
+/* Secondary: green outline, green text */
+.btn-secondary {
+	@apply border border-emerald-500 bg-transparent text-emerald-600 hover:bg-emerald-50;
+}
+
+/* Danger: red background, white text */
+.btn-danger {
+	@apply bg-red-500 text-white hover:bg-red-600;
+}
+
+/* Tertiary: gray outline, gray text */
+.btn-tertiary {
+	@apply border border-gray-200 bg-white text-gray-600 hover:bg-slate-50;
+}
+
+/* Icon button with optional text */
+.btn-with-icon {
+	@apply flex items-center justify-center gap-2 py-2 px-4;
+}
+
+/* Icon-only button, no border */
+.btn-icon-only {
+	@apply p-2 hover:bg-gray-100 text-gray-500 rounded-full;
+}
+
+/* Optional small icon-only size */
+.btn-icon-small {
+	@apply h-8 w-8;
 }
 
 .icon {
