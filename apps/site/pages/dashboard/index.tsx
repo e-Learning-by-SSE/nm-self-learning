@@ -2,7 +2,11 @@ import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import {
+	EnableLearningDiaryDialog,
+	LearningDiaryEntryStatusBadge,
+	StatusBadgeInfo
+} from "@self-learning/diary";
 import {
 	Card,
 	DialogHandler,
@@ -330,7 +334,10 @@ function DashboardPage(props: Props) {
 					<div className="rounded bg-white p-4 shadow">
 						{ltb.enabled ? (
 							<>
-								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
+								<StatusBadgeInfo
+									header="Letzter Lerntagebucheintrag"
+									className="mb-4"
+								/>
 								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
 							</>
 						) : (
