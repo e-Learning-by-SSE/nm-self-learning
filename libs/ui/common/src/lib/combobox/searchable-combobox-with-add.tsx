@@ -4,9 +4,9 @@ import { SearchableCombobox } from "./searchable-combobox";
 export type SearchableComboboxWithAddProps<T> = {
 	items: T[];
 	initialSelection?: T;
-	onChange: (item: T) => void;
+	onChange: (item?: T) => void;
 	onAdd: (label: string) => void;
-	getLabel: (item: T) => string;
+	getLabel: (item?: T) => string;
 	placeholder?: string;
 	addButtonLabel?: string;
 };

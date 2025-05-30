@@ -325,7 +325,7 @@ export function MarkDownInputTile({
 		>
 			<div className="flex flex-grow min-h-40 overflow-auto">
 				{initialNote === "" ? (
-					<span>Bisher wurden noch keine Notizen erstellt.</span>
+					<span className="m-auto">Bisher wurden noch keine Notizen erstellt.</span>
 				) : (
 					<div className="whitespace-nowrap m-auto">
 						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
