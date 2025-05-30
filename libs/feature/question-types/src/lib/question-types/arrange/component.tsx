@@ -1,5 +1,5 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { MarkdownViewer } from "@self-learning/ui/forms";
+import { MarkdownViewer } from "@self-learning/ui/common";
 import { Fragment } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
