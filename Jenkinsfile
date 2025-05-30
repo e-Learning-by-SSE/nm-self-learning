@@ -205,17 +205,26 @@ pipeline {
                             def newVersion = params.RELEASE_LATEST_VERSION
                             currentBuild.displayName = "Release ${newVersion}"
 
-                            git restore . // we need a clean state for npm version cmd
+                            // Git vorbereiten
+                            sh 'git restore .'
+                            sh 'git config user.name "ssejenkins"'
+                            sh 'git config user.email "jenkins@sse.uni-hildesheim.de"'
 
-                            withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                            // Postgres + Sidecar für Build und Tests
+                            withPostgres([
+                                dbUser: env.POSTGRES_USER,
+                                dbPassword: env.POSTGRES_PASSWORD,
+                                dbName: env.POSTGRES_DB
+                            ]).insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --target=test --all --skip-nx-cache"
                                 sh "npm version ${newVersion}"
                             }
 
-                            git push origin v${newVersion}
+                            // Git-Tag pushen
+                            sh "git push origin v${newVersion}"
 
+                            // Docker-Build und Publish
                             ssedocker {
                                 create {
                                     target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
@@ -225,6 +234,7 @@ pipeline {
                                 }
                             }
                         }
+
                     }
                 }
             }
