@@ -1,6 +1,6 @@
 import { Tab as HeadlessTab, TabGroup, TabList } from "@headlessui/react";
 import { Fragment, ReactNode } from "react";
-import { XButton } from "../button/icon-only-button";
+import { XButton } from "../button/button";
 
 export function Tabs({
 	children,
