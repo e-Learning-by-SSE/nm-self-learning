@@ -1,4 +1,4 @@
-import { XButton } from "../button/icon-only-button";
+import { XButton } from "../button/button";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 
 export function Chip({
