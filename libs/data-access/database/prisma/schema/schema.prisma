@@ -234,32 +234,17 @@ model License {
     lessons           Lesson[]
 }
 
-model SkillRepository {
-    id          String  @id @default(cuid())
-    name        String
-    description String?
-    skills      Skill[]
-    ownerName   String
-    owner       User    @relation(fields: [ownerName], references: [name])
-
-    @@unique([ownerName, name])
-    @@map("skill-repositories")
-}
-
 model Skill {
-    id             String          @id @default(cuid())
+    id             String   @id @default(cuid())
     name           String
     description    String?
     authorId       Int
-    author         Author          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-    repositoryId   String
-    repository     SkillRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
-    children       Skill[]         @relation("parent")
-    parents        Skill[]         @relation("parent")
-    goalsOf        Lesson[]        @relation("teachingGoals")
-    requirementsOf Lesson[]        @relation("requirements")
+    author         Author   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    children       Skill[]  @relation("parent")
+    parents        Skill[]  @relation("parent")
+    goalsOf        Lesson[] @relation("teachingGoals")
+    requirementsOf Lesson[] @relation("requirements")
 
-    @@unique([repositoryId, name])
     @@map("skills")
 }
 

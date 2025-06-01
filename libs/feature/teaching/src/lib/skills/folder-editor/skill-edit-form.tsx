@@ -41,7 +41,6 @@ export function SkillInfoForm({
 		await updateSkill({
 			skill: {
 				...data,
-				repositoryId: skill.repositoryId,
 				id: skill.id,
 				// don't use the form values. parents|children are changed from inside the dependency info component
 				children: skill.children,
@@ -93,7 +92,6 @@ export function SkillInfoForm({
 						<SkillToSkillDepsInfo
 							parents={dbSkill?.parents ?? []}
 							children={dbSkill?.children ?? []}
-							repoId={skill.repositoryId}
 							skillToChange={skill}
 						/>
 					</div>
@@ -115,12 +113,10 @@ export function SkillInfoForm({
 function SkillToSkillDepsInfo({
 	parents,
 	children,
-	repoId,
 	skillToChange
 }: {
 	parents: SkillResolved["parents"];
 	children: SkillResolved["children"];
-	repoId: string;
 	skillToChange: SkillFormModel;
 }) {
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
@@ -171,7 +167,6 @@ function SkillToSkillDepsInfo({
 							...skill,
 							children: [],
 							parents: [],
-							repositoryId: repoId
 						};
 					})}
 					onDeleteSkill={skill => {
@@ -181,7 +176,6 @@ function SkillToSkillDepsInfo({
 						if (!skills) return;
 						addChildren(skills);
 					}}
-					repoId={repoId}
 				/>
 			</div>
 			<label>
@@ -196,7 +190,6 @@ function SkillToSkillDepsInfo({
 							...skill,
 							children: [],
 							parents: [],
-							repositoryId: repoId
 						};
 					})}
 					onDeleteSkill={skill => {
@@ -206,7 +199,6 @@ function SkillToSkillDepsInfo({
 						if (!skills) return;
 						addParent(skills);
 					}}
-					repoId={repoId}
 				/>
 			</div>
 		</>

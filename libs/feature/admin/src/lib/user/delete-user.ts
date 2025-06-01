@@ -13,10 +13,6 @@ export async function deleteUserAndDependentData(username: string, database: Pri
 			where: { authors: { some: { username: username } } }
 		});
 
-		await transaction.skillRepository.deleteMany({
-			where: { ownerName: username }
-		});
-
 		return true;
 	});
 }

@@ -115,11 +115,16 @@ export function getCycleDisplayInformation(skills: Map<string, SkillFormModel>) 
 		...skill,
 		nestedSkills: skill.children
 	}));
-	console.log(`libSkills is length of ${libSkills.length}`);
 
 	if (!libSkills) return [];
-	const cycleParents = findParentsOfCycledSkills(libSkills);
+
+	const cycleParents = findParentsOfCycledSkills(
+		//TODO remove the empty repository id !!!!!!
+		libSkills.map(skills => ({ ...skills, repositoryId: "" }))
+	);
+
 	if (!cycleParents) return [];
+
 	const children = cycleParents.nestingSkills.map(cycle => ({
 		...cycle,
 		hasNestedCycleMembers: true
