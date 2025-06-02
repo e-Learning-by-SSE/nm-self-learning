@@ -69,13 +69,21 @@ const ClozeAnswer = dynamic(() => import("./question-types/cloze/component"), { 
 const ClozeForm = dynamic(() => import("./question-types/cloze/form"), { ssr: false });
 const ArrangeAnswer = dynamic(() => import("./question-types/arrange/component"), { ssr: false });
 const ArrangeForm = dynamic(() => import("./question-types/arrange/form"), { ssr: false });
-const LanguageTextForm = dynamic(() => import("./question-types/language-tree/form"), { ssr: false });
+const LanguageTextForm = dynamic(() => import("./question-types/language-tree/form"), {
+	ssr: false
+});
 const LanguageTextAnswer = dynamic(() => import("./question-types/language-tree/component"), {
 	ssr: false
 });
 
-
-export type QuestionTypeUnion = MultipleChoice | Exact | Text | Programming | Cloze | Arrange | LanguageTree;
+export type QuestionTypeUnion =
+	| MultipleChoice
+	| Exact
+	| Text
+	| Programming
+	| Cloze
+	| Arrange
+	| LanguageTree;
 
 export const quizContentSchema = z.discriminatedUnion("type", [
 	multipleChoiceQuestionSchema,
