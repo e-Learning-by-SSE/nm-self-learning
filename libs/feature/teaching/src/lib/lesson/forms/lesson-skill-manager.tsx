@@ -16,8 +16,8 @@ export function LessonSkillManager() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {
-		requirements: watch("requirements"),
-		teachingGoals: watch("teachingGoals")
+		requires: watch("requires"),
+		provides: watch("provides")
 	};
 
 	const [selectSkillModal, setSelectSkillModal] = useState<{
