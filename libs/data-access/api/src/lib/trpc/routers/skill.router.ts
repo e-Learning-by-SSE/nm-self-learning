@@ -92,9 +92,6 @@ export async function getSkillsByAuthorId(authorId: number) {
 export const skillRouter = t.router({
 	getParentSkills: authorProcedure.query(async () => {
 		const skills = await database.skill.findMany({
-			where: {
-				parents: { none: {} }
-			},
 			select: {
 				id: true,
 				name: true,

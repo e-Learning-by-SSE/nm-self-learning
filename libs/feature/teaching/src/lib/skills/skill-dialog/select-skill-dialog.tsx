@@ -5,20 +5,14 @@ import { trpc } from "@self-learning/api-client";
 import { memo, useEffect, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
 
-export function SelectSkillDialog({
-	onClose,
-}: {
-	onClose: OnDialogCloseFn<SkillFormModel[]>;
-}) {
+export function SelectSkillDialog({ onClose }: { onClose: OnDialogCloseFn<SkillFormModel[]> }) {
 	return <SkillModal onClose={onClose} />;
 }
 
-function SkillModal({
-	onClose,
-}: {
-	onClose: OnDialogCloseFn<SkillFormModel[]>;
-}) {
+function SkillModal({ onClose }: { onClose: OnDialogCloseFn<SkillFormModel[]> }) {
 	const { data: skills, isLoading } = trpc.skill.getParentSkills.useQuery();
+
+	console.log("skills", skills);
 
 	return (
 		<Dialog onClose={() => onClose(undefined)} title={"Füge die Skills hinzu"}>

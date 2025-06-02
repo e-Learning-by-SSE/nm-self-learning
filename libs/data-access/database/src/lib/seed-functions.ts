@@ -441,7 +441,6 @@ export async function createSkills(skills: Skill[], repositoryId: string) {
 	await Promise.all(
 		skills.map(async skill => {
 			const input: Prisma.SkillUncheckedCreateInput = {
-				repositoryId: repositoryId,
 				authorId: author ? author.id : 0,
 				...skill
 			};
@@ -472,7 +471,6 @@ export async function createSkillGroups(
 		await prisma.skill.create({
 			data: {
 				id: skill.id,
-				repositoryId: repository.id,
 				authorId: author ? author.id : 0,
 				name: skill.name,
 				description: skill.description,
@@ -489,18 +487,6 @@ export type Repository = {
 	name: string;
 	description: string;
 };
-
-export async function createRepositories(repository: Repository) {
-	const admin = await getAdminUser();
-	await prisma.skillRepository.create({
-		data: {
-			id: repository.id,
-			ownerName: admin?.name ?? "unknown",
-			name: repository.name,
-			description: repository.description
-		}
-	});
-}
 
 // Function to generate a random date between 50 days and 6 hours ago
 
