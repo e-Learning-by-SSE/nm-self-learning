@@ -67,7 +67,7 @@ export default function CourseCreationEditor() {
 			case 1:
 				return <CourseSkillView authorId={author.id} />;
 			case 2:
-				return <CourseModulView />;
+				return <CourseModulView onSubmit={() => {}} />;
 			case 3:
 				return <CoursePreview />;
 			default:

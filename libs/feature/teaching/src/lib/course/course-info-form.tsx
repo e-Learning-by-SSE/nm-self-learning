@@ -2,6 +2,7 @@ import { ImageOrPlaceholder } from "@self-learning/ui/common";
 import { Form, InputWithButton, LabeledField, Upload, useSlugify } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
+import { useTranslation } from "react-i18next";
 
 /**
  * Allows the user to edit basic information about a course,
@@ -29,7 +30,7 @@ export function CourseInfoForm() {
 		formState: { errors }
 	} = form;
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-
+	const { t } = useTranslation("pages-course-info");
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Daten" subtitle="Informationen über diesen Kurs." />
@@ -40,7 +41,7 @@ export function CourseInfoForm() {
 						{...register("title")}
 						type="text"
 						className="textfield"
-						placeholder="Die Neue Lerneinheit"
+						placeholder={t("The new course")}
 						onBlur={slugifyIfEmpty}
 					/>
 				</LabeledField>
@@ -49,7 +50,7 @@ export function CourseInfoForm() {
 						input={
 							<input
 								className="textfield"
-								placeholder="die-neue-lerneinheit"
+								placeholder={t("the-new-course")}
 								type={"text"}
 								{...register("slug")}
 							/>

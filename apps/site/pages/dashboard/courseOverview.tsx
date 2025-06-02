@@ -1,4 +1,3 @@
-import { GetServerSideProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
@@ -14,13 +13,15 @@ import {
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import { formatDateAgo } from "@self-learning/util/common";
-import { withAuth } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 
 interface CourseOverviewProps {
 	enrollments: EnrollmentDetails[] | null;
 }
-export const getServerSideProps: GetServerSideProps = withAuth<CourseOverviewProps>(
-	async (_, user) => {
+
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<CourseOverviewProps>(async (context, user) => {
 		try {
 			return {
 				props: {
@@ -35,8 +36,9 @@ export const getServerSideProps: GetServerSideProps = withAuth<CourseOverviewPro
 				}
 			};
 		}
-	}
+	})
 );
+
 export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);

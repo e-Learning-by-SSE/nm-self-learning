@@ -1,16 +1,13 @@
-import { Combobox } from "@headlessui/react";
-import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { LearningSubGoal } from "@self-learning/types";
-import { Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
+import { ComboboxMenu, Dialog, DialogActions, LoadingCircle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Goal, StatusUpdateCallback } from "../util/types";
 import { LearningGoals } from "./learning-goals";
 
 /**
  * Component to display an editor dialog for a learning goal or sub-goal.
- * Author Fabian Kneer
  *
  * @param goal Learning goal data
  * @param subGoal Sub-goal data
@@ -33,7 +30,11 @@ export function GoalEditorDialog({
 	const { mutateAsync: createGoal } = trpc.learningGoal.createGoal.useMutation();
 	const { mutateAsync: createGoalFromSubGoal } =
 		trpc.learningGoal.createGoalFromSubGoal.useMutation();
-	const [description, setDescription] = useState(goal?.description ?? subGoal?.description ?? "");
+	const [description, setDescriptionState] = useState(
+		goal?.description.trim() ?? subGoal?.description.trim() ?? ""
+	);
+	const setDescription = (desc: string) => setDescriptionState(desc.trim());
+
 	const [learningGoalId, setLearningGoalId] = useState(subGoal?.learningGoalId ?? "");
 
 	// Different label for creating or editing of a goal or sub-goal
@@ -44,7 +45,7 @@ export function GoalEditorDialog({
 	 * The combobox is only displayed for new learning goals or sub-goals.
 	 */
 	function save() {
-		if (description.length > 0) {
+		if (description.length > 4) {
 			const goalId = goal?.id ?? "";
 			const subGoalId = subGoal?.id ?? "";
 
@@ -113,7 +114,7 @@ export function GoalEditorDialog({
 								Durch Auswahl eines übergeordneten Ziels erstellen Sie ein neues
 								Feinziel
 							</span>
-							<MyCombobox
+							<GoalDropDownSelector
 								goals={goals}
 								pSelectedGoal={selectedGoal}
 								onChange={(id: string) => setLearningGoalId(id)}
@@ -126,7 +127,12 @@ export function GoalEditorDialog({
 					<button
 						type="button"
 						className="btn-primary"
-						disabled={description.length === 0}
+						title={
+							description.length < 5
+								? "Description must be at least 5 characters long"
+								: "Speichern"
+						}
+						disabled={description.length < 5}
 						onClick={() => save()}
 					>
 						Speichern
@@ -138,67 +144,46 @@ export function GoalEditorDialog({
 }
 
 /**
- * Combobox component for selecting the parent learning goal of a sub-goal. If nothing is selected a new learning goal will be created
+ * Dropdown dropdown-menu component for selecting the parent learning goal of a sub-goal.
+ * If no goal is selected, a new learning goal will be created.
  *
- * @param goals Learning goal data
- * @param pSelectedGoal Current selected goal for editing a sub-goal
- * @param onChange Function executed on change of the selected entry
- * @returns Combobox with all inprogress learning goals
+ * This component uses Headless UI's Menu for rendering the dropdown.
+ *
+ * Props:
+ * @param goals - Array of learning goals with id, description, and goalId.
+ * @param pSelectedGoal - Index of the currently selected goal for a sub-goal.
+ * @param onChange - Callback triggered when a goal is selected. Receives the goalId.
+ *
+ * @returns A dropdown dropdown-menu listing all in-progress learning goals.
  */
-function MyCombobox({
+export function GoalDropDownSelector({
 	goals,
 	pSelectedGoal,
 	onChange
-}: Readonly<{
+}: {
 	goals: { id: number; description: string; goalId: string }[];
 	pSelectedGoal: number;
 	onChange: (id: string) => void;
-}>) {
+}) {
 	const [selectedGoal, setSelectedGoal] = useState(goals[pSelectedGoal]);
-	const [query, setQuery] = useState("");
 
-	const filteredGoals =
-		query === ""
-			? goals
-			: goals.filter(goals => {
-					return goals.description.toLowerCase().includes(query.toLowerCase());
-				});
+	function onSelectedGoalChange(goalName: string) {
+		const goal = goals.find(goal => goal.description === goalName);
 
-	function onSelectedGoalChange(e: { id: number; description: string; goalId: string }) {
-		setSelectedGoal(e);
-		onChange(e.goalId);
+		if (goal) {
+			setSelectedGoal(goal);
+			onChange(goal.goalId);
+		}
 	}
 
 	return (
-		<Combobox value={selectedGoal} onChange={onSelectedGoalChange}>
-			<div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
-				<Combobox.Input
-					className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-					onChange={event => setQuery(event.target.value)}
-					displayValue={goal =>
-						(goal as { id: number; description: string; goalId: string }).description
-					}
-				/>
-				<Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-					<ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-				</Combobox.Button>
-			</div>
-			<Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-				{filteredGoals.map(goal => (
-					<Combobox.Option key={goal.id} value={goal} as={Fragment}>
-						{({ active }) => (
-							<li
-								className={`${
-									active ? "bg-emerald-500 text-white" : "bg-white text-black"
-								}`}
-							>
-								{goal.description}
-							</li>
-						)}
-					</Combobox.Option>
-				))}
-			</Combobox.Options>
-		</Combobox>
+		<ComboboxMenu
+			title={""}
+			dropdownPosition={"bottom"}
+			onChange={selection => onSelectedGoalChange(selection)}
+			displayValue={selectedGoal.description}
+			options={goals.map(goal => goal.description)}
+		/>
 	);
 }
 

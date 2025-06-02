@@ -2,7 +2,7 @@ import {
 	CheckCircleIcon as CheckCircleIconOutline,
 	XCircleIcon
 } from "@heroicons/react/24/outline";
-import { CheckCircleIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon, CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import {
@@ -15,11 +15,13 @@ import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdow
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
-import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
+import { GetServerSideProps } from "next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withAuth } from "@self-learning/api";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -30,7 +32,8 @@ type QuestionProps = LessonLayoutProps & {
 	};
 };
 
-export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ params }) => {
+// Cant use withTranslation hook for some reason. Test will fail otherwise.
+export const getServerSideProps = withAuth<QuestionProps>(async ({params, locale}) => {
 	const parentProps = await getStaticPropsForLayout(params);
 
 	if ("notFound" in parentProps) return { notFound: true };
@@ -67,6 +70,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 
 	return {
 		props: {
+			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			...parentProps,
 			quiz,
 			markdown: {
@@ -76,7 +80,7 @@ export const getServerSideProps: GetServerSideProps<QuestionProps> = async ({ pa
 			}
 		}
 	};
-};
+});
 
 export default function QuestionsPage({ course, lesson, quiz, markdown }: QuestionProps) {
 	const { questions, config } = quiz;

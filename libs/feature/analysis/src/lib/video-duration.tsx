@@ -1,3 +1,4 @@
+"use client";
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { sumByDate, sumByMonth, sumByWeek, toInterval } from "./aggregation-functions";

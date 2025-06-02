@@ -1,9 +1,33 @@
+"use client";
 import { trpc } from "@self-learning/api-client";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { FeatureSettingsForm } from "@self-learning/settings";
 import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
+import { isBefore, subDays } from "date-fns";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+export const useFirstLoginDialog = (): boolean => {
+	const [shouldRender, setShouldRender] = useState<boolean>(false);
+
+	useEffect(() => {
+		const lastShown: Date | null = loadFromLocalStorage(
+			"settings_firstLoginDialog_lastRendered"
+		);
+		const oneDayAgo = subDays(new Date(), 1);
+
+		if (!lastShown) {
+			setShouldRender(true);
+			saveToLocalStorage("settings_firstLoginDialog_lastRendered", new Date());
+		} else if (isBefore(lastShown, oneDayAgo)) {
+			setShouldRender(true);
+			saveToLocalStorage("settings_firstLoginDialog_lastRendered", new Date());
+		}
+	}, []);
+
+	return shouldRender;
+};
 
 /**
  * Dialog for the first login of a user. The user can set his settings here.

@@ -1,3 +1,4 @@
+"use client";
 import { Dialog } from "@headlessui/react";
 import { EditorField } from "@self-learning/ui/forms";
 import { useMemo, useState } from "react";

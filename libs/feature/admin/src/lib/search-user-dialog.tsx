@@ -1,3 +1,4 @@
+"use client";
 import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import {

@@ -91,8 +91,8 @@ model Specialization {
 }
 
 model Course {
-    courseId             String              @id
-    slug                 String              @unique
+    courseId             String               @id
+    slug                 String               @unique
     title                String
     subtitle             String
     description          String?
@@ -148,8 +148,8 @@ model Lesson {
     licenseId             Int?
     lessonType            LessonType                    @default(TRADITIONAL)
     selfRegulatedQuestion String?
-    requirements          Skill[]                       @relation("requirements")
-    teachingGoals         Skill[]                       @relation("teachingGoals")
+    requires              Skill[]                       @relation("requiredSkills")
+    provides              Skill[]                       @relation("providedSkills")
     lessonStart           LearningDiaryLearnedLessons[] // TODO check if this is necessary
 }
 
@@ -242,8 +242,8 @@ model Skill {
     author         Author   @relation(fields: [authorId], references: [id], onDelete: Cascade)
     children       Skill[]  @relation("parent")
     parents        Skill[]  @relation("parent")
-    goalsOf        Lesson[] @relation("teachingGoals")
-    requirementsOf Lesson[] @relation("requirements")
+    goalsOf        Lesson[] @relation("providedSkills")
+    requirementsOf Lesson[] @relation("requiredSkills")
 
     @@map("skills")
 }

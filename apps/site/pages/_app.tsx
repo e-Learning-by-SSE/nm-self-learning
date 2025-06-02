@@ -1,4 +1,4 @@
-import type { AppRouter } from "@self-learning/api";
+import { AppRouter, withTranslations } from "@self-learning/api";
 import { Footer, Navbar } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
@@ -8,10 +8,10 @@ import { SessionProvider } from "next-auth/react";
 import PlausibleProvider from "next-plausible";
 import { AppProps } from "next/app";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import superjson from "superjson";
 import { GlobalFeatures } from "../../_features";
 import "./styles.css";
+import { appWithTranslation } from "next-i18next";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -37,14 +37,14 @@ export default withTRPC<AppRouter>({
 			}
 		};
 	}
-})(CustomApp);
+})(appWithTranslation(CustomApp));
 
 function CustomApp({ Component, pageProps }: AppProps) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const Layout = (Component as any).getLayout
-		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(Component as any).getLayout(Component, pageProps)
+		? (Component as any).getLayout(Component, pageProps)
 		: null;
+
+	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 	return (
 		<>
@@ -54,14 +54,36 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			<PlausibleProvider
 				domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
 				customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
-				trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
+				trackLocalhost={process.env.NODE_ENV === "development"}
 			>
-				<SessionProvider
-					session={pageProps.session}
-					basePath={useRouter().basePath + "/api/auth"}
-				>
+				<SessionProvider session={pageProps.session} basePath={basePath + "/api/auth"}>
 					<Head>
 						<title>Self-Learning</title>
+						{/* Favicon setup based on recommendation of:
+						 *  - https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
+						 *  - https://favicon.io/
+						 */}
+						<link
+							rel="apple-touch-icon"
+							sizes="180x180"
+							href={basePath + "/apple-touch-icon.png"}
+						/>
+						<link rel="icon" sizes="48x48" href={basePath + "/favicon.ico"} />
+						<link rel="icon" type="image/svg+xml" href={basePath + "/icon.svg"} />
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="32x32"
+							href={basePath + "/favicon-32x32.png"}
+						/>
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="16x16"
+							href={basePath + "favicon-16x16.png"}
+						/>
+						{/* Only required for /pages, /app will handle this automatically */}
+						<link rel="manifest" href={basePath + "/api/manifest"} />
 					</Head>
 					<GlobalFeatures />
 					<Navbar />
@@ -74,3 +96,5 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		</>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

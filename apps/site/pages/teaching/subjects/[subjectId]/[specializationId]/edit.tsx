@@ -4,6 +4,7 @@ import { useRequiredSession } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
 import { SpecializationEditor } from "../create";
+import { withTranslations } from "@self-learning/api";
 
 export default function SpecializationEditPage() {
 	useRequiredSession();
@@ -43,3 +44,5 @@ export default function SpecializationEditPage() {
 		</div>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

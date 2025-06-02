@@ -1,3 +1,4 @@
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
@@ -13,15 +14,19 @@ export async function onLessonCreatorSubmit(
 	onClose: () => void,
 	createLessonAsync: (lesson: LessonFormModel) => Promise<{
 		title: string;
+		lessonId: string;
+		slug: string;
 	}>,
 	lesson?: LessonFormModel
 ) {
 	try {
+		let result = null;
 		if (lesson) {
-			const result = await createLessonAsync(lesson);
+			result = await createLessonAsync(lesson);
 			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
 		}
 		onClose();
+		return result;
 	} catch (error) {
 		console.error(error);
 		showToast({
@@ -29,6 +34,8 @@ export async function onLessonCreatorSubmit(
 			title: "Fehler",
 			subtitle: "Lerneinheit konnte nicht erstellt werden."
 		});
+
+		return null;
 	}
 }
 
@@ -91,20 +98,18 @@ export function LessonEditor({
 				className="flex h-full flex-col overflow-hidden"
 			>
 				<div className="flex h-full overflow-y-auto overflow-x-hidden">
-					{selectedTab === 0 && (
-						<FirstTabContent
-							initialLesson={initialLesson}
-							selectedTab={selectedTab}
-							setSelectedTab={setSelectedTab}
-						/>
-					)}
-					{selectedTab === 1 && (
-						<SecondTabContent
-							initialLesson={initialLesson}
-							selectedTab={selectedTab}
-							setSelectedTab={setSelectedTab}
-						/>
-					)}
+					<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
+						<LessonInfoEditor lesson={initialLesson} />
+
+						<div>
+							<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+								<Tab>Lerninhalt</Tab>
+								<Tab>Lernkontrolle</Tab>
+							</Tabs>
+							{selectedTab === 0 && <LessonContentEditor />}
+							{selectedTab === 1 && <QuizEditor />}
+						</div>
+					</div>
 				</div>
 
 				<div
@@ -122,53 +127,5 @@ export function LessonEditor({
 				</div>
 			</form>
 		</FormProvider>
-	);
-}
-
-function FirstTabContent({
-	initialLesson,
-	selectedTab,
-	setSelectedTab
-}: {
-	initialLesson?: LessonFormModel;
-	selectedTab: number;
-	setSelectedTab: (v: number) => void;
-}) {
-	return (
-		<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-			<LessonInfoEditor lesson={initialLesson} />
-
-			<div>
-				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-					<Tab>Lerninhalt</Tab>
-					<Tab>Lernkontrolle</Tab>
-				</Tabs>
-				<LessonContentEditor />
-			</div>
-		</div>
-	);
-}
-
-function SecondTabContent({
-	initialLesson,
-	selectedTab,
-	setSelectedTab
-}: {
-	initialLesson?: LessonFormModel;
-	selectedTab: number;
-	setSelectedTab: (v: number) => void;
-}) {
-	return (
-		<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-			<LessonInfoEditor lesson={initialLesson} />
-
-			<div>
-				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-					<Tab>Lerninhalt</Tab>
-					<Tab>Lernkontrolle</Tab>
-				</Tabs>
-				<QuizEditor />
-			</div>
-		</div>
 	);
 }

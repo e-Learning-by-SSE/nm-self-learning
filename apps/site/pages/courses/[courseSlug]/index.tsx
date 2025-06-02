@@ -15,11 +15,11 @@ import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
-import { GetServerSideProps } from "next";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
+import { withTranslations } from "@self-learning/api";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -108,28 +108,23 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ params }) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
-
 	if (!courseSlug) {
 		throw new Error("No slug provided.");
 	}
 
 	const course = await getCourse(courseSlug);
-
 	if (!course) {
 		return { notFound: true };
 	}
 
 	const content = await mapCourseContent(course.content as CourseContent);
-
 	let markdownDescription = null;
 
-	if (course) {
-		if (course.description && course.description.length > 0) {
-			markdownDescription = await compileMarkdown(course.description);
-			course.description = null;
-		}
+	if (course.description && course.description.length > 0) {
+		markdownDescription = await compileMarkdown(course.description);
+		course.description = null;
 	}
 
 	const summary = createCourseSummary(content);
@@ -143,7 +138,7 @@ export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ para
 		},
 		notFound: !course
 	};
-};
+});
 
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({
@@ -216,7 +211,7 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
-	const firstLessonFromChapter = content[0].content[0];
+	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 	return (
 		<section className="flex flex-col gap-16">
@@ -275,9 +270,13 @@ function CourseHeader({
 
 					{isEnrolled && (
 						<Link
-							href={`/courses/${course.slug}/${
-								nextLessonSlug ?? firstLessonFromChapter.slug
-							}`}
+							href={
+								firstLessonFromChapter
+									? `/courses/${course.slug}/${
+											nextLessonSlug ?? firstLessonFromChapter.slug
+										}`
+									: `/courses/${course.slug}`
+							}
 							className="btn-primary"
 						>
 							<span>
@@ -317,6 +316,20 @@ function CourseHeader({
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
 	const completion = useCourseCompletion(course.slug);
+	const hasContent = content.length > 0;
+
+	if (!hasContent) {
+		return (
+			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+				<h3 className="heading flex gap-4 text-2xl">
+					<span className="text-secondary">Kein Inhalt verfügbar</span>
+				</h3>
+				<span className="mt-4 text-light">
+					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
+				</span>
+			</div>
+		);
+	}
 
 	return (
 		<section className="flex flex-col gap-8">
@@ -365,7 +378,6 @@ function Lesson({
 			</div>
 		);
 	}
-
 	return (
 		<Link
 			href={href}

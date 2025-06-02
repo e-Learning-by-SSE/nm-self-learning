@@ -1,3 +1,4 @@
+"use client";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { useCallback, useMemo, useState } from "react";
 import { DialogHandler } from "@self-learning/ui/common";

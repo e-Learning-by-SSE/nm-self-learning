@@ -1,3 +1,4 @@
+"use client";
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
@@ -19,6 +20,7 @@ import {
 } from "./input-tile";
 import { DiaryLearnedContent } from "./page-details";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
+import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -99,22 +101,18 @@ function usePageForm({
 }
 
 function useCompactView() {
-	const [isCompact, setIsCompact] = useState<boolean>(false);
+	const [isCompact, setIsCompact] = useState(false);
 
 	useEffect(() => {
 		if (typeof window !== "undefined") {
-			const savedState = localStorage.getItem("is-diary-page-compact");
-			setIsCompact(savedState !== null ? JSON.parse(savedState) : false);
+			setIsCompact(loadFromLocalStorage("ltb_pageViewer_compactPreference") ?? false);
 		}
 	}, []);
 
 	const toggleCompactView = useCallback((): void => {
 		setIsCompact((prev: boolean): boolean => {
-			const newState = !prev;
-			if (typeof window !== "undefined") {
-				localStorage.setItem("is-diary-page-compact", JSON.stringify(newState));
-			}
-			return newState;
+			saveToLocalStorage("ltb_pageViewer_compactPreference", !prev);
+			return !prev;
 		});
 	}, [setIsCompact]);
 
