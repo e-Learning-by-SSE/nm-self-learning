@@ -21,18 +21,17 @@ export function LabeledFieldSelectSkillsView({
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
 	return (
-		<LabeledField
-			label={label}
-			button={
-				<IconButton
-					text="Hinzufügen"
-					icon={<PlusIcon className={getButtonSizeClass("medium")} />}
-					onClick={() => setSelectSkillModal(true)}
-					title={"Hinzufügen"}
-					data-testid="BenoetigteSkills-add"
-				/>
-			}
-		>
+		<LabeledField label={label} button={null}>
+			<button
+				type="button"
+				onClick={() => setSelectSkillModal(true)}
+				className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-400 rounded py-2 mb-3 text-grey-500 hover:bg-emerald-50 transition text-sm"
+				data-testid="BenoetigteSkills-add"
+				onDragOver={e => e.preventDefault()}
+				onDrop={handleDropSkill(onAddSkill)}
+			>
+				Klicken zum Auswhählen oder mit Drag & Drop einfügen
+			</button>
 			<SkillManagementComponent
 				skills={skills}
 				setSelectSkillModal={setSelectSkillModal}
@@ -43,6 +42,23 @@ export function LabeledFieldSelectSkillsView({
 			/>
 		</LabeledField>
 	);
+}
+
+function handleDropSkill(
+	onAddSkill: (skill: SkillFormModel[] | undefined) => void
+) {
+	return (event: React.DragEvent<HTMLButtonElement>) => {
+		event.preventDefault();
+		const data = event.dataTransfer.getData("text/plain");
+		if (!data) return;
+
+		try {
+			const skill: SkillFormModel = JSON.parse(data);
+			onAddSkill([skill]);
+		} catch (error) {
+			console.error("Invalid skill data", error);
+		}
+	};
 }
 
 // TODO looks like a duplicate of the above component

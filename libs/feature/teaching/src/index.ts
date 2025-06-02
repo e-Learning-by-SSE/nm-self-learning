@@ -10,5 +10,6 @@ export * from "./lib/skills/repository/repository-overview";
 export * from "./lib/skills/folder-editor";
 export * from "./lib/course/full-course-export";
 export * from "./lib/lesson/forms/lesson-info";
+export * from "./lib/lesson/forms/module-info";
 export * from "./lib/lesson/forms/lesson-content";
 export * from "./lib/lesson/forms/quiz-editor";
