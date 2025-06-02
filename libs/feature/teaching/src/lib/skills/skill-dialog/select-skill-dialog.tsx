@@ -10,9 +10,7 @@ export function SelectSkillDialog({ onClose }: { onClose: OnDialogCloseFn<SkillF
 }
 
 function SkillModal({ onClose }: { onClose: OnDialogCloseFn<SkillFormModel[]> }) {
-	const { data: skills, isLoading } = trpc.skill.getParentSkills.useQuery();
-
-	console.log("skills", skills);
+	const { data: skills, isLoading } = trpc.skill.getSkills.useQuery();
 
 	return (
 		<Dialog onClose={() => onClose(undefined)} title={"Füge die Skills hinzu"}>
@@ -78,7 +76,7 @@ function SelectSkillForm({
 									.map((skill, index) => (
 										<>
 											<span
-												key={"span: " + skill.id + index}
+												key={skill.id + index}
 												className="flex items-center gap-2"
 											>
 												<SkillElementMemorized

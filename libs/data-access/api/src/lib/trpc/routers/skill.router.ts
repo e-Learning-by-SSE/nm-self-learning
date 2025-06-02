@@ -63,6 +63,19 @@ export async function getParentSkills() {
 	});
 }
 
+async function getSkills() {
+	return database.skill.findMany({
+		select: {
+			id: true,
+			name: true,
+			description: true,
+			authorId: true,
+			children: { select: { id: true } },
+			parents: { select: { id: true } }
+		}
+	});
+}
+
 export async function getSkillsByAuthorId(authorId: number) {
 	const skills = await database.skill.findMany({
 		where: { authorId: authorId },
@@ -101,6 +114,20 @@ export const skillRouter = t.router({
 				parents: { select: { id: true } }
 			}
 		});
+
+		const transformedSkills: SkillFormModel[] = skills.map(skill => ({
+			name: skill.name,
+			description: skill.description,
+			id: skill.id,
+			authorId: skill.authorId,
+			children: skill.children.map(child => child.id),
+			parents: skill.parents.map(parent => parent.id)
+		}));
+
+		return transformedSkills;
+	}),
+	getSkills: authorProcedure.query(async () => {
+		const skills = await getSkills();
 
 		const transformedSkills: SkillFormModel[] = skills.map(skill => ({
 			name: skill.name,
