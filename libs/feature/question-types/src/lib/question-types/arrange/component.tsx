@@ -3,16 +3,11 @@ import { MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
-import { ArrangeItem } from "./schema";
-import { watch } from "fs";
 
-type ArrangeQuestionProps = {
-	order: string[];
-};
-
-export default function ArrangeQuestion({ order = [] }: { order: string[] }) {
+export default function ArrangeQuestion() {
 	const { answer, setAnswer, evaluation, question } = useQuestion("arrange");
-
+	const  order  = question.categoryOrder
+	
 	return (
 		<>
 			<DragDropContext

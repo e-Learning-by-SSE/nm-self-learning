@@ -268,7 +268,7 @@ export function QuestionAnswerRenderer({
 	}
 
 	if (question.type === "arrange") {
-		return <ArrangeAnswer order={question.categoryOrder} />;
+		return <ArrangeAnswer />;
 	}
 
 	if (question.type === "language-tree") {
