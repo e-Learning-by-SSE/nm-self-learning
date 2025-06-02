@@ -74,19 +74,16 @@ function SelectSkillForm({
 								{filteredSkills
 									.sort((a, b) => a.name.localeCompare(b.name))
 									.map((skill, index) => (
-										<>
-											<span
-												key={skill.id + index}
-												className="flex items-center gap-2"
-											>
-												<SkillElementMemorized
-													key={skill.id + index}
-													skill={skill}
-													value={checkBoxMap.get(skill) ?? false}
-													setSkill={setSkill}
-												/>
-											</span>
-										</>
+										<span
+											key={skill.id + index}
+											className="flex items-center gap-2"
+										>
+											<SkillElementMemorized
+												skill={skill}
+												value={checkBoxMap.get(skill) ?? false}
+												setSkill={setSkill}
+											/>
+										</span>
 									))}
 							</>
 						)}

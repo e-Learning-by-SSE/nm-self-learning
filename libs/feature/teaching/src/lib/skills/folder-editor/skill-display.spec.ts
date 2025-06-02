@@ -8,7 +8,6 @@ const skill = {
 	id: "skillId",
 	name: "Skill Name",
 	children: [],
-	repositoryId: "repoId",
 	authorId: 42,
 	description: "description",
 	parents: []

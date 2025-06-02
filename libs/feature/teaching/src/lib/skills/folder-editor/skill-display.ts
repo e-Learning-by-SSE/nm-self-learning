@@ -119,8 +119,7 @@ export function getCycleDisplayInformation(skills: Map<string, SkillFormModel>) 
 	if (!libSkills) return [];
 
 	const cycleParents = findParentsOfCycledSkills(
-		//TODO remove the empty repository id !!!!!!
-		libSkills.map(skills => ({ ...skills, repositoryId: "" }))
+		libSkills.map(skills => ({ ...skills}))
 	);
 
 	if (!cycleParents) return [];
