@@ -60,7 +60,6 @@ export function SkillFolderTable({
 			let addSkill;
 			if (result.parent) {
 				const newSkill = {
-					repoId: "1", // ToRemove To be removed when repository is removed
 					parentSkillId: result.parent,
 					authorId: authorId,
 					skill: { ...result, children: [] }
@@ -68,7 +67,6 @@ export function SkillFolderTable({
 				addSkill = async () => await addSkillOnParent(newSkill);
 			} else {
 				const newSkill = {
-					repoId: "1", // ToRemove To be removed when repository is removed
 					authorId: authorId,
 					skill: { ...result, children: [] }
 				};

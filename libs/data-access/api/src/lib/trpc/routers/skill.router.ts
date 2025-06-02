@@ -31,7 +31,6 @@ async function updateSkill(skill: SkillFormModel) {
 
 async function createSkill(input: {
 	skill: { children: string[]; name: string; description: string | null };
-	repoId: string;
 	authorId: number;
 }) {
 	return database.skill.create({
@@ -163,7 +162,6 @@ export const skillRouter = t.router({
 	createSkill: authorProcedure
 		.input(
 			z.object({
-				repoId: z.string(),
 				authorId: z.number(),
 				skill: skillCreationFormSchema
 			})
@@ -174,7 +172,6 @@ export const skillRouter = t.router({
 	createSkillWithParents: authorProcedure
 		.input(
 			z.object({
-				repoId: z.string(),
 				authorId: z.number(),
 				parentSkillId: z.string(),
 				skill: skillCreationFormSchema
@@ -184,7 +181,6 @@ export const skillRouter = t.router({
 			const parentSkill = await getSkillById(input.parentSkillId);
 			if (!parentSkill) return null;
 			const createdSkill = await createSkill({
-				repoId: input.repoId,
 				authorId: input.authorId,
 				skill: input.skill
 			});

@@ -55,14 +55,12 @@ export function AddChildButton({
 		description: "Add here",
 		children: [],
 		parents: [parentSkill.id],
-		repositoryId: "1", // ToRemove To be removed when repository is removed
 		...skillDefaults
 	};
 
 	const handleAddSkill = async () =>
 		await withErrorHandling(async () => {
 			const result = await addSkillOnParent({
-				repoId: "1", // ToRemove To be removed when repository is removed
 				authorId: authorId,
 				parentSkillId: parentSkill.id,
 				skill: newSkill
