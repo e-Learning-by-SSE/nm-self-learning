@@ -70,7 +70,6 @@ export function LearningGoals({
 	};
 
 	const handleCreateGoal = (parent?: GoalFormModel) => {
-		console.log(parent);
 		setOpenAddDialog(true);
 		setNewGoalParent(parent);
 	};

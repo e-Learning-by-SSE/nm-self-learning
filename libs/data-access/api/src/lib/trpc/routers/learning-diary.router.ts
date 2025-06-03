@@ -173,8 +173,8 @@ export const learningDiaryPageRouter = t.router({
 			);
 		}
 
-		// get location ID (available to everyone(?)) TEMPORAL FIX
-		let locationID;
+		// get location ID (ensure that global and personal locations are taken into account)
+		let locationID: string | undefined;
 		if (input.learningLocation) {
 			// Try to find personalized case
 			const existingLocation = await database.learningLocation.findUnique({
@@ -214,15 +214,6 @@ export const learningDiaryPageRouter = t.router({
 			(input.learningGoals?.length ?? 0) > 0 &&
 			(input.techniqueRatings?.length ?? 0) > 0
 		);
-
-		// console.log("HELL isDraft? ", isDraft);
-		// const dbgInput = {
-		// 	...input,
-		// 	learningLocation: input.learningLocation
-		// 		? { ...input.learningLocation, iconURL: null }
-		// 		: null
-		// };
-		// console.log(dbgInput);
 
 		return database.learningDiaryPage.update({
 			where: {
