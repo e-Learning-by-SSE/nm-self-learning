@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-useless-fragment */
 import { SkillFormModel } from "@self-learning/types";
 import { Form} from "@self-learning/ui/forms";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
