@@ -646,12 +646,14 @@ export async function seedSkillbasedModelling() {
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
+	const author = await prisma.author.findFirst();
+
 	for (const skill of skills) {
 		await prisma.skill.create({
 			data: {
 				id: skill.id,
 				name: skill.name,
-				authorId: authors[0]?.author?.create?.id ? authors[0].author.create.id : 0
+				authorId: author?.id ?? 0,
 			}
 		});
 	}
