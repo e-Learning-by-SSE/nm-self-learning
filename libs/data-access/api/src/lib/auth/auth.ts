@@ -2,51 +2,16 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database } from "@self-learning/database";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
-import { jwtDecode } from "jwt-decode";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import { Adapter, AdapterAccount } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
-import { createUserSession } from "./data-access";
+import { authCallbacks, getIdpSelflearnAdminRole } from "./create-user-session";
 import { loginCallbacks } from "./on-login";
-
-type KeyCloakClaims = {
-	realm_access?: {
-		roles?: string[];
-	};
-};
-
-enum Role {
-	USER,
-	ADMIN,
-	UNDEFINED
-}
 
 export const MAIL_DOMAIN = "@uni-hildesheim.de";
 export const OIDC_SCOPES = "openid profile email roles profile_studium";
-export const ADMIN_ROLE = "selflearn_admin";
-
-function hasAdminRole(access_token: string | undefined): Role {
-	// realm_access.roles is optional claim -> Check if claim exists
-	if (access_token) {
-		const claims = jwtDecode(access_token) satisfies KeyCloakClaims;
-		const access_roles = claims["realm_access"];
-
-		if (access_roles) {
-			const roles = access_roles["roles"] as string[];
-
-			// Admin role of Self-Learning is defined as selflearn_admin in KeyCloak
-			if (roles?.includes(ADMIN_ROLE)) {
-				return Role.ADMIN;
-			} else {
-				return Role.USER;
-			}
-		}
-	}
-
-	return Role.UNDEFINED;
-}
 
 function mailToUsername(mail: string): string {
 	if (mail.toLowerCase().includes(MAIL_DOMAIN)) {
@@ -74,7 +39,7 @@ const customPrismaAdapter: Adapter = {
 		});
 
 		// Promote User to admin if specified by KeyCloak
-		if (hasAdminRole(account.access_token)) {
+		if (getIdpSelflearnAdminRole(account.access_token)) {
 			await database.user.update({
 				where: {
 					id: user.id
@@ -209,42 +174,19 @@ function getProviders(): Provider[] {
 			}) as any
 		);
 	}
-
 	return providers;
 }
 
 export const authOptions: NextAuthOptions = {
 	theme: { colorScheme: "light" },
 	adapter: customPrismaAdapter,
-	callbacks: {
-		jwt({ token, account }) {
-			// Store OIDC role inside JWT token
-			const role = hasAdminRole(account?.access_token);
-			if (role == Role.ADMIN) {
-				token.isAdmin = true;
-			} else if (role == Role.USER) {
-				token.isAdmin = false;
-			}
-
-			return token;
-		},
-		async session({ session, user, token }) {
-			const username = session.user?.name ?? user.name;
-			session.user = await createUserSession({ username, token });
-			return session;
-		}
-	},
+	callbacks: authCallbacks,
 	session: {
 		strategy: "jwt"
 	},
 	providers: getProviders(),
 	events: {
 		signIn: async ({ user, account, isNewUser, profile }) => {
-			// Create a new user session
-			// if (account?.provider === "keycloak") {
-			// 	const username = mailToUsername(user.email ?? user.name);
-			// 	await createUserSession({ username, token: account.access_token });
-			// }
 			for (const call of loginCallbacks) {
 				await call({ user, account, profile, isNewUser });
 			}

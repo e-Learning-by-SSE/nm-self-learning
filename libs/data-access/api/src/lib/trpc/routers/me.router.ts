@@ -3,6 +3,7 @@ import { authProcedure, t } from "../trpc";
 import { findLessons } from "./lesson.router";
 import { editUserSettingsSchema } from "@self-learning/types";
 import { randomUUID } from "crypto";
+import { isGamificationOptInEnabled } from "@self-learning/profile";
 
 export const meRouter = t.router({
 	permissions: authProcedure.query(({ ctx }) => {
@@ -136,5 +137,8 @@ export const meRouter = t.router({
 				registrationCompleted: true
 			}
 		});
+	}),
+	gamificationOptIn: authProcedure.query(async ({ ctx }) => {
+		return isGamificationOptInEnabled(ctx.user.name);
 	})
 });
