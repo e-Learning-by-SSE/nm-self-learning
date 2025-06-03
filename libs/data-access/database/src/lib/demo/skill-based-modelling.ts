@@ -22,7 +22,6 @@ const authors: Prisma.UserCreateInput[] = [
 		displayName: "Jane Doe",
 		author: {
 			create: {
-				id: 1,
 				displayName: "Jane Doe",
 				slug: "slr-author_1"
 			}
