@@ -2,7 +2,11 @@ import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import {
+	EnableLearningDiaryDialog,
+	LearningDiaryEntryStatusBadge,
+	StatusBadgeInfo
+} from "@self-learning/diary";
 import {
 	Card,
 	DialogHandler,
@@ -330,7 +334,10 @@ function DashboardPage(props: Props) {
 					<div className="rounded bg-white p-4 shadow">
 						{ltb.enabled ? (
 							<>
-								<h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2>
+								<StatusBadgeInfo
+									header="Letzter Lerntagebucheintrag"
+									className="mb-4"
+								/>
 								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
 							</>
 						) : (
@@ -401,7 +408,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 									className="hover: flex items-center rounded-lg border border-light-border
 							p-3 transition-transform hover:bg-slate-100"
 								>
-									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
+									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
 										<div className="flex items-center gap-2">
 											<LearningDiaryEntryStatusBadge
 												isDraft={page.isDraft}
@@ -448,7 +455,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 						>
 							<li
 								className="hover: flex items-center rounded-lg border border-light-border
-							pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+							px-3 transition-transform hover:bg-slate-100"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl}

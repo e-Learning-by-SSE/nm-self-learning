@@ -70,7 +70,6 @@ export function LearningGoals({
 	};
 
 	const handleCreateGoal = (parent?: GoalFormModel) => {
-		console.log(parent);
 		setOpenAddDialog(true);
 		setNewGoalParent(parent);
 	};
@@ -197,9 +196,6 @@ export function GoalsOverview({
 	onRowClick: (editedGoal: GoalFormModel) => void;
 }>) {
 	const { userGoals: goals } = useLearningGoalContext();
-	if (goals.size === 0) {
-		return <p>Keine Ziele Gefunden.</p>;
-	}
 	const parentGoals = goals.values().filter(goal => !goal.parentId);
 	return (
 		<div>

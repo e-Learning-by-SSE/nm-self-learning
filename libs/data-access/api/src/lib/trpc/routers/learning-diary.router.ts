@@ -44,21 +44,23 @@ export const learningLocationRouter = t.router({
 });
 
 export const learningTechniqueRouter = t.router({
-	createNewTechnique: authProcedure.input(learningTechniqueCreateSchema).mutation(async ({ input, ctx }) => {
-		return database.learningTechnique.create({
-			data: {
-				name: input.name,
-				description: input.description,
-				creatorName: ctx.user.name,
-				learningStrategieId: input.learningStrategieId
-			},
-			select: {
-				id: true,
-				name: true,
-				description: true,
-			}
-		});
-	}),
+	createNewTechnique: authProcedure
+		.input(learningTechniqueCreateSchema)
+		.mutation(async ({ input, ctx }) => {
+			return database.learningTechnique.create({
+				data: {
+					name: input.name,
+					description: input.description,
+					creatorName: ctx.user.name,
+					learningStrategieId: input.learningStrategieId
+				},
+				select: {
+					id: true,
+					name: true,
+					description: true
+				}
+			});
+		}),
 	upsert: authProcedure.input(techniqueRatingSchema).mutation(async ({ input, ctx }) => {
 		return database.techniqueRating.upsert({
 			where: {
@@ -171,32 +173,80 @@ export const learningDiaryPageRouter = t.router({
 			);
 		}
 
+		// get location ID (ensure that global and personal locations are taken into account)
+		let locationID: string | undefined;
+		if (input.learningLocation) {
+			// Try to find personalized case
+			const existingLocation = await database.learningLocation.findUnique({
+				where: {
+					unique_name_creator: {
+						name: input.learningLocation.name,
+						creatorName: ctx.user.name
+					}
+				},
+				select: {
+					id: true
+				}
+			});
+			if (existingLocation) {
+				locationID = existingLocation.id;
+			} else {
+				// Try to find generalized case
+				const existingLocation = await database.learningLocation.findFirst({
+					where: {
+						name: input.learningLocation.name,
+						creatorName: null
+					},
+					select: {
+						id: true
+					}
+				});
+				if (existingLocation) {
+					locationID = existingLocation.id;
+				}
+			}
+		}
+		// Determine if is completed
+		const isDraft = !(
+			(input.distractionLevel ?? 0) > 0 &&
+			(input.effortLevel ?? 0) > 0 &&
+			locationID &&
+			(input.learningGoals?.length ?? 0) > 0 &&
+			(input.techniqueRatings?.length ?? 0) > 0
+		);
+
 		return database.learningDiaryPage.update({
 			where: {
 				id: input.id
 			},
 			data: {
-				isDraft: false,
+				isDraft: isDraft,
 				notes: input.notes,
 				scope: input.scope ?? 0, // TODO remove default value
 				distractionLevel: input.distractionLevel,
 				effortLevel: input.effortLevel,
-				learningLocation: input.learningLocation
-					? {
-							connect: {
-								unique_name_creator: {
-									name: input.learningLocation.name,
-									creatorName: ctx.user.name
+				learningLocation:
+					input.learningLocation && locationID
+						? {
+								connect: {
+									id: locationID
 								}
 							}
-						}
-					: undefined,
+						: undefined,
 				learningGoals: {
 					connect: input.learningGoals
 						?.filter(goal => goal.id)
 						.map(goal => ({
 							id: goal.id
 						}))
+				},
+				techniqueRatings: {
+					connect:
+						input.techniqueRatings
+							?.filter(rating => rating.id)
+							.map(rating => ({
+								evalId: { techniqueId: rating.id, diaryPageId: input.id }
+							})) ?? []
 				}
 			},
 			select: {
