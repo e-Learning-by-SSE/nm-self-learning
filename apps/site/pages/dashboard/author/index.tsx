@@ -83,6 +83,20 @@ export function getAuthor(username: string) {
 						}
 					}
 				}
+			},
+			newCourse: {
+				orderBy: { title: "asc" },
+				select: {
+					courseId: true,
+					slug: true,
+					title: true,
+					imgUrl: true,
+					specializations: {
+						select: {
+							title: true
+						}
+					}
+				}
 			}
 		}
 	});
@@ -193,7 +207,7 @@ function AuthorDashboardPage({ author }: Props) {
 						</div>
 
 						<ul className="flex flex-col gap-4 py-4">
-							{author.courses.length === 0 ? (
+							{author.courses.length === 0 && author.newCourse.length === 0 ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
@@ -201,7 +215,7 @@ function AuthorDashboardPage({ author }: Props) {
 									<p className="text-light">Du hast noch keine Kurse erstellt.</p>
 								</div>
 							) : (
-								author.courses.map(course => (
+								[...author.courses, ...author.newCourse].map(course => (
 									<li
 										key={course.courseId}
 										className="flex items-center rounded-lg border border-light-border bg-white"

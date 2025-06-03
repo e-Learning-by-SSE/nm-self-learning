@@ -74,6 +74,19 @@ export const isCourseAuthorProcedure = t.procedure
 	});
 
 async function checkIfUserIsAuthor(username: string, courseId: string) {
+	if (courseId.startsWith("dyn")) {
+		const course = await database.newCourse.findUniqueOrThrow({
+			where: { courseId },
+			select: {
+				authors: {
+					select: {
+						username: true
+					}
+				}
+			}
+		});
+		return course.authors.some(author => author.username === username);
+	}
 	const course = await database.course.findUniqueOrThrow({
 		where: { courseId },
 		select: {
@@ -84,6 +97,5 @@ async function checkIfUserIsAuthor(username: string, courseId: string) {
 			}
 		}
 	});
-
 	return course.authors.some(author => author.username === username);
 }

@@ -126,8 +126,9 @@ export const getServerSideProps = withTranslations(
 		let isGenerated = false;
 		let needsARefresh = false;
 
-		let course = await getCourse(courseSlug);
-		if (!course) {
+		let course: Course | null = null;
+
+		if (courseSlug.startsWith("dyn")) {
 			const [newCourse, courseVersion] = await getNewCourse(courseSlug, ctx.name);
 
 			if (!newCourse) {
@@ -143,6 +144,12 @@ export const getServerSideProps = withTranslations(
 			if (!course) {
 				return { notFound: true };
 			}
+		}
+
+		course = await getCourse(courseSlug);
+
+		if (!course) {
+			return { notFound: true };
 		}
 
 		const content = await mapCourseContent(course.content as CourseContent);
@@ -392,7 +399,7 @@ function CourseHeader({
 							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
-					{isGenerated && (<CoursePath course={course} needsARefresh={needsARefresh} />)}
+					{isGenerated && <CoursePath course={course} needsARefresh={needsARefresh} />}
 				</div>
 			</div>
 		</section>

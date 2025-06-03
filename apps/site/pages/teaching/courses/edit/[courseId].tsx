@@ -21,6 +21,22 @@ export const getServerSideProps = withTranslations(
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;
 
+		if(!courseId) {
+			return {
+				notFound: true
+			};
+		}
+
+		if (courseId.startsWith("dyn")) {
+            return {
+                redirect: {
+                    destination: `/teaching/courses/dynamic/edit/${courseId}`,
+                    permanent: false
+                },
+				notFound: false
+            };
+        }
+
 		const course = await database.course.findUnique({
 			where: { courseId },
 			include: {

@@ -131,6 +131,26 @@ export const specializationRouter = t.router({
 				});
 			}
 
+			if (courseId.startsWith("dyn")) {
+				const added = await database.specialization.update({
+					where: { specializationId },
+					data: {
+						newCourses: {
+							connect: { courseId }
+						}
+					},
+					select: {
+						specializationId: true
+					}
+				});
+				console.log(
+					"[specializationRouter.addCourse]: Dynamic course added to specialization",
+					{ specializationId, courseId }
+				);
+
+				return added;
+			}
+
 			const added = await database.specialization.update({
 				where: { specializationId },
 				data: {

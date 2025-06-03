@@ -22,6 +22,7 @@ model Student {
     learningTechniqueRatings    TechniqueRating[]
 	learningGoals				LearningGoal[]
     generatedLessonPaths        GeneratedLessonPath[]
+    received                    Skill[] @relation("StudentToSkill")
 }
 
 
@@ -301,6 +302,8 @@ model Skill {
     // Existing references
     goalsOf        Lesson[]        @relation("providedSkills")
     requirementsOf Lesson[]        @relation("requiredSkills")
+
+    Student Student[] @relation("StudentToSkill")
 
     @@unique([repositoryId, name])
     @@map("skills")

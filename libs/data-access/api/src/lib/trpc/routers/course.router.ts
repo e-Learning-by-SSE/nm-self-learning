@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
+	newCourseFormSchema,
 	courseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
@@ -451,6 +452,88 @@ export const courseRouter = t.router({
 
 		return fullExport;
 	}),
+	createDynamic: authorProcedure.input(newCourseFormSchema).mutation(async ({ input, ctx }) => {
+		if (!canCreate(ctx.user)) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
+			});
+		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+			});
+		}
+
+		const created = await database.newCourse.create({
+			data: {
+				...input,
+				courseId: "dyn" + getRandomId(),
+				slug: "dyn" + input.slug,
+				courseVersion: Date.now().toString(),
+				subjectId: input.subjectId ?? undefined,
+				meta: {},
+				authors: {
+					connect: input.authors.map(author => ({ username: author.username }))
+				},
+				teachingGoals: {
+					create: input.teachingGoals.map(goal => ({
+						name: goal.name,
+						description: goal.description,
+						repositoryId: goal.repositoryId,
+						id: goal.id
+					}))
+				}
+			},
+			select: {
+				title: true,
+				slug: true,
+				courseId: true
+			}
+		});
+
+		console.log("[courseRouter.createDynamic]: Course created by", ctx.user.name, created);
+		return created;
+	}),
+	editDynamic: isCourseAuthorProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				course: newCourseFormSchema
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const updated = await database.newCourse.update({
+				where: { courseId: input.courseId },
+				data: {
+					...input,
+					courseVersion: Date.now().toString(),
+					slug: "dyn" + input.course.slug,
+					meta: {},
+					authors: {
+						connect: input.course.authors.map(author => ({ username: author.username }))
+					},
+					teachingGoals: {
+						create: input.course.teachingGoals.map(goal => ({
+							name: goal.name,
+							description: goal.description,
+							repositoryId: goal.repositoryId,
+							id: goal.id
+						}))
+					}
+				},
+				select: {
+					title: true,
+					slug: true,
+					courseId: true
+				}
+			});
+
+			console.log("[courseRouter.editDynamic]: Course updated by", ctx.user?.name, updated);
+			return updated;
+		}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
 		if (!canCreate(ctx.user)) {
 			throw new TRPCError({

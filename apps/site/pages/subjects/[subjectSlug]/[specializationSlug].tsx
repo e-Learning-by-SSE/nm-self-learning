@@ -90,27 +90,9 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 				subtitle={subtitle}
 			/>
 			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
-				{courses.length > 0 ? (
+				{courses.length > 0 || newCourses.length > 0 ? (
 					<ItemCardGrid>
-						{courses.map(course => (
-							<CourseCard key={course.slug} course={course} />
-						))}
-					</ItemCardGrid>
-				) : (
-					<div className="grid gap-16 pt-16">
-						<span className="mx-auto font-semibold">
-							Leider gibt es hier noch keine Inhalte.
-						</span>
-						<div className="mx-auto w-full max-w-md ">
-							<VoidSvg />
-						</div>
-					</div>
-				)}
-			</div>
-			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
-				{newCourses.length > 0 ? (
-					<ItemCardGrid>
-						{newCourses.map(course => (
+						{[...courses, ...newCourses].map(course => (
 							<CourseCard key={course.slug} course={course} />
 						))}
 					</ItemCardGrid>
