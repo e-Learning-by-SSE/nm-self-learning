@@ -6,11 +6,9 @@ export function getSkillById(id: string) {
 		where: { id },
 		include: {
 			children: true,
-			repository: true,
 			parents: true
 		}
 	});
 }
 
 export type SkillResolved = ResolvedValue<typeof getSkillById>;
-export type SkillUnresolved = Omit<SkillResolved, "children" | "repository" | "parents">;

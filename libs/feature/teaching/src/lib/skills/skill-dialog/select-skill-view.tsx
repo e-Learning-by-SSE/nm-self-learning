@@ -1,6 +1,6 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
-import { getButtonSizeClass, IconButton, XButton } from "@self-learning/ui/common";
+import { getButtonSizeClass, IconButton } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
@@ -9,13 +9,11 @@ export function LabeledFieldSelectSkillsView({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId,
 	label
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
 	label: string;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
@@ -38,7 +36,6 @@ export function LabeledFieldSelectSkillsView({
 				onAddSkill={onAddSkill}
 				selectSkillModal={selectSkillModal}
 				onDeleteSkill={onDeleteSkill}
-				repoId={repoId}
 			/>
 		</LabeledField>
 	);
@@ -66,12 +63,11 @@ export function SelectSkillsView({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId
+
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
 
@@ -90,7 +86,6 @@ export function SelectSkillsView({
 				onAddSkill={onAddSkill}
 				selectSkillModal={selectSkillModal}
 				onDeleteSkill={onDeleteSkill}
-				repoId={repoId}
 			/>
 		</>
 	);
@@ -100,14 +95,12 @@ function SkillManagementComponent({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId,
 	setSelectSkillModal,
 	selectSkillModal
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
 	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 	selectSkillModal: boolean;
 }) {
@@ -132,7 +125,6 @@ function SkillManagementComponent({
 						setSelectSkillModal(false);
 						onAddSkill(skill);
 					}}
-					repositoryId={repoId}
 				/>
 			)}
 		</div>
@@ -158,7 +150,12 @@ function InlineRemoveButton({
 				>
 					{label}
 				</button>
-				<XButton onClick={onRemove} title={"Skill entfernen"} className="p-2 mr-2" />
+				<XMarkIcon
+					type="button"
+					onClick={onRemove}
+					title={"Skill entfernen"}
+					className="h-7 w-7 hover:text-secondary"
+				/>
 			</div>
 		</div>
 	);

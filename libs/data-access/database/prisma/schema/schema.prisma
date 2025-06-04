@@ -1,7 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl"]
-  previewFeatures = ["prismaSchemaFolder"]
+    provider        = "prisma-client-js"
+    binaryTargets   = ["native", "linux-musl"]
+    previewFeatures = ["prismaSchemaFolder"]
 }
 
 datasource db {
@@ -10,19 +10,18 @@ datasource db {
 }
 
 model Student {
-    userId                      String                        @unique
-    username                    String                        @id
-    completedLessons            CompletedLesson[]
-    enrollments                 Enrollment[]
-    customLearningLocations     LearningLocation[]
-    quizAttempts                QuizAttempt[]
-    user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
-    learningDiaryEntrys         LearningDiaryPage[]
-    personalLearningTechniques  LearningTechnique[]
-    learningTechniqueRatings    TechniqueRating[]
-	learningGoals				LearningGoal[]
+    userId                     String              @unique
+    username                   String              @id
+    completedLessons           CompletedLesson[]
+    enrollments                Enrollment[]
+    customLearningLocations    LearningLocation[]
+    quizAttempts               QuizAttempt[]
+    user                       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    learningDiaryEntrys        LearningDiaryPage[]
+    personalLearningTechniques LearningTechnique[]
+    learningTechniqueRatings   TechniqueRating[]
+    learningGoals              LearningGoal[]
 }
-
 
 model Author {
     id                  Int                   @id @default(autoincrement())
@@ -36,6 +35,7 @@ model Author {
     courses             Course[]              @relation("AuthorToCourse")
     lessons             Lesson[]              @relation("AuthorToLesson")
     teams               Team[]                @relation("AuthorToTeam")
+    skills              Skill[]
 }
 
 model SubjectAdmin {
@@ -99,14 +99,14 @@ model Course {
     imgUrl               String?
     content              Json
     meta                 Json
-    createdAt            DateTime             @default(now())
-    updatedAt            DateTime             @updatedAt
+    createdAt            DateTime            @default(now())
+    updatedAt            DateTime            @updatedAt
     subjectId            String?
     completions          CompletedLesson[]
-    subject              Subject?             @relation(fields: [subjectId], references: [subjectId])
+    subject              Subject?            @relation(fields: [subjectId], references: [subjectId])
     enrollments          Enrollment[]
-    authors              Author[]             @relation("AuthorToCourse")
-    specializations      Specialization[]     @relation("CourseToSpecialization")
+    authors              Author[]            @relation("AuthorToCourse")
+    specializations      Specialization[]    @relation("CourseToSpecialization")
     learningDiaryEntries LearningDiaryPage[]
 }
 
@@ -196,7 +196,6 @@ model QuizAnswer {
 //     student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
 // }
 
-
 model UploadedAssets {
     objectName String   @id
     fileName   String
@@ -235,40 +234,27 @@ model License {
     lessons           Lesson[]
 }
 
-model SkillRepository {
-  id            String        @id @default(cuid())
-  name          String
-  description   String?
-  skills        Skill[]
-  ownerName     String
-  owner         User     @relation(fields: [ownerName], references: [name])
-
-  @@unique([ownerName, name])
-  @@map("skill-repositories")
-}
-
 model Skill {
-    id             String          @id @default(cuid())
+    id             String   @id @default(cuid())
     name           String
     description    String?
-    repositoryId   String
-    repository     SkillRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
-    children       Skill[]         @relation("parent")
-    parents        Skill[]         @relation("parent")
-    goalsOf        Lesson[]        @relation("providedSkills")
-    requirementsOf Lesson[]        @relation("requiredSkills")
+    authorId       Int
+    author         Author   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    children       Skill[]  @relation("parent")
+    parents        Skill[]  @relation("parent")
+    goalsOf        Lesson[] @relation("providedSkills")
+    requirementsOf Lesson[] @relation("requiredSkills")
 
-    @@unique([repositoryId, name])
     @@map("skills")
 }
 
 model EventLog {
-  id          Int    @id @default(autoincrement())
-  createdAt   DateTime  @default(now())
-  username    String
-  resourceId  String?
-  courseId    String?
-  type        String
-  payload     Json?
-  // @@id([userId, createdAt, action]) // todo check if optimization is needed
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now())
+    username   String
+    resourceId String?
+    courseId   String?
+    type       String
+    payload    Json?
+    // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
 }

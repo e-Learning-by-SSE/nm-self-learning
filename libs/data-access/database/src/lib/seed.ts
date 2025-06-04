@@ -16,7 +16,6 @@ async function seed(): Promise<void> {
 
 	console.log("Deleting previous records...");
 	await prisma.learningDiaryLearnedLessons.deleteMany();
-	await prisma.skillRepository.deleteMany();
 	await prisma.user.deleteMany();
 	await prisma.team.deleteMany();
 	await prisma.course.deleteMany();
