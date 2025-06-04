@@ -1,11 +1,11 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
 import {
 	LessonContentEditor,
 	LessonFormModel,
-	LessonInfoEditor,
-	QuizEditor
+	QuizEditor,
+	ModuleInfoEditor,
 } from "@self-learning/teaching";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -56,9 +56,10 @@ export function CourseModulView({
 					content={<div>Content</div>}
 					footer={<div>footer</div>}
 					header={<div>header</div>}
+					form={form}
 				/>
 			</div>
-			<div className="ml-64 m-3 px-4 max-w-[75%]">
+			<div className="ml-[600px] m-3 px-4 max-w-[35%]">
 				<FormProvider {...form}>
 					<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
 						{tabs.map((content, idx) => (
@@ -77,7 +78,7 @@ export function CourseModulView({
 }
 
 function BasicData() {
-	return <LessonInfoEditor />;
+	return <ModuleInfoEditor />;
 }
 
 function LearningContent() {
@@ -91,17 +92,21 @@ function LearningAssessment() {
 export function Sidebar({
 	header,
 	content,
-	footer
+	footer,
+	form
 }: {
 	header: ReactNode;
 	content: ReactNode;
 	footer: ReactNode;
+	form: UseFormReturn<LessonFormModel>; 
 }) {
 	return (
-		<div className="fixed left-0 z-10 flex h-full w-full flex-col overflow-hidden bg-white sm:w-64 border-2 max-w-[25%]">
-			{header}
-			{content}
-			{footer}
-		</div>
+		<FormProvider {...form}>
+			<div className="fixed ...">
+				{header}
+				{content}
+				{footer}
+			</div>
+		</FormProvider>
 	);
 }
