@@ -1,5 +1,4 @@
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { CourseFormModel } from "../course-form-model";
 import { IncompleteNanoModuleExport } from "@self-learning/lia-exporter";
 import { useState } from "react";
 import { ErrorReportDialog } from "./error-report-dialog";

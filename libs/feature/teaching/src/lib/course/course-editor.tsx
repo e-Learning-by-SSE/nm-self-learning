@@ -9,8 +9,6 @@ import { AuthorsForm } from "../author/authors-form";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
-import { useState } from "react";
-import { ExportCourseDialog } from "./course-export/course-export-dialog";
 import { useRouter } from "next/router";
 
 export function CourseEditor({

@@ -26,7 +26,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Specialization, Subject } from "@self-learning/types";
-import { ExportCourseDialog } from "../../../../../libs/feature/teaching/src/lib/course/course-export/course-export-dialog";
+import { ExportCourseDialog } from "@self-learning/teaching";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
