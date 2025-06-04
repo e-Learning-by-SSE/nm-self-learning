@@ -144,7 +144,7 @@ export function LessonContentEditor() {
 					werden soll."
 			/>
 
-			<div className="flex gap-4 text-sm">
+			<div className="grid gap-4 text-sm grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 				{contentTypes.map(contentType => (
 					<AddButton
 						key={contentType}
@@ -199,7 +199,7 @@ function AddButton({
 	return (
 		<button
 			type="button"
-			className="btn-primary w-fit"
+			className="btn-primary w-full"
 			onClick={() => addContent(contentType)}
 			disabled={disabled}
 		>
