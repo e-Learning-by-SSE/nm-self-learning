@@ -31,7 +31,6 @@ export default function ArrangeQuestion() {
 						.map(containerId => (
 							// eslint-disable-next-line react/jsx-no-useless-fragment
 							<Fragment key={containerId}>
-								{containerId === "_init" ? null : (
 									<ul
 										key={containerId}
 										className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-gray-200 p-4"
@@ -76,7 +75,6 @@ export default function ArrangeQuestion() {
 											)}
 										</Droppable>
 									</ul>
-								)}
 							</Fragment>
 						))}
 				</div>
