@@ -32,7 +32,9 @@ export function CourseEditor({
 	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	function onCancel() {
-		router.push("/dashboard/author")
+		if (window.confirm("Änderungen verwerfen?")) {
+			router.push("/dashboard/author");
+		}
 	}
 
 	return (
