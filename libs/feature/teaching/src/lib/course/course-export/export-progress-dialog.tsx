@@ -32,7 +32,15 @@ export function ExportCourseProgressDialog({
 	onFinish,
 	onError
 }: {
-	course: CourseFormModel;
+	course: {
+		slug: string;
+		imgUrl: string | null;
+		title: string;
+		specializations: {
+			title: string;
+		}[];
+		courseId: string;
+	};
 	onClose: () => void;
 	onFinish: () => void;
 	onError: (report: IncompleteNanoModuleExport[]) => void;

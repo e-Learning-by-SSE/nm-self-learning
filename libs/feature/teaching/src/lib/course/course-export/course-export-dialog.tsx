@@ -9,7 +9,15 @@ export function ExportCourseDialog({
 	course,
 	onClose
 }: {
-	course: CourseFormModel;
+	course: {
+		slug: string;
+		imgUrl: string | null;
+		title: string;
+		specializations: {
+			title: string;
+		}[];
+		courseId: string;
+	};
 	onClose: () => void;
 }) {
 	const [errorReport, setErrorReport] = useState<IncompleteNanoModuleExport[]>([]);

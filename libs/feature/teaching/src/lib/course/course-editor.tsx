@@ -29,7 +29,6 @@ export function CourseEditor({
 		resolver: zodResolver(courseFormSchema)
 	});
 
-	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	function onCancel() {
 		if (window.confirm("Änderungen verwerfen?")) {
@@ -75,17 +74,6 @@ export function CourseEditor({
 								</div>
 
 								<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
-
-								<div className="flex space-x-2">
-									<button
-										className="btn-primary w-full text-right"
-										type="button"
-										onClick={() => setViewExportDialog(true)}
-									>
-										Export
-									</button>
-								</div>
-
 								<CourseInfoForm />
 								<AuthorsForm
 									subtitle="Die Autoren dieses Kurses."
@@ -108,15 +96,6 @@ export function CourseEditor({
 					</div>
 				</form>
 			</FormProvider>
-
-			{viewExportDialog && (
-				<ExportCourseDialog
-					course={course}
-					onClose={() => {
-						setViewExportDialog(false);
-					}}
-				/>
-			)}
 		</div>
 	);
 }

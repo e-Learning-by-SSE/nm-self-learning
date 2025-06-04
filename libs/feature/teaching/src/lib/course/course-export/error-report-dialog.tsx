@@ -138,6 +138,7 @@ function SectionTitle({ slug, item }: { slug: string; item: IncompleteNanoModule
 		</div>
 	);
 }
+
 /**
  * Generates a dialog to display a report of incomplete nanomodule exports.
  * @param report The report of incomplete nanomodule exports (should not be empty)
@@ -151,7 +152,15 @@ export function ErrorReportDialog({
 	onClose
 }: {
 	report: IncompleteNanoModuleExport[];
-	course: CourseFormModel;
+	course: {
+		slug: string;
+		imgUrl: string | null;
+		title: string;
+		specializations: {
+			title: string;
+		}[];
+		courseId: string;
+	};
 	onClose: () => void;
 }) {
 	const element = report.length > 1 ? "Einige Elemente werden" : "Ein Element wird";
