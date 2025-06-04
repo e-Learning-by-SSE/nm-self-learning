@@ -1,4 +1,4 @@
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { t, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -239,11 +239,12 @@ function AuthorDashboardPage({ author }: Props) {
 												</Link>
 												<div className="flex space-x-2">
 													<button
-														className="btn-primary w-full text-right"
+														className="btn-stroked w-full text-right"
 														type="button"
 														onClick={() => setViewExportDialog(true)}
 													>
-														Export
+														<ArrowDownTrayIcon className="w-5 h-5 icon" />
+														{"Export"}
 													</button>
 												</div>
 												<CourseDeleteOption slug={course.slug} />
