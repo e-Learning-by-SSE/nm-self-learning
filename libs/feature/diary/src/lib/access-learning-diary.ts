@@ -78,7 +78,7 @@ async function updateDiaryDetails(username: string, id: string, endDate: Date) {
 
 		const SIX_HOURS_IN_MS = 6 * 60 * 60 * 1000;
 		// Diary should span at max 6 hours (= SIX_HOURS_IN_MS)
-		// Maybe there a single events (visits) of a lesson, for which no Diary page was created
+		// Maybe there are single events (visits) of a lesson for which no diary page was created,
 		// i.e., visit was shorter than 1 minute. We do not want to consider these events.
 		const start = diaryMeta.createdAt.getTime();
 		const end = endDate.getTime();
