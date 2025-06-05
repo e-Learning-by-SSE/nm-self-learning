@@ -8,8 +8,8 @@ import { UserEvent } from "@self-learning/database";
  * - Resource B: 10:05 - 10:10
  * - Resource A: 10:20 - 10:25
  * - Will return 15 minutes, not 25 minutes.
- * @param events
- * @returns
+ * @param events Filtered user events for which the total duration (without pauses) should be computed.
+ * @returns The total duration in milliseconds (without pauses between resource changes).
  */
 export function computeTotalDuration(events: Pick<UserEvent, "createdAt" | "resourceId">[]) {
 	let totalDuration = 0;
