@@ -1,4 +1,4 @@
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
 	DeleteMeForm,
@@ -9,6 +9,7 @@ import {
 import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
 import { useState } from "react";

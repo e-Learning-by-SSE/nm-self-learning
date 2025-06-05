@@ -4,7 +4,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
-import { withAuth } from "@self-learning/api";
 import {
 	QuizCompletionDialog,
 	QuizFailedDialog,
@@ -21,6 +20,7 @@ import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdow
 import { QuizContent } from "@self-learning/question-types";
 import { defaultQuizConfig, Question, Quiz, QuizProvider, useQuiz } from "@self-learning/quiz";
 import { LoadingBox, Tab, Tabs, useIsFirstRender } from "@self-learning/ui/common";
+import { withAuth } from "@self-learning/util/auth";
 import { useEventLog } from "@self-learning/util/eventlog";
 import { calculateAverageScore } from "libs/feature/completion/src/lib/lesson-grading";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";

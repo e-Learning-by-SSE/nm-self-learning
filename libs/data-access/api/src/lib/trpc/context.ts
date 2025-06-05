@@ -1,8 +1,7 @@
 import * as trpcNext from "@trpc/server/adapters/next";
 import { getServerSession, Session } from "next-auth";
 import { getToken } from "next-auth/jwt";
-import { authOptions } from "../auth/auth";
-import { createToken, incomingToLocalRole } from "../auth/create-user-session";
+import { authOptions, createToken, incomingToLocalRole } from "@self-learning/util/auth/server";
 
 export type UserFromSession = Session["user"];
 

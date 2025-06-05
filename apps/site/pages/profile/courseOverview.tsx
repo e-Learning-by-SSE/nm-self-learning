@@ -1,4 +1,4 @@
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import {
 	ProgressBar,
@@ -10,6 +10,7 @@ import {
 	Tabs
 } from "@self-learning/ui/common";
 import { DashboardSidebarLayout, UniversalSearchBar } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
 import { formatDateAgo } from "@self-learning/util/common";
 import { NextComponentType, NextPageContext } from "next";
 import Image from "next/image";

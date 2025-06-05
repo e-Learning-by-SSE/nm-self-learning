@@ -1,9 +1,8 @@
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
-import { isGamificationOptInEnabled } from "@self-learning/profile";
 import {
 	Card,
 	DialogHandler,
@@ -16,6 +15,7 @@ import {
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
+import { withAuth } from "@self-learning/util/auth";
 import {
 	formatDateAgo,
 	formatDateStringShort,
@@ -194,7 +194,8 @@ export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<Props>(async (_, user) => {
 		// TODO: remove this when in case gamification is fully enabled
-		if (isGamificationOptInEnabled()) {
+		const isParticipant = user.features.includes("experimentalFeatures");
+		if (isParticipant) {
 			return {
 				redirect: {
 					destination: "/profile",

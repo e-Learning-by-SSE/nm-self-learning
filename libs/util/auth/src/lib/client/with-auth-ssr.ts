@@ -5,15 +5,14 @@ import type {
 	GetServerSidePropsResult
 } from "next";
 
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { getSession } from "next-auth/react";
 import { ParsedUrlQuery } from "querystring";
-import { UserFromSession } from "../trpc/context";
-import { authOptions } from "./auth";
+import { authOptions } from "../auth";
 
 export async function getAuthenticatedUser(
 	ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>
-): Promise<UserFromSession | undefined> {
+): Promise<Session["user"] | undefined> {
 	const session = await getSession(ctx);
 	if (!session) return;
 	if (!session.user) return;
@@ -22,7 +21,7 @@ export async function getAuthenticatedUser(
 
 export type ServerSidePropsWithAuthUser<Prop> = (
 	context: GetServerSidePropsContext,
-	user: UserFromSession
+	user: Session["user"]
 ) => Promise<GetServerSidePropsResult<Prop>>;
 
 /**

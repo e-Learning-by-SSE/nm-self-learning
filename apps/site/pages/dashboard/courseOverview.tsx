@@ -13,7 +13,8 @@ import {
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import { formatDateAgo } from "@self-learning/util/common";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
+import { withAuth } from "@self-learning/util/auth";
 
 interface CourseOverviewProps {
 	enrollments: EnrollmentDetails[] | null;

@@ -1,11 +1,10 @@
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 import {
 	DashboardAchievementsSection,
-	isGamificationOptInEnabled,
 	StreakIndicatorCircle,
 	StreakSlotMachineDialog
 } from "@self-learning/profile";
@@ -18,6 +17,7 @@ import {
 	ProgressBar
 } from "@self-learning/ui/common";
 import { DashboardSidebarLayout } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
 import {
 	formatDateAgo,
 	formatDateStringShort,
@@ -254,7 +254,10 @@ DashboardPage.getLayout = DashboardLayout;
 export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<Props>(async (_, user) => {
-		if (!isGamificationOptInEnabled()) {
+		// TODO remove this check when gamification is fully enabled
+		// const { isParticipating } = await getExperimentStatus(user.name);
+		const isParticipant = user.features.includes("experimentalFeatures");
+		if (!isParticipant) {
 			return {
 				redirect: {
 					destination: "/dashboard",

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useLessonContext } from "@self-learning/lesson";
-import { useEventLog } from "@self-learning/util/common";
+import { useEventLog } from "@self-learning/util/eventlog";
 import { QuizHeader } from "../pages/courses/[courseSlug]/[lessonSlug]/quiz";
 import { render, screen, waitFor } from "@testing-library/react";
 import { useQuiz } from "@self-learning/quiz";
@@ -11,7 +11,7 @@ jest.mock("@self-learning/util/common");
 jest.mock("@self-learning/lesson");
 jest.mock("@self-learning/quiz");
 jest.mock("@self-learning/api", () => ({
-    withAuth: jest.fn()
+	withAuth: jest.fn()
 }));
 
 const mockNewEvent = jest.fn();
@@ -44,7 +44,6 @@ const mockQuestions = [
 		type: "multiple-choice"
 	}
 ] as any[];
-
 
 describe("QuizHeader", () => {
 	beforeEach(() => {

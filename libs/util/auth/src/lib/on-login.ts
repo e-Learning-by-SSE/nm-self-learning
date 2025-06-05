@@ -1,5 +1,6 @@
 import { createNewProfile } from "@self-learning/achievements";
 import { database } from "@self-learning/database";
+import { getExperimentStatus } from "@self-learning/profile";
 import {
 	Flames,
 	GamificationProfile,
@@ -30,6 +31,11 @@ async function logLogin({ user }: Parameters<SigninCallback>[0]): Promise<void> 
 async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promise<void> {
 	const username = user?.name?.trim();
 	if (!username) return;
+	const { isParticipating } = await getExperimentStatus(username);
+	console.log(`User ${username} is participating in the experiment: ${isParticipating}`);
+	if (!isParticipating) return;
+	console.log(user);
+	if (!user.features.includes("experimentalFeatures")) return;
 
 	const now = new Date();
 

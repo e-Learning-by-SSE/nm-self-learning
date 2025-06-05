@@ -1,7 +1,8 @@
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { AchievementOverview } from "@self-learning/achievements";
 import { DashboardSidebarLayout } from "@self-learning/ui/layouts";
 import { NextComponentType, NextPageContext } from "next";
+import { withAuth } from "@self-learning/util/auth";
 
 function AchievementLayout(
 	Component: NextComponentType<NextPageContext, unknown, Record<string, never>>,

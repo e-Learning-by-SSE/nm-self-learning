@@ -44,7 +44,9 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 			image: true,
 			author: { select: { username: true } },
 			enabledFeatureLearningDiary: true,
-			enabledLearningStatistics: true
+			enabledLearningStatistics: true,
+			experimentalFeatures: true,
+			acceptedExperimentTerms: true
 		}
 	});
 	const updateUser = (role: UserRole) => {
@@ -69,6 +71,17 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 		userRole = updated.role;
 	}
 
+	const features: Session["user"]["features"] = [];
+	if (userFromDb.enabledLearningStatistics) {
+		features.push("learningStatistics");
+	}
+	if (userFromDb.enabledFeatureLearningDiary) {
+		features.push("learningDiary");
+	}
+	if (userFromDb.acceptedExperimentTerms && userFromDb.experimentalFeatures) {
+		features.push("experimentalFeatures");
+	}
+
 	return {
 		id: userFromDb.id,
 		name: name,
@@ -76,19 +89,29 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 		isAuthor: !!userFromDb.author,
 		avatarUrl: userFromDb.image,
 		enabledLearningStatistics: userFromDb.enabledLearningStatistics,
-		enabledFeatureLearningDiary: userFromDb.enabledFeatureLearningDiary
+		enabledFeatureLearningDiary: userFromDb.enabledFeatureLearningDiary,
+		features
 	};
 }
 
 export const authCallbacks: Partial<CallbacksOptions> = {
 	jwt: async ({ token, user, account }) => {
-		if (!user?.name) return token;
-		if (!account?.access_token) return token;
+		if (!user?.name) return token; // user not logged in
 
-		// user is logged in. Store data inside JWT token
 		const { name } = user;
-		const incomingRole = getIdpSelflearnAdminRole(account.access_token);
+		let incomingRole: UserRole | undefined;
+		if (!account?.access_token && process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE) {
+			// In demo instance, we don't have an access token => demo accounts
+			const { role } = await database.user.findUniqueOrThrow({
+				where: { name },
+				select: { role: true }
+			});
+			incomingRole = role;
+		} else if (account?.access_token) {
+			incomingRole = getIdpSelflearnAdminRole(account.access_token);
+		}
 		const ownToken = await createToken(name, incomingRole ?? "USER");
+
 		Object.assign(token, ownToken);
 		return token;
 	},

@@ -2,7 +2,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database } from "@self-learning/database";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
-import NextAuth, { NextAuthOptions } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import { Adapter, AdapterAccount } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -10,8 +10,8 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 import { authCallbacks, getIdpSelflearnAdminRole } from "./create-user-session";
 import { loginCallbacks } from "./on-login";
 
-export const MAIL_DOMAIN = "@uni-hildesheim.de";
-export const OIDC_SCOPES = "openid profile email roles profile_studium";
+const MAIL_DOMAIN = "@uni-hildesheim.de";
+const OIDC_SCOPES = "openid profile email roles profile_studium";
 
 function mailToUsername(mail: string): string {
 	if (mail.toLowerCase().includes(MAIL_DOMAIN)) {
@@ -19,7 +19,6 @@ function mailToUsername(mail: string): string {
 	}
 	return mail;
 }
-
 export const testingExportMailToUsername = mailToUsername;
 
 const customPrismaAdapter: Adapter = {
@@ -92,9 +91,9 @@ function getProviders(): Provider[] {
 	const providers = [
 		KeycloakProvider({
 			name: process.env.KEYCLOAK_PROVIDER_NAME ?? "Keycloak",
-			issuer: process.env.KEYCLOAK_ISSUER_URL as string,
-			clientId: process.env.KEYCLOAK_CLIENT_ID as string,
-			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
+			issuer: process.env.KEYCLOAK_ISSUER_URL,
+			clientId: process.env.KEYCLOAK_CLIENT_ID,
+			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
 			authorization: { params: { scope: OIDC_SCOPES } },
 			profile(profile) {
 				return {
@@ -193,5 +192,3 @@ export const authOptions: NextAuthOptions = {
 		}
 	}
 };
-
-export const NextAuthPage = NextAuth(authOptions);

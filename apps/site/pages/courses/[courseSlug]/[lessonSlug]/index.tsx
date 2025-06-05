@@ -1,6 +1,6 @@
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
@@ -24,6 +24,7 @@ import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
+import { withAuth } from "@self-learning/util/auth";
 import { useEventLog } from "@self-learning/util/eventlog";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";

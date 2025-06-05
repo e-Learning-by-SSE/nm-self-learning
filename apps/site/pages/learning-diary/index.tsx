@@ -1,5 +1,5 @@
 import { ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 import {
@@ -9,6 +9,7 @@ import {
 	TableVisibilityDropdown
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { useRouter } from "next/router";
 import { useState } from "react";
