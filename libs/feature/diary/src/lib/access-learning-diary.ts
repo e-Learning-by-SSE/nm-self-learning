@@ -76,13 +76,13 @@ async function updateDiaryDetails(username: string, id: string, endDate: Date) {
 			return;
 		}
 
-		// Diary should span at max 6 hours (= 86400000 ms)
+		// Diary should span at max 6 hours (= MAX_DIARY_SPAN_MS)
 		// Maybe there a single events (visits) of a lesson, for which no Diary page was created
 		// i.e., visit was shorter than 1 minute. We do not want to consider these events.
 		const start = diaryMeta.createdAt.getTime();
 		const end = endDate.getTime();
-		if (end - start > 86400000) {
-			endDate = new Date(diaryMeta.createdAt.getTime() + 86400000);
+		if (end - start > MAX_DIARY_SPAN_MS) {
+			endDate = new Date(diaryMeta.createdAt.getTime() + MAX_DIARY_SPAN_MS);
 		}
 
 		// Compute duration per lesson
