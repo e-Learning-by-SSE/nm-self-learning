@@ -38,7 +38,7 @@ model Author {
     courses             Course[]              @relation("AuthorToCourse")
     lessons             Lesson[]              @relation("AuthorToLesson")
     teams               Team[]                @relation("AuthorToTeam")
-    newCourse           NewCourse[]           @relation("AuthorToNewCourse")
+    dynCourse           DynCourse[]           @relation("AuthorToDynCourse")
 }
 
 model SubjectAdmin {
@@ -78,7 +78,7 @@ model Subject {
     courses         Course[]
     specializations Specialization[]
     subjectAdmin    SubjectAdmin[]
-    newCourse NewCourse[]
+    dynCourse DynCourse[]
 }
 
 model Specialization {
@@ -92,7 +92,7 @@ model Specialization {
     subject             Subject               @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
     specializationAdmin SpecializationAdmin[]
     courses             Course[]              @relation("CourseToSpecialization")
-    newCourses          NewCourse[]           @relation("NewCourseToSpecialization")
+    dynCourses          DynCourse[]           @relation("DynCourseToSpecialization")
 }
 
 model Course {
@@ -115,7 +115,7 @@ model Course {
     learningDiaryEntries LearningDiaryPage[]
 }
 
-model NewCourse {
+model DynCourse {
     courseId             String               @id
     slug                 String               @unique
     title                String
@@ -123,15 +123,15 @@ model NewCourse {
     courseVersion        String               
     description          String?
     imgUrl               String?
-    teachingGoals        Skill[]              @relation("NewCourseTeachingGoals") 
-    requirements         Skill[]              @relation("NewCourseRequirements") 
+    teachingGoals        Skill[]              @relation("DynCourseTeachingGoals") 
+    requirements         Skill[]              @relation("DynCourseRequirements") 
     meta                 Json
     createdAt            DateTime             @default(now())
     updatedAt            DateTime             @updatedAt
     subjectId            String?
-    authors              Author[]             @relation("AuthorToNewCourse")
+    authors              Author[]             @relation("AuthorToDynCourse")
     subject              Subject?             @relation(fields: [subjectId], references: [subjectId])
-    specializations      Specialization[]     @relation("NewCourseToSpecialization")
+    specializations      Specialization[]     @relation("DynCourseToSpecialization")
     generatedLessonPaths GeneratedLessonPath[]
 }
 
@@ -146,7 +146,7 @@ model GeneratedLessonPath {
     createdAt            DateTime             @default(now())
     updatedAt            DateTime             @updatedAt
     student              Student              @relation(fields: [username], references: [username], onDelete: Cascade)
-    course               NewCourse           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    course               DynCourse           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
 }
 
 model Enrollment {
@@ -295,9 +295,9 @@ model Skill {
     children       Skill[]         @relation("parent")
     parents        Skill[]         @relation("parent")
 
-    // Add references to NewCourse
-    goalsOfNewCourse        NewCourse[]     @relation("NewCourseTeachingGoals") 
-    requirementsOfNewCourse NewCourse[]     @relation("NewCourseRequirements") 
+    // Add references to DynCourse
+    goalsOfDynCourse        DynCourse[]     @relation("DynCourseTeachingGoals") 
+    requirementsOfDynCourse DynCourse[]     @relation("DynCourseRequirements") 
 
     // Existing references
     goalsOf        Lesson[]        @relation("providedSkills")

@@ -28,15 +28,14 @@ function getCourse(slug: string) {
 }
 
 async function getNewCourse(courseSlug: string) {
-	return await database.newCourse.findUnique({
+	return await database.dynCourse.findUnique({
 		where: { slug: courseSlug },
 		select: {
 			courseId: true,
 			title: true,
-			slug: true,
+			slug: true
 		}
 	});
-
 }
 
 export async function getStaticPropsForLayout(
@@ -55,7 +54,6 @@ export async function getStaticPropsForLayout(
 	if (!course) {
 		course = await getNewCourse(courseSlug);
 	}
-
 
 	if (!course || !lesson) {
 		return { notFound: true };

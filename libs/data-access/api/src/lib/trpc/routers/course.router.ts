@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
-	newCourseFormSchema,
+	dynCourseFormSchema,
 	courseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
@@ -217,7 +217,7 @@ export const courseRouter = t.router({
 			});
 
 			if (!course) {
-				const newCourse = await database.newCourse.findUniqueOrThrow({
+				const dynCourse = await database.dynCourse.findUniqueOrThrow({
 					where: { slug: input.slug },
 					select: {
 						courseId: true,
@@ -233,8 +233,8 @@ export const courseRouter = t.router({
 				});
 
 				course = {
-					...newCourse,
-					content: newCourse.generatedLessonPaths[0]?.content ?? []
+					...dynCourse,
+					content: dynCourse.generatedLessonPaths[0]?.content ?? []
 				};
 			}
 
@@ -275,7 +275,7 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const course = await database.newCourse.findUniqueOrThrow({
+			const course = await database.dynCourse.findUniqueOrThrow({
 				where: { courseId: input.courseId },
 				select: {
 					courseVersion: true,
@@ -452,7 +452,7 @@ export const courseRouter = t.router({
 
 		return fullExport;
 	}),
-	createDynamic: authorProcedure.input(newCourseFormSchema).mutation(async ({ input, ctx }) => {
+	createDynamic: authorProcedure.input(dynCourseFormSchema).mutation(async ({ input, ctx }) => {
 		if (!canCreate(ctx.user)) {
 			throw new TRPCError({
 				code: "FORBIDDEN",
@@ -467,10 +467,10 @@ export const courseRouter = t.router({
 			});
 		}
 
-		const created = await database.newCourse.create({
+		const created = await database.dynCourse.create({
 			data: {
 				...input,
-				courseId: "dyn" + getRandomId(),
+				courseId: "dyn" + crypto.randomUUID(),
 				slug: "dyn" + input.slug,
 				courseVersion: Date.now().toString(),
 				subjectId: input.subjectId ?? undefined,
@@ -501,11 +501,11 @@ export const courseRouter = t.router({
 		.input(
 			z.object({
 				courseId: z.string(),
-				course: newCourseFormSchema
+				course: dynCourseFormSchema
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const updated = await database.newCourse.update({
+			const updated = await database.dynCourse.update({
 				where: { courseId: input.courseId },
 				data: {
 					...input,

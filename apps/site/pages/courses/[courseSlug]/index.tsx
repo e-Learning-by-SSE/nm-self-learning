@@ -127,26 +127,21 @@ export const getServerSideProps = withTranslations(
 		let needsARefresh = false;
 
 		let course: Course | null = null;
-
 		if (courseSlug.startsWith("dyn")) {
-			const [newCourse, courseVersion] = await getNewCourse(courseSlug, ctx.name);
-
-			if (!newCourse) {
+			const [dynCourse, courseVersion] = await getDynCourse(courseSlug, ctx.name);
+			
+			if (!dynCourse) {
 				return { notFound: true };
 			}
 			course = {
-				...newCourse
+				...dynCourse
 			} as Course;
 
 			isGenerated = true;
-			needsARefresh = newCourse.courseVersion > courseVersion;
-
-			if (!course) {
-				return { notFound: true };
-			}
+			needsARefresh = dynCourse.courseVersion > courseVersion;
+		} else {
+			course = await getCourse(courseSlug);
 		}
-
-		course = await getCourse(courseSlug);
 
 		if (!course) {
 			return { notFound: true };
@@ -191,8 +186,8 @@ async function getCourse(courseSlug: string) {
 	});
 }
 
-async function getNewCourse(courseSlug: string, username: string) {
-	const course = await database.newCourse.findUniqueOrThrow({
+async function getDynCourse(courseSlug: string, username: string) {
+	const course = await database.dynCourse.findUniqueOrThrow({
 		where: { slug: courseSlug },
 		select: {
 			courseId: true,

@@ -7,22 +7,22 @@ import Link from "next/link";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../author/authors-form";
 import { CourseFormModel } from "../course/course-form-model";
-import { NewCourseFormModel, newCourseFormSchema } from "./newCourse-form-model";
+import { DynCourseFormModel, dynCourseFormSchema } from "./dynCourse-form-model";
 import { CourseInfoForm } from "../course/course-info-form";
-import { NewCourseContentForm } from "./newCourse-content-form";
+import { DynCourseContentForm } from "./dynCourse-content-form";
 
-export function NewCourseEditor({
+export function DynCourseEditor({
 	course,
 	onConfirm
 }: {
-	course: NewCourseFormModel;
-	onConfirm: (course: NewCourseFormModel) => void;
+	course: DynCourseFormModel;
+	onConfirm: (course: DynCourseFormModel) => void;
 }) {
 	const isNew = course.courseId === "";
 
-	const form = useForm<NewCourseFormModel>({
+	const form = useForm<DynCourseFormModel>({
 		defaultValues: { ...course },
-		resolver: zodResolver(newCourseFormSchema)
+		resolver: zodResolver(dynCourseFormSchema)
 	});
 
 	return (
@@ -36,7 +36,7 @@ export function NewCourseEditor({
 								data => {
 									console.log("data", data);
 									try {
-										const validated = newCourseFormSchema.parse(data);
+										const validated = dynCourseFormSchema.parse(data);
 										onConfirm(validated);
 									} catch (error) {
 										console.error(error);
@@ -64,7 +64,7 @@ export function NewCourseEditor({
 
 								<OpenAsJsonButton
 									form={form}
-									validationSchema={newCourseFormSchema}
+									validationSchema={dynCourseFormSchema}
 								/>
 
 								<div className="flex space-x-2">
@@ -82,7 +82,7 @@ export function NewCourseEditor({
 						}
 					>
 						<CourseDescriptionForm />
-						<NewCourseContentForm />
+						<DynCourseContentForm />
 					</SidebarEditorLayout>
 				</form>
 			</FormProvider>

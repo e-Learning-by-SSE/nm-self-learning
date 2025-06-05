@@ -51,7 +51,7 @@ async function getSpecialization(specializationSlug: string, username: string) {
 					meta: true
 				}
 			},
-			newCourses: {
+			dynCourses: {
 				orderBy: { title: "asc" },
 				select: {
 					courseVersion: true,
@@ -78,7 +78,7 @@ async function getSpecialization(specializationSlug: string, username: string) {
 }
 
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
-	const { title, subtitle, imgUrlBanner, subject, courses, newCourses } = specialization;
+	const { title, subtitle, imgUrlBanner, subject, courses, dynCourses } = specialization;
 
 	return (
 		<div className="bg-gray-50 pb-32">
@@ -90,9 +90,9 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 				subtitle={subtitle}
 			/>
 			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
-				{courses.length > 0 || newCourses.length > 0 ? (
+				{courses.length > 0 || dynCourses.length > 0 ? (
 					<ItemCardGrid>
-						{[...courses, ...newCourses].map(course => (
+						{[...courses, ...dynCourses].map(course => (
 							<CourseCard key={course.slug} course={course} />
 						))}
 					</ItemCardGrid>

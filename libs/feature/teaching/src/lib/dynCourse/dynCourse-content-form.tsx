@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { LinkedSkillRepositoryMemorized } from "../lesson/forms/lesson-skill-manager";
 import { LabeledFieldSelectSkillsView } from "../skills/skill-dialog/select-skill-view";
-import { NewCourseFormModel } from "./newCourse-form-model";
+import { DynCourseFormModel } from "./dynCourse-form-model";
 
-export function NewCourseContentForm() {
-	const { watch, setValue } = useFormContext<NewCourseFormModel>();
+export function DynCourseContentForm() {
+	const { watch, setValue } = useFormContext<DynCourseFormModel>();
 	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
 	const watchingSkills = {
 		teachingGoals: watch("teachingGoals")

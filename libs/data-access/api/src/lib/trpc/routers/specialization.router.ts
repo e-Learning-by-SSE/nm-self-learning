@@ -135,7 +135,7 @@ export const specializationRouter = t.router({
 				const added = await database.specialization.update({
 					where: { specializationId },
 					data: {
-						newCourses: {
+						dynCourses: {
 							connect: { courseId }
 						}
 					},

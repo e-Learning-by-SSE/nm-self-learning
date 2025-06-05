@@ -1,13 +1,13 @@
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { NewCourseEditor, NewCourseFormModel } from "@self-learning/teaching";
+import { DynCourseEditor, DynCourseFormModel } from "@self-learning/teaching";
 import { showToast } from "@self-learning/ui/common";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useRouter } from "next/router";
 
 type EditCourseProps = {
-	course: NewCourseFormModel;
+	course: DynCourseFormModel;
 };
 
 export const getServerSideProps = withTranslations(
@@ -22,7 +22,7 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		const newCourse = await database.newCourse.findUnique({
+		const dynCourse = await database.dynCourse.findUnique({
 			where: { courseId },
 			include: {
 				authors: {
@@ -54,25 +54,25 @@ export const getServerSideProps = withTranslations(
 			}
 		});
 
-		if (!newCourse) {
+		if (!dynCourse) {
 			return {
 				notFound: true
 			};
 		}
 
-		const teachingGoals = newCourse.teachingGoals.map(goal => ({
+		const teachingGoals = dynCourse.teachingGoals.map(goal => ({
 			...goal,
 			children: goal.children.map(child => child.id),
 			parents: goal.parents.map(parent => parent.id)
 		}));
 
 		const courseForProps = {
-			...newCourse,
+			...dynCourse,
 			teachingGoals
 		};
 
 		return {
-			notFound: !newCourse,
+			notFound: !dynCourse,
 			props: {
 				course: courseForProps,
 				...(await serverSideTranslations(locale ?? "en", ["common"]))
@@ -85,7 +85,7 @@ export default function EditCoursePage({ course }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.editDynamic.useMutation();
 	const router = useRouter();
 
-	function onConfirm(updatedCourse: NewCourseFormModel) {
+	function onConfirm(updatedCourse: DynCourseFormModel) {
 		async function update() {
 			try {
 				const { title } = await updateCourse({
@@ -106,5 +106,5 @@ export default function EditCoursePage({ course }: EditCourseProps) {
 		update();
 	}
 
-	return <NewCourseEditor course={course} onConfirm={onConfirm} />;
+	return <DynCourseEditor course={course} onConfirm={onConfirm} />;
 }

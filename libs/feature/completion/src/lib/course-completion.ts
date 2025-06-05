@@ -11,7 +11,7 @@ export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
 ): Promise<CourseCompletion> {
-	const course = await database.newCourse.findUniqueOrThrow({
+	const course = await database.dynCourse.findUniqueOrThrow({
 		where: { slug: courseSlug },
 		select: {
 			generatedLessonPaths: {
