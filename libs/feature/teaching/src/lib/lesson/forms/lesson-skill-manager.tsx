@@ -8,7 +8,6 @@ import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
-import { ExtendedCourseFormModel } from "../../course/course-form-model";
 import { MarkdownListboxMenu } from "@self-learning/markdown";
 
 type SkillModalIdentifier = "provides" | "requires";
