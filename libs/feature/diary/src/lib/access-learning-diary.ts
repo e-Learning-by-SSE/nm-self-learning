@@ -1,5 +1,6 @@
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
+import { computeTotalDuration } from "@self-learning/analysis";
 
 export async function allPages(username: string) {
 	let pages = await database.learningDiaryPage.findMany({
@@ -75,12 +76,23 @@ async function updateDiaryDetails(username: string, id: string, endDate: Date) {
 			return;
 		}
 
+		const SIX_HOURS_IN_MS = 6 * 60 * 60 * 1000;
+		// Diary should span at max 6 hours (= SIX_HOURS_IN_MS)
+		// Maybe there are single events (visits) of a lesson for which no diary page was created,
+		// i.e., visit was shorter than 1 minute. We do not want to consider these events.
+		const start = diaryMeta.createdAt.getTime();
+		const end = endDate.getTime();
+		if (end - start > SIX_HOURS_IN_MS) {
+			endDate = new Date(diaryMeta.createdAt.getTime() + SIX_HOURS_IN_MS);
+		}
+
 		// Compute duration per lesson
 		const lessonIds = diaryMeta.lessonsLearned.map(l => l.lesson.lessonId);
 		if (lessonIds.length === 0) {
 			return;
 		}
 		// No transaction needed -> do not block other transactions
+
 		const events = await database.eventLog.findMany({
 			where: {
 				// courseId: diaryMeta.course.courseId,
@@ -93,17 +105,8 @@ async function updateDiaryDetails(username: string, id: string, endDate: Date) {
 			},
 			orderBy: { createdAt: "asc" }
 		});
-		const totalDuration = lessonIds
-			.map(lessonId => {
-				const lessonEvents = events.filter(e => e.resourceId === lessonId);
-				const duration =
-					lessonEvents.length > 0
-						? lessonEvents[lessonEvents.length - 1].createdAt.getTime() -
-							lessonEvents[0].createdAt.getTime()
-						: 0;
-				return duration;
-			})
-			.reduce((acc, duration) => acc + duration, 0);
+
+		const totalDuration = computeTotalDuration(events);
 
 		return await tx.learningDiaryPage.update({
 			where: {
