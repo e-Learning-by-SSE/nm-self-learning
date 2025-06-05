@@ -1,71 +1,204 @@
-import { ButtonHTMLAttributes, DetailedHTMLProps, PropsWithChildren } from "react";
+import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
+import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
-export function PrimaryButton(
-	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
-) {
-	return <button {...props} type="button" className="btn-primary" />;
-}
-
-export function StrokedButton(
-	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
-) {
-	return <button {...props} type="button" className="btn-stroked" />;
-}
-
-export function RedButton({
-	label,
-	onClick,
-	className = "",
-	...props
-}: {
-	label: string;
-	onClick: () => void;
-	className: string;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-	return (
-		<button
-			className={`btn rounded-full bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring-4 focus:ring-red-300 ${className}`}
-			onClick={onClick}
-			{...props}
-		>
-			{label}
-		</button>
-	);
-}
-
-export function GreyBoarderButton(
-	props: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>
-) {
-	const cl = props.className ? props.className : "px-2 py-2"; // done for compatiblity
-	return (
-		<button
-			{...props}
-			className={`border-1 border-gray-150 inline-flex items-center justify-center rounded-md border bg-white font-medium text-black hover:bg-gray-100 ${cl}`}
-		>
-			{props.children}
-		</button>
-	);
-}
 /**
- * Button with an icon
+ * Enhanced Icon Button with responsive text
+ * Text disappears on small viewports, only icon remains visible
  *
  * @example
- * <IconButton text="Edit" icon={<PencilIcon className="h-5" />} />
+ * <IconButton text="Edit" icon={<PencilIcon className="h-5" />} variant="primary" />
+ * <IconButton text="Delete" icon={<TrashIcon className="h-5" />} variant="danger" />
  */
-export function IconButton(
-	props: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
-		icon: React.ReactNode;
-		text: string;
+export function IconButton({
+	icon,
+	text,
+	variant = "primary",
+	hideTextOnMobile = true,
+	className = "",
+	...props
+}: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
+	icon: React.ReactNode;
+	text: string;
+	variant?: "primary" | "secondary" | "danger" | "tertiary";
+	hideTextOnMobile?: boolean;
+}) {
+	const baseClasses = "btn btn-with-icon";
+	const variantClass = `btn-${variant}`;
+	const textClasses = hideTextOnMobile ? "hidden sm:inline" : "";
+
+	return (
+		<button type="button" className={`${baseClasses} ${variantClass} ${className}`} {...props}>
+			{icon}
+			<span className={`text-sm ${textClasses}`}>{text}</span>
+		</button>
+	);
+}
+
+/**
+ * Icon-only button (no text, no border)
+ * For cases where only the icon should be displayed
+ */
+export function IconOnlyButton({
+	icon,
+	variant = "tertiary",
+	className = "",
+	...props
+}: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
+	icon: React.ReactNode;
+	variant?: "primary" | "secondary" | "danger" | "tertiary";
+}) {
+	const baseClasses = "btn btn-icon-only";
+	const variantClass = `btn-${variant}`;
+
+	return (
+		<button type="button" className={`${baseClasses} ${variantClass} ${className}`} {...props}>
+			{icon}
+		</button>
+	);
+}
+
+// Size utility for icons
+type Size = "small" | "medium" | "large";
+
+export function getButtonSizeClass(size: Size): string {
+	switch (size) {
+		case "small":
+			return "h-3 w-3";
+		case "medium":
+			return "h-5 w-5";
+		case "large":
+			return "h-7 w-7";
+		default:
+			return "h-5 w-5";
 	}
-) {
+}
+
+// Specialized buttons that use the new unified system
+export function PlusButton({
+	onAdd,
+	title,
+	size = "medium",
+	showText = false,
+	className = ""
+}: {
+	onAdd: () => void;
+	title: string;
+	size?: Size;
+	showText?: boolean;
+	className?: string;
+}) {
+	if (showText) {
+		return (
+			<IconButton
+				icon={<PlusIcon className={getButtonSizeClass(size)} />}
+				text="Add"
+				variant="primary"
+				onClick={onAdd}
+				title={title}
+				className={className}
+			/>
+		);
+	}
+
+	return (
+		<IconOnlyButton
+			icon={<PlusIcon className={getButtonSizeClass(size)} />}
+			variant="primary"
+			onClick={onAdd}
+			title={title}
+			className={className}
+		/>
+	);
+}
+
+export function TrashcanButton({
+	onClick,
+	title = "Remove",
+	showText = false,
+	className = ""
+}: {
+	onClick: () => void;
+	title?: string;
+	showText?: boolean;
+	className?: string;
+}) {
+	if (showText) {
+		return (
+			<IconButton
+				icon={<TrashIcon className="h-5 w-5" />}
+				text="Delete"
+				variant="danger"
+				onClick={onClick}
+				title={title}
+				className={className}
+			/>
+		);
+	}
+
+	return (
+		<IconOnlyButton
+			icon={<TrashIcon className="h-5 w-5" />}
+			variant="danger"
+			onClick={onClick}
+			title={title}
+			className={className}
+		/>
+	);
+}
+
+export function XButton({
+	onClick,
+	title,
+	className = "",
+	size = "medium"
+}: {
+	onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+	className?: string;
+	title?: string;
+	size?: Size;
+}) {
 	return (
 		<button
 			type="button"
-			className="flex place-content-center items-center gap-4 rounded-lg bg-emerald-500 py-2 pl-4 pr-6 font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
-			{...props}
+			data-testid="remove"
+			title={title}
+			className={`rounded-full text-gray-400 hover:bg-gray-50 hover:text-red-500 p-1 ${className}`}
+			onClick={onClick}
 		>
-			{props.icon}
-			<span className="text-sm">{props.text}</span>
+			<XMarkIcon className={getButtonSizeClass(size)} />
 		</button>
+	);
+}
+
+export function PencilButton({
+	onClick,
+	title,
+	showText = false,
+	buttonTitle
+}: {
+	onClick: () => void;
+	title: string;
+	showText?: boolean;
+	buttonTitle?: string;
+}) {
+	if (showText && buttonTitle) {
+		return (
+			<IconButton
+				icon={<PencilIcon className="h-5 w-5" />}
+				text={buttonTitle}
+				variant="tertiary"
+				onClick={onClick}
+				title={title}
+			/>
+		);
+	}
+
+	return (
+		<IconOnlyButton
+			icon={<PencilIcon className="h-5 w-5" />}
+			variant="tertiary"
+			onClick={onClick}
+			title={title}
+		/>
 	);
 }
