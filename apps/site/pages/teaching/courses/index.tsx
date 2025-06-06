@@ -50,7 +50,6 @@ export default function CourseCreationEditor({
 }: {
 	onConfirm: (course: ExtendedCourseFormModel) => void;
 }) {
-	//const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau", "Test"];
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -65,7 +64,7 @@ export default function CourseCreationEditor({
 			case 1:
 				return <CourseSkillView />;
 			case 2:
-				return <CourseModulView onSubmit={() => {}} />;
+				return <CourseModulView />;
 			case 3:
 				return <CoursePreview />;
 			default:
@@ -131,57 +130,3 @@ export default function CourseCreationEditor({
 		</>
 	);
 }
-/* TODO: remove later
-function Test() {
-	const form = useFormContext<CourseFormModel & { content: unknown[] }>();
-	const {
-		register,
-		control,
-		formState: { errors }
-	} = form;
-	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-
-	return (
-		<>
-			<h1>Test </h1>
-			<LabeledField label="Titel" error={errors.title?.message}>
-				<input
-					{...register("title")}
-					type="text"
-					className="textfield"
-					placeholder="Die Neue Lerneinheit"
-					onBlur={slugifyIfEmpty}
-				/>
-			</LabeledField>
-			<LabeledField label="Slug" error={errors.slug?.message}>
-				<InputWithButton
-					input={
-						<input
-							className="textfield"
-							placeholder="die-neue-lerneinheit"
-							type={"text"}
-							{...register("slug")}
-						/>
-					}
-					button={
-						<button type="button" className="btn-stroked" onClick={slugifyField}>
-							Generieren
-						</button>
-					}
-				/>
-			</LabeledField>
-
-			<LabeledField
-				label="Beschreibung (TODO: as markdown?)"
-				error={errors.description?.message}
-			>
-				<textarea {...register("description")} placeholder="" className="h-full" />
-			</LabeledField>
-			<AuthorsForm
-				subtitle="Die Autoren dieses Kurses."
-				emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."
-			/>
-		</>
-	);
-}
-	*/

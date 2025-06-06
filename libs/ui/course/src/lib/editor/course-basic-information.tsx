@@ -1,65 +1,20 @@
 import { ExtendedCourseFormValues } from "@self-learning/teaching";
-<<<<<<< HEAD
 import { Controller, useFormContext } from "react-hook-form";
-import { memo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	InputWithButton,
 	LabeledField,
-	SearchField,
 	Upload,
-	useSlugify
+	useSlugify,
+	FieldHint,
+	MarkdownField
 } from "@self-learning/ui/forms";
 import { AuthorsForm } from "libs/feature/teaching/src/lib/author/authors-form";
-import { CourseSkillForm } from "libs/feature/teaching/src/lib/lesson/forms/skills-form";
-import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
-import {
-	Dialog,
-	DialogActions,
-	IconButton,
-	ImageOrPlaceholder,
-	LoadingBox,
-	OnDialogCloseFn
-} from "@self-learning/ui/common";
-import { PlusIcon } from "@heroicons/react/24/solid";
-import { trpc } from "@self-learning/api-client";
-//import { Author } from "@self-learning/types";
-/*
-import {
-	InlineRemoveButton,
-	SelectSkillsView
-} from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-view";
-*/
-//import { SelectSkillDialog } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-dialog";
-
-export function CourseBasicInformation() {
-	const form = useFormContext<ExtendedCourseFormValues>();
-
-	import { CourseFormModel, ExtendedCourseFormModel } from "@self-learning/teaching";
-
-	/*=======
-=======
->>>>>>> ae149add (change from nested data structure for FormProvider back to flat one)
-import { useFormContext } from "react-hook-form";
-import { useEffect, useState } from "react";
-import { InputWithButton, LabeledField, useSlugify } from "@self-learning/ui/forms";
-import { AuthorsForm } from "libs/feature/teaching/src/lib/author/authors-form";
-import { CourseSkillForm } from "libs/feature/teaching/src/lib/lesson/forms/skills-form";
-import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
-import { IconButton } from "@self-learning/ui/common";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { GreyBoarderButton, ImageOrPlaceholder } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
 
 export function CourseBasicInformation() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-	// TODO: should I not use extended version of course form model
-	// widen content type to prevent circular path error
-	const form = useFormContext<CourseFormModel & { content: unknown[] }>();
->>>>>>> e2d21dcc (add basic version of all elements)
-*/
-=======
 	const form = useFormContext<ExtendedCourseFormValues>();
->>>>>>> ae149add (change from nested data structure for FormProvider back to flat one)
 
 	const {
 		register,
@@ -83,6 +38,7 @@ export function CourseBasicInformation() {
 			</div>
 
 			<div>
+				{/**
 				<Skills />
 
 				<Selectors
@@ -90,25 +46,10 @@ export function CourseBasicInformation() {
 					onAddAuthor={onAddAuthor}
 					onDeleteAuthor={onDeleteAuthor}
 				/>
+				*/}
 			</div>
 		</div>
 	);
-}
-/* =======
-				<Selectors />
-			</div>
-		</div>
-	);
-}
-
-function Skills() {
-	const form = useFormContext<ExtendedCourseFormValues>();
-	const {
-		register,
-		control,
-		formState: { errors }
-	} = form;
-	return <CourseSkillForm />;
 }
 
 function BasicInfo() {
@@ -122,23 +63,28 @@ function BasicInfo() {
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 
-	const { data: subjects = [] } = trpc.subject.getAllSubjects.useQuery();
+	const { data: subjects = [], isLoading: isLoadingSubjects } =
+		trpc.subject.getAllSubjects.useQuery();
 	useEffect(() => {
+		if (isLoadingSubjects) return;
+
 		if (subjects.length > 0) {
 			setValue("subjectId", subjects[0]?.subjectId || "");
 		} else {
 			console.error("Failed to fetch subjects from DB!");
 		}
-	}, [subjects, setValue]);
+	}, [subjects, setValue, isLoadingSubjects]);
 
-	const { data: specializations = [] } = trpc.specialization.getAll.useQuery();
+	const { data: specializations = [], isLoading: isLoadingSpecializations } =
+		trpc.specialization.getAll.useQuery();
 	useEffect(() => {
+		if (isLoadingSpecializations) return;
 		if (specializations.length > 0) {
 			setValue("specializationId", specializations[0]?.specializationId || "");
 		} else {
 			console.error("Failed to fetch specializations from DB!");
 		}
-	});
+	}, [specializations, isLoadingSpecializations, setValue]);
 
 	const onSubjectChange = (subjectId: string) => {
 		setValue("subjectId", subjectId);
@@ -147,8 +93,12 @@ function BasicInfo() {
 		setValue("specializationId", specializationId);
 	};
 
+	const feedback = () => {
+		console.log("form", form.getValues());
+	};
+
 	return (
-		<>
+		<div className="space-y-3">
 			<LabeledField label="Titel" error={errors.title?.message}>
 				<input
 					{...register("title")}
@@ -158,50 +108,99 @@ function BasicInfo() {
 					onBlur={slugifyIfEmpty}
 				/>
 			</LabeledField>
-			<LabeledField label="Untertitle" error={errors.subtitle?.message}>
-				<input
-					{...register("subtitle")}
-					type="text"
-					className="textfield"
-					placeholder=""
-					onBlur={slugifyIfEmpty}
-				/>
-			</LabeledField>
+
 			<LabeledField label="Slug" error={errors.slug?.message}>
 				<InputWithButton
 					input={
 						<input
 							className="textfield"
-							placeholder="der-neue-Kurs"
+							placeholder="die-neue-lerneinheit"
 							type={"text"}
 							{...register("slug")}
 						/>
 					}
 					button={
-						<button type="button" className="btn-stroked" onClick={slugifyField}>
-							Generieren
-						</button>
+						<GreyBoarderButton
+							type="button"
+							onClick={slugifyField}
+							title={"Generiere Slug"}
+						>
+							<span className={"text-gray-600"}>Generieren</span>
+						</GreyBoarderButton>
 					}
 				/>
+				<FieldHint>
+					Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig sein.
+				</FieldHint>
+			</LabeledField>
+
+			<LabeledField label="Untertitel" error={errors.subtitle?.message} optional={true}>
+				<Controller
+					control={form.control}
+					name="subtitle"
+					render={({ field }) => (
+						<MarkdownField
+							content={field.value as string}
+							setValue={field.onChange}
+							inline={true}
+							placeholder="1-2 Sätze über diese Lerneinheit."
+						/>
+					)}
+				></Controller>
 			</LabeledField>
 
 			<LabeledField
-				label="Beschreibung (TODO: as markdown?)"
-				error={errors.subtitle?.message}
+				label={"Beschreibung"}
+				error={errors.description?.message}
+				optional={true}
 			>
-				<textarea {...register("description")} placeholder="" className="h-full" />
+				<Controller
+					control={form.control}
+					name={"description"}
+					render={({ field }) => (
+						<MarkdownField
+							content={field.value as string}
+							setValue={field.onChange}
+							inline={true}
+							placeholder={"1-2 Sätze welche diese Lerneinheit beschreibt."}
+						></MarkdownField>
+					)}
+				></Controller>
 			</LabeledField>
 
-			<LabeledField label="Fachgebiet" error={errors.subtitle?.message}>
+			<LabeledField label="Fachgebiet" error={errors.subjectId?.message}>
 				<SubjectDropDown subjects={subjects} onChange={onSubjectChange} />
 			</LabeledField>
 
-			<LabeledField label="Spezialisierung" error={errors.subtitle?.message}>
+			<LabeledField label="Spezialisierung" error={errors.specializationId?.message}>
 				<SpecializationDropDown
 					specializations={specializations}
 					onChange={onSpecializationChange}
 				/>
 			</LabeledField>
+
+			<Controller
+				control={form.control}
+				name="imgUrl"
+				render={({ field }) => (
+					<LabeledField label="Bild" error={errors.imgUrl?.message}>
+						<div className="flex w-full gap-4">
+							<div className="flex w-full flex-col gap-2">
+								<Upload
+									mediaType="image"
+									onUploadCompleted={field.onChange}
+									preview={
+										<ImageOrPlaceholder
+											src={field.value ?? undefined}
+											className="mx-auto h-32 w-32 shrink-0 rounded-lg"
+										/>
+									}
+								/>
+							</div>
+						</div>
+					</LabeledField>
+				)}
+			></Controller>
 
 			<div className="my-5 border-t border-gray-200">
 				<AuthorsForm
@@ -209,7 +208,10 @@ function BasicInfo() {
 					emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."
 				/>
 			</div>
-		</>
+			<button onClick={feedback} className="bg-blue-300">
+				FEEDBACK
+			</button>
+		</div>
 	);
 }
 
@@ -270,7 +272,7 @@ function SpecializationDropDown({
 		specializations?.[0]?.specializationId ?? ""
 	);
 
-	const changeDisplaySelectedRepository = (id: string) => {
+	const changeDisplaySelectedSpecialization = (id: string) => {
 		setSelectedSpecialization(id);
 	};
 
@@ -284,7 +286,7 @@ function SpecializationDropDown({
 				className="textfield"
 				value={selectedSpecialization ?? specializations[0].specializationId}
 				onChange={e => {
-					changeDisplaySelectedRepository(e.target.value);
+					changeDisplaySelectedSpecialization(e.target.value);
 				}}
 			>
 				{specializations.map(specialization => (
@@ -299,36 +301,38 @@ function SpecializationDropDown({
 		</div>
 	);
 }
+/*
+function Skills() {
+	const form = useFormContext<ExtendedCourseFormValues>();
+	const {
+		register,
+		control,
+		formState: { errors }
+	} = form;
 
-function Selectors() {
-	const [openAddDialog, setOpenAddDialog] = useState(false);
-
-	const handleAdd = () => {
-		// TODO
-		setOpenAddDialog(false);
+	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
+	const [openAddRepoDialog, setOpenAddRepoDialog] = useState<boolean>(false);
+	const onSelect = () => {
+		console.log("repo selected");
 	};
 
 	return (
-		<div className="my-5">
-			<SidebarSectionTitle
-				title="Selektoren"
-				subtitle="Begrenzung der Menge berücksichtigter Module"
-			/>
-			<div className="my-2 flex flex-col">
+		<div className="flex flex-col">
+			<span className="font-semibold text-secondary">Skills bearbeiten</span>
+			<span className="font-small">Kursziele und Voraussetzungen dieses Kurses.</span>
+			<div className="py-2 flex justify-end">
 				<IconButton
-					type="button"
-					data-testid="author-add"
-					onClick={() => setOpenAddDialog(true)}
-					title="Hinzufügen"
-					text="Hinzufügen"
+					text="Erstellen"
 					icon={<PlusIcon className="h-5" />}
->>>>>>> e2d21dcc (add basic version of all elements)
-
+					onClick={() => setOpenAddRepoDialog(true)}
 				/>
 			</div>
+
+			<LinkedSkillRepository selectRepository={onSelect} />
 		</div>
 	);
-} */
+}
+
 
 type AuthorSelector = {
 	displayName: string;
@@ -363,18 +367,7 @@ function Selectors({
 					{authors.length === 0 && (
 						<div className="mt-3 text-sm text-gray-500">Keine Authoren vorhanden</div>
 					)}
-					{/**
-					<div className="mt-3 max-h-40 overflow-auto">
-						{authors.map((author, index) => (
-							<InlineRemoveButton
-								key={index}
-								label={author.displayName}
-								onRemove={() => onDeleteAuthor(author)}
-								onClick={() => {}} //TODO
-							/>
-						))}
-					</div>
-					*/}
+
 
 					{selectAuthorSelector && (
 						<SelectAuthorSelectorDialog
@@ -419,6 +412,7 @@ function AuthorSelectorModal({ onClose }: { onClose: OnDialogCloseFn<AuthorSelec
 		</Dialog>
 	);
 }
+
 function SelectSelectorForm({
 	onClose,
 	authors
@@ -529,218 +523,8 @@ function SelectorElement({
 		</>
 	);
 }
-//----------------------------------------------- here are good things not so experimata
-function Skills() {
-	const form = useFormContext<ExtendedCourseFormValues>();
-	const {
-		register,
-		control,
-		formState: { errors }
-	} = form;
-	return <CourseSkillForm />;
-}
 
-function BasicInfo() {
-	const form = useFormContext<ExtendedCourseFormValues>();
 
-	const {
-		register,
-		setValue,
-		formState: { errors }
-	} = form;
-
-	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-
-	const { data: subjects = [] } = trpc.subject.getAllSubjects.useQuery();
-	useEffect(() => {
-		if (subjects.length > 0) {
-			setValue("subjectId", subjects[0]?.subjectId || "");
-		} else {
-			console.error("Failed to fetch subjects from DB!");
-		}
-	}, [subjects, setValue]);
-
-	const { data: specializations = [] } = trpc.specialization.getAll.useQuery();
-	useEffect(() => {
-		if (specializations.length > 0) {
-			setValue("specializationId", specializations[0]?.specializationId || "");
-		} else {
-			console.error("Failed to fetch specializations from DB!");
-		}
-	});
-
-	const onSubjectChange = (subjectId: string) => {
-		setValue("subjectId", subjectId);
-	};
-	const onSpecializationChange = (specializationId: string) => {
-		setValue("specializationId", specializationId);
-	};
-
-	return (
-		<>
-			<LabeledField label="Titel" error={errors.title?.message}>
-				<input
-					{...register("title")}
-					type="text"
-					className="textfield"
-					placeholder="Der neue Kurs"
-					onBlur={slugifyIfEmpty}
-				/>
-			</LabeledField>
-			<LabeledField label="Slug" error={errors.slug?.message}>
-				<InputWithButton
-					input={
-						<input
-							className="textfield"
-							placeholder="der-neue-Kurs"
-							type={"text"}
-							{...register("slug")}
-						/>
-					}
-					button={
-						<button type="button" className="btn-stroked" onClick={slugifyField}>
-							Generieren
-						</button>
-					}
-				/>
-			</LabeledField>
-
-			<LabeledField label="Beschreibung" error={errors.description?.message}>
-				<textarea {...register("description")} placeholder="" className="h-full" />
-			</LabeledField>
-
-			<LabeledField label="Fachgebiet" error={errors.subjectId?.message}>
-				<SubjectDropDown subjects={subjects} onChange={onSubjectChange} />
-			</LabeledField>
-
-			<LabeledField label="Spezialisierung" error={errors.specializationId?.message}>
-				<SpecializationDropDown
-					specializations={specializations}
-					onChange={onSpecializationChange}
-				/>
-			</LabeledField>
-
-			{/** TODO: who knows if it works - cannot connect to MinIO */}
-			<Controller
-				control={form.control}
-				name="imgUrl"
-				render={({ field }) => (
-					<LabeledField label="Bild" error={errors.imgUrl?.message}>
-						<div className="flex w-full gap-4">
-							<div className="flex w-full flex-col gap-2">
-								<Upload
-									mediaType="image"
-									onUploadCompleted={field.onChange}
-									preview={
-										<ImageOrPlaceholder
-											src={field.value ?? undefined}
-											className="mx-auto h-32 w-32 shrink-0 rounded-lg"
-										/>
-									}
-								/>
-							</div>
-						</div>
-					</LabeledField>
-				)}
-			></Controller>
-
-			<div className="my-5 border-t border-gray-200">
-				<AuthorsForm
-					subtitle="Die Autoren dieses Kurses."
-					emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."
-				/>
-			</div>
-		</>
-	);
-}
-
-type subject = {
-	subjectId: string;
-	title: string;
-};
-
-function SubjectDropDown({
-	subjects,
-	onChange
-}: {
-	subjects: subject[];
-	onChange: (id: string) => void;
-}) {
-	const [selectedSubject, setSelectedSubject] = useState<string>(subjects?.[0]?.subjectId ?? "");
-
-	const changeDisplaySelectedRepository = (id: string) => {
-		setSelectedSubject(id);
-	};
-
-	useEffect(() => {
-		onChange(selectedSubject);
-	}, [onChange, selectedSubject]);
-
-	return (
-		<div className="flex flex-col">
-			<select
-				className="textfield"
-				value={selectedSubject ?? subjects[0].subjectId}
-				onChange={e => {
-					changeDisplaySelectedRepository(e.target.value);
-				}}
-			>
-				{subjects.map(subject => (
-					<option key={subject.subjectId} value={subject.subjectId}>
-						{subject.title}
-					</option>
-				))}
-			</select>
-		</div>
-	);
-}
-
-type specialization = {
-	specializationId: string;
-	title: string;
-};
-
-function SpecializationDropDown({
-	specializations,
-	onChange
-}: {
-	specializations: specialization[];
-	onChange: (id: string) => void;
-}) {
-	const [selectedSpecialization, setSelectedSpecialization] = useState<string>(
-		specializations?.[0]?.specializationId ?? ""
-	);
-
-	const changeDisplaySelectedSpecialization = (id: string) => {
-		setSelectedSpecialization(id);
-	};
-
-	useEffect(() => {
-		onChange(selectedSpecialization);
-	}, [onChange, selectedSpecialization]);
-
-	return (
-		<div className="flex flex-col">
-			<select
-				className="textfield"
-				value={selectedSpecialization ?? specializations[0].specializationId}
-				onChange={e => {
-					changeDisplaySelectedSpecialization(e.target.value);
-				}}
-			>
-				{specializations.map(specialization => (
-					<option
-						key={specialization.specializationId}
-						value={specialization.specializationId}
-					>
-						{specialization.title}
-					</option>
-				))}
-			</select>
-		</div>
-	);
-}
-/*
 function Selectors({ authors, onChange }: { authors: Author[]; onChange: (id: string) => void }) {
 	const [openAddDialog, setOpenAddDialog] = useState(false);
 
