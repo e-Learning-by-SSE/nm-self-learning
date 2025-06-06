@@ -4,7 +4,7 @@ import { LoadingBox, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import {
 	CourseBasicInformation,
 	CourseSkillView,
-	CourseModulView,
+	CourseModuleView,
 	CoursePreview
 } from "@self-learning/ui/course";
 import { GetServerSideProps } from "next";
@@ -67,7 +67,7 @@ export default function CourseCreationEditor() {
 			case 1:
 				return <CourseSkillView authorId={author.id} />;
 			case 2:
-				return <CourseModulView onSubmit={() => {}} />;
+				return <CourseModuleView onSubmit={() => {}} authorId={author.id}/>
 			case 3:
 				return <CoursePreview />;
 			default:

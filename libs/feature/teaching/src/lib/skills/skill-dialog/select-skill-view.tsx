@@ -4,66 +4,56 @@ import { getButtonSizeClass, IconButton } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
+import { Droppable } from "@hello-pangea/dnd";
 
 export function LabeledFieldSelectSkillsView({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	label
+	label,
+	droppableId
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	label: string;
+	droppableId?: string;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
 	return (
-		<LabeledField label={label} button={null}>
-			<button
-				type="button"
-				onClick={() => setSelectSkillModal(true)}
-				className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-400 rounded py-2 mb-3 text-grey-500 hover:bg-emerald-50 transition text-sm"
-				data-testid="BenoetigteSkills-add"
-				onDragOver={e => e.preventDefault()}
-				onDrop={handleDropSkill(onAddSkill)}
-			>
-				Klicken zum Auswhählen oder mit Drag & Drop einfügen
-			</button>
-			<SkillManagementComponent
-				skills={skills}
-				setSelectSkillModal={setSelectSkillModal}
-				onAddSkill={onAddSkill}
-				selectSkillModal={selectSkillModal}
-				onDeleteSkill={onDeleteSkill}
-			/>
-		</LabeledField>
+		<Droppable droppableId={droppableId ? droppableId : "select-skills"}>
+			{(provided ) => (
+				<div ref={provided.innerRef} {...provided.droppableProps}>
+					<LabeledField label={label} button={null}>
+						<button
+							type="button"
+							onClick={() => setSelectSkillModal(true)}
+							className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-400 rounded py-2 mb-3 text-grey-500 hover:bg-emerald-50 transition text-sm"
+							data-testid="BenoetigteSkills-add"
+						>
+							Klicken zum Auswhählen oder mit Drag & Drop einfügen
+						</button>
+						<SkillManagementComponent
+							skills={skills}
+							setSelectSkillModal={setSelectSkillModal}
+							onAddSkill={onAddSkill}
+							selectSkillModal={selectSkillModal}
+							onDeleteSkill={onDeleteSkill}
+						/>
+					</LabeledField>
+					{provided.placeholder}
+				</div>
+			)}
+		</Droppable>
 	);
-}
-
-function handleDropSkill(
-	onAddSkill: (skill: SkillFormModel[] | undefined) => void
-) {
-	return (event: React.DragEvent<HTMLButtonElement>) => {
-		event.preventDefault();
-		const data = event.dataTransfer.getData("text/plain");
-		if (!data) return;
-
-		try {
-			const skill: SkillFormModel = JSON.parse(data);
-			onAddSkill([skill]);
-		} catch (error) {
-			console.error("Invalid skill data", error);
-		}
-	};
 }
 
 // TODO looks like a duplicate of the above component
 export function SelectSkillsView({
 	skills,
 	onDeleteSkill,
-	onAddSkill,
-
+	onAddSkill
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;

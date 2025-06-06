@@ -13,7 +13,7 @@ export function CourseSkillView({ authorId }: { authorId: number }) {
 
 	return (
 		<div>
-			<SkillFolderEditor skills={allSkills} authorId={authorId} />
+			<SkillFolderEditor skills={allSkills} authorId={authorId} isSkilltree={ false } />
 		</div>
 	);
 }

@@ -16,13 +16,18 @@ import {
 	getCycleDisplayInformation
 } from "./skill-display";
 import { SkillFolderTable } from "./folder-table";
+import { SkillTree } from "./skill-tree";
 
 export function SkillFolderEditor({
 	skills,
-	authorId
+	authorId,
+	isSkilltree,
+	isDragging
 }: {
 	skills: Map<string, SkillFormModel>;
 	authorId: number;
+	isSkilltree: boolean; 
+	isDragging?: boolean;
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
 
@@ -55,7 +60,7 @@ export function SkillFolderEditor({
 		},
 		[updateSkillDisplay]
 	);
-
+	if (!isSkilltree) {
 	return (
 		<div className="bg-gray-50">
 			<SidebarEditorLayout
@@ -66,7 +71,7 @@ export function SkillFolderEditor({
 					/>
 				}
 			>
-				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles} />}
+				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles}/>}
 				<SkillFolderTable
 					skillDisplayData={skillDisplayData}
 					selectedSkill={selectedSkill}
@@ -77,6 +82,17 @@ export function SkillFolderEditor({
 			</SidebarEditorLayout>
 			<DialogHandler id={"simpleDialog"} />
 		</div>
+	);
+}
+	return (
+		<SkillTree
+			skillDisplayData={skillDisplayData}
+			selectedSkill={selectedSkill}
+			onSkillSelect={changeEditTarget}
+			updateSkillDisplay={updateSkillDisplay}
+			authorId={authorId}		
+			isDragging={isDragging? isDragging : false}
+		/>
 	);
 }
 

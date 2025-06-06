@@ -6,15 +6,13 @@ import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
-import { ExtendedCourseFormModel } from "../../course/course-form-model";
-import { MarkdownListboxMenu } from "@self-learning/markdown";
 
 type SkillModalIdentifier = "provides" | "requires";
 
 /**
  * Area to add and remove skills to a lesson
  */
-export function LessonSkillManager() {
+export function LessonSkillManager({ addSkills }: { addSkills: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void }) {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {
@@ -25,12 +23,6 @@ export function LessonSkillManager() {
 	const [selectSkillModal, setSelectSkillModal] = useState<{
 		id: SkillModalIdentifier;
 	} | null>(null);
-
-	const addSkills = (skill: SkillFormModel[] | undefined, id: SkillModalIdentifier) => {
-		if (!skill) return;
-		skill = skill.map(skill => ({ ...skill, children: [], parents: [] }));
-		setValue(id, [...watchingSkills[id], ...skill]);
-	};
 
 	const deleteSkill = (skill: SkillFormModel, id: SkillModalIdentifier) => {
 		setValue(
@@ -53,8 +45,10 @@ export function LessonSkillManager() {
 						deleteSkill(skill, "provides");
 					}}
 					onAddSkill={skill => {
-						addSkills(skill, "provides");
+						if (skill) addSkills(skill, "provides");
+						console.log("Added skills", skill);
 					}}
+					droppableId="provides"
 				/>
 
 				<LabeledFieldSelectSkillsView
@@ -64,14 +58,15 @@ export function LessonSkillManager() {
 						deleteSkill(skill, "requires");
 					}}
 					onAddSkill={skill => {
-						addSkills(skill, "requires");
+						if (skill) addSkills(skill, "requires");
 					}}
+					droppableId="requires"
 				/>
 				{selectSkillModal && (
 					<SelectSkillDialog
 						onClose={skill => {
 							setSelectSkillModal(null);
-							addSkills(skill, selectSkillModal.id);
+							if (skill) addSkills(skill, selectSkillModal.id);
 						}}
 					/>
 				)}

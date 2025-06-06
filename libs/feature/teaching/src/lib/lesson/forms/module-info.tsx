@@ -12,11 +12,11 @@ import {
 import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { lessonSchema } from "@self-learning/types";
+import { lessonSchema, SkillFormModel } from "@self-learning/types";
 import { GreyBoarderButton } from "@self-learning/ui/common";
 import { LessonSkillManager } from "./lesson-skill-manager";
 
-export function ModuleInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
+export function ModuleInfoEditor({ lesson, addSkills }: { lesson?: LessonFormModel, addSkills: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void }) {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -111,7 +111,7 @@ export function ModuleInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 
 				<LicenseForm />
 
-				<LessonSkillManager />
+				<LessonSkillManager addSkills={addSkills}/>
 			</div>
 		</Form.SidebarSection>
 	);
