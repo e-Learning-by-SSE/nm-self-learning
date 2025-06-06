@@ -75,7 +75,7 @@ export const isCourseAuthorProcedure = t.procedure
 
 async function checkIfUserIsAuthor(username: string, courseId: string) {
 	if (courseId.startsWith("dyn")) {
-		const course = await database.newCourse.findUniqueOrThrow({
+		const course = await database.dynCourse.findUniqueOrThrow({
 			where: { courseId },
 			select: {
 				authors: {
