@@ -1,6 +1,6 @@
+"use client";
 import { GameifyDialog } from "@self-learning/ui/common";
 import { useState } from "react";
-import { useTranslation } from "next-i18next";
 
 export function EarnedDialog({
 	achievement,

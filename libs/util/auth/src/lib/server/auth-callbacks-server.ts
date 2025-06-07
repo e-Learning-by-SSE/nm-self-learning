@@ -27,10 +27,7 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 	const username = user?.name?.trim();
 	if (!username) return;
 	const { isParticipating } = await getExperimentStatus(username);
-	console.log(`User ${username} is participating in the experiment: ${isParticipating}`);
 	if (!isParticipating) return;
-	console.log(user);
-	if (!user.features.includes("experimentalFeatures")) return;
 
 	const now = new Date();
 

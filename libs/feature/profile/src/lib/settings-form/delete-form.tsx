@@ -10,12 +10,14 @@ import {
 	RedButton,
 	showToast
 } from "@self-learning/ui/common";
-import { CenteredContainer, redirectToLogin, useRequiredSession } from "@self-learning/ui/layouts";
+import { CenteredContainer, useRequiredSession } from "@self-learning/ui/layouts";
 import { AuthorSvg, DiarySvg, StatisticSvg } from "@self-learning/ui/static";
 import { Session } from "next-auth";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 export function DeleteMeForm() {
+	const router = useRouter();
 	const { mutateAsync: deleteMe } = trpc.me.delete.useMutation();
 	const session = useRequiredSession();
 	const user = session.data?.user;
@@ -37,7 +39,7 @@ export function DeleteMeForm() {
 									subtitle: "Sie wurden erfolgreich abgemeldet."
 								});
 							}
-							redirectToLogin();
+							router.push("/");
 						} catch (error) {
 							showToast({
 								type: "error",

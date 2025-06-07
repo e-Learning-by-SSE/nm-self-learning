@@ -57,7 +57,10 @@ export const adminRouter = t.router({
 				student: true,
 				enabledFeatureLearningDiary: true,
 				enabledLearningStatistics: true,
-				registrationCompleted: true
+				registrationCompleted: true,
+				notificationSettings: true,
+				acceptedExperimentTerms: true,
+				experimentalFeatures: true
 			}
 		});
 	}),

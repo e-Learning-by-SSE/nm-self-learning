@@ -13,13 +13,13 @@ import {
 	XMarkIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { NotificationPropsMap } from "@self-learning/types";
 import {
 	AnimatedFlame,
 	GameifyDialog,
 	SlotCounter,
 	useIsAtLeastLargeScreen
 } from "@self-learning/ui/common";
+import { NotificationPropsMap } from "@self-learning/ui/notifications";
 import { addHours, intervalToDuration, isBefore } from "date-fns";
 import { useEffect, useState } from "react";
 

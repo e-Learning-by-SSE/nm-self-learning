@@ -1,10 +1,10 @@
 import { Course, Prisma } from "@prisma/client";
-import { database, loadUserEvents } from "@self-learning/database";
-import { createLessonMeta, EventType, EventTypeKeys, lessonSchema } from "@self-learning/types";
+import { database } from "@self-learning/database";
+import { createLessonMeta, EventTypeMap, lessonSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
+import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
-import { differenceInHours } from "date-fns";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -180,7 +180,7 @@ export const lessonRouter = t.router({
 
 			const latestOpenEvent = {
 				...data,
-				payload: data.payload as EventType["LESSON_OPEN"]
+				payload: data.payload as EventTypeMap["LESSON_OPEN"]
 			};
 
 			const eventAttemptId = latestOpenEvent.payload.lessonAttemptId;

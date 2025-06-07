@@ -1,6 +1,6 @@
-import { UserEvent } from "@self-learning/database";
 import { EventTypeKeys } from "@self-learning/types";
-import { addHours, startOfHour, format, addMilliseconds, isBefore, addDays } from "date-fns";
+import { addDays, addHours, addMilliseconds, format, isBefore, startOfHour } from "date-fns";
+import { UserEvent } from "./types";
 
 export type Interval = {
 	start: Date;

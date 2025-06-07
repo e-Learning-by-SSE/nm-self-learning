@@ -12,7 +12,7 @@ import Head from "next/head";
 import Script from "next/script";
 import { PropsWithChildren } from "react";
 import superjson from "superjson";
-import { GlobalFeatures } from "../../_features";
+import { GlobalFeatures } from "../_features";
 import "./styles.css";
 
 export default withTRPC<AppRouter>({
@@ -114,7 +114,7 @@ function RootLayout({ children }: PropsWithChildren<unknown>) {
 				<title>Self-Learning</title>
 			</Head>
 			<Navbar />
-			{children}
+			<div className="flex-1">{children}</div>
 			<Footer />
 		</>
 	);
