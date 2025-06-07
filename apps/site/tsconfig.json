@@ -28,7 +28,7 @@
     "**/*.jsx",
     "next-env.d.ts",
     "../../index.d.ts",
-    "../_features.tsx",
+    "_features.tsx",
     ".next/types/**/*.ts"
   ],
   "exclude": [
