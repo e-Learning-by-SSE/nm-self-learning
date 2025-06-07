@@ -1,39 +1,22 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
-import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { FeatureSettingsForm } from "@self-learning/profile";
 import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
-import { isBefore, subDays } from "date-fns";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-
-export const useFirstLoginDialog = (): boolean => {
-	const [shouldRender, setShouldRender] = useState<boolean>(false);
-
-	useEffect(() => {
-		const lastShown: Date | null = loadFromLocalStorage(
-			"settings_firstLoginDialog_lastRendered"
-		);
-		const oneDayAgo = subDays(new Date(), 1);
-
-		if (!lastShown) {
-			setShouldRender(true);
-			saveToLocalStorage("settings_firstLoginDialog_lastRendered", new Date());
-		} else if (isBefore(lastShown, oneDayAgo)) {
-			setShouldRender(true);
-			saveToLocalStorage("settings_firstLoginDialog_lastRendered", new Date());
-		}
-	}, []);
-
-	return shouldRender;
-};
+import { useState } from "react";
 
 /**
  * Dialog for the first login of a user. The user can set his settings here.
  * Fully controlled and updates the settings on the server.
  */
-export function FirstLoginDialog({ onClose }: { onClose: () => void }) {
+export function OnboardingDialog({
+	onClose,
+	onSubmit
+}: {
+	onClose: () => void;
+	onSubmit: () => void;
+}) {
 	const session = useSession();
 	const user = session.data?.user;
 	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
@@ -49,6 +32,7 @@ export function FirstLoginDialog({ onClose }: { onClose: () => void }) {
 		try {
 			await updateSettings({ user: { ...settings, registrationCompleted: true } });
 			onClose();
+			onSubmit?.();
 		} catch (error) {
 			if (error instanceof Error) {
 				showToast({
@@ -86,7 +70,11 @@ export function FirstLoginDialog({ onClose }: { onClose: () => void }) {
 			</div>
 			<div className="pt-14" />
 			<div className="absolute right-4 bottom-5">
-				<DialogActions onClose={onClose}>
+				<DialogActions
+					onClose={() => {
+						onClose?.();
+					}}
+				>
 					<button className="btn-primary" onClick={handleSettingSave}>
 						Speichern
 					</button>

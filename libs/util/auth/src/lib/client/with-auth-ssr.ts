@@ -8,7 +8,7 @@ import type {
 import { getServerSession, Session } from "next-auth";
 import { getSession } from "next-auth/react";
 import { ParsedUrlQuery } from "querystring";
-import { authOptions } from "../auth";
+import { authOptions } from "../server/auth";
 
 export async function getAuthenticatedUser(
 	ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>

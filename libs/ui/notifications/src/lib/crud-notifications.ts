@@ -4,7 +4,7 @@ import {
 	NotificationEntry,
 	NotificationPropsMap,
 	validateNotification
-} from "@self-learning/types";
+} from "./notification-renderer-registry";
 import { addBusinessDays } from "date-fns";
 
 type DbInputNotification = Partial<
@@ -30,7 +30,7 @@ export async function createNotification<K extends keyof NotificationPropsMap>(
 		const newNotification = await client.notification.create({
 			data: {
 				component,
-				props,
+				props: props ?? {},
 				displayFrom: new Date(),
 				displayUntil: addBusinessDays(new Date(), 5),
 				targetAudience,
@@ -40,7 +40,6 @@ export async function createNotification<K extends keyof NotificationPropsMap>(
 
 		if (targetUser && targetAudience === "user") {
 			const userIds = Array.isArray(targetUser) ? targetUser : [targetUser];
-			console.log("userIds", userIds, newNotification.id);
 			await client.notificationUser.createMany({
 				data: userIds.map(userId => ({
 					userId,

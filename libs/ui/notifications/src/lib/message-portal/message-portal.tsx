@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import styles from "./message-portal.module.css";
 import { useCountdownSeconds } from "@self-learning/ui/common";
-import { NotificationPropsMap } from "@self-learning/types";
 import { secondsToMilliseconds } from "date-fns";
+import { NotificationPropsMap } from "../notification-renderer-registry";
 
 export function MessagePortal({
 	htmlMessage,

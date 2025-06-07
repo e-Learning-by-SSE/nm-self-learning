@@ -1,11 +1,7 @@
 "use client";
-import { trpc } from "@self-learning/api-client";
-import { FirstLoginDialog, useFirstLoginDialog } from "@self-learning/profile";
-import { MessagePortal, NotificationsRenderer } from "@self-learning/ui/notifications";
+import { NotificationsRenderer } from "@self-learning/ui/notifications";
 import { init } from "@socialgouv/matomo-next";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 
 // TODO find a better place for this file - should be easy if we migrate to app router.
@@ -14,44 +10,9 @@ export function GlobalFeatures() {
 	useMatomo();
 	return (
 		<>
-			<ControlledFirstLoginDialog />
 			<Toaster containerStyle={{ top: 96 }} position="top-right" />
 			<NotificationsRenderer />
 		</>
-	);
-}
-
-export function ControlledFirstLoginDialog() {
-	const session = useSession();
-	const { data, isLoading } = trpc.me.registrationStatus.useQuery(undefined, {
-		enabled: session.data?.user?.name !== undefined
-	});
-	const router = useRouter();
-	const [onboardingDialogClosed, setDialogClosed] = useState<boolean | null>(null);
-
-	const shouldRender = useFirstLoginDialog();
-
-	if (onboardingDialogClosed === null && data) {
-		setDialogClosed(data.registrationCompleted ?? false);
-	}
-
-	if (isLoading || !shouldRender) {
-		return null;
-	}
-
-	const registrationCompleted = data?.registrationCompleted ?? true;
-
-	if (registrationCompleted || onboardingDialogClosed) {
-		return null;
-	}
-
-	return (
-		<FirstLoginDialog
-			onClose={() => {
-				setDialogClosed(true);
-				router.reload();
-			}}
-		/>
 	);
 }
 

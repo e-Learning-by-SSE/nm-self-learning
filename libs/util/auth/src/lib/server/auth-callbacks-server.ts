@@ -1,13 +1,8 @@
 import { createNewProfile } from "@self-learning/achievements";
 import { database } from "@self-learning/database";
 import { getExperimentStatus } from "@self-learning/profile";
-import {
-	Flames,
-	GamificationProfile,
-	LoginStreak,
-	NotificationPropsMap
-} from "@self-learning/types";
-import { createNotification } from "@self-learning/ui/notifications";
+import { Flames, GamificationProfile, LoginStreak } from "@self-learning/types";
+import { createNotification, NotificationPropsMap } from "@self-learning/ui/notifications";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
 import { differenceInHours } from "date-fns";
 import { EventCallbacks } from "next-auth";
@@ -94,4 +89,27 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 	});
 }
 
-export const loginCallbacks: SigninCallback[] = [logLogin, updateLoginStreak];
+async function createOnboardingNotification({
+	user
+}: Parameters<SigninCallback>[0]): Promise<void> {
+	if (!user.name || !user.id) return;
+	const dbUser = await database.user.findUniqueOrThrow({
+		where: { id: user.id },
+		select: { name: true, id: true, registrationCompleted: true }
+	});
+
+	if (dbUser.registrationCompleted) return;
+	await createNotification({
+		component: "OnboardingDialog",
+		props: {},
+		targetAudience: "user",
+		targetUser: dbUser.id,
+		tx: database
+	});
+}
+
+export const loginCallbacks: SigninCallback[] = [
+	logLogin,
+	createOnboardingNotification,
+	updateLoginStreak
+];

@@ -8,10 +8,10 @@ import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { authCallbacks, getIdpSelflearnAdminRole } from "./create-user-session";
-import { loginCallbacks } from "./on-login";
+import { loginCallbacks } from "./auth-callbacks-server";
 
-const MAIL_DOMAIN = "@uni-hildesheim.de";
-const OIDC_SCOPES = "openid profile email roles profile_studium";
+export const MAIL_DOMAIN = "@uni-hildesheim.de";
+export const OIDC_SCOPES = "openid profile email roles profile_studium";
 
 function mailToUsername(mail: string): string {
 	if (mail.toLowerCase().includes(MAIL_DOMAIN)) {
@@ -101,7 +101,8 @@ function getProviders(): Provider[] {
 					name: profile.preferred_username ?? mailToUsername(profile.email),
 					email: profile.email,
 					image: profile.picture,
-					displayName: profile.name
+					displayName: profile.name,
+					features: []
 				};
 			}
 		})
