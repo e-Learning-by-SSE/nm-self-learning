@@ -1,9 +1,4 @@
-import {
-	AchievementContext,
-	CourseReminderContext,
-	EmailContext,
-	StreakReminderContext
-} from "./email-types";
+import { CourseReminderContext, EmailContext, StreakReminderContext } from "./email-types";
 import { renderTemplate } from "./template-engine";
 
 export interface EmailTemplate {
@@ -71,13 +66,9 @@ export async function sendTemplatedEmail(to: string, context: EmailContext) {
 
 // Convenience functions
 export async function sendCourseReminder(to: string, data: CourseReminderContext) {
-	return sendTemplatedEmail(to, { type: "course-reminder", data });
-}
-
-export async function sendAchievementNotification(to: string, data: AchievementContext) {
-	return sendTemplatedEmail(to, { type: "achievement-unlocked", data });
+	return sendTemplatedEmail(to, { type: "courseReminder", data });
 }
 
 export async function sendStreakReminder(to: string, data: StreakReminderContext) {
-	return sendTemplatedEmail(to, { type: "streak-reminder", data });
+	return sendTemplatedEmail(to, { type: "streakReminder", data });
 }

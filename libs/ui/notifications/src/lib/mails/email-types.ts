@@ -5,13 +5,6 @@ export type CourseReminderContext = {
 	progress: number;
 };
 
-export type AchievementContext = {
-	userName: string;
-	achievementTitle: string;
-	achievementDescription: string;
-	xpReward: number;
-};
-
 export type StreakReminderContext = {
 	userName: string;
 	currentStreak: number;
@@ -19,6 +12,5 @@ export type StreakReminderContext = {
 };
 
 export type EmailContext =
-	| { type: "course-reminder"; data: CourseReminderContext }
-	| { type: "achievement-unlocked"; data: AchievementContext }
-	| { type: "streak-reminder"; data: StreakReminderContext };
+	| { type: "courseReminder"; data: CourseReminderContext }
+	| { type: "streakReminder"; data: StreakReminderContext };

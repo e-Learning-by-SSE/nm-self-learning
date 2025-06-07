@@ -1,12 +1,16 @@
+import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import { inferRouterOutputs } from "@trpc/server";
 import { useRouter } from "next/router";
+import { z } from "zod";
 
-export function ExperimentShortInfo() {
-	const { data: experimentStatus } = trpc.me.getExperimentStatus.useQuery();
+type ExperimentShortInfoProps = inferRouterOutputs<AppRouter>["me"]["getExperimentStatus"];
+
+export function ExperimentShortInfo(props: ExperimentShortInfoProps) {
 	const router = useRouter();
 
 	const statusText = () => {
-		if (experimentStatus?.isParticipating ?? false) {
+		if (props.isParticipating) {
 			return <span className="text-green-600 font-bold">Teilnehmer*in.</span>;
 		}
 		return <span className="text-red-600 font-bold">Keine Teilnahme.</span>;

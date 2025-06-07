@@ -4,7 +4,9 @@ import {
 	DeleteMeForm,
 	ExperimentShortInfo,
 	FeatureSettingsForm,
+	getExperimentStatus,
 	getUserWithSettings,
+	NotificationSettingsForm,
 	PersonalSettingsForm
 } from "@self-learning/profile";
 import { ResolvedValue } from "@self-learning/types";
@@ -17,12 +19,14 @@ import { useState } from "react";
 
 interface PageProps {
 	settings: NonNullable<ResolvedValue<typeof getUserWithSettings>>;
+	experimentStatus: NonNullable<ResolvedValue<typeof getExperimentStatus>>;
 }
 
 export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<PageProps>(async (context, user) => {
 		const settings = await getUserWithSettings(user.name);
+		const experimentStatus = await getExperimentStatus(user.name);
 
 		if (!settings) {
 			return {
@@ -32,7 +36,8 @@ export const getServerSideProps = withTranslations(
 
 		return {
 			props: {
-				settings
+				settings,
+				experimentStatus
 			}
 		};
 	})
@@ -69,11 +74,15 @@ export default function SettingsPage(props: PageProps) {
 		}
 	};
 
-	const onFeatureChange: Parameters<typeof FeatureSettingsForm>[0]["onChange"] = async update => {
+	type OnChangeType = Parameters<typeof FeatureSettingsForm>[0]["onChange"] &
+		Parameters<typeof NotificationSettingsForm>[0]["onChange"];
+
+	const onFeatureChange: OnChangeType = async update => {
 		try {
 			if (!update) return;
 			// TODO [MS-MA]: remove this check when the feature is stable
 			if (
+				"enabledFeatureLearningDiary" in update &&
 				update.enabledLearningStatistics === false &&
 				data?.user.features.includes("experimentalFeatures")
 			) {
@@ -100,7 +109,6 @@ export default function SettingsPage(props: PageProps) {
 			}
 		}
 	};
-	console.log("settings", settings);
 	return (
 		<CenteredSection className="bg-gray-50">
 			<h1 className="text-2xl font-bold">Einstellungen</h1>
@@ -116,8 +124,16 @@ export default function SettingsPage(props: PageProps) {
 			<SettingSection title="Funktionen">
 				<FeatureSettingsForm featureSettings={settings} onChange={onFeatureChange} />
 			</SettingSection>
+			<SettingSection title="Benachrichtigungen">
+				{props.experimentStatus?.isParticipating && (
+					<NotificationSettingsForm
+						notificationSettings={settings.notificationSettings}
+						onChange={onFeatureChange}
+					/>
+				)}
+			</SettingSection>
 			<SettingSection title="Studienteilnahme">
-				<ExperimentShortInfo />
+				{props.experimentStatus && <ExperimentShortInfo {...props.experimentStatus} />}
 			</SettingSection>
 			<SettingSection title="Kritischer Bereich">
 				<DeleteMeForm />

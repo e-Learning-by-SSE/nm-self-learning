@@ -1,7 +1,7 @@
 import { database } from "@self-learning/database";
-
+import { editNotificationSettingsSchema } from "@self-learning/types";
 export async function getUserWithSettings(username: string) {
-	return await database.user.findUnique({
+	const data = await database.user.findUniqueOrThrow({
 		where: {
 			name: username
 		},
@@ -11,7 +11,12 @@ export async function getUserWithSettings(username: string) {
 			email: true,
 			image: true,
 			enabledLearningStatistics: true,
-			enabledFeatureLearningDiary: true
+			enabledFeatureLearningDiary: true,
+			notificationSettings: true
 		}
 	});
+	return {
+		...data,
+		notificationSettings: editNotificationSettingsSchema.parse(data.notificationSettings ?? {})
+	};
 }

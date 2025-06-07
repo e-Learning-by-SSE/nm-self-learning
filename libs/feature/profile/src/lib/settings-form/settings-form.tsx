@@ -2,15 +2,33 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	EditFeatureSettings,
+	editNotificationSettingsSchema,
 	EditPersonalSettings,
 	editPersonalSettingSchema,
+	NotificationSettings,
 	ResolvedValue
 } from "@self-learning/types";
 import { OnDialogCloseFn, Toggle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { getUserWithSettings } from "../crud-settings";
+import { ExpandableSettingsSection } from "./setting-section";
+
+function ToggleSetting({
+	value,
+	onChange,
+	label
+}: {
+	value: boolean;
+	onChange: (value: boolean) => void;
+	label: string;
+}) {
+	return (
+		<div className="flex items-center gap-2">
+			<Toggle value={value} onChange={onChange} label={label} />
+		</div>
+	);
+}
 
 type SettingsProps = NonNullable<ResolvedValue<typeof getUserWithSettings>>;
 
@@ -186,50 +204,42 @@ export function FeatureSettingsForm({
 	);
 }
 
-function ExpandableSettingsSection({
-	text,
-	title,
-	children
+export function NotificationSettingsForm({
+	notificationSettings,
+	onChange
 }: {
-	text: string;
-	title: string;
-	children?: React.ReactNode;
+	notificationSettings: NotificationSettings;
+	onChange: OnDialogCloseFn<Partial<NotificationSettings>>;
 }) {
-	const [isExpanded, setIsExpanded] = useState(false);
-
-	const toggleExpanded = () => {
-		setIsExpanded(!isExpanded);
-	};
-
-	const btnClass = "text-blue-500 hover:underline" + (isExpanded ? "" : " px-2");
+	const { courseReminder, streakReminder } = notificationSettings;
 
 	return (
-		<section className="mt-5 rounded-lg bg-white p-3.5">
-			<span className="h-32 w-full font-medium" title={title}>
-				{text}
-			</span>
+		<div className="space-y-4">
+			<div className="space-y-2">
+				<ToggleSetting
+					value={courseReminder}
+					onChange={value => onChange({ courseReminder: value })}
+					label="Benachrichtigungen für Kurs-Erinnerungen"
+				/>
 
-			{isExpanded && <br />}
-			{isExpanded && children}
-			<button className={btnClass} onClick={toggleExpanded}>
-				{isExpanded ? "Weniger anzeigen" : "Mehr anzeigen"}
-			</button>
-		</section>
-	);
-}
+				<ExpandableSettingsSection
+					text="Erhalte eine Erinnerung, wenn du einen Kurs begonnen hast, aber noch nicht abgeschlossen hast"
+					title="Details zu Kurs-Erinnerungen"
+				/>
+			</div>
 
-function ToggleSetting({
-	value,
-	onChange,
-	label
-}: {
-	value: boolean;
-	onChange: (value: boolean) => void;
-	label: string;
-}) {
-	return (
-		<div className="flex items-center gap-2">
-			<Toggle value={value} onChange={onChange} label={label} />
+			<div className="space-y-2">
+				<ToggleSetting
+					value={streakReminder}
+					onChange={value => onChange({ streakReminder: value })}
+					label="Benachrichtigungen für Streak-Erinnerungen"
+				/>
+
+				<ExpandableSettingsSection
+					text="Erhalte eine Erinnerung, wenn du deine Lernziele für einen Tag nicht erreicht hast"
+					title="Details zu Streak-Erinnerungen"
+				/>
+			</div>
 		</div>
 	);
 }
