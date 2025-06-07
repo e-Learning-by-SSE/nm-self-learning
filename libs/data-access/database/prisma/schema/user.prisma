@@ -41,10 +41,15 @@ model User {
     skillRepositories           SkillRepository[]
     notifications               NotificationUser[]
     reminders                   ReminderLog[]
+    // Settings
     notificationSettings        Json?
     enabledLearningStatistics   Boolean              @default(false)
     enabledFeatureLearningDiary Boolean              @default(false)
     registrationCompleted       Boolean              @default(false)
+
+    // temporary fields masterarbeit marcel
+    acceptedExperimentTerms DateTime?
+    experimentalFeatures    Boolean?  @default(false) // Null: No-Participation, True: Participation group A, False: Participation group B
 }
 
 enum UserRole {

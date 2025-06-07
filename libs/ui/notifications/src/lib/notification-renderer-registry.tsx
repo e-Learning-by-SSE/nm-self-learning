@@ -2,10 +2,11 @@
 import { trpc } from "@self-learning/api-client";
 import { OnboardingDialog, StreakSlotMachineDialog } from "@self-learning/profile";
 import { flamesSchema, loginStreakSchema, streakDialogTriggerEnum } from "@self-learning/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { MessagePortal } from "./message-portal/message-portal";
 import { useRouter } from "next/router";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 
 export const notificationPropSchema = {
 	StreakInfoDialog: z.object({
@@ -19,7 +20,8 @@ export const notificationPropSchema = {
 		autoDismiss: z.boolean().optional(),
 		visibleTime: z.number().optional()
 	}),
-	OnboardingDialog: z.object({}).optional()
+	OnboardingDialog: z.object({}).optional(),
+	ExperimentConsentForwarder: z.object({}).optional()
 } as const;
 
 export type NotificationPropsMap = {
@@ -84,9 +86,34 @@ export function DynamicNotificationRenderer({ notification }: { notification: No
 			);
 		case "OnboardingDialog":
 			return <NotificationOnboardingDialog {...notification} {...notification.props} />;
+		case "ExperimentConsentForwarder":
+			return <ExperimentConsentForwarder {...notification} {...notification.props} />;
 		default:
 			return null;
 	}
+}
+
+function ExperimentConsentForwarder(
+	props: NotificationPropsMap["ExperimentConsentForwarder"] & {
+		id: string;
+	}
+) {
+	const { mutateAsync: deleteNotification } = trpc.notification.delete.useMutation();
+	const session = useRequiredSession();
+	const { data: registrationStatus, isLoading } = trpc.me.registrationStatus.useQuery(undefined, {
+		enabled: session.data?.user?.name !== undefined
+	});
+	const router = useRouter();
+
+	useEffect(() => {
+		if (!isLoading && registrationStatus?.registrationCompleted === false) {
+			deleteNotification({ notificationIds: [props.id] }).then(() => {
+				router.push("/experiment/consent");
+			});
+		}
+	}, [isLoading, registrationStatus, props.id, deleteNotification, router]);
+
+	return null;
 }
 
 function StreakInfoDialogWrapper(

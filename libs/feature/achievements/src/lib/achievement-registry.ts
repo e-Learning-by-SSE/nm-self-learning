@@ -1,6 +1,6 @@
 import { AchievementMeta, AchievementWithProgress } from "@self-learning/types";
 import { checkGradeLessonTotal } from "./conditions/grade-lessons-total";
-import { checkStreak } from "./conditions/streak";
+import { checkDailyStreak } from "./conditions/streak";
 import { checkTimeLearnedToday } from "./conditions/focus-time";
 
 /**
@@ -12,7 +12,7 @@ import { checkTimeLearnedToday } from "./conditions/focus-time";
 type GroupDiscriminators = AchievementMeta["group"];
 
 export const ACHIEVEMENT_CONDITION_CHECKERS: Record<GroupDiscriminators, ConditionChecker> = {
-	streak: checkStreak,
+	daily_streak: checkDailyStreak,
 	grade_lessons_serial: async () => {
 		return {};
 	},

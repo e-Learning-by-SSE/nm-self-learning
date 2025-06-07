@@ -2,13 +2,14 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
 	DeleteMeForm,
+	ExperimentShortInfo,
 	FeatureSettingsForm,
 	getUserWithSettings,
 	PersonalSettingsForm
 } from "@self-learning/profile";
 import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
@@ -40,7 +41,7 @@ export const getServerSideProps = withTranslations(
 export default function SettingsPage(props: PageProps) {
 	const [settings, setSettings] = useState(props.settings);
 	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
-
+	const { data } = useRequiredSession();
 	const router = useRouter();
 
 	const onPersonalSettingSubmit: Parameters<
@@ -71,7 +72,19 @@ export default function SettingsPage(props: PageProps) {
 	const onFeatureChange: Parameters<typeof FeatureSettingsForm>[0]["onChange"] = async update => {
 		try {
 			if (!update) return;
-
+			// TODO [MS-MA]: remove this check when the feature is stable
+			if (
+				update.enabledLearningStatistics === false &&
+				data?.user.features.includes("experimentalFeatures")
+			) {
+				showToast({
+					type: "error",
+					title: "Aktion nicht möglich",
+					subtitle:
+						"Diese Einstellung kann nicht deaktiviert während du an einer Studie teilnimmst."
+				});
+				return;
+			}
 			setSettings(prev => {
 				const newSettings = { ...prev, ...update };
 				updateSettings({ user: newSettings });
@@ -91,6 +104,9 @@ export default function SettingsPage(props: PageProps) {
 	return (
 		<CenteredSection className="bg-gray-50">
 			<h1 className="text-2xl font-bold">Einstellungen</h1>
+			<p className="text-gray-600 text-sm">
+				Einige Einstellungen werden möglicherweise erst nach einem erneuten Login aktiv.
+			</p>
 			<SettingSection title="Profil">
 				<PersonalSettingsForm
 					personalSettings={settings}
@@ -99,6 +115,9 @@ export default function SettingsPage(props: PageProps) {
 			</SettingSection>
 			<SettingSection title="Funktionen">
 				<FeatureSettingsForm featureSettings={settings} onChange={onFeatureChange} />
+			</SettingSection>
+			<SettingSection title="Studienteilnahme">
+				<ExperimentShortInfo />
 			</SettingSection>
 			<SettingSection title="Kritischer Bereich">
 				<DeleteMeForm />

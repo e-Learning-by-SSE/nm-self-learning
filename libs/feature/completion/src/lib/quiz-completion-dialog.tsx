@@ -1,10 +1,15 @@
 import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { useQuiz } from "@self-learning/quiz";
-import { useGamificationOptIn } from "@self-learning/profile";
-import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	LoadingCircleCorner,
+	OnDialogCloseFn
+} from "@self-learning/ui/common";
 import Link from "next/link";
 import { QuizCompletedGradeDialog } from "./lesson-grade-dialog";
+import { trpc } from "@self-learning/api-client";
 
 export function QuizCompletionDialog({
 	course,
@@ -17,9 +22,10 @@ export function QuizCompletionDialog({
 	nextLesson: { title: string; slug: string } | null;
 	onClose: OnDialogCloseFn<void>;
 }) {
-	const optin = useGamificationOptIn();
+	const { isLoading, data } = trpc.me.getExperimentStatus.useQuery();
 
-	if (optin) {
+	if (isLoading || !data) return <LoadingCircleCorner />;
+	if (data.isParticipating) {
 		return (
 			<QuizCompletedGradeDialog
 				open={true}

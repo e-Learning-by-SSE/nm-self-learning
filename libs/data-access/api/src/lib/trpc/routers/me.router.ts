@@ -1,8 +1,14 @@
 import { database } from "@self-learning/database";
-import { authProcedure, t } from "../trpc";
-import { findLessons } from "./lesson.router";
+import {
+	createUserParticipation,
+	getExperimentStatus,
+	updateExperimentParticipation
+} from "@self-learning/profile";
 import { editUserSettingsSchema } from "@self-learning/types";
 import { randomUUID } from "crypto";
+import { z } from "zod";
+import { authProcedure, t } from "../trpc";
+import { findLessons } from "./lesson.router";
 
 export const meRouter = t.router({
 	permissions: authProcedure.query(({ ctx }) => {
@@ -136,5 +142,30 @@ export const meRouter = t.router({
 				registrationCompleted: true
 			}
 		});
+	}),
+
+	// TODO [MS-MA]: remove this when the feature is stable
+	submitExperimentConsent: authProcedure
+		.input(
+			z.object({
+				consent: z.boolean()
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { user } = ctx;
+			const { consent } = input;
+
+			if (!consent) {
+				return updateExperimentParticipation({
+					username: user.name,
+					consent: false
+				});
+			} else {
+				return createUserParticipation(user.name);
+			}
+		}),
+	getExperimentStatus: authProcedure.query(async ({ ctx }) => {
+		const { user } = ctx;
+		return getExperimentStatus(user.name);
 	})
 });
