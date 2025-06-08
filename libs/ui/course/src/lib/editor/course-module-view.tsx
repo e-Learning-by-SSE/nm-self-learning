@@ -46,25 +46,23 @@ export function CourseModuleView({
 		setSelectedIndex(index);
 	}
 	const addSkills = (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => {
-    form.setValue(field, [
-        ...(form.getValues(field) ?? []),
-        ...skillsToAdd.map(skill => ({ ...skill, children: [], parents: [] }))
-    ]);
-};
+		form.setValue(field, [
+			...(form.getValues(field) ?? []),
+			...skillsToAdd.map(skill => ({ ...skill, children: [], parents: [] }))
+		]);
+	};
 	const onDragStart = () => {
-		console.log("Drag Started");
 		setIsDragging(true);
 	};
 	const onDragEnd = (result: import("@hello-pangea/dnd").DropResult) => {
 		setIsDragging(false);
-		console.log("Drag Ended", result);
 		if (!result.destination) return;
 		if (["provides", "requires"].includes(result.destination.droppableId)) {
-			const skillId = result.draggableId;
+			//Filter out the skill ID from the draggableId because only the number after the last colon is the skill ID
+			const skillId = result.draggableId.split(":").pop() ?? "";
 			const skill = allSkills.get(skillId);
 			if (skill) {
 				addSkills([skill], result.destination.droppableId as "provides" | "requires");
-				console.log("Added skill", skill, "to", result.destination.droppableId);
 			}
 		}
 	};
@@ -72,7 +70,7 @@ export function CourseModuleView({
 	const renderContent = (index: number) => {
 		switch (index) {
 			case 0:
-				return <ModuleInfoEditor addSkills={addSkills}/>;
+				return <ModuleInfoEditor addSkills={addSkills} />;
 			case 1:
 				return <LessonContentEditor />;
 			case 2:
@@ -83,19 +81,24 @@ export function CourseModuleView({
 	};
 
 	return (
-		<div className="flex min-h-screen">
+		<div className="grid grid-cols-[1fr_2fr] min-h-screen">
 			<DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
-				<aside className="w-[600px] border-r border-light-border bg-white p-6">
-					<SkillFolderEditor skills={allSkills} authorId={authorId} isSkilltree={true} isDragging={isDragging}/>
+				<aside className="w-[2fr] min-w-[400px] max-w-[600px] border-r border-light-border bg-white p-6">
+					<SkillFolderEditor
+						skills={allSkills}
+						authorId={authorId}
+						isSkilltree={true}
+						isDragging={isDragging}
+					/>
 				</aside>
-				<main className="flex-1 p-8 pr-4 py-4 text-sm ">
+				<main className="flex-1 min-w-[500px] max-w-[900px] p-8 pr-4 py-4 text-sm">
 					<FormProvider {...form}>
 						<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
 							{tabs.map((content, idx) => (
 								<Tab key={idx}>{content}</Tab>
 							))}
 						</Tabs>
-						<div className="items-center justify-center">
+						<div className="items-center justify-center w-full">
 							{renderContent(selectedIndex)}
 						</div>
 						<form id="lessonform" onSubmit={() => {}}></form>

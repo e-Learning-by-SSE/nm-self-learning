@@ -46,7 +46,6 @@ export function LessonSkillManager({ addSkills }: { addSkills: (skillsToAdd: Ski
 					}}
 					onAddSkill={skill => {
 						if (skill) addSkills(skill, "provides");
-						console.log("Added skills", skill);
 					}}
 					droppableId="provides"
 				/>
