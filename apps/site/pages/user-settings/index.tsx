@@ -46,6 +46,9 @@ export const getServerSideProps = withTranslations(
 export default function SettingsPage(props: PageProps) {
 	const [settings, setSettings] = useState(props.settings);
 	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+	const { mutateAsync: updateNotificationSettings } =
+		trpc.notification.upsertNotificationSetting.useMutation();
+
 	const { data } = useRequiredSession();
 	const router = useRouter();
 
@@ -74,10 +77,7 @@ export default function SettingsPage(props: PageProps) {
 		}
 	};
 
-	type OnChangeType = Parameters<typeof FeatureSettingsForm>[0]["onChange"] &
-		Parameters<typeof NotificationSettingsForm>[0]["onChange"];
-
-	const onFeatureChange: OnChangeType = async update => {
+	const onFeatureChange: Parameters<typeof FeatureSettingsForm>[0]["onChange"] = async update => {
 		try {
 			if (!update) return;
 			// TODO [MS-MA]: remove this check when the feature is stable
@@ -109,6 +109,26 @@ export default function SettingsPage(props: PageProps) {
 			}
 		}
 	};
+
+	const onNotificationChange: Parameters<
+		typeof NotificationSettingsForm
+	>[0]["onChange"] = async update => {
+		if (!update) return;
+		setSettings(prev => {
+			const updateIndex = prev.notificationSettings.findIndex(
+				setting => setting.id === update.id
+			);
+			const newSettings = [...prev.notificationSettings];
+			if (updateIndex >= 0 && update.id) {
+				newSettings[updateIndex] = { ...prev.notificationSettings[updateIndex], ...update };
+				void updateNotificationSettings(newSettings[updateIndex]);
+			}
+			return { ...prev, notificationSettings: newSettings };
+		});
+	};
+
+	console.log(settings);
+
 	return (
 		<CenteredSection className="bg-gray-50">
 			<h1 className="text-2xl font-bold">Einstellungen</h1>
@@ -128,7 +148,7 @@ export default function SettingsPage(props: PageProps) {
 				{props.experimentStatus?.isParticipating && (
 					<NotificationSettingsForm
 						notificationSettings={settings.notificationSettings}
-						onChange={onFeatureChange}
+						onChange={onNotificationChange}
 					/>
 				)}
 			</SettingSection>

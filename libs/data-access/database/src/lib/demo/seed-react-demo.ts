@@ -11,7 +11,11 @@ import {
 import { getRandomId } from "@self-learning/util/common";
 import { subHours } from "date-fns";
 import { defaultLicenseId } from "../license";
-import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
+import {
+	createLessonWithRandomContentAndDemoQuestions,
+	createUsers,
+	getDefaultNotificationData
+} from "../seed-functions";
 
 faker.seed(1);
 
@@ -463,6 +467,11 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 					maxCount: 10
 				} satisfies Flames
 			}
+		},
+		notificationSettings: {
+			createMany: {
+				data: getDefaultNotificationData(false)
+			}
 		}
 	},
 	{
@@ -488,6 +497,11 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 				displayName: "Minerva McGonagall",
 				slug: "mcgonagall",
 				imgUrl: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg"
+			}
+		},
+		notificationSettings: {
+			createMany: {
+				data: getDefaultNotificationData(false)
 			}
 		}
 	}
@@ -556,6 +570,11 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 				count: 3,
 				maxCount: 10
 			} satisfies Flames
+		}
+	},
+	notificationSettings: {
+		createMany: {
+			data: getDefaultNotificationData(false)
 		}
 	}
 }));

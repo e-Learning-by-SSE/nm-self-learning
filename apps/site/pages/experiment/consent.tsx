@@ -39,6 +39,7 @@ export default function ExperimentConsentPage({
 	const [agreesToParticipate, setAgreesToParticipate] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
+	const { mutateAsync: updateProfile } = trpc.me.updateSettings.useMutation();
 	const { mutateAsync: submitConsent } = trpc.me.submitExperimentConsent.useMutation();
 
 	async function handleSubmitConsent() {
@@ -47,12 +48,13 @@ export default function ExperimentConsentPage({
 		setIsSubmitting(true);
 		try {
 			await submitConsent({ consent: true });
+			await updateProfile({ user: { registrationCompleted: true } });
 			showToast({
 				type: "success",
 				title: "Einverständnis gespeichert",
 				subtitle: "Vielen Dank für Ihre Teilnahme am Experiment!"
 			});
-			loginRedirect("/profile");
+			void loginRedirect("/profile");
 		} catch (error) {
 			showToast({
 				type: "error",
@@ -68,12 +70,13 @@ export default function ExperimentConsentPage({
 		setIsSubmitting(true);
 		try {
 			await submitConsent({ consent: false });
+			await updateProfile({ user: { registrationCompleted: true } });
 			showToast({
 				type: "info",
 				title: "Teilnahme abgelehnt",
 				subtitle: "Sie können die Plattform normal weiter nutzen."
 			});
-			loginRedirect("/profile");
+			void loginRedirect("/dashboard");
 		} catch (error) {
 			showToast({
 				type: "error",

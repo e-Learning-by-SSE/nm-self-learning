@@ -113,6 +113,28 @@ model NotificationUser {
     @@id([notificationId, userId])
 }
 
+model UserNotificationSetting {
+    id      String              @id @default(uuid())
+    userId  String
+    type    NotificationType
+    channel NotificationChannel
+    enabled Boolean             @default(true)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, type, channel]) // Jeder User nur 1x pro Typ + Channel
+}
+
+enum NotificationType {
+    courseReminder
+    streakReminder
+}
+
+enum NotificationChannel {
+    email
+    push
+}
+
 model ReminderLog {
     id          String         @id @default(uuid())
     user        User           @relation(fields: [userId], references: [id])

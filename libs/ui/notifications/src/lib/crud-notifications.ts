@@ -1,11 +1,17 @@
-import { Notification, Prisma } from "@prisma/client";
+import {
+	Notification,
+	NotificationChannel,
+	NotificationType,
+	Prisma,
+	PrismaClient
+} from "@prisma/client";
 import { database } from "@self-learning/database";
+import { addBusinessDays } from "date-fns";
 import {
 	NotificationEntry,
 	NotificationPropsMap,
 	validateNotification
 } from "./notification-renderer-registry";
-import { addBusinessDays } from "date-fns";
 
 type DbInputNotification = Partial<
 	Omit<Notification, "id" | "createdAt" | "updatedAt" | "component" | "props">
@@ -50,4 +56,28 @@ export async function createNotification<K extends keyof NotificationPropsMap>(
 		return newNotification;
 	};
 	return tx ? execution(tx) : database.$transaction(execution);
+}
+
+export async function createInitialNotificationSettings(
+	user: { id: string },
+	client: Prisma.TransactionClient | PrismaClient = database
+) {
+	await client.userNotificationSetting.createMany({
+		data: getDefaultNotificationData().map(setting => ({
+			...setting,
+			userId: user.id
+		}))
+	});
+}
+
+function getDefaultNotificationData(defaultValue?: boolean) {
+	const types = Object.values(NotificationType);
+	const channels = Object.values(NotificationChannel);
+	return types.flatMap(type =>
+		channels.map(channel => ({
+			type,
+			channel,
+			enabled: defaultValue // if undefined -> prisma default
+		}))
+	);
 }

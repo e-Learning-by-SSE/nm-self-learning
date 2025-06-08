@@ -1,6 +1,6 @@
 /* eslint-disable quotes */
 import { faker } from "@faker-js/faker";
-import { LessonType, Prisma, PrismaClient } from "@prisma/client";
+import { LessonType, NotificationChannel, NotificationType, Prisma, PrismaClient } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -233,7 +233,8 @@ export function createMultipleChoice({
 			...answer
 		})),
 		questionStep: 1,
-		hints: hintsData
+		hints: hintsData,
+		randomizeAnswers: false
 	};
 }
 
@@ -553,4 +554,16 @@ export function getRandomElementFromArray<T>(arr: T[]): T {
 	}
 	const randomIndex = faker.number.int({ min: 0, max: arr.length - 1 });
 	return arr[randomIndex];
+}
+
+export function getDefaultNotificationData(defaultValue?: boolean) {
+	const types = Object.values(NotificationType);
+	const channels = Object.values(NotificationChannel);
+	return types.flatMap(type =>
+		channels.map(channel => ({
+			type,
+			channel,
+			enabled: defaultValue // if undefined -> prisma default
+		}))
+	);
 }

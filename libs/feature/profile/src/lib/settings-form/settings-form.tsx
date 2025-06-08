@@ -1,12 +1,13 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { NotificationType } from "@prisma/client";
+import { trpc } from "@self-learning/api-client";
 import {
 	EditFeatureSettings,
-	editNotificationSettingsSchema,
 	EditPersonalSettings,
 	editPersonalSettingSchema,
-	NotificationSettings,
-	ResolvedValue
+	ResolvedValue,
+	UserNotificationSetting
 } from "@self-learning/types";
 import { OnDialogCloseFn, Toggle } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
@@ -204,41 +205,46 @@ export function FeatureSettingsForm({
 	);
 }
 
+const descriptionMap: Record<NotificationType, { title: string; text: string }> = {
+	courseReminder: {
+		title: "Kurs-Erinnerungen",
+		text: "Erhalte eine Erinnerung, wenn du einen Kurs begonnen hast, aber noch nicht abgeschlossen hast"
+	},
+	streakReminder: {
+		title: "Streak-Erinnerungen",
+		text: "Erhalte eine Erinnerung, wenn du deine Lernziele für einen Tag nicht erreicht hast"
+	}
+};
+
 export function NotificationSettingsForm({
 	notificationSettings,
 	onChange
 }: {
-	notificationSettings: NotificationSettings;
-	onChange: OnDialogCloseFn<Partial<NotificationSettings>>;
+	notificationSettings: UserNotificationSetting[];
+	onChange: OnDialogCloseFn<UserNotificationSetting>;
 }) {
-	const { courseReminder, streakReminder } = notificationSettings;
-
 	return (
 		<div className="space-y-4">
 			<div className="space-y-2">
-				<ToggleSetting
-					value={courseReminder}
-					onChange={value => onChange({ courseReminder: value })}
-					label="Benachrichtigungen für Kurs-Erinnerungen"
-				/>
-
-				<ExpandableSettingsSection
-					text="Erhalte eine Erinnerung, wenn du einen Kurs begonnen hast, aber noch nicht abgeschlossen hast"
-					title="Details zu Kurs-Erinnerungen"
-				/>
-			</div>
-
-			<div className="space-y-2">
-				<ToggleSetting
-					value={streakReminder}
-					onChange={value => onChange({ streakReminder: value })}
-					label="Benachrichtigungen für Streak-Erinnerungen"
-				/>
-
-				<ExpandableSettingsSection
-					text="Erhalte eine Erinnerung, wenn du deine Lernziele für einen Tag nicht erreicht hast"
-					title="Details zu Streak-Erinnerungen"
-				/>
+				{notificationSettings
+					.filter(ns => ns.channel === "email") // currently only email notifications are supported
+					.map(setting => {
+						return (
+							<>
+								<ToggleSetting
+									value={setting.enabled}
+									onChange={value =>
+										void onChange({ ...setting, enabled: value })
+									}
+									label={`${descriptionMap[setting.type].title}`}
+								/>
+								<ExpandableSettingsSection
+									text={descriptionMap[setting.type].text}
+									title={descriptionMap[setting.type].title}
+								/>
+							</>
+						);
+					})}
 			</div>
 		</div>
 	);

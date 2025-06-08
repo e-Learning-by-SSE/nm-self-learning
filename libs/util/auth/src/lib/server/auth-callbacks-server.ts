@@ -1,4 +1,3 @@
-import { createNewProfile } from "@self-learning/achievements";
 import { database } from "@self-learning/database";
 import { getExperimentStatus, isExperimentActive } from "@self-learning/profile";
 import { GamificationProfile } from "@self-learning/types";
@@ -33,27 +32,10 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 	const now = new Date();
 
 	await database.$transaction(async tx => {
-		const profile = await tx.gamificationProfile.findUnique({
+		const profile = await tx.gamificationProfile.findUniqueOrThrow({
 			where: { userId: user.id },
 			select: { lastLogin: true, loginStreak: true, flames: true }
 		});
-
-		if (!profile) {
-			const newCreatedProfile = await createNewProfile(username, tx);
-
-			await createNotification({
-				tx,
-				component: "StreakInfoDialog",
-				props: {
-					flames: newCreatedProfile.flames,
-					trigger: "onBoard",
-					loginStreak: newCreatedProfile.loginStreak
-				},
-				targetAudience: "user",
-				targetUser: user.id
-			});
-			return;
-		}
 
 		const { lastLogin, loginStreak, flames } = profile as GamificationProfile;
 		const hoursSinceLastLogin = differenceInHours(now, lastLogin ?? new Date());

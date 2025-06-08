@@ -25,13 +25,13 @@ model Session {
 }
 
 model User {
-    id                          String               @id @default(cuid())
-    name                        String               @unique
+    id                          String                    @id @default(cuid())
+    name                        String                    @unique
     displayName                 String
-    email                       String?              @unique
+    email                       String?                   @unique
     emailVerified               DateTime?
     image                       String?
-    role                        UserRole             @default(USER)
+    role                        UserRole                  @default(USER)
     accounts                    Account[]
     author                      Author?
     sessions                    Session[]
@@ -41,11 +41,11 @@ model User {
     skillRepositories           SkillRepository[]
     notifications               NotificationUser[]
     reminders                   ReminderLog[]
+    notificationSettings        UserNotificationSetting[]
     // Settings
-    notificationSettings        Json?
-    enabledLearningStatistics   Boolean              @default(false)
-    enabledFeatureLearningDiary Boolean              @default(false)
-    registrationCompleted       Boolean              @default(false)
+    enabledLearningStatistics   Boolean                   @default(false)
+    enabledFeatureLearningDiary Boolean                   @default(false)
+    registrationCompleted       Boolean                   @default(false)
 
     // temporary fields masterarbeit marcel
     acceptedExperimentTerms DateTime?

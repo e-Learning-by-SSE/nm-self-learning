@@ -1,5 +1,4 @@
 import * as z from "zod";
-import { EmailContext } from "@self-learning/ui/notifications";
 
 export const editFeatureSettingsSchema = z.object({
 	enabledLearningStatistics: z.boolean(),
@@ -12,24 +11,12 @@ export const editPersonalSettingSchema = z.object({
 });
 export type EditPersonalSettings = z.infer<typeof editPersonalSettingSchema>;
 
-export const editNotificationSettingsSchema = z.object({
-	courseReminder: z.boolean().default(true),
-	streakReminder: z.boolean().default(true)
-});
-// add a compiler check to be sure that every email context type is covered and can be used in the settings
-const _assert = editNotificationSettingsSchema.shape satisfies Record<
-	EmailContext["type"],
-	z.ZodTypeAny
->;
-export type NotificationSettings = z.infer<typeof editNotificationSettingsSchema>;
-
 export const editUserSettingsSchema = z
 	.object({
 		user: z
 			.object({
 				...editPersonalSettingSchema.shape,
 				...editFeatureSettingsSchema.shape,
-				...editNotificationSettingsSchema.shape,
 				registrationCompleted: z.boolean()
 			})
 			.partial()
@@ -37,3 +24,15 @@ export const editUserSettingsSchema = z
 	.partial();
 
 export type EditUserSettings = z.infer<typeof editUserSettingsSchema>;
+
+const notificationTypeSchema = z.enum(["courseReminder", "streakReminder"]);
+const notificationChannelSchema = z.enum(["email", "push"]);
+
+export const userNotificationSettingSchema = z.object({
+	id: z.string().optional(), // optional for create, required for update
+	userId: z.string(),
+	type: notificationTypeSchema,
+	channel: notificationChannelSchema,
+	enabled: z.boolean().default(true)
+});
+export type UserNotificationSetting = z.infer<typeof userNotificationSettingSchema>;

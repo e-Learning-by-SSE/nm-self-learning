@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { createNewProfile } from "@self-learning/achievements";
 import { database } from "@self-learning/database";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
@@ -7,8 +8,9 @@ import { Adapter, AdapterAccount } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
-import { authCallbacks, getIdpSelflearnAdminRole } from "./create-user-session";
 import { loginCallbacks } from "./auth-callbacks-server";
+import { authCallbacks, getIdpSelflearnAdminRole } from "./create-user-session";
+import { createInitialNotificationSettings } from "@self-learning/ui/notifications";
 
 export const MAIL_DOMAIN = "@uni-hildesheim.de";
 export const OIDC_SCOPES = "openid profile email roles profile_studium";
@@ -190,6 +192,15 @@ export const authOptions: NextAuthOptions = {
 			for (const call of loginCallbacks) {
 				await call({ user, account, profile, isNewUser });
 			}
+		},
+		createUser: async ({ user }) => {
+			const username = user.name?.trim();
+			if (!username) return;
+			database.$transaction(async tx => {
+				await createNewProfile(username, tx);
+
+				await createInitialNotificationSettings(user, tx);
+			});
 		}
 	}
 };

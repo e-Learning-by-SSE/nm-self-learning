@@ -2,6 +2,7 @@ import { database } from "@self-learning/database";
 import { authProcedure, t } from "../trpc";
 import { z } from "zod";
 import { AudienceType, Prisma } from "@prisma/client";
+import { userNotificationSettingSchema } from "@self-learning/types";
 
 async function getNotifications(userId: string, tx?: Prisma.TransactionClient) {
 	const client = tx ?? database;
@@ -121,6 +122,28 @@ export const notificationRouter = t.router({
 					await tx.notification.delete({
 						where: { id: notificationId }
 					});
+				}
+			});
+		}),
+	upsertNotificationSetting: authProcedure
+		.input(userNotificationSettingSchema)
+		.mutation(async ({ input, ctx }) => {
+			const userId = ctx.user.id;
+			return database.userNotificationSetting.upsert({
+				where: {
+					id: input.id ?? "",
+					userId_type_channel: {
+						userId,
+						type: input.type,
+						channel: input.channel
+					}
+				},
+				create: {
+					...input,
+					userId
+				},
+				update: {
+					enabled: input.enabled
 				}
 			});
 		})
