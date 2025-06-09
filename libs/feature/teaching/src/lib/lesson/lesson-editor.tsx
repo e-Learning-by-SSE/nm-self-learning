@@ -92,7 +92,7 @@ export function LessonEditor({
 
 	return (
 		<FormProvider {...form}>
-			<form id="lessonform" onSubmit={form.handleSubmit(onSubmit, console.log)} className="">
+			<form id="lessonform" onSubmit={form.handleSubmit(onSubmit, console.log)} className="bg-gray-50">
 				<SidebarEditorLayout sidebar={<LessonInfoEditor lesson={initialLesson} />}>
 					<div>
 						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
