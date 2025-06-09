@@ -9,6 +9,7 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
+import { useRouter } from "next/router";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -78,6 +79,8 @@ export function LessonEditor({
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
 }) {
+	const isNew = initialLesson?.lessonId === "";
+	const router = useRouter();
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
 	const form = useForm<LessonFormModel>({
@@ -90,9 +93,19 @@ export function LessonEditor({
 		resolver: zodResolver(lessonSchema)
 	});
 
+	function onCancel() {
+		if (window.confirm("Änderungen verwerfen?")) {
+			router.push("/dashboard/author");
+		}
+	}
+
 	return (
 		<FormProvider {...form}>
-			<form id="lessonform" onSubmit={form.handleSubmit(onSubmit, console.log)} className="bg-gray-50">
+			<form
+				id="lessonform"
+				onSubmit={form.handleSubmit(onSubmit, console.log)}
+				className="bg-gray-50"
+			>
 				<SidebarEditorLayout sidebar={<LessonInfoEditor lesson={initialLesson} />}>
 					<div>
 						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
@@ -108,12 +121,14 @@ export function LessonEditor({
 						} pointer-events-none bottom-0 flex w-full items-end justify-end`}
 					></div>
 				</SidebarEditorLayout>
-				<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
-					<DialogActions onClose={onSubmit}>
-						<button type="submit" className="btn-primary pointer-events-auto">
-							Speichern
-						</button>
-					</DialogActions>
+				<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
+					<div className="z-50 pr-5 pb-5">
+						<DialogActions onClose={onCancel}>
+							<button type="submit" className="btn-primary pointer-events-auto">
+								{isNew ? "Erstellen" : "Speichern"}
+							</button>
+						</DialogActions>
+					</div>
 				</div>
 			</form>
 		</FormProvider>

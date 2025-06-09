@@ -77,7 +77,7 @@ export function Title({
 export function SidebarSection({ children }: { children: React.ReactNode }) {
 	return (
 		<section
-			className={`ml-3 flex flex-col gap-4 border-b border-light-border last:border-b-0`}
+			className={`ml-3 flex flex-col gap-4 border-b border-light-border py-4 last:border-b-0`}
 		>
 			{children}
 		</section>
