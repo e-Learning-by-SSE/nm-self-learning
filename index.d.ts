@@ -5,7 +5,7 @@ declare global {
 	declare namespace NodeJS {
 		interface ProcessEnv {
 			NODE_ENV: "development" | "production";
-			SITE_BASE_URL: string;
+			NEXT_PUBLIC_SITE_BASE_URL: string;
 			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
 			NEXT_PUBLIC_BASE_PATH: string | undefined;
 			NEXT_TRAILING_SLASH: Boolean | undefined;

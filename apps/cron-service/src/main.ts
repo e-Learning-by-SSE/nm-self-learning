@@ -1,7 +1,7 @@
 import cron from "node-cron";
 
 const API_SECRET = process.env.SCHEDULER_SECRET;
-const API_URL = process.env.SITE_BASE_URL;
+const API_URL = process.env.NEXT_PUBLIC_SITE_BASE_URL;
 
 function startCronSendEmail() {
 	const cronConfig = "0 6,12,18,0 * * *";
