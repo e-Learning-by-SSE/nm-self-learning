@@ -5,6 +5,7 @@ declare global {
 	declare namespace NodeJS {
 		interface ProcessEnv {
 			NODE_ENV: "development" | "production";
+			SITE_BASE_URL: string;
 			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
 			NEXT_PUBLIC_BASE_PATH: string | undefined;
 			NEXT_TRAILING_SLASH: Boolean | undefined;
@@ -25,6 +26,8 @@ declare global {
 			NEXTAUTH_URL: string;
 			NEXTAUTH_SECRET: string;
 			APP_VERSION: string;
+			SCHEDULER_SECRET: string | undefined;
+			RESEND_API_KEY: string | undefined;
 		}
 	}
 }
