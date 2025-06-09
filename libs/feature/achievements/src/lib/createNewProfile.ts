@@ -19,7 +19,7 @@ export async function createNewProfile(
 
 	const data = await tx.gamificationProfile.create({
 		data: {
-			user: { connect: { id: username } },
+			user: { connect: { name: username } },
 			username,
 			lastLogin: new Date(),
 			flames: newFlames,
