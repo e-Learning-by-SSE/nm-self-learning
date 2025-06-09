@@ -8,7 +8,7 @@ import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
-import { useRequiredSession } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -92,38 +92,28 @@ export function LessonEditor({
 
 	return (
 		<FormProvider {...form}>
-			<form
-				id="lessonform"
-				onSubmit={form.handleSubmit(onSubmit, console.log)}
-				className="flex h-full flex-col overflow-hidden"
-			>
-				<div className="flex h-full overflow-y-auto overflow-x-hidden">
-					<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-						<LessonInfoEditor lesson={initialLesson} />
-
-						<div>
-							<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-								<Tab>Lerninhalt</Tab>
-								<Tab>Lernkontrolle</Tab>
-							</Tabs>
-							{selectedTab === 0 && <LessonContentEditor />}
-							{selectedTab === 1 && <QuizEditor />}
-						</div>
+			<form id="lessonform" onSubmit={form.handleSubmit(onSubmit, console.log)} className="">
+				<SidebarEditorLayout sidebar={<LessonInfoEditor lesson={initialLesson} />}>
+					<div>
+						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+							<Tab>Lerninhalt</Tab>
+							<Tab>Lernkontrolle</Tab>
+						</Tabs>
+						{selectedTab === 0 && <LessonContentEditor />}
+						{selectedTab === 1 && <QuizEditor />}
 					</div>
-				</div>
-
-				<div
-					className={`${
-						isFullScreen ? "fixed" : ""
-					} pointer-events-none bottom-0 flex w-full items-end justify-end`}
-				>
-					<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
-						<DialogActions onClose={onSubmit}>
-							<button type="submit" className="btn-primary pointer-events-auto">
-								Speichern
-							</button>
-						</DialogActions>
-					</div>
+					<div
+						className={`${
+							isFullScreen ? "fixed" : ""
+						} pointer-events-none bottom-0 flex w-full items-end justify-end`}
+					></div>
+				</SidebarEditorLayout>
+				<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
+					<DialogActions onClose={onSubmit}>
+						<button type="submit" className="btn-primary pointer-events-auto">
+							Speichern
+						</button>
+					</DialogActions>
 				</div>
 			</form>
 		</FormProvider>
