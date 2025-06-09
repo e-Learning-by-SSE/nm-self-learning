@@ -20,7 +20,7 @@ import {
 	LessonContent,
 	LessonMeta
 } from "@self-learning/types";
-import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
+import { AuthorsList, LicenseChip, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -418,6 +418,25 @@ function SelfRegulatedPreQuestion({
 }) {
 	const [userAnswer, setUserAnswer] = useState("");
 
+	const handleSubmit = () => {
+		setShowDialog(false);
+		showToast({
+			title: "Super!",
+			subtitle:
+				"Vohandenes Wissen im Vorfeld noch einmal zu aktivieren, fördert den Lernerfolg!",
+			type: "info"
+		});
+	};
+
+	const handleSkipQuestion = () => {
+		setShowDialog(false);
+		showToast({
+			title: "Schritt übersprungen",
+			subtitle: ".",
+			type: "info"
+		});
+	};
+
 	return (
 		<>
 			<div>
@@ -434,16 +453,24 @@ function SelfRegulatedPreQuestion({
 					/>
 				</div>
 				<div className="mt-2 flex justify-end gap-2">
-					<button
-						type="button"
-						className="btn-primary"
-						onClick={() => {
-							setShowDialog(false);
-						}}
-						disabled={userAnswer.length == 0}
-					>
-						Antwort Speichern
-					</button>
+					{userAnswer.length == 0 ? (
+						<button
+							type="button"
+							className="btn-secondary"
+							onClick={handleSkipQuestion}
+						>
+							Schritt Überspringen
+						</button>
+					) : (
+						<button
+							type="button"
+							className="btn-primary"
+							onClick={handleSubmit}
+							disabled={userAnswer.length == 0}
+						>
+							Zur Lerneinheit
+						</button>
+					)}
 				</div>
 			</div>
 		</>
