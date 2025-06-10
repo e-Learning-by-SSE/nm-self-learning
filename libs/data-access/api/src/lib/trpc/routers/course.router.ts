@@ -609,9 +609,12 @@ export const courseRouter = t.router({
 		}),
 	deleteCourse: authorProcedure
 		.input(z.object({ slug: z.string() }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			return database.course.delete({
-				where: { slug: input.slug }
+				where: {
+					slug: input.slug,
+					authors: { some: { username: ctx.user.name } }
+				}
 			});
 		}),
 	findLinkedEntities: authorProcedure

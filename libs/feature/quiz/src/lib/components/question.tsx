@@ -1,4 +1,4 @@
-import { ArrowPathIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import type { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import {
 	AnswerContextProvider,
@@ -18,6 +18,10 @@ import { LessonType } from "@prisma/client";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
 import { useEventLog } from "@self-learning/util/common";
+import {
+	CheckCircleIcon as CheckCircleIconOutline,
+	XCircleIcon
+} from "@heroicons/react/24/outline";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
@@ -207,4 +211,53 @@ function CheckResult({
 		completed: null
 	};
 	return returnButton[completionState];
+}
+
+export function QuestionTab(props: {
+	evaluation: { isCorrect: boolean } | null;
+	index: number;
+	isMultiStep: boolean;
+}) {
+	const isCorrect = props.evaluation?.isCorrect === true;
+	const isIncorrect = props.evaluation?.isCorrect === false;
+
+	{
+		props.isMultiStep && <CheckCircleIcon className="h-5 text-secondary" />;
+	}
+
+	return (
+		<span className="flex items-center gap-4">
+			{isCorrect ? (
+				<QuestionTabIcon isMultiStep={props.isMultiStep}>
+					<CheckCircleIcon className="h-5 text-secondary" />
+				</QuestionTabIcon>
+			) : isIncorrect ? (
+				<QuestionTabIcon isMultiStep={props.isMultiStep}>
+					<XCircleIcon className="h-5 text-red-500" />
+				</QuestionTabIcon>
+			) : (
+				<QuestionTabIcon isMultiStep={props.isMultiStep}>
+					<CheckCircleIconOutline className="h-5 text-gray-400" />
+				</QuestionTabIcon>
+			)}
+			<span data-testid="questionTab">Aufgabe {props.index + 1}</span>
+		</span>
+	);
+}
+
+function QuestionTabIcon({
+	children,
+	isMultiStep
+}: {
+	children: React.ReactNode;
+	isMultiStep: boolean;
+}) {
+	return isMultiStep ? (
+		<div className="flex overflow-hidden">
+			{children}
+			{children}
+		</div>
+	) : (
+		<div>{children}</div>
+	);
 }

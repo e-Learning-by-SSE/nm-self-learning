@@ -3,9 +3,7 @@ import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 import { createCloze, Gap } from "./cloze-parser";
 import ReactMarkdown from "react-markdown";
-import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Selection } from "@self-learning/ui/common";
-type SetAnswerFn = (index: number, answer: string) => void;
+import { MarkdownListboxMenu, rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 
 export default function ClozeAnswer() {
 	const { question, answer, setAnswer, evaluation } = useQuestion("cloze");
@@ -39,13 +37,15 @@ export default function ClozeAnswer() {
 							{segment ?? ""}
 						</ReactMarkdown>
 						{cloze.gaps[index] && (
-							<RenderGapType
-								gap={cloze.gaps[index]}
-								index={index}
-								setAnswer={onUpdateAnswer}
-								value={answer.value[index] ?? ""}
-								disabled={!!evaluation}
-							/>
+							<span className="ml-1 inline-block align-middle">
+								<RenderGapType
+									gap={cloze.gaps[index]}
+									index={index}
+									setAnswer={onUpdateAnswer}
+									value={answer.value[index] ?? ""}
+									disabled={!!evaluation}
+								/>
+							</span>
 						)}
 					</Fragment>
 				))}
@@ -72,36 +72,28 @@ export default function ClozeAnswer() {
 
 export function RenderGapType({
 	gap,
-	setAnswer,
-	index,
 	value,
+	index,
+	setAnswer,
 	disabled
 }: {
 	gap: Gap;
 	value: string;
 	index: number;
-	setAnswer: SetAnswerFn;
+	setAnswer: (index: number, value: string) => void;
 	disabled: boolean;
 }) {
 	if (gap.type === "C") {
-		const options = gap.values.map(value => (
-			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
-				{value.text ?? ""}
-			</ReactMarkdown>
-		));
-		//renders the current selected value
-		const renderedValue = (
-			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
-				{value === "" ? "Select an option" : value}
-			</ReactMarkdown>
-		);
-
 		return (
-			<Selection
-				content={options}
-				value={renderedValue}
-				onChange={valueIndex => setAnswer(index, gap.values[valueIndex].text)}
-				disabled={disabled}
+			<MarkdownListboxMenu
+				onChange={option => setAnswer(index, option)}
+				title={""}
+				dropdownPosition={"bottom"}
+				displayValue={value}
+				options={gap.values.map(value => value.text)}
+				customButtonStyle={
+					"items-center justify-between px-3 py-2 border rounded space-x-2"
+				}
 			/>
 		);
 	}

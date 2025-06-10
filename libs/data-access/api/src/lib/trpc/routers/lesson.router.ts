@@ -171,9 +171,12 @@ export const lessonRouter = t.router({
 		}),
 	deleteLesson: authorProcedure
 		.input(z.object({ id: z.string() }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			return database.lesson.delete({
-				where: { lessonId: input.id }
+				where: {
+					lessonId: input.id,
+					authors: { some: { username: ctx.user.name } }
+				}
 			});
 		})
 });
