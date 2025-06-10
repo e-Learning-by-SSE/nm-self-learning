@@ -267,7 +267,7 @@ export const courseRouter = t.router({
 
 			return { content, lessonMap };
 		}),
-	generateCoursePreview: authProcedure
+	generateDynCourse: authProcedure
 		.input(
 			z.object({
 				courseId: z.string(),
@@ -302,6 +302,22 @@ export const courseRouter = t.router({
 				}
 			});
 
+			const userGlobalKnowledge = await database.student.findUnique({
+				where: { username: ctx.user.name },
+				select: {
+					received: {
+						select: {
+							id: true
+						}
+					}
+				}
+			});
+
+			const userGlobalKnowledgeIds =
+				userGlobalKnowledge?.received.map(skill => skill.id) ?? [];
+
+			const userKnowledge = [...input.knowledge, ...userGlobalKnowledgeIds];
+
 			const libSkills: LibSkill[] = dbSkills.map(skill => ({
 				id: skill.id,
 				repositoryId: skill.repositoryId,
@@ -316,7 +332,7 @@ export const courseRouter = t.router({
 				children: goal.children.map(child => child.id)
 			}));
 
-			const knowledgeLibSkills: LibSkill[] = input.knowledge
+			const knowledgeLibSkills: LibSkill[] = userKnowledge
 				.map(skillId => findSkill(skillId))
 				.filter((skill): skill is LibSkill => !!skill);
 
@@ -505,18 +521,23 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			// This directive is used here to intentionally ignore the "unused variable" warning from ESLint.
+			// In this case, the variable is required by the function signature (e.g., for destructuring or API compatibility),
+			// but is not actually used in the function body. Disabling the rule prevents unnecessary lint errors.
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { courseId, ...updateData } = input.course;
 			const updated = await database.dynCourse.update({
 				where: { courseId: input.courseId },
 				data: {
-					...input,
+					...updateData,
 					courseVersion: Date.now().toString(),
-					slug: "dyn" + input.course.slug,
+					slug: updateData.slug,
 					meta: {},
 					authors: {
-						connect: input.course.authors.map(author => ({ username: author.username }))
+						connect: updateData.authors.map(author => ({ username: author.username }))
 					},
 					teachingGoals: {
-						create: input.course.teachingGoals.map(goal => ({
+						connect: updateData.teachingGoals.map(goal => ({
 							name: goal.name,
 							description: goal.description,
 							repositoryId: goal.repositoryId,

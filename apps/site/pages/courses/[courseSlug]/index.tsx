@@ -129,7 +129,7 @@ export const getServerSideProps = withTranslations(
 		let course: Course | null = null;
 		if (courseSlug.startsWith("dyn")) {
 			const [dynCourse, courseVersion] = await getDynCourse(courseSlug, ctx.name);
-			
+
 			if (!dynCourse) {
 				return { notFound: true };
 			}
@@ -424,11 +424,15 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 			<ul className="flex flex-col gap-16">
 				{content.map((chapter, index) => (
 					<li key={index} className="flex flex-col rounded-lg bg-gray-100 p-8">
-						<h3 className="heading flex gap-4 text-2xl">
-							<span>{index + 1}.</span>
-							<span className="text-secondary">{chapter.title}</span>
-						</h3>
-						<span className="mt-4 text-light">{chapter.description}</span>
+						{content.length > 1 && (
+							<>
+								<h3 className="heading flex gap-4 text-2xl">
+									<span>{index + 1}.</span>
+									<span className="text-secondary">{chapter.title}</span>
+								</h3>
+								<span className="mt-4 text-light">{chapter.description}</span>
+							</>
+						)}
 
 						<ul className="mt-8 flex flex-col gap-1">
 							{chapter.content.map(lesson => (
@@ -534,19 +538,16 @@ function RefreshGeneratedCourse() {
 }
 
 function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: boolean }) {
-	const { mutateAsync } = trpc.course.generateCoursePreview.useMutation();
-	const [selectedPath, setSelectedPath] = useState("");
+	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
 	const [openDialog, setOpenDialog] = useState<React.JSX.Element | null>(null);
 	const router = useRouter();
 
-	const onSelectedKnowledge = async (skills: SkillFormModel[]) => {
+	const generateDynamicCourse = async () => {
 		try {
 			const generatedCourse = await mutateAsync({
 				courseId: course.courseId,
-				knowledge: skills.map(skill => skill.id)
+				knowledge: []
 			});
-
-			setOpenDialog(<ShowGeneratedPath selectedSkills={skills} />);
 
 			router.reload();
 		} catch (error) {
@@ -570,105 +571,15 @@ function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: 
 	return (
 		<div>
 			<h3 className="font-semibold text-lg">Kurspfad wählen </h3>
-			<div className="mt-2 space-y-2">
-				<label
-					className="block p-4 border rounded-lg cursor-pointer"
-					onClick={() => setSelectedPath("no-knowledge")}
-				>
-					<input
-						type="radio"
-						name="course-path"
-						checked={selectedPath === "no-knowledge"}
-						className="mr-2"
-						readOnly
-					/>
-					<span className="font-medium">Ohne Vorwissen</span>
-					<p className="text-sm text-gray-500">
-						Alle Lerneinheiten werden dem Pfad hinzugefügt, ungeachtet des Vorwissens
-						des Nutzers.
-					</p>
-				</label>
-				<label
-					className="block p-4 border rounded-lg cursor-pointer"
-					onClick={() => setSelectedPath("with-knowledge")}
-				>
-					<input
-						type="radio"
-						name="course-path"
-						checked={selectedPath === "with-knowledge"}
-						className="mr-2"
-						readOnly
-					/>
-					<span className="font-medium">Mit Vorwissen</span>
-					<p className="text-sm text-gray-500">
-						Lerneinheiten, bei denen der Nutzer bereits den Skill erworben hat, werden
-						nicht dem Pfad hinzugefügt.
-					</p>
-				</label>
-			</div>
-
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
 				onClick={async () => {
-					setOpenDialog(
-						<HandleChosenPath
-							selectedPath={selectedPath}
-							onClose={async skills => await onSelectedKnowledge(skills)}
-						/>
-					);
+					await generateDynamicCourse();
 				}}
 			>
 				Starten
 			</button>
 			{openDialog}
-		</div>
-	);
-}
-
-function HandleChosenPath({
-	selectedPath,
-	onClose
-}: {
-	selectedPath: string;
-	onClose: (skills: SkillFormModel[]) => void;
-}) {
-	const [isOpen, setIsOpen] = useState(true);
-	if (selectedPath == "with-knowledge") {
-		return (
-			<>
-				{isOpen && (
-					<SelectSkillDialog
-						onClose={skills => {
-							onClose(skills ?? []);
-							setIsOpen(false);
-						}}
-						repositoryId={"1"}
-					/>
-				)}
-			</>
-		);
-	}
-
-	return null;
-}
-
-function ShowGeneratedPath({ selectedSkills }: { selectedSkills: SkillFormModel[] }) {
-	const randomTime = Math.random() * selectedSkills.length * 1.5;
-
-	return (
-		<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
-			<h3 className="heading flex gap-4 text-2xl">
-				<span className="text-secondary">Generierter Kurs</span>
-			</h3>
-			<span className="mt-4 text-light">
-				Der Kurs wurde erfolgreich generiert. Die Lerneinheiten sind nun verfügbar.
-			</span>
-			<span className="mt-4 text-light">
-				Du hast dir durch dein Vorwissen {Math.floor(randomTime)} Module gespart.
-			</span>
-			<p className="mt-4 text-light">
-				Du kannst den Kurs jetzt starten und dein Wissen erweitern.
-			</p>
 		</div>
 	);
 }
