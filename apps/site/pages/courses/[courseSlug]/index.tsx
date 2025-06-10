@@ -219,9 +219,12 @@ async function getDynCourse(courseSlug: string, username: string) {
 	return [
 		{
 			...course,
-			content: course.generatedLessonPaths?.[0]?.content ?? []
+			content:
+				course.generatedLessonPaths?.[course.generatedLessonPaths?.length - 1]?.content ??
+				[]
 		} as typeof course & { content: unknown[] },
-		course.generatedLessonPaths?.[0]?.courseVersion ?? null
+		course.generatedLessonPaths?.[course.generatedLessonPaths?.length - 1]?.courseVersion ??
+			null
 	] as const;
 }
 
@@ -514,7 +517,7 @@ function Description({ content }: { content: CompiledMarkdown }) {
 	);
 }
 
-function RefreshGeneratedCourse() {
+function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 	return (
 		<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
 			<h3 className="heading flex gap-4 text-2xl">
@@ -529,7 +532,7 @@ function RefreshGeneratedCourse() {
 			</p>
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
-				onClick={() => {}}
+				onClick={onClick}
 			>
 				Kurs aktualisieren
 			</button>
@@ -544,7 +547,7 @@ function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: 
 
 	const generateDynamicCourse = async () => {
 		try {
-			const generatedCourse = await mutateAsync({
+			await mutateAsync({
 				courseId: course.courseId,
 				knowledge: []
 			});
@@ -561,7 +564,7 @@ function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: 
 	};
 
 	if (course.content?.length !== 0 && needsARefresh) {
-		return <RefreshGeneratedCourse />;
+		return <RefreshGeneratedCourse onClick={generateDynamicCourse} />;
 	}
 
 	if (course.content?.length !== 0) {
