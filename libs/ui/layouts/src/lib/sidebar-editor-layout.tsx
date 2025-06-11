@@ -7,7 +7,7 @@ export function SidebarEditorLayout({
 }) {
 	return (
 		<div className="mx-auto grid max-w-[1920px] gap-8 xl:grid-cols-[500px_1fr]">
-			<aside className="playlist-scroll top-1 w-full overflow-auto border-t border-r-gray-200 pb-8 xl:sticky xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r">
+			<aside className="top-1 w-full border-t border-r-gray-200 pb-8 xl:sticky xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r">
 				<div className="flex flex-col px-4 pb-8">
 					<div className="sticky top-0 z-10 flex flex-col gap-2 border-light-border pt-8 pb-4">
 						{sidebar}
