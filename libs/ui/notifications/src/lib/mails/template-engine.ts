@@ -1,3 +1,5 @@
+import { EmailContext } from "./email-types";
+
 export interface TemplateVariables {
 	[key: string]: string | number | boolean;
 }
@@ -8,8 +10,11 @@ export interface EmailTemplateDefinition {
 	text?: string;
 }
 
-export const EMAIL_TEMPLATES: Record<string, { subject: string; html: string; text?: string }> = {
-	"course-reminder": {
+export const EMAIL_TEMPLATES: Record<
+	EmailContext["type"],
+	{ subject: string; html: string; text?: string }
+> = {
+	courseReminder: {
 		subject: "Vergiss nicht: {{courseName}} wartet auf dich!",
 		html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -28,22 +33,22 @@ export const EMAIL_TEMPLATES: Record<string, { subject: string; html: string; te
 		text: 'Hallo {{userName}}! Du hast den Kurs "{{courseName}}" schon eine Weile nicht besucht. Jetzt weitermachen: {{courseUrl}}'
 	},
 
-	"achievement-unlocked": {
-		subject: "Neue Errungenschaft freigeschaltet! 🏆",
-		html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1>🏆 Herzlichen Glückwunsch {{userName}}!</h1>
-            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="color: #92400e; margin: 0;">{{achievementTitle}}</h2>
-              <p style="color: #78350f;">{{achievementDescription}}</p>
-              <p><strong>XP Belohnung: {{xpReward}}</strong></p>
-            </div>
-            <p>Weiter so! Schaue dir deine anderen Errungenschaften an und sammle weitere Punkte.</p>
-          </div>
-        `
-	},
+	// "achievement-unlocked": {
+	// 	subject: "Neue Errungenschaft freigeschaltet! 🏆",
+	// 	html: `
+	//         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+	//           <h1>🏆 Herzlichen Glückwunsch {{userName}}!</h1>
+	//           <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+	//             <h2 style="color: #92400e; margin: 0;">{{achievementTitle}}</h2>
+	//             <p style="color: #78350f;">{{achievementDescription}}</p>
+	//             <p><strong>XP Belohnung: {{xpReward}}</strong></p>
+	//           </div>
+	//           <p>Weiter so! Schaue dir deine anderen Errungenschaften an und sammle weitere Punkte.</p>
+	//         </div>
+	//       `
+	// },
 
-	"streak-reminder": {
+	streakReminder: {
 		subject: "Dein {{currentStreak}}-Tage Lernstreak ist in Gefahr! 🔥",
 		html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

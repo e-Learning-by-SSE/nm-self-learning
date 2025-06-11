@@ -1,6 +1,7 @@
 import { database } from "@self-learning/database";
 import { subDays } from "date-fns";
 import { sendCourseReminder } from "./email-service";
+import { checkStreakRisks } from "./reminders/streak-risk";
 
 export interface SchedulerResult {
 	courseReminders: number;
@@ -21,7 +22,7 @@ export async function checkAndSendScheduledEmails(): Promise<SchedulerResult> {
 		await Promise.all([
 			// checkCourseInactivity(results),
 			// checkNewAchievements(results),
-			// checkStreakRisks(results)
+			checkStreakRisks(results)
 		]);
 	} catch (error) {
 		console.error("Email scheduler error:", error);
@@ -102,14 +103,4 @@ async function checkCourseInactivity(results: SchedulerResult) {
 			results.errors++;
 		}
 	}
-}
-
-async function checkNewAchievements(results: SchedulerResult) {
-	// Implementation for achievement notifications
-	// Similar pattern as above
-}
-
-async function checkStreakRisks(results: SchedulerResult) {
-	// Implementation for streak reminders
-	// Similar pattern as above
 }

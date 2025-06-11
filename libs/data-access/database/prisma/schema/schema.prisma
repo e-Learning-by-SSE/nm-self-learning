@@ -144,6 +144,7 @@ model ReminderLog {
     status      ReminderStatus
     error       String?
     metadata    Json?
+    updatedAt   DateTime       @updatedAt
 
     @@index([userId, templateKey, sentAt])
 }
