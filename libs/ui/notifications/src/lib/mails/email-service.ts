@@ -1,5 +1,7 @@
+import { UserNotificationSetting } from "@prisma/client";
 import { CourseReminderContext, EmailContext, StreakReminderContext } from "./email-types";
 import { renderTemplate } from "./template-engine";
+import { matches } from "@self-learning/util/common";
 
 export interface EmailTemplate {
 	to: string;
@@ -18,9 +20,9 @@ export async function sendEmail(template: EmailTemplate): Promise<EmailResult> {
 	if (typeof window !== "undefined") {
 		throw new Error("sendEmail can only be called on the server side.");
 	}
-	if (process.env.NODE_ENV !== "production") {
+	if (process.env.NODE_ENV === "production") {
 		console.warn(
-			"Email sending is disabled in non-production environments. Switch to production to enable."
+			"Email sending via Resend is disabled in non-production environments. Switch to production to enable."
 		);
 		return {
 			success: true,
@@ -70,5 +72,19 @@ export async function sendCourseReminder(to: string, data: CourseReminderContext
 }
 
 export async function sendStreakReminder(to: string, data: StreakReminderContext) {
+	console.log("Sending streak reminder to:", to, "with data:", data);
 	return sendTemplatedEmail(to, { type: "streakReminder", data });
+}
+
+// export async function sendStreakReminderLastChance(to: string, data: StreakReminderContext) {
+// 	return sendTemplatedEmail(to, { type: "streakReminderLastChance", data });
+// }
+
+export function isEmailNotificationSettingEnabled(
+	type: EmailContext["type"],
+	user: { notificationSettings: UserNotificationSetting[] }
+) {
+	return user.notificationSettings.some(
+		matches<UserNotificationSetting>({ channel: "email", type, enabled: true })
+	);
 }

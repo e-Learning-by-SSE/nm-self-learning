@@ -1,3 +1,4 @@
+import "dotenv/config";
 import cron from "node-cron";
 
 const API_SECRET = process.env.SCHEDULER_SECRET;

@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		return;
 	}
 	try {
-		if (process.env.NODE_ENV === "production") {
+		if (process.env.NODE_ENV !== "development") {
 			const result = await checkAndSendScheduledEmails();
 			res.status(200).json({
 				status: "ok",
