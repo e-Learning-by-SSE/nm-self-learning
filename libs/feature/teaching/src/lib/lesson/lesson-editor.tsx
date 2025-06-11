@@ -119,17 +119,27 @@ export function LessonEditor({
 						className={`${
 							isFullScreen ? "fixed" : ""
 						} pointer-events-none bottom-0 flex w-full items-end justify-end`}
-					></div>
-				</SidebarEditorLayout>
-				<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
-					<div className="z-50 pr-5 pb-5">
-						<DialogActions onClose={onCancel}>
-							<button type="submit" className="btn-primary pointer-events-auto">
-								{isNew ? "Erstellen" : "Speichern"}
-							</button>
-						</DialogActions>
+					>
+						{!isFullScreen && (
+							<DialogActions onClose={onCancel}>
+								<button type="submit" className="btn-primary pointer-events-auto">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+							</DialogActions>
+						)}
 					</div>
-				</div>
+				</SidebarEditorLayout>
+				{isFullScreen && (
+					<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
+						<div className="z-50 pr-5 pb-5">
+							<DialogActions onClose={onCancel}>
+								<button type="submit" className="btn-primary pointer-events-auto">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+							</DialogActions>
+						</div>
+					</div>
+				)}
 			</form>
 		</FormProvider>
 	);
