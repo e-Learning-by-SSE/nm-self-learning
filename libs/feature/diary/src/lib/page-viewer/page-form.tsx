@@ -1,3 +1,4 @@
+"use client";
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";

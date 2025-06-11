@@ -8,8 +8,9 @@ import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
+import { MarkdownListboxMenu } from "@self-learning/markdown";
 
-type SkillModalIdentifier = "teachingGoals" | "requirements";
+type SkillModalIdentifier = "provides" | "requires";
 
 /**
  * Area to add and remove skills to a lesson
@@ -18,8 +19,8 @@ export function LessonSkillManager() {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {
-		requirements: watch("requirements"),
-		teachingGoals: watch("teachingGoals")
+		requires: watch("requires"),
+		provides: watch("provides")
 	};
 
 	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
@@ -54,25 +55,25 @@ export function LessonSkillManager() {
 			{selectedRepository && (
 				<>
 					<LabeledFieldSelectSkillsView
-						lable={"Vermittelte Skills"}
-						skills={watchingSkills["teachingGoals"]}
+						label={"Vermittelte Skills"}
+						skills={watchingSkills["provides"]}
 						onDeleteSkill={skill => {
-							deleteSkill(skill, "teachingGoals");
+							deleteSkill(skill, "provides");
 						}}
 						onAddSkill={skill => {
-							addSkills(skill, "teachingGoals");
+							addSkills(skill, "provides");
 						}}
 						repoId={selectedRepository.id}
 					/>
 
 					<LabeledFieldSelectSkillsView
-						lable={"Benötigte Skills"}
-						skills={watchingSkills["requirements"]}
+						label={"Benötigte Skills"}
+						skills={watchingSkills["requires"]}
 						onDeleteSkill={skill => {
-							deleteSkill(skill, "requirements");
+							deleteSkill(skill, "requires");
 						}}
 						onAddSkill={skill => {
-							addSkills(skill, "requirements");
+							addSkills(skill, "requires");
 						}}
 						repoId={selectedRepository.id}
 					/>
@@ -101,8 +102,12 @@ function LinkedSkillRepository({
 	// TODO Make a method to get a smaller version of the repository
 	const { data: repositories, isLoading } = trpc.skill.getRepositories.useQuery();
 
-	const onChange = (id: string) => {
-		const repository = repositories?.find(repository => repository.id === id);
+	if (isLoading) {
+		return <div />;
+	}
+
+	const onChange = (name: string) => {
+		const repository = repositories?.find(repository => repository.name === name);
 		if (repository) {
 			selectRepository(repository);
 		}
@@ -130,12 +135,12 @@ function RepositoryDropDown({
 	onChange
 }: {
 	repositories: SkillRepositoryModel[];
-	onChange: (id: string) => void;
+	onChange: (name: string) => void;
 }) {
-	const [selectedRepository, setSelectedRepository] = useState<string>(repositories[0].id);
+	const [selectedRepository, setSelectedRepository] = useState<string>(repositories[0].name);
 
-	const changeDisplaySelectedRepository = (id: string) => {
-		setSelectedRepository(id);
+	const changeDisplaySelectedRepository = (name: string) => {
+		setSelectedRepository(name);
 	};
 
 	useEffect(() => {
@@ -143,20 +148,13 @@ function RepositoryDropDown({
 	}, [onChange, selectedRepository]);
 
 	return (
-		<div className="flex flex-col">
-			<select
-				className="textfield"
-				value={selectedRepository ?? repositories[0].id}
-				onChange={e => {
-					changeDisplaySelectedRepository(e.target.value);
-				}}
-			>
-				{repositories.map(repository => (
-					<option key={repository.id} value={repository.id}>
-						{repository.name}
-					</option>
-				))}
-			</select>
+		<div className="flex w-full">
+			<MarkdownListboxMenu
+				title=""
+				onChange={name => changeDisplaySelectedRepository(name)}
+				displayValue={selectedRepository ?? repositories[0].name}
+				options={repositories.map(repository => repository.name)}
+			/>
 		</div>
 	);
 }

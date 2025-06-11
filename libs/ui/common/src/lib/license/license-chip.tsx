@@ -1,3 +1,4 @@
+"use client";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 import Link from "next/link";
 import { useState } from "react";

@@ -6,6 +6,7 @@
 	.animation-delay-3000 {
 		animation-delay: 3s;
 	}
+
 	.animation-delay-5000 {
 		animation-delay: 5s;
 	}
@@ -109,6 +110,14 @@ video {
 	@apply glass flex place-content-center items-center gap-2 rounded-lg py-2 px-8 text-sm font-semibold transition-colors hover:bg-opacity-90;
 }
 
+.btn-add {
+	@apply flex place-content-center items-center gap-4 rounded-lg border border-emerald-500 bg-transparent py-2 pl-4 pr-6 font-semibold text-emerald-600 transition-colors;
+}
+
+.btn-add:hover {
+	@apply bg-emerald-50;
+}
+
 .btn-stroked {
 	@apply flex place-content-center items-center gap-2 rounded-lg border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
 }
@@ -119,6 +128,10 @@ video {
 
 .btn-small-highlight {
 	@apply p-1 disabled:text-slate-200 bg-emerald-500 text-white hover:bg-emerald-700 gap-2 rounded-lg px-2 py-2;
+}
+
+.btn-icon {
+	@apply h-fit rounded-lg border border-light-border bg-white px-2 py-2;
 }
 
 .icon {
@@ -239,6 +252,7 @@ pre[class*="language-"] {
 	color: #db4c69;
 	background: #1e1e1e;
 }
+
 /*********************************************************
 * Tokens
 */
@@ -420,6 +434,7 @@ pre[class*="language-"] {
 .token.namespace {
 	color: #4ec9b0;
 }
+
 /*********************************************************
 * Language Specific
 */
@@ -452,6 +467,7 @@ code[class*="language-html"] {
 .language-html .token.punctuation {
 	color: #808080;
 }
+
 /*********************************************************
 * Line highlighting
 */

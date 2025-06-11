@@ -1,3 +1,4 @@
+"use client";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
