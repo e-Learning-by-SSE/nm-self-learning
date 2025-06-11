@@ -18,12 +18,9 @@ import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { useMemo } from "react";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { SelectSkillDialog } from "libs/feature/teaching/src/lib/skills/skill-dialog/select-skill-dialog";
-import { SkillFormModel } from "@self-learning/types";
 import { useRouter } from "next/router";
 
 type Course = ResolvedValue<typeof getCourse>;
@@ -542,7 +539,6 @@ function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 
 function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: boolean }) {
 	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
-	const [openDialog, setOpenDialog] = useState<React.JSX.Element | null>(null);
 	const router = useRouter();
 
 	const generateDynamicCourse = async () => {
@@ -563,11 +559,11 @@ function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: 
 		}
 	};
 
-	if (course.content?.length !== 0 && needsARefresh) {
+	if (Array.isArray(course.content) && course.content.length !== 0  && needsARefresh) {
 		return <RefreshGeneratedCourse onClick={generateDynamicCourse} />;
 	}
 
-	if (course.content?.length !== 0) {
+	if (Array.isArray(course.content) && course.content.length !== 0) {
 		return null;
 	}
 
@@ -582,7 +578,6 @@ function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: 
 			>
 				Starten
 			</button>
-			{openDialog}
 		</div>
 	);
 }
