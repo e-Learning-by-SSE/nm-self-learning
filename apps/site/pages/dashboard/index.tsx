@@ -13,9 +13,7 @@ import {
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	Toggle,
-	Tabs,
-	Tab
+	Toggle
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
@@ -26,7 +24,7 @@ import {
 } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -250,8 +248,6 @@ function DashboardPage(props: Props) {
 		dialogOpen: false,
 		enabled: props.student.user.enabledFeatureLearningDiary
 	});
-
-	const [selectedTab, setSelectedTab] = useState(0);
 
 	const openSettings = () => {
 		router.push("/user-settings");
