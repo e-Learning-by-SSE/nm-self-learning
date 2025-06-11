@@ -79,7 +79,7 @@ export function LessonEditor({
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
 }) {
-	const isNew = initialLesson?.lessonId === "";
+	const isNew = initialLesson === null || initialLesson === undefined;
 	const router = useRouter();
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
