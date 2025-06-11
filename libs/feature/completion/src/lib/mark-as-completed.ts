@@ -40,6 +40,8 @@ export async function markAsCompleted({
 		}
 	});
 
+	await addEarnedSkillsToUser(lessonId, username);
+
 	await createUserEvent({
 		username,
 		type: "LESSON_COMPLETE",
@@ -85,5 +87,31 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 			progress,
 			lastProgressUpdate: new Date()
 		}
+	});
+}
+
+async function addEarnedSkillsToUser(lessonId: string, username: string) {
+	return await database.$transaction(async tx => {
+		const lesson = await tx.lesson.findUniqueOrThrow({
+			where: {
+				lessonId
+			},
+			select: {
+				provides: {
+					select: {
+						id: true
+					}
+				}
+			}
+		});
+
+		await tx.student.update({
+			where: { username },
+			data: {
+				received: {
+					connect: lesson.provides.map(skill => ({ id: skill.id }))
+				}
+			}
+		});
 	});
 }

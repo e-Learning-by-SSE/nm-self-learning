@@ -37,6 +37,17 @@ export function getCourse(slug: string) {
 	});
 }
 
+async function getDynCourse(courseSlug: string) {
+	return await database.dynCourse.findUnique({
+		where: { slug: courseSlug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+}
+
 export async function getStaticPropsForLessonCourseLayout(
 	params?: ParsedUrlQuery | undefined
 ): Promise<LessonLayoutProps | { notFound: true }> {
@@ -50,7 +61,13 @@ export async function getStaticPropsForLessonCourseLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const course = await getCourse(courseSlug);
+	let course;
+	if (courseSlug.startsWith("dyn")) {
+		course = await getDynCourse(courseSlug);
+	} else {
+		course = await getCourse(courseSlug);
+	}
+
 	if (!course) {
 		return { notFound: true };
 	}
