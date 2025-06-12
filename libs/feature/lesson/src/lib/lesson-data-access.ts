@@ -37,11 +37,11 @@ export async function getLesson(slug: string) {
 	});
 }
 
-export async function getLessons(lessonIds: string[]): Promise<LessonContent[]> {
+export async function getLessons(lessonIds: string[]): Promise<LessonData[]> {
 	return database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
 		select: selectStatement
 	});
 }
 
-export type LessonContent = ResolvedValue<typeof getLesson>;
+export type LessonData = ResolvedValue<typeof getLesson>;

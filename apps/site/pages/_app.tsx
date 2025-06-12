@@ -85,7 +85,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 							rel="icon"
 							type="image/png"
 							sizes="16x16"
-							href={basePath + "favicon-16x16.png"}
+							href={basePath + "/favicon-16x16.png"}
 						/>
 						{/* Only required for /pages, /app will handle this automatically */}
 						<link rel="manifest" href={basePath + "/api/manifest"} />

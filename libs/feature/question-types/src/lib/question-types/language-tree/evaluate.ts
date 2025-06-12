@@ -1,8 +1,9 @@
 import { EvaluationFn } from "../../question-type-registry";
 
 export const evaluateLanguageTreeAnswer: EvaluationFn<"language-tree"> = (question, answer) => {
-    let studentAnswer = answer.value.trim();
-    let correctAnswers = question.answer.map((a) => a.trim());
+    //Replace all whitespace characters with an empty string and trim the input
+    let studentAnswer = answer.value.replace(/\s+/g, "").trim();
+    let correctAnswers = question.answer.map((a) => a.replace(/\s+/g, "").trim());
 
     if (!question.caseSensitive) {
         studentAnswer = studentAnswer.toLowerCase();
