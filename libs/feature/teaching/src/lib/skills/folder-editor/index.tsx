@@ -87,7 +87,6 @@ export function SkillFolderEditor({
 	return (
 		<SkillTree
 			skillDisplayData={skillDisplayData}
-			selectedSkill={selectedSkill}
 			onSkillSelect={changeEditTarget}
 			updateSkillDisplay={updateSkillDisplay}
 			authorId={authorId}		
@@ -96,7 +95,7 @@ export function SkillFolderEditor({
 	);
 }
 
-function useTableSkillDisplay(skills: Map<string, SkillFormModel>) {
+export function useTableSkillDisplay(skills: Map<string, SkillFormModel>) {
 	const [skillDisplayData, setSkillDisplayData] = useState(
 		new Map<string, SkillFolderVisualization>()
 	);

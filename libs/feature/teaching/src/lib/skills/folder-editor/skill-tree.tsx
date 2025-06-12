@@ -9,14 +9,12 @@ import { Droppable } from "@hello-pangea/dnd";
 
 export function SkillTree({
 	skillDisplayData,
-	selectedSkill,
 	onSkillSelect: handleSelection,
 	updateSkillDisplay,
 	authorId,
 	isDragging
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
-	selectedSkill?: Skill;
 	onSkillSelect: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
 	authorId: number;

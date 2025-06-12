@@ -6,20 +6,20 @@ import {
 	LessonFormModel,
 	QuizEditor,
 	ModuleInfoEditor,
-	SkillFolderEditor
+	onLessonCreatorSubmit
 } from "@self-learning/teaching";
-import { createEmptyLesson, lessonSchema, SkillFormModel } from "@self-learning/types";
+import { createEmptyLesson, Lesson, lessonSchema, SkillFormModel } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext } from "@hello-pangea/dnd";
+import { ModuleDependency } from "./module-dependency";
+import { set } from "date-fns";
 
 export function CourseModuleView({
-	onSubmit,
 	initialLesson,
 	authorId
 }: {
-	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 	authorId: number;
 }) {
@@ -28,10 +28,13 @@ export function CourseModuleView({
 	const tabs = ["Basisdaten", "Lerninhalt", "Lernkontrolle"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const { data: skills } = trpc.skill.getSkillsByAuthorId.useQuery();
+	const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
 	const allSkills = new Map<string, SkillFormModel>();
 	skills?.forEach(skill => {
 		allSkills.set(skill.id, skill);
 	});
+	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
+	const [modules, setModules] = useState<Map<string, LessonFormModel>>(new Map());
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
@@ -54,6 +57,14 @@ export function CourseModuleView({
 	const onDragStart = () => {
 		setIsDragging(true);
 	};
+	const onSubmit = form.handleSubmit((lesson: LessonFormModel) => {
+		const id = selectedModuleId ?? lesson.lessonId ?? crypto.randomUUID();
+		const updatedModules = new Map(modules);
+		updatedModules.set(id, { ...lesson, lessonId: id });
+		setModules(updatedModules);
+		setSelectedModuleId(null);
+		form.reset(createEmptyLesson());
+	});
 	const onDragEnd = (result: import("@hello-pangea/dnd").DropResult) => {
 		setIsDragging(false);
 		if (!result.destination) return;
@@ -66,7 +77,13 @@ export function CourseModuleView({
 			}
 		}
 	};
-
+	function handleModuleClick(id: string) {
+		const lesson = modules.get(id);
+		if (lesson) {
+			form.reset(lesson); // this loads the data into the form
+			setSelectedModuleId(id);
+		}
+	}
 	const renderContent = (index: number) => {
 		switch (index) {
 			case 0:
@@ -84,24 +101,35 @@ export function CourseModuleView({
 		<div className="grid grid-cols-[1fr_2fr] min-h-screen">
 			<DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
 				<aside className="w-[2fr] min-w-[400px] max-w-[600px] border-r border-light-border bg-white p-6">
-					<SkillFolderEditor
+					<ModuleDependency
 						skills={allSkills}
 						authorId={authorId}
-						isSkilltree={true}
 						isDragging={isDragging}
+						modules={modules}
+						onSelectModule={handleModuleClick}
 					/>
 				</aside>
 				<main className="flex-1 min-w-[500px] max-w-[900px] p-8 pr-4 py-4 text-sm">
 					<FormProvider {...form}>
-						<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
-							{tabs.map((content, idx) => (
-								<Tab key={idx}>{content}</Tab>
-							))}
-						</Tabs>
-						<div className="items-center justify-center w-full">
-							{renderContent(selectedIndex)}
-						</div>
-						<form id="lessonform" onSubmit={() => {}}></form>
+						<form
+							id="lessonform"
+							onSubmit={onSubmit}
+							className="flex flex-col h-full justify-between"
+						>
+							<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
+								{tabs.map((content, idx) => (
+									<Tab key={idx}>{content}</Tab>
+								))}
+							</Tabs>
+
+							<div className="flex-grow">{renderContent(selectedIndex)}</div>
+
+							<div className="flex justify-end mb-8">
+								<button className="btn btn-primary" type="submit">
+									Modul Hinzufügen
+								</button>
+							</div>
+						</form>
 					</FormProvider>
 				</main>
 			</DragDropContext>
