@@ -1,6 +1,7 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { createNewProfile } from "@self-learning/achievements";
 import { database } from "@self-learning/database";
+import { createInitialNotificationSettings } from "@self-learning/ui/notifications";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import { NextAuthOptions } from "next-auth";
@@ -10,7 +11,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { loginCallbacks } from "./auth-callbacks-server";
 import { authCallbacks, getIdpSelflearnAdminRole } from "./create-user-session";
-import { createInitialNotificationSettings } from "@self-learning/ui/notifications";
 
 export const MAIL_DOMAIN = "@uni-hildesheim.de";
 export const OIDC_SCOPES = "openid profile email roles profile_studium";
@@ -39,17 +39,14 @@ const customPrismaAdapter: Adapter = {
 			provider: account.provider
 		});
 
-		// Promote User to admin if specified by KeyCloak
-		if (getIdpSelflearnAdminRole(account.access_token)) {
-			await database.user.update({
-				where: {
-					id: user.id
-				},
-				data: {
-					role: "ADMIN"
-				}
-			});
-		}
+		await database.user.update({
+			where: { id: user.id },
+			data: {
+				// Promote User to admin if specified by KeyCloak
+				role: getIdpSelflearnAdminRole(account.access_token) ?? "USER",
+				emailVerified: new Date() // OIDC always has verified emails
+			}
+		});
 
 		await database.$transaction([
 			database.account.create({
@@ -73,17 +70,6 @@ const customPrismaAdapter: Adapter = {
 					userId: account.userId,
 					username: user.name ?? user.id
 				}
-			}),
-			database.gamificationProfile.upsert({
-				where: {
-					userId: account.userId
-				},
-				create: {
-					userId: account.userId,
-					username: user.name ?? user.id,
-					lastLogin: new Date()
-				},
-				update: {}
 			})
 		]);
 	}
@@ -103,8 +89,7 @@ function getProviders(): Provider[] {
 					name: profile.preferred_username ?? mailToUsername(profile.email),
 					email: profile.email,
 					image: profile.picture,
-					displayName: profile.name,
-					features: []
+					displayName: profile.name
 				};
 			}
 		})
@@ -194,9 +179,11 @@ export const authOptions: NextAuthOptions = {
 			}
 		},
 		createUser: async ({ user }) => {
+			// this is called on every new user (demo or OIDC)
+
 			const username = user.name?.trim();
 			if (!username) return;
-			database.$transaction(async tx => {
+			await database.$transaction(async tx => {
 				await createNewProfile(username, tx);
 
 				await createInitialNotificationSettings(user, tx);
