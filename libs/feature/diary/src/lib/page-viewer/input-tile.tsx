@@ -1,15 +1,14 @@
-import React, { PropsWithChildren, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
-import { Dialog, LoadingBox, StarRating, XButton } from "@self-learning/ui/common";
-import Image from "next/image";
-import { useRef, useState } from "react";
-import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { LearningGoal } from "@self-learning/types";
+import { Dialog, LoadingBox, StarRating, XButton } from "@self-learning/ui/common";
+import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { IdSet } from "@self-learning/util/common";
-import { StatusUpdateCallback } from "../util/types";
-import { GoalStatus } from "../goals/status";
-import { LearningGoalEditorDialog } from "../goals/goal-editor";
+import Image from "next/image";
+import { PropsWithChildren, useCallback, useRef, useState } from "react";
 import { Location } from "../access-learning-diary";
+import { LearningGoalsDialog } from "../goals/learning-goals";
+import { GoalStatusCheckbox } from "../goals/status-checkbox";
+import { StatusUpdateCallback } from "../util/types";
 
 export function Tile({
 	onClick,
@@ -21,7 +20,7 @@ export function Tile({
 }>) {
 	return (
 		<div
-			className={`flex justify-center items-center w-full min-h-48 max-h-64 px-4 py-2 rounded-lg cursor-pointer ${
+			className={`flex flex-grow justify-center items-center w-full min-h-48 px-4 py-2 rounded-lg cursor-pointer ${
 				isFilled ? "bg-green-100" : "bg-gray-100"
 			}`}
 			onClick={() => onClick(true)}
@@ -46,7 +45,7 @@ export function TileLayout({
 	tileName: string;
 }>) {
 	return (
-		<div>
+		<>
 			{isCompact && (
 				<CompactTile onClick={onClick} isFilled={isFilled} tileName={tileName}>
 					{children}
@@ -62,7 +61,7 @@ export function TileLayout({
 					{children}
 				</InfoTile>
 			)}
-		</div>
+		</>
 	);
 }
 
@@ -77,10 +76,10 @@ export function CompactTile({
 	tileName: string;
 }>) {
 	return (
-		<div className="relative">
-			<span className="absolute top-2 left-2 px-2 py-1 rounded text-gray-800 z-10">
-				{tileName}:
-			</span>
+		<div className="flex flex-col">
+			<div className="relative -bottom-2 flex bg-gray-200 rounded-t-lg text-center">
+				<span className="text-gray-800 font-semibold p-2">{tileName}:</span>
+			</div>
 
 			<Tile onClick={onClick} isFilled={isFilled}>
 				{children}
@@ -102,13 +101,15 @@ export function InfoTile({
 	tileName: string;
 }>) {
 	return (
-		<div className="flex flex-col xl:flex-row items-stretch w-full h-full space-y-1 xl:space-y-0 xl:space-x-4">
-			<div className="flex flex-col xl:w-1/4 bg-gray-200 rounded-lg text-center p-4 min-h-40 max-h-64">
+		<div className="flex flex-col xl:grid xl:grid-cols-4 items-stretch w-full h-full space-y-1 xl:space-y-0 xl:space-x-4">
+			<div className="flex flex-col xl:col-span-1 bg-gray-200 rounded-lg text-center p-4 min-h-48">
 				<span className="text-gray-800 font-semibold">{tileName}:</span>
-				<span className="text-gray-600 mt-1 py-4">{tileDescription}</span>
+				<span className="text-gray-600 mt-1 py-4 info-tile-scroll flex-grow overflow-y-auto">
+					{tileDescription}
+				</span>
 			</div>
 
-			<div className="flex-grow flex items-stretch">
+			<div className="flex-grow flex xl:col-span-3 items-stretch">
 				<Tile onClick={onClick} isFilled={isFilled}>
 					{children}
 				</Tile>
@@ -149,7 +150,7 @@ export function LocationInputTile({
 			tileDescription={description}
 			tileName={"Lernort"}
 		>
-			<div className="p-4 min-h-40 xl:min-h-0">
+			<div className="flex items-center p-4 min-h-40 xl:min-h-0">
 				{initialSelection ? (
 					<div>
 						<p>{initialSelection?.name ?? ""}</p>
@@ -209,7 +210,7 @@ export function LocationChooseDialog({
 
 	return (
 		<Dialog title={"Lernort:"} onClose={onClose} className={"max-w-md"}>
-			<div className="space-y-4 max-h-96 overflow-y-auto">
+			<div className="space-y-4 max-h-96 overflow-y-auto pr-2">
 				<span>{description}</span>
 
 				{learningLocations.map(location => {
@@ -322,11 +323,11 @@ export function MarkDownInputTile({
 			tileDescription={"Platz für persönliche Anmerkungen."}
 			tileName={"Notizen"}
 		>
-			<div className="flex items-center min-h-40">
+			<div className="flex flex-grow min-h-40 overflow-auto">
 				{initialNote === "" ? (
-					<span>Bisher wurden noch keine Notizen erstellt.</span>
+					<span className="m-auto">Bisher wurden noch keine Notizen erstellt.</span>
 				) : (
-					<div className={"max-w-5xl truncate"}>
+					<div className="whitespace-nowrap m-auto">
 						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
 					</div>
 				)}
@@ -344,12 +345,12 @@ export function MarkDownInputTile({
 }
 
 export function LearningGoalInputTile({
-	goals: displayGoals,
+	goals,
 	onChange,
 	isCompact
 }: {
-	goals: LearningGoal[];
-	onChange: (goal: LearningGoal[]) => void;
+	goals: IdSet<LearningGoal>;
+	onChange: (goal: LearningGoal[]) => void; // don'use IdSet here, because it is not serializable and will cause zod validation error
 	isCompact: boolean;
 }) {
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -359,14 +360,21 @@ export function LearningGoalInputTile({
 	};
 
 	const handleGoalStatusUpdate: StatusUpdateCallback = useCallback(
-		(goal, _) => {
-			// this is handled by form.field.onChange. so push all learning goals with the appended changed one.
-			const a = new IdSet(displayGoals);
-			a.add(goal as LearningGoal); // TODO goals: make this type safe
-			onChange(Array.from(a));
+		goal => {
+			// avoid duplicates via sets
+			const copy = new IdSet([...goals.entries(), goal]);
+			onChange(copy.entries());
 		},
-		[displayGoals, onChange]
+		[goals, onChange]
 	);
+
+	const completedParents = new IdSet<LearningGoal>();
+
+	goals.forEach(goal => {
+		if (!goal.parentId) {
+			completedParents.add(goal);
+		}
+	});
 
 	const description =
 		"Ziele helfen dir eine Richtung zu finden, die du einschlagen möchtest, und bietet dir eine Checkliste, um deine Fortschritte zu überprüfen.";
@@ -375,29 +383,32 @@ export function LearningGoalInputTile({
 		<TileLayout
 			isCompact={isCompact}
 			onClick={setDialogOpen}
-			isFilled={displayGoals.length > 0}
+			isFilled={goals.size > 0}
 			tileDescription={description}
 			tileName={"Lernziele"}
 		>
 			<div>
-				<div className="flex flex-wrap p-4 min-h-40 xl:min-h-0">
-					{displayGoals.length === 0 && <span>Keine Lernziele vorhanden</span>}
-					{displayGoals.map(goal => (
+				<div className="flex flex-wrap justify-center items-center p-4 min-h-40 xl:min-h-0">
+					{goals.size === 0 && <span>Keine Lernziele vorhanden</span>}
+					{goals.entries().map(goal => (
 						<div
 							key={goal.id}
 							className="flex items-center p-2 border border-gray-300 rounded bg-gray-50 m-2"
 						>
-							<GoalStatus goal={goal} editable={false} />
+							<GoalStatusCheckbox goal={goal} editable={false} />
 							<span className="ml-2">{goal.description}</span>
 						</div>
 					))}
 				</div>
+				{/* <LearningGoalProvider userGoals={goals}>
+					<GoalsOverview notFoundMessage={""} editable={false} onRowClick={() => {}} />
+				</LearningGoalProvider> */}
 			</div>
 			{dialogOpen && (
-				<LearningGoalEditorDialog
+				<LearningGoalsDialog
 					onClose={onClose}
+					description={"Lernziele bearbeiten"}
 					onStatusUpdate={handleGoalStatusUpdate}
-					description={description}
 				/>
 			)}
 		</TileLayout>

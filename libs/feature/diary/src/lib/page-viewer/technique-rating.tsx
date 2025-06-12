@@ -120,7 +120,7 @@ export function PersonalTechniqueRatingTile({
 				/>
 			)}
 			{/* Display List of Used Techniques */}
-			<div className="mt-4 py-2 min-h-40 max-h-40 overflow-y-auto">
+			<div className="mt-4 py-2">
 				<UsedTechniqueList techniques={techniquesWithRating} />
 			</div>
 		</TileLayout>

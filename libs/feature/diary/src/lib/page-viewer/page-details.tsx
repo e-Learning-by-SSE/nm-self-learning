@@ -21,8 +21,8 @@ export function DiaryLearnedContent({
 }) {
 	const [showMore, setShowMore] = useState(false);
 	return (
-		<div className="flex w-full flex-col space-y-2 p-4">
-			<div className="flex w-full flex-wrap ">
+		<div className="flex w-full flex-col space-y-2 py-4">
+			<div className="flex w-full flex-wrap gap-2">
 				<DetailRow
 					label="Datum"
 					value={formatDateStringFull(page.createdAt)}

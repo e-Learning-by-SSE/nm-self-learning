@@ -1,5 +1,6 @@
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
+import { goalSelectClause } from "./goals/access-learning-goal";
 
 export async function allPages(username: string) {
 	let pages = await database.learningDiaryPage.findMany({
@@ -142,20 +143,7 @@ export async function getDiaryPage(ltbId: string) {
 				}
 			},
 			learningGoals: {
-				select: {
-					id: true,
-					description: true,
-					status: true,
-					lastProgressUpdate: true,
-					learningSubGoals: {
-						select: {
-							id: true,
-							description: true,
-							status: true,
-							priority: true
-						}
-					}
-				}
+				select: goalSelectClause
 			},
 			createdAt: true,
 			lessonsLearned: {

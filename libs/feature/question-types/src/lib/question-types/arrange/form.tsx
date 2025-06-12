@@ -165,10 +165,9 @@ export default function ArrangeForm({ index }: { index: number }) {
 													title={"Kategorie editieren"}
 												/>
 												<PlusButton
-													onAdd={() => setEditItemDialog({ containerId })}
+													onClick={() => setEditItemDialog({ containerId })}
 													title={"Element hinzufügen"}
 												/>
-
 												<TrashcanButton
 													onClick={() => onDeleteContainer(containerId)}
 													title={"Kategorie entfernen"}

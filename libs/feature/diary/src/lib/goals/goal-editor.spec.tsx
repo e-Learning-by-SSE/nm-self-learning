@@ -1,7 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { GoalEditorDialog } from "./goal-editor";
+import { EditGoalDialog } from "./goal-editor";
 import "@testing-library/jest-dom";
+import { GoalFormModel } from "../util/types";
 
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
@@ -18,7 +19,7 @@ jest.mock("@self-learning/api-client", () => ({
 	}
 }));
 
-describe("GoalEditorDialog", () => {
+describe("EditGoalDialog", () => {
 	beforeAll(() => {
 		global.ResizeObserver = class {
 			observe() {}
@@ -27,37 +28,42 @@ describe("GoalEditorDialog", () => {
 		};
 	});
 
-	it("should disable save button when description length is less than 5", async () => {
-		const onClose = jest.fn();
-		render(<GoalEditorDialog onClose={onClose} />);
+	it("should update the description state when the user types in the textarea", async () => {
+		const mockOnClose = jest.fn();
+		const mockOnSubmit = jest.fn();
+		const mockGoal = {
+			id: "goal1",
+			description: "Old Description",
+			status: "ACTIVE",
+			children: []
+		} as unknown as GoalFormModel;
 
-		const textarea = screen.getByRole("textbox");
-		const saveButton = screen.getByRole("button", { name: /speichern/i });
+		render(<EditGoalDialog goal={mockGoal} onClose={mockOnClose} onSubmit={mockOnSubmit} />);
 
-		await userEvent.type(textarea, "1234");
-		expect(saveButton).toBeDisabled();
-	});
+		// Verify the initial description is rendered
+		const descriptionTextarea = screen.getByRole("textbox");
+		expect(descriptionTextarea).toHaveValue("Old Description");
 
-	it("should disable save button when description contains only whitespace", async () => {
-		const onClose = jest.fn();
-		render(<GoalEditorDialog onClose={onClose} />);
+		// Simulate user typing a new description
+		await userEvent.clear(descriptionTextarea);
+		await userEvent.type(descriptionTextarea, "New Description");
 
-		const textarea = screen.getByRole("textbox");
-		const saveButton = screen.getByRole("button", { name: /speichern/i });
+		// Verify the updated description in the textarea
+		expect(descriptionTextarea).toHaveValue("New Description");
 
-		await userEvent.type(textarea, "     ");
-		expect(saveButton).toBeDisabled();
-	});
+		// Simulate clicking the save button
+		const saveButton = screen.getByRole("button", { name: "Speichern" });
+		await userEvent.click(saveButton);
 
-	it("should enable save button when description length is valid", async () => {
-		const onClose = jest.fn();
-		render(<GoalEditorDialog onClose={onClose} />);
+		// Verify the onSubmit function was called with the updated description
+		await waitFor(() => {
+			expect(mockOnSubmit).toHaveBeenCalledWith({
+				...mockGoal,
+				description: "New Description"
+			});
+		});
 
-		const textarea = screen.getByRole("textbox");
-		const saveButton = screen.getByRole("button", { name: /speichern/i });
-
-		// Enter a valid description with more than 4 characters
-		await userEvent.type(textarea, "Valid description");
-		expect(saveButton).not.toBeDisabled();
+		// Verify the dialog is closed after saving
+		expect(mockOnClose).toHaveBeenCalled();
 	});
 });

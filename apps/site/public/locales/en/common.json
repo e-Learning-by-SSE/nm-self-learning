@@ -2,5 +2,10 @@
 	"languageGerman": "German",
 	"languageEnglish": "English",
 	"pickLanguage": "Select language",
-	"search": "Search..."
+	"add": "Add",
+	"create": "Create",
+	"delete": "Delete",
+	"edit": "Edit",
+	"save": "Save",
+	"search": "Search"
 }

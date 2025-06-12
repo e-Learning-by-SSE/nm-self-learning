@@ -13,23 +13,24 @@ export async function getLearningGoals(username: string) {
 			// I think alphabetical order by description is more intuitive to end users
 			description: "asc"
 		},
-		select: {
-			id: true,
-			status: true,
-			lastProgressUpdate: true,
-			description: true,
-			learningSubGoals: {
-				orderBy: {
-					priority: "asc"
-				},
-				select: {
-					id: true,
-					description: true,
-					priority: true,
-					status: true,
-					learningGoalId: true
-				}
-			}
-		}
+		select: goalSelectClause
 	});
 }
+
+export const goalSelectClause = {
+	id: true,
+	status: true,
+	lastProgressUpdate: true,
+	description: true,
+	parentId: true,
+	priority: true,
+	order: true,
+	children: {
+		orderBy: {
+			order: "asc"
+		},
+		select: {
+			id: true
+		}
+	}
+} as const;
