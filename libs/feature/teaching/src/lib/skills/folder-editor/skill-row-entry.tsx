@@ -22,7 +22,9 @@ export function ListSkillEntryWithChildren({
 	updateSkillDisplay,
 	renderedIds = new Set(),
 	parentNodeId,
-	authorId
+	authorId,
+	matchingSkillIds,
+	autoExpandIds
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
@@ -32,11 +34,17 @@ export function ListSkillEntryWithChildren({
 	renderedIds?: Set<string>;
 	parentNodeId: string;
 	authorId: number;
+	matchingSkillIds?: Set<string>;
+	autoExpandIds?: Set<string>;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
 
 	const nodeId = generateNodeId(parentNodeId, skillDisplayData.id);
+
+	if (autoExpandIds?.has(skillDisplayData.id)) {
+		skillDisplayData.isExpanded = true;
+	}
 
 	return (
 		<>
@@ -57,6 +65,21 @@ export function ListSkillEntryWithChildren({
 					.filter(wasNotRendered)
 					.map(element => {
 						// recursive structure to add <SkillRow /> for each child
+						if (matchingSkillIds) {
+							const hasMatchingDescendant = (
+								skill: SkillFolderVisualization
+							): boolean => {
+								if (matchingSkillIds.has(skill.id)) return true;
+								return skill.children
+									.map(childId => skillResolver(childId))
+									.filter(isTruthy)
+									.some(child => hasMatchingDescendant(child));
+							};
+
+							if (!hasMatchingDescendant(element)) {
+								return null;
+							}
+						}
 						const newSet = new Set(renderedIds);
 						newSet.add(element.id);
 						return (
@@ -70,6 +93,8 @@ export function ListSkillEntryWithChildren({
 								renderedIds={newSet}
 								parentNodeId={nodeId}
 								authorId={authorId}
+								matchingSkillIds={matchingSkillIds}
+								autoExpandIds={autoExpandIds}
 							/>
 						);
 					})}

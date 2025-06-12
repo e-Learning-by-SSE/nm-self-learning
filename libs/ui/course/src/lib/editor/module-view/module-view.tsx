@@ -2,11 +2,9 @@ import { LessonFormModel } from "@self-learning/teaching";
 
 export function ModuleView({
 	modules,
-	authorId,
 	onSelectModule
 }: {
 	modules: Map<string, LessonFormModel>;
-	authorId: number;
 	onSelectModule: (id: string) => void;
 }) {
 	return (

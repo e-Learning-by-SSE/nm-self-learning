@@ -11,6 +11,7 @@ import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { useState } from "react";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { LessonFormModel } from "@self-learning/teaching";
 
 export const getServerSideProps: GetServerSideProps = async ctx => {
 	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
@@ -43,7 +44,8 @@ export default function CourseCreationEditor() {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const session = useRequiredSession();
 	const username = session.data?.user.name;
-
+	const [modules, setModules] = useState<Map<string, LessonFormModel>>(new Map());
+	
 	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({
 		username: username ?? ""
 	});
@@ -67,7 +69,7 @@ export default function CourseCreationEditor() {
 			case 1:
 				return <CourseSkillView authorId={author.id} />;
 			case 2:
-				return <CourseModuleView onSubmit={() => {}} authorId={author.id}/>
+				return <CourseModuleView authorId={author.id} modules={modules} setModules={setModules}/>
 			case 3:
 				return <CoursePreview />;
 			default:

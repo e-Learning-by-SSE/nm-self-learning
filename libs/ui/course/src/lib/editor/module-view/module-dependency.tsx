@@ -1,5 +1,5 @@
 import { LessonFormModel, useTableSkillDisplay } from "@self-learning/teaching";
-import { Lesson, SkillFormModel } from "@self-learning/types";
+import { SkillFormModel } from "@self-learning/types";
 import { SkillTree } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-tree";
 import { ModuleView } from "./module-view";
 import { useState } from "react";
@@ -38,12 +38,17 @@ export function ModuleDependency({
 					/>
 				);
 			case 1:
-				return <ModuleView modules={modules} authorId={authorId} onSelectModule={onSelectModule}/>;
+				return <ModuleView modules={modules} onSelectModule={onSelectModule}/>;
+			default:
+				return <div>Tab not found</div>;
 		}
 	};
 	return (
 		<>
-			<h1>Abhängigkeiten</h1>
+			<h1 className="text-emerald-500">Abhängigkeiten</h1>
+			<p className="text-gray-500">
+				Wählen Sie Skills und Module aus um diese per Drag & Drop der Lerneinheit zuzuweisen
+			</p>
 			<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
 				{tabs.map((content, idx) => (
 					<Tab key={idx}>{content}</Tab>

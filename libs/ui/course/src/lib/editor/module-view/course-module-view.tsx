@@ -1,30 +1,30 @@
 import React, { useState } from "react";
-import { OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
+import { showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { FormProvider, useForm } from "react-hook-form";
 import {
 	LessonContentEditor,
 	LessonFormModel,
 	QuizEditor,
 	ModuleInfoEditor,
-	onLessonCreatorSubmit
 } from "@self-learning/teaching";
-import { createEmptyLesson, Lesson, lessonSchema, SkillFormModel } from "@self-learning/types";
+import { createEmptyLesson, lessonSchema, SkillFormModel } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRequiredSession } from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { ModuleDependency } from "./module-dependency";
-import { set } from "date-fns";
 
 export function CourseModuleView({
 	initialLesson,
-	authorId
+	authorId,
+	modules,
+	setModules
 }: {
 	initialLesson?: LessonFormModel;
 	authorId: number;
+	modules: Map<string, LessonFormModel>;
+	setModules: React.Dispatch<React.SetStateAction<Map<string, LessonFormModel>>>;
 }) {
 	const [isDragging, setIsDragging] = useState(false);
-	const session = useRequiredSession();
 	const tabs = ["Basisdaten", "Lerninhalt", "Lernkontrolle"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const { data: skills } = trpc.skill.getSkillsByAuthorId.useQuery();
@@ -33,8 +33,6 @@ export function CourseModuleView({
 	skills?.forEach(skill => {
 		allSkills.set(skill.id, skill);
 	});
-	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
-	const [modules, setModules] = useState<Map<string, LessonFormModel>>(new Map());
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
@@ -54,6 +52,7 @@ export function CourseModuleView({
 			...skillsToAdd.map(skill => ({ ...skill, children: [], parents: [] }))
 		]);
 	};
+	// Needed to prevent reloading the skills when dragging skills
 	const onDragStart = () => {
 		setIsDragging(true);
 	};
@@ -63,6 +62,11 @@ export function CourseModuleView({
 		updatedModules.set(id, { ...lesson, lessonId: id });
 		setModules(updatedModules);
 		setSelectedModuleId(null);
+		showToast({
+			type: "success",
+			title: "Modul gespeichert!",
+			subtitle: lesson.title
+		});
 		form.reset(createEmptyLesson());
 	});
 	const onDragEnd = (result: import("@hello-pangea/dnd").DropResult) => {

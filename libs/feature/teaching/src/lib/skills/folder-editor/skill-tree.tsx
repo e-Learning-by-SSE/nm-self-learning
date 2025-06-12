@@ -4,7 +4,6 @@ import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import { ListSkillEntryWithChildren } from "./skill-row-entry";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
-import { Skill } from "@prisma/client";
 import { Droppable } from "@hello-pangea/dnd";
 
 export function SkillTree({
@@ -21,16 +20,58 @@ export function SkillTree({
 	isDragging: boolean;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
+
+	const normalized = searchTerm.toLowerCase().trim();
+	const allSkills = Array.from(skillDisplayData.values());
+	const matchingSkillIds: Set<string> = new Set(
+		allSkills
+			.filter(
+				skill =>
+					skill.skill.name.toLowerCase().includes(normalized) ||
+					skill.displayName?.toLowerCase().includes(normalized)
+			)
+			.map(skill => skill.id)
+	);
+	const skillIdsToAutoExpand: Set<string> = new Set();
 	const skillsToDisplay = useMemo(() => {
-		const skills = Array.from(skillDisplayData.values());
-		if (!searchTerm?.trim() || isDragging) return skills;
-		const normalizedSearchTerm = searchTerm.toLowerCase().trim();
-		return skills.filter(
-			skill =>
-				skill.skill.name.toLowerCase().includes(normalizedSearchTerm) ||
-				skill.displayName?.toLowerCase().includes(normalizedSearchTerm)
-		);
-	}, [skillDisplayData, searchTerm, isDragging]);
+		const skillIdsToRender: Set<string> = new Set(matchingSkillIds);
+		matchingSkillIds.forEach(skillId => {
+			collectAncestors(skillId, skillDisplayData, skillIdsToRender, skillIdsToAutoExpand);
+		});
+		if (!searchTerm?.trim() || isDragging) {
+			return allSkills.filter(IsTopLevelSkill).sort(byChildrenLength);
+		}
+
+		return allSkills
+			.filter(skill => IsTopLevelSkill(skill) && skillIdsToRender.has(skill.id))
+			.sort(byChildrenLength);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [
+		skillDisplayData,
+		searchTerm,
+		isDragging,
+		matchingSkillIds,
+		skillIdsToAutoExpand,
+		allSkills
+	]);
+
+	function collectAncestors(
+		skillId: string,
+		map: Map<string, SkillFolderVisualization>,
+		result: Set<string>,
+		autoExpand: Set<string>
+	) {
+		const skill = map.get(skillId);
+		if (!skill) return;
+
+		for (const parentId of skill.skill.parents) {
+			if (!result.has(parentId)) {
+				result.add(parentId);
+				autoExpand.add(parentId);
+				collectAncestors(parentId, map, result, autoExpand);
+			}
+		}
+	}
 
 	return (
 		<div>
@@ -51,20 +92,19 @@ export function SkillTree({
 								ref={droppableProvided.innerRef}
 								{...droppableProvided.droppableProps}
 							>
-								{skillsToDisplay
-									.sort(byChildrenLength)
-									.filter(IsTopLevelSkill)
-									.map((element) => (
-										<ListSkillEntryWithChildren
-											key={element.id}
-											skillDisplayData={element}
-											updateSkillDisplay={updateSkillDisplay}
-											handleSelection={handleSelection}
-											skillResolver={skillId => skillDisplayData.get(skillId)}
-											parentNodeId={""}
-											authorId={authorId}
-										/>
-									))}
+								{skillsToDisplay.sort(byChildrenLength).map(element => (
+									<ListSkillEntryWithChildren
+										key={element.id}
+										skillDisplayData={element}
+										updateSkillDisplay={updateSkillDisplay}
+										handleSelection={handleSelection}
+										skillResolver={skillId => skillDisplayData.get(skillId)}
+										parentNodeId={""}
+										authorId={authorId}
+										matchingSkillIds={matchingSkillIds}
+										autoExpandIds={skillIdsToAutoExpand}
+									/>
+								))}
 								{droppableProvided.placeholder}
 							</tbody>
 						</Table>
