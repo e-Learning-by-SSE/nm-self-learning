@@ -423,7 +423,7 @@ function SelfRegulatedPreQuestion({
 		showToast({
 			title: "Super!",
 			subtitle:
-				"Vohandenes Wissen im Vorfeld noch einmal zu aktivieren, fördert den Lernerfolg!",
+				"Vorhandenes Wissen im Vorfeld noch einmal zu aktivieren, fördert den Lernerfolg!",
 			type: "info"
 		});
 	};
