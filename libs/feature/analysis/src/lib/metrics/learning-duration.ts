@@ -1,4 +1,5 @@
 import { UserEvent } from "@self-learning/database";
+import { differenceInMilliseconds } from "date-fns";
 
 /**
  * Computes the total duration of already filtered user events.
@@ -23,7 +24,7 @@ export function computeTotalDuration(events: Pick<UserEvent, "createdAt" | "reso
 
 		if (event.resourceId !== currentResource) {
 			// Compute duration for the segment that just ended
-			const duration = event.createdAt.getTime() - segmentStart.getTime();
+			const duration = differenceInMilliseconds(event.createdAt, segmentStart);
 			totalDuration += duration;
 
 			// Start new segment
@@ -34,7 +35,7 @@ export function computeTotalDuration(events: Pick<UserEvent, "createdAt" | "reso
 
 	// Add duration for the final segment
 	const lastEvent = events[events.length - 1];
-	const lastDuration = lastEvent.createdAt.getTime() - segmentStart.getTime();
+	const lastDuration = differenceInMilliseconds(lastEvent.createdAt, segmentStart);
 	totalDuration += lastDuration;
 
 	return totalDuration;

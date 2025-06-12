@@ -1,6 +1,7 @@
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 import { computeTotalDuration } from "@self-learning/analysis";
+import { hoursToMilliseconds, addMilliseconds } from "date-fns";
 
 export async function allPages(username: string) {
 	let pages = await database.learningDiaryPage.findMany({
@@ -76,14 +77,14 @@ async function updateDiaryDetails(username: string, id: string, endDate: Date) {
 			return;
 		}
 
-		const SIX_HOURS_IN_MS = 6 * 60 * 60 * 1000;
-		// Diary should span at max 6 hours (= SIX_HOURS_IN_MS)
+		// Diary should span at max 6 hours
 		// Maybe there are single events (visits) of a lesson for which no diary page was created,
 		// i.e., visit was shorter than 1 minute. We do not want to consider these events.
+		const MAX_DIARY_SPAN = hoursToMilliseconds(6);
 		const start = diaryMeta.createdAt.getTime();
 		const end = endDate.getTime();
-		if (end - start > SIX_HOURS_IN_MS) {
-			endDate = new Date(diaryMeta.createdAt.getTime() + SIX_HOURS_IN_MS);
+		if (end - start > MAX_DIARY_SPAN) {
+			endDate = addMilliseconds(diaryMeta.createdAt, MAX_DIARY_SPAN);
 		}
 
 		// Compute duration per lesson
