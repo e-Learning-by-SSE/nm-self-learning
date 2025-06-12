@@ -127,7 +127,8 @@ model UserNotificationSetting {
 
 enum NotificationType {
     courseReminder
-    streakReminder
+    streakReminderFirst
+    streakReminderLast
 }
 
 enum NotificationChannel {

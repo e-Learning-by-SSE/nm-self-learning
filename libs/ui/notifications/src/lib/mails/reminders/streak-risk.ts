@@ -1,10 +1,8 @@
 import { database } from "@self-learning/database";
-import { endOfDay, startOfDay } from "date-fns";
-import { isEmailNotificationSettingEnabled, sendStreakReminder } from "../email-service";
-import { SchedulerResult } from "../email-scheduler";
 import { LoginStreak } from "@self-learning/types";
-
-const MODULE_TYPE = "streakReminder";
+import { endOfDay, startOfDay } from "date-fns";
+import { SchedulerResult } from "../email-scheduler";
+import { isEmailNotificationSettingEnabled, sendTemplatedEmail } from "../email-service";
 
 /**
  * Domain Model: StreakRisk
@@ -25,20 +23,17 @@ interface StreakRisk {
 
 interface ReminderSchedule {
 	timeUTC: number; // Hour in UTC (0-23)
-	templateKey: string;
-	isLastChance: boolean;
+	templateKey: "streakReminderFirst" | "streakReminderLast";
 }
 
 const REMINDER_SCHEDULES: ReminderSchedule[] = [
 	{
 		timeUTC: 12,
-		templateKey: "streak-reminder-12",
-		isLastChance: false
+		templateKey: "streakReminderFirst"
 	},
 	{
 		timeUTC: 21,
-		templateKey: "streak-reminder-21",
-		isLastChance: true
+		templateKey: "streakReminderLast"
 	}
 ];
 
@@ -46,31 +41,24 @@ export async function checkStreakRisks(results: SchedulerResult): Promise<void> 
 	const currentHour = new Date().getUTCHours();
 
 	// Find which reminder schedule applies to current time
-	// const currentSchedule = REMINDER_SCHEDULES.find(schedule => schedule.timeUTC === currentHour);
-	const currentSchedule = REMINDER_SCHEDULES[0];
+	const currentSchedule = REMINDER_SCHEDULES.find(schedule => schedule.timeUTC === currentHour);
 	if (!currentSchedule) {
 		// Not a reminder time, nothing to do
 		return;
 	}
 
-	try {
-		// Step 1: Get all users with streak risks
-		const usersAtRisk = await getUsersWithStreakRisks();
+	// Step 1: Get all users with streak risks
+	const usersAtRisk = await getUsersWithStreakRisks(currentSchedule.templateKey);
 
-		// Step 2: Filter users who haven't received this specific reminder yet
-		const usersNeedingReminder = await filterUsersWithoutReminder(
-			usersAtRisk,
-			currentSchedule.templateKey
-		);
+	// Step 2: Filter users who haven't received this specific reminder yet
+	const usersNeedingReminder = await filterUsersWithoutReminder(
+		usersAtRisk,
+		currentSchedule.templateKey
+	);
 
-		// Step 3: Send reminders and log them
-		for (const user of usersNeedingReminder) {
-			await sendStreakReminderToUser(user, currentSchedule, results);
-			results.streakReminders++;
-		}
-	} catch (error) {
-		console.error("Streak risk check error:", error);
-		results.errors++;
+	// Step 3: Send reminders and log them
+	for (const user of usersNeedingReminder) {
+		await sendStreakReminderToUser(user, currentSchedule, results);
 	}
 }
 
@@ -83,7 +71,9 @@ export async function checkStreakRisks(results: SchedulerResult): Promise<void> 
  * 3. User has email notifications enabled
  */
 // export for testing
-export async function getUsersWithStreakRisks(): Promise<StreakRisk[]> {
+export async function getUsersWithStreakRisks(
+	emailNotificationKey: "streakReminderLast" | "streakReminderFirst"
+): Promise<StreakRisk[]> {
 	const today = new Date();
 	const startOfToday = startOfDay(today);
 	const endOfToday = endOfDay(today);
@@ -103,7 +93,7 @@ export async function getUsersWithStreakRisks(): Promise<StreakRisk[]> {
 			gamificationProfile: true,
 			notificationSettings: {
 				where: {
-					type: MODULE_TYPE,
+					type: emailNotificationKey,
 					channel: "email",
 					enabled: true
 				}
@@ -118,7 +108,7 @@ export async function getUsersWithStreakRisks(): Promise<StreakRisk[]> {
 		if (!user.gamificationProfile || !user.email) continue;
 
 		// Check if user has email notifications enabled for streak reminders
-		if (!isEmailNotificationSettingEnabled(MODULE_TYPE, user)) continue;
+		if (!isEmailNotificationSettingEnabled(emailNotificationKey, user)) continue;
 
 		const loginStreak = user.gamificationProfile.loginStreak as unknown as LoginStreak;
 
@@ -191,10 +181,13 @@ export async function sendStreakReminderToUser(
 ): Promise<void> {
 	try {
 		// Prepare email context
-		const emailResult = await sendStreakReminder(user.email, {
-			userName: user.displayName,
-			currentStreak: user.currentStreak,
-			loginUrl: `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/profile`
+		const emailResult = await sendTemplatedEmail(user.email, {
+			type: schedule.templateKey,
+			data: {
+				userName: user.displayName,
+				currentStreak: user.currentStreak,
+				loginUrl: `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/profile`
+			}
 		});
 
 		if (emailResult.success) {
@@ -209,7 +202,6 @@ export async function sendStreakReminderToUser(
 					sentAt: new Date(),
 					metadata: {
 						streakCount: user.currentStreak,
-						reminderType: schedule.isLastChance ? "last-chance" : "friendly",
 						scheduledHour: schedule.timeUTC
 					}
 				}
@@ -229,8 +221,7 @@ export async function sendStreakReminderToUser(
 					status: "FAILED",
 					error: emailResult.error || "Unknown email error",
 					metadata: {
-						streakCount: user.currentStreak,
-						reminderType: schedule.isLastChance ? "last-chance" : "friendly"
+						streakCount: user.currentStreak
 					}
 				}
 			});

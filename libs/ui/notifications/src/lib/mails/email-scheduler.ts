@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { subDays } from "date-fns";
+import { differenceInDays, subDays } from "date-fns";
 import { sendCourseReminder } from "./email-service";
 import { checkStreakRisks } from "./reminders/streak-risk";
 
@@ -59,7 +59,7 @@ async function checkCourseInactivity(results: SchedulerResult) {
 			const existingReminder = await database.reminderLog.findFirst({
 				where: {
 					userId: enrollment.student.user.id,
-					templateKey: "course-inactivity",
+					templateKey: "courseReminder",
 					status: "SENT",
 					metadata: {
 						path: ["courseId"],
@@ -77,7 +77,8 @@ async function checkCourseInactivity(results: SchedulerResult) {
 				userName: enrollment.student.user.displayName,
 				courseName: enrollment.course.title,
 				courseUrl: `${process.env.NEXT_PUBLIC_BASE_PATH}/courses/${enrollment.course.slug}`,
-				progress: enrollment.progress
+				progress: enrollment.progress,
+				lastVisitedDays: differenceInDays(new Date(), enrollment.lastProgressUpdate)
 			});
 
 			if (result.success) {
@@ -87,7 +88,7 @@ async function checkCourseInactivity(results: SchedulerResult) {
 				await database.reminderLog.create({
 					data: {
 						userId: enrollment.student.user.id,
-						templateKey: "course-inactivity",
+						templateKey: "courseReminder",
 						status: "SENT",
 						sentAt: new Date(),
 						metadata: {

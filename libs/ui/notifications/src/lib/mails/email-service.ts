@@ -1,6 +1,10 @@
 import { UserNotificationSetting } from "@prisma/client";
-import { CourseReminderContext, EmailContext, StreakReminderContext } from "./email-types";
-import { renderTemplate } from "./template-engine";
+import {
+	renderTemplate,
+	CourseReminderContext,
+	EmailContext,
+	StreakReminderContext
+} from "./template-engine";
 import { matches } from "@self-learning/util/common";
 
 export interface EmailTemplate {
@@ -71,9 +75,12 @@ export async function sendCourseReminder(to: string, data: CourseReminderContext
 	return sendTemplatedEmail(to, { type: "courseReminder", data });
 }
 
-export async function sendStreakReminder(to: string, data: StreakReminderContext) {
-	console.log("Sending streak reminder to:", to, "with data:", data);
-	return sendTemplatedEmail(to, { type: "streakReminder", data });
+export async function sendStreakReminderFirst(to: string, data: StreakReminderContext) {
+	return sendTemplatedEmail(to, { type: "streakReminderFirst", data });
+}
+
+export async function sendStreakReminderLast(to: string, data: StreakReminderContext) {
+	return sendTemplatedEmail(to, { type: "streakReminderLast", data });
 }
 
 // export async function sendStreakReminderLastChance(to: string, data: StreakReminderContext) {
