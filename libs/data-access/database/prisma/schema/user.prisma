@@ -1,4 +1,3 @@
-
 model Account {
     id                String  @id @default(cuid())
     userId            String
@@ -26,23 +25,21 @@ model Session {
 }
 
 model User {
-    id                String            @id @default(cuid())
-    name              String            @unique
-    displayName       String
-    email             String?           @unique
-    emailVerified     DateTime?
-    image             String?
-    role              UserRole          @default(USER)
-    accounts          Account[]
-    author            Author?
-    sessions          Session[]
-    student           Student?
-    uploadedAssets    UploadedAssets[]
-    skillRepositories SkillRepository[]
-
-    enabledLearningStatistics Boolean @default(false)
-    enabledFeatureLearningDiary  Boolean  @default(false)
-    registrationCompleted      Boolean  @default(false)
+    id                          String           @id @default(cuid())
+    name                        String           @unique
+    displayName                 String
+    email                       String?          @unique
+    emailVerified               DateTime?
+    image                       String?
+    role                        UserRole         @default(USER)
+    accounts                    Account[]
+    author                      Author?
+    sessions                    Session[]
+    student                     Student?
+    uploadedAssets              UploadedAssets[]
+    enabledLearningStatistics   Boolean          @default(false)
+    enabledFeatureLearningDiary Boolean          @default(false)
+    registrationCompleted       Boolean          @default(false)
 }
 
 model VerificationToken {

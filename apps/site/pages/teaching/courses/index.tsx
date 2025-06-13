@@ -1,14 +1,17 @@
 import { authOptions } from "@self-learning/api";
-import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
+import { trpc } from "@self-learning/api-client";
+import { LoadingBox, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import {
 	CourseBasicInformation,
 	CourseSkillView,
-	CourseModulView,
+	CourseModuleView,
 	CoursePreview
 } from "@self-learning/ui/course";
 import { GetServerSideProps } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { useState } from "react";
+import { useRequiredSession } from "@self-learning/ui/layouts";
+import { LessonFormModel } from "@self-learning/teaching";
 
 export const getServerSideProps: GetServerSideProps = async ctx => {
 	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
@@ -38,7 +41,22 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
 
 export default function CourseCreationEditor() {
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
-	const [selectedIndex, setSelectedIndex] = useState(2);
+	const [selectedIndex, setSelectedIndex] = useState(0);
+	const session = useRequiredSession();
+	const username = session.data?.user.name;
+	const [modules, setModules] = useState<Map<string, LessonFormModel>>(new Map());
+	
+	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({
+		username: username ?? ""
+	});
+
+	if (isLoading) {
+		<LoadingBox />;
+	}
+
+	if (!author) {
+		return <div>Author Missing</div>;
+	}
 
 	function switchTab(index: number) {
 		setSelectedIndex(index);
@@ -49,9 +67,9 @@ export default function CourseCreationEditor() {
 			case 0:
 				return <CourseBasicInformation />;
 			case 1:
-				return <CourseSkillView />;
+				return <CourseSkillView authorId={author.id} />;
 			case 2:
-				return <CourseModulView onSubmit={() => {}} />;
+				return <CourseModuleView authorId={author.id} modules={modules} setModules={setModules}/>
 			case 3:
 				return <CoursePreview />;
 			default:
