@@ -17,6 +17,8 @@ export type EmailContext =
 	| { type: "streakReminderFirst"; data: StreakReminderContext }
 	| { type: "streakReminderLast"; data: StreakReminderContext };
 
+export type EmailTemplateType = EmailContext["type"];
+
 export interface TemplateVariables {
 	[key: string]: string | number | boolean;
 }
@@ -28,7 +30,7 @@ export interface EmailTemplateDefinition {
 }
 
 export const EMAIL_TEMPLATES: Record<
-	EmailContext["type"],
+	EmailTemplateType,
 	{ subject: string; html: string; text?: string }
 > = {
 	courseReminder: {
@@ -131,7 +133,7 @@ export const EMAIL_TEMPLATES: Record<
 		text: `
 			Hallo {{userName}},
 
-			du hast eine Serie von {{currentStreak}} Tagen aufgebaut – Respekt! Aber wenn du heute nicht lernst, endet sie 😢
+			du hast eine Serie von {{currentStreak}} Tagen aufgebaut - Respekt! Aber wenn du heute nicht lernst, endet sie 😢
 
 			Logge dich jetzt ein und halte deine Lernserie am Leben:
 			{{loginUrl}}
@@ -140,8 +142,6 @@ export const EMAIL_TEMPLATES: Record<
 		`
 	}
 } as const;
-
-export type EmailTemplateType = keyof typeof EMAIL_TEMPLATES;
 
 export function renderTemplate(
 	templateType: EmailTemplateType,

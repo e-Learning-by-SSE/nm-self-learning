@@ -126,25 +126,29 @@ export const notificationRouter = t.router({
 			});
 		}),
 	upsertNotificationSetting: authProcedure
-		.input(userNotificationSettingSchema)
+		.input(userNotificationSettingSchema.array())
 		.mutation(async ({ input, ctx }) => {
 			const userId = ctx.user.id;
-			return database.userNotificationSetting.upsert({
-				where: {
-					id: input.id ?? "",
-					userId_type_channel: {
-						userId,
-						type: input.type,
-						channel: input.channel
-					}
-				},
-				create: {
-					...input,
-					userId
-				},
-				update: {
-					enabled: input.enabled
-				}
-			});
+			return Promise.all(
+				input.map(setting =>
+					database.userNotificationSetting.upsert({
+						where: {
+							id: setting.id ?? "",
+							userId_type_channel: {
+								userId,
+								type: setting.type,
+								channel: setting.channel
+							}
+						},
+						create: {
+							...setting,
+							userId
+						},
+						update: {
+							enabled: setting.enabled
+						}
+					})
+				)
+			);
 		})
 });

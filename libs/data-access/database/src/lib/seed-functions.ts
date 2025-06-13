@@ -1,6 +1,12 @@
 /* eslint-disable quotes */
 import { faker } from "@faker-js/faker";
-import { LessonType, NotificationChannel, NotificationType, Prisma, PrismaClient } from "@prisma/client";
+import {
+	LessonType,
+	NotificationChannel,
+	NotificationType,
+	Prisma,
+	PrismaClient
+} from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -414,6 +420,8 @@ export async function seedCaseStudy(
 
 export async function createUsers(users: Prisma.UserCreateInput[]): Promise<void> {
 	for (const user of users) {
+		console.log("Creating user:", user.name);
+		// Check if user already exists
 		await prisma.user.create({
 			data: user
 		});

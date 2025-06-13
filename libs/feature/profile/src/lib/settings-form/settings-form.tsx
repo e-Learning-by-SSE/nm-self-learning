@@ -1,7 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { NotificationType } from "@prisma/client";
-import { trpc } from "@self-learning/api-client";
+import { NotificationChannel, NotificationType } from "@prisma/client";
 import {
 	EditFeatureSettings,
 	EditPersonalSettings,
@@ -205,47 +204,120 @@ export function FeatureSettingsForm({
 	);
 }
 
-const descriptionMap: Record<NotificationType, { title: string; text: string }> = {
+// Gruppierung der NotificationTypes zu benutzerfreundlichen Settings
+const notificationSettingsGroups: Record<
+	string, // group key wie "streakReminder", "courseReminder"
+	{
+		title: string;
+		text: string;
+		correspondingNotifications: NotificationType[];
+	}
+> = {
 	courseReminder: {
 		title: "Kurs-Erinnerungen",
-		text: "Erhalte eine Erinnerung, wenn du einen Kurs begonnen hast, aber noch nicht abgeschlossen hast"
+		text: "Erhalte eine Erinnerung, wenn du einen Kurs begonnen hast, aber noch nicht abgeschlossen hast",
+		correspondingNotifications: ["courseReminder"]
 	},
 	streakReminder: {
 		title: "Streak-Erinnerungen",
-		text: "Erhalte eine Erinnerung, wenn du deine Lernziele für einen Tag nicht erreicht hast"
+		text: "Erhalte eine Erinnerung, wenn du deine Lernziele für einen Tag nicht erreicht hast",
+		correspondingNotifications: ["streakReminderFirst", "streakReminderLast"]
 	}
 };
+
+// Helper: Bestimmt ob eine Gruppe für einen Channel aktiviert ist
+function isGroupEnabled(
+	groupKey: string,
+	channel: NotificationChannel,
+	allSettings: UserNotificationSetting[]
+): boolean {
+	const group = notificationSettingsGroups[groupKey];
+	if (!group) return false;
+
+	// Gruppe ist aktiviert wenn MINDESTENS ein entsprechender NotificationType aktiviert ist
+	return group.correspondingNotifications.some(notificationType => {
+		const setting = allSettings.find(s => s.type === notificationType && s.channel === channel);
+		return setting?.enabled ?? false;
+	});
+}
 
 export function NotificationSettingsForm({
 	notificationSettings,
 	onChange
 }: {
 	notificationSettings: UserNotificationSetting[];
-	onChange: OnDialogCloseFn<UserNotificationSetting>;
+	onChange: OnDialogCloseFn<UserNotificationSetting[]>;
 }) {
+	const supportedChannels: NotificationChannel[] = ["email"]; // später auch "push"
+
+	const handleGroupToggle = function (
+		groupKey: string,
+		channel: NotificationChannel,
+		newValue: boolean
+	): void {
+		const group = notificationSettingsGroups[groupKey];
+		if (!group) return;
+
+		const updatedSettings: UserNotificationSetting[] = [];
+
+		// Alle NotificationTypes dieser Gruppe für den Channel aktualisieren
+		group.correspondingNotifications.forEach(notificationType => {
+			const updatedSetting = notificationSettings.find(
+				s => s.type === notificationType && s.channel === channel
+			);
+			if (updatedSetting) {
+				updatedSettings.push({
+					...updatedSetting,
+					enabled: newValue
+				});
+			}
+		});
+		onChange(updatedSettings);
+	};
+
 	return (
-		<div className="space-y-4">
-			<div className="space-y-2">
-				{notificationSettings
-					.filter(ns => ns.channel === "email") // currently only email notifications are supported
-					.map(setting => {
-						return (
-							<>
+		<div className="space-y-6">
+			{Object.entries(notificationSettingsGroups).map(([groupKey, group]) => (
+				<div key={groupKey} className="space-y-3">
+					<div className="space-y-2">
+						<h3 className="font-medium">{group.title}</h3>
+						<ExpandableSettingsSection title={group.title} text={group.text} />
+					</div>
+
+					{/* Pro Channel ein Toggle */}
+					<div className="space-y-2 pl-4">
+						{supportedChannels.map(channel => {
+							// Prüfen ob für diesen Channel + Gruppe Settings existieren
+							const hasSettingsForChannel = group.correspondingNotifications.some(
+								notificationType =>
+									notificationSettings.some(
+										s => s.type === notificationType && s.channel === channel
+									)
+							);
+
+							if (!hasSettingsForChannel) return null;
+
+							const isEnabled = isGroupEnabled(
+								groupKey,
+								channel,
+								notificationSettings
+							);
+							const channelLabel = channel === "email" ? "E-Mail" : "Push";
+
+							return (
 								<ToggleSetting
-									value={setting.enabled}
-									onChange={value =>
-										void onChange({ ...setting, enabled: value })
+									key={`${groupKey}-${channel}`}
+									value={isEnabled}
+									onChange={(value: boolean) =>
+										handleGroupToggle(groupKey, channel, value)
 									}
-									label={`${descriptionMap[setting.type].title}`}
+									label={`${group.title} ${channelLabel}`}
 								/>
-								<ExpandableSettingsSection
-									text={descriptionMap[setting.type].text}
-									title={descriptionMap[setting.type].title}
-								/>
-							</>
-						);
-					})}
-			</div>
+							);
+						})}
+					</div>
+				</div>
+			))}
 		</div>
 	);
 }

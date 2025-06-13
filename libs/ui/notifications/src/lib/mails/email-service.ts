@@ -1,11 +1,12 @@
-import { UserNotificationSetting } from "@prisma/client";
+import { NotificationType, UserNotificationSetting } from "@prisma/client";
+import { matches } from "@self-learning/util/common";
 import {
-	renderTemplate,
 	CourseReminderContext,
 	EmailContext,
+	EmailTemplateType,
+	renderTemplate,
 	StreakReminderContext
 } from "./template-engine";
-import { matches } from "@self-learning/util/common";
 
 export interface EmailTemplate {
 	to: string;
@@ -83,15 +84,15 @@ export async function sendStreakReminderLast(to: string, data: StreakReminderCon
 	return sendTemplatedEmail(to, { type: "streakReminderLast", data });
 }
 
-// export async function sendStreakReminderLastChance(to: string, data: StreakReminderContext) {
-// 	return sendTemplatedEmail(to, { type: "streakReminderLastChance", data });
-// }
-
 export function isEmailNotificationSettingEnabled(
-	type: EmailContext["type"],
+	type: NotificationType,
 	user: { notificationSettings: UserNotificationSetting[] }
 ) {
 	return user.notificationSettings.some(
-		matches<UserNotificationSetting>({ channel: "email", type, enabled: true })
+		matches<UserNotificationSetting>({
+			channel: "email",
+			type: type,
+			enabled: true
+		})
 	);
 }

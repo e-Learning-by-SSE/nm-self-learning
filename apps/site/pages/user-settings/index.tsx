@@ -13,6 +13,7 @@ import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
+import { isTruthy } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -113,21 +114,32 @@ export default function SettingsPage(props: PageProps) {
 	const onNotificationChange: Parameters<
 		typeof NotificationSettingsForm
 	>[0]["onChange"] = async update => {
-		if (!update) return;
+		if (!update || (Array.isArray(update) && update.length === 0)) return;
+
+		const updatesArray = Array.isArray(update) ? update : [update];
+
 		setSettings(prev => {
-			const updateIndex = prev.notificationSettings.findIndex(
-				setting => setting.id === update.id
-			);
 			const newSettings = [...prev.notificationSettings];
-			if (updateIndex >= 0 && update.id) {
-				newSettings[updateIndex] = { ...prev.notificationSettings[updateIndex], ...update };
-				void updateNotificationSettings(newSettings[updateIndex]);
-			}
+
+			updatesArray.forEach(singleUpdate => {
+				const index = newSettings.findIndex(s => s.id === singleUpdate.id);
+				if (index >= 0) {
+					newSettings[index] = { ...newSettings[index], ...singleUpdate };
+				}
+			});
+
 			return { ...prev, notificationSettings: newSettings };
 		});
+		console.log("Updating notification settings", updatesArray);
+		const fullUpdates = updatesArray
+			.map(singleUpdate => ({
+				...settings.notificationSettings.find(s => s.id === singleUpdate.id),
+				...singleUpdate
+			}))
+			.filter(isTruthy);
+		console.log("Updating notification settings", fullUpdates);
+		await updateNotificationSettings(fullUpdates);
 	};
-
-	console.log(settings);
 
 	return (
 		<CenteredSection className="bg-gray-50">

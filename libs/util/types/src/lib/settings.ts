@@ -1,3 +1,4 @@
+import { NotificationChannel, NotificationType } from "@prisma/client";
 import * as z from "zod";
 
 export const editFeatureSettingsSchema = z.object({
@@ -25,14 +26,12 @@ export const editUserSettingsSchema = z
 
 export type EditUserSettings = z.infer<typeof editUserSettingsSchema>;
 
-const notificationTypeSchema = z.enum(["courseReminder", "streakReminder"]);
-const notificationChannelSchema = z.enum(["email", "push"]);
-
+// compatible with prisma schema
 export const userNotificationSettingSchema = z.object({
 	id: z.string().optional(), // optional for create, required for update
 	userId: z.string(),
-	type: notificationTypeSchema,
-	channel: notificationChannelSchema,
+	type: z.nativeEnum(NotificationType),
+	channel: z.nativeEnum(NotificationChannel),
 	enabled: z.boolean().default(true)
 });
 export type UserNotificationSetting = z.infer<typeof userNotificationSettingSchema>;
