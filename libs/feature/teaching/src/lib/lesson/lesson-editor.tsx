@@ -8,7 +8,8 @@ import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
-import { useRequiredSession } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
+import { useRouter } from "next/router";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -78,6 +79,8 @@ export function LessonEditor({
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
 }) {
+	const isNew = initialLesson === null || initialLesson === undefined;
+	const router = useRouter();
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
 	const form = useForm<LessonFormModel>({
@@ -90,41 +93,53 @@ export function LessonEditor({
 		resolver: zodResolver(lessonSchema)
 	});
 
+	function onCancel() {
+		if (window.confirm("Änderungen verwerfen?")) {
+			router.push("/dashboard/author");
+		}
+	}
+
 	return (
 		<FormProvider {...form}>
 			<form
 				id="lessonform"
 				onSubmit={form.handleSubmit(onSubmit, console.log)}
-				className="flex h-full flex-col overflow-hidden"
+				className="bg-gray-50"
 			>
-				<div className="flex h-full overflow-y-auto overflow-x-hidden">
-					<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-						<LessonInfoEditor lesson={initialLesson} />
-
-						<div>
-							<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-								<Tab>Lerninhalt</Tab>
-								<Tab>Lernkontrolle</Tab>
-							</Tabs>
-							{selectedTab === 0 && <LessonContentEditor />}
-							{selectedTab === 1 && <QuizEditor />}
+				<SidebarEditorLayout sidebar={<LessonInfoEditor lesson={initialLesson} />}>
+					<div>
+						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+							<Tab>Lerninhalt</Tab>
+							<Tab>Lernkontrolle</Tab>
+						</Tabs>
+						{selectedTab === 0 && <LessonContentEditor />}
+						{selectedTab === 1 && <QuizEditor />}
+					</div>
+					<div
+						className={`${
+							isFullScreen ? "fixed" : ""
+						} pointer-events-none bottom-0 flex w-full items-end justify-end`}
+					>
+						{!isFullScreen && (
+							<DialogActions onClose={onCancel}>
+								<button type="submit" className="btn-primary pointer-events-auto">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+							</DialogActions>
+						)}
+					</div>
+				</SidebarEditorLayout>
+				{isFullScreen && (
+					<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
+						<div className="z-50 pr-5 pb-5">
+							<DialogActions onClose={onCancel}>
+								<button type="submit" className="btn-primary pointer-events-auto">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+							</DialogActions>
 						</div>
 					</div>
-				</div>
-
-				<div
-					className={`${
-						isFullScreen ? "fixed" : ""
-					} pointer-events-none bottom-0 flex w-full items-end justify-end`}
-				>
-					<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
-						<DialogActions onClose={onSubmit}>
-							<button type="submit" className="btn-primary pointer-events-auto">
-								Speichern
-							</button>
-						</DialogActions>
-					</div>
-				</div>
+				)}
 			</form>
 		</FormProvider>
 	);
