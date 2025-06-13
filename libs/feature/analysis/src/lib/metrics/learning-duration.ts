@@ -24,7 +24,7 @@ export function computeTotalDuration(events: Pick<UserEvent, "createdAt" | "reso
 
 		if (event.resourceId !== currentResource) {
 			// Compute duration for the segment that just ended
-			const duration = differenceInMilliseconds(event.createdAt, segmentStart);
+			const duration = differenceInMilliseconds(events[i - 1].createdAt, segmentStart);
 			totalDuration += duration;
 
 			// Start new segment
