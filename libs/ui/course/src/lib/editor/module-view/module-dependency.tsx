@@ -20,7 +20,6 @@ export function ModuleDependency({
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
 	const tabs = ["Skills", "Module"];
-	const handleSelect = () => {};
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	function switchTab(index: number) {
 		setSelectedIndex(index);
@@ -31,7 +30,6 @@ export function ModuleDependency({
 				return (
 					<SkillTree
 						skillDisplayData={skillDisplayData}
-						onSkillSelect={handleSelect}
 						updateSkillDisplay={updateSkillDisplay}
 						authorId={authorId}
 						isDragging={isDragging}

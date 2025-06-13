@@ -5,7 +5,7 @@ import {
 	LessonContentEditor,
 	LessonFormModel,
 	QuizEditor,
-	ModuleInfoEditor,
+	ModuleInfoEditor
 } from "@self-learning/teaching";
 import { createEmptyLesson, lessonSchema, SkillFormModel } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,9 +36,7 @@ export function CourseModuleView({
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
-			...createEmptyLesson(),
-			//TODO input author here
-			authors: []
+			...createEmptyLesson()
 		},
 		resolver: zodResolver(lessonSchema)
 	});
@@ -52,10 +50,7 @@ export function CourseModuleView({
 			...skillsToAdd.map(skill => ({ ...skill, children: [], parents: [] }))
 		]);
 	};
-	// Needed to prevent reloading the skills when dragging skills
-	const onDragStart = () => {
-		setIsDragging(true);
-	};
+
 	const onSubmit = form.handleSubmit((lesson: LessonFormModel) => {
 		const id = selectedModuleId ?? lesson.lessonId ?? crypto.randomUUID();
 		const updatedModules = new Map(modules);
@@ -69,6 +64,11 @@ export function CourseModuleView({
 		});
 		form.reset(createEmptyLesson());
 	});
+	// Needed to prevent reloading the skills when dragging skills
+	const onDragStart = () => {
+		setIsDragging(true);
+	};
+
 	const onDragEnd = (result: import("@hello-pangea/dnd").DropResult) => {
 		setIsDragging(false);
 		if (!result.destination) return;
@@ -84,10 +84,11 @@ export function CourseModuleView({
 	function handleModuleClick(id: string) {
 		const lesson = modules.get(id);
 		if (lesson) {
-			form.reset(lesson); // this loads the data into the form
+			form.reset(lesson);
 			setSelectedModuleId(id);
 		}
 	}
+	
 	const renderContent = (index: number) => {
 		switch (index) {
 			case 0:
@@ -130,7 +131,7 @@ export function CourseModuleView({
 
 							<div className="flex justify-end mb-8">
 								<button className="btn btn-primary" type="submit">
-									Modul Hinzufügen
+									{selectedModuleId ? "Modul speichern" : "Modul hinzufügen"}
 								</button>
 							</div>
 						</form>
