@@ -12,7 +12,7 @@ type SkillModalIdentifier = "provides" | "requires";
 /**
  * Area to add and remove skills to a lesson
  */
-export function LessonSkillManager({ addSkills }: { addSkills: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void }) {
+export function LessonSkillManager({ addSkills = () => {} }: { addSkills?: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void }) {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
 	const watchingSkills = {
