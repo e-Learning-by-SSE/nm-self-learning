@@ -1,4 +1,4 @@
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { t, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -26,6 +26,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Specialization, Subject } from "@self-learning/types";
+import { ExportCourseDialog } from "@self-learning/teaching";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -115,6 +116,8 @@ export default function Start(props: Props) {
 function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
 	const authorName = session.data?.user.name;
+
+	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
 		<div className="bg-gray-50">
@@ -234,9 +237,27 @@ function AuthorDashboardPage({ author }: Props) {
 													<PencilIcon className="icon" />
 													<span>Bearbeiten</span>
 												</Link>
+												<div className="flex space-x-2">
+													<button
+														className="btn-stroked w-full text-right"
+														type="button"
+														onClick={() => setViewExportDialog(true)}
+													>
+														<ArrowDownTrayIcon className="w-5 h-5 icon" />
+														{"Export"}
+													</button>
+												</div>
 												<CourseDeleteOption slug={course.slug} />
 											</div>
 										</div>
+										{viewExportDialog && (
+											<ExportCourseDialog
+												course={course}
+												onClose={() => {
+													setViewExportDialog(false);
+												}}
+											/>
+										)}
 									</li>
 								))
 							)}
