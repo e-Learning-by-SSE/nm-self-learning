@@ -4,19 +4,21 @@ import { useState } from "react";
 import { ErrorReportDialog } from "./error-report-dialog";
 import { ExportCourseProgressDialog } from "./export-progress-dialog";
 
+export type CourseExportType = {
+	slug: string;
+	imgUrl: string | null;
+	title: string;
+	specializations: {
+		title: string;
+	}[];
+	courseId: string;
+};
+
 export function ExportCourseDialog({
 	course,
 	onClose
 }: {
-	course: {
-		slug: string;
-		imgUrl: string | null;
-		title: string;
-		specializations: {
-			title: string;
-		}[];
-		courseId: string;
-	};
+	course: CourseExportType;
 	onClose: () => void;
 }) {
 	const [errorReport, setErrorReport] = useState<IncompleteNanoModuleExport[]>([]);

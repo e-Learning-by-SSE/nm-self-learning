@@ -1,9 +1,9 @@
 import { DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { CourseFormModel } from "../course-form-model";
 import { IncompleteNanoModuleExport, exportCourseArchive } from "@self-learning/lia-exporter";
 import { useEffect, useState, useRef } from "react";
 import { trpc } from "@self-learning/api-client";
+import { CourseExportType } from "@self-learning/teaching";
 
 // Optional public env variable that indicates were the storage is located
 const minioUrl = process.env["NEXT_PUBLIC_MINIO_PUBLIC_URL"];
@@ -32,15 +32,7 @@ export function ExportCourseProgressDialog({
 	onFinish,
 	onError
 }: {
-	course: {
-		slug: string;
-		imgUrl: string | null;
-		title: string;
-		specializations: {
-			title: string;
-		}[];
-		courseId: string;
-	};
+	course: CourseExportType;
 	onClose: () => void;
 	onFinish: () => void;
 	onError: (report: IncompleteNanoModuleExport[]) => void;
