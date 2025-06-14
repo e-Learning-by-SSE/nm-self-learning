@@ -22,12 +22,13 @@ import { AuthorsList, LicenseChip, showToast, Tab, Tabs } from "@self-learning/u
 import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer, useRequiredSession } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
+import { useEventLog } from "@self-learning/util/eventlog";
+import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { LessonData } from "./lesson-data-access";
-import { useEventLog } from "@self-learning/util/eventlog";
 
 export type LessonProps = {
 	lesson: LessonData;
@@ -223,14 +224,18 @@ function LessonControls({
 	course: Exclude<LessonProps["course"], null | undefined>;
 	lesson: LessonProps["lesson"];
 }) {
+	const { lessonId } = lesson;
+	const { courseId } = course;
 	const markAsCompleted = useMarkAsCompleted();
 	const completion = useCourseCompletion(course.slug);
 	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 	const { newEvent } = useEventLog();
 	const url = "courses/" + course.slug + "/" + lesson.slug;
+	const { logAttemptSubmit, logStartAttempt } = useAttemptSubmission({ lessonId, courseId });
+	const { lessonAttemptId } = useLessonSession({ lessonId });
 
-	const { lessonAttemptId, submit } = useLessonSession(lesson.lessonId, course.courseId);
+	logStartAttempt();
 
 	useEffect(() => {
 		if (!lessonAttemptId) return;
@@ -240,7 +245,7 @@ function LessonControls({
 			courseId: course.courseId,
 			payload: { lessonAttemptId }
 		});
-	}, [newEvent, lesson.lessonId, course.courseId, lessonAttemptId]);
+	}, [newEvent, lesson.lessonId, course.courseId, lessonAttemptId, logStartAttempt]);
 
 	const handleLessonExit = useCallback(async () => {
 		if (!lessonAttemptId) return;
@@ -266,14 +271,14 @@ function LessonControls({
 	const handleMarkCompleted = useCallback(async () => {
 		const finalSession = loadLessonSessionSafe(lesson.lessonId);
 		if (!finalSession) return;
-		await submit("completed", 1.0);
+		await logAttemptSubmit("completed", 1.0);
 
 		markAsCompleted({
 			lessonId: lesson.lessonId,
 			courseSlug: course.slug,
 			performanceScore: 1
 		});
-	}, [lesson.lessonId, submit, markAsCompleted, course.slug]);
+	}, [lesson.lessonId, logAttemptSubmit, markAsCompleted, course.slug]);
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">

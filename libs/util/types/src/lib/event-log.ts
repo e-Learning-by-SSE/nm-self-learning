@@ -42,7 +42,7 @@ const eventDefinitions = {
 		completionState: z.enum(["completed", "failed"]),
 		pauseCount: z.number().int().nonnegative(),
 		effectiveTimeLearned: z.number(), // screen-focus: time spent minus pauses // seconds
-		performanceScore: z.number().int().min(0).max(1)
+		performanceScore: z.number().min(0).max(1)
 	}),
 	/**
 	 * Fired when a lesson is marked as completed.

@@ -2,25 +2,44 @@
 import { PlayIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { AchievementList, useAchievementRedemption } from "@self-learning/achievements";
 import { trpc } from "@self-learning/api-client";
-import { LessonLayoutProps } from "@self-learning/lesson";
+import { LessonLayoutProps, loadLessonSessionSafe } from "@self-learning/lesson";
 import { useQuiz } from "@self-learning/quiz";
 import { AchievementWithProgress, PerformanceGrade } from "@self-learning/types";
 import { DialogActions, GameifyDialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
+import { intervalToDuration } from "date-fns";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { calculateAverageScore, calculateQuizGrade } from "./lesson-grading";
 
-function GradeDisplay({ grade }: { grade: PerformanceGrade }) {
-	const getGradeData = (grade: PerformanceGrade) => {
+function GradeDisplay({
+	grade,
+	averageScore,
+	totalAttempts,
+	learnedSeconds
+}: {
+	grade: PerformanceGrade;
+	averageScore: number;
+	totalAttempts: number;
+	learnedSeconds: number;
+}) {
+	const getGradeData = (grade: PerformanceGrade, score: number) => {
 		switch (grade) {
 			case "PERFECT":
 				return {
 					color: "text-purple-700 bg-gradient-to-br from-purple-100 to-amber-100 border-2 border-purple-300",
 					text: "Perfekt",
-					display: "1**"
+					display: "1+"
 				};
 			case "VERY_GOOD":
+				// Feinere Abstufung für "sehr gut"
+				if (score === 1) {
+					return {
+						color: "text-green-700 bg-green-100 border-2 border-green-300",
+						text: "Sehr gut",
+						display: "1+"
+					};
+				}
 				return {
 					color: "text-green-700 bg-green-100 border-2 border-green-300",
 					text: "Sehr gut",
@@ -38,6 +57,7 @@ function GradeDisplay({ grade }: { grade: PerformanceGrade }) {
 					text: "Befriedigend",
 					display: "3"
 				};
+
 			case "SUFFICIENT":
 				return {
 					color: "text-red-700 bg-red-100 border-2 border-red-300",
@@ -53,22 +73,65 @@ function GradeDisplay({ grade }: { grade: PerformanceGrade }) {
 		}
 	};
 
-	const gradeData = getGradeData(grade);
+	const gradeData = getGradeData(grade, averageScore);
+	const duration = intervalToDuration({ start: 0, end: learnedSeconds * 1000 });
+	const durationFormatted = `${duration.minutes ?? "00"}:${String(duration.seconds ?? "00").padStart(2, "0")}`;
 
 	return (
-		<div className="text-center mb-6">
-			<div
-				className={`inline-flex items-center justify-center w-28 h-28 rounded-full ${gradeData.color} mb-3 shadow-lg`}
-			>
-				<span className="text-3xl font-bold">{gradeData.display}</span>
+		<div className="flex flex-col items-center gap-6 p-6">
+			{/* Header - wie in deiner Zeichnung */}
+			<div className="text-center">
+				<h2 className="text-2xl font-semibold text-gray-800 mb-2">
+					Gratulation toll gemacht!
+				</h2>
+				<p className="text-gray-600">
+					Du hast{" "}
+					<span className="font-semibold">{Math.round(averageScore * 100)} Punkte</span>{" "}
+					abgeschlossen
+				</p>
 			</div>
-			<p className="text-xl font-semibold text-gray-800">{gradeData.text}</p>
-			{grade === "PERFECT" && <p className="text-sm text-purple-600 mt-1">Fehlerfrei!</p>}
+
+			{/* Haupt-Display mit Zeit und Note - Layout wie in deiner Zeichnung */}
+			<div className="flex items-center gap-6">
+				{/* Zeit-Box (links) */}
+				<div className="bg-white border-2 border-gray-300 rounded-xl px-6 py-4 min-w-[100px] text-center shadow-lg">
+					<div className="text-xl font-mono text-gray-700 font-semibold">
+						{durationFormatted}
+					</div>
+					<div className="text-xs text-gray-500 mt-1">Zeit</div>
+				</div>
+
+				{/* Note-Box (rechts) - viel prominenter */}
+				<div
+					className={`${gradeData.color} rounded-xl px-8 py-6 min-w-[120px] text-center shadow-lg`}
+				>
+					<div className="text-4xl font-bold mb-1">{gradeData.display}</div>
+					<div className="text-sm font-medium">{gradeData.text}</div>
+				</div>
+			</div>
+
+			{/* Zusätzliche Info */}
+			<div className="text-center text-sm text-gray-600">
+				<p>Versuch: {totalAttempts}</p>
+				{grade === "PERFECT" && (
+					<p className="text-purple-600 font-medium mt-1">
+						Fehlerfrei!{" "}
+						<span role="img" aria-label="Konfetti">
+							🎉
+						</span>
+					</p>
+				)}
+				{grade !== "PERFECT" && (
+					<p className="mt-2 text-blue-600">
+						Du kannst es noch einmal versuchen, um eine bessere Note zu erhalten!
+					</p>
+				)}
+			</div>
 		</div>
 	);
 }
 
-interface QuizCompletedGradeDialogProps {
+interface QuizGradeDialogProps {
 	open: boolean;
 	onClose: OnDialogCloseFn<void>;
 	lesson: LessonLayoutProps["lesson"];
@@ -76,17 +139,24 @@ interface QuizCompletedGradeDialogProps {
 	nextLesson?: { title: string; slug: string } | null;
 }
 
-export function QuizCompletedGradeDialog({
+export function QuizGradeDialog({
 	open,
 	onClose,
 	lesson,
 	course,
 	nextLesson
-}: QuizCompletedGradeDialogProps) {
-	const { attempts, answers } = useQuiz();
+}: QuizGradeDialogProps) {
+	const { attempts, answers, lessonAttemptId: attemptIdControl, reload } = useQuiz();
 	const { mutateAsync: earnAchievements } = trpc.achievement.earnAchievements.useMutation();
 	const [achievements, setAchievements] = useState<IdSet<AchievementWithProgress>>(new IdSet());
 	const { handleRedeem } = useAchievementRedemption();
+	const learningSession = loadLessonSessionSafe(lesson.lessonId);
+
+	if (learningSession && attemptIdControl !== learningSession.lessonAttemptId) {
+		console.warn(
+			"QuizGradeDialog: lessonAttemptId from quiz does not match the one from lesson session."
+		);
+	}
 
 	const totalAttempts = Object.values(attempts).reduce((acc, attempt) => acc + attempt, 0);
 	const averageScore = calculateAverageScore(attempts, answers);
@@ -120,7 +190,7 @@ export function QuizCompletedGradeDialog({
 			open={open}
 			onClose={onClose}
 			title={lesson.title}
-			style={{ minWidth: "300px", maxWidth: "600px", maxHeight: "90vh", width: "90vw" }}
+			style={{ minWidth: "400px", maxWidth: "600px", maxHeight: "90vh", width: "90vw" }}
 		>
 			<div className="space-y-6">
 				{/* Course Information */}
@@ -130,18 +200,16 @@ export function QuizCompletedGradeDialog({
 						von {lesson.authors.map(a => a.displayName).join(", ")}
 					</p>
 				</div>
-				{/* Grade Display */}
-				<GradeDisplay grade={grade} />
-				{/* Attempts Information */}
-				<div className="text-center text-sm text-gray-600">
-					<p>Versuch: {totalAttempts}</p>
-					{grade !== "PERFECT" && (
-						<p className="mt-2 text-blue-600">
-							Du kannst es noch einmal versuchen, um eine bessere Note zu erhalten!
-						</p>
-					)}
-				</div>
-				{/* Achievements Section `*/}
+
+				{/* Grade Display - jetzt mit verbesserter Darstellung */}
+				<GradeDisplay
+					grade={grade}
+					averageScore={averageScore}
+					totalAttempts={totalAttempts}
+					learnedSeconds={learningSession?.totalDurationSec ?? 0}
+				/>
+
+				{/* Achievements Section */}
 				{achievements.size > 0 && (
 					<GradeAchievementSection
 						title="Errungenschaften"
@@ -149,6 +217,8 @@ export function QuizCompletedGradeDialog({
 						onRedeem={handleRedeemWithStateUpdate}
 					/>
 				)}
+
+				{/* Lesson completion text */}
 				<div className="flex flex-col text-sm text-light">
 					<p>
 						Du hast die Lerneinheit{" "}
@@ -173,8 +243,13 @@ export function QuizCompletedGradeDialog({
 				</div>
 			</div>
 
+			{/* Action buttons - wie in deiner Zeichnung */}
 			<DialogActions abortLabel="Schließen" onClose={onClose}>
-				{grade !== "PERFECT" && <button className="btn-stroked">Erneut versuchen</button>}
+				{grade !== "PERFECT" && (
+					<button onClick={reload} className="btn-stroked">
+						Erneut versuchen
+					</button>
+				)}
 				{nextLesson && (
 					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
 				)}

@@ -27,7 +27,8 @@ import { LoadingBox, Tab, Tabs, useIsFirstRender } from "@self-learning/ui/commo
 import { useEventLog } from "@self-learning/util/eventlog";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { useAttemptSubmission } from "../quiz-submit-attempt";
 
 export type QuestionProps = {
 	lesson: LessonData;
@@ -46,10 +47,14 @@ export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionPro
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
-	const { lessonAttemptId, submit, reset, setTrackingState } = useLessonSession(
-		lesson.lessonId,
-		course?.courseId ?? "undefined"
-	);
+	const { lessonAttemptId, reset, setTrackingState, init } = useLessonSession({
+		lessonId: lesson.lessonId
+	});
+	const { logAttemptSubmit } = useAttemptSubmission({
+		lessonId: lesson.lessonId,
+		courseId: course?.courseId ?? ""
+	});
+
 	const isStandalone = !course;
 
 	const getQuestionUrl = useCallback(
@@ -84,6 +89,7 @@ export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionPro
 	const restart = () => {
 		router.reload();
 		reset();
+		init();
 	};
 
 	if (lessonAttemptId === null) return <LoadingBox />;
@@ -117,8 +123,9 @@ export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionPro
 						<QuizCompletionStateSubscriber
 							lesson={lesson}
 							course={course}
-							onSubmitAttempt={submit}
-							setTrackingState={setTrackingState}
+							onSubmitAttempt={logAttemptSubmit}
+							setLearningTrackingState={setTrackingState}
+							resetTracking={reset}
 						/>
 					)}
 				</div>
@@ -132,7 +139,8 @@ function QuizCompletionStateSubscriber({
 	lesson,
 	course,
 	onSubmitAttempt,
-	setTrackingState
+	resetTracking,
+	setLearningTrackingState
 }: {
 	lesson: QuestionProps["lesson"];
 	course: NonNullable<QuestionProps["course"]>;
@@ -140,7 +148,8 @@ function QuizCompletionStateSubscriber({
 		completionState: "completed" | "failed",
 		performanceScore: number
 	) => Promise<unknown>;
-	setTrackingState: (state: boolean) => void;
+	resetTracking: () => void;
+	setLearningTrackingState: Dispatch<SetStateAction<boolean>>;
 }) {
 	const { completionState, attempts, answers } = useQuiz();
 	const unsubscribeRef = useRef(false);
@@ -154,7 +163,11 @@ function QuizCompletionStateSubscriber({
 
 			if (completionState !== "in-progress") {
 				onSubmitAttempt(completionState, performanceScore);
-				setTrackingState(false);
+				setLearningTrackingState(false);
+			}
+
+			if (completionState === "in-progress") {
+				setLearningTrackingState(true);
 			}
 
 			if (completionState === "completed") {
@@ -177,7 +190,8 @@ function QuizCompletionStateSubscriber({
 		lesson.lessonId,
 		markAsCompleted,
 		onSubmitAttempt,
-		setTrackingState
+		resetTracking,
+		setLearningTrackingState
 	]);
 
 	return <></>;
@@ -210,9 +224,11 @@ export function QuizHeader({
 
 	// we need to reset the warning dialog when the quiz is in progress since the user can retry and
 	// the state is kept in this case
-	if (completionState === "in-progress" && suppressDialog) {
-		setSuppressDialog(false);
-	}
+	useEffect(() => {
+		if (completionState === "in-progress" && suppressDialog) {
+			setSuppressDialog(false);
+		}
+	}, [completionState, suppressDialog]);
 
 	const showSuccessDialog = completionState === "completed" && !suppressDialog;
 	const showFailureDialog = completionState === "failed" && !suppressDialog;

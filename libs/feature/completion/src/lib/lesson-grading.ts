@@ -6,11 +6,9 @@
  * Only the translation from threshold to grade remains centralize then.
  */
 
-import { trpc } from "@self-learning/api-client";
 import { QuestionType } from "@self-learning/question-types";
 import { QuizContextValue } from "@self-learning/quiz";
 import { PerformanceGrade } from "@self-learning/types";
-import { useCallback } from "react";
 
 // Weights for each question type used for grading
 const QUESTION_TYPE_WEIGHTS: { [QType in QuestionType["type"]]: number } = {

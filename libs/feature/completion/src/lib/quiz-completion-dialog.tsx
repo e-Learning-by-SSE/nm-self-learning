@@ -1,15 +1,9 @@
 import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonLayoutProps } from "@self-learning/lesson";
-import { useQuiz } from "@self-learning/quiz";
-import {
-	Dialog,
-	DialogActions,
-	LoadingCircleCorner,
-	OnDialogCloseFn
-} from "@self-learning/ui/common";
+import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 import Link from "next/link";
-import { QuizCompletedGradeDialog } from "./lesson-grade-dialog";
-import { trpc } from "@self-learning/api-client";
+import { QuizGradeDialog } from "./quiz-grade-dialog";
 
 export function QuizCompletionDialog({
 	course,
@@ -22,12 +16,11 @@ export function QuizCompletionDialog({
 	nextLesson: { title: string; slug: string } | null;
 	onClose: OnDialogCloseFn<void>;
 }) {
-	const { isLoading, data } = trpc.me.getExperimentStatus.useQuery();
+	const session = useRequiredSession();
 
-	if (isLoading || !data) return <LoadingCircleCorner />;
-	if (data.isParticipating) {
+	if (session.data?.user.featureFlags.experimental) {
 		return (
-			<QuizCompletedGradeDialog
+			<QuizGradeDialog
 				open={true}
 				onClose={onClose}
 				lesson={lesson}
@@ -85,8 +78,6 @@ export function QuizFailedDialog({
 	nextLesson: { title: string; slug: string } | null;
 	onClose: OnDialogCloseFn<void>;
 }) {
-	const { reload } = useQuiz();
-
 	return (
 		<Dialog onClose={onClose} title="Nicht Bestanden" style={{ maxWidth: "600px" }}>
 			<div className="flex flex-col text-sm text-light">
@@ -98,8 +89,8 @@ export function QuizFailedDialog({
 			</div>
 
 			<DialogActions onClose={onClose}>
-				<button className="btn-primary" onClick={reload}>
-					<span>Erneut probieren</span>
+				<button className="btn-primary" onClick={() => onClose()}>
+					<span>Weiter probieren</span>
 					<ArrowPathIcon className="h-5 shrink-0" />
 				</button>
 

@@ -1,7 +1,7 @@
 "use client";
 import { EventLog, EventTypeKeys } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback } from "react";
 
 export function useEventLog() {
 	const { mutateAsync } = trpc.events.create.useMutation();
@@ -25,8 +25,6 @@ export function useEventLog() {
 		},
 		[mutateAsync]
 	);
-
-	useEffect(() => console.log("MutateAsyncChanged"), [mutateAsync]);
 
 	return { newEvent };
 }
