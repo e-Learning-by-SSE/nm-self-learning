@@ -64,14 +64,13 @@ async function getStudent(username: string) {
 					name: true,
 					image: true,
 					email: true,
-					enabledFeatureLearningDiary: true,
-					enabledLearningStatistics: true,
 					gamificationProfile: {
 						select: {
 							loginStreak: true,
 							flames: true
 						}
-					}
+					},
+					featureFlags: true
 				}
 			},
 			completedLessons: {
@@ -256,7 +255,7 @@ export const getServerSideProps = withTranslations(
 	withAuth<Props>(async (_, user) => {
 		// TODO remove this check when gamification is fully enabled
 		// const { isParticipating } = await getExperimentStatus(user.name);
-		const isParticipant = user.features.includes("experimentalFeatures");
+		const isParticipant = user.featureFlags.experimental;
 		if (!isParticipant) {
 			return {
 				redirect: {
@@ -283,20 +282,20 @@ export default function DashboardPage(props: Props) {
 	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
 	const [ltb, dispatch] = useReducer(ltbReducer, {
 		dialogOpen: false,
-		enabled: props.student.user.enabledFeatureLearningDiary
+		enabled: props.student.user.featureFlags?.learningDiary ?? false
 	});
 
 	const handleDialogSubmit: Parameters<
 		typeof EnableLearningDiaryDialog
 	>[0]["onSubmit"] = async update => {
-		await updateSettings({ user: { ...update } });
+		await updateSettings({ user: { featureFlags: { ...update } } });
 		dispatch({ type: "TOGGLE_LTB", enabled: true });
 		dispatch({ type: "CLOSE_DIALOG" });
 	};
 
 	const handleClickLtbToggle = async () => {
 		if (ltb.enabled) {
-			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
+			await updateSettings({ user: { featureFlags: { learningDiary: false } } });
 			dispatch({ type: "TOGGLE_LTB", enabled: false });
 		} else {
 			dispatch({ type: "OPEN_DIALOG" });

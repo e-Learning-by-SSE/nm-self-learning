@@ -1,10 +1,14 @@
 import { NotificationChannel, NotificationType } from "@prisma/client";
 import * as z from "zod";
 
-export const editFeatureSettingsSchema = z.object({
-	enabledLearningStatistics: z.boolean(),
-	enabledFeatureLearningDiary: z.boolean()
-});
+export const editFeatureSettingsSchema = z
+	.object({
+		learningStatistics: z.boolean().default(true),
+		// experimental: z.boolean().default(false), // Uncomment if you want to let the user change this setting via the default setting page
+		learningDiary: z.boolean().default(false)
+	})
+	.partial();
+
 export type EditFeatureSettings = z.infer<typeof editFeatureSettingsSchema>;
 
 export const editPersonalSettingSchema = z.object({
@@ -17,7 +21,7 @@ export const editUserSettingsSchema = z
 		user: z
 			.object({
 				...editPersonalSettingSchema.shape,
-				...editFeatureSettingsSchema.shape,
+				featureFlags: editFeatureSettingsSchema,
 				registrationCompleted: z.boolean()
 			})
 			.partial()

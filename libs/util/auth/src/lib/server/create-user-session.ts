@@ -43,9 +43,7 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 			role: true,
 			image: true,
 			author: { select: { username: true } },
-			enabledFeatureLearningDiary: true,
-			enabledLearningStatistics: true,
-			experimentalFeatures: true,
+			featureFlags: true,
 			acceptedExperimentTerms: true
 		}
 	});
@@ -59,38 +57,27 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 		});
 	};
 
-	let userRole = userFromDb.role;
 	// Remote permissions wins over local permissions
 	if (userFromDb.role === "ADMIN" && incomingRole !== "ADMIN") {
 		// Local Admin, remote not -> Demote to User
-		const updated = await updateUser(incomingRole);
-		userRole = updated.role;
+		await updateUser(incomingRole);
 	} else if (userFromDb.role !== "ADMIN" && incomingRole === "ADMIN") {
 		// Local User, remote Admin -> Promote to Admin
-		const updated = await updateUser("ADMIN");
-		userRole = updated.role;
-	}
-
-	const features: Session["user"]["features"] = [];
-	if (userFromDb.enabledLearningStatistics) {
-		features.push("learningStatistics");
-	}
-	if (userFromDb.enabledFeatureLearningDiary) {
-		features.push("learningDiary");
-	}
-	if (userFromDb.acceptedExperimentTerms && userFromDb.experimentalFeatures) {
-		features.push("experimentalFeatures");
+		await updateUser("ADMIN");
 	}
 
 	return {
 		id: userFromDb.id,
 		name: name,
-		role: userRole,
+		role: incomingRole,
 		isAuthor: !!userFromDb.author,
 		avatarUrl: userFromDb.image,
-		enabledLearningStatistics: userFromDb.enabledLearningStatistics,
-		enabledFeatureLearningDiary: userFromDb.enabledFeatureLearningDiary,
-		features
+		featureFlags: userFromDb.featureFlags ?? {
+			// should not happen when database is up-to-date
+			experimental: false,
+			learningDiary: false,
+			learningStatistics: false
+		}
 	};
 }
 
@@ -99,6 +86,7 @@ export const authCallbacks: Partial<CallbacksOptions> = {
 		if (!user?.name) return token; // user not logged in
 
 		const { name } = user;
+
 		let incomingRole: UserRole | undefined;
 		if (!account?.access_token && process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE) {
 			// In demo instance, we don't have an access token => demo accounts
@@ -110,6 +98,7 @@ export const authCallbacks: Partial<CallbacksOptions> = {
 		} else if (account?.access_token) {
 			incomingRole = getIdpSelflearnAdminRole(account.access_token);
 		}
+
 		const ownToken = await createToken(name, incomingRole ?? "USER");
 
 		Object.assign(token, ownToken);

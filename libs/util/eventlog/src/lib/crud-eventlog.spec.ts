@@ -6,7 +6,7 @@ import { ALWAYS_SAVE_EVENT_TYPES } from "./privacy-exceptions.conf";
 
 jest.mock("@self-learning/database", () => ({
 	database: {
-		user: {
+		features: {
 			findUnique: jest.fn()
 		},
 		eventLog: {
@@ -14,17 +14,6 @@ jest.mock("@self-learning/database", () => ({
 		}
 	}
 }));
-
-// Mock user objects for enabled and disabled learning statistics
-const mockUserEnabled = {
-	name: "testUser",
-	enabledLearningStatistics: true
-};
-
-const mockUserDisabled = {
-	name: "testUser",
-	enabledLearningStatistics: false
-};
 
 const course = { courseId: "course123" };
 const lesson = { lessonId: "lesson456" };
@@ -49,20 +38,24 @@ describe("createUserEvent", () => {
 	});
 
 	it("should create an event with the original username when user has enabled learning statistics", async () => {
-		(database.user.findUnique as jest.Mock).mockResolvedValue(mockUserEnabled);
+		(database.features.findUnique as jest.Mock).mockResolvedValue({ learningStatistics: true });
 		(database.eventLog.create as jest.Mock).mockResolvedValue(baseEventData);
 
 		const result = await createEventLogEntry({ ...baseEventData });
 
-		expect(database.user.findUnique).toHaveBeenCalledWith({
-			where: { name: baseEventData.username }
-		});
+		expect(database.features.findUnique).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: { username: baseEventData.username }
+			})
+		);
 		expect(database.eventLog.create).toHaveBeenCalledWith({ data: baseEventData });
 		expect(result).toEqual(baseEventData);
 	});
 
 	it("should create an event with an anonymized username when learning statistics are disabled and the event type is not always saved", async () => {
-		(database.user.findUnique as jest.Mock).mockResolvedValue(mockUserDisabled);
+		(database.features.findUnique as jest.Mock).mockResolvedValue({
+			learningStatistics: false
+		});
 
 		// Use an event type that is not in the always-saved list
 		const eventData = { ...baseEventData, type: "LESSON_QUIZ_START" as const };
@@ -76,9 +69,11 @@ describe("createUserEvent", () => {
 
 		const result = await createEventLogEntry({ ...eventData });
 
-		expect(database.user.findUnique).toHaveBeenCalledWith({
-			where: { name: eventData.username }
-		});
+		expect(database.features.findUnique).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: { username: baseEventData.username }
+			})
+		);
 		expect(database.eventLog.create).toHaveBeenCalledWith({
 			data: { ...eventData, username: anonymizedUsername }
 		});
@@ -86,7 +81,9 @@ describe("createUserEvent", () => {
 	});
 
 	it("should create an event with the original username when learning statistics are disabled but the event type is always saved", async () => {
-		(database.user.findUnique as jest.Mock).mockResolvedValue(mockUserDisabled);
+		(database.features.findUnique as jest.Mock).mockResolvedValue({
+			learningStatistics: false
+		});
 
 		const eventData = {
 			...baseEventData,
@@ -102,29 +99,16 @@ describe("createUserEvent", () => {
 
 		const result = await createEventLogEntry({ ...eventData });
 
-		expect(database.user.findUnique).toHaveBeenCalledWith({
-			where: { name: eventData.username }
-		});
 		expect(database.eventLog.create).toHaveBeenCalledWith({ data: eventData });
 		expect(result).toEqual(eventData);
-	});
-
-	it("should return null if the user does not exist", async () => {
-		(database.user.findUnique as jest.Mock).mockResolvedValue(null);
-
-		const result = await createEventLogEntry({ ...baseEventData });
-
-		expect(database.user.findUnique).toHaveBeenCalledWith({
-			where: { name: baseEventData.username }
-		});
-		expect(database.eventLog.create).not.toHaveBeenCalled();
-		expect(result).toBeNull();
 	});
 
 	// Automated test for all event types in EventTypesToAlwaysSave
 	describe("EventTypesToAlwaysSave", () => {
 		it("should not anonymize the username for events that are always saved", async () => {
-			(database.user.findUnique as jest.Mock).mockResolvedValue(mockUserDisabled);
+			(database.features.findUnique as jest.Mock).mockResolvedValue({
+				learningStatistics: false
+			});
 
 			for (const eventType of ALWAYS_SAVE_EVENT_TYPES) {
 				const eventData = { ...baseEventData, type: eventType as EventTypeKeys };
@@ -133,9 +117,6 @@ describe("createUserEvent", () => {
 
 				const result = await createEventLogEntry({ ...eventData });
 
-				expect(database.user.findUnique).toHaveBeenCalledWith({
-					where: { name: eventData.username }
-				});
 				expect(database.eventLog.create).toHaveBeenCalledWith({ data: eventData });
 				expect(result).toEqual(eventData);
 

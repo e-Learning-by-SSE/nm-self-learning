@@ -72,30 +72,30 @@ export function FeatureSettingsForm({
 	featureSettings,
 	onChange
 }: {
-	featureSettings: EditFeatureSettings;
-	onChange: OnDialogCloseFn<Partial<EditFeatureSettings>>;
+	featureSettings: { learningDiary: boolean; learningStatistics: boolean };
+	onChange: OnDialogCloseFn<EditFeatureSettings>;
 }) {
-	const { enabledFeatureLearningDiary, enabledLearningStatistics } = featureSettings;
+	const { learningDiary, learningStatistics } = featureSettings;
 
 	const onChangeLtb = (value: boolean) => {
 		if (value) {
-			onChange({ enabledFeatureLearningDiary: true, enabledLearningStatistics: true });
+			onChange({ learningDiary: true, learningStatistics: true });
 		}
-		onChange({ enabledFeatureLearningDiary: value });
+		onChange({ learningDiary: value });
 	};
 
 	const onChangeStatistics = (value: boolean) => {
 		if (!value) {
-			onChange({ enabledLearningStatistics: false, enabledFeatureLearningDiary: false });
+			onChange({ learningStatistics: false, learningDiary: false });
 		}
-		onChange({ enabledLearningStatistics: value });
+		onChange({ learningStatistics: value });
 	};
 
 	return (
 		<div className="space-y-8">
 			<div className="space-y-2">
 				<ToggleSetting
-					value={enabledLearningStatistics}
+					value={learningStatistics}
 					onChange={onChangeStatistics}
 					label="Lernstatistiken"
 				/>
@@ -177,11 +177,7 @@ export function FeatureSettingsForm({
 				</ExpandableSettingsSection>
 			</div>
 			<div className="space-y-2">
-				<ToggleSetting
-					value={enabledFeatureLearningDiary}
-					onChange={onChangeLtb}
-					label="Lerntagebuch"
-				/>
+				<ToggleSetting value={learningDiary} onChange={onChangeLtb} label="Lerntagebuch" />
 
 				<ExpandableSettingsSection
 					text="Lernaktivitäten und Lernstrategien dokumentieren"

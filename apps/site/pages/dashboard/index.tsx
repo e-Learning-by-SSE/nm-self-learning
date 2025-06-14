@@ -57,8 +57,7 @@ function getStudent(username: string) {
 					displayName: true,
 					name: true,
 					image: true,
-					enabledFeatureLearningDiary: true,
-					enabledLearningStatistics: true
+					featureFlags: true
 				}
 			},
 			completedLessons: {
@@ -194,7 +193,7 @@ export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<Props>(async (_, user) => {
 		// TODO: remove this when in case gamification is fully enabled
-		const isParticipant = user.features.includes("experimentalFeatures");
+		const isParticipant = user.featureFlags.experimental;
 		if (isParticipant) {
 			return {
 				redirect: {
@@ -248,7 +247,7 @@ function DashboardPage(props: Props) {
 	const router = useRouter();
 	const [ltb, dispatch] = useReducer(ltbReducer, {
 		dialogOpen: false,
-		enabled: props.student.user.enabledFeatureLearningDiary
+		enabled: props.student.user.featureFlags?.learningDiary ?? false
 	});
 
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -259,7 +258,7 @@ function DashboardPage(props: Props) {
 
 	const handleClickLtbToggle = async () => {
 		if (ltb.enabled) {
-			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
+			await updateSettings({ user: { featureFlags: { learningDiary: true } } });
 			dispatch({ type: "TOGGLE_LTB", enabled: false });
 		} else {
 			dispatch({ type: "OPEN_DIALOG" });
@@ -269,7 +268,7 @@ function DashboardPage(props: Props) {
 	const handleDialogSubmit: Parameters<
 		typeof EnableLearningDiaryDialog
 	>[0]["onSubmit"] = async update => {
-		await updateSettings({ user: { ...update } });
+		await updateSettings({ user: { featureFlags: { ...update } } });
 		dispatch({ type: "TOGGLE_LTB", enabled: true });
 		dispatch({ type: "CLOSE_DIALOG" });
 	};

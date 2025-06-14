@@ -85,6 +85,9 @@ export async function getUsersWithStreakRisks(
 			gamificationProfile: {
 				isNot: null
 			},
+			featureFlags: {
+				experimental: true
+			},
 			acceptedExperimentTerms: {
 				not: null
 			}

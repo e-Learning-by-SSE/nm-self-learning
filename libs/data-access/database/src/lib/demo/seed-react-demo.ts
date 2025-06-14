@@ -426,8 +426,6 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		displayName: "Albus Dumbledore",
 		role: "ADMIN",
 		image: "https://i.imgur.com/UWMVO8m.jpeg",
-		enabledFeatureLearningDiary: false,
-		enabledLearningStatistics: true,
 		accounts: {
 			create: [
 				{
@@ -471,6 +469,12 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		notificationSettings: {
 			createMany: {
 				data: getDefaultNotificationData(false)
+			}
+		},
+		featureFlags: {
+			create: {
+				username: "dumbledore",
+				learningStatistics: true
 			}
 		}
 	},
@@ -575,6 +579,12 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 	notificationSettings: {
 		createMany: {
 			data: getDefaultNotificationData(false)
+		}
+	},
+	featureFlags: {
+		create: {
+			username: student.username,
+			learningStatistics: true
 		}
 	}
 }));

@@ -103,19 +103,23 @@ export const meRouter = t.router({
 			const dbSettings = await tx.user.findUnique({
 				where: {
 					name: ctx.user.name
+				},
+				include: {
+					notificationSettings: true,
+					featureFlags: true
 				}
 			});
 
 			const { user } = input;
 			const isUserDefined = user !== undefined;
 			const isFeatureLearningDiaryChanged =
-				dbSettings?.enabledFeatureLearningDiary !== user?.enabledFeatureLearningDiary;
+				dbSettings?.featureFlags?.learningDiary !== user?.featureFlags?.learningDiary;
 			const shouldLogEvent = isUserDefined && isFeatureLearningDiaryChanged;
 			if (shouldLogEvent) {
 				await tx.eventLog.create({
 					data: {
 						type: "LTB_TOGGLE",
-						payload: { enabled: user.enabledFeatureLearningDiary },
+						payload: { enabled: user.featureFlags?.learningDiary },
 						username: ctx.user.name,
 						resourceId: ctx.user.name
 					}

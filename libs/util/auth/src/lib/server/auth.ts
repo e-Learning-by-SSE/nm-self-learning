@@ -186,6 +186,13 @@ export const authOptions: NextAuthOptions = {
 			await database.$transaction(async tx => {
 				await createNewProfile(username, tx);
 
+				await tx.features.create({
+					data: {
+						userId: user.id,
+						username: username
+					}
+				});
+
 				await createInitialNotificationSettings(user, tx);
 			});
 		}

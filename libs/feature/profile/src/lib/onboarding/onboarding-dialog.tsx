@@ -1,7 +1,6 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
 import { FeatureSettingsForm } from "@self-learning/profile";
-import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, showToast } from "@self-learning/ui/common";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -22,11 +21,11 @@ export function OnboardingDialog({
 	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
 
 	const settingSuggestion = {
-		enabledLearningStatistics: true,
-		enabledFeatureLearningDiary: false
+		learningStatistics: true,
+		learningDiary: false
 	};
 
-	const [settings, setSettings] = useState<EditFeatureSettings>(settingSuggestion);
+	const [settings, setSettings] = useState<typeof settingSuggestion>(settingSuggestion);
 
 	const handleSettingSave = async () => {
 		try {

@@ -12,19 +12,19 @@ type CreateEventParams<T extends EventTypeKeys> = EventLog<T> & {
 export async function createEventLogEntry<T extends EventTypeKeys>(
 	event: CreateEventParams<T>
 ): Promise<EventLog<T> | null> {
-	const enabledLearningStatistics = (
-		await database.user.findUnique({ where: { name: event.username } })
-	)?.enabledLearningStatistics;
+	if (!ALWAYS_SAVE_EVENT_TYPES.includes(event.type)) {
+		const features = await database.features.findUnique({
+			where: { username: event.username },
+			select: { learningStatistics: true }
+		});
+		const enabledLearningStatistics = features?.learningStatistics ?? false;
 
-	// Return null if the user or setting is not found
-	if (enabledLearningStatistics === undefined || enabledLearningStatistics === null) {
-		return null;
-	}
+		// Anonymizes the username using SHA-256 when user event tracking is disabled,
+		// unless the event type is in the list of events that should always be saved (e.g., error events).
 
-	// Anonymizes the username using SHA-256 when user event tracking is disabled,
-	// unless the event type is in the list of events that should always be saved (e.g., error events).
-	if (!enabledLearningStatistics && !ALWAYS_SAVE_EVENT_TYPES.includes(event.type)) {
-		event.username = createHash("sha256").update(event.username).digest("hex");
+		if (!enabledLearningStatistics) {
+			event.username = createHash("sha256").update(event.username).digest("hex");
+		}
 	}
 
 	const data = await database.eventLog.create({ data: event });

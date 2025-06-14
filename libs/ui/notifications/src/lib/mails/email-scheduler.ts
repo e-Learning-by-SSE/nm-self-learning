@@ -42,7 +42,9 @@ async function checkCourseInactivity(results: SchedulerResult) {
 			lastProgressUpdate: { lt: threeDaysAgo },
 			student: {
 				user: {
-					enabledLearningStatistics: true,
+					featureFlags: {
+						learningStatistics: true
+					},
 					email: { not: null }
 				}
 			}

@@ -11,14 +11,14 @@ const defaultUseQuizReturn = {
 	completionState: "incomplete"
 };
 
-jest.mock("@self-learning/util/common");
-jest.mock(
-	"@self-learning/quiz",
-	jest.fn(() => ({
-		...jest.requireActual("@self-learning/quiz"),
+jest.mock("@self-learning/util/eventlog");
+jest.mock("@self-learning/quiz", () => {
+	const actual = jest.requireActual("@self-learning/quiz");
+	return {
+		...actual,
 		useQuiz: jest.fn(() => defaultUseQuizReturn)
-	}))
-);
+	};
+});
 jest.mock("@self-learning/lesson");
 jest.mock("@self-learning/api", () => ({
 	withAuth: jest.fn()

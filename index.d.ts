@@ -42,12 +42,12 @@ declare module "next-auth" {
 			name: string;
 			role: UserRole;
 			isAuthor: boolean;
-			avatarUrl: string | null;
-			enabledLearningStatistics: boolean; // TODO move to feature flag array
-			enabledFeatureLearningDiary: boolean; // TODO move to feature flag array
-			features: FeatureFlag[];
+			avatarUrl?: string | null;
+			featureFlags: {
+				learningDiary: boolean;
+				learningStatistics: boolean;
+				experimental: boolean;
+			};
 		};
 	}
 }
-
-type FeatureFlag = "experimentalFeatures" | "learningDiary" | "learningStatistics";

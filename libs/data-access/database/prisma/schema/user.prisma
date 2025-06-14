@@ -25,31 +25,27 @@ model Session {
 }
 
 model User {
-    id                          String                    @id @default(cuid())
-    name                        String                    @unique
-    displayName                 String
-    email                       String?                   @unique
-    emailVerified               DateTime?
-    image                       String?
-    role                        UserRole                  @default(USER)
-    accounts                    Account[]
-    author                      Author?
-    sessions                    Session[]
-    student                     Student?
-    gamificationProfile         GamificationProfile?
-    uploadedAssets              UploadedAssets[]
-    skillRepositories           SkillRepository[]
-    notifications               NotificationUser[]
-    reminders                   ReminderLog[]
-    notificationSettings        UserNotificationSetting[]
-    // Settings
-    enabledLearningStatistics   Boolean                   @default(false)
-    enabledFeatureLearningDiary Boolean                   @default(false)
-    registrationCompleted       Boolean                   @default(false)
+    id                   String                    @id @default(cuid())
+    name                 String                    @unique
+    displayName          String
+    email                String?                   @unique
+    emailVerified        DateTime?
+    image                String?
+    role                 UserRole                  @default(USER)
+    accounts             Account[]
+    author               Author?
+    sessions             Session[]
+    student              Student?
+    gamificationProfile  GamificationProfile?
+    uploadedAssets       UploadedAssets[]
+    skillRepositories    SkillRepository[]
+    notifications        NotificationUser[]
+    reminders            ReminderLog[]
+    notificationSettings UserNotificationSetting[]
+    featureFlags         Features?
 
-    // temporary fields masterarbeit marcel
+    registrationCompleted   Boolean   @default(false)
     acceptedExperimentTerms DateTime?
-    experimentalFeatures    Boolean?  @default(false) // Null: No-Participation, True: Participation group A, False: Participation group B
 }
 
 enum UserRole {
@@ -63,4 +59,15 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Features {
+    userId   String @id
+    username String @unique
+
+    learningStatistics Boolean @default(false)
+    learningDiary      Boolean @default(false)
+    experimental       Boolean @default(false)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

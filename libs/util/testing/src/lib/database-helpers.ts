@@ -6,7 +6,6 @@ export async function createTestUser(username: string) {
 		name: username,
 		id: username,
 		displayName: username,
-		enabledLearningStatistics: true,
 		accounts: {
 			create: [
 				{
@@ -18,6 +17,11 @@ export async function createTestUser(username: string) {
 			]
 		},
 		student: {
+			create: {
+				username
+			}
+		},
+		featureFlags: {
 			create: {
 				username
 			}

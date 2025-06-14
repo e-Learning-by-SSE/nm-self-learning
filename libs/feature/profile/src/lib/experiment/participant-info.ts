@@ -1,23 +1,21 @@
 import { database } from "@self-learning/database";
 
-export async function getExperimentStatus(
-	username: string,
-	info?: { acceptedExperimentTerms: Date | null; experimentalFeatures: boolean | null }
-) {
-	let userData = info;
-	if (!userData) {
-		userData = await database.user.findUniqueOrThrow({
-			where: { name: username },
-			select: {
-				acceptedExperimentTerms: true,
-				experimentalFeatures: true
+export async function getExperimentStatus(username: string) {
+	const userData = await database.user.findUniqueOrThrow({
+		where: { name: username },
+		select: {
+			acceptedExperimentTerms: true,
+			featureFlags: {
+				select: {
+					experimental: true
+				}
 			}
-		});
-	}
+		}
+	});
 
 	return {
 		consentDate: userData?.acceptedExperimentTerms,
-		experimentalFeatures: userData?.experimentalFeatures ?? false,
+		experimentalFeatures: userData.featureFlags?.experimental, // null when not consented
 		isParticipating: userData?.acceptedExperimentTerms !== null
 	};
 }
@@ -31,21 +29,18 @@ export async function updateExperimentParticipation({
 	experimentalFeatures?: boolean;
 	consent: boolean;
 }) {
-	const updatedUser = await database.user.update({
+	return database.user.update({
 		where: { name: username },
 		data: {
-			acceptedExperimentTerms: consent ? new Date() : null,
-			experimentalFeatures: experimentalFeatures,
-			enabledLearningStatistics: consent ?? false
+			featureFlags: {
+				update: {
+					experimental: experimentalFeatures ?? false,
+					learningStatistics: consent ?? false
+				}
+			},
+			acceptedExperimentTerms: consent ? new Date() : null
 		}
 	});
-
-	return {
-		success: true,
-		consentGiven: consent,
-		consentDate: updatedUser.acceptedExperimentTerms,
-		experimentalFeatures: updatedUser.experimentalFeatures
-	};
 }
 
 export async function createUserParticipation(username: string) {
@@ -62,17 +57,20 @@ export async function assignExperimentGroup(username: string): Promise<"treatmen
 		database.user.count({
 			where: {
 				acceptedExperimentTerms: { not: null },
-				experimentalFeatures: true
+				featureFlags: {
+					experimental: true
+				}
 			}
 		}),
 		database.user.count({
 			where: {
 				acceptedExperimentTerms: { not: null },
-				experimentalFeatures: false
+				featureFlags: {
+					experimental: false
+				}
 			}
 		})
 	]);
-	console.log(`Treatment group count: ${treatmentCount}, Control group count: ${controlCount}`);
 
 	let assignTreatment: boolean;
 	if (treatmentCount < controlCount) {
@@ -83,12 +81,13 @@ export async function assignExperimentGroup(username: string): Promise<"treatmen
 		assignTreatment = Math.random() < 0.5; // Randomly assign if groups are balanced
 	}
 
-	await database.user.update({
-		where: { name: username },
+	await database.features.update({
+		where: { username },
 		data: {
-			experimentalFeatures: assignTreatment
+			experimental: assignTreatment
 		}
 	});
 
+	console.log(`User ${username} assigned to ${assignTreatment ? "treatment" : "control"} group.`);
 	return assignTreatment ? "treatment" : "control";
 }

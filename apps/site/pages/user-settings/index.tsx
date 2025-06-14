@@ -83,9 +83,9 @@ export default function SettingsPage(props: PageProps) {
 			if (!update) return;
 			// TODO [MS-MA]: remove this check when the feature is stable
 			if (
-				"enabledFeatureLearningDiary" in update &&
-				update.enabledLearningStatistics === false &&
-				data?.user.features.includes("experimentalFeatures")
+				"learningStatistics" in update &&
+				update.learningStatistics === false &&
+				data?.user.featureFlags.experimental
 			) {
 				showToast({
 					type: "error",
@@ -96,8 +96,10 @@ export default function SettingsPage(props: PageProps) {
 				return;
 			}
 			setSettings(prev => {
-				const newSettings = { ...prev, ...update };
-				updateSettings({ user: newSettings });
+				const newFeatureFlags = { ...prev.featureFlags, ...update };
+				const newSettings = { ...prev, featureFlags: newFeatureFlags };
+
+				void updateSettings({ user: newSettings });
 				return newSettings;
 			});
 		} catch (error) {
@@ -154,7 +156,10 @@ export default function SettingsPage(props: PageProps) {
 				/>
 			</SettingSection>
 			<SettingSection title="Funktionen">
-				<FeatureSettingsForm featureSettings={settings} onChange={onFeatureChange} />
+				<FeatureSettingsForm
+					featureSettings={settings.featureFlags}
+					onChange={onFeatureChange}
+				/>
 			</SettingSection>
 			<SettingSection title="Benachrichtigungen">
 				{props.experimentStatus?.isParticipating && (

@@ -9,10 +9,21 @@ export async function getUserWithSettings(username: string) {
 			displayName: true,
 			email: true,
 			image: true,
-			enabledLearningStatistics: true,
-			enabledFeatureLearningDiary: true,
-			notificationSettings: true
+			notificationSettings: true,
+			featureFlags: {
+				select: {
+					experimental: true,
+					learningDiary: true,
+					learningStatistics: true
+				}
+			}
 		}
 	});
-	return data;
+	if (!data.featureFlags) {
+		throw new Error("Feature flags not found for user");
+	}
+	return {
+		...data,
+		featureFlags: data.featureFlags // now non-null after check
+	};
 }
