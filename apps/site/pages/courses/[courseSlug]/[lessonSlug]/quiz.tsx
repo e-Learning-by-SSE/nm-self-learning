@@ -19,10 +19,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
-import { GetServerSideProps } from "next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withAuth } from "@self-learning/api";
-import { parse } from "next-useragent";
 
 type QuestionProps = LessonLayoutProps & {
 	quiz: Quiz;
@@ -69,14 +67,10 @@ export const getServerSideProps = withAuth<QuestionProps>(async ({ params, local
 
 	quiz.questions = processedQuestions;
 
-	const ua = parse(req.headers["user-agent"] || "");
-	const isMobile = ua.isMobile;
-
 	return {
 		props: {
 			...(await serverSideTranslations(locale ?? "en", ["common"])),
 			...parentProps,
-			isMobile,
 			quiz,
 			markdown: {
 				questionsMd,

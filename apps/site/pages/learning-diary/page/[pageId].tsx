@@ -8,7 +8,6 @@ import {
 	Strategy
 } from "@self-learning/diary";
 import { subMilliseconds } from "date-fns";
-import { parse } from "next-useragent";
 
 export const getServerSideProps = withTranslations(
 	["common"],
@@ -24,12 +23,8 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		const ua = parse(context.req.headers["user-agent"] || "");
-		const isMobile = ua.isMobile;
-
 		return {
 			props: {
-				isMobile,
 				diaryId: pageId,
 				pages,
 				availableStrategies

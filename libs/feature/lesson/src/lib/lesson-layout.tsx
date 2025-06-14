@@ -85,34 +85,29 @@ function mapToPlaylistContent(
 
 export function LessonLayout(
 	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
-	pageProps: LessonLayoutProps & { isMobile: boolean }
+	pageProps: LessonLayoutProps
 ) {
-	const { isMobile } = pageProps;
-
-	if (isMobile) {
-		return (
-			<>
+	return (
+		<>
+			<div className="xl:hidden">
 				<MobilePlaylistArea {...pageProps} />
 				<div className="p-5 pt-8 bg-gray-100 pb-16">
 					<div className="w-full">
 						<Component {...pageProps} />
 					</div>
 				</div>
-			</>
-		);
-	}
+			</div>
+			<div className="hidden xl:block">
+				<Head>
+					<title>{pageProps.lesson.title}</title>
+				</Head>
 
-	return (
-		<>
-			<Head>
-				<title>{pageProps.lesson.title}</title>
-			</Head>
-
-			<div className="flex flex-col bg-gray-100">
-				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-					<PlaylistArea {...pageProps} />
-					<div className="w-full pt-8 pb-16">
-						<Component {...pageProps} />
+				<div className="flex flex-col bg-gray-100">
+					<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+						<PlaylistArea {...pageProps} />
+						<div className="w-full pt-8 pb-16">
+							<Component {...pageProps} />
+						</div>
 					</div>
 				</div>
 			</div>
