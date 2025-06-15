@@ -5,7 +5,12 @@ import { trpc } from "@self-learning/api-client";
 import { LessonLayoutProps, loadLessonSessionSafe } from "@self-learning/lesson";
 import { useQuiz } from "@self-learning/quiz";
 import { AchievementWithProgress, PerformanceGrade } from "@self-learning/types";
-import { DialogActions, GameifyDialog, OnDialogCloseFn } from "@self-learning/ui/common";
+import {
+	ConfettiRain,
+	DialogActions,
+	GameifyDialog,
+	OnDialogCloseFn
+} from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
 import { intervalToDuration } from "date-fns";
 import Link from "next/link";
@@ -186,75 +191,82 @@ export function QuizGradeDialog({
 	}, [earnAchievements]);
 
 	return (
-		<GameifyDialog
-			open={open}
-			onClose={onClose}
-			title={lesson.title}
-			style={{ minWidth: "400px", maxWidth: "600px", maxHeight: "90vh", width: "90vw" }}
-		>
-			<div className="space-y-6">
-				{/* Course Information */}
-				<div className="text-center">
-					<h2 className="text-xl font-semibold mb-2">{course.title}</h2>
-					<p className="text-sm text-gray-600">
-						von {lesson.authors.map(a => a.displayName).join(", ")}
-					</p>
-				</div>
+		<>
+			<ConfettiRain gravityBaseValue={3} />
 
-				{/* Grade Display - jetzt mit verbesserter Darstellung */}
-				<GradeDisplay
-					grade={grade}
-					averageScore={averageScore}
-					totalAttempts={totalAttempts}
-					learnedSeconds={learningSession?.totalDurationSec ?? 0}
-				/>
-
-				{/* Achievements Section */}
-				{achievements.size > 0 && (
-					<GradeAchievementSection
-						title="Errungenschaften"
-						achievements={achievements}
-						onRedeem={handleRedeemWithStateUpdate}
-					/>
-				)}
-
-				{/* Lesson completion text */}
-				<div className="flex flex-col text-sm text-light">
-					<p>
-						Du hast die Lerneinheit{" "}
-						<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
-						erfolgreich abgeschlossen.
-					</p>
-
-					{nextLesson ? (
-						<div className="flex flex-col">
-							<p>Die nächste Lerneinheit ist ...</p>
-							<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
-								{nextLesson.title}
-							</span>
-						</div>
-					) : (
-						<p>
-							Der Kurs{" "}
-							<span className="font-semibold text-secondary">{course.title}</span>{" "}
-							enthält keine weiteren Lerneinheiten für dich.
+			<GameifyDialog
+				open={open}
+				onClose={onClose}
+				title={lesson.title}
+				style={{ minWidth: "400px", maxWidth: "600px", maxHeight: "90vh", width: "90vw" }}
+			>
+				<div className="space-y-6">
+					{/* Course Information */}
+					<div className="text-center">
+						<h2 className="text-xl font-semibold mb-2">{course.title}</h2>
+						<p className="text-sm text-gray-600">
+							von {lesson.authors.map(a => a.displayName).join(", ")}
 						</p>
-					)}
-				</div>
-			</div>
+					</div>
 
-			{/* Action buttons - wie in deiner Zeichnung */}
-			<DialogActions abortLabel="Schließen" onClose={onClose}>
-				{grade !== "PERFECT" && (
-					<button onClick={reload} className="btn-stroked">
-						Erneut versuchen
-					</button>
-				)}
-				{nextLesson && (
-					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
-				)}
-			</DialogActions>
-		</GameifyDialog>
+					{/* Grade Display - jetzt mit verbesserter Darstellung */}
+					<GradeDisplay
+						grade={grade}
+						averageScore={averageScore}
+						totalAttempts={totalAttempts}
+						learnedSeconds={learningSession?.totalDurationSec ?? 0}
+					/>
+
+					{/* Achievements Section */}
+					{achievements.size > 0 && (
+						<GradeAchievementSection
+							title="Errungenschaften"
+							achievements={achievements}
+							onRedeem={handleRedeemWithStateUpdate}
+						/>
+					)}
+
+					{/* Lesson completion text */}
+					<div className="flex flex-col text-sm text-light">
+						<p>
+							Du hast die Lerneinheit{" "}
+							<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
+							erfolgreich abgeschlossen.
+						</p>
+
+						{nextLesson ? (
+							<div className="flex flex-col">
+								<p>Die nächste Lerneinheit ist ...</p>
+								<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
+									{nextLesson.title}
+								</span>
+							</div>
+						) : (
+							<p>
+								Der Kurs{" "}
+								<span className="font-semibold text-secondary">{course.title}</span>{" "}
+								enthält keine weiteren Lerneinheiten für dich.
+							</p>
+						)}
+					</div>
+				</div>
+
+				{/* Action buttons - wie in deiner Zeichnung */}
+				<DialogActions abortLabel="Schließen" onClose={onClose}>
+					{grade !== "PERFECT" && (
+						<button onClick={reload} className="btn-stroked">
+							Erneut versuchen
+						</button>
+					)}
+					{nextLesson && (
+						<NextLessonButton
+							courseSlug={course.slug}
+							nextLessonSlug={nextLesson.slug}
+						/>
+					)}
+				</DialogActions>
+			</GameifyDialog>
+		</>
 	);
 }
 

@@ -41,3 +41,4 @@ export * from "./lib/screensize-hook/use-screensize";
 export * from "./lib/dropdown-menu/dropdown-menu";
 export * from "./lib/dropdown-menu/combobox-menu";
 export * from "./lib/transition/minor-scale-fade-in";
+export * from "./effects/ConfettiRain";
