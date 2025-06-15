@@ -7,14 +7,17 @@ import {
 } from "@self-learning/completion";
 import {
 	ChapterName,
-	getCourse,
+	LessonCourseData,
 	LessonData,
+	LessonLayoutProps,
+	StandaloneLessonLayoutProps,
 	useLessonContext,
 	useLessonSession
 } from "@self-learning/lesson";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import {
+	compileQuizMarkdown,
 	defaultQuizConfig,
 	Question,
 	QuestionTab,
@@ -22,7 +25,6 @@ import {
 	QuizProvider,
 	useQuiz
 } from "@self-learning/quiz";
-import { ResolvedValue } from "@self-learning/types";
 import { LoadingBox, Tab, Tabs, useIsFirstRender } from "@self-learning/ui/common";
 import { useEventLog } from "@self-learning/util/eventlog";
 import Link from "next/link";
@@ -32,7 +34,7 @@ import { useAttemptSubmission } from "../quiz-submit-attempt";
 
 export type QuestionProps = {
 	lesson: LessonData;
-	course?: ResolvedValue<typeof getCourse>;
+	course?: LessonCourseData;
 	quiz: Quiz;
 	markdown: {
 		questionsMd: MdLookup;
@@ -40,6 +42,22 @@ export type QuestionProps = {
 		hintsMd: MdLookupArray;
 	};
 };
+
+export async function getSspQuizLearnersView(
+	parentProps: LessonLayoutProps | StandaloneLessonLayoutProps
+) {
+	const quiz = parentProps.lesson.quiz as Quiz;
+	const { questionsMd, answersMd, hintsMd, processedQuestions } = await compileQuizMarkdown(quiz);
+	quiz.questions = processedQuestions;
+
+	return {
+		props: {
+			...parentProps,
+			quiz,
+			markdown: { questionsMd, answersMd, hintsMd }
+		}
+	};
+}
 
 export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionProps) {
 	const { questions, config } = quiz;

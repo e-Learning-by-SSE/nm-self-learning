@@ -1,31 +1,24 @@
-import { getStaticPropsForLessonCourseLayout, LessonLayout } from "@self-learning/lesson";
-import { compileQuizMarkdown, QuestionProps, Quiz, QuizLearnersView } from "@self-learning/quiz";
+import { withTranslations } from "@self-learning/api";
+import { getSSpLessonCourseLayout, LessonLayout } from "@self-learning/lesson";
+import { getSspQuizLearnersView, QuestionProps, Quiz, QuizLearnersView } from "@self-learning/quiz";
 import { withAuth } from "@self-learning/util/auth";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
-export const getServerSideProps = withAuth<QuestionProps>(async ({ params, locale }) => {
-	const parentProps = await getStaticPropsForLessonCourseLayout(params);
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<QuestionProps>(async ({ params }) => {
+		const parentProps = await getSSpLessonCourseLayout(params);
 
-	if ("notFound" in parentProps) return { notFound: true };
+		if ("notFound" in parentProps) return { notFound: true };
 
-	const quiz = parentProps.lesson.quiz as Quiz | null;
-	if (!quiz) return { notFound: true };
+		const quiz = parentProps.lesson.quiz as Quiz | null;
+		if (!quiz) return { notFound: true };
 
-	const { questionsMd, answersMd, hintsMd, processedQuestions } = await compileQuizMarkdown(quiz);
-	quiz.questions = processedQuestions;
+		return getSspQuizLearnersView(parentProps);
+	})
+);
 
-	return {
-		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
-			...parentProps,
-			quiz,
-			markdown: { questionsMd, answersMd, hintsMd }
-		}
-	};
-});
-
-export default function QuestionsPage({ course, lesson, quiz, markdown }: QuestionProps) {
-	return <QuizLearnersView course={course} lesson={lesson} quiz={quiz} markdown={markdown} />;
+export default function QuestionsPage(props: QuestionProps) {
+	return <QuizLearnersView {...props} />;
 }
 
 QuestionsPage.getLayout = LessonLayout;

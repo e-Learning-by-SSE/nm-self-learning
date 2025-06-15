@@ -1,9 +1,9 @@
 import { LessonType } from "@prisma/client";
 import { compileMarkdown } from "@self-learning/markdown";
 import { findContentType, LessonContent } from "@self-learning/types";
-import { LessonData } from "./lesson-data-access";
+import { LessonData } from "../lesson-data-access";
 
-export async function getStaticLessonProps(lesson: LessonData) {
+export async function createLessonPropsFrom(lesson: LessonData) {
 	let mdDescription = null;
 	let mdArticle = null;
 	let mdQuestion = null;

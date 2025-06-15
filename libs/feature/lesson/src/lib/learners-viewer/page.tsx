@@ -3,9 +3,10 @@ import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import {
-	getCourse,
+	ChapterName,
+	LessonLayoutProps,
 	loadLessonSessionSafe,
-	useLessonContext,
+	StandaloneLessonLayoutProps,
 	useLessonSession
 } from "@self-learning/lesson";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
@@ -15,24 +16,23 @@ import {
 	getContentTypeDisplayName,
 	includesMediaType,
 	LessonContent,
-	LessonMeta,
-	ResolvedValue
+	LessonMeta
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, showToast, Tab, Tabs } from "@self-learning/ui/common";
-import { LabeledField } from "@self-learning/ui/forms";
 import { MarkdownContainer, useRequiredSession } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/eventlog";
-import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt";
+import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt"; // TODO
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
-import { LessonData } from "./lesson-data-access";
+import { LessonCourseData, LessonData } from "../lesson-data-access";
+import { createLessonPropsFrom } from "./create-lesson-props";
 
-export type LessonProps = {
+export type LessonLearnersViewProps = {
 	lesson: LessonData;
-	course?: ResolvedValue<typeof getCourse>;
+	course?: LessonCourseData;
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
@@ -40,31 +40,26 @@ export type LessonProps = {
 		subtitle: CompiledMarkdown | null;
 	};
 };
-function usePreferredMediaType(lesson: LessonProps["lesson"]) {
-	// Handle situations that content creator may created an empty lesson (to add content later)
-	const content = lesson.content as LessonContent;
-	const router = useRouter();
 
-	let preferredMediaType = content.length > 0 ? content[0].type : "video";
+export async function getSspLearnersView(
+	parentProps: LessonLayoutProps | StandaloneLessonLayoutProps
+) {
+	const { lesson } = parentProps;
+	lesson.quiz = null;
+	const lessonProps = await createLessonPropsFrom(lesson);
 
-	if (content.length > 0) {
-		const availableMediaTypes = content.map(c => c.type);
-
-		const { type: typeFromRoute } = router.query;
-		const typeFromStorage = loadFromLocalStorage("user_preferredMediaType");
-
-		const { isIncluded, type } = includesMediaType(
-			availableMediaTypes,
-			(typeFromRoute as string) ?? typeFromStorage
-		);
-
-		if (isIncluded) {
-			preferredMediaType = type;
+	return {
+		props: {
+			...parentProps,
+			// course: parentProps.course ?? undefined,
+			markdown: {
+				...lessonProps
+			}
 		}
-	}
-	return preferredMediaType;
+	};
 }
-export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
+
+export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersViewProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
@@ -121,18 +116,46 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 	);
 }
 
+function usePreferredMediaType(lesson: LessonLearnersViewProps["lesson"]) {
+	// Handle situations that content creator may created an empty lesson (to add content later)
+	const content = lesson.content as LessonContent;
+	const router = useRouter();
+
+	let preferredMediaType = content.length > 0 ? content[0].type : "video";
+
+	if (content.length > 0) {
+		const availableMediaTypes = content.map(c => c.type);
+
+		const { type: typeFromRoute } = router.query;
+		const typeFromStorage = loadFromLocalStorage("user_preferredMediaType");
+
+		const { isIncluded, type } = includesMediaType(
+			availableMediaTypes,
+			(typeFromRoute as string) ?? typeFromStorage
+		);
+
+		if (isIncluded) {
+			preferredMediaType = type;
+		}
+	}
+	return preferredMediaType;
+}
+
 function LessonHeader({
 	course,
 	lesson,
 	mdDescription,
 	mdSubtitle
 }: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
+	course: LessonLearnersViewProps["course"];
+	lesson: LessonLearnersViewProps["lesson"];
 	mdDescription?: CompiledMarkdown | null;
 	mdSubtitle?: CompiledMarkdown | null;
 }) {
 	const isStandalone = !course;
+
+	// const session = useRequiredSession();
+	// const isExperimentParticipant = session.data?.user.featureFlags.experimental ?? false;
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -158,18 +181,36 @@ function LessonHeader({
 						</MarkdownContainer>
 					)}
 
-					<span className="flex flex-wrap-reverse justify-between gap-4">
-						<span className="flex flex-col gap-3">
-							<Authors authors={lesson.authors} />
-						</span>
-						<div className="-mt-3">
-							{!lesson.license ? (
-								<DefaultLicenseLabel />
-							) : (
-								<LicenseLabel license={lesson.license} />
-							)}
+					<div className="flex flex-wrap justify-between gap-4 items-end mt-2">
+						<div className="flex flex-col xl:flex-row xl:items-end xl:gap-6">
+							<span>
+								<Authors authors={lesson.authors} />
+							</span>
+							<div className="mt-2 xl:mt-0">
+								{!lesson.license ? (
+									<DefaultLicenseLabel />
+								) : (
+									<LicenseChip
+										name={lesson.license.name}
+										imgUrl={lesson.license.logoUrl ?? undefined}
+										description={lesson.license.licenseText ?? undefined}
+										url={lesson.license.url ?? undefined}
+									/>
+								)}
+							</div>
 						</div>
-					</span>
+						{/* {isExperimentParticipant && (
+							<div className="flex flex-col items-center">
+								<span className="mb-1 text-xs text-gray-500 text-center font-semibold">
+									Bisherige Bewertung
+								</span>
+								<SmallGradeBadge
+									score={lesson.performanceScore ?? 0}
+									sizeClassName="px-4 py-2"
+								/>
+							</div>
+						)} */}
+					</div>
 					{!isStandalone && (
 						<div className="pt-4">
 							<MediaTypeSelector lesson={lesson} course={course} />
@@ -187,20 +228,7 @@ function LessonHeader({
 	);
 }
 
-export function ChapterName({
-	course,
-	lesson
-}: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
-}) {
-	const lessonContext = useLessonContext(lesson.lessonId, course?.slug ?? "");
-	const chapterName = course ? lessonContext.chapterName : null;
-
-	return <div className="font-semibold text-secondary min-h-[24px]">{chapterName}</div>;
-}
-
-function AuthorEditButton({ lesson }: { lesson: LessonProps["lesson"] }) {
+function AuthorEditButton({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
 	const session = useRequiredSession();
 
 	if (session.data?.user.isAuthor || session.data?.user.role === "ADMIN") {
@@ -221,8 +249,8 @@ function LessonControls({
 	course,
 	lesson
 }: {
-	course: Exclude<LessonProps["course"], null | undefined>;
-	lesson: LessonProps["lesson"];
+	course: Exclude<LessonLearnersViewProps["course"], null | undefined>;
+	lesson: LessonLearnersViewProps["lesson"];
 }) {
 	const { lessonId } = lesson;
 	const { courseId } = course;
@@ -298,7 +326,7 @@ function LessonControls({
 	);
 }
 
-function StandaloneLessonControls({ lesson }: { lesson: LessonProps["lesson"] }) {
+function StandaloneLessonControls({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 	const url = "lessons/" + lesson.slug;
 	return (
@@ -328,9 +356,9 @@ function DefaultLicenseLabel() {
 	const { data, isLoading } = trpc.licenseRouter.getDefault.useQuery();
 	const fallbackLicense = {
 		name: "Keine Lizenz verfügbar",
-		logoUrl: "",
 		url: "",
 		oerCompatible: false,
+		logoUrl: null,
 		licenseText:
 			"*Für diese Lektion ist keine Lizenz verfügbar. Bei Nachfragen, wenden Sie sich an den Autor*"
 	};
@@ -338,44 +366,32 @@ function DefaultLicenseLabel() {
 		console.log("No default license found");
 	}
 	if (isLoading) return null;
-	return <LicenseLabel license={data ?? fallbackLicense} />;
-}
 
-export function LicenseLabel({
-	license
-}: {
-	license: NonNullable<LessonProps["lesson"]["license"]>;
-}) {
+	const license = data ?? fallbackLicense;
 	return (
-		<LabeledField label="Lizenz">
-			<LicenseChip
-				name={license.name}
-				imgUrl={license.logoUrl ?? undefined}
-				description={license.licenseText ?? undefined}
-				url={license.url ?? undefined}
-			/>
-		</LabeledField>
+		<LicenseChip
+			name={license.name}
+			imgUrl={license.logoUrl ?? undefined}
+			description={license.licenseText ?? undefined}
+			url={license.url ?? undefined}
+		/>
 	);
 }
 
-function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
-	return (
-		<>
-			{authors.length > 0 && (
-				<div className="mt-4">
-					<AuthorsList authors={authors} />
-				</div>
-			)}
-		</>
-	);
+function Authors({ authors }: { authors: LessonLearnersViewProps["lesson"]["authors"] }) {
+	return authors.length > 0 ? (
+		<div className="mt-4">
+			<AuthorsList authors={authors} />
+		</div>
+	) : null;
 }
 
 function MediaTypeSelector({
 	lesson,
 	course
 }: {
-	course?: LessonProps["course"];
-	lesson: LessonProps["lesson"];
+	course?: LessonLearnersViewProps["course"];
+	lesson: LessonLearnersViewProps["lesson"];
 }) {
 	const lessonContent = lesson.content as LessonContent;
 	// If no content is specified at this time, use video as default (and don't s´display anything)
@@ -408,19 +424,17 @@ function MediaTypeSelector({
 	}, [index, selectedIndex, setSelectedIndex]);
 
 	return (
-		<>
-			{lessonContent.length > 1 && (
-				<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
-					{lessonContent.map((content, idx) => (
-						<Tab key={idx}>
-							<span data-testid="mediaTypeTab">
-								{getContentTypeDisplayName(content.type)}
-							</span>
-						</Tab>
-					))}
-				</Tabs>
-			)}
-		</>
+		lessonContent.length > 1 && (
+			<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
+				{lessonContent.map((content, idx) => (
+					<Tab key={idx}>
+						<span data-testid="mediaTypeTab">
+							{getContentTypeDisplayName(content.type)}
+						</span>
+					</Tab>
+				))}
+			</Tabs>
+		)
 	);
 }
 
