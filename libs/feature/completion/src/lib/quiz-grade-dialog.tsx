@@ -16,6 +16,7 @@ import { intervalToDuration } from "date-fns";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { calculateAverageScore, calculateQuizGrade } from "./lesson-grading";
+import { GradeBadge } from "./lesson-grade-display";
 
 function GradeDisplay({
 	grade,
@@ -28,57 +29,6 @@ function GradeDisplay({
 	totalAttempts: number;
 	learnedSeconds: number;
 }) {
-	const getGradeData = (grade: PerformanceGrade, score: number) => {
-		switch (grade) {
-			case "PERFECT":
-				return {
-					color: "text-purple-700 bg-gradient-to-br from-purple-100 to-amber-100 border-2 border-purple-300",
-					text: "Perfekt",
-					display: "1+"
-				};
-			case "VERY_GOOD":
-				// Feinere Abstufung für "sehr gut"
-				if (score === 1) {
-					return {
-						color: "text-green-700 bg-green-100 border-2 border-green-300",
-						text: "Sehr gut",
-						display: "1+"
-					};
-				}
-				return {
-					color: "text-green-700 bg-green-100 border-2 border-green-300",
-					text: "Sehr gut",
-					display: "1"
-				};
-			case "GOOD":
-				return {
-					color: "text-blue-700 bg-blue-100 border-2 border-blue-300",
-					text: "Gut",
-					display: "2"
-				};
-			case "SATISFACTORY":
-				return {
-					color: "text-orange-700 bg-orange-100 border-2 border-orange-300",
-					text: "Befriedigend",
-					display: "3"
-				};
-
-			case "SUFFICIENT":
-				return {
-					color: "text-red-700 bg-red-100 border-2 border-red-300",
-					text: "Ausreichend",
-					display: "4"
-				};
-			default:
-				return {
-					color: "text-gray-700 bg-gray-100 border-2 border-gray-300",
-					text: "Unbekannt",
-					display: "?"
-				};
-		}
-	};
-
-	const gradeData = getGradeData(grade, averageScore);
 	const duration = intervalToDuration({ start: 0, end: learnedSeconds * 1000 });
 	const durationFormatted = `${duration.minutes ?? "00"}:${String(duration.seconds ?? "00").padStart(2, "0")}`;
 
@@ -106,13 +56,7 @@ function GradeDisplay({
 					<div className="text-xs text-gray-500 mt-1">Zeit</div>
 				</div>
 
-				{/* Note-Box (rechts) - viel prominenter */}
-				<div
-					className={`${gradeData.color} rounded-xl px-8 py-6 min-w-[120px] text-center shadow-lg`}
-				>
-					<div className="text-4xl font-bold mb-1">{gradeData.display}</div>
-					<div className="text-sm font-medium">{gradeData.text}</div>
-				</div>
+				<GradeBadge score={averageScore} />
 			</div>
 
 			{/* Zusätzliche Info */}

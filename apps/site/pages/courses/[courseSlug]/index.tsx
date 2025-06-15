@@ -1,5 +1,6 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
+import { withTranslations } from "@self-learning/api";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
@@ -14,12 +15,14 @@ import {
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
+import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { SmallGradeBadge } from "libs/feature/completion/src/lib/lesson-grade-display";
+import { getServerSession } from "next-auth";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
-import { withTranslations } from "@self-learning/api";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -44,6 +47,7 @@ function mapToTocContent(
 						meta: { hasQuiz: false, mediaTypes: {} },
 						title: "Removed",
 						lessonType: LessonType.TRADITIONAL,
+						performanceScore: null,
 						lessonNr: -1
 					};
 
@@ -52,7 +56,7 @@ function mapToTocContent(
 	}));
 }
 
-async function mapCourseContent(content: CourseContent): Promise<ToC.Content> {
+async function mapCourseContent(content: CourseContent, username?: string): Promise<ToC.Content> {
 	const lessonIds = extractLessonIds(content);
 
 	const lessons = await database.lesson.findMany({
@@ -61,14 +65,26 @@ async function mapCourseContent(content: CourseContent): Promise<ToC.Content> {
 			lessonId: true,
 			slug: true,
 			title: true,
-			meta: true
+			meta: true,
+			completions: {
+				where: { username },
+				orderBy: { performanceScore: "desc" },
+				take: 1, // Nur den höchsten Score nehmen
+				select: {
+					performanceScore: true,
+					username: true
+				}
+			}
 		}
 	});
 
 	const map = new Map<string, LessonInfo>();
 
 	for (const lesson of lessons) {
-		map.set(lesson.lessonId, lesson as LessonInfo);
+		const { completions, ...rest } = lesson;
+		const performanceScore = completions.length > 0 ? completions[0].performanceScore : null;
+		const mappedLesson = { ...rest, performanceScore } as LessonInfo;
+		map.set(lesson.lessonId, mappedLesson);
 	}
 
 	return mapToTocContent(content, map);
@@ -108,7 +124,7 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params, req, res }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
 	if (!courseSlug) {
 		throw new Error("No slug provided.");
@@ -119,7 +135,10 @@ export const getServerSideProps = withTranslations(["common"], async ({ params }
 		return { notFound: true };
 	}
 
-	const content = await mapCourseContent(course.content as CourseContent);
+	const session = await getServerSession(req, res, authOptions);
+	const sessionUser = session?.user;
+
+	const content = await mapCourseContent(course.content as CourseContent, sessionUser?.name);
 	let markdownDescription = null;
 
 	if (course.description && course.description.length > 0) {
@@ -392,11 +411,15 @@ function Lesson({
 
 function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
 	return (
-		<span className="flex">
-			<span className="w-8 shrink-0 self-center font-medium text-secondary">
-				{lesson.lessonNr}
+		<span className="flex items-center justify-between w-full">
+			<span className="flex items-center">
+				<span className="w-8 shrink-0 self-center font-medium text-secondary">
+					{lesson.lessonNr}
+				</span>
+				<span>{lesson.title}</span>
 			</span>
-			<span>{lesson.title}</span>
+			{/* Grade badge - klein und konsistent mit GradeDisplay */}
+			{lesson.performanceScore != null && <SmallGradeBadge score={lesson.performanceScore} />}
 		</span>
 	);
 }
