@@ -3,15 +3,14 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { ArrowTrendingUpIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import {
 	CalendarIcon,
-	CheckBadgeIcon,
 	FireIcon,
-	LockClosedIcon,
 	PauseCircleIcon,
 	SparklesIcon,
 	TrophyIcon,
 	XCircleIcon,
 	XMarkIcon
 } from "@heroicons/react/24/solid";
+import { AchievementList, useAchievementRedemption } from "@self-learning/achievements";
 import { trpc } from "@self-learning/api-client";
 import {
 	AnimatedFlame,
@@ -20,6 +19,7 @@ import {
 	useIsAtLeastLargeScreen
 } from "@self-learning/ui/common";
 import { NotificationPropsMap } from "@self-learning/ui/notifications";
+import { IdSet } from "@self-learning/util/common";
 import { addHours, intervalToDuration, isBefore } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -212,46 +212,27 @@ export function StreakSlotMachineDialog({
 	const { mutateAsync: pauseStreakMutation } = trpc.achievement.pauseStreak.useMutation();
 	const { mutateAsync: refireStreakMutation } = trpc.achievement.refireStreak.useMutation();
 
+	const achievements = trpc.achievement.getOwnAchievements.useQuery();
+	const streakAchievements = (achievements.data ?? []).filter(
+		achievement => achievement?.meta?.group === "daily_streak"
+	);
+	const { mutateAsync: earnAchievements } = trpc.achievement.earnAchievements.useMutation();
+	const { handleRedeem } = useAchievementRedemption();
+
 	const isPaused = streakStatus === "paused" && pausedUntil !== null;
 	const remainingFlames = flames.count ?? 0;
 
-	const [achievements, setAchievements] = useState([
-		{
-			id: 1,
-			name: "Anfänger",
-			description: "3 Tage in Folge aktiv",
-			threshold: 3,
-			unlocked: streakCount >= 3
-		},
-		{
-			id: 2,
-			name: "Engagiert",
-			description: "7 Tage in Folge aktiv",
-			threshold: 7,
-			unlocked: streakCount >= 7
-		},
-		{
-			id: 3,
-			name: "Beständig",
-			description: "14 Tage in Folge aktiv",
-			threshold: 14,
-			unlocked: streakCount >= 14
-		},
-		{
-			id: 4,
-			name: "Diszipliniert",
-			description: "30 Tage in Folge aktiv",
-			threshold: 30,
-			unlocked: streakCount >= 30
-		},
-		{
-			id: 5,
-			name: "Meister",
-			description: "90 Tage in Folge aktiv",
-			threshold: 90,
-			unlocked: streakCount >= 90
+	useEffect(() => {
+		async function fetchAchievements() {
+			if (trigger !== "reset") {
+				const newAch = await earnAchievements({ trigger: "daily_login" });
+				if (newAch.length > 0) {
+					setShowAchievements(true);
+				}
+			}
 		}
-	]);
+		fetchAchievements();
+	}, [trigger, earnAchievements]);
 
 	const handleRefire = async (): Promise<void> => {
 		if (remainingFlames >= 2) {
@@ -375,45 +356,10 @@ export function StreakSlotMachineDialog({
 									<XMarkIcon className="w-5 h-5" />
 								</button>
 							</div>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								{achievements.map(achievement => (
-									<div
-										key={achievement.id}
-										className={`p-3 rounded-lg border ${
-											achievement.unlocked
-												? "border-green-200 bg-green-50"
-												: "border-gray-200 bg-gray-100 opacity-70"
-										}`}
-									>
-										<div className="flex items-start">
-											{achievement.unlocked ? (
-												<CheckBadgeIcon className="w-6 h-6 text-green-500 mr-2 flex-shrink-0" />
-											) : (
-												<LockClosedIcon className="w-6 h-6 text-gray-400 mr-2 flex-shrink-0" />
-											)}
-											<div>
-												<h4 className="font-semibold">
-													{achievement.name}
-												</h4>
-												<p className="text-sm text-gray-600">
-													{achievement.description}
-												</p>
-												<div className="mt-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-													<div
-														className="h-full bg-green-500"
-														style={{
-															width: `${Math.min(100, (streakCount / achievement.threshold) * 100)}%`
-														}}
-													></div>
-												</div>
-												<p className="text-xs text-right mt-1">
-													{streakCount}/{achievement.threshold} Tage
-												</p>
-											</div>
-										</div>
-									</div>
-								))}
-							</div>
+							<AchievementList
+								achievements={new IdSet(streakAchievements)}
+								onRedeem={handleRedeem}
+							/>
 						</div>
 					) : (
 						<>

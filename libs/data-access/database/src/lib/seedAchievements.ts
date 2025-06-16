@@ -262,8 +262,8 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 		// },
 		/* ───────────────────────────── ⏳ Daily Login Streak ──────────────────────────── */
 		{
-			code: "STREAK_3",
-			title: "Anfänger",
+			code: "ACTIVITY_STREAK_§",
+			title: "Anfänger*in",
 			description: "3 Tage in Folge aktiv",
 			xpReward: 10,
 			category: "Streak",
@@ -272,7 +272,7 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			meta: { group: "daily_streak", level: 1 }
 		},
 		{
-			code: "STREAK_7",
+			code: "ACTIVITY_STREAK_7",
 			title: "Engagiert",
 			description: "7 Tage in Folge aktiv",
 			xpReward: 20,
@@ -282,7 +282,7 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			meta: { group: "daily_streak", level: 2 }
 		},
 		{
-			code: "STREAK_14",
+			code: "ACTIVITY_STREAK_14",
 			title: "Beständig",
 			description: "14 Tage in Folge aktiv",
 			xpReward: 40,
@@ -292,7 +292,7 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			meta: { group: "daily_streak", level: 3 }
 		},
 		{
-			code: "STREAK_30",
+			code: "ACTIVITY_STREAK_30",
 			title: "Diszipliniert",
 			description: "30 Tage in Folge aktiv",
 			xpReward: 80,
@@ -302,8 +302,8 @@ export async function seedAchievements(prisma: PrismaClient): Promise<void> {
 			meta: { group: "daily_streak", level: 4 }
 		},
 		{
-			code: "STREAK_90",
-			title: "Meister",
+			code: "ACTIVITY_STREAK_90",
+			title: "Meister*in",
 			description: "90 Tage in Folge aktiv",
 			xpReward: 150,
 			category: "Streak",
