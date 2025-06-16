@@ -5,7 +5,7 @@ import {
 	getParentSkills,
 	transformSkills
 } from "../../../../../libs/data-access/api/src/lib/trpc/routers/skill.router";
-import CreateAndViewSkills from "../../../../../libs/feature/teaching/src/lib/skills/folder-editor";
+import { CreateAndViewSkills } from "@self-learning/teaching";
 
 export const getServerSideProps: GetServerSideProps<{
 	skills: SkillFormModel[];
@@ -31,7 +31,7 @@ export const getServerSideProps: GetServerSideProps<{
 	return { props: { skills, selectedSkill } };
 };
 
-export default function Page({
+export default function CreateAndViewSkillsPage({
 	skills,
 	selectedSkill
 }: {

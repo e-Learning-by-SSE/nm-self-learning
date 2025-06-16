@@ -5,7 +5,7 @@ import {
 	getParentSkills,
 	transformSkills
 } from "../../../../libs/data-access/api/src/lib/trpc/routers/skill.router";
-import CreateAndViewSkills from "../../../../libs/feature/teaching/src/lib/skills/folder-editor";
+import { CreateAndViewSkills } from "@self-learning/teaching";
 
 export const getServerSideProps: GetServerSideProps<{ skills: SkillFormModel[] }> = async ctx => {
 	const user = await getAuthenticatedUser(ctx);
@@ -24,7 +24,7 @@ export const getServerSideProps: GetServerSideProps<{ skills: SkillFormModel[] }
 	return { props: { skills } };
 };
 
-export default function Page({
+export default function CreateAndViewSkillsPage({
 	skills,
 	selectedSkill
 }: {

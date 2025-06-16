@@ -3,7 +3,6 @@ import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layou
 import { useCallback, useMemo, useState } from "react";
 import { DialogHandler, LoadingBox } from "@self-learning/ui/common";
 import { SkillFormModel } from "@self-learning/types";
-
 import { SelectedSkillsInfoForm } from "./skill-edit-form";
 import { ShowCyclesDialog } from "./cycle-detection/cycle-detection";
 import {
@@ -18,7 +17,7 @@ import {
 import { SkillFolderTable } from "./folder-table";
 import { trpc } from "@self-learning/api-client";
 
-export default function CreateAndViewSkills({
+export function CreateAndViewSkills({
 	initialSkills,
 	selectedSkill
 }: {
@@ -52,7 +51,13 @@ export default function CreateAndViewSkills({
 		return <LoadingBox />;
 	}
 
-	return <SkillFolderEditor skills={treeContent} authorId={author.id} initiallySelectedSkill={selectedSkill}/>;
+	return (
+		<SkillFolderEditor
+			skills={treeContent}
+			authorId={author.id}
+			initiallySelectedSkill={selectedSkill}
+		/>
+	);
 }
 
 export function SkillFolderEditor({
