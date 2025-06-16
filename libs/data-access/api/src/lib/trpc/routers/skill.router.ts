@@ -8,6 +8,25 @@ import {
 	skillFormSchema
 } from "@self-learning/types";
 import fieldTypes from "rehype-citation/node/src/citation-js/plugin-bibtex/input/fieldTypes";
+import author = fieldTypes.author;
+
+type RawSkill = {
+	id: string;
+	name: string;
+	description: string | null;
+	authorId: number;
+	children: { id: string }[];
+	parents: { id: string }[];
+};
+
+type TransformedSkill = {
+	id: string;
+	name: string;
+	description: string | null;
+	authorId: number;
+	children: string[];
+	parents: string[];
+};
 
 async function updateSkill(skill: SkillFormModel) {
 	const children = skill.children.map(id => ({ id }));
@@ -75,6 +94,22 @@ async function getSkills() {
 	});
 }
 
+export async function getParentSkillsByAuthorId(authorId: number) {
+	return database.skill.findMany({
+		where: {
+			AND: [{ parents: { none: {} } }, { authorId: authorId }]
+		},
+		select: {
+			id: true,
+			name: true,
+			description: true,
+			authorId: true,
+			children: { select: { id: true } },
+			parents: { select: { id: true } }
+		}
+	});
+}
+
 export async function getSkillsByAuthorId(authorId: number) {
 	const skills = await database.skill.findMany({
 		where: { authorId: authorId },
@@ -87,18 +122,18 @@ export async function getSkillsByAuthorId(authorId: number) {
 			parents: { select: { id: true } }
 		}
 	});
+	return transformSkills(skills);
+}
 
-	const transformedSkill = skills.map(skill => {
-		return {
-			id: skill.id,
-			name: skill.name,
-			description: skill.description,
-			authorId: skill.authorId,
-			children: skill.children.map(child => child.id),
-			parents: skill.parents.map(parent => parent.id)
-		};
-	});
-	return transformedSkill;
+export function transformSkills(skills: RawSkill[]): TransformedSkill[] {
+	return skills.map(skill => ({
+		id: skill.id,
+		name: skill.name,
+		description: skill.description,
+		authorId: skill.authorId,
+		children: skill.children.map(child => child.id),
+		parents: skill.parents.map(parent => parent.id)
+	}));
 }
 
 export const skillRouter = t.router({
@@ -114,30 +149,10 @@ export const skillRouter = t.router({
 			}
 		});
 
-		const transformedSkills: SkillFormModel[] = skills.map(skill => ({
-			name: skill.name,
-			description: skill.description,
-			id: skill.id,
-			authorId: skill.authorId,
-			children: skill.children.map(child => child.id),
-			parents: skill.parents.map(parent => parent.id)
-		}));
-
-		return transformedSkills;
+		return transformSkills(skills);
 	}),
 	getSkills: authorProcedure.query(async () => {
-		const skills = await getSkills();
-
-		const transformedSkills: SkillFormModel[] = skills.map(skill => ({
-			name: skill.name,
-			description: skill.description,
-			id: skill.id,
-			authorId: skill.authorId,
-			children: skill.children.map(child => child.id),
-			parents: skill.parents.map(parent => parent.id)
-		}));
-
-		return transformedSkills;
+		return transformSkills(await getSkills());
 	}),
 	getSkillsByAuthorId: authorProcedure.query(async ({ input, ctx }) => {
 		const authorId = (
@@ -148,6 +163,17 @@ export const skillRouter = t.router({
 		)?.id;
 
 		return await getSkillsByAuthorId(authorId ? authorId : -1);
+	}),
+
+	getParentSkillsByAuthorId: authorProcedure.query(async ({ input, ctx }) => {
+		const authorId = (
+			await database.author.findUnique({
+				where: { username: ctx.user.name },
+				select: { id: true }
+			})
+		)?.id;
+
+		return getParentSkillsByAuthorId(authorId ? authorId : -1);
 	}),
 	updateSkill: authorProcedure
 		.input(

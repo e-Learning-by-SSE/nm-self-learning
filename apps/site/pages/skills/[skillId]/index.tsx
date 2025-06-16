@@ -4,16 +4,21 @@ import { SkillFormModel } from "@self-learning/types";
 import {
 	getParentSkills,
 	transformSkills
-} from "../../../../libs/data-access/api/src/lib/trpc/routers/skill.router";
-import CreateAndViewSkills from "../../../../libs/feature/teaching/src/lib/skills/folder-editor";
+} from "../../../../../libs/data-access/api/src/lib/trpc/routers/skill.router";
+import CreateAndViewSkills from "../../../../../libs/feature/teaching/src/lib/skills/folder-editor";
 
-export const getServerSideProps: GetServerSideProps<{ skills: SkillFormModel[] }> = async ctx => {
+export const getServerSideProps: GetServerSideProps<{
+	skills: SkillFormModel[];
+	selectedSkill?: SkillFormModel;
+}> = async ctx => {
+	const selectedSkillId = ctx.params?.skillId;
+
 	const user = await getAuthenticatedUser(ctx);
 
 	if (!user) {
 		return {
 			redirect: {
-				destination: `/403`, // your new URL here
+				destination: `/login`, // your new URL here
 				permanent: false
 			}
 		};
@@ -21,7 +26,9 @@ export const getServerSideProps: GetServerSideProps<{ skills: SkillFormModel[] }
 
 	const skills = transformSkills(await getParentSkills());
 
-	return { props: { skills } };
+	const selectedSkill = skills.find(skill => skill.id === selectedSkillId);
+
+	return { props: { skills, selectedSkill } };
 };
 
 export default function Page({

@@ -11,3 +11,4 @@ export * from "./lib/course/full-course-export";
 export * from "./lib/lesson/forms/lesson-info";
 export * from "./lib/lesson/forms/lesson-content";
 export * from "./lib/lesson/forms/quiz-editor";
+export * from "./lib/skills/skill-overview"
