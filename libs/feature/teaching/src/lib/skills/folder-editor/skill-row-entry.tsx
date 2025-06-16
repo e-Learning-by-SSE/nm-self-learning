@@ -24,7 +24,9 @@ export function ListSkillEntryWithChildren({
 	parentNodeId,
 	authorId,
 	matchingSkillIds,
-	autoExpandIds
+	autoExpandIds,
+	textClassName,
+	isUsedSkill
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
@@ -36,6 +38,8 @@ export function ListSkillEntryWithChildren({
 	authorId: number;
 	matchingSkillIds?: Set<string>;
 	autoExpandIds?: Set<string>;
+	textClassName?: string;
+	isUsedSkill?: (skillId: string) => boolean;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
@@ -56,6 +60,8 @@ export function ListSkillEntryWithChildren({
 				updateSkillDisplay={updateSkillDisplay}
 				nodeId={nodeId}
 				authorId={authorId}
+				textClassName={textClassName}
+				isUsedSkill={isUsedSkill}
 			/>
 			{showChildren &&
 				skillDisplayData.children
@@ -95,6 +101,8 @@ export function ListSkillEntryWithChildren({
 								authorId={authorId}
 								matchingSkillIds={matchingSkillIds}
 								autoExpandIds={autoExpandIds}
+								textClassName={textClassName}
+								isUsedSkill={isUsedSkill}
 							/>
 						);
 					})}
@@ -122,7 +130,9 @@ function SkillRow({
 	handleSelection,
 	updateSkillDisplay,
 	nodeId,
-	authorId
+	authorId,
+	textClassName,
+	isUsedSkill
 }: {
 	skill: SkillFolderVisualization;
 	depth: number;
@@ -130,6 +140,8 @@ function SkillRow({
 	updateSkillDisplay: UpdateVisuals;
 	nodeId: string;
 	authorId: number;
+	textClassName?: string;
+	isUsedSkill?: (skillId: string) => boolean;
 }) {
 	const depthCssStyle = {
 		"--depth": depth
@@ -245,7 +257,9 @@ function SkillRow({
 												<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 											)}
 											<span
-												className={`${skill.isSelected ? "text-secondary" : ""}`}
+												className={`${
+													isUsedSkill?.(skill.id) ? "hover:text-emerald-500" : textClassName ?? "hover:text-emerald-500"
+												}`}
 											>
 												{skill.displayName ?? skill.skill.name}
 											</span>

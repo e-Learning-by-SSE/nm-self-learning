@@ -11,13 +11,15 @@ export function SkillTree({
 	updateSkillDisplay,
 	authorId,
 	isDragging,
-	onSkillSelect
+	onSkillSelect,
+	isUsedSkill
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
 	updateSkillDisplay: UpdateVisuals;
 	authorId: number;
 	isDragging: boolean;
 	onSkillSelect: SkillSelectHandler;
+	isUsedSkill: (skillId: string) => boolean;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
 
@@ -87,7 +89,7 @@ export function SkillTree({
 				<div className="pt-4" />
 				<Droppable droppableId="skill-tree-table">
 					{droppableProvided => (
-						<Table head={<TableHeaderColumn>Bezeichnung</TableHeaderColumn>}>
+						<Table head={<TableHeaderColumn>Skills</TableHeaderColumn>}>
 							<tbody
 								ref={droppableProvided.innerRef}
 								{...droppableProvided.droppableProps}
@@ -103,6 +105,8 @@ export function SkillTree({
 										matchingSkillIds={matchingSkillIds}
 										autoExpandIds={skillIdsToAutoExpand}
 										handleSelection={onSkillSelect}
+										textClassName="italic hover:text-emerald-500"
+										isUsedSkill={isUsedSkill}
 									/>
 								))}
 								{droppableProvided.placeholder}
