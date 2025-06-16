@@ -9,13 +9,13 @@ import {
 import { withAuth } from "@self-learning/util/auth";
 
 export const getServerSideProps = withTranslations(["common"], async context => {
-	return withAuth(async _user => {
+	return withAuth(async (_context, user) => {
 		const props = await getSspStandaloneLessonLayout(context.params);
 
 		if ("notFound" in props) {
 			return { notFound: true };
 		}
-		return getSspLearnersView(props);
+		return getSspLearnersView(props, user);
 	})(context);
 });
 

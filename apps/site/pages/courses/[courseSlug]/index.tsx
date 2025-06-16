@@ -19,6 +19,7 @@ import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { SmallGradeBadge } from "libs/feature/completion/src/lib/lesson-grade-display";
 import { getServerSession } from "next-auth";
+import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
@@ -232,6 +233,20 @@ function CourseHeader({
 
 	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
+
+	const avgScore = useMemo(() => {
+		const scores = content
+			.flatMap(chapter => chapter.content.map(lesson => lesson.performanceScore))
+			.filter(score => score != null);
+
+		const sumScore = scores.reduce((acc, score) => acc + (score ?? 0), 0);
+		if (scores.length === 0) return null;
+		else return sumScore / scores.length;
+	}, [content]);
+
+	const session = useSession();
+	const isParticipant = session.data?.user.featureFlags.experimental ?? false;
+
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
@@ -269,7 +284,11 @@ function CourseHeader({
 							></Image>
 						)}
 
-						<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center">
+						<ul
+							className={`absolute bottom-0 grid w-full ${
+								isParticipant ? "grid-cols-4" : "grid-cols-3"
+							} divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center`}
+						>
 							<li className="flex flex-col">
 								<span className="font-semibold text-secondary">Lerneinheiten</span>
 								<span className="text-light">{summary.lessons}</span>
@@ -284,6 +303,20 @@ function CourseHeader({
 									{formatSeconds(summary.duration)}
 								</span>
 							</li>
+							{isParticipant && (
+								<li className="flex flex-col items-center">
+									<span className="font-semibold text-secondary">
+										Mein Score{" "}
+									</span>
+									{avgScore != null ? (
+										<div className="flex justify-center">
+											<SmallGradeBadge score={avgScore} />
+										</div>
+									) : (
+										<span>Keine</span>
+									)}
+								</li>
+							)}
 						</ul>
 					</div>
 

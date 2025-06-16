@@ -35,7 +35,7 @@ const MAX_ATTEMPTS_BEFORE_PENALTY = 3;
 /**
  * Berechnet den durchschnittlichen Score basierend auf Versuchen und Antworten.
  */
-export function calculateAverageScore(
+export function calculateAverageQuizScore(
 	attempts: QuizContextValue["attempts"],
 	answers: QuizContextValue["answers"]
 ): number {

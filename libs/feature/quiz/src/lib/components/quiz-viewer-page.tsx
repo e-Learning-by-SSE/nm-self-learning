@@ -1,6 +1,6 @@
 import { LessonType } from "@prisma/client";
 import {
-	calculateAverageScore,
+	calculateAverageQuizScore,
 	QuizCompletionDialog,
 	QuizFailedDialog,
 	useMarkAsCompleted
@@ -177,7 +177,7 @@ function QuizCompletionStateSubscriber({
 		if (unsubscribeRef.current) return;
 
 		const handleCompletion = async () => {
-			const performanceScore = calculateAverageScore(attempts, answers);
+			const performanceScore = calculateAverageQuizScore(attempts, answers);
 
 			if (completionState !== "in-progress") {
 				onSubmitAttempt(completionState, performanceScore);

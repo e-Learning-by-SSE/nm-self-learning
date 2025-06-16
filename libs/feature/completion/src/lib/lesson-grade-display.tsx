@@ -2,7 +2,13 @@ import { Tooltip } from "@self-learning/ui/common";
 import { calculateQuizGrade } from "./lesson-grading";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 
-export function SmallGradeBadge({ score }: { score: number }) {
+export function SmallGradeBadge({
+	score,
+	sizeClassName = "min-w-[2rem] px-2 py-1"
+}: {
+	score: number;
+	sizeClassName?: string;
+}) {
 	const session = useRequiredSession();
 	if (!session.data?.user.featureFlags.experimental) return null;
 
@@ -46,7 +52,7 @@ export function SmallGradeBadge({ score }: { score: number }) {
 
 	return (
 		<span
-			className={`px-2 py-1 rounded-md text-xs font-medium border min-w-[2rem] text-center ${gradeDisplay.className}`}
+			className={` rounded-md text-xs font-medium border ${sizeClassName} text-center ${gradeDisplay.className}`}
 		>
 			<Tooltip content={`Deine bisherige Bewertung für diese Lerneinheit`}>
 				{gradeDisplay.text}
@@ -55,7 +61,13 @@ export function SmallGradeBadge({ score }: { score: number }) {
 	);
 }
 
-export function GradeBadge({ score }: { score: number }) {
+export function GradeBadge({
+	score,
+	sizeClassName = "min-w-[120px] px-8 py-6"
+}: {
+	score: number;
+	sizeClassName?: string;
+}) {
 	const session = useRequiredSession();
 	if (!session.data?.user.featureFlags.experimental) return null;
 
@@ -111,9 +123,7 @@ export function GradeBadge({ score }: { score: number }) {
 	})();
 
 	return (
-		<div
-			className={`${gradeData.color} rounded-xl px-8 py-6 min-w-[120px] text-center shadow-lg`}
-		>
+		<div className={`${gradeData.color} rounded-xl ${sizeClassName} text-center shadow-lg`}>
 			<div className="text-4xl font-bold mb-1">{gradeData.display}</div>
 			<div className="text-sm font-medium">{gradeData.text}</div>
 		</div>

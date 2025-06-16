@@ -1,7 +1,11 @@
 import { CheckCircleIcon, PencilIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
-import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
+import {
+	SmallGradeBadge,
+	useCourseCompletion,
+	useMarkAsCompleted
+} from "@self-learning/completion";
 import {
 	ChapterName,
 	LessonLayoutProps,
@@ -29,9 +33,11 @@ import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { LessonCourseData, LessonData } from "../lesson-data-access";
 import { createLessonPropsFrom } from "./create-lesson-props";
+import { database } from "@self-learning/database";
+import { Session } from "next-auth";
 
 export type LessonLearnersViewProps = {
-	lesson: LessonData;
+	lesson: LessonData & { performanceScore?: number | null };
 	course?: LessonCourseData;
 	markdown: {
 		description: CompiledMarkdown | null;
@@ -42,15 +48,33 @@ export type LessonLearnersViewProps = {
 };
 
 export async function getSspLearnersView(
-	parentProps: LessonLayoutProps | StandaloneLessonLayoutProps
+	parentProps: LessonLayoutProps | StandaloneLessonLayoutProps,
+	user: Session["user"]
 ) {
 	const { lesson } = parentProps;
 	lesson.quiz = null;
 	const lessonProps = await createLessonPropsFrom(lesson);
 
+	const data = await database.completedLesson.findMany({
+		where: {
+			lessonId: lesson.lessonId,
+			user: {
+				username: user.name
+			}
+		},
+		select: {
+			performanceScore: true
+		},
+		orderBy: { performanceScore: "desc" },
+		take: 1 // Nur den höchsten Score nehmen
+	});
+
+	const lessonWithScore = { ...lesson, performanceScore: data[0]?.performanceScore ?? null };
+
 	return {
 		props: {
 			...parentProps,
+			lesson: lessonWithScore,
 			// course: parentProps.course ?? undefined,
 			markdown: {
 				...lessonProps
@@ -154,8 +178,8 @@ function LessonHeader({
 }) {
 	const isStandalone = !course;
 
-	// const session = useRequiredSession();
-	// const isExperimentParticipant = session.data?.user.featureFlags.experimental ?? false;
+	const session = useRequiredSession();
+	const isExperimentParticipant = session.data?.user.featureFlags.experimental ?? false;
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -199,17 +223,21 @@ function LessonHeader({
 								)}
 							</div>
 						</div>
-						{/* {isExperimentParticipant && (
+						{isExperimentParticipant && (
 							<div className="flex flex-col items-center">
 								<span className="mb-1 text-xs text-gray-500 text-center font-semibold">
 									Bisherige Bewertung
 								</span>
-								<SmallGradeBadge
-									score={lesson.performanceScore ?? 0}
-									sizeClassName="px-4 py-2"
-								/>
+								{lesson.performanceScore ? (
+									<SmallGradeBadge
+										score={lesson.performanceScore}
+										sizeClassName="px-4 py-2"
+									/>
+								) : (
+									<span className="text-gray-500 text-sm">Keine</span>
+								)}
 							</div>
-						)} */}
+						)}
 					</div>
 					{!isStandalone && (
 						<div className="pt-4">

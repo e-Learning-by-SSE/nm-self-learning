@@ -1,6 +1,7 @@
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import { SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
 import {
@@ -40,6 +41,7 @@ type LearningDiaryEntryLessonWithDetails = {
 	courseSlug: string;
 	touchedAt: Date;
 	completed: boolean;
+	performanceScore?: number; // has a value if the lesson was completed
 };
 
 type Props = {
@@ -78,6 +80,7 @@ async function getStudent(username: string) {
 				orderBy: { createdAt: "desc" },
 				select: {
 					createdAt: true,
+					performanceScore: true,
 					lesson: {
 						select: {
 							slug: true,
@@ -201,7 +204,8 @@ async function loadMostRecentLessons({
 			courseSlug: lesson.courseSlug || "",
 			touchedAt: lesson.createdAt || null,
 			entryId: lesson.entryId || "",
-			compeleted: false
+			compeleted: false,
+			performanceScore: lessonDetails?.completions?.[0]?.performanceScore || undefined
 		};
 	});
 
@@ -491,8 +495,11 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 									<span className="flex gap-3 ">
 										<span className="truncate max-w-xs">{lesson.title}</span>
 
-										{lesson.completed && (
-											<CheckIcon className="icon h-5 text-green-500" />
+										{lesson.completed && lesson.performanceScore && (
+											<>
+												<CheckIcon className="icon h-5 text-green-500" />
+												<SmallGradeBadge score={lesson.performanceScore} />
+											</>
 										)}
 									</span>
 
