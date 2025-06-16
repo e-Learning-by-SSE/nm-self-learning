@@ -27,14 +27,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { withAuth, withTranslations } from "@self-learning/api";
-
-function hasAnsweredSelfRegulated(lessonId: string) {
-	return sessionStorage.getItem(`selfRegulatedSeen-${lessonId}`) === "true";
-}
-
-function setSelfRegulatedAnswered(lessonId: string) {
-	sessionStorage.setItem(`selfRegulatedSeen-${lessonId}`, "true");
-}
+import { usePathname, useSearchParams } from "next/navigation";
 
 export type LessonProps = LessonLayoutProps & {
 	markdown: {
@@ -128,40 +121,35 @@ export default function LessonPage({ lesson, course, markdown }: LessonProps) {
 function Lesson({ lesson, course, markdown }: LessonProps) {
 	/**
 	 * Using router and modal state to simulate 2 different URLs for back/forward navigation.
-	 * window.history.replaceState to overwrite URLs to hide the modal state from the address bar.
 	 * Alternative: Create 2 separate pages for the lesson and the self regulated question.
 	 */
 	const router = useRouter();
-	const path = router.asPath.split("?")[0];
-	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
+	const path = usePathname();
+	const searchParams = useSearchParams();
+	const modalOpened = searchParams.get("modal");
+	const [showDialog, setShowDialog] = useState(
+		lesson.lessonType === LessonType.SELF_REGULATED && modalOpened !== "closed"
+	);
 
 	useEffect(() => {
 		if (lesson.lessonType === LessonType.SELF_REGULATED) {
 			if (!router.isReady) return;
 
-			// Initial load: Show self regulated question
-			if (router.query.modal === undefined) {
-				// Push a state with question to be displayed
-				router
-					.replace({ pathname: path, query: { modal: "open" } }, undefined, {
-						shallow: true
-					})
-					.then(() => {
-						// Remove the query param from the address bar
-						window.history.replaceState(
-							{ ...window.history.state, as: path },
-							"",
-							path
-						);
-					});
+			if (modalOpened === "closed") {
+				setShowDialog(false);
 			}
-
-			// Double check: Modal + session to prevent query "hacking"
-			const answered =
-				router.query.modal === "closed" && hasAnsweredSelfRegulated(lesson.lessonId);
-			setShowDialog(!answered);
+			if (modalOpened === null) {
+				// Probably the first time the page is loaded, so we open the dialog
+				router.replace({ pathname: path, query: { modal: "open" } }, undefined, {
+					shallow: true
+				});
+			}
+			if (modalOpened === "open") {
+				// Probably on back navigation, ensure dialog is open (and not closed by previous action)
+				setShowDialog(true);
+			}
 		}
-	}, [router, lesson.lessonId, lesson.lessonType, path]);
+	}, [lesson.lessonType, modalOpened, router, path]);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
@@ -181,14 +169,9 @@ function Lesson({ lesson, course, markdown }: LessonProps) {
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		setSelfRegulatedAnswered(lesson.lessonId);
-		router
-			.push({ pathname: path, query: { modal: "closed" } }, undefined, {
-				shallow: true
-			})
-			.then(() => {
-				window.history.replaceState({ ...window.history.state, as: path }, "", path);
-			});
+		router.push({ pathname: path, query: { modal: "closed" } }, undefined, {
+			shallow: true
+		});
 	};
 
 	if (showDialog && markdown.preQuestion) {
