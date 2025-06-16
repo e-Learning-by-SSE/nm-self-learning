@@ -3,19 +3,21 @@ import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import { ListSkillEntryWithChildren } from "./skill-row-entry";
-import { SkillFolderVisualization, UpdateVisuals } from "./skill-display";
+import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { Droppable } from "@hello-pangea/dnd";
 
 export function SkillTree({
 	skillDisplayData,
 	updateSkillDisplay,
 	authorId,
-	isDragging
+	isDragging,
+	onSkillSelect
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
 	updateSkillDisplay: UpdateVisuals;
 	authorId: number;
 	isDragging: boolean;
+	onSkillSelect: SkillSelectHandler;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
 
@@ -100,6 +102,7 @@ export function SkillTree({
 										authorId={authorId}
 										matchingSkillIds={matchingSkillIds}
 										autoExpandIds={skillIdsToAutoExpand}
+										handleSelection={onSkillSelect}
 									/>
 								))}
 								{droppableProvided.placeholder}

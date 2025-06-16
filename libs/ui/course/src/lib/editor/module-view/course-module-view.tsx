@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { ModuleDependency } from "./module-dependency";
+import { SkillSelectHandler } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-display";
 
 export function CourseModuleView({
 	initialLesson,
@@ -44,6 +45,50 @@ export function CourseModuleView({
 	function switchTab(index: number) {
 		setSelectedIndex(index);
 	}
+	const onSkillSelect: SkillSelectHandler = skillId => {
+		const skill = skillId ? allSkills.get(skillId) : undefined;
+		const provides = form.getValues("provides") ?? [];
+
+		if (!skill) {
+			showToast({
+				type: "error",
+				title: "Skill nicht gefunden",
+				subtitle: "Der ausgewählte Skill existiert nicht."
+			});
+			return;
+		}
+
+		const alreadyProvided = provides.some(s => s.id === skill.id);
+
+		if (!form.getValues("title")) {
+			form.setValue("title", skill.name);
+		}
+
+		if (alreadyProvided) {
+			showToast({
+				type: "error",
+				title: "Skill bereits vorhanden",
+				subtitle: `Der Skill ${skill.name} ist bereits in der Liste der zu vermittelnden Skills enthalten.`
+			});
+			return;
+		}
+		form.setValue("provides", [
+			...(form.getValues("provides") ?? []),
+			{
+				id: skill.id,
+				name: skill.name,
+				description: skill.description ?? null,
+				authorId: skill.authorId ?? authorId,
+				children: [],
+				parents: []
+			}
+		]);
+		showToast({
+			type: "success",
+			title: "Skill hinzugefügt",
+			subtitle: skill.name
+		});
+	};
 	const addSkills = (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => {
 		form.setValue(field, [
 			...(form.getValues(field) ?? []),
@@ -88,7 +133,7 @@ export function CourseModuleView({
 			setSelectedModuleId(id);
 		}
 	}
-	
+
 	const renderContent = (index: number) => {
 		switch (index) {
 			case 0:
@@ -112,6 +157,7 @@ export function CourseModuleView({
 						isDragging={isDragging}
 						modules={modules}
 						onSelectModule={handleModuleClick}
+						onSkillSelect={onSkillSelect}
 					/>
 				</aside>
 				<main className="flex-1 min-w-[500px] max-w-[900px] p-8 pr-4 py-4 text-sm">

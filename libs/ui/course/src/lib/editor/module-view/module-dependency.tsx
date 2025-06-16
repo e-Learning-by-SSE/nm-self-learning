@@ -4,19 +4,22 @@ import { SkillTree } from "libs/feature/teaching/src/lib/skills/folder-editor/sk
 import { ModuleView } from "./module-view";
 import { useState } from "react";
 import { Tabs, Tab } from "@self-learning/ui/common";
+import { SkillSelectHandler } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-display";
 
 export function ModuleDependency({
 	skills,
 	authorId,
 	isDragging,
     modules,
-	onSelectModule
+	onSelectModule,
+	onSkillSelect
 }: {
 	skills: Map<string, SkillFormModel>;
 	authorId: number;
 	isDragging: boolean;
     modules: Map<string, LessonFormModel>;
 	onSelectModule: (id: string) => void;
+	onSkillSelect: SkillSelectHandler
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
 	const tabs = ["Skills", "Module"];
@@ -33,6 +36,7 @@ export function ModuleDependency({
 						updateSkillDisplay={updateSkillDisplay}
 						authorId={authorId}
 						isDragging={isDragging}
+						onSkillSelect={onSkillSelect}
 					/>
 				);
 			case 1:

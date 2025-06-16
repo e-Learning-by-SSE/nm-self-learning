@@ -29,7 +29,7 @@ export function ListSkillEntryWithChildren({
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
 	depth?: number;
-	handleSelection?: SkillSelectHandler;
+	handleSelection: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
 	renderedIds?: Set<string>;
 	parentNodeId: string;
@@ -52,7 +52,7 @@ export function ListSkillEntryWithChildren({
 				key={`${skillDisplayData.id}-${depth}`}
 				skill={skillDisplayData}
 				depth={depth}
-				handleSelection={handleSelection ?? (() => {})}
+				handleSelection={handleSelection}
 				updateSkillDisplay={updateSkillDisplay}
 				nodeId={nodeId}
 				authorId={authorId}
