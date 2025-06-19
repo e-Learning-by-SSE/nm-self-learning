@@ -3,7 +3,7 @@ import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { scoreToPerformanceGrade, SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "@self-learning/diary";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import {
 	CourseEnrollmentOverview,
@@ -35,23 +35,23 @@ import { useState } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
-type LearningDiaryEntryLessonWithDetails = {
-	entryId: string;
-	lessonId: string;
+type RecentLesson = {
 	title: string;
 	slug: string;
-	courseImgUrl?: string;
 	courseSlug: string;
+	courseImgUrl?: string | null;
 	touchedAt: Date;
 	completed: boolean;
-	performanceScore?: number; // has a value if the lesson was completed
+	performanceScore?: number;
 };
 
-type Props = {
-	student: Student;
-	recentLessons: LearningDiaryEntryLessonWithDetails[];
-	enrollments: EnrollmentDetails[];
-	competitionStats: PlatformStats;
+type Submission = {
+	username: string;
+	payload: {
+		lessonAttemptId: string;
+		completionState: "completed" | "failed";
+		effectiveTimeLearned: number;
+	};
 };
 
 async function getPlattformCompetitionStats(): Promise<PlatformStats> {
@@ -138,15 +138,6 @@ async function getPlattformCompetitionStats(): Promise<PlatformStats> {
 		}
 	};
 }
-
-type Submission = {
-	username: string;
-	payload: {
-		lessonAttemptId: string;
-		completionState: "completed" | "failed";
-		effectiveTimeLearned: number;
-	};
-};
 
 function getUserWithHighestLearnedTime(submissions: Submission[]) {
 	// 1. Nur "completed" Events
@@ -256,7 +247,7 @@ async function getStudent(username: string) {
 			},
 			learningDiaryEntrys: {
 				orderBy: { createdAt: "desc" },
-				take: 5,
+				take: 8,
 				select: {
 					createdAt: true,
 					id: true,
@@ -292,14 +283,68 @@ async function getStudent(username: string) {
 	};
 }
 
-export type DiaryLessonSchema = {
-	id: string;
-	courseSlug: string;
-	courseImgUrl: string | null;
-	entryId: string;
-	lessonId: string;
-	createdAt: Date;
-};
+// Method 1: Get lessons from diary entries
+function getRecentLessonsFromDiary({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}): RecentLesson[] {
+	// Get recent diary lessons
+	const recentDiaryLessons = student.learningDiaryEntrys
+		.flatMap(entry =>
+			entry.lessonsLearned.map(lesson => ({
+				lessonId: lesson.lessonId,
+				courseSlug: entry.courseSlug,
+				courseImgUrl: entry.course?.imgUrl,
+				touchedAt: entry.createdAt
+			}))
+		)
+		.sort((a, b) => new Date(b.touchedAt).getTime() - new Date(a.touchedAt).getTime())
+		.slice(0, lessonLimit);
+
+	// Enrich with completion data
+	const completedLessonsMap = new Map(
+		student.completedLessons.map(lesson => [lesson.lessonId, lesson])
+	);
+
+	return recentDiaryLessons.map(diaryLesson => {
+		const completedLesson = completedLessonsMap.get(diaryLesson.lessonId);
+
+		return {
+			title: completedLesson?.lesson.title || "HALLO",
+			slug: completedLesson?.lesson.slug || "",
+			courseSlug: diaryLesson.courseSlug,
+			courseImgUrl: diaryLesson.courseImgUrl,
+			touchedAt: diaryLesson.touchedAt,
+			completed: !!completedLesson,
+			performanceScore: completedLesson?.performanceScore
+		};
+	});
+}
+
+// Method 2: Get lessons from completions only
+function getRecentLessonsFromCompletions({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}): RecentLesson[] {
+	return student.completedLessons
+		.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+		.slice(0, lessonLimit)
+		.map(completedLesson => ({
+			title: completedLesson.lesson.title,
+			slug: completedLesson.lesson.slug,
+			courseSlug: completedLesson.course?.slug || "",
+			courseImgUrl: completedLesson.course?.imgUrl,
+			touchedAt: completedLesson.createdAt,
+			completed: true,
+			performanceScore: completedLesson.performanceScore
+		}));
+}
 
 async function loadMostRecentLessons({
 	student,
@@ -307,60 +352,20 @@ async function loadMostRecentLessons({
 }: {
 	student: Student;
 	lessonLimit: number;
-}) {
-	const lessonsFromDiary: DiaryLessonSchema[] = student.learningDiaryEntrys.flatMap(entry =>
-		entry.lessonsLearned.map(lesson => ({
-			...lesson,
-			courseSlug: entry.courseSlug,
-			courseImgUrl: entry.course?.imgUrl,
-			entryId: lesson.id,
-			createdAt: entry.createdAt
-		}))
-	);
-
-	const sortedLessons = lessonsFromDiary.sort(
-		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-	);
-
-	const newestLessons = sortedLessons.slice(0, lessonLimit);
-	const lessonIds = newestLessons.map(lesson => lesson.lessonId);
-
-	const lessonsArray = await database.lesson.findMany({
-		where: { lessonId: { in: lessonIds } },
-		select: {
-			lessonId: true,
-			title: true,
-			slug: true,
-			completions: true
-		}
-	});
-
-	const lessonDetailsMap = new Map(lessonsArray.map(detail => [detail.lessonId, detail]));
-	const lessonsWithDetails = newestLessons.map(lesson => {
-		const lessonDetails = lessonDetailsMap.get(lesson.lessonId);
-
-		return {
-			lessonId: lesson.lessonId,
-			title: lessonDetails?.title || "",
-			slug: lessonDetails?.slug || "",
-			courseImgUrl: lesson.courseImgUrl || "",
-			courseSlug: lesson.courseSlug || "",
-			touchedAt: lesson.createdAt || null,
-			entryId: lesson.entryId || "",
-			compeleted: false,
-			performanceScore: lessonDetails?.completions?.[0]?.performanceScore || undefined
-		};
-	});
-
-	const completedLessonsTitleSet = new Set(
-		student.completedLessons.map(lesson => lesson.lesson.title)
-	);
-
-	return lessonsWithDetails.map(lesson => ({
-		...lesson,
-		completed: completedLessonsTitleSet.has(lesson.title)
-	}));
+}): Promise<RecentLesson[]> {
+	if (student.user.featureFlags?.learningDiary ?? false) {
+		return getRecentLessonsFromDiary({ student, lessonLimit });
+	} else {
+		return getRecentLessonsFromCompletions({ student, lessonLimit });
+	}
 }
+
+type Props = {
+	student: Student;
+	recentLessons: RecentLesson[];
+	enrollments: EnrollmentDetails[];
+	competitionStats: PlatformStats;
+};
 
 function DashboardLayout(
 	Component: NextComponentType<NextPageContext, unknown, Props>,
@@ -390,7 +395,7 @@ export const getServerSideProps = withTranslations(
 		}
 
 		const student = await getStudent(user.name);
-		const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
+		const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 8 });
 
 		return {
 			props: {
@@ -461,14 +466,25 @@ export default function DashboardPage(props: Props) {
 			{/* Third row - Recent Lessons and Platform Best Performers */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				{/* Recent Lessons */}
-				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
-					<h2 className="mb-4 text-lg font-semibold text-gray-900">
-						{ltbEnabled ? "Lerntagebuch Einträge" : "Zuletzt bearbeitete Lerneinheiten"}
-					</h2>
+
+				<div className="rounded bg-white p-4 shadow overflow-auto overflow-x-visible">
 					{ltbEnabled ? (
-						<LastLearningDiaryEntry pages={learningDiaryEntrys} />
+						<>
+							<StatusBadgeInfo
+								header="Letzter Lerntagebucheintrag"
+								className="mb-4"
+							/>
+
+							<LastLearningDiaryEntry pages={learningDiaryEntrys} />
+						</>
 					) : (
-						<LessonList lessons={props.recentLessons} />
+						<>
+							<h2 className="text-xl py-2 px-2">Zuletzt bearbeitete Lerneinheiten</h2>
+
+							<div className="mb-4 border-b border-light-border h-[6px]"></div>
+
+							<LessonList lessons={props.recentLessons} />
+						</>
 					)}
 				</div>
 
@@ -727,7 +743,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 												</span>
 											</div>
 										</div>
-										<span className="hidden text-sm text-light md:block">
+										<span className="hidden text-xs text-light md:block">
 											{formatDateStringShort(page.createdAt)}
 										</span>
 									</div>
@@ -741,42 +757,53 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	);
 }
 
-function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[] }) {
+function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 	return (
 		<>
 			{lessons.length === 0 ? (
 				<span className="text-sm text-light">Du hast keine Lerneinheiten bearbeitet.</span>
 			) : (
-				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
+				<ul className="flex flex-col gap-3 overflow-auto overflow-x-visible">
 					{lessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"
 							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
 							key={"course-" + index}
 						>
-							<li
-								className="hover: flex items-center rounded-lg border border-light-border
-                            pl-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
-							>
+							<li className="flex items-center rounded-lg border border-light-border overflow-hidden transition-all hover:scale-[1.02] hover:bg-slate-50 hover:shadow-md hover:border-gray-200">
+								{/* Course Image */}
 								<ImageOrPlaceholder
-									src={lesson.courseImgUrl}
-									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
+									src={lesson.courseImgUrl ?? undefined}
+									className="h-16 w-16 shrink-0 object-cover rounded-l-lg"
 								/>
-								<div className="flex w-full items-center justify-between gap-2 px-4">
-									{/* Titel und Datum */}
-									<div className="flex flex-col min-w-0">
-										<span className="truncate max-w-xs">{lesson.title}</span>
-										<span className="hidden text-xs text-light md:block">
+
+								{/* Content Area */}
+								<div className="flex-1 flex items-center justify-between p-4 min-w-0">
+									{/* Left side: Title and Date */}
+									<div className="flex flex-col min-w-0 flex-1">
+										<span className="font-medium text-gray-900 truncate">
+											{lesson.title}
+										</span>
+										<span className="text-xs text-gray-500 mt-1">
 											{formatDateAgo(lesson.touchedAt)}
 										</span>
 									</div>
-									{/* Check und Badge rechtsbündig */}
-									{lesson.completed && lesson.performanceScore && (
-										<div className="flex items-center gap-2 flex-shrink-0 ml-2">
-											<CheckIcon className="icon h-5 w-5 text-green-500" />
-											<SmallGradeBadge rating={lesson.performanceScore} />
-										</div>
-									)}
+
+									{/* Right side: Completion Status */}
+									<div className="flex items-center gap-2 ml-4 flex-shrink-0">
+										{lesson.completed ? (
+											<>
+												<CheckIcon className="h-5 w-5 text-green-500" />
+												{
+													<SmallGradeBadge
+														rating={lesson.performanceScore ?? 0}
+													/>
+												}
+											</>
+										) : (
+											<div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+										)}
+									</div>
 								</div>
 							</li>
 						</Link>
