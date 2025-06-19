@@ -1,8 +1,9 @@
-import { TrophyIcon, ClockIcon, FireIcon, AcademicCapIcon } from "@heroicons/react/24/solid";
+import { ClockIcon, TrophyIcon } from "@heroicons/react/24/solid";
+import { SmallGradeBadge } from "@self-learning/completion";
 import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
-import { SmallGradeBadge } from "@self-learning/completion";
 import { secondsToMilliseconds } from "date-fns";
+import { useRouter } from "next/router";
 
 // Mock data types - replace with your actual API types
 export interface PlatformStats {
@@ -23,8 +24,13 @@ export interface PlatformStats {
 }
 
 function AchievementBadge({ achievement }: { achievement: { title: string; icon?: string } }) {
+	const router = useRouter();
+
 	return (
-		<div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
+		<div
+			className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 cursor-pointer hover:bg-purple-100 transition-colors"
+			onClick={() => router.push(`/profile/achievements`)}
+		>
 			<TrophyIcon className="h-4 w-4 text-purple-600 flex-shrink-0" />
 			<span className="text-sm font-medium text-purple-800 truncate">
 				{achievement.title}
