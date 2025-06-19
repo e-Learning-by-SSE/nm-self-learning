@@ -495,7 +495,7 @@ export const courseRouter = t.router({
 					connect: input.authors.map(author => ({ username: author.username }))
 				},
 				teachingGoals: {
-					create: input.teachingGoals.map(goal => ({
+					connect: input.teachingGoals.map(goal => ({
 						name: goal.name,
 						description: goal.description,
 						repositoryId: goal.repositoryId,
