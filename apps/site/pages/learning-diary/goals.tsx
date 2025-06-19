@@ -1,18 +1,16 @@
 import { withTranslations } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
-import { LearningGoals } from "@self-learning/diary";
-import { LoadingCircle } from "@self-learning/ui/common";
-import { useRequiredSession } from "@self-learning/ui/layouts";
+import { LearningGoals, useLearningGoals } from "@self-learning/diary";
+import { LoadingBox } from "@self-learning/ui/common";
+import { CenteredSection } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withAuth(withTranslations(["common"]));
 
 export default function LearningGoal() {
-	const { data: goals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
-	useRequiredSession();
-
-	if(isLoading) {
-		return <LoadingCircle className="h-8 w-8" />
-	}
-
-	return goals && <LearningGoals goals={goals} onStatusUpdate={_ => {}} />;
+	const { userGoals, isLoading } = useLearningGoals();
+	return (
+		<CenteredSection className="overflow-y-auto bg-gray-50 pb-32 px-5">
+			<section>{isLoading ? <LoadingBox /> : <LearningGoals goals={userGoals} />}</section>
+		</CenteredSection>
+	);
 }

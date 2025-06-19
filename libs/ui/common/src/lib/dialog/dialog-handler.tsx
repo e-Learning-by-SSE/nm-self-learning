@@ -10,6 +10,9 @@ interface State {
 	dialog: React.ReactNode;
 }
 
+/**
+ * @deprecated
+ */
 export const dispatchDialog = (dialog: React.ReactNode, id: string) => {
 	memoryState = { isOpen: true, dialog: dialog };
 	const listeners = listenerMap.get(id);
@@ -22,6 +25,7 @@ export const dispatchDialog = (dialog: React.ReactNode, id: string) => {
 /**
  * Should be used if the same dialog is opened multiple times in one component
  * Reason React will not rerender the component if the same dialog is used
+ * @deprecated
  */
 export const freeDialog = (id: string) => {
 	memoryState = { isOpen: false, dialog: null };
@@ -32,6 +36,9 @@ export const freeDialog = (id: string) => {
 	});
 };
 
+/**
+ * @deprecated
+ */
 function useDialog(id: string): State {
 	const [state, setState] = useState<State>(memoryState);
 
@@ -54,8 +61,14 @@ function useDialog(id: string): State {
 	return state;
 }
 
+/**
+ * @deprecated
+ */
 export const DialogHandler = memo(DialogHandlerComponent);
 
+/**
+ * @deprecated
+ */
 function DialogHandlerComponent({ id }: { id: string }) {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { isOpen, dialog } = useDialog(id);

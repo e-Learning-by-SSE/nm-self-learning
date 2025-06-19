@@ -58,6 +58,7 @@ export const adminRouter = t.router({
 				registrationCompleted: true,
 				notificationSettings: true,
 				acceptedExperimentTerms: true,
+				declinedExperimentTerms: true,
 				featureFlags: true
 			}
 		});

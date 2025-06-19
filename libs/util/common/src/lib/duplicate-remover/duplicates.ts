@@ -1,7 +1,8 @@
 // copied from nm-skill-lib version 0.2.0
 // should be removed as soon as the lib is updated
 // TODO spark-sse
-export type IdElement = { id: string | number };
+
+type IdElement = { id: string | number };
 
 export function duplicateRemover(initialBuffer: (string | number)[] = []) {
 	const alreadyComputedSkillsBuffer = new Set<string | number>(initialBuffer);
@@ -44,8 +45,7 @@ export function sortById(a: IdElement, b: IdElement) {
  * Can be used as a drop-in replacement for a Set or Map, but is maybe not as efficient in some manners. It's not fully compatible with the Set and Map interface, but provides a similar API.
  * @author Marcel Spark
  */
-
-export class IdSet<T extends IdElement = IdElement> {
+export class IdSet<T extends IdElement> {
 	private items: Record<string, T>;
 
 	constructor(initialValues: T[] | Set<T> | IdSet<T> = []) {

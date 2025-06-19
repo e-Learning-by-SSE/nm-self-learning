@@ -2,16 +2,18 @@ import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import {
+	EnableLearningDiaryDialog,
+	LearningDiaryEntryStatusBadge,
+	StatusBadgeInfo
+} from "@self-learning/diary";
 import {
 	Card,
 	DialogHandler,
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	Toggle,
-	Tabs,
-	Tab
+	Toggle
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
@@ -23,7 +25,7 @@ import {
 } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -250,8 +252,6 @@ function DashboardPage(props: Props) {
 		enabled: props.student.user.featureFlags?.learningDiary ?? false
 	});
 
-	const [selectedTab, setSelectedTab] = useState(0);
-
 	const openSettings = () => {
 		router.push("/user-settings");
 	};
@@ -338,23 +338,11 @@ function DashboardPage(props: Props) {
 					<div className="rounded bg-white p-4 shadow">
 						{ltb.enabled ? (
 							<>
-								<Tabs onChange={v => setSelectedTab(v)} selectedIndex={selectedTab}>
-									<Tab>
-										<h2 className="text-xl"> Lerntagebuch </h2>
-									</Tab>
-									<Tab>
-										<h2 className="text-xl"> Lerneinheiten </h2>
-									</Tab>
-								</Tabs>
-								<div className="mb-4" />
-								{selectedTab === 0 && (
-									<LastLearningDiaryEntry
-										pages={props.student.learningDiaryEntrys}
-									/>
-								)}
-								{selectedTab === 1 && <LessonList lessons={props.recentLessons} />}
-
-								{/* <h2 className="mb-4 text-xl">Letzter Lerntagebucheintrag</h2> */}
+								<StatusBadgeInfo
+									header="Letzter Lerntagebucheintrag"
+									className="mb-4"
+								/>
+								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
 							</>
 						) : (
 							<>
@@ -427,7 +415,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 									className="hover: flex items-center rounded-lg border border-light-border
 							p-3 transition-transform hover:bg-slate-100 hover:scale-105"
 								>
-									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-4">
+									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
 										<div className="flex items-center gap-2">
 											<LearningDiaryEntryStatusBadge
 												isDraft={page.isDraft}
@@ -474,7 +462,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 						>
 							<li
 								className="hover: flex items-center rounded-lg border border-light-border
-							px-3 transition-transform hover:scale-105 hover:bg-slate-100 hover:shadow-lg"
+							px-3 transition-transform hover:bg-slate-100"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl}
