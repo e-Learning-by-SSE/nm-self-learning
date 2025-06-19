@@ -46,6 +46,7 @@ model User {
 
     registrationCompleted   Boolean   @default(false)
     acceptedExperimentTerms DateTime?
+    declinedExperimentTerms DateTime?
 }
 
 enum UserRole {

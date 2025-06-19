@@ -5,6 +5,7 @@ export async function getExperimentStatus(username: string) {
 		where: { name: username },
 		select: {
 			acceptedExperimentTerms: true,
+			declinedExperimentTerms: true,
 			featureFlags: {
 				select: {
 					experimental: true
@@ -16,7 +17,8 @@ export async function getExperimentStatus(username: string) {
 	return {
 		consentDate: userData?.acceptedExperimentTerms,
 		experimentalFeatures: userData.featureFlags?.experimental, // null when not consented
-		isParticipating: userData?.acceptedExperimentTerms !== null
+		isParticipating: userData?.acceptedExperimentTerms !== null,
+		declinedOnce: userData?.declinedExperimentTerms !== null
 	};
 }
 
@@ -38,7 +40,8 @@ export async function updateExperimentParticipation({
 					learningStatistics: consent ?? false
 				}
 			},
-			acceptedExperimentTerms: consent ? new Date() : null
+			acceptedExperimentTerms: consent ? new Date() : null,
+			declinedExperimentTerms: !consent ? new Date() : null
 		}
 	});
 }

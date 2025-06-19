@@ -12,6 +12,7 @@ import { useState } from "react";
 interface ExperimentConsentProps {
 	hasAlreadyConsented: boolean;
 	consentDate?: Date;
+	locked: boolean;
 }
 
 export const getServerSideProps = withTranslations(
@@ -22,7 +23,8 @@ export const getServerSideProps = withTranslations(
 		return {
 			props: {
 				hasAlreadyConsented: data.isParticipating,
-				consentDate: data.consentDate || undefined
+				consentDate: data.consentDate || undefined,
+				locked: data.isParticipating || data.declinedOnce
 			}
 		};
 	})
@@ -32,7 +34,8 @@ const KURS_TITLE = "Dummy Kurs (Kursnummer: 1234)";
 
 export default function ExperimentConsentPage({
 	hasAlreadyConsented,
-	consentDate
+	consentDate,
+	locked
 }: ExperimentConsentProps) {
 	const { loginRedirect } = useLoginRedirect();
 	const [hasReadFullText, setHasReadFullText] = useState(false);
@@ -70,7 +73,9 @@ export default function ExperimentConsentPage({
 		setIsSubmitting(true);
 		try {
 			await submitConsent({ consent: false });
-			await updateProfile({ user: { registrationCompleted: true } });
+			await updateProfile({
+				user: { registrationCompleted: true }
+			});
 			showToast({
 				type: "info",
 				title: "Teilnahme abgelehnt",
@@ -111,15 +116,26 @@ export default function ExperimentConsentPage({
 						<div className="mt-8 space-y-6 border-t pt-8">
 							<h2 className="text-xl font-semibold">Ihr Einverständnis</h2>
 
+							{locked && (
+								<div className="mb-4 rounded-lg bg-yellow-50 p-4 border border-yellow-200">
+									<p className="text-yellow-800 text-sm">
+										Sie haben bereits eine Entscheidung bezüglich der
+										Studienteilnahme getroffen. Eine erneute Änderung ist nicht
+										möglich.
+									</p>
+								</div>
+							)}
+
 							<div className="space-y-4">
 								<label className="flex items-start gap-3">
 									<input
 										type="checkbox"
 										checked={hasReadFullText}
 										onChange={e => setHasReadFullText(e.target.checked)}
-										className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
+										disabled={locked}
+										className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
 									/>
-									<span className="text-sm">
+									<span className={`text-sm ${locked ? "text-gray-500" : ""}`}>
 										Ich habe die obigen Informationen gelesen und verstanden.
 										Mir ist bewusst, dass meine Teilnahme freiwillig ist und ich
 										diese jederzeit ohne Angabe von Gründen beenden kann.
@@ -131,9 +147,10 @@ export default function ExperimentConsentPage({
 										type="checkbox"
 										checked={agreesToParticipate}
 										onChange={e => setAgreesToParticipate(e.target.checked)}
-										className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
+										disabled={locked}
+										className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
 									/>
-									<span className="text-sm">
+									<span className={`text-sm ${locked ? "text-gray-500" : ""}`}>
 										Ich erkläre mich bereit, an dieser Forschungsstudie
 										teilzunehmen.
 									</span>
@@ -144,9 +161,12 @@ export default function ExperimentConsentPage({
 								<button
 									onClick={handleSubmitConsent}
 									disabled={
-										!hasReadFullText || !agreesToParticipate || isSubmitting
+										locked ||
+										!hasReadFullText ||
+										!agreesToParticipate ||
+										isSubmitting
 									}
-									className="btn-primary flex items-center gap-2 disabled:opacity-50"
+									className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
 								>
 									{isSubmitting ? (
 										"Wird gespeichert..."
@@ -160,8 +180,8 @@ export default function ExperimentConsentPage({
 
 								<button
 									onClick={handleDeclineParticipation}
-									disabled={isSubmitting}
-									className="btn-stroked"
+									disabled={locked || isSubmitting}
+									className="btn-stroked disabled:opacity-50 disabled:cursor-not-allowed"
 								>
 									Nicht teilnehmen
 								</button>
