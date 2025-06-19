@@ -13,6 +13,7 @@ import { trpc } from "@self-learning/api-client";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { ModuleDependency } from "./module-dependency";
 import { SkillSelectHandler } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-display";
+import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 
 export function CourseModuleView({
 	initialLesson,
@@ -45,12 +46,17 @@ export function CourseModuleView({
 	function switchTab(index: number) {
 		setSelectedIndex(index);
 	}
-		const isUsedSkill = (skillId: string): boolean => {
+	const isUsedSkill = (skillId: string): boolean => {
 		const skill = allSkills.get(skillId);
 		const provides = form.getValues("provides") ?? [];
 		const alreadyProvided = provides.some(s => s.id === skill?.id);
 		if (alreadyProvided) {
 			return true;
+		}
+		for (const module of modules.values()) {
+			if (module.provides?.some(s => s.id === skillId)) {
+				return true;
+			}
 		}
 		return false;
 	};
@@ -102,6 +108,8 @@ export function CourseModuleView({
 		]);
 	};
 
+	const onCreateNewModule = () => form.reset(createEmptyLesson());
+
 	const onSubmit = form.handleSubmit((lesson: LessonFormModel) => {
 		const id = selectedModuleId ?? lesson.lessonId ?? crypto.randomUUID();
 		const updatedModules = new Map(modules);
@@ -122,15 +130,26 @@ export function CourseModuleView({
 
 	const onDragEnd = (result: import("@hello-pangea/dnd").DropResult) => {
 		setIsDragging(false);
-		if (!result.destination) return;
-		if (["provides", "requires"].includes(result.destination.droppableId)) {
-			//Filter out the skill ID from the draggableId because only the number after the last colon is the skill ID
-			const skillId = result.draggableId.split(":").pop() ?? "";
-			const skill = allSkills.get(skillId);
-			if (skill) {
-				addSkills([skill], result.destination.droppableId as "provides" | "requires");
+			if (!result.destination) return;
+			if (["provides", "requires"].includes(result.destination.droppableId)) {
+				//Filter out the skill ID from the draggableId because only the number after the last colon is the skill ID
+				const skillId = result.draggableId.split(":").pop() ?? "";
+				const skill = allSkills.get(skillId);
+				if (
+					form.getValues("provides")?.some(s => s.id === skillId) ||
+					form.getValues("requires")?.some(s => s.id === skillId)
+				) {
+					showToast({
+						type: "error",
+						title: "Skill bereits vorhanden",
+						subtitle: `Der Skill ${skill?.name} ist bereits in der ausgewählten Liste enthalten.`
+					});
+					return;
+				}
+				if (skill) {
+					addSkills([skill], result.destination.droppableId as "provides" | "requires");
+				}
 			}
-		}
 	};
 	function handleModuleClick(id: string) {
 		const lesson = modules.get(id);
@@ -156,17 +175,15 @@ export function CourseModuleView({
 	return (
 		<div className="grid grid-cols-[1fr_2fr] min-h-screen">
 			<DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
-				<aside className="w-[2fr] min-w-[400px] max-w-[600px] border-r border-light-border bg-white p-6">
-					<ModuleDependency
-						skills={allSkills}
+					<SidebarEditorLayout sidebar={<ModuleDependency	skills={allSkills}
 						authorId={authorId}
 						isDragging={isDragging}
 						modules={modules}
 						isUsedSkill={isUsedSkill}
 						onSelectModule={handleModuleClick}
 						onSkillSelect={onSkillSelect}
-					/>
-				</aside>
+						onCreateNewModule={onCreateNewModule}
+					/>}/>
 				<main className="flex-1 min-w-[500px] max-w-[900px] p-8 pr-4 py-4 text-sm">
 					<FormProvider {...form}>
 						<form
@@ -184,7 +201,7 @@ export function CourseModuleView({
 
 							<div className="flex justify-end mb-8">
 								<button className="btn btn-primary" type="submit">
-									{selectedModuleId ? "Modul speichern" : "Modul hinzufügen"}
+									{selectedModuleId ? "Nanomodul speichern" : "Nanomodul hinzufügen"}
 								</button>
 							</div>
 						</form>

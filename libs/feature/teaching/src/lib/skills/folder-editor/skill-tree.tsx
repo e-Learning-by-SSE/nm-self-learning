@@ -105,7 +105,7 @@ export function SkillTree({
 										matchingSkillIds={matchingSkillIds}
 										autoExpandIds={skillIdsToAutoExpand}
 										handleSelection={onSkillSelect}
-										textClassName="italic hover:text-emerald-500"
+										textClassName="hover:text-emerald-500"
 										isUsedSkill={isUsedSkill}
 									/>
 								))}

@@ -242,11 +242,11 @@ function SkillRow({
 																/>
 															)}
 														</div>
-														<FolderIcon className="icon h-5 text-lg" />
+														<FolderIcon className={`icon h-5 text-lg ${isUsedSkill?.(skill.id) ? "text-emerald-500" : ""}`} />
 													</>
 												) : (
 													<div className="ml-6">
-														<PuzzlePieceIcon className="icon h-5 text-lg" />
+														<PuzzlePieceIcon className={`icon h-5 text-lg ${isUsedSkill?.(skill.id) ? "text-emerald-500" : ""}`} />
 													</div>
 												)}
 											</div>
@@ -257,9 +257,7 @@ function SkillRow({
 												<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 											)}
 											<span
-												className={`${
-													isUsedSkill?.(skill.id) ? "hover:text-emerald-500" : textClassName ?? "hover:text-emerald-500"
-												}`}
+												className={`${textClassName}`}
 											>
 												{skill.displayName ?? skill.skill.name}
 											</span>
