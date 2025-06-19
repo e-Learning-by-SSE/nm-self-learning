@@ -255,7 +255,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 						</TableDataColumn>
 						<TableDataColumn key={"author"}>
 							<span className="text-sm text-gray-600">
-								{enrollment.course.authors[0].displayName}
+								{enrollment.course.authors[0]?.displayName ?? "Unbekannter Autor"}
 							</span>
 						</TableDataColumn>
 						<TableDataColumn key={"progress"}>
