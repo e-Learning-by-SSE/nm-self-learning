@@ -10,7 +10,8 @@
 		"noImplicitOverride": true,
 		"noPropertyAccessFromIndexSignature": true,
 		"noImplicitReturns": true,
-		"noFallthroughCasesInSwitch": true
+		"noFallthroughCasesInSwitch": true,
+		"noErrorTruncation": true, // Disable error truncation for better error messages when set to true. May decrease build performance.
 	},
 	"files": [],
 	"include": [],
