@@ -108,6 +108,8 @@ model Course {
     authors              Author[]             @relation("AuthorToCourse")
     specializations      Specialization[]     @relation("CourseToSpecialization")
     learningDiaryEntries LearningDiaryPage[]
+	requires              Skill[]             @relation("courseRequiredSkills")
+    provides              Skill[]             @relation("courseProvidedSkills")
 }
 
 model Enrollment {
@@ -257,6 +259,8 @@ model Skill {
     parents        Skill[]         @relation("parent")
     goalsOf        Lesson[]        @relation("providedSkills")
     requirementsOf Lesson[]        @relation("requiredSkills")
+	courseGoalsOf  Course[]		   @relation("courseProvidedSkills")
+	courseRequirementsOf Course[]  @relation("courseRequiredSkills")
 
     @@unique([repositoryId, name])
     @@map("skills")

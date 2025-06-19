@@ -8,6 +8,7 @@ export * from "./lib/subject/permissions-dialog";
 export * from "./lib/lesson/forms/license-form";
 export * from "./lib/skills/repository/repository-overview";
 export * from "./lib/skills/folder-editor";
+export * from "./lib/skills/skill-manager";
 export * from "./lib/course/full-course-export";
 export * from "./lib/lesson/forms/lesson-info";
 export * from "./lib/lesson/forms/lesson-content";
