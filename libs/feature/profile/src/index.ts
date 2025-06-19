@@ -7,6 +7,8 @@ export * from "./lib/crud-settings";
 export * from "./lib/dashboard/streak-slot-machine";
 export * from "./lib/dashboard/streak-indicator-circle";
 export * from "./lib/dashboard/dashboard-achievement-section";
+export * from "./lib/dashboard/enrollment-overview";
+export * from "./lib/dashboard/platform-competion-stats";
 
 export * from "./lib/experiment/participant-info";
 export * from "./lib/experiment/experiment-settings-info";

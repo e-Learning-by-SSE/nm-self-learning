@@ -1,7 +1,7 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
-import { useCourseCompletion } from "@self-learning/completion";
+import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -12,12 +12,11 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList } from "@self-learning/ui/common";
+import { AuthorsList, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
-import { SmallGradeBadge } from "libs/feature/completion/src/lib/lesson-grade-display";
 import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
@@ -310,7 +309,7 @@ function CourseHeader({
 									</span>
 									{avgScore != null ? (
 										<div className="flex justify-center">
-											<SmallGradeBadge score={avgScore} />
+											<SmallGradeBadge rating={avgScore} />
 										</div>
 									) : (
 										<span>Keine</span>
@@ -452,7 +451,11 @@ function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
 				<span>{lesson.title}</span>
 			</span>
 			{/* Grade badge - klein und konsistent mit GradeDisplay */}
-			{lesson.performanceScore != null && <SmallGradeBadge score={lesson.performanceScore} />}
+			{lesson.performanceScore != null && (
+				<Tooltip content="Deine bishere beste Bewertung für dieses Nanomodul.">
+					<SmallGradeBadge rating={lesson.performanceScore} />
+				</Tooltip>
+			)}
 		</span>
 	);
 }

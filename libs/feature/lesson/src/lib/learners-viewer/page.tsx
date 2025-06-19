@@ -230,7 +230,7 @@ function LessonHeader({
 								</span>
 								{lesson.performanceScore ? (
 									<SmallGradeBadge
-										score={lesson.performanceScore}
+										rating={lesson.performanceScore}
 										sizeClassName="px-4 py-2"
 									/>
 								) : (

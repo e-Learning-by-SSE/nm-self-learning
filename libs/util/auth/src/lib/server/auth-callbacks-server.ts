@@ -34,7 +34,7 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 	await database.$transaction(async tx => {
 		const profile = await tx.gamificationProfile.findUniqueOrThrow({
 			where: { userId: user.id },
-			select: { lastLogin: true, loginStreak: true, flames: true }
+			select: { lastLogin: true, loginStreak: true, flames: true, longestStreak: true }
 		});
 
 		const { lastLogin, loginStreak, flames } = profile as GamificationProfile;
@@ -57,11 +57,17 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 			trigger = "reset";
 		}
 
+		let longestStreak: number | undefined;
+		if (loginStreak.count > profile.longestStreak) {
+			longestStreak = loginStreak.count;
+		}
+
 		await tx.gamificationProfile.update({
 			where: { userId: user.id },
 			data: {
 				lastLogin: now,
-				loginStreak
+				loginStreak: loginStreak,
+				longestStreak: longestStreak
 			}
 		});
 

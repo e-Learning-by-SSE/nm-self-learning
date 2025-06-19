@@ -82,7 +82,7 @@ export function calculateAverageQuizScore(
 /**
  * Berechnet die Gesamtnote basierend auf dem durchschnittlichen Score.
  */
-export function calculateQuizGrade(averageScore: number): PerformanceGrade {
+export function scoreToPerformanceGrade(averageScore: number): PerformanceGrade {
 	for (const { grade, threshold } of GRADE_THRESHOLD) {
 		if (averageScore >= threshold) {
 			return grade as PerformanceGrade;

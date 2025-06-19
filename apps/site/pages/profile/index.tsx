@@ -1,17 +1,20 @@
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
-import { SmallGradeBadge } from "@self-learning/completion";
+import { scoreToPerformanceGrade, SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { EnableLearningDiaryDialog, LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import { LearningDiaryEntryStatusBadge } from "@self-learning/diary";
+import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import {
+	CourseEnrollmentOverview,
 	DashboardAchievementsSection,
+	PlatformStats,
+	PlatformStatsComponent,
 	StreakIndicatorCircle,
 	StreakSlotMachineDialog
 } from "@self-learning/profile";
-import { Flames, LoginStreak } from "@self-learning/types";
+import { EventTypeMap, Flames, LoginStreak, PerformanceGrade } from "@self-learning/types";
 import {
-	Divider,
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
@@ -24,11 +27,11 @@ import {
 	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
+import { startOfToday } from "date-fns";
 import { NextComponentType, NextPageContext } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useReducer, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
@@ -47,7 +50,140 @@ type LearningDiaryEntryLessonWithDetails = {
 type Props = {
 	student: Student;
 	recentLessons: LearningDiaryEntryLessonWithDetails[];
+	enrollments: EnrollmentDetails[];
+	competitionStats: PlatformStats;
 };
+
+async function getPlattformCompetitionStats(): Promise<PlatformStats> {
+	const achievements = await database.achievementProgress.findMany({
+		where: {
+			redeemedAt: {
+				gte: startOfToday()
+			}
+		},
+		select: {
+			achievement: {
+				select: {
+					title: true,
+					id: true
+				}
+			}
+		},
+		orderBy: {
+			redeemedAt: "desc"
+		},
+		take: 5
+	});
+
+	const learningSubmissions = await database.eventLog.findMany({
+		where: {
+			createdAt: {
+				gte: startOfToday()
+			},
+			type: {
+				equals: "LESSON_LEARNING_SUBMIT"
+			}
+		},
+		select: {
+			type: true,
+			payload: true,
+			createdAt: true,
+			username: true
+		},
+		orderBy: {
+			createdAt: "desc"
+		},
+		take: 1000 // increase to get more data for stats
+	});
+	const formattedLearningSubmissions = learningSubmissions.map(submission => ({
+		...submission,
+		payload: submission.payload as EventTypeMap["LESSON_LEARNING_SUBMIT"]
+	}));
+	const longestLearningSession = getUserWithHighestLearnedTime(formattedLearningSubmissions);
+
+	const learningUnitsLearned = await database.completedLesson.groupBy({
+		by: ["username"],
+		where: {
+			createdAt: {
+				gte: startOfToday()
+			}
+		},
+		_count: {
+			lessonId: true
+		}
+	});
+
+	console.log(learningUnitsLearned);
+
+	// Dummy for topUser (replace with real logic if available)
+	const topUser = {
+		currentStreak: 0,
+		achievementCount: 0,
+		averageRating: 0,
+		isCurrentUser: false
+	};
+
+	return {
+		topUser,
+		today: {
+			newAchievements: achievements.map(a => ({
+				id: a.achievement.id,
+				title: a.achievement.title
+			})),
+			longestLearningSession: longestLearningSession.highest.totalLearned,
+			mostLessonsCompleted: Math.max(
+				...(learningUnitsLearned.map(u => u._count.lessonId).filter(Boolean) as number[]),
+				0
+			)
+		}
+	};
+}
+
+type Submission = {
+	username: string;
+	payload: {
+		lessonAttemptId: string;
+		completionState: "completed" | "failed";
+		effectiveTimeLearned: number;
+	};
+};
+
+function getUserWithHighestLearnedTime(submissions: Submission[]) {
+	// 1. Nur "completed" Events
+	const completed = submissions.filter(s => s.payload.completionState === "completed");
+	// 2. Gruppieren: user -> lessonAttemptId -> [submissions]
+	const userLessonMap = new Map<string, Map<string, Submission>>();
+
+	for (const sub of completed) {
+		if (!userLessonMap.has(sub.username)) {
+			userLessonMap.set(sub.username, new Map());
+		}
+		const lessonMap = userLessonMap.get(sub.username)!;
+		const existing = lessonMap.get(sub.payload.lessonAttemptId);
+
+		// 3. Nur den mit dem höchsten effectiveTimeLearned behalten
+		if (!existing || sub.payload.effectiveTimeLearned > existing.payload.effectiveTimeLearned) {
+			lessonMap.set(sub.payload.lessonAttemptId, sub);
+		}
+	}
+
+	// 4. Pro User: Summe der höchsten effectiveTimeLearned pro lessonAttemptId
+	const userTotals: { username: string; totalLearned: number }[] = [];
+	for (const [username, lessonMap] of userLessonMap.entries()) {
+		const total = Array.from(lessonMap.values()).reduce(
+			(sum, sub) => sum + sub.payload.effectiveTimeLearned,
+			0
+		);
+		userTotals.push({ username, totalLearned: total });
+	}
+
+	// 5. User mit dem höchsten Wert finden
+	const highest = userTotals.reduce(
+		(max, curr) => (curr.totalLearned > max.totalLearned ? curr : max),
+		{ username: "", totalLearned: 0 }
+	);
+	return { userTotals, highest };
+}
 
 async function getStudent(username: string) {
 	const student = await database.student.findUniqueOrThrow({
@@ -69,16 +205,17 @@ async function getStudent(username: string) {
 					gamificationProfile: {
 						select: {
 							loginStreak: true,
-							flames: true
+							flames: true,
+							longestStreak: true
 						}
 					},
 					featureFlags: true
 				}
 			},
 			completedLessons: {
-				take: 5,
-				orderBy: { createdAt: "desc" },
+				orderBy: { performanceScore: "desc" },
 				select: {
+					lessonId: true,
 					createdAt: true,
 					performanceScore: true,
 					lesson: {
@@ -104,10 +241,15 @@ async function getStudent(username: string) {
 					lastProgressUpdate: true,
 					course: {
 						select: {
-							slug: true,
 							title: true,
+							slug: true,
 							subtitle: true,
-							imgUrl: true
+							imgUrl: true,
+							authors: {
+								select: {
+									displayName: true
+								}
+							}
 						}
 					}
 				}
@@ -141,6 +283,7 @@ async function getStudent(username: string) {
 		user: {
 			...student.user,
 			gamificationProfile: {
+				...student.user.gamificationProfile,
 				loginStreak: student.user.gamificationProfile
 					?.loginStreak as unknown as LoginStreak,
 				flames: student.user.gamificationProfile?.flames as unknown as Flames
@@ -219,29 +362,6 @@ async function loadMostRecentLessons({
 	}));
 }
 
-type LtbState = {
-	enabled: boolean;
-	dialogOpen: boolean;
-};
-
-type LtbFeatureAction =
-	| { type: "TOGGLE_LTB"; enabled: boolean }
-	| { type: "OPEN_DIALOG" }
-	| { type: "CLOSE_DIALOG" };
-
-function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
-	switch (action.type) {
-		case "TOGGLE_LTB":
-			return { ...state, enabled: action.enabled };
-		case "OPEN_DIALOG":
-			return { ...state, dialogOpen: true };
-		case "CLOSE_DIALOG":
-			return { ...state, dialogOpen: false };
-		default:
-			return state;
-	}
-}
-
 function DashboardLayout(
 	Component: NextComponentType<NextPageContext, unknown, Props>,
 	pageProps: Props
@@ -275,7 +395,10 @@ export const getServerSideProps = withTranslations(
 		return {
 			props: {
 				student,
-				recentLessons
+				recentLessons,
+				enrollments: await getEnrollmentDetails(user.name),
+				competitionStats: await getPlattformCompetitionStats()
+				// refactor this to load the data in the student function to have a single query
 			}
 		};
 	})
@@ -283,130 +406,84 @@ export const getServerSideProps = withTranslations(
 
 export default function DashboardPage(props: Props) {
 	const router = useRouter();
-	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
-	const [ltb, dispatch] = useReducer(ltbReducer, {
-		dialogOpen: false,
-		enabled: props.student.user.featureFlags?.learningDiary ?? false
-	});
-
-	const handleDialogSubmit: Parameters<
-		typeof EnableLearningDiaryDialog
-	>[0]["onSubmit"] = async update => {
-		await updateSettings({ user: { featureFlags: { ...update } } });
-		dispatch({ type: "TOGGLE_LTB", enabled: true });
-		dispatch({ type: "CLOSE_DIALOG" });
-	};
-
-	const handleClickLtbToggle = async () => {
-		if (ltb.enabled) {
-			await updateSettings({ user: { featureFlags: { learningDiary: false } } });
-			dispatch({ type: "TOGGLE_LTB", enabled: false });
-		} else {
-			dispatch({ type: "OPEN_DIALOG" });
-		}
-	};
 
 	const openSettings = () => {
 		router.push("/user-settings");
 	};
 
-	const { user, _count: completionCount, enrollments, learningDiaryEntrys } = props.student;
+	const { user, enrollments, learningDiaryEntrys } = props.student;
+	const ltbEnabled = user.featureFlags?.learningDiary ?? false;
+
 	const gamificationProfile = user.gamificationProfile;
 
 	const [streakInfoOpen, setStreakInfoOpen] = useState(false);
-	const { t } = useTranslation(["common", "pages/dashboard"]);
 
 	return (
-		// Updated grid to accommodate the new achievements section
-		<div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-			{/* First column - Profile and achievements */}
-			<div className="xl:col-span-1 space-y-6">
-				{/* Existing profile section */}
-				<section className="relative rounded-lg bg-white shadow p-4 space-y-2">
-					<div className="absolute -top-4 -right-4 h-14 w-14">
-						<StreakIndicatorCircle
-							streakCount={gamificationProfile.loginStreak.count}
-							onClick={() => setStreakInfoOpen(true)}
+		<div className="space-y-6">
+			{/* Top row - Profile and Last Course */}
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				{/* Profile Card */}
+				<div className="lg:col-span-1 h-full">
+					<div className="h-full">
+						<ProfileCard
+							student={props.student}
+							openSettings={openSettings}
+							setStreakInfoOpen={setStreakInfoOpen}
 						/>
 					</div>
-					<div className="flex justify-between items-center mb-4">
-						<button
-							onClick={openSettings}
-							className="rounded-full p-2 hover:bg-gray-100"
-							title="Einstellungen"
-						>
-							<CogIcon className="h-5 w-5 text-gray-500" />
-						</button>
-					</div>
-
-					<div className="flex flex-col items-center text-center">
-						<ImageOrPlaceholder
-							src={user.image ?? undefined}
-							className="h-20 w-20 rounded-full object-cover mb-2"
-						/>
-						<h1 className="text-lg font-bold">{user.name}</h1>
-						<p className="text-sm text-gray-500">{user.email}</p>
-					</div>
-
-					<Divider />
-
-					<div className="text-sm space-y-1">
-						<p>
-							<strong>{t("Units learned")}</strong> {completionCount.completedLessons}
-						</p>
-						<p>
-							<strong>Kurse:</strong> {enrollments.length}
-						</p>
-						<p>
-							<strong>Fachgebiet:</strong> {user.name ?? "–"}
-						</p>
-						<p>
-							<strong>Tage in Folge aktiv:</strong>{" "}
-							{gamificationProfile.loginStreak.count}
-						</p>
-					</div>
-				</section>
-
-				{/* Achievements Section */}
-				<DashboardAchievementsSection />
-			</div>
-
-			{/* Second and third columns - Course and Diary Section */}
-			<div className="xl:col-span-2 grid gap-6 lg:grid-cols-2">
-				<div className="rounded-lg bg-white p-6 shadow">
-					<h2 className="mb-4 text-lg font-semibold">Letzter Kurs</h2>
-					<LastCourseProgress
-						lastEnrollment={
-							enrollments.sort(
-								(a, b) =>
-									new Date(b.lastProgressUpdate).getTime() -
-									new Date(a.lastProgressUpdate).getTime()
-							)[0]
-						}
-					/>
 				</div>
 
-				<div className="rounded-lg bg-white p-6 shadow">
-					<h2 className="mb-4 text-lg font-semibold">
-						{ltb.enabled
-							? "Letzter Lerntagebucheintrag"
-							: "Zuletzt bearbeitete Lerneinheiten"}
+				{/* Last Course */}
+				<div className="lg:col-span-2 h-full">
+					<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6 h-full flex flex-col">
+						<h2 className="mb-4 text-lg font-semibold text-gray-900">Letzter Kurs</h2>
+						<LastCourseProgress
+							lastEnrollment={
+								enrollments.sort(
+									(a, b) =>
+										new Date(b.lastProgressUpdate).getTime() -
+										new Date(a.lastProgressUpdate).getTime()
+								)[0]
+							}
+						/>
+					</div>
+				</div>
+			</div>
+
+			{/* Second row - Course Enrollment Overview (full width) */}
+			<div className="w-full">
+				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
+					<h2 className="mb-4 text-lg font-semibold text-gray-900">Mein Lernplan</h2>
+					<CourseEnrollmentOverview enrollments={props.enrollments} />
+				</div>
+			</div>
+
+			{/* Third row - Recent Lessons and Platform Best Performers */}
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				{/* Recent Lessons */}
+				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
+					<h2 className="mb-4 text-lg font-semibold text-gray-900">
+						{ltbEnabled ? "Lerntagebuch Einträge" : "Zuletzt bearbeitete Lerneinheiten"}
 					</h2>
-					{ltb.enabled ? (
+					{ltbEnabled ? (
 						<LastLearningDiaryEntry pages={learningDiaryEntrys} />
 					) : (
 						<LessonList lessons={props.recentLessons} />
 					)}
 				</div>
+
+				{/* Platform Leaderboard/Best Performers */}
+				<div className="rounded-xl bg-white ">
+					<PlatformStatsComponent stats={props.competitionStats} />
+				</div>
+			</div>
+
+			{/* Fourth row - Achievements (full width) */}
+			<div className="w-full">
+				<DashboardAchievementsSection />
 			</div>
 
 			{/* Dialogs */}
-			{ltb.dialogOpen && (
-				<EnableLearningDiaryDialog
-					onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
-					onSubmit={handleDialogSubmit}
-				/>
-			)}
 			<StreakSlotMachineDialog
 				flames={gamificationProfile.flames}
 				loginStreak={gamificationProfile.loginStreak}
@@ -415,6 +492,200 @@ export default function DashboardPage(props: Props) {
 				onClose={() => setStreakInfoOpen(false)}
 			/>
 		</div>
+	);
+}
+
+function getGradeBreakdown(completedLessons: { lessonId: string; performanceScore: number }[]) {
+	const map = new Map<string, number>();
+	for (const entry of completedLessons) {
+		if (!map.has(entry.lessonId)) {
+			map.set(entry.lessonId, entry.performanceScore);
+		}
+	}
+	const highestScores = Array.from(map.values());
+
+	const breakdown: Record<PerformanceGrade, number> = {
+		PERFECT: 0,
+		VERY_GOOD: 0,
+		GOOD: 0,
+		SATISFACTORY: 0,
+		SUFFICIENT: 0
+	};
+
+	for (const score of highestScores) {
+		const grade = scoreToPerformanceGrade(score);
+		breakdown[grade]++;
+	}
+
+	return breakdown;
+}
+
+// Durchschnitt berechnen
+function calculateAverage(scores: number[]) {
+	if (scores.length === 0) return 0;
+	const sum = scores.reduce((acc, val) => acc + val, 0);
+	return sum / scores.length;
+}
+
+function ProfileCard({
+	student,
+	openSettings,
+	setStreakInfoOpen
+}: {
+	student: Student;
+	openSettings: () => void;
+	setStreakInfoOpen: (open: boolean) => void;
+}) {
+	const [showGradeDetails, setShowGradeDetails] = useState(false);
+
+	const { user, _count: completionCount, enrollments, completedLessons } = student;
+	const gamificationProfile = user.gamificationProfile;
+	const longestStreak =
+		gamificationProfile.longestStreak || gamificationProfile.loginStreak.count;
+
+	// Calculate additional metrics
+	const totalLearningTime = 1232;
+	const averageScore = calculateAverage(completedLessons.map(lesson => lesson.performanceScore));
+	const gradeBreakdown = getGradeBreakdown(completedLessons);
+
+	const completedCourses = enrollments.filter(e => e.status === "COMPLETED").length;
+
+	return (
+		<section className="relative rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm border border-gray-100 p-6 space-y-6">
+			<div className="absolute -top-3 -right-3 h-16 w-16 z-10">
+				<StreakIndicatorCircle
+					streakCount={gamificationProfile.loginStreak.count}
+					onClick={() => setStreakInfoOpen(true)}
+				/>
+			</div>
+			<div className="flex justify-start">
+				<button
+					onClick={openSettings}
+					className="rounded-full p-2 hover:bg-gray-100 transition-colors"
+					title="Einstellungen"
+				>
+					<CogIcon className="h-5 w-5 text-gray-500" />
+				</button>
+			</div>
+			{/* User Info */}
+			<div className="flex flex-col items-center text-center space-y-3">
+				<div className="relative">
+					<ImageOrPlaceholder
+						src={user.image ?? undefined}
+						className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-md"
+					/>
+					<div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-500 rounded-full border-2 border-white"></div>
+				</div>
+				<div>
+					<h1 className="text-xl font-bold text-gray-900">{user.name}</h1>
+					<p className="text-sm text-gray-600 mt-1">{user.email}</p>
+				</div>
+			</div>
+
+			{/* Stats Grid */}
+			<div className="bg-white rounded-lg p-5 space-y-4 border border-gray-100">
+				{/* Completion Stats */}
+				<div>
+					<h3 className="text-sm font-semibold text-gray-700 mb-3">Abgeschlossen</h3>
+					<div className="grid grid-cols-2 gap-4">
+						<div className="text-center">
+							<div className="text-2xl font-bold text-emerald-600">
+								{completedCourses}
+							</div>
+							<div className="text-xs text-gray-500 uppercase tracking-wide">
+								Kurse
+							</div>
+						</div>
+						<div className="text-center">
+							<div className="text-2xl font-bold text-blue-600">
+								{completionCount.completedLessons}
+							</div>
+							<div className="text-xs text-gray-500 uppercase tracking-wide">
+								Lerneinheiten
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div className="border-t border-gray-100 pt-4 space-y-3">
+					{/* Learning Time */}
+					<div className="flex items-center justify-between">
+						<span className="text-sm text-gray-600">Insgesamt Zeit gelernt</span>
+						<span className="text-sm font-semibold text-purple-600">
+							{formatTimeIntervalToString(totalLearningTime)}
+						</span>
+					</div>
+
+					{/* Longest Streak */}
+					<div className="flex items-center justify-between">
+						<span className="text-sm text-gray-600">Längster Streak</span>
+						<span className="text-sm font-semibold  text-purple-600">
+							{longestStreak} Tage
+						</span>
+					</div>
+
+					{/* Average Grade with Expandable Details */}
+					<div className="space-y-2">
+						<button
+							onClick={() => setShowGradeDetails(!showGradeDetails)}
+							className="w-full flex items-center justify-between text-sm text-gray-600 hover:text-gray-800 transition-colors"
+						>
+							<span className="flex items-center space-x-2">
+								Ø Bewertungen{" "}
+								<ChevronDownIcon
+									className={`h-4 w-4 transition-transform ${showGradeDetails ? "rotate-180" : ""}`}
+								/>
+							</span>
+							<div className="flex items-center space-x-2 flex-shrink-0">
+								<div className="flex justify-end">
+									{averageScore > 0 ? (
+										<SmallGradeBadge rating={averageScore} />
+									) : (
+										<span className="font-semibold text-indigo-600">
+											Keine Bewertungen
+										</span>
+									)}
+								</div>
+							</div>
+						</button>
+						{showGradeDetails && averageScore > 0 && (
+							<div className="bg-gray-50 rounded-lg p-3 space-y-2">
+								<div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+									Bewertungsverteilung
+								</div>
+								{Object.entries(gradeBreakdown).map(([grade, count]) => (
+									<div
+										key={grade}
+										className="flex items-center justify-between text-sm"
+									>
+										<SmallGradeBadge rating={grade as PerformanceGrade} />
+										<div className="flex items-center space-x-2">
+											<div className="w-16 bg-gray-200 rounded-full h-2">
+												<div
+													className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
+													style={{
+														width: `${
+															completionCount.completedLessons > 0
+																? (count /
+																		completionCount.completedLessons) *
+																	100
+																: 0
+														}%`
+													}}
+												></div>
+											</div>
+											<span className="text-gray-600 min-w-[1.5rem]">
+												{count}
+											</span>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				</div>
+			</div>
+		</section>
 	);
 }
 
@@ -491,21 +762,21 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 									src={lesson.courseImgUrl}
 									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 								/>
-								<div className="flex w-full grid-rows-2 justify-between gap-2 px-4">
-									<span className="flex gap-3 ">
+								<div className="flex w-full items-center justify-between gap-2 px-4">
+									{/* Titel und Datum */}
+									<div className="flex flex-col min-w-0">
 										<span className="truncate max-w-xs">{lesson.title}</span>
-
-										{lesson.completed && lesson.performanceScore && (
-											<>
-												<CheckIcon className="icon h-5 text-green-500" />
-												<SmallGradeBadge score={lesson.performanceScore} />
-											</>
-										)}
-									</span>
-
-									<span className="hidden text-xs text-light md:block">
-										{formatDateAgo(lesson.touchedAt)}
-									</span>
+										<span className="hidden text-xs text-light md:block">
+											{formatDateAgo(lesson.touchedAt)}
+										</span>
+									</div>
+									{/* Check und Badge rechtsbündig */}
+									{lesson.completed && lesson.performanceScore && (
+										<div className="flex items-center gap-2 flex-shrink-0 ml-2">
+											<CheckIcon className="icon h-5 w-5 text-green-500" />
+											<SmallGradeBadge rating={lesson.performanceScore} />
+										</div>
+									)}
 								</div>
 							</li>
 						</Link>

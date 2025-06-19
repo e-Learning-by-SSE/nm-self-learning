@@ -1,18 +1,27 @@
-import { Tooltip } from "@self-learning/ui/common";
-import { calculateQuizGrade } from "./lesson-grading";
+import { scoreToPerformanceGrade } from "./lesson-grading";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { PerformanceGrade } from "@self-learning/types";
+
+type Rating = number | PerformanceGrade;
+
+function resolveGrade(rating: Rating): PerformanceGrade {
+	if (typeof rating === "number") {
+		return scoreToPerformanceGrade(rating);
+	}
+	return rating;
+}
 
 export function SmallGradeBadge({
-	score,
+	rating,
 	sizeClassName = "min-w-[2rem] px-2 py-1"
 }: {
-	score: number;
+	rating: Rating;
 	sizeClassName?: string;
 }) {
 	const session = useRequiredSession();
 	if (!session.data?.user.featureFlags.experimental) return null;
 
-	const grade = calculateQuizGrade(score);
+	const grade = resolveGrade(rating);
 
 	const gradeDisplay = (() => {
 		switch (grade) {
@@ -54,24 +63,22 @@ export function SmallGradeBadge({
 		<span
 			className={` rounded-md text-xs font-medium border ${sizeClassName} text-center ${gradeDisplay.className}`}
 		>
-			<Tooltip content={`Deine bisherige Bewertung für diese Lerneinheit`}>
-				{gradeDisplay.text}
-			</Tooltip>
+			{gradeDisplay.text}
 		</span>
 	);
 }
 
 export function GradeBadge({
-	score,
+	rating,
 	sizeClassName = "min-w-[120px] px-8 py-6"
 }: {
-	score: number;
+	rating: Rating;
 	sizeClassName?: string;
 }) {
 	const session = useRequiredSession();
 	if (!session.data?.user.featureFlags.experimental) return null;
 
-	const grade = calculateQuizGrade(score);
+	const grade = resolveGrade(rating);
 
 	const gradeData = (() => {
 		switch (grade) {
@@ -82,14 +89,6 @@ export function GradeBadge({
 					display: "1+"
 				};
 			case "VERY_GOOD":
-				// Feinere Abstufung für "sehr gut"
-				if (score === 1) {
-					return {
-						color: "text-green-700 bg-green-100 border-2 border-green-300",
-						text: "Sehr gut",
-						display: "1+"
-					};
-				}
 				return {
 					color: "text-green-700 bg-green-100 border-2 border-green-300",
 					text: "Sehr gut",

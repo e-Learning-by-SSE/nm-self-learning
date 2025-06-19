@@ -66,6 +66,7 @@ export const gamificationProfileSchema = z.object({
 	userId: z.string(),
 	lastLogin: z.date().optional(),
 	loginStreak: loginStreakSchema,
+	longestStreak: z.number().nonnegative().default(0),
 	flames: flamesSchema,
 	itemLog: itemLogSchema
 });

@@ -15,7 +15,7 @@ import { IdSet } from "@self-learning/util/common";
 import { intervalToDuration } from "date-fns";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { calculateAverageQuizScore, calculateQuizGrade } from "./lesson-grading";
+import { calculateAverageQuizScore, scoreToPerformanceGrade } from "./lesson-grading";
 import { GradeBadge } from "./lesson-grade-display";
 
 function GradeDisplay({
@@ -56,7 +56,7 @@ function GradeDisplay({
 					<div className="text-xs text-gray-500 mt-1">Zeit</div>
 				</div>
 
-				<GradeBadge score={averageScore} />
+				<GradeBadge rating={averageScore} />
 			</div>
 
 			{/* Zusätzliche Info */}
@@ -109,7 +109,7 @@ export function QuizGradeDialog({
 
 	const totalAttempts = Object.values(attempts).reduce((acc, attempt) => acc + attempt, 0);
 	const averageScore = calculateAverageQuizScore(attempts, answers);
-	const grade = calculateQuizGrade(averageScore);
+	const grade = scoreToPerformanceGrade(averageScore);
 
 	const handleRedeemWithStateUpdate = async (achievementId: string) => {
 		void handleRedeem(achievementId);
