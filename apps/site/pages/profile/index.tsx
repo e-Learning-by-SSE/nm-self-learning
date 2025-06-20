@@ -7,9 +7,8 @@ import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "@self-learning/d
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import {
 	CourseEnrollmentOverview,
-	DashboardAchievementsSection,
 	PlatformStats,
-	PlatformStatsComponent,
+	PlatformStatsAchievementsSection,
 	StreakIndicatorCircle,
 	StreakSlotMachineDialog
 } from "@self-learning/profile";
@@ -54,7 +53,7 @@ type Submission = {
 	};
 };
 
-async function getPlattformCompetitionStats(): Promise<PlatformStats> {
+async function getPlattformCompetitionStats(): Promise<Omit<PlatformStats, "own">> {
 	const achievements = await database.achievementProgress.findMany({
 		where: {
 			redeemedAt: {
@@ -367,7 +366,7 @@ type Props = {
 	competitionStats: PlatformStats;
 };
 
-function DashboardLayout(
+function ProfilLayout(
 	Component: NextComponentType<NextPageContext, unknown, Props>,
 	pageProps: Props
 ) {
@@ -377,7 +376,7 @@ function DashboardLayout(
 		</DashboardSidebarLayout>
 	);
 }
-DashboardPage.getLayout = DashboardLayout;
+ProfilPage.getLayout = ProfilLayout;
 
 export const getServerSideProps = withTranslations(
 	["common"],
@@ -396,27 +395,46 @@ export const getServerSideProps = withTranslations(
 
 		const student = await getStudent(user.name);
 		const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 8 });
+		const competitionStatsPartial = await getPlattformCompetitionStats();
+		const competitionStats = {
+			...competitionStatsPartial,
+			own: {
+				currentStreak: student.user.gamificationProfile.loginStreak.count,
+				averageRating: calculateAverage(
+					student.completedLessons.map(lesson => lesson.performanceScore)
+				),
+				isCurrentUser: true
+			}
+		};
+
+		const enrollments = await getEnrollmentDetails(user.name);
 
 		return {
 			props: {
 				student,
 				recentLessons,
-				enrollments: await getEnrollmentDetails(user.name),
-				competitionStats: await getPlattformCompetitionStats()
+				enrollments,
+				competitionStats
 				// refactor this to load the data in the student function to have a single query
 			}
 		};
 	})
 );
 
-export default function DashboardPage(props: Props) {
+export default function ProfilPage({
+	student,
+	recentLessons,
+	enrollments,
+	competitionStats
+}: Props) {
+	const { user, learningDiaryEntrys } = student;
+
 	const router = useRouter();
 
 	const openSettings = () => {
 		router.push("/user-settings");
 	};
 
-	const { user, enrollments, learningDiaryEntrys } = props.student;
 	const ltbEnabled = user.featureFlags?.learningDiary ?? false;
 
 	const gamificationProfile = user.gamificationProfile;
@@ -425,78 +443,67 @@ export default function DashboardPage(props: Props) {
 
 	return (
 		<div className="space-y-6">
-			{/* Top row - Profile and Last Course */}
+			{/* Top row - Profile Card und Stats/Achievements */}
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 				{/* Profile Card */}
 				<div className="lg:col-span-1 h-full">
 					<div className="h-full">
 						<ProfileCard
-							student={props.student}
+							student={student}
 							openSettings={openSettings}
 							setStreakInfoOpen={setStreakInfoOpen}
 						/>
 					</div>
 				</div>
 
-				{/* Last Course */}
+				{/* Platform Stats & Achievements - Kombinierte Komponente */}
 				<div className="lg:col-span-2 h-full">
-					<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6 h-full flex flex-col">
-						<h2 className="mb-4 text-lg font-semibold text-gray-900">Letzter Kurs</h2>
-						<LastCourseProgress
-							lastEnrollment={
-								enrollments.sort(
-									(a, b) =>
-										new Date(b.lastProgressUpdate).getTime() -
-										new Date(a.lastProgressUpdate).getTime()
-								)[0]
-							}
-						/>
-					</div>
+					<PlatformStatsAchievementsSection stats={competitionStats} className="h-full" />
 				</div>
 			</div>
 
-			{/* Second row - Course Enrollment Overview (full width) */}
-			<div className="w-full">
-				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
-					<h2 className="mb-4 text-lg font-semibold text-gray-900">Mein Lernplan</h2>
-					<CourseEnrollmentOverview enrollments={props.enrollments} />
-				</div>
-			</div>
-
-			{/* Third row - Recent Lessons and Platform Best Performers */}
+			{/* Second row - Letzter Kurs und Zuletzt bearbeitete Lerneinheiten */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Recent Lessons */}
+				{/* Last Course */}
+				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6 h-full flex flex-col">
+					<h2 className="mb-4 text-lg font-semibold text-gray-900">Letzter Kurs</h2>
+					<LastCourseProgress
+						lastEnrollment={
+							student.enrollments.sort(
+								// TODO refactor, to enrollment lists in use
+								(a, b) =>
+									new Date(b.lastProgressUpdate).getTime() -
+									new Date(a.lastProgressUpdate).getTime()
+							)[0]
+						}
+					/>
+				</div>
 
-				<div className="rounded bg-white p-4 shadow overflow-auto overflow-x-visible">
+				{/* Recent Lessons / Learning Diary */}
+				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6 h-full flex flex-col">
+					<h2 className="mb-4 text-lg font-semibold text-gray-900">
+						{ltbEnabled ? "Lerntagebuch Einträge" : "Zuletzt bearbeitete Lerneinheiten"}
+					</h2>
 					{ltbEnabled ? (
 						<>
 							<StatusBadgeInfo
 								header="Letzter Lerntagebucheintrag"
 								className="mb-4"
 							/>
-
 							<LastLearningDiaryEntry pages={learningDiaryEntrys} />
 						</>
 					) : (
-						<>
-							<h2 className="text-xl py-2 px-2">Zuletzt bearbeitete Lerneinheiten</h2>
-
-							<div className="mb-4 border-b border-light-border h-[6px]"></div>
-
-							<LessonList lessons={props.recentLessons} />
-						</>
+						<LessonList lessons={recentLessons} />
 					)}
-				</div>
-
-				{/* Platform Leaderboard/Best Performers */}
-				<div className="rounded-xl bg-white ">
-					<PlatformStatsComponent stats={props.competitionStats} />
 				</div>
 			</div>
 
-			{/* Fourth row - Achievements (full width) */}
+			{/* Third row - Course Enrollment Overview (full width) */}
 			<div className="w-full">
-				<DashboardAchievementsSection />
+				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
+					<h2 className="mb-4 text-lg font-semibold text-gray-900">Mein Lernplan</h2>
+					<CourseEnrollmentOverview enrollments={enrollments} />
+				</div>
 			</div>
 
 			{/* Dialogs */}
@@ -852,7 +859,12 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 								<></>
 							)
 						}
-						footer={<ProgressBar completionPercentage={lastEnrollment.progress} />}
+						footer={
+							<ProgressBar
+								progressPercentage={lastEnrollment.progress}
+								text={`${lastEnrollment.progress}%`}
+							/>
+						}
 					/>
 				</Link>
 			)}

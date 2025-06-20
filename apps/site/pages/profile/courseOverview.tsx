@@ -294,7 +294,8 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 						</TableDataColumn>
 						<TableDataColumn key={"progress"}>
 							<ProgressBar
-								completionPercentage={
+								text={`${enrollment.completions.courseCompletion.completionPercentage}%`}
+								progressPercentage={
 									enrollment.completions.courseCompletion.completionPercentage
 								}
 							/>

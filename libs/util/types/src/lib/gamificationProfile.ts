@@ -147,6 +147,7 @@ export type AchievementDb = z.infer<typeof achievementFullSchema>;
 
 export const achievementWithProgressSchema = achievementFullSchema.extend({
 	progressValue: z.number().nonnegative().default(0),
-	redeemedAt: z.date().optional().nullable()
+	redeemedAt: z.date().optional().nullable(),
+	lastProgressUpdate: z.date().optional().nullable()
 });
 export type AchievementWithProgress = z.infer<typeof achievementWithProgressSchema>;

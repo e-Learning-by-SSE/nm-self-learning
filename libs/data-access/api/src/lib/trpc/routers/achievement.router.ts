@@ -98,19 +98,20 @@ export const gamificationRouter = t.router({
 			include: {
 				progressBy: {
 					where: { username: ctx.user.name },
-					select: { progressValue: true, redeemedAt: true }
+					select: { progressValue: true, redeemedAt: true, updatedAt: true }
 				}
 			},
 			orderBy: [{ category: "asc" }, { requiredValue: "asc" }]
 		});
 		const achievmentWithProgress = achievements.map(achievement => {
-			const { progressValue, redeemedAt } = achievement.progressBy[0] || {
+			const { progressValue, redeemedAt, updatedAt } = achievement.progressBy[0] || {
 				progressValue: 0,
-				redeemedAt: null
+				redeemedAt: null,
+				updatedAt: null
 			};
 			const meta = achievementMetaSchema.safeParse(achievement.meta);
 			if (meta.success) {
-				return { ...achievement, meta: meta.data, progressValue, redeemedAt };
+				return { ...achievement, meta: meta.data, progressValue, redeemedAt, updatedAt };
 			} else {
 				console.warn("Invalid achievement meta; skipping:", achievement.meta);
 				return;
