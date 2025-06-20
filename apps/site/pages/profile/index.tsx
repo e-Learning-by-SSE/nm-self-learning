@@ -436,16 +436,14 @@ export default function ProfilPage({
 	};
 
 	const ltbEnabled = user.featureFlags?.learningDiary ?? false;
-
 	const gamificationProfile = user.gamificationProfile;
-
 	const [streakInfoOpen, setStreakInfoOpen] = useState(false);
 
 	return (
 		<div className="space-y-6">
 			{/* Top row - Profile Card und Stats/Achievements */}
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				{/* Profile Card */}
+				{/* Profile Card - simplified, no grade breakdown */}
 				<div className="lg:col-span-1 h-full">
 					<div className="h-full">
 						<ProfileCard
@@ -456,9 +454,13 @@ export default function ProfilPage({
 					</div>
 				</div>
 
-				{/* Platform Stats & Achievements - Kombinierte Komponente */}
+				{/* Platform Stats & Achievements - now includes grade breakdown */}
 				<div className="lg:col-span-2 h-full">
-					<PlatformStatsAchievementsSection stats={competitionStats} className="h-full" />
+					<PlatformStatsAchievementsSection
+						stats={competitionStats}
+						completedLessons={student.completedLessons}
+						className="h-full"
+					/>
 				</div>
 			</div>
 
@@ -470,7 +472,6 @@ export default function ProfilPage({
 					<LastCourseProgress
 						lastEnrollment={
 							student.enrollments.sort(
-								// TODO refactor, to enrollment lists in use
 								(a, b) =>
 									new Date(b.lastProgressUpdate).getTime() -
 									new Date(a.lastProgressUpdate).getTime()
@@ -518,31 +519,6 @@ export default function ProfilPage({
 	);
 }
 
-function getGradeBreakdown(completedLessons: { lessonId: string; performanceScore: number }[]) {
-	const map = new Map<string, number>();
-	for (const entry of completedLessons) {
-		if (!map.has(entry.lessonId)) {
-			map.set(entry.lessonId, entry.performanceScore);
-		}
-	}
-	const highestScores = Array.from(map.values());
-
-	const breakdown: Record<PerformanceGrade, number> = {
-		PERFECT: 0,
-		VERY_GOOD: 0,
-		GOOD: 0,
-		SATISFACTORY: 0,
-		SUFFICIENT: 0
-	};
-
-	for (const score of highestScores) {
-		const grade = scoreToPerformanceGrade(score);
-		breakdown[grade]++;
-	}
-
-	return breakdown;
-}
-
 // Durchschnitt berechnen
 function calculateAverage(scores: number[]) {
 	if (scores.length === 0) return 0;
@@ -559,8 +535,6 @@ function ProfileCard({
 	openSettings: () => void;
 	setStreakInfoOpen: (open: boolean) => void;
 }) {
-	const [showGradeDetails, setShowGradeDetails] = useState(false);
-
 	const { user, _count: completionCount, enrollments, completedLessons } = student;
 	const gamificationProfile = user.gamificationProfile;
 	const longestStreak =
@@ -569,7 +543,6 @@ function ProfileCard({
 	// Calculate additional metrics
 	const totalLearningTime = 1232;
 	const averageScore = calculateAverage(completedLessons.map(lesson => lesson.performanceScore));
-	const gradeBreakdown = getGradeBreakdown(completedLessons);
 
 	const completedCourses = enrollments.filter(e => e.status === "COMPLETED").length;
 
@@ -634,7 +607,7 @@ function ProfileCard({
 					{/* Learning Time */}
 					<div className="flex items-center justify-between">
 						<span className="text-sm text-gray-600">Insgesamt Zeit gelernt</span>
-						<span className="text-sm font-semibold text-purple-600">
+						<span className="text-sm font-semibold text-emerald-600">
 							{formatTimeIntervalToString(totalLearningTime)}
 						</span>
 					</div>
@@ -642,69 +615,9 @@ function ProfileCard({
 					{/* Longest Streak */}
 					<div className="flex items-center justify-between">
 						<span className="text-sm text-gray-600">Längster Streak</span>
-						<span className="text-sm font-semibold  text-purple-600">
+						<span className="text-sm font-semibold  text-emerald-600">
 							{longestStreak} Tage
 						</span>
-					</div>
-
-					{/* Average Grade with Expandable Details */}
-					<div className="space-y-2">
-						<button
-							onClick={() => setShowGradeDetails(!showGradeDetails)}
-							className="w-full flex items-center justify-between text-sm text-gray-600 hover:text-gray-800 transition-colors"
-						>
-							<span className="flex items-center space-x-2">
-								Ø Bewertungen{" "}
-								<ChevronDownIcon
-									className={`h-4 w-4 transition-transform ${showGradeDetails ? "rotate-180" : ""}`}
-								/>
-							</span>
-							<div className="flex items-center space-x-2 flex-shrink-0">
-								<div className="flex justify-end">
-									{averageScore > 0 ? (
-										<SmallGradeBadge rating={averageScore} />
-									) : (
-										<span className="font-semibold text-indigo-600">
-											Keine Bewertungen
-										</span>
-									)}
-								</div>
-							</div>
-						</button>
-						{showGradeDetails && averageScore > 0 && (
-							<div className="bg-gray-50 rounded-lg p-3 space-y-2">
-								<div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-									Bewertungsverteilung
-								</div>
-								{Object.entries(gradeBreakdown).map(([grade, count]) => (
-									<div
-										key={grade}
-										className="flex items-center justify-between text-sm"
-									>
-										<SmallGradeBadge rating={grade as PerformanceGrade} />
-										<div className="flex items-center space-x-2">
-											<div className="w-16 bg-gray-200 rounded-full h-2">
-												<div
-													className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
-													style={{
-														width: `${
-															completionCount.completedLessons > 0
-																? (count /
-																		completionCount.completedLessons) *
-																	100
-																: 0
-														}%`
-													}}
-												></div>
-											</div>
-											<span className="text-gray-600 min-w-[1.5rem]">
-												{count}
-											</span>
-										</div>
-									</div>
-								))}
-							</div>
-						)}
 					</div>
 				</div>
 			</div>
