@@ -14,20 +14,24 @@ export const learningTechniqueCreateSchema = z.object({
 
 const learningGoalStatusSchema = z.nativeEnum(LearningGoalStatus);
 
-export const learningSubGoalSchema = z.object({
-	id: z.string().cuid(),
-	description: z.string().min(5),
-	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
-	priority: z.number().int(),
-	learningGoalId: z.string().cuid()
-});
-
 export const learningGoalSchema = z.object({
 	id: z.string().cuid(),
-	description: z.string().min(5),
+	description: z.string().min(5, "Description must be at least 5 characters long"),
 	status: learningGoalStatusSchema.default(LearningGoalStatus.INACTIVE),
-	learningSubGoals: z.array(learningSubGoalSchema)
+	children: z.array(z.string()).default([]),
+	parentId: z.string().optional(),
+	priority: z.number().int().default(0),
+	order: z.number().int(),
+	lastProgressUpdate: z.date().optional()
 });
+
+export const learningGoalEditSchema = learningGoalSchema.partial().extend({
+	id: z.string(),
+	description: learningGoalSchema.shape.description
+});
+export type LearningGoalEditInput = z.input<typeof learningGoalEditSchema>;
+
+export const learningGoalCreateSchema = learningGoalSchema.omit({ id: true, order: true });
 
 export const learningLocationSchema = z.object({
 	name: z.string(),
@@ -50,7 +54,6 @@ export type LearningDiaryPageInput = z.input<typeof learningDiaryPageSchema>; //
 export type LearningDiaryPageOutput = z.output<typeof learningDiaryPageSchema>;
 
 export type LearningGoal = z.infer<typeof learningGoalSchema>;
-export type LearningSubGoal = z.infer<typeof learningSubGoalSchema>;
 
 export const lessonStartSchema = z.object({
 	entryId: z.string(),
