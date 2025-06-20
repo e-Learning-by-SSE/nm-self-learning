@@ -1,5 +1,5 @@
 import { ExtendedCourseFormModel, SkillManager } from "@self-learning/teaching";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useEffect, useState } from "react";
 import {
 	InputWithButton,
@@ -7,11 +7,23 @@ import {
 	Upload,
 	useSlugify,
 	FieldHint,
-	MarkdownField
+	MarkdownField,
+	Form
 } from "@self-learning/ui/forms";
 import { AuthorsForm } from "libs/feature/teaching/src/lib/author/authors-form";
-import { GreyBoarderButton, ImageOrPlaceholder } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	getButtonSizeClass,
+	GreyBoarderButton,
+	IconButton,
+	ImageOrPlaceholder,
+	showToast
+} from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
+import { PlusIcon } from "@heroicons/react/24/solid";
+import { SkillRepositoryCreationModel, skillRepositoryCreationSchema } from "@self-learning/types";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export function CourseBasicInformation() {
 	const form = useFormContext<ExtendedCourseFormModel>();
@@ -29,15 +41,109 @@ export function CourseBasicInformation() {
 			</div>
 
 			<div>
-				<CourseSkillManager />
+				<Skills />
 			</div>
 		</div>
+	);
+}
+
+function Skills() {
+	const [openDialog, setDialogOpen] = useState(false);
+
+	const closeRepoDialog = () => {
+		setDialogOpen(false);
+	};
+	return (
+		<>
+			<div className="p-3">
+				<h2 className="text-xl">Skillkarten</h2>
+				<span className="text-sm text-light">Erstelle neue Skillkarten</span>
+				<IconButton
+					text="Neue Skillkarte Erstellen"
+					icon={<PlusIcon className={getButtonSizeClass("medium")} />}
+					onClick={() => setDialogOpen(true)}
+					title={"Erstellen"}
+				/>
+
+				{openDialog && <SkillRepositoryDialog onClose={closeRepoDialog} />}
+			</div>
+
+			<CourseSkillManager />
+		</>
 	);
 }
 
 const CourseSkillManager = () => {
 	return SkillManager<ExtendedCourseFormModel>();
 };
+
+function SkillRepositoryDialog({ onClose }: { onClose: () => void }) {
+	const form = useForm<SkillRepositoryCreationModel>({
+		defaultValues: { name: "", description: "", ownerName: "" },
+		resolver: zodResolver(skillRepositoryCreationSchema)
+	});
+
+	const errors = form.formState.errors;
+	const { mutateAsync: createRepo } = trpc.skill.addRepo.useMutation();
+
+	const handleCreate = form.handleSubmit(
+		async data => {
+			try {
+				await createRepo({ rep: data });
+				showToast({
+					type: "success",
+					title: "Skill Netzwerk gespeichert!",
+					subtitle: ""
+				});
+				onClose();
+			} catch (error) {
+				if (error instanceof Error) {
+					showToast({
+						type: "error",
+						title: "Skill Netzwerk konnte nicht erstellt werden.",
+						subtitle: error.message
+					});
+				}
+			}
+		},
+		validationErrors => {
+			console.log("Validation failed:", validationErrors);
+		}
+	);
+
+	return (
+		<Dialog onClose={onClose} title={"Neue Skillkarte"}>
+			<FormProvider {...form}>
+				<form className="flex flex-col justify-between">
+					<Form.SidebarSection>
+						<div className="flex flex-col gap-4">
+							<LabeledField label="Name" error={errors.name?.message}>
+								<input
+									type="text"
+									className="textfield"
+									{...form.register("name")}
+								/>
+							</LabeledField>
+							<LabeledField label="Beschreibung" error={errors.description?.message}>
+								<input
+									type="text"
+									className="textfield"
+									{...form.register("description")}
+								/>
+							</LabeledField>
+						</div>
+					</Form.SidebarSection>
+				</form>
+			</FormProvider>
+
+			<DialogActions onClose={onClose}>
+				<button className="btn-primary" onClick={handleCreate}>
+					Speichern
+				</button>
+			</DialogActions>
+		</Dialog>
+	);
+}
 
 function BasicInfo() {
 	const form = useFormContext<ExtendedCourseFormModel>();
