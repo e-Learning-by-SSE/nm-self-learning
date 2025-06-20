@@ -2,5 +2,10 @@
 	"languageGerman": "Deutsch",
 	"languageEnglish": "Englisch",
 	"pickLanguage": "Sprache wählen",
-	"search": "Suchen..."
+	"add": "Hinzufügen",
+	"create": "Erstellen",
+	"delete": "Löschen",
+	"edit": "Bearbeiten",
+	"save": "Speichern",
+	"search": "Suchen"
 }
