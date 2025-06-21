@@ -1,7 +1,7 @@
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, ChartBarIcon, LinkIcon } from "@heroicons/react/24/outline";
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
-import { scoreToPerformanceGrade, SmallGradeBadge } from "@self-learning/completion";
+import { SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "@self-learning/diary";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
@@ -12,14 +12,18 @@ import {
 	StreakIndicatorCircle,
 	StreakSlotMachineDialog
 } from "@self-learning/profile";
-import { EventTypeMap, Flames, LoginStreak, PerformanceGrade } from "@self-learning/types";
+import { EventTypeMap, Flames, LoginStreak } from "@self-learning/types";
 import {
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
 	ProgressBar
 } from "@self-learning/ui/common";
-import { DashboardSidebarLayout } from "@self-learning/ui/layouts";
+import {
+	CenteredSection,
+	DashboardSidebarLayout,
+	useRequiredSession
+} from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
 import {
 	formatDateAgo,
@@ -371,9 +375,14 @@ function ProfilLayout(
 	pageProps: Props
 ) {
 	return (
-		<DashboardSidebarLayout>
-			<Component {...pageProps} />
-		</DashboardSidebarLayout>
+		<div className="bg-gray-50">
+			<CenteredSection>
+				<Component {...pageProps} />
+			</CenteredSection>
+		</div>
+		// <DashboardSidebarLayout>
+		// 	<Component {...pageProps} />
+		// </DashboardSidebarLayout>
 	);
 }
 ProfilPage.getLayout = ProfilLayout;
@@ -441,21 +450,27 @@ export default function ProfilPage({
 
 	return (
 		<div className="space-y-6">
-			{/* Top row - Profile Card und Stats/Achievements */}
+			{/* Top row - Profile Card links, Stats/Achievements rechts */}
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				{/* Profile Card - simplified, no grade breakdown */}
-				<div className="lg:col-span-1 h-full">
-					<div className="h-full">
+				{/* Left column - Profile Card und Meine Funktionen */}
+				<div className="lg:col-span-1 flex flex-col space-y-6 h-full">
+					{/* Profile Card */}
+					<div className="flex-shrink-0">
 						<ProfileCard
 							student={student}
 							openSettings={openSettings}
 							setStreakInfoOpen={setStreakInfoOpen}
 						/>
 					</div>
+
+					{/* Meine Funktionen - nimmt den verbleibenden Platz */}
+					<div className="flex-1">
+						<MyFunctionsCard />
+					</div>
 				</div>
 
-				{/* Platform Stats & Achievements - now includes grade breakdown */}
-				<div className="lg:col-span-2 h-full">
+				{/* Platform Stats & Achievements - nimmt die rechten 2 Spalten ein */}
+				<div className="lg:col-span-2">
 					<PlatformStatsAchievementsSection
 						stats={competitionStats}
 						completedLessons={student.completedLessons}
@@ -464,6 +479,7 @@ export default function ProfilPage({
 				</div>
 			</div>
 
+			{/* Rest of your existing content remains unchanged */}
 			{/* Second row - Letzter Kurs und Zuletzt bearbeitete Lerneinheiten */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				{/* Last Course */}
@@ -481,7 +497,7 @@ export default function ProfilPage({
 				</div>
 
 				{/* Recent Lessons / Learning Diary */}
-				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6 h-full flex flex-col">
+				<div className="rounded-xl  bg-white shadow-sm border border-gray-100 p-6 h-full flex flex-col">
 					<h2 className="mb-4 text-lg font-semibold text-gray-900">
 						{ltbEnabled ? "Lerntagebuch Einträge" : "Zuletzt bearbeitete Lerneinheiten"}
 					</h2>
@@ -519,7 +535,84 @@ export default function ProfilPage({
 	);
 }
 
-// Durchschnitt berechnen
+function MyFunctionsCard() {
+	const session = useRequiredSession();
+
+	const functions = [
+		{
+			title: "Lernplan",
+			description: "Erstelle und bearbeite deine Kurse",
+			href: "/dashboard/courseOverview",
+			icon: BookOpenIcon,
+			condition: true
+		},
+
+		{
+			title: "Statistiken",
+			description: "Verfolge deinen Lernfortschritt",
+			href: "/statistics",
+			icon: ChartBarIcon,
+			condition: false
+		},
+		{
+			title: "Lerntagebuch",
+			description: "Dokumentiere deine Lernfortschritte",
+			href: "/learning-diary",
+			icon: BookOpenIcon,
+			condition: session.data?.user.featureFlags?.learningDiary
+		},
+		{
+			title: "Lernziele",
+			description: "Setze dir individuelle Lernziele",
+			href: "/learning-goals",
+			icon: ChartBarIcon,
+			condition: session.data?.user.featureFlags?.learningDiary
+		},
+		{
+			title: "Einstellungen",
+			description: "Personalisiere dein Profil",
+			href: "/user-settings",
+			icon: CogIcon,
+			condition: true
+		}
+	];
+
+	return (
+		<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6 h-full">
+			<h2 className="mb-4 text-lg font-semibold text-gray-900">Meine Funktionen</h2>
+			<div className="space-y-1">
+				{functions
+					.filter(f => f.condition)
+					.map((func, index) => (
+						<div key={index}>
+							<a
+								href={func.href}
+								className="group flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+							>
+								<div className="flex-shrink-0 mr-3">
+									<func.icon className="h-5 w-5 text-gray-500 group-hover:text-gray-700 transition-colors" />
+								</div>
+								<div className="flex-1 min-w-0">
+									<div className="flex items-center justify-between">
+										<p className="text-sm font-medium text-gray-900 group-hover:text-gray-700 transition-colors">
+											{func.title}
+										</p>
+										<LinkIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 ml-2 flex-shrink-0 transition-colors" />
+									</div>
+									<p className="text-xs text-gray-500 mt-1">{func.description}</p>
+								</div>
+							</a>
+							{/* Trenner - außer beim letzten Element */}
+							{index < functions.length - 1 && (
+								<div className="border-b border-gray-100 mx-3"></div>
+							)}
+						</div>
+					))}
+			</div>
+		</div>
+	);
+}
+
 function calculateAverage(scores: number[]) {
 	if (scores.length === 0) return 0;
 	const sum = scores.reduce((acc, val) => acc + val, 0);
@@ -542,7 +635,7 @@ function ProfileCard({
 
 	// Calculate additional metrics
 	const totalLearningTime = 1232;
-	const averageScore = calculateAverage(completedLessons.map(lesson => lesson.performanceScore));
+	// const averageScore = calculateAverage(completedLessons.map(lesson => lesson.performanceScore));
 
 	const completedCourses = enrollments.filter(e => e.status === "COMPLETED").length;
 
@@ -634,7 +727,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 				</span>
 			) : (
 				<>
-					<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden">
+					<ul className="flex max-h-96 flex-col gap-2 overflow-auto overflow-x-hidden">
 						{pages.map((page, _) => (
 							<Link
 								className="text-sm font-medium"
@@ -683,7 +776,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 			{lessons.length === 0 ? (
 				<span className="text-sm text-light">Du hast keine Lerneinheiten bearbeitet.</span>
 			) : (
-				<ul className="flex flex-col gap-3 overflow-auto overflow-x-visible">
+				<ul className="flex max-h-96 flex-col gap-3 overflow-auto overflow-x-visible">
 					{lessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"

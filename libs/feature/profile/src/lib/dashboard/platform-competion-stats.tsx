@@ -1,9 +1,5 @@
-import {
-	ChevronRightIcon,
-	ClockIcon,
-	QuestionMarkCircleIcon,
-	TrophyIcon
-} from "@heroicons/react/24/solid";
+import { FolderIcon } from "@heroicons/react/24/outline";
+import { ChevronRightIcon, ClockIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { AchievementCard } from "@self-learning/achievements";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, scoreToPerformanceGrade } from "@self-learning/completion";
@@ -301,7 +297,7 @@ export function PlatformStatsAchievementsSection({
 											/ {achievementStats?.total || 0}
 										</span>
 									</div>
-									<div className="text-sm text-gray-600">Errungenschaften</div>
+									<div className="text-sm text-gray-600">Erfolge</div>
 								</div>
 
 								{/* Rating - now clickable */}
@@ -321,7 +317,7 @@ export function PlatformStatsAchievementsSection({
 									</div>
 									<div className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors flex items-center justify-center gap-1 relative z-10">
 										<span>Ø Bewertung</span>
-										<QuestionMarkCircleIcon className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+										<FolderIcon className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors hidden sm:inline" />
 									</div>
 								</div>
 							</div>
@@ -366,7 +362,7 @@ export function PlatformStatsAchievementsSection({
 									<div className="text-3xl font-bold text-emerald-600 mb-1">
 										{stats.topUser.achievementCount}
 									</div>
-									<div className="text-sm text-gray-600">Errungenschaften</div>
+									<div className="text-sm text-gray-600">Erfolge</div>
 								</div>
 
 								{/* Rating */}
