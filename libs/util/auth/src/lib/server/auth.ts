@@ -155,7 +155,9 @@ function getProviders(): Provider[] {
 							}
 						}
 					});
-
+					// since the createUser event is currently only called for OIDC providers,
+					// we call it manually here to ensure the user profile is created
+					await onCreateUser({ name: username, id: user.id });
 					return user;
 				}
 			}) as any
@@ -179,22 +181,25 @@ export const authOptions: NextAuthOptions = {
 			}
 		},
 		createUser: async ({ user }) => {
-			// this is called on every new user (demo or OIDC)
-
-			const username = user.name?.trim();
-			if (!username) return;
-			await database.$transaction(async tx => {
-				await createNewProfile(username, tx);
-
-				await tx.features.create({
-					data: {
-						userId: user.id,
-						username: username
-					}
-				});
-
-				await createInitialNotificationSettings(user, tx);
-			});
+			// this is called on new users (only OIDC)
+			if (!user.name) return;
+			onCreateUser({ name: user.name, id: user.id });
 		}
 	}
 };
+
+function onCreateUser(user: { name: string; id: string }) {
+	const { id, name } = user;
+	return database.$transaction(async tx => {
+		await createNewProfile(name, tx);
+
+		await tx.features.create({
+			data: {
+				userId: user.id,
+				username: name
+			}
+		});
+
+		await createInitialNotificationSettings(user, tx);
+	});
+}
