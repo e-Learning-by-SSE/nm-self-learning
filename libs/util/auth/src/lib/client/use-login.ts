@@ -6,7 +6,7 @@ export function useLoginRedirect() {
 	const router = useRouter();
 
 	const loginRedirect = useCallback(
-		(callback?: string) => {
+		(callback = "/profile") => {
 			const callbackUrl = callback ?? router.asPath;
 			const provider =
 				process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true" ? undefined : "keycloak";
