@@ -42,7 +42,7 @@ export default function ExperimentConsentPage({
 	const [agreesToParticipate, setAgreesToParticipate] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const { mutateAsync: updateProfile } = trpc.me.updateSettings.useMutation();
+	const { mutateAsync: updateProfile } = trpc.me.update.useMutation();
 	const { mutateAsync: submitConsent } = trpc.me.submitExperimentConsent.useMutation();
 
 	async function handleSubmitConsent() {

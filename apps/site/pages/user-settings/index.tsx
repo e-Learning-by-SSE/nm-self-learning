@@ -46,7 +46,9 @@ export const getServerSideProps = withTranslations(
 
 export default function SettingsPage(props: PageProps) {
 	const [settings, setSettings] = useState(props.settings);
-	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+
+	const { mutateAsync: updateUser } = trpc.me.update.useMutation();
+	const { mutateAsync: updateFeatures } = trpc.me.updateFeatureFlags.useMutation();
 	const { mutateAsync: updateNotificationSettings } =
 		trpc.notification.upsertNotificationSetting.useMutation();
 
@@ -60,7 +62,7 @@ export default function SettingsPage(props: PageProps) {
 		try {
 			setSettings(prev => {
 				const newSettings = { ...prev, ...update };
-				updateSettings({ user: newSettings });
+				void updateUser({ user: newSettings });
 				return newSettings;
 			});
 			showToast({
@@ -99,7 +101,7 @@ export default function SettingsPage(props: PageProps) {
 				const newFeatureFlags = { ...prev.featureFlags, ...update };
 				const newSettings = { ...prev, featureFlags: newFeatureFlags };
 
-				void updateSettings({ user: newSettings });
+				void updateFeatures(update);
 				return newSettings;
 			});
 		} catch (error) {

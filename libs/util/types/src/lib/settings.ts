@@ -16,19 +16,18 @@ export const editPersonalSettingSchema = z.object({
 });
 export type EditPersonalSettings = z.infer<typeof editPersonalSettingSchema>;
 
-export const editUserSettingsSchema = z
+export const editUserSchema = z
 	.object({
 		user: z
 			.object({
 				...editPersonalSettingSchema.shape,
-				featureFlags: editFeatureSettingsSchema,
 				registrationCompleted: z.boolean()
 			})
 			.partial()
 	})
 	.partial();
 
-export type EditUserSettings = z.infer<typeof editUserSettingsSchema>;
+export type EditUserInput = z.input<typeof editUserSchema>;
 
 // compatible with prisma schema
 export const userNotificationSettingSchema = z.object({

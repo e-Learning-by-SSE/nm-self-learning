@@ -100,9 +100,12 @@ function ExperimentConsentForwarder(
 ) {
 	const { mutateAsync: deleteNotification } = trpc.notification.delete.useMutation();
 	const session = useRequiredSession();
-	const { data: registrationStatus, isLoading } = trpc.me.registrationStatus.useQuery(undefined, {
-		enabled: session.data?.user?.name !== undefined
-	});
+	const { data: registrationStatus, isLoading } = trpc.me.getRegistrationStatus.useQuery(
+		undefined,
+		{
+			enabled: session.data?.user?.name !== undefined
+		}
+	);
 	const router = useRouter();
 
 	useEffect(() => {

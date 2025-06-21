@@ -245,7 +245,7 @@ function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
 }
 
 function DashboardPage(props: Props) {
-	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+	const { mutateAsync: updateSettings } = trpc.me.updateFeatureFlags.useMutation();
 	const router = useRouter();
 	const [ltb, dispatch] = useReducer(ltbReducer, {
 		dialogOpen: false,
@@ -258,7 +258,7 @@ function DashboardPage(props: Props) {
 
 	const handleClickLtbToggle = async () => {
 		if (ltb.enabled) {
-			await updateSettings({ user: { featureFlags: { learningDiary: true } } });
+			await updateSettings({ learningDiary: true });
 			dispatch({ type: "TOGGLE_LTB", enabled: false });
 		} else {
 			dispatch({ type: "OPEN_DIALOG" });
@@ -268,7 +268,8 @@ function DashboardPage(props: Props) {
 	const handleDialogSubmit: Parameters<
 		typeof EnableLearningDiaryDialog
 	>[0]["onSubmit"] = async update => {
-		await updateSettings({ user: { featureFlags: { ...update } } });
+		if (!update) return;
+		await updateSettings(update);
 		dispatch({ type: "TOGGLE_LTB", enabled: true });
 		dispatch({ type: "CLOSE_DIALOG" });
 	};
