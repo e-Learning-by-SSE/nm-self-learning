@@ -391,7 +391,6 @@ export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<Props>(async (_, user) => {
 		// TODO remove this check when gamification is fully enabled
-		// const { isParticipating } = await getExperimentStatus(user.name);
 		const isParticipant = user.featureFlags.experimental;
 		if (!isParticipant) {
 			return {

@@ -193,7 +193,7 @@ export default function SettingsPage(props: PageProps) {
 				/>
 			</SettingSection>
 			<SettingSection title="Benachrichtigungen">
-				{props.experimentStatus?.isParticipating && (
+				{props.experimentStatus?.experimentalFeatures && (
 					<NotificationSettingsForm
 						notificationSettings={settings.notificationSettings}
 						onChange={onNotificationChange}
