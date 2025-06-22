@@ -124,8 +124,6 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 	const now = new Date();
 
 	await database.$transaction(async tx => {
-		console.log("Debug, 1");
-
 		const profile = await tx.gamificationProfile.findUniqueOrThrow({
 			where: { userId: user.id },
 			select: {
@@ -136,18 +134,10 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 			}
 		});
 
-		console.log("Debug, 2", profile);
-
 		const { flames } = profile as GamificationProfile;
 
 		// Calculate the streak update using pure business logic
 		const streakUpdate = calculateLoginStreakUpdate(profile as GamificationProfile, now);
-
-		console.log(
-			`User ${username} ${user.id} logged in. Updating streak: ` +
-				`count=${streakUpdate.loginStreak.count}, status=${streakUpdate.loginStreak.status}, ` +
-				`trigger=${streakUpdate.trigger}, longestStreak=${streakUpdate.longestStreak ?? profile.longestStreak}`
-		);
 
 		// Prepare update data
 		const updateData: {
@@ -169,8 +159,6 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 			where: { userId: user.id },
 			data: updateData
 		});
-
-		console.log("done");
 
 		// Create notification with the calculated trigger
 		await createNotification({
