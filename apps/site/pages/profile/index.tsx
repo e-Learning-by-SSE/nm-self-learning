@@ -537,7 +537,6 @@ export default function ProfilPage({
 
 function MyFunctionsCard() {
 	const session = useRequiredSession();
-
 	const functions = [
 		{
 			title: "Lernplan",
@@ -564,7 +563,7 @@ function MyFunctionsCard() {
 		{
 			title: "Lernziele",
 			description: "Setze dir individuelle Lernziele",
-			href: "/learning-goals",
+			href: "/learning-diary/goals",
 			icon: ChartBarIcon,
 			condition: session.data?.user.featureFlags?.learningDiary
 		},
@@ -582,7 +581,7 @@ function MyFunctionsCard() {
 			<h2 className="mb-4 text-lg font-semibold text-gray-900">Meine Funktionen</h2>
 			<div className="space-y-1">
 				{functions
-					.filter(f => f.condition)
+					.filter(f => !!f.condition)
 					.map((func, index) => (
 						<div key={index}>
 							<a

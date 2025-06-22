@@ -50,6 +50,7 @@ export default function ExperimentRevokePage({ hasConsented, consentDate }: Expe
 			});
 			loginRedirect("/profile");
 		} catch (error) {
+			console.log("Error revoking consent:", error);
 			showToast({
 				type: "error",
 				title: "Fehler",

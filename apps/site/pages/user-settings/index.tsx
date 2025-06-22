@@ -12,7 +12,7 @@ import {
 import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { withAuth } from "@self-learning/util/auth";
+import { useLoginRedirect, withAuth } from "@self-learning/util/auth";
 import { isTruthy } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
@@ -46,6 +46,7 @@ export const getServerSideProps = withTranslations(
 
 export default function SettingsPage(props: PageProps) {
 	const [settings, setSettings] = useState(props.settings);
+	const [hasSettingsChanged, setHasSettingsChanged] = useState(false);
 
 	const { mutateAsync: updateUser } = trpc.me.update.useMutation();
 	const { mutateAsync: updateFeatures } = trpc.me.updateFeatureFlags.useMutation();
@@ -54,6 +55,8 @@ export default function SettingsPage(props: PageProps) {
 
 	const { data } = useRequiredSession();
 	const router = useRouter();
+
+	const { loginRedirect } = useLoginRedirect();
 
 	const onPersonalSettingSubmit: Parameters<
 		typeof PersonalSettingsForm
@@ -65,6 +68,7 @@ export default function SettingsPage(props: PageProps) {
 				void updateUser({ user: newSettings });
 				return newSettings;
 			});
+			setHasSettingsChanged(true);
 			showToast({
 				type: "success",
 				title: "Informationen aktualisiert",
@@ -104,6 +108,7 @@ export default function SettingsPage(props: PageProps) {
 				void updateFeatures(update);
 				return newSettings;
 			});
+			setHasSettingsChanged(true);
 		} catch (error) {
 			if (error instanceof Error) {
 				showToast({
@@ -143,14 +148,38 @@ export default function SettingsPage(props: PageProps) {
 			.filter(isTruthy);
 		console.log("Updating notification settings", fullUpdates);
 		await updateNotificationSettings(fullUpdates);
+		setHasSettingsChanged(true);
 	};
 
 	return (
 		<CenteredSection className="bg-gray-50">
 			<h1 className="text-2xl font-bold">Einstellungen</h1>
-			<p className="text-gray-600 text-sm">
-				Einige Einstellungen werden möglicherweise erst nach einem erneuten Login aktiv.
-			</p>
+
+			{hasSettingsChanged ? (
+				<div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+					<div className="flex items-center justify-between">
+						<div className="flex-1">
+							<p className="text-blue-800 text-sm font-medium">
+								Einstellungen aktualisiert
+							</p>
+							<p className="text-blue-600 text-sm">
+								Einige Einstellungen werden erst nach einem erneuten Login aktiv.
+							</p>
+						</div>
+						<button
+							onClick={() => loginRedirect("/user-settings")}
+							className="ml-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+						>
+							Neu einloggen
+						</button>
+					</div>
+				</div>
+			) : (
+				<p className="text-gray-600 text-sm mb-4">
+					Einige Einstellungen werden möglicherweise erst nach einem erneuten Login aktiv.
+				</p>
+			)}
+
 			<SettingSection title="Profil">
 				<PersonalSettingsForm
 					personalSettings={settings}
