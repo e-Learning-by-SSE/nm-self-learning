@@ -209,6 +209,9 @@ export function StreakSlotMachineDialog({
 	const [showAchievements, setShowAchievements] = useState(false);
 	const [streakStatus, setStreakStatus] = useState<StreakStatus>(initialStreakStatus);
 	const [pausedUntil, setPausedUntil] = useState(initialPausedUntil ?? new Date());
+
+	const [remainingFlames, setRemainingFlames] = useState(flames.count ?? 0);
+
 	const { mutateAsync: pauseStreakMutation } = trpc.achievement.pauseStreak.useMutation();
 	const { mutateAsync: refireStreakMutation } = trpc.achievement.refireStreak.useMutation();
 
@@ -220,7 +223,10 @@ export function StreakSlotMachineDialog({
 	const { handleRedeem } = useAchievementRedemption();
 
 	const isPaused = streakStatus === "paused" && pausedUntil !== null;
-	const remainingFlames = flames.count ?? 0;
+
+	useEffect(() => {
+		setRemainingFlames(flames.count ?? 0);
+	}, [flames.count]);
 
 	useEffect(() => {
 		async function fetchAchievements() {
@@ -238,6 +244,8 @@ export function StreakSlotMachineDialog({
 		if (remainingFlames >= 2) {
 			setRefireDisclosureOpen(false);
 			setStreakStatus("refire");
+			// Optimistic Update: Flammen sofort reduzieren
+			setRemainingFlames(prev => prev - 2);
 			await refireStreakMutation();
 		}
 	};
@@ -246,6 +254,8 @@ export function StreakSlotMachineDialog({
 		if (remainingFlames >= 1 && !isPaused) {
 			setStreakStatus("paused");
 			setPausedUntil(addHours(new Date(), 24));
+			// Optimistic Update: Flammen sofort reduzieren
+			setRemainingFlames(prev => prev - 1);
 			await pauseStreakMutation();
 		}
 	};
@@ -263,6 +273,7 @@ export function StreakSlotMachineDialog({
 		setShowAchievements(false);
 	};
 
+	// Rest der Komponente bleibt gleich...
 	return (
 		<GameifyDialog
 			open={open}
@@ -286,12 +297,10 @@ export function StreakSlotMachineDialog({
 						<FireIcon className="w-5 h-5 text-orange-500" />
 					</div>
 
-					{/* Streak Slot Machine */}
+					{/* Rest der JSX bleibt gleich... */}
 					<SlotMachine streakCount={streakCount} streakStatus={streakStatus} />
 
-					{/* Status display and buttons */}
 					<div className="flex flex-col items-center justify-center">
-						{/* Pause-Status Anzeige */}
 						{isPaused && (
 							<div className="mb-4 text-center">
 								<div className="flex items-center justify-center mb-2">
@@ -310,7 +319,6 @@ export function StreakSlotMachineDialog({
 							</div>
 						)}
 
-						{/* Status-spezifische Buttons */}
 						<div className="flex space-x-4 mt-2">
 							{streakStatus === "broken" && (
 								<button
@@ -344,7 +352,6 @@ export function StreakSlotMachineDialog({
 
 				{/* Main content area */}
 				<div className="space-y-6">
-					{/* Errungenschaftsbereich */}
 					{showAchievements ? (
 						<div className="bg-gray-50 p-4 rounded-lg">
 							<div className="flex justify-between items-center mb-4">
