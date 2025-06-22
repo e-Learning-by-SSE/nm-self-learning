@@ -1,5 +1,4 @@
-import { GetServerSideProps } from "next";
-import { getAuthenticatedUser } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { SkillFormModel } from "@self-learning/types";
 import {
 	getParentSkills,
@@ -7,22 +6,24 @@ import {
 } from "../../../../libs/data-access/api/src/lib/trpc/routers/skill.router";
 import { CreateAndViewSkills } from "@self-learning/teaching";
 
-export const getServerSideProps: GetServerSideProps<{ skills: SkillFormModel[] }> = async ctx => {
-	const user = await getAuthenticatedUser(ctx);
+export const getServerSideProps = withTranslations(["common"], ctx => {
+	return withAuth(async (ctx, user) => {
+		if (user.role !== "ADMIN" && !user.isAuthor) {
+			return {
+				redirect: {
+					destination: "/403",
+					permanent: false
+				}
+			};
+		}
 
-	if (!user) {
+		const skills = transformSkills(await getParentSkills());
+
 		return {
-			redirect: {
-				destination: `/403`, // your new URL here
-				permanent: false
-			}
+			props: { skills }
 		};
-	}
-
-	const skills = transformSkills(await getParentSkills());
-
-	return { props: { skills } };
-};
+	})(ctx);
+});
 
 export default function CreateAndViewSkillsPage({
 	skills,

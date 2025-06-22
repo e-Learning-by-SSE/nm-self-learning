@@ -1,4 +1,4 @@
-import { authOptions } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { LoadingBox, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import {
@@ -7,36 +7,26 @@ import {
 	CourseModulView,
 	CoursePreview
 } from "@self-learning/ui/course";
-import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
 import { useState } from "react";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { GetServerSideProps } from "next";
 
-export const getServerSideProps: GetServerSideProps = async ctx => {
-	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+export const getServerSideProps: GetServerSideProps<{}> = withTranslations(["common"], context => {
+	return withAuth(async (ctx, user) => {
+		if (user.role !== "ADMIN" && !user.isAuthor) {
+			return {
+				redirect: {
+					destination: "/403",
+					permanent: false
+				}
+			};
+		}
 
-	if (!session) {
 		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
-			}
+			props: {}
 		};
-	}
-
-	if (session.user.role !== "ADMIN" && !session.user.isAuthor) {
-		return {
-			redirect: {
-				destination: "/403",
-				permanent: false
-			}
-		};
-	}
-
-	return {
-		props: {}
-	};
-};
+	})(context);
+});
 
 export default function CourseCreationEditor() {
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
