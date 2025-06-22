@@ -84,6 +84,21 @@ export const gamificationRouter = t.router({
 		});
 		return updatedStreak;
 	}),
+	resetStreak: authProcedure.mutation(async ({ ctx }) => {
+		const username = ctx.user.name;
+		return database.gamificationProfile.updateMany({
+			where: {
+				username,
+				loginStreak: {
+					path: ["status"],
+					equals: "broken"
+				}
+			},
+			data: {
+				loginStreak: { count: 1, status: "active" }
+			}
+		});
+	}),
 	earnAchievements: authProcedure
 		.input(z.object({ trigger: achievementTriggerEnum }))
 		.mutation(async ({ ctx, input }) => {

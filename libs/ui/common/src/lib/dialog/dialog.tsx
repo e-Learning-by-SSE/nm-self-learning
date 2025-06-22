@@ -1,5 +1,6 @@
 "use client";
 import {
+	DialogBackdrop,
 	Dialog as HeadlessDialog,
 	DialogPanel as HeadlessDialogPanel,
 	DialogTitle as HeadlessDialogTitle,
@@ -26,7 +27,7 @@ const DEFAULT_DIALOG_STYLE_SIZE = {
 function Backdrop() {
 	return (
 		<EaseInTransitionChild>
-			<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+			<DialogBackdrop className="fixed inset-0 bg-black/30" aria-hidden="true" />
 		</EaseInTransitionChild>
 	);
 }

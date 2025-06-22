@@ -1,6 +1,10 @@
 "use client";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
-import { ArrowTrendingUpIcon, ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
+import {
+	ArrowTrendingUpIcon,
+	ChevronDoubleDownIcon,
+	ExclamationTriangleIcon
+} from "@heroicons/react/24/outline";
 import {
 	CalendarIcon,
 	FireIcon,
@@ -15,6 +19,7 @@ import { trpc } from "@self-learning/api-client";
 import {
 	AnimatedFlame,
 	GameifyDialog,
+	showToast,
 	SlotCounter,
 	useIsAtLeastLargeScreen
 } from "@self-learning/ui/common";
@@ -214,6 +219,7 @@ export function StreakSlotMachineDialog({
 
 	const { mutateAsync: pauseStreakMutation } = trpc.achievement.pauseStreak.useMutation();
 	const { mutateAsync: refireStreakMutation } = trpc.achievement.refireStreak.useMutation();
+	const { mutateAsync: resetStreak } = trpc.achievement.resetStreak.useMutation();
 
 	const achievements = trpc.achievement.getOwnAchievements.useQuery();
 	const streakAchievements = (achievements.data ?? []).filter(
@@ -247,6 +253,12 @@ export function StreakSlotMachineDialog({
 			// Optimistic Update: Flammen sofort reduzieren
 			setRemainingFlames(prev => prev - 2);
 			await refireStreakMutation();
+		} else {
+			showToast({
+				title: "Nicht genug Flammen",
+				subtitle: "Du benötigst mindestens 2 Flammen, um deinen Streak wiederherzustellen.",
+				type: "error"
+			});
 		}
 	};
 
@@ -258,6 +270,12 @@ export function StreakSlotMachineDialog({
 			setRemainingFlames(prev => prev - 1);
 			await pauseStreakMutation();
 		}
+	};
+
+	const handleReset = async (): Promise<void> => {
+		await resetStreak();
+		customOnClose(); // just close it and save logic for resetting here
+		window.location.reload();
 	};
 
 	const customOnClose = () => {
@@ -319,18 +337,26 @@ export function StreakSlotMachineDialog({
 							</div>
 						)}
 
-						<div className="flex space-x-4 mt-2">
+						{/* Fixed height button container to prevent layout shifts */}
+						<div className="flex justify-center mt-2" style={{ minHeight: "48px" }}>
 							{streakStatus === "broken" && (
-								<button
-									className="btn-secondary bg-gradient-to-br from-orange-500 to-orange-100 animate-bounce"
-									onClick={handleRefire}
-								>
-									Streak wiederherstellen
-									<FireIcon className="w-5 h-5 ml-2 inline-block" />
-									<span className="ml-1">
-										(-2 <FireIcon className="w-4 h-4 inline-block" />)
-									</span>
-								</button>
+								<div className="flex flex-col items-center gap-4">
+									<button
+										className="btn-secondary bg-gradient-to-br from-orange-500 to-orange-100 animate-bounce"
+										onClick={handleRefire}
+										// disabled={remainingFlames < 2}
+									>
+										Streak wiederherstellen
+										<FireIcon className="w-5 h-5 ml-2 inline-block" />
+										<span className="ml-1">
+											(-2 <FireIcon className="w-4 h-4 inline-block" />)
+										</span>
+									</button>
+
+									<button className="btn-stroked" onClick={handleReset}>
+										Jetzt zurücksetzen
+									</button>
+								</div>
 							)}
 
 							{streakStatus === "active" && (
@@ -421,6 +447,15 @@ export function StreakSlotMachineDialog({
 											der Zähler zurückgesetzt. Du kannst ihn aber mit Flammen
 											wiederherstellen oder im Voraus eine Lernpause
 											einplanen.
+										</p>
+									</div>
+									<div className="flex items-start">
+										<ExclamationTriangleIcon className="w-6 h-6 text-amber-500 mr-2 flex-shrink-0" />
+										<p>
+											<strong>Wichtig:</strong> Wenn dein Streak unterbrochen
+											ist, wird er beim nächsten Login automatisch
+											zurückgesetzt, es sei denn du stellst ihn vorher wieder
+											her.
 										</p>
 									</div>
 								</div>

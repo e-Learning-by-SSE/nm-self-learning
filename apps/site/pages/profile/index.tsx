@@ -641,7 +641,8 @@ function ProfileCard({
 		<section className="relative rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm border border-gray-100 p-6 space-y-6">
 			<div className="absolute -top-3 -right-3 h-16 w-16 z-10">
 				<StreakIndicatorCircle
-					streakCount={gamificationProfile.loginStreak.count}
+					count={gamificationProfile.loginStreak.count}
+					status={gamificationProfile.loginStreak.status}
 					onClick={() => setStreakInfoOpen(true)}
 				/>
 			</div>
