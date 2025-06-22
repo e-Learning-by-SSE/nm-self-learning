@@ -38,7 +38,7 @@ export const checkTimeLearnedToday: ConditionChecker = async (achievement, usern
 	}, 0);
 
 	const learnedMinutes = secondsToMinutes(effectiveTimeLearnedToday);
-	console.warn(
+	console.log(
 		`Achievement check for focus_time: ${username} has learned ${effectiveTimeLearnedToday} seconds and ${learnedMinutes} minutes today`
 	);
 	if (learnedMinutes == achievement.progressValue) {

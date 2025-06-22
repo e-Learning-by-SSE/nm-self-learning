@@ -3,6 +3,7 @@ import { checkAndAwardAchievements, convertAchievement } from "@self-learning/ac
 import { database } from "@self-learning/database";
 import {
 	AchievementWithProgress,
+	Flames,
 	GamificationProfile,
 	achievementTriggerEnum
 } from "@self-learning/types";
@@ -177,6 +178,11 @@ export const gamificationRouter = t.router({
 						username: ctx.user.name,
 						achievementId
 					}
+				},
+				include: {
+					gamificationProfile: {
+						select: { xp: true }
+					}
 				}
 			});
 
@@ -209,9 +215,37 @@ export const gamificationRouter = t.router({
 							}
 						}
 					}
+				},
+				include: {
+					gamificationProfile: {
+						select: { xp: true, flames: true }
+					}
 				}
 			});
+
+			const newRewards = getNewRewards(
+				achievementProgress.gamificationProfile.xp,
+				updated.gamificationProfile.xp
+			);
+
+			if (newRewards > 0) {
+				// todo create notification to show the user
+				const flames = updated.gamificationProfile.flames as Flames;
+				await database.gamificationProfile.update({
+					where: { username: ctx.user.name },
+					data: {
+						flames: { ...flames, count: flames.count + newRewards }
+					}
+				});
+			}
 
 			return { redeemedAt: updated.redeemedAt };
 		})
 });
+
+function getNewRewards(previousXp: number, currentXp: number): number {
+	const prevLevel = Math.floor(previousXp / 50);
+	const newLevel = Math.floor(currentXp / 50);
+
+	return Math.max(0, newLevel - prevLevel);
+}
