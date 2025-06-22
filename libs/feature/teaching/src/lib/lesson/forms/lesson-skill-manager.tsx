@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-useless-fragment */
 import { SkillFormModel } from "@self-learning/types";
 import { Form} from "@self-learning/ui/forms";
 import { useState } from "react";
