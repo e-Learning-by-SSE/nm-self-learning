@@ -1,5 +1,3 @@
-import { withAuth, withTranslations } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
 import { LoadingBox, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import {
 	CourseBasicInformation,
@@ -7,9 +5,11 @@ import {
 	CourseModulView,
 	CoursePreview
 } from "@self-learning/ui/course";
+import { GetServerSideProps } from "next";
 import { useState } from "react";
 import { useRequiredSession } from "@self-learning/ui/layouts";
-import { GetServerSideProps } from "next";
+import { withAuth, withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 
 export const getServerSideProps: GetServerSideProps<{}> = withTranslations(["common"], context => {
 	return withAuth(async (ctx, user) => {
@@ -30,10 +30,9 @@ export const getServerSideProps: GetServerSideProps<{}> = withTranslations(["com
 
 export default function CourseCreationEditor() {
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
-	const [selectedIndex, setSelectedIndex] = useState(0);
 	const session = useRequiredSession();
 	const username = session.data?.user.name;
-
+	const [selectedIndex, setSelectedIndex] = useState(2);
 	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({
 		username: username ?? ""
 	});
@@ -45,6 +44,7 @@ export default function CourseCreationEditor() {
 	if (!author) {
 		return <div>Author Missing</div>;
 	}
+
 
 	function switchTab(index: number) {
 		setSelectedIndex(index);

@@ -558,7 +558,7 @@ function Lessons({ authorName }: { authorName: string }) {
 							<tr key={lesson.lessonId}>
 								<TableDataColumn>
 									<Link
-										href={`/teaching/lessons/edit/${lesson.lessonId}`}
+										href={`/lessons/${lesson.slug}`}
 										className="font-medium hover:text-secondary"
 									>
 										{lesson.title}

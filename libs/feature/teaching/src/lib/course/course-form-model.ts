@@ -20,7 +20,14 @@ export const courseFormSchema = z.object({
 	content: courseContentSchema
 });
 
+export const extendedCourseFormSchema = z.object({
+	course: courseFormSchema,
+	courseTeachingGoals: z.array(skillFormSchema),
+	courseRequirements: z.array(skillFormSchema)
+});
+
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
+export type ExtendedCourseFormModel = z.infer<typeof extendedCourseFormSchema>;
 
 export function mapCourseFormToInsert(
 	course: CourseFormModel,
@@ -68,17 +75,4 @@ export function mapCourseFormToUpdate(
 	};
 
 	return courseForDb;
-}
-export function createEmptyCourseFormModel(): CourseFormModel {
-	return {
-		courseId: null,
-		subjectId: null,
-		slug: "",
-		title: "",
-		subtitle: "",
-		description: null,
-		imgUrl: null,
-		authors: [],
-		content: []
-	};
 }

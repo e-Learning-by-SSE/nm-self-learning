@@ -11,7 +11,8 @@ export type ArrangeItem = z.infer<typeof itemSchema>;
 export const arrangeQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("arrange"),
 	items: z.record(z.array(itemSchema)),
-	randomizeItems: z.boolean().optional().default(false)
+	randomizeItems: z.boolean().optional().default(false),
+	categoryOrder: z.array(z.string())
 });
 
 export type ArrangeQuestion = z.infer<typeof arrangeQuestionSchema>;
