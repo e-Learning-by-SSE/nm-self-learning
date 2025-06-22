@@ -108,14 +108,21 @@ export function AchievementList({
 	achievements,
 	onRedeem
 }: {
-	achievements: IdSet<AchievementWithProgress>;
+	achievements:
+		| IdSet<AchievementWithProgress>
+		| AchievementWithProgress[] /* for sorted arrays */;
 	onRedeem?: (achievementId: string) => void;
 }) {
-	if (achievements.size === 0) return null;
+	// Support both IdSet and array input using a union
+	const achievementsArray = Array.isArray(achievements)
+		? achievements
+		: Array.from(achievements.values());
+
+	if (achievementsArray.length === 0) return null;
 
 	return (
 		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-			{achievements.values().map(achievement => (
+			{achievementsArray.map(achievement => (
 				<AchievementCard
 					key={achievement.id}
 					achievement={achievement}

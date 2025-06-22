@@ -222,9 +222,9 @@ export function StreakSlotMachineDialog({
 	const { mutateAsync: resetStreak } = trpc.achievement.resetStreak.useMutation();
 
 	const achievements = trpc.achievement.getOwnAchievements.useQuery();
-	const streakAchievements = (achievements.data ?? []).filter(
-		achievement => achievement?.meta?.group === "daily_streak"
-	);
+	const streakAchievements = (achievements.data ?? [])
+		.filter(achievement => achievement?.meta?.group === "daily_streak")
+		.reverse();
 	const { mutateAsync: earnAchievements } = trpc.achievement.earnAchievements.useMutation();
 	const { handleRedeem } = useAchievementRedemption();
 
@@ -390,7 +390,7 @@ export function StreakSlotMachineDialog({
 								</button>
 							</div>
 							<AchievementList
-								achievements={new IdSet(streakAchievements)}
+								achievements={streakAchievements}
 								onRedeem={handleRedeem}
 							/>
 						</div>
