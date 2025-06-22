@@ -11,7 +11,7 @@ import {
 	NotificationEntry,
 	NotificationPropsMap,
 	validateNotification
-} from "./notification-renderer-registry";
+} from "./notification-types";
 
 type DbInputNotification = Partial<
 	Omit<Notification, "id" | "createdAt" | "updatedAt" | "component" | "props">

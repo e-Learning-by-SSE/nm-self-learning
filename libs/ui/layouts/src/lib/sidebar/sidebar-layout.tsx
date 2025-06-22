@@ -1,5 +1,5 @@
 "use client";
-import { Bars4Icon, ViewColumnsIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars4Icon, ViewColumnsIcon } from "@heroicons/react/24/outline";
 import { PropsWithChildren, ReactNode, useCallback, useEffect, useState } from "react";
 import { DefaultSidebar } from "./sidebar-default";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
@@ -17,7 +17,6 @@ export function SecondarySidebarLayout({
 	footer: React.ReactNode;
 }) {
 	const [open, setOpen] = useSidebarState();
-	console.log(open);
 	return (
 		<div
 			className="flex h-ful

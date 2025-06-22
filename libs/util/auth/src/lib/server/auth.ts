@@ -195,7 +195,7 @@ function onCreateUser(user: { name: string; id: string }) {
 
 		await tx.features.create({
 			data: {
-				userId: user.id,
+				userId: id,
 				username: name
 			}
 		});

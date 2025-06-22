@@ -1,12 +1,13 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
 import { OnboardingDialog, StreakSlotMachineDialog } from "@self-learning/profile";
-import { flamesSchema, loginStreakSchema, streakDialogTriggerEnum } from "@self-learning/types";
-import { useEffect, useState } from "react";
-import { z } from "zod";
-import { MessagePortal } from "./message-portal/message-portal";
-import { useRouter } from "next/router";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { MessagePortal } from "./message-portal/message-portal";
+import { NotificationEntry, NotificationPropsMap } from "./notification-types";
+import { flamesSchema, loginStreakSchema, streakDialogTriggerEnum } from "@self-learning/types";
+import { z } from "zod";
 
 export const notificationPropSchema = {
 	StreakInfoDialog: z.object({
@@ -23,33 +24,6 @@ export const notificationPropSchema = {
 	OnboardingDialog: z.object({}).optional(),
 	ExperimentConsentForwarder: z.object({}).optional()
 } as const;
-
-export type NotificationPropsMap = {
-	[K in keyof typeof notificationPropSchema]: z.infer<(typeof notificationPropSchema)[K]>;
-};
-
-export type NotificationEntry = {
-	[K in keyof NotificationPropsMap]: {
-		id: string;
-		component: K;
-		props: NotificationPropsMap[K];
-	};
-}[keyof NotificationPropsMap];
-
-export function validateNotification<T extends NotificationEntry>(
-	notification: T
-): { success: true; value: T } | { success: false; error: z.ZodError } {
-	const schema = notificationPropSchema[notification.component] as z.ZodType<
-		typeof notification.props
-	>;
-	const result = schema.safeParse(notification.props);
-
-	if (result.success) {
-		return { success: true, value: notification };
-	} else {
-		return { success: false, error: result.error };
-	}
-}
 
 export function NotificationsRenderer() {
 	const { data: notifications } = trpc.notification.getOwn.useQuery(undefined, {
