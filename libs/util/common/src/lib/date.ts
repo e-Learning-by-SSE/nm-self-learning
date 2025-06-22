@@ -1,6 +1,8 @@
-import { formatDistance, intervalToDuration } from "date-fns";
+import { differenceInDays, formatDistance, intervalToDuration, startOfDay } from "date-fns";
+import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { de } from "date-fns/locale";
-import { formatInTimeZone } from "date-fns-tz";
+
+export const DISPLAY_TIMEZONE = "Europe/Berlin";
 
 /**
  * Formats seconds to "hh:mm:ss" (hh will be removed if less than an hour).
@@ -49,14 +51,20 @@ export function formatTimeIntervalToString(ms: number): string {
 	return result || "0 Minuten";
 }
 
+export function getDifferenceInGermanDays(laterDate: Date, earlierDate: Date): number {
+	const laterGerman = toZonedTime(laterDate, DISPLAY_TIMEZONE);
+	const earlierGerman = toZonedTime(earlierDate, DISPLAY_TIMEZONE);
+
+	return differenceInDays(startOfDay(laterGerman), startOfDay(earlierGerman));
+}
 export function formatDateStringShort(date: Date): string {
-	return formatInTimeZone(date, "Europe/Berlin", "dd.MM.yyyy", { locale: de });
+	return formatInTimeZone(date, DISPLAY_TIMEZONE, "dd.MM.yyyy", { locale: de });
 }
 
 export function formatDateString(date: Date, format: string): string {
-	return formatInTimeZone(date, "Europe/Berlin", format, { locale: de });
+	return formatInTimeZone(date, DISPLAY_TIMEZONE, format, { locale: de });
 }
 
 export function formatDateStringFull(date: Date): string {
-	return formatInTimeZone(date, "Europe/Berlin", "Pp", { locale: de });
+	return formatInTimeZone(date, DISPLAY_TIMEZONE, "Pp", { locale: de });
 }

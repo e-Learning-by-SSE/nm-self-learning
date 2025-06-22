@@ -20,7 +20,7 @@ export const loginStreakSchema = z.object({
 	 * After this date, the streak will become "inactive" if not resumed.
 	 * Null or undefined if the streak is not paused.
 	 */
-	pausedUntil: z.date().optional().nullable()
+	pausedUntil: z.coerce.date().optional().nullable()
 });
 export type LoginStreak = z.infer<typeof loginStreakSchema>;
 
@@ -38,21 +38,6 @@ export const itemLogSchema = z.array(
 	})
 );
 export type ItemLog = z.infer<typeof itemLogSchema>;
-
-// export type GamificationProfileMeta = z.infer<typeof gamificationProfileMetaSchema>;
-
-// export const defaultGamificationProfileMeta = {
-// 	itemLog: [],
-// 	flames: {
-// 		count: 0,
-// 		maxCount: 3
-// 	},
-// 	loginStreak: {
-// 		count: 0,
-// 		status: "active",
-// 		pauseUntil: null
-// 	}
-// } satisfies GamificationProfileMeta;
 
 export const streakDialogTriggerEnum = z.enum([
 	"dailyIncrease",
