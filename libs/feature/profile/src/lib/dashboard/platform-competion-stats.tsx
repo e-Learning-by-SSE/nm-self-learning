@@ -329,8 +329,11 @@ export function PlatformStatsAchievementsSection({
 						<h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
 							<TrophyIcon className="h-5 w-5 text-yellow-500" />
 							{stats.topUser.isCurrentUser ? (
-								<span className="text-red-400">
-									Du bist aktueller Spitzenreiter! 🎉
+								<span className="text-purple-600">
+									Du bist aktueller Spitzenreiter!{" "}
+									<span role="img" aria-label="Konfetti-Emoji">
+										🎉
+									</span>
 								</span>
 							) : (
 								"Aktueller Spitzenreiter"
@@ -338,16 +341,21 @@ export function PlatformStatsAchievementsSection({
 						</h3>
 
 						{stats.topUser.isCurrentUser && (
-							<div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-								<p className="text-sm text-emerald-700">
-									🔒 Andere Nutzer sehen nur deine Erfolge, aber keine
-									persönlichen Informationen von dir.
+							<div className="mb-2 p-1 bg-gray-50 border border-gray-200 rounded-lg">
+								<p className="text-xs text-green-700">
+									<span role="img" aria-label="Schloss-Emoji">
+										🔒
+									</span>{" "}
+									Andere Nutzer sehen nur deine Erfolge, aber keine persönlichen
+									Informationen von dir.
 								</p>
 							</div>
 						)}
 
 						{/* Container mit goldenem Rand */}
-						<div className="bg-gradient-to-br from-white to-gray-50 rounded-lg border-2 border-yellow-300 shadow-lg shadow-yellow-100 p-4">
+						<div
+							className={`bg-gradient-to-br from-white to-gray-50 rounded-lg border-2 ${stats.topUser.isCurrentUser ? "border-purple-300 shadow-purple-100 " : "border-yellow-300 shadow-yellow-100 "}  shadow-lg  p-4`}
+						>
 							<div className="grid grid-cols-3 divide-x divide-gray-200">
 								{/* Streak */}
 								<div className="text-center">

@@ -53,7 +53,8 @@ export const gamificationProfileSchema = z.object({
 	loginStreak: loginStreakSchema,
 	longestStreak: z.number().nonnegative().default(0),
 	flames: flamesSchema,
-	itemLog: itemLogSchema
+	itemLog: itemLogSchema,
+	xp: z.number().int().nonnegative().default(0)
 });
 
 export type GamificationProfile = z.infer<typeof gamificationProfileSchema>;

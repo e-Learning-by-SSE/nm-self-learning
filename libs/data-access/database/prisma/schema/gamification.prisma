@@ -5,6 +5,7 @@ model GamificationProfile {
     loginStreak   Json     @default("{\"count\": 0, \"status\": \"active\", \"pauseUntil\": null}")
     longestStreak Int      @default(0)
     flames        Json     @default("{\"count\": 0, \"maxStatus\": 3}")
+    xp            Int      @default(0)
 
     user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
     achievementProgress AchievementProgress[]

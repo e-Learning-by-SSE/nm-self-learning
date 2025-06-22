@@ -167,7 +167,7 @@ export const gamificationRouter = t.router({
 			// Get the achievement details
 			const achievement = await database.achievement.findUniqueOrThrow({
 				where: { id: achievementId },
-				select: { requiredValue: true }
+				select: { requiredValue: true, xpReward: true }
 			});
 
 			// Check if the achievement exists and is earned but not redeemed
@@ -201,7 +201,14 @@ export const gamificationRouter = t.router({
 					id: achievementProgress.id
 				},
 				data: {
-					redeemedAt: new Date()
+					redeemedAt: new Date(),
+					gamificationProfile: {
+						update: {
+							xp: {
+								increment: achievement.xpReward
+							}
+						}
+					}
 				}
 			});
 

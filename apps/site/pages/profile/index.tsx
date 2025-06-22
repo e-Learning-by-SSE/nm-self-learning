@@ -19,11 +19,7 @@ import {
 	ImageOrPlaceholder,
 	ProgressBar
 } from "@self-learning/ui/common";
-import {
-	CenteredSection,
-	DashboardSidebarLayout,
-	useRequiredSession
-} from "@self-learning/ui/layouts";
+import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
 import {
 	formatDateAgo,
@@ -57,7 +53,9 @@ type Submission = {
 	};
 };
 
-async function getPlattformCompetitionStats(): Promise<Omit<PlatformStats, "own">> {
+async function getPlattformCompetitionStats(
+	loggedInUsername: string
+): Promise<Omit<PlatformStats, "own">> {
 	const achievements = await database.achievementProgress.findMany({
 		where: {
 			redeemedAt: {
@@ -116,18 +114,67 @@ async function getPlattformCompetitionStats(): Promise<Omit<PlatformStats, "own"
 		}
 	});
 
-	console.log(learningUnitsLearned);
+	const topUser = await database.user.findFirst({
+		select: {
+			name: true,
+			student: {
+				select: {
+					completedLessons: {
+						select: {
+							performanceScore: true
+						}
+					}
+				}
+			},
+			gamificationProfile: {
+				select: {
+					loginStreak: true,
+					xp: true,
+					achievementProgress: {
+						select: {
+							achievement: {
+								select: {
+									id: true
+								}
+							}
+						},
+						where: {
+							redeemedAt: {
+								not: null
+							}
+						}
+					}
+				}
+			}
+		},
+		where: {
+			gamificationProfile: {
+				// This ensures only users with a gamificationProfile are considered // should not happen
+				isNot: null
+			}
+		},
+		orderBy: {
+			gamificationProfile: {
+				xp: "desc"
+			}
+		}
+	});
 
-	// Dummy for topUser (replace with real logic if available)
-	const topUser = {
-		currentStreak: 0,
-		achievementCount: 0,
-		averageRating: 0,
-		isCurrentUser: false
-	};
+	console.log("topUser", topUser);
+
+	const topUserLoginStreak = topUser?.gamificationProfile?.loginStreak as LoginStreak;
+	const topUsersCompletions = topUser?.student?.completedLessons ?? [];
+	const topUserAverageScore = calculateAverage(
+		topUsersCompletions.map(lesson => lesson.performanceScore)
+	);
 
 	return {
-		topUser,
+		topUser: {
+			currentStreak: topUserLoginStreak?.count ?? 0,
+			achievementCount: topUser?.gamificationProfile?.achievementProgress?.length ?? 0,
+			averageRating: topUserAverageScore,
+			isCurrentUser: topUser?.name === loggedInUsername
+		},
 		today: {
 			newAchievements: achievements.map(a => ({
 				id: a.achievement.id,
@@ -403,15 +450,14 @@ export const getServerSideProps = withTranslations(
 
 		const student = await getStudent(user.name);
 		const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 8 });
-		const competitionStatsPartial = await getPlattformCompetitionStats();
+		const competitionStatsPartial = await getPlattformCompetitionStats(user.name);
 		const competitionStats = {
 			...competitionStatsPartial,
 			own: {
 				currentStreak: student.user.gamificationProfile.loginStreak.count,
 				averageRating: calculateAverage(
 					student.completedLessons.map(lesson => lesson.performanceScore)
-				),
-				isCurrentUser: true
+				)
 			}
 		};
 

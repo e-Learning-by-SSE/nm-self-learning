@@ -40,9 +40,9 @@ function GradeDisplay({
 					Gratulation toll gemacht!
 				</h2>
 				<p className="text-gray-600">
-					Du hast{" "}
-					<span className="font-semibold">{Math.round(averageScore * 100)} Punkte</span>{" "}
-					abgeschlossen
+					Du hast eine{" "}
+					<span className="font-semibold">{Math.round(averageScore * 100)} / 100</span>{" "}
+					Bewertung erreicht
 				</p>
 			</div>
 
