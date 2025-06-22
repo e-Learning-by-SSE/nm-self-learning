@@ -1,10 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { checkAndAwardAchievements } from "@self-learning/achievements";
+import { checkAndAwardAchievements, convertAchievement } from "@self-learning/achievements";
 import { database } from "@self-learning/database";
 import {
 	AchievementWithProgress,
 	GamificationProfile,
-	achievementMetaSchema,
 	achievementTriggerEnum
 } from "@self-learning/types";
 import { isTruthy } from "@self-learning/util/common";
@@ -103,21 +102,13 @@ export const gamificationRouter = t.router({
 			},
 			orderBy: [{ category: "asc" }, { requiredValue: "asc" }]
 		});
-		const achievmentWithProgress = achievements.map(achievement => {
-			const { progressValue, redeemedAt, updatedAt } = achievement.progressBy[0] || {
-				progressValue: 0,
-				redeemedAt: null,
-				updatedAt: null
-			};
-			const meta = achievementMetaSchema.safeParse(achievement.meta);
-			if (meta.success) {
-				return { ...achievement, meta: meta.data, progressValue, redeemedAt, updatedAt };
-			} else {
-				console.warn("Invalid achievement meta; skipping:", achievement.meta);
-				return;
-			}
-		});
-		return achievmentWithProgress as AchievementWithProgress[];
+		const achievmentWithProgress = achievements
+			.map(
+				achievement =>
+					convertAchievement(achievement) as AchievementWithProgress | undefined
+			)
+			.filter(isTruthy);
+		return achievmentWithProgress;
 	}),
 	getOverviewStats: authProcedure.query(async ({ ctx }) => {
 		// Alle Achievements mit Progress holen

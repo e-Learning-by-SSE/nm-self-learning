@@ -39,14 +39,6 @@ export async function checkAndAwardAchievements({
 		const evaluation = await checker(achievementWithProgress, username, context);
 
 		if (!evaluation.newValue) continue; // no changes -> no update
-		// let type = "unchanged";
-		// if (evaluation.newValue >= achievementWithProgress.requiredValue) {
-		// 	type = "earned";
-		// } else if (evaluation.newValue > currentValue) {
-		// 	type = "progressed";
-		// } else if (evaluation.newValue < currentValue) {
-		// 	type = "regressed";
-		// }
 
 		await updateProgress(achievement.id, username, evaluation.newValue);
 		updatedAchievements.push({
