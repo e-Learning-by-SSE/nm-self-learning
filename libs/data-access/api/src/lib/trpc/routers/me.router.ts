@@ -62,8 +62,6 @@ export const meRouter = t.router({
 				}
 			});
 
-			const skillsIds = skills.map(skill => skill.id);
-
 			const username = "anonymous" + randomUUID();
 
 			await prisma.user.create({
