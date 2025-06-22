@@ -11,7 +11,7 @@ import { useRequiredSession } from "@self-learning/ui/layouts";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 
-export const getServerSideProps: GetServerSideProps<{}> = withTranslations(["common"], context => {
+export const getServerSideProps: GetServerSideProps = withTranslations(["common"], context => {
 	return withAuth(async (ctx, user) => {
 		if (user.role !== "ADMIN" && !user.isAuthor) {
 			return {
