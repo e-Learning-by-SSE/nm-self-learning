@@ -30,7 +30,7 @@ export const getServerSideProps = withTranslations(
 	})
 );
 
-const KURS_TITLE = "Dummy Kurs (Kursnummer: 1234)";
+const KURS_TITLE = "Sprachbeschreibung für die Sprachtechnologie (Kursnummer: 4310)";
 
 export default function ExperimentConsentPage({
 	hasAlreadyConsented,
@@ -156,7 +156,6 @@ export default function ExperimentConsentPage({
 									</span>
 								</label>
 							</div>
-
 							<div className="flex gap-4 pt-4">
 								<button
 									onClick={handleSubmitConsent}
@@ -192,8 +191,8 @@ export default function ExperimentConsentPage({
 					<div className="mt-8 border-t pt-6">
 						<div className="text-center">
 							<p className="text-xs text-gray-500 mb-2">
-								Bei Fragen zur Studie können Sie sich jederzeit an das
-								Forschungsteam wenden:
+								Bei Rückfragen oder Unklarheiten zur Studie können Sie sich
+								jederzeit an das Forschungsteam wenden:
 								<a
 									href="mailto:spark@uni-hildesheim.de"
 									className="text-emerald-600 hover:underline ml-1"
@@ -299,16 +298,16 @@ function ResponsiblePersons() {
 					<h3 className="font-semibold text-purple-900 mb-2">Verantwortliche Person</h3>
 					<div className="text-purple-800 text-sm space-y-1">
 						<p>
-							<strong>Prof. Dr. Klaus Beispiel</strong>
+							<strong>Prof. Dr. Ulrich Heid</strong>
 						</p>
-						<p>Lehrstuhl für Digitale Medien</p>
+						<p>Lehrstuhl für Computerlinguistik und Sprachtechnologie</p>
 						<p>Universität Hildesheim</p>
 						<p>
 							<a
 								href="mailto:beispiel@uni-hildesheim.de"
 								className="text-purple-600 hover:underline"
 							>
-								beispiel@uni-hildesheim.de
+								heidul@uni-hildesheim.de
 							</a>
 						</p>
 					</div>
@@ -319,15 +318,32 @@ function ResponsiblePersons() {
 }
 
 function ExperimentInformation() {
+	const [showFull, setShowFull] = useState(false);
+
+	const shortText =
+		"Die Datenverarbeitung erfolgt auf Grundlage Ihrer freiwilligen Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO. Alle Daten werden ausschließlich für wissenschaftliche Zwecke verwendet.";
+
+	const fullText = `Die Datenverarbeitung erfolgt auf Grundlage Ihrer freiwilligen Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO. Alle Daten werden ausschließlich für wissenschaftliche Zwecke verwendet. Zugriff auf personenbezogene Daten haben nur die Versuchsleitung und autorisiertes technisches Personal. Lehrpersonen erhalten ausschließlich pseudoanonymisierte Datensätze, die keine Rückschlüsse auf Ihre Person zulassen. Die Durchführung des Experiments erfolgt im Einklang mit der EU-Datenschutz-Grundverordnung (DSGVO). Die Daten werden auf universitätseigenen Servern gespeichert. Nach Abschluss des Experiments erfolgt eine Pseudonymisierung, bevor die Daten ausgewertet werden. Die Daten werden für maximal 10 Jahre gespeichert und danach gelöscht, sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Ergebnisse werden ausschließlich anonymisiert und in aggregierter Form veröffentlicht. Ausgewählte Aussagen oder Verhaltensdaten können anonymisiert zitiert werden. Eine Identifikation einzelner Personen ist hierbei ausgeschlossen.
+
+Datenschutzbeauftragter der Universität Hildesheim:
+Prof. Dr. Thomas Mandl
+Institut für Informationswissenschaft und Sprachtechnologie
+Universität Hildesheim
+E-Mail: mandl@uni-hildesheim.de
+Tel.: +49 5121 883-30306
+Lübecker Straße 3, 31141 Hildesheim`;
+
 	return (
 		<div className="space-y-6">
 			<div>
 				<h2 className="mb-3 text-xl font-semibold">Worum geht es in dieser Studie?</h2>
 				<p className="text-gray-700">
 					Diese Forschungsstudie untersucht die Wirksamkeit verschiedener Elemente in
-					digitalen Lernumgebungen. Sämtliches Verhalten der Teilnehmenden hat keinerlei
-					Einfluss auf die Bewertung in einer Lehrveranstaltung, ausgenommen Bonuspunkte
-					für eine Teilnahme an der Studie selbst.
+					digitalen Lernumgebungen. Hierbei wird das Verhalten der Teilnehmenden erfasst
+					und überprüft, welche Elemente potentiellen Einfluss auf das Verhalten nehmen.
+					Das Verhalten der Teilnehmenden hat keinerlei Einfluss auf die Bewertung in
+					einer Lehrveranstaltung, ausgenommen Bonuspunkte für eine Teilnahme an der
+					Studie selbst.
 				</p>
 			</div>
 
@@ -355,21 +371,27 @@ function ExperimentInformation() {
 				<h2 className="mb-3 text-xl font-semibold">Welche Daten werden erhoben?</h2>
 				<ul className="list-inside list-disc space-y-2 text-gray-700">
 					<li>Ergebnis der Abschlussklausur {KURS_TITLE}</li>
-					<li>
-						Dein Verhalten auf der Plattform wie:
-						<ul className="list-inside list-disc ml-6 space-y-1">
-							<li>Lernfortschritte und -zeiten</li>
-							<li>Interaktionen mit Elementen der Plattform</li>
-							<li>Bewertungen und Testergebnisse</li>
-							<li>Nutzungsstatistiken der Plattform</li>
-						</ul>
-					</li>
+					<li>Lernfortschritte und -zeiten</li>
+					<li>Bewertungen und Testergebnisse</li>
+					<li>Dein Verhalten auf der Plattform, wie z.&nbsp;B.:</li>
+					<ul className="list-inside list-disc ml-6 space-y-1">
+						<li>Interaktionen mit Elementen der Plattform</li>
+						<li>Aufenthaltsdauer</li>
+						<li>Klicks</li>
+						<li>Zugriffszeiten</li>
+					</ul>
 				</ul>
-				<p className="mt-3 text-sm text-gray-600">
-					Alle Daten werden ausschließlich für wissenschaftliche Zwecke verwendet und
-					nicht an Dritte weitergegeben. Ausschließlich die Versuchsleitung hat Zugriff
-					auf die individuellen Datensätze. Lehrpersonen erhalten nur pseudoanomisierte
-					Daten, die keine Rückschlüsse auf einzelne Personen zulassen.
+				<p className="mt-3 text-sm text-gray-600 whitespace-pre-line">
+					{showFull ? fullText : shortText}
+					{!showFull && (
+						<button
+							type="button"
+							className="ml-2 text-emerald-700 underline hover:text-emerald-900"
+							onClick={() => setShowFull(true)}
+						>
+							Mehr anzeigen
+						</button>
+					)}
 				</p>
 			</div>
 
