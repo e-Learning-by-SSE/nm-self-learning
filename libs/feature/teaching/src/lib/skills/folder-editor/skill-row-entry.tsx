@@ -7,7 +7,8 @@ import {
 	ShieldExclamationIcon,
 	ChevronRightIcon
 } from "@heroicons/react/24/solid";
-import { PuzzlePieceIcon } from "@heroicons/react/24/outline";
+import { PuzzlePieceIcon as PuzzlePieceIconSolid } from "@heroicons/react/24/solid";
+import { PuzzlePieceIcon as PuzzlePieceIconOutline } from "@heroicons/react/24/outline";
 import { AddChildButton } from "./skill-taskbar";
 import styles from "./folder-table.module.css";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
@@ -26,7 +27,8 @@ export function ListSkillEntryWithChildren({
 	matchingSkillIds,
 	autoExpandIds,
 	textClassName,
-	isUsedSkill
+	isProvidedSkill,
+	isRequiredSkill
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
@@ -39,7 +41,8 @@ export function ListSkillEntryWithChildren({
 	matchingSkillIds?: Set<string>;
 	autoExpandIds?: Set<string>;
 	textClassName?: string;
-	isUsedSkill?: (skillId: string) => boolean;
+	isProvidedSkill?: (skillId: string) => boolean;
+	isRequiredSkill?: (skillId: string) => boolean;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
@@ -61,7 +64,8 @@ export function ListSkillEntryWithChildren({
 				nodeId={nodeId}
 				authorId={authorId}
 				textClassName={textClassName}
-				isUsedSkill={isUsedSkill}
+				isProvidedSkill={isProvidedSkill}
+				isRequiredSkill={isRequiredSkill}
 			/>
 			{showChildren &&
 				skillDisplayData.children
@@ -102,7 +106,8 @@ export function ListSkillEntryWithChildren({
 								matchingSkillIds={matchingSkillIds}
 								autoExpandIds={autoExpandIds}
 								textClassName={textClassName}
-								isUsedSkill={isUsedSkill}
+								isProvidedSkill={isProvidedSkill}
+								isRequiredSkill={isRequiredSkill}
 							/>
 						);
 					})}
@@ -132,7 +137,8 @@ function SkillRow({
 	nodeId,
 	authorId,
 	textClassName,
-	isUsedSkill
+	isProvidedSkill,
+	isRequiredSkill
 }: {
 	skill: SkillFolderVisualization;
 	depth: number;
@@ -141,7 +147,8 @@ function SkillRow({
 	nodeId: string;
 	authorId: number;
 	textClassName?: string;
-	isUsedSkill?: (skillId: string) => boolean;
+	isProvidedSkill?: (skillId: string) => boolean;
+	isRequiredSkill?: (skillId: string) => boolean;
 }) {
 	const depthCssStyle = {
 		"--depth": depth
@@ -242,11 +249,20 @@ function SkillRow({
 																/>
 															)}
 														</div>
-														<FolderIcon className={`icon h-5 text-lg ${isUsedSkill?.(skill.id) ? "text-emerald-500" : ""}`} />
+														<FolderIcon
+															className={`icon h-5 text-lg ${isProvidedSkill?.(skill.id) ? "text-emerald-500" : ""}`}
+														/>
 													</>
 												) : (
 													<div className="ml-6">
-														<PuzzlePieceIcon className={`icon h-5 text-lg ${isUsedSkill?.(skill.id) ? "text-emerald-500" : ""}`} />
+														{isProvidedSkill?.(skill.id) &&
+														isRequiredSkill?.(skill.id) ? (
+															<PuzzlePieceIconSolid className="icon h-5 text-lg text-emerald-500" />
+														) : isProvidedSkill?.(skill.id) ? (
+															<PuzzlePieceIconOutline className="icon h-5 text-lg text-emerald-500" />
+														) : (
+															<PuzzlePieceIconOutline className="icon h-5 text-lg" />
+														)}
 													</div>
 												)}
 											</div>
@@ -256,9 +272,7 @@ function SkillRow({
 											{cycleWarning && (
 												<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 											)}
-											<span
-												className={`${textClassName}`}
-											>
+											<span className={`${textClassName}`}>
 												{skill.displayName ?? skill.skill.name}
 											</span>
 										</div>

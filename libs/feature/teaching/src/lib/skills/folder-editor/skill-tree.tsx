@@ -12,14 +12,16 @@ export function SkillTree({
 	authorId,
 	isDragging,
 	onSkillSelect,
-	isUsedSkill
+	isProvidedSkill,
+	isRequiredSkill
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
 	updateSkillDisplay: UpdateVisuals;
 	authorId: number;
 	isDragging: boolean;
 	onSkillSelect: SkillSelectHandler;
-	isUsedSkill: (skillId: string) => boolean;
+	isProvidedSkill: (skillId: string) => boolean;
+	isRequiredSkill: (skillId: string) => boolean;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
 
@@ -106,7 +108,8 @@ export function SkillTree({
 										autoExpandIds={skillIdsToAutoExpand}
 										handleSelection={onSkillSelect}
 										textClassName="hover:text-emerald-500"
-										isUsedSkill={isUsedSkill}
+										isProvidedSkill={isProvidedSkill}
+										isRequiredSkill={isRequiredSkill}
 									/>
 								))}
 								{droppableProvided.placeholder}

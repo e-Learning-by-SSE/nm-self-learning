@@ -46,7 +46,21 @@ export function CourseModuleView({
 	function switchTab(index: number) {
 		setSelectedIndex(index);
 	}
-	const isUsedSkill = (skillId: string): boolean => {
+	const isRequiredSkill = (skillId: string): boolean => {
+		const skill = allSkills.get(skillId);
+		const requires = form.getValues("requires") ?? [];
+		const alreadyRequired = requires.some(s => s.id === skill?.id);
+		if (alreadyRequired) {
+			return true;
+		}
+		for (const module of modules.values()) {
+			if (module.requires?.some(s => s.id === skillId)) {
+				return true;
+			}
+		}
+		return false;
+	};
+	const isProvidedSkill = (skillId: string): boolean => {
 		const skill = allSkills.get(skillId);
 		const provides = form.getValues("provides") ?? [];
 		const alreadyProvided = provides.some(s => s.id === skill?.id);
@@ -76,7 +90,7 @@ export function CourseModuleView({
 			form.setValue("title", skill.name);
 		}
 
-		if (isUsedSkill(skill.id)) {
+		if (isProvidedSkill(skill.id)) {
 			showToast({
 				type: "error",
 				title: "Skill bereits vorhanden",
@@ -179,7 +193,8 @@ export function CourseModuleView({
 						authorId={authorId}
 						isDragging={isDragging}
 						modules={modules}
-						isUsedSkill={isUsedSkill}
+						isProvidedSkill={isProvidedSkill}
+						isRequiredSkill={isRequiredSkill}
 						onSelectModule={handleModuleClick}
 						onSkillSelect={onSkillSelect}
 						onCreateNewModule={onCreateNewModule}

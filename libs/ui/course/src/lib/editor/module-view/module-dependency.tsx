@@ -13,7 +13,8 @@ export function ModuleDependency({
 	modules,
 	onSelectModule,
 	onSkillSelect,
-	isUsedSkill,
+	isProvidedSkill,
+	isRequiredSkill,
 	onCreateNewModule
 }: {
 	skills: Map<string, SkillFormModel>;
@@ -22,7 +23,8 @@ export function ModuleDependency({
 	modules: Map<string, LessonFormModel>;
 	onSelectModule: (id: string) => void;
 	onSkillSelect: SkillSelectHandler;
-	isUsedSkill: (skillId: string) => boolean;
+	isProvidedSkill: (skillId: string) => boolean;
+	isRequiredSkill: (skillId: string) => boolean;
 	onCreateNewModule?: () => void;
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
@@ -41,7 +43,8 @@ export function ModuleDependency({
 						authorId={authorId}
 						isDragging={isDragging}
 						onSkillSelect={onSkillSelect}
-						isUsedSkill={isUsedSkill}
+						isProvidedSkill={isProvidedSkill}
+						isRequiredSkill={isRequiredSkill}
 					/>
 				);
 			case 1:
