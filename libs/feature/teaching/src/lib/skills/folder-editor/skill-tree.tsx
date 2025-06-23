@@ -110,6 +110,7 @@ export function SkillTree({
 										textClassName="hover:text-emerald-500"
 										isProvidedSkill={isProvidedSkill}
 										isRequiredSkill={isRequiredSkill}
+										calledBySkillTree={true}
 									/>
 								))}
 								{droppableProvided.placeholder}

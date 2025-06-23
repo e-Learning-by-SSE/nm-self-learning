@@ -8,7 +8,10 @@ import {
 	ChevronRightIcon
 } from "@heroicons/react/24/solid";
 import { PuzzlePieceIcon as PuzzlePieceIconSolid } from "@heroicons/react/24/solid";
-import { PuzzlePieceIcon as PuzzlePieceIconOutline } from "@heroicons/react/24/outline";
+import {
+	LockClosedIcon,
+	PuzzlePieceIcon as PuzzlePieceIconOutline
+} from "@heroicons/react/24/outline";
 import { AddChildButton } from "./skill-taskbar";
 import styles from "./folder-table.module.css";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
@@ -28,7 +31,8 @@ export function ListSkillEntryWithChildren({
 	autoExpandIds,
 	textClassName,
 	isProvidedSkill,
-	isRequiredSkill
+	isRequiredSkill,
+	calledBySkillTree
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
@@ -43,6 +47,7 @@ export function ListSkillEntryWithChildren({
 	textClassName?: string;
 	isProvidedSkill?: (skillId: string) => boolean;
 	isRequiredSkill?: (skillId: string) => boolean;
+	calledBySkillTree?: boolean;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
@@ -66,6 +71,7 @@ export function ListSkillEntryWithChildren({
 				textClassName={textClassName}
 				isProvidedSkill={isProvidedSkill}
 				isRequiredSkill={isRequiredSkill}
+				calledBySkillTree={calledBySkillTree}
 			/>
 			{showChildren &&
 				skillDisplayData.children
@@ -108,6 +114,7 @@ export function ListSkillEntryWithChildren({
 								textClassName={textClassName}
 								isProvidedSkill={isProvidedSkill}
 								isRequiredSkill={isRequiredSkill}
+								calledBySkillTree={calledBySkillTree}
 							/>
 						);
 					})}
@@ -138,7 +145,8 @@ function SkillRow({
 	authorId,
 	textClassName,
 	isProvidedSkill,
-	isRequiredSkill
+	isRequiredSkill,
+	calledBySkillTree
 }: {
 	skill: SkillFolderVisualization;
 	depth: number;
@@ -149,6 +157,7 @@ function SkillRow({
 	textClassName?: string;
 	isProvidedSkill?: (skillId: string) => boolean;
 	isRequiredSkill?: (skillId: string) => boolean;
+	calledBySkillTree?: boolean;
 }) {
 	const depthCssStyle = {
 		"--depth": depth
@@ -164,7 +173,13 @@ function SkillRow({
 			{ id: skill.id, isExpanded: !skill.isExpanded, shortHighlight: false }
 		]);
 	};
-
+	const isProvided = isProvidedSkill?.(skill.id);
+	const isRequired = isRequiredSkill?.(skill.id);
+	const isLocked = isProvided && isRequired;
+	console.log(skill.id, {
+		provided: isProvidedSkill?.(skill.id),
+		required: isRequiredSkill?.(skill.id)
+	});
 	let title = "";
 	if (skill.isCycleMember) {
 		title = "Dieser Skill ist Teil eines Zyklus.";
@@ -255,8 +270,7 @@ function SkillRow({
 													</>
 												) : (
 													<div className="ml-6">
-														{isProvidedSkill?.(skill.id) &&
-														isRequiredSkill?.(skill.id) ? (
+														{isLocked ? (
 															<PuzzlePieceIconSolid className="icon h-5 text-lg text-emerald-500" />
 														) : isProvidedSkill?.(skill.id) ? (
 															<PuzzlePieceIconOutline className="icon h-5 text-lg text-emerald-500" />
@@ -272,18 +286,23 @@ function SkillRow({
 											{cycleWarning && (
 												<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 											)}
-											<span className={`${textClassName}`}>
+											<span className={`flex items-center ${textClassName}`}>
 												{skill.displayName ?? skill.skill.name}
+												{isLocked && (
+													<LockClosedIcon className="ml-1 text-gray-400 h-4 w-4 flex-shrink-0" />
+												)}
 											</span>
 										</div>
 										<div className="invisible  group-hover:visible">
-											<AddChildButton
-												parentSkill={skill.skill}
-												childrenNumber={skill.numberChildren}
-												updateSkillDisplay={updateSkillDisplay}
-												handleSelection={handleSelection}
-												authorId={authorId}
-											/>
+											{!calledBySkillTree && (
+												<AddChildButton
+													parentSkill={skill.skill}
+													childrenNumber={skill.numberChildren}
+													updateSkillDisplay={updateSkillDisplay}
+													handleSelection={handleSelection}
+													authorId={authorId}
+												/>
+											)}
 										</div>
 									</div>
 								)}
