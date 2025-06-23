@@ -25,9 +25,7 @@ export function ConfettiRain({
 
 	const getInstance = useCallback((params: { confetti: TCanvasConfettiInstance }) => {
 		confettiRef.current = params.confetti;
-		if (!isActive) {
-			startConfettiRain();
-		}
+		startConfettiRain();
 	}, []);
 
 	const rainConfetti = useCallback((): void => {

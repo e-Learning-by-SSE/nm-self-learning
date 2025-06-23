@@ -134,9 +134,22 @@ export function QuizGradeDialog({
 		void fetchAchievements();
 	}, [earnAchievements]);
 
+	const [showConfetti, setShowConfetti] = useState(false);
+
+	useEffect(() => {
+		setShowConfetti(true);
+		const timer = setTimeout(() => setShowConfetti(false), 200);
+		return () => clearTimeout(timer);
+	}, []);
+
 	return (
 		<>
-			<ConfettiRain gravityBaseValue={3} />
+			<ConfettiRain
+				isActive={showConfetti}
+				interval={30}
+				duration={100}
+				gravityBaseValue={3.5}
+			/>
 
 			<GameifyDialog
 				open={open}
