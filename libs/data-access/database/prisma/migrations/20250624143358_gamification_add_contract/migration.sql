@@ -9,6 +9,3 @@
 ALTER TABLE "User" DROP COLUMN "enabledFeatureLearningDiary",
 DROP COLUMN "enabledLearningStatistics";
 
-
--- CreateIndex
-CREATE UNIQUE INDEX "CompletedLesson_username_lessonId_key" ON "CompletedLesson"("username", "lessonId");

@@ -29,20 +29,18 @@ import { useReducer } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
-type LearningDiaryEntryLessonWithDetails = {
-	entryId: string;
-	lessonId: string;
+type RecentLesson = {
 	title: string;
 	slug: string;
-	courseImgUrl?: string;
 	courseSlug: string;
+	courseImgUrl?: string | null;
 	touchedAt: Date;
 	completed: boolean;
 };
 
 type Props = {
 	student: Student;
-	recentLessons: LearningDiaryEntryLessonWithDetails[];
+	recentLessons: RecentLesson[];
 };
 
 function getStudent(username: string) {
@@ -66,6 +64,7 @@ function getStudent(username: string) {
 				take: 5,
 				orderBy: { createdAt: "desc" },
 				select: {
+					lessonId: true,
 					createdAt: true,
 					lesson: {
 						select: {
@@ -131,64 +130,79 @@ export type DiaryLessonSchema = {
 	createdAt: Date;
 };
 
+// Method 1: Get lessons from diary entries
+function getRecentLessonsFromDiary({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}): RecentLesson[] {
+	// Get recent diary lessons
+	const recentDiaryLessons = student.learningDiaryEntrys
+		.flatMap(entry =>
+			entry.lessonsLearned.map(lesson => ({
+				lessonId: lesson.lessonId,
+				courseSlug: entry.courseSlug,
+				courseImgUrl: entry.course?.imgUrl,
+				touchedAt: entry.createdAt
+			}))
+		)
+		.sort((a, b) => new Date(b.touchedAt).getTime() - new Date(a.touchedAt).getTime())
+		.slice(0, lessonLimit);
+
+	// Enrich with completion data
+	const completedLessonsMap = new Map(
+		student.completedLessons.map(lesson => [lesson.lessonId, lesson])
+	);
+
+	return recentDiaryLessons.map(diaryLesson => {
+		const completedLesson = completedLessonsMap.get(diaryLesson.lessonId);
+
+		return {
+			title: completedLesson?.lesson.title || "HALLO",
+			slug: completedLesson?.lesson.slug || "",
+			courseSlug: diaryLesson.courseSlug,
+			courseImgUrl: diaryLesson.courseImgUrl,
+			touchedAt: diaryLesson.touchedAt,
+			completed: !!completedLesson
+		};
+	});
+}
+
+// Method 2: Get lessons from completions only
+function getRecentLessonsFromCompletions({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}): RecentLesson[] {
+	return student.completedLessons
+		.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+		.slice(0, lessonLimit)
+		.map(completedLesson => ({
+			title: completedLesson.lesson.title,
+			slug: completedLesson.lesson.slug,
+			courseSlug: completedLesson.course?.slug || "",
+			courseImgUrl: completedLesson.course?.imgUrl,
+			touchedAt: completedLesson.createdAt,
+			completed: true
+		}));
+}
+
 async function loadMostRecentLessons({
 	student,
 	lessonLimit
 }: {
 	student: Student;
 	lessonLimit: number;
-}) {
-	const lessonsFromDiary: DiaryLessonSchema[] = student.learningDiaryEntrys.flatMap(entry =>
-		entry.lessonsLearned.map(lesson => ({
-			...lesson,
-			courseSlug: entry.courseSlug,
-			courseImgUrl: entry.course?.imgUrl,
-			entryId: lesson.id,
-			createdAt: entry.createdAt
-		}))
-	);
-
-	const sortedLessons = lessonsFromDiary.sort(
-		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-	);
-
-	const newestLessons = sortedLessons.slice(0, lessonLimit);
-	const lessonIds = newestLessons.map(lesson => lesson.lessonId);
-
-	const lessonsArray = await database.lesson.findMany({
-		where: { lessonId: { in: lessonIds } },
-		select: {
-			lessonId: true,
-			title: true,
-			slug: true,
-			completions: true
-		}
-	});
-
-	const lessonDetailsMap = new Map(lessonsArray.map(detail => [detail.lessonId, detail]));
-	const lessonsWithDetails = newestLessons.map(lesson => {
-		const lessonDetails = lessonDetailsMap.get(lesson.lessonId);
-
-		return {
-			lessonId: lesson.lessonId,
-			title: lessonDetails?.title || "",
-			slug: lessonDetails?.slug || "",
-			courseImgUrl: lesson.courseImgUrl || "",
-			courseSlug: lesson.courseSlug || "",
-			touchedAt: lesson.createdAt || null,
-			entryId: lesson.entryId || "",
-			compeleted: false
-		};
-	});
-
-	const completedLessonsTitleSet = new Set(
-		student.completedLessons.map(lesson => lesson.lesson.title)
-	);
-
-	return lessonsWithDetails.map(lesson => ({
-		...lesson,
-		completed: completedLessonsTitleSet.has(lesson.title)
-	}));
+}): Promise<RecentLesson[]> {
+	if (student.user.featureFlags?.learningDiary ?? false) {
+		return getRecentLessonsFromDiary({ student, lessonLimit });
+	} else {
+		return getRecentLessonsFromCompletions({ student, lessonLimit });
+	}
 }
 
 export const getServerSideProps = withTranslations(
@@ -448,7 +462,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	);
 }
 
-function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[] }) {
+function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 	return (
 		<>
 			{lessons.length === 0 ? (
@@ -466,7 +480,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 							px-3 transition-transform hover:bg-slate-100"
 							>
 								<ImageOrPlaceholder
-									src={lesson.courseImgUrl}
+									src={lesson.courseImgUrl ?? undefined}
 									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 								/>
 								<div className="flex w-full grid-rows-2 justify-between gap-2 px-4">

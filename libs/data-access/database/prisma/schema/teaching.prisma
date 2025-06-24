@@ -153,7 +153,7 @@ model CompletedLesson {
     lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
     user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
 
-    @@unique([username, lessonId])
+    @@index([username, lessonId])
 }
 
 model QuizAttempt {

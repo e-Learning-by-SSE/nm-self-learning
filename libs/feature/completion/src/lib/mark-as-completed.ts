@@ -23,35 +23,12 @@ export async function markAsCompleted({
 			})
 		: null;
 
-	const oldData = await database.completedLesson.findUnique({
-		where: { username_lessonId: { username, lessonId } },
-		select: {
-			performanceScore: true
-		}
-	});
-
-	const existingPerformance = oldData?.performanceScore ?? 0;
-
-	let updatePerformance = performanceScore;
-	if (existingPerformance > performanceScore) {
-		updatePerformance = performanceScore;
-	}
-
-	const result = await database.completedLesson.upsert({
-		where: {
-			username_lessonId: {
-				username,
-				lessonId
-			}
-		},
-		create: {
+	const result = await database.completedLesson.create({
+		data: {
 			courseId: course?.courseId,
 			lessonId,
 			username,
-			performanceScore: updatePerformance
-		},
-		update: {
-			performanceScore: updatePerformance
+			performanceScore
 		},
 		select: {
 			createdAt: true,

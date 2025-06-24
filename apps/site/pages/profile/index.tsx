@@ -1,3 +1,4 @@
+import { duplicateRemover } from "@e-learning-by-sse/nm-skill-lib";
 import { BookOpenIcon, ChartBarIcon, LinkIcon } from "@heroicons/react/24/outline";
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
@@ -17,15 +18,18 @@ import {
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
-	ProgressBar
+	ProgressBar,
+	Tooltip
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
 import {
 	formatDateAgo,
 	formatDateStringShort,
-	formatTimeIntervalToString
+	formatTimeIntervalToString,
+	IdSet
 } from "@self-learning/util/common";
+import { createEventLogEntry } from "@self-learning/util/eventlog";
 import { startOfToday } from "date-fns";
 import { NextComponentType, NextPageContext } from "next";
 import Link from "next/link";
@@ -379,6 +383,9 @@ function getRecentLessonsFromCompletions({
 	lessonLimit: number;
 }): RecentLesson[] {
 	return student.completedLessons
+		.map(completedLesson => ({ ...completedLesson, id: completedLesson.lessonId })) // for duplicate removal
+		.sort((a, b) => b.performanceScore - a.performanceScore) // sort to remove only the lowest performance score duplicates
+		.filter(duplicateRemover())
 		.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
 		.slice(0, lessonLimit)
 		.map(completedLesson => ({
@@ -441,6 +448,12 @@ export const getServerSideProps = withTranslations(
 				}
 			};
 		}
+
+		await createEventLogEntry({
+			type: "PROFILE_VIEW",
+			username: user.name,
+			payload: undefined
+		});
 
 		const student = await getStudent(user.name);
 		const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 8 });
@@ -677,6 +690,14 @@ function ProfileCard({
 
 	const completedCourses = enrollments.filter(e => e.status === "COMPLETED").length;
 
+	const uniqueCompletedLesson = new IdSet(
+		completedLessons
+			.map(lesson => ({ ...lesson, id: lesson.lessonId }))
+			.sort((a, b) => b.performanceScore - a.performanceScore)
+	);
+
+	console.log("Unique Completed Lessons", uniqueCompletedLesson);
+
 	return (
 		<section className="relative rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm border border-gray-100 p-6 space-y-6">
 			<div className="absolute -top-3 -right-3 h-16 w-16 z-10">
@@ -726,7 +747,7 @@ function ProfileCard({
 						</div>
 						<div className="text-center">
 							<div className="text-2xl font-bold text-blue-600">
-								{completionCount.completedLessons}
+								{uniqueCompletedLesson.size}
 							</div>
 							<div className="text-xs text-gray-500 uppercase tracking-wide">
 								Lerneinheiten
@@ -749,6 +770,15 @@ function ProfileCard({
 						<span className="text-sm text-gray-600">Längster Streak</span>
 						<span className="text-sm font-semibold  text-emerald-600">
 							{longestStreak} Tage
+						</span>
+					</div>
+					{/*  */}
+					<div className="flex items-center justify-between">
+						<Tooltip content="Lerneinheiten die du erfolgreich bearbeitet hast. Auch mehrfachbewertungen werden hier gezählt.">
+							<span className="text-sm text-gray-600">Lerneinheiten bearbeitet</span>
+						</Tooltip>
+						<span className="text-sm font-semibold  text-emerald-600">
+							{completionCount.completedLessons}
 						</span>
 					</div>
 				</div>

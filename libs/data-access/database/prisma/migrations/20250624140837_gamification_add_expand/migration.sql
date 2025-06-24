@@ -1,9 +1,4 @@
-/*
-  Warnings:
 
-  - A unique constraint covering the columns `[username,lessonId]` on the table `CompletedLesson` will be added. If there are existing duplicate values, this will fail.
-
-*/
 -- CreateEnum
 CREATE TYPE "AchievementTrigger" AS ENUM ('lesson_completed', 'daily_login', 'session_time', 'streak_check', 'manual');
 
@@ -19,8 +14,6 @@ CREATE TYPE "NotificationChannel" AS ENUM ('email', 'push');
 -- CreateEnum
 CREATE TYPE "ReminderStatus" AS ENUM ('SCHEDULED', 'SENT', 'FAILED', 'SKIPPED');
 
--- DropIndex
-DROP INDEX "CompletedLesson_username_lessonId_idx";
 
 -- AlterTable
 ALTER TABLE "CompletedLesson" ADD COLUMN     "performanceScore" DOUBLE PRECISION NOT NULL DEFAULT 0;
