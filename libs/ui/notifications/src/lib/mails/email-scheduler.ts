@@ -19,11 +19,7 @@ export async function checkAndSendScheduledEmails(): Promise<SchedulerResult> {
 	};
 
 	try {
-		await Promise.all([
-			// checkCourseInactivity(results),
-			// checkNewAchievements(results),
-			checkStreakRisks(results)
-		]);
+		await Promise.all([checkCourseInactivity(results), checkStreakRisks(results)]);
 	} catch (error) {
 		console.error("Email scheduler error:", error);
 		results.errors++;
@@ -78,7 +74,7 @@ async function checkCourseInactivity(results: SchedulerResult) {
 			const result = await sendCourseReminder(enrollment.student.user.email!, {
 				userName: enrollment.student.user.displayName,
 				courseName: enrollment.course.title,
-				courseUrl: `${process.env.NEXT_PUBLIC_BASE_PATH}/courses/${enrollment.course.slug}`,
+				courseUrl: `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/courses/${enrollment.course.slug}`,
 				progress: enrollment.progress,
 				lastVisitedDays: differenceInDays(new Date(), enrollment.lastProgressUpdate)
 			});
