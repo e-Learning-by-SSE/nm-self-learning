@@ -134,7 +134,7 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 			}
 		});
 
-		const { flames } = profile as GamificationProfile;
+		const { flames, loginStreak: oldLoginStreak } = profile as GamificationProfile;
 
 		// Calculate the streak update using pure business logic
 		const streakUpdate = calculateLoginStreakUpdate(profile as GamificationProfile, now);
@@ -160,18 +160,20 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 			data: updateData
 		});
 
-		// Create notification with the calculated trigger
-		await createNotification({
-			tx,
-			component: "StreakInfoDialog",
-			props: {
-				flames,
-				trigger: streakUpdate.trigger,
-				loginStreak: streakUpdate.loginStreak
-			},
-			targetAudience: "user",
-			targetUser: user.id
-		});
+		if (streakUpdate.loginStreak.count !== oldLoginStreak.count) {
+			// Create notification with the calculated trigger
+			await createNotification({
+				tx,
+				component: "StreakInfoDialog",
+				props: {
+					flames,
+					trigger: streakUpdate.trigger,
+					loginStreak: streakUpdate.loginStreak
+				},
+				targetAudience: "user",
+				targetUserIds: user.id
+			});
+		}
 	});
 }
 
@@ -194,7 +196,7 @@ async function createOnboardingNotification({
 		component,
 		props: {},
 		targetAudience: "user",
-		targetUser: dbUser.id,
+		targetUserIds: dbUser.id,
 		tx: database
 	});
 }

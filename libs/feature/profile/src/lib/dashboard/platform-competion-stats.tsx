@@ -1,5 +1,9 @@
-import { FolderIcon } from "@heroicons/react/24/outline";
-import { ChevronRightIcon, ClockIcon, TrophyIcon } from "@heroicons/react/24/solid";
+import {
+	ChevronRightIcon,
+	ClockIcon,
+	QuestionMarkCircleIcon,
+	TrophyIcon
+} from "@heroicons/react/24/solid";
 import { AchievementCard } from "@self-learning/achievements";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, scoreToPerformanceGrade } from "@self-learning/completion";
@@ -317,7 +321,7 @@ export function PlatformStatsAchievementsSection({
 									</div>
 									<div className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors flex items-center justify-center gap-1 relative z-10">
 										<span>Ø Bewertung</span>
-										<FolderIcon className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors hidden sm:inline" />
+										<QuestionMarkCircleIcon className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors hidden sm:inline" />
 									</div>
 								</div>
 							</div>
