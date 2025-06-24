@@ -15,6 +15,7 @@ import {
 import { AuthorsList, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
+import { handleEmailTracking } from "@self-learning/ui/notifications";
 import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { getServerSession } from "next-auth";
@@ -124,82 +125,51 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(
-	["common"],
-	async ({ params, query, req, res }) => {
-		const courseSlug = params?.courseSlug as string | undefined;
-		if (!courseSlug) {
-			throw new Error("No slug provided.");
-		}
+export const getServerSideProps = withTranslations(["common"], async context => {
+	const { req, res, params } = context;
+	const courseSlug = params?.courseSlug as string | undefined;
+	if (!courseSlug) {
+		throw new Error("No slug provided.");
+	}
 
-		const emailTrackId = query.ident as string | undefined;
-
-		if (emailTrackId) {
-			try {
-				const reminderLog = await database.reminderLog.findFirst({
-					where: {
-						metadata: {
-							path: ["trackingIdentifier"],
-							equals: emailTrackId
-						}
-					}
-				});
-
-				await database.reminderLog.update({
-					where: { id: reminderLog?.id },
-					data: {
-						metadata: {
-							...((reminderLog?.metadata ?? {}) as any),
-							ipAddress:
-								req.headers["x-forwarded-for"] || req.connection.remoteAddress,
-							clickedAt: new Date()
-						}
-					}
-				});
-
-				// Redirect ohne tracking parameter für saubere URL
-				const cleanUrl = `/courses/${courseSlug}`;
-				return {
-					redirect: {
-						destination: cleanUrl,
-						permanent: false
-					}
-				};
-			} catch (error) {
-				console.error("Email tracking failed:", error);
-				// Continue normally wenn tracking fehlschlägt
-			}
-		}
-
-		const course = await getCourse(courseSlug);
-		if (!course) {
-			return { notFound: true };
-		}
-
-		const session = await getServerSession(req, res, authOptions);
-		const sessionUser = session?.user;
-
-		const content = await mapCourseContent(course.content as CourseContent, sessionUser?.name);
-		let markdownDescription = null;
-
-		if (course.description && course.description.length > 0) {
-			markdownDescription = await compileMarkdown(course.description);
-			course.description = null;
-		}
-
-		const summary = createCourseSummary(content);
-
+	const trackingResult = await handleEmailTracking(context);
+	if (trackingResult.shouldRedirect) {
 		return {
-			props: {
-				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
-				summary,
-				content,
-				markdownDescription
-			},
-			notFound: !course
+			redirect: {
+				destination: `/courses/${courseSlug}`,
+				permanent: false
+			}
 		};
 	}
-);
+
+	const course = await getCourse(courseSlug);
+	if (!course) {
+		return { notFound: true };
+	}
+
+	const session = await getServerSession(req, res, authOptions);
+	const sessionUser = session?.user;
+
+	const content = await mapCourseContent(course.content as CourseContent, sessionUser?.name);
+	let markdownDescription = null;
+
+	if (course.description && course.description.length > 0) {
+		markdownDescription = await compileMarkdown(course.description);
+		course.description = null;
+	}
+
+	const summary = createCourseSummary(content);
+
+	return {
+		props: {
+			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
+			summary,
+			content,
+			markdownDescription
+		},
+		notFound: !course
+	};
+});
 
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({

@@ -103,6 +103,7 @@ const eventDefinitions = {
 		newValue: z.number().int().nonnegative(),
 		usedFor: z.enum(["refire", "pause"])
 	}),
+	EMAIL_CLICK: z.undefined(),
 	ERROR: z.object({
 		error: z.string(),
 		path: z.string()

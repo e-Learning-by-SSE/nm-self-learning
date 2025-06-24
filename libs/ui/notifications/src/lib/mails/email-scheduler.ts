@@ -2,7 +2,7 @@ import { database } from "@self-learning/database";
 import { differenceInDays, subDays } from "date-fns";
 import { sendCourseReminder } from "./email-service";
 import { checkStreakRisks } from "./reminders/streak-risk";
-import { getRandomId } from "@self-learning/util/common";
+import { buildTrackingUrl } from "./email-tracking";
 
 export interface SchedulerResult {
 	courseReminders: number;
@@ -79,11 +79,9 @@ async function checkCourseInactivity(results: SchedulerResult) {
 				continue;
 			}
 
-			const emailIdentifier = getRandomId();
-			const url = new URL(
+			const { url, trackingId } = buildTrackingUrl(
 				`${process.env.NEXT_PUBLIC_SITE_BASE_URL}/courses/${enrollment.course.slug}`
 			);
-			url.searchParams.set("ident", emailIdentifier);
 
 			// Send the reminder
 			const result = await sendCourseReminder(enrollment.student.user.email!, {
@@ -106,7 +104,7 @@ async function checkCourseInactivity(results: SchedulerResult) {
 						sentAt: new Date(),
 						metadata: {
 							courseId: enrollment.course.courseId,
-							trackingIdentifier: emailIdentifier
+							trackingIdentifier: trackingId
 						}
 					}
 				});

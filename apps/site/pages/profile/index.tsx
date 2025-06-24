@@ -22,6 +22,7 @@ import {
 	Tooltip
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
+import { handleEmailTracking } from "@self-learning/ui/notifications";
 import { withAuth } from "@self-learning/util/auth";
 import {
 	formatDateAgo,
@@ -29,7 +30,6 @@ import {
 	formatTimeIntervalToString,
 	IdSet
 } from "@self-learning/util/common";
-import { createEventLogEntry } from "@self-learning/util/eventlog";
 import { startOfToday } from "date-fns";
 import { NextComponentType, NextPageContext } from "next";
 import Link from "next/link";
@@ -437,13 +437,23 @@ ProfilPage.getLayout = ProfilLayout;
 
 export const getServerSideProps = withTranslations(
 	["common"],
-	withAuth<Props>(async (_, user) => {
+	withAuth<Props>(async (context, user) => {
 		// TODO remove this check when gamification is fully enabled
 		const isParticipant = user.featureFlags.experimental;
 		if (!isParticipant) {
 			return {
 				redirect: {
 					destination: "/dashboard",
+					permanent: false
+				}
+			};
+		}
+
+		const trackingResult = await handleEmailTracking(context);
+		if (trackingResult.shouldRedirect) {
+			return {
+				redirect: {
+					destination: "/profile",
 					permanent: false
 				}
 			};

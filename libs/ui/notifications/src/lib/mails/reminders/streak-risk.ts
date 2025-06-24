@@ -3,6 +3,7 @@ import { LoginStreak } from "@self-learning/types";
 import { endOfDay, startOfDay } from "date-fns";
 import { SchedulerResult } from "../email-scheduler";
 import { isEmailNotificationSettingEnabled, sendTemplatedEmail } from "../email-service";
+import { buildTrackingUrl } from "../email-tracking";
 
 /**
  * Domain Model: StreakRisk
@@ -32,13 +33,14 @@ const REMINDER_SCHEDULES: ReminderSchedule[] = [
 		templateKey: "streakReminderFirst"
 	},
 	{
-		timeUTC: 18,
+		timeUTC: 20,
 		templateKey: "streakReminderLast"
 	}
 ];
 
 export async function checkStreakRisks(results: SchedulerResult): Promise<void> {
 	const currentHour = new Date().getUTCHours();
+	console.log(`Current UTC hour: ${currentHour}`);
 
 	// Find which reminder schedule applies to current time
 	const currentSchedule = REMINDER_SCHEDULES.find(schedule => schedule.timeUTC === currentHour);
@@ -183,13 +185,17 @@ export async function sendStreakReminderToUser(
 	results: SchedulerResult
 ): Promise<void> {
 	try {
+		const { url, trackingId } = buildTrackingUrl(
+			`${process.env.NEXT_PUBLIC_SITE_BASE_URL}/profile`
+		);
+
 		// Prepare email context
 		const emailResult = await sendTemplatedEmail(user.email, {
 			type: schedule.templateKey,
 			data: {
 				userName: user.displayName,
 				currentStreak: user.currentStreak,
-				loginUrl: `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/profile`
+				loginUrl: url
 			}
 		});
 
@@ -205,7 +211,7 @@ export async function sendStreakReminderToUser(
 					sentAt: new Date(),
 					metadata: {
 						streakCount: user.currentStreak,
-						scheduledHour: schedule.timeUTC
+						trackingIdentifier: trackingId
 					}
 				}
 			});
