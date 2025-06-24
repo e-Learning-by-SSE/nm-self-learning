@@ -22,10 +22,17 @@ export async function createNotification<K extends keyof NotificationPropsMap>(
 		component: K;
 		props: NotificationPropsMap[K];
 		tx?: Prisma.TransactionClient;
-		targetUser?: string[] | string;
+		targetUserIds?: string[] | string;
 	} & DbInputNotification
 ) {
-	const { component, props, tx, targetUser, targetAudience = "user", ...rest } = input;
+	const {
+		component,
+		props,
+		tx,
+		targetUserIds: targetUser,
+		targetAudience = "user",
+		...rest
+	} = input;
 	// we want to make sure that when the targetAudience is not set, we make set it to the most restrictive one
 	// which is the user, because then specific targets needs to be defined.
 	// Sicherstellen, dass die Props valide sind

@@ -9,9 +9,10 @@ import {
 } from "@self-learning/types";
 import { isTruthy } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
-import { addHours } from "date-fns";
+import { addHours, addMinutes } from "date-fns";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
+import { createNotification } from "@self-learning/ui/notifications";
 
 export async function getProfile(username: string, tx?: PrismaClient) {
 	const client = tx || database;
@@ -229,13 +230,23 @@ export const gamificationRouter = t.router({
 			);
 
 			if (newRewards > 0) {
-				// todo create notification to show the user
-				const flames = updated.gamificationProfile.flames as Flames;
-				await database.gamificationProfile.update({
-					where: { username: ctx.user.name },
-					data: {
-						flames: { ...flames, count: flames.count + newRewards }
-					}
+				database.$transaction(async tx => {
+					const flames = updated.gamificationProfile.flames as Flames;
+					await tx.gamificationProfile.update({
+						where: { username: ctx.user.name },
+						data: {
+							flames: { ...flames, count: flames.count + newRewards }
+						}
+					});
+					return createNotification({
+						component: "NewEnergy",
+						props: { count: newRewards },
+						targetAudience: "user",
+						displayFrom: new Date(),
+						displayUntil: addMinutes(new Date(), 5),
+						targetUserIds: ctx.user.id,
+						tx: tx
+					});
 				});
 			}
 

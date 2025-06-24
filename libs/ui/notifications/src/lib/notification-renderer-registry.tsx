@@ -1,13 +1,14 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
 import { OnboardingDialog, StreakSlotMachineDialog } from "@self-learning/profile";
+import { flamesSchema, loginStreakSchema, streakDialogTriggerEnum } from "@self-learning/types";
+import { LightningLoadingDialog } from "@self-learning/ui/common";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { MessagePortal } from "./message-portal/message-portal";
 import { NotificationEntry, NotificationPropsMap } from "./notification-types";
-import { flamesSchema, loginStreakSchema, streakDialogTriggerEnum } from "@self-learning/types";
-import { z } from "zod";
 
 export const notificationPropSchema = {
 	StreakInfoDialog: z.object({
@@ -22,7 +23,10 @@ export const notificationPropSchema = {
 		visibleTime: z.number().optional()
 	}),
 	OnboardingDialog: z.object({}).optional(),
-	ExperimentConsentForwarder: z.object({}).optional()
+	ExperimentConsentForwarder: z.object({}).optional(),
+	NewEnergy: z.object({
+		count: z.number()
+	})
 } as const;
 
 export function NotificationsRenderer() {
@@ -62,6 +66,8 @@ export function DynamicNotificationRenderer({ notification }: { notification: No
 			return <NotificationOnboardingDialog {...notification} {...notification.props} />;
 		case "ExperimentConsentForwarder":
 			return <ExperimentConsentForwarder {...notification} {...notification.props} />;
+		case "NewEnergy":
+			return <NewEnergyNotification {...notification} {...notification.props} />;
 		default:
 			return null;
 	}
@@ -124,6 +130,27 @@ export function NotificationOnboardingDialog({ id }: { id: string }) {
 			onSubmit={() => {
 				void router.reload();
 			}}
+		/>
+	);
+}
+
+export function NewEnergyNotification({
+	count,
+	id
+}: NotificationPropsMap["NewEnergy"] & { id: string }) {
+	const { mutateAsync: deleteNotification } = trpc.notification.delete.useMutation();
+	const [open, setOpen] = useState(true);
+
+	return (
+		<LightningLoadingDialog
+			open={open}
+			onClose={async () => {
+				await deleteNotification({ notificationIds: [id] });
+				setOpen(false);
+			}}
+			animationMode="once"
+			text={"Du hast gerade +" + count + " Energie erhalten!"}
+			showOkButton={true}
 		/>
 	);
 }

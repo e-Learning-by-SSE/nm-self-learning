@@ -24,7 +24,7 @@ const DEFAULT_DIALOG_STYLE_SIZE = {
 	maxHeight: "80vh"
 } satisfies RequiredSizeProps;
 
-function Backdrop() {
+export function Backdrop() {
 	return (
 		<EaseInTransitionChild>
 			<DialogBackdrop className="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -45,6 +45,38 @@ function DialogPanelTransition({ children }: { children: React.ReactNode }) {
 		>
 			{children}
 		</TransitionChild>
+	);
+}
+
+export function TransparentDialog({
+	open,
+	onClose,
+	children
+}: {
+	open: boolean;
+	onClose: () => void;
+	children: React.ReactNode;
+}) {
+	return (
+		<Transition as={Fragment} show={open} appear>
+			<HeadlessDialog
+				as="div"
+				className="fixed inset-0 z-50 flex items-center justify-center"
+				onClose={onClose}
+			>
+				<EaseInTransitionChild>
+					<div
+						className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+						aria-hidden="true"
+					/>
+				</EaseInTransitionChild>
+				<DialogPanelTransition>
+					<div className="relative rounded-lg p-8 max-w-md mx-4 text-center">
+						{children}
+					</div>
+				</DialogPanelTransition>
+			</HeadlessDialog>
+		</Transition>
 	);
 }
 

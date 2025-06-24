@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "./Flame.module.scss";
-import { useTimeout } from "../lib/timer/timer";
+import { useTimeout } from "../timer/timer";
 
 interface FlameBackgroundProps {
 	/** Child elements to display over the flame background */
