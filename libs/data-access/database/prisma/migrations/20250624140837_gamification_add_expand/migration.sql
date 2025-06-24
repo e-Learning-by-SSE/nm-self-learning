@@ -150,8 +150,7 @@ CREATE INDEX "ReminderLog_userId_templateKey_sentAt_idx" ON "ReminderLog"("userI
 -- CreateIndex
 CREATE UNIQUE INDEX "Features_username_key" ON "Features"("username");
 
--- CreateIndex
-CREATE UNIQUE INDEX "CompletedLesson_username_lessonId_key" ON "CompletedLesson"("username", "lessonId");
+
 
 -- AddForeignKey
 ALTER TABLE "GamificationProfile" ADD CONSTRAINT "GamificationProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
