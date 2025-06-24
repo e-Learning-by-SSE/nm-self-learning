@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { EventLog, EventLogQueryInput, EventTypeKeys } from "@self-learning/types";
 import { createHash } from "crypto";
@@ -10,10 +10,11 @@ type CreateEventParams<T extends EventTypeKeys> = EventLog<T> & {
 };
 
 export async function createEventLogEntry<T extends EventTypeKeys>(
-	event: CreateEventParams<T>
+	event: CreateEventParams<T>,
+	client: Prisma.TransactionClient | PrismaClient = database
 ): Promise<EventLog<T> | null> {
 	if (!ALWAYS_SAVE_EVENT_TYPES.includes(event.type)) {
-		const features = await database.features.findUnique({
+		const features = await client.features.findUnique({
 			where: { username: event.username },
 			select: { learningStatistics: true }
 		});

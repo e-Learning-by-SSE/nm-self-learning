@@ -96,7 +96,14 @@ const eventDefinitions = {
 	LTB_TOGGLE: z.object({ enabled: z.boolean() }),
 	ACHIEVEMENT_REDEEMED: z.undefined(),
 	EMAIL_REFERRAL: z.undefined(),
-	PAGE_VIEW: z.undefined(),
+	PAGE_VIEW: z.object({
+		userAgent: z.string()
+	}),
+	ENERGY_USED: z.object({
+		energyUsed: z.number().int().nonnegative(),
+		newValue: z.number().int().nonnegative(),
+		usedFor: z.enum(["refire", "pause"])
+	}),
 	ERROR: z.object({
 		error: z.string(),
 		path: z.string()

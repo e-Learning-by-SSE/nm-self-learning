@@ -14,6 +14,7 @@ function usePageTracking(): void {
 	const session = useSession();
 
 	const { newEvent } = useEventLog();
+	// load user agent
 
 	useEffect(() => {
 		// Früher Return wenn nicht authentifiziert
@@ -25,7 +26,9 @@ function usePageTracking(): void {
 			return newEvent({
 				type: "PAGE_VIEW",
 				resourceId: url,
-				payload: undefined
+				payload: {
+					userAgent: navigator.userAgent ?? "Unknown User Agent"
+				}
 			});
 		}
 
@@ -38,7 +41,7 @@ function usePageTracking(): void {
 		return () => {
 			router.events.off("routeChangeComplete", handleRouteChange);
 		};
-	}, [router.asPath, router.events, session.data?.user.name, session.status]);
+	}, [newEvent, router.asPath, router.events, session]);
 }
 
 export function GlobalFeatures() {

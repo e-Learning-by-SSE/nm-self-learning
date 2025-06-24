@@ -41,17 +41,35 @@ export const gamificationRouter = t.router({
 
 		// 3. Update the streak status and energy count
 		const { energy, loginStreak } = profile;
-		const newEnergy = energy - 2;
 		loginStreak.status = "active";
 		loginStreak.count += 1;
-		const updated = await database.gamificationProfile.update({
-			where: { username },
-			data: {
-				energy: newEnergy,
-				loginStreak: loginStreak
-			}
+
+		return database.$transaction(async tx => {
+			await createEventLogEntry(
+				{
+					username,
+					type: "ENERGY_USED",
+					resourceId: username,
+					payload: {
+						energyUsed: 2,
+						newValue: energy - 2,
+						usedFor: "refire"
+					}
+				},
+				tx
+			);
+
+			const updated = await tx.gamificationProfile.update({
+				where: { username },
+				data: {
+					energy: {
+						decrement: 2
+					},
+					loginStreak: loginStreak
+				}
+			});
+			return updated;
 		});
-		return updated;
 	}),
 
 	pauseStreak: authProcedure.mutation(async ({ ctx }) => {
@@ -76,16 +94,33 @@ export const gamificationRouter = t.router({
 		// 4. Update the streak status, flame count, and set pause end time
 		loginStreak.status = "paused";
 		loginStreak.pausedUntil = pauseUntil;
-		energy -= 1;
-		const updatedStreak = await database.gamificationProfile.update({
-			where: { username },
-			data: {
-				loginStreak,
-				energy,
-				lastLogin: new Date()
-			}
+
+		return database.$transaction(async tx => {
+			await createEventLogEntry(
+				{
+					username,
+					type: "ENERGY_USED",
+					resourceId: username,
+					payload: {
+						energyUsed: 1,
+						newValue: energy - 1,
+						usedFor: "pause"
+					}
+				},
+				tx
+			);
+			const updatedStreak = await tx.gamificationProfile.update({
+				where: { username },
+				data: {
+					loginStreak,
+					energy: {
+						decrement: 1
+					},
+					lastLogin: new Date()
+				}
+			});
+			return updatedStreak;
 		});
-		return updatedStreak;
 	}),
 	resetStreak: authProcedure.mutation(async ({ ctx }) => {
 		const username = ctx.user.name;
