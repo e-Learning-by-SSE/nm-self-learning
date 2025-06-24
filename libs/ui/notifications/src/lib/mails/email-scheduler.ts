@@ -2,6 +2,7 @@ import { database } from "@self-learning/database";
 import { differenceInDays, subDays } from "date-fns";
 import { sendCourseReminder } from "./email-service";
 import { checkStreakRisks } from "./reminders/streak-risk";
+import { getRandomId } from "@self-learning/util/common";
 
 export interface SchedulerResult {
 	courseReminders: number;
@@ -39,12 +40,20 @@ async function checkCourseInactivity(results: SchedulerResult) {
 			student: {
 				user: {
 					featureFlags: {
-						learningStatistics: true
+						experimental: true
+					},
+					notificationSettings: {
+						some: {
+							channel: "email",
+							type: "courseReminder",
+							enabled: true
+						}
 					},
 					email: { not: null }
 				}
 			}
 		},
+
 		include: {
 			course: true,
 			student: { include: { user: true } }
@@ -70,11 +79,17 @@ async function checkCourseInactivity(results: SchedulerResult) {
 				continue;
 			}
 
+			const emailIdentifier = getRandomId();
+			const url = new URL(
+				`${process.env.NEXT_PUBLIC_SITE_BASE_URL}/courses/${enrollment.course.slug}`
+			);
+			url.searchParams.set("ident", emailIdentifier);
+
 			// Send the reminder
 			const result = await sendCourseReminder(enrollment.student.user.email!, {
 				userName: enrollment.student.user.displayName,
 				courseName: enrollment.course.title,
-				courseUrl: `${process.env.NEXT_PUBLIC_SITE_BASE_URL}/courses/${enrollment.course.slug}`,
+				courseUrl: url.toString(),
 				progress: enrollment.progress,
 				lastVisitedDays: differenceInDays(new Date(), enrollment.lastProgressUpdate)
 			});
@@ -90,7 +105,8 @@ async function checkCourseInactivity(results: SchedulerResult) {
 						status: "SENT",
 						sentAt: new Date(),
 						metadata: {
-							courseId: enrollment.course.courseId
+							courseId: enrollment.course.courseId,
+							trackingIdentifier: emailIdentifier
 						}
 					}
 				});

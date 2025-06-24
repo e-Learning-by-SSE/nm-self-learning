@@ -95,7 +95,6 @@ const eventDefinitions = {
 	LESSON_VIDEO_STOP: z.undefined(),
 	LTB_TOGGLE: z.object({ enabled: z.boolean() }),
 	ACHIEVEMENT_REDEEMED: z.undefined(),
-	EMAIL_REFERRAL: z.undefined(),
 	PAGE_VIEW: z.object({
 		userAgent: z.string()
 	}),

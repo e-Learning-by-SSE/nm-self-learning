@@ -3,7 +3,6 @@ import { matches } from "@self-learning/util/common";
 import {
 	CourseReminderContext,
 	EmailContext,
-	EmailTemplateType,
 	renderTemplate,
 	StreakReminderContext
 } from "./template-engine";
