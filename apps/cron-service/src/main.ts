@@ -5,7 +5,7 @@ const API_SECRET = process.env.SCHEDULER_SECRET;
 const API_URL = process.env.NEXT_PUBLIC_SITE_BASE_URL;
 
 function startCronSendEmail() {
-	const cronConfig = "0 6,12,18,0 * * *";
+	const cronConfig = "*/10 * * * *"; // Every 10 minutes
 	console.log("Schedule sendEmails cron job at:", new Date(), "with config", cronConfig);
 	cron.schedule(cronConfig, async () => {
 		console.log("Running sendEmail cron job at", new Date().toISOString());
