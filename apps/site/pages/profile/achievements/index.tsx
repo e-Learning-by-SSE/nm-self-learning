@@ -1,6 +1,6 @@
 import { withTranslations } from "@self-learning/api";
 import { AchievementOverview } from "@self-learning/achievements";
-import { DashboardSidebarLayout } from "@self-learning/ui/layouts";
+import { CenteredSection } from "@self-learning/ui/layouts";
 import { NextComponentType, NextPageContext } from "next";
 import { withAuth } from "@self-learning/util/auth";
 
@@ -9,9 +9,9 @@ function AchievementLayout(
 	pageProps: Record<string, never>
 ) {
 	return (
-		<DashboardSidebarLayout>
+		<CenteredSection className="bg-gray-50">
 			<Component {...pageProps} />
-		</DashboardSidebarLayout>
+		</CenteredSection>
 	);
 }
 

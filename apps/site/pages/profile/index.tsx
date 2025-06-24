@@ -160,8 +160,6 @@ async function getPlattformCompetitionStats(
 		}
 	});
 
-	console.log("topUser", topUser);
-
 	const topUserLoginStreak = topUser?.gamificationProfile?.loginStreak as LoginStreak;
 	const topUsersCompletions = topUser?.student?.completedLessons ?? [];
 	const topUserAverageScore = calculateAverage(
@@ -422,11 +420,9 @@ function ProfilLayout(
 	pageProps: Props
 ) {
 	return (
-		<div className="bg-gray-50">
-			<CenteredSection>
-				<Component {...pageProps} />
-			</CenteredSection>
-		</div>
+		<CenteredSection className="bg-gray-50">
+			<Component {...pageProps} />
+		</CenteredSection>
 		// <DashboardSidebarLayout>
 		// 	<Component {...pageProps} />
 		// </DashboardSidebarLayout>
