@@ -449,12 +449,6 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		await createEventLogEntry({
-			type: "PROFILE_VIEW",
-			username: user.name,
-			payload: undefined
-		});
-
 		const student = await getStudent(user.name);
 		const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 8 });
 		const competitionStatsPartial = await getPlattformCompetitionStats(user.name);

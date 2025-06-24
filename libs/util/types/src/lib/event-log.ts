@@ -2,6 +2,10 @@ import { z } from "zod";
 
 // Single source of truth
 const eventDefinitions = {
+	USER_MODIFY: z.object({
+		type: z.any(), // TODO
+		value: z.any()
+	}),
 	USER_LOGIN: z.undefined(),
 	USER_LOGOUT: z.undefined(),
 	COURSE_ENROLL: z.undefined(),
@@ -90,6 +94,9 @@ const eventDefinitions = {
 	LESSON_VIDEO_START: z.undefined(),
 	LESSON_VIDEO_STOP: z.undefined(),
 	LTB_TOGGLE: z.object({ enabled: z.boolean() }),
+	ACHIEVEMENT_REDEEMED: z.undefined(),
+	EMAIL_REFERRAL: z.undefined(),
+	PAGE_VIEW: z.undefined(),
 	ERROR: z.object({
 		error: z.string(),
 		path: z.string()

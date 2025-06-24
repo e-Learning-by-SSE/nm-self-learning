@@ -12,6 +12,7 @@ import { addHours, addMinutes } from "date-fns";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { createNotification } from "@self-learning/ui/notifications";
+import { createEventLogEntry } from "@self-learning/util/eventlog";
 
 export async function getProfile(username: string, tx?: PrismaClient) {
 	const client = tx || database;
@@ -238,6 +239,12 @@ export const gamificationRouter = t.router({
 								increment: newRewards
 							}
 						}
+					});
+					await createEventLogEntry({
+						username: ctx.user.name,
+						type: "ACHIEVEMENT_REDEEMED",
+						resourceId: achievementId,
+						payload: undefined
 					});
 					return createNotification({
 						component: "NewEnergy",

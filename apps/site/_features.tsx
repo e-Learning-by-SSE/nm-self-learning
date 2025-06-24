@@ -1,13 +1,49 @@
 "use client";
 import { NotificationsRenderer } from "@self-learning/ui/notifications";
+import { useEventLog } from "@self-learning/util/eventlog";
 import { init } from "@socialgouv/matomo-next";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 
 // TODO find a better place for this file - should be easy if we migrate to app router.
 
+function usePageTracking(): void {
+	const router = useRouter();
+	const session = useSession();
+
+	const { newEvent } = useEventLog();
+
+	useEffect(() => {
+		// Früher Return wenn nicht authentifiziert
+		console.log("usePageTracking: Session status:", session.status);
+		if (session.status !== "authenticated") return;
+
+		async function handleRouteChange(url: string) {
+			// Erstelle Promise, aber handle es nicht im Effect
+			return newEvent({
+				type: "PAGE_VIEW",
+				resourceId: url,
+				payload: undefined
+			});
+		}
+
+		// Track initial page load
+		handleRouteChange(router.asPath);
+
+		// Listen for route changes
+		router.events.on("routeChangeComplete", handleRouteChange);
+
+		return () => {
+			router.events.off("routeChangeComplete", handleRouteChange);
+		};
+	}, [router.asPath, router.events, session.data?.user.name, session.status]);
+}
+
 export function GlobalFeatures() {
 	useMatomo();
+	usePageTracking();
 	return (
 		<>
 			<Toaster containerStyle={{ top: 96 }} position="top-right" />
