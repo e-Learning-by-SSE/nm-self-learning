@@ -5,7 +5,6 @@ import {
 	createCourseContent,
 	createCourseMeta,
 	extractLessonIds,
-	Flames,
 	LoginStreak
 } from "@self-learning/types";
 import { getRandomId } from "@self-learning/util/common";
@@ -460,10 +459,7 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 					count: 3,
 					status: "broken"
 				} satisfies LoginStreak,
-				flames: {
-					count: 10,
-					maxCount: 10
-				} satisfies Flames
+				energy: 10
 			}
 		},
 		notificationSettings: {
@@ -570,10 +566,7 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 				count: 3,
 				status: "active"
 			} satisfies LoginStreak,
-			flames: {
-				count: 3,
-				maxCount: 10
-			} satisfies Flames
+			energy: 3
 		}
 	},
 	notificationSettings: {

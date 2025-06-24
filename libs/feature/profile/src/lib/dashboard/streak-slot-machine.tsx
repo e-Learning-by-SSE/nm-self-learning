@@ -172,13 +172,13 @@ export function StreakSlotMachineDialog({
 	open,
 	trigger,
 	loginStreak,
-	flames
+	energy
 }: {
 	open: boolean;
 	onClose: () => void;
 	trigger: NotificationPropsMap["StreakInfoDialog"]["trigger"];
 	loginStreak: NotificationPropsMap["StreakInfoDialog"]["loginStreak"];
-	flames: NotificationPropsMap["StreakInfoDialog"]["flames"];
+	energy: NotificationPropsMap["StreakInfoDialog"]["energy"];
 }) {
 	const {
 		pausedUntil: initialPausedUntil,
@@ -192,7 +192,7 @@ export function StreakSlotMachineDialog({
 	const [streakStatus, setStreakStatus] = useState<StreakStatus>(initialStreakStatus);
 	const [pausedUntil, setPausedUntil] = useState(initialPausedUntil ?? new Date());
 
-	const [remainingEnergy, setRemainingEnergy] = useState(flames.count ?? 0);
+	const [remainingEnergy, setRemainingEnergy] = useState(energy);
 
 	const { mutateAsync: pauseStreakMutation } = trpc.achievement.pauseStreak.useMutation();
 	const { mutateAsync: refireStreakMutation } = trpc.achievement.refireStreak.useMutation();
@@ -210,8 +210,8 @@ export function StreakSlotMachineDialog({
 	const [showLightning, setShowLightning] = useState(false);
 
 	useEffect(() => {
-		setRemainingEnergy(flames.count ?? 0);
-	}, [flames.count]);
+		setRemainingEnergy(energy ?? 0);
+	}, [energy]);
 
 	useEffect(() => {
 		async function fetchAchievements() {
@@ -229,13 +229,13 @@ export function StreakSlotMachineDialog({
 		if (remainingEnergy >= 2) {
 			setRefireDisclosureOpen(false);
 			setStreakStatus("refire");
-			// Optimistic Update: Flammen sofort reduzieren
+			// Optimistic Update: Energy sofort reduzieren
 			setRemainingEnergy(prev => prev - 2);
 			await refireStreakMutation();
 		} else {
 			showToast({
-				title: "Nicht genug Flammen",
-				subtitle: "Du benötigst mindestens 2 Flammen, um deinen Streak wiederherzustellen.",
+				title: "Nicht genug Energie",
+				subtitle: "Du benötigst mindestens 2 Energie, um deinen Streak wiederherzustellen.",
 				type: "error"
 			});
 		}
@@ -245,7 +245,7 @@ export function StreakSlotMachineDialog({
 		if (remainingEnergy >= 1 && !isPaused) {
 			setStreakStatus("paused");
 			setPausedUntil(addHours(new Date(), 24));
-			// Optimistic Update: Flammen sofort reduzieren
+			// Optimistic Update: Energy sofort reduzieren
 			setRemainingEnergy(prev => prev - 1);
 			await pauseStreakMutation();
 			setShowLightning(true);

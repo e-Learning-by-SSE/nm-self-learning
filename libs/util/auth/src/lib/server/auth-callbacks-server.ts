@@ -129,12 +129,12 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 			select: {
 				lastLogin: true,
 				loginStreak: true,
-				flames: true,
+				energy: true,
 				longestStreak: true
 			}
 		});
 
-		const { flames, loginStreak: oldLoginStreak } = profile as GamificationProfile;
+		const { energy, loginStreak: oldLoginStreak } = profile as GamificationProfile;
 
 		// Calculate the streak update using pure business logic
 		const streakUpdate = calculateLoginStreakUpdate(profile as GamificationProfile, now);
@@ -166,7 +166,7 @@ async function updateLoginStreak({ user }: Parameters<SigninCallback>[0]): Promi
 				tx,
 				component: "StreakInfoDialog",
 				props: {
-					flames,
+					energy: energy,
 					trigger: streakUpdate.trigger,
 					loginStreak: streakUpdate.loginStreak
 				},

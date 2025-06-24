@@ -12,7 +12,7 @@ import {
 	StreakIndicatorCircle,
 	StreakSlotMachineDialog
 } from "@self-learning/profile";
-import { EventTypeMap, Flames, LoginStreak } from "@self-learning/types";
+import { EventTypeMap, LoginStreak } from "@self-learning/types";
 import {
 	ImageCard,
 	ImageCardBadge,
@@ -244,7 +244,7 @@ async function getStudent(username: string) {
 					gamificationProfile: {
 						select: {
 							loginStreak: true,
-							flames: true,
+							energy: true,
 							longestStreak: true
 						}
 					},
@@ -323,9 +323,7 @@ async function getStudent(username: string) {
 			...student.user,
 			gamificationProfile: {
 				...student.user.gamificationProfile,
-				loginStreak: student.user.gamificationProfile
-					?.loginStreak as unknown as LoginStreak,
-				flames: student.user.gamificationProfile?.flames as unknown as Flames
+				loginStreak: student.user.gamificationProfile?.loginStreak as unknown as LoginStreak
 			}
 		}
 	};
@@ -566,7 +564,7 @@ export default function ProfilPage({
 
 			{/* Dialogs */}
 			<StreakSlotMachineDialog
-				flames={gamificationProfile.flames}
+				energy={gamificationProfile.energy ?? 0}
 				loginStreak={gamificationProfile.loginStreak}
 				open={streakInfoOpen}
 				trigger="dashboard"

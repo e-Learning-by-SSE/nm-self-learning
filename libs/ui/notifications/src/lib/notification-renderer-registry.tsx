@@ -1,7 +1,7 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
 import { OnboardingDialog, StreakSlotMachineDialog } from "@self-learning/profile";
-import { flamesSchema, loginStreakSchema, streakDialogTriggerEnum } from "@self-learning/types";
+import { loginStreakSchema, streakDialogTriggerEnum } from "@self-learning/types";
 import { LightningLoadingDialog } from "@self-learning/ui/common";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
@@ -14,7 +14,7 @@ export const notificationPropSchema = {
 	StreakInfoDialog: z.object({
 		trigger: streakDialogTriggerEnum,
 		loginStreak: loginStreakSchema,
-		flames: flamesSchema
+		energy: z.number().int().nonnegative()
 	}),
 	BannerMessage: z.object({
 		htmlMessage: z.string(),

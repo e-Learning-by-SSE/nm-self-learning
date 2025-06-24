@@ -11,7 +11,7 @@ export const loginStreakSchema = z.object({
 	 * The current status of the login streak:
 	 * - "active": User is maintaining a daily login streak.
 	 * - "paused": Streak is temporarily protected (e.g., due to a streak freeze item).
-	 * - "inactive": Streak is broken and can be refired by using flames
+	 * - "inactive": Streak is broken and can be refired by using energy
 	 */
 	status: z.enum(["active", "paused", "broken"]).default("active"),
 
@@ -23,12 +23,6 @@ export const loginStreakSchema = z.object({
 	pausedUntil: z.coerce.date().optional().nullable()
 });
 export type LoginStreak = z.infer<typeof loginStreakSchema>;
-
-export const flamesSchema = z.object({
-	count: z.number().nonnegative().default(0),
-	maxCount: z.number().nonnegative().default(0)
-});
-export type Flames = z.infer<typeof flamesSchema>;
 
 export const itemLogSchema = z.array(
 	z.object({
@@ -52,7 +46,7 @@ export const gamificationProfileSchema = z.object({
 	lastLogin: z.date().optional(),
 	loginStreak: loginStreakSchema,
 	longestStreak: z.number().nonnegative().default(0),
-	flames: flamesSchema,
+	energy: z.number().int().nonnegative(),
 	itemLog: itemLogSchema,
 	xp: z.number().int().nonnegative().default(0)
 });

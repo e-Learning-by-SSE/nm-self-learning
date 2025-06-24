@@ -3,7 +3,6 @@ import { checkAndAwardAchievements, convertAchievement } from "@self-learning/ac
 import { database } from "@self-learning/database";
 import {
 	AchievementWithProgress,
-	Flames,
 	GamificationProfile,
 	achievementTriggerEnum
 } from "@self-learning/types";
@@ -31,24 +30,24 @@ export const gamificationRouter = t.router({
 		const username = ctx.user.name;
 		const profile = await getProfile(username);
 
-		// 2. Check if user has enough flames
-		if (profile.flames.count < 2) {
+		// 2. Check if user has enough energy
+		if (profile.energy < 2) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message: "Not enough flames to refire streak"
 			});
 		}
 
-		// 3. Update the streak status and flame count
-		const { flames, loginStreak } = profile;
-		flames.count -= 2;
+		// 3. Update the streak status and energy count
+		const { energy, loginStreak } = profile;
+		const newEnergy = energy - 2;
 		loginStreak.status = "active";
 		loginStreak.count += 1;
 		const updated = await database.gamificationProfile.update({
 			where: { username },
 			data: {
-				flames,
-				loginStreak
+				energy: newEnergy,
+				loginStreak: loginStreak
 			}
 		});
 		return updated;
@@ -56,10 +55,11 @@ export const gamificationRouter = t.router({
 
 	pauseStreak: authProcedure.mutation(async ({ ctx }) => {
 		const username = ctx.user.name;
-		const { loginStreak, flames } = await getProfile(username);
+		// eslint-disable-next-line prefer-const
+		let { loginStreak, energy } = await getProfile(username);
 
 		// 2. Check if user has enough flames and isn't already paused
-		if (flames.count < 1 || loginStreak.status === "paused") {
+		if (energy < 1 || loginStreak.status === "paused") {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message:
@@ -75,12 +75,12 @@ export const gamificationRouter = t.router({
 		// 4. Update the streak status, flame count, and set pause end time
 		loginStreak.status = "paused";
 		loginStreak.pausedUntil = pauseUntil;
-		flames.count -= 1;
+		energy -= 1;
 		const updatedStreak = await database.gamificationProfile.update({
 			where: { username },
 			data: {
 				loginStreak,
-				flames,
+				energy,
 				lastLogin: new Date()
 			}
 		});
@@ -219,7 +219,7 @@ export const gamificationRouter = t.router({
 				},
 				include: {
 					gamificationProfile: {
-						select: { xp: true, flames: true }
+						select: { xp: true }
 					}
 				}
 			});
@@ -231,11 +231,12 @@ export const gamificationRouter = t.router({
 
 			if (newRewards > 0) {
 				database.$transaction(async tx => {
-					const flames = updated.gamificationProfile.flames as Flames;
 					await tx.gamificationProfile.update({
 						where: { username: ctx.user.name },
 						data: {
-							flames: { ...flames, count: flames.count + newRewards }
+							energy: {
+								increment: newRewards
+							}
 						}
 					});
 					return createNotification({
