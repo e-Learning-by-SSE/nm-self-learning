@@ -28,11 +28,11 @@ interface ReminderSchedule {
 
 const REMINDER_SCHEDULES: ReminderSchedule[] = [
 	{
-		timeUTC: 12,
+		timeUTC: 10,
 		templateKey: "streakReminderFirst"
 	},
 	{
-		timeUTC: 21,
+		timeUTC: 18,
 		templateKey: "streakReminderLast"
 	}
 ];
