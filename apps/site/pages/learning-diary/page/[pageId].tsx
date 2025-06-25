@@ -1,4 +1,4 @@
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import {
 	allPages,
 	DiaryContentForm,
@@ -9,6 +9,7 @@ import {
 	Strategy
 } from "@self-learning/diary";
 import { Divider } from "@self-learning/ui/common";
+import { withAuth } from "@self-learning/util/auth";
 import { subMilliseconds } from "date-fns";
 
 export const getServerSideProps = withTranslations(

@@ -1,4 +1,8 @@
-export type IdElement = { id: string | number };
+// copied from nm-skill-lib version 0.2.0
+// should be removed as soon as the lib is updated
+// TODO spark-sse
+
+type IdElement = { id: string | number };
 
 export function duplicateRemover(initialBuffer: (string | number)[] = []) {
 	const alreadyComputedSkillsBuffer = new Set<string | number>(initialBuffer);
@@ -41,7 +45,6 @@ export function sortById(a: IdElement, b: IdElement) {
  * Can be used as a drop-in replacement for a Set or Map, but is maybe not as efficient in some manners. It's not fully compatible with the Set and Map interface, but provides a similar API.
  * @author Marcel Spark
  */
-
 export class IdSet<T extends IdElement> {
 	private items: Record<string, T>;
 
@@ -118,8 +121,13 @@ export class IdSet<T extends IdElement> {
 	 * @param item The element to delete.
 	 * @returns *true* if the element was deleted, *false* if it was not in the set.
 	 */
-	delete(item: T): boolean {
-		const key = item.id.toString();
+	delete(item: T | T["id"]): boolean {
+		let key: string;
+		if (idGuard(item)) {
+			key = item.id.toString();
+		} else {
+			key = item.toString();
+		}
 		if (this.items[key]) {
 			delete this.items[key];
 			return true;

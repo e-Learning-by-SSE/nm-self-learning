@@ -100,7 +100,7 @@ export function ExportCourseProgressDialog({
 				// Prevent closing the dialog by clicking on the backdrop
 				onClose={() => {}}
 			>
-				{progress < 100 && <ProgressBar completionPercentage={progress} />}
+				{progress < 100 && <ProgressBar progressPercentage={progress} />}
 				<div className="overlay">{message}</div>
 				<div className="grid justify-items-end">
 					<button

@@ -17,11 +17,11 @@ import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
-import { useEventLog } from "@self-learning/util/common";
 import {
 	CheckCircleIcon as CheckCircleIconOutline,
 	XCircleIcon
 } from "@heroicons/react/24/outline";
+import { useEventLog } from "@self-learning/util/eventlog";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
@@ -40,9 +40,18 @@ export function Question({
 	lesson: LessonLayoutProps["lesson"];
 	courseId?: string;
 }) {
-	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } =
-		useQuiz();
-	const { newEvent: writeEvent } = useEventLog();
+	const {
+		goToNextQuestion,
+		answers,
+		setAnswers,
+		evaluations,
+		setEvaluations,
+		config,
+		attempts,
+		setAttempts,
+		lessonAttemptId
+	} = useQuiz();
+	const { newEvent } = useEventLog();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
 	const [currentStep, setCurrentStep] = useState(
@@ -61,7 +70,6 @@ export function Question({
 
 	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
-
 		setAnswers(prev => {
 			const updatedAnswers = {
 				...prev,
@@ -86,21 +94,29 @@ export function Question({
 			...prev,
 			[question.questionId]: e
 		}));
-
-		await writeEvent({
-			type: "LESSON_QUIZ_SUBMISSION",
-			resourceId: lesson.lessonId,
-			courseId: courseId,
-			payload: {
-				questionId: question.questionId,
-				totalQuestionPool: totalSteps,
-				questionPoolIndex: currentStep,
-				type: question.type,
-				hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
-				attempts: 1,
-				solved: e?.isCorrect ?? false
-			}
-		});
+		// no event on "Reset" click
+		if (e) {
+			setAttempts(prev => {
+				const attempts = prev[question.questionId];
+				const newAttempts = attempts + 1;
+				void newEvent({
+					type: "LESSON_QUIZ_SUBMISSION",
+					resourceId: lesson.lessonId,
+					courseId: courseId,
+					payload: {
+						questionId: question.questionId,
+						totalQuestionPool: totalSteps,
+						questionPoolIndex: currentStep,
+						type: question.type,
+						hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
+						attempts: newAttempts,
+						solved: e.isCorrect ?? false,
+						lessonAttemptId
+					}
+				});
+				return { ...prev, [question.questionId]: newAttempts };
+			});
+		}
 	}
 
 	function nextQuestionStep() {
@@ -109,6 +125,16 @@ export function Question({
 		} else {
 			goToNextQuestion();
 		}
+		void newEvent({
+			type: "LESSON_QUIZ_START",
+			resourceId: lesson.lessonId,
+			courseId: courseId,
+			payload: {
+				questionId: question.questionId,
+				type: question.type,
+				lessonAttemptId
+			}
+		});
 	}
 
 	return (
@@ -182,6 +208,7 @@ function CheckResult({
 		console.debug("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
 		setEvaluation(evaluation);
+		//here?
 	}
 	if (!currentEvaluation) {
 		<span className="text-red-500">No question state found for this question.</span>;

@@ -201,7 +201,10 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 				</span>
 			</div>
 
-			<ProgressBar completionPercentage={completionPercentage} />
+			<ProgressBar
+				text={`${completionPercentage}%`}
+				progressPercentage={completionPercentage}
+			/>
 
 			<Divider />
 

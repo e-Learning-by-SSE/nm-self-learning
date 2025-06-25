@@ -1,29 +1,36 @@
 import NextAuth from "next-auth";
+import { DefaultSession } from "next-auth";
 
-declare var process: {
-	env: {
-		NODE_ENV: "development" | "production";
-		NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
-		NEXT_PUBLIC_BASE_PATH: string | undefined;
-		NEXT_TRAILING_SLASH: Boolean | undefined;
-		NEXT_PUBLIC_MATOMO_ULR: string | undefined;
-		NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;
-		DATABASE_URL: string;
-		MINIO_ENDPOINT: string;
-		MINIO_PORT: string;
-		MINIO_USE_SSL: string;
-		MINIO_ACCESS_KEY: string;
-		MINIO_SECRET_KEY: string;
-		MINIO_BUCKET_NAME: string;
-		PISTON_URL: string;
-		KEYCLOAK_ISSUER_URL: string;
-		KEYCLOAK_CLIENT_ID: string;
-		KEYCLOAK_PROVIDER_NAME: string | undefined;
-		NEXTAUTH_URL: string;
-		NEXTAUTH_SECRET: string;
-		APP_VERSION: string;
-	};
-};
+declare global {
+	declare namespace NodeJS {
+		interface ProcessEnv {
+			NODE_ENV: "development" | "production";
+			NEXT_PUBLIC_SITE_BASE_URL: string;
+			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
+			NEXT_PUBLIC_BASE_PATH: string | undefined;
+			NEXT_TRAILING_SLASH: Boolean | undefined;
+			NEXT_PUBLIC_MATOMO_ULR: string | undefined;
+			NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;
+			DATABASE_URL: string;
+			MINIO_ENDPOINT: string;
+			MINIO_PORT: string;
+			MINIO_USE_SSL: string;
+			MINIO_ACCESS_KEY: string;
+			MINIO_SECRET_KEY: string;
+			MINIO_BUCKET_NAME: string;
+			PISTON_URL: string;
+			KEYCLOAK_ISSUER_URL: string;
+			KEYCLOAK_CLIENT_ID: string;
+			KEYCLOAK_CLIENT_SECRET: string;
+			KEYCLOAK_PROVIDER_NAME: string | undefined;
+			NEXTAUTH_URL: string;
+			NEXTAUTH_SECRET: string;
+			APP_VERSION: string;
+			SCHEDULER_SECRET: string | undefined;
+			RESEND_API_KEY: string | undefined;
+		}
+	}
+}
 
 declare module "next-auth" {
 	/**
@@ -33,11 +40,14 @@ declare module "next-auth" {
 		user: {
 			id: string;
 			name: string;
-			role: "USER" | "ADMIN";
+			role: UserRole;
 			isAuthor: boolean;
 			avatarUrl?: string | null;
-			enabledLearningStatistics: boolean;
-			enabledFeatureLearningDiary: boolean;
+			featureFlags: {
+				learningDiary: boolean;
+				learningStatistics: boolean;
+				experimental: boolean;
+			};
 		};
 	}
 }

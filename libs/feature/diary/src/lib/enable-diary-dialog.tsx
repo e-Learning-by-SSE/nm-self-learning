@@ -1,4 +1,4 @@
-import { FeatureSettingsForm } from "@self-learning/settings";
+import { FeatureSettingsForm } from "@self-learning/profile";
 import { EditFeatureSettings } from "@self-learning/types";
 import { Dialog, DialogActions, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 
@@ -15,9 +15,11 @@ export function EnableLearningDiaryDialog({
 	onClose: OnDialogCloseFn<EditFeatureSettings>;
 	onSubmit: OnDialogCloseFn<EditFeatureSettings>;
 }) {
-	const settingSuggestion: EditFeatureSettings = {
-		enabledLearningStatistics: true,
-		enabledFeatureLearningDiary: true
+	// currently the dialog is the same as the setting dialog so they are reused. When we have
+	// more feature settings, we can create a more specific dialog for the learning diary.
+	const settingSuggestion = {
+		learningDiary: true,
+		learningStatistics: true
 	};
 
 	const updateSetting = () => {

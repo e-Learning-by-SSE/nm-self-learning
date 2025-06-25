@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import { useRef } from "react";
 import { hasAuthorPermission } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withAuth } from "@self-learning/util/auth";
 
 type EditCourseProps = {
 	course: CourseFormModel;
@@ -16,7 +17,7 @@ type EditCourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["pages-course-info","common"],
+	["pages-course-info", "common"],
 	withAuth<EditCourseProps>(async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;
