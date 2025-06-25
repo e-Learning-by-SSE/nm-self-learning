@@ -254,7 +254,7 @@ export default function Course({
 			)}
 
 			<CenteredSection className="bg-gray-50">
-				<TableOfContents content={content} course={course} />
+				<TableOfContents content={content} course={course} isGenerated={isGenerated} />
 			</CenteredSection>
 		</div>
 	);
@@ -401,7 +401,15 @@ function CourseHeader({
 	);
 }
 
-function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
+function TableOfContents({
+	content,
+	course,
+	isGenerated
+}: {
+	content: ToC.Content;
+	course: Course;
+	isGenerated: boolean;
+}) {
 	const completion = useCourseCompletion(course.slug);
 	const hasContent = content.length > 0;
 
@@ -413,6 +421,17 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 				</h3>
 				<span className="mt-4 text-light">
 					Du hast dir noch keinen Kurspfad generiert. Bitte wähle einen Kurspfad aus.
+				</span>
+			</div>
+		);
+	}
+
+	if (isGenerated && !hasContent) {
+		return (
+			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+				<span className="text-secondary">Keine Inhalte verfügbar</span>
+				<span className="mt-4 text-light">
+					Du hast entweder alle Skills schon erreicht oder es sind keine Lerninhalte verfügbar.
 				</span>
 			</div>
 		);
@@ -524,9 +543,6 @@ function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 				Der Kurs wurde aktualisiert. Du kannst den Kurs jetzt starten und dein Wissen
 				erweitern.
 			</span>
-			<p className="mt-4 text-light">
-				Um den Kurs zu aktualisieren, klicke auf den Button unten.
-			</p>
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
 				onClick={onClick}
@@ -559,7 +575,7 @@ function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: 
 		}
 	};
 
-	if (Array.isArray(course.content) && course.content.length !== 0  && needsARefresh) {
+	if (Array.isArray(course.content) && course.content.length !== 0 && needsARefresh) {
 		return <RefreshGeneratedCourse onClick={generateDynamicCourse} />;
 	}
 
