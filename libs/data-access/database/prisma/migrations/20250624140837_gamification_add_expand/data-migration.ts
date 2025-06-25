@@ -308,7 +308,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 		await tx.achievement.upsert({
 			where: { code: achievement.code },
 			update: {},
-			create: achievement
+			create: { ...achievement, id: crypto.randomUUID() }
 		});
 	}
 }
@@ -332,7 +332,8 @@ export async function createInitialNotificationSettings(
 	await client.userNotificationSetting.createMany({
 		data: getDefaultNotificationData().map(setting => ({
 			...setting,
-			userId: user.id
+			userId: user.id,
+			id: crypto.randomUUID()
 		}))
 	});
 }
@@ -349,7 +350,7 @@ export async function createNewProfile(
 
 	await tx.gamificationProfile.create({
 		data: {
-			user: { connect: { name: username } },
+			User: { connect: { name: username } },
 			username,
 			lastLogin: new Date(),
 			// energy: 2, // default handles by prisma
@@ -362,17 +363,10 @@ async function main() {
 	try {
 		await prisma.$transaction(async tx => {
 			await seedAchievements(tx);
-			const userSettings = await tx.user.findMany({
-				include: {
-					gamificationProfile: true
-				}
-			});
+			const userSettings = await tx.user.findMany();
 
 			const promises = userSettings.map(async user => {
-				if (!user.gamificationProfile) {
-					// since we introduce this newly, users should never already have gamification profiles
-					await createNewProfile(user.name, tx);
-				}
+				await createNewProfile(user.name, tx);
 				await createInitialNotificationSettings(user, tx);
 				return tx.features.upsert({
 					where: { userId: user.id },
