@@ -640,7 +640,7 @@ function MyFunctionsCard() {
 					.filter(f => !!f.condition)
 					.map((func, index) => (
 						<div key={index}>
-							<a
+							<Link
 								href={func.href}
 								className="group flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
 							>
@@ -656,7 +656,7 @@ function MyFunctionsCard() {
 									</div>
 									<p className="text-xs text-gray-500 mt-1">{func.description}</p>
 								</div>
-							</a>
+							</Link>
 							{/* Trenner - außer beim letzten Element */}
 							{index < functions.length - 1 && (
 								<div className="border-b border-gray-100 mx-3"></div>

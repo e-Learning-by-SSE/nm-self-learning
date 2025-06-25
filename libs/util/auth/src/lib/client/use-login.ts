@@ -4,10 +4,11 @@ import { useCallback } from "react";
 
 export function useLoginRedirect() {
 	const router = useRouter();
+	const basePath = router.basePath || process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 	const loginRedirect = useCallback(
 		(callback = "/profile") => {
-			const callbackUrl = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${callback ?? router.asPath}`;
+			const callbackUrl = `${basePath}${callback ?? router.asPath}`;
 			const provider =
 				process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true" ? undefined : "keycloak";
 			return signIn(provider, { callbackUrl });

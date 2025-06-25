@@ -66,7 +66,10 @@ export function withAuth<Prop extends { [key: string]: any }>(
 		const sessionUser = session?.user;
 
 		if (!session || !sessionUser) {
-			const callbackUrl = encodeURIComponent(context.resolvedUrl);
+			const callbackUrl = encodeURIComponent(
+				`${process.env.NEXT_PUBLIC_BASE_PATH}${context.resolvedUrl}`
+			);
+
 			return {
 				redirect: {
 					destination: `/api/auth/signin?callbackUrl=${callbackUrl}`,
