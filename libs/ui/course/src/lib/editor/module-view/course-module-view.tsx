@@ -74,6 +74,16 @@ export function CourseModuleView({
 		}
 		return false;
 	};
+	const isUsedinCurrentModule = (skillId: string): boolean => {
+		const skill = allSkills.get(skillId);
+		const provides = form.getValues("provides") ?? [];
+		const requires = form.getValues("requires") ?? [];
+		const alreadyUsed = provides.some(s => s.id === skill?.id) || requires.some(s => s.id === skill?.id);
+		if (alreadyUsed) {
+			return true;
+		}
+		return false;
+	}
 	const onSkillSelect: SkillSelectHandler = skillId => {
 		const skill = skillId ? allSkills.get(skillId) : undefined;
 
@@ -195,6 +205,7 @@ export function CourseModuleView({
 						modules={modules}
 						isProvidedSkill={isProvidedSkill}
 						isRequiredSkill={isRequiredSkill}
+						isUsedinCurrentModule={isUsedinCurrentModule}
 						onSelectModule={handleModuleClick}
 						onSkillSelect={onSkillSelect}
 						onCreateNewModule={onCreateNewModule}

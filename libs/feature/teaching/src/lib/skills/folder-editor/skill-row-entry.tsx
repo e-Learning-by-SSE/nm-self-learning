@@ -32,6 +32,7 @@ export function ListSkillEntryWithChildren({
 	textClassName,
 	isProvidedSkill,
 	isRequiredSkill,
+	isUsedinCurrentModule,
 	calledBySkillTree
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
@@ -47,6 +48,7 @@ export function ListSkillEntryWithChildren({
 	textClassName?: string;
 	isProvidedSkill?: (skillId: string) => boolean;
 	isRequiredSkill?: (skillId: string) => boolean;
+	isUsedinCurrentModule?: (skillId: string) => boolean;
 	calledBySkillTree?: boolean;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
@@ -71,6 +73,7 @@ export function ListSkillEntryWithChildren({
 				textClassName={textClassName}
 				isProvidedSkill={isProvidedSkill}
 				isRequiredSkill={isRequiredSkill}
+				isUsedinCurrentModule={isUsedinCurrentModule}
 				calledBySkillTree={calledBySkillTree}
 			/>
 			{showChildren &&
@@ -114,6 +117,7 @@ export function ListSkillEntryWithChildren({
 								textClassName={textClassName}
 								isProvidedSkill={isProvidedSkill}
 								isRequiredSkill={isRequiredSkill}
+								isUsedinCurrentModule={isUsedinCurrentModule}
 								calledBySkillTree={calledBySkillTree}
 							/>
 						);
@@ -146,6 +150,7 @@ function SkillRow({
 	textClassName,
 	isProvidedSkill,
 	isRequiredSkill,
+	isUsedinCurrentModule,
 	calledBySkillTree
 }: {
 	skill: SkillFolderVisualization;
@@ -157,6 +162,7 @@ function SkillRow({
 	textClassName?: string;
 	isProvidedSkill?: (skillId: string) => boolean;
 	isRequiredSkill?: (skillId: string) => boolean;
+	isUsedinCurrentModule?: (skillId: string) => boolean;
 	calledBySkillTree?: boolean;
 }) {
 	const depthCssStyle = {
@@ -175,11 +181,7 @@ function SkillRow({
 	};
 	const isProvided = isProvidedSkill?.(skill.id);
 	const isRequired = isRequiredSkill?.(skill.id);
-	const isLocked = isProvided && isRequired;
-	console.log(skill.id, {
-		provided: isProvidedSkill?.(skill.id),
-		required: isRequiredSkill?.(skill.id)
-	});
+	const isUsedCurrently = isUsedinCurrentModule?.(skill.id);
 	let title = "";
 	if (skill.isCycleMember) {
 		title = "Dieser Skill ist Teil eines Zyklus.";
@@ -208,6 +210,9 @@ function SkillRow({
 	}
 
 	function checkDraggableSetting(skill: SkillFolderVisualization): boolean {
+		if (isUsedCurrently) {
+			return true;
+		}
 		if (skill.skill.children.length > 0 && skill.skill.parents.length === 0) {
 			return true;
 		}
@@ -270,9 +275,9 @@ function SkillRow({
 													</>
 												) : (
 													<div className="ml-6">
-														{isLocked ? (
+														{isProvided && isRequired ? (
 															<PuzzlePieceIconSolid className="icon h-5 text-lg text-emerald-500" />
-														) : isProvidedSkill?.(skill.id) ? (
+														) : isProvided ? (
 															<PuzzlePieceIconOutline className="icon h-5 text-lg text-emerald-500" />
 														) : (
 															<PuzzlePieceIconOutline className="icon h-5 text-lg" />
@@ -288,7 +293,7 @@ function SkillRow({
 											)}
 											<span className={`flex items-center ${textClassName}`}>
 												{skill.displayName ?? skill.skill.name}
-												{isLocked && (
+												{isUsedCurrently && (
 													<LockClosedIcon className="ml-1 text-gray-400 h-4 w-4 flex-shrink-0" />
 												)}
 											</span>

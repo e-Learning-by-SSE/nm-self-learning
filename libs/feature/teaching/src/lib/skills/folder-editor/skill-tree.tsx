@@ -4,7 +4,6 @@ import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import { ListSkillEntryWithChildren } from "./skill-row-entry";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
-import { Droppable } from "@hello-pangea/dnd";
 
 export function SkillTree({
 	skillDisplayData,
@@ -13,7 +12,8 @@ export function SkillTree({
 	isDragging,
 	onSkillSelect,
 	isProvidedSkill,
-	isRequiredSkill
+	isRequiredSkill,
+	isUsedinCurrentModule
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
 	updateSkillDisplay: UpdateVisuals;
@@ -22,6 +22,7 @@ export function SkillTree({
 	onSkillSelect: SkillSelectHandler;
 	isProvidedSkill: (skillId: string) => boolean;
 	isRequiredSkill: (skillId: string) => boolean;
+	isUsedinCurrentModule: (skillId: string) => boolean;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
 
@@ -89,13 +90,8 @@ export function SkillTree({
 
 				<DialogHandler id={"alert"} />
 				<div className="pt-4" />
-				<Droppable droppableId="skill-tree-table">
-					{droppableProvided => (
 						<Table head={<TableHeaderColumn>Skills</TableHeaderColumn>}>
-							<tbody
-								ref={droppableProvided.innerRef}
-								{...droppableProvided.droppableProps}
-							>
+							<tbody>
 								{skillsToDisplay.sort(byChildrenLength).map(element => (
 									<ListSkillEntryWithChildren
 										key={element.id}
@@ -110,14 +106,12 @@ export function SkillTree({
 										textClassName="hover:text-emerald-500"
 										isProvidedSkill={isProvidedSkill}
 										isRequiredSkill={isRequiredSkill}
+										isUsedinCurrentModule={isUsedinCurrentModule}
 										calledBySkillTree={true}
 									/>
 								))}
-								{droppableProvided.placeholder}
 							</tbody>
 						</Table>
-					)}
-				</Droppable>
 				<DialogHandler id={"copyMoveDialog"} />
 			</CenteredSection>
 		</div>

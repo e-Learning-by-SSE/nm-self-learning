@@ -15,6 +15,7 @@ export function ModuleDependency({
 	onSkillSelect,
 	isProvidedSkill,
 	isRequiredSkill,
+	isUsedinCurrentModule,
 	onCreateNewModule
 }: {
 	skills: Map<string, SkillFormModel>;
@@ -25,6 +26,7 @@ export function ModuleDependency({
 	onSkillSelect: SkillSelectHandler;
 	isProvidedSkill: (skillId: string) => boolean;
 	isRequiredSkill: (skillId: string) => boolean;
+	isUsedinCurrentModule: (skillId: string) => boolean;
 	onCreateNewModule?: () => void;
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
@@ -33,6 +35,7 @@ export function ModuleDependency({
 	function switchTab(index: number) {
 		setSelectedIndex(index);
 	}
+
 	const renderContent = (index: number) => {
 		switch (index) {
 			case 0:
@@ -45,6 +48,7 @@ export function ModuleDependency({
 						onSkillSelect={onSkillSelect}
 						isProvidedSkill={isProvidedSkill}
 						isRequiredSkill={isRequiredSkill}
+						isUsedinCurrentModule={isUsedinCurrentModule}
 					/>
 				);
 			case 1:
