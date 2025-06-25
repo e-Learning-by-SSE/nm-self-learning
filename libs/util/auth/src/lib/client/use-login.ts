@@ -16,13 +16,12 @@ export function useLoginRedirect() {
 		[router.asPath, router.query]
 	);
 
-	const logoutRedirect = useCallback(
-		(callback = "/") =>
-			signOut({
-				callbackUrl: callback.startsWith("/") ? callback : `/${callback}`
-			}),
-		[]
-	);
+	const logoutRedirect = useCallback((callback = "/") => {
+		const callbackUrl = `${basePath}${callback ?? router.asPath}`;
+		signOut({
+			callbackUrl: callbackUrl.startsWith("/") ? callbackUrl : `/${callbackUrl}`
+		});
+	}, []);
 
 	return { loginRedirect, logoutRedirect };
 }
