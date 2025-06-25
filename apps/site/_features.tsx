@@ -18,7 +18,6 @@ function usePageTracking(): void {
 
 	useEffect(() => {
 		// Früher Return wenn nicht authentifiziert
-		console.log("usePageTracking: Session status:", session.status);
 		if (session.status !== "authenticated") return;
 
 		async function handleRouteChange(url: string) {

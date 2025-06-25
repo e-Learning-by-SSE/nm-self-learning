@@ -1,6 +1,7 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
@@ -16,6 +17,7 @@ import { AuthorsList, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { handleEmailTracking } from "@self-learning/ui/notifications";
+import { withAuth } from "@self-learning/util/auth";
 import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { getServerSession } from "next-auth";
@@ -23,7 +25,7 @@ import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -125,51 +127,54 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(["common"], async context => {
-	const { req, res, params } = context;
-	const courseSlug = params?.courseSlug as string | undefined;
-	if (!courseSlug) {
-		throw new Error("No slug provided.");
-	}
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth(async context => {
+		const { req, res, params } = context;
+		const courseSlug = params?.courseSlug as string | undefined;
+		if (!courseSlug) {
+			throw new Error("No slug provided.");
+		}
 
-	const trackingResult = await handleEmailTracking(context);
-	if (trackingResult.shouldRedirect) {
+		const trackingResult = await handleEmailTracking(context);
+		if (trackingResult.shouldRedirect) {
+			return {
+				redirect: {
+					destination: `/courses/${courseSlug}`,
+					permanent: false
+				}
+			};
+		}
+
+		const course = await getCourse(courseSlug);
+		if (!course) {
+			return { notFound: true };
+		}
+
+		const session = await getServerSession(req, res, authOptions);
+		const sessionUser = session?.user;
+
+		const content = await mapCourseContent(course.content as CourseContent, sessionUser?.name);
+		let markdownDescription = null;
+
+		if (course.description && course.description.length > 0) {
+			markdownDescription = await compileMarkdown(course.description);
+			course.description = null;
+		}
+
+		const summary = createCourseSummary(content);
+
 		return {
-			redirect: {
-				destination: `/courses/${courseSlug}`,
-				permanent: false
-			}
+			props: {
+				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
+				summary,
+				content,
+				markdownDescription
+			},
+			notFound: !course
 		};
-	}
-
-	const course = await getCourse(courseSlug);
-	if (!course) {
-		return { notFound: true };
-	}
-
-	const session = await getServerSession(req, res, authOptions);
-	const sessionUser = session?.user;
-
-	const content = await mapCourseContent(course.content as CourseContent, sessionUser?.name);
-	let markdownDescription = null;
-
-	if (course.description && course.description.length > 0) {
-		markdownDescription = await compileMarkdown(course.description);
-		course.description = null;
-	}
-
-	const summary = createCourseSummary(content);
-
-	return {
-		props: {
-			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
-			summary,
-			content,
-			markdownDescription
-		},
-		notFound: !course
-	};
-});
+	})
+);
 
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({
@@ -221,7 +226,19 @@ function CourseHeader({
 
 	const enrollments = useEnrollments();
 	const { enroll } = useEnrollmentMutations();
-	const completion = useCourseCompletion(course.slug);
+	const { data: completion, refetch: fetchCourseCompletion } =
+		trpc.completion.getCourseCompletion.useQuery(
+			{ courseSlug: course.slug },
+			{ enabled: false }
+		);
+
+	const session = useSession();
+
+	useEffect(() => {
+		if (session.status === "authenticated" && !completion) {
+			fetchCourseCompletion();
+		}
+	}, [session.status, fetchCourseCompletion, completion]);
 
 	const isEnrolled = useMemo(() => {
 		if (!enrollments) return false;
@@ -255,7 +272,6 @@ function CourseHeader({
 		else return sumScore / scores.length;
 	}, [content]);
 
-	const session = useSession();
 	const isParticipant = session.data?.user.featureFlags.experimental ?? false;
 
 	return (
@@ -378,7 +394,8 @@ function CourseHeader({
 }
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
-	const completion = useCourseCompletion(course.slug);
+	// const completion = useCourseCompletion(course.slug);
+	const completion: any = null;
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {
