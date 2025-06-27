@@ -223,16 +223,19 @@ function SkillRow({
 		<tr
 			style={depthCssStyle}
 			title={title}
-			className={`group cursor-pointer hover:bg-gray-100 ${cycleError ? "bg-red-100" : ""}
+			className={`group cursor-pointer transition-colors duration-150
+				hover:bg-gray-50
+				${cycleError ? "bg-red-100" : ""}
 				${cycleWarning ? "bg-yellow-100" : ""}
-				${skill.isSelected ? "bg-gray-200" : ""} `}
+				${skill.isSelected ? "bg-gray-200 ring-inset ring-2 ring-gray-400" : ""}
+				${isUsedCurrently ? "bg-gray-50" : ""}`}
 		>
 			<TableDataColumn
 				className={`${styles["folder-line"]} ${
 					skill.shortHighlight ? "animate-highlight rounded-md" : ""
 				} text-sm font-medium`}
 			>
-				<Droppable droppableId={nodeId} direction="vertical">
+				<Droppable droppableId={nodeId} direction="vertical" isDropDisabled={calledBySkillTree}>
 					{provided => (
 						<div ref={provided.innerRef} {...provided.droppableProps}>
 							<Draggable
@@ -243,7 +246,7 @@ function SkillRow({
 							>
 								{(provided, snapshot) => (
 									<div
-										className={`flex px-2`}
+										className="flex items-center gap-2 px-3 py-2 w-full"
 										ref={provided.innerRef}
 										{...provided.draggableProps}
 										{...provided.dragHandleProps}
@@ -253,7 +256,7 @@ function SkillRow({
 											className={`flex ${skill.isFolder && "hover:text-secondary"}`}
 											onClick={() => handleSelection(skill.id)}
 										>
-											<div className="flex px-3">
+											<div className="flex items-center px-2 gap-1 min-w-[2rem]">
 												{skill.isFolder ? (
 													<>
 														<div className="mr-1">
@@ -291,10 +294,10 @@ function SkillRow({
 											{cycleWarning && (
 												<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 											)}
-											<span className={`flex items-center ${textClassName}`}>
+											<span className={`flex items-center gap-1 text-sm font-medium text-gray-800 ${textClassName}`}>
 												{skill.displayName ?? skill.skill.name}
 												{isUsedCurrently && (
-													<LockClosedIcon className="ml-1 text-gray-400 h-4 w-4 flex-shrink-0" />
+													<LockClosedIcon className="text-gray-400 h-4 w-4 flex-shrink-0" />
 												)}
 											</span>
 										</div>

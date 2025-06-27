@@ -16,7 +16,8 @@ export function ModuleDependency({
 	isProvidedSkill,
 	isRequiredSkill,
 	isUsedinCurrentModule,
-	onCreateNewModule
+	onCreateNewModule,
+	selectedModuleId
 }: {
 	skills: Map<string, SkillFormModel>;
 	authorId: number;
@@ -28,6 +29,7 @@ export function ModuleDependency({
 	isRequiredSkill: (skillId: string) => boolean;
 	isUsedinCurrentModule: (skillId: string) => boolean;
 	onCreateNewModule?: () => void;
+	selectedModuleId: string | null;
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
 	const tabs = ["Skills", "Nanomodule"];
@@ -52,7 +54,7 @@ export function ModuleDependency({
 					/>
 				);
 			case 1:
-				return <ModuleView modules={modules} onSelectModule={onSelectModule} />;
+				return <ModuleView modules={modules} onSelectModule={onSelectModule} selectedModuleId={selectedModuleId}/>;
 			default:
 				return <div>Tab not found</div>;
 		}

@@ -209,6 +209,7 @@ export function CourseModuleView({
 						onSelectModule={handleModuleClick}
 						onSkillSelect={onSkillSelect}
 						onCreateNewModule={onCreateNewModule}
+						selectedModuleId={selectedModuleId}
 					/>}/>
 				<main className="flex-1 min-w-[500px] max-w-[900px] p-8 pr-4 py-4 text-sm">
 					<FormProvider {...form}>

@@ -2,34 +2,41 @@ import { LessonFormModel } from "@self-learning/teaching";
 
 export function ModuleView({
 	modules,
-	onSelectModule
+	onSelectModule,
+	selectedModuleId
 }: {
 	modules: Map<string, LessonFormModel>;
 	onSelectModule: (id: string) => void;
+	selectedModuleId: string | null;
 }) {
 	return (
-		<div className="flex flex-col space-y-4">
+		<div className="flex flex-col space-y-6">
 			{modules.size > 0 ? (
-				[...modules.values()].map(lesson => (
-					<div
-						key={lesson.lessonId}
-						className={`cursor-pointer p-4 bg-white rounded-lg shadow-md group ${lesson === [...modules.values()][0] ? "mt-6" : ""}`}
-						onClick={() => {
-							const id = lesson.lessonId;
-							if (id) onSelectModule(id);
-						}}
-					>
-						<h3 className="group-hover:text-emerald-500 text-gray-600 transition-colors duration-200">
-							{lesson.title}
-						</h3>
-					</div>
-				))
+				[...modules.values()].map((lesson) => {
+					const isSelected = lesson.lessonId === selectedModuleId;
+					return (
+						<div
+							key={lesson.lessonId}
+							onClick={() => lesson.lessonId && onSelectModule(lesson.lessonId)}
+							className={`transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer px-6 py-4 rounded-xl shadow-sm border
+								${isSelected ? "bg-emerald-50 ring-inset ring-2 ring-emerald-500 border-emerald-300" : "bg-white hover:bg-gray-50 border-gray-200"}`}
+						>
+							<h3 className={`text-lg font-semibold transition-colors duration-200
+								${isSelected ? "text-emerald-600" : "text-gray-700 group-hover:text-emerald-500"}`}>
+								{lesson.title || "Unbenanntes Modul"}
+							</h3>
+							{lesson.description && (
+								<p className="text-sm text-gray-500 mt-1 line-clamp-2">
+									{lesson.description}
+								</p>
+							)}
+						</div>
+					);
+				})
 			) : (
-				<div className="p-4">
-					<p className="text-gray-500">Keine Module gefunden.</p>
-					<p className="text-gray-500">
-						Bitte erstellen Sie ein Modul, um es anzuzeigen.
-					</p>
+				<div className="p-6 rounded-lg bg-gray-50 text-center border border-gray-200">
+					<p className="text-gray-600 font-medium">Keine Module gefunden.</p>
+					<p className="text-gray-500 mt-1">Bitte erstellen Sie ein Modul, um es hier anzuzeigen.</p>
 				</div>
 			)}
 		</div>
