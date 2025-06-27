@@ -5,8 +5,9 @@ import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 
 export default function ArrangeQuestion() {
-	const { answer, setAnswer, evaluation } = useQuestion("arrange");
-
+	const { answer, setAnswer, evaluation, question } = useQuestion("arrange");
+	const  order  = question.categoryOrder
+	
 	return (
 		<>
 			<DragDropContext
@@ -25,55 +26,59 @@ export default function ArrangeQuestion() {
 				}}
 			>
 				<div className="grid auto-rows-fr gap-4 grid-flow-row xl:grid-flow-col">
-					{Object.entries(answer.value).map(([containerId, items]) => (
-						// eslint-disable-next-line react/jsx-no-useless-fragment
-						<Fragment key={containerId}>
-							{containerId === "_init" ? null : (
-								<ul
-									key={containerId}
-									className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-gray-200 p-4"
-								>
-									<span className="font-semibold">{containerId}</span>
-
-									<Droppable
-										droppableId={containerId.toString()}
-										isDropDisabled={!!evaluation}
+					{order
+						.filter(containerId => containerId !== "_init")
+						.map(containerId => (
+							// eslint-disable-next-line react/jsx-no-useless-fragment
+							<Fragment key={containerId}>
+								{containerId === "_init" ? null : (
+									<ul
+										key={containerId}
+										className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-gray-200 p-4"
 									>
-										{provided => (
-											<ul
-												ref={provided.innerRef}
-												{...provided.droppableProps}
-												className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-100 p-4"
-											>
-												{items.map((item, index) => (
-													<Draggable
-														key={item.id}
-														draggableId={item.id}
-														index={index}
-														isDragDisabled={!!evaluation}
-													>
-														{provided => (
-															<li
-																ref={provided.innerRef}
-																{...provided.draggableProps}
-																{...provided.dragHandleProps}
-																className="h-fit w-fit max-w-[50ch] rounded-lg bg-white p-4 shadow-lg"
+										<span className="font-semibold">{containerId}</span>
+
+										<Droppable
+											droppableId={containerId.toString()}
+											isDropDisabled={!!evaluation}
+										>
+											{provided => (
+												<ul
+													ref={provided.innerRef}
+													{...provided.droppableProps}
+													className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-100 p-4"
+												>
+													{answer.value[containerId]?.map(
+														(item, index) => (
+															<Draggable
+																key={item.id}
+																draggableId={item.id}
+																index={index}
+																isDragDisabled={!!evaluation}
 															>
-																<MarkdownViewer
-																	content={item.content}
-																/>
-															</li>
-														)}
-													</Draggable>
-												))}
-												{provided.placeholder}
-											</ul>
-										)}
-									</Droppable>
-								</ul>
-							)}
-						</Fragment>
-					))}
+																{provided => (
+																	<li
+																		ref={provided.innerRef}
+																		{...provided.draggableProps}
+																		{...provided.dragHandleProps}
+																		className="h-fit w-fit max-w-[50ch] rounded-lg bg-white p-4 shadow-lg"
+																	>
+																		<MarkdownViewer
+																			content={item.content}
+																		/>
+																	</li>
+																)}
+															</Draggable>
+														)
+													)}
+													{provided.placeholder}
+												</ul>
+											)}
+										</Droppable>
+									</ul>
+								)}
+							</Fragment>
+						))}
 				</div>
 
 				<div className="flex min-h-[128px] flex-col gap-4 rounded-lg bg-gray-200 p-4">

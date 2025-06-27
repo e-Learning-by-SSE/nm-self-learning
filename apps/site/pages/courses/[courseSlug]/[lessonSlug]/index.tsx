@@ -20,7 +20,6 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 		return {
 			props: {
 				...props,
-				course: null,
 				markdown: {
 					...lessonProps
 				}
