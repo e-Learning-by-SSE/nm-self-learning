@@ -92,7 +92,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 					<div className="flex items-center gap-4 py-6">
 						<h5 className="text-xl font-semibold">Anfängliche Baumstruktur</h5>
 						<PlusButton
-							additionalClassNames={`${initialTreeInput ? "invisible" : "visible"}`}
+							className={`${initialTreeInput ? "invisible" : "visible"}`}
 							onClick={addInitialTree}
 							title={"Struktur Hinzufügen"}
 						/>
