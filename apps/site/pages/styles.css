@@ -103,7 +103,8 @@ video {
 .btn-primary,
 .btn-secondary,
 .btn-danger,
-.btn-tertiary {
+.btn-tertiary,
+.btn-stroked {
 	@apply flex place-content-center items-center rounded-lg gap-2 px-8 py-2 text-sm font-semibold transition-colors disabled:bg-opacity-25;
 }
 
@@ -125,6 +126,11 @@ video {
 /* Tertiary button: gray outline, gray text (previously border button) */
 .btn-tertiary {
 	@apply border border-gray-200 bg-transparent text-black hover:bg-slate-50;
+}
+
+/* Stroked button: Gray outline, white background, black text  */
+.btn-stroked {
+	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
 }
 
 /* Icon button with text that can be hidden on mobile */
