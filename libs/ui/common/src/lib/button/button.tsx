@@ -75,13 +75,13 @@ export function getButtonSizeClass(size: Size): string {
 
 // Specialized buttons that use the new unified system
 export function PlusButton({
-	onAdd,
+	onClick,
 	title,
 	size = "medium",
 	showText = false,
 	className = ""
 }: {
-	onAdd: () => void;
+	onClick: () => void;
 	title: string;
 	size?: Size;
 	showText?: boolean;
@@ -93,7 +93,7 @@ export function PlusButton({
 				icon={<PlusIcon className={getButtonSizeClass(size)} />}
 				text="Add"
 				variant="primary"
-				onClick={onAdd}
+				onClick={onClick}
 				title={title}
 				className={className}
 			/>
@@ -104,7 +104,7 @@ export function PlusButton({
 		<IconOnlyButton
 			icon={<PlusIcon className={getButtonSizeClass(size)} />}
 			variant="primary"
-			onClick={onAdd}
+			onClick={onClick}
 			title={title}
 			className={className}
 		/>

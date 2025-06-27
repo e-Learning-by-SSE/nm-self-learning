@@ -359,7 +359,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 				>
 					<TrashcanButton
 						onClick={() => removeHint(hintIndex)}
-						additionalClassNames={"self-end"}
+						className={"self-end"}
 						title={"Hinweis Entfernen"}
 					/>
 

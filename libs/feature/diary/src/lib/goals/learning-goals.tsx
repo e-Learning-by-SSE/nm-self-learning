@@ -371,7 +371,7 @@ function GoalRow({
 								title={t("create")}
 								onClick={() => onCreateGoal?.(goal)}
 								size="small"
-								additionalClassNames="w-14 text-center flex justify-center"
+								className="w-14 text-center flex justify-center"
 							/>
 						</div>
 					)}
