@@ -1,9 +1,10 @@
-import { PlusButton, Toggle, TrashcanButton } from "@self-learning/ui/common";
+import { IconOnlyButton, Toggle, TrashcanButton } from "@self-learning/ui/common";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { MultipleChoiceQuestion } from "./schema";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 export default function MultipleChoiceForm({
 	index
@@ -41,7 +42,7 @@ export default function MultipleChoiceForm({
 		<section className="flex flex-col gap-8">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
-				<PlusButton onClick={addAnswer} title={"Antwort hinzufügen"} />
+				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} onClick={addAnswer} title={"Antwort hinzufügen"} />
 			</div>
 			<div className="flex items-center gap-2">
 				<Toggle

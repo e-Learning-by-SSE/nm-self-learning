@@ -8,7 +8,7 @@ import { Quiz } from "@self-learning/quiz";
 import {
 	Divider,
 	DropdownMenu,
-	PlusButton,
+	IconOnlyButton,
 	RemovableTab,
 	SectionHeader,
 	Tabs,
@@ -20,6 +20,7 @@ import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
@@ -344,7 +345,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
 
-				<PlusButton onClick={addHint} title={"Hinweis Hinzufügen"} />
+				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} onClick={addHint} title={"Hinweis Hinzufügen"} />
 			</div>
 
 			<p className="text-sm text-light">

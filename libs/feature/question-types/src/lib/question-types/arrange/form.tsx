@@ -5,7 +5,6 @@ import { QuestionTypeForm } from "../../base-question";
 import { ArrangeItem, ArrangeQuestion } from "./schema";
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
 import {
-	PlusButton,
 	TrashcanButton,
 	Dialog,
 	DialogActions,
@@ -16,7 +15,8 @@ import {
 	showToast,
 	XButton,
 	IconButton,
-	Toggle
+	Toggle,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
 import { PlusIcon } from "@heroicons/react/24/solid";
@@ -164,7 +164,8 @@ export default function ArrangeForm({ index }: { index: number }) {
 													}
 													title={"Kategorie editieren"}
 												/>
-												<PlusButton
+												<IconOnlyButton
+													icon={<PlusIcon className="h-5 w-5"/>}
 													onClick={() => setEditItemDialog({ containerId })}
 													title={"Element hinzufügen"}
 												/>

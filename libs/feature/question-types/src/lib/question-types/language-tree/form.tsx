@@ -4,9 +4,10 @@ import { LanguageTreeQuestion } from "./schema";
 import { ReactNode, useState } from "react";
 import { parseTree, TreeNode } from "./tree-parser";
 import { TreeVisualization } from "./tree-visualization";
-import { Dialog, DialogActions, PlusButton, Toggle } from "@self-learning/ui/common";
+import { Dialog, DialogActions, IconOnlyButton, Toggle } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { FaceFrownIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 export default function LanguageTreeForm({ index }: { index: number }) {
 	const { control, setValue } = useFormContext<QuestionTypeForm<LanguageTreeQuestion>>();
@@ -91,7 +92,8 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
 						<h5 className="text-xl font-semibold">Anfängliche Baumstruktur</h5>
-						<PlusButton
+						<IconOnlyButton
+							icon={<PlusIcon className="h-5 w-5"/>}
 							className={`${initialTreeInput ? "invisible" : "visible"}`}
 							onClick={addInitialTree}
 							title={"Struktur Hinzufügen"}
@@ -122,7 +124,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
 						<h5 className="text-xl font-semibold">Antworten</h5>
-						<PlusButton onClick={addAnswerTree} title={"Antwort Hinzufügen"} />
+						<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} onClick={addAnswerTree} title={"Antwort Hinzufügen"} />
 					</div>
 					<div className="flex justify-center w-full min-h-[150px] max-h-[300px] overflow-y-auto">
 						{answerTreeInput.length > 0 ? (
