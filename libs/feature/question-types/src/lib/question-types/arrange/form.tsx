@@ -166,10 +166,11 @@ export default function ArrangeForm({ index }: { index: number }) {
 												/>
 												<IconOnlyButton
 													icon={<PlusIcon className="h-5 w-5"/>}
+													variant = "primary"
 													onClick={() => setEditItemDialog({ containerId })}
 													title={"Element hinzufügen"}
 												/>
-												<TrashcanButton
+												<TrashcanButton 
 													onClick={() => onDeleteContainer(containerId)}
 													title={"Kategorie entfernen"}
 												/>

@@ -345,7 +345,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
 
-				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} onClick={addHint} title={"Hinweis Hinzufügen"} />
+				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} variant = "primary" onClick={addHint} title={"Hinweis Hinzufügen"} />
 			</div>
 
 			<p className="text-sm text-light">

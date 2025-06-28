@@ -40,6 +40,7 @@ export default function ExactForm({
 
 					<IconOnlyButton
 						icon={<PlusIcon className="h-5 w-5"/>}
+						variant = "primary"
 						onClick={addAnswer}
 						title={"Antwort hinzufügen"}
 						className={"h-fit w-fit items-center"}

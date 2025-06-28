@@ -42,7 +42,7 @@ export default function MultipleChoiceForm({
 		<section className="flex flex-col gap-8">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
-				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} onClick={addAnswer} title={"Antwort hinzufügen"} />
+				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} variant = "primary" onClick={addAnswer} title={"Antwort hinzufügen"} />
 			</div>
 			<div className="flex items-center gap-2">
 				<Toggle
