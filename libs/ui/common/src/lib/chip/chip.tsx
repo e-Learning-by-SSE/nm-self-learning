@@ -1,4 +1,5 @@
-import { XButton } from "../button/button";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import { IconOnlyButton } from "../button/button";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 
 export function Chip({
@@ -24,7 +25,7 @@ export function Chip({
 			<span className="flex w-full flex-col px-4">{children}</span>
 			<div className={"px-2 pr-4 mr-2"}>
 				{onRemove && (
-					<XButton onClick={onRemove} data-testid={"remove"} title="Author Entfernen" />
+					<IconOnlyButton icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" onClick={onRemove} data-testid={"remove"} title="Author Entfernen" />
 				)}
 			</div>
 		</li>

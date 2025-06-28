@@ -133,6 +133,11 @@ video {
 	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
 }
 
+/* X Mark Button: Text Gray, Hover Gray  */
+.btn-x-mark {
+	@apply rounded-full text-gray-400 hover:bg-gray-50 hover:text-red-500 p-1;
+}
+
 /* Icon button with text that can be hidden on mobile */
 .btn-with-icon {
 	@apply flex items-center justify-center gap-2 py-2 px-4;

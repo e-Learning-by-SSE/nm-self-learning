@@ -11,13 +11,12 @@ import {
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
-	XButton,
 	IconButton,
 	Toggle,
 	IconOnlyButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
@@ -245,7 +244,9 @@ function DraggableContent({
 							title={"Editieren"}
 						/>
 
-						<XButton
+						<IconOnlyButton
+							icon={<XMarkIcon className="h-5 w-5" />}
+							variant="x-mark"
 							onClick={() => onDeleteItem(containerId, item.id)}
 							title="Löschen"
 						/>
