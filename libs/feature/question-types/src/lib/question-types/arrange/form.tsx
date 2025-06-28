@@ -8,7 +8,6 @@ import {
 	Dialog,
 	DialogActions,
 	Divider,
-	PencilButton,
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
@@ -18,7 +17,7 @@ import {
 	IconOnlyButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
@@ -157,7 +156,9 @@ export default function ArrangeForm({ index }: { index: number }) {
 										<span className="flex items-center justify-between gap-4 font-semibold">
 											<span>{containerId}</span>
 											<div className="flex gap-2">
-												<PencilButton
+												<IconOnlyButton
+													icon={<PencilIcon className="h-5 w-5" />}
+													variant="tertiary"
 													onClick={() =>
 														setEditCategoryDialog(containerId)
 													}
@@ -232,7 +233,9 @@ function DraggableContent({
 					className="flex h-fit w-fit flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
 				>
 					<div className="flex justify-end gap-2">
-						<PencilButton
+						<IconOnlyButton
+							icon={<PencilIcon className="h-5 w-5" />}
+							variant="tertiary"
 							onClick={() =>
 								setEditItemDialog({
 									containerId,

@@ -1,5 +1,5 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
-import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 /**
  * Enhanced Icon Button with responsive text
@@ -99,35 +99,4 @@ export function XButton({
 	);
 }
 
-export function PencilButton({
-	onClick,
-	title,
-	showText = false,
-	buttonTitle
-}: {
-	onClick: () => void;
-	title: string;
-	showText?: boolean;
-	buttonTitle?: string;
-}) {
-	if (showText && buttonTitle) {
-		return (
-			<IconButton
-				icon={<PencilIcon className="h-5 w-5" />}
-				text={buttonTitle}
-				variant="tertiary"
-				onClick={onClick}
-				title={title}
-			/>
-		);
-	}
 
-	return (
-		<IconOnlyButton
-			icon={<PencilIcon className="h-5 w-5" />}
-			variant="tertiary"
-			onClick={onClick}
-			title={title}
-		/>
-	);
-}
