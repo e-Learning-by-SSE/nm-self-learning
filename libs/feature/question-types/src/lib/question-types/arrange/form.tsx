@@ -5,7 +5,6 @@ import { QuestionTypeForm } from "../../base-question";
 import { ArrangeItem, ArrangeQuestion } from "./schema";
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
 import {
-	TrashcanButton,
 	Dialog,
 	DialogActions,
 	Divider,
@@ -19,7 +18,7 @@ import {
 	IconOnlyButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
@@ -170,7 +169,9 @@ export default function ArrangeForm({ index }: { index: number }) {
 													onClick={() => setEditItemDialog({ containerId })}
 													title={"Element hinzufügen"}
 												/>
-												<TrashcanButton 
+												<IconOnlyButton
+													icon={<TrashIcon className="h-5 w-5" />}
+													variant = "danger" 
 													onClick={() => onDeleteContainer(containerId)}
 													title={"Kategorie entfernen"}
 												/>

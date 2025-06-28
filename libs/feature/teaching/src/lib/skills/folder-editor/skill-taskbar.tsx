@@ -4,9 +4,9 @@ import {
 	dispatchDialog,
 	freeDialog,
 	IconButton,
+	IconOnlyButton,
 	showToast,
-	SimpleDialog,
-	TrashcanButton
+	SimpleDialog
 } from "@self-learning/ui/common";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
@@ -127,7 +127,7 @@ export function SkillDeleteOption({
 	};
 
 	if (!inline) {
-		return <TrashcanButton onClick={handleDelete} />;
+		return <IconOnlyButton icon={<TrashIcon className="h-5 w-5" />}	variant = "danger"  onClick={handleDelete} />;
 	} else {
 		return (
 			<button type="button" className={"px-2 hover:text-secondary"} onClick={handleDelete}>

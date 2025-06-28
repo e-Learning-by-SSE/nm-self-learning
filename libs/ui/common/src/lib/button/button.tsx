@@ -75,41 +75,6 @@ export function getButtonSizeClass(size: Size): string {
 
 // Specialized buttons that use the new unified system
 
-export function TrashcanButton({
-	onClick,
-	title = "Remove",
-	showText = false,
-	className = ""
-}: {
-	onClick: () => void;
-	title?: string;
-	showText?: boolean;
-	className?: string;
-}) {
-	if (showText) {
-		return (
-			<IconButton
-				icon={<TrashIcon className="h-5 w-5" />}
-				text="Delete"
-				variant="danger"
-				onClick={onClick}
-				title={title}
-				className={className}
-			/>
-		);
-	}
-
-	return (
-		<IconOnlyButton
-			icon={<TrashIcon className="h-5 w-5" />}
-			variant="danger"
-			onClick={onClick}
-			title={title}
-			className={className}
-		/>
-	);
-}
-
 export function XButton({
 	onClick,
 	title,

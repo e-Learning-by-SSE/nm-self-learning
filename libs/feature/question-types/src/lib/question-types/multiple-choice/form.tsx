@@ -1,10 +1,10 @@
-import { IconOnlyButton, Toggle, TrashcanButton } from "@self-learning/ui/common";
+import { IconOnlyButton, Toggle } from "@self-learning/ui/common";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { MultipleChoiceQuestion } from "./schema";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function MultipleChoiceForm({
 	index
@@ -73,7 +73,9 @@ export default function MultipleChoiceForm({
 							Diese Antwort ist korrekt.
 						</label>
 
-						<TrashcanButton
+						<IconOnlyButton
+							icon={<TrashIcon className="h-5 w-5" />}
+							variant = "danger" 
 							onClick={() => removeAnswer(answerIndex)}
 							title={"Antwort entfernen"}
 						/>

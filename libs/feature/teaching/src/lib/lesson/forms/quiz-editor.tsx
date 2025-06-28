@@ -11,8 +11,7 @@ import {
 	IconOnlyButton,
 	RemovableTab,
 	SectionHeader,
-	Tabs,
-	TrashcanButton
+	Tabs
 } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
@@ -20,7 +19,7 @@ import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
@@ -358,7 +357,9 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 					key={hint.hintId}
 					className="flex flex-col gap-4 rounded-lg border border-yellow-500 bg-yellow-100  p-4"
 				>
-					<TrashcanButton
+					<IconOnlyButton
+						icon={<TrashIcon className="h-5 w-5" />}
+						variant = "danger" 
 						onClick={() => removeHint(hintIndex)}
 						className={"self-end"}
 						title={"Hinweis Entfernen"}
