@@ -2,7 +2,7 @@ import { DialogWithReactNodeTitle, CollapsibleBox } from "@self-learning/ui/comm
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { IncompleteNanoModuleExport, MissedElement } from "@self-learning/lia-exporter";
 import Link from "next/link";
-import { CourseFormModel } from "../course-form-model";
+import { CourseExportType } from "@self-learning/teaching";
 
 /**
  * Generates a Link to the quiz with the given index in a uniform format.
@@ -138,6 +138,7 @@ function SectionTitle({ slug, item }: { slug: string; item: IncompleteNanoModule
 		</div>
 	);
 }
+
 /**
  * Generates a dialog to display a report of incomplete nanomodule exports.
  * @param report The report of incomplete nanomodule exports (should not be empty)
@@ -151,7 +152,7 @@ export function ErrorReportDialog({
 	onClose
 }: {
 	report: IncompleteNanoModuleExport[];
-	course: CourseFormModel;
+	course: CourseExportType;
 	onClose: () => void;
 }) {
 	const element = report.length > 1 ? "Einige Elemente werden" : "Ein Element wird";
