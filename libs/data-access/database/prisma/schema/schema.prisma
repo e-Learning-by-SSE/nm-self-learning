@@ -256,3 +256,16 @@ model EventLog {
     payload    Json?
     // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
 }
+
+model LlmConfiguration {
+  id              String   @id @default(cuid())
+  serverUrl       String   @map("server_url")
+  apiKey          String?  @map("api_key")
+  defaultModel    String   @map("default_model")
+  availableModels Json?   @default("[]")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("llm_configurations")
+}
