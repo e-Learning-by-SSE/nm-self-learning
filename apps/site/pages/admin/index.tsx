@@ -57,6 +57,11 @@ export default function AdminPage() {
 					imageElement={<CodingSvg />}
 					title="REST API Dokumentation (OpenAPI)"
 				/>
+				<Card
+					href="/admin/llm-config"
+					imageElement={<CodingSvg />}
+					title="LLM Konfiguration"
+				/>
 			</div>
 			<div className="text-center text-sm text-gray-500 mt-8">
 				{`App Version: ${appVersion}`}
