@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { LearningGoal } from "@self-learning/types";
-import { Dialog, LoadingBox, StarRating, XButton } from "@self-learning/ui/common";
+import { Dialog, IconOnlyButton, LoadingBox, StarRating } from "@self-learning/ui/common";
 import { MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { IdSet } from "@self-learning/util/common";
 import Image from "next/image";
@@ -9,6 +9,7 @@ import { Location } from "../access-learning-diary";
 import { LearningGoalsDialog } from "../goals/learning-goals";
 import { GoalStatusCheckbox } from "../goals/status-checkbox";
 import { StatusUpdateCallback } from "../util/types";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 export function Tile({
 	onClick,
@@ -225,13 +226,14 @@ export function LocationChooseDialog({
 								)}
 								<span className="text-gray-800 flex-grow">{location.name}</span>
 								{!location.defaultLocation && (
-									<XButton
+									<IconOnlyButton
+										icon={<XMarkIcon className="h-3 w-3" />}
+										variant="x-mark"
 										onClick={e => {
 											e.stopPropagation();
 											deleteLearningLocationAsync(location.id);
 										}}
 										className="ml-auto text-red-500 hover:text-red-700"
-										size="small"
 									/>
 								)}
 							</div>

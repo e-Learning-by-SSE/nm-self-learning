@@ -8,11 +8,10 @@ import { Quiz } from "@self-learning/quiz";
 import {
 	Divider,
 	DropdownMenu,
-	PlusButton,
+	IconOnlyButton,
 	RemovableTab,
 	SectionHeader,
-	Tabs,
-	TrashcanButton
+	Tabs
 } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
@@ -20,6 +19,7 @@ import { Reorder } from "framer-motion";
 import { useMemo, useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
@@ -374,7 +374,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
 
-				<PlusButton onClick={addHint} title={"Hinweis Hinzufügen"} />
+				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} variant = "primary" onClick={addHint} title={"Hinweis Hinzufügen"} />
 			</div>
 
 			<p className="text-sm text-light">
@@ -387,9 +387,11 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 					key={hint.hintId}
 					className="flex flex-col gap-4 rounded-lg border border-yellow-500 bg-yellow-100  p-4"
 				>
-					<TrashcanButton
+					<IconOnlyButton
+						icon={<TrashIcon className="h-5 w-5" />}
+						variant = "danger" 
 						onClick={() => removeHint(hintIndex)}
-						additionalClassNames={"self-end"}
+						className={"self-end"}
 						title={"Hinweis Entfernen"}
 					/>
 

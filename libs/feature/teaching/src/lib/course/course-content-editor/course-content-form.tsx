@@ -5,7 +5,8 @@ import {
 	ChevronLeftIcon,
 	LinkIcon,
 	PencilIcon,
-	PlusIcon
+	PlusIcon,
+	XMarkIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
@@ -15,7 +16,7 @@ import {
 	onLessonEditorSubmit
 } from "@self-learning/teaching";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
-import { OnDialogCloseFn, SectionHeader, XButton } from "@self-learning/ui/common";
+import { IconOnlyButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
@@ -174,7 +175,7 @@ function LessonNode({
 						Lernkontrolle
 					</span>
 				)}
-				<XButton onClick={onRemove} title="Entfernen" size="medium" />
+				<IconOnlyButton onClick={onRemove} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" title="Entfernen" />
 			</div>
 		</span>
 	);

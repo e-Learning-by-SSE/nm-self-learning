@@ -1,6 +1,5 @@
 import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { CSSProperties, ReactNode } from "react";
-import { GreyBoarderButton } from "../button/button";
 export type OnDialogCloseFn<T> = (result?: T) => void;
 
 export function Dialog<TResult>({
@@ -93,9 +92,9 @@ export function DialogActions({
 }) {
 	return (
 		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
-			<GreyBoarderButton onClick={() => onClose(undefined)}>
+			<button className="btn btn-tertiary" onClick={() => onClose(undefined)}>
 				<span className={"text-gray-600"}>Abbrechen</span>
-			</GreyBoarderButton>
+			</button>
 			{children}
 		</div>
 	);

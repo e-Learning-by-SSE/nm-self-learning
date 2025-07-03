@@ -4,6 +4,7 @@ import "@testing-library/jest-dom";
 import { LearningGoals } from "./learning-goals";
 import { IdSet } from "@self-learning/util/common";
 import { GoalFormModel } from "../util/types";
+import { IconOnlyButton } from "@self-learning/ui/common";
 
 // Initial state: Parent goal with two sub goals
 const subGoal1 = {
@@ -100,7 +101,7 @@ jest.mock("@self-learning/ui/common", () => {
 		dispatchDialog: jest.fn(),
 		freeDialog: jest.fn(),
 		LoadingBox: jest.fn(() => null),
-		PlusButton: jest.fn(() => null),
+		IconOnlyButton: jest.fn(() => null),
 		SimpleDialog: jest.fn(() => null),
 		Tab,
 		Tabs
