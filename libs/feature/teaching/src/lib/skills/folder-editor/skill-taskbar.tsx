@@ -3,12 +3,11 @@ import {
 	ButtonActions,
 	dispatchDialog,
 	freeDialog,
-	IconButton,
 	showToast,
 	SimpleDialog,
 	TrashcanButton
 } from "@self-learning/ui/common";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { TrashIcon } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
@@ -36,28 +35,33 @@ const withErrorHandling = async (fn: () => Promise<void>) => {
 
 export function AddChildButton({
 	parentSkill,
+	childrenNumber,
 	updateSkillDisplay,
 	handleSelection,
-	skillDefaults
+	skillDefaults,
+	authorId
 }: {
 	parentSkill: SkillFormModel;
+	childrenNumber: number;
 	updateSkillDisplay: UpdateVisuals;
 	handleSelection: SkillSelectHandler;
 	skillDefaults?: Partial<Skill>;
+	authorId: number;
 }) {
 	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
+
 	const newSkill = {
-		name: `${parentSkill.children.length + 1}. Kind - ${parentSkill.name}`,
+		name: `${childrenNumber + 1}. Kind - ${parentSkill.name}`,
 		description: "Add here",
 		children: [],
 		parents: [parentSkill.id],
-		repositoryId: parentSkill.repositoryId,
 		...skillDefaults
 	};
+
 	const handleAddSkill = async () =>
 		await withErrorHandling(async () => {
 			const result = await addSkillOnParent({
-				repoId: parentSkill.repositoryId,
+				authorId: authorId,
 				parentSkillId: parentSkill.id,
 				skill: newSkill
 			});
@@ -80,7 +84,7 @@ export function AddChildButton({
 	return (
 		<button
 			title="Neuen Skill in dieser Skillgruppe anlegen"
-			className="hover:text-secondary"
+			className="mr-3 px-2 hover:text-secondary"
 			onClick={handleAddSkill}
 		>
 			<FolderPlusIcon className="icon h-5 text-lg" style={{ cursor: "pointer" }} />
@@ -135,40 +139,4 @@ export function SkillDeleteOption({
 			</button>
 		);
 	}
-}
-
-export function NewSkillButton({
-	repoId,
-	onSuccess,
-	skillDefaults
-}: {
-	repoId: string;
-	onSuccess?: (skill: Skill) => void | Promise<void>;
-	skillDefaults?: Partial<Skill>;
-}) {
-	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
-
-	const date = new Date();
-	const formattedDate = date.toLocaleDateString("de-DE");
-
-	const newSkill = {
-		name: `Skill vom ${formattedDate}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-		description: "Add here",
-		children: [],
-		...skillDefaults
-	};
-	const onCreateSkill = async () => {
-		const createdSkill = await createNewSkill({
-			repoId: repoId,
-			skill: newSkill
-		});
-		await onSuccess?.(createdSkill ?? null);
-	};
-	return (
-		<IconButton
-			text="Skill hinzufügen"
-			icon={<PlusIcon className="icon h-5" />}
-			onClick={onCreateSkill}
-		/>
-	);
 }
