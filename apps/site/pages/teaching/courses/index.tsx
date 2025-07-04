@@ -1,9 +1,5 @@
 import { LoadingBox, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
-import {
-	CourseBasicInformation,
-	CourseSkillView,
-	CoursePreview
-} from "@self-learning/ui/course";
+import { CourseBasicInformation, CourseSkillView, CoursePreview } from "@self-learning/ui/course";
 import { GetServerSideProps } from "next";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { withAuth, withTranslations } from "@self-learning/api";
@@ -33,6 +29,9 @@ export default function CourseCreationEditor() {
 	const session = useRequiredSession();
 	const username = session.data?.user.name;
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	const prevIndexRef = useRef<number>(0);
+	const [courseId, setCourseId] = useState<string>("");
+	const [selectors, setSelectors] = useState<string[]>([]);
 	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({
 		username: username ?? ""
 	});
@@ -44,10 +43,6 @@ export default function CourseCreationEditor() {
 	if (!author) {
 		return <div>Author Missing</div>;
 	}
-
-	const prevIndexRef = useRef<number>(0);
-	const [courseId, setCourseId] = useState<string>("");
-	const [selectors, setSelectors] = useState<string[]>([]);
 
 	async function switchTab(newIndex: number) {
 		if (newIndex > 0 && !courseId) {
