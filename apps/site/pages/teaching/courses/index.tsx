@@ -2,14 +2,14 @@ import { LoadingBox, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import {
 	CourseBasicInformation,
 	CourseSkillView,
-	CourseModulView,
 	CoursePreview
 } from "@self-learning/ui/course";
 import { GetServerSideProps } from "next";
-import { useState } from "react";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import CourseModuleView from "libs/ui/course/src/lib/editor/course-module-view";
+import { useRef, useState } from "react";
 
 export const getServerSideProps: GetServerSideProps = withTranslations(["common"], context => {
 	return withAuth(async (ctx, user) => {
@@ -32,7 +32,7 @@ export default function CourseCreationEditor() {
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
 	const session = useRequiredSession();
 	const username = session.data?.user.name;
-	const [selectedIndex, setSelectedIndex] = useState(2);
+	const [selectedIndex, setSelectedIndex] = useState(0);
 	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({
 		username: username ?? ""
 	});
@@ -45,19 +45,34 @@ export default function CourseCreationEditor() {
 		return <div>Author Missing</div>;
 	}
 
+	const prevIndexRef = useRef<number>(0);
+	const [courseId, setCourseId] = useState<string>("");
+	const [selectors, setSelectors] = useState<string[]>([]);
 
-	function switchTab(index: number) {
-		setSelectedIndex(index);
+	async function switchTab(newIndex: number) {
+		if (newIndex > 0 && !courseId) {
+			alert("Bitte zuerst den Kurs speichern.");
+			return;
+		}
+		prevIndexRef.current = newIndex;
+		setSelectedIndex(newIndex);
 	}
 
 	const renderContent = (index: number) => {
 		switch (index) {
 			case 0:
-				return <CourseBasicInformation />;
+				return (
+					<CourseBasicInformation
+						onCourseCreated={(id: string, selectors: string[]) => {
+							setCourseId(id);
+							setSelectors(selectors);
+						}}
+					/>
+				);
 			case 1:
 				return <CourseSkillView authorId={author.id} />;
 			case 2:
-				return <CourseModulView onSubmit={() => {}} />;
+				return <CourseModuleView courseId={courseId} selectors={selectors} />;
 			case 3:
 				return <CoursePreview />;
 			default:
@@ -72,7 +87,16 @@ export default function CourseCreationEditor() {
 			</section>
 			<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
 				{tabs.map((content, idx) => (
-					<Tab key={idx}>{content}</Tab>
+					<Tab key={idx}>
+						<span
+							style={{
+								opacity: idx > 0 && !courseId ? 0.3 : 1,
+								cursor: idx > 0 && !courseId ? "not-allowed" : "pointer"
+							}}
+						>
+							{content}
+						</span>
+					</Tab>
 				))}
 			</Tabs>
 			<div>{renderContent(selectedIndex)}</div>
