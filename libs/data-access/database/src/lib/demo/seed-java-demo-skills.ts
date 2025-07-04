@@ -1,4 +1,4 @@
-import { createRepositories, createSkillGroups, createSkills } from "../seed-functions";
+import { createSkillGroups, createSkills } from "../seed-functions";
 
 const skills = [
 	{
@@ -198,8 +198,6 @@ const repository = {
 };
 
 export async function seedJavaDemoSkills() {
-	await createRepositories(repository);
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Repositories");
 
 	await createSkills(skills, repository.id);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");

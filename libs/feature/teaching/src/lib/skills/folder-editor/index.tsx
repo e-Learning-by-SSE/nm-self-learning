@@ -1,10 +1,8 @@
 "use client";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
 import { useCallback, useMemo, useState } from "react";
-import { DialogHandler, Divider } from "@self-learning/ui/common";
+import { DialogHandler, LoadingBox } from "@self-learning/ui/common";
 import { SkillFormModel } from "@self-learning/types";
-import { RepositoryInfoMemorized } from "../repository/repository-edit-form";
-
 import { SelectedSkillsInfoForm } from "./skill-edit-form";
 import { ShowCyclesDialog } from "./cycle-detection/cycle-detection";
 import {
@@ -16,22 +14,67 @@ import {
 	changeDisplay,
 	getCycleDisplayInformation
 } from "./skill-display";
-import { SkillRepository } from "@prisma/client";
 import { SkillFolderTable } from "./folder-table";
+import { trpc } from "@self-learning/api-client";
+
+export function CreateAndViewSkills({
+	initialSkills,
+	selectedSkill
+}: {
+	initialSkills: SkillFormModel[];
+	selectedSkill?: SkillFormModel;
+}) {
+	const { data: skills = initialSkills, isLoading } = trpc.skill.getParentSkills.useQuery();
+
+	const session = useRequiredSession();
+	const username = session.data?.user.name;
+
+	const { data: author } = trpc.author.getByUsername.useQuery({
+		username: username ?? ""
+	});
+
+	if (isLoading) {
+		<LoadingBox />;
+	}
+
+	if (!author) {
+		return <div>Author Missing</div>;
+	}
+
+	const treeContent = new Map<string, SkillFormModel>();
+
+	skills?.forEach(skill => {
+		treeContent.set(skill.id, skill);
+	});
+
+	if (isLoading) {
+		return <LoadingBox />;
+	}
+
+	return (
+		<SkillFolderEditor
+			skills={treeContent}
+			authorId={author.id}
+			initiallySelectedSkill={selectedSkill}
+		/>
+	);
+}
 
 export function SkillFolderEditor({
-	repository,
-	skills
+	initiallySelectedSkill,
+	skills,
+	authorId
 }: {
-	repository: SkillRepository;
+	initiallySelectedSkill?: SkillFormModel;
 	skills: Map<string, SkillFormModel>;
+	authorId: number;
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
 
 	const [selectedItem, setSelectedItem] = useState<{
 		previousSkill?: string;
 		currentSkill?: string;
-	}>({});
+	}>({ currentSkill: initiallySelectedSkill?.id });
 
 	const cycles = useMemo(() => {
 		const cycleData = getCycleDisplayInformation(skills);
@@ -57,7 +100,6 @@ export function SkillFolderEditor({
 		},
 		[updateSkillDisplay]
 	);
-
 	return (
 		<div className="bg-gray-50">
 			<SidebarEditorLayout
@@ -65,16 +107,16 @@ export function SkillFolderEditor({
 					<SidebarContentEditor
 						skill={selectedSkill}
 						changeEditTarget={changeEditTarget}
-						repository={repository}
 					/>
 				}
 			>
-				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles} />}
+				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles}/>}
 				<SkillFolderTable
-					repository={repository}
 					skillDisplayData={skillDisplayData}
+					selectedSkill={selectedSkill}
 					onSkillSelect={changeEditTarget}
 					updateSkillDisplay={updateSkillDisplay}
+					authorId={authorId}
 				/>
 			</SidebarEditorLayout>
 			<DialogHandler id={"simpleDialog"} />
@@ -82,7 +124,7 @@ export function SkillFolderEditor({
 	);
 }
 
-function useTableSkillDisplay(skills: Map<string, SkillFormModel>) {
+export function useTableSkillDisplay(skills: Map<string, SkillFormModel>) {
 	const [skillDisplayData, setSkillDisplayData] = useState(
 		new Map<string, SkillFolderVisualization>()
 	);
@@ -104,6 +146,7 @@ function useTableSkillDisplay(skills: Map<string, SkillFormModel>) {
 						prev => prev?.concat(displayWithoutSkill) ?? displayWithoutSkill
 					);
 				}
+
 				return displayData;
 			});
 		},
@@ -128,20 +171,13 @@ function useTableSkillDisplay(skills: Map<string, SkillFormModel>) {
 
 function SidebarContentEditor({
 	skill,
-	changeEditTarget,
-	repository
+	changeEditTarget
 }: {
 	skill?: SkillFormModel;
 	changeEditTarget: SkillSelectHandler;
-	repository: SkillRepository;
 }) {
 	return (
-		<>
-			<span className="text-2xl font-semibold text-secondary">Skillkarten editieren</span>
-
-			<RepositoryInfoMemorized repository={repository} />
-			<Divider />
-
+		<div>
 			{skill ? (
 				<SelectedSkillsInfoForm
 					skills={[skill]} // TODO check multiple skills
@@ -150,6 +186,6 @@ function SidebarContentEditor({
 			) : (
 				"Einen Skill aus der Liste auswählen um das Bearbeiten zu starten..."
 			)}
-		</>
+		</div>
 	);
 }
