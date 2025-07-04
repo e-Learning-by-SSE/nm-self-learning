@@ -1,9 +1,8 @@
 "use client";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
 import { useCallback, useMemo, useState } from "react";
-import { DialogHandler } from "@self-learning/ui/common";
+import { DialogHandler, LoadingBox } from "@self-learning/ui/common";
 import { SkillFormModel } from "@self-learning/types";
-
 import { SelectedSkillsInfoForm } from "./skill-edit-form";
 import { ShowCyclesDialog } from "./cycle-detection/cycle-detection";
 import {
@@ -16,11 +15,57 @@ import {
 	getCycleDisplayInformation
 } from "./skill-display";
 import { SkillFolderTable } from "./folder-table";
+import { trpc } from "@self-learning/api-client";
+
+export function CreateAndViewSkills({
+	initialSkills,
+	selectedSkill
+}: {
+	initialSkills: SkillFormModel[];
+	selectedSkill?: SkillFormModel;
+}) {
+	const { data: skills = initialSkills, isLoading } = trpc.skill.getParentSkills.useQuery();
+
+	const session = useRequiredSession();
+	const username = session.data?.user.name;
+
+	const { data: author } = trpc.author.getByUsername.useQuery({
+		username: username ?? ""
+	});
+
+	if (isLoading) {
+		<LoadingBox />;
+	}
+
+	if (!author) {
+		return <div>Author Missing</div>;
+	}
+
+	const treeContent = new Map<string, SkillFormModel>();
+
+	skills?.forEach(skill => {
+		treeContent.set(skill.id, skill);
+	});
+
+	if (isLoading) {
+		return <LoadingBox />;
+	}
+
+	return (
+		<SkillFolderEditor
+			skills={treeContent}
+			authorId={author.id}
+			initiallySelectedSkill={selectedSkill}
+		/>
+	);
+}
 
 export function SkillFolderEditor({
+	initiallySelectedSkill,
 	skills,
 	authorId
 }: {
+	initiallySelectedSkill?: SkillFormModel;
 	skills: Map<string, SkillFormModel>;
 	authorId: number;
 }) {
@@ -29,7 +74,7 @@ export function SkillFolderEditor({
 	const [selectedItem, setSelectedItem] = useState<{
 		previousSkill?: string;
 		currentSkill?: string;
-	}>({});
+	}>({ currentSkill: initiallySelectedSkill?.id });
 
 	const cycles = useMemo(() => {
 		const cycleData = getCycleDisplayInformation(skills);

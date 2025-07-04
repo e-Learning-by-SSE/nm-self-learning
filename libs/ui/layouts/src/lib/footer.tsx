@@ -23,7 +23,7 @@ function FooterElement({
 
 export function Footer() {
 	return (
-		<footer className="border-t-gray border-t bg-white px-6 py-2 text-light">
+		<footer className="border-t-gray border-t bg-white px-6 py-2 text-light mt-auto">
 			<div
 				className="mx-auto flex flex-col items-center justify-between md:flex-row"
 				style={{ maxWidth: "1200px" }}

@@ -27,12 +27,12 @@ export function getButtonSizeClass(size: Size): string {
 }
 
 export function PlusButton({
-	onAdd,
+	onClick,
 	title,
 	additionalClassNames,
 	size = "medium"
 }: {
-	onAdd: () => void;
+	onClick: () => void;
 	title: string;
 	additionalClassNames?: string;
 	size?: Size;
@@ -40,8 +40,8 @@ export function PlusButton({
 	return (
 		<button
 			type="button"
-			onClick={onAdd}
-			title={title || "Hinzufügen"}
+			onClick={onClick}
+			title={title}
 			className={`btn-small-highlight ${additionalClassNames}`}
 		>
 			<PlusIcon className={getButtonSizeClass(size)} />

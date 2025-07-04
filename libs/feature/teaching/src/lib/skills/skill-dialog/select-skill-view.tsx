@@ -53,17 +53,20 @@ export function LabeledFieldSelectSkillsView({
 export function SelectSkillsView({
 	skills,
 	onDeleteSkill,
-	onAddSkill
+	onAddSkill,
+	disabled = false
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
+	disabled?: boolean;
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
 
 	return (
 		<>
 			<IconButton
+				disabled={disabled ? disabled : false}
 				text="Hinzufügen"
 				icon={<PlusIcon className={getButtonSizeClass("medium")} />}
 				onClick={() => setSelectSkillModal(true)}

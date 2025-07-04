@@ -76,25 +76,3 @@ export function mapCourseFormToUpdate(
 
 	return courseForDb;
 }
-export function createEmptyCourseFormModel(): CourseFormModel {
-	return {
-		courseId: null,
-		subjectId: null,
-		slug: "",
-		title: "",
-		subtitle: "",
-		description: null,
-		imgUrl: null,
-		authors: [],
-		content: []
-	};
-}
-
-export function createEmptyExtendedCourseFormModel(): ExtendedCourseFormModel {
-	const emptyCourse = createEmptyCourseFormModel();
-	return {
-		course: emptyCourse,
-		courseTeachingGoals: [],
-		courseRequirements: []
-	};
-}

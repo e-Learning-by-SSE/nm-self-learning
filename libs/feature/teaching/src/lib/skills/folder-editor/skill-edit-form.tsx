@@ -189,14 +189,23 @@ function SkillToSkillDepsInfo({
 						return {
 							...skill,
 							children: [],
-							parents: [],
+							parents: []
 						};
 					})}
+					disabled={
+						skillToChange.children.length >= 1 && skillToChange.parents.length >= 0
+					}
 					onDeleteSkill={skill => {
 						removeParent(skill.id);
 					}}
 					onAddSkill={skills => {
 						if (!skills) return;
+						if (
+							skillToChange.children.length >= 1 &&
+							skillToChange.parents.length >= 1
+						) {
+							return;
+						}
 						addParent(skills);
 					}}
 				/>
