@@ -1,66 +1,26 @@
-import { adminProcedure, authProcedure, t } from "../trpc";
+import { z } from "zod";
+import { adminProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
-import { secondsToMilliseconds } from "date-fns";
-import { llmConfigSchema, llmConfigSchemaForFetching, ollamaModelList } from "@self-learning/types";
 
-/**
- * Fetches available models from the LLM server.
- * @param serverUrl The URL of the LLM server.
- * @param apiKey Optional API key for authentication.
- * @param timeoutSeconds Optional timeout in seconds (default: 10).
- */
-async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutSeconds = 10) {
-	const headers: Record<string, string> = {
-		"Content-Type": "application/json"
-	};
+const llmConfigSchema = z.object({
+	serverUrl: z.string().url(),
+	apiKey: z.string().optional(),
+	defaultModel: z.string().min(1)
+});
 
-	if (apiKey) {
-		headers["Authorization"] = `Bearer ${apiKey}`;
-	}
-
-	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(timeoutSeconds));
-	const response = await fetch(serverUrl + "/tags", {
-		method: "GET",
-		headers,
-		signal: controller.signal
-	});
-	clearTimeout(timeoutId);
-	if (!response.ok) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: `${response.statusText}`
-		});
-	}
-
-	const data = await response.json();
-	return ollamaModelList.parse(data);
-}
-
-export async function fetchLlmConfig() {
-	const config = await database.llmConfiguration.findFirst({
-		where: { isActive: true },
-		select: {
-			serverUrl: true,
-			defaultModel: true,
-			updatedAt: true,
-			apiKey: true
-		}
-	});
-
-	return config;
-}
-
-export const llmConfigRouter = t.router({
-	get: authProcedure.query(async () => {
+const llmConfigRouter = t.router({
+	// Get current LLM configuration
+	get: adminProcedure.query(async () => {
 		const config = await database.llmConfiguration.findFirst({
 			where: { isActive: true },
 			select: {
+				id: true,
 				serverUrl: true,
 				defaultModel: true,
-				updatedAt: true,
-				apiKey: true
+				isActive: true,
+				createdAt: true,
+				updatedAt: true
 			}
 		});
 
@@ -68,28 +28,126 @@ export const llmConfigRouter = t.router({
 			return null;
 		}
 
-		const { apiKey, ...rest } = config;
+		// Check if API key exists without exposing it
+		const hasApiKey = await database.llmConfiguration.findFirst({
+			where: { id: config.id, apiKey: { not: null } },
+			select: { id: true }
+		});
 
 		return {
-			...rest,
-			hasApiKey: !!apiKey
+			...config,
+			hasApiKey: !!hasApiKey,
+			apiKey: hasApiKey ? "****" : undefined // Masked value
 		};
 	}),
 
+	// Validate LLM configuration by testing connection
+	validate: adminProcedure.input(llmConfigSchema).mutation(async ({ input }) => {
+		try {
+			const { serverUrl, apiKey, defaultModel } = input;
+
+			// Test connection by calling /api/tags endpoint
+			const tagsUrl = `${serverUrl.replace(/\/$/, "")}/api/tags`;
+			const headers: Record<string, string> = {
+				"Content-Type": "application/json"
+			};
+
+			if (apiKey) {
+				headers["Authorization"] = `Bearer ${apiKey}`;
+			}
+
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+			const response = await fetch(tagsUrl, {
+				method: "GET",
+				headers,
+				signal: controller.signal
+			});
+			clearTimeout(timeoutId);
+
+			if (!response.ok) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Failed to connect to LLM server: ${response.status} ${response.statusText}`
+				});
+			}
+
+			const data = await response.json();
+
+			// Check if the specified model is available
+			const availableModels = data.models || [];
+			const modelExists = availableModels.some(
+				(model: any) =>
+					model.name === defaultModel || model.name.startsWith(defaultModel + ":")
+			);
+
+			if (!modelExists) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Model "${defaultModel}" is not available on the server. Available models: ${availableModels.map((m: any) => m.name).join(", ")}`
+				});
+			}
+
+			return {
+				valid: true,
+				availableModels: availableModels.map((m: any) => m.name)
+			};
+		} catch (error) {
+			if (error instanceof TRPCError) {
+				throw error;
+			}
+
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: `Failed to validate LLM configuration: ${error instanceof Error ? error.message : "Unknown error"}`
+			});
+		}
+	}),
+
+	// Create or update LLM configuration
 	save: adminProcedure.input(llmConfigSchema).mutation(async ({ input }) => {
 		try {
 			const { serverUrl, apiKey, defaultModel } = input;
 
+			// First validate the configuration by calling the LLM server directly
 			try {
-				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
-				const modelExists = availableModels.models.some(
-					m => m.name === defaultModel || m.name.startsWith(defaultModel + ":")
+				const tagsUrl = `${serverUrl.replace(/\/$/, "")}/api/tags`;
+				const headers: Record<string, string> = {
+					"Content-Type": "application/json"
+				};
+
+				if (apiKey) {
+					headers["Authorization"] = `Bearer ${apiKey}`;
+				}
+
+				const controller = new AbortController();
+				const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+				const response = await fetch(tagsUrl, {
+					method: "GET",
+					headers,
+					signal: controller.signal
+				});
+				clearTimeout(timeoutId);
+
+				if (!response.ok) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `Failed to connect to LLM server: ${response.status} ${response.statusText}`
+					});
+				}
+
+				const data = await response.json();
+				const availableModels = data.models || [];
+				const modelExists = availableModels.some(
+					(model: any) =>
+						model.name === defaultModel || model.name.startsWith(defaultModel + ":")
 				);
 
 				if (!modelExists) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
-						message: "This Model is not available on the server."
+						message: `Model "${defaultModel}" is not available on the server. Available models: ${availableModels.map((m: any) => m.name).join(", ")}`
 					});
 				}
 			} catch (error) {
@@ -98,40 +156,65 @@ export const llmConfigRouter = t.router({
 				}
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "Failed to validate LLM configuration."
+					message: `Failed to validate LLM configuration: ${error instanceof Error ? error.message : "Unknown error"}`
 				});
 			}
 
+			// Check if there's an existing active configuration
 			const existingConfig = await database.llmConfiguration.findFirst({
 				where: { isActive: true }
 			});
 
-			const config = await database.llmConfiguration.upsert({
-				where: { id: existingConfig?.id || crypto.randomUUID() },
-				update: {
-					serverUrl,
-					apiKey: apiKey || null,
-					defaultModel,
-					updatedAt: new Date()
-				},
-				create: {
-					serverUrl,
-					apiKey: apiKey || null,
-					defaultModel,
-					isActive: true
-				},
-				select: {
-					id: true,
-					serverUrl: true,
-					defaultModel: true,
-					updatedAt: true
-				}
-			});
+			if (existingConfig) {
+				// Update existing configuration
+				const updatedConfig = await database.llmConfiguration.update({
+					where: { id: existingConfig.id },
+					data: {
+						serverUrl,
+						apiKey: apiKey || null,
+						defaultModel,
+						updatedAt: new Date()
+					},
+					select: {
+						id: true,
+						serverUrl: true,
+						defaultModel: true,
+						isActive: true,
+						createdAt: true,
+						updatedAt: true
+					}
+				});
 
-			return {
-				...config,
-				hasApiKey: !!apiKey
-			};
+				return {
+					...updatedConfig,
+					hasApiKey: !!apiKey,
+					apiKey: apiKey ? "****" : undefined
+				};
+			} else {
+				// Create new configuration
+				const newConfig = await database.llmConfiguration.create({
+					data: {
+						serverUrl,
+						apiKey: apiKey || null,
+						defaultModel,
+						isActive: true
+					},
+					select: {
+						id: true,
+						serverUrl: true,
+						defaultModel: true,
+						isActive: true,
+						createdAt: true,
+						updatedAt: true
+					}
+				});
+
+				return {
+					...newConfig,
+					hasApiKey: !!apiKey,
+					apiKey: apiKey ? "****" : undefined
+				};
+			}
 		} catch (error) {
 			if (error instanceof TRPCError) {
 				throw error;
@@ -144,24 +227,52 @@ export const llmConfigRouter = t.router({
 		}
 	}),
 
-	getAvailableModels: adminProcedure
-		.input(llmConfigSchemaForFetching)
-		.mutation(async ({ input }) => {
-			try {
-				const { serverUrl, apiKey } = input;
-				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
-				return {
-					valid: true,
-					availableModels: availableModels.models.map(m => m.name)
-				};
-			} catch (error) {
-				if (error instanceof TRPCError) {
-					throw error;
-				}
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Failed to fetch available models"
-				});
+	// Get available models from the configured server
+	getAvailableModels: adminProcedure.query(async () => {
+		const config = await database.llmConfiguration.findFirst({
+			where: { isActive: true }
+		});
+
+		if (!config) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "No LLM configuration found"
+			});
+		}
+
+		try {
+			const tagsUrl = `${config.serverUrl.replace(/\/$/, "")}/api/tags`;
+			const headers: Record<string, string> = {
+				"Content-Type": "application/json"
+			};
+
+			if (config.apiKey) {
+				headers["Authorization"] = `Bearer ${config.apiKey}`;
 			}
-		})
+
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+			const response = await fetch(tagsUrl, {
+				method: "GET",
+				headers,
+				signal: controller.signal
+			});
+			clearTimeout(timeoutId);
+
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+			}
+
+			const data = await response.json();
+			return data.models || [];
+		} catch (error) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: `Failed to fetch available models: ${error instanceof Error ? error.message : "Unknown error"}`
+			});
+		}
+	})
 });
+
+export { llmConfigRouter };
