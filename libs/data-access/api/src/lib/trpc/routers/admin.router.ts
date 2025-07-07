@@ -6,6 +6,7 @@ import { z } from "zod";
 import { adminProcedure, t } from "../trpc";
 import { userSchema } from "@self-learning/types";
 import { deleteUser, deleteUserAndDependentData } from "@self-learning/admin";
+import { llmConfigRouter } from "./llm-config.router";
 
 export const adminRouter = t.router({
 	findUsers: adminProcedure
@@ -128,5 +129,7 @@ export const adminRouter = t.router({
 				access_token: true
 			}
 		});
-	})
+	}),
+	llmConfig: llmConfigRouter, // Include the LLM config router
+	
 });
