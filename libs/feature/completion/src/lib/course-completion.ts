@@ -6,28 +6,21 @@ import {
 	CourseContent,
 	extractLessonIds
 } from "@self-learning/types";
+import { getCombinedCourses } from "@self-learning/course";
 
 export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
 ): Promise<CourseCompletion> {
-	const course = await database.dynCourse.findUniqueOrThrow({
-		where: { slug: courseSlug },
-		select: {
-			generatedLessonPaths: {
-				where: {
-					AND: {
-						username: username
-					}
-				},
-				select: {
-					content: true
-				}
-			}
-		}
+	const result = await getCombinedCourses({
+		slug: courseSlug,
+		username: username,
+		includeContent: true
 	});
 
-	const content = (course.generatedLessonPaths[0] ?? { content: [] }).content as CourseContent;
+	const course = result[0];
+
+	const content = course.content as CourseContent;
 	const lessonIds = extractLessonIds(content);
 
 	const completedLessons = await database.completedLesson.findMany({

@@ -8,8 +8,7 @@ import {
 	CourseContent,
 	Defined,
 	extractLessonIds,
-	LessonInfo,
-	ResolvedValue
+	LessonInfo
 } from "@self-learning/types";
 import {
 	AuthorsList,
@@ -23,13 +22,13 @@ import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { useRouter } from "next/router";
 import { Dialog } from "@self-learning/ui/common";
+import { CombinedCourseResult, getCombinedCourses } from "@self-learning/course";
 
-type Course = ResolvedValue<typeof getCourse>;
 
 function mapToTocContent(
 	content: CourseContent,
@@ -112,7 +111,7 @@ function createCourseSummary(content: ToC.Content): Summary {
 type CourseProps = {
 	needsARefresh: boolean;
 	isGenerated: boolean;
-	course: Course;
+	course: CombinedCourseResult;
 	summary: Summary;
 	content: ToC.Content;
 	markdownDescription: CompiledMarkdown | null;
@@ -129,26 +128,28 @@ export const getServerSideProps = withTranslations(
 		let isGenerated = false;
 		let needsARefresh = false;
 
-		let course: Course | null = null;
-		if (courseSlug.startsWith("dyn")) {
-			const [dynCourse, courseVersion] = await getDynCourse(courseSlug, ctx.name);
+		
 
-			if (!dynCourse) {
-				return { notFound: true };
-			}
-			course = {
-				...dynCourse
-			} as Course;
+		const result = await getCombinedCourses({
+			slug: courseSlug,
+			username: ctx.name,
+			includeContent: true,
+		});
 
-			isGenerated = true;
-			needsARefresh = dynCourse.courseVersion > courseVersion;
-		} else {
-			course = await getCourse(courseSlug);
-		}
+		const course = result[0];
 
+		
 		if (!course) {
 			return { notFound: true };
 		}
+
+
+		if(course.courseType === "DYNAMIC" && course.localCourseVersion !== undefined && course.globalCourseVersion !== undefined ) {
+		
+			isGenerated = true;
+			needsARefresh = course?.localCourseVersion < course?.globalCourseVersion;
+		}
+
 
 		const content = await mapCourseContent(course.content as CourseContent);
 		let markdownDescription = null;
@@ -173,63 +174,6 @@ export const getServerSideProps = withTranslations(
 		};
 	})
 );
-
-async function getCourse(courseSlug: string) {
-	return database.course.findUnique({
-		where: { slug: courseSlug },
-		include: {
-			authors: {
-				select: {
-					slug: true,
-					displayName: true,
-					imgUrl: true
-				}
-			}
-		}
-	});
-}
-
-async function getDynCourse(courseSlug: string, username: string) {
-	const course = await database.dynCourse.findUniqueOrThrow({
-		where: { slug: courseSlug },
-		select: {
-			courseId: true,
-			courseVersion: true,
-			title: true,
-			subtitle: true,
-			description: true,
-			slug: true,
-			imgUrl: true,
-			createdAt: true,
-			updatedAt: true,
-			meta: true,
-			subjectId: true,
-			authors: {
-				select: {
-					slug: true,
-					displayName: true,
-					imgUrl: true
-				}
-			},
-			generatedLessonPaths: {
-				where: {
-					username: username
-				}
-			}
-		}
-	});
-
-	return [
-		{
-			...course,
-			content:
-				course.generatedLessonPaths?.[course.generatedLessonPaths?.length - 1]?.content ??
-				[]
-		} as typeof course & { content: unknown[] },
-		course.generatedLessonPaths?.[course.generatedLessonPaths?.length - 1]?.courseVersion ??
-			null
-	] as const;
-}
 
 export default function Course({
 	needsARefresh,
@@ -413,7 +357,7 @@ function TableOfContents({
 	isGenerated
 }: {
 	content: ToC.Content;
-	course: Course;
+	course: CombinedCourseResult;
 	isGenerated: boolean;
 }) {
 	const completion = useCourseCompletion(course.slug);
@@ -560,7 +504,7 @@ function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 	);
 }
 
-function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: boolean }) {
+function CoursePath({ course, needsARefresh }: { course: CombinedCourseResult; needsARefresh: boolean }) {
 	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
 	const router = useRouter();
 	const [isGenerating, setIsGenerating] = useState(false);
