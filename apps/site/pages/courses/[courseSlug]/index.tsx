@@ -11,17 +11,23 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList, showToast } from "@self-learning/ui/common";
+import {
+	AuthorsList,
+	showToast,
+	ButtonActions,
+	OnDialogCloseFn
+} from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { useRouter } from "next/router";
+import { Dialog } from "@self-learning/ui/common";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -431,7 +437,8 @@ function TableOfContents({
 			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
 				<span className="text-secondary">Keine Inhalte verfügbar</span>
 				<span className="mt-4 text-light">
-					Du hast entweder alle Skills schon erreicht oder es sind keine Lerninhalte verfügbar.
+					Du hast entweder alle Skills schon erreicht oder es sind keine Lerninhalte
+					verfügbar.
 				</span>
 			</div>
 		);
@@ -556,16 +563,21 @@ function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: boolean }) {
 	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
 	const router = useRouter();
+	const [isGenerating, setIsGenerating] = useState(false);
+	const [isComplete, setIsComplete] = useState(false);
 
 	const generateDynamicCourse = async () => {
 		try {
+			setIsGenerating(true);
+			setIsComplete(false);
 			await mutateAsync({
 				courseId: course.courseId,
 				knowledge: []
 			});
-
-			router.reload();
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			setIsComplete(true);
 		} catch (error) {
+			setIsGenerating(false);
 			console.error("Error generating course preview:", error);
 			showToast({
 				type: "error",
@@ -585,15 +597,88 @@ function CoursePath({ course, needsARefresh }: { course: Course; needsARefresh: 
 
 	return (
 		<div>
+			{isGenerating && (
+				<GeneratingCourseDialog
+					isComplete={isComplete}
+					onClose={() => {
+						setIsGenerating(false);
+						if (isComplete) {
+							router.reload();
+						}
+					}}
+				/>
+			)}
 			<h3 className="font-semibold text-lg">Kurspfad wählen </h3>
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
-				onClick={async () => {
-					await generateDynamicCourse();
-				}}
+				onClick={generateDynamicCourse}
+				disabled={isGenerating}
 			>
 				Starten
 			</button>
 		</div>
+	);
+}
+
+function GeneratingCourseDialog({
+	onClose,
+	isComplete
+}: {
+	onClose: OnDialogCloseFn<string>;
+	isComplete: boolean;
+}) {
+	return (
+		<Dialog title="Kurspfad wird erstellt" onClose={onClose} style={{ minWidth: 480 }}>
+			<div className="flex flex-col items-center justify-center py-4">
+				{!isComplete ? (
+					<>
+						<div className="mb-6 relative">
+							<div className="w-24 h-24 rounded-full border-4 border-t-emerald-500 border-r-emerald-300 border-b-emerald-200 border-l-gray-200 animate-spin"></div>
+							<div className="absolute inset-0 flex items-center justify-center">
+								<div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
+									<div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 animate-pulse"></div>
+								</div>
+							</div>
+						</div>
+						<p className="text-center text-lg font-medium">
+							Dein individueller Kurspfad wird generiert...
+						</p>
+						<p className="text-center text-sm text-light mt-2">
+							KI erstellt deinen personalisierten Lerninhalt. Dies kann einen Moment
+							dauern.
+						</p>
+					</>
+				) : (
+					<>
+						<div className="mb-6 text-emerald-500">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-24 w-24"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path
+									fillRule="evenodd"
+									d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+									clipRule="evenodd"
+								/>
+							</svg>
+						</div>
+						<p className="text-center text-lg font-medium">
+							Dein Kurspfad wurde erfolgreich erstellt!
+						</p>
+						<p className="text-center text-sm text-light mt-2">
+							Klicke auf Schließen, um mit dem Kurs zu beginnen.
+						</p>
+						<button
+							className="btn-primary mt-6 px-8 py-2"
+							onClick={() => onClose(ButtonActions.OK)}
+						>
+							Schließen
+						</button>
+					</>
+				)}
+			</div>
+		</Dialog>
 	);
 }
