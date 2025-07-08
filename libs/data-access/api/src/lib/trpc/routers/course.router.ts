@@ -73,7 +73,7 @@ export const courseRouter = t.router({
 		.query(async ({ input }) => {
 			const pageSize = input.pageSize ?? 20;
 
-			const where: Prisma.CourseWhereInput = {
+			const whereCourse: Prisma.CourseWhereInput = {
 				title:
 					input.title && input.title.length > 0
 						? { contains: input.title, mode: "insensitive" }
@@ -84,15 +84,38 @@ export const courseRouter = t.router({
 				authors: input.authorId ? { some: { username: input.authorId } } : undefined
 			};
 
-			const result = await database.course.findMany({
+			const whereDynCourse: Prisma.DynCourseWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined,
+				specializations: input.specializationId
+					? { some: { specializationId: input.specializationId } }
+					: undefined,
+				authors: input.authorId ? { some: { username: input.authorId } } : undefined
+			};
+
+			const course = await database.course.findMany({
 				select: {
 					slug: true,
 					title: true
 				},
 				...paginate(pageSize, input.page),
 				orderBy: { title: "asc" },
-				where
+				where: whereCourse
 			});
+
+			const dynCourse = await database.dynCourse.findMany({
+				select: {
+					slug: true,
+					title: true
+				},
+				...paginate(pageSize, input.page),
+				orderBy: { title: "asc" },
+				where: whereDynCourse
+			});
+
+			const result = [...course, ...dynCourse].sort((a, b) => a.title.localeCompare(b.title));
 
 			return {
 				result,
@@ -202,7 +225,8 @@ export const courseRouter = t.router({
 				result,
 				pageSize: pageSize,
 				page: input.page,
-				totalCount: count
+				totalCount: count,
+
 			} satisfies Paginated<unknown>;
 		}),
 	getContent: authProcedure
@@ -486,8 +510,8 @@ export const courseRouter = t.router({
 		const created = await database.dynCourse.create({
 			data: {
 				...input,
-				courseId: "dyn" + crypto.randomUUID(),
-				slug: "dyn" + input.slug,
+				courseId: crypto.randomUUID(),
+				slug: input.slug,
 				courseVersion: Date.now().toString(),
 				subjectId: input.subjectId ?? undefined,
 				meta: {},

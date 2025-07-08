@@ -20,7 +20,12 @@ export async function getCourseCompletionOfStudent(
 
 	const course = result[0];
 
-	const content = course.content as CourseContent;
+	let content = course.content as CourseContent;
+
+	if(content === undefined) {
+		content = [];
+	}
+
 	const lessonIds = extractLessonIds(content);
 
 	const completedLessons = await database.completedLesson.findMany({

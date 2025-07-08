@@ -136,20 +136,23 @@ export const getServerSideProps = withTranslations(
 			includeContent: true,
 		});
 
-		const course = result[0];
+		let course = result[0];
 
-		
 		if (!course) {
 			return { notFound: true };
 		}
-
 
 		if(course.courseType === "DYNAMIC" && course.localCourseVersion !== undefined && course.globalCourseVersion !== undefined ) {
 		
 			isGenerated = true;
 			needsARefresh = course?.localCourseVersion < course?.globalCourseVersion;
+			if(course.content === undefined) { 
+				course = {
+					...course,
+					content: []
+				};
+			}
 		}
-
 
 		const content = await mapCourseContent(course.content as CourseContent);
 		let markdownDescription = null;

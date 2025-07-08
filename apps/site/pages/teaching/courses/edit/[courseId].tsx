@@ -16,26 +16,16 @@ type EditCourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["pages-course-info","common"],
+	["pages-course-info", "common"],
 	withAuth<EditCourseProps>(async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;
 
-		if(!courseId) {
+		if (!courseId) {
 			return {
 				notFound: true
 			};
 		}
-
-		if (courseId.startsWith("dyn")) {
-            return {
-                redirect: {
-                    destination: `/teaching/courses/dynamic/edit/${courseId}`,
-                    permanent: false
-                },
-				notFound: false
-            };
-        }
 
 		const course = await database.course.findUnique({
 			where: { courseId },
@@ -61,7 +51,11 @@ export const getServerSideProps = withTranslations(
 
 		if (!course) {
 			return {
-				notFound: true
+				redirect: {
+					destination: `/teaching/courses/dynamic/edit/${courseId}`,
+					permanent: false
+				},
+				notFound: false
 			};
 		}
 

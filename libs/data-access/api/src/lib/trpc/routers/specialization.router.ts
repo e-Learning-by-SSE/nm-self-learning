@@ -131,7 +131,24 @@ export const specializationRouter = t.router({
 				});
 			}
 
-			if (courseId.startsWith("dyn")) {
+			const validCourse = await database.course.findUnique({
+				where: { courseId },
+				select: { courseId: true }
+			});
+
+			if (!validCourse) {
+				const validDynCourse = await database.dynCourse.findUnique({
+					where: { courseId },
+					select: { courseId: true }
+				});
+
+				if (!validDynCourse) {
+					throw new TRPCError({
+						code: "NOT_FOUND",
+						message: `Course with ID ${courseId} not found.`
+					});
+				}
+
 				const added = await database.specialization.update({
 					where: { specializationId },
 					data: {
