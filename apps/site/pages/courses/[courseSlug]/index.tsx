@@ -308,7 +308,7 @@ function CourseHeader({
 						</ul>
 					</div>
 
-					{isEnrolled && (
+					{isEnrolled && (!isGenerated || isGenerated && Array.isArray(course.content) && course.content.length !== 0) && (
 						<Link
 							href={
 								firstLessonFromChapter
@@ -555,13 +555,13 @@ function CoursePath({ course, needsARefresh }: { course: CombinedCourseResult; n
 					}}
 				/>
 			)}
-			<h3 className="font-semibold text-lg">Kurspfad wählen </h3>
+			<h3 className="font-semibold text-lg">Kurspfad generieren</h3>
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
 				onClick={generateDynamicCourse}
 				disabled={isGenerating}
 			>
-				Starten
+				Generieren
 			</button>
 		</div>
 	);
