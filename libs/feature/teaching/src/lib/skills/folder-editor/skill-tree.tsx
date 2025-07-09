@@ -2,30 +2,19 @@ import { DialogHandler, Table, TableHeaderColumn } from "@self-learning/ui/commo
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
-import { ListSkillEntryWithChildren } from "./skill-row-entry";
+import { ListSkillEntryWithChildren } from "./skilltree/module-view-skill-row";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 
 export function SkillTree({
 	skillDisplayData,
 	updateSkillDisplay,
-	authorId,
-	isDragging,
-	onSkillSelect,
-	isProvidedSkill,
-	isRequiredSkill,
-	isUsedinCurrentModule
+	onSkillSelect
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
 	updateSkillDisplay: UpdateVisuals;
-	authorId: number;
-	isDragging: boolean;
 	onSkillSelect: SkillSelectHandler;
-	isProvidedSkill: (skillId: string) => boolean;
-	isRequiredSkill: (skillId: string) => boolean;
-	isUsedinCurrentModule: (skillId: string) => boolean;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
-
 	const normalized = searchTerm.toLowerCase().trim();
 	const allSkills = Array.from(skillDisplayData.values());
 	const matchingSkillIds: Set<string> = new Set(
@@ -43,7 +32,7 @@ export function SkillTree({
 		matchingSkillIds.forEach(skillId => {
 			collectAncestors(skillId, skillDisplayData, skillIdsToRender, skillIdsToAutoExpand);
 		});
-		if (!searchTerm?.trim() || isDragging) {
+		if (!searchTerm?.trim()) {
 			return allSkills.filter(IsTopLevelSkill).sort(byChildrenLength);
 		}
 
@@ -54,7 +43,6 @@ export function SkillTree({
 	}, [
 		skillDisplayData,
 		searchTerm,
-		isDragging,
 		matchingSkillIds,
 		skillIdsToAutoExpand,
 		allSkills
@@ -90,28 +78,21 @@ export function SkillTree({
 
 				<DialogHandler id={"alert"} />
 				<div className="pt-4" />
-						<Table head={<TableHeaderColumn>Skills</TableHeaderColumn>}>
-							<tbody>
-								{skillsToDisplay.sort(byChildrenLength).map(element => (
-									<ListSkillEntryWithChildren
-										key={element.id}
-										skillDisplayData={element}
-										updateSkillDisplay={updateSkillDisplay}
-										skillResolver={skillId => skillDisplayData.get(skillId)}
-										parentNodeId={""}
-										authorId={authorId}
-										matchingSkillIds={matchingSkillIds}
-										autoExpandIds={skillIdsToAutoExpand}
-										handleSelection={onSkillSelect}
-										textClassName="hover:text-emerald-500"
-										isProvidedSkill={isProvidedSkill}
-										isRequiredSkill={isRequiredSkill}
-										isUsedinCurrentModule={isUsedinCurrentModule}
-										calledBySkillTree={true}
-									/>
-								))}
-							</tbody>
-						</Table>
+				<Table head={<TableHeaderColumn>Skills</TableHeaderColumn>}>
+					{skillsToDisplay.sort(byChildrenLength).map(element => (
+						<ListSkillEntryWithChildren
+							key={element.id}
+							skillDisplayData={element}
+							updateSkillDisplay={updateSkillDisplay}
+							skillResolver={skillId => skillDisplayData.get(skillId)}
+							parentNodeId={""}
+							matchingSkillIds={matchingSkillIds}
+							autoExpandIds={skillIdsToAutoExpand}
+							handleSelection={onSkillSelect}
+							textClassName="hover:text-emerald-500"
+						/>
+					))}
+				</Table>
 				<DialogHandler id={"copyMoveDialog"} />
 			</CenteredSection>
 		</div>

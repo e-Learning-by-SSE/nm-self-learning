@@ -7,14 +7,10 @@ import {
 	ShieldExclamationIcon,
 	ChevronRightIcon
 } from "@heroicons/react/24/solid";
-import { PuzzlePieceIcon as PuzzlePieceIconSolid } from "@heroicons/react/24/solid";
-import {
-	LockClosedIcon,
-	PuzzlePieceIcon as PuzzlePieceIconOutline
-} from "@heroicons/react/24/outline";
-import { AddChildButton } from "./skill-taskbar";
-import styles from "./folder-table.module.css";
-import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
+import { PuzzlePieceIcon as PuzzlePieceIconOutline } from "@heroicons/react/24/outline";
+import { AddChildButton } from "../skill-taskbar";
+import styles from "../folder-table.module.css";
+import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "../skill-display";
 import { isTruthy } from "@self-learning/util/common";
 import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@hello-pangea/dnd";
 
@@ -28,12 +24,7 @@ export function ListSkillEntryWithChildren({
 	parentNodeId,
 	authorId,
 	matchingSkillIds,
-	autoExpandIds,
-	textClassName,
-	isProvidedSkill,
-	isRequiredSkill,
-	isUsedinCurrentModule,
-	calledBySkillTree
+	autoExpandIds
 }: {
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
 	skillDisplayData: SkillFolderVisualization;
@@ -45,11 +36,6 @@ export function ListSkillEntryWithChildren({
 	authorId: number;
 	matchingSkillIds?: Set<string>;
 	autoExpandIds?: Set<string>;
-	textClassName?: string;
-	isProvidedSkill?: (skillId: string) => boolean;
-	isRequiredSkill?: (skillId: string) => boolean;
-	isUsedinCurrentModule?: (skillId: string) => boolean;
-	calledBySkillTree?: boolean;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
@@ -70,11 +56,6 @@ export function ListSkillEntryWithChildren({
 				updateSkillDisplay={updateSkillDisplay}
 				nodeId={nodeId}
 				authorId={authorId}
-				textClassName={textClassName}
-				isProvidedSkill={isProvidedSkill}
-				isRequiredSkill={isRequiredSkill}
-				isUsedinCurrentModule={isUsedinCurrentModule}
-				calledBySkillTree={calledBySkillTree}
 			/>
 			{showChildren &&
 				skillDisplayData.children
@@ -114,11 +95,6 @@ export function ListSkillEntryWithChildren({
 								authorId={authorId}
 								matchingSkillIds={matchingSkillIds}
 								autoExpandIds={autoExpandIds}
-								textClassName={textClassName}
-								isProvidedSkill={isProvidedSkill}
-								isRequiredSkill={isRequiredSkill}
-								isUsedinCurrentModule={isUsedinCurrentModule}
-								calledBySkillTree={calledBySkillTree}
 							/>
 						);
 					})}
@@ -148,9 +124,6 @@ function SkillRow({
 	nodeId,
 	authorId,
 	textClassName,
-	isProvidedSkill,
-	isRequiredSkill,
-	isUsedinCurrentModule,
 	calledBySkillTree
 }: {
 	skill: SkillFolderVisualization;
@@ -160,9 +133,6 @@ function SkillRow({
 	nodeId: string;
 	authorId: number;
 	textClassName?: string;
-	isProvidedSkill?: (skillId: string) => boolean;
-	isRequiredSkill?: (skillId: string) => boolean;
-	isUsedinCurrentModule?: (skillId: string) => boolean;
 	calledBySkillTree?: boolean;
 }) {
 	const depthCssStyle = {
@@ -179,9 +149,6 @@ function SkillRow({
 			{ id: skill.id, isExpanded: !skill.isExpanded, shortHighlight: false }
 		]);
 	};
-	const isProvided = isProvidedSkill?.(skill.id);
-	const isRequired = isRequiredSkill?.(skill.id);
-	const isUsedCurrently = isUsedinCurrentModule?.(skill.id);
 	let title = "";
 	if (skill.isCycleMember) {
 		title = "Dieser Skill ist Teil eines Zyklus.";
@@ -210,9 +177,6 @@ function SkillRow({
 	}
 
 	function checkDraggableSetting(skill: SkillFolderVisualization): boolean {
-		if (isUsedCurrently) {
-			return true;
-		}
 		if (skill.skill.children.length > 0 && skill.skill.parents.length === 0) {
 			return true;
 		}
@@ -227,15 +191,17 @@ function SkillRow({
 				hover:bg-gray-50
 				${cycleError ? "bg-red-100" : ""}
 				${cycleWarning ? "bg-yellow-100" : ""}
-				${skill.isSelected ? "bg-gray-200 ring-inset ring-2 ring-gray-400" : ""}
-				${isUsedCurrently ? "bg-gray-50" : ""}`}
+				${skill.isSelected ? "bg-gray-200 ring-inset ring-2 ring-gray-400" : ""}`}
 		>
 			<TableDataColumn
 				className={`${styles["folder-line"]} ${
 					skill.shortHighlight ? "animate-highlight rounded-md" : ""
 				} text-sm font-medium`}
 			>
-				<Droppable droppableId={nodeId} direction="vertical" isDropDisabled={calledBySkillTree}>
+				<Droppable
+					droppableId={nodeId}
+					direction="vertical"
+				>
 					{provided => (
 						<div ref={provided.innerRef} {...provided.droppableProps}>
 							<Draggable
@@ -273,18 +239,12 @@ function SkillRow({
 															)}
 														</div>
 														<FolderIcon
-															className={`icon h-5 text-lg ${isProvidedSkill?.(skill.id) ? "text-emerald-500" : ""}`}
+															className={`icon h-5 text-lg`}
 														/>
 													</>
 												) : (
 													<div className="ml-6">
-														{isProvided && isRequired ? (
-															<PuzzlePieceIconSolid className="icon h-5 text-lg text-emerald-500" />
-														) : isProvided ? (
-															<PuzzlePieceIconOutline className="icon h-5 text-lg text-emerald-500" />
-														) : (
-															<PuzzlePieceIconOutline className="icon h-5 text-lg" />
-														)}
+														<PuzzlePieceIconOutline className="icon h-5 text-lg" />
 													</div>
 												)}
 											</div>
@@ -294,11 +254,10 @@ function SkillRow({
 											{cycleWarning && (
 												<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 											)}
-											<span className={`flex items-center gap-1 text-sm font-medium text-gray-800 ${textClassName}`}>
+											<span
+												className={`flex items-center gap-1 text-sm font-medium text-gray-800 ${textClassName}`}
+											>
 												{skill.displayName ?? skill.skill.name}
-												{isUsedCurrently && (
-													<LockClosedIcon className="text-gray-400 h-4 w-4 flex-shrink-0" />
-												)}
 											</span>
 										</div>
 										<div className="invisible  group-hover:visible">

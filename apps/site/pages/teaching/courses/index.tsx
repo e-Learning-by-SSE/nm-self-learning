@@ -7,7 +7,6 @@ import {
 } from "@self-learning/ui/course";
 import { GetServerSideProps } from "next";
 import { useRequiredSession } from "@self-learning/ui/layouts";
-import { LessonFormModel } from "@self-learning/teaching";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { useRef, useState } from "react";
@@ -31,7 +30,6 @@ export const getServerSideProps: GetServerSideProps = withTranslations(["common"
 
 export default function CourseCreationEditor() {
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
-	const [modules, setModules] = useState<Map<string, LessonFormModel>>(new Map());
 	const session = useRequiredSession();
 	const username = session.data?.user.name;
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -73,7 +71,7 @@ export default function CourseCreationEditor() {
 			case 1:
 				return <CourseSkillView authorId={author.id} />;
 			case 2:
-				return <CourseModuleView authorId={author.id} modules={modules} setModules={setModules}/>
+				return <CourseModuleView authorId={author.id}/>
 			case 3:
 				return <CoursePreview />;
 			default:

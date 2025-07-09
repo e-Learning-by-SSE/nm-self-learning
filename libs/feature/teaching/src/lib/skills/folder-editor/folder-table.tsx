@@ -10,7 +10,7 @@ import {
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
-import { ListSkillEntryWithChildren } from "./skill-row-entry";
+import { ListSkillEntryWithChildren } from "./skilltree/skill-row-entry";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { Skill } from "@prisma/client";
 import { PlusIcon } from "@heroicons/react/24/solid";

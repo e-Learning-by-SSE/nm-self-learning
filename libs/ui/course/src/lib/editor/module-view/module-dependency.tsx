@@ -1,39 +1,25 @@
-import { LessonFormModel, useTableSkillDisplay } from "@self-learning/teaching";
-import { SkillFormModel } from "@self-learning/types";
+import { useTableSkillDisplay } from "@self-learning/teaching";
 import { SkillTree } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-tree";
 import { ModuleView } from "./module-view";
 import { useState } from "react";
 import { Tabs, Tab } from "@self-learning/ui/common";
 import { SkillSelectHandler } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-display";
+import { useModuleViewContext } from "@self-learning/teaching";
 
 export function ModuleDependency({
-	skills,
-	authorId,
-	isDragging,
-	modules,
 	onSelectModule,
 	onSkillSelect,
-	isProvidedSkill,
-	isRequiredSkill,
-	isUsedinCurrentModule,
 	onCreateNewModule,
-	selectedModuleId
 }: {
-	skills: Map<string, SkillFormModel>;
-	authorId: number;
-	isDragging: boolean;
-	modules: Map<string, LessonFormModel>;
 	onSelectModule: (id: string) => void;
 	onSkillSelect: SkillSelectHandler;
-	isProvidedSkill: (skillId: string) => boolean;
-	isRequiredSkill: (skillId: string) => boolean;
-	isUsedinCurrentModule: (skillId: string) => boolean;
 	onCreateNewModule?: () => void;
-	selectedModuleId: string | null;
 }) {
-	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
+	const { modules, selectedModuleId, allSkills } = useModuleViewContext();
+	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(allSkills);
 	const tabs = ["Skills", "Nanomodule"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	console.log("Rendered inside ModuleViewContext:", useModuleViewContext());
 	function switchTab(index: number) {
 		setSelectedIndex(index);
 	}
@@ -45,12 +31,7 @@ export function ModuleDependency({
 					<SkillTree
 						skillDisplayData={skillDisplayData}
 						updateSkillDisplay={updateSkillDisplay}
-						authorId={authorId}
-						isDragging={isDragging}
 						onSkillSelect={onSkillSelect}
-						isProvidedSkill={isProvidedSkill}
-						isRequiredSkill={isRequiredSkill}
-						isUsedinCurrentModule={isUsedinCurrentModule}
 					/>
 				);
 			case 1:
