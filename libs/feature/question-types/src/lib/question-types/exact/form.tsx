@@ -38,7 +38,7 @@ export default function ExactForm({
 					<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
 
 					<PlusButton
-						onAdd={addAnswer}
+						onClick={addAnswer}
 						title={"Antwort hinzufügen"}
 						additionalClassNames={"h-fit w-fit items-center"}
 					/>

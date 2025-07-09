@@ -4,9 +4,17 @@ import {
 	courseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
-	mapCourseFormToUpdate
+	mapCourseFormToUpdate,
+	mapRelaxedCourseFormToInsert,
+	relaxedCourseFormSchema as relaxedCourseFormSchema
 } from "@self-learning/teaching";
-import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
+import {
+	CourseContent,
+	CourseMeta,
+	createCourseMeta,
+	extractLessonIds,
+	LessonMeta
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -261,6 +269,34 @@ export const courseRouter = t.router({
 		});
 
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
+		return created;
+	}),
+	createMinimal: authProcedure.input(relaxedCourseFormSchema).mutation(async ({ input, ctx }) => {
+		if (!canCreate(ctx.user)) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
+			});
+		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+			});
+		}
+
+		const course = mapRelaxedCourseFormToInsert(input, getRandomId());
+
+		const created = await database.course.create({
+			data: course,
+			select: {
+				title: true,
+				slug: true,
+				courseId: true
+			}
+		});
+
 		return created;
 	}),
 	edit: isCourseAuthorProcedure

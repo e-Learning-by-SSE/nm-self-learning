@@ -192,12 +192,6 @@ model QuizAnswer {
     @@index([questionId])
 }
 
-// model LearningDiary {
-//     username String  @id
-//     goals    String?
-//     student  Student @relation(fields: [username], references: [username], onDelete: Cascade)
-// }
-
 
 model UploadedAssets {
     objectName String   @id

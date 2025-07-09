@@ -1,4 +1,8 @@
-import { ExtendedCourseFormModel, SkillManager } from "@self-learning/teaching";
+import {
+	RelaxedCourseFormModel,
+	relaxedCourseFormSchema,
+	SkillManager
+} from "@self-learning/teaching";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useEffect, useState } from "react";
 import {
@@ -24,129 +28,76 @@ import { trpc } from "@self-learning/api-client";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { SkillRepositoryCreationModel, skillRepositoryCreationSchema } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useSession } from "next-auth/react";
 
-export function CourseBasicInformation() {
-	const form = useFormContext<ExtendedCourseFormModel>();
+type Props = {
+	onCourseCreated: (courseId: string, selectors: string[]) => void;
+};
+
+export function CourseBasicInformation({ onCourseCreated }: Props) {
+	const form = useForm<RelaxedCourseFormModel>({
+		resolver: zodResolver(relaxedCourseFormSchema),
+		defaultValues: {
+			courseId: "",
+			requires: [], // need this for skill manager
+			provides: []
+		}
+	});
 
 	const {
 		register,
-		control,
+		handleSubmit,
+		setValue,
 		formState: { errors }
 	} = form;
 
-	return (
-		<div className="m-2 grid w-2/3 grid-cols-1 gap-6 p-2 md:grid-cols-2">
-			<div>
-				<BasicInfo />
-			</div>
+	const { mutateAsync: create } = trpc.course.createMinimal.useMutation();
 
-			<div>
-				<Skills />
-			</div>
-		</div>
-	);
-}
+	const createCourse = async () => {
+		const course = form.getValues();
 
-function Skills() {
-	const [openDialog, setDialogOpen] = useState(false);
-
-	const closeRepoDialog = () => {
-		setDialogOpen(false);
-	};
-	return (
-		<>
-			<div className="p-3">
-				<h2 className="text-xl">Skillkarten</h2>
-				<span className="text-sm text-light">Erstelle neue Skillkarten</span>
-				<IconButton
-					text="Neue Skillkarte Erstellen"
-					icon={<PlusIcon className={getButtonSizeClass("medium")} />}
-					onClick={() => setDialogOpen(true)}
-					title={"Erstellen"}
-				/>
-
-				{openDialog && <SkillRepositoryDialog onClose={closeRepoDialog} />}
-			</div>
-
-			<CourseSkillManager />
-		</>
-	);
-}
-
-const CourseSkillManager = () => {
-	return SkillManager<ExtendedCourseFormModel>();
-};
-
-function SkillRepositoryDialog({ onClose }: { onClose: () => void }) {
-	const form = useForm<SkillRepositoryCreationModel>({
-		defaultValues: { name: "", description: "", ownerName: "" },
-		resolver: zodResolver(skillRepositoryCreationSchema)
-	});
-
-	const errors = form.formState.errors;
-	const { mutateAsync: createRepo } = trpc.skill.addRepo.useMutation();
-
-	const handleCreate = form.handleSubmit(
-		async data => {
-			try {
-				await createRepo({ rep: data });
-				showToast({
-					type: "success",
-					title: "Skill Netzwerk gespeichert!",
-					subtitle: ""
-				});
-				onClose();
-			} catch (error) {
-				if (error instanceof Error) {
-					showToast({
-						type: "error",
-						title: "Skill Netzwerk konnte nicht erstellt werden.",
-						subtitle: error.message
-					});
-				}
-			}
-		},
-		validationErrors => {
-			console.log("Validation failed:", validationErrors);
+		try {
+			const { title, slug, courseId } = await create(course);
+			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
+			onCourseCreated(courseId, ["dummy-selector-1", "dummy-selector-2"]);
+		} catch (error) {
+			console.error(error);
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: JSON.stringify(error, null, 2)
+			});
 		}
-	);
+	};
+
+	useEffect(() => {
+		if (Object.keys(errors).length > 0) {
+			console.log("Form validation errors:", errors);
+		}
+	}, [errors]);
 
 	return (
-		<Dialog onClose={onClose} title={"Neue Skillkarte"}>
-			<FormProvider {...form}>
-				<form className="flex flex-col justify-between">
-					<Form.SidebarSection>
-						<div className="flex flex-col gap-4">
-							<LabeledField label="Name" error={errors.name?.message}>
-								<input
-									type="text"
-									className="textfield"
-									{...form.register("name")}
-								/>
-							</LabeledField>
-							<LabeledField label="Beschreibung" error={errors.description?.message}>
-								<input
-									type="text"
-									className="textfield"
-									{...form.register("description")}
-								/>
-							</LabeledField>
-						</div>
-					</Form.SidebarSection>
-				</form>
-			</FormProvider>
-
-			<DialogActions onClose={onClose}>
-				<button className="btn-primary" onClick={handleCreate}>
-					Speichern
-				</button>
-			</DialogActions>
-		</Dialog>
+		<FormProvider {...form}>
+			<form
+				onSubmit={handleSubmit(createCourse)}
+				className="m-2 grid w-2/3 grid-cols-1 gap-6 p-2 md:grid-cols-2"
+			>
+				<div>
+					<button type="submit" className="btn-primary w-full my-5">
+						Kurs erstellen
+					</button>
+					<BasicInfo />
+				</div>
+				<div>
+					<Skills></Skills>
+				</div>
+			</form>
+		</FormProvider>
 	);
 }
-
 function BasicInfo() {
-	const form = useFormContext<ExtendedCourseFormModel>();
+	const form = useFormContext<RelaxedCourseFormModel>();
 
 	const {
 		register,
@@ -158,6 +109,7 @@ function BasicInfo() {
 
 	const { data: subjects = [], isLoading: isLoadingSubjects } =
 		trpc.subject.getAllSubjects.useQuery();
+
 	useEffect(() => {
 		if (isLoadingSubjects) return;
 
@@ -170,6 +122,7 @@ function BasicInfo() {
 
 	const { data: specializations = [], isLoading: isLoadingSpecializations } =
 		trpc.specialization.getAll.useQuery();
+
 	useEffect(() => {
 		if (isLoadingSpecializations) return;
 		if (specializations.length > 0) {
@@ -300,7 +253,6 @@ function BasicInfo() {
 		</div>
 	);
 }
-
 type subject = {
 	subjectId: string;
 	title: string;
@@ -385,5 +337,106 @@ function SpecializationDropDown({
 				))}
 			</select>
 		</div>
+	);
+}
+
+function Skills() {
+	const [openDialog, setDialogOpen] = useState(false);
+
+	const closeRepoDialog = () => {
+		setDialogOpen(false);
+	};
+	return (
+		<>
+			<div className="p-3">
+				<h2 className="text-xl">Skillkarten</h2>
+				<span className="text-sm text-light">Erstelle neue Skillkarten</span>
+				<IconButton
+					text="Neue Skillkarte Erstellen"
+					icon={<PlusIcon className={getButtonSizeClass("medium")} />}
+					onClick={() => setDialogOpen(true)}
+					title={"Erstellen"}
+				/>
+
+				{openDialog && <SkillRepositoryDialog onClose={closeRepoDialog} />}
+			</div>
+
+			<CourseSkillManager />
+		</>
+	);
+}
+
+const CourseSkillManager = () => {
+	return <SkillManager<RelaxedCourseFormModel> />;
+};
+
+function SkillRepositoryDialog({ onClose }: { onClose: () => void }) {
+	const { data: session } = useSession();
+	const ownerName = session?.user?.name ?? "";
+
+	const form = useForm<SkillRepositoryCreationModel>({
+		defaultValues: { name: "", description: "", ownerName: ownerName },
+		resolver: zodResolver(skillRepositoryCreationSchema)
+	});
+
+	const errors = form.formState.errors;
+	const { mutateAsync: createRepo } = trpc.skill.addRepo.useMutation();
+
+	const handleCreate = form.handleSubmit(
+		async data => {
+			try {
+				await createRepo({ rep: data });
+				showToast({
+					type: "success",
+					title: "Skill Netzwerk gespeichert!",
+					subtitle: ""
+				});
+				onClose();
+			} catch (error) {
+				if (error instanceof Error) {
+					showToast({
+						type: "error",
+						title: "Skill Netzwerk konnte nicht erstellt werden.",
+						subtitle: error.message
+					});
+				}
+			}
+		},
+		validationErrors => {
+			console.log("Validation failed:", validationErrors);
+		}
+	);
+
+	return (
+		<Dialog onClose={onClose} title={"Neue Skillkarte"}>
+			<FormProvider {...form}>
+				<form className="flex flex-col justify-between">
+					<Form.SidebarSection>
+						<div className="flex flex-col gap-4">
+							<LabeledField label="Name" error={errors.name?.message}>
+								<input
+									type="text"
+									className="textfield"
+									{...form.register("name")}
+								/>
+							</LabeledField>
+							<LabeledField label="Beschreibung" error={errors.description?.message}>
+								<input
+									type="text"
+									className="textfield"
+									{...form.register("description")}
+								/>
+							</LabeledField>
+						</div>
+					</Form.SidebarSection>
+				</form>
+			</FormProvider>
+
+			<DialogActions onClose={onClose}>
+				<button className="btn-primary" onClick={handleCreate}>
+					Speichern
+				</button>
+			</DialogActions>
+		</Dialog>
 	);
 }

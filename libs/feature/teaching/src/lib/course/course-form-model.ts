@@ -18,18 +18,28 @@ export const courseFormSchema = z.object({
 	imgUrl: z.string().nullable(),
 	authors: authorsRelationSchema,
 	content: courseContentSchema,
-	specializationId: z.string().nullable().optional()
+	specializationId: z.string().nullable().optional(),
+	provides: z.array(skillFormSchema).nullable().optional(),
+	requires: z.array(skillFormSchema).nullable().optional()
 });
 
-export const extendedCourseFormSchema = courseFormSchema.merge(
-	z.object({
-		provides: z.array(skillFormSchema),
-		requires: z.array(skillFormSchema)
-	})
-);
+export const relaxedCourseFormSchema = z.object({
+	courseId: z.string().nullable(),
+	subjectId: z.string().nullable().optional(),
+	slug: z.string().min(3),
+	title: z.string().min(3),
+	subtitle: z.string().optional().default(""),
+	description: z.string().nullable().optional(),
+	imgUrl: z.string().nullable().optional(),
+	authors: authorsRelationSchema,
+	content: courseContentSchema.optional().default([]),
+	specializationId: z.string().nullable().optional(),
+	provides: z.array(skillFormSchema).optional().default([]),
+	requires: z.array(skillFormSchema).optional().default([])
+});
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
-export type ExtendedCourseFormModel = z.infer<typeof extendedCourseFormSchema>;
+export type RelaxedCourseFormModel = z.infer<typeof relaxedCourseFormSchema>;
 
 export function mapCourseFormToInsert(
 	course: CourseFormModel,
@@ -53,6 +63,47 @@ export function mapCourseFormToInsert(
 	};
 
 	return courseForDb;
+}
+
+export function mapRelaxedCourseFormToInsert(
+	course: RelaxedCourseFormModel,
+	courseId: string
+): Prisma.CourseCreateInput {
+	const {
+		title,
+		slug,
+		subtitle,
+		description,
+		imgUrl,
+		content,
+		subjectId,
+		specializationId,
+		provides,
+		requires,
+		authors
+	} = course;
+
+	return {
+		courseId,
+		slug,
+		title,
+		subtitle,
+		imgUrl: stringOrNull(imgUrl),
+		description: stringOrNull(description),
+		content,
+		meta: createCourseMeta(course),
+		authors: {
+			connect: authors.map(author => ({ username: author.username }))
+		},
+		subject: subjectId ? { connect: { subjectId } } : undefined,
+		specializations: specializationId ? { connect: { specializationId } } : undefined,
+		provides: {
+			connect: (provides ?? []).map(skill => ({ id: skill.id }))
+		},
+		requires: {
+			connect: (requires ?? []).map(skill => ({ id: skill.id }))
+		}
+	};
 }
 
 export function mapCourseFormToUpdate(
@@ -90,14 +141,5 @@ export function createEmptyCourseFormModel(): CourseFormModel {
 		authors: [],
 		content: [],
 		specializationId: null
-	};
-}
-
-export function createEmptyExtendedCourseFormModel(): ExtendedCourseFormModel {
-	const emptyCourse = createEmptyCourseFormModel();
-	return {
-		...emptyCourse,
-		provides: [],
-		requires: []
 	};
 }
