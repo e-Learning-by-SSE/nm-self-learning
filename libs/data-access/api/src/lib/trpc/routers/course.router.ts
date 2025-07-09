@@ -181,7 +181,8 @@ export const courseRouter = t.router({
 		.query(async ({ input }) => {
 			const pageSize = 15;
 
-			const where: Prisma.CourseWhereInput = {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const where: any = {
 				title:
 					input.title && input.title.length > 0
 						? { contains: input.title, mode: "insensitive" }
@@ -195,7 +196,7 @@ export const courseRouter = t.router({
 					: undefined
 			};
 
-			const [result, count] = await database.$transaction([
+			const [resultCourse, countCourse] = await database.$transaction([
 				database.course.findMany({
 					select: {
 						courseId: true,
@@ -221,12 +222,44 @@ export const courseRouter = t.router({
 				database.course.count({ where })
 			]);
 
+			const [resultDynCourse, countDynCourse] = await database.$transaction([
+				database.dynCourse.findMany({
+					select: {
+						courseId: true,
+						slug: true,
+						imgUrl: true,
+						title: true,
+						authors: {
+							select: {
+								displayName: true
+							}
+						},
+						subject: {
+							select: {
+								subjectId: true,
+								title: true
+							}
+						}
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { title: "asc" },
+					where
+				}),
+				database.course.count({ where })
+			]);
+
+			const result = [
+				...resultCourse,
+				...resultDynCourse
+			].sort((a, b) => a.title.localeCompare(b.title));
+
+			const count = countCourse + countDynCourse;
+
 			return {
 				result,
 				pageSize: pageSize,
 				page: input.page,
 				totalCount: count,
-
 			} satisfies Paginated<unknown>;
 		}),
 	getContent: authProcedure

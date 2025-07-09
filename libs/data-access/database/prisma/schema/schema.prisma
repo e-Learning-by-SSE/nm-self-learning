@@ -129,6 +129,8 @@ model DynCourse {
     createdAt            DateTime             @default(now())
     updatedAt            DateTime             @updatedAt
     subjectId            String?
+    enrollments          Enrollment[]
+     completions         CompletedLesson[]
     authors              Author[]             @relation("AuthorToDynCourse")
     subject              Subject?             @relation(fields: [subjectId], references: [subjectId])
     specializations      Specialization[]     @relation("DynCourseToSpecialization")
@@ -150,17 +152,22 @@ model GeneratedLessonPath {
 }
 
 model Enrollment {
+     id                 String            @id @default(uuid())
     status             EnrollmentStatus
     progress           Int              @default(0)
     createdAt          DateTime         @default(now())
     lastProgressUpdate DateTime         @default(now())
     completedAt        DateTime?
-    courseId           String
+    courseId           String?
+    dynCourseId        String?
     username           String
-    course             Course           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    course             Course?          @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    dynCourse          DynCourse?       @relation(fields: [dynCourseId], references: [courseId], onDelete: Cascade)
     student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
 
-    @@id([courseId, username])
+
+    @@unique([courseId, username])
+    @@unique([dynCourseId, username])
 }
 
 enum LessonType {
@@ -195,10 +202,12 @@ model Lesson {
 model CompletedLesson {
     completedLessonId Int      @id @default(autoincrement())
     courseId          String?
+    dynCourseId       String?
     lessonId          String
     username          String
     createdAt         DateTime @default(now())
-    course            Course?  @relation(fields: [courseId], references: [courseId])
+    course            Course?    @relation(fields: [courseId], references: [courseId])
+    dynCourse         DynCourse? @relation(fields: [dynCourseId], references: [courseId])
     lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
     user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
 

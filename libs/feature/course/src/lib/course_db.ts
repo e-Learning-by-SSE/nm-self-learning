@@ -36,7 +36,6 @@ export async function getCombinedCourses(options?: {
 	const includeContent = options?.includeContent ?? false;
 	const includeSpecializations = options?.includeSpecializations ?? false;
 
-	// Get standard courses
 	const standardCourseQuery = database.course.findMany({
 		where: {
 			...(options?.courseId ? { courseId: options.courseId } : {}),
@@ -74,7 +73,6 @@ export async function getCombinedCourses(options?: {
 		}
 	});
 
-	// Get dynamic courses
 	const dynCourseQuery = database.dynCourse.findMany({
 		where: {
 			...(options?.courseId ? { courseId: options.courseId } : {}),
@@ -126,7 +124,7 @@ export async function getCombinedCourses(options?: {
 		}
 	});
 
-	// Run both queries in parallel
+
 	const [standardCourses, dynCourses] = await Promise.all([standardCourseQuery, dynCourseQuery]);
 
 	// Map standard courses to the result format
@@ -135,7 +133,7 @@ export async function getCombinedCourses(options?: {
 		courseType: "STANDARD" as const
 	}));
 
-	// Map dynamic courses to the result format, including user-specific content if available
+
 	const dynCoursesResult = dynCourses.map(course => {
 		// For dynamic courses with a specified user, use their generated lesson path content if available
 		let content = undefined;
@@ -161,6 +159,6 @@ export async function getCombinedCourses(options?: {
 		};
 	});
 
-	// Combine both course types
+
 	return [...standardCoursesResult, ...dynCoursesResult];
 }
