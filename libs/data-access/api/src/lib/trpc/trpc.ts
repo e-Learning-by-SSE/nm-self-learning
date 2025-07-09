@@ -74,16 +74,33 @@ export const isCourseAuthorProcedure = t.procedure
 	});
 
 async function checkIfUserIsAuthor(username: string, courseId: string) {
-	const course = await database.course.findUniqueOrThrow({
-		where: { courseId },
+	const author = await database.author.findUniqueOrThrow({
+		where: { username },
 		select: {
-			authors: {
+			courses: {
+				where: { courseId },
 				select: {
-					username: true
+					authors: {
+						select: {
+							username: true
+						}
+					}
+				}
+			},
+			dynCourse: {
+				select: {
+					authors: {
+						select: {
+							username: true
+						}
+					}
 				}
 			}
 		}
 	});
-
-	return course.authors.some(author => author.username === username);
+	const allAuthors = [
+		...(author.courses?.flatMap(c => c.authors) ?? []),
+		...(author.dynCourse?.flatMap(c => c.authors) ?? [])
+	];
+	return allAuthors.some(a => a.username === username);
 }
