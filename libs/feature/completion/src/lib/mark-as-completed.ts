@@ -1,3 +1,4 @@
+import { getCombinedCourses } from "@self-learning/course";
 import { createUserEvent, database } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 
@@ -10,15 +11,13 @@ export async function markAsCompleted({
 	courseSlug: string | null;
 	username: string;
 }) {
-	const course = courseSlug
-		? await database.course.findUniqueOrThrow({
-				where: { slug: courseSlug },
-				select: {
-					courseId: true,
-					content: true
-				}
-			})
-		: null;
+	let course = null;
+	if (courseSlug) {
+		const result = await getCombinedCourses({
+			slug: courseSlug
+		});
+		course = result[0] ?? null;
+	}
 
 	const result = await database.completedLesson.create({
 		data: {
@@ -59,8 +58,14 @@ export async function markAsCompleted({
 
 async function updateCourseProgress(courseId: string, content: CourseContent, username: string) {
 	const completedLessons = await database.completedLesson.findMany({
-		where: { AND: { username, courseId } },
-		select: { lessonId: true }
+		where: {
+			AND: [
+				{ username },
+				{
+					OR: [{ courseId }, { dynCourseId: courseId }]
+				}
+			]
+		}
 	});
 
 	// Remove duplicates to support re-visiting a lesson
@@ -80,9 +85,11 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 	}
 
 	// TODO: Student must be enrolled in course, otherwise this will fail
-	await database.enrollment.update({
-		where: { courseId_username: { courseId, username } },
-		select: null,
+	await database.enrollment.updateMany({
+		where: {
+			username,
+			OR: [{ courseId }, { dynCourseId: courseId }]
+		},
 		data: {
 			progress,
 			lastProgressUpdate: new Date()
