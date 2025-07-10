@@ -52,15 +52,26 @@ export function CourseBasicInformation({ onCourseCreated }: Props) {
 		formState: { errors }
 	} = form;
 
+	const [id, setId] = useState<string>();
 	const { mutateAsync: create } = trpc.course.createMinimal.useMutation();
+	const { mutateAsync: edit } = trpc.course.editMinimal.useMutation();
 
 	const createCourse = async () => {
 		const course = form.getValues();
-
 		try {
-			const { title, slug, courseId } = await create(course);
-			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
-			onCourseCreated(courseId, ["dummy-selector-1", "dummy-selector-2"]);
+			if (id) {
+				const { title, slug, courseId } = await edit({
+					courseId: id,
+					course: course
+				});
+				showToast({ type: "success", title: "Kurs aktualisiert!", subtitle: title });
+				onCourseCreated(courseId, ["dummy-selector-1", "dummy-selector-2"]);
+			} else {
+				const { title, slug, courseId } = await create(course);
+				showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
+				setId(courseId);
+				onCourseCreated(courseId, ["dummy-selector-1", "dummy-selector-2"]);
+			}
 		} catch (error) {
 			console.error(error);
 			showToast({

@@ -322,6 +322,29 @@ export const courseRouter = t.router({
 			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
 			return updated;
 		}),
+	editMinimal: isCourseAuthorProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				course: relaxedCourseFormSchema
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const courseForDb = mapRelaxedCourseFormToInsert(input.course, input.courseId);
+
+			const updated = await database.course.update({
+				where: { courseId: input.courseId },
+				data: courseForDb,
+				select: {
+					title: true,
+					slug: true,
+					courseId: true
+				}
+			});
+
+			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
+			return updated;
+		}),
 	deleteCourse: authorProcedure
 		.input(z.object({ slug: z.string() }))
 		.mutation(async ({ input, ctx }) => {
