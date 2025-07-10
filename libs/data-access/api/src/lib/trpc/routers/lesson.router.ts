@@ -150,7 +150,7 @@ export const lessonRouter = t.router({
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
 			if (ctx.user?.role === "ADMIN") {
-				const deleted = await database.lesson.deleteMany({
+				await database.lesson.deleteMany({
 					where: {
 						lessonId: input.lessonId
 					}
