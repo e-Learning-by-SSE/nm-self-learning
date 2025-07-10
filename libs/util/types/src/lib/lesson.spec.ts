@@ -163,6 +163,7 @@ describe("lessonSchema", () => {
 							withCertainty: false
 						}
 					],
+					questionOrder: ["q1"],
 					config: {
 						hints: {
 							enabled: true,

@@ -13,7 +13,7 @@ export const getServerSideProps = withAuth<QuestionProps>(async ({ params, local
 
 	const { questionsMd, answersMd, hintsMd, processedQuestions } = await compileQuizMarkdown(quiz);
 	quiz.questions = processedQuestions;
-
+	
 	return {
 		props: {
 			...(await serverSideTranslations(locale ?? "en", ["common"])),

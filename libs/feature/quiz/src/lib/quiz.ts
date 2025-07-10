@@ -28,6 +28,7 @@ export const configSchema = z.object({
 
 export const quizSchema = z.object({
 	questions: z.array(quizContentSchema),
+	questionOrder: z.array(z.string()),
 	config: configSchema.nullable()
 });
 
