@@ -1,25 +1,31 @@
-import { useTableSkillDisplay } from "@self-learning/teaching";
+import { useSafeModuleViewContext, useTableSkillDisplay } from "@self-learning/teaching";
 import { SkillTree } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-tree";
 import { ModuleView } from "./module-view";
 import { useState } from "react";
 import { Tabs, Tab } from "@self-learning/ui/common";
 import { SkillSelectHandler } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-display";
-import { useModuleViewContext } from "@self-learning/teaching";
 
 export function ModuleDependency({
 	onSelectModule,
 	onSkillSelect,
-	onCreateNewModule,
+	onCreateNewModule
 }: {
 	onSelectModule: (id: string) => void;
 	onSkillSelect: SkillSelectHandler;
 	onCreateNewModule?: () => void;
 }) {
-	const { modules, selectedModuleId, allSkills } = useModuleViewContext();
-	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(allSkills);
 	const tabs = ["Skills", "Nanomodule"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	console.log("Rendered inside ModuleViewContext:", useModuleViewContext());
+	const context = useSafeModuleViewContext();
+	const allSkills = context?.allSkills ?? new Map();
+	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(allSkills);
+
+	if (!context) {
+		console.error("❌ ModuleDependency: useSafeModuleViewContext() returned null");
+		return null;
+	}
+
+	const { modules, selectedModuleId } = context;
 	function switchTab(index: number) {
 		setSelectedIndex(index);
 	}
@@ -35,7 +41,13 @@ export function ModuleDependency({
 					/>
 				);
 			case 1:
-				return <ModuleView modules={modules} onSelectModule={onSelectModule} selectedModuleId={selectedModuleId}/>;
+				return (
+					<ModuleView
+						modules={modules}
+						onSelectModule={onSelectModule}
+						selectedModuleId={selectedModuleId}
+					/>
+				);
 			default:
 				return <div>Tab not found</div>;
 		}
@@ -47,9 +59,24 @@ export function ModuleDependency({
 				Wählen Sie Skills und Module aus um diese per Drag & Drop der Lerneinheit zuzuweisen
 			</p>
 			<div className="relative mb-4">
-				<button className="absolute top-1.5 right-0 btn btn-primary" title="Nanomodul erstellen" onClick={onCreateNewModule}>
-					<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+				<button
+					className="absolute top-1.5 right-0 btn btn-primary"
+					title="Nanomodul erstellen"
+					onClick={onCreateNewModule}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						className="h-5 w-5"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M12 4v16m8-8H4"
+						/>
 					</svg>
 				</button>
 				<Tabs selectedIndex={selectedIndex} onChange={switchTab}>

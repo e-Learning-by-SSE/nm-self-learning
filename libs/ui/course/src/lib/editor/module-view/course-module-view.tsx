@@ -99,6 +99,16 @@ export function CourseModuleView({
 		});
 	};
 	const addSkills = (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => {
+		const alreadyRequired = form.getValues("provides")?.some(s => skillsToAdd.some(skill => skill.id === s.id));
+		const alreadyProvided = form.getValues("requires")?.some(s => skillsToAdd.some(skill => skill.id === s.id));
+		if (alreadyRequired || alreadyProvided) {
+			showToast({
+				type: "error",
+				title: "Skill bereits vorhanden",
+				subtitle: `Einige der ausgewählten Skills sind bereits in der Liste der ${field === "provides" ? "vermittelten" : "benötigten"} Skills enthalten.`
+			});
+			return;
+		}
 		form.setValue(field, [
 			...(form.getValues(field) ?? []),
 			...skillsToAdd.map(skill => ({ ...skill, children: [], parents: [] }))

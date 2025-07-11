@@ -1,5 +1,4 @@
 import { TableDataColumn } from "@self-learning/ui/common";
-import React from "react";
 import {
 	ChevronDownIcon,
 	FolderIcon,
@@ -16,7 +15,7 @@ import styles from "../folder-table.module.css";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "../skill-display";
 import { isTruthy } from "@self-learning/util/common";
 import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@hello-pangea/dnd";
-import { useModuleViewContext } from "@self-learning/teaching";
+import { useSafeModuleViewContext } from "@self-learning/teaching";
 import { useFormContext } from "react-hook-form";
 
 export function ListSkillEntryWithChildren({
@@ -136,6 +135,15 @@ function SkillRow({
 	nodeId: string;
 	textClassName?: string;
 }) {
+	const { getValues } = useFormContext<MyFormValues>();
+	const context = useSafeModuleViewContext();
+	if (!context) {
+		console.error(
+			"ModuleViewContext is not available. Please ensure you are using this component within a ModuleViewProvider."
+		);
+		return null;
+	}
+	const { allSkills, modules } = context;
 	const depthCssStyle = {
 		"--depth": depth
 	} as React.CSSProperties;
@@ -169,8 +177,6 @@ function SkillRow({
 			parents: string[];
 		}[];
 	};
-	const { allSkills, modules } = useModuleViewContext();
-	const { getValues } = useFormContext<MyFormValues>();
 	const isRequiredSkill = (skillId: string): boolean => {
 		const skill = allSkills.get(skillId);
 		const requires = getValues("requires") ?? [];

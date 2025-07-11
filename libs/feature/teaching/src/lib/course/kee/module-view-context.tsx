@@ -10,7 +10,7 @@ type ModuleViewContextType = {
 	setSelectedModuleId: (id: string | null) => void;
 	allSkills: Map<string, SkillFormModel>;
 };
-const ModuleViewContext = createContext<ModuleViewContextType | undefined>(undefined);
+export const ModuleViewContext = createContext<ModuleViewContextType | undefined>(undefined);
 
 type ModuleViewProviderProps = {
 	children: React.ReactNode;
@@ -51,4 +51,13 @@ export const useModuleViewContext = () => {
     console.error("useModuleViewContext must be used within ModuleViewProvider");
     console.trace();
 	return ctx;
+};
+
+export const useSafeModuleViewContext = () => {
+	try {
+		return useContext(ModuleViewContext) ?? null;
+	} catch (err) {
+		console.error("❌ useModuleViewContext() failed in early render:", err);
+		return null;
+	}
 };
