@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SectionHeader } from "@self-learning/ui/common";
+import { DialogActions, SectionHeader } from "@self-learning/ui/common";
 import { Form, MarkdownField, OpenAsJsonButton } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import Link from "next/link";
@@ -9,8 +9,7 @@ import { AuthorsForm } from "../author/authors-form";
 import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
-import { useState } from "react";
-import { ExportCourseDialog } from "./course-export/course-export-dialog";
+import { useRouter } from "next/router";
 
 export function CourseEditor({
 	course,
@@ -19,6 +18,8 @@ export function CourseEditor({
 	course: CourseFormModel;
 	onConfirm: (course: CourseFormModel) => void;
 }) {
+	const router = useRouter();
+
 	const isNew = course.courseId === "";
 
 	const form = useForm<CourseFormModel>({
@@ -26,7 +27,12 @@ export function CourseEditor({
 		resolver: zodResolver(courseFormSchema)
 	});
 
-	const [viewExportDialog, setViewExportDialog] = useState(false);
+
+	function onCancel() {
+		if (window.confirm("Änderungen verwerfen?")) {
+			router.push("/dashboard/author");
+		}
+	}
 
 	return (
 		<div className="bg-gray-50">
@@ -66,20 +72,6 @@ export function CourseEditor({
 								</div>
 
 								<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
-
-								<div className="flex space-x-2">
-									<button className="btn-primary w-full" type="submit">
-										{isNew ? "Erstellen" : "Speichern"}
-									</button>
-									<button
-										className="btn-primary w-full text-right"
-										type="button"
-										onClick={() => setViewExportDialog(true)}
-									>
-										Export
-									</button>
-								</div>
-
 								<CourseInfoForm />
 								<AuthorsForm
 									subtitle="Die Autoren dieses Kurses."
@@ -91,17 +83,17 @@ export function CourseEditor({
 						<CourseDescriptionForm />
 						<CourseContentForm />
 					</SidebarEditorLayout>
+					<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
+						<div className="z-50 pr-5 pb-5">
+							<DialogActions onClose={onCancel}>
+								<button type="submit" className="btn-primary pointer-events-auto">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+							</DialogActions>
+						</div>
+					</div>
 				</form>
 			</FormProvider>
-
-			{viewExportDialog && (
-				<ExportCourseDialog
-					course={course}
-					onClose={() => {
-						setViewExportDialog(false);
-					}}
-				/>
-			)}
 		</div>
 	);
 }

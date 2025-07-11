@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { LessonDeleteOption } from "@self-learning/ui/lesson";
 
 export default function LessonManagementPage() {
 	const router = useRouter();
@@ -84,12 +85,15 @@ export default function LessonManagementPage() {
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<span
-								className="text-light"
-								title={new Date(lesson.updatedAt).toLocaleString()}
-							>
-								{formatDateAgo(lesson.updatedAt)}
-							</span>
+							<div className="flex items-right gap-4">
+								<span
+									className="text-light"
+									title={new Date(lesson.updatedAt).toLocaleString()}
+								>
+									{formatDateAgo(lesson.updatedAt)}
+								</span>
+								<LessonDeleteOption lessonId={lesson.lessonId} />
+							</div>
 						</TableDataColumn>
 					</tr>
 				))}

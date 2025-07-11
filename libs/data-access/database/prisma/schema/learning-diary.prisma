@@ -99,20 +99,13 @@ model LearningGoal {
   lastProgressUpdate  DateTime?
   username            String
   student             Student            @relation(fields: [username], references: [username], onDelete: Cascade)
-  learningSubGoals    LearningSubGoal[]
+  children            LearningGoal[]     @relation("ParentGoal")
+  parentId            String?           
+  parent              LearningGoal?      @relation("ParentGoal", fields: [parentId], references: [id])
   LearningDiaryPage   LearningDiaryPage? @relation(fields: [learningDiaryPageId], references: [id])
   learningDiaryPageId String?
-}
-
-model LearningSubGoal {
-  id                 String             @id @default(cuid())
-  description        String
-  status             LearningGoalStatus @default(value: INACTIVE)
-  createdAt          DateTime           @default(now())
-  lastProgressUpdate DateTime?          @default(now())
-  priority           Int                @default(autoincrement())
-  learningGoalId     String
-  learningGoal       LearningGoal       @relation(fields: [learningGoalId], references: [id], onDelete: Cascade)
+  priority            Int                @default(0)
+  order               Int                @default(autoincrement())
 }
 
 enum LearningGoalStatus {

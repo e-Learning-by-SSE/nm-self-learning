@@ -7,16 +7,26 @@ import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
 import { useMemo } from "react";
-import { LessonContent, getLesson } from "./lesson-data-access";
+import { LessonData, getLesson } from "./lesson-data-access";
 
 export type LessonLayoutProps = {
-	lesson: LessonContent;
+	lesson: LessonData;
 	course: ResolvedValue<typeof getCourse>;
+};
+
+export type StandaloneLessonLayoutProps = {
+	lesson: LessonData;
+};
+
+type BaseLessonLayoutProps = {
+	title: string;
+	playlistArea: React.ReactNode;
+	children: React.ReactNode;
 };
 
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 
-function getCourse(slug: string) {
+export function getCourse(slug: string) {
 	return database.course.findUnique({
 		where: { slug },
 		select: {
@@ -27,23 +37,42 @@ function getCourse(slug: string) {
 	});
 }
 
-export async function getStaticPropsForLayout(
+export async function getStaticPropsForLessonCourseLayout(
 	params?: ParsedUrlQuery | undefined
 ): Promise<LessonLayoutProps | { notFound: true }> {
-	const courseSlug = params?.["courseSlug"] as string;
-	const lessonSlug = params?.["lessonSlug"] as string;
-
-	if (!courseSlug || !lessonSlug) {
-		throw new Error("No course/lesson slug provided.");
-	}
-
-	const [lesson, course] = await Promise.all([getLesson(lessonSlug), getCourse(courseSlug)]);
-
-	if (!course || !lesson) {
+	const standaloneProps = await getStaticPropsForStandaloneLessonLayout(params);
+	if ("notFound" in standaloneProps) {
 		return { notFound: true };
 	}
 
-	return { lesson, course };
+	const courseSlug = params?.["courseSlug"] as string;
+	if (!courseSlug) {
+		throw new Error("No course/lesson slug provided.");
+	}
+
+	const course = await getCourse(courseSlug);
+	if (!course) {
+		return { notFound: true };
+	}
+
+	return { ...standaloneProps, course };
+}
+
+export async function getStaticPropsForStandaloneLessonLayout(
+	params?: ParsedUrlQuery | undefined
+): Promise<StandaloneLessonLayoutProps | { notFound: true }> {
+	const lessonSlug = params?.["lessonSlug"] as string;
+	if (!lessonSlug) {
+		throw new Error("No lesson slug provided.");
+	}
+
+	const lesson = await getLesson(lessonSlug);
+
+	if (!lesson) {
+		return { notFound: true };
+	}
+
+	return { lesson };
 }
 
 function mapToPlaylistContent(
@@ -76,25 +105,49 @@ function mapToPlaylistContent(
 	return playlistContent;
 }
 
-export function LessonLayout(
-	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
-	pageProps: LessonLayoutProps
-) {
+function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {
 	return (
 		<>
 			<Head>
-				<title>{pageProps.lesson.title}</title>
+				<title>{title}</title>
 			</Head>
 
 			<div className="flex flex-col bg-gray-100">
 				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-					<PlaylistArea {...pageProps} />
-					<div className="w-full pt-8 pb-16">
-						<Component {...pageProps} />
-					</div>
+					{playlistArea}
+					<div className="w-full pt-8 pb-16">{children}</div>
 				</div>
 			</div>
 		</>
+	);
+}
+
+export function LessonLayout(
+	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
+	pageProps: LessonLayoutProps
+) {
+	if (!pageProps.course) {
+		throw new Error("LessonLayout expects course");
+	}
+	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
+
+	return (
+		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+			<Component {...pageProps} />
+		</BaseLessonLayout>
+	);
+}
+
+export function StandaloneLessonLayout(
+	Component: NextComponentType<NextPageContext, unknown, StandaloneLessonLayoutProps>,
+	pageProps: StandaloneLessonLayoutProps
+) {
+	const playlistArea = <StandaloneLessonPlaylistArea {...pageProps} />;
+
+	return (
+		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+			<Component {...pageProps} />
+		</BaseLessonLayout>
 	);
 }
 
@@ -120,6 +173,14 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 					<div className="h-full animate-pulse rounded-lg bg-gray-200"></div>
 				</div>
 			)}
+		</aside>
+	);
+}
+
+function StandaloneLessonPlaylistArea({ lesson }: StandaloneLessonLayoutProps) {
+	return (
+		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+			{/** to be implemented */}
 		</aside>
 	);
 }

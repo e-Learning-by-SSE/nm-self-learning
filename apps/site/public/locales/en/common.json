@@ -1,5 +1,11 @@
 {
 	"languageGerman": "German",
 	"languageEnglish": "English",
-	"pickLanguage": "Select language"
+	"pickLanguage": "Select language",
+	"add": "Add",
+	"create": "Create",
+	"delete": "Delete",
+	"edit": "Edit",
+	"save": "Save",
+	"search": "Search"
 }
