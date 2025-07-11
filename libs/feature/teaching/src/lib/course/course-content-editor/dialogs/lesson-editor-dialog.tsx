@@ -60,7 +60,13 @@ function LessonEditorDialog({
 					Im separaten Editor öffnen
 				</Link>
 			</div>
-			<LessonEditor onSubmit={onClose} initialLesson={initialLesson} isFullScreen={false} />
+			<div className={"overflow-y-auto"}>
+				<LessonEditor
+					onSubmit={onClose}
+					initialLesson={initialLesson}
+					isFullScreen={false}
+				/>
+			</div>
 		</Dialog>
 	);
 }
