@@ -39,7 +39,7 @@ export default function LessonManagementPage() {
 
 				<Link href="/teaching/lessons/create" className="btn-primary flex w-fit">
 					<PlusIcon className="icon h-5" />
-					<span>Lerneinheit hinzufügen</span>
+					<span>Lerneinheit erstellen</span>
 				</Link>
 			</div>
 

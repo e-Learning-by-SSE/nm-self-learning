@@ -20,14 +20,14 @@ function RepositoryInfoForm({ repository }: { repository: SkillRepositoryModel }
 			await changeRep({ rep: data, repoId: data.id ?? "0" });
 			showToast({
 				type: "success",
-				title: "Skill Netzwerk gespeichert!",
+				title: "Skillkarte gespeichert!",
 				subtitle: ""
 			});
 		} catch (error) {
 			if (error instanceof Error) {
 				showToast({
 					type: "error",
-					title: "Aktuelles Skill Netzwerk konnte nicht gespeichert werden!",
+					title: "Aktuelle Skillkarte konnte nicht gespeichert werden!",
 					subtitle: error.message ?? ""
 				});
 			}
@@ -39,8 +39,8 @@ function RepositoryInfoForm({ repository }: { repository: SkillRepositoryModel }
 			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
 				<Form.SidebarSection>
 					<Form.SidebarSectionTitle
-						title="Skill Netzwerk"
-						subtitle="Informationen über das Skill Netzwerk "
+						title="Skillkarte"
+						subtitle="Informationen über diese Skillkarte"
 					/>
 					<div className="flex flex-col gap-4">
 						<LabeledField label="Name" error={errors.name?.message}>
