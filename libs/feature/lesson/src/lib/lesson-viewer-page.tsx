@@ -3,12 +3,11 @@ import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { getCourse, useLessonContext } from "@self-learning/lesson";
-import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
-import { CompiledMarkdown } from "@self-learning/markdown";
+import { saveToLocalStorage } from "@self-learning/local-storage";
+import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
-	findContentType,
+	Article,
 	getContentTypeDisplayName,
-	includesMediaType,
 	LessonContent,
 	LessonMeta,
 	ResolvedValue
@@ -34,35 +33,10 @@ export type LessonProps = {
 		subtitle: CompiledMarkdown | null;
 	};
 };
-function usePreferredMediaType(lesson: LessonProps["lesson"]) {
-	// Handle situations that content creator may created an empty lesson (to add content later)
-	const content = lesson.content as LessonContent;
-	const router = useRouter();
-
-	let preferredMediaType = content.length > 0 ? content[0].type : "video";
-
-	if (content.length > 0) {
-		const availableMediaTypes = content.map(c => c.type);
-
-		const { type: typeFromRoute } = router.query;
-		const typeFromStorage = loadFromLocalStorage("user_preferredMediaType");
-
-		const { isIncluded, type } = includesMediaType(
-			availableMediaTypes,
-			(typeFromRoute as string) ?? typeFromStorage
-		);
-
-		if (isIncluded) {
-			preferredMediaType = type;
-		}
-	}
-	return preferredMediaType;
-}
 export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
 
-	const { content: video } = findContentType("video", lesson.content as LessonContent);
-	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
+	const content = lesson.content as LessonContent;
 
 	const { newEvent } = useEventLog();
 	useEffect(() => {
@@ -74,8 +48,6 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 			payload: undefined
 		});
 	}, [newEvent, lesson.lessonId, course?.courseId]);
-
-	const preferredMediaType = usePreferredMediaType(lesson);
 
 	if (showDialog && markdown.preQuestion) {
 		return (
@@ -90,20 +62,6 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 
 	return (
 		<article className="flex flex-col gap-4">
-			{preferredMediaType === "video" && (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
-					{video?.value.url ? (
-						<VideoPlayer
-							parentLessonId={lesson.lessonId}
-							url={video.value.url}
-							courseId={course?.courseId}
-						/>
-					) : (
-						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
-					)}
-				</div>
-			)}
-
 			<LessonHeader
 				lesson={lesson}
 				course={course}
@@ -111,18 +69,99 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 				mdSubtitle={markdown.subtitle}
 			/>
 
-			{preferredMediaType === "article" && markdown.article && (
-				<MarkdownContainer className="mx-auto w-full pt-4">
-					<MDXRemote {...markdown.article} />
-				</MarkdownContainer>
-			)}
+			{content.map(c => {
+				console.log(`content type ${c.type}`);
+				switch (c.type) {
+					case "video":
+						if (!c.value.url) return <ContentError text="missing video URL" />;
+						return (
+							<div className="aspect-video w-full xl:max-h-[75vh]">
+								<VideoPlayer
+									parentLessonId={lesson.lessonId}
+									url={c.value.url}
+									courseId={course?.courseId}
+								/>
+							</div>
+						);
+					case "article":
+						return <LessonArticle article={c} />;
+					case "pdf":
+						if (!c.value.url) return <ContentError text="missing PDF URL" />;
+						return (
+							<div className="h-[90vh] xl:h-[80vh]">
+								<PdfViewer url={c.value.url} />
+							</div>
+						);
+					default:
+						return <ContentError text={`unsupported content type: ${c.type}`} />;
+				}
+			})}
 
-			{preferredMediaType === "pdf" && pdf?.value.url && (
-				<div className="h-[90vh] xl:h-[80vh]">
-					<PdfViewer url={pdf.value.url} />
-				</div>
-			)}
+			<LessonFooter
+				lesson={lesson}
+				course={course}
+				mdDescription={markdown.description}
+				mdSubtitle={markdown.subtitle}
+			/>
 		</article>
+	);
+}
+
+function LessonArticle({ article }: { article: Article }) {
+	const [markdown, setMarkdown] = useState<CompiledMarkdown | null>(null);
+	useEffect(() => {
+		if (article.type === "article" && article.value) {
+			compileMarkdown(article.value.content).then(setMarkdown);
+		}
+	}, [article]);
+
+	if (!article.value) return <ContentError text="missing article text" />;
+	if (!markdown) return <ContentLoader />;
+
+	return (
+		<MarkdownContainer className="mx-auto w-full pt-4">
+			<MDXRemote {...markdown} />
+		</MarkdownContainer>
+	);
+}
+
+function ContentError({ text }: { text: string }) {
+	return <div className="py-16 text-center text-red-500">Error: {text}</div>;
+}
+function ContentLoader() {
+	return <div className="py-16 text-center">Loading...</div>;
+}
+
+function LessonFooter({
+	course,
+	lesson,
+	mdDescription,
+	mdSubtitle
+}: {
+	course: LessonProps["course"];
+	lesson: LessonProps["lesson"];
+	mdDescription?: CompiledMarkdown | null;
+	mdSubtitle?: CompiledMarkdown | null;
+}) {
+	return (
+		<div className="flex flex-col gap-8">
+			<div className="flex flex-wrap justify-between gap-4">
+				<div className="flex w-full flex-col">
+					<span className="flex flex-wrap-reverse justify-between gap-4">
+						<span className="flex flex-col gap-3">
+							<Authors authors={lesson.authors} />
+						</span>
+						<div className="-mt-3">
+							{!lesson.license ? (
+								<DefaultLicenseLabel />
+							) : (
+								<LicenseLabel license={lesson.license} />
+							)}
+						</div>
+					</span>
+				</div>
+			</div>
+		</div>
 	);
 }
 
@@ -145,10 +184,10 @@ function LessonHeader({
 				<div className="flex w-full flex-col">
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
+							<h1 className="text-4xl">{lesson.title}</h1>
 							<div className="font-semibold text-secondary min-h-[24px]">
 								{!isStandalone && <ChapterName course={course} lesson={lesson} />}
 							</div>
-							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
 
 						{isStandalone ? (
@@ -162,19 +201,6 @@ function LessonHeader({
 							<MDXRemote {...mdSubtitle} />
 						</MarkdownContainer>
 					)}
-
-					<span className="flex flex-wrap-reverse justify-between gap-4">
-						<span className="flex flex-col gap-3">
-							<Authors authors={lesson.authors} />
-						</span>
-						<div className="-mt-3">
-							{!lesson.license ? (
-								<DefaultLicenseLabel />
-							) : (
-								<LicenseLabel license={lesson.license} />
-							)}
-						</div>
-					</span>
 					{!isStandalone && (
 						<div className="pt-4">
 							<MediaTypeSelector lesson={lesson} course={course} />
@@ -334,14 +360,12 @@ function MediaTypeSelector({
 }) {
 	const lessonContent = lesson.content as LessonContent;
 	// If no content is specified at this time, use video as default (and don't s´display anything)
-	const preferredMediaType = usePreferredMediaType(lesson);
-	const { index } = findContentType(preferredMediaType, lessonContent);
+	const index = 0; // TODO
 	const [selectedIndex, setSelectedIndex] = useState(index);
 	const router = useRouter();
 
 	function changeMediaType(index: number) {
 		const type = lessonContent[index].type;
-		saveToLocalStorage("user_preferredMediaType", type);
 
 		let url = `/lessons/${lesson.slug}?type=${type}`;
 
