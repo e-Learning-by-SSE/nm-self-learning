@@ -21,7 +21,7 @@ export const lessonRouter = t.router({
 						name: true,
 						description: true,
 						children: true,
-						repositoryId: true,
+						authorId: true,
 						parents: true
 					}
 				},
@@ -31,7 +31,7 @@ export const lessonRouter = t.router({
 						name: true,
 						description: true,
 						children: true,
-						repositoryId: true,
+						authorId: true,
 						parents: true
 					}
 				}

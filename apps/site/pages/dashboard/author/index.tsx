@@ -1,9 +1,8 @@
 import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
-import { t, withAuth, withTranslations } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { SkillRepositoryOverview } from "@self-learning/teaching";
 import {
 	Divider,
 	IconButton,
@@ -26,6 +25,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Specialization, Subject } from "@self-learning/types";
+import { ParentSkillOverview } from "@self-learning/teaching";
 import { ExportCourseDialog } from "@self-learning/teaching";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
@@ -285,20 +285,21 @@ function AuthorDashboardPage({ author }: Props) {
 					</section>
 
 					<Divider />
+
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
 								title="Skillkarten"
-								subtitle="Besitzer der folgenden Repositories"
+								subtitle="Besitzer der folgenden Skillkarten"
 							/>
-							<Link href="/skills/repository/create">
-								<IconButton
-									icon={<PlusIcon className="icon h-5" />}
-									text="Skillkarten anlegen"
-								/>
+							<Link href="/skills">
+								<button type="button" className="btn-stroked w-fit self-end">
+									<PencilIcon className="icon" />
+									<span>Skills bearbeiten</span>
+								</button>
 							</Link>
 						</div>
-						<SkillRepositoryOverview />
+						<ParentSkillOverview />
 					</section>
 
 					<Divider />
