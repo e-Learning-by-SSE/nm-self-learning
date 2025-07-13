@@ -98,10 +98,14 @@ export function LessonEditor({
 				className="flex h-full flex-col overflow-hidden"
 			>
 				<div className="flex h-full overflow-y-auto overflow-x-hidden">
-					<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-						<LessonInfoEditor lesson={initialLesson} />
+					<div className="grid h-full w-full gap-8 xl:grid-cols-[500px_1fr] overflow-hidden">
+						{/* TODO here a proper sidebar must be implemented */}
+						{/* TODO very annoying that LessonInfoEditor has mr-3 */}
+						<div className="border-b xl:border-b-0 xl:border-r pr-3">
+							<LessonInfoEditor lesson={initialLesson} />
+						</div>
 
-						<div>
+						<div className="px-3">
 							<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
 								<Tab>Lerninhalt</Tab>
 								<Tab>Lernkontrolle</Tab>
