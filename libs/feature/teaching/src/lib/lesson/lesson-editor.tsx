@@ -95,10 +95,10 @@ export function LessonEditor({
 			<form
 				id="lessonform"
 				onSubmit={form.handleSubmit(onSubmit, console.log)}
-				className="flex h-full flex-col overflow-hidden"
+				className="flex flex-col"
 			>
-				<div className="flex h-full overflow-y-auto overflow-x-hidden">
-					<div className="grid h-full w-full gap-8 xl:grid-cols-[500px_1fr] overflow-hidden">
+				<div className="flex overflow-x-hidden">
+					<div className="grid w-full gap-8 xl:grid-cols-[500px_1fr]">
 						{/* TODO here a proper sidebar must be implemented */}
 						{/* TODO very annoying that LessonInfoEditor has mr-3 */}
 						<div className="border-b xl:border-b-0 xl:border-r pr-3">

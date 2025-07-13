@@ -156,11 +156,13 @@ function LessonContentViewer({
 	content,
 	setActiveContentIndex,
 	targetIndex, // separate from contentIndex to avoid circle dependency
+	resetTargetIndex,
 	emptyMessage
 }: {
 	content: LessonContent;
 	setActiveContentIndex: (idx: number | undefined) => void;
 	targetIndex: number | undefined;
+	resetTargetIndex: () => void;
 	emptyMessage: string;
 }) {
 	const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -172,6 +174,7 @@ function LessonContentViewer({
 				behavior: "smooth",
 				block: "start"
 			});
+			resetTargetIndex();
 		}
 	}, [targetIndex]); // Deliberately avoid update on content to avoid scroll on delete, on swap, .... Allow only on click
 	// Detect active element
@@ -239,7 +242,7 @@ function LessonContentViewer({
 					}}
 					// Add a data attribute to easily retrieve the index in the Intersection Observer callback
 					data-content-index={index}
-					// offset by height of the website header
+					// Scroll positioning fix because of website header
 					className="scroll-mt-16"
 				>
 					<RenderContentType index={index} content={item} />
@@ -310,6 +313,7 @@ function ContentOutline({
 	);
 }
 
+// horizontal
 function LessonContentOutline({
 	content,
 	swapContent,
@@ -432,7 +436,7 @@ export function LessonContentEditor() {
 
 	return (
 		// xl:grid-cols-[1fr_300px]
-		<div className="grid h-full w-full gap-8">
+		<div className="grid w-full gap-8">
 			{/* overflow is hidden so the draggable area can scroll */}
 			<div className="w-full overflow-hidden flex flex-col gap-8">
 				<div className="">
@@ -454,6 +458,7 @@ export function LessonContentEditor() {
 				<LessonContentViewer
 					content={content}
 					targetIndex={targetTabIndex}
+					resetTargetIndex={() => setTargetTabIndex(undefined)} // cheaky way to prevent scroll on update behavior (and more)
 					setActiveContentIndex={setContentTabIndex}
 					emptyMessage="Diese Lerneinheit hat noch keinen Inhalt."
 				/>
