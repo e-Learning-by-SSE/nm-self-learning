@@ -6,8 +6,8 @@ import { useQuestion } from "../../use-question-hook";
 
 export default function ArrangeQuestion() {
 	const { answer, setAnswer, evaluation, question } = useQuestion("arrange");
-	const  order  = question.categoryOrder
-	
+	const order = question.categoryOrder;
+
 	return (
 		<>
 			<DragDropContext
