@@ -6,7 +6,8 @@ export const videoSchema = z.object({
 		url: z.string()
 	}),
 	meta: z.object({
-		duration: z.number()
+		duration: z.number(),
+		id: z.string()
 	})
 });
 
@@ -16,7 +17,8 @@ export const articleSchema = z.object({
 		content: z.string()
 	}),
 	meta: z.object({
-		estimatedDuration: z.number()
+		estimatedDuration: z.number(),
+		id: z.string()
 	})
 });
 
@@ -26,7 +28,8 @@ export const pdfSchema = z.object({
 		url: z.string()
 	}),
 	meta: z.object({
-		estimatedDuration: z.number()
+		estimatedDuration: z.number(),
+		id: z.string()
 	})
 });
 
@@ -36,7 +39,8 @@ export const iframeSchema = z.object({
 		url: z.string()
 	}),
 	meta: z.object({
-		estimatedDuration: z.number()
+		estimatedDuration: z.number(),
+		id: z.string()
 	})
 });
 
