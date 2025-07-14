@@ -1,32 +1,33 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { LessonFormModel } from "@self-learning/teaching";
 import {
+	CONTENT_TYPES,
 	getContentTypeDisplayName,
 	LessonContent,
-	LessonContentMediaType,
 	LessonContentType,
 	ValueByContentType
 } from "@self-learning/types";
 import {
 	DropdownMenu,
-	RemovableTab,
 	SectionHeader,
-	Tab,
-	Tabs,
-	useIsFirstRender,
-	XButton
+	SectionCard,
+	useIsFirstRender
 } from "@self-learning/ui/common";
 import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
-import { Reorder } from "framer-motion";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	Control,
+	Controller,
+	FieldArrayWithId,
+	useFieldArray,
+	useFormContext
+} from "react-hook-form";
 import { ArticleInput } from "../content-types/article";
 import { IFrameInput } from "../content-types/iframe";
 import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
 import { Button } from "@headlessui/react";
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { Bars3Icon } from "@heroicons/react/24/outline";
+import { DraggableContentOutline, DraggableContentViewer } from "@self-learning/ui/layouts";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -150,239 +151,6 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 	};
 }
 
-const contentTypes: LessonContentMediaType[] = ["video", "article", "pdf", "iframe"];
-
-function LessonContentViewer({
-	content,
-	setActiveContentIndex,
-	targetIndex, // separate from contentIndex to avoid circle dependency
-	resetTargetIndex,
-	emptyMessage
-}: {
-	content: LessonContent;
-	setActiveContentIndex: (idx: number | undefined) => void;
-	targetIndex: number | undefined;
-	resetTargetIndex: () => void;
-	emptyMessage: string;
-}) {
-	const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
-	const visibleItemsRef = useRef<Set<number>>(new Set());
-	// scroll into selected
-	useEffect(() => {
-		if (targetIndex !== undefined && content[targetIndex] && contentRefs.current[targetIndex]) {
-			contentRefs.current[targetIndex].scrollIntoView({
-				behavior: "smooth",
-				block: "start"
-			});
-			resetTargetIndex();
-		}
-	}, [targetIndex]); // Deliberately avoid update on content to avoid scroll on delete, on swap, .... Allow only on click
-	// Detect active element
-	const calculateMinVisibleIndex = () => {
-		if (visibleItemsRef.current.size === 0) return undefined;
-		let min: number | undefined;
-		for (const idx of visibleItemsRef.current) {
-			if (min === undefined || idx < min) min = idx;
-		}
-		return min;
-	};
-	useEffect(() => {
-		console.log("Hello");
-		const observer = new IntersectionObserver(
-			entries => {
-				entries.forEach(entry => {
-					const indexStr = (entry.target as HTMLElement).dataset?.["contentIndex"];
-					if (indexStr !== undefined) {
-						const index = parseInt(indexStr, 10);
-						if (entry.isIntersecting) {
-							visibleItemsRef.current.add(index);
-						} else {
-							visibleItemsRef.current.delete(index);
-						}
-					}
-				});
-				const newActiveIndex = calculateMinVisibleIndex();
-				setActiveContentIndex(newActiveIndex); // React ignores same index update
-			},
-			{
-				root: null,
-				rootMargin: "0px",
-				threshold: 0.1
-			}
-		);
-
-		contentRefs.current.forEach(ref => {
-			if (ref) {
-				observer.observe(ref);
-			}
-		});
-
-		return () => {
-			observer.disconnect();
-		};
-	}, [content, setActiveContentIndex]);
-
-	if (!content || content.length === 0) {
-		return (
-			<section>
-				<div className="rounded-lg border border-light-border bg-white py-80 text-center text-light">
-					{emptyMessage}
-				</div>
-			</section>
-		);
-	}
-
-	return (
-		<section className="flex flex-col gap-4">
-			{content.map((item, index) => (
-				<div
-					key={item.meta.id}
-					ref={el => {
-						contentRefs.current[index] = el;
-					}}
-					// Add a data attribute to easily retrieve the index in the Intersection Observer callback
-					data-content-index={index}
-					// Scroll positioning fix because of website header
-					className="scroll-mt-16"
-				>
-					<RenderContentType index={index} content={item} />
-				</div>
-			))}
-		</section>
-	);
-}
-
-function ContentOutline({
-	content,
-	swapContent,
-	removeContent,
-	contentIndex,
-	selectContent
-}: {
-	content: { id: string; value: string }[];
-	swapContent: (src: number, dest: number) => void;
-	removeContent?: (idx: number) => void;
-	contentIndex: number | undefined;
-	selectContent: (idx: number) => void; // separate from contentIndex to avoid circle dependency
-}) {
-	return (
-		<DragDropContext
-			onDragEnd={result => {
-				if (result.reason !== "DROP" || !result.destination) return;
-				swapContent(result.source.index, result.destination.index);
-			}}
-		>
-			<Droppable droppableId="droppable" direction="vertical">
-				{provided => (
-					<div
-						ref={provided.innerRef}
-						{...provided.droppableProps}
-						className="overflow-y-auto"
-					>
-						<div className="flex flex-col flex-no-wrap gap-4 min-w-max">
-							{content.map((item, index) => (
-								<Draggable key={item.id} draggableId={item.id} index={index}>
-									{provided => (
-										<div
-											ref={provided.innerRef}
-											{...provided.draggableProps}
-											{...provided.dragHandleProps}
-											className={`flex gap-5 text-nowrap flex-nowrap items-center ${contentIndex === index ? "text-secondary" : "text-light"}`}
-										>
-											<Bars3Icon className="h-5 text-light" />
-											<span onClick={() => selectContent(index)}>
-												{item.value}
-											</span>
-											{removeContent && (
-												<XButton
-													onClick={() => removeContent(index)}
-													title="Entfernen"
-													className="flex items-center"
-												/>
-											)}
-										</div>
-									)}
-								</Draggable>
-							))}
-						</div>
-						{provided.placeholder}
-					</div>
-				)}
-			</Droppable>
-		</DragDropContext>
-	);
-}
-
-// horizontal
-function LessonContentOutline({
-	content,
-	swapContent,
-	removeContent,
-	contentIndex,
-	selectContentIndex
-}: {
-	content: { id: string; value: string }[];
-	swapContent: (src: number, dest: number) => void;
-	removeContent?: (idx: number) => void;
-	contentIndex: number | undefined;
-	selectContentIndex: (idx: number) => void;
-}) {
-	return (
-		<DragDropContext
-			onDragEnd={result => {
-				if (result.reason !== "DROP" || !result.destination) return;
-				swapContent(result.source.index, result.destination.index);
-			}}
-		>
-			<Droppable droppableId="droppable" direction="horizontal">
-				{provided => (
-					<div
-						ref={provided.innerRef}
-						{...provided.droppableProps}
-						className="overflow-auto"
-					>
-						<Tabs selectedIndex={contentIndex} onChange={selectContentIndex}>
-							<div className="flex flex-no-wrap gap-4 min-w-max">
-								{content.map((item, index) => (
-									<Draggable key={item.id} draggableId={item.id} index={index}>
-										{provided => (
-											<div
-												ref={provided.innerRef}
-												{...provided.draggableProps}
-												{...provided.dragHandleProps}
-											>
-												{removeContent && (
-													<RemovableTab
-														onRemove={() => removeContent(index)}
-													>
-														<div className="flex gap-5 items-center">
-															<Bars3Icon className="h-5 text-light" />
-															{item.value}
-														</div>
-													</RemovableTab>
-												)}
-												{!removeContent && (
-													<Tab>
-														<div className="flex gap-5 items-center">
-															<Bars3Icon className="h-5 text-light" />
-															{item.value}
-														</div>
-													</Tab>
-												)}
-											</div>
-										)}
-									</Draggable>
-								))}
-							</div>
-						</Tabs>
-						{provided.placeholder}
-					</div>
-				)}
-			</Droppable>
-		</DragDropContext>
-	);
-}
-
 function LessonContentOutlineHeader({
 	addContent
 }: {
@@ -406,7 +174,7 @@ function LessonContentOutlineHeader({
 								</div>
 							}
 						>
-							{contentTypes.map(contentType => (
+							{CONTENT_TYPES.map(contentType => (
 								<Button
 									key={contentType}
 									type={"button"}
@@ -421,8 +189,20 @@ function LessonContentOutlineHeader({
 					</div>
 				}
 			/>
-			<div className="mb-8 mt-4"></div>
 		</section>
+	);
+}
+
+function ContentOutlineTab({
+	item
+}: {
+	item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
+}) {
+	return (
+		<>
+			{item && getContentTypeDisplayName(item.type)}
+			{!item && "Kein Inhalt"}
+		</>
 	);
 }
 
@@ -436,59 +216,76 @@ export function LessonContentEditor() {
 
 	return (
 		// xl:grid-cols-[1fr_300px]
-		<div className="grid w-full gap-8">
+		<div className="grid w-full gap-8 lg:grid-cols-[1fr_300px]">
 			{/* overflow is hidden so the draggable area can scroll */}
-			<div className="w-full overflow-hidden flex flex-col gap-8">
+			<div className="w-full overflow-hidden flex flex-col gap-8 mb-8">
 				<div className="">
 					<LessonDescriptionForm />
 				</div>
 				<LessonContentOutlineHeader addContent={addContent} />
-				<div className="max-w-full overflow-x-auto">
-					<ContentOutline
-						content={content.map(c => ({
-							id: c.meta.id,
-							value: getContentTypeDisplayName(c.type)
-						}))}
-						swapContent={swapContent}
-						removeContent={removeContent}
-						contentIndex={contentTabIndex}
-						selectContent={setTargetTabIndex}
-					/>
-				</div>
-				<LessonContentViewer
+				<DraggableContentViewer
 					content={content}
 					targetIndex={targetTabIndex}
-					resetTargetIndex={() => setTargetTabIndex(undefined)} // cheaky way to prevent scroll on update behavior (and more)
-					setActiveContentIndex={setContentTabIndex}
-					emptyMessage="Diese Lerneinheit hat noch keinen Inhalt."
+					resetTargetIndex={() => setTargetTabIndex(undefined)} // way to prevent scroll on update behavior (and more)
+					setActiveIndex={setContentTabIndex}
+					RenderContent={RenderContentType}
 				/>
+			</div>
+			<div className="bg-gray-100 w-full h-full border-l">
+				<div
+					className="fixed z-4 overflow-y-auto 
+				bottom-0 left-0 right-0 lg:top-28
+				lg:left-auto lg:w-72 lg:max-h-none lg:h-auto "
+				>
+					<h2 className="text-xl text-center w-max ml-4 my-2">Inhalt</h2>
+					<div className="ml-6">
+						<DraggableContentOutline
+							content={content}
+							swapContent={swapContent}
+							removeContent={removeContent}
+							activeIndex={contentTabIndex}
+							setTargetIndex={setTargetTabIndex}
+							RenderContent={ContentOutlineTab}
+						/>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
 }
 
-function RenderContentType({ index, content }: { index: number; content: LessonContentType }) {
-	if (content.type === "video") {
+function RenderContentType({
+	index,
+	item
+}: {
+	index?: number;
+	item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
+}) {
+	if (!item || index === undefined || index === null) {
+		return (
+			<SectionCard>
+				<span className="text-light">Diese Lerneinheit hat noch keinen Inhalt.</span>
+			</SectionCard>
+		);
+	}
+
+	if (item.type === "video") {
 		return <VideoInput index={index} />;
 	}
 
-	if (content.type === "article") {
+	if (item.type === "article") {
 		return <ArticleInput index={index} />;
 	}
 
-	if (content.type === "pdf") {
+	if (item.type === "pdf") {
 		return <PdfInput index={index} />;
 	}
 
-	if (content.type === "iframe") {
+	if (item.type === "iframe") {
 		return <IFrameInput index={index} />;
 	}
-
-	return (
-		<span className="text-red-500">
-			Error: Unknown content type ({(content as { type: string | undefined }).type})
-		</span>
-	);
+	// Must not happen!
+	return <span className="text-red-500">Error: Unknown content type</span>;
 }
 
 export function LessonDescriptionForm() {

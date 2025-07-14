@@ -47,6 +47,7 @@ export async function onLessonEditorSubmit(
 	}) => Promise<{ title: string }>,
 	lesson?: LessonFormModel
 ) {
+	console.log("JKHFHUIHUIYIUHHIUUHOOUHIJIOUH");
 	try {
 		if (lesson) {
 			const result = await editLessonAsync({
@@ -94,7 +95,9 @@ export function LessonEditor({
 		<FormProvider {...form}>
 			<form
 				id="lessonform"
-				onSubmit={form.handleSubmit(onSubmit, console.log)}
+				onSubmit={form.handleSubmit(onSubmit, error => {
+					console.log("EEE", error);
+				})}
 				className="flex flex-col"
 			>
 				<div className="flex overflow-x-hidden">
@@ -105,7 +108,7 @@ export function LessonEditor({
 							<LessonInfoEditor lesson={initialLesson} />
 						</div>
 
-						<div className="px-3">
+						<div className="pl-3">
 							<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
 								<Tab>Lerninhalt</Tab>
 								<Tab>Lernkontrolle</Tab>
