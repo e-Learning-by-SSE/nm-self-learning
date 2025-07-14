@@ -3,7 +3,6 @@ import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { getCourse, useLessonContext } from "@self-learning/lesson";
-import { saveToLocalStorage } from "@self-learning/local-storage";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	Article,
@@ -14,7 +13,11 @@ import {
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { MarkdownContainer, useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	DraggableContentSelector,
+	MarkdownContainer,
+	useRequiredSession
+} from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
@@ -69,6 +72,8 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 				mdSubtitle={markdown.subtitle}
 			/>
 
+			{course && <MediaTypeSelector lesson={lesson} course={course} />}
+
 			{content.map(c => {
 				console.log(`content type ${c.type}`);
 				switch (c.type) {
@@ -96,13 +101,6 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 						return <ContentError text={`unsupported content type: ${c.type}`} />;
 				}
 			})}
-
-			<LessonFooter
-				lesson={lesson}
-				course={course}
-				mdDescription={markdown.description}
-				mdSubtitle={markdown.subtitle}
-			/>
 		</article>
 	);
 }
@@ -130,39 +128,6 @@ function ContentError({ text }: { text: string }) {
 }
 function ContentLoader() {
 	return <div className="py-16 text-center">Loading...</div>;
-}
-
-function LessonFooter({
-	course,
-	lesson,
-	mdDescription,
-	mdSubtitle
-}: {
-	course: LessonProps["course"];
-	lesson: LessonProps["lesson"];
-	mdDescription?: CompiledMarkdown | null;
-	mdSubtitle?: CompiledMarkdown | null;
-}) {
-	return (
-		<div className="flex flex-col gap-8">
-			<div className="flex flex-wrap justify-between gap-4">
-				<div className="flex w-full flex-col">
-					<span className="flex flex-wrap-reverse justify-between gap-4">
-						<span className="flex flex-col gap-3">
-							<Authors authors={lesson.authors} />
-						</span>
-						<div className="-mt-3">
-							{!lesson.license ? (
-								<DefaultLicenseLabel />
-							) : (
-								<LicenseLabel license={lesson.license} />
-							)}
-						</div>
-					</span>
-				</div>
-			</div>
-		</div>
-	);
 }
 
 function LessonHeader({
@@ -201,11 +166,18 @@ function LessonHeader({
 							<MDXRemote {...mdSubtitle} />
 						</MarkdownContainer>
 					)}
-					{!isStandalone && (
-						<div className="pt-4">
-							<MediaTypeSelector lesson={lesson} course={course} />
+					<span className="flex flex-wrap-reverse justify-between gap-4">
+						<span className="flex flex-col gap-3">
+							<Authors authors={lesson.authors} />
+						</span>
+						<div className="-mt-3">
+							{!lesson.license ? (
+								<DefaultLicenseLabel />
+							) : (
+								<LicenseLabel license={lesson.license} />
+							)}
 						</div>
-					)}
+					</span>
 				</div>
 			</div>
 
