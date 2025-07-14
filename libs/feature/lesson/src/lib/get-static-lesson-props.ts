@@ -17,14 +17,15 @@ export async function getStaticLessonProps(lesson: LessonData) {
 		mdSubtitle = await compileMarkdown(lesson.subtitle);
 	}
 
-	const { content: article } = findContentType("article", lesson.content as LessonContent);
+	// Do not touch articles - not used anyway TODO
+	// const { content: article } = findContentType("article", lesson.content as LessonContent);
 
-	if (article) {
-		mdArticle = await compileMarkdown(article.value.content ?? "Kein Inhalt.");
-		// Remove article content to avoid duplication
+	// if (article) {
+	// 	mdArticle = await compileMarkdown(article.value.content ?? "Kein Inhalt.");
+	// 	// Remove article content to avoid duplication
 
-		article.value.content = "(replaced)";
-	}
+	// 	article.value.content = "(replaced)";
+	// }
 
 	// TODO change to check if the lesson is self regulated
 	if (lesson.lessonType === LessonType.SELF_REGULATED) {
