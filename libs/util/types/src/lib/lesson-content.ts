@@ -51,6 +51,8 @@ export const lessonContentSchema = z.discriminatedUnion("type", [
 	iframeSchema
 ]);
 
+export const CONTENT_TYPES = ["video", "article", "pdf", "iframe"] as const;
+
 export function getContentTypeDisplayName(contentType: LessonContentMediaType): string {
 	const names: { [contentType in LessonContentMediaType]: string } = {
 		video: "Video",
