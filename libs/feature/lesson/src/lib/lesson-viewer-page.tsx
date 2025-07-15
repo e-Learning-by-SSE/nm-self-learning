@@ -30,9 +30,7 @@ import {
 import { LabeledField } from "@self-learning/ui/forms";
 import {
 	DraggableContentOutline,
-	DraggableContentSelector,
 	DraggableContentViewer,
-	DraggableItem,
 	MarkdownContainer,
 	useDraggableContent,
 	useRequiredSession
@@ -252,6 +250,8 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 		if (openedMedia.removeContent) {
 			openedMedia.removeContent(idx);
 			openedMedia.setActiveIndex(undefined);
+		} else {
+			console.log("Error: in mediaContent remove is disabled!");
 		}
 	};
 
@@ -646,7 +646,7 @@ function SelfRegulatedPreQuestion({
 					onClick={() => {
 						setShowDialog(false);
 					}}
-					disabled={userAnswer.length == 0}
+					disabled={userAnswer.length === 0}
 				>
 					Antwort Speichern
 				</button>
