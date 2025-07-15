@@ -68,10 +68,6 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 		didContextInit.current = true;
 		//
 	}, [content, setContent]);
-	const idCounter = useRef(content.length + 1);
-	function getNextId(type: LessonContentType["type"]) {
-		return (idCounter.current++).toString();
-	}
 
 	useEffect(() => {
 		if (content.length === 0) {
@@ -89,25 +85,25 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 				append({
 					type: "video",
 					value: { url: "" },
-					meta: { duration: 0, id: getNextId(type) }
+					meta: { duration: 0 }
 				}),
 			article: () =>
 				append({
 					type: "article",
 					value: { content: "" },
-					meta: { estimatedDuration: 0, id: getNextId(type) }
+					meta: { estimatedDuration: 0 }
 				}),
 			pdf: () =>
 				append({
 					type: "pdf",
 					value: { url: "" },
-					meta: { estimatedDuration: 0, id: getNextId(type) }
+					meta: { estimatedDuration: 0 }
 				}),
 			iframe: () =>
 				append({
 					type: "iframe",
 					value: { url: "" },
-					meta: { estimatedDuration: 0, id: getNextId(type) }
+					meta: { estimatedDuration: 0 }
 				})
 		};
 
