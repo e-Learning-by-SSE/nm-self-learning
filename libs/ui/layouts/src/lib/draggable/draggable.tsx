@@ -3,7 +3,69 @@
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { RemovableTab, Tab, Tabs, XButton } from "@self-learning/ui/common";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+export type DraggableItem<T> = T & { id: string };
+
+const fixContentIDs = <T,>(contentArray: T[]): DraggableItem<T>[] => {
+	return contentArray.map(item => {
+		if (
+			typeof item === "object" &&
+			item !== null &&
+			"id" in item &&
+			typeof (item as Record<string, unknown>).id === "string"
+		) {
+			return item as DraggableItem<T>;
+		}
+		return { ...item, id: crypto.randomUUID() } as DraggableItem<T>;
+	});
+};
+
+export function useDraggableContent<T>(
+	initialContent: T[],
+	swapEnabled: boolean,
+	removeEnabled: boolean
+) {
+	const normalizedInitialContent = useMemo(() => {
+		return fixContentIDs(initialContent);
+	}, [initialContent]);
+
+	const [content, setContent] = useState<DraggableItem<T>[]>(normalizedInitialContent);
+	const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
+
+	useEffect(() => {
+		setContent(fixContentIDs(initialContent));
+	}, [initialContent]);
+
+	const swapContent = useCallback((src: number, dest: number) => {
+		setContent(prevContent => {
+			const newContent = Array.from(prevContent);
+			const [removed] = newContent.splice(src, 1);
+			newContent.splice(dest, 0, removed);
+			return newContent;
+		});
+	}, []);
+
+	const removeContent = useCallback((idx: number) => {
+		setContent(prevContent => prevContent.filter((_, i) => i !== idx));
+	}, []);
+
+	const appendContent = useCallback((newItem: T) => {
+		setContent(prevContent => {
+			const normalizedNewItem = fixContentIDs([newItem])[0];
+			return [...prevContent, normalizedNewItem];
+		});
+	}, []);
+
+	return {
+		content,
+		activeIndex,
+		setActiveIndex,
+		swapContent: swapEnabled ? swapContent : undefined,
+		removeContent: removeEnabled ? removeContent : undefined,
+		appendContent: appendContent
+	};
+}
 
 /**
  * @usage
@@ -22,18 +84,23 @@ import { useEffect, useRef } from "react";
  *
  * resetTargetIndex - set it to `() => setTargetIndex(nullptr)`
  */
-export function DraggableContentViewer<T extends { id: string }>({
+export function DraggableContentViewer<
+	T extends { id: string },
+	RenderProps extends Record<string, unknown> = Record<string, never>
+>({
 	content,
 	setActiveIndex,
 	targetIndex, // separate from activeIndex to avoid circle dependency
 	resetTargetIndex,
-	RenderContent
+	RenderContent,
+	renderProps
 }: {
 	content: T[];
 	setActiveIndex: (idx: number | undefined) => void;
 	targetIndex: number | undefined;
 	resetTargetIndex: () => void;
-	RenderContent: (props: { item?: T; index?: number }) => JSX.Element;
+	RenderContent: (props: { item?: T; index?: number } & RenderProps) => JSX.Element;
+	renderProps?: RenderProps;
 }) {
 	const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const visibleItemsRef = useRef<Set<number>>(new Set());
@@ -58,8 +125,6 @@ export function DraggableContentViewer<T extends { id: string }>({
 	};
 	useEffect(() => {
 		const remInPx = parseInt(getComputedStyle(document.documentElement).fontSize);
-		console.log(`${4 * remInPx}px 0px 0px 0px`);
-
 		const observer = new IntersectionObserver(
 			entries => {
 				entries.forEach(entry => {
@@ -97,7 +162,7 @@ export function DraggableContentViewer<T extends { id: string }>({
 	if (!content || content.length === 0) {
 		return (
 			<div>
-				<RenderContent />
+				<RenderContent {...(renderProps as RenderProps)} />
 			</div>
 		);
 	}
@@ -115,7 +180,7 @@ export function DraggableContentViewer<T extends { id: string }>({
 					// Scroll positioning fix because of website header
 					className="scroll-mt-16"
 				>
-					<RenderContent index={index} item={item} />
+					<RenderContent index={index} item={item} {...(renderProps as RenderProps)} />
 				</div>
 			))}
 		</div>
@@ -131,7 +196,7 @@ export function DraggableContentOutline<T extends { id: string }>({
 	RenderContent
 }: {
 	content: T[];
-	swapContent: (src: number, dest: number) => void;
+	swapContent?: (src: number, dest: number) => void;
 	removeContent?: (idx: number) => void;
 	activeIndex: number | undefined;
 	setTargetIndex: (idx: number) => void; // separate from activeIndex to avoid circle dependency
@@ -140,7 +205,7 @@ export function DraggableContentOutline<T extends { id: string }>({
 	return (
 		<DragDropContext
 			onDragEnd={result => {
-				if (result.reason !== "DROP" || !result.destination) return;
+				if (!swapContent || result.reason !== "DROP" || !result.destination) return;
 				swapContent(result.source.index, result.destination.index);
 			}}
 		>
@@ -153,7 +218,12 @@ export function DraggableContentOutline<T extends { id: string }>({
 					>
 						<div className="flex flex-col flex-no-wrap gap-4 min-w-max">
 							{content.map((item, index) => (
-								<Draggable key={item.id} draggableId={item.id} index={index}>
+								<Draggable
+									key={item.id}
+									draggableId={item.id}
+									index={index}
+									isDragDisabled={!swapContent}
+								>
 									{provided => (
 										<div
 											ref={provided.innerRef}
@@ -161,7 +231,9 @@ export function DraggableContentOutline<T extends { id: string }>({
 											{...provided.dragHandleProps}
 											className={`flex gap-5 text-nowrap flex-nowrap items-center ${activeIndex === index ? "text-secondary" : "text-light"}`}
 										>
-											<Bars3Icon className="h-5 text-light" />
+											{swapContent && (
+												<Bars3Icon className="h-5 text-light" />
+											)}
 											<span onClick={() => setTargetIndex(index)}>
 												<RenderContent item={item} />
 											</span>
@@ -197,20 +269,20 @@ export function DraggableContentSelector<T extends { id: string }>({
 	swapContent,
 	removeContent,
 	activeIndex,
-	selectContentIndex,
+	setTargetIndex,
 	RenderContent
 }: {
 	content: T[];
-	swapContent: (src: number, dest: number) => void;
+	swapContent?: (src: number, dest: number) => void;
 	removeContent?: (idx: number) => void;
 	activeIndex: number | undefined;
-	selectContentIndex: (idx: number) => void;
+	setTargetIndex: (idx: number) => void;
 	RenderContent: (props: { item?: T }) => JSX.Element;
 }) {
 	return (
 		<DragDropContext
 			onDragEnd={result => {
-				if (result.reason !== "DROP" || !result.destination) return;
+				if (!swapContent || result.reason !== "DROP" || !result.destination) return;
 				swapContent(result.source.index, result.destination.index);
 			}}
 		>
@@ -221,10 +293,15 @@ export function DraggableContentSelector<T extends { id: string }>({
 						{...provided.droppableProps}
 						className="overflow-auto"
 					>
-						<Tabs selectedIndex={activeIndex} onChange={selectContentIndex}>
+						<Tabs selectedIndex={activeIndex} onChange={setTargetIndex}>
 							<div className="flex flex-no-wrap gap-4 min-w-max">
 								{content.map((item, index) => (
-									<Draggable key={item.id} draggableId={item.id} index={index}>
+									<Draggable
+										key={item.id}
+										draggableId={item.id}
+										index={index}
+										isDragDisabled={!swapContent}
+									>
 										{provided => (
 											<div
 												ref={provided.innerRef}
@@ -236,7 +313,9 @@ export function DraggableContentSelector<T extends { id: string }>({
 														onRemove={() => removeContent(index)}
 													>
 														<div className="flex gap-5 items-center">
-															<Bars3Icon className="h-5 text-light" />
+															{swapContent && (
+																<Bars3Icon className="h-5 text-light" />
+															)}
 															<RenderContent item={item} />
 														</div>
 													</RemovableTab>
@@ -244,7 +323,9 @@ export function DraggableContentSelector<T extends { id: string }>({
 												{!removeContent && (
 													<Tab>
 														<div className="flex gap-5 items-center">
-															<Bars3Icon className="h-5 text-light" />
+															{swapContent && (
+																<Bars3Icon className="h-5 text-light" />
+															)}
 															<RenderContent item={item} />
 														</div>
 													</Tab>
@@ -254,21 +335,13 @@ export function DraggableContentSelector<T extends { id: string }>({
 									</Draggable>
 								))}
 								{(!content || content.length === 0) && (
-									<Draggable key={"null"} draggableId={"null"} index={0}>
-										{provided => (
-											<div
-												ref={provided.innerRef}
-												{...provided.draggableProps}
-												{...provided.dragHandleProps}
-												className={`flex gap-5 text-nowrap flex-nowrap items-center`}
-											>
-												<Bars3Icon className="h-5 text-light" />
-												<span>
-													<RenderContent />
-												</span>
-											</div>
-										)}
-									</Draggable>
+									<div
+										className={`flex gap-5 text-nowrap flex-nowrap items-center`}
+									>
+										<span>
+											<RenderContent />
+										</span>
+									</div>
 								)}
 							</div>
 						</Tabs>
