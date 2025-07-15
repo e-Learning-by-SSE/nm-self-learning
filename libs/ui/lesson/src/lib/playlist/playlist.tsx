@@ -213,8 +213,6 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 }
 
 function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
-	const router = useRouter();
-
 	const currentChapter = useMemo(() => {
 		for (const chapter of content) {
 			for (const les of chapter.content) {
@@ -227,20 +225,6 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 		return null;
 	}, [content, lesson]);
 
-	const { previous, next } = useMemo(() => {
-		const flatLessons = content.flatMap(chapter => chapter.content);
-		const lessonIndex = flatLessons.findIndex(l => l.lessonId === lesson.lessonId);
-
-		return {
-			previous: lessonIndex > 0 ? flatLessons[lessonIndex - 1] : null,
-			next: lessonIndex < flatLessons.length - 1 ? flatLessons[lessonIndex + 1] : null
-		};
-	}, [content, lesson]);
-
-	function navigateToLesson(lesson: PlaylistLesson) {
-		router.push(`/courses/${course.slug}/${lesson.slug}`);
-	}
-
 	return (
 		<div className="flex flex-col gap-4" data-testid="CurrentlyPlaying">
 			<span className="flex items-center gap-2 text-sm">
@@ -251,40 +235,6 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 				<span className="text-light">-</span>
 				<span className="overflow-hidden text-ellipsis whitespace-nowrap font-medium text-secondary">
 					{lesson.title}
-				</span>
-			</span>
-			<span className="flex justify-between">
-				{lesson.meta.hasQuiz && (
-					<Link
-						href={`/courses/${course.slug}/${lesson.slug}${
-							router.pathname.endsWith("quiz") ? "" : "/quiz"
-						}`}
-						className="btn-primary text-sm"
-						data-testid="quizLink"
-					>
-						{router.pathname.endsWith("quiz") ? "Zum Lernhinhalt" : "Zur Lernkontrolle"}
-					</Link>
-				)}
-
-				<span className="flex gap-2">
-					<button
-						onClick={() => previous && navigateToLesson(previous)}
-						disabled={!previous}
-						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
-						title="Vorherige Lerneinheit"
-						data-testid="previousLessonButton"
-					>
-						<ChevronDoubleLeftIcon className="h-5" />
-					</button>
-					<button
-						onClick={() => next && navigateToLesson(next)}
-						disabled={!next}
-						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
-						title="Nächste Lerneinheit"
-						data-testid="nextLessonButton"
-					>
-						<ChevronDoubleRightIcon className="h-5" />
-					</button>
 				</span>
 			</span>
 		</div>
