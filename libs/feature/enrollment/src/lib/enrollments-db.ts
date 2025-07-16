@@ -2,7 +2,7 @@ import { EnrollmentStatus } from "@prisma/client";
 import { getCourseCompletionOfStudent } from "@self-learning/completion";
 import { getCombinedCourses } from "@self-learning/course";
 import { createUserEvent, database } from "@self-learning/database";
-import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
+import { CourseCompletion, CourseEnrollment, ResolvedValue } from "@self-learning/types";
 import { AlreadyExists } from "@self-learning/util/http";
 
 export async function getEnrollmentDetails(username: string) {
@@ -37,13 +37,32 @@ export async function getEnrollmentDetails(username: string) {
 		}
 	});
 
+	const enrollmentCourseMapped = enrollments.map(enrollment => ({
+		...enrollment,
+		course: enrollment.course ??
+			enrollment.dynCourse ?? {
+				title: "Unknown Course",
+				slug: "unknown-course",
+				imgUrl: "",
+				authors: []
+			}
+	}));
+
 	const enrollmentsWithDetails = await Promise.all(
-		enrollments.map(async enrollment => {
-			const courseObj = enrollment.course ?? enrollment.dynCourse;
+		enrollmentCourseMapped.map(async enrollment => {
+			const courseObj = enrollment.course;
 			const courseSlug = courseObj?.slug;
-			const completions = courseSlug
+			const completions: CourseCompletion = courseSlug
 				? await getCourseCompletionOfStudent(courseSlug, username)
-				: [];
+				: {
+						courseCompletion: {
+							lessonCount: 0,
+							completedLessonCount: 0,
+							completionPercentage: 0
+						},
+						chapterCompletion: [],
+						completedLessons: {}
+					};
 
 			return {
 				...enrollment,
@@ -184,7 +203,7 @@ export async function disenrollUser({
 		courseId
 	});
 
-	if(!course || !course.length) {
+	if (!course || !course.length) {
 		throw new Error(`Course with ID ${courseId} not found.`);
 	}
 

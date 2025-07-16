@@ -1,7 +1,7 @@
 import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
-import { useLessonContext, ChapterName, LessonData, getCourse } from "@self-learning/lesson";
+import { useLessonContext, ChapterName, LessonData, getCombinedSmallCourse } from "@self-learning/lesson";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import {
@@ -21,7 +21,7 @@ import { ResolvedValue } from "@self-learning/types";
 
 export type QuestionProps = {
 	lesson: LessonData;
-	course?: ResolvedValue<typeof getCourse>;
+	course?: ResolvedValue<typeof getCombinedSmallCourse>;
 	quiz: Quiz;
 	markdown: {
 		questionsMd: MdLookup;

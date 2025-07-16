@@ -1,9 +1,8 @@
-import { Course } from "@prisma/client";
 import { LessonData } from "./lesson-data-access";
 import { CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getCourse, useLessonContext } from "@self-learning/lesson";
+import { getCombinedSmallCourse, useLessonContext } from "@self-learning/lesson";
 import { LessonMeta, ResolvedValue } from "@self-learning/types";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/common";
@@ -26,7 +25,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 export type LessonProps = {
 	lesson: LessonData;
-	course?: ResolvedValue<typeof getCourse>;
+	course?: ResolvedValue<typeof getCombinedSmallCourse>;
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
