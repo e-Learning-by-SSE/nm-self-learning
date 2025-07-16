@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { Bars3Icon, ChevronDownIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { LessonFormModel } from "@self-learning/teaching";
 import {
 	CONTENT_TYPES,
@@ -11,7 +11,8 @@ import {
 	DropdownMenu,
 	SectionHeader,
 	SectionCard,
-	useIsFirstRender
+	useIsFirstRender,
+	XButton
 } from "@self-learning/ui/common";
 import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -190,13 +191,34 @@ function LessonContentOutlineHeader({
 }
 
 function ContentOutlineTab({
-	item
+	item,
+	swappable,
+	remove,
+	select,
+	active
 }: {
 	item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
+	swappable?: boolean;
+	remove?: () => void;
+	select?: () => void;
+	active?: boolean;
 }) {
 	return (
 		<>
-			{item && getContentTypeDisplayName(item.type)}
+			{item && (
+				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center rounded-lg border border-light-border bg-white text-sm p-2">
+					{swappable && <Bars3Icon className="h-5 text-light" />}
+					<span
+						className={`w-full ${active ? "text-secondary" : "text-light"}`}
+						onClick={select}
+					>
+						{getContentTypeDisplayName(item.type)}
+					</span>
+					{remove && (
+						<XButton onClick={remove} title="Entfernen" className="flex items-center" />
+					)}
+				</div>
+			)}
 			{!item && "Kein Inhalt"}
 		</>
 	);
@@ -209,10 +231,10 @@ export function LessonContentEditor() {
 
 	// Helper to utilize scroll into view
 	const [targetTabIndex, setTargetTabIndex] = useState<number | undefined>(undefined);
+	const [isOutlineOpen, setIsOutlineOpen] = useState(false);
 
 	return (
-		// xl:grid-cols-[1fr_300px]
-		<div className="grid w-full gap-8 lg:grid-cols-[1fr_300px]">
+		<div className="w-full lg:grid lg:grid-cols-[1fr_300px] gap-8">
 			{/* overflow is hidden so the draggable area can scroll */}
 			<div className="w-full overflow-hidden flex flex-col gap-8 mb-8">
 				<div className="">
@@ -227,14 +249,28 @@ export function LessonContentEditor() {
 					RenderContent={RenderContentType}
 				/>
 			</div>
-			<div className="bg-gray-100 w-full h-full border-l">
+			<div
+				className="w-full sticky bottom-0
+				max-h-[35vh] lg:max-h-none 
+				border-t lg:border-t-0 lg:border-l border-l-0 
+			  lg:bg-white bg-gray-100 
+				shadow-[0_-6px_6px_-4px_rgba(0,0,0,0.1)] lg:shadow-none"
+			>
 				<div
-					className="fixed z-4 overflow-y-auto 
-				bottom-0 left-0 right-0 lg:top-28
-				lg:left-auto lg:w-72 lg:max-h-none lg:h-auto "
+					className="sticky z-4 overflow-y-auto 
+				bottom-0 lg:top-16 lg:max-h-none max-h-[35vh]
+				lg:left-auto lg:h-auto pl-8 pr-4"
 				>
-					<h2 className="text-xl text-center w-max ml-4 my-2">Inhalt</h2>
-					<div className="ml-6">
+					<h2
+						className="flex gap-4 text-xl text-center w-max my-4 cursor-pointer"
+						onClick={() => setIsOutlineOpen(prev => !prev)}
+					>
+						<ChevronDownIcon
+							className={`w-5 h-5 transition-transform duration-200 ${isOutlineOpen ? "rotate-0" : "-rotate-90"} lg:hidden`}
+						/>
+						Inhalt
+					</h2>
+					<div className={`${isOutlineOpen ? "" : "hidden"} lg:block`}>
 						<DraggableContentOutline
 							content={content}
 							swapContent={swapContent}

@@ -16,7 +16,7 @@ import { lessonSchema } from "@self-learning/types";
 import { GreyBoarderButton } from "@self-learning/ui/common";
 import { LessonSkillManager } from "./lesson-skill-manager";
 
-export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
+export function LessonInfoEditor() {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -28,12 +28,6 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 
 	return (
 		<Form.SidebarSection>
-			<div>
-				<span className="font-semibold text-secondary">Lerneinheit editieren</span>
-
-				<h1 className="text-2xl">{lesson?.title}</h1>
-			</div>
-
 			<Form.SidebarSectionTitle
 				title="Daten"
 				subtitle="Informationen über diese Lerneinheit"
