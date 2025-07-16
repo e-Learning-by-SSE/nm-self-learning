@@ -7,7 +7,6 @@ import {
 	dispatchDialog,
 	freeDialog,
 	ImageOrPlaceholder,
-	RedButton,
 	showToast
 } from "@self-learning/ui/common";
 import { CenteredContainer, redirectToLogin, useRequiredSession } from "@self-learning/ui/layouts";
@@ -69,8 +68,7 @@ export function DeleteMeForm() {
 			<DialogHandler id="student-delete-form" />
 
 			<div className="mt-6 flex flex-col gap-4">
-				<RedButton
-					label="Nutzerdaten löschen"
+				<button
 					onClick={() => {
 						dispatchDialog(
 							<StudentDeleteInfoDialog
@@ -82,11 +80,12 @@ export function DeleteMeForm() {
 							"student-delete-form"
 						);
 					}}
-					className="w-full max-w-52"
-				/>
+					className="btn btn-danger w-full max-w-52"
+				>
+					Nutzerdaten löschen
+				</button>
 
-				<RedButton
-					label="Autorenprofil löschen"
+				<button
 					onClick={() => {
 						dispatchDialog(
 							<AuthorDeleteDialog
@@ -99,8 +98,10 @@ export function DeleteMeForm() {
 						);
 					}}
 					disabled={!user.isAuthor}
-					className="w-full max-w-52"
-				/>
+					className="btn btn-danger w-full max-w-52"
+				>
+					Autorenprofil löschen
+				</button>
 			</div>
 		</>
 	);

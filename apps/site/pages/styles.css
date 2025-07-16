@@ -98,40 +98,54 @@ video {
 	color: theme("colors.slate.800");
 }
 
-.btn {
-	@apply flex place-content-center items-center gap-2 rounded-lg px-8 py-2 text-sm font-semibold text-white transition-colors disabled:bg-opacity-25;
-}
-
-.btn-primary {
-	@apply flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25;
-}
-
-.btn-secondary {
-	@apply glass flex place-content-center items-center gap-2 rounded-lg py-2 px-8 text-sm font-semibold transition-colors hover:bg-opacity-90;
-}
-
-.btn-add {
-	@apply flex place-content-center items-center gap-4 rounded-lg border border-emerald-500 bg-transparent py-2 pl-4 pr-6 font-semibold text-emerald-600 transition-colors;
-}
-
-.btn-add:hover {
-	@apply bg-emerald-50;
-}
-
+/* Base button styles that all button variants inherit */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-tertiary,
 .btn-stroked {
-	@apply flex place-content-center items-center gap-2 rounded-lg border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
+	@apply flex place-content-center items-center rounded-lg gap-2 px-8 py-2 text-sm font-semibold transition-colors disabled:bg-opacity-25;
 }
 
-.btn-small {
-	@apply rounded border border-light-border p-1 disabled:text-slate-200;
+/* Primary button: green background, white text */
+.btn-primary {
+	@apply bg-emerald-500 text-white hover:bg-emerald-600;
 }
 
-.btn-small-highlight {
-	@apply p-1 disabled:text-slate-200 bg-emerald-500 text-white hover:bg-emerald-700 gap-2 rounded-lg px-2 py-2;
+/* Secondary button: green outline, green text */
+.btn-secondary {
+	@apply border border-emerald-500 bg-transparent text-emerald-600 hover:bg-emerald-50;
 }
 
-.btn-icon {
-	@apply h-fit rounded-lg border border-light-border bg-white px-2 py-2;
+/* Danger button: red background, white text */
+.btn-danger {
+	@apply bg-red-500 text-white hover:bg-red-600;
+}
+
+/* Tertiary button: gray outline, gray text (previously border button) */
+.btn-tertiary {
+	@apply border border-gray-200 bg-transparent text-black hover:bg-slate-50;
+}
+
+/* Stroked button: Gray outline, white background, black text  */
+.btn-stroked {
+	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
+}
+
+/* X Mark Button: Text Gray, Hover Gray  */
+.btn-x-mark {
+	@apply rounded-full text-gray-400 hover:bg-gray-50 hover:text-red-500 p-1;
+}
+
+/* Icon button with text that can be hidden on mobile */
+.btn-with-icon {
+	@apply flex items-center justify-center gap-2 py-2 px-4;
+}
+
+/* Icon-only buttons (no border when only icon is shown) */
+.btn-icon-only {
+	@apply border-0 p-2;
 }
 
 .icon {

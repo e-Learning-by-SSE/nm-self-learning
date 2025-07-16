@@ -5,21 +5,18 @@ import { QuestionTypeForm } from "../../base-question";
 import { ArrangeItem, ArrangeQuestion } from "./schema";
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
 import {
-	PlusButton,
-	TrashcanButton,
 	Dialog,
 	DialogActions,
 	Divider,
-	PencilButton,
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
-	XButton,
 	IconButton,
-	Toggle
+	Toggle,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
@@ -158,17 +155,23 @@ export default function ArrangeForm({ index }: { index: number }) {
 										<span className="flex items-center justify-between gap-4 font-semibold">
 											<span>{containerId}</span>
 											<div className="flex gap-2">
-												<PencilButton
+												<IconOnlyButton
+													icon={<PencilIcon className="h-5 w-5" />}
+													variant="tertiary"
 													onClick={() =>
 														setEditCategoryDialog(containerId)
 													}
 													title={"Kategorie editieren"}
 												/>
-												<PlusButton
+												<IconOnlyButton
+													icon={<PlusIcon className="h-5 w-5"/>}
+													variant = "primary"
 													onClick={() => setEditItemDialog({ containerId })}
 													title={"Element hinzufügen"}
 												/>
-												<TrashcanButton
+												<IconOnlyButton
+													icon={<TrashIcon className="h-5 w-5" />}
+													variant = "danger" 
 													onClick={() => onDeleteContainer(containerId)}
 													title={"Kategorie entfernen"}
 												/>
@@ -229,7 +232,9 @@ function DraggableContent({
 					className="flex h-fit w-fit flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
 				>
 					<div className="flex justify-end gap-2">
-						<PencilButton
+						<IconOnlyButton
+							icon={<PencilIcon className="h-5 w-5" />}
+							variant="tertiary"
 							onClick={() =>
 								setEditItemDialog({
 									containerId,
@@ -239,7 +244,9 @@ function DraggableContent({
 							title={"Editieren"}
 						/>
 
-						<XButton
+						<IconOnlyButton
+							icon={<XMarkIcon className="h-5 w-5" />}
+							variant="x-mark"
 							onClick={() => onDeleteItem(containerId, item.id)}
 							title="Löschen"
 						/>
