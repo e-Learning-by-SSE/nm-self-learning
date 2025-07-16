@@ -2,7 +2,7 @@
 
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import { RemovableTab, Tab, Tabs, XButton } from "@self-learning/ui/common";
+import { RemovableTab, Tab, Tabs } from "@self-learning/ui/common";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type DraggableItem<T> = T & { id: string };
@@ -200,7 +200,13 @@ export function DraggableContentOutline<T extends { id: string }>({
 	removeContent?: (idx: number) => void;
 	activeIndex: number | undefined;
 	setTargetIndex: (idx: number) => void; // separate from activeIndex to avoid circle dependency
-	RenderContent: (props: { item?: T }) => JSX.Element;
+	RenderContent: (props: {
+		item?: T;
+		swappable?: boolean;
+		remove?: () => void;
+		select?: () => void;
+		active?: boolean;
+	}) => JSX.Element;
 }) {
 	return (
 		<DragDropContext
@@ -216,7 +222,7 @@ export function DraggableContentOutline<T extends { id: string }>({
 						{...provided.droppableProps}
 						className="overflow-y-auto"
 					>
-						<div className="flex flex-col flex-no-wrap gap-4 min-w-max">
+						<div className="flex flex-col flex-no-wrap min-w-max">
 							{content.map((item, index) => (
 								<Draggable
 									key={item.id}
@@ -229,21 +235,16 @@ export function DraggableContentOutline<T extends { id: string }>({
 											ref={provided.innerRef}
 											{...provided.draggableProps}
 											{...provided.dragHandleProps}
-											className={`flex gap-5 text-nowrap flex-nowrap items-center ${activeIndex === index ? "text-secondary" : "text-light"}`}
 										>
-											{swapContent && (
-												<Bars3Icon className="h-5 text-light" />
-											)}
-											<span onClick={() => setTargetIndex(index)}>
-												<RenderContent item={item} />
-											</span>
-											{removeContent && (
-												<XButton
-													onClick={() => removeContent(index)}
-													title="Entfernen"
-													className="flex items-center"
-												/>
-											)}
+											<RenderContent
+												item={item}
+												swappable={!!swapContent}
+												remove={
+													removeContent && (() => removeContent(index))
+												}
+												select={() => setTargetIndex(index)}
+												active={activeIndex === index}
+											/>
 										</div>
 									)}
 								</Draggable>
