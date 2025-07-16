@@ -1,11 +1,11 @@
 import { useDiaryPage, useDiaryPageRouter } from "@self-learning/diary";
-import { formatDateString, formatDateStringFull } from "@self-learning/util/common";
-import { isThisMonth, isThisWeek, isToday, format, parse } from "date-fns";
-import Link from "next/link";
-import { PagesMeta } from "../access-learning-diary";
-import { LearningDiaryEntryStatusBadge } from "../status-badge";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
+import { formatDateString, formatDateStringFull } from "@self-learning/util/common";
+import { format, isThisMonth, isThisWeek, isToday, parse } from "date-fns";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { PagesMeta } from "../access-learning-diary";
+import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "../status-badge";
 
 function categorizePagesIntoGroups(pages: PagesMeta) {
 	const fromToday: PagesMeta = [];
@@ -170,11 +170,16 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 
 	return (
 		<aside
-			className="playlist-scroll sticky top-[61px]
-        w-full overflow-auto border-t border-r-gray-200
-        pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
+			className="sticky py-4 flex flex-col overflow-hidden top-[61px]
+        w-full border-t border-r-gray-200
+        xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
 		>
-			<h2 className="text-2xl font-bold mt-4 mb-2">Lerntagebuch Seiten</h2>
+			<StatusBadgeInfo
+				header="Lerntagebuch Seiten"
+				className="mb-2"
+				headerStyles="font-bold text-2xl"
+			/>
+
 			<div className="max-h-full overflow-y-auto">
 				{Object.entries(categorizedPages).map(([label, pages]) => {
 					if (pages.length === 0) return null; // Skip empty sections

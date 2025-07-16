@@ -6,26 +6,25 @@ import {
 } from "@self-learning/question-types";
 import { Quiz } from "@self-learning/quiz";
 import {
-	PlusButton,
-	TrashcanButton,
 	Divider,
+	DropdownMenu,
+	PlusButton,
 	RemovableTab,
 	SectionHeader,
 	Tabs,
-	DropdownButton
+	TrashcanButton
 } from "@self-learning/ui/common";
 import { LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { getRandomId } from "@self-learning/util/common";
 import { Reorder } from "framer-motion";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
-import { PencilIcon } from "@heroicons/react/24/solid";
 
 type QuizForm = { quiz: Quiz };
 
 export function useQuizEditorForm() {
-	const { control, register, setValue } = useFormContext<QuizForm>();
+	const { control, register, setValue, getValues } = useFormContext<QuizForm>();
 	const {
 		append,
 		remove,
@@ -38,6 +37,16 @@ export function useQuizEditorForm() {
 
 	const [questionIndex, setQuestionIndex] = useState<number>(quiz.length > 0 ? 0 : -1);
 	const currentQuestion = quiz[questionIndex];
+	const questionOrder = useWatch({ control, name: "quiz.questionOrder" });
+	const orderedQuestions = useMemo(() => {
+		if (!questionOrder || questionOrder.length === 0) return quiz;
+
+		const ordered = questionOrder
+			.map(id => quiz.find(q => q.questionId === id))
+			.filter((q): q is NonNullable<typeof q> => !!q);
+
+		return ordered;
+	}, [quiz, questionOrder]);
 
 	function appendQuestion(type: QuestionType["type"]) {
 		const initialConfigFn = INITIAL_QUESTION_CONFIGURATION_FUNCTIONS[type];
@@ -46,17 +55,29 @@ export function useQuizEditorForm() {
 			console.error("No initial configuration function found for question type", type);
 			return;
 		}
-		append(initialConfigFn());
+		const newQuestion = initialConfigFn();
 
+		if (!newQuestion.questionId) {
+			console.error("InitialConfigFn did not return a questionId!", { newQuestion });
+			throw new Error("Invalid question: missing questionId");
+		}
+		append(newQuestion);
+		setValue("quiz.questionOrder", [
+			...(getValues("quiz.questionOrder") ?? []),
+			newQuestion.questionId
+		]);
 		setQuestionIndex(quiz.length);
 	}
 
 	function removeQuestion(index: number) {
 		const confirm = window.confirm("Aufgabe entfernen?");
-
+		const removedId = quiz[index].questionId;
 		if (confirm) {
 			remove(index);
-
+			setValue(
+				"quiz.questionOrder",
+				(getValues("quiz.questionOrder") ?? []).filter(id => id !== removedId)
+			);
 			if (index === questionIndex) {
 				setQuestionIndex(quiz.length - 2); // set to last index or -1 if no questions exist
 			}
@@ -64,6 +85,12 @@ export function useQuizEditorForm() {
 	}
 
 	function setQuiz(questions: QuizForm["quiz"]["questions"]) {
+		setValue("quiz.questions", questions);
+		setValue(
+			"quiz.questionOrder",
+			questions.map(q => q.questionId)
+		);
+
 		const currentQuestionIndex = questions.findIndex(
 			question => question.questionId === currentQuestion?.questionId
 		);
@@ -85,7 +112,8 @@ export function useQuizEditorForm() {
 		setQuestionIndex,
 		currentQuestion,
 		appendQuestion,
-		removeQuestion
+		removeQuestion,
+		orderedQuestions
 	};
 }
 
@@ -98,7 +126,8 @@ export function QuizEditor() {
 		setQuestionIndex,
 		currentQuestion,
 		appendQuestion,
-		removeQuestion
+		removeQuestion,
+		orderedQuestions
 	} = useQuizEditorForm();
 
 	return (
@@ -109,30 +138,26 @@ export function QuizEditor() {
 					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lerneinheit
 					erfolgreich abzuschließen."
 				button={
-					<DropdownButton
-						title="Aufgabentyp hinzufügen"
-						backgroundColor={"btn-primary"}
-						hover={"hover:bg-emerald-700"}
-						chevronColor={"text-white"}
+					<DropdownMenu
+						title="Aufgabe erstellen"
+						button={
+							<div className="btn-primary">
+								<span className="font-semibold text-white">Aufgabe erstellen</span>
+							</div>
+						}
 					>
-						<span className={"text-white"}>Aufgabe Hinzufügen</span>
-						<div className={"bg-white"}>
-							{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
-								<Button
-									title={"Aufgabe Hinzufügen"}
-									onClick={() => appendQuestion(type as QuestionType["type"])}
-									key={type as QuestionType["type"]}
-									className={
-										"hover:bg-secondary hover:text-white border rounded-md p-2 w-full"
-									}
-								>
-									<span>
-										{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
-									</span>
-								</Button>
-							))}
-						</div>
-					</DropdownButton>
+						{Object.keys(QUESTION_TYPE_DISPLAY_NAMES).map(type => (
+							<Button
+								key={type}
+								type={"button"}
+								title="Aufgabentyp Hinzufügen"
+								className={"w-full text-left px-3 py-1"}
+								onClick={() => appendQuestion(type as QuestionType["type"])}
+							>
+								{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
+							</Button>
+						))}
+					</DropdownMenu>
 				}
 			/>
 
@@ -141,7 +166,7 @@ export function QuizEditor() {
 			{questionIndex >= 0 && (
 				<Reorder.Group values={quiz} onReorder={setQuiz} axis="x" className="w-full">
 					<Tabs selectedIndex={questionIndex} onChange={index => setQuestionIndex(index)}>
-						{quiz.map((value, index) => (
+						{orderedQuestions.map((value, index) => (
 							<Reorder.Item
 								as="div"
 								value={value}
@@ -349,7 +374,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
 
-				<PlusButton onAdd={addHint} title={"Hinweis Hinzufügen"} />
+				<PlusButton onClick={addHint} title={"Hinweis Hinzufügen"} />
 			</div>
 
 			<p className="text-sm text-light">

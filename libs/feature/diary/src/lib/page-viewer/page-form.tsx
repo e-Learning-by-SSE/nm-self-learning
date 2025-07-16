@@ -8,7 +8,7 @@ import {
 	learningDiaryPageSchema
 } from "@self-learning/types";
 import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
-import { isTruthy } from "@self-learning/util/common";
+import { IdSet, isTruthy } from "@self-learning/util/common";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
@@ -21,6 +21,7 @@ import {
 import { DiaryLearnedContent } from "./page-details";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
+import { convertLearningGoal } from "../util/types";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -39,19 +40,7 @@ function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | u
 					defaultLocation: false
 				}
 			: undefined,
-		learningGoals:
-			pageDetails.learningGoals?.map(goal => ({
-				id: goal.id,
-				description: goal.description,
-				status: goal.status,
-				learningSubGoals: goal.learningSubGoals.map(subGoal => ({
-					id: subGoal.id,
-					description: subGoal.description,
-					priority: subGoal.priority,
-					status: subGoal.status,
-					learningGoalId: goal.id // rename
-				}))
-			})) ?? undefined,
+		learningGoals: pageDetails.learningGoals.map(convertLearningGoal),
 		techniqueRatings:
 			pageDetails.techniqueRatings?.map(rating => ({
 				id: rating.technique.id,
@@ -231,7 +220,7 @@ export function DiaryContentForm({
 							control={form.control}
 							render={({ field }) => (
 								<LearningGoalInputTile
-									goals={field.value ?? []}
+									goals={new IdSet(field.value ?? [])}
 									onChange={field.onChange}
 									isCompact={isCompact}
 								/>

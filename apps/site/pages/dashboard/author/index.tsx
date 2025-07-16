@@ -1,4 +1,4 @@
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { t, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -26,6 +26,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Specialization, Subject } from "@self-learning/types";
+import { LessonDeleteOption } from "@self-learning/ui/lesson";
+import { ExportCourseDialog } from "@self-learning/teaching";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -115,6 +117,8 @@ export default function Start(props: Props) {
 function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
 	const authorName = session.data?.user.name;
+
+	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
 		<div className="bg-gray-50">
@@ -234,9 +238,27 @@ function AuthorDashboardPage({ author }: Props) {
 													<PencilIcon className="icon" />
 													<span>Bearbeiten</span>
 												</Link>
+												<div className="flex space-x-2">
+													<button
+														className="btn-stroked w-full text-right"
+														type="button"
+														onClick={() => setViewExportDialog(true)}
+													>
+														<ArrowDownTrayIcon className="w-5 h-5 icon" />
+														{"Export"}
+													</button>
+												</div>
 												<CourseDeleteOption slug={course.slug} />
 											</div>
 										</div>
+										{viewExportDialog && (
+											<ExportCourseDialog
+												course={course}
+												onClose={() => {
+													setViewExportDialog(false);
+												}}
+											/>
+										)}
 									</li>
 								))
 							)}
@@ -419,92 +441,6 @@ function LessonTaskbar({ lessonId }: { lessonId: string }) {
 	);
 }
 
-function LessonDeleteOption({ lessonId }: { lessonId: string }) {
-	const { mutateAsync: deleteLesson } = trpc.lesson.deleteLesson.useMutation();
-	const { data: linkedEntities, isLoading } = trpc.lesson.findLinkedLessonEntities.useQuery({
-		lessonId
-	});
-	const [showConfirmation, setShowConfirmation] = useState(false);
-
-	const handleDelete = async () => {
-		await deleteLesson({ id: lessonId });
-	};
-
-	const handleConfirm = () => {
-		handleDelete();
-		setShowConfirmation(false);
-	};
-
-	const handleCancel = () => {
-		setShowConfirmation(false);
-	};
-
-	// Don't show delete button -> Empty option
-	if (isLoading) {
-		return <></>;
-	}
-
-	return (
-		<>
-			<button
-				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
-				onClick={() => setShowConfirmation(true)}
-			>
-				<div className="ml-4">
-					<TrashIcon className="icon " />
-				</div>
-			</button>
-			{showConfirmation && (
-				<LessonDeletionDialog
-					handleCancel={handleCancel}
-					handleConfirm={handleConfirm}
-					linkedEntities={linkedEntities}
-				/>
-			)}
-		</>
-	);
-}
-
-function LessonDeletionDialog({
-	handleCancel,
-	handleConfirm,
-	linkedEntities
-}: {
-	handleCancel: () => void;
-	handleConfirm: () => void;
-	linkedEntities?: { slug: string; title: string }[];
-}) {
-	if (linkedEntities && linkedEntities.length > 0) {
-		return (
-			<Dialog title={"Löschen nicht möglich"} onClose={handleCancel}>
-				Lerneinheit kann nicht gelöscht werden, da sie in den folgenden Kursen Anwendung
-				findet:
-				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
-					{linkedEntities.map(course => (
-						<li key={course.slug}>
-							<Link href={`/courses/${course.slug}`} className="hover:text-secondary">
-								{course.title}
-							</Link>
-						</li>
-					))}
-				</ul>
-				<DialogActions onClose={handleCancel} />
-			</Dialog>
-		);
-	}
-
-	return (
-		<Dialog title={"Löschen"} onClose={handleCancel}>
-			Möchten Sie diese Lerneinheit wirklich löschen?
-			<DialogActions onClose={handleCancel}>
-				<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
-					Löschen
-				</button>
-			</DialogActions>
-		</Dialog>
-	);
-}
-
 function Lessons({ authorName }: { authorName: string }) {
 	const router = useRouter();
 	const { title = "", page = 1 } = router.query;
@@ -557,7 +493,7 @@ function Lessons({ authorName }: { authorName: string }) {
 							<tr key={lesson.lessonId}>
 								<TableDataColumn>
 									<Link
-										href={`/teaching/lessons/edit/${lesson.lessonId}`}
+										href={`/lessons/${lesson.slug}`}
 										className="font-medium hover:text-secondary"
 									>
 										{lesson.title}

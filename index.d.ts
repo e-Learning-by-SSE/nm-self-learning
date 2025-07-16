@@ -18,6 +18,7 @@ declare var process: {
 		PISTON_URL: string;
 		KEYCLOAK_ISSUER_URL: string;
 		KEYCLOAK_CLIENT_ID: string;
+		KEYCLOAK_PROVIDER_NAME: string | undefined;
 		NEXTAUTH_URL: string;
 		NEXTAUTH_SECRET: string;
 		APP_VERSION: string;
