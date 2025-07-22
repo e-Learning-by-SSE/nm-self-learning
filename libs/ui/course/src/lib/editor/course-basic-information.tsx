@@ -13,6 +13,7 @@ import { AuthorsForm } from "libs/feature/teaching/src/lib/author/authors-form";
 import { GreyBoarderButton, ImageOrPlaceholder, showToast } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { LessonSkillManager } from "libs/feature/teaching/src/lib/lesson/forms/lesson-skill-manager";
 
 type Props = {
 	onCourseCreated: (courseId: string, selectors: string[]) => void;
@@ -84,7 +85,7 @@ export function CourseBasicInformation({ onCourseCreated }: Props) {
 					<BasicInfo />
 				</div>
 				<div>
-					<Skills></Skills>
+					<LessonSkillManager />
 				</div>
 			</form>
 		</FormProvider>
@@ -333,18 +334,3 @@ function SpecializationDropDown({
 		</div>
 	);
 }
-
-function Skills() {
-	const [openDialog, setDialogOpen] = useState(false);
-
-	const closeRepoDialog = () => {
-		setDialogOpen(false);
-	};
-	return <>TODO</>;
-}
-/*
-const CourseSkillManager = () => {
-	return <SkillManager<RelaxedCourseFormModel> />;
-};
-
-*/

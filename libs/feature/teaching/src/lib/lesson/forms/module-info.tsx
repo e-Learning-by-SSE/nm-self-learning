@@ -13,9 +13,13 @@ import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { SkillFormModel } from "@self-learning/types";
 import { GreyBoarderButton } from "@self-learning/ui/common";
-import { LessonSkillManager } from "./lesson-skill-manager";
+import { LessonSkillManagerDragDrop } from "./lesson-skill-manager-dragdrop";
 
-export function ModuleInfoEditor({ addSkills }: { addSkills: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void }) {
+export function ModuleInfoEditor({
+	addSkills
+}: {
+	addSkills: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void;
+}) {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -49,7 +53,11 @@ export function ModuleInfoEditor({ addSkills }: { addSkills: (skillsToAdd: Skill
 							/>
 						}
 						button={
-							<GreyBoarderButton type="button" onClick={slugifyField} title={"Generiere Slug"}>
+							<GreyBoarderButton
+								type="button"
+								onClick={slugifyField}
+								title={"Generiere Slug"}
+							>
 								<span className={"text-gray-600"}>Generieren</span>
 							</GreyBoarderButton>
 						}
@@ -73,7 +81,7 @@ export function ModuleInfoEditor({ addSkills }: { addSkills: (skillsToAdd: Skill
 								setValue={field.onChange}
 								inline={true}
 								placeholder={"1-2 Sätze welche diese Lerneinheit beschreibt."}
-                                className="h-20"
+								className="h-20"
 							/>
 						)}
 					></Controller>
@@ -101,7 +109,7 @@ export function ModuleInfoEditor({ addSkills }: { addSkills: (skillsToAdd: Skill
 					></Controller>
 				</LabeledField>
 
-                <hr className="ml-3 flex flex-col gap-4 border-light-border py-4" />
+				<hr className="ml-3 flex flex-col gap-4 border-light-border py-4" />
 
 				<AuthorsForm
 					subtitle="Autoren dieser Lerneinheit."
@@ -110,7 +118,7 @@ export function ModuleInfoEditor({ addSkills }: { addSkills: (skillsToAdd: Skill
 
 				<LicenseForm />
 
-				<LessonSkillManager addSkills={addSkills}/>
+				<LessonSkillManagerDragDrop addSkills={addSkills} />
 			</div>
 		</Form.SidebarSection>
 	);

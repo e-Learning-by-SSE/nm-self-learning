@@ -6,7 +6,7 @@ import { useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
 import { Droppable } from "@hello-pangea/dnd";
 
-export function LabeledFieldSelectSkillsView({
+export function LabeledFieldSelectSkillsViewDragDrop({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
@@ -23,7 +23,7 @@ export function LabeledFieldSelectSkillsView({
 
 	return (
 		<Droppable droppableId={droppableId ? droppableId : "select-skills"}>
-			{(provided ) => (
+			{provided => (
 				<div ref={provided.innerRef} {...provided.droppableProps}>
 					<LabeledField label={label} button={null}>
 						<button
@@ -84,7 +84,7 @@ export function SelectSkillsView({
 	);
 }
 
-function SkillManagementComponent({
+export function SkillManagementComponent({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
