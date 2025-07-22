@@ -22,7 +22,8 @@ export const authorRouter = t.router({
 				username: true,
 				slug: true,
 				displayName: true,
-				imgUrl: true
+				imgUrl: true,
+				id: true
 			}
 		});
 	}),

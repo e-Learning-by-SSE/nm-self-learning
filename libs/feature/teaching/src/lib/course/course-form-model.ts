@@ -129,6 +129,7 @@ export function mapCourseFormToUpdate(
 
 	return courseForDb;
 }
+
 export function createEmptyCourseFormModel(): CourseFormModel {
 	return {
 		courseId: null,

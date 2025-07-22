@@ -1,43 +1,52 @@
-import { authOptions } from "@self-learning/api";
-import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
-import { CourseBasicInformation, CourseSkillView, CoursePreview } from "@self-learning/ui/course";
-import CourseModuleView from "libs/ui/course/src/lib/editor/course-module-view";
+import { LoadingBox, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
+import {
+	CourseBasicInformation,
+	CourseSkillView,
+	CourseModuleView,
+	CoursePreview
+} from "@self-learning/ui/course";
 import { GetServerSideProps } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { useRequiredSession } from "@self-learning/ui/layouts";
+import { withAuth, withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { useRef, useState } from "react";
 
-export const getServerSideProps: GetServerSideProps = async ctx => {
-	const session = await unstable_getServerSession(ctx.req, ctx.res, authOptions);
+export const getServerSideProps: GetServerSideProps = withTranslations(["common"], context => {
+	return withAuth(async (ctx, user) => {
+		if (user.role !== "ADMIN" && !user.isAuthor) {
+			return {
+				redirect: {
+					destination: "/403",
+					permanent: false
+				}
+			};
+		}
 
-	if (!session) {
 		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
-			}
+			props: {}
 		};
-	}
-
-	if (session.user.role !== "ADMIN" && !session.user.isAuthor) {
-		return {
-			redirect: {
-				destination: "/403",
-				permanent: false
-			}
-		};
-	}
-
-	return {
-		props: {}
-	};
-};
+	})(context);
+});
 
 export default function CourseCreationEditor() {
 	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
+	const session = useRequiredSession();
+	const username = session.data?.user.name;
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const prevIndexRef = useRef<number>(0);
 	const [courseId, setCourseId] = useState<string>("");
 	const [selectors, setSelectors] = useState<string[]>([]);
+	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({
+		username: username ?? ""
+	});
+
+	if (isLoading) {
+		<LoadingBox />;
+	}
+
+	if (!author) {
+		return <div>Author Missing</div>;
+	}
 
 	async function switchTab(newIndex: number) {
 		if (newIndex > 0 && !courseId) {
@@ -60,9 +69,9 @@ export default function CourseCreationEditor() {
 					/>
 				);
 			case 1:
-				return <CourseSkillView />;
+				return <CourseSkillView authorId={author.id} />;
 			case 2:
-				return <CourseModuleView courseId={courseId} selectors={selectors} />;
+				return <CourseModuleView authorId={author.id}/>
 			case 3:
 				return <CoursePreview />;
 			default:
