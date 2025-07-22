@@ -36,16 +36,21 @@ export default function CourseCreationEditor() {
 	const prevIndexRef = useRef<number>(0);
 	const [courseId, setCourseId] = useState<string>("");
 	const [selectors, setSelectors] = useState<string[]>([]);
-	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({
-		username: username ?? ""
-	});
+	const { data: author, isLoading } = trpc.author.getByUsername.useQuery(
+		{
+			username: username ?? ""
+		},
+		{
+			enabled: !!username?.trim()
+		}
+	);
 
 	if (isLoading) {
 		<LoadingBox />;
 	}
 
 	if (!author) {
-		return <div>Author Missing</div>;
+		return <div>Author missing</div>;
 	}
 
 	async function switchTab(newIndex: number) {
@@ -71,7 +76,7 @@ export default function CourseCreationEditor() {
 			case 1:
 				return <CourseSkillView authorId={author.id} />;
 			case 2:
-				return <CourseModuleView authorId={author.id}/>
+				return <CourseModuleView authorId={author.id} />;
 			case 3:
 				return <CoursePreview />;
 			default:

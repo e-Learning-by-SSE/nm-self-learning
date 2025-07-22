@@ -1,8 +1,4 @@
-import {
-	RelaxedCourseFormModel,
-	relaxedCourseFormSchema,
-	SkillManager
-} from "@self-learning/teaching";
+import { RelaxedCourseFormModel, relaxedCourseFormSchema } from "@self-learning/teaching";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useEffect, useState } from "react";
 import {
@@ -11,25 +7,12 @@ import {
 	Upload,
 	useSlugify,
 	FieldHint,
-	MarkdownField,
-	Form
+	MarkdownField
 } from "@self-learning/ui/forms";
 import { AuthorsForm } from "libs/feature/teaching/src/lib/author/authors-form";
-import {
-	Dialog,
-	DialogActions,
-	getButtonSizeClass,
-	GreyBoarderButton,
-	IconButton,
-	ImageOrPlaceholder,
-	showToast
-} from "@self-learning/ui/common";
+import { GreyBoarderButton, ImageOrPlaceholder, showToast } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
-import { PlusIcon } from "@heroicons/react/24/solid";
-import { SkillRepositoryCreationModel, skillRepositoryCreationSchema } from "@self-learning/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useSession } from "next-auth/react";
 
 type Props = {
 	onCourseCreated: (courseId: string, selectors: string[]) => void;

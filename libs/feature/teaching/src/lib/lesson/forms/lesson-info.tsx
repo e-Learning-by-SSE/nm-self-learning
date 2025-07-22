@@ -1,4 +1,4 @@
-import { LicenseForm, SkillManager } from "@self-learning/teaching";
+import { LicenseForm } from "@self-learning/teaching";
 import {
 	FieldHint,
 	Form,
@@ -14,6 +14,7 @@ import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { lessonSchema } from "@self-learning/types";
 import { GreyBoarderButton } from "@self-learning/ui/common";
+import { LessonSkillManager } from "./lesson-skill-manager";
 
 export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	const form = useFormContext<LessonFormModel>();
@@ -143,7 +144,3 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 		</Form.SidebarSection>
 	);
 }
-
-const LessonSkillManager = () => {
-	return SkillManager<LessonFormModel>();
-};

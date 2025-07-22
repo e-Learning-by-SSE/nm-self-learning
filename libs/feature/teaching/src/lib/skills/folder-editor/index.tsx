@@ -110,7 +110,7 @@ export function SkillFolderEditor({
 					/>
 				}
 			>
-				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles}/>}
+				{!!showCyclesDialog && <ShowCyclesDialog cycleParticipants={cycles} />}
 				<SkillFolderTable
 					skillDisplayData={skillDisplayData}
 					selectedSkill={selectedSkill}
