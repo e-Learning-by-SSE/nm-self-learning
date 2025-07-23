@@ -1,27 +1,28 @@
-import { LessonData } from "./lesson-data-access";
-import { CheckCircleIcon, PlayIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon, PencilIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
+import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { getCombinedSmallCourse, useLessonContext } from "@self-learning/lesson";
-import { LessonMeta, ResolvedValue } from "@self-learning/types";
-import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
-import { useEventLog } from "@self-learning/util/common";
-import Link from "next/link";
-import { useRouter } from "next/router";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
-import { trpc } from "@self-learning/api-client";
 import { CompiledMarkdown } from "@self-learning/markdown";
 import {
 	findContentType,
 	getContentTypeDisplayName,
 	includesMediaType,
-	LessonContent
+	LessonContent,
+	LessonMeta,
+	ResolvedValue
 } from "@self-learning/types";
 import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { MarkdownContainer } from "@self-learning/ui/layouts";
+import { MarkdownContainer, useRequiredSession } from "@self-learning/ui/layouts";
+import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
+import { useEventLog } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { LessonData } from "./lesson-data-access";
 
 export type LessonProps = {
 	lesson: LessonData;
@@ -204,6 +205,23 @@ export function ChapterName({
 	return <div className="font-semibold text-secondary min-h-[24px]">{chapterName}</div>;
 }
 
+function AuthorEditButton({ lesson }: { lesson: LessonProps["lesson"] }) {
+	const session = useRequiredSession();
+
+	if (session.data?.user.isAuthor || session.data?.user.role === "ADMIN") {
+		return (
+			<Link
+				href={`/teaching/lessons/edit/${lesson.lessonId}`}
+				className="btn-stroked h-fit xl:w-fit"
+			>
+				<PencilIcon className="h-6" />
+			</Link>
+		);
+	}
+
+	return null;
+}
+
 function LessonControls({
 	course,
 	lesson
@@ -219,6 +237,7 @@ function LessonControls({
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
+			<AuthorEditButton lesson={lesson} />
 			{hasQuiz && <LinkToQuiz url={url} />}
 
 			{!hasQuiz && !isCompletedLesson && (
@@ -239,6 +258,7 @@ function StandaloneLessonControls({ lesson }: { lesson: LessonProps["lesson"] })
 	const url = "lessons/" + lesson.slug;
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
+			<AuthorEditButton lesson={lesson} />
 			{hasQuiz && <LinkToQuiz url={url} />}
 		</div>
 	);

@@ -2,7 +2,7 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { LanguageTreeQuestion } from "./schema";
 import { ReactNode, useState } from "react";
-import { parseTree, TreeNode} from "./tree-parser";
+import { parseTree, TreeNode } from "./tree-parser";
 import { TreeVisualization } from "./tree-visualization";
 import { Dialog, DialogActions, PlusButton, Toggle } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
@@ -76,9 +76,14 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 						<Toggle
 							value={languageTree.customTextInputInParentNodes}
 							onChange={value =>
-								setValue(`quiz.questions.${index}.customTextInputInParentNodes`, value)
+								setValue(
+									`quiz.questions.${index}.customTextInputInParentNodes`,
+									value
+								)
 							}
-							label={"Erlaubt Freitexteingabe in Knoten mit untergeordneten Elementen"}
+							label={
+								"Erlaubt Freitexteingabe in Knoten mit untergeordneten Elementen"
+							}
 						/>
 					</div>
 				</div>
@@ -88,14 +93,16 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 						<h5 className="text-xl font-semibold">Anfängliche Baumstruktur</h5>
 						<PlusButton
 							additionalClassNames={`${initialTreeInput ? "invisible" : "visible"}`}
-							onAdd={addInitialTree}
+							onClick={addInitialTree}
 							title={"Struktur Hinzufügen"}
 						/>
 					</div>
 					<div className="flex justify-center w-full h-[150px] p-4">
 						{initialTreeInput ? (
-							<li className="flex items-center w-full rounded-lg border border-light-border h-10 bg-white  hover:cursor-pointer hover:bg-gray-100"
-							onClick={addInitialTree}>
+							<li
+								className="flex items-center w-full rounded-lg border border-light-border h-10 bg-white  hover:cursor-pointer hover:bg-gray-100"
+								onClick={addInitialTree}
+							>
 								<div className="flex w-full items-center justify-between px-4">
 									<div className="flex flex-col gap-1 hover:text-secondary">
 										<span className="truncate overflow-hidden whitespace-nowrap text-ellipsis">
@@ -115,7 +122,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
 						<h5 className="text-xl font-semibold">Antworten</h5>
-						<PlusButton onAdd={addAnswerTree} title={"Antwort Hinzufügen"} />
+						<PlusButton onClick={addAnswerTree} title={"Antwort Hinzufügen"} />
 					</div>
 					<div className="flex justify-center w-full min-h-[150px] max-h-[300px] overflow-y-auto">
 						{answerTreeInput.length > 0 ? (
@@ -124,9 +131,9 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 									<li
 										key={index}
 										className="flex items-start w-full justify-start rounded-lg border border-light-border bg-white p-2 hover:cursor-pointer hover:bg-gray-100"
-										onClick={(e) => {
+										onClick={e => {
 											// Prevent opening the dialog when clicking on the delete button
-											if ((e.target as HTMLElement).closest('button')) {
+											if ((e.target as HTMLElement).closest("button")) {
 												return; // Do nothing if the click is from the delete button
 											}
 											setEditDialog(
@@ -134,7 +141,9 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 													value={answer}
 													onClose={value => {
 														if (value) {
-															const newAnswerTreeInput = [...answerTreeInput];
+															const newAnswerTreeInput = [
+																...answerTreeInput
+															];
 															newAnswerTreeInput[index] = value;
 															setAnswerTreeInput(newAnswerTreeInput);
 															setValue(
@@ -247,7 +256,11 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 			</CenteredContainer>
 			<div className="mt-auto">
 				<DialogActions onClose={onClose}>
-					<button className="btn-primary" disabled={error!=null} onClick={() => onClose(treeValue)}>
+					<button
+						className="btn-primary"
+						disabled={error != null}
+						onClick={() => onClose(treeValue)}
+					>
 						Speichern
 					</button>
 				</DialogActions>

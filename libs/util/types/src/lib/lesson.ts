@@ -30,6 +30,7 @@ export const lessonSchema = z.object({
 	quiz: z
 		.object({
 			questions: z.array(z.any()),
+			questionOrder: z.array(z.string()),
 			config: z.any().nullable()
 		})
 		.nullable()

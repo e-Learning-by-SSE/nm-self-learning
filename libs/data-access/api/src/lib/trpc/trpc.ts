@@ -34,8 +34,11 @@ const isAuthorMiddleware = t.middleware(async ({ ctx, next }) => {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
 
-	if (ctx.user.isAuthor !== true) {
-		throw new TRPCError({ code: "FORBIDDEN", message: "Requires 'AUTHOR' role." });
+	if (!ctx.user.isAuthor && ctx.user.role !== "ADMIN") {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Requires 'AUTHOR' or 'ADMIN' role."
+		});
 	}
 
 	return next({ ctx: ctx as Required<Context> });

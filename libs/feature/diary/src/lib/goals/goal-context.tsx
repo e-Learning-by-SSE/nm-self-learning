@@ -1,9 +1,11 @@
-import { createContext, ReactNode, useContext } from "react";
-import { Goal, StatusUpdateCallback } from "../util/types";
+import { createContext, PropsWithChildren, useContext } from "react";
+import { GoalFormModel, StatusUpdateCallback } from "../util/types";
+import { IdSet } from "@self-learning/util/common";
 
 type LearningGoalContextType = {
-	userGoals: Goal[];
-	onStatusUpdate: StatusUpdateCallback;
+	userGoals: IdSet<GoalFormModel>;
+	onStatusUpdate?: StatusUpdateCallback;
+	onCreateGoal?: (parent?: GoalFormModel) => void;
 };
 
 const LearningGoalContext = createContext<LearningGoalContextType | undefined>(undefined);
@@ -16,20 +18,10 @@ export const useLearningGoalContext = () => {
 	return context;
 };
 
-type LearningGoalProviderProps = {
-	children: ReactNode;
-	userGoals: Goal[];
-	onStatusUpdate: StatusUpdateCallback;
-};
+type LearningGoalProviderProps = PropsWithChildren<LearningGoalContextType>;
 
-export const LearningGoalProvider = ({
-	children,
-	userGoals,
-	onStatusUpdate
-}: LearningGoalProviderProps) => {
+export const LearningGoalProvider = ({ children, ...rest }: LearningGoalProviderProps) => {
 	return (
-		<LearningGoalContext.Provider value={{ userGoals, onStatusUpdate }}>
-			{children}
-		</LearningGoalContext.Provider>
+		<LearningGoalContext.Provider value={{ ...rest }}>{children}</LearningGoalContext.Provider>
 	);
 };
