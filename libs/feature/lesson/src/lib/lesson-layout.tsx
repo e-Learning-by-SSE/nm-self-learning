@@ -29,6 +29,8 @@ type BaseLessonLayoutProps = {
 	title: string;
 	playlistArea: React.ReactNode;
 	children: React.ReactNode;
+	course?: ResolvedValue<typeof getCourse>;
+	lesson?: LessonData;
 };
 
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
@@ -112,15 +114,19 @@ function mapToPlaylistContent(
 	return playlistContent;
 }
 
-function BaseLessonLayout({ title, playlistArea, children, course, lesson }: BaseLessonLayoutProps & LessonLayoutProps) {
+function BaseLessonLayout({
+	title,
+	playlistArea,
+	children,
+	course,
+	lesson
+}: BaseLessonLayoutProps) {
 	return (
 		<>
 			<div className="xl:hidden">
-				<MobilePlaylistArea {...{ course, lesson }} />
+				{course && lesson && <MobilePlaylistArea course={course} lesson={lesson} />}
 				<div className="p-5 pt-8 bg-gray-100 pb-16">
-					<div className="w-full">
-						{children}
-					</div>
+					<div className="w-full">{children}</div>
 				</div>
 			</div>
 			<div className="hidden xl:block">
@@ -162,7 +168,11 @@ export function StandaloneLessonLayout(
 	const playlistArea = <StandaloneLessonPlaylistArea {...pageProps} />;
 
 	return (
-		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+		<BaseLessonLayout
+			title={pageProps.lesson.title}
+			playlistArea={playlistArea}
+			lesson={pageProps.lesson}
+		>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);
@@ -194,7 +204,6 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 	);
 }
 
-
 function StandaloneLessonPlaylistArea({ lesson }: StandaloneLessonLayoutProps) {
 	return (
 		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
@@ -202,9 +211,6 @@ function StandaloneLessonPlaylistArea({ lesson }: StandaloneLessonLayoutProps) {
 		</aside>
 	);
 }
-
-
-
 
 function MobilePlaylistArea(pageProps: LessonLayoutProps) {
 	const { data: content } = trpc.course.getContent.useQuery({ slug: pageProps.course.slug });
