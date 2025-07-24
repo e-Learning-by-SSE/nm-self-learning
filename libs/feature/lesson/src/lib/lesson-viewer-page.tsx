@@ -165,14 +165,20 @@ function MediaDisplay({
 
 	const { playlistRef } = useLessonLayout();
 
+	// If suppressed -> just follow user click
+	const tabUpdateSuppressRef = useRef<boolean>(false);
+
 	// The way to make it target the same pdf that was last selected in a tab
-	const prevIndexRef = useRef<number | undefined>(undefined);
 	useEffect(() => {
-		if (prevIndexRef.current !== undefined) {
-			setTargetIndex(openedMedia[prevIndexRef.current].content_id);
+		// if last tab was a PDF and no other Tab was selected -> go to that PDF
+		if (!tabUpdateSuppressRef.current && selectedIndex !== undefined) {
+			const idx = openedMedia[selectedIndex].content_id;
+			ctx.setActiveIndex(idx); // highlight it
+			setTargetIndex(idx); // make it jump
+		} else {
+			tabUpdateSuppressRef.current = false;
 		}
-		prevIndexRef.current = selectedIndex;
-	}, [selectedIndex, openedMedia]);
+	}, [selectedIndex, openedMedia, ctx]);
 
 	return (
 		<>
@@ -182,7 +188,13 @@ function MediaDisplay({
 						content={ctx.content}
 						swapContent={ctx.swapContent}
 						activeIndex={ctx.activeIndex}
-						setTargetIndex={setTargetIndex}
+						setTargetIndex={idx => {
+							// suppress all pdf tab activity if in pdf mode
+							tabUpdateSuppressRef.current = selectedIndex !== undefined;
+							// This is to allow navigation when DraggableContentViewer is not visible
+							setTargetIndex(idx);
+							ctx.setActiveIndex(idx);
+						}}
 						RenderContent={ContentTabItem}
 					/>,
 					playlistRef.current
@@ -276,7 +288,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 	}
 
 	return (
-		<article className="flex flex-col gap-4">
+		<article className="flex flex-col gap-4 h-full">
 			<LessonHeader
 				lesson={lesson}
 				course={course}
@@ -367,7 +379,7 @@ function LessonNavigation({
 	}
 
 	return (
-		<span className="flex gap-2 justify-between">
+		<span className="flex gap-2 justify-between mt-auto pt-4">
 			<button
 				onClick={() => previous && navigateToLesson(previous)}
 				disabled={!previous}

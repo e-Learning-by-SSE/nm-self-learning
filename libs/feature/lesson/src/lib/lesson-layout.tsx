@@ -121,7 +121,7 @@ function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutPro
 			<div className="flex flex-col bg-gray-100">
 				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
 					{playlistArea}
-					<div className="w-full pt-8 pb-16">{children}</div>
+					<div className="w-full pt-8 pb-8">{children}</div>
 				</div>
 			</div>
 		</LessonLayoutContext.Provider>
