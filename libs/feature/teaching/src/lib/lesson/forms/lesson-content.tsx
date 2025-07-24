@@ -235,11 +235,8 @@ export function LessonContentEditor() {
 
 	return (
 		<div className="w-full lg:grid lg:grid-cols-[1fr_300px] gap-8">
-			{/* overflow is hidden so the draggable area can scroll */}
 			<div className="w-full overflow-hidden flex flex-col gap-8 mb-8">
-				<div className="">
-					<LessonDescriptionForm />
-				</div>
+				<LessonDescriptionForm />
 				<LessonContentOutlineHeader addContent={addContent} />
 				<DraggableContentViewer
 					content={content}
