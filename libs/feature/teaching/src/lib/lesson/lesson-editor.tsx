@@ -1,7 +1,14 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import {
+	DialogActions,
+	GreyBoarderButton,
+	OnDialogCloseFn,
+	showToast,
+	Tab,
+	Tabs
+} from "@self-learning/ui/common";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -94,37 +101,35 @@ export function LessonEditor({
 		<FormProvider {...form}>
 			<form
 				id="lessonform"
-				onSubmit={form.handleSubmit(onSubmit, console.log)}
-				className="flex h-full flex-col overflow-hidden"
+				onSubmit={form.handleSubmit(onSubmit, error => {
+					console.log("EEE", error);
+				})}
+				className="flex flex-col w-full max-w-screen-xl mx-auto px-4"
 			>
-				<div className="flex h-full overflow-y-auto overflow-x-hidden">
-					<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-						<LessonInfoEditor lesson={initialLesson} />
-
-						<div>
-							<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-								<Tab>Lerninhalt</Tab>
-								<Tab>Lernkontrolle</Tab>
-							</Tabs>
-							{selectedTab === 0 && <LessonContentEditor />}
-							{selectedTab === 1 && <QuizEditor />}
-						</div>
+				<div className="flex justify-between mb-8">
+					<div className="flex flex-col gap-2">
+						<span className="font-semibold text-2xl text-secondary">
+							Lerneinheit editieren
+						</span>
+						<h1 className="text-4xl">{initialLesson?.title || "<Titel>"}</h1>
+					</div>
+					<div className="pointer-events-auto flex items-center gap-2">
+						<GreyBoarderButton>
+							<span className={"text-gray-600"}>Abbrechen</span>
+						</GreyBoarderButton>
+						<button type="submit" className="btn-primary pointer-events-auto">
+							Speichern
+						</button>
 					</div>
 				</div>
-
-				<div
-					className={`${
-						isFullScreen ? "fixed" : ""
-					} pointer-events-none bottom-0 flex w-full items-end justify-end`}
-				>
-					<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
-						<DialogActions onClose={onSubmit}>
-							<button type="submit" className="btn-primary pointer-events-auto">
-								Speichern
-							</button>
-						</DialogActions>
-					</div>
-				</div>
+				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+					<Tab>Lernangaben</Tab>
+					<Tab>Lerninhalt</Tab>
+					<Tab>Lernkontrolle</Tab>
+				</Tabs>
+				{selectedTab === 0 && <LessonInfoEditor />}
+				{selectedTab === 1 && <LessonContentEditor />}
+				{selectedTab === 2 && <QuizEditor />}
 			</form>
 		</FormProvider>
 	);

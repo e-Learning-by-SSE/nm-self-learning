@@ -1,28 +1,50 @@
-import { CheckCircleIcon, PencilIcon, PlayIcon } from "@heroicons/react/24/solid";
+import {
+	CheckCircleIcon,
+	ChevronDoubleLeftIcon,
+	ChevronDoubleRightIcon,
+	PencilIcon,
+	PlayIcon
+} from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getCourse, useLessonContext } from "@self-learning/lesson";
-import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
-import { CompiledMarkdown } from "@self-learning/markdown";
+import { getCourse, useLessonContext, useLessonLayout } from "@self-learning/lesson";
+import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
-	findContentType,
+	Article,
+	CourseContent,
 	getContentTypeDisplayName,
-	includesMediaType,
 	LessonContent,
+	LessonContentType,
 	LessonMeta,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList, LicenseChip, Tab, Tabs } from "@self-learning/ui/common";
+import {
+	AuthorsList,
+	LicenseChip,
+	SectionCard,
+	Tab,
+	Tabs,
+	RemovableTab
+} from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { MarkdownContainer, useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	DraggableContentOutline,
+	DraggableContentViewer,
+	MarkdownContainer,
+	useDraggableContent,
+	useRequiredSession
+} from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { LessonData } from "./lesson-data-access";
+import { Button } from "@headlessui/react";
+import { DocumentIcon } from "@heroicons/react/24/outline";
+import { createPortal } from "react-dom";
 
 export type LessonProps = {
 	lesson: LessonData;
@@ -34,35 +56,190 @@ export type LessonProps = {
 		subtitle: CompiledMarkdown | null;
 	};
 };
-function usePreferredMediaType(lesson: LessonProps["lesson"]) {
-	// Handle situations that content creator may created an empty lesson (to add content later)
-	const content = lesson.content as LessonContent;
-	const router = useRouter();
-
-	let preferredMediaType = content.length > 0 ? content[0].type : "video";
-
-	if (content.length > 0) {
-		const availableMediaTypes = content.map(c => c.type);
-
-		const { type: typeFromRoute } = router.query;
-		const typeFromStorage = loadFromLocalStorage("user_preferredMediaType");
-
-		const { isIncluded, type } = includesMediaType(
-			availableMediaTypes,
-			(typeFromRoute as string) ?? typeFromStorage
-		);
-
-		if (isIncluded) {
-			preferredMediaType = type;
-		}
+function ContentTabItem({
+	item,
+	select,
+	active
+}: {
+	item?: LessonContentType;
+	select?: () => void;
+	active?: boolean;
+}) {
+	return (
+		<>
+			{item && (
+				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center text-sm">
+					<span
+						className={`w-full ${active ? "text-secondary" : "text-light"}`}
+						onClick={select}
+					>
+						{getContentTypeDisplayName(item.type)}
+					</span>
+				</div>
+			)}
+			{!item && "Kein Inhalt"}
+		</>
+	);
+}
+function ContentDisplayItem({
+	item: c,
+	index,
+	lesson,
+	course,
+	addMediaDisplay
+}: {
+	item?: LessonContentType;
+	index?: number;
+	lesson: LessonProps["lesson"];
+	course: LessonProps["course"];
+	addMediaDisplay: (idx: number) => void;
+}) {
+	if (!c || index === undefined) {
+		return <ContentInfo text="Diese Lerneinheit hat keinen Inhalt." />;
 	}
-	return preferredMediaType;
+	switch (c.type) {
+		case "article":
+			return (
+				<div className="flex">
+					<div className="flex flex-wrap items-start">
+						<LessonArticle article={c} />
+					</div>
+				</div>
+			);
+		case "video":
+			if (!c.value.url) return <ContentInfo error text="Fehlende Video-URL." />;
+			return (
+				<div className="aspect-video w-full xl:max-h-[75vh]">
+					<VideoPlayer
+						parentLessonId={lesson.lessonId}
+						url={c.value.url}
+						courseId={course?.courseId}
+					/>
+				</div>
+			);
+		case "pdf":
+			if (!c.value.url) return <ContentInfo error text="missing PDF URL" />;
+			return (
+				<div className="flex items-center">
+					<Button onClick={() => addMediaDisplay(index)} className="btn-secondary">
+						<DocumentIcon className="h-6 w-6 text-primary" />
+						PDF öffnen
+					</Button>
+				</div>
+			);
+		default:
+			return <ContentInfo error text={`unsupported content type: ${c?.type}`} />;
+	}
+}
+
+function MediaDisplayHelper({ currentMedia }: { currentMedia: OpenedMediaInfo }) {
+	switch (currentMedia?.type) {
+		case "pdf":
+			if (!currentMedia.value.url) return <ContentInfo error text="missing PDF URL" />;
+			return (
+				<div className="h-[90vh] xl:h-[80vh]">
+					<PdfViewer url={currentMedia.value.url} />
+				</div>
+			);
+		default:
+			return <ContentInfo error text={`unsupported content type: ${currentMedia?.type}`} />;
+	}
+}
+
+function MediaDisplay({
+	lesson,
+	course,
+	selectedIndex,
+	openedMedia,
+	addMediaDisplay
+}: {
+	lesson: LessonProps["lesson"];
+	course: LessonProps["course"];
+	selectedIndex?: number;
+	openedMedia: OpenedMediaInfo[];
+	addMediaDisplay: (idx: number) => void;
+}) {
+	const lessonContent = lesson.content as LessonContent;
+	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
+	const ctx = useDraggableContent(lessonContent, false, false);
+
+	const { playlistRef } = useLessonLayout();
+
+	// If suppressed -> just follow user click
+	const tabUpdateSuppressRef = useRef<boolean>(false);
+
+	// The way to make it target the same pdf that was last selected in a tab
+	useEffect(() => {
+		// if last tab was a PDF and no other Tab was selected -> go to that PDF
+		if (!tabUpdateSuppressRef.current && selectedIndex !== undefined) {
+			const idx = openedMedia[selectedIndex].content_id;
+			ctx.setActiveIndex(idx); // highlight it
+			setTargetIndex(idx); // make it jump
+		} else {
+			tabUpdateSuppressRef.current = false;
+		}
+	}, [selectedIndex, openedMedia, ctx]);
+
+	return (
+		<>
+			{playlistRef?.current &&
+				createPortal(
+					<DraggableContentOutline
+						content={ctx.content}
+						swapContent={ctx.swapContent}
+						activeIndex={ctx.activeIndex}
+						setTargetIndex={idx => {
+							// suppress all pdf tab activity if in pdf mode
+							tabUpdateSuppressRef.current = selectedIndex !== undefined;
+							// This is to allow navigation when DraggableContentViewer is not visible
+							setTargetIndex(idx);
+							ctx.setActiveIndex(idx);
+						}}
+						RenderContent={ContentTabItem}
+					/>,
+					playlistRef.current
+				)}
+			{/* Display base content */}
+			{selectedIndex === undefined && (
+				<DraggableContentViewer
+					content={ctx.content}
+					setActiveIndex={ctx.setActiveIndex}
+					targetIndex={targetIndex}
+					resetTargetIndex={() => setTargetIndex(undefined)}
+					RenderContent={ContentDisplayItem}
+					renderProps={{ addMediaDisplay, lesson, course }}
+					gap={8}
+				/>
+			)}
+			{selectedIndex !== undefined && (
+				<MediaDisplayHelper currentMedia={openedMedia[selectedIndex]} />
+			)}
+		</>
+	);
+}
+// id is required by Draggable. Content id is required to map this to lesson.content pos
+type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };
+//
+type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
+type LessonNavigationItem = { slug: string; lessonId: string };
+type LessonNavigationData = LessonNavigationItem[];
+function extractNavigationInfo(
+	courseContent: CourseContent,
+	lessons: { [lessonId: string]: LessonInfo }
+): LessonNavigationData {
+	const tmp = courseContent.map(chapter => ({
+		content: chapter.content.map(lesson => {
+			const lessonInfo = lessons[lesson.lessonId] ?? {
+				slug: undefined,
+				lessonId: undefined
+			};
+			return lessonInfo;
+		})
+	}));
+	return tmp.flatMap(chapter => chapter.content);
 }
 export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
-
-	const { content: video } = findContentType("video", lesson.content as LessonContent);
-	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
 
 	const { newEvent } = useEventLog();
 	useEffect(() => {
@@ -75,7 +252,29 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 		});
 	}, [newEvent, lesson.lessonId, course?.courseId]);
 
-	const preferredMediaType = usePreferredMediaType(lesson);
+	const { data: temp } = course
+		? trpc.course.getContent.useQuery({ slug: course.slug })
+		: { data: undefined };
+	const courseContent = useMemo(
+		() => (!temp ? [] : extractNavigationInfo(temp.content, temp.lessonMap)),
+		[temp]
+	);
+	const lessonContent = lesson.content as LessonContent;
+	const INITIAL_PDF: OpenedMediaInfo[] = useMemo(
+		() =>
+			lessonContent
+				.map((m, idx) => ({
+					...m,
+					content_id: idx
+				}))
+				.filter(m => m.type === "pdf") as OpenedMediaInfo[],
+		[lessonContent]
+	);
+	const openedMedia = useDraggableContent(INITIAL_PDF, false, false);
+	const addMediaDisplay = (idx: number) => {
+		const existingIndex = openedMedia.content.findIndex(m => m.content_id === idx);
+		openedMedia.setActiveIndex(existingIndex);
+	};
 
 	if (showDialog && markdown.preQuestion) {
 		return (
@@ -89,21 +288,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 	}
 
 	return (
-		<article className="flex flex-col gap-4">
-			{preferredMediaType === "video" && (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
-					{video?.value.url ? (
-						<VideoPlayer
-							parentLessonId={lesson.lessonId}
-							url={video.value.url}
-							courseId={course?.courseId}
-						/>
-					) : (
-						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
-					)}
-				</div>
-			)}
-
+		<article className="flex flex-col gap-4 h-full">
 			<LessonHeader
 				lesson={lesson}
 				course={course}
@@ -111,18 +296,111 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 				mdSubtitle={markdown.subtitle}
 			/>
 
-			{preferredMediaType === "article" && markdown.article && (
-				<MarkdownContainer className="mx-auto w-full pt-4">
-					<MDXRemote {...markdown.article} />
-				</MarkdownContainer>
-			)}
+			{/* TODO can be replaced with DraggableContentSelector, make Inhalt default and immutable */}
+			<MediaSelector
+				lesson={lesson}
+				course={course}
+				selectedIndex={openedMedia.activeIndex}
+				setSelectedIndex={openedMedia.setActiveIndex}
+				openedMedia={openedMedia.content}
+			/>
+			<MediaDisplay
+				addMediaDisplay={addMediaDisplay}
+				openedMedia={openedMedia.content}
+				selectedIndex={openedMedia.activeIndex}
+				lesson={lesson}
+				course={course}
+			/>
 
-			{preferredMediaType === "pdf" && pdf?.value.url && (
-				<div className="h-[90vh] xl:h-[80vh]">
-					<PdfViewer url={pdf.value.url} />
-				</div>
-			)}
+			<LessonNavigation content={courseContent} lesson={lesson} course={course} />
 		</article>
+	);
+}
+
+function LessonArticle({ article }: { article: Article }) {
+	const [markdown, setMarkdown] = useState<CompiledMarkdown | null>(null);
+	useEffect(() => {
+		if (article.type === "article" && article.value) {
+			compileMarkdown(article.value.content).then(setMarkdown);
+		}
+	}, [article]);
+
+	if (!article.value) return <ContentInfo error text="missing article text" />;
+	if (!markdown) return <ContentLoader />;
+
+	return (
+		<MarkdownContainer className="mx-auto w-full pt-4">
+			<MDXRemote {...markdown} />
+		</MarkdownContainer>
+	);
+}
+
+function ContentInfo({ text, error }: { text: string; error?: boolean }) {
+	return (
+		<SectionCard>
+			<span className={`text-light text-center ${error && "text-red-500"}`}>
+				{error && "Error: "}
+				{text}
+			</span>
+		</SectionCard>
+	);
+}
+function ContentLoader() {
+	return <div className="py-16 text-center">Loading...</div>;
+}
+
+function LessonNavigation({
+	content,
+	lesson,
+	course
+}: {
+	content: LessonNavigationData;
+	lesson: LessonProps["lesson"];
+	course: LessonProps["course"];
+}) {
+	const router = useRouter();
+	const { previous, next } = useMemo(() => {
+		const lessonIndex = content.findIndex(l => l.lessonId === lesson.lessonId);
+
+		return {
+			previous: lessonIndex > 0 ? content[lessonIndex - 1] : null,
+			next: lessonIndex < content.length - 1 ? content[lessonIndex + 1] : null
+		};
+	}, [content, lesson]);
+
+	function navigateToLesson(lesson: LessonNavigationItem) {
+		if (course) {
+			router.push(`/courses/${course.slug}/${lesson.slug}`);
+		}
+	}
+
+	if (!course) {
+		return <span></span>;
+	}
+
+	return (
+		<span className="flex gap-2 justify-between mt-auto pt-4">
+			<button
+				onClick={() => previous && navigateToLesson(previous)}
+				disabled={!previous}
+				className="rounded-lg bg-white flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
+				title="Vorherige Lerneinheit"
+				data-testid="previousLessonButton"
+			>
+				<ChevronDoubleLeftIcon className="h-5" />
+				Vorherige Lerneinheit
+			</button>
+			<button
+				onClick={() => next && navigateToLesson(next)}
+				disabled={!next}
+				className="rounded-lg bg-white flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
+				title="Nächste Lerneinheit"
+				data-testid="nextLessonButton"
+			>
+				Nächste Lerneinheit
+				<ChevronDoubleRightIcon className="h-5" />
+			</button>
+		</span>
 	);
 }
 
@@ -145,10 +423,10 @@ function LessonHeader({
 				<div className="flex w-full flex-col">
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
+							<h1 className="text-4xl">{lesson.title}</h1>
 							<div className="font-semibold text-secondary min-h-[24px]">
 								{!isStandalone && <ChapterName course={course} lesson={lesson} />}
 							</div>
-							<h1 className="text-4xl">{lesson.title}</h1>
 						</span>
 
 						{isStandalone ? (
@@ -162,7 +440,6 @@ function LessonHeader({
 							<MDXRemote {...mdSubtitle} />
 						</MarkdownContainer>
 					)}
-
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-3">
 							<Authors authors={lesson.authors} />
@@ -175,11 +452,6 @@ function LessonHeader({
 							)}
 						</div>
 					</span>
-					{!isStandalone && (
-						<div className="pt-4">
-							<MediaTypeSelector lesson={lesson} course={course} />
-						</div>
-					)}
 				</div>
 			</div>
 
@@ -257,7 +529,7 @@ function StandaloneLessonControls({ lesson }: { lesson: LessonProps["lesson"] })
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 	const url = "lessons/" + lesson.slug;
 	return (
-		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
+		<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
 			<AuthorEditButton lesson={lesson} />
 			{hasQuiz && <LinkToQuiz url={url} />}
 		</div>
@@ -266,7 +538,7 @@ function StandaloneLessonControls({ lesson }: { lesson: LessonProps["lesson"] })
 
 function LinkToQuiz({ url }: { url: string }) {
 	return (
-		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
+		<div className="flex flex-wrap gap-2 xl:flex-row">
 			<Link
 				href={`/${url}/quiz`}
 				className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
@@ -325,57 +597,40 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 	);
 }
 
-function MediaTypeSelector({
-	lesson,
-	course
+function MediaSelector({
+	selectedIndex,
+	setSelectedIndex,
+	openedMedia
 }: {
 	course?: LessonProps["course"];
 	lesson: LessonProps["lesson"];
+	selectedIndex?: number;
+	setSelectedIndex: (idx?: number) => void;
+	openedMedia: OpenedMediaInfo[];
 }) {
-	const lessonContent = lesson.content as LessonContent;
-	// If no content is specified at this time, use video as default (and don't s´display anything)
-	const preferredMediaType = usePreferredMediaType(lesson);
-	const { index } = findContentType(preferredMediaType, lessonContent);
-	const [selectedIndex, setSelectedIndex] = useState(index);
-	const router = useRouter();
-
-	function changeMediaType(index: number) {
-		const type = lessonContent[index].type;
-		saveToLocalStorage("user_preferredMediaType", type);
-
-		let url = `/lessons/${lesson.slug}?type=${type}`;
-
-		if (course) {
-			url = `/courses/${course.slug}/${lesson.slug}?type=${type}`;
-		}
-
-		router.push(url, undefined, {
-			shallow: true
-		});
-
-		setSelectedIndex(index);
-	}
-
-	useEffect(() => {
-		if (selectedIndex !== index) {
-			setSelectedIndex(index);
-		}
-	}, [index, selectedIndex, setSelectedIndex]);
-
+	// index transform to allow first item to be default
+	const index = selectedIndex !== undefined ? selectedIndex + 1 : 0;
+	// TODO can be replaced with DraggableContentSelector, make Inhalt default and immutable
 	return (
-		<>
-			{lessonContent.length > 1 && (
-				<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
-					{lessonContent.map((content, idx) => (
-						<Tab key={idx}>
-							<span data-testid="mediaTypeTab">
-								{getContentTypeDisplayName(content.type)}
-							</span>
-						</Tab>
-					))}
-				</Tabs>
-			)}
-		</>
+		<Tabs
+			selectedIndex={index}
+			// index transform to allow first item to be default
+			onChange={idx => {
+				setSelectedIndex(idx > 0 ? idx - 1 : undefined);
+			}}
+		>
+			<Tab key={0}>
+				<span data-testid="mediaTypeTab-Base">Inhalt</span>
+			</Tab>
+			{openedMedia &&
+				openedMedia.map((content, idx) => (
+					<Tab key={idx + 1}>
+						<span data-testid="mediaTypeTab">
+							{getContentTypeDisplayName(content.type)}
+						</span>
+					</Tab>
+				))}
+		</Tabs>
 	);
 }
 
@@ -409,7 +664,7 @@ function SelfRegulatedPreQuestion({
 					onClick={() => {
 						setShowDialog(false);
 					}}
-					disabled={userAnswer.length == 0}
+					disabled={userAnswer.length === 0}
 				>
 					Antwort Speichern
 				</button>

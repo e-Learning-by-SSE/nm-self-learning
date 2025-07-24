@@ -1,21 +1,34 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { Bars3Icon, ChevronDownIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { LessonFormModel } from "@self-learning/teaching";
 import {
+	CONTENT_TYPES,
 	getContentTypeDisplayName,
 	LessonContent,
-	LessonContentMediaType,
 	LessonContentType,
 	ValueByContentType
 } from "@self-learning/types";
-import { RemovableTab, SectionHeader, Tabs, useIsFirstRender } from "@self-learning/ui/common";
+import {
+	DropdownMenu,
+	SectionHeader,
+	SectionCard,
+	useIsFirstRender,
+	XButton
+} from "@self-learning/ui/common";
 import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
-import { Reorder } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	Control,
+	Controller,
+	FieldArrayWithId,
+	useFieldArray,
+	useFormContext
+} from "react-hook-form";
 import { ArticleInput } from "../content-types/article";
 import { IFrameInput } from "../content-types/iframe";
 import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
+import { Button } from "@headlessui/react";
+import { DraggableContentOutline, DraggableContentViewer } from "@self-learning/ui/layouts";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -23,24 +36,11 @@ export type SetValueFn = <CType extends LessonContentType["type"]>(
 	index: number
 ) => void;
 
-function useContentTypeUsage(content: LessonContent) {
-	const typesWithUsage = useMemo(() => {
-		const possibleTypes: { [contentType in LessonContentType["type"]]?: boolean } = {};
-
-		for (const c of content) {
-			possibleTypes[c.type] = true;
-		}
-
-		return possibleTypes;
-	}, [content]);
-
-	return typesWithUsage;
-}
-
 export function useLessonContentEditor(control: Control<{ content: LessonContent }>) {
 	const {
 		append,
 		remove,
+		swap,
 		replace: setContent,
 		fields: content
 	} = useFieldArray<{ content: LessonContent }>({
@@ -48,9 +48,27 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 		control
 	});
 
-	const [contentTabIndex, setContentTabIndex] = useState<number | undefined>(
-		content.length > 0 ? 0 : undefined
-	);
+	const [contentTabIndex, setContentTabIndex] = useState<number | undefined>(undefined);
+
+	// check content ids on mount (it will double trigger )
+	const didContextInit = useRef(false);
+	useEffect(() => {
+		// prevent repetition
+		if (didContextInit.current || content.length === 0) return;
+		// do content indexing
+		setContent(
+			content.map((item, index) => ({
+				...item,
+				meta: {
+					...item.meta,
+					id: (index + 1).toString()
+				}
+			})) as LessonContent
+		);
+		//
+		didContextInit.current = true;
+		//
+	}, [content, setContent]);
 
 	useEffect(() => {
 		if (content.length === 0) {
@@ -62,13 +80,20 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 		}
 	}, [contentTabIndex, content]);
 
-	const typesWithUsage = useContentTypeUsage(content);
-
 	function addContent(type: LessonContentType["type"]) {
 		const addActions: { [contentType in LessonContentType["type"]]: () => void } = {
-			video: () => append({ type: "video", value: { url: "" }, meta: { duration: 0 } }),
+			video: () =>
+				append({
+					type: "video",
+					value: { url: "" },
+					meta: { duration: 0 }
+				}),
 			article: () =>
-				append({ type: "article", value: { content: "" }, meta: { estimatedDuration: 0 } }),
+				append({
+					type: "article",
+					value: { content: "" },
+					meta: { estimatedDuration: 0 }
+				}),
 			pdf: () =>
 				append({
 					type: "pdf",
@@ -93,7 +118,12 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 
 		fn();
 
-		setContentTabIndex(content.length); // Select the newly created tab
+		// Do not need it as scroll will automatically set current index
+		// setContentTabIndex(content.length); // Select the newly created tab
+	}
+
+	function swapContent(indexSrc: number, indexDest: number) {
+		swap(indexSrc, indexDest);
 	}
 
 	const removeContent = useCallback(
@@ -109,128 +139,182 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 
 	return {
 		content,
+		swapContent,
 		addContent,
 		removeContent,
 		setContent,
 		contentTabIndex,
-		typesWithUsage,
 		setContentTabIndex
 	};
 }
 
-const contentTypes: LessonContentMediaType[] = ["video", "article", "pdf", "iframe"];
-
-export function LessonContentEditor() {
-	const { control } = useFormContext<{ content: LessonContent }>();
-	const {
-		content,
-		addContent,
-		removeContent,
-		setContent,
-		contentTabIndex,
-		setContentTabIndex,
-		typesWithUsage
-	} = useLessonContentEditor(control);
-
+function LessonContentOutlineHeader({
+	addContent
+}: {
+	addContent: (type: LessonContentType["type"]) => void;
+}) {
 	return (
 		<section>
-			<div className="mb-8">
-				<LessonDescriptionForm />
-			</div>
 			<SectionHeader
 				title="Inhalt"
-				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
-					angelegt werden, kann der Student selber entscheiden, welches Medium angezeigt
-					werden soll."
-			/>
-
-			<div className="flex gap-4 text-sm">
-				{contentTypes.map(contentType => (
-					<AddButton
-						key={contentType}
-						contentType={contentType}
-						disabled={typesWithUsage[contentType] === true}
-						addContent={addContent}
-					/>
-				))}
-			</div>
-
-			<div className="mb-8 mt-4 flex gap-4">
-				{content.length > 0 && (
-					<Reorder.Group
-						className="w-full"
-						axis="x"
-						values={content}
-						onReorder={setContent}
-					>
-						<Tabs selectedIndex={contentTabIndex} onChange={setContentTabIndex}>
-							{content.map((value, index) => (
-								<Reorder.Item as="div" key={value.id} value={value}>
-									<RemovableTab onRemove={() => removeContent(index)}>
-										{getContentTypeDisplayName(value.type)}
-									</RemovableTab>
-								</Reorder.Item>
+				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. "
+				button={
+					<div className="flex gap-4 text-sm">
+						<DropdownMenu
+							title="Inhalt hinzufügen"
+							button={
+								<div className="btn-primary">
+									<PlusIcon className="icon h-5" />
+									<span className="font-semibold text-white">
+										Inhalt hinzufügen
+									</span>
+								</div>
+							}
+						>
+							{CONTENT_TYPES.map(contentType => (
+								<Button
+									key={contentType}
+									type={"button"}
+									title="Inhaltstyp Hinzufügen"
+									className={"w-full text-left px-3 py-1"}
+									onClick={() => addContent(contentType)}
+								>
+									{getContentTypeDisplayName(contentType)}
+								</Button>
 							))}
-						</Tabs>
-					</Reorder.Group>
-				)}
-			</div>
-
-			{contentTabIndex !== undefined && content[contentTabIndex] ? (
-				<RenderContentType index={contentTabIndex} content={content[contentTabIndex]} />
-			) : (
-				<div className="rounded-lg border border-light-border bg-white py-80 text-center text-light">
-					Diese Lerneinheit hat noch keinen Inhalt.
-				</div>
-			)}
+						</DropdownMenu>
+					</div>
+				}
+			/>
 		</section>
 	);
 }
 
-function AddButton({
-	contentType,
-	addContent,
-	disabled
+function ContentOutlineTab({
+	item,
+	swappable,
+	remove,
+	select,
+	active
 }: {
-	contentType: LessonContentMediaType;
-	addContent: (t: LessonContentMediaType) => void;
-	disabled: boolean;
+	item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
+	swappable?: boolean;
+	remove?: () => void;
+	select?: () => void;
+	active?: boolean;
 }) {
 	return (
-		<button
-			type="button"
-			className="btn-primary w-fit"
-			onClick={() => addContent(contentType)}
-			disabled={disabled}
-		>
-			<PlusIcon className="icon h-5" />
-			<span>{getContentTypeDisplayName(contentType)} hinzufügen</span>
-		</button>
+		<>
+			{item && (
+				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center rounded-lg border border-light-border bg-white text-sm p-2">
+					{swappable && <Bars3Icon className="h-5 text-light" />}
+					<span
+						className={`w-full ${active ? "text-secondary" : "text-light"}`}
+						onClick={select}
+					>
+						{getContentTypeDisplayName(item.type)}
+					</span>
+					{remove && (
+						<XButton onClick={remove} title="Entfernen" className="flex items-center" />
+					)}
+				</div>
+			)}
+			{!item && "Kein Inhalt"}
+		</>
 	);
 }
 
-function RenderContentType({ index, content }: { index: number; content: LessonContentType }) {
-	if (content.type === "video") {
+export function LessonContentEditor() {
+	const { control } = useFormContext<{ content: LessonContent }>();
+	const { content, addContent, removeContent, swapContent, contentTabIndex, setContentTabIndex } =
+		useLessonContentEditor(control);
+
+	// Helper to utilize scroll into view
+	const [targetTabIndex, setTargetTabIndex] = useState<number | undefined>(undefined);
+	const [isOutlineOpen, setIsOutlineOpen] = useState(false);
+
+	return (
+		<div className="w-full lg:grid lg:grid-cols-[1fr_300px] gap-8">
+			<div className="w-full overflow-hidden flex flex-col gap-8 mb-8">
+				<LessonDescriptionForm />
+				<LessonContentOutlineHeader addContent={addContent} />
+				<DraggableContentViewer
+					content={content}
+					targetIndex={targetTabIndex}
+					resetTargetIndex={() => setTargetTabIndex(undefined)} // way to prevent scroll on update behavior (and more)
+					setActiveIndex={setContentTabIndex}
+					RenderContent={RenderContentType}
+				/>
+			</div>
+			<div
+				className="w-full sticky bottom-0
+				max-h-[35vh] lg:max-h-none 
+				border-t lg:border-t-0 lg:border-l border-l-0 
+			  lg:bg-white bg-gray-100 
+				shadow-[0_-6px_6px_-4px_rgba(0,0,0,0.1)] lg:shadow-none"
+			>
+				<div
+					className="sticky z-4 overflow-y-auto 
+				bottom-0 lg:top-16 lg:max-h-none max-h-[35vh]
+				lg:left-auto lg:h-auto pl-8 pr-4"
+				>
+					<h2
+						className="flex gap-4 text-xl text-center w-max my-4 cursor-pointer"
+						onClick={() => setIsOutlineOpen(prev => !prev)}
+					>
+						<ChevronDownIcon
+							className={`w-5 h-5 transition-transform duration-200 ${isOutlineOpen ? "rotate-0" : "-rotate-90"} lg:hidden`}
+						/>
+						Inhalt
+					</h2>
+					<div className={`${isOutlineOpen ? "" : "hidden"} lg:block`}>
+						<DraggableContentOutline
+							content={content}
+							swapContent={swapContent}
+							removeContent={removeContent}
+							activeIndex={contentTabIndex}
+							setTargetIndex={setTargetTabIndex}
+							RenderContent={ContentOutlineTab}
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function RenderContentType({
+	index,
+	item
+}: {
+	index?: number;
+	item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
+}) {
+	if (!item || index === undefined || index === null) {
+		return (
+			<SectionCard>
+				<span className="text-light">Diese Lerneinheit hat noch keinen Inhalt.</span>
+			</SectionCard>
+		);
+	}
+
+	if (item.type === "video") {
 		return <VideoInput index={index} />;
 	}
 
-	if (content.type === "article") {
+	if (item.type === "article") {
 		return <ArticleInput index={index} />;
 	}
 
-	if (content.type === "pdf") {
+	if (item.type === "pdf") {
 		return <PdfInput index={index} />;
 	}
 
-	if (content.type === "iframe") {
+	if (item.type === "iframe") {
 		return <IFrameInput index={index} />;
 	}
-
-	return (
-		<span className="text-red-500">
-			Error: Unknown content type ({(content as { type: string | undefined }).type})
-		</span>
-	);
+	// Must not happen!
+	return <span className="text-red-500">Error: Unknown content type</span>;
 }
 
 export function LessonDescriptionForm() {
@@ -241,27 +325,25 @@ export function LessonDescriptionForm() {
 
 	return (
 		<section>
-			<div className="py-4">
-				{currentLessonType === "SELF_REGULATED" && (
-					<div
-						data-testid="aktivierungsfrage-element"
-						className={`p-4 rounded-md ${!suppressHighlight ? "animate-highlight" : ""}`}
-					>
-						<LabeledField label="Aktivierungsfrage" optional={false}>
-							<Controller
-								control={control}
-								name="selfRegulatedQuestion"
-								render={({ field }) => (
-									<MarkdownField
-										content={field.value as string}
-										setValue={field.onChange}
-									/>
-								)}
-							/>
-						</LabeledField>
-					</div>
-				)}
-			</div>
+			{currentLessonType === "SELF_REGULATED" && (
+				<div
+					data-testid="aktivierungsfrage-element"
+					className={`pt-4 rounded-md ${!suppressHighlight ? "animate-highlight" : ""}`}
+				>
+					<LabeledField label="Aktivierungsfrage" optional={false}>
+						<Controller
+							control={control}
+							name="selfRegulatedQuestion"
+							render={({ field }) => (
+								<MarkdownField
+									content={field.value as string}
+									setValue={field.onChange}
+								/>
+							)}
+						/>
+					</LabeledField>
+				</div>
+			)}
 			<SectionHeader
 				title="Beschreibung"
 				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
