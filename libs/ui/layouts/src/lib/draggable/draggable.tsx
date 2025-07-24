@@ -93,7 +93,8 @@ export function DraggableContentViewer<
 	targetIndex, // separate from activeIndex to avoid circle dependency
 	resetTargetIndex,
 	RenderContent,
-	renderProps
+	renderProps,
+	gap
 }: {
 	content: T[];
 	setActiveIndex: (idx: number | undefined) => void;
@@ -101,19 +102,50 @@ export function DraggableContentViewer<
 	resetTargetIndex: () => void;
 	RenderContent: (props: { item?: T; index?: number } & RenderProps) => JSX.Element;
 	renderProps?: RenderProps;
+	gap?: number;
 }) {
 	const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const visibleItemsRef = useRef<Set<number>>(new Set());
+	const isAutoScrollRef = useRef<boolean>(false);
 	// scroll into selected
 	useEffect(() => {
 		if (targetIndex !== undefined && content[targetIndex] && contentRefs.current[targetIndex]) {
+			isAutoScrollRef.current = true;
+			const prevScrollY = window.scrollY;
 			contentRefs.current[targetIndex].scrollIntoView({
 				behavior: "smooth",
 				block: "start"
 			});
-			resetTargetIndex();
+			setActiveIndex(targetIndex);
+			resetTargetIndex(); // immediately drop so it can be triggered again
+			// debounce
+			setTimeout(() => {
+				const newScrollY = window.scrollY;
+				if (Math.abs(newScrollY - prevScrollY) < 1) {
+					isAutoScrollRef.current = false; // Ensure it's false
+				}
+			}, 300);
 		}
 	}, [targetIndex]); // Deliberately avoid update on content to avoid scroll on delete, on swap, .... Allow only on click
+	useEffect(() => {
+		const handleScrollEnd = () => {
+			if (isAutoScrollRef.current) {
+				isAutoScrollRef.current = false;
+			}
+		};
+
+		if ("onscrollend" in window) {
+			window.addEventListener("scrollend", handleScrollEnd);
+		} else {
+			console.log("ERROR onscrollend is not supported");
+		}
+		return () => {
+			if ("onscrollend" in window) {
+				window.removeEventListener("scrollend", handleScrollEnd);
+			}
+		};
+	}, []);
+
 	// Detect active element
 	const calculateMinVisibleIndex = () => {
 		if (visibleItemsRef.current.size === 0) return undefined;
@@ -138,8 +170,11 @@ export function DraggableContentViewer<
 						}
 					}
 				});
-				const newActiveIndex = calculateMinVisibleIndex();
-				setActiveIndex(newActiveIndex); // React ignores same index update
+				if (!isAutoScrollRef.current) {
+					// if manual scroll - adjust active index
+					const newActiveIndex = calculateMinVisibleIndex();
+					setActiveIndex(newActiveIndex); // React ignores same index update
+				}
 			},
 			{
 				root: null,
@@ -168,7 +203,7 @@ export function DraggableContentViewer<
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className={`flex flex-col gap-${gap ?? 4}`}>
 			{content.map((item, index) => (
 				<div
 					key={item.id}
