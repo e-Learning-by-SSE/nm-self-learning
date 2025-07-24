@@ -54,7 +54,6 @@ export async function onLessonEditorSubmit(
 	}) => Promise<{ title: string }>,
 	lesson?: LessonFormModel
 ) {
-	console.log("JKHFHUIHUIYIUHHIUUHOOUHIJIOUH");
 	try {
 		if (lesson) {
 			const result = await editLessonAsync({
