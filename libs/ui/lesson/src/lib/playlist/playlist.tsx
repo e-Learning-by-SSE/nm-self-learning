@@ -7,6 +7,7 @@ import {
 	PlayIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
+import { useLessonLayout } from "@self-learning/lesson";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { Divider, ProgressBar, useTimeout } from "@self-learning/ui/common";
 import Link from "next/link";
@@ -158,26 +159,30 @@ function Lesson({
 	href: string;
 	isActive: boolean;
 }) {
+	const { playlistRef } = useLessonLayout();
 	return (
-		<Link
-			href={href}
-			className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
-				isActive ? "bg-gray-200 font-medium text-black" : "text-light"
-			}`}
-		>
-			<span
-				style={{ width: lesson.isCompleted ? "2px" : "1px" }}
-				className={`absolute h-full ${
-					lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
+		<>
+			<Link
+				href={href}
+				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
+					isActive ? "bg-gray-200 font-medium text-black" : "text-light"
 				}`}
-			></span>
-			<span
-				className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm"
-				data-testid="lessonTitle"
 			>
-				{lesson.title}
-			</span>
-		</Link>
+				<span
+					style={{ width: lesson.isCompleted ? "2px" : "1px" }}
+					className={`absolute h-full ${
+						lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
+					}`}
+				></span>
+				<span
+					className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm"
+					data-testid="lessonTitle"
+				>
+					{lesson.title}
+				</span>
+			</Link>
+			{isActive && <div className="ml-8 mt-1" ref={playlistRef}></div>}
+		</>
 	);
 }
 
