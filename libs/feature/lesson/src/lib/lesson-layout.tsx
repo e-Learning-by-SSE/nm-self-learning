@@ -6,8 +6,9 @@ import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/les
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { LessonData, getLesson } from "./lesson-data-access";
+import { LessonLayoutContext, LessonLayoutContextType } from "./lesson-layout-context";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
@@ -106,8 +107,13 @@ function mapToPlaylistContent(
 }
 
 function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {
+	const playlistRef = useRef<HTMLDivElement>(null);
+
+	const contextValue: LessonLayoutContextType = {
+		playlistRef
+	};
 	return (
-		<>
+		<LessonLayoutContext.Provider value={contextValue}>
 			<Head>
 				<title>{title}</title>
 			</Head>
@@ -118,7 +124,7 @@ function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutPro
 					<div className="w-full pt-8 pb-16">{children}</div>
 				</div>
 			</div>
-		</>
+		</LessonLayoutContext.Provider>
 	);
 }
 
