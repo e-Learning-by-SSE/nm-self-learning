@@ -8,7 +8,7 @@ import {
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getCourse, useLessonContext } from "@self-learning/lesson";
+import { getCourse, useLessonContext, useLessonLayout } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	Article,
@@ -40,10 +40,11 @@ import { useEventLog } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { LessonData } from "./lesson-data-access";
 import { Button } from "@headlessui/react";
-import { DocumentIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import { DocumentIcon } from "@heroicons/react/24/outline";
+import { createPortal } from "react-dom";
 
 export type LessonProps = {
 	lesson: LessonData;
@@ -55,8 +56,30 @@ export type LessonProps = {
 		subtitle: CompiledMarkdown | null;
 	};
 };
-function ContentTabItem({ item }: { item?: LessonContentType }) {
-	return <span>{item ? item.type : ""}</span>;
+function ContentTabItem({
+	item,
+	select,
+	active
+}: {
+	item?: LessonContentType;
+	select?: () => void;
+	active?: boolean;
+}) {
+	return (
+		<>
+			{item && (
+				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center text-sm">
+					<span
+						className={`w-full ${active ? "text-secondary" : "text-light"}`}
+						onClick={select}
+					>
+						{getContentTypeDisplayName(item.type)}
+					</span>
+				</div>
+			)}
+			{!item && "Kein Inhalt"}
+		</>
+	);
 }
 function ContentDisplayItem({
 	item: c,
@@ -69,7 +92,7 @@ function ContentDisplayItem({
 	index?: number;
 	lesson: LessonProps["lesson"];
 	course: LessonProps["course"];
-	addMediaDisplay: (m: LessonContentType, idx: number) => void;
+	addMediaDisplay: (idx: number) => void;
 }) {
 	if (!c || index === undefined) {
 		return <ContentInfo text="Diese Lerneinheit hat keinen Inhalt." />;
@@ -77,87 +100,50 @@ function ContentDisplayItem({
 	switch (c.type) {
 		case "article":
 			return (
-				<SectionCard>
-					<div className="flex flex-col gap-4">
-						<div className="flex items-center gap-2">
-							<DocumentTextIcon className="h-6 w-6 text-primary" />
-							<span className="text-lg font-semibold">Article</span>
-						</div>
+				<div className="flex">
+					<div className="flex flex-wrap items-start">
 						<LessonArticle article={c} />
 					</div>
-				</SectionCard>
+				</div>
 			);
 		case "video":
 			if (!c.value.url) return <ContentInfo error text="Fehlende Video-URL." />;
 			return (
-				<SectionCard>
-					<div className="flex flex-col gap-4">
-						<div className="flex items-center gap-2">
-							<PlayIcon className="h-6 w-6 text-primary" />
-							<span className="text-lg font-semibold">Video</span>
-						</div>
-						<div className="aspect-video w-full xl:max-h-[75vh]">
-							<VideoPlayer
-								parentLessonId={lesson.lessonId}
-								url={c.value.url}
-								courseId={course?.courseId}
-							/>
-						</div>
-					</div>
-				</SectionCard>
+				<div className="aspect-video w-full xl:max-h-[75vh]">
+					<VideoPlayer
+						parentLessonId={lesson.lessonId}
+						url={c.value.url}
+						courseId={course?.courseId}
+					/>
+				</div>
 			);
 		case "pdf":
 			if (!c.value.url) return <ContentInfo error text="missing PDF URL" />;
 			return (
-				<SectionCard>
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2">
-							<DocumentIcon className="h-6 w-6 text-primary" />
-							<span className="text-lg font-semibold">PDF</span>
-						</div>
-						<Button onClick={() => addMediaDisplay(c, index)} className="btn-secondary">
-							In neuem Tab öffnen
-						</Button>
-					</div>
-				</SectionCard>
+				<div className="flex items-center">
+					<Button onClick={() => addMediaDisplay(index)} className="btn-secondary">
+						<DocumentIcon className="h-6 w-6 text-primary" />
+						PDF öffnen
+					</Button>
+				</div>
 			);
 		default:
 			return <ContentInfo error text={`unsupported content type: ${c?.type}`} />;
 	}
 }
-function LessonDisplay({
-	lesson,
-	course,
-	addMediaDisplay
-}: {
-	lesson: LessonProps["lesson"];
-	course: LessonProps["course"];
-	addMediaDisplay: (m: LessonContentType, idx: number) => void;
-}) {
-	const lessonContent = lesson.content as LessonContent;
 
-	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
-	const ctx = useDraggableContent(lessonContent, false, false);
-
-	return (
-		<>
-			<DraggableContentOutline
-				content={ctx.content}
-				swapContent={ctx.swapContent}
-				activeIndex={ctx.activeIndex}
-				setTargetIndex={setTargetIndex}
-				RenderContent={ContentTabItem}
-			/>
-			<DraggableContentViewer
-				content={ctx.content}
-				setActiveIndex={ctx.setActiveIndex}
-				targetIndex={targetIndex}
-				resetTargetIndex={() => setTargetIndex(undefined)}
-				RenderContent={ContentDisplayItem}
-				renderProps={{ addMediaDisplay, lesson, course }}
-			/>
-		</>
-	);
+function MediaDisplayHelper({ currentMedia }: { currentMedia: OpenedMediaInfo }) {
+	switch (currentMedia?.type) {
+		case "pdf":
+			if (!currentMedia.value.url) return <ContentInfo error text="missing PDF URL" />;
+			return (
+				<div className="h-[90vh] xl:h-[80vh]">
+					<PdfViewer url={currentMedia.value.url} />
+				</div>
+			);
+		default:
+			return <ContentInfo error text={`unsupported content type: ${currentMedia?.type}`} />;
+	}
 }
 
 function MediaDisplay({
@@ -171,25 +157,53 @@ function MediaDisplay({
 	course: LessonProps["course"];
 	selectedIndex?: number;
 	openedMedia: OpenedMediaInfo[];
-	addMediaDisplay: (m: LessonContentType, idx: number) => void;
+	addMediaDisplay: (idx: number) => void;
 }) {
-	if (selectedIndex === undefined) {
-		return <LessonDisplay lesson={lesson} course={course} addMediaDisplay={addMediaDisplay} />;
-	}
+	const lessonContent = lesson.content as LessonContent;
+	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
+	const ctx = useDraggableContent(lessonContent, false, false);
 
-	const currentMedia = openedMedia[selectedIndex];
+	const { playlistRef } = useLessonLayout();
 
-	switch (currentMedia?.type) {
-		case "pdf":
-			if (!currentMedia.value.url) return <ContentInfo error text="missing PDF URL" />;
-			return (
-				<div className="h-[90vh] xl:h-[80vh]">
-					<PdfViewer url={currentMedia.value.url} />
-				</div>
-			);
-		default:
-			return <ContentInfo error text={`unsupported content type: ${currentMedia?.type}`} />;
-	}
+	// The way to make it target the same pdf that was last selected in a tab
+	const prevIndexRef = useRef<number | undefined>(undefined);
+	useEffect(() => {
+		if (prevIndexRef.current !== undefined) {
+			setTargetIndex(openedMedia[prevIndexRef.current].content_id);
+		}
+		prevIndexRef.current = selectedIndex;
+	}, [selectedIndex, openedMedia]);
+
+	return (
+		<>
+			{playlistRef?.current &&
+				createPortal(
+					<DraggableContentOutline
+						content={ctx.content}
+						swapContent={ctx.swapContent}
+						activeIndex={ctx.activeIndex}
+						setTargetIndex={setTargetIndex}
+						RenderContent={ContentTabItem}
+					/>,
+					playlistRef.current
+				)}
+			{/* Display base content */}
+			{selectedIndex === undefined && (
+				<DraggableContentViewer
+					content={ctx.content}
+					setActiveIndex={ctx.setActiveIndex}
+					targetIndex={targetIndex}
+					resetTargetIndex={() => setTargetIndex(undefined)}
+					RenderContent={ContentDisplayItem}
+					renderProps={{ addMediaDisplay, lesson, course }}
+					gap={8}
+				/>
+			)}
+			{selectedIndex !== undefined && (
+				<MediaDisplayHelper currentMedia={openedMedia[selectedIndex]} />
+			)}
+		</>
+	);
 }
 // id is required by Draggable. Content id is required to map this to lesson.content pos
 type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };
@@ -233,26 +247,21 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 		() => (!temp ? [] : extractNavigationInfo(temp.content, temp.lessonMap)),
 		[temp]
 	);
-	const EMPTY_INIT: OpenedMediaInfo[] = useMemo(() => [], []);
-	const openedMedia = useDraggableContent(EMPTY_INIT, false, true);
-	const addMediaDisplay = (m: LessonContentType, idx: number) => {
+	const lessonContent = lesson.content as LessonContent;
+	const INITIAL_PDF: OpenedMediaInfo[] = useMemo(
+		() =>
+			lessonContent
+				.map((m, idx) => ({
+					...m,
+					content_id: idx
+				}))
+				.filter(m => m.type === "pdf") as OpenedMediaInfo[],
+		[lessonContent]
+	);
+	const openedMedia = useDraggableContent(INITIAL_PDF, false, false);
+	const addMediaDisplay = (idx: number) => {
 		const existingIndex = openedMedia.content.findIndex(m => m.content_id === idx);
-		let index;
-		if (existingIndex >= 0) {
-			index = existingIndex;
-		} else {
-			index = openedMedia.content.length; // set index to last element
-			openedMedia.appendContent({ ...m, content_id: idx } as OpenedMediaInfo);
-		}
-		openedMedia.setActiveIndex(index);
-	};
-	const removeMediaTab = (idx: number) => {
-		if (openedMedia.removeContent) {
-			openedMedia.removeContent(idx);
-			openedMedia.setActiveIndex(undefined);
-		} else {
-			console.log("Error: in mediaContent remove is disabled!");
-		}
+		openedMedia.setActiveIndex(existingIndex);
 	};
 
 	if (showDialog && markdown.preQuestion) {
@@ -282,7 +291,6 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 				selectedIndex={openedMedia.activeIndex}
 				setSelectedIndex={openedMedia.setActiveIndex}
 				openedMedia={openedMedia.content}
-				removeMediaTab={removeMediaTab}
 			/>
 			<MediaDisplay
 				addMediaDisplay={addMediaDisplay}
@@ -509,7 +517,7 @@ function StandaloneLessonControls({ lesson }: { lesson: LessonProps["lesson"] })
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 	const url = "lessons/" + lesson.slug;
 	return (
-		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
+		<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
 			<AuthorEditButton lesson={lesson} />
 			{hasQuiz && <LinkToQuiz url={url} />}
 		</div>
@@ -518,7 +526,7 @@ function StandaloneLessonControls({ lesson }: { lesson: LessonProps["lesson"] })
 
 function LinkToQuiz({ url }: { url: string }) {
 	return (
-		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
+		<div className="flex flex-wrap gap-2 xl:flex-row">
 			<Link
 				href={`/${url}/quiz`}
 				className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
@@ -580,14 +588,12 @@ function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 function MediaSelector({
 	selectedIndex,
 	setSelectedIndex,
-	openedMedia,
-	removeMediaTab
+	openedMedia
 }: {
 	course?: LessonProps["course"];
 	lesson: LessonProps["lesson"];
 	selectedIndex?: number;
 	setSelectedIndex: (idx?: number) => void;
-	removeMediaTab: (idx: number) => void;
 	openedMedia: OpenedMediaInfo[];
 }) {
 	// index transform to allow first item to be default
@@ -606,11 +612,11 @@ function MediaSelector({
 			</Tab>
 			{openedMedia &&
 				openedMedia.map((content, idx) => (
-					<RemovableTab key={idx + 1} onRemove={() => removeMediaTab(idx)}>
+					<Tab key={idx + 1}>
 						<span data-testid="mediaTypeTab">
 							{getContentTypeDisplayName(content.type)}
 						</span>
-					</RemovableTab>
+					</Tab>
 				))}
 		</Tabs>
 	);
