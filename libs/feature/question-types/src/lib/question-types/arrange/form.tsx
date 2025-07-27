@@ -1,8 +1,4 @@
-import {
-	LabeledField,
-	MarkdownEditorDialog,
-	MarkdownViewer
-} from "@self-learning/ui/forms";
+import { LabeledField, MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
@@ -26,15 +22,15 @@ import { getRandomId } from "@self-learning/util/common";
 import { PlusIcon } from "@heroicons/react/24/solid";
 
 export default function ArrangeForm({ index }: { index: number }) {
-	const { watch, setValue} = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
+	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
 	const items = watch(`quiz.questions.${index}.items`);
 	const [addCategoryDialog, setAddCategoryDialog] = useState(false);
+	const categoryOrder = watch(`quiz.questions.${index}.categoryOrder`) ?? [];
 	const [editCategoryDialog, setEditCategoryDialog] = useState<string | null>(null);
 	const [editItemDialog, setEditItemDialog] = useState<{
 		item?: ArrangeItem;
 		containerId: string;
 	} | null>(null);
-
 	const onDragEnd: OnDragEndResponder = result => {
 		const { source, destination } = result;
 
@@ -61,6 +57,8 @@ export default function ArrangeForm({ index }: { index: number }) {
 			...items,
 			[title]: []
 		});
+		const updatedOrder = [...categoryOrder, title];
+		setValue(`quiz.questions.${index}.categoryOrder`, updatedOrder);
 	};
 
 	const onEditItem: OnDialogCloseFn<ArrangeItem> = item => {
@@ -85,7 +83,8 @@ export default function ArrangeForm({ index }: { index: number }) {
 	const onEditContainer: OnDialogCloseFn<string> = title => {
 		setEditCategoryDialog(null);
 		const currentContainerId = editCategoryDialog;
-		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId) return;
+		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId)
+			return;
 		if (items[title]) {
 			showToast({ type: "warning", title: "Kategorie existiert bereits", subtitle: title });
 			return;
@@ -93,7 +92,10 @@ export default function ArrangeForm({ index }: { index: number }) {
 		const updatedItems = { ...items };
 		updatedItems[title] = updatedItems[currentContainerId];
 		delete updatedItems[currentContainerId];
-
+		setValue(
+			`quiz.questions.${index}.categoryOrder`,
+			categoryOrder.map(id => (id === currentContainerId ? title : id))
+		);
 		setValue(`quiz.questions.${index}.items`, updatedItems);
 	};
 
@@ -115,6 +117,8 @@ export default function ArrangeForm({ index }: { index: number }) {
 			const value = { ...items };
 			delete value[containerId];
 			setValue(`quiz.questions.${index}.items`, value);
+			const updatedOrder = categoryOrder.filter(id => id !== containerId);
+			setValue(`quiz.questions.${index}.categoryOrder`, updatedOrder);
 		}
 	}
 
@@ -137,60 +141,65 @@ export default function ArrangeForm({ index }: { index: number }) {
 					label="Antworten dem Nutzer zufällig anordnen"
 				/>
 			</div>
-				{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
-				{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
-				{editCategoryDialog && <EditCategoryDialog onClose={onEditContainer} category= { editCategoryDialog } />}
+			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
+			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
+			{editCategoryDialog && (
+				<EditCategoryDialog onClose={onEditContainer} category={editCategoryDialog} />
+			)}
 			<DragDropContext onDragEnd={onDragEnd}>
 				<div className="grid w-full gap-4 sm:grid-cols-1 md:grid-cols-2">
-					{Object.entries(items).map(([containerId, items]) => (
-						// eslint-disable-next-line react/jsx-no-useless-fragment
-						<Fragment key={containerId}>
-							{containerId === "_init" ? null : (
-								<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4">
-									<span className="flex items-center justify-between gap-4 font-semibold">
-										<span>{containerId}</span>
-										<div className="flex gap-2">
-											<PencilButton
-												onClick={() => setEditCategoryDialog(containerId)}
-												title={"Kategorie editieren"}
-											/>
-											<PlusButton
-												onAdd={() => setEditItemDialog({ containerId })}
-												title={"Element hinzufügen"}
-											/>
+					{categoryOrder
+						.filter(containerId => containerId !== "_init" && items[containerId])
+						.map(containerId => (
+							// eslint-disable-next-line react/jsx-no-useless-fragment
+							<Fragment key={containerId}>
+								{containerId === "_init" ? null : (
+									<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4">
+										<span className="flex items-center justify-between gap-4 font-semibold">
+											<span>{containerId}</span>
+											<div className="flex gap-2">
+												<PencilButton
+													onClick={() =>
+														setEditCategoryDialog(containerId)
+													}
+													title={"Kategorie editieren"}
+												/>
+												<PlusButton
+													onClick={() => setEditItemDialog({ containerId })}
+													title={"Element hinzufügen"}
+												/>
+												<TrashcanButton
+													onClick={() => onDeleteContainer(containerId)}
+													title={"Kategorie entfernen"}
+												/>
+											</div>
+										</span>
 
-											<TrashcanButton
-												onClick={() => onDeleteContainer(containerId)}
-												title={"Kategorie entfernen"}
-											/>
-										</div>
-									</span>
-
-									<Droppable droppableId={containerId} direction="horizontal">
-										{provided => (
-											<ul
-												ref={provided.innerRef}
-												{...provided.droppableProps}
-												className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-gray-100 p-4"
-											>
-												{items.map((item, index) => (
-													<DraggableContent
-														key={item.id}
-														item={item}
-														index={index}
-														onDeleteItem={onDeleteItem}
-														setEditItemDialog={setEditItemDialog}
-														containerId={containerId}
-													/>
-												))}
-												{provided.placeholder}
-											</ul>
-										)}
-									</Droppable>
-								</div>
-							)}
-						</Fragment>
-					))}
+										<Droppable droppableId={containerId} direction="horizontal">
+											{provided => (
+												<ul
+													ref={provided.innerRef}
+													{...provided.droppableProps}
+													className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-gray-100 p-4"
+												>
+													{items[containerId].map((item, index) => (
+														<DraggableContent
+															key={item.id}
+															item={item}
+															index={index}
+															onDeleteItem={onDeleteItem}
+															setEditItemDialog={setEditItemDialog}
+															containerId={containerId}
+														/>
+													))}
+													{provided.placeholder}
+												</ul>
+											)}
+										</Droppable>
+									</div>
+								)}
+							</Fragment>
+						))}
 				</div>
 			</DragDropContext>
 		</div>
@@ -283,7 +292,7 @@ function EditCategoryDialog({
 	category
 }: {
 	onClose: OnDialogCloseFn<string>;
-	category: string|undefined;
+	category: string | undefined;
 }) {
 	const [title, setTitle] = useState(category);
 	return (
@@ -325,7 +334,7 @@ function EditItemDialog({
 	onClose: OnDialogCloseFn<ArrangeItem>;
 }) {
 	const [isEditorOpen, setIsEditorOpen] = useState(true);
-	
+
 	return (
 		isEditorOpen && (
 			<MarkdownEditorDialog

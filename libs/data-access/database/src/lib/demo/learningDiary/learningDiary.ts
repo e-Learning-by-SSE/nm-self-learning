@@ -210,17 +210,19 @@ export async function generateLearningDiaryDemoData() {
 				status: "ACTIVE",
 				username: student.username,
 				createdAt: new Date(),
-				learningSubGoals: {
+				children: {
 					create: [
 						{
 							description: "Understand basic types",
 							status: "ACTIVE",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						},
 						{
 							description: "Learn about interfaces",
 							status: "INACTIVE",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						}
 					]
 				}
@@ -233,17 +235,19 @@ export async function generateLearningDiaryDemoData() {
 				status: "INACTIVE",
 				username: student.username,
 				createdAt: new Date(),
-				learningSubGoals: {
+				children: {
 					create: [
 						{
 							description: "Understand relations",
 							status: "ACTIVE",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						},
 						{
 							description: "Learn about migrations",
 							status: "INACTIVE",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						}
 					]
 				}
@@ -256,17 +260,19 @@ export async function generateLearningDiaryDemoData() {
 				status: "INACTIVE",
 				username: student.username,
 				createdAt: new Date(),
-				learningSubGoals: {
+				children: {
 					create: [
 						{
 							description: "Learn basic SQL commands",
 							status: "ACTIVE",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						},
 						{
 							description: "Learn joins",
 							status: "INACTIVE",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						}
 					]
 				}
@@ -279,17 +285,19 @@ export async function generateLearningDiaryDemoData() {
 				status: "ACTIVE",
 				username: student.username,
 				createdAt: new Date(),
-				learningSubGoals: {
+				children: {
 					create: [
 						{
 							description: "Understand containers",
 							status: "ACTIVE",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						},
 						{
 							description: "Learn Dockerfile basics",
 							status: "INACTIVE",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						}
 					]
 				}
@@ -302,17 +310,19 @@ export async function generateLearningDiaryDemoData() {
 				status: "COMPLETED",
 				username: student.username,
 				createdAt: new Date(),
-				learningSubGoals: {
+				children: {
 					create: [
 						{
 							description: "Understand version control",
 							status: "COMPLETED",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						},
 						{
 							description: "Learn branching strategies",
 							status: "COMPLETED",
-							createdAt: new Date()
+							createdAt: new Date(),
+							username: student.username
 						}
 					]
 				}

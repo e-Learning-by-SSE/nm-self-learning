@@ -51,6 +51,7 @@ const mockQuestions = [
 		type: "multiple-choice"
 	}
 ] as any[];
+const mockQuestionOrder = mockQuestions.map(q => q.questionId);
 
 describe("QuizHeader", () => {
 	beforeEach(() => {
@@ -65,6 +66,7 @@ describe("QuizHeader", () => {
 				questions={mockQuestions}
 				currentIndex={0}
 				goToQuestion={jest.fn()}
+				questionOrder={mockQuestionOrder}
 			/>
 		);
 		await waitFor(() => {
@@ -88,6 +90,7 @@ describe("QuizHeader", () => {
 				questions={mockQuestions}
 				currentIndex={0}
 				goToQuestion={jest.fn()}
+				questionOrder={mockQuestionOrder}
 			/>
 		);
 
