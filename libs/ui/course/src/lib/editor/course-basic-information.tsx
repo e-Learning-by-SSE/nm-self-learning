@@ -16,10 +16,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LessonSkillManager } from "libs/feature/teaching/src/lib/lesson/forms/lesson-skill-manager";
 
 type Props = {
-	onCourseCreated: (courseId: string, selectors: string[]) => void;
+	onCourseCreated: (slug: string, selectors: string[]) => void;
+	course?: RelaxedCourseFormModel;
 };
 
-export function CourseBasicInformation({ onCourseCreated }: Props) {
+export function CourseBasicInformation({ onCourseCreated, course }: Props) {
 	const form = useForm<RelaxedCourseFormModel>({
 		resolver: zodResolver(relaxedCourseFormSchema),
 		defaultValues: {
@@ -33,12 +34,24 @@ export function CourseBasicInformation({ onCourseCreated }: Props) {
 		register,
 		handleSubmit,
 		setValue,
+		reset,
 		formState: { errors }
 	} = form;
 
 	const [id, setId] = useState<string>();
 	const { mutateAsync: create } = trpc.course.createMinimal.useMutation();
 	const { mutateAsync: edit } = trpc.course.editMinimal.useMutation();
+
+	useEffect(() => {
+		if (course) {
+			reset({
+				...course,
+				// if some fields need transformation, do here, e.g.:
+				requires: course.requires ?? [],
+				provides: course.provides ?? []
+			});
+		}
+	}, [course, reset]);
 
 	const createCourse = async () => {
 		const course = form.getValues();
@@ -49,12 +62,12 @@ export function CourseBasicInformation({ onCourseCreated }: Props) {
 					course: course
 				});
 				showToast({ type: "success", title: "Kurs aktualisiert!", subtitle: title });
-				onCourseCreated(courseId, ["dummy-selector-1", "dummy-selector-2"]);
+				onCourseCreated(slug, ["dummy-selector-1", "dummy-selector-2"]);
 			} else {
 				const { title, slug, courseId } = await create(course);
 				showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
 				setId(courseId);
-				onCourseCreated(courseId, ["dummy-selector-1", "dummy-selector-2"]);
+				onCourseCreated(slug, ["dummy-selector-1", "dummy-selector-2"]);
 			}
 		} catch (error) {
 			console.error(error);
@@ -91,6 +104,7 @@ export function CourseBasicInformation({ onCourseCreated }: Props) {
 		</FormProvider>
 	);
 }
+
 function BasicInfo() {
 	const form = useFormContext<RelaxedCourseFormModel>();
 

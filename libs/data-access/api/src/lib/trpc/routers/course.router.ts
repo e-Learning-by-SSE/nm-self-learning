@@ -223,6 +223,66 @@ export const courseRouter = t.router({
 
 		return { content, lessonMap };
 	}),
+	getCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(relaxedCourseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					provides: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requires: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true
+				}
+			});
+
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId ?? null,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle ?? "",
+				description: course.description ?? null,
+				imgUrl: course.imgUrl ?? null,
+
+				content: normalizeContent(course.content),
+
+				specializationId: course.specializations[0].specializationId ?? null, // TODO: some decisions has to be made
+
+				authors: course.authors.map(a => ({
+					username: a.username
+				})),
+
+				provides: course.provides.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				requires: course.requires.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				}))
+			};
+		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
 
@@ -418,4 +478,20 @@ async function authorizedUserForExport(
 	}
 
 	return false;
+}
+
+function normalizeContent(
+	raw: unknown
+): { title: string; content: { lessonId: string }[]; description?: string | null }[] {
+	if (!Array.isArray(raw)) return [];
+
+	return raw
+		.filter((item): item is any => item && typeof item === "object") // Remove null and non-objects
+		.map((item: any) => ({
+			title: typeof item.title === "string" ? item.title : "Untitled",
+			content: Array.isArray(item.content)
+				? item.content.filter((c: any) => typeof c.lessonId === "string")
+				: [],
+			description: "description" in item ? item.description : undefined
+		}));
 }
