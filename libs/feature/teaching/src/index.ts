@@ -6,10 +6,13 @@ export * from "./lib/course/course-form-model";
 export * from "./lib/subject/subject-editor";
 export * from "./lib/subject/permissions-dialog";
 export * from "./lib/lesson/forms/license-form";
-export * from "./lib/skills/repository/repository-overview";
 export * from "./lib/skills/folder-editor";
 export * from "./lib/course/full-course-export";
 export * from "./lib/lesson/forms/lesson-info";
+export * from "./lib/lesson/forms/module-info";
 export * from "./lib/lesson/forms/lesson-content";
 export * from "./lib/lesson/forms/quiz-editor";
+export * from "./lib/skills/skill-overview"
+export * from "./lib/skills/folder-editor/index"
+export * from "./lib/course/kee/module-view-context";
 export * from "./lib/course/course-export/course-export-dialog";

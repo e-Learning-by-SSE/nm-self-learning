@@ -19,12 +19,14 @@ export function MarkdownField({
 	content,
 	setValue,
 	inline,
-	placeholder
+	placeholder,
+	className
 }: {
 	content: string | undefined;
 	setValue: (v: string | undefined) => void;
 	inline?: boolean;
 	placeholder?: string;
+	className?: string;
 }) {
 	const [openEditor, setOpenEditor] = useState(false);
 
@@ -32,7 +34,7 @@ export function MarkdownField({
 		<div>
 			<div className="flex items-center gap-2">
 				<div
-					className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2"
+					className={`flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2 ${className ?? ""}`}
 					style={{ minHeight: 32 }}
 					onClick={() => setOpenEditor(true)}
 				>

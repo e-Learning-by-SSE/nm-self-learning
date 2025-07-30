@@ -14,12 +14,12 @@ import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
-export function SkillRepositoryOverview() {
+export function ParentSkillOverview() {
 	useRequiredSession();
 
 	const [displayName, setDisplayName] = useState("");
 
-	const { data: skillTrees, isLoading } = trpc.skill.getRepositoriesByUser.useQuery();
+	const { data: skillTrees, isLoading } = trpc.skill.getParentSkillsByAuthorId.useQuery();
 
 	const filteredSkillTrees = useMemo(() => {
 		if (!skillTrees) return [];
@@ -59,14 +59,14 @@ export function SkillRepositoryOverview() {
 											<div className="flex flex-wrap gap-4">
 												<Link
 													className="text-sm font-medium hover:text-secondary"
-													href={`/skills/repository/${id}`}
+													href={`/skills/${id}`}
 												>
 													{name}
 												</Link>
 											</div>
 										</TableDataColumn>
 										<TableDataColumn>
-											<RepositoryTaskbar repositoryId={id} />
+											<RepositoryTaskbar skillId={id} />
 										</TableDataColumn>
 									</tr>
 								)}
@@ -95,10 +95,10 @@ export function SkillRepositoryOverview() {
 	);
 }
 
-function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
+function RepositoryTaskbar({ skillId }: { skillId: string }) {
 	return (
 		<div className="flex flex-row justify-end gap-4">
-			<Link href={`/skills/repository/${repositoryId}`}>
+			<Link href={`/skills/${skillId}`}>
 				<button
 					type="button"
 					className="lg:flex rounded-lg lg:border lg:place-content-center lg:items-center border-gray-200 bg-white lg:w-fit lg:self-end p-2 lg:px-8 lg:py-2"
@@ -107,17 +107,17 @@ function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
 					<span className="hidden lg:inline">Bearbeiten</span>
 				</button>
 			</Link>
-			<RepositoryDeleteOption repositoryId={repositoryId} />
+			<RepositoryDeleteOption skillId={skillId} />
 		</div>
 	);
 }
 
-function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
-	const { mutateAsync: deleteRepo } = trpc.skill.deleteRepository.useMutation();
+function RepositoryDeleteOption({ skillId }: { skillId: string }) {
+	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkills.useMutation();
 	const [showConfirmation, setShowConfirmation] = useState(false);
 
 	const handleDelete = async () => {
-		await deleteRepo({ id: repositoryId });
+		await deleteSkill({ ids: [skillId] });
 	};
 
 	const handleConfirm = () => {
