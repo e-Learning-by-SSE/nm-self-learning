@@ -17,15 +17,15 @@ import { LessonSkillManager } from "libs/feature/teaching/src/lib/lesson/forms/l
 
 type Props = {
 	onCourseCreated: (slug: string, selectors: string[]) => void;
-	course?: RelaxedCourseFormModel;
+	initialCourse?: RelaxedCourseFormModel;
 };
 
-export function CourseBasicInformation({ onCourseCreated, course }: Props) {
+export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props) {
 	const form = useForm<RelaxedCourseFormModel>({
 		resolver: zodResolver(relaxedCourseFormSchema),
 		defaultValues: {
 			courseId: "",
-			requires: [], // need this for skill manager
+			requires: [], // needed for skill manager
 			provides: []
 		}
 	});
@@ -43,22 +43,35 @@ export function CourseBasicInformation({ onCourseCreated, course }: Props) {
 	const { mutateAsync: edit } = trpc.course.editMinimal.useMutation();
 
 	useEffect(() => {
-		if (course) {
+		if (initialCourse) {
 			reset({
-				...course,
-				// if some fields need transformation, do here, e.g.:
-				requires: course.requires ?? [],
-				provides: course.provides ?? []
+				...initialCourse,
+				requires: initialCourse.requires ?? [],
+				provides: initialCourse.provides ?? []
 			});
 		}
-	}, [course, reset]);
+	}, [initialCourse, reset]);
 
-	const createCourse = async () => {
+	//console.log("initialCourse", initialCourse);
+
+	const handleCourseSubmit = async () => {
 		const course = form.getValues();
+		console.log("course", course);
 		try {
-			if (id) {
+			if (initialCourse) {
+				if (!initialCourse?.courseId) {
+					console.error("Editing course, but courseId is missing.");
+					showToast({
+						type: "error",
+						title: "Fehlende Kurs-ID",
+						subtitle: "Die Kurs-ID fehlt für das Update."
+					});
+					return;
+				}
+
 				const { title, slug, courseId } = await edit({
-					courseId: id,
+					courseId: initialCourse.courseId,
+					slug: initialCourse.slug,
 					course: course
 				});
 				showToast({ type: "success", title: "Kurs aktualisiert!", subtitle: title });
@@ -88,13 +101,14 @@ export function CourseBasicInformation({ onCourseCreated, course }: Props) {
 	return (
 		<FormProvider {...form}>
 			<form
-				onSubmit={handleSubmit(createCourse)}
+				onSubmit={handleSubmit(handleCourseSubmit)}
 				className="m-2 grid w-2/3 grid-cols-1 gap-6 p-2 md:grid-cols-2"
 			>
 				<div>
 					<button type="submit" className="btn-primary w-full my-5">
-						Kurs erstellen
+						{initialCourse ? "Kurs aktualisieren" : "Kurs erstellen"}
 					</button>
+
 					<BasicInfo />
 				</div>
 				<div>
@@ -145,6 +159,7 @@ function BasicInfo() {
 		setValue("subjectId", subjectId);
 	};
 	const onSpecializationChange = (specializationId: string) => {
+		console.log("specializationId", specializationId);
 		setValue("specializationId", specializationId);
 	};
 

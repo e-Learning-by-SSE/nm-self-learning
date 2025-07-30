@@ -385,15 +385,15 @@ export const courseRouter = t.router({
 	editMinimal: isCourseAuthorProcedure
 		.input(
 			z.object({
-				courseId: z.string(),
+				slug: z.string(),
 				course: relaxedCourseFormSchema
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const courseForDb = mapRelaxedCourseFormToInsert(input.course, input.courseId);
+			const courseForDb = mapRelaxedCourseFormToInsert(input.course, input.slug);
 
 			const updated = await database.course.update({
-				where: { courseId: input.courseId },
+				where: { slug: input.slug },
 				data: courseForDb,
 				select: {
 					title: true,
