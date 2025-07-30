@@ -47,6 +47,8 @@ export const lessonContentSchema = z.discriminatedUnion("type", [
 	iframeSchema
 ]);
 
+export const CONTENT_TYPES = ["video", "article", "pdf", "iframe"] as const;
+
 export function getContentTypeDisplayName(contentType: LessonContentMediaType): string {
 	const names: { [contentType in LessonContentMediaType]: string } = {
 		video: "Video",
@@ -80,7 +82,7 @@ export type ValueByContentType<CType extends LessonContentType["type"]> =
 
 export type MetaByContentType<CType extends LessonContentType["type"]> =
 	InferContentType<CType>["meta"];
-
+// TODO unused
 export function findContentType<CType extends LessonContentType["type"]>(
 	type: CType,
 	content: LessonContent

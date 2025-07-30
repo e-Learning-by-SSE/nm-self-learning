@@ -59,7 +59,14 @@ export function RemovableTab({
 		<Tab>
 			<span className="flex items-end gap-4 hover:text-secondary">
 				<span>{children}</span>
-				<XButton onClick={onRemove} title="Entfernen" className="flex items-center" />
+				<XButton
+					onClick={e => {
+						e.stopPropagation();
+						onRemove();
+					}}
+					title="Entfernen"
+					className="flex items-center"
+				/>
 			</span>
 		</Tab>
 	);
