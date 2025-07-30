@@ -41,7 +41,7 @@ function LessonEditorDialog({
 }) {
 	return (
 		<Dialog
-			title={!initialLesson ? "Neue Lerneinheit erstellen" : "Lerneinheit anpassen"}
+			title={!initialLesson ? "Lerneinheit erstellen" : "Lerneinheit bearbeiten"}
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			style={{ height: "80vh", width: "80vw" }}
 		>

@@ -83,8 +83,9 @@ export default function ArrangeForm({ index }: { index: number }) {
 	const onEditContainer: OnDialogCloseFn<string> = title => {
 		setEditCategoryDialog(null);
 		const currentContainerId = editCategoryDialog;
-		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId)
+		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId) {
 			return;
+		}
 		if (items[title]) {
 			showToast({ type: "warning", title: "Kategorie existiert bereits", subtitle: title });
 			return;
@@ -162,10 +163,12 @@ export default function ArrangeForm({ index }: { index: number }) {
 													onClick={() =>
 														setEditCategoryDialog(containerId)
 													}
-													title={"Kategorie editieren"}
+													title={"Kategorie bearbeiten"}
 												/>
 												<PlusButton
-													onClick={() => setEditItemDialog({ containerId })}
+													onClick={() =>
+														setEditItemDialog({ containerId })
+													}
 													title={"Element hinzufügen"}
 												/>
 												<TrashcanButton
@@ -236,7 +239,7 @@ function DraggableContent({
 									item
 								})
 							}
-							title={"Editieren"}
+							title={"Bearbeiten"}
 						/>
 
 						<XButton
@@ -319,7 +322,7 @@ function EditCategoryDialog({
 					onClick={() => onClose(title?.trim())}
 					disabled={title?.length === 0}
 				>
-					Übernehmen
+					Speichern
 				</button>
 			</DialogActions>
 		</Dialog>

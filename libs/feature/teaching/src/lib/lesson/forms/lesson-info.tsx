@@ -29,7 +29,9 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	return (
 		<Form.SidebarSection>
 			<div>
-				<span className="font-semibold text-secondary">Lerneinheit editieren</span>
+				<span className="font-semibold text-secondary">
+					{lesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
+				</span>
 
 				<h1 className="text-2xl">{lesson?.title}</h1>
 			</div>
@@ -46,7 +48,7 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 						{...register("title")}
 						type="text"
 						className="textfield"
-						placeholder="Die Neue Lerneinheit"
+						placeholder="Die neue Lerneinheit"
 						onBlur={slugifyIfEmpty}
 					/>
 				</LabeledField>
@@ -62,7 +64,11 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 							/>
 						}
 						button={
-							<GreyBoarderButton type="button" onClick={slugifyField} title={"Generiere Slug"}>
+							<GreyBoarderButton
+								type="button"
+								onClick={slugifyField}
+								title={"Generiere Slug"}
+							>
 								<span className={"text-gray-600"}>Generieren</span>
 							</GreyBoarderButton>
 						}
