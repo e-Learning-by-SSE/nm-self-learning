@@ -147,9 +147,29 @@ const chapters = [
 						]
 					})
 				]
+			}),
+			createLesson({
+				title: "If&Else-Blöcke",
+				subtitle: "Entscheidungsstrukturen in Java",
+				description:"Erlernen der Grundlagen von If-Else-Blöcken in Java",
+				content: [],
+				questions: [
+					createMultipleChoice({
+						question: "Was ist ein If-Else-Block?",
+						answers: [
+							{
+								content: "Eine Art von Schleife",
+								isCorrect: false
+							},
+							{
+							content: "eine Entscheidung aufgrund einer oder mehrerer Variablen",
+							isCorrect: true
+							}
+						]
+					})
+				]
 			})
-		]
-	}
+	]},
 ];
 
 const courses = [
@@ -176,6 +196,7 @@ const authors = [
 ];
 
 export async function seedJavaDemo(): Promise<void> {
-	await seedJavaDemoSkills();
 	await seedCaseStudy("Java", courses, chapters, authors);
+	await seedJavaDemoSkills();
+
 }
