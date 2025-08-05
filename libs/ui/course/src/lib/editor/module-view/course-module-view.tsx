@@ -128,6 +128,7 @@ export function CourseModuleView({
 			title: "Modul gespeichert!",
 			subtitle: lesson.title
 		});
+		setSelectedIndex(0);
 		form.reset(createEmptyLesson());
 	});
 
