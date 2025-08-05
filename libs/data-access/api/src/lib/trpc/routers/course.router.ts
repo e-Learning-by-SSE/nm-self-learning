@@ -399,7 +399,7 @@ export const courseRouter = t.router({
 				}
 			});
 		}),
-	editMinimal: isCourseAuthorProcedure
+	editMinimal: authorProcedure
 		.input(
 			z.object({
 				slug: z.string(),

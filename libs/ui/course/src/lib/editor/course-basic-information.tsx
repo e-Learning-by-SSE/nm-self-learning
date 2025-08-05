@@ -67,7 +67,7 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 				}
 
 				const { title, slug, courseId } = await edit({
-					courseId: initialCourse.courseId,
+					//courseId: initialCourse.courseId,
 					slug: initialCourse.slug,
 					course: course
 				});
