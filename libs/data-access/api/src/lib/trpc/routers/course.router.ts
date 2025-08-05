@@ -18,7 +18,7 @@ import {
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authorProcedure, authProcedure, isCourseAuthorProcedure, t } from "../trpc";
+import { authorProcedure, authProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
 
 export const courseRouter = t.router({
@@ -359,7 +359,7 @@ export const courseRouter = t.router({
 
 		return created;
 	}),
-	edit: isCourseAuthorProcedure
+	edit: authorProcedure
 		.input(
 			z.object({
 				courseId: z.string(),
@@ -369,8 +369,28 @@ export const courseRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId);
 
-			const updated = await database.course.update({
-				where: { courseId: input.courseId },
+			if (ctx.user.role === "ADMIN") {
+				return await database.course.update({
+					where: {
+						courseId: input.courseId
+					},
+					data: courseForDb,
+					select: {
+						title: true,
+						slug: true,
+						courseId: true
+					}
+				});
+			}
+			return await database.course.update({
+				where: {
+					courseId: input.courseId,
+					authors: {
+						some: {
+							username: ctx.user.name
+						}
+					}
+				},
 				data: courseForDb,
 				select: {
 					title: true,
@@ -378,9 +398,6 @@ export const courseRouter = t.router({
 					courseId: true
 				}
 			});
-
-			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
-			return updated;
 		}),
 	editMinimal: isCourseAuthorProcedure
 		.input(
