@@ -30,7 +30,6 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 		<Form.SidebarSection>
 			<div>
 				<span className="font-semibold text-secondary">Lerneinheit editieren</span>
-
 				<h1 className="text-2xl">{lesson?.title}</h1>
 			</div>
 
