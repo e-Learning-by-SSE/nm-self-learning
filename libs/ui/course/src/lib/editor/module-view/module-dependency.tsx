@@ -59,26 +59,28 @@ export function ModuleDependency({
 				Wählen Sie Skills und Module aus um diese per Drag & Drop der Lerneinheit zuzuweisen
 			</p>
 			<div className="relative mb-4">
-				<button
-					className="absolute top-1.5 right-0 btn btn-primary"
-					title="Nanomodul erstellen"
-					onClick={onCreateNewModule}
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						className="h-5 w-5"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
+				{selectedIndex === 1 && onCreateNewModule && (
+					<button
+						className="absolute top-1.5 right-0 btn btn-primary"
+						title="Nanomodul erstellen"
+						onClick={onCreateNewModule}
 					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M12 4v16m8-8H4"
-						/>
-					</svg>
-				</button>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							className="h-5 w-5"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M12 4v16m8-8H4"
+							/>
+						</svg>
+					</button>
+				)}
 				<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
 					{tabs.map((content, idx) => (
 						<Tab key={idx}>{content}</Tab>
