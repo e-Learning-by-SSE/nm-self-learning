@@ -52,11 +52,8 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 		}
 	}, [initialCourse, reset]);
 
-	//console.log("initialCourse", initialCourse);
-
 	const handleCourseSubmit = async () => {
 		const course = form.getValues();
-		console.log("course", course);
 		try {
 			if (initialCourse) {
 				if (!initialCourse?.courseId) {
@@ -143,24 +140,8 @@ function BasicInfo() {
 		}
 	}, [subjects, setValue, isLoadingSubjects]);
 
-	const { data: specializations = [], isLoading: isLoadingSpecializations } =
-		trpc.specialization.getAll.useQuery();
-
-	useEffect(() => {
-		if (isLoadingSpecializations) return;
-		if (specializations.length > 0) {
-			setValue("specializationId", specializations[0]?.specializationId || "");
-		} else {
-			console.error("Failed to fetch specializations from DB!");
-		}
-	}, [specializations, isLoadingSpecializations, setValue]);
-
 	const onSubjectChange = (subjectId: string) => {
 		setValue("subjectId", subjectId);
-	};
-	const onSpecializationChange = (specializationId: string) => {
-		console.log("specializationId", specializationId);
-		setValue("specializationId", specializationId);
 	};
 
 	return (
@@ -238,13 +219,6 @@ function BasicInfo() {
 				<SubjectDropDown subjects={subjects} onChange={onSubjectChange} />
 			</LabeledField>
 
-			<LabeledField label="Spezialisierung" error={errors.specializationId?.message}>
-				<SpecializationDropDown
-					specializations={specializations}
-					onChange={onSpecializationChange}
-				/>
-			</LabeledField>
-
 			<Controller
 				control={form.control}
 				name="imgUrl"
@@ -311,52 +285,6 @@ function SubjectDropDown({
 				{subjects.map(subject => (
 					<option key={subject.subjectId} value={subject.subjectId}>
 						{subject.title}
-					</option>
-				))}
-			</select>
-		</div>
-	);
-}
-
-type specialization = {
-	specializationId: string;
-	title: string;
-};
-
-function SpecializationDropDown({
-	specializations,
-	onChange
-}: {
-	specializations: specialization[];
-	onChange: (id: string) => void;
-}) {
-	const [selectedSpecialization, setSelectedSpecialization] = useState<string>(
-		specializations?.[0]?.specializationId ?? ""
-	);
-
-	const changeDisplaySelectedSpecialization = (id: string) => {
-		setSelectedSpecialization(id);
-	};
-
-	useEffect(() => {
-		onChange(selectedSpecialization);
-	}, [onChange, selectedSpecialization]);
-
-	return (
-		<div className="flex flex-col">
-			<select
-				className="textfield"
-				value={selectedSpecialization ?? specializations[0].specializationId}
-				onChange={e => {
-					changeDisplaySelectedSpecialization(e.target.value);
-				}}
-			>
-				{specializations.map(specialization => (
-					<option
-						key={specialization.specializationId}
-						value={specialization.specializationId}
-					>
-						{specialization.title}
 					</option>
 				))}
 			</select>

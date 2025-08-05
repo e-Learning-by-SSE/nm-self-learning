@@ -3,7 +3,8 @@ import {
 	authorsRelationSchema,
 	courseContentSchema,
 	createCourseMeta,
-	skillFormSchema
+	skillFormSchema,
+	specializationSchema
 } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
@@ -33,7 +34,7 @@ export const relaxedCourseFormSchema = z.object({
 	imgUrl: z.string().nullable().optional(),
 	authors: authorsRelationSchema,
 	content: courseContentSchema.optional().default([]),
-	specializationId: z.string().nullable().optional(),
+	specializations: z.array(specializationSchema).optional().default([]),
 	provides: z.array(skillFormSchema).optional().default([]),
 	requires: z.array(skillFormSchema).optional().default([])
 });
@@ -77,7 +78,7 @@ export function mapRelaxedCourseFormToInsert(
 		imgUrl,
 		content,
 		subjectId,
-		specializationId,
+		specializations,
 		provides,
 		requires,
 		authors
@@ -96,7 +97,11 @@ export function mapRelaxedCourseFormToInsert(
 			connect: authors.map(author => ({ username: author.username }))
 		},
 		subject: subjectId ? { connect: { subjectId } } : undefined,
-		specializations: specializationId ? { connect: { specializationId } } : undefined,
+		specializations: {
+			connect: (specializations ?? []).map(specialization => ({
+				specializationId: specialization.specializationId
+			}))
+		},
 		provides: {
 			connect: (provides ?? []).map(skill => ({ id: skill.id }))
 		},

@@ -258,7 +258,7 @@ export const courseRouter = t.router({
 
 				content: normalizeContent(course.content),
 
-				specializationId: course.specializations[0].specializationId ?? null, // TODO: some decisions has to be made
+				specializations: course.specializations ?? [],
 
 				authors: course.authors.map(a => ({
 					username: a.username
