@@ -138,17 +138,19 @@ export function QuizHeader({
 	course: QuestionProps["course"];
 	currentIndex: number;
 	questions: QuizContent;
-	questionOrder: string[];
+	questionOrder?: string[];
 	goToQuestion: (index: number) => void;
 }) {
 	const { evaluations, completionState } = useQuiz();
 	const { newEvent } = useEventLog();
 	const [suppressDialog, setSuppressDialog] = useState(false);
 	const orderedQuestions = useMemo(() => {
-	return questionOrder
-		.map(Id => questions.find(q => q.questionId === Id))
-		.filter((q): q is NonNullable<typeof q> => !!q);
-}, [questionOrder, questions]);
+		return questionOrder
+			? questionOrder
+					.map(Id => questions.find(q => q.questionId === Id))
+					.filter((q): q is NonNullable<typeof q> => !!q)
+			: questions;
+	}, [questionOrder, questions]);
 	const isStandalone = !course;
 	const lessonUrl = isStandalone
 		? `/lessons/${lesson.slug}`
@@ -179,7 +181,7 @@ export function QuizHeader({
 
 	useEffect(() => {
 		// TODO diary: check if the useEffect is necessary
-		logQuizStart(lesson, orderedQuestions[currentIndex])
+		logQuizStart(lesson, orderedQuestions[currentIndex]);
 	}, [orderedQuestions, currentIndex, logQuizStart, lesson]);
 
 	return (
