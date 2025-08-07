@@ -6,7 +6,11 @@ jest.mock("@self-learning/database", () => ({
 	createUserEvent: jest.fn(),
 	database: {
 		course: {
-			findUniqueOrThrow: jest.fn()
+			findUniqueOrThrow: jest.fn(),
+			findUnique: jest.fn()
+		},
+		dynCourse: {
+			findUnique: jest.fn()
 		},
 		enrollment: {
 			create: jest.fn()
@@ -58,14 +62,7 @@ describe("enrollUser", () => {
 			enrollments: [{ createdAt }]
 		});
 
-		try {
-			await enrollUser({ courseId, username });
-			fail(`No Exception thrown`);
-		} catch (e) {
-			if (!(e instanceof ApiError)) {
-				fail(`Wrong exception thrown: ${e}`);
-			}
-		}
+		await expect(enrollUser({ courseId, username })).rejects.toThrow(ApiError);
 		// await expect(enrollUser({ courseId, username })).rejects.toBeInstanceOf(ApiError); // TODO this does not work in testing
 
 		expect(createUserEvent).not.toHaveBeenCalled();
