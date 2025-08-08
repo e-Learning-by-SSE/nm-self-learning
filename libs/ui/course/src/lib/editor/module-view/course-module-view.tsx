@@ -147,27 +147,21 @@ export function CourseModuleView({
 	};
 
 	const onCreateNewModule = () => form.reset(createEmptyLesson());
-
 	const onSubmit = form.handleSubmit(async (lesson: LessonFormModel) => {
-		const id = selectedModuleId ?? lesson.lessonId ?? crypto.randomUUID();
-		const updatedModules = new Map(modules);
-		updatedModules.set(id, { ...lesson, lessonId: id });
-		setModules(updatedModules);
-		setSelectedModuleId(null);
-		let lessonTitle;
-		if (lesson.lessonId) {
-			//const { title } = await edit({ lessonId: lesson.lessonId, lesson: lesson });
-			lessonTitle = "TODO";
-		} else {
-			const { title } = await create(lesson);
-			lessonTitle = title;
-		}
+		const isEdit = Boolean(lesson.lessonId);
+
+		const { lessonId, title } = isEdit
+			? await edit({ lessonId: lesson.lessonId!, lesson })
+			: await create(lesson);
 
 		showToast({
 			type: "success",
-			title: "Modul gespeichert!",
-			subtitle: lessonTitle
+			title: isEdit ? "Modul aktualisiert!" : "Modul gespeichert!",
+			subtitle: title
 		});
+
+		setModules(prev => new Map(prev).set(lessonId, { ...lesson, lessonId }));
+		setSelectedModuleId(null);
 		setSelectedIndex(0);
 		form.reset(createEmptyLesson());
 	});
