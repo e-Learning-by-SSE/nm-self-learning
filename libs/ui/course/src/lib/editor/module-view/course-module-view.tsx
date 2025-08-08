@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { FormProvider, useForm } from "react-hook-form";
 import {
@@ -26,12 +26,36 @@ export function CourseModuleView({
 	const tabs = ["Basisdaten", "Lerninhalt", "Lernkontrolle"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const { data: skills } = trpc.skill.getSkillsByAuthorId.useQuery();
+	const { mutateAsync: create } = trpc.lesson.create.useMutation();
+	const { mutateAsync: edit } = trpc.lesson.edit.useMutation();
+
 	const [modules, setModules] = useState<Map<string, LessonFormModel>>(new Map());
 	const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+	const [loaded, setLoaded] = useState(false);
+
+	useEffect(() => {
+		const savedModules = sessionStorage.getItem("modules");
+		if (savedModules) {
+			try {
+				setModules(new Map(JSON.parse(savedModules)));
+			} catch (e) {
+				console.error("Invalid modules data in sessionStorage", e);
+			}
+		}
+		setLoaded(true);
+	}, []);
+
+	useEffect(() => {
+		if (loaded) {
+			sessionStorage.setItem("modules", JSON.stringify(Array.from(modules.entries())));
+		}
+	}, [modules, loaded]);
+
 	const allSkills = new Map<string, SkillFormModel>();
 	skills?.forEach(skill => {
 		allSkills.set(skill.id, skill);
 	});
+
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
@@ -50,11 +74,14 @@ export function CourseModuleView({
 		if (alreadyProvided) {
 			return true;
 		}
-		for (const module of modules.values()) {
-			if (module.provides?.some(s => s.id === skillId)) {
-				return true;
+		if (modules instanceof Map) {
+			for (const module of modules.values()) {
+				if (module.provides?.some(s => s.id === skillId)) {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	};
 	const onSkillSelect: SkillSelectHandler = skillId => {
@@ -99,8 +126,12 @@ export function CourseModuleView({
 		});
 	};
 	const addSkills = (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => {
-		const alreadyRequired = form.getValues("provides")?.some(s => skillsToAdd.some(skill => skill.id === s.id));
-		const alreadyProvided = form.getValues("requires")?.some(s => skillsToAdd.some(skill => skill.id === s.id));
+		const alreadyRequired = form
+			.getValues("provides")
+			?.some(s => skillsToAdd.some(skill => skill.id === s.id));
+		const alreadyProvided = form
+			.getValues("requires")
+			?.some(s => skillsToAdd.some(skill => skill.id === s.id));
 		if (alreadyRequired || alreadyProvided) {
 			showToast({
 				type: "error",
@@ -117,16 +148,25 @@ export function CourseModuleView({
 
 	const onCreateNewModule = () => form.reset(createEmptyLesson());
 
-	const onSubmit = form.handleSubmit((lesson: LessonFormModel) => {
+	const onSubmit = form.handleSubmit(async (lesson: LessonFormModel) => {
 		const id = selectedModuleId ?? lesson.lessonId ?? crypto.randomUUID();
 		const updatedModules = new Map(modules);
 		updatedModules.set(id, { ...lesson, lessonId: id });
 		setModules(updatedModules);
 		setSelectedModuleId(null);
+		let lessonTitle;
+		if (lesson.lessonId) {
+			//const { title } = await edit({ lessonId: lesson.lessonId, lesson: lesson });
+			lessonTitle = "TODO";
+		} else {
+			const { title } = await create(lesson);
+			lessonTitle = title;
+		}
+
 		showToast({
 			type: "success",
 			title: "Modul gespeichert!",
-			subtitle: lesson.title
+			subtitle: lessonTitle
 		});
 		setSelectedIndex(0);
 		form.reset(createEmptyLesson());

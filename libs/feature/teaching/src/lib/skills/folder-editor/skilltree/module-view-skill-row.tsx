@@ -177,6 +177,8 @@ function SkillRow({
 			parents: string[];
 		}[];
 	};
+
+	// TODO: make one function out of these
 	const isRequiredSkill = (skillId: string): boolean => {
 		const skill = allSkills.get(skillId);
 		const requires = getValues("requires") ?? [];
@@ -184,9 +186,11 @@ function SkillRow({
 		if (alreadyRequired) {
 			return true;
 		}
-		for (const module of modules.values()) {
-			if (module.requires?.some(s => s.id === skillId)) {
-				return true;
+		if (modules instanceof Map) {
+			for (const module of modules.values()) {
+				if (module.requires?.some(s => s.id === skillId)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -198,9 +202,11 @@ function SkillRow({
 		if (alreadyProvided) {
 			return true;
 		}
-		for (const module of modules.values()) {
-			if (module.provides?.some(s => s.id === skillId)) {
-				return true;
+		if (modules instanceof Map) {
+			for (const module of modules.values()) {
+				if (module.provides?.some(s => s.id === skillId)) {
+					return true;
+				}
 			}
 		}
 		return false;
