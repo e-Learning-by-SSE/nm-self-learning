@@ -146,12 +146,15 @@ export function CourseModuleView({
 		]);
 	};
 
-	const onCreateNewModule = () => form.reset(createEmptyLesson());
+	const onCreateNewModule = () => {
+		form.reset(createEmptyLesson());
+		setSelectedModuleId(null);
+	};
 	const onSubmit = form.handleSubmit(async (lesson: LessonFormModel) => {
 		const isEdit = Boolean(lesson.lessonId);
 
 		const { lessonId, title } = isEdit
-			? await edit({ lessonId: lesson.lessonId!, lesson })
+			? await edit({ lessonId: lesson.lessonId, lesson })
 			: await create(lesson);
 
 		showToast({
@@ -229,12 +232,21 @@ export function CourseModuleView({
 								/>
 							}
 						/>
+
 						<main className="flex-1 min-w-[500px] max-w-[900px] p-8 pr-4 py-4 text-sm">
 							<form
 								id="lessonform"
 								onSubmit={onSubmit}
 								className="flex flex-col h-full justify-between"
 							>
+								<div className="flex justify-end mb-8">
+									<button className="btn btn-primary" type="submit">
+										{selectedModuleId
+											? "Nanomodul aktualisieren"
+											: "Nanomodul speichern"}
+									</button>
+								</div>
+
 								<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
 									{tabs.map((content, idx) => (
 										<Tab key={idx}>{content}</Tab>
@@ -242,14 +254,6 @@ export function CourseModuleView({
 								</Tabs>
 
 								<div className="flex-grow">{renderContent(selectedIndex)}</div>
-
-								<div className="flex justify-end mb-8">
-									<button className="btn btn-primary" type="submit">
-										{selectedModuleId
-											? "Nanomodul speichern"
-											: "Nanomodul hinzufügen"}
-									</button>
-								</div>
 							</form>
 						</main>
 					</ModuleViewProvider>
