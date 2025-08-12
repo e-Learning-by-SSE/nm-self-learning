@@ -34,16 +34,12 @@ export function DynCourseEditor({
 						if ((e.target as unknown as { id: string }).id === "courseform") {
 							form.handleSubmit(
 								data => {
-									console.log("data", data);
 									try {
 										const validated = dynCourseFormSchema.parse(data);
 										onConfirm(validated);
 									} catch (error) {
 										console.error(error);
 									}
-								},
-								invalid => {
-									console.log("invalid", invalid);
 								}
 							)(e);
 						}

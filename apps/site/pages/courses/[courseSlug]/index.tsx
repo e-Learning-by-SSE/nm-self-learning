@@ -4,18 +4,8 @@ import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import {
-	CourseContent,
-	Defined,
-	extractLessonIds,
-	LessonInfo
-} from "@self-learning/types";
-import {
-	AuthorsList,
-	showToast,
-	ButtonActions,
-	OnDialogCloseFn
-} from "@self-learning/ui/common";
+import { CourseContent, Defined, extractLessonIds, LessonInfo } from "@self-learning/types";
+import { AuthorsList, showToast, ButtonActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
@@ -28,7 +18,6 @@ import { trpc } from "@self-learning/api-client";
 import { useRouter } from "next/router";
 import { Dialog } from "@self-learning/ui/common";
 import { CombinedCourseResult, getCombinedCourses } from "@self-learning/course";
-
 
 function mapToTocContent(
 	content: CourseContent,
@@ -128,12 +117,10 @@ export const getServerSideProps = withTranslations(
 		let isGenerated = false;
 		let needsARefresh = false;
 
-		
-
 		const result = await getCombinedCourses({
 			slug: courseSlug,
 			username: ctx.name,
-			includeContent: true,
+			includeContent: true
 		});
 
 		let course = result[0];
@@ -142,11 +129,14 @@ export const getServerSideProps = withTranslations(
 			return { notFound: true };
 		}
 
-		if(course.courseType === "DYNAMIC" && course.localCourseVersion !== undefined && course.globalCourseVersion !== undefined ) {
-		
+		if (
+			course.courseType === "DYNAMIC" &&
+			course.localCourseVersion !== undefined &&
+			course.globalCourseVersion !== undefined
+		) {
 			isGenerated = true;
 			needsARefresh = course?.localCourseVersion < course?.globalCourseVersion;
-			if(course.content === undefined) { 
+			if (course.content === undefined) {
 				course = {
 					...course,
 					content: []
@@ -253,6 +243,12 @@ function CourseHeader({
 
 	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
+
+	const shouldShowStartButton =
+		isEnrolled &&
+		(!isGenerated ||
+			(isGenerated && Array.isArray(course.content) && course.content.length !== 0));
+
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
@@ -308,7 +304,7 @@ function CourseHeader({
 						</ul>
 					</div>
 
-					{isEnrolled && (!isGenerated || isGenerated && Array.isArray(course.content) && course.content.length !== 0) && (
+					{shouldShowStartButton && (
 						<Link
 							href={
 								firstLessonFromChapter
@@ -507,7 +503,13 @@ function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 	);
 }
 
-function CoursePath({ course, needsARefresh }: { course: CombinedCourseResult; needsARefresh: boolean }) {
+function CoursePath({
+	course,
+	needsARefresh
+}: {
+	course: CombinedCourseResult;
+	needsARefresh: boolean;
+}) {
 	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
 	const router = useRouter();
 	const [isGenerating, setIsGenerating] = useState(false);
