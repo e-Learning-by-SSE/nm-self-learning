@@ -1,4 +1,6 @@
+import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import { database } from "@self-learning/database";
 import { CourseFormModel, RelaxedCourseFormModel } from "@self-learning/teaching";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CourseBasicInformation } from "@self-learning/ui/course";
