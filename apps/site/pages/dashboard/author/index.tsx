@@ -188,7 +188,7 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor in den folgenden Kursen:"
 							/>
 
-							<Link href="/teaching/courses/create">
+							<Link href="/teaching/courses/new">
 								<IconButton
 									text="Neuen Kurs erstellen"
 									icon={<PlusIcon className="icon h-5" />}
@@ -232,7 +232,7 @@ function AuthorDashboardPage({ author }: Props) {
 
 											<div className="flex flex-wrap justify-end gap-4">
 												<Link
-													href={`/teaching/courses/edit/${course.courseId}`}
+													href={`/teaching/courses/${course.slug}/edit`}
 													className="btn-stroked h-fit w-fit"
 												>
 													<PencilIcon className="icon" />

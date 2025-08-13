@@ -4,7 +4,6 @@ import { showToast } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
-import CourseCreationEditor from ".";
 
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
@@ -44,7 +43,20 @@ export default function CreateCoursePage() {
 	return (
 		<>
 			{router.isReady && ( // Query params are not available on first render -> Wait for router to be ready
-			<CourseCreationEditor/>
+				<CourseEditor
+					onConfirm={onConfirm}
+					course={{
+						courseId: "",
+						title: "",
+						slug: "",
+						description: "",
+						subtitle: "",
+						imgUrl: "",
+						subjectId: null,
+						content: [],
+						authors: [{ username: author }]
+					}}
+				/>
 			)}
 		</>
 	);
