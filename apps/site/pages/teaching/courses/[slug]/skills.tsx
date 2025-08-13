@@ -1,5 +1,6 @@
 import { isAuthor } from "@self-learning/admin";
 import { withAuth, withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CourseSkillView } from "@self-learning/ui/course";
 import { useParams } from "next/navigation";
@@ -9,6 +10,7 @@ import { useState } from "react";
 export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth(async (context, user) => {
+		console.log("# user", user);
 		if (!user) {
 			return { redirect: { destination: "/", permanent: false } };
 		}
@@ -23,15 +25,18 @@ export const getServerSideProps = withTranslations(
 			return { redirect: { destination: "/", permanent: false } };
 		}
 
-		return { props: {} };
+		return { props: { username: user.name } };
 	})
 );
 
-export default function CourseSkillsPage() {
+type Props = { username: string };
+
+export default function CourseSkillsPage({ username }: Props) {
 	const router = useRouter();
 	const params = useParams();
 	const slug = params?.slug as string;
 	const [selectedIndex, setSelectedIndex] = useState(1);
+	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({ username: username });
 
 	const tabs = [
 		{ label: "1. Grunddaten", path: "edit" },
@@ -52,6 +57,14 @@ export default function CourseSkillsPage() {
 		return null;
 	}
 
+	if (isLoading) {
+		return <div>Loading...</div>;
+	}
+
+	if (!author) {
+		return <div>Author not found.</div>;
+	}
+
 	return (
 		<div className="m-3">
 			<section>
@@ -64,7 +77,7 @@ export default function CourseSkillsPage() {
 					</Tab>
 				))}
 			</Tabs>
-			<CourseSkillView authorId={0} />
+			<CourseSkillView authorId={author.id} />
 		</div>
 	);
 }

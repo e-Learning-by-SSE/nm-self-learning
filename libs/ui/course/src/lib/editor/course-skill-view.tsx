@@ -4,8 +4,7 @@ import { SkillFormModel } from "@self-learning/types";
 
 export function CourseSkillView({ authorId }: { authorId: number }) {
 	const allSkills = new Map<string, SkillFormModel>();
-
-	const { data: skills } = trpc.skill.getSkillsByAuthorId.useQuery();
+	const { data: skills } = trpc.skill.getSkills.useQuery();
 
 	skills?.forEach(skill => {
 		allSkills.set(skill.id, skill);
