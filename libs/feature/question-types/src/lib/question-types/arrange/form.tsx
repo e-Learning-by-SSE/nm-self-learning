@@ -80,8 +80,9 @@ export default function ArrangeForm({ index }: { index: number }) {
 	const onEditContainer: OnDialogCloseFn<string> = title => {
 		setEditCategoryDialog(null);
 		const currentContainerId = editCategoryDialog;
-		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId)
+		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId) {
 			return;
+		}
 		if (items[title]) {
 			showToast({ type: "warning", title: "Kategorie existiert bereits", subtitle: title });
 			return;
@@ -161,17 +162,19 @@ export default function ArrangeForm({ index }: { index: number }) {
 													onClick={() =>
 														setEditCategoryDialog(containerId)
 													}
-													title={"Kategorie editieren"}
+													title={"Kategorie bearbeiten"}
 												/>
 												<IconOnlyButton
-													icon={<PlusIcon className="h-5 w-5"/>}
-													variant = "primary"
-													onClick={() => setEditItemDialog({ containerId })}
+													icon={<PlusIcon className="h-5 w-5" />}
+													variant="primary"
+													onClick={() =>
+														setEditItemDialog({ containerId })
+													}
 													title={"Element hinzufügen"}
 												/>
 												<IconOnlyButton
 													icon={<TrashIcon className="h-5 w-5" />}
-													variant = "danger" 
+													variant="danger"
 													onClick={() => onDeleteContainer(containerId)}
 													title={"Kategorie entfernen"}
 												/>
@@ -241,7 +244,7 @@ function DraggableContent({
 									item
 								})
 							}
-							title={"Editieren"}
+							title={"Bearbeiten"}
 						/>
 
 						<IconOnlyButton
@@ -326,7 +329,7 @@ function EditCategoryDialog({
 					onClick={() => onClose(title?.trim())}
 					disabled={title?.length === 0}
 				>
-					Übernehmen
+					Speichern
 				</button>
 			</DialogActions>
 		</Dialog>

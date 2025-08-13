@@ -111,7 +111,7 @@ export function MarkdownEditorDialog({
 
 				<div className="flex h-full w-full flex-col gap-2 overflow-auto">
 					<span className="relative flex justify-between">
-						<label className="text-sm font-semibold">Preview</label>
+						<label className="text-sm font-semibold">Vorschau</label>
 					</span>
 					<div className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
@@ -128,7 +128,7 @@ export function MarkdownEditorDialog({
 
 			<DialogActions onClose={onClose}>
 				<button type="button" className="btn-primary" onClick={() => onClose(value)}>
-					Übernehmen
+					Speichern
 				</button>
 			</DialogActions>
 		</Dialog>

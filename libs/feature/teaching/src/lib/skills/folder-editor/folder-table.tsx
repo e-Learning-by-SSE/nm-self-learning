@@ -45,7 +45,7 @@ export function SkillFolderTable({
 				</div>
 
 				<SearchField
-					placeholder="Suche nach Skill-Trees"
+					placeholder="Suche nach Skills"
 					onChange={e => {
 						setSearchTerm(e.target.value);
 					}}

@@ -63,7 +63,7 @@ export function CourseEditor({
 							<>
 								<div>
 									<span className="font-semibold text-secondary">
-										Kurs editieren
+										{isNew ? "Kurs erstellen" : "Kurs bearbeiten"}
 									</span>
 
 									<Link href={`/courses/${course.slug}`} target="_blank">

@@ -79,7 +79,7 @@ export function JsonEditorDialog<T>({
 								className="btn-primary  w-fit"
 								onClick={closeWithReturn}
 							>
-								Übernehmen
+								Speichern
 							</button>
 
 							<button

@@ -111,7 +111,7 @@ export function CourseContentForm() {
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
 				<PlusIcon className="mr-2 h-5" />
-				<span>Kapitel hinzufügen</span>
+				<span>Kapitel erstellen</span>
 			</button>
 
 			{openNewChapterDialog && <ChapterDialog onClose={handleAddChapterDialogClose} />}
@@ -300,7 +300,7 @@ function ChapterNode({
 								onClick={() => setEditChapterDialogOpen(true)}
 							>
 								<PencilIcon className="icon" />
-								<span>Editieren</span>
+								<span>Bearbeiten</span>
 							</button>
 						</div>
 
@@ -311,7 +311,7 @@ function ChapterNode({
 								onClick={() => setCreateLessonDialogOpen(true)}
 							>
 								<PlusIcon className="icon" />
-								<span>Neue Lerneinheit erstellen</span>
+								<span>Lerneinheit erstellen</span>
 							</button>
 
 							<button
