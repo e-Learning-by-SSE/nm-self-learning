@@ -13,7 +13,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { lessonSchema } from "@self-learning/types";
-import { GreyBoarderButton } from "@self-learning/ui/common";
 import { LessonSkillManager } from "./lesson-skill-manager";
 
 export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
@@ -29,7 +28,9 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	return (
 		<Form.SidebarSection>
 			<div>
-				<span className="font-semibold text-secondary">Lerneinheit editieren</span>
+				<span className="font-semibold text-secondary">
+					{lesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
+				</span>
 
 				<h1 className="text-2xl">{lesson?.title}</h1>
 			</div>
@@ -46,7 +47,7 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 						{...register("title")}
 						type="text"
 						className="textfield"
-						placeholder="Die Neue Lerneinheit"
+						placeholder="Die neue Lerneinheit"
 						onBlur={slugifyIfEmpty}
 					/>
 				</LabeledField>
@@ -62,13 +63,14 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 							/>
 						}
 						button={
-							<GreyBoarderButton
+							<button
+								className="btn btn-tertiary"
 								type="button"
 								onClick={slugifyField}
-								title={"Generiere Slug"}
+								title={"Slug generieren"}
 							>
 								<span className={"text-gray-600"}>Generieren</span>
-							</GreyBoarderButton>
+							</button>
 						}
 					/>
 					<FieldHint>

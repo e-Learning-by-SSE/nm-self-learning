@@ -6,7 +6,7 @@ import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/database";
 import { SkillDeleteOption } from "./skill-taskbar";
-import { GreyBoarderButton, showToast } from "@self-learning/ui/common";
+import { IconOnlyButton, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { SkillSelectHandler } from "./skill-display";
 import { XMarkIcon } from "@heroicons/react/24/solid";
@@ -74,13 +74,13 @@ export function SkillInfoForm({
 							subtitle="Informationen über den rechts ausgewählten Skill"
 						/>
 
-						<GreyBoarderButton
+						<IconOnlyButton
+							icon={<XMarkIcon className="h-5" />}
+							variant="tertiary"
 							onClick={resetEditTarget}
 							title="Ansicht ohne Veränderungen schließen"
 							className="px-4"
-						>
-							<XMarkIcon className="h-5" />
-						</GreyBoarderButton>
+						/>
 					</div>
 					<div className="flex flex-col gap-4 border-b-2 border-light-border">
 						<LabeledField label="Name" error={errors.name?.message}>

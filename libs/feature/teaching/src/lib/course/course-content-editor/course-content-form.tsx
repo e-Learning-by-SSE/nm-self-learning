@@ -5,7 +5,8 @@ import {
 	ChevronLeftIcon,
 	LinkIcon,
 	PencilIcon,
-	PlusIcon
+	PlusIcon,
+	XMarkIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
@@ -15,7 +16,7 @@ import {
 	onLessonEditorSubmit
 } from "@self-learning/teaching";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
-import { OnDialogCloseFn, SectionHeader, XButton } from "@self-learning/ui/common";
+import { IconOnlyButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
@@ -110,7 +111,7 @@ export function CourseContentForm() {
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
 				<PlusIcon className="mr-2 h-5" />
-				<span>Kapitel hinzufügen</span>
+				<span>Kapitel erstellen</span>
 			</button>
 
 			{openNewChapterDialog && <ChapterDialog onClose={handleAddChapterDialogClose} />}
@@ -174,7 +175,7 @@ function LessonNode({
 						Lernkontrolle
 					</span>
 				)}
-				<XButton onClick={onRemove} title="Entfernen" size="medium" />
+				<IconOnlyButton onClick={onRemove} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" title="Entfernen" />
 			</div>
 		</span>
 	);
@@ -299,7 +300,7 @@ function ChapterNode({
 								onClick={() => setEditChapterDialogOpen(true)}
 							>
 								<PencilIcon className="icon" />
-								<span>Editieren</span>
+								<span>Bearbeiten</span>
 							</button>
 						</div>
 
@@ -310,7 +311,7 @@ function ChapterNode({
 								onClick={() => setCreateLessonDialogOpen(true)}
 							>
 								<PlusIcon className="icon" />
-								<span>Neue Lerneinheit erstellen</span>
+								<span>Lerneinheit erstellen</span>
 							</button>
 
 							<button

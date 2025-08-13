@@ -158,7 +158,7 @@ function Explainer() {
 
 			<ul className="text-sm text-light">
 				<li>
-					<span className="font-bold">standlone</span>: Der Student entwickelt das
+					<span className="font-bold">standalone</span>: Der Student entwickelt das
 					vollstände Programm. Die Ausgabe des Programms wird mit einer vom Autor
 					vordefinierten Ausgabe verglichen, um die Korrektheit der Lösung zu ermitteln.
 				</li>

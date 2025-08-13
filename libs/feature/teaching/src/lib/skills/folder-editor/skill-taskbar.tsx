@@ -3,11 +3,12 @@ import {
 	ButtonActions,
 	dispatchDialog,
 	freeDialog,
+	IconButton,
+	IconOnlyButton,
 	showToast,
-	SimpleDialog,
-	TrashcanButton
+	SimpleDialog
 } from "@self-learning/ui/common";
-import { TrashIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
@@ -83,8 +84,8 @@ export function AddChildButton({
 
 	return (
 		<button
-			title="Neuen Skill in dieser Skillgruppe anlegen"
-			className="mr-3 px-2 hover:text-secondary"
+			title="Neuen Skill in dieser Skillgruppe erstellen"
+			className="hover:text-secondary"
 			onClick={handleAddSkill}
 		>
 			<FolderPlusIcon className="icon h-5 text-lg" style={{ cursor: "pointer" }} />
@@ -131,7 +132,13 @@ export function SkillDeleteOption({
 	};
 
 	if (!inline) {
-		return <TrashcanButton onClick={handleDelete} />;
+		return (
+			<IconOnlyButton
+				icon={<TrashIcon className="h-5 w-5" />}
+				variant="danger"
+				onClick={handleDelete}
+			/>
+		);
 	} else {
 		return (
 			<button type="button" className={"px-2 hover:text-secondary"} onClick={handleDelete}>
@@ -139,4 +146,40 @@ export function SkillDeleteOption({
 			</button>
 		);
 	}
+}
+
+export function NewSkillButton({
+	authorId,
+	onSuccess,
+	skillDefaults
+}: {
+	authorId: number;
+	onSuccess?: (skill: Skill) => void | Promise<void>;
+	skillDefaults?: Partial<Skill>;
+}) {
+	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
+
+	const date = new Date();
+	const formattedDate = date.toLocaleDateString("de-DE");
+
+	const newSkill = {
+		name: `Skill vom ${formattedDate}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+		description: "Add here",
+		children: [],
+		...skillDefaults
+	};
+	const onCreateSkill = async () => {
+		const createdSkill = await createNewSkill({
+			skill: newSkill,
+			authorId: authorId
+		});
+		await onSuccess?.(createdSkill ?? null);
+	};
+	return (
+		<IconButton
+			text="Skill erstellen"
+			icon={<PlusIcon className="icon h-5" />}
+			onClick={onCreateSkill}
+		/>
+	);
 }

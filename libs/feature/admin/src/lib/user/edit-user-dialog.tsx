@@ -144,7 +144,7 @@ function UserData() {
 				<LabeledField label="Name" error={errors.displayName?.message}>
 					<input className="textfield" type={"text"} {...register("name")} />
 				</LabeledField>
-				<LabeledField label="Displayname" error={errors.displayName?.message}>
+				<LabeledField label="Anzeigename" error={errors.displayName?.message}>
 					<input className="textfield" type={"text"} {...register("displayName")} />
 				</LabeledField>
 				<LabeledField label="Email" error={errors.email?.message}>

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { getButtonSizeClass, IconButton } from "@self-learning/ui/common";
+import { IconButton } from "@self-learning/ui/common";
 import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
 import { SkillManagementComponent } from "../../skills/skill-dialog/select-skill-view";
 
@@ -43,7 +43,7 @@ export function LessonSkillManager() {
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle
 				title="Skills"
-				subtitle="Vermittelte und Benötigte Skills dieser Lerneinheit"
+				subtitle="Vermittelte und benötigte Skills dieser Lerneinheit"
 			/>
 			<>
 				<LabeledFieldSelectSkillsView2
@@ -99,7 +99,7 @@ export function LabeledFieldSelectSkillsView2({
 			button={
 				<IconButton
 					text="Hinzufügen"
-					icon={<PlusIcon className={getButtonSizeClass("medium")} />}
+					icon={<PlusIcon />}
 					onClick={() => setSelectSkillModal(true)}
 					title={"Hinzufügen"}
 					data-testid="BenoetigteSkills-add"

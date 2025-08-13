@@ -34,7 +34,7 @@ export function ParentSkillOverview() {
 		<AuthorGuard>
 			<div className="flex min-h-[300px] flex-col">
 				<SearchField
-					placeholder="Suche nach Skill-Trees"
+					placeholder="Suche nach Skillkarten"
 					onChange={e => {
 						setDisplayName(e.target.value);
 					}}
@@ -78,7 +78,7 @@ export function ParentSkillOverview() {
 									<TableDataColumn>
 										<div className="flex flex-wrap gap-4">
 											<span className="text-sm font-medium hover:text-secondary">
-												Keine Skill Repositories vorhanden
+												Keine Skillkarten vorhanden
 											</span>
 										</div>
 									</TableDataColumn>
