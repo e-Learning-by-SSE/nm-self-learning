@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { isAuthor } from "@self-learning/admin";
+import { trpc } from "@self-learning/api-client";
 
 export const getServerSideProps = withTranslations(
 	["common"],
@@ -23,14 +24,17 @@ export const getServerSideProps = withTranslations(
 			return { redirect: { destination: "/", permanent: false } };
 		}
 
-		return { props: {} };
+		return { props: { username: user.name } };
 	})
 );
 
-export default function CourseModulesPage() {
+type Props = { username: string };
+
+export default function CourseModulesPage({ username }: Props) {
 	const router = useRouter();
 	const params = useParams();
 	const slug = params?.slug as string;
+	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({ username: username });
 
 	const [selectedIndex, setSelectedIndex] = useState(2);
 
@@ -48,6 +52,15 @@ export default function CourseModulesPage() {
 			router.push(`/teaching/courses/${slug}/${tab.path}`);
 		}
 	}
+
+	if (isLoading) {
+		return <div>Loading...</div>;
+	}
+
+	if (!author) {
+		return <div>Author not found.</div>;
+	}
+
 	return (
 		<div className="m-3">
 			<section>
@@ -60,7 +73,7 @@ export default function CourseModulesPage() {
 					</Tab>
 				))}
 			</Tabs>
-			<CourseModuleView authorId={0} />
+			<CourseModuleView authorId={author.id} />
 		</div>
 	);
 }

@@ -25,7 +25,7 @@ export function CourseModuleView({
 }) {
 	const tabs = ["Basisdaten", "Lerninhalt", "Lernkontrolle"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	const { data: skills } = trpc.skill.getSkillsByAuthorId.useQuery();
+	const { data: skills } = trpc.skill.getSkills.useQuery();
 	const { mutateAsync: create } = trpc.lesson.create.useMutation();
 	const { mutateAsync: edit } = trpc.lesson.edit.useMutation();
 
