@@ -439,9 +439,9 @@ function CombinedImageButton({
 							{imageSizes.map(size => (
 								<button
 									key={size.key}
-									className={`flex items-center justify-between p-2 text-left rounded-md transition-all duration-150 hover:bg-green-50 ${
+									className={`flex items-center justify-between p-2 text-left rounded-md transition-all duration-150 hover:bg-emerald-50 ${
 										selectedSize === size.key
-											? "bg-green-100 border border-green-200 shadow-sm"
+											? "bg-emerald-100 border border-emerald-200 shadow-sm"
 											: "hover:shadow-sm border border-transparent"
 									}`}
 									onClick={() => handleSizeSelect(size.key)}
@@ -474,7 +474,7 @@ function CombinedImageButton({
 								placeholder="z.B. 200, 150px, 50%"
 								defaultValue={selectedImageHeight.current}
 								onChange={e => handleHeightChange(e.target.value)}
-								className="flex-1 p-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-transparent"
+								className="flex-1 p-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-transparent"
 							/>
 							{selectedImageHeight.current && (
 								<button
@@ -499,7 +499,7 @@ function CombinedImageButton({
 					<div className="p-3 space-y-2">
 						<button
 							type="button"
-							className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-white rounded-md hover:bg-green-600 transition-colors duration-200 text-sm font-medium"
+							className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-white rounded-md hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium"
 							onClick={insertImageMarkdown}
 						>
 							Markdown-Link einfügen
