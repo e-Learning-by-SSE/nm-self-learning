@@ -1,7 +1,7 @@
 "use client";
-import { ChevronDownIcon, ItalicIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, ItalicIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, OnDialogCloseFn, PencilButton } from "@self-learning/ui/common";
+import { Dialog, DialogActions, IconButton, OnDialogCloseFn } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
@@ -61,8 +61,10 @@ export function MarkdownField({
 
 			{!inline && (
 				<div className="flex justify-end bottom-0 right-0 py-2">
-					<PencilButton
-						buttonTitle="Bearbeiten"
+					<IconButton
+						icon={<PencilIcon className="h-5 w-5" />}
+						variant="tertiary"
+						text="Bearbeiten"
 						onClick={() => setOpenEditor(true)}
 						title="Beschreibung bearbeiten"
 					/>
