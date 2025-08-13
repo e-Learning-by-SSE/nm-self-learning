@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import { LearningDiaryPageDetail } from "../access-learning-diary";
 import {
 	duplicateRemover,

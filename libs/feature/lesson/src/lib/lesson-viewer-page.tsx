@@ -21,8 +21,9 @@ import { useEventLog } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { LessonData } from "./lesson-data-access";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export type LessonProps = {
 	lesson: LessonData;
@@ -59,7 +60,37 @@ function usePreferredMediaType(lesson: LessonProps["lesson"]) {
 	return preferredMediaType;
 }
 export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
-	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
+	/**
+	 * Using router and modal state to simulate 2 different URLs for back/forward navigation.
+	 * Alternative: Create 2 separate pages for the lesson and the self regulated question.
+	 */
+	const router = useRouter();
+	const path = usePathname();
+	const searchParams = useSearchParams();
+	const modalOpened = searchParams.get("modal");
+	const [showDialog, setShowDialog] = useState(
+		lesson.lessonType === LessonType.SELF_REGULATED && modalOpened !== "closed"
+	);
+
+	useEffect(() => {
+		if (lesson.lessonType === LessonType.SELF_REGULATED) {
+			if (!router.isReady) return;
+
+			if (modalOpened === "closed") {
+				setShowDialog(false);
+			}
+			if (modalOpened === null) {
+				// Probably the first time the page is loaded, so we open the dialog
+				router.replace({ pathname: path, query: { modal: "open" } }, undefined, {
+					shallow: true
+				});
+			}
+			if (modalOpened === "open") {
+				// Probably on back navigation, ensure dialog is open (and not closed by previous action)
+				setShowDialog(true);
+			}
+		}
+	}, [lesson.lessonType, modalOpened, router, path]);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
@@ -77,11 +108,18 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
+	const handleCloseDialog = () => {
+		setShowDialog(false);
+		router.push({ pathname: path, query: { modal: "closed" } }, undefined, {
+			shallow: true
+		});
+	};
+
 	if (showDialog && markdown.preQuestion) {
 		return (
 			<article className="flex flex-col gap-4">
 				<SelfRegulatedPreQuestion
-					setShowDialog={setShowDialog}
+					onClose={handleCloseDialog}
 					question={markdown.preQuestion}
 				/>
 			</article>
@@ -381,10 +419,10 @@ function MediaTypeSelector({
 
 function SelfRegulatedPreQuestion({
 	question,
-	setShowDialog
+	onClose
 }: {
 	question: CompiledMarkdown;
-	setShowDialog: Dispatch<SetStateAction<boolean>>;
+	onClose: () => void;
 }) {
 	const [userAnswer, setUserAnswer] = useState("");
 
@@ -406,9 +444,7 @@ function SelfRegulatedPreQuestion({
 				<button
 					type="button"
 					className="btn-primary"
-					onClick={() => {
-						setShowDialog(false);
-					}}
+					onClick={onClose}
 					disabled={userAnswer.length == 0}
 				>
 					Antwort speichern
