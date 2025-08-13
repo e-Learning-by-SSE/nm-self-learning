@@ -334,17 +334,10 @@ export const courseRouter = t.router({
 		return created;
 	}),
 	createMinimal: authProcedure.input(relaxedCourseFormSchema).mutation(async ({ input, ctx }) => {
-		if (!canCreate(ctx.user)) {
+		if (!ctx.user.isAuthor) {
 			throw new TRPCError({
 				code: "FORBIDDEN",
-				message:
-					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
-			});
-		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message:
-					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+				message: "Creating a course requires user to be an author"
 			});
 		}
 
