@@ -36,28 +36,33 @@ const withErrorHandling = async (fn: () => Promise<void>) => {
 
 export function AddChildButton({
 	parentSkill,
+	childrenNumber,
 	updateSkillDisplay,
 	handleSelection,
-	skillDefaults
+	skillDefaults,
+	authorId
 }: {
 	parentSkill: SkillFormModel;
+	childrenNumber: number;
 	updateSkillDisplay: UpdateVisuals;
 	handleSelection: SkillSelectHandler;
 	skillDefaults?: Partial<Skill>;
+	authorId: number;
 }) {
 	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
+
 	const newSkill = {
-		name: `${parentSkill.children.length + 1}. Kind - ${parentSkill.name}`,
+		name: `${childrenNumber + 1}. Kind - ${parentSkill.name}`,
 		description: "Add here",
 		children: [],
 		parents: [parentSkill.id],
-		repositoryId: parentSkill.repositoryId,
 		...skillDefaults
 	};
+
 	const handleAddSkill = async () =>
 		await withErrorHandling(async () => {
 			const result = await addSkillOnParent({
-				repoId: parentSkill.repositoryId,
+				authorId: authorId,
 				parentSkillId: parentSkill.id,
 				skill: newSkill
 			});
@@ -127,7 +132,13 @@ export function SkillDeleteOption({
 	};
 
 	if (!inline) {
-		return <IconOnlyButton icon={<TrashIcon className="h-5 w-5" />}	variant = "danger"  onClick={handleDelete} />;
+		return (
+			<IconOnlyButton
+				icon={<TrashIcon className="h-5 w-5" />}
+				variant="danger"
+				onClick={handleDelete}
+			/>
+		);
 	} else {
 		return (
 			<button type="button" className={"px-2 hover:text-secondary"} onClick={handleDelete}>
@@ -138,11 +149,11 @@ export function SkillDeleteOption({
 }
 
 export function NewSkillButton({
-	repoId,
+	authorId,
 	onSuccess,
 	skillDefaults
 }: {
-	repoId: string;
+	authorId: number;
 	onSuccess?: (skill: Skill) => void | Promise<void>;
 	skillDefaults?: Partial<Skill>;
 }) {
@@ -159,8 +170,8 @@ export function NewSkillButton({
 	};
 	const onCreateSkill = async () => {
 		const createdSkill = await createNewSkill({
-			repoId: repoId,
-			skill: newSkill
+			skill: newSkill,
+			authorId: authorId
 		});
 		await onSuccess?.(createdSkill ?? null);
 	};

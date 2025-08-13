@@ -4,9 +4,18 @@ import {
 	courseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
-	mapCourseFormToUpdate
+	mapCourseFormToUpdate,
+	mapRelaxedCourseFormToInsert,
+	mapRelaxedCourseFormToUpdate,
+	relaxedCourseFormSchema as relaxedCourseFormSchema
 } from "@self-learning/teaching";
-import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
+import {
+	CourseContent,
+	CourseMeta,
+	createCourseMeta,
+	extractLessonIds,
+	LessonMeta
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -215,6 +224,66 @@ export const courseRouter = t.router({
 
 		return { content, lessonMap };
 	}),
+	getCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(relaxedCourseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					provides: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requires: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true
+				}
+			});
+
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId ?? null,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle ?? "",
+				description: course.description ?? null,
+				imgUrl: course.imgUrl ?? null,
+
+				content: normalizeContent(course.content),
+
+				specializations: course.specializations ?? [],
+
+				authors: course.authors.map(a => ({
+					username: a.username
+				})),
+
+				provides: course.provides.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				requires: course.requires.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				}))
+			};
+		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
 
@@ -249,6 +318,7 @@ export const courseRouter = t.router({
 			});
 		}
 
+		input.authors = [...input.authors, { username: ctx.user.name }];
 		const courseForDb = mapCourseFormToInsert(input, getRandomId());
 
 		const created = await database.course.create({
@@ -261,6 +331,28 @@ export const courseRouter = t.router({
 		});
 
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
+		return created;
+	}),
+	createMinimal: authProcedure.input(relaxedCourseFormSchema).mutation(async ({ input, ctx }) => {
+		if (!ctx.user.isAuthor) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Creating a course requires user to be an author"
+			});
+		}
+
+		input.authors = [...input.authors, { username: ctx.user.name }];
+		const course = mapRelaxedCourseFormToInsert(input, getRandomId());
+
+		const created = await database.course.create({
+			data: course,
+			select: {
+				title: true,
+				slug: true,
+				courseId: true
+			}
+		});
+
 		return created;
 	}),
 	edit: authorProcedure
@@ -302,6 +394,30 @@ export const courseRouter = t.router({
 					courseId: true
 				}
 			});
+		}),
+	editMinimal: authorProcedure
+		.input(
+			z.object({
+				slug: z.string(),
+				course: relaxedCourseFormSchema
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const courseForDb = mapRelaxedCourseFormToUpdate(input.course, input.slug);
+
+			const updated = await database.course.update({
+				where: { slug: input.slug },
+				data: {
+					...courseForDb
+				},
+				select: {
+					title: true,
+					slug: true,
+					courseId: true
+				}
+			});
+			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
+			return updated;
 		}),
 	deleteCourse: authorProcedure
 		.input(z.object({ slug: z.string() }))
@@ -376,4 +492,20 @@ async function authorizedUserForExport(
 	}
 
 	return false;
+}
+
+function normalizeContent(
+	raw: unknown
+): { title: string; content: { lessonId: string }[]; description?: string | null }[] {
+	if (!Array.isArray(raw)) return [];
+
+	return raw
+		.filter((item): item is any => item && typeof item === "object") // Remove null and non-objects
+		.map((item: any) => ({
+			title: typeof item.title === "string" ? item.title : "Untitled",
+			content: Array.isArray(item.content)
+				? item.content.filter((c: any) => typeof c.lessonId === "string")
+				: [],
+			description: "description" in item ? item.description : undefined
+		}));
 }

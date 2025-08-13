@@ -7,6 +7,7 @@ import {
 	createLessonMeta,
 	LessonContent
 } from "@self-learning/types";
+import { database } from "@self-learning/database";
 
 export function createExampleCourse(
 	courseId: string,
@@ -85,14 +86,14 @@ export function createLessonMock({
 	requires?: Skill[];
 	provides?: Skill[];
 }): Partial<Lesson> &
-	Pick<Lesson, "lessonId"> & { authors: Pick<Author, "username">[] } & {
-		requires: Skill[];
-	} & { provides: Skill[] } {
+	Pick<Lesson, "lessonId"> & { authors: Pick<Author, "username">[] } & { requires: Skill[] } & {
+		provides: Skill[];
+	} {
 	const defaultSkill: Skill = {
+		authorId: 1,
 		id: "skill:1",
 		name: "Skill1",
-		description: "Skill1 description",
-		repositoryId: "repo:1"
+		description: "Skill1 description"
 	};
 
 	return {
