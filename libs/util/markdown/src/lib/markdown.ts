@@ -1,6 +1,7 @@
 import { serialize } from "next-mdx-remote/serialize";
 import rehypeExternalLinks from "rehype-external-links";
 import { invalidLanguageFilter } from "./invalid-language-filter";
+import { rehypeImageAttributes } from "./rehype-image-attributes";
 // Rehype packages
 import rehypeKatex from "rehype-katex";
 import rehypePrismPlus from "rehype-prism-plus";
@@ -14,6 +15,7 @@ export const rehypePlugins = [
 	rehypeKatex,
 	invalidLanguageFilter,
 	rehypePrismPlus,
+	rehypeImageAttributes,
 	[rehypeExternalLinks, { target: "_blank" }] as Pluggable
 ];
 
