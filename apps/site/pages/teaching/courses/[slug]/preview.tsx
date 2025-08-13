@@ -2,6 +2,29 @@ import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { withAuth, withTranslations } from "@self-learning/api";
+import { isAuthor } from "@self-learning/admin";
+
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth(async (context, user) => {
+		if (!user) {
+			return { redirect: { destination: "/", permanent: false } };
+		}
+
+		const slugParam = context.params?.slug;
+		if (!slugParam) return { props: {} };
+
+		const slug = Array.isArray(slugParam) ? slugParam.join("/") : slugParam;
+		const isUserCourseAuthor = await isAuthor(user.name, slug);
+
+		if (!isUserCourseAuthor) {
+			return { redirect: { destination: "/", permanent: false } };
+		}
+
+		return { props: {} };
+	})
+);
 
 export default function CoursePreviewPage() {
 	const router = useRouter();

@@ -154,7 +154,7 @@ export function CourseModuleView({
 		const isEdit = Boolean(lesson.lessonId);
 
 		const { lessonId, title } = isEdit
-			? await edit({ lessonId: lesson.lessonId, lesson })
+			? await edit({ lessonId: lesson.lessonId!, lesson })
 			: await create(lesson);
 
 		showToast({

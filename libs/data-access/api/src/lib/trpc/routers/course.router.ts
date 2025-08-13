@@ -6,6 +6,7 @@ import {
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate,
 	mapRelaxedCourseFormToInsert,
+	mapRelaxedCourseFormToUpdate,
 	relaxedCourseFormSchema as relaxedCourseFormSchema
 } from "@self-learning/teaching";
 import {
@@ -317,6 +318,7 @@ export const courseRouter = t.router({
 			});
 		}
 
+		input.authors = [...input.authors, { username: ctx.user.name }];
 		const courseForDb = mapCourseFormToInsert(input, getRandomId());
 
 		const created = await database.course.create({
@@ -346,6 +348,7 @@ export const courseRouter = t.router({
 			});
 		}
 
+		input.authors = [...input.authors, { username: ctx.user.name }];
 		const course = mapRelaxedCourseFormToInsert(input, getRandomId());
 
 		const created = await database.course.create({
@@ -407,18 +410,19 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const courseForDb = mapRelaxedCourseFormToInsert(input.course, input.slug);
+			const courseForDb = mapRelaxedCourseFormToUpdate(input.course, input.slug);
 
 			const updated = await database.course.update({
 				where: { slug: input.slug },
-				data: courseForDb,
+				data: {
+					...courseForDb
+				},
 				select: {
 					title: true,
 					slug: true,
 					courseId: true
 				}
 			});
-
 			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
 			return updated;
 		}),

@@ -1,12 +1,32 @@
+import { isAuthor } from "@self-learning/admin";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { database } from "@self-learning/database";
-import { CourseFormModel, RelaxedCourseFormModel } from "@self-learning/teaching";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CourseBasicInformation } from "@self-learning/ui/course";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
+
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth(async (context, user) => {
+		if (!user) {
+			return { redirect: { destination: "/", permanent: false } };
+		}
+
+		const slugParam = context.params?.slug;
+		if (!slugParam) return { props: {} };
+
+		const slug = Array.isArray(slugParam) ? slugParam.join("/") : slugParam;
+		const isUserCourseAuthor = await isAuthor(user.name, slug);
+
+		if (!isUserCourseAuthor) {
+			return { redirect: { destination: "/", permanent: false } };
+		}
+
+		return { props: {} };
+	})
+);
 
 export default function EditCoursePage() {
 	const router = useRouter();

@@ -66,6 +66,52 @@ export function mapCourseFormToInsert(
 	return courseForDb;
 }
 
+export function mapRelaxedCourseFormToUpdate(
+	course: RelaxedCourseFormModel,
+	courseId: string
+): Prisma.CourseUpdateInput {
+	const {
+		title,
+		slug,
+		subtitle,
+		description,
+		imgUrl,
+		content,
+		subjectId,
+		specializations,
+		provides,
+		requires,
+		authors
+	} = course;
+
+	return {
+		courseId,
+		slug,
+		title,
+		subtitle,
+		imgUrl: stringOrNull(imgUrl),
+		description: stringOrNull(description),
+		content,
+		meta: createCourseMeta(course),
+		authors: {
+			// `set` replaces entire list
+			set: (authors ?? []).map(author => ({ username: author.username }))
+		},
+		subject: subjectId ? { connect: { subjectId } } : undefined,
+		specializations: {
+			set: (specializations ?? []).map(specialization => ({
+				specializationId: specialization.specializationId
+			}))
+		},
+		provides: {
+			set: (provides ?? []).map(skill => ({ id: skill.id }))
+		},
+		requires: {
+			set: (requires ?? []).map(skill => ({ id: skill.id }))
+		}
+	};
+}
+
 export function mapRelaxedCourseFormToInsert(
 	course: RelaxedCourseFormModel,
 	courseId: string
@@ -83,7 +129,6 @@ export function mapRelaxedCourseFormToInsert(
 		requires,
 		authors
 	} = course;
-
 	return {
 		courseId,
 		slug,
