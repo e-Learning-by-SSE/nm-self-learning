@@ -269,13 +269,12 @@ model EventLog {
 
 model LlmConfiguration {
   id              String   @id @default(cuid())
-  serverUrl       String   @map("server_url")
-  apiKey          String?  @map("api_key")
-  defaultModel    String   @map("default_model")
+  serverUrl       String
+  apiKey          String?
+  defaultModel    String   
   availableModels Json?   @default("[]")
-  isActive        Boolean   @default(true) @map("is_active")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   @@map("llm_configurations")
 }
