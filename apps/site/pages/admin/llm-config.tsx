@@ -3,52 +3,66 @@ import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { withTranslations } from "@self-learning/api";
+import { formatDateString } from "@self-learning/util/common";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
-interface LlmConfig {
-	id: string;
-	serverUrl: string;
-	defaultModel: string;
-	hasApiKey: boolean;
-	createdAt: Date;
-	updatedAt: Date;
-}
+const llmConfigSchema = z.object({
+	serverUrl: z.string().url(),
+	apiKey: z.string().optional(),
+	defaultModel: z.string().min(1)
+});
 
 export default function LlmConfigPage() {
-	const [formData, setFormData] = useState({
-		serverUrl: "",
-		apiKey: "",
-		defaultModel: ""
+	const { register, handleSubmit, reset, watch, setValue } = useForm({
+		resolver: zodResolver(llmConfigSchema),
+		defaultValues: {
+			serverUrl: "",
+			apiKey: "",
+			defaultModel: ""
+		}
 	});
+	const formData = watch();
+	const [response, setResponse] = useState("");
 	const [validating, setValidating] = useState(false);
+	const [fetchingModels, setFetchingModels] = useState(false);
 	const [availableModels, setAvailableModels] = useState<string[]>([]);
+	const [once, setOnce] = useState(false);
 
-	// tRPC queries and mutations
-	const { data: config, isLoading, refetch } = trpc.admin.llmConfig.get.useQuery();
-	const validateConfig = trpc.admin.llmConfig.validate.useMutation();
-	const saveConfig = trpc.admin.llmConfig.save.useMutation();
-	const getAvailableModels = trpc.admin.llmConfig.getAvailableModels.useQuery(undefined, {
-		enabled: !!config
-	});
+	const { data: config, isLoading, refetch } = trpc.llmConfig.get.useQuery();
+	const validateConfig = trpc.llmConfig.validate.useMutation();
+	const saveConfig = trpc.llmConfig.save.useMutation();
+	const getAvailableModels = trpc.llmConfig.getAvailableModels.useMutation();
 
-	// Initialize form data when config is loaded
 	useEffect(() => {
-		if (config) {
-			setFormData({
+		if (config && !once) {
+			reset({
 				serverUrl: config.serverUrl,
-				apiKey: "", // Don't populate API key for security
+				apiKey: "",
 				defaultModel: config.defaultModel
 			});
+			setOnce(true);
 		}
-	}, [config]);
+	}, [config, once, reset]);
 
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-		const { name, value } = e.target;
-		setFormData(prev => ({
-			...prev,
-			[name]: value
-		}));
-	};
+	// const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+	// 	const { name, value } = e.target;
+	// 	setFormData(prev => ({
+	// 		...prev,
+	// 		[name]: value
+	// 	}));
+	// };
 
+	const handleValidateConfig = async () => {
+		if (!formData.serverUrl || !formData.defaultModel) {
+			showToast({
+				type: "error",
+				title: "Validation Error",
+				subtitle: "Please fill in all required fields"
+			});
+			return;
+		}
 	const handleValidateConfig = async () => {
 		if (!formData.serverUrl || !formData.defaultModel) {
 			showToast({
@@ -66,6 +80,13 @@ export default function LlmConfigPage() {
 				apiKey: formData.apiKey || undefined,
 				defaultModel: formData.defaultModel
 			});
+		setValidating(true);
+		try {
+			const result = await validateConfig.mutateAsync({
+				serverUrl: formData.serverUrl,
+				apiKey: formData.apiKey || undefined,
+				defaultModel: formData.defaultModel
+			});
 
 			if (result.valid) {
 				setAvailableModels(result.availableModels);
@@ -74,6 +95,33 @@ export default function LlmConfigPage() {
 					title: "Configuration Valid",
 					subtitle: `Successfully connected to LLM server. Found ${result.availableModels.length} models.`
 				});
+
+				try {
+					const response = await fetch(formData.serverUrl + "api/generate", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: formData.apiKey ? `Bearer ${formData.apiKey}` : ""
+						},
+						body: JSON.stringify({
+							prompt: "hello world",
+							model: formData.defaultModel,
+							stream: false
+						})
+					});
+					if (!response.ok) {
+						throw new Error("Failed to generate response from LLM server");
+					}
+					const data = await response.json();
+					setResponse(data.response);
+					showToast({
+						type: "success",
+						title: "Test Successful",
+						subtitle: `LLM server responded with: ${data.response}`
+					});
+				} catch (err) {
+					console.error("Error occurred while testing LLM server:", err);
+				}
 			}
 		} catch (error) {
 			showToast({
@@ -86,14 +134,12 @@ export default function LlmConfigPage() {
 		}
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-
+	const onSubmit = async (data: typeof formData) => {
 		try {
 			await saveConfig.mutateAsync({
-				serverUrl: formData.serverUrl,
-				apiKey: formData.apiKey || undefined,
-				defaultModel: formData.defaultModel
+				serverUrl: data.serverUrl,
+				apiKey: data.apiKey || undefined,
+				defaultModel: data.defaultModel
 			});
 
 			showToast({
@@ -101,8 +147,12 @@ export default function LlmConfigPage() {
 				title: "Configuration Saved",
 				subtitle: "LLM configuration has been saved successfully!"
 			});
+			showToast({
+				type: "success",
+				title: "Configuration Saved",
+				subtitle: "LLM configuration has been saved successfully!"
+			});
 
-			// Refetch the config to update the UI
 			refetch();
 		} catch (error) {
 			showToast({
@@ -114,27 +164,51 @@ export default function LlmConfigPage() {
 	};
 
 	const handleFetchAvailableModels = async () => {
+		if (!formData.serverUrl) {
+			showToast({
+				type: "error",
+				title: "Validation Error",
+				subtitle: "Please enter the LLM server URL"
+			});
+			return;
+		}
+
+		setFetchingModels(true);
 		try {
-			const models = await getAvailableModels.refetch();
-			if (models.data) {
-				setAvailableModels(models.data.map((model: any) => model.name));
+			const result = await getAvailableModels.mutateAsync({
+				serverUrl: formData.serverUrl,
+				apiKey: formData.apiKey || undefined
+			});
+
+			if (result.valid) {
+				setAvailableModels(result.availableModels);
+				showToast({
+					type: "success",
+					title: "Models Fetched",
+					subtitle: `Found ${result.availableModels.length} models on the server.`
+				});
 			}
 		} catch (error) {
 			showToast({
 				type: "error",
-				title: "Failed to Fetch Models",
-				subtitle: "Could not retrieve available models from the server"
+				title: "Fetch Models Failed",
+				subtitle:
+					error instanceof Error ? error.message : "Failed to fetch available models"
 			});
+		} finally {
+			setFetchingModels(false);
 		}
 	};
 
 	if (isLoading) {
 		return (
-			<CenteredSection>
-				<div className="text-center">
-					<p className="text-gray-500">Loading LLM configuration...</p>
-				</div>
-			</CenteredSection>
+			<AdminGuard>
+				<CenteredSection>
+					<div className="text-center">
+						<p className="text-gray-500">Loading LLM configuration...</p>
+					</div>
+				</CenteredSection>
+			</AdminGuard>
 		);
 	}
 
@@ -147,7 +221,7 @@ export default function LlmConfigPage() {
 							LLM Server Configuration
 						</h1>
 
-						<form onSubmit={handleSubmit} className="space-y-6">
+						<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 							<div>
 								<label
 									htmlFor="serverUrl"
@@ -158,9 +232,7 @@ export default function LlmConfigPage() {
 								<input
 									type="url"
 									id="serverUrl"
-									name="serverUrl"
-									value={formData.serverUrl}
-									onChange={handleInputChange}
+									{...register("serverUrl")}
 									required
 									className="textfield w-full"
 									placeholder="https://your-llm-server.com"
@@ -180,9 +252,7 @@ export default function LlmConfigPage() {
 								<input
 									type="password"
 									id="apiKey"
-									name="apiKey"
-									value={formData.apiKey}
-									onChange={handleInputChange}
+									{...register("apiKey")}
 									className="textfield w-full"
 									placeholder={
 										config?.hasApiKey
@@ -208,9 +278,7 @@ export default function LlmConfigPage() {
 									<input
 										type="text"
 										id="defaultModel"
-										name="defaultModel"
-										value={formData.defaultModel}
-										onChange={handleInputChange}
+										{...register("defaultModel")}
 										required
 										className="textfield max-w-4/5 w-4/5"
 										placeholder="llama3.1:8b, gpt-4, claude-3-sonnet, etc."
@@ -219,7 +287,11 @@ export default function LlmConfigPage() {
 										<button
 											type="button"
 											onClick={handleFetchAvailableModels}
-											disabled={getAvailableModels.isLoading}
+											disabled={
+												getAvailableModels.isLoading ||
+												fetchingModels ||
+												!formData.serverUrl
+											}
 											className="btn bg-gray-600 text-white hover:bg-gray-700"
 										>
 											{getAvailableModels.isLoading
@@ -234,12 +306,7 @@ export default function LlmConfigPage() {
 											Available models:
 										</p>
 										<select
-											onChange={e =>
-												setFormData(prev => ({
-													...prev,
-													defaultModel: e.target.value
-												}))
-											}
+											onChange={e => setValue("defaultModel", e.target.value)}
 											className="select w-full"
 										>
 											<option value="">Select a model</option>
@@ -280,17 +347,43 @@ export default function LlmConfigPage() {
 												: "Save Configuration"}
 									</button>
 								</div>
+							<div className="flex justify-between items-center pt-4 border-t">
+								<div className="flex gap-2">
+									<button
+										type="button"
+										onClick={handleValidateConfig}
+										disabled={
+											validating ||
+											!formData.serverUrl ||
+											!formData.defaultModel
+										}
+										className="btn bg-gray-600 text-white hover:bg-gray-700"
+									>
+										{validating ? "Validating..." : "Validate Configuration"}
+									</button>
+
+									<button
+										type="submit"
+										disabled={saveConfig.isLoading}
+										className="btn btn-primary"
+									>
+										{saveConfig.isLoading
+											? "Saving..."
+											: config
+												? "Update Configuration"
+												: "Save Configuration"}
+									</button>
+								</div>
 
 								{config && (
 									<div className="text-sm text-gray-500">
 										Last updated:{" "}
-										{new Date(config.updatedAt).toLocaleDateString()}
+										{formatDateString(config.updatedAt, "MMM dd, yyyy")}
 									</div>
 								)}
 							</div>
 						</form>
 
-						{/* Configuration Status */}
 						{config && (
 							<div className="mt-6 p-4 bg-green-50 rounded-md">
 								<h3 className="text-sm font-medium text-green-800 mb-2">
@@ -306,6 +399,9 @@ export default function LlmConfigPage() {
 									<p>
 										<strong>API Key:</strong>{" "}
 										{config.hasApiKey ? "Configured" : "Not configured"}
+									</p>
+									<p>
+										<strong>Server Response:</strong> {response}
 									</p>
 								</div>
 							</div>
