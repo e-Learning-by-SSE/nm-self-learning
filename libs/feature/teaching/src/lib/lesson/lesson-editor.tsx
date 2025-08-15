@@ -1,14 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import {
-	DialogActions,
-	GreyBoarderButton,
-	OnDialogCloseFn,
-	showToast,
-	Tab,
-	Tabs
-} from "@self-learning/ui/common";
+import { GreyBoarderButton, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -16,6 +9,7 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { OpenAsJsonButton } from "@self-learning/ui/forms";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -111,9 +105,10 @@ export function LessonEditor({
 							<span className="font-semibold text-2xl text-secondary">
 								Lerneinheit editieren
 							</span>
-							<h1 className="text-4xl">{initialLesson?.title || "<Titel>"}</h1>
+							<h1 className="text-4xl">{initialLesson?.title || ""}</h1>
 						</div>
 						<div className="pointer-events-auto flex items-center gap-2">
+							<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
 							<GreyBoarderButton>
 								<span className={"text-gray-600"}>Abbrechen</span>
 							</GreyBoarderButton>
@@ -123,7 +118,7 @@ export function LessonEditor({
 						</div>
 					</div>
 					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-						<Tab>Lernangaben</Tab>
+						<Tab>Grunddaten</Tab>
 						<Tab>Lerninhalt</Tab>
 						<Tab>Lernkontrolle</Tab>
 					</Tabs>
