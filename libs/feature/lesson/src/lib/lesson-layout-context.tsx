@@ -1,4 +1,3 @@
-// LessonLayoutContext.tsx
 import { createContext, useContext } from "react";
 
 export type LessonLayoutContextType = {

@@ -1,11 +1,5 @@
 "use client";
-import {
-	ChevronDoubleLeftIcon,
-	ChevronDoubleRightIcon,
-	ChevronDownIcon,
-	ChevronLeftIcon,
-	PlayIcon
-} from "@heroicons/react/24/solid";
+import { ChevronDownIcon, ChevronLeftIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { useLessonLayout } from "@self-learning/lesson";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
@@ -218,6 +212,7 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 }
 
 function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
+	const router = useRouter();
 	const currentChapter = useMemo(() => {
 		for (const chapter of content) {
 			for (const les of chapter.content) {
@@ -229,6 +224,20 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 
 		return null;
 	}, [content, lesson]);
+
+	const { previous, next } = useMemo(() => {
+		const flatLessons = content.flatMap(chapter => chapter.content);
+		const lessonIndex = flatLessons.findIndex(l => l.lessonId === lesson.lessonId);
+
+		return {
+			previous: lessonIndex > 0 ? flatLessons[lessonIndex - 1] : null,
+			next: lessonIndex < flatLessons.length - 1 ? flatLessons[lessonIndex + 1] : null
+		};
+	}, [content, lesson]);
+
+	function navigateToLesson(lesson: PlaylistLesson) {
+		router.push(`/courses/${course.slug}/${lesson.slug}`);
+	}
 
 	return (
 		<div className="flex flex-col gap-4" data-testid="CurrentlyPlaying">

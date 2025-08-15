@@ -19,14 +19,7 @@ import {
 	LessonMeta,
 	ResolvedValue
 } from "@self-learning/types";
-import {
-	AuthorsList,
-	LicenseChip,
-	SectionCard,
-	Tab,
-	Tabs,
-	RemovableTab
-} from "@self-learning/ui/common";
+import { AuthorsList, LicenseChip, SectionCard, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import {
 	DraggableContentOutline,
@@ -56,6 +49,13 @@ export type LessonProps = {
 		subtitle: CompiledMarkdown | null;
 	};
 };
+// id is required by Draggable. Content id is required to map this to lesson.content pos
+type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };
+//
+type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
+type LessonNavigationItem = { slug: string; lessonId: string };
+type LessonNavigationData = LessonNavigationItem[];
+
 function ContentTabItem({
 	item,
 	select,
@@ -217,12 +217,7 @@ function MediaDisplay({
 		</>
 	);
 }
-// id is required by Draggable. Content id is required to map this to lesson.content pos
-type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };
-//
-type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
-type LessonNavigationItem = { slug: string; lessonId: string };
-type LessonNavigationData = LessonNavigationItem[];
+
 function extractNavigationInfo(
 	courseContent: CourseContent,
 	lessons: { [lessonId: string]: LessonInfo }
