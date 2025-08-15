@@ -26,16 +26,8 @@ export function useDraggableContent<T>(
 	swapEnabled: boolean,
 	removeEnabled: boolean
 ) {
-	const normalizedInitialContent = useMemo(() => {
-		return fixContentIDs(initialContent);
-	}, [initialContent]);
-
-	const [content, setContent] = useState<DraggableItem<T>[]>(normalizedInitialContent);
+	const [content, setContent] = useState(() => fixContentIDs(initialContent));
 	const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
-
-	useEffect(() => {
-		setContent(fixContentIDs(initialContent));
-	}, [initialContent]);
 
 	const swapContent = useCallback((src: number, dest: number) => {
 		setContent(prevContent => {
@@ -133,15 +125,29 @@ export function DraggableContentViewer<
 				isAutoScrollRef.current = false;
 			}
 		};
-
-		if ("onscrollend" in window) {
-			window.addEventListener("scrollend", handleScrollEnd);
-		} else {
-			console.log("ERROR onscrollend is not supported");
+		let scrollTimeout: ReturnType<typeof setTimeout>;
+		const handleScroll = () => {
+			clearTimeout(scrollTimeout);
+			scrollTimeout = setTimeout(() => {
+				handleScrollEnd();
+			}, 100);
+		};
+		if (typeof window !== "undefined") {
+			if ("onscrollend" in window) {
+				window.addEventListener("scrollend", handleScrollEnd);
+			} else {
+				// @ts-expect-error ts always thinks that onscrollend is present. For safari might not be the case
+				window.addEventListener("scroll", handleScroll, { passive: true });
+			}
 		}
 		return () => {
-			if ("onscrollend" in window) {
-				window.removeEventListener("scrollend", handleScrollEnd);
+			if (typeof window !== "undefined") {
+				if ("onscrollend" in window) {
+					window.removeEventListener("scrollend", handleScrollEnd);
+				} else {
+					// @ts-expect-error ts always thinks that onscrollend is present. For safari might not be the case
+					window.removeEventListener("scroll", handleScroll);
+				}
 			}
 		};
 	}, []);
