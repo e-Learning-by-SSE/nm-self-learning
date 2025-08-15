@@ -7,15 +7,9 @@ import {
 	LessonContentType,
 	ValueByContentType
 } from "@self-learning/types";
-import {
-	DropdownMenu,
-	SectionHeader,
-	SectionCard,
-	useIsFirstRender,
-	XButton
-} from "@self-learning/ui/common";
+import { DropdownMenu, SectionCard, useIsFirstRender, XButton } from "@self-learning/ui/common";
 import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	Control,
 	Controller,
@@ -125,48 +119,6 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 	};
 }
 
-function LessonContentOutlineHeader({
-	addContent
-}: {
-	addContent: (type: LessonContentType["type"]) => void;
-}) {
-	return (
-		<section>
-			<SectionHeader
-				title="Inhalt"
-				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. "
-				button={
-					<div className="flex gap-4 text-sm">
-						<DropdownMenu
-							title="Inhalt hinzufügen"
-							button={
-								<div className="btn-primary">
-									<PlusIcon className="icon h-5" />
-									<span className="font-semibold text-white">
-										Inhalt hinzufügen
-									</span>
-								</div>
-							}
-						>
-							{CONTENT_TYPES.map(contentType => (
-								<Button
-									key={contentType}
-									type={"button"}
-									title="Inhaltstyp Hinzufügen"
-									className={"w-full text-left px-3 py-1"}
-									onClick={() => addContent(contentType)}
-								>
-									{getContentTypeDisplayName(contentType)}
-								</Button>
-							))}
-						</DropdownMenu>
-					</div>
-				}
-			/>
-		</section>
-	);
-}
-
 function ContentOutlineTab({
 	item,
 	swappable,
@@ -212,9 +164,9 @@ export function LessonContentEditor() {
 
 	return (
 		<div className="w-full lg:grid lg:grid-cols-[1fr_300px] gap-8">
-			<div className="w-full overflow-hidden flex flex-col gap-8 mb-8">
+			<div className="w-full overflow-hidden flex flex-col gap-4 mb-8 mt-4">
 				<LessonDescriptionForm />
-				<LessonContentOutlineHeader addContent={addContent} />
+				<h2 className="text-2xl mb-4">Inhalt</h2>
 				<DraggableContentViewer
 					content={content}
 					targetIndex={targetTabIndex}
@@ -235,15 +187,35 @@ export function LessonContentEditor() {
 				bottom-0 lg:top-16 lg:max-h-none max-h-[35vh]
 				lg:left-auto lg:h-auto pl-8 pr-4"
 				>
-					<h2
-						className="flex gap-4 text-xl text-center w-max my-4 cursor-pointer"
+					<div
+						className="flex gap-4 w-full my-4 items-center justify-between"
 						onClick={() => setIsOutlineOpen(prev => !prev)}
 					>
 						<ChevronDownIcon
 							className={`w-5 h-5 transition-transform duration-200 ${isOutlineOpen ? "rotate-0" : "-rotate-90"} lg:hidden`}
 						/>
-						Inhalt
-					</h2>
+						<h2 className="text-xl">Inhalt</h2>
+						<DropdownMenu
+							title="Inhalt hinzufügen"
+							button={
+								<div className="btn-small-highlight">
+									<PlusIcon className="icon h-3 pl-2" />
+								</div>
+							}
+						>
+							{CONTENT_TYPES.map(contentType => (
+								<Button
+									key={contentType}
+									type={"button"}
+									title="Inhaltstyp Hinzufügen"
+									className={"w-full text-left px-3 py-1"}
+									onClick={() => addContent(contentType)}
+								>
+									{getContentTypeDisplayName(contentType)}
+								</Button>
+							))}
+						</DropdownMenu>
+					</div>
 					<div className={`${isOutlineOpen ? "" : "hidden"} lg:block`}>
 						<DraggableContentOutline
 							content={content}
@@ -321,16 +293,17 @@ export function LessonDescriptionForm() {
 					</LabeledField>
 				</div>
 			)}
-			<SectionHeader
-				title="Beschreibung"
-				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
-			/>
 			<Form.MarkdownWithPreviewContainer>
 				<Controller
 					control={control}
 					name="description"
 					render={({ field }) => (
-						<MarkdownField content={field.value as string} setValue={field.onChange} />
+						<MarkdownField
+							content={field.value as string}
+							setValue={field.onChange}
+							compact={true}
+							header={{ text: "Beschreibung", sz: "2xl" }}
+						/>
 					)}
 				/>
 			</Form.MarkdownWithPreviewContainer>
