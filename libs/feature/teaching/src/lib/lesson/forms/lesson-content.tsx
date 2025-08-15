@@ -40,96 +40,73 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 	const {
 		append,
 		remove,
-		swap,
+		insert,
 		replace: setContent,
 		fields: content
-	} = useFieldArray<{ content: LessonContent }>({
+	} = useFieldArray({
 		name: "content",
 		control
 	});
 
 	const [contentTabIndex, setContentTabIndex] = useState<number | undefined>(undefined);
 
-	// check content ids on mount (it will double trigger )
-	const didContextInit = useRef(false);
-	useEffect(() => {
-		// prevent repetition
-		if (didContextInit.current || content.length === 0) return;
-		// do content indexing
-		setContent(
-			content.map((item, index) => ({
-				...item,
-				meta: {
-					...item.meta,
-					id: (index + 1).toString()
-				}
-			})) as LessonContent
-		);
-		//
-		didContextInit.current = true;
-		//
-	}, [content, setContent]);
-
 	useEffect(() => {
 		if (content.length === 0) {
 			setContentTabIndex(undefined);
+		} else if (contentTabIndex !== undefined && contentTabIndex >= content.length) {
+			// If the selected tab index is out of bounds, reset it to the first tab (0).
+			setContentTabIndex(0);
 		}
-
-		if (contentTabIndex && contentTabIndex >= content.length) {
-			setContentTabIndex(content.length > 0 ? 0 : undefined);
-		}
-	}, [contentTabIndex, content]);
+	}, [contentTabIndex, content.length]);
 
 	function addContent(type: LessonContentType["type"]) {
-		const addActions: { [contentType in LessonContentType["type"]]: () => void } = {
-			video: () =>
-				append({
+		let newItem;
+		switch (type) {
+			case "video":
+				newItem = {
 					type: "video",
 					value: { url: "" },
 					meta: { duration: 0 }
-				}),
-			article: () =>
-				append({
+				};
+				break;
+			case "article":
+				newItem = {
 					type: "article",
 					value: { content: "" },
 					meta: { estimatedDuration: 0 }
-				}),
-			pdf: () =>
-				append({
+				};
+				break;
+			case "pdf":
+				newItem = {
 					type: "pdf",
 					value: { url: "" },
 					meta: { estimatedDuration: 0 }
-				}),
-			iframe: () =>
-				append({
+				};
+				break;
+			case "iframe":
+				newItem = {
 					type: "iframe",
 					value: { url: "" },
 					meta: { estimatedDuration: 0 }
-				})
-		};
-
-		const fn = addActions[type];
-
-		if (!fn) {
-			throw new Error(
-				`Unknown content type: ${type} - There is no action defined to add this type.`
-			);
+				};
+				break;
+			default:
+				throw new Error(
+					`Unknown content type: ${type} - No action defined to add this type.`
+				);
 		}
-
-		fn();
-
-		// Do not need it as scroll will automatically set current index
-		// setContentTabIndex(content.length); // Select the newly created tab
+		append(newItem as LessonContentType);
 	}
 
 	function swapContent(indexSrc: number, indexDest: number) {
-		swap(indexSrc, indexDest);
+		const itemToMove = content[indexSrc];
+		remove(indexSrc);
+		insert(indexDest, itemToMove);
 	}
 
 	const removeContent = useCallback(
 		(index: number) => {
 			const confirmed = window.confirm("Inhalt entfernen ?");
-
 			if (confirmed) {
 				remove(index);
 			}
@@ -250,7 +227,7 @@ export function LessonContentEditor() {
 				className="w-full sticky bottom-0
 				max-h-[35vh] lg:max-h-none 
 				border-t lg:border-t-0 lg:border-l border-l-0 
-			  lg:bg-white bg-gray-100 
+			  bg-gray-100 
 				shadow-[0_-6px_6px_-4px_rgba(0,0,0,0.1)] lg:shadow-none"
 			>
 				<div
