@@ -78,8 +78,7 @@ export async function onLessonEditorSubmit(
 
 export function LessonEditor({
 	onSubmit,
-	initialLesson,
-	isFullScreen
+	initialLesson
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
@@ -102,34 +101,36 @@ export function LessonEditor({
 			<form
 				id="lessonform"
 				onSubmit={form.handleSubmit(onSubmit, error => {
-					console.log("EEE", error);
+					console.log("Lesson form error", error);
 				})}
-				className="flex flex-col w-full max-w-screen-xl mx-auto px-4"
+				className="w-full bg-gray-100"
 			>
-				<div className="flex justify-between mb-8">
-					<div className="flex flex-col gap-2">
-						<span className="font-semibold text-2xl text-secondary">
-							Lerneinheit editieren
-						</span>
-						<h1 className="text-4xl">{initialLesson?.title || "<Titel>"}</h1>
+				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
+					<div className="flex justify-between mb-8">
+						<div className="flex flex-col gap-2">
+							<span className="font-semibold text-2xl text-secondary">
+								Lerneinheit editieren
+							</span>
+							<h1 className="text-4xl">{initialLesson?.title || "<Titel>"}</h1>
+						</div>
+						<div className="pointer-events-auto flex items-center gap-2">
+							<GreyBoarderButton>
+								<span className={"text-gray-600"}>Abbrechen</span>
+							</GreyBoarderButton>
+							<button type="submit" className="btn-primary pointer-events-auto">
+								Speichern
+							</button>
+						</div>
 					</div>
-					<div className="pointer-events-auto flex items-center gap-2">
-						<GreyBoarderButton>
-							<span className={"text-gray-600"}>Abbrechen</span>
-						</GreyBoarderButton>
-						<button type="submit" className="btn-primary pointer-events-auto">
-							Speichern
-						</button>
-					</div>
+					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+						<Tab>Lernangaben</Tab>
+						<Tab>Lerninhalt</Tab>
+						<Tab>Lernkontrolle</Tab>
+					</Tabs>
+					{selectedTab === 0 && <LessonInfoEditor />}
+					{selectedTab === 1 && <LessonContentEditor />}
+					{selectedTab === 2 && <QuizEditor />}
 				</div>
-				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-					<Tab>Lernangaben</Tab>
-					<Tab>Lerninhalt</Tab>
-					<Tab>Lernkontrolle</Tab>
-				</Tabs>
-				{selectedTab === 0 && <LessonInfoEditor />}
-				{selectedTab === 1 && <LessonContentEditor />}
-				{selectedTab === 2 && <QuizEditor />}
 			</form>
 		</FormProvider>
 	);
