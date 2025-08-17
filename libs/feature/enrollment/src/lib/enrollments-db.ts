@@ -3,7 +3,7 @@ import { getCourseCompletionOfStudent } from "@self-learning/completion";
 import { getCombinedCourses } from "@self-learning/course";
 import { createUserEvent, database } from "@self-learning/database";
 import { CourseCompletion, CourseEnrollment, ResolvedValue } from "@self-learning/types";
-import { AlreadyExists } from "@self-learning/util/http";
+import { AlreadyExists, NotFound } from "@self-learning/util/http";
 
 export async function getEnrollmentDetails(username: string) {
 	const enrollments = await database.enrollment.findMany({
@@ -146,7 +146,7 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 	}
 
 	if (!course) {
-		throw new Error(`Course with ID ${courseId} not found.`);
+		throw NotFound({ courseId });
 	}
 
 	if (course.enrollments[0]) {
