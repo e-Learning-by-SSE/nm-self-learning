@@ -27,7 +27,7 @@ describe("enrollUser", () => {
 	});
 
 	it("should enroll a user and create a user event", async () => {
-		(database.course.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+		(database.course.findUnique as jest.Mock).mockResolvedValue({
 			courseId,
 			enrollments: []
 		});
@@ -57,13 +57,31 @@ describe("enrollUser", () => {
 
 	it("should throw an error if the user is already enrolled", async () => {
 		const createdAt = new Date();
-		(database.course.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+		(database.course.findUnique as jest.Mock).mockResolvedValue({
 			courseId,
 			enrollments: [{ createdAt }]
 		});
 
-		await expect(enrollUser({ courseId, username })).rejects.toThrow(ApiError);
-		// await expect(enrollUser({ courseId, username })).rejects.toBeInstanceOf(ApiError); // TODO this does not work in testing
+		try {
+			await enrollUser({ courseId, username });
+			fail("Expected function to throw an error");
+		} catch (error) {
+			expect(error).toBeInstanceOf(ApiError);
+		}
+
+		expect(createUserEvent).not.toHaveBeenCalled();
+	});
+
+	it("should throw an ApiError if the course is not found", async () => {
+		(database.course.findUnique as jest.Mock).mockResolvedValue(null);
+		(database.dynCourse.findUnique as jest.Mock).mockResolvedValue(null);
+
+		try {
+			await enrollUser({ courseId, username });
+			fail("Expected function to throw an error");
+		} catch (error) {
+			expect(error).toBeInstanceOf(ApiError);
+		}
 
 		expect(createUserEvent).not.toHaveBeenCalled();
 	});
