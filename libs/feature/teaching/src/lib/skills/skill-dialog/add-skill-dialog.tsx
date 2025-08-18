@@ -33,6 +33,7 @@ export function AddSkillDialog({
 	});
 
 	const onSubmit = (data: SkillFormData) => {
+		console.log("onSubmit, data", data);
 		onClose(data);
 	};
 
@@ -53,7 +54,11 @@ export function AddSkillDialog({
 				</LabeledField>
 
 				<LabeledField label="Parent">
-					<select value={selectedSkill?.id} className="textfield" {...register("parent")}>
+					<select
+						defaultValue={selectedSkill?.id ?? ""}
+						className="textfield"
+						{...register("parent")}
+					>
 						<option value="">None</option>
 						{skills.map(skill => (
 							<option key={skill.id} value={skill.id}>
