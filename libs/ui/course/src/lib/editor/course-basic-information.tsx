@@ -134,15 +134,14 @@ function BasicInfo() {
 		if (isLoadingSubjects) return;
 
 		if (subjects.length > 0) {
-			setValue("subjectId", subjects[0]?.subjectId || "");
+			const currentSubjectId = form.getValues("subjectId");
+			if (!currentSubjectId) {
+				setValue("subjectId", subjects[0]?.subjectId || "");
+			}
 		} else {
 			console.error("Failed to fetch subjects from DB!");
 		}
-	}, [subjects, setValue, isLoadingSubjects]);
-
-	const onSubjectChange = (subjectId: string) => {
-		setValue("subjectId", subjectId);
-	};
+	}, [subjects, setValue, isLoadingSubjects, form]);
 
 	return (
 		<div className="space-y-3">
@@ -216,7 +215,17 @@ function BasicInfo() {
 			</LabeledField>
 
 			<LabeledField label="Fachgebiet" error={errors.subjectId?.message}>
-				<SubjectDropDown subjects={subjects} onChange={onSubjectChange} />
+				<Controller
+					control={form.control}
+					name="subjectId"
+					render={({ field }) => (
+						<SubjectDropDown
+							subjects={subjects}
+							initialSelectedSubject={field.value ?? ""}
+							onChange={field.onChange}
+						/>
+					)}
+				/>
 			</LabeledField>
 
 			<Controller
@@ -258,29 +267,19 @@ type subject = {
 
 function SubjectDropDown({
 	subjects,
+	initialSelectedSubject,
 	onChange
 }: {
 	subjects: subject[];
+	initialSelectedSubject: string;
 	onChange: (id: string) => void;
 }) {
-	const [selectedSubject, setSelectedSubject] = useState<string>(subjects?.[0]?.subjectId ?? "");
-
-	const changeDisplaySelectedRepository = (id: string) => {
-		setSelectedSubject(id);
-	};
-
-	useEffect(() => {
-		onChange(selectedSubject);
-	}, [onChange, selectedSubject]);
-
 	return (
 		<div className="flex flex-col">
 			<select
 				className="textfield"
-				value={selectedSubject ?? subjects[0].subjectId}
-				onChange={e => {
-					changeDisplaySelectedRepository(e.target.value);
-				}}
+				value={initialSelectedSubject ?? ""}
+				onChange={e => onChange(e.target.value)}
 			>
 				{subjects.map(subject => (
 					<option key={subject.subjectId} value={subject.subjectId}>
