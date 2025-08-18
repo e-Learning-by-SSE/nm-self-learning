@@ -321,11 +321,17 @@ function SkillRow({
 													<div className="ml-6">
 														{isProvidedSkill(skill.id) &&
 														isRequiredSkill(skill.id) ? (
-															<PuzzlePieceIconSolid className="icon h-5 text-lg text-emerald-500" />
+															// provided + required -> green filled
+															<PuzzlePieceIconSolid className="icon h-5 text-emerald-500" />
 														) : isProvidedSkill(skill.id) ? (
-															<PuzzlePieceIconOutline className="icon h-5 text-lg text-emerald-500" />
+															// only provided -> green outline
+															<PuzzlePieceIconOutline className="icon h-5 text-emerald-500" />
+														) : isRequiredSkill(skill.id) ? (
+															// only required -> red outline
+															<PuzzlePieceIconOutline className="icon h-5 text-red-500" />
 														) : (
-															<PuzzlePieceIconOutline className="icon h-5 text-lg" />
+															// neither -> no highlight (default/neutral)
+															<PuzzlePieceIconOutline className="icon h-5" />
 														)}
 													</div>
 												)}
