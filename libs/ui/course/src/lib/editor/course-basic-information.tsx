@@ -14,6 +14,7 @@ import { GreyBoarderButton, ImageOrPlaceholder, showToast } from "@self-learning
 import { trpc } from "@self-learning/api-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LessonSkillManager } from "libs/feature/teaching/src/lib/lesson/forms/lesson-skill-manager";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 
 type Props = {
 	onCourseCreated: (slug: string, selectors: string[]) => void;
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props) {
+	const session = useRequiredSession();
 	const form = useForm<RelaxedCourseFormModel>({
 		resolver: zodResolver(relaxedCourseFormSchema),
 		defaultValues: {
@@ -41,6 +43,15 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 	const [id, setId] = useState<string>();
 	const { mutateAsync: create } = trpc.course.createMinimal.useMutation();
 	const { mutateAsync: edit } = trpc.course.editMinimal.useMutation();
+
+	useEffect(() => {
+		if (session.data?.user?.name) {
+			form.reset({
+				...form.getValues(),
+				authors: [{ username: session.data.user.name }]
+			});
+		}
+	}, [session.data?.user?.name, form]);
 
 	useEffect(() => {
 		if (initialCourse) {
