@@ -26,6 +26,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Specialization, Subject } from "@self-learning/types";
+import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
@@ -128,7 +129,7 @@ function AuthorDashboardPage({ author }: Props) {
 							<section>
 								<SectionHeader
 									title="Fachgebiete"
-									subtitle="Administrator in den folgenden Fachgebieten:"
+									subtitle="Administrator der folgenden Fachgebiete:"
 								/>
 
 								<ul className="flex flex-wrap gap-4">
@@ -156,7 +157,7 @@ function AuthorDashboardPage({ author }: Props) {
 							<section>
 								<SectionHeader
 									title="Spezialisierungen"
-									subtitle="Administrator in den folgenden Spezialisierungen:"
+									subtitle="Administrator der folgenden Spezialisierungen:"
 								/>
 
 								<ul className="flex flex-wrap gap-4">
@@ -184,12 +185,12 @@ function AuthorDashboardPage({ author }: Props) {
 						<div className="flex justify-between gap-4">
 							<SectionHeader
 								title="Meine Kurse"
-								subtitle="Autor in den folgenden Kursen:"
+								subtitle="Autor der folgenden Kurse:"
 							/>
 
 							<Link href="/teaching/courses/create">
 								<IconButton
-									text="Neuen Kurs erstellen"
+									text="Kurs erstellen"
 									icon={<PlusIcon className="icon h-5" />}
 								/>
 							</Link>
@@ -275,7 +276,7 @@ function AuthorDashboardPage({ author }: Props) {
 
 							<Link href="/teaching/lessons/create">
 								<IconButton
-									text="Neue Lerneinheit erstellen"
+									text="Lerneinheit erstellen"
 									icon={<PlusIcon className="icon h-5" />}
 								/>
 							</Link>
@@ -288,13 +289,13 @@ function AuthorDashboardPage({ author }: Props) {
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Skillkarten"
-								subtitle="Besitzer der folgenden Repositories"
+								title="Meine Skillkarten"
+								subtitle="Autor der folgenden Skillkarten:"
 							/>
 							<Link href="/skills/repository/create">
 								<IconButton
 									icon={<PlusIcon className="icon h-5" />}
-									text="Skillkarten anlegen"
+									text="Skillkarte erstellen"
 								/>
 							</Link>
 						</div>
@@ -440,92 +441,6 @@ function LessonTaskbar({ lessonId }: { lessonId: string }) {
 	);
 }
 
-function LessonDeleteOption({ lessonId }: { lessonId: string }) {
-	const { mutateAsync: deleteLesson } = trpc.lesson.deleteLesson.useMutation();
-	const { data: linkedEntities, isLoading } = trpc.lesson.findLinkedLessonEntities.useQuery({
-		lessonId
-	});
-	const [showConfirmation, setShowConfirmation] = useState(false);
-
-	const handleDelete = async () => {
-		await deleteLesson({ id: lessonId });
-	};
-
-	const handleConfirm = () => {
-		handleDelete();
-		setShowConfirmation(false);
-	};
-
-	const handleCancel = () => {
-		setShowConfirmation(false);
-	};
-
-	// Don't show delete button -> Empty option
-	if (isLoading) {
-		return <></>;
-	}
-
-	return (
-		<>
-			<button
-				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
-				onClick={() => setShowConfirmation(true)}
-			>
-				<div className="ml-4">
-					<TrashIcon className="icon " />
-				</div>
-			</button>
-			{showConfirmation && (
-				<LessonDeletionDialog
-					handleCancel={handleCancel}
-					handleConfirm={handleConfirm}
-					linkedEntities={linkedEntities}
-				/>
-			)}
-		</>
-	);
-}
-
-function LessonDeletionDialog({
-	handleCancel,
-	handleConfirm,
-	linkedEntities
-}: {
-	handleCancel: () => void;
-	handleConfirm: () => void;
-	linkedEntities?: { slug: string; title: string }[];
-}) {
-	if (linkedEntities && linkedEntities.length > 0) {
-		return (
-			<Dialog title={"Löschen nicht möglich"} onClose={handleCancel}>
-				Lerneinheit kann nicht gelöscht werden, da sie in den folgenden Kursen Anwendung
-				findet:
-				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
-					{linkedEntities.map(course => (
-						<li key={course.slug}>
-							<Link href={`/courses/${course.slug}`} className="hover:text-secondary">
-								{course.title}
-							</Link>
-						</li>
-					))}
-				</ul>
-				<DialogActions onClose={handleCancel} />
-			</Dialog>
-		);
-	}
-
-	return (
-		<Dialog title={"Löschen"} onClose={handleCancel}>
-			Möchten Sie diese Lerneinheit wirklich löschen?
-			<DialogActions onClose={handleCancel}>
-				<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
-					Löschen
-				</button>
-			</DialogActions>
-		</Dialog>
-	);
-}
-
 function Lessons({ authorName }: { authorName: string }) {
 	const router = useRouter();
 	const { title = "", page = 1 } = router.query;
@@ -549,7 +464,7 @@ function Lessons({ authorName }: { authorName: string }) {
 			) : (
 				<>
 					<SearchField
-						placeholder="Suche nach Lerneinheit"
+						placeholder="Suche nach Lerneinheiten"
 						value={title}
 						onChange={e => {
 							router.push(

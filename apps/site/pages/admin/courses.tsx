@@ -43,7 +43,7 @@ export default function CoursesPage() {
 
 				<Link href="/teaching/courses/create" className="btn-primary flex w-fit">
 					<PlusIcon className="h-5" />
-					<span>Kurs hinzufügen</span>
+					<span>Kurs erstellen</span>
 				</Link>
 			</div>
 

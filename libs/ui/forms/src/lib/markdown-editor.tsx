@@ -1,7 +1,7 @@
 "use client";
-import { ChevronDownIcon, ItalicIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, ItalicIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, OnDialogCloseFn, PencilButton } from "@self-learning/ui/common";
+import { Dialog, DialogActions, IconButton, OnDialogCloseFn } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
@@ -84,9 +84,11 @@ export function MarkdownField({
 			</div>
 
 			{!inline && !header && (
-				<div className="flex justify-end bottom-0 right-0">
-					<PencilButton
-						buttonTitle="Bearbeiten"
+				<div className="flex justify-end bottom-0 right-0 py-2">
+					<IconButton
+						icon={<PencilIcon className="h-5 w-5" />}
+						variant="tertiary"
+						text="Bearbeiten"
 						onClick={() => setOpenEditor(true)}
 						title="Beschreibung bearbeiten"
 					/>
@@ -133,7 +135,7 @@ export function MarkdownEditorDialog({
 
 				<div className="flex h-full w-full flex-col gap-2 overflow-auto">
 					<span className="relative flex justify-between">
-						<label className="text-sm font-semibold">Preview</label>
+						<label className="text-sm font-semibold">Vorschau</label>
 					</span>
 					<div className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
@@ -150,7 +152,7 @@ export function MarkdownEditorDialog({
 
 			<DialogActions onClose={onClose}>
 				<button type="button" className="btn-primary" onClick={() => onClose(value)}>
-					Übernehmen
+					Speichern
 				</button>
 			</DialogActions>
 		</Dialog>

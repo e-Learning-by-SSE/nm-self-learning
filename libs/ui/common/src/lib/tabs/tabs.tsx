@@ -1,6 +1,7 @@
 import { Tab as HeadlessTab, TabGroup, TabList } from "@headlessui/react";
 import { Fragment, ReactNode } from "react";
-import { XButton } from "../button/icon-only-button";
+import { IconOnlyButton } from "../button/button";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 export function Tabs({
 	children,
@@ -59,14 +60,10 @@ export function RemovableTab({
 		<Tab>
 			<span className="flex items-end gap-4 hover:text-secondary">
 				<span>{children}</span>
-				<XButton
-					onClick={e => {
+				<IconOnlyButton icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" onClick={onClick={e => {
 						e.stopPropagation();
 						onRemove();
-					}}
-					title="Entfernen"
-					className="flex items-center"
-				/>
+					}}} title="Entfernen" className="flex items-center" />
 			</span>
 		</Tab>
 	);

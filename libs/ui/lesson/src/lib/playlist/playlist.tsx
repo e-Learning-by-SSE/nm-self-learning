@@ -251,6 +251,42 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 					{lesson.title}
 				</span>
 			</span>
+
+      {/* supposedly no longer required here
+			<span className="flex justify-between">
+				{lesson.meta.hasQuiz && (
+					<Link
+						href={`/courses/${course.slug}/${lesson.slug}${
+							router.pathname.endsWith("quiz") ? "" : "/quiz"
+						}`}
+						className="btn-primary text-sm"
+						data-testid="quizLink"
+					>
+						{router.pathname.endsWith("quiz") ? "Zum Lerninhalt" : "Zur Lernkontrolle"}
+					</Link>
+				)}
+				<span className="flex gap-2">
+					<button
+						onClick={() => previous && navigateToLesson(previous)}
+						disabled={!previous}
+						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
+						title="Vorherige Lerneinheit"
+						data-testid="previousLessonButton"
+					>
+						<ChevronDoubleLeftIcon className="h-5" />
+					</button>
+					<button
+						onClick={() => next && navigateToLesson(next)}
+						disabled={!next}
+						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
+						title="Nächste Lerneinheit"
+						data-testid="nextLessonButton"
+					>
+						<ChevronDoubleRightIcon className="h-5" />
+					</button>
+				</span>
+			</span>
+      */}
 		</div>
 	);
 }
