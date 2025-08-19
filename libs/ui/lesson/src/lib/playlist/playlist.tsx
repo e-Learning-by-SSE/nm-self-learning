@@ -7,9 +7,16 @@ import {
 	PlayIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { useLessonLayout } from "@self-learning/lesson";
-import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
+import { useLessonOutline } from "@self-learning/lesson";
+import {
+	CourseCompletion,
+	extractLessonIds,
+	getContentTypeDisplayName,
+	LessonContentType,
+	LessonMeta
+} from "@self-learning/types";
 import { Divider, ProgressBar, useTimeout } from "@self-learning/ui/common";
+import { NavigableContentOutline } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -159,7 +166,7 @@ function Lesson({
 	href: string;
 	isActive: boolean;
 }) {
-	const { playlistRef } = useLessonLayout();
+	const outline = useLessonOutline();
 	return (
 		<>
 			<Link
@@ -181,7 +188,43 @@ function Lesson({
 					{lesson.title}
 				</span>
 			</Link>
-			{isActive && <div className="ml-8 mt-1" ref={playlistRef}></div>}
+			{isActive && outline && (
+				<div className="ml-8 mt-1">
+					<NavigableContentOutline
+						content={outline.content}
+						swapContent={outline.swapContent}
+						activeIndex={outline.activeIndex}
+						setTargetIndex={outline.setTargetIndex}
+						RenderContent={ContentTabItem}
+					/>
+				</div>
+			)}
+		</>
+	);
+}
+
+function ContentTabItem({
+	item,
+	select,
+	active
+}: {
+	item?: LessonContentType;
+	select?: () => void;
+	active?: boolean;
+}) {
+	return (
+		<>
+			{item && (
+				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center text-sm">
+					<span
+						className={`w-full ${active ? "text-secondary" : "text-light"}`}
+						onClick={select}
+					>
+						{getContentTypeDisplayName(item.type)}
+					</span>
+				</div>
+			)}
+			{!item && "Kein Inhalt"}
 		</>
 	);
 }

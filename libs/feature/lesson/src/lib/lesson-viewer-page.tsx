@@ -8,7 +8,7 @@ import {
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getCourse, useLessonContext, useLessonLayout } from "@self-learning/lesson";
+import { getCourse, useLessonContext, useLessonOutline } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	Article,
@@ -22,10 +22,9 @@ import {
 import { AuthorsList, LicenseChip, SectionCard, Tab, Tabs } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import {
-	DraggableContentOutline,
-	DraggableContentViewer,
+	NavigableContentViewer,
 	MarkdownContainer,
-	useDraggableContent,
+	useNavigableContent,
 	useRequiredSession
 } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -37,9 +36,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { LessonData } from "./lesson-data-access";
 import { Button } from "@headlessui/react";
 import { DocumentIcon } from "@heroicons/react/24/outline";
-import { createPortal } from "react-dom";
 import { usePathname, useSearchParams } from "next/navigation";
-        
+
 export type LessonProps = {
 	lesson: LessonData;
 	course?: ResolvedValue<typeof getCourse>;
@@ -50,38 +48,13 @@ export type LessonProps = {
 		subtitle: CompiledMarkdown | null;
 	};
 };
-// id is required by Draggable. Content id is required to map this to lesson.content pos
+// id is required by Navigable. Content id is required to map this to lesson.content pos
 type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };
 //
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 type LessonNavigationItem = { slug: string; lessonId: string };
 type LessonNavigationData = LessonNavigationItem[];
 
-function ContentTabItem({
-	item,
-	select,
-	active
-}: {
-	item?: LessonContentType;
-	select?: () => void;
-	active?: boolean;
-}) {
-	return (
-		<>
-			{item && (
-				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center text-sm">
-					<span
-						className={`w-full ${active ? "text-secondary" : "text-light"}`}
-						onClick={select}
-					>
-						{getContentTypeDisplayName(item.type)}
-					</span>
-				</div>
-			)}
-			{!item && "Kein Inhalt"}
-		</>
-	);
-}
 function ContentDisplayItem({
 	item: c,
 	index,
@@ -160,11 +133,7 @@ function MediaDisplay({
 	openedMedia: OpenedMediaInfo[];
 	addMediaDisplay: (idx: number) => void;
 }) {
-	const lessonContent = lesson.content as LessonContent;
-	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
-	const ctx = useDraggableContent(lessonContent, false, false);
-
-	const { playlistRef } = useLessonLayout();
+	const outline = useLessonOutline();
 
 	// If suppressed -> just follow user click
 	const tabUpdateSuppressRef = useRef<boolean>(false);
@@ -174,39 +143,22 @@ function MediaDisplay({
 		// if last tab was a PDF and no other Tab was selected -> go to that PDF
 		if (!tabUpdateSuppressRef.current && selectedIndex !== undefined) {
 			const idx = openedMedia[selectedIndex].content_id;
-			ctx.setActiveIndex(idx); // highlight it
-			setTargetIndex(idx); // make it jump
+			outline?.setActiveIndex(idx); // highlight it
+			outline?.setTargetIndex(idx); // make it jump
 		} else {
 			tabUpdateSuppressRef.current = false;
 		}
-	}, [selectedIndex, openedMedia, ctx]);
+	}, [selectedIndex, openedMedia, outline]);
 
 	return (
 		<>
-			{playlistRef?.current &&
-				createPortal(
-					<DraggableContentOutline
-						content={ctx.content}
-						swapContent={ctx.swapContent}
-						activeIndex={ctx.activeIndex}
-						setTargetIndex={idx => {
-							// suppress all pdf tab activity if in pdf mode
-							tabUpdateSuppressRef.current = selectedIndex !== undefined;
-							// This is to allow navigation when DraggableContentViewer is not visible
-							setTargetIndex(idx);
-							ctx.setActiveIndex(idx);
-						}}
-						RenderContent={ContentTabItem}
-					/>,
-					playlistRef.current
-				)}
 			{/* Display base content */}
-			{selectedIndex === undefined && (
-				<DraggableContentViewer
-					content={ctx.content}
-					setActiveIndex={ctx.setActiveIndex}
-					targetIndex={targetIndex}
-					resetTargetIndex={() => setTargetIndex(undefined)}
+			{selectedIndex === undefined && outline && (
+				<NavigableContentViewer
+					content={outline.content}
+					setActiveIndex={outline.setActiveIndex}
+					targetIndex={outline.targetIndex}
+					resetTargetIndex={() => outline.setTargetIndex(undefined)}
 					RenderContent={ContentDisplayItem}
 					renderProps={{ addMediaDisplay, lesson, course }}
 					gap={8}
@@ -296,7 +248,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 				.filter(m => m.type === "pdf") as OpenedMediaInfo[],
 		[lessonContent]
 	);
-	const openedMedia = useDraggableContent(INITIAL_PDF, false, false);
+	const openedMedia = useNavigableContent(INITIAL_PDF, false, false);
 	const addMediaDisplay = (idx: number) => {
 		const existingIndex = openedMedia.content.findIndex(m => m.content_id === idx);
 		openedMedia.setActiveIndex(existingIndex);
@@ -329,7 +281,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 				mdSubtitle={markdown.subtitle}
 			/>
 
-			{/* TODO can be replaced with DraggableContentSelector, make Inhalt default and immutable */}
+			{/* TODO can be replaced with NavigableContentSelector, make Inhalt default and immutable */}
 			<MediaSelector
 				lesson={lesson}
 				course={course}
@@ -643,7 +595,7 @@ function MediaSelector({
 }) {
 	// index transform to allow first item to be default
 	const index = selectedIndex !== undefined ? selectedIndex + 1 : 0;
-	// TODO can be replaced with DraggableContentSelector, make Inhalt default and immutable
+	// TODO can be replaced with NavigableContentSelector, make Inhalt default and immutable
 	return (
 		<Tabs
 			selectedIndex={index}
