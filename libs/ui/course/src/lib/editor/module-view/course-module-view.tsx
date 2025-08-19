@@ -67,6 +67,7 @@ export function CourseModuleView({
 	function switchTab(index: number) {
 		setSelectedIndex(index);
 	}
+
 	const isProvidedSkill = (skillId: string): boolean => {
 		const skill = allSkills.get(skillId);
 		const provides = form.getValues("provides") ?? [];
@@ -84,6 +85,7 @@ export function CourseModuleView({
 
 		return false;
 	};
+
 	const onSkillSelect: SkillSelectHandler = skillId => {
 		const skill = skillId ? allSkills.get(skillId) : undefined;
 
@@ -125,6 +127,7 @@ export function CourseModuleView({
 			subtitle: skill.name
 		});
 	};
+
 	const addSkills = (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => {
 		const alreadyRequired = form
 			.getValues("provides")
@@ -150,6 +153,7 @@ export function CourseModuleView({
 		form.reset(createEmptyLesson());
 		setSelectedModuleId(null);
 	};
+
 	const onSubmit = form.handleSubmit(async (lesson: LessonFormModel) => {
 		const isEdit = Boolean(lesson.lessonId);
 
@@ -191,6 +195,7 @@ export function CourseModuleView({
 			}
 		}
 	};
+
 	function handleModuleClick(id: string) {
 		const lesson = modules.get(id);
 		if (lesson) {

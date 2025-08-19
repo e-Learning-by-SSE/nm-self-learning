@@ -3,3 +3,4 @@ export * from "./lib/editor/course-basic-information";
 export * from "./lib/editor/course-skill-view";
 export * from "./lib/editor/module-view/course-module-view";
 export * from "./lib/editor/course-preview";
+export * from "./lib/editor/kee-tabs-names";

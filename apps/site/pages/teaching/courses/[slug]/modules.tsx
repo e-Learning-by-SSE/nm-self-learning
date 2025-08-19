@@ -1,5 +1,5 @@
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
-import { CourseModuleView } from "@self-learning/ui/course";
+import { CourseModuleView, editorTabs } from "@self-learning/ui/course";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -38,12 +38,7 @@ export default function CourseModulesPage({ username }: Props) {
 
 	const [selectedIndex, setSelectedIndex] = useState(2);
 
-	const tabs = [
-		{ label: "1. Grunddaten", path: "edit" },
-		{ label: "2. Skillansicht", path: "skills" },
-		{ label: "3. Modulansicht", path: "modules" },
-		{ label: "4. Vorschau", path: "preview" }
-	];
+	const tabs = editorTabs;
 
 	async function switchTab(newIndex: number) {
 		setSelectedIndex(newIndex);

@@ -2,7 +2,7 @@ import { isAuthor } from "@self-learning/admin";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
-import { CourseBasicInformation } from "@self-learning/ui/course";
+import { CourseBasicInformation, editorTabs } from "@self-learning/ui/course";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -47,12 +47,7 @@ export default function EditCoursePage() {
 		return <div>Loading course...</div>;
 	}
 
-	const tabs = [
-		{ label: "1. Grunddaten", path: "" },
-		{ label: "2. Skillansicht", path: "skills" },
-		{ label: "3. Modulansicht", path: "modules" },
-		{ label: "4. Vorschau", path: "preview" }
-	];
+	const tabs = editorTabs;
 
 	async function switchTab(newIndex: number) {
 		setSelectedIndex(newIndex);
@@ -74,7 +69,7 @@ export default function EditCoursePage() {
 				))}
 			</Tabs>
 			<CourseBasicInformation
-				onCourseCreated={(slug: string, selectors: string[]) => {
+				onCourseCreated={(slug: string) => {
 					router.push(`/teaching/courses/${slug}/edit`);
 				}}
 				initialCourse={course}

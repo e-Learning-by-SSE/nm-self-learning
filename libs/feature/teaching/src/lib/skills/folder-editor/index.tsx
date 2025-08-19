@@ -34,7 +34,7 @@ export function CreateAndViewSkills({
 	});
 
 	if (isLoading) {
-		<LoadingBox />;
+		return <LoadingBox />;
 	}
 
 	if (!author) {
@@ -46,10 +46,6 @@ export function CreateAndViewSkills({
 	skills?.forEach(skill => {
 		treeContent.set(skill.id, skill);
 	});
-
-	if (isLoading) {
-		return <LoadingBox />;
-	}
 
 	return (
 		<SkillFolderEditor

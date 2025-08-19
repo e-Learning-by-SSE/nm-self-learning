@@ -17,7 +17,7 @@ import { LessonSkillManager } from "libs/feature/teaching/src/lib/lesson/forms/l
 import { useRequiredSession } from "@self-learning/ui/layouts";
 
 type Props = {
-	onCourseCreated: (slug: string, selectors: string[]) => void;
+	onCourseCreated: (slug: string) => void;
 	initialCourse?: RelaxedCourseFormModel;
 };
 
@@ -33,14 +33,11 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 	});
 
 	const {
-		register,
 		handleSubmit,
-		setValue,
 		reset,
 		formState: { errors }
 	} = form;
 
-	const [id, setId] = useState<string>();
 	const { mutateAsync: create } = trpc.course.createMinimal.useMutation();
 	const { mutateAsync: edit } = trpc.course.editMinimal.useMutation();
 
@@ -78,17 +75,15 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 				}
 
 				const { title, slug, courseId } = await edit({
-					//courseId: initialCourse.courseId,
 					slug: initialCourse.slug,
 					course: course
 				});
 				showToast({ type: "success", title: "Kurs aktualisiert!", subtitle: title });
-				onCourseCreated(slug, ["dummy-selector-1", "dummy-selector-2"]);
+				onCourseCreated(slug);
 			} else {
 				const { title, slug, courseId } = await create(course);
 				showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
-				setId(courseId);
-				onCourseCreated(slug, ["dummy-selector-1", "dummy-selector-2"]);
+				onCourseCreated(slug);
 			}
 		} catch (error) {
 			console.error(error);
@@ -132,7 +127,6 @@ function BasicInfo() {
 
 	const {
 		register,
-		setValue,
 		formState: { errors }
 	} = form;
 
@@ -142,17 +136,10 @@ function BasicInfo() {
 		trpc.subject.getAllSubjects.useQuery();
 
 	useEffect(() => {
-		if (isLoadingSubjects) return;
-
-		if (subjects.length > 0) {
-			const currentSubjectId = form.getValues("subjectId");
-			if (!currentSubjectId) {
-				setValue("subjectId", subjects[0]?.subjectId || "");
-			}
-		} else {
-			console.error("Failed to fetch subjects from DB!");
+		if (!isLoadingSubjects && subjects.length > 0) {
+			form.setValue("subjectId", form.getValues("subjectId") || subjects[0].subjectId);
 		}
-	}, [subjects, setValue, isLoadingSubjects, form]);
+	}, [isLoadingSubjects, subjects, form]);
 
 	return (
 		<div className="space-y-3">
@@ -232,7 +219,7 @@ function BasicInfo() {
 					render={({ field }) => (
 						<SubjectDropDown
 							subjects={subjects}
-							initialSelectedSubject={field.value ?? ""}
+							value={field.value ?? ""}
 							onChange={field.onChange}
 						/>
 					)}
@@ -271,25 +258,26 @@ function BasicInfo() {
 		</div>
 	);
 }
-type subject = {
+
+type Subject = {
 	subjectId: string;
 	title: string;
 };
 
 function SubjectDropDown({
 	subjects,
-	initialSelectedSubject,
+	value,
 	onChange
 }: {
-	subjects: subject[];
-	initialSelectedSubject: string;
+	subjects: Subject[];
+	value: string;
 	onChange: (id: string) => void;
 }) {
 	return (
 		<div className="flex flex-col">
 			<select
 				className="textfield"
-				value={initialSelectedSubject ?? ""}
+				value={value ?? ""}
 				onChange={e => onChange(e.target.value)}
 			>
 				{subjects.map(subject => (

@@ -46,7 +46,7 @@ export function LessonSkillManager() {
 				subtitle="Vermittelte und benötigte Skills dieser Lerneinheit"
 			/>
 			<>
-				<LabeledFieldSelectSkillsView2
+				<LabeledFieldSelectSkillsView
 					label={"Vermittelte Skills"}
 					skills={watchingSkills["provides"]}
 					onDeleteSkill={skill => {
@@ -57,7 +57,7 @@ export function LessonSkillManager() {
 					}}
 				/>
 
-				<LabeledFieldSelectSkillsView2
+				<LabeledFieldSelectSkillsView
 					label={"Benötigte Skills"}
 					skills={watchingSkills["requires"]}
 					onDeleteSkill={skill => {
@@ -80,7 +80,7 @@ export function LessonSkillManager() {
 	);
 }
 
-export function LabeledFieldSelectSkillsView2({
+export function LabeledFieldSelectSkillsView({
 	skills,
 	onDeleteSkill,
 	onAddSkill,

@@ -12,7 +12,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { SkillFormModel } from "@self-learning/types";
-//import { GreyBoarderButton } from "@self-learning/ui/common";
 import { LessonSkillManagerDragDrop } from "./lesson-skill-manager-dragdrop";
 import { GreyBoarderButton } from "@self-learning/ui/common";
 

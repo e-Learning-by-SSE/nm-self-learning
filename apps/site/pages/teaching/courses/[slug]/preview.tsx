@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { isAuthor } from "@self-learning/admin";
+import { editorTabs } from "@self-learning/ui/course";
 
 export const getServerSideProps = withTranslations(
 	["common"],
@@ -32,12 +33,7 @@ export default function CoursePreviewPage() {
 	const slug = params?.slug as string;
 	const [selectedIndex, setSelectedIndex] = useState(3);
 
-	const tabs = [
-		{ label: "1. Grunddaten", path: "edit" },
-		{ label: "2. Skillansicht", path: "skills" },
-		{ label: "3. Modulansicht", path: "modules" },
-		{ label: "4. Vorschau", path: "preview" }
-	];
+	const tabs = editorTabs;
 
 	async function switchTab(newIndex: number) {
 		setSelectedIndex(newIndex);
