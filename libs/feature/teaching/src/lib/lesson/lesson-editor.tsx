@@ -1,7 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import { GreyBoarderButton, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import { OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -109,9 +109,9 @@ export function LessonEditor({
 						</div>
 						<div className="pointer-events-auto flex items-center gap-2">
 							<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
-							<GreyBoarderButton>
+							<button className="btn btn-tertiary" type="button" title={"Abbrechen"}>
 								<span className={"text-gray-600"}>Abbrechen</span>
-							</GreyBoarderButton>
+							</button>
 							<button type="submit" className="btn-primary pointer-events-auto">
 								Speichern
 							</button>
