@@ -1,31 +1,157 @@
 "use client";
 
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { Bars3Icon } from "@heroicons/react/24/outline";
-import { RemovableTab, Tab, Tabs } from "@self-learning/ui/common";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-export type DraggableItem<T> = T & { id: string };
+/**
+ * README
+ * @usage
+ * - Select combination of two elements: @see NavigableContentViewer (Viewer) 
+ *     and @see NavigableContentOutline / @see NavigableContentSelector Outline/Selector. 
+ * - You can use Outline/Selector separately from Viewer.
+ * - T must have an unique `id: string` field.
+ * - Create your container of T[].
+ * - Create TWO useState<number | undefined>(undefined):
+ *   - activeIndex - holds current viewed element;
+ *   - targetIndex - used to trigger scroll on click on the desired content.
+ * - RenderContent for Viewer is a view for each T.
+ *   - if supplied item is undefined => content array is empty
+ * - RenderContent for Outline/Selector is a view for each T. 
+ *   - if supplied item is undefined => content array is empty
+ * @important look carefully which indexes have T[]! Can cause nasty errors!
+ * 
+ * For simplicity of data management use @see useNavigableContent.
+ *
+ * `resetTargetIndex` - set it to `() => setTargetIndex(nullptr)`
+ * 
+ * @usage
+ * ```
+ * function Parent(content) : {content: string[] } {
 
-const fixContentIDs = <T,>(contentArray: T[]): DraggableItem<T>[] => {
-	return contentArray.map(item => {
-		if (
-			typeof item === "object" &&
-			item !== null &&
-			"id" in item &&
-			typeof (item as Record<string, unknown>).id === "string"
-		) {
-			return item as DraggableItem<T>;
-		}
-		return { ...item, id: crypto.randomUUID() } as DraggableItem<T>;
-	});
+		const [targetTabIndex, setTargetTabIndex] = useState<number | undefined>(undefined);
+		const ctx = useNavigableContent(content, true, true);
+
+		render(
+	 		<div className="grid grid-cols-[1fr_300px] gap-8">
+	 			<NavigableContentOutline
+					content={ctx.content}
+					swapContent={ctx.swapContent}
+					removeContent={ctx.removeContent}
+					activeIndex={ctx.activeIndex}
+					setTargetIndex={setTargetTabIndex}
+					RenderContent={ContentOutlineTab}
+				/>
+				<NavigableContentViewer
+					content={ctx.content}
+					targetIndex={targetTabIndex}
+					resetTargetIndex={() => setTargetTabIndex(undefined)} // way to prevent scroll on update behavior (and more)
+					setActiveIndex={ctx.setActiveIndex}
+					RenderContent={RenderContentType}
+				/>
+			</div>
+		)
+ * }
+
+	function RenderContentType({
+		index,
+		item
+	}: {
+		index?: number;
+		item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
+	}) {
+		if (!item || index === undefined || index === null)
+			return <> empty </>
+		if (item.type === "A")
+			return <> content A </>
+		if (item.type === "B") 
+			return <> content B </>
+		// Must not happen!
+		return <span className="text-red-500">Error: Unknown content type</span>;
+	}
+
+	function ContentOutlineTab({
+		item,
+		swappable,
+		remove,
+		select,
+		active
+	}: 
+		INavigableOutlineTab<FieldArrayWithId<{ content: LessonContent }, "content", "id">>
+	) {
+		return (
+			<>
+				{item && (
+					<div>
+						{swappable && <IconCanSwap/>}
+						<span
+							className={`${active ? "active" : "non-active"}`}
+							onClick={select}
+						>
+							{item.text}
+						</span>
+						{remove && (
+							<Button onClick={remove}/>
+						)}
+					</div>
+				)}
+				{!item && "empty"}
+			</>
+		);
+	}
+ * 
+ */
+
+/**
+ * A generic wrapper type that ensures each item has a unique `id` field.
+ */
+export type NavigableItem<T> = T & { id: string };
+
+export type INavigableOutlineTab<T> = {
+	item?: T;
+	swappable?: boolean;
+	remove?: () => void;
+	select?: () => void;
+	active?: boolean;
 };
 
-export function useDraggableContent<T>(
+export type NavigableContent<T> = {
+	content: NavigableItem<T>[];
+	activeIndex: number | undefined;
+	setActiveIndex: (idx: number | undefined) => void;
+	swapContent?: (a: number, b: number) => void;
+	removeContent?: (idx: number) => void;
+	appendContent?: (newItem: T) => void;
+};
+
+export type NavigableContentContext<T> = NavigableContent<T> & {
+	targetIndex: number | undefined;
+	setTargetIndex: (idx: number | undefined) => void;
+};
+
+/**
+ * React hook to manage navigable content with optional swap/remove capabilities.
+ *
+ * @template T - Type of the content items
+ *
+ * @param initialContent - Initial array of content items
+ * @param swapEnabled - Whether swapping items (drag & drop reorder) is allowed
+ * @param removeEnabled - Whether removing items is allowed
+ *
+ * @note will create separate array of content; will append `id` field if missing
+ *
+ * @returns Object with:
+ *  - `content`: current array of navigable items
+ *  - `activeIndex`: index of the currently active item
+ *  - `setActiveIndex`: setter for the active index
+ *  - `swapContent`: function to swap two items (if `swapEnabled`)
+ *  - `removeContent`: function to remove an item by index (if `removeEnabled`)
+ *  - `appendContent`: function to append a new item
+ */
+export function useNavigableContent<T>(
 	initialContent: T[],
 	swapEnabled: boolean,
 	removeEnabled: boolean
-) {
+): NavigableContent<T> {
 	const [content, setContent] = useState(() => fixContentIDs(initialContent));
 	const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
 
@@ -60,23 +186,18 @@ export function useDraggableContent<T>(
 }
 
 /**
- * @usage
- * - Select combination of two elements: Viewer and Outline/Selector. You can use Outline/Selector separately from viewer
- * - T must have a string id field.
- * - Create your container of T[].
- * - Create TWO useState<number | undefined>(undefined):
- *   - activeIndex - holds current viewed element
- *   - targetIndex - used to trigger scroll on click on the desired content
- * - RenderContent for Viewer is a view for each T. Must have item: T and index: number fields.
- *   - if supplied item is undefined => content array is empty
- * - RenderContent for Outline/Selector is a view for each T. Must have item: T.
- *   - Keep it simple! Ideally make it just text
- *   - if supplied item is undefined => content array is empty
- * !!! look carefully which indexes are supplied into components! Can cause nasty errors!
+ * Component for rendering a vertically scrollable viewer of navigable content.
  *
- * resetTargetIndex - set it to `() => setTargetIndex(nullptr)`
+ * @template T - Item type (must include an `id: string` field)
+ * @template RenderProps - Extra props passed to each `RenderContent`
+ *
+ * @remarks
+ * - Designed for pairing with `NavigableContentOutline` (selector).
+ * - Tracks visible items using IntersectionObserver.
+ * - Supports smooth auto-scroll to `targetIndex`.
+ * - Updates `activeIndex` based on scroll position.
  */
-export function DraggableContentViewer<
+export function NavigableContentViewer<
 	T extends { id: string },
 	RenderProps extends Record<string, unknown> = Record<string, never>
 >({
@@ -190,9 +311,7 @@ export function DraggableContentViewer<
 		);
 
 		contentRefs.current.forEach(ref => {
-			if (ref) {
-				observer.observe(ref);
-			}
+			ref && observer.observe(ref);
 		});
 
 		return () => {
@@ -228,7 +347,16 @@ export function DraggableContentViewer<
 	);
 }
 
-export function DraggableContentOutline<T extends { id: string }>({
+/**
+ * Outline-style sidebar for navigable content.
+ *
+ * @remarks
+ * - Vertical list
+ * - Allows selecting items
+ * - Allows drag & drop (reorder) 	(if `swapContent`  is provided)
+ * - Allows removing items 			(if `removeContent` is provided)
+ */
+export function NavigableContentOutline<T extends { id: string }>({
 	content,
 	swapContent,
 	removeContent,
@@ -263,7 +391,94 @@ export function DraggableContentOutline<T extends { id: string }>({
 						{...provided.droppableProps}
 						className="overflow-y-auto"
 					>
-						<div className="flex flex-col flex-no-wrap min-w-max">
+						<div className="flex flex-col flex-nowrap min-w-max">
+							{content.map((item, index) => (
+								<Draggable
+									key={item.id}
+									draggableId={item.id}
+									index={index}
+									isDragDisabled={!swapContent}
+								>
+									{provided => (
+										<div
+											ref={provided.innerRef}
+											{...provided.draggableProps}
+											{...provided.dragHandleProps}
+										>
+											<RenderContent
+												item={item}
+												swappable={!!swapContent}
+												remove={
+													removeContent && (() => removeContent(index))
+												}
+												select={() => setTargetIndex(index)}
+												active={activeIndex === index}
+											/>
+										</div>
+									)}
+								</Draggable>
+							))}
+							{(!content || content.length === 0) && (
+								<div
+									className={`flex gap-5 whitespace-nowrap flex-nowrap items-center`}
+								>
+									<span>
+										<RenderContent />
+									</span>
+								</div>
+							)}
+						</div>
+						{provided.placeholder}
+					</div>
+				)}
+			</Droppable>
+		</DragDropContext>
+	);
+}
+
+/**
+ * Horizontal selector variant of @see NavigableContentOutline
+ *
+ * @remarks
+ * - Horizontal scrolling instead of vertical
+ * - Supports drag & drop reordering
+ */
+export function NavigableContentSelector<T extends { id: string }>({
+	content,
+	swapContent,
+	removeContent,
+	activeIndex,
+	setTargetIndex,
+	RenderContent
+}: {
+	content: T[];
+	swapContent?: (src: number, dest: number) => void;
+	removeContent?: (idx: number) => void;
+	activeIndex: number | undefined;
+	setTargetIndex: (idx: number) => void;
+	RenderContent: (props: {
+		item?: T;
+		swappable?: boolean;
+		remove?: () => void;
+		select?: () => void;
+		active?: boolean;
+	}) => JSX.Element;
+}) {
+	return (
+		<DragDropContext
+			onDragEnd={result => {
+				if (!swapContent || result.reason !== "DROP" || !result.destination) return;
+				swapContent(result.source.index, result.destination.index);
+			}}
+		>
+			<Droppable droppableId="droppable" direction="horizontal">
+				{provided => (
+					<div
+						ref={provided.innerRef}
+						{...provided.droppableProps}
+						className="overflow-auto"
+					>
+						<div className="flex flex-no-wrap gap-4 min-w-max">
 							{content.map((item, index) => (
 								<Draggable
 									key={item.id}
@@ -306,91 +521,16 @@ export function DraggableContentOutline<T extends { id: string }>({
 	);
 }
 
-export function DraggableContentSelector<T extends { id: string }>({
-	content,
-	swapContent,
-	removeContent,
-	activeIndex,
-	setTargetIndex,
-	RenderContent
-}: {
-	content: T[];
-	swapContent?: (src: number, dest: number) => void;
-	removeContent?: (idx: number) => void;
-	activeIndex: number | undefined;
-	setTargetIndex: (idx: number) => void;
-	RenderContent: (props: { item?: T }) => JSX.Element;
-}) {
-	return (
-		<DragDropContext
-			onDragEnd={result => {
-				if (!swapContent || result.reason !== "DROP" || !result.destination) return;
-				swapContent(result.source.index, result.destination.index);
-			}}
-		>
-			<Droppable droppableId="droppable" direction="horizontal">
-				{provided => (
-					<div
-						ref={provided.innerRef}
-						{...provided.droppableProps}
-						className="overflow-auto"
-					>
-						<Tabs selectedIndex={activeIndex} onChange={setTargetIndex}>
-							<div className="flex flex-no-wrap gap-4 min-w-max">
-								{content.map((item, index) => (
-									<Draggable
-										key={item.id}
-										draggableId={item.id}
-										index={index}
-										isDragDisabled={!swapContent}
-									>
-										{provided => (
-											<div
-												ref={provided.innerRef}
-												{...provided.draggableProps}
-												{...provided.dragHandleProps}
-											>
-												{removeContent && (
-													<RemovableTab
-														onRemove={() => removeContent(index)}
-													>
-														<div className="flex gap-5 items-center">
-															{swapContent && (
-																<Bars3Icon className="h-5 text-light" />
-															)}
-															<RenderContent item={item} />
-														</div>
-													</RemovableTab>
-												)}
-												{!removeContent && (
-													<Tab>
-														<div className="flex gap-5 items-center">
-															{swapContent && (
-																<Bars3Icon className="h-5 text-light" />
-															)}
-															<RenderContent item={item} />
-														</div>
-													</Tab>
-												)}
-											</div>
-										)}
-									</Draggable>
-								))}
-								{(!content || content.length === 0) && (
-									<div
-										className={`flex gap-5 text-nowrap flex-nowrap items-center`}
-									>
-										<span>
-											<RenderContent />
-										</span>
-									</div>
-								)}
-							</div>
-						</Tabs>
-						{provided.placeholder}
-					</div>
-				)}
-			</Droppable>
-		</DragDropContext>
-	);
-}
+const fixContentIDs = <T,>(contentArray: T[]): NavigableItem<T>[] => {
+	return contentArray.map(item => {
+		if (
+			typeof item === "object" &&
+			item !== null &&
+			"id" in item &&
+			typeof (item as Record<string, unknown>).id === "string"
+		) {
+			return item as NavigableItem<T>;
+		}
+		return { ...item, id: crypto.randomUUID() } as NavigableItem<T>;
+	});
+};

@@ -27,7 +27,7 @@ import { IFrameInput } from "../content-types/iframe";
 import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
 import { Button } from "@headlessui/react";
-import { DraggableContentOutline, DraggableContentViewer } from "@self-learning/ui/layouts";
+import { NavigableContentOutline, NavigableContentViewer } from "@self-learning/ui/layouts";
 import { TrashIcon } from "@heroicons/react/24/outline";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
@@ -177,8 +177,8 @@ export function LessonContentEditor() {
 		<div className="w-full lg:grid lg:grid-cols-[1fr_300px] gap-8">
 			<div className="w-full overflow-hidden flex flex-col gap-4 mb-8 mt-4">
 				<LessonDescriptionForm />
-				<h2 className="text-2xl mb-4">Inhalt</h2>
-				<DraggableContentViewer
+				<h2 className="text-2xl mt-4">Inhalt</h2>
+				<NavigableContentViewer
 					content={content}
 					targetIndex={targetTabIndex}
 					resetTargetIndex={() => setTargetTabIndex(undefined)} // way to prevent scroll on update behavior (and more)
@@ -230,7 +230,7 @@ export function LessonContentEditor() {
 						</DropdownMenu>
 					</div>
 					<div className={`${isOutlineOpen ? "" : "hidden"} lg:block`}>
-						<DraggableContentOutline
+						<NavigableContentOutline
 							content={content}
 							swapContent={swapContent}
 							removeContent={removeContent}
