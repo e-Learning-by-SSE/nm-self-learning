@@ -1,7 +1,13 @@
 "use client";
 import { ChevronDownIcon, ItalicIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, IconButton, OnDialogCloseFn } from "@self-learning/ui/common";
+import {
+	ButtonVariant,
+	Dialog,
+	DialogActions,
+	IconButton,
+	OnDialogCloseFn
+} from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
@@ -28,7 +34,7 @@ export function MarkdownField({
 	inline?: boolean;
 	placeholder?: string;
 	compact?: boolean;
-	header?: string | { text: string; sz: string };
+	header?: string | { text: string; sz: string; btn_variant?: ButtonVariant };
 }) {
 	const [openEditor, setOpenEditor] = useState(false);
 	const style = compact ? "overflow-y-auto max-h-64" : "";
@@ -44,8 +50,10 @@ export function MarkdownField({
 					<h3 className={`text-${header.sz}`}>{header.text}</h3>
 					<div className="flex w-full justify-end bottom-0 right-0">
 						{!inline && (
-							<PencilButton
-								buttonTitle="Bearbeiten"
+							<IconButton
+								icon={<PencilIcon className="h-5 w-5" />}
+								variant={header.btn_variant || "stroked"}
+								text="Bearbeiten"
 								onClick={() => setOpenEditor(true)}
 								title="Beschreibung bearbeiten"
 							/>

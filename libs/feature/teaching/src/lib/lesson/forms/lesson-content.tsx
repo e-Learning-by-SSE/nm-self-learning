@@ -7,7 +7,12 @@ import {
 	LessonContentType,
 	ValueByContentType
 } from "@self-learning/types";
-import { DropdownMenu, SectionCard, useIsFirstRender, XButton } from "@self-learning/ui/common";
+import {
+	DropdownMenu,
+	IconOnlyButton,
+	SectionCard,
+	useIsFirstRender
+} from "@self-learning/ui/common";
 import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -23,6 +28,7 @@ import { PdfInput } from "../content-types/pdf";
 import { VideoInput } from "../content-types/video";
 import { Button } from "@headlessui/react";
 import { DraggableContentOutline, DraggableContentViewer } from "@self-learning/ui/layouts";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -144,7 +150,12 @@ function ContentOutlineTab({
 						{getContentTypeDisplayName(item.type)}
 					</span>
 					{remove && (
-						<XButton onClick={remove} title="Entfernen" className="flex items-center" />
+						<IconOnlyButton
+							icon={<TrashIcon className="h-5 w-5" />}
+							variant="x-mark"
+							onClick={remove}
+							title="Entfernen"
+						/>
 					)}
 				</div>
 			)}
@@ -198,9 +209,11 @@ export function LessonContentEditor() {
 						<DropdownMenu
 							title="Inhalt hinzufügen"
 							button={
-								<div className="btn-small-highlight">
-									<PlusIcon className="icon h-3 pl-2" />
-								</div>
+								<IconOnlyButton
+									icon={<PlusIcon className="h-5 w-5" />}
+									variant="stroked"
+									title={"Inhalt hinzufügen"}
+								/>
 							}
 						>
 							{CONTENT_TYPES.map(contentType => (
