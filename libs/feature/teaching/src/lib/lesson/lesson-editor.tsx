@@ -103,9 +103,9 @@ export function LessonEditor({
 					<div className="flex justify-between mb-8">
 						<div className="flex flex-col gap-2">
 							<span className="font-semibold text-2xl text-secondary">
-								Lerneinheit editieren
+								{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
 							</span>
-							<h1 className="text-4xl">{initialLesson?.title || ""}</h1>
+							<h1 className="text-4xl">{initialLesson?.title}</h1>
 						</div>
 						<div className="pointer-events-auto flex items-center gap-2">
 							<OpenAsJsonButton form={form} validationSchema={lessonSchema} />

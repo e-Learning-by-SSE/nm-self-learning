@@ -1,5 +1,11 @@
 "use client";
-import { ChevronDownIcon, ChevronLeftIcon, PlayIcon } from "@heroicons/react/24/solid";
+import {
+	ChevronDoubleLeftIcon,
+	ChevronDoubleRightIcon,
+	ChevronDownIcon,
+	ChevronLeftIcon,
+	PlayIcon
+} from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { useLessonLayout } from "@self-learning/lesson";
 import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
@@ -251,8 +257,6 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 					{lesson.title}
 				</span>
 			</span>
-
-      {/* supposedly no longer required here
 			<span className="flex justify-between">
 				{lesson.meta.hasQuiz && (
 					<Link
@@ -286,7 +290,6 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 					</button>
 				</span>
 			</span>
-      */}
 		</div>
 	);
 }
