@@ -51,12 +51,16 @@ export const meRouter = t.router({
 			});
 			const courseIds = courses.map(course => course.courseId);
 
-			const skills = await prisma.skillRepository.findMany({
+			const authorId = await prisma.author.findUnique({
+				where: { username: ctx.user.name },
+				select: { id: true }
+			});
+
+			const skills = await prisma.skill.findMany({
 				where: {
-					ownerName: ctx.user.name
+					authorId: authorId ? authorId.id : undefined,
 				}
 			});
-			const skillsIds = skills.map(skill => skill.id);
 
 			const username = "anonymous" + randomUUID();
 
@@ -77,9 +81,6 @@ export const meRouter = t.router({
 							}
 						}
 					},
-					skillRepositories: {
-						connect: skillsIds.map(id => ({ id }))
-					}
 				}
 			});
 

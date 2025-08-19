@@ -22,7 +22,7 @@ export const lessonRouter = t.router({
 						name: true,
 						description: true,
 						children: true,
-						repositoryId: true,
+						authorId: true,
 						parents: true
 					}
 				},
@@ -32,7 +32,7 @@ export const lessonRouter = t.router({
 						name: true,
 						description: true,
 						children: true,
-						repositoryId: true,
+						authorId: true,
 						parents: true
 					}
 				}
@@ -112,7 +112,7 @@ export const lessonRouter = t.router({
 						: Prisma.JsonNull,
 					lessonId: input.lessonId,
 					authors: {
-						set: input.lesson.authors.map(a => ({ username: a.username }))
+						connect: input.lesson.authors.map(a => ({ username: a.username }))
 					},
 					licenseId: input.lesson.licenseId,
 					requires: {
