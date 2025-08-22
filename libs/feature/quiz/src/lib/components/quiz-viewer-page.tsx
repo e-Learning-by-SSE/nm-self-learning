@@ -15,7 +15,7 @@ import {
 import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
 import { ResolvedValue } from "@self-learning/types";
 
@@ -31,7 +31,7 @@ export type QuestionProps = {
 };
 
 export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionProps) {
-	const { questions, config } = quiz;
+	const { questionOrder, questions, config } = quiz;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
 	const { index } = router.query;
@@ -83,6 +83,7 @@ export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionPro
 						currentIndex={nextIndex - 1}
 						goToQuestion={goToQuestion}
 						questions={questions}
+						questionOrder={questionOrder}
 					/>
 
 					<Question
@@ -130,18 +131,24 @@ export function QuizHeader({
 	course,
 	questions,
 	currentIndex,
+	questionOrder,
 	goToQuestion
 }: {
 	lesson: QuestionProps["lesson"];
 	course: QuestionProps["course"];
 	currentIndex: number;
 	questions: QuizContent;
+	questionOrder: string[];
 	goToQuestion: (index: number) => void;
 }) {
 	const { evaluations, completionState } = useQuiz();
 	const { newEvent } = useEventLog();
 	const [suppressDialog, setSuppressDialog] = useState(false);
-
+	const orderedQuestions = useMemo(() => {
+	return questionOrder
+		.map(Id => questions.find(q => q.questionId === Id))
+		.filter((q): q is NonNullable<typeof q> => !!q);
+}, [questionOrder, questions]);
 	const isStandalone = !course;
 	const lessonUrl = isStandalone
 		? `/lessons/${lesson.slug}`
@@ -152,7 +159,6 @@ export function QuizHeader({
 	if (completionState === "in-progress" && suppressDialog) {
 		setSuppressDialog(false);
 	}
-
 	const showSuccessDialog = completionState === "completed" && !suppressDialog;
 	const showFailureDialog = completionState === "failed" && !suppressDialog;
 
@@ -173,8 +179,8 @@ export function QuizHeader({
 
 	useEffect(() => {
 		// TODO diary: check if the useEffect is necessary
-		logQuizStart(lesson, questions[currentIndex]);
-	}, [questions, currentIndex, logQuizStart, lesson]);
+		logQuizStart(lesson, orderedQuestions[currentIndex])
+	}, [orderedQuestions, currentIndex, logQuizStart, lesson]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -186,7 +192,7 @@ export function QuizHeader({
 				</Link>
 			</div>
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
-				{questions.map((question, index) => (
+				{orderedQuestions.map((question, index) => (
 					<div onClick={() => logQuizStart(lesson, question)} key={question.questionId}>
 						<Tab>
 							<QuestionTab

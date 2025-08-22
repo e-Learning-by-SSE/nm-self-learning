@@ -46,7 +46,7 @@ export default function LicensesPage() {
 					<h1 className="text-5xl">Lizenzen</h1>
 					<button className="btn-primary" onClick={() => setEditTarget("new")}>
 						<PlusIcon className="icon h-5" />
-						<span>Lizenz hinzufügen</span>
+						<span>Lizenz erstellen</span>
 					</button>
 				</div>
 
@@ -127,7 +127,7 @@ function LicenseTable({
 											className="btn-stroked"
 											onClick={() => changeEditTarget(licenseId)}
 										>
-											Editieren
+											Bearbeiten
 										</button>
 									</div>
 								</TableDataColumn>
