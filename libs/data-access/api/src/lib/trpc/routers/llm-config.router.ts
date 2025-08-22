@@ -116,7 +116,7 @@ export const llmConfigRouter = t.router({
 				if (!response.ok) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
-						message: `Failed to connect to LLM server: ${response.status} ${response.statusText}`
+						message: `Failed to connect to LLM server`
 					});
 				}
 
@@ -131,7 +131,7 @@ export const llmConfigRouter = t.router({
 				if (!modelExists) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
-						message: "This Model is not available on the server."
+						message: `Model "${defaultModel}" is not available on the server.`
 					});
 				}
 			} catch (error) {
@@ -140,6 +140,7 @@ export const llmConfigRouter = t.router({
 				}
 				throw new TRPCError({
 					code: "BAD_REQUEST",
+					message: "Failed to validate LLM configuration."
 					message: "Failed to validate LLM configuration."
 				});
 			}
@@ -191,17 +192,6 @@ export const llmConfigRouter = t.router({
 		.mutation(async ({ input }) => {
 			try {
 				const { serverUrl, apiKey } = input;
-<<<<<<< HEAD
-				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
-=======
-
-				if (!serverUrl) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
-						message: "Server URL is required to fetch available models"
-					});
-				}
-
 				const headers: Record<string, string> = {
 					"Content-Type": "application/json"
 				};
@@ -228,7 +218,7 @@ export const llmConfigRouter = t.router({
 					} else {
 						throw new TRPCError({
 							code: "BAD_REQUEST",
-							message: `Failed to fetch available models: ${response.status} ${response.statusText}`
+							message: "Failed to fetch available models."
 						});
 					}
 				}
@@ -245,6 +235,7 @@ export const llmConfigRouter = t.router({
 				}
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to fetch available models"
 					message: "Failed to fetch available models"
 				});
 			}
