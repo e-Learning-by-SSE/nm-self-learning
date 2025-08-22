@@ -309,16 +309,16 @@ export default function LlmConfigPage() {
 		}
 	});
 	const formData = watch();
-	const [response, setResponse] = useState("");
-	const [validating, setValidating] = useState(false);
 	const [fetchingModels, setFetchingModels] = useState(false);
 	const [availableModels, setAvailableModels] = useState<string[]>([]);
+	const [errorMessage, setErrorMessage] = useState<{ code: string; message: string } | null>(
+		null
+	);
 	const [once, setOnce] = useState(false);
-
 	const { data: config, isLoading, refetch } = trpc.llmConfig.get.useQuery();
-	const validateConfig = trpc.llmConfig.validate.useMutation();
 	const saveConfig = trpc.llmConfig.save.useMutation();
 	const getAvailableModels = trpc.llmConfig.getAvailableModels.useMutation();
+	const { t } = useTranslation("pages-admin-llm-config");
 
 	useEffect(() => {
 		if (config && !once) {
@@ -428,15 +428,6 @@ export default function LlmConfigPage() {
 	};
 
 	const handleFetchAvailableModels = async () => {
-		if (!formData.serverUrl) {
-			showToast({
-				type: "error",
-				title: "Validation Error",
-				subtitle: "Please enter the LLM server URL"
-			});
-			return;
-		}
-
 		setFetchingModels(true);
 		try {
 			const result = await getAvailableModels.mutateAsync({
@@ -502,7 +493,8 @@ export default function LlmConfigPage() {
 									placeholder="https://your-llm-server.com"
 								/>
 								<p className="text-sm text-gray-500 mt-1">
-									Base URL of your LLM server (e.g., Ollama server)
+									Base URL of your LLM server (e.g.,
+									https://example.com/ollama/api)
 								</p>
 							</div>
 
@@ -547,22 +539,20 @@ export default function LlmConfigPage() {
 										className="textfield max-w-4/5 w-4/5"
 										placeholder="llama3.1:8b, gpt-4, claude-3-sonnet, etc."
 									/>
-									{config && (
-										<button
-											type="button"
-											onClick={handleFetchAvailableModels}
-											disabled={
-												getAvailableModels.isLoading ||
-												fetchingModels ||
-												!formData.serverUrl
-											}
-											className="btn bg-gray-600 text-white hover:bg-gray-700"
-										>
-											{getAvailableModels.isLoading
-												? "Loading..."
-												: "Fetch Models"}
-										</button>
-									)}
+									<button
+										type="button"
+										onClick={handleFetchAvailableModels}
+										disabled={
+											getAvailableModels.isLoading ||
+											fetchingModels ||
+											!formData.serverUrl
+										}
+										className="btn bg-gray-600 text-white hover:bg-gray-700"
+									>
+										{getAvailableModels.isLoading
+											? "Loading..."
+											: "Fetch Models"}
+									</button>
 								</div>
 								{availableModels.length > 0 && (
 									<div className="mt-2">
@@ -586,19 +576,6 @@ export default function LlmConfigPage() {
 
 							<div className="flex justify-between items-center pt-4 border-t">
 								<div className="flex gap-2">
-									<button
-										type="button"
-										onClick={handleValidateConfig}
-										disabled={
-											validating ||
-											!formData.serverUrl ||
-											!formData.defaultModel
-										}
-										className="btn bg-gray-600 text-white hover:bg-gray-700"
-									>
-										{validating ? "Validating..." : "Validate Configuration"}
-									</button>
-
 									<button
 										type="submit"
 										disabled={saveConfig.isLoading}
