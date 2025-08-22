@@ -61,73 +61,11 @@ export const llmConfigRouter = t.router({
 		return config || null;
 	}),
 
-	validate: adminProcedure.input(llmConfigSchema).mutation(async ({ input }) => {
-		try {
-			const { serverUrl, apiKey, defaultModel } = input;
-
-			const tagsUrl = `${serverUrl.replace(/\/$/, "")}/api/tags`;
-			const headers: Record<string, string> = {
-				"Content-Type": "application/json"
-			};
-
-			if (apiKey) {
-				headers["Authorization"] = `Bearer ${apiKey}`;
-			}
-
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(10));
-
-			const response = await fetch(tagsUrl, {
-				method: "GET",
-				headers,
-				signal: controller.signal
-			});
-			clearTimeout(timeoutId);
-
-			if (!response.ok) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Failed to connect to LLM server: ${response.status} ${response.statusText}`
-				});
-			}
-
-			const data = await response.json();
-
-			const availableModels = data.models || [];
-			const modelExists = availableModels.some(
-				(model: any) =>
-					model.name === defaultModel || model.name.startsWith(defaultModel + ":")
-			);
-
-			if (!modelExists) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Model "${defaultModel}" is not available on the server. Available models: ${availableModels.map((m: any) => m.name).join(", ")}`
-				});
-			}
-
-			return {
-				valid: true,
-				availableModels: availableModels.map((m: any) => m.name)
-			};
-		} catch (error) {
-			if (error instanceof TRPCError) {
-				throw error;
-			}
-
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: `Failed to validate LLM configuration: ${error instanceof Error ? error.message : "Unknown error"}`
-			});
-		}
-	}),
-
 	save: adminProcedure.input(llmConfigSchema).mutation(async ({ input }) => {
 		try {
 			const { serverUrl, apiKey, defaultModel } = input;
 
 			try {
-				const tagsUrl = `${serverUrl.replace(/\/$/, "")}/api/tags`;
 				const headers: Record<string, string> = {
 					"Content-Type": "application/json"
 				};
@@ -138,7 +76,7 @@ export const llmConfigRouter = t.router({
 
 				const controller = new AbortController();
 				const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-				const response = await fetch(tagsUrl, {
+				const response = await fetch(serverUrl + "/tags", {
 					method: "GET",
 					headers,
 					signal: controller.signal
@@ -252,7 +190,6 @@ export const llmConfigRouter = t.router({
 					});
 				}
 
-				const tagsUrl = `${serverUrl.replace(/\/$/, "")}/api/tags`;
 				const headers: Record<string, string> = {
 					"Content-Type": "application/json"
 				};
@@ -262,7 +199,7 @@ export const llmConfigRouter = t.router({
 
 				const controller = new AbortController();
 				const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(10));
-				const response = await fetch(tagsUrl, {
+				const response = await fetch(serverUrl + "/tags", {
 					method: "GET",
 					headers,
 					signal: controller.signal
