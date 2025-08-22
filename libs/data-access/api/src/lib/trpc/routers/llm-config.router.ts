@@ -105,7 +105,7 @@ export const llmConfigRouter = t.router({
 				}
 
 				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+				const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(10));
 				const response = await fetch(serverUrl + "/tags", {
 					method: "GET",
 					headers,
