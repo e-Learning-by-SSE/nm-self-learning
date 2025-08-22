@@ -32,8 +32,7 @@ export function MarkdownField({
 		<div>
 			<div className="flex items-center gap-2">
 				<div
-					className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2"
-					style={{ minHeight: 32 }}
+					className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2 min-h-8"
 					onClick={() => setOpenEditor(true)}
 				>
 					<div className={"max-w-full" + (inline && " text-sm")}>
@@ -155,6 +154,8 @@ const MD_LANG_BLOCK = "```";
 function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }) {
 	const selectedHeader = useRef("H1");
 	const selectedLanguage = useRef("javascript");
+	const selectedImageSize = useRef("300");
+	const selectedImageHeight = useRef("");
 
 	const applyMarkdownFormat = useCallback(
 		(formatType: FORMAT_TYPES) => {
@@ -230,15 +231,6 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 						setCursorPos(selectedTextLength + 3);
 					}
 					break;
-				case "IMAGE":
-					if (!selectedText) {
-						formattedText = `![your-description](link-to-your-img)`;
-						setCursorPos(2);
-					} else {
-						formattedText = `![${selectedText}](url)`;
-						setCursorPos(selectedText.length + 3);
-					}
-					break;
 				default:
 					break;
 			}
@@ -280,11 +272,6 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 						title: "Link",
 						format: "LINK",
 						content: <LinkIcon className={iconSize} />
-					},
-					{
-						title: "Image",
-						format: "IMAGE",
-						content: <PhotoIcon className={iconSize} />
 					}
 				].map(({ title, format, content }) => (
 					<button
@@ -298,7 +285,12 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 					</button>
 				))}
 
-				<AssetPickerButton copyToClipboard={true} onClose={handleCloseUploadDialog} />
+				<CombinedImageButton
+					editor={editor}
+					selectedImageSize={selectedImageSize}
+					selectedImageHeight={selectedImageHeight}
+					onCloseUploadDialog={handleCloseUploadDialog}
+				/>
 
 				<EditorQuickActionsHeaderDropdown
 					onChange={value => {
@@ -314,6 +306,222 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 					}}
 				/>
 			</div>
+		</div>
+	);
+}
+/*
+	This component implements its own markdown formatting logic because it combines two distinct formatting pipelines:
+	1. Standard markdown rendering using shared remarkPlugins/rehypePlugins from @self-learning/markdown
+	2. Custom editor toolbar formatting (applyMarkdownFormat function) that handles standard markdown syntax insertion
+	3. Specialized image formatting (CombinedImageButton) that handles extended syntax like image attributes {width=300 height=200}
+*/
+function CombinedImageButton({
+	editor,
+	selectedImageSize,
+	selectedImageHeight,
+	onCloseUploadDialog
+}: {
+	editor: editor.IStandaloneCodeEditor;
+	selectedImageSize: React.MutableRefObject<string>;
+	selectedImageHeight: React.MutableRefObject<string>;
+	onCloseUploadDialog: () => Promise<void>;
+}) {
+	const imageSizes: Array<{
+		key: string;
+		label: string;
+		description: string;
+		width: number;
+	}> = [
+		{ key: "100", label: "XS", description: "100px", width: 2 },
+		{ key: "150", label: "S", description: "150px",  width: 3 },
+		{ key: "200", label: "M", description: "200px",  width: 4 },
+		{ key: "300", label: "L", description: "300px",  width: 6 },
+		{ key: "400", label: "XL", description: "400px", width: 7 },
+		{ key: "500", label: "XXL", description: "500px", width: 8 },
+		{ key: "100%", label: "Full", description: "Volle Breite", width: 10 }
+	];
+
+	const [selectedSize, setSelectedSize] = useState("300");
+	const [showImageOptions, setShowImageOptions] = useState(false);
+
+	const selectedSizeData = imageSizes.find(size => size.key === selectedSize) || imageSizes[3];
+
+	const handleSizeSelect = (key: string) => {
+		setSelectedSize(key);
+		selectedImageSize.current = key;
+	};
+
+	const handleHeightChange = (height: string) => {
+		selectedImageHeight.current = height;
+	};
+
+	const insertImageMarkdown = () => {
+		const selection = editor.getSelection();
+		const model = editor.getModel();
+		if (!selection || !model) return;
+
+		const selectedText = model.getValueInRange(selection).trim();
+
+		let attributes = `width=${selectedSize}`;
+		if (selectedImageHeight.current) {
+			attributes += ` height=${selectedImageHeight.current}`;
+		}
+		const imageMarkdown = selectedText
+			? `![your-description {${attributes}}](${selectedText})`
+			: `![your-description {${attributes}}](link-to-your-img)`;
+
+		editor.executeEdits("", [
+			{
+				range: selection,
+				text: imageMarkdown,
+				forceMoveMarkers: true
+			}
+		]);
+
+		const newPosition = selectedText
+			? selection.getStartPosition().delta(0, selectedText.length + 3)
+			: selection.getStartPosition().delta(0, 2);
+		editor.setPosition(newPosition);
+		editor.focus();
+		setShowImageOptions(false);
+	};
+
+	const handleAssetPicker = (url: string | undefined) => {
+		if (url) {
+			let attributes = `width=${selectedSize}`;
+			if (selectedImageHeight.current) {
+				attributes += ` height=${selectedImageHeight.current}`;
+			}
+
+			const imageMarkdown = `![Image {${attributes}}](${url})`;
+			const selection = editor.getSelection();
+			const model = editor.getModel();
+			if (selection && model) {
+				editor.executeEdits("", [
+					{
+						range: selection,
+						text: imageMarkdown,
+						forceMoveMarkers: true
+					}
+				]);
+				editor.focus();
+			}
+		}
+		setShowImageOptions(false);
+		onCloseUploadDialog();
+	};
+
+	return (
+		<div className="relative inline-block">
+			<button
+				type="button"
+				className="btn-icon"
+				onClick={() => setShowImageOptions(!showImageOptions)}
+				title="Bild einfügen"
+			>
+				<PhotoIcon className="h-5 w-5" />
+			</button>
+
+			{showImageOptions && (
+				<div className="absolute z-20 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-xl animate-in slide-in-from-top-2 duration-200">
+					<div className="p-3 border-b border-gray-100">
+						<div className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+							<PhotoIcon className="h-5 w-5 text-secondary" />
+							Bild einfügen
+						</div>
+					</div>
+
+					<div className="p-3 border-b border-gray-100">
+						<div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+							Breite wählen
+						</div>
+						<div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto">
+							{imageSizes.map(size => (
+								<button
+									key={size.key}
+									className={`flex items-center justify-between p-2 text-left rounded-md transition-all duration-150 hover:bg-emerald-50 ${
+										selectedSize === size.key
+											? "bg-emerald-100 border border-emerald-200 shadow-sm"
+											: "hover:shadow-sm border border-transparent"
+									}`}
+									onClick={() => handleSizeSelect(size.key)}
+								>
+									<div className="flex items-center space-x-2">
+										<div>
+											<div className="font-medium text-xs text-gray-900">
+												{size.label}
+											</div>
+											<div className="text-xs text-gray-500">
+												{size.description}
+											</div>
+										</div>
+									</div>
+									{selectedSize === size.key && (
+										<div className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
+									)}
+								</button>
+							))}
+						</div>
+					</div>
+
+					<div className="p-3 border-b border-gray-100">
+						<div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+							Höhe (optional)
+						</div>
+						<div className="flex gap-2">
+							<input
+								type="text"
+								placeholder="z.B. 200, 150px, 50%"
+								defaultValue={selectedImageHeight.current}
+								onChange={e => handleHeightChange(e.target.value)}
+								className="flex-1 p-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-transparent"
+							/>
+							{selectedImageHeight.current && (
+								<button
+									type="button"
+									onClick={() => {
+										handleHeightChange("");
+										setShowImageOptions(false);
+										setTimeout(() => setShowImageOptions(true), 0);
+									}}
+									className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+									title="Höhe zurücksetzen"
+								>
+									✕
+								</button>
+							)}
+						</div>
+						<div className="text-xs text-gray-500 mt-1">
+							Leer lassen für automatische Höhe
+						</div>
+					</div>
+
+					<div className="p-3 space-y-2">
+						<button
+							type="button"
+							className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-white rounded-md hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium"
+							onClick={insertImageMarkdown}
+						>
+							Markdown-Link einfügen
+						</button>
+
+						<div className="w-full">
+							<AssetPickerButton copyToClipboard={true} onClose={handleAssetPicker} />
+						</div>
+					</div>
+
+					<div className="p-2 border-t border-gray-100 bg-gray-50 rounded-b-lg">
+						<div className="text-xs text-gray-500 text-center">
+							Größe: {selectedSizeData.description}
+							{selectedImageHeight.current && ` × ${selectedImageHeight.current}`}
+						</div>
+					</div>
+				</div>
+			)}
+
+			{showImageOptions && (
+				<div className="fixed inset-0 z-10" onClick={() => setShowImageOptions(false)} />
+			)}
 		</div>
 	);
 }
