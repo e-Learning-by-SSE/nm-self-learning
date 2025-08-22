@@ -265,5 +265,4 @@ model LlmConfiguration {
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  @@map("llm_configurations")
 }
