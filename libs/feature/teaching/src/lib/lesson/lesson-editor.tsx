@@ -1,7 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import { OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -9,6 +9,7 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { OpenAsJsonButton } from "@self-learning/ui/forms";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -71,8 +72,7 @@ export async function onLessonEditorSubmit(
 
 export function LessonEditor({
 	onSubmit,
-	initialLesson,
-	isFullScreen
+	initialLesson
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
@@ -94,36 +94,37 @@ export function LessonEditor({
 		<FormProvider {...form}>
 			<form
 				id="lessonform"
-				onSubmit={form.handleSubmit(onSubmit, console.log)}
-				className="flex h-full flex-col overflow-hidden"
+				onSubmit={form.handleSubmit(onSubmit, error => {
+					console.log("Lesson form error", error);
+				})}
+				className="w-full bg-gray-100"
 			>
-				<div className="flex h-full overflow-y-auto overflow-x-hidden">
-					<div className="grid h-full gap-8 xl:grid-cols-[500px_1fr]">
-						<LessonInfoEditor lesson={initialLesson} />
-
-						<div>
-							<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-								<Tab>Lerninhalt</Tab>
-								<Tab>Lernkontrolle</Tab>
-							</Tabs>
-							{selectedTab === 0 && <LessonContentEditor />}
-							{selectedTab === 1 && <QuizEditor />}
+				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
+					<div className="flex justify-between mb-8">
+						<div className="flex flex-col gap-2">
+							<span className="font-semibold text-2xl text-secondary">
+								{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
+							</span>
+							<h1 className="text-4xl">{initialLesson?.title}</h1>
 						</div>
-					</div>
-				</div>
-
-				<div
-					className={`${
-						isFullScreen ? "fixed" : ""
-					} pointer-events-none bottom-0 flex w-full items-end justify-end`}
-				>
-					<div className={`${isFullScreen ? "absolute" : "fixed"}  z-50 pr-5 pb-5`}>
-						<DialogActions onClose={onSubmit}>
+						<div className="pointer-events-auto flex items-center gap-2">
+							<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+							<button className="btn btn-tertiary" type="button" title={"Abbrechen"}>
+								<span className={"text-gray-600"}>Abbrechen</span>
+							</button>
 							<button type="submit" className="btn-primary pointer-events-auto">
 								Speichern
 							</button>
-						</DialogActions>
+						</div>
 					</div>
+					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+						<Tab>Grunddaten</Tab>
+						<Tab>Lerninhalt</Tab>
+						<Tab>Lernkontrolle</Tab>
+					</Tabs>
+					{selectedTab === 0 && <LessonInfoEditor />}
+					{selectedTab === 1 && <LessonContentEditor />}
+					{selectedTab === 2 && <QuizEditor />}
 				</div>
 			</form>
 		</FormProvider>
