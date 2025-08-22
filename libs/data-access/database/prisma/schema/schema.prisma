@@ -272,7 +272,6 @@ model LlmConfiguration {
   serverUrl       String
   apiKey          String?
   defaultModel    String   
-  availableModels Json?   @default("[]")
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
