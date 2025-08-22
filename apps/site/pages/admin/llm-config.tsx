@@ -157,7 +157,7 @@ export default function LlmConfigPage() {
 								/>
 								{config?.hasApiKey && (
 									<p className="text-sm text-gray-500 mt-1">
-										Leave empty to keep existing API key
+										Leave empty if API key is not required
 									</p>
 								)}
 							</div>
