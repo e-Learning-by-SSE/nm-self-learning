@@ -2,7 +2,7 @@ import { CheckCircleIcon, PencilIcon, PlayIcon } from "@heroicons/react/24/solid
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getCourse, useLessonContext } from "@self-learning/lesson";
+import { getCombinedSmallCourse, useLessonContext } from "@self-learning/lesson";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { CompiledMarkdown } from "@self-learning/markdown";
 import {
@@ -27,7 +27,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 export type LessonProps = {
 	lesson: LessonData;
-	course?: ResolvedValue<typeof getCourse>;
+	course?: ResolvedValue<typeof getCombinedSmallCourse>;
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;

@@ -92,7 +92,7 @@ export function LessonSkillManager() {
 	);
 }
 
-const LinkedSkillRepositoryMemorized = memo(LinkedSkillRepository);
+export const LinkedSkillRepositoryMemorized = memo(LinkedSkillRepository);
 
 function LinkedSkillRepository({
 	selectRepository

@@ -92,6 +92,30 @@ export const lessonRouter = t.router({
 			}
 		});
 
+		const providedSkillIds = input.provides.map(s => s.id);
+
+		const relevantCourses = await database.dynCourse.findMany({
+			where: {
+				teachingGoals: {
+					some: {
+						id: { in: providedSkillIds }
+					}
+				}
+			},
+			select: {
+				courseId: true
+			}
+		});
+
+		for (const course of relevantCourses) {
+			await database.dynCourse.update({
+				where: { courseId: course.courseId },
+				data: {
+					courseVersion: Date.now().toString()
+				}
+			});
+		}
+
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		return createdLesson;
 	}),
