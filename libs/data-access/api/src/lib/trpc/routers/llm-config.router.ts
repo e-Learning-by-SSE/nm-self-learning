@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { adminProcedure, authProcedure, t } from "../trpc";
+import { adminProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
@@ -43,22 +43,6 @@ export const llmConfigRouter = t.router({
 			hasApiKey: !!hasApiKey,
 			apiKey: hasApiKey ? "****" : undefined
 		};
-	}),
-
-	getForServerUse: authProcedure.query(async () => {
-		const config = await database.llmConfiguration.findFirst({
-			where: { isActive: true },
-			select: {
-				id: true,
-				serverUrl: true,
-				defaultModel: true,
-				isActive: true,
-				createdAt: true,
-				updatedAt: true,
-				apiKey: true
-			}
-		});
-		return config || null;
 	}),
 
 	save: adminProcedure.input(llmConfigSchema).mutation(async ({ input }) => {
@@ -117,54 +101,35 @@ export const llmConfigRouter = t.router({
 				where: { isActive: true }
 			});
 
-			if (existingConfig) {
-				const updatedConfig = await database.llmConfiguration.update({
-					where: { id: existingConfig.id },
-					data: {
-						serverUrl,
-						apiKey: apiKey || null,
-						defaultModel,
-						updatedAt: new Date()
-					},
-					select: {
-						id: true,
-						serverUrl: true,
-						defaultModel: true,
-						isActive: true,
-						createdAt: true,
-						updatedAt: true
-					}
-				});
+			const config = await database.llmConfiguration.upsert({
+				where: { id: existingConfig?.id ?? "" },
+				update: {
+					serverUrl,
+					apiKey: apiKey || null,
+					defaultModel,
+					updatedAt: new Date()
+				},
+				create: {
+					serverUrl,
+					apiKey: apiKey || null,
+					defaultModel,
+					isActive: true
+				},
+				select: {
+					id: true,
+					serverUrl: true,
+					defaultModel: true,
+					isActive: true,
+					createdAt: true,
+					updatedAt: true
+				}
+			});
 
-				return {
-					...updatedConfig,
-					hasApiKey: !!apiKey,
-					apiKey: apiKey ? "****" : undefined
-				};
-			} else {
-				const newConfig = await database.llmConfiguration.create({
-					data: {
-						serverUrl,
-						apiKey: apiKey || null,
-						defaultModel,
-						isActive: true
-					},
-					select: {
-						id: true,
-						serverUrl: true,
-						defaultModel: true,
-						isActive: true,
-						createdAt: true,
-						updatedAt: true
-					}
-				});
-
-				return {
-					...newConfig,
-					hasApiKey: !!apiKey,
-					apiKey: apiKey ? "****" : undefined
-				};
-			}
+			return {
+				...config,
+				hasApiKey: !!apiKey,
+				apiKey: apiKey ? "****" : undefined
+			};
 		} catch (error) {
 			if (error instanceof TRPCError) {
 				throw error;
