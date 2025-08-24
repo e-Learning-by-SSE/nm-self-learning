@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { llmConfigSchema } from "@self-learning/types";
 import { TRPCClientError } from "@trpc/client";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 export default function LlmConfigPage() {
 	const { register, handleSubmit, reset, watch, setValue } = useForm({
@@ -275,6 +276,7 @@ export default function LlmConfigPage() {
 					</div>
 				</div>
 			</CenteredSection>
+			<FloatingTutorButton />
 		</AdminGuard>
 	);
 }
