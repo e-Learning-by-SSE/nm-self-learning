@@ -25,7 +25,9 @@ import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
+import { withTranslations } from "@self-learning/api";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -40,10 +42,7 @@ function mapToTocContent(
 		description: chapter.description,
 		content: chapter.content.map(({ lessonId }) => {
 			const lesson: ToC.Content[0]["content"][0] = lessonIdMap.has(lessonId)
-				? {
-						...(lessonIdMap.get(lessonId) as LessonInfo),
-						lessonNr: lessonNr++
-					}
+				? { ...(lessonIdMap.get(lessonId) as LessonInfo), lessonNr: lessonNr++ }
 				: {
 						lessonId: "removed",
 						slug: "removed",
@@ -74,10 +73,7 @@ async function mapCourseContent(content: CourseContent, username?: string): Prom
 				where: { username },
 				orderBy: { performanceScore: "desc" },
 				take: 1, // Nur den höchsten Score nehmen
-				select: {
-					performanceScore: true,
-					username: true
-				}
+				select: { performanceScore: true, username: true }
 			}
 		}
 	});
@@ -141,12 +137,7 @@ export const getServerSideProps = withTranslations(
 
 		const trackingResult = await handleEmailTracking(context);
 		if (trackingResult.shouldRedirect) {
-			return {
-				redirect: {
-					destination: `/courses/${courseSlug}`,
-					permanent: false
-				}
-			};
+			return { redirect: { destination: `/courses/${courseSlug}`, permanent: false } };
 		}
 
 		const course = await getCourse(courseSlug);
@@ -182,15 +173,7 @@ export const getServerSideProps = withTranslations(
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({
 		where: { slug: courseSlug },
-		include: {
-			authors: {
-				select: {
-					slug: true,
-					displayName: true,
-					imgUrl: true
-				}
-			}
-		}
+		include: { authors: { select: { slug: true, displayName: true, imgUrl: true } } }
 	});
 }
 
@@ -212,6 +195,7 @@ export default function Course({ course, summary, content, markdownDescription }
 			<CenteredSection>
 				<TableOfContents content={content} course={course} />
 			</CenteredSection>
+			<FloatingTutorButton />
 		</div>
 	);
 }
