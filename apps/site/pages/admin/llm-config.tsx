@@ -421,8 +421,8 @@ export default function LlmConfigPage() {
 		} catch (error) {
 			showToast({
 				type: "error",
-				title: "Save Failed",
-				subtitle: error instanceof Error ? error.message : "Failed to save configuration"
+				title: t("Save Failed"),
+				subtitle: error instanceof Error ? error.message : t("Failed to save configuration")
 			});
 		}
 	};
@@ -439,8 +439,10 @@ export default function LlmConfigPage() {
 				setAvailableModels(result.availableModels);
 				showToast({
 					type: "success",
-					title: "Models Fetched",
-					subtitle: `Found ${result.availableModels.length} models on the server.`
+					title: t("Models Fetched"),
+					subtitle: t("Found x models on the server.", {
+						count: result.availableModels.length
+					})
 				});
 			}
 		} catch (error) {
@@ -473,7 +475,7 @@ export default function LlmConfigPage() {
 				<div className="max-w-4xl mx-auto p-6">
 					<div className="bg-white rounded-lg shadow-md p-6">
 						<h1 className="text-2xl font-bold text-gray-900 mb-6">
-							LLM Server Configuration
+							{t("LLM Server Configuration")}
 						</h1>
 
 						<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
