@@ -1,4 +1,8 @@
-import { useSafeModuleViewContext, useTableSkillDisplay } from "@self-learning/teaching";
+import {
+	LessonFormModel,
+	useSafeModuleViewContext,
+	useTableSkillDisplay
+} from "@self-learning/teaching";
 import { SkillTree } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-tree";
 import { ModuleView } from "./module-view";
 import { useState } from "react";
@@ -8,11 +12,13 @@ import { SkillSelectHandler } from "libs/feature/teaching/src/lib/skills/folder-
 export function ModuleDependency({
 	onSelectModule,
 	onSkillSelect,
-	onCreateNewModule
+	onCreateNewModule,
+	onRemoveLesson
 }: {
 	onSelectModule: (id: string) => void;
 	onSkillSelect: SkillSelectHandler;
 	onCreateNewModule?: () => void;
+	onRemoveLesson: (lesson: LessonFormModel) => void;
 }) {
 	const tabs = ["Skills", "Nanomodule"];
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -46,6 +52,7 @@ export function ModuleDependency({
 						modules={modules}
 						onSelectModule={onSelectModule}
 						selectedModuleId={selectedModuleId}
+						onRemoveLesson={onRemoveLesson}
 					/>
 				);
 			default:

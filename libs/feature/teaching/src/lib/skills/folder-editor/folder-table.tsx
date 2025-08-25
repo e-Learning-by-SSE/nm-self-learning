@@ -124,8 +124,12 @@ export function SkillFolderTable({
 
 		if (!sourceSkill || !destinationSkill) return;
 
-		console.log(`sourceSkill is ${sourceSkill.name}`);
-		console.log(`destinationSkill is ${destinationSkill.name}`);
+		const hasParent = (skill: SkillFormModel): boolean => {
+			if (!skill.parents) {
+				return false;
+			}
+			return skill.parents.length > 0;
+		};
 
 		if (!sourceSkill.parents.includes(destinationSkill.id)) {
 			if (isHotkeyPressed("ctrl") || isHotkeyPressed("alt")) {
@@ -151,9 +155,23 @@ export function SkillFolderTable({
 							}
 							freeDialog("copyMoveDialog");
 						}}
+						hasParent={hasParent(sourceSkill)}
 					>
-						Which action would you like to perform on {sourceSkill.name}? Copy or Move
-						To {destinationSkill.name}?
+						<div className="">
+							Sie haben <span className="text-secondary">{sourceSkill.name}</span> auf
+							<span className="text-secondary"> {destinationSkill.name} </span>{" "}
+							gezogen.
+						</div>
+						{hasParent(sourceSkill) ? (
+							<div className="text-sm mt-2">
+								Soll {destinationSkill.name} als zusätzlichen Eltern-Skill
+								hinzugefügt werden oder den aktuellen Eltern-Skill ersetzen?
+							</div>
+						) : (
+							<div className="text-sm mt-2">
+								Soll {destinationSkill.name} als Eltern-Skill hinzugefügt werden?
+							</div>
+						)}
 					</CopyMoveDialog>,
 					"copyMoveDialog"
 				);
@@ -188,7 +206,6 @@ export function SkillFolderTable({
 				/>
 
 				<DialogHandler id={"alert"} />
-				<div className="pt-4" />
 				<DragDropContext onDragEnd={onDragEnd} key={"element.id"}>
 					<Table head={<TableHeaderColumn>Bezeichnung</TableHeaderColumn>}>
 						{skillsToDisplay

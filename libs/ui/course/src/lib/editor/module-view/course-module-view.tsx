@@ -28,6 +28,7 @@ export function CourseModuleView({
 	const { data: skills } = trpc.skill.getSkills.useQuery();
 	const { mutateAsync: create } = trpc.lesson.create.useMutation();
 	const { mutateAsync: edit } = trpc.lesson.edit.useMutation();
+	const { mutateAsync: remove } = trpc.lesson.deleteLesson.useMutation();
 
 	const [modules, setModules] = useState<Map<string, LessonFormModel>>(new Map());
 	const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
@@ -173,6 +174,20 @@ export function CourseModuleView({
 		form.reset(createEmptyLesson());
 	});
 
+	const onRemoveLesson = async (lesson: LessonFormModel) => {
+		const confirmed = window.confirm(
+			`Möchten Sie dieses Nanomodul wirklich löschen? "${lesson.title}"?`
+		);
+		if (!confirmed) return;
+		if (!lesson.lessonId) return;
+
+		await remove({ lessonId: lesson.lessonId });
+
+		const updatedModules = [...modules.entries()].filter(([id]) => id !== lesson.lessonId);
+		sessionStorage.setItem("modules", JSON.stringify(updatedModules));
+		setModules(new Map(updatedModules));
+	};
+
 	const onDragEnd = (result: import("@hello-pangea/dnd").DropResult) => {
 		if (!result.destination) return;
 		if (["provides", "requires"].includes(result.destination.droppableId)) {
@@ -234,6 +249,7 @@ export function CourseModuleView({
 									onSelectModule={handleModuleClick}
 									onSkillSelect={onSkillSelect}
 									onCreateNewModule={onCreateNewModule}
+									onRemoveLesson={onRemoveLesson}
 								/>
 							}
 						/>

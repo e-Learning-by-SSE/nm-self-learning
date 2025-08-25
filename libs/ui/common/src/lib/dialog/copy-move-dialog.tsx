@@ -13,10 +13,12 @@ export const CopyMoveButtonActions = {
 export function CopyMoveDialog({
 	children,
 	name,
+	hasParent,
 	onClose
 }: {
 	children: React.ReactNode;
 	name: string;
+	hasParent: boolean;
 	onClose: (action: CopyMoveButtonActions) => void;
 }) {
 	const [open, setOpen] = useState(true);
@@ -27,30 +29,42 @@ export function CopyMoveDialog({
 	};
 
 	if (!open) return null;
+
 	return (
 		<CenteredContainer>
 			<Dialog
-				style={{ height: "25vh", width: "30vw", overflow: "auto" }}
+				style={{ height: "30vh", width: "35vw", overflow: "auto" }}
 				title={name}
 				onClose={() => {
 					onDialogClose();
 				}}
 			>
 				<CenteredContainer>{children}</CenteredContainer>
-				<div className="mt-auto">
+				<div className="">
 					<DialogActions onClose={onDialogClose}>
-						<button
-							className="btn-primary"
-							onClick={() => onDialogClose(CopyMoveButtonActions.COPY)}
-						>
-							Copy
-						</button>
-						<button
-							className="btn-primary"
-							onClick={() => onDialogClose(CopyMoveButtonActions.MOVE)}
-						>
-							Move
-						</button>
+						{hasParent ? (
+							<>
+								<button
+									className="btn-primary"
+									onClick={() => onDialogClose(CopyMoveButtonActions.COPY)}
+								>
+									Hinzufügen
+								</button>
+								<button
+									className="btn-primary"
+									onClick={() => onDialogClose(CopyMoveButtonActions.MOVE)}
+								>
+									Ersetzen
+								</button>
+							</>
+						) : (
+							<button
+								className="btn-primary"
+								onClick={() => onDialogClose(CopyMoveButtonActions.MOVE)}
+							>
+								Hinzufügen
+							</button>
+						)}
 					</DialogActions>
 				</div>
 			</Dialog>

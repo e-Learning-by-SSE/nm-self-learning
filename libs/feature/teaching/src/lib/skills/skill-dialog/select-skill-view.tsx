@@ -34,7 +34,7 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 							className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-400 rounded py-2 mb-3 text-grey-500 hover:bg-emerald-50 transition text-sm"
 							data-testid="BenoetigteSkills-add"
 						>
-							Klicken zum Auswhählen oder mit Drag & Drop einfügen
+							Klicken zum Auswählen oder mit Drag & Drop einfügen
 						</button>
 						<SkillManagementComponent
 							skills={skills}
