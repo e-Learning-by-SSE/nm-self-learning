@@ -13,6 +13,7 @@
 		"minio",
 		"Nanomodul",
 		"OIDC",
+		"ollama",
 		"Pluggable",
 		"prisma",
 		"rehype",
