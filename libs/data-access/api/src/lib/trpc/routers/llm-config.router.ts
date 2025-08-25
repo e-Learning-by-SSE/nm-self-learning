@@ -3,6 +3,7 @@ import { adminProcedure, authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
+import { m } from "framer-motion";
 
 const llmConfigSchema = z.object({
 	serverUrl: z.string().url(),
@@ -13,6 +14,18 @@ const llmConfigSchema = z.object({
 const llmConfigSchemaForFetching = z.object({
 	serverUrl: z.string().url(),
 	apiKey: z.string().optional()
+});
+
+/**
+ * Relevant data type description of the response of Ollama's list models endpoint.
+ * @see https://docs.ollama.com/reference/list-models
+ */
+const ollamaModelList = z.object({
+	models: z.array(
+		z.object({
+			name: z.string()
+		})
+	)
 });
 
 export const llmConfigRouter = t.router({
@@ -91,10 +104,10 @@ export const llmConfigRouter = t.router({
 				}
 
 				const data = await response.json();
-				const availableModels = data.models || [];
-				const modelExists = availableModels.some(
-					(model: any) =>
-						model.name === defaultModel || model.name.startsWith(defaultModel + ":")
+				// Throws ZodError if defined data does not exist (in case of API change)
+				const availableModels = ollamaModelList.parse(data);
+				const modelExists = availableModels.models.some(
+					m => m.name === defaultModel || m.name.startsWith(defaultModel + ":")
 				);
 
 				if (!modelExists) {
