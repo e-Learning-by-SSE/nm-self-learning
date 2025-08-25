@@ -1,0 +1,10 @@
+{
+    "LLM Server Configuration": "LLM Server Configuration",
+    "Configuration Saved": "Configuration Saved",
+    "LLM configuration has been saved successfully!": "LLM configuration has been saved successfully!",
+    "Save Failed": "Save Failed",
+    "Failed to save configuration": "Failed to save configuration",
+    "Models Fetched": "Models Fetched",
+    "Found x models on the server._one": "Found {{count}} model on the server.",
+    "Found x models on the server._other": "Found {{count}} models on the server."
+}
