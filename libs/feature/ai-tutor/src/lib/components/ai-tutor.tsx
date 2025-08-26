@@ -20,7 +20,7 @@ export function AiTutor() {
 	} = useAiTutorContext();
 
 	const session = useSession();
-	const user = session.data?.user;
+	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 	if (!config) return null;
 
@@ -93,7 +93,7 @@ export function AiTutor() {
 												<img
 													className="rounded-xl object-cover object-top"
 													alt="Avatar"
-													src={"/user.png"}
+													src={basePath + "/user.png"}
 													width={42}
 													height={42}
 												/>
@@ -102,7 +102,7 @@ export function AiTutor() {
 											<img
 												className="rounded-xl object-cover object-top"
 												alt="Avatar"
-												src={"/ai-tutor-3.png"}
+												src={basePath + "/ai-tutor-3.png"}
 												width={42}
 												height={42}
 											/>
