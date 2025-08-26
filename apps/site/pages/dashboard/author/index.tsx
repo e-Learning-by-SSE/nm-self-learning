@@ -182,18 +182,27 @@ function AuthorDashboardPage({ author }: Props) {
 					<Divider />
 
 					<section>
-						<div className="flex justify-between gap-4">
+						<div className="flex justify-between items-start">
 							<SectionHeader
 								title="Meine Kurse"
 								subtitle="Autor der folgenden Kurse:"
 							/>
 
-							<Link href="/teaching/courses/new">
-								<IconButton
-									text="Kurs erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
-							</Link>
+							<div className="flex space-x-2 mt-5">
+								<Link href="/teaching/courses/create">
+									<IconButton
+										text="Kurs erstellen"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+								</Link>
+								<Link href="/teaching/courses/new">
+									<IconButton
+										text="Adaptiven Kurs erstellen"
+										variant="danger"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+								</Link>
+							</div>
 						</div>
 
 						<ul className="flex flex-col gap-4 py-4">
