@@ -132,7 +132,7 @@ export function AiTutor() {
 										<img
 											className="rounded-xl object-cover object-top"
 											alt="Avatar"
-											src={"/ai-tutor-3.png"}
+											src={basePath + "/ai-tutor-3.png"}
 										/>
 									</div>
 									<div className="px-4 py-3 rounded-2xl text-sm backdrop-blur-sm shadow-lg bg-white/70 text-gray-800">
