@@ -39,7 +39,7 @@ export function AiTutor() {
 									<img
 										className="rounded-xl object-cover object-top"
 										alt="Avatar"
-										src={"/ai-tutor-3.png"}
+										src={basePath + "/ai-tutor-3.png"}
 									/>
 								</div>
 								<div>
