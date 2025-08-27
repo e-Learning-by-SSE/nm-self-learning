@@ -37,6 +37,7 @@ import { LessonData } from "./lesson-data-access";
 import { Button } from "@headlessui/react";
 import { DocumentIcon } from "@heroicons/react/24/outline";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export type LessonProps = {
 	lesson: LessonData;
@@ -343,6 +344,9 @@ function LessonNavigation({
 	lesson: LessonProps["lesson"];
 	course: LessonProps["course"];
 }) {
+	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
+	const urlToQuiz = course && lesson ? "courses/" + course.slug + "/" + lesson.slug : "";
+
 	const router = useRouter();
 	const { previous, next } = useMemo(() => {
 		const lessonIndex = content.findIndex(l => l.lessonId === lesson.lessonId);
@@ -375,6 +379,7 @@ function LessonNavigation({
 				<ChevronDoubleLeftIcon className="h-5" />
 				Vorherige Lerneinheit
 			</button>
+			{hasQuiz && urlToQuiz && <LinkToQuiz url={urlToQuiz} />}
 			<button
 				onClick={() => next && navigateToLesson(next)}
 				disabled={!next}
@@ -490,12 +495,10 @@ function LessonControls({
 	const completion = useCourseCompletion(course.slug);
 	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
-	const url = "courses/" + course.slug + "/" + lesson.slug;
 
 	return (
 		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
 			<AuthorEditButton lesson={lesson} />
-			{hasQuiz && <LinkToQuiz url={url} />}
 
 			{!hasQuiz && !isCompletedLesson && (
 				<button
@@ -511,14 +514,16 @@ function LessonControls({
 }
 
 function StandaloneLessonControls({ lesson }: { lesson: LessonProps["lesson"] }) {
-	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
-	const url = "lessons/" + lesson.slug;
-	return (
-		<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
-			<AuthorEditButton lesson={lesson} />
-			{hasQuiz && <LinkToQuiz url={url} />}
-		</div>
-	);
+	const session = useSession();
+	// TODO - separate issue -  find out am I an author? lesson provides no uid
+
+	if (session.data?.user.role === "ADMIN" || session.data?.user.isAuthor)
+		return (
+			<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
+				<AuthorEditButton lesson={lesson} />
+			</div>
+		);
+	else return <div></div>;
 }
 
 function LinkToQuiz({ url }: { url: string }) {
