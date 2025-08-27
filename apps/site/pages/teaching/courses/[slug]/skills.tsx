@@ -1,41 +1,25 @@
-import { isAuthor } from "@self-learning/admin";
-import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CourseSkillView, editorTabs } from "@self-learning/ui/course";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
 
-export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth(async (context, user) => {
-		if (!user) {
-			return { redirect: { destination: "/", permanent: false } };
-		}
-
-		const slugParam = context.params?.slug;
-		if (!slugParam) return { props: {} };
-
-		const slug = Array.isArray(slugParam) ? slugParam.join("/") : slugParam;
-		const isUserCourseAuthor = await isAuthor(user.name, slug);
-
-		if (!isUserCourseAuthor) {
-			return { redirect: { destination: "/", permanent: false } };
-		}
-
-		return { props: { username: user.name } };
-	})
-);
-
-type Props = { username: string };
-
-export default function CourseSkillsPage({ username }: Props) {
+export default function CourseSkillsPage() {
+	const { data: session } = useSession();
 	const router = useRouter();
 	const params = useParams();
 	const slug = params?.slug as string;
 	const [selectedIndex, setSelectedIndex] = useState(1);
-	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({ username: username });
+
+	const username = session?.user?.name;
+
+	const { data: author, isLoading } = trpc.author.getByUsername.useQuery(
+		{ username: username as string },
+		{ enabled: !!username }
+	);
 
 	const tabs = editorTabs;
 
@@ -52,18 +36,20 @@ export default function CourseSkillsPage({ username }: Props) {
 	if (!author) return <div>Author not found.</div>;
 
 	return (
-		<div className="m-3">
-			<section>
-				<SectionHeader title={"Kompetenzerwerbseditor"} subtitle="" />
-			</section>
-			<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
-				{tabs.map((tab, idx) => (
-					<Tab key={idx}>
-						<span>{tab.label}</span>
-					</Tab>
-				))}
-			</Tabs>
-			<CourseSkillView authorId={author.id} />
-		</div>
+		<AuthorGuard>
+			<div className="m-3">
+				<section>
+					<SectionHeader title={"Kompetenzerwerbseditor"} subtitle="" />
+				</section>
+				<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
+					{tabs.map((tab, idx) => (
+						<Tab key={idx}>
+							<span>{tab.label}</span>
+						</Tab>
+					))}
+				</Tabs>
+				<CourseSkillView authorId={author.id} />
+			</div>
+		</AuthorGuard>
 	);
 }

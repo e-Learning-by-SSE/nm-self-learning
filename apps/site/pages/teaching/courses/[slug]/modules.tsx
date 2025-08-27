@@ -3,40 +3,23 @@ import { CourseModuleView, editorTabs } from "@self-learning/ui/course";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { withAuth, withTranslations } from "@self-learning/api";
-import { isAuthor } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
+import { useSession } from "next-auth/react";
+import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
 
-export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth(async (context, user) => {
-		if (!user) {
-			return { redirect: { destination: "/", permanent: false } };
-		}
-
-		const slugParam = context.params?.slug;
-		if (!slugParam) return { props: {} };
-
-		const slug = Array.isArray(slugParam) ? slugParam.join("/") : slugParam;
-		const isUserCourseAuthor = await isAuthor(user.name, slug);
-
-		if (!isUserCourseAuthor) {
-			return { redirect: { destination: "/", permanent: false } };
-		}
-
-		return { props: { username: user.name } };
-	})
-);
-
-type Props = { username: string };
-
-export default function CourseModulesPage({ username }: Props) {
+export default function CourseModulesPage() {
+	const { data: session } = useSession();
 	const router = useRouter();
 	const params = useParams();
 	const slug = params?.slug as string;
-	const { data: author, isLoading } = trpc.author.getByUsername.useQuery({ username: username });
-
 	const [selectedIndex, setSelectedIndex] = useState(2);
+
+	const username = session?.user?.name;
+
+	const { data: author, isLoading } = trpc.author.getByUsername.useQuery(
+		{ username: username as string },
+		{ enabled: !!username }
+	);
 
 	const tabs = editorTabs;
 
@@ -57,18 +40,20 @@ export default function CourseModulesPage({ username }: Props) {
 	}
 
 	return (
-		<div className="m-3">
-			<section>
-				<SectionHeader title={"Kompetenzerwerbseditor"} subtitle="" />
-			</section>
-			<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
-				{tabs.map((tab, idx) => (
-					<Tab key={idx}>
-						<span>{tab.label}</span>
-					</Tab>
-				))}
-			</Tabs>
-			<CourseModuleView authorId={author.id} />
-		</div>
+		<AuthorGuard>
+			<div className="m-3">
+				<section>
+					<SectionHeader title={"Kompetenzerwerbseditor"} subtitle="" />
+				</section>
+				<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
+					{tabs.map((tab, idx) => (
+						<Tab key={idx}>
+							<span>{tab.label}</span>
+						</Tab>
+					))}
+				</Tabs>
+				<CourseModuleView authorId={author.id} />
+			</div>
+		</AuthorGuard>
 	);
 }

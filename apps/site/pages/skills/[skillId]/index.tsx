@@ -1,10 +1,10 @@
 import { withAuth, withTranslations } from "@self-learning/api";
 import { SkillFormModel } from "@self-learning/types";
+import { CreateAndViewSkills } from "@self-learning/teaching";
 import {
 	getParentSkills,
 	transformSkills
-} from "../../../../../libs/data-access/api/src/lib/trpc/routers/skill.router";
-import { CreateAndViewSkills } from "@self-learning/teaching";
+} from "libs/data-access/api/src/lib/trpc/routers/skill.router";
 
 export const getServerSideProps = withTranslations(["common"], ctx => {
 	return withAuth(async (ctx, user) => {

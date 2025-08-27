@@ -1,32 +1,10 @@
-import { isAuthor } from "@self-learning/admin";
-import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CourseBasicInformation, editorTabs } from "@self-learning/ui/course";
+import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
-
-export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth(async (context, user) => {
-		if (!user) {
-			return { redirect: { destination: "/", permanent: false } };
-		}
-
-		const slugParam = context.params?.slug;
-		if (!slugParam) return { props: {} };
-
-		const slug = Array.isArray(slugParam) ? slugParam.join("/") : slugParam;
-		const isUserCourseAuthor = await isAuthor(user.name, slug);
-
-		if (!isUserCourseAuthor) {
-			return { redirect: { destination: "/", permanent: false } };
-		}
-
-		return { props: {} };
-	})
-);
 
 export default function EditCoursePage() {
 	const router = useRouter();
@@ -57,23 +35,25 @@ export default function EditCoursePage() {
 		}
 	}
 	return (
-		<div className="m-3">
-			<section>
-				<SectionHeader title={"Kompetenzerwerbseditor"} subtitle="" />
-			</section>
-			<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
-				{tabs.map((tab, idx) => (
-					<Tab key={idx}>
-						<span>{tab.label}</span>
-					</Tab>
-				))}
-			</Tabs>
-			<CourseBasicInformation
-				onCourseCreated={(slug: string) => {
-					router.push(`/teaching/courses/${slug}/edit`);
-				}}
-				initialCourse={course}
-			/>
-		</div>
+		<AuthorGuard>
+			<div className="m-3">
+				<section>
+					<SectionHeader title={"Kompetenzerwerbseditor"} subtitle="" />
+				</section>
+				<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
+					{tabs.map((tab, idx) => (
+						<Tab key={idx}>
+							<span>{tab.label}</span>
+						</Tab>
+					))}
+				</Tabs>
+				<CourseBasicInformation
+					onCourseCreated={(slug: string) => {
+						router.push(`/teaching/courses/${slug}/edit`);
+					}}
+					initialCourse={course}
+				/>
+			</div>
+		</AuthorGuard>
 	);
 }

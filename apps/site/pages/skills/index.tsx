@@ -3,7 +3,7 @@ import { SkillFormModel } from "@self-learning/types";
 import {
 	getParentSkills,
 	transformSkills
-} from "../../../../libs/data-access/api/src/lib/trpc/routers/skill.router";
+} from "libs/data-access/api/src/lib/trpc/routers/skill.router";
 import { CreateAndViewSkills } from "@self-learning/teaching";
 
 export const getServerSideProps = withTranslations(["common"], ctx => {
