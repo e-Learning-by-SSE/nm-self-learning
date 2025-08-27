@@ -30,64 +30,57 @@ export function LessonInfoEditor() {
 					title="Daten"
 					subtitle="Informationen über diese Lerneinheit"
 				/>
+			<div className="flex flex-col gap-4">
+				<LabeledField label="Titel" error={errors.title?.message}>
+					<input
+						{...register("title")}
+						type="text"
+						className="textfield"
+						placeholder="Die neue Lerneinheit"
+						onBlur={slugifyIfEmpty}
+					/>
+				</LabeledField>
 
-				<div className="flex flex-col gap-4">
-					<LabeledField label="Titel" error={errors.title?.message}>
-						<input
-							{...register("title")}
-							type="text"
-							className="textfield"
-							placeholder="Die Neue Lerneinheit"
-							onBlur={slugifyIfEmpty}
-						/>
-					</LabeledField>
+				<LabeledField label="Slug" error={errors.slug?.message}>
+					<InputWithButton
+						input={
+							<input
+								className="textfield"
+								placeholder="die-neue-lerneinheit"
+								type={"text"}
+								{...register("slug")}
+							/>
+						}
+						button={
+							<button
+								className="btn btn-tertiary"
+								type="button"
+								onClick={slugifyField}
+								title={"Slug generieren"}
+							>
+								<span className={"text-gray-600"}>Generieren</span>
+							</button>
+						}
+					/>
+					<FieldHint>
+						Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig sein.
+					</FieldHint>
+				</LabeledField>
 
-					<LabeledField label="Slug" error={errors.slug?.message}>
-						<InputWithButton
-							input={
-								<input
-									className="textfield"
-									placeholder="die-neue-lerneinheit"
-									type={"text"}
-									{...register("slug")}
-								/>
-							}
-							button={
-								<button
-									className="btn btn-tertiary"
-									type="button"
-									onClick={slugifyField}
-									title={"Slug generieren"}
-								>
-									<span className={"text-gray-600"}>Generieren</span>
-								</button>
-							}
-						/>
-						<FieldHint>
-							Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig
-							sein.
-						</FieldHint>
-					</LabeledField>
-
-					<LabeledField
-						label="Untertitel"
-						error={errors.subtitle?.message}
-						optional={true}
-					>
-						<Controller
-							control={control}
-							name="subtitle"
-							render={({ field }) => (
-								<MarkdownField
-									content={field.value as string}
-									setValue={field.onChange}
-									inline={true}
-									placeholder="1-2 Sätze über diese Lerneinheit."
-								/>
-							)}
-						></Controller>
-					</LabeledField>
-
+				<LabeledField label="Untertitel" error={errors.subtitle?.message} optional={true}>
+					<Controller
+						control={control}
+						name="subtitle"
+						render={({ field }) => (
+							<MarkdownField
+								content={field.value as string}
+								setValue={field.onChange}
+								inline={true}
+								placeholder="1-2 Sätze über diese Lerneinheit."
+							/>
+						)}
+					></Controller>
+				</LabeledField>				
 					<LabeledField
 						label={"Beschreibung"}
 						error={errors.description?.message}

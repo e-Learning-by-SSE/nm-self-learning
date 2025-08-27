@@ -8,8 +8,9 @@ import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
-import { useRequiredSession } from "@self-learning/ui/layouts";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
+import { useRouter } from "next/router";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -78,6 +79,8 @@ export function LessonEditor({
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
 }) {
+	const isNew = initialLesson === null || initialLesson === undefined;
+	const router = useRouter();
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
 	const form = useForm<LessonFormModel>({
@@ -90,33 +93,21 @@ export function LessonEditor({
 		resolver: zodResolver(lessonSchema)
 	});
 
+	function onCancel() {
+		if (window.confirm("Änderungen verwerfen?")) {
+			router.push("/dashboard/author");
+		}
+	}
+
 	return (
 		<FormProvider {...form}>
 			<form
 				id="lessonform"
-				onSubmit={form.handleSubmit(onSubmit, error => {
-					console.log("Lesson form error", error);
-				})}
+				onSubmit={form.handleSubmit(onSubmit, console.log)}
 				className="w-full bg-gray-100"
 			>
-				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
-					<div className="flex justify-between mb-8">
-						<div className="flex flex-col gap-2">
-							<span className="font-semibold text-2xl text-secondary">
-								{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
-							</span>
-							<h1 className="text-4xl">{initialLesson?.title}</h1>
-						</div>
-						<div className="pointer-events-auto flex items-center gap-2">
-							<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
-							<button className="btn btn-tertiary" type="button" title={"Abbrechen"}>
-								<span className={"text-gray-600"}>Abbrechen</span>
-							</button>
-							<button type="submit" className="btn-primary pointer-events-auto">
-								Speichern
-							</button>
-						</div>
-					</div>
+        <SidebarEditorLayout sidebar={<LessonInfoEditor lesson={initialLesson} />}>
+					<div>
 					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
 						<Tab>Grunddaten</Tab>
 						<Tab>Lerninhalt</Tab>
@@ -126,6 +117,33 @@ export function LessonEditor({
 					{selectedTab === 1 && <LessonContentEditor />}
 					{selectedTab === 2 && <QuizEditor />}
 				</div>
+					<div
+						className={`${
+							isFullScreen ? "fixed" : ""
+						} pointer-events-none bottom-0 flex w-full items-end justify-end`}
+					>
+						{!isFullScreen && (
+							<DialogActions onClose={onCancel}>
+                <OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+								<button type="submit" className="btn-primary pointer-events-auto">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+							</DialogActions>
+						)}
+					</div>
+				</SidebarEditorLayout>
+				{isFullScreen && (
+					<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
+						<div className="z-50 pr-5 pb-5">
+							<DialogActions onClose={onCancel}>
+                <OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+								<button type="submit" className="btn-primary pointer-events-auto">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+							</DialogActions>
+						</div>
+					</div>
+				)}
 			</form>
 		</FormProvider>
 	);
