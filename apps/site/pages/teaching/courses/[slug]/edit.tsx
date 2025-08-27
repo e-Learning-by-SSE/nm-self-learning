@@ -1,10 +1,15 @@
 import { trpc } from "@self-learning/api-client";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
-import { CourseBasicInformation, editorTabs } from "@self-learning/ui/course";
+import { CourseBasicInformation, useEditorTabs } from "@self-learning/ui/course";
 import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { withTranslations } from "@self-learning/api";
+
+export const getServerSideProps = withTranslations(["common"], async () => {
+	return { props: {} };
+});
 
 export default function EditCoursePage() {
 	const router = useRouter();
@@ -17,6 +22,8 @@ export default function EditCoursePage() {
 	);
 
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	const tabs = useEditorTabs();
+
 	if (!slug || typeof slug !== "string") {
 		return <div>Loading...</div>;
 	}
@@ -24,8 +31,6 @@ export default function EditCoursePage() {
 	if (isLoading) {
 		return <div>Loading course...</div>;
 	}
-
-	const tabs = editorTabs;
 
 	async function switchTab(newIndex: number) {
 		setSelectedIndex(newIndex);

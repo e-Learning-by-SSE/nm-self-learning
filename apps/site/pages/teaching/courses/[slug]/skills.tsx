@@ -1,11 +1,16 @@
 import { trpc } from "@self-learning/api-client";
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
-import { CourseSkillView, editorTabs } from "@self-learning/ui/course";
+import { CourseSkillView, useEditorTabs } from "@self-learning/ui/course";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
+import { withTranslations } from "@self-learning/api";
+
+export const getServerSideProps = withTranslations(["common"], async () => {
+	return { props: {} };
+});
 
 export default function CourseSkillsPage() {
 	const { data: session } = useSession();
@@ -21,7 +26,7 @@ export default function CourseSkillsPage() {
 		{ enabled: !!username }
 	);
 
-	const tabs = editorTabs;
+	const tabs = useEditorTabs();
 
 	async function switchTab(newIndex: number) {
 		setSelectedIndex(newIndex);

@@ -2,8 +2,13 @@ import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { editorTabs } from "@self-learning/ui/course";
+import { useEditorTabs } from "@self-learning/ui/course";
 import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
+import { withTranslations } from "@self-learning/api";
+
+export const getServerSideProps = withTranslations(["common"], async () => {
+	return { props: {} };
+});
 
 export default function CoursePreviewPage() {
 	const router = useRouter();
@@ -11,7 +16,7 @@ export default function CoursePreviewPage() {
 	const slug = params?.slug as string;
 	const [selectedIndex, setSelectedIndex] = useState(3);
 
-	const tabs = editorTabs;
+	const tabs = useEditorTabs();
 
 	async function switchTab(newIndex: number) {
 		setSelectedIndex(newIndex);

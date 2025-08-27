@@ -1,11 +1,17 @@
 import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { CourseBasicInformation } from "@self-learning/ui/course";
 import { useRouter } from "next/router";
+import { withTranslations } from "@self-learning/api";
+import { useEditorTabs } from "@self-learning/ui/course";
+
+export const getServerSideProps = withTranslations(["common"], async () => {
+	return { props: {} };
+});
 
 export default function NewCoursePage() {
 	const router = useRouter();
 	const selectedId = 0;
-	const tabs = ["1. Grunddaten", "2. Skillansicht", "3. Modulansicht", "4. Vorschau"];
+	const tabs = useEditorTabs();
 
 	return (
 		<div className="m-3">
@@ -13,7 +19,7 @@ export default function NewCoursePage() {
 				<SectionHeader title={"Kompetenzerwerbseditor"} subtitle="" />
 			</section>
 			<Tabs selectedIndex={selectedId} onChange={() => {}}>
-				{tabs.map((content, idx) => (
+				{tabs.map((tab, idx) => (
 					<Tab key={idx}>
 						<span
 							style={{
@@ -21,7 +27,7 @@ export default function NewCoursePage() {
 								cursor: idx > 0 ? "not-allowed" : "pointer"
 							}}
 						>
-							{content}
+							{tab.label}
 						</span>
 					</Tab>
 				))}
