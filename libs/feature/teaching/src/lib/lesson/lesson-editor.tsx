@@ -1,7 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import { OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
@@ -9,7 +9,7 @@ import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
-import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
 
 export async function onLessonCreatorSubmit(
@@ -106,44 +106,34 @@ export function LessonEditor({
 				onSubmit={form.handleSubmit(onSubmit, console.log)}
 				className="w-full bg-gray-100"
 			>
-        <SidebarEditorLayout sidebar={<LessonInfoEditor lesson={initialLesson} />}>
-					<div>
-					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-						<Tab>Grunddaten</Tab>
-						<Tab>Lerninhalt</Tab>
-						<Tab>Lernkontrolle</Tab>
-					</Tabs>
-					{selectedTab === 0 && <LessonInfoEditor />}
-					{selectedTab === 1 && <LessonContentEditor />}
-					{selectedTab === 2 && <QuizEditor />}
-				</div>
-					<div
-						className={`${
-							isFullScreen ? "fixed" : ""
-						} pointer-events-none bottom-0 flex w-full items-end justify-end`}
-					>
-						{!isFullScreen && (
+				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
+					<div className="flex justify-between mb-8">
+						<div className="flex flex-col gap-2">
+							<span className="font-semibold text-2xl text-secondary">
+								{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
+							</span>
+							<h1 className="text-4xl">{initialLesson?.title}</h1>
+						</div>
+						<div className="pointer-events-auto">
 							<DialogActions onClose={onCancel}>
-                <OpenAsJsonButton form={form} validationSchema={lessonSchema} />
-								<button type="submit" className="btn-primary pointer-events-auto">
-									{isNew ? "Erstellen" : "Speichern"}
-								</button>
-							</DialogActions>
-						)}
-					</div>
-				</SidebarEditorLayout>
-				{isFullScreen && (
-					<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
-						<div className="z-50 pr-5 pb-5">
-							<DialogActions onClose={onCancel}>
-                <OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+								<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
 								<button type="submit" className="btn-primary pointer-events-auto">
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
 							</DialogActions>
 						</div>
 					</div>
-				)}
+					<div>
+						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+							<Tab>Grunddaten</Tab>
+							<Tab>Lerninhalt</Tab>
+							<Tab>Lernkontrolle</Tab>
+						</Tabs>
+						{selectedTab === 0 && <LessonInfoEditor />}
+						{selectedTab === 1 && <LessonContentEditor />}
+						{selectedTab === 2 && <QuizEditor />}
+					</div>
+				</div>
 			</form>
 		</FormProvider>
 	);
