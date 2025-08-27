@@ -211,7 +211,7 @@ export function LessonContentEditor() {
 							button={
 								<IconOnlyButton
 									icon={<PlusIcon className="h-5 w-5" />}
-									variant="stroked"
+									variant="primary"
 									title={"Inhalt hinzufügen"}
 								/>
 							}
