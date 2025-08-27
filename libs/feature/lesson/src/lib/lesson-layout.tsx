@@ -1,13 +1,15 @@
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseContent, LessonMeta, ResolvedValue } from "@self-learning/types";
+import { CourseContent, LessonContent, LessonMeta, ResolvedValue } from "@self-learning/types";
 import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { LessonData, getLesson } from "./lesson-data-access";
+import { LessonOutlineContext } from "./lesson-outline-context";
+import { useNavigableContent } from "@self-learning/ui/layouts";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
@@ -19,7 +21,7 @@ export type StandaloneLessonLayoutProps = {
 };
 
 type BaseLessonLayoutProps = {
-	title: string;
+	lesson: LessonData;
 	playlistArea: React.ReactNode;
 	children: React.ReactNode;
 };
@@ -105,20 +107,30 @@ function mapToPlaylistContent(
 	return playlistContent;
 }
 
-function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {
+function BaseLessonLayout({ lesson, playlistArea, children }: BaseLessonLayoutProps) {
+	const lessonContent = lesson.content as LessonContent;
+	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
+	const ctx = useNavigableContent(lessonContent, false, false);
+
+	const contextValue = {
+		...ctx,
+		targetIndex,
+		setTargetIndex
+	};
+
 	return (
-		<>
+		<LessonOutlineContext.Provider value={contextValue}>
 			<Head>
-				<title>{title}</title>
+				<title>{lesson.title}</title>
 			</Head>
 
 			<div className="flex flex-col bg-gray-100">
 				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
 					{playlistArea}
-					<div className="w-full pt-8 pb-16">{children}</div>
+					<div className="w-full pt-8 pb-8">{children}</div>
 				</div>
 			</div>
-		</>
+		</LessonOutlineContext.Provider>
 	);
 }
 
@@ -132,7 +144,7 @@ export function LessonLayout(
 	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
 
 	return (
-		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+		<BaseLessonLayout lesson={pageProps.lesson} playlistArea={playlistArea}>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);
@@ -145,7 +157,7 @@ export function StandaloneLessonLayout(
 	const playlistArea = <StandaloneLessonPlaylistArea {...pageProps} />;
 
 	return (
-		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+		<BaseLessonLayout lesson={pageProps.lesson} playlistArea={playlistArea}>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);
