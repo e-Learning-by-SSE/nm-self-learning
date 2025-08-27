@@ -99,10 +99,7 @@ export function SkillInfoForm({
 						<button type="submit" className="btn-primary w-full">
 							Speichern
 						</button>
-						<SkillDeleteOption
-							skillIds={[skill.id]}
-							//onDeleteSuccess={resetEditTarget}
-						/>
+						<SkillDeleteOption skill={skill} />
 					</div>
 				</Form.SidebarSection>
 			</form>
@@ -166,7 +163,7 @@ function SkillToSkillDepsInfo({
 						return {
 							...skill,
 							children: [],
-							parents: [],
+							parents: []
 						};
 					})}
 					onDeleteSkill={skill => {

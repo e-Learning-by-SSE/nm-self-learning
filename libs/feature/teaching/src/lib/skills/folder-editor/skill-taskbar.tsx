@@ -94,11 +94,11 @@ export function AddChildButton({
 }
 
 export function SkillDeleteOption({
-	skillIds,
+	skill,
 	inline = false,
 	onDeleteSuccess
 }: {
-	skillIds: SkillFormModel["id"][];
+	skill: SkillFormModel;
 	inline?: boolean;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 }) {
@@ -106,7 +106,7 @@ export function SkillDeleteOption({
 
 	const onClose = async () => {
 		await withErrorHandling(async () => {
-			await deleteSkills({ ids: skillIds });
+			await deleteSkills({ ids: [skill.id] });
 			await onDeleteSuccess?.();
 		});
 	};
@@ -124,8 +124,14 @@ export function SkillDeleteOption({
 					freeDialog("simpleDialog");
 				}}
 			>
-				{skillIds.length > 1 ? "Sollen die Skills " : "Soll der Skill"} wirklich gelöscht
-				werden?
+				Soll der Skill wirklich gelöscht werden?
+				{skill.parents.length > 1 && (
+					<div className="text-sm mt-2 text-red-600">
+						Hinweis: {skill.name} ist noch mindestens einem weiteren Eltern-Skill
+						zugeordnet. Wenn Sie {skill.name} löschen, wird er automatisch aus allen
+						zugehörigen Eltern-Skills entfernt.
+					</div>
+				)}
 			</SimpleDialog>,
 			"simpleDialog"
 		);
