@@ -291,6 +291,17 @@ describe("REST API of Course Router", () => {
 				return null; // User is not an author (includes admins who aren't authors)
 			});
 
+			// Mock course.findUnique for 404 check
+			(database.course.findUnique as jest.Mock).mockImplementation(async query => {
+				if (query.where.slug === "test-course") {
+					return {
+						courseId: courseMock.courseId,
+						content: courseMock.content
+					};
+				}
+				return null; // Course doesn't exist
+			});
+
 			// Mock enrollment.findMany for enrolled students check
 			(database.enrollment.findMany as jest.Mock).mockImplementation(async query => {
 				const requestedUsernames = query.where.username.in || [];
@@ -379,6 +390,10 @@ describe("REST API of Course Router", () => {
 			});
 
 			expect(response.statusCode).toBe(403);
+			expect(response.body).toMatchObject({
+				code: "FORBIDDEN",
+				message: "You are not an author of this course."
+			});
 		});
 
 		it("should return 403 for admin users who are not course authors", async () => {
@@ -392,6 +407,10 @@ describe("REST API of Course Router", () => {
 			});
 
 			expect(response.statusCode).toBe(403);
+			expect(response.body).toMatchObject({
+				code: "FORBIDDEN",
+				message: "You are not an author of this course."
+			});
 		});
 
 		it("should return 401 for unauthorized requests", async () => {
@@ -426,6 +445,26 @@ describe("REST API of Course Router", () => {
 			expect(response.body).toEqual([
 				{ username: "student1", progress: 0 } // 0/4 lessons = 0%
 			]);
+		});
+
+		it("should return 404 for non-existent course", async () => {
+			// Override the findUnique mock to return null (course doesn't exist)
+			(database.course.findUnique as jest.Mock).mockImplementationOnce(async () => null);
+
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "non-existent-course", "progress"],
+					usernames: "student1,student2"
+				},
+				user: courseAuthor1
+			});
+
+			expect(response.statusCode).toBe(404);
+			expect(response.body).toMatchObject({
+				code: "NOT_FOUND",
+				message: "Course not found for slug: non-existent-course"
+			});
 		});
 	});
 });

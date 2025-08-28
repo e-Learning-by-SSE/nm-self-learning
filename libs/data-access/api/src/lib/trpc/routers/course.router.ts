@@ -369,19 +369,29 @@ export const courseRouter = t.router({
 						.filter(Boolean)
 				: [];
 
-			// Verify user is author of the course
-			const course = await database.course.findFirst({
+			// check if course exists (404 if not)
+			const course = await database.course.findUnique({
+				where: { slug: input.slug },
+				select: { courseId: true, content: true }
+			});
+
+			if (!course) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course not found for slug: ${input.slug}`
+				});
+			}
+
+			// check if user is authorized (403 if not)
+			const userIsAuthor = await database.course.findFirst({
 				where: {
 					slug: input.slug,
 					authors: { some: { username: ctx.user.name } }
 				},
-				select: {
-					courseId: true,
-					content: true
-				}
+				select: { courseId: true }
 			});
-		
-			if (!course) {
+
+			if (!userIsAuthor) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message: "You are not an author of this course."
@@ -427,13 +437,10 @@ export const courseRouter = t.router({
 				}
 			});
 
-			const completedMap = new Map<string, number>();
-			for (const c of completedLessons) {
-				completedMap.set(c.username, c._count.lessonId);
-			}
-
 			return enrollments.map(enrollment => {
-				const completedCount = completedMap.get(enrollment.username) ?? 0;
+				const completedCount =
+					completedLessons.find(c => c.username === enrollment.username)?._count
+						.lessonId ?? 0;
 				const progressPercent = Math.round((completedCount / totalLessons) * 100);
 				return {
 					username: enrollment.username,
