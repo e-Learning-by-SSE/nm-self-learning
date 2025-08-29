@@ -1,79 +1,142 @@
-import { isAuthor } from "@self-learning/admin";
+import { Prisma } from "@prisma/client";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
-import { CourseBasicInformation, editorTabs } from "@self-learning/ui/course";
-import { useParams } from "next/navigation";
+import { database } from "@self-learning/database";
+import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
+import { CourseContent, extractLessonIds } from "@self-learning/types";
+import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useRef } from "react";
+import { hasAuthorPermission } from "@self-learning/ui/layouts";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+
+type EditCourseProps = {
+	course: CourseFormModel;
+	lessons: { title: string; lessonId: string; slug: string; meta: Prisma.JsonValue }[];
+};
 
 export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth(async (context, user) => {
-		if (!user) {
-			return { redirect: { destination: "/", permanent: false } };
+	["pages-course-info", "common"],
+	withAuth<EditCourseProps>(async (ctx, user) => {
+		const slug = ctx.params?.slug as string;
+		const { locale } = ctx;
+
+		const course = await database.course.findUnique({
+			where: { slug },
+			include: {
+				authors: {
+					select: {
+						username: true
+					}
+				},
+				specializations: {
+					select: {
+						specializationId: true
+					}
+				},
+				subject: {
+					select: {
+						subjectId: true,
+						title: true
+					}
+				}
+			}
+		});
+
+		if (!course) {
+			return {
+				notFound: true
+			};
 		}
 
-		const slugParam = context.params?.slug;
-		if (!slugParam) return { props: {} };
-
-		const slug = Array.isArray(slugParam) ? slugParam.join("/") : slugParam;
-		const isUserCourseAuthor = await isAuthor(user.name, slug);
-
-		if (!isUserCourseAuthor) {
-			return { redirect: { destination: "/", permanent: false } };
+		if (!hasAuthorPermission({ user, permittedAuthors: course.authors.map(a => a.username) })) {
+			return {
+				redirect: {
+					destination: "/403",
+					permanent: false
+				}
+			};
 		}
 
-		return { props: {} };
+		const content = course.content as CourseContent;
+
+		const lessonIds = extractLessonIds(content);
+
+		const lessons = await database.lesson.findMany({
+			where: { lessonId: { in: lessonIds } },
+			select: {
+				title: true,
+				slug: true,
+				lessonId: true,
+				meta: true
+			}
+		});
+
+		const lessonsById = new Map<string, (typeof lessons)[0]>();
+
+		for (const lesson of lessons) {
+			lessonsById.set(lesson.lessonId, lesson);
+		}
+
+		const courseFormModel: CourseFormModel = {
+			title: course.title,
+			courseId: course.courseId,
+			description: course.description,
+			subtitle: course.subtitle,
+			imgUrl: course.imgUrl,
+			slug: course.slug,
+			subjectId: course.subject?.subjectId ?? null,
+			authors: course.authors.map(author => ({ username: author.username })),
+			content: content
+		};
+
+		return {
+			notFound: !course,
+			props: {
+				course: courseFormModel,
+				lessons,
+				...(await serverSideTranslations(locale ?? "en", ["common"]))
+			}
+		};
 	})
 );
 
-export default function EditCoursePage() {
+export default function EditCoursePage({ course, lessons }: EditCourseProps) {
+	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
 	const router = useRouter();
-	const params = useParams();
-	const slug = params?.slug as string;
+	const trpcContext = trpc.useUtils();
+	const isInitialRender = useRef(true);
 
-	const { data: course, isLoading } = trpc.course.getCourse.useQuery(
-		{ slug },
-		{ enabled: !!slug }
-	);
+	if (isInitialRender.current) {
+		isInitialRender.current = false;
 
-	const [selectedIndex, setSelectedIndex] = useState(0);
-	if (!slug || typeof slug !== "string") {
-		return <div>Loading...</div>;
-	}
-
-	if (isLoading) {
-		return <div>Loading course...</div>;
-	}
-
-	const tabs = editorTabs;
-
-	async function switchTab(newIndex: number) {
-		setSelectedIndex(newIndex);
-		const tab = tabs[newIndex];
-		if (tab.path) {
-			router.push(`/teaching/courses/${slug}/${tab.path}`);
+		// Populate query cache with existing lessons
+		// This way, we only need to fetch newly added lessons
+		for (const lesson of lessons) {
+			trpcContext.lesson.findOne.setData({ lessonId: lesson.lessonId }, lesson);
 		}
 	}
-	return (
-		<div className="m-3">
-			<section>
-				<SectionHeader title={"Kompetenzerwerbseditor"} subtitle="" />
-			</section>
-			<Tabs selectedIndex={selectedIndex} onChange={switchTab}>
-				{tabs.map((tab, idx) => (
-					<Tab key={idx}>
-						<span>{tab.label}</span>
-					</Tab>
-				))}
-			</Tabs>
-			<CourseBasicInformation
-				onCourseCreated={(slug: string) => {
-					router.push(`/teaching/courses/${slug}/edit`);
-				}}
-				initialCourse={course}
-			/>
-		</div>
-	);
+
+	function onConfirm(updatedCourse: CourseFormModel) {
+		async function update() {
+			try {
+				const { title } = await updateCourse({
+					courseId: course.courseId as string,
+					course: updatedCourse
+				});
+				showToast({ type: "success", title: "Änderung gespeichert!", subtitle: title });
+				router.replace(router.asPath, undefined, { scroll: false });
+			} catch (error) {
+				showToast({
+					type: "error",
+					title: "Fehler",
+					subtitle: JSON.stringify(error, null, 2)
+				});
+			}
+		}
+
+		update();
+	}
+
+	return <CourseEditor course={course} onConfirm={onConfirm} />;
 }
