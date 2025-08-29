@@ -18,6 +18,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEventLog } from "@self-learning/util/common";
 import { ResolvedValue } from "@self-learning/types";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 export type QuestionProps = {
 	lesson: LessonData;
@@ -97,6 +98,7 @@ export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionPro
 					{!isStandalone && <QuizCompletionSubscriber lesson={lesson} course={course} />}
 				</div>
 			</div>
+			<FloatingTutorButton />
 		</QuizProvider>
 	);
 }
@@ -145,10 +147,10 @@ export function QuizHeader({
 	const { newEvent } = useEventLog();
 	const [suppressDialog, setSuppressDialog] = useState(false);
 	const orderedQuestions = useMemo(() => {
-	return questionOrder
-		.map(Id => questions.find(q => q.questionId === Id))
-		.filter((q): q is NonNullable<typeof q> => !!q);
-}, [questionOrder, questions]);
+		return questionOrder
+			.map(Id => questions.find(q => q.questionId === Id))
+			.filter((q): q is NonNullable<typeof q> => !!q);
+	}, [questionOrder, questions]);
 	const isStandalone = !course;
 	const lessonUrl = isStandalone
 		? `/lessons/${lesson.slug}`
@@ -179,7 +181,7 @@ export function QuizHeader({
 
 	useEffect(() => {
 		// TODO diary: check if the useEffect is necessary
-		logQuizStart(lesson, orderedQuestions[currentIndex])
+		logQuizStart(lesson, orderedQuestions[currentIndex]);
 	}, [orderedQuestions, currentIndex, logQuizStart, lesson]);
 
 	return (

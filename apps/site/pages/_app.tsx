@@ -93,7 +93,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 							{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 						</main>
 						<AiTutor />
-						<FloatingTutorButton />
 						<Footer />
 					</AiTutorProvider>
 				</SessionProvider>

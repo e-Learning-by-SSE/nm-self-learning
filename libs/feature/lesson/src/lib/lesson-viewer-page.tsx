@@ -24,6 +24,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { LessonData } from "./lesson-data-access";
 import { usePathname, useSearchParams } from "next/navigation";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 export type LessonProps = {
 	lesson: LessonData;
@@ -160,6 +161,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 					<PdfViewer url={pdf.value.url} />
 				</div>
 			)}
+			<FloatingTutorButton />
 		</article>
 	);
 }

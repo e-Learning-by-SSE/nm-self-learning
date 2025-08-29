@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 const llmConfigSchema = z.object({
 	serverUrl: z.string().url(),
@@ -263,6 +264,7 @@ export default function LlmConfigPage() {
 					</div>
 				</div>
 			</CenteredSection>
+			<FloatingTutorButton />
 		</AdminGuard>
 	);
 }
