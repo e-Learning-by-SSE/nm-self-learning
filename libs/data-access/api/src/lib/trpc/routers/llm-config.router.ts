@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { adminProcedure, authProcedure, t } from "../trpc";
+import { adminProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
-import { m } from "framer-motion";
 
 const llmConfigSchema = z.object({
 	serverUrl: z.string().url(),
@@ -28,37 +27,50 @@ const ollamaModelList = z.object({
 	)
 });
 
+/**
+ * Fetches available models from the LLM server.
+ * @param serverUrl The URL of the LLM server.
+ * @param apiKey Optional API key for authentication.
+ * @param timeoutSeconds Optional timeout in seconds (default: 10).
+ */
+async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutSeconds = 10) {
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json"
+	};
+
+	if (apiKey) {
+		headers["Authorization"] = `Bearer ${apiKey}`;
+	}
+
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(timeoutSeconds));
+	const response = await fetch(serverUrl + "/tags", {
+		method: "GET",
+		headers,
+		signal: controller.signal
+	});
+	clearTimeout(timeoutId);
+
+	if (!response.ok) {
+		if (response.status === 401) {
+			throw new TRPCError({
+				code: "UNAUTHORIZED",
+				message: "Invalid API key or unauthorized access"
+			});
+		} else {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Failed to connect to LLM server."
+			});
+		}
+	}
+
+	const data = await response.json();
+	return ollamaModelList.parse(data);
+}
+
 export const llmConfigRouter = t.router({
 	get: adminProcedure.query(async () => {
-		const config = await database.llmConfiguration.findFirst({
-			where: { isActive: true },
-			select: {
-				id: true,
-				serverUrl: true,
-				defaultModel: true,
-				isActive: true,
-				createdAt: true,
-				updatedAt: true
-			}
-		});
-
-		if (!config) {
-			return null;
-		}
-
-		const hasApiKey = await database.llmConfiguration.findFirst({
-			where: { id: config.id, apiKey: { not: null } },
-			select: { id: true }
-		});
-
-		return {
-			...config,
-			hasApiKey: !!hasApiKey,
-			apiKey: hasApiKey ? "****" : undefined
-		};
-	}),
-
-	getForServerUse: authProcedure.query(async () => {
 		const config = await database.llmConfiguration.findFirst({
 			where: { isActive: true },
 			select: {
@@ -71,7 +83,15 @@ export const llmConfigRouter = t.router({
 				apiKey: true
 			}
 		});
-		return config || null;
+
+		if (!config) {
+			return null;
+		}
+
+		return {
+			...config,
+			hasApiKey: !!config.apiKey
+		};
 	}),
 
 	save: adminProcedure.input(llmConfigSchema).mutation(async ({ input }) => {
@@ -79,33 +99,7 @@ export const llmConfigRouter = t.router({
 			const { serverUrl, apiKey, defaultModel } = input;
 
 			try {
-				const headers: Record<string, string> = {
-					"Content-Type": "application/json"
-				};
-
-				if (apiKey) {
-					headers["Authorization"] = `Bearer ${apiKey}`;
-				}
-
-				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(10));
-				const response = await fetch(serverUrl + "/tags", {
-					method: "GET",
-					headers,
-					signal: controller.signal
-				});
-				clearTimeout(timeoutId);
-
-				if (!response.ok) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
-						message: `Failed to connect to LLM server`
-					});
-				}
-
-				const data = await response.json();
-				// Throws ZodError if defined data does not exist (in case of API change)
-				const availableModels = ollamaModelList.parse(data);
+				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
 				const modelExists = availableModels.models.some(
 					m => m.name === defaultModel || m.name.startsWith(defaultModel + ":")
 				);
@@ -113,7 +107,7 @@ export const llmConfigRouter = t.router({
 				if (!modelExists) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
-						message: `Model "${defaultModel}" is not available on the server.`
+						message: "This Model is not available on the server."
 					});
 				}
 			} catch (error) {
@@ -130,54 +124,32 @@ export const llmConfigRouter = t.router({
 				where: { isActive: true }
 			});
 
-			if (existingConfig) {
-				const updatedConfig = await database.llmConfiguration.update({
-					where: { id: existingConfig.id },
-					data: {
-						serverUrl,
-						apiKey: apiKey || null,
-						defaultModel,
-						updatedAt: new Date()
-					},
-					select: {
-						id: true,
-						serverUrl: true,
-						defaultModel: true,
-						isActive: true,
-						createdAt: true,
-						updatedAt: true
-					}
-				});
+			const config = await database.llmConfiguration.upsert({
+				where: { id: existingConfig?.id || crypto.randomUUID() },
+				update: {
+					serverUrl,
+					apiKey: apiKey || null,
+					defaultModel,
+					updatedAt: new Date()
+				},
+				create: {
+					serverUrl,
+					apiKey: apiKey || null,
+					defaultModel,
+					isActive: true
+				},
+				select: {
+					id: true,
+					serverUrl: true,
+					defaultModel: true,
+					updatedAt: true
+				}
+			});
 
-				return {
-					...updatedConfig,
-					hasApiKey: !!apiKey,
-					apiKey: apiKey ? "****" : undefined
-				};
-			} else {
-				const newConfig = await database.llmConfiguration.create({
-					data: {
-						serverUrl,
-						apiKey: apiKey || null,
-						defaultModel,
-						isActive: true
-					},
-					select: {
-						id: true,
-						serverUrl: true,
-						defaultModel: true,
-						isActive: true,
-						createdAt: true,
-						updatedAt: true
-					}
-				});
-
-				return {
-					...newConfig,
-					hasApiKey: !!apiKey,
-					apiKey: apiKey ? "****" : undefined
-				};
-			}
+			return {
+				...config,
+				hasApiKey: !!apiKey
+			};
 		} catch (error) {
 			if (error instanceof TRPCError) {
 				throw error;
@@ -195,41 +167,10 @@ export const llmConfigRouter = t.router({
 		.mutation(async ({ input }) => {
 			try {
 				const { serverUrl, apiKey } = input;
-				const headers: Record<string, string> = {
-					"Content-Type": "application/json"
-				};
-				if (apiKey) {
-					headers["Authorization"] = `Bearer ${apiKey}`;
-				}
-
-				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(10));
-				const response = await fetch(serverUrl + "/tags", {
-					method: "GET",
-					headers,
-					signal: controller.signal
-				});
-
-				clearTimeout(timeoutId);
-
-				if (!response.ok) {
-					if (response.status === 401) {
-						throw new TRPCError({
-							code: "UNAUTHORIZED",
-							message: "Invalid API key or unauthorized access"
-						});
-					} else {
-						throw new TRPCError({
-							code: "BAD_REQUEST",
-							message: "Failed to fetch available models."
-						});
-					}
-				}
-				const data = await response.json();
-				const models = data.models || [];
+				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
 				return {
 					valid: true,
-					availableModels: models.map((model: any) => model.name)
+					availableModels: availableModels.models.map(m => m.name)
 				};
 			} catch (error) {
 				if (error instanceof TRPCError) {

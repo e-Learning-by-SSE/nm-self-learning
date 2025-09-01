@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { TRPCError } from "@trpc/server";
 
 const llmConfigSchema = z.object({
 	serverUrl: z.string().url(),
@@ -60,11 +61,20 @@ export default function LlmConfigPage() {
 
 			refetch();
 		} catch (error) {
-			showToast({
-				type: "error",
-				title: t("Save Failed"),
-				subtitle: error instanceof Error ? error.message : t("Failed to save configuration")
-			});
+			if (error instanceof TRPCError) {
+				showToast({
+					type: "error",
+					title: t(error.code),
+					subtitle: t(error.message)
+				});
+			} else {
+				showToast({
+					type: "error",
+					title: t("Save Failed"),
+					subtitle:
+						error instanceof Error ? error.message : t("Failed to save configuration")
+				});
+			}
 		}
 	};
 
@@ -87,12 +97,22 @@ export default function LlmConfigPage() {
 				});
 			}
 		} catch (error) {
-			showToast({
-				type: "error",
-				title: "Fetch Models Failed",
-				subtitle:
-					error instanceof Error ? error.message : "Failed to fetch available models"
-			});
+			if (error instanceof TRPCError) {
+				showToast({
+					type: "error",
+					title: t(error.code),
+					subtitle: t(error.message)
+				});
+			} else {
+				showToast({
+					type: "error",
+					title: t("Fetch Models Failed"),
+					subtitle:
+						error instanceof Error
+							? error.message
+							: t("Failed to fetch available models")
+				});
+			}
 		} finally {
 			setFetchingModels(false);
 		}
@@ -125,7 +145,7 @@ export default function LlmConfigPage() {
 									htmlFor="serverUrl"
 									className="block text-sm font-medium text-gray-700 mb-2"
 								>
-									LLM Server URL *
+									{t("LLM Server URL *")}
 								</label>
 								<input
 									type="url"
@@ -133,10 +153,10 @@ export default function LlmConfigPage() {
 									{...register("serverUrl")}
 									required
 									className="textfield w-full"
-									placeholder="https://your-llm-server.com"
+									placeholder="https://example.com/ollama/api"
 								/>
 								<p className="text-sm text-gray-500 mt-1">
-									Base URL of your LLM server (e.g.,
+									{t("Base URL of your LLM server")} (e.g.,
 									https://example.com/ollama/api)
 								</p>
 							</div>
@@ -146,7 +166,7 @@ export default function LlmConfigPage() {
 									htmlFor="apiKey"
 									className="block text-sm font-medium text-gray-700 mb-2"
 								>
-									API Key (Optional)
+									{t("API Key (Optional)")}
 								</label>
 								<input
 									type="password"
@@ -156,12 +176,12 @@ export default function LlmConfigPage() {
 									placeholder={
 										config?.hasApiKey
 											? "••••••••••••••••"
-											: "Enter API key if required"
+											: t("Enter API key if required")
 									}
 								/>
 								{config?.hasApiKey && (
 									<p className="text-sm text-gray-500 mt-1">
-										Leave empty if API key is not required
+										{t("Leave empty if API key is not required")}
 									</p>
 								)}
 							</div>
@@ -171,7 +191,7 @@ export default function LlmConfigPage() {
 									htmlFor="defaultModel"
 									className="block text-sm font-medium text-gray-700 mb-2"
 								>
-									Default Model *
+									{t("Default Model *")}
 								</label>
 								<div className="flex gap-2">
 									<input
@@ -180,7 +200,7 @@ export default function LlmConfigPage() {
 										{...register("defaultModel")}
 										required
 										className="textfield max-w-4/5 w-4/5"
-										placeholder="llama3.1:8b, gpt-4, claude-3-sonnet, etc."
+										placeholder="llama3.1:8b"
 									/>
 									<button
 										type="button"
@@ -193,20 +213,20 @@ export default function LlmConfigPage() {
 										className="btn bg-gray-600 text-white hover:bg-gray-700"
 									>
 										{getAvailableModels.isLoading
-											? "Loading..."
-											: "Fetch Models"}
+											? t("Fetching...")
+											: t("Fetch Models")}
 									</button>
 								</div>
 								{availableModels.length > 0 && (
 									<div className="mt-2">
 										<p className="text-sm text-gray-600 mb-1">
-											Available models:
+											{t("Available Models:")}
 										</p>
 										<select
 											onChange={e => setValue("defaultModel", e.target.value)}
 											className="select w-full"
 										>
-											<option value="">Select a model</option>
+											<option value="">{t("Select a model")}</option>
 											{availableModels.map(model => (
 												<option key={model} value={model}>
 													{model}
@@ -225,16 +245,16 @@ export default function LlmConfigPage() {
 										className="btn btn-primary"
 									>
 										{saveConfig.isLoading
-											? "Saving..."
+											? t("Saving...")
 											: config
-												? "Update Configuration"
-												: "Save Configuration"}
+												? t("Update Configuration")
+												: t("Save Configuration")}
 									</button>
 								</div>
 
 								{config && (
 									<div className="text-sm text-gray-500">
-										Last updated:{" "}
+										{t("Last updated:")}{" "}
 										{formatDateString(config.updatedAt, "MMM dd, yyyy")}
 									</div>
 								)}
@@ -244,18 +264,18 @@ export default function LlmConfigPage() {
 						{config && (
 							<div className="mt-6 p-4 bg-green-50 rounded-md">
 								<h3 className="text-sm font-medium text-green-800 mb-2">
-									Current Configuration
+									{t("Current Configuration")}
 								</h3>
 								<div className="text-sm text-green-700">
 									<p>
 										<strong>Server:</strong> {config.serverUrl}
 									</p>
 									<p>
-										<strong>Default Model:</strong> {config.defaultModel}
+										<strong>{t("Default Model:")}</strong> {config.defaultModel}
 									</p>
 									<p>
-										<strong>API Key:</strong>{" "}
-										{config.hasApiKey ? "Configured" : "Not configured"}
+										<strong>{t("API Key:")}</strong>{" "}
+										{config.hasApiKey ? t("Configured") : t("Not configured")}
 									</p>
 								</div>
 							</div>
