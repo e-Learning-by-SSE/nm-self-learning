@@ -131,7 +131,7 @@ export const llmConfigRouter = t.router({
 				if (!modelExists) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
-						message: `Model "${defaultModel}" is not available on the server.`
+						message: "This Model is not available on the server."
 					});
 				}
 			} catch (error) {
