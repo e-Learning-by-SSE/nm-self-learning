@@ -4,17 +4,11 @@ import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { withTranslations } from "@self-learning/api";
 import { formatDateString } from "@self-learning/util/common";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { TRPCError } from "@trpc/server";
-
-const llmConfigSchema = z.object({
-	serverUrl: z.string().url(),
-	apiKey: z.string().optional(),
-	defaultModel: z.string().min(1)
-});
+import { llmConfigSchema } from "@self-learning/types";
 
 export default function LlmConfigPage() {
 	const { register, handleSubmit, reset, watch, setValue } = useForm({

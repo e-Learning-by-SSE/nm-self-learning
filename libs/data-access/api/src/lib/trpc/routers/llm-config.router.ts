@@ -1,31 +1,8 @@
-import { z } from "zod";
 import { adminProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
-
-const llmConfigSchema = z.object({
-	serverUrl: z.string().url(),
-	apiKey: z.string().optional(),
-	defaultModel: z.string().min(1)
-});
-
-const llmConfigSchemaForFetching = z.object({
-	serverUrl: z.string().url(),
-	apiKey: z.string().optional()
-});
-
-/**
- * Relevant data type description of the response of Ollama's list models endpoint.
- * @see https://docs.ollama.com/reference/list-models
- */
-const ollamaModelList = z.object({
-	models: z.array(
-		z.object({
-			name: z.string()
-		})
-	)
-});
+import { llmConfigSchema, llmConfigSchemaForFetching, ollamaModelList } from "@self-learning/types";
 
 /**
  * Fetches available models from the LLM server.
