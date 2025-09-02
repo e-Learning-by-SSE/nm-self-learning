@@ -109,7 +109,7 @@ export default function LlmConfigPage() {
 					title: t("Fetch Models Failed"),
 					subtitle:
 						error instanceof Error
-							? error.message
+							? t(error.message)
 							: t("Failed to fetch available models")
 				});
 			}
@@ -156,8 +156,9 @@ export default function LlmConfigPage() {
 									placeholder="https://example.com/ollama/api"
 								/>
 								<p className="text-sm text-gray-500 mt-1">
-									{t("Base URL of your LLM server")} (e.g.,
-									https://example.com/ollama/api)
+									{t("Base URL of your LLM server", {
+										url: "https://example.com/ollama/api"
+									})}
 								</p>
 							</div>
 
@@ -193,13 +194,13 @@ export default function LlmConfigPage() {
 								>
 									{t("Default Model *")}
 								</label>
-								<div className="flex gap-2">
+								<div className="flex gap-4">
 									<input
 										type="text"
 										id="defaultModel"
 										{...register("defaultModel")}
 										required
-										className="textfield max-w-4/5 w-4/5"
+										className="textfield max-w-3/4 w-3/4"
 										placeholder="llama3.1:8b"
 									/>
 									<button
@@ -210,7 +211,7 @@ export default function LlmConfigPage() {
 											fetchingModels ||
 											!formData.serverUrl
 										}
-										className="btn bg-gray-600 text-white hover:bg-gray-700"
+										className="btn-secondary flex-1"
 									>
 										{getAvailableModels.isLoading
 											? t("Fetching...")
@@ -254,8 +255,9 @@ export default function LlmConfigPage() {
 
 								{config && (
 									<div className="text-sm text-gray-500">
-										{t("Last updated:")}{" "}
-										{formatDateString(config.updatedAt, "MMM dd, yyyy")}
+										{t("Last updated:", {
+											date: formatDateString(config.updatedAt, "d. MMM yyyy")
+										})}
 									</div>
 								)}
 							</div>
@@ -263,7 +265,7 @@ export default function LlmConfigPage() {
 
 						{config && (
 							<div className="mt-6 p-4 bg-green-50 rounded-md">
-								<h3 className="text-sm font-medium text-green-800 mb-2">
+								<h3 className="text-green-800 mb-2">
 									{t("Current Configuration")}
 								</h3>
 								<div className="text-sm text-green-700">
