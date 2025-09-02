@@ -827,7 +827,7 @@ export default function LlmConfigPage() {
 									htmlFor="serverUrl"
 									className="block text-sm font-medium text-gray-700 mb-2"
 								>
-									{t("LLM Server URL *")}
+									{t("LLM Server URL")} *
 								</label>
 								<input
 									type="url"
@@ -874,7 +874,7 @@ export default function LlmConfigPage() {
 									htmlFor="defaultModel"
 									className="block text-sm font-medium text-gray-700 mb-2"
 								>
-									{t("Default Model *")}
+									{t("Default Model")} *
 								</label>
 								<div className="flex gap-4">
 									<input
@@ -903,7 +903,7 @@ export default function LlmConfigPage() {
 								{availableModels.length > 0 && (
 									<div className="mt-2">
 										<p className="text-sm text-gray-600 mb-1">
-											{t("Available Models:")}
+											{t("Available Models")}:
 										</p>
 										<select
 											onChange={e => setValue("defaultModel", e.target.value)}
@@ -937,7 +937,7 @@ export default function LlmConfigPage() {
 
 								{config && (
 									<div className="text-sm text-gray-500">
-										{t("Last updated:", {
+										{t("Last updated", {
 											date: formatDateString(config.updatedAt, "d. MMM yyyy")
 										})}
 									</div>
@@ -945,21 +945,30 @@ export default function LlmConfigPage() {
 							</div>
 						</form>
 
-            {/* Configuration Status */}
-            {config && (
-              <div className="mt-6 p-4 bg-green-50 rounded-md">
-                <h3 className="text-sm font-medium text-green-800 mb-2">Current Configuration</h3>
-                <div className="text-sm text-green-700">
-                  <p><strong>Server:</strong> {config.serverUrl}</p>
-                  <p><strong>Default Model:</strong> {config.defaultModel}</p>
-                  <p><strong>API Key:</strong> {config.hasApiKey ? 'Configured' : 'Not configured'}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </CenteredSection>
-    </AdminGuard>
-  );
-} export const getServerSideProps = withTranslations(["common"]);
->>>>>>> 65fb8528 (feature: use tRPC for database and  validate llm servers.)
+						{config && (
+							<div className="mt-6 p-4 bg-green-50 rounded-md">
+								<h3 className="text-green-800 mb-2">
+									{t("Current Configuration")}
+								</h3>
+								<div className="text-sm text-green-700">
+									<p>
+										<strong>{t("Server")}:</strong> {config.serverUrl}
+									</p>
+									<p>
+										<strong>{t("Default Model")}:</strong> {config.defaultModel}
+									</p>
+									<p>
+										<strong>{t("API Key")}</strong>
+										{": "}
+										{config.hasApiKey ? t("Configured") : t("Not configured")}
+									</p>
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+			</CenteredSection>
+		</AdminGuard>
+	);
+}
+export const getServerSideProps = withTranslations(["common", "pages-admin-llm-config"]);
