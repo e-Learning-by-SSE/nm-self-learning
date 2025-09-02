@@ -145,7 +145,7 @@ export default function LlmConfigPage() {
 									htmlFor="serverUrl"
 									className="block text-sm font-medium text-gray-700 mb-2"
 								>
-									{t("LLM Server URL *")}
+									{t("LLM Server URL")} *
 								</label>
 								<input
 									type="url"
@@ -192,7 +192,7 @@ export default function LlmConfigPage() {
 									htmlFor="defaultModel"
 									className="block text-sm font-medium text-gray-700 mb-2"
 								>
-									{t("Default Model *")}
+									{t("Default Model")} *
 								</label>
 								<div className="flex gap-4">
 									<input
@@ -221,7 +221,7 @@ export default function LlmConfigPage() {
 								{availableModels.length > 0 && (
 									<div className="mt-2">
 										<p className="text-sm text-gray-600 mb-1">
-											{t("Available Models:")}
+											{t("Available Models")}:
 										</p>
 										<select
 											onChange={e => setValue("defaultModel", e.target.value)}
@@ -255,7 +255,7 @@ export default function LlmConfigPage() {
 
 								{config && (
 									<div className="text-sm text-gray-500">
-										{t("Last updated:", {
+										{t("Last updated", {
 											date: formatDateString(config.updatedAt, "d. MMM yyyy")
 										})}
 									</div>
@@ -270,13 +270,14 @@ export default function LlmConfigPage() {
 								</h3>
 								<div className="text-sm text-green-700">
 									<p>
-										<strong>Server:</strong> {config.serverUrl}
+										<strong>{t("Server")}:</strong> {config.serverUrl}
 									</p>
 									<p>
-										<strong>{t("Default Model:")}</strong> {config.defaultModel}
+										<strong>{t("Default Model")}:</strong> {config.defaultModel}
 									</p>
 									<p>
-										<strong>{t("API Key:")}</strong>{" "}
+										<strong>{t("API Key")}</strong>
+										{": "}
 										{config.hasApiKey ? t("Configured") : t("Not configured")}
 									</p>
 								</div>

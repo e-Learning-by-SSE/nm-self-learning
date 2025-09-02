@@ -19,16 +19,15 @@
     "UNAUTHORIZED": "UNAUTHORIZED",
     "Invalid API key or unauthorized access": "Invalid API key or unauthorized access",
     "Leave empty if API key is not required": "Leave empty if API key is not required",
-    "LLM Server URL *": "LLM Server URL *",
+    "LLM Server URL": "LLM Server URL",
     "Base URL of your LLM server": "Base URL of your LLM server (e.g., {{url}})",
     "API Key (Optional)": "API Key (Optional)",
-    "Default Model *": "Default Model *",
-    "Available Models:": "Available Models:",
+    "Default Model": "Default Model",
+    "Available Models": "Available Models",
     "Select a model": "Select a model",
-    "Last updated:": "Last updated: {{date}}",
+    "Last updated": "Last updated: {{date}}",
     "Current Configuration": "Current Configuration",
-    "Default Model:": "Default Model:",
-    "API Key:": "API Key:",
+    "API Key": "API Key",
     "Configured": "Configured",
     "Not configured": "Not configured",
     "Saving...": "Saving...",
@@ -36,6 +35,6 @@
     "Save Configuration": "Save Configuration",
     "Fetching...": "Fetching...",
     "Fetch Models": "Fetch Models",
-    "Enter API key if required": "Enter API key if required"
-
+    "Enter API key if required": "Enter API key if required",
+    "Server": "Server"
 }
