@@ -6,16 +6,26 @@ import {
 	CourseContent,
 	extractLessonIds
 } from "@self-learning/types";
+import { getCombinedCourses } from "@self-learning/course";
 
 export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
 ): Promise<CourseCompletion> {
-	const course = await database.course.findUniqueOrThrow({
-		where: { slug: courseSlug }
+	const result = await getCombinedCourses({
+		slug: courseSlug,
+		username: username,
+		includeContent: true
 	});
 
-	const content = (course.content ?? []) as CourseContent;
+	const course = result[0];
+
+	let content = course.content as CourseContent;
+
+	if(content === undefined) {
+		content = [];
+	}
+
 	const lessonIds = extractLessonIds(content);
 
 	const completedLessons = await database.completedLesson.findMany({

@@ -16,8 +16,9 @@ jest.mock("next-auth", () => ({
 // Mock the database
 jest.mock("@self-learning/database", () => ({
 	database: {
-		course: { findUnique: jest.fn() },
-		lesson: { findUnique: jest.fn() }
+		course: { findUnique: jest.fn(), findFirst: jest.fn() },
+		lesson: { findUnique: jest.fn() },
+		dynCourse: { findFirst: jest.fn() }
 	}
 }));
 
@@ -53,7 +54,9 @@ describe("getServerSideProps", () => {
 			jest.clearAllMocks();
 			// Mock the database response
 			(database.course.findUnique as jest.Mock).mockResolvedValue(courseMock);
+			(database.course.findFirst as jest.Mock).mockResolvedValue(courseMock);
 			(database.lesson.findUnique as jest.Mock).mockResolvedValue(lessonMock);
+			(database.dynCourse.findFirst as jest.Mock).mockResolvedValue(courseMock);
 			(compileMarkdown as jest.Mock).mockResolvedValue("");
 			global.encodeURIComponent = jest.fn().mockReturnValue("loginPage");
 		});
