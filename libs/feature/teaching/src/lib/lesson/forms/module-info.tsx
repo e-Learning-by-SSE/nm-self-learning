@@ -81,7 +81,6 @@ export function ModuleInfoEditor({
 								setValue={field.onChange}
 								inline={true}
 								placeholder={"1-2 Sätze welche diese Lerneinheit beschreibt."}
-								className="h-20"
 							/>
 						)}
 					></Controller>
