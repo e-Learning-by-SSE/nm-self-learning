@@ -266,3 +266,13 @@ model EventLog {
   payload     Json?
   // @@id([userId, createdAt, action]) // todo check if optimization is needed
 }
+
+model LlmConfiguration {
+  id              String   @id @default(cuid())
+  serverUrl       String
+  apiKey          String?
+  defaultModel    String   
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
