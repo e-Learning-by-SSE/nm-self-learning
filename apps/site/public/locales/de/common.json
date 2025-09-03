@@ -7,5 +7,9 @@
 	"delete": "Löschen",
 	"edit": "Bearbeiten",
 	"save": "Speichern",
-	"search": "Suchen"
+	"search": "Suchen",
+	"KeeTabBasic": "1. Grunddaten",
+  	"KeeTabSkills": "2. Skillansicht",
+  	"KeeTabModules": "3. Modulansicht",
+  	"KeeTabPreview": "4. Vorschau"
 }

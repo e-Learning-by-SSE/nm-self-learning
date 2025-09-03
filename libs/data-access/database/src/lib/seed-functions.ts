@@ -7,7 +7,7 @@ import {
 	createCourseMeta,
 	createLessonMeta,
 	extractLessonIds,
-	LessonContent /* eslint-disable quotes */,
+	LessonContent,
 	LessonContentType
 } from "@self-learning/types";
 import { slugify } from "@self-learning/util/common";
@@ -197,12 +197,10 @@ export function createCourse({
 
 	course.meta = createCourseMeta(course);
 
-	const result = {
+	return {
 		data: course as Prisma.CourseCreateManyInput,
 		specializationId: specializationId
 	};
-
-	return result;
 }
 
 export function createMultipleChoice({
@@ -419,9 +417,15 @@ export async function createUsers(users: Prisma.UserCreateInput[]): Promise<void
 	}
 }
 
-export async function getAdminUser() {
-	return await prisma.user.findFirst({
+async function getAdminUser() {
+	return prisma.user.findFirst({
 		where: { name: adminName }
+	});
+}
+
+export async function getAuthor() {
+	return await prisma.author.findFirst({
+		where: { username: adminName }
 	});
 }
 
@@ -432,10 +436,12 @@ export type Skill = {
 };
 
 export async function createSkills(skills: Skill[], repositoryId: string) {
+	const author = await getAuthor();
+
 	await Promise.all(
 		skills.map(async skill => {
 			const input: Prisma.SkillUncheckedCreateInput = {
-				repositoryId: repositoryId,
+				authorId: author ? author.id : 0,
 				...skill
 			};
 
@@ -453,15 +459,19 @@ export type SkillGroup = {
 	children: string[];
 };
 
-export async function createSkillGroups(skillGroups: SkillGroup[], repository: Repository) {
+export async function createSkillGroups(
+	skillGroups: SkillGroup[],
+	repository: Repository,
+) {
 	// Need to preserve ordering and wait to be finished before creating the next one!
 	for (const skill of skillGroups) {
+		const author = await getAuthor();
 		const nested = skill.children?.map(i => ({ id: i }));
 
 		await prisma.skill.create({
 			data: {
 				id: skill.id,
-				repositoryId: repository.id,
+				authorId: author ? author.id : 0,
 				name: skill.name,
 				description: skill.description,
 				children: {
@@ -477,18 +487,6 @@ export type Repository = {
 	name: string;
 	description: string;
 };
-
-export async function createRepositories(repository: Repository) {
-	const admin = await getAdminUser();
-	await prisma.skillRepository.create({
-		data: {
-			id: repository.id,
-			ownerName: admin?.name ?? "unknown",
-			name: repository.name,
-			description: repository.description
-		}
-	});
-}
 
 // Function to generate a random date between 50 days and 6 hours ago
 

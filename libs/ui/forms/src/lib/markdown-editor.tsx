@@ -335,9 +335,9 @@ function CombinedImageButton({
 		width: number;
 	}> = [
 		{ key: "100", label: "XS", description: "100px", width: 2 },
-		{ key: "150", label: "S", description: "150px",  width: 3 },
-		{ key: "200", label: "M", description: "200px",  width: 4 },
-		{ key: "300", label: "L", description: "300px",  width: 6 },
+		{ key: "150", label: "S", description: "150px", width: 3 },
+		{ key: "200", label: "M", description: "200px", width: 4 },
+		{ key: "300", label: "L", description: "300px", width: 6 },
 		{ key: "400", label: "XL", description: "400px", width: 7 },
 		{ key: "500", label: "XXL", description: "500px", width: 8 },
 		{ key: "100%", label: "Full", description: "Volle Breite", width: 10 }

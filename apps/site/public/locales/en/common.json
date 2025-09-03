@@ -7,5 +7,9 @@
 	"delete": "Delete",
 	"edit": "Edit",
 	"save": "Save",
-	"search": "Search"
+	"search": "Search",
+	"KeeTabBasic": "1. Basic Information",
+  	"KeeTabSkills": "2. Skills",
+  	"KeeTabModules": "3. Modules",
+  	"KeeTabPreview": "4. Preview"
 }
