@@ -1,20 +1,21 @@
 import { useState, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
-
-const LOCAL_STORAGE_KEY = "aiTutorCurrentChat";
+import { Message } from "@self-learning/types";
+import { withTranslations } from "@self-learning/api";
+import { useTranslation } from "react-i18next";
 
 export function useAiTutor() {
-	const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [isTutorOpen, setIsTutorOpen] = useState(false);
 	const [isAnimating, setIsAnimating] = useState(false);
+	const { t } = useTranslation("ai-tutor");
 
 	const { data: config } = trpc.llmConfig.get.useQuery();
 	const aiResponse = trpc.aiTutor.sendMessage.useMutation();
 
-	// Send message
 	const sendMessage = useCallback(async () => {
 		if (!input.trim()) return;
 
@@ -36,13 +37,13 @@ export function useAiTutor() {
 		} catch (err) {
 			showToast({
 				type: "error",
-				title: "Message Failed",
-				subtitle: err instanceof Error ? err.message : "Unknown error"
+				title: t("Message Failed"),
+				subtitle: err instanceof Error ? t(err.message) : t("Unknown error")
 			});
 		} finally {
 			setLoading(false);
 		}
-	}, [input, aiResponse, messages]);
+	}, [input, aiResponse, messages, t]);
 
 	// Keyboard handling
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -67,7 +68,6 @@ export function useAiTutor() {
 
 	const clearChat = () => {
 		setMessages([]);
-		localStorage.removeItem(LOCAL_STORAGE_KEY);
 	};
 
 	return {
@@ -85,3 +85,4 @@ export function useAiTutor() {
 		clearChat
 	};
 }
+export const getServerSideProps = withTranslations(["common", "ai-tutor"]);
