@@ -1,4 +1,4 @@
-import { adminProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
@@ -53,39 +53,28 @@ export async function fetchLlmConfig() {
 }
 
 export const llmConfigRouter = t.router({
-	get: adminProcedure.query(async () => {
-		const config = await fetchLlmConfig();
-		if (!config) {
-			return null;
-		}
-
-		const { apiKey, ...rest } = config;
-
-		return {
-			...rest,
-			hasApiKey: !!apiKey
-		};
-	}),
-
-<<<<<<< HEAD
-=======
-	getForServerUse: authProcedure.query(async () => {
+	get: authProcedure.query(async () => {
 		const config = await database.llmConfiguration.findFirst({
 			where: { isActive: true },
 			select: {
-				id: true,
 				serverUrl: true,
 				defaultModel: true,
-				isActive: true,
-				createdAt: true,
 				updatedAt: true,
 				apiKey: true
 			}
 		});
-		return config || null;
+
+		if (!config) {
+			return null;
+		}
+
+		return {
+			...config,
+			hasApiKey: !!config.apiKey,
+			apiKey: undefined
+		};
 	}),
 
->>>>>>> 69fd3814 (llm configuration ready for merge.)
 	save: adminProcedure.input(llmConfigSchema).mutation(async ({ input }) => {
 		try {
 			const { serverUrl, apiKey, defaultModel } = input;
