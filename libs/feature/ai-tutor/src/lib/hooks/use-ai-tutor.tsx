@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { Message } from "@self-learning/types";
-import { withTranslations } from "@self-learning/api";
 import { useTranslation } from "react-i18next";
 
 export function useAiTutor() {
@@ -85,4 +84,3 @@ export function useAiTutor() {
 		clearChat
 	};
 }
-export const getServerSideProps = withTranslations(["common", "ai-tutor"]);
