@@ -92,4 +92,4 @@ export default function CoursesPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common", "ai-tutor"]);
+export const getServerSideProps = withTranslations(["common"]);

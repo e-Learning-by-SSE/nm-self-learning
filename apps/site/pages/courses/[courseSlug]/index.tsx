@@ -109,7 +109,7 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
+export const getServerSideProps = withTranslations(["common", "ai-tutor"], async ({ params }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
 	if (!courseSlug) {
 		throw new Error("No slug provided.");
