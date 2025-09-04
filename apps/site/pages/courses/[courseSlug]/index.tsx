@@ -126,19 +126,11 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth(async context => {
-		const { req, res, params } = context;
-		const courseSlug = params?.courseSlug as string | undefined;
-		if (!courseSlug) {
-			throw new Error("No slug provided.");
-		}
-
-		const trackingResult = await handleEmailTracking(context);
-		if (trackingResult.shouldRedirect) {
-			return { redirect: { destination: `/courses/${courseSlug}`, permanent: false } };
-		}
+export const getServerSideProps = withTranslations(["common", "ai-tutor"], async ({ params }) => {
+	const courseSlug = params?.courseSlug as string | undefined;
+	if (!courseSlug) {
+		throw new Error("No slug provided.");
+	}
 
 		const course = await getCourse(courseSlug);
 		if (!course) {
