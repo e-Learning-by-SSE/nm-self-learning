@@ -280,4 +280,8 @@ export default function LlmConfigPage() {
 		</AdminGuard>
 	);
 }
-export const getServerSideProps = withTranslations(["common", "pages-admin-llm-config"]);
+export const getServerSideProps = withTranslations([
+	"common",
+	"pages-admin-llm-config",
+	"ai-tutor"
+]);
