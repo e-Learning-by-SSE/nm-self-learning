@@ -2,7 +2,6 @@ import { IconButton } from "@self-learning/ui/common";
 import { useAiTutorContext } from "../context/ai-tutor-context";
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-import { withTranslations } from "@self-learning/api";
 
 export function FloatingTutorButton() {
 	const { toggleTutor, isAnimating } = useAiTutorContext();
@@ -20,4 +19,3 @@ export function FloatingTutorButton() {
 		/>
 	);
 }
-export const getServerSideProps = withTranslations(["common", "ai-tutor"]);

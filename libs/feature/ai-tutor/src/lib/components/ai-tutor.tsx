@@ -4,7 +4,6 @@ import { useAiTutorContext } from "../context/ai-tutor-context";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import ReactMarkdown from "react-markdown";
 import { IconOnlyButton } from "@self-learning/ui/common";
-import { withTranslations } from "@self-learning/api";
 import { useTranslation } from "react-i18next";
 
 export function AiTutor() {
@@ -173,4 +172,3 @@ export function AiTutor() {
 		</div>
 	);
 }
-export const getServerSideProps = withTranslations(["common", "ai-tutor"]);
