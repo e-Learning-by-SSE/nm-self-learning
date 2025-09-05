@@ -11,7 +11,7 @@ import { LessonData, getLesson } from "./lesson-data-access";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
-	course: ResolvedValue<typeof getCourse>;
+	course: ResolvedValue<typeof getCombinedSmallCourse>;
 };
 
 export type StandaloneLessonLayoutProps = {
@@ -26,8 +26,8 @@ type BaseLessonLayoutProps = {
 
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 
-export function getCourse(slug: string) {
-	return database.course.findUnique({
+export async function getCombinedSmallCourse(slug: string) {
+	const course = await database.course.findFirst({
 		where: { slug },
 		select: {
 			courseId: true,
@@ -35,6 +35,20 @@ export function getCourse(slug: string) {
 			slug: true
 		}
 	});
+
+	const dynCourse = await database.dynCourse.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+	if (!course && !dynCourse) {
+		return null;
+	}
+	const combinedCourse = course ? course : dynCourse;
+	return combinedCourse;
 }
 
 export async function getStaticPropsForLessonCourseLayout(
@@ -50,7 +64,8 @@ export async function getStaticPropsForLessonCourseLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const course = await getCourse(courseSlug);
+	const course = await getCombinedSmallCourse(courseSlug);
+
 	if (!course) {
 		return { notFound: true };
 	}

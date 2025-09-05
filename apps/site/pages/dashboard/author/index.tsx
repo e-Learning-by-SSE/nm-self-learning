@@ -85,6 +85,20 @@ export function getAuthor(username: string) {
 						}
 					}
 				}
+			},
+			dynCourse: {
+				orderBy: { title: "asc" },
+				select: {
+					courseId: true,
+					slug: true,
+					title: true,
+					imgUrl: true,
+					specializations: {
+						select: {
+							title: true
+						}
+					}
+				}
 			}
 		}
 	});
@@ -190,14 +204,29 @@ function AuthorDashboardPage({ author }: Props) {
 
 							<Link href="/teaching/courses/new">
 								<IconButton
-									text="Kurs erstellen"
+									text="Kurs erstellen (173: url to new)"
 									icon={<PlusIcon className="icon h-5" />}
 								/>
 							</Link>
+
+							<div className="flex flex-row items-center gap-4">
+								<Link href="/teaching/courses/create">
+									<IconButton
+										text="Kurs erstellen (391: url to create)"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+								</Link>
+								<Link href="/teaching/courses/dynamic/create">
+									<IconButton
+										text="Neuen Dynamischen Kurs erstellen"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+								</Link>
+							</div>
 						</div>
 
 						<ul className="flex flex-col gap-4 py-4">
-							{author.courses.length === 0 ? (
+							{author.courses.length === 0 && author.dynCourse.length === 0 ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
@@ -205,7 +234,7 @@ function AuthorDashboardPage({ author }: Props) {
 									<p className="text-light">Du hast noch keine Kurse erstellt.</p>
 								</div>
 							) : (
-								author.courses.map(course => (
+								[...author.courses, ...author.dynCourse].map(course => (
 									<li
 										key={course.courseId}
 										className="flex items-center rounded-lg border border-light-border bg-white"
