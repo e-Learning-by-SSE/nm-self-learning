@@ -68,10 +68,11 @@ export const llmConfigRouter = t.router({
 			return null;
 		}
 
+		const { apiKey, ...rest } = config;
+
 		return {
-			...config,
-			hasApiKey: !!config.apiKey,
-			apiKey: undefined
+			...rest,
+			hasApiKey: !!apiKey
 		};
 	}),
 
