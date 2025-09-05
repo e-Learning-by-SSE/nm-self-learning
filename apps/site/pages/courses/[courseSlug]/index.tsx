@@ -20,6 +20,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 import { withTranslations } from "@self-learning/api";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -108,7 +109,7 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
+export const getServerSideProps = withTranslations(["common", "ai-tutor"], async ({ params }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
 	if (!courseSlug) {
 		throw new Error("No slug provided.");
@@ -173,6 +174,7 @@ export default function Course({ course, summary, content, markdownDescription }
 			<CenteredSection className="bg-gray-50">
 				<TableOfContents content={content} course={course} />
 			</CenteredSection>
+			<FloatingTutorButton />
 		</div>
 	);
 }
