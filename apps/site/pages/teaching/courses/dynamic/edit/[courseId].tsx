@@ -47,8 +47,9 @@ export const getServerSideProps = withTranslations(
 						name: true,
 						description: true,
 						children: true,
-						repositoryId: true,
-						parents: true
+						//repositoryId: true,
+						parents: true,
+						authorId: true
 					}
 				}
 			}

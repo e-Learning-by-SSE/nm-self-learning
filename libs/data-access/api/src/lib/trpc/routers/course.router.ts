@@ -402,7 +402,7 @@ export const courseRouter = t.router({
 					teachingGoals: {
 						select: {
 							id: true,
-							repositoryId: true,
+							//repositoryId: true,
 							children: {
 								// Needed for nestedSkills
 								select: { id: true }
@@ -415,7 +415,7 @@ export const courseRouter = t.router({
 			const dbSkills = await database.skill.findMany({
 				select: {
 					id: true,
-					repositoryId: true,
+					//repositoryId: true,
 					children: {
 						select: { id: true }
 					}
@@ -440,7 +440,7 @@ export const courseRouter = t.router({
 
 			const libSkills: LibSkill[] = dbSkills.map(skill => ({
 				id: skill.id,
-				repositoryId: skill.repositoryId,
+				//repositoryId: skill.repositoryId,
 				children: skill.children.map(child => child.id)
 			}));
 
@@ -448,7 +448,7 @@ export const courseRouter = t.router({
 
 			const goalLibSkills: LibSkill[] = course.teachingGoals.map(goal => ({
 				id: goal.id,
-				repositoryId: goal.repositoryId,
+				//repositoryId: goal.repositoryId,
 				children: goal.children.map(child => child.id)
 			}));
 
@@ -618,7 +618,7 @@ export const courseRouter = t.router({
 					connect: input.teachingGoals.map(goal => ({
 						name: goal.name,
 						description: goal.description,
-						repositoryId: goal.repositoryId,
+						//repositoryId: goal.repositoryId,
 						id: goal.id
 					}))
 				}
@@ -660,7 +660,7 @@ export const courseRouter = t.router({
 						connect: updateData.teachingGoals.map(goal => ({
 							name: goal.name,
 							description: goal.description,
-							repositoryId: goal.repositoryId,
+							//repositoryId: goal.repositoryId,
 							id: goal.id
 						}))
 					}
