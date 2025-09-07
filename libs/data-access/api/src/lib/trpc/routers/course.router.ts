@@ -1,4 +1,6 @@
+import { DefaultCostParameter } from "@e-learning-by-sse/nm-skill-lib";
 import { Prisma } from "@prisma/client";
+import { ThreadWorker } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
@@ -9,6 +11,8 @@ import {
 import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
+import { randomUUID } from "crypto";
+import path from "path";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
@@ -181,6 +185,7 @@ export const courseRouter = t.router({
 				result,
 				pageSize: pageSize,
 				page: input.page,
+				totalCount: count
 				totalCount: count
 			} satisfies Paginated<unknown>;
 		}),
