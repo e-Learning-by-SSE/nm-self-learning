@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
 import { useTranslation } from "react-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { GetServerSidePropsContext } from "next";
 
 export default function SubjectCreatePage() {
 	const { mutateAsync: createSubject } = trpc.subject.create.useMutation();
@@ -58,16 +59,11 @@ export default function SubjectCreatePage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(
-	["common", "pages-admin-subjects"],
-	async ({ locale }) => {
-		return {
-			props: {
-				...(await serverSideTranslations(locale ?? "en", [
-					"common",
-					"pages-admin-subjects"
-				]))
-			}
-		};
-	}
-);
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+	const { locale } = context;
+	return {
+		props: {
+			...(await serverSideTranslations(locale ?? "en", ["common", "pages-admin-subjects"]))
+		}
+	};
+};
