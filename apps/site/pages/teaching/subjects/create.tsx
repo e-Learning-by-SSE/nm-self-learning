@@ -6,9 +6,7 @@ import { AdminGuard } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
-import { useTranslation } from "react-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { GetServerSidePropsContext } from "next";
+import { useTranslation } from "next-i18next";
 
 export default function SubjectCreatePage() {
 	const { mutateAsync: createSubject } = trpc.subject.create.useMutation();
@@ -40,8 +38,10 @@ export default function SubjectCreatePage() {
 		}
 	}
 
+	const errorMsg = t("Topics can only be created by administrators") + ".";
+
 	return (
-		<AdminGuard error={<>{t("Topics can only be created by administrators")}.</>}>
+		<AdminGuard error={errorMsg}>
 			<div className="flex flex-col bg-gray-50">
 				<SubjectEditor
 					initialSubject={{
@@ -59,11 +59,4 @@ export default function SubjectCreatePage() {
 	);
 }
 
-export const getServerSideProps = async (context: GetServerSidePropsContext) => {
-	const { locale } = context;
-	return {
-		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common", "pages-admin-subjects"]))
-		}
-	};
-};
+export const getServerSideProps = withTranslations(["common", "pages-admin-subjects"]);
