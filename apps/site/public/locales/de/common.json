@@ -7,5 +7,8 @@
 	"delete": "Löschen",
 	"edit": "Bearbeiten",
 	"save": "Speichern",
-	"search": "Suchen"
+	"search": "Suchen",
+	"topic": "Fachgebiet",
+	"topic_other": "Fachgebiete",
+	"Error": "Fehler"
 }

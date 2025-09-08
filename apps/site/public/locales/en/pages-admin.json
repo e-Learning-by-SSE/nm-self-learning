@@ -1,0 +1,11 @@
+{
+    "Management": "Management",
+    "Manage Lessons": "Manage Lessons",
+    "Manage Courses": "Manage Courses",
+    "Manage Topics": "Manage $t(common:topic_other)",
+    "Manage Authors": "Manage Authors",
+    "Manage Licenses": "Manage Licenses",
+    "Manage Users": "Manage Users",
+    "REST API Documentation": "REST API Documentation (OpenAPI)",
+    "App Version": "App-Version: {{version}}"
+}
