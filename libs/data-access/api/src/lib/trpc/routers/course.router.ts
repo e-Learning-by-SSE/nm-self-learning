@@ -1,6 +1,5 @@
 import { DefaultCostParameter } from "@e-learning-by-sse/nm-skill-lib";
 import { Prisma } from "@prisma/client";
-import { ThreadWorker } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
@@ -19,8 +18,8 @@ import {
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
+import { workerPoolManager } from "../../workers/worker-pool-manager";
 import { randomUUID } from "crypto";
-import path from "path";
 import { z } from "zod";
 import { UserFromSession } from "../context";
 import { authorProcedure, authProcedure, isCourseAuthorProcedure, t } from "../trpc";
@@ -382,12 +381,10 @@ export const courseRouter = t.router({
 				provides: lesson.provides ?? []
 			}));
 
-			const worker = new ThreadWorker(
-				path.join(process.cwd(), "../../", "dist/apps/site/workers/path_worker_thread.js")
-			);
+			const pool = workerPoolManager.getPathGenerationPool();
 
 			try {
-				const pathResult = (await worker.runTask({
+				const pathResult = (await pool.runTask({
 					type: "generatePath",
 					payload: {
 						dbSkills,
@@ -401,8 +398,6 @@ export const courseRouter = t.router({
 						costOptions: DefaultCostParameter
 					}
 				})) as { path: Array<{ origin: { id: string } }> } | null;
-
-				worker.terminate();
 
 				if (!pathResult || !pathResult.path) {
 					throw new TRPCError({
@@ -439,7 +434,6 @@ export const courseRouter = t.router({
 
 				return generatedCourse;
 			} catch (err) {
-				worker.terminate();
 				console.error(`Error generating dynamic course: ${err}`);
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
