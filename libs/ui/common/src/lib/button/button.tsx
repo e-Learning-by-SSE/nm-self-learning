@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
+import { ButtonHTMLAttributes, DetailedHTMLProps, PropsWithChildren } from "react";
 
 /**
  * Enhanced Icon Button with responsive text
@@ -52,6 +52,21 @@ export function IconOnlyButton({
 	return (
 		<button type="button" className={`${baseClasses} ${variantClass} ${className}`} {...props}>
 			{icon}
+		</button>
+	);
+}
+
+export function GreyBoarderButton(
+	props: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>
+) {
+	const cl = props.className ? props.className : "px-2 py-2"; // done for compatiblity
+	return (
+		<button
+			type="button"
+			{...props}
+			className={`border-1 border-gray-150 inline-flex items-center justify-center rounded-md border bg-white font-medium text-black hover:bg-gray-100 ${cl}`}
+		>
+			{props.children}
 		</button>
 	);
 }

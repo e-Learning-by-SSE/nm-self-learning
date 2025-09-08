@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, SkillRepository } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { slugify } from "@self-learning/util/common";
 
 const prisma = new PrismaClient();
@@ -26,15 +26,6 @@ const authors: Prisma.UserCreateInput[] = [
 				slug: "slr-author_1"
 			}
 		}
-	}
-];
-
-const repositories: SkillRepository[] = [
-	{
-		id: "SK-Repository::SRL::1-A",
-		name: "Self-Regulated Learning (Example 1, Version A)",
-		description: "Self-Regulated Learning (Example 1, Version A)",
-		ownerName: authors[0].name
 	}
 ];
 
@@ -655,17 +646,14 @@ export async function seedSkillbasedModelling() {
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
-	await prisma.skillRepository.createMany({
-		data: repositories
-	});
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skill Repositories");
+	const author = await prisma.author.findFirst();
 
 	for (const skill of skills) {
 		await prisma.skill.create({
 			data: {
 				id: skill.id,
 				name: skill.name,
-				repositoryId: repositories[0].id
+				authorId: author?.id ?? 0,
 			}
 		});
 	}
