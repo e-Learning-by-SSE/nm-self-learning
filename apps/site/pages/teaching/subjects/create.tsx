@@ -1,5 +1,5 @@
 import { trpc } from "@self-learning/api-client";
-import { SubjectEditor } from "@self-learning/teaching";
+import { SubjectEditor, I18N_NAMESPACE as NS_TEACHING } from "@self-learning/teaching";
 import { Subject } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { AdminGuard } from "@self-learning/ui/layouts";
@@ -59,4 +59,6 @@ export default function SubjectCreatePage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common", "pages-admin-subjects"]);
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", "pages-admin-subjects", ...NS_TEACHING]))
+);

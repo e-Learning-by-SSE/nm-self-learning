@@ -7,8 +7,22 @@
 	"delete": "Delete",
 	"edit": "Edit",
 	"save": "Save",
+	"Generate": "Generate",
 	"search": "Search",
 	"topic": "Subject",
 	"topic_other": "Subjects",
-	"Error": "Error"
+	"Error": "Error",
+	"Information": "Information",
+	"Information_other": "Information",
+	"Title": "Title",
+	"Subtitle": "Subtitle",
+	"Slug": "Slug",
+	"Slug Description": "The <strong>slug</strong> is displayed in the URL. Must be unique.",
+	"Banner Image": "Image (Banner)",
+	"Banner Image Description": "Image displayed as a banner at the top of the page.",
+	"Tile Image": "Image (Tile)",
+	"Tile Image Description": "Image displayed in tiles on the overview page.",
+	"Upload Video": "Upload Video",
+	"Upload Image": "Upload Image",
+	"Upload File": "Upload File"
 }
