@@ -4,7 +4,7 @@ import { AuthorChip, ImageOrPlaceholder, LoadingBox } from "@self-learning/ui/co
 import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export default function SubjectsPage() {
 	const { data: subjects } = trpc.subject.getAllForAdminPage.useQuery();

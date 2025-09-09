@@ -5,7 +5,7 @@ import { PersonalInformationSvg } from "@self-learning/ui/static";
 import { TutorialSvg } from "@self-learning/ui/static";
 import { Card } from "@self-learning/ui/common";
 import { withTranslations } from "@self-learning/api";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export default function AdminPage() {
 	const appVersion = process.env.APP_VERSION || "Version not available";
