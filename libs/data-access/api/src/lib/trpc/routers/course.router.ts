@@ -327,8 +327,8 @@ export const courseRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			const generationId = randomUUID();
 
-			// Run the generation in the background, don't await it.
-			// The result will be sent via SSE.
+			/* Run the generation in the background
+			 The result will be sent via SSE.*/
 			const run = async () => {
 				try {
 					const course = await database.dynCourse.findUniqueOrThrow({
