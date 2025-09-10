@@ -7,6 +7,7 @@
 	"delete": "Löschen",
 	"edit": "Bearbeiten",
 	"save": "Speichern",
+	"Abort": "Abbrechen",
 	"search": "Suchen",
 	"Generate": "Generieren",
 	"topic": "Fachgebiet",
@@ -24,5 +25,7 @@
 	"Tile Image Description": "Bild, das in Kacheln auf der Übersichtsseite angezeigt wird.",
 	"Upload Video": "Video hochladen",
 	"Upload Image": "Bild hochladen",
-	"Upload File": "Datei hochladen"
+	"Upload File": "Datei hochladen",
+	"Edit as JSON": "Als JSON bearbeiten",
+	"Abort Changes": "Änderungen verwerfen"
 }

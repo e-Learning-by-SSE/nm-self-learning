@@ -7,6 +7,7 @@
 	"delete": "Delete",
 	"edit": "Edit",
 	"save": "Save",
+	"Abort": "Abort",
 	"Generate": "Generate",
 	"search": "Search",
 	"topic": "Subject",
@@ -24,5 +25,7 @@
 	"Tile Image Description": "Image displayed in tiles on the overview page.",
 	"Upload Video": "Upload Video",
 	"Upload Image": "Upload Image",
-	"Upload File": "Upload File"
+	"Upload File": "Upload File",
+	"Edit as JSON": "Edit as JSON",
+	"Abort Changes": "Abort Changes"
 }
