@@ -27,7 +27,7 @@ export function createLessonWithRandomContentAndDemoQuestions({
 }: {
 	title: string;
 	questions: QuizContent;
-	provides?: string[]
+	provides?: string[];
 }) {
 	const content = [
 		{
@@ -97,9 +97,7 @@ export function createLesson({
 		},
 		meta: {},
 		license: licenseId ? { connect: { licenseId: licenseId } } : undefined,
-		provides: provides
-		? { connect: provides.map(goalId => ({ id: goalId })) }
-		: undefined,
+		provides: provides ? { connect: provides.map(goalId => ({ id: goalId })) } : undefined
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -443,7 +441,7 @@ export type Skill = {
 	description: string;
 };
 
-export async function createSkills(skills: Skill[], repositoryId: string) {
+export async function createSkills(skills: Skill[]) {
 	const author = await getAuthor();
 
 	await Promise.all(
@@ -467,10 +465,7 @@ export type SkillGroup = {
 	children: string[];
 };
 
-export async function createSkillGroups(
-	skillGroups: SkillGroup[],
-	repository: Repository,
-) {
+export async function createSkillGroups(skillGroups: SkillGroup[]) {
 	// Need to preserve ordering and wait to be finished before creating the next one!
 	for (const skill of skillGroups) {
 		const author = await getAuthor();
@@ -484,17 +479,11 @@ export async function createSkillGroups(
 				description: skill.description,
 				children: {
 					connect: nested
-				},
+				}
 			}
 		});
 	}
 }
-
-export type Repository = {
-	id: string;
-	name: string;
-	description: string;
-};
 
 // Function to generate a random date between 50 days and 6 hours ago
 

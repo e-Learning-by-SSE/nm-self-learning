@@ -398,7 +398,7 @@ export const reactCourses: Prisma.CourseCreateManyInput[] = [
 				title: chapter.title,
 				description: chapter.description,
 				content: chapter.content.map(lesson => ({ lessonId: lesson.lessonId }))
-			}))	
+			}))
 		),
 		meta: {}
 	}
@@ -640,28 +640,18 @@ const skillGroups = [
 	}
 ];
 
-const repository = {
-	id: "2",
-	name: "React Fundamentals Repository",
-	description: "Skill Repository für grundlegende React Kenntnisse"
-};
-
 async function seedReactDemoSkills() {
-	await createRepositories(repository);
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Repositories");
-
-	await createSkills(skills, repository.id);
+	await createSkills(skills);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
 
-	await createSkillGroups(skillGroups, repository);
+	await createSkillGroups(skillGroups);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skill Groups");
 }
 
 export async function seedReactDemo() {
-	
 	await createUsers(users);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
-	
+
 	for (const author of reactAuthors) {
 		await prisma.user.create({ data: author });
 	}
@@ -679,17 +669,17 @@ export async function seedReactDemo() {
 			await Promise.all(
 				chapter.content.map(async lesson => {
 					try {
-					await prisma.lesson.create({
-						data: {
-							...lesson, 
-							license: {
-								connect: { licenseId } 
+						await prisma.lesson.create({
+							data: {
+								...lesson,
+								license: {
+									connect: { licenseId }
+								}
 							}
-						}
-					});
-				} catch(error) {
-					console.error("Error creating lesson:", error);
-				}
+						});
+					} catch (error) {
+						console.error("Error creating lesson:", error);
+					}
 				})
 			);
 		})
