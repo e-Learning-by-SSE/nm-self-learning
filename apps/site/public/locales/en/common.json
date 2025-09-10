@@ -1,4 +1,7 @@
 {
+	"Author": "Author",
+	"Author_other": "Authors",
+	"Admin": "Admin",
 	"languageGerman": "German",
 	"languageEnglish": "English",
 	"pickLanguage": "Select language",
@@ -27,5 +30,12 @@
 	"Upload Image": "Upload Image",
 	"Upload File": "Upload File",
 	"Edit as JSON": "Edit as JSON",
-	"Abort Changes": "Abort Changes"
+	"Abort Changes": "Änderungen verwerfen",
+	"User Menu": "User Menu",
+	"Open User Menu": "Open User Menu",
+	"Profile": "Profile",
+	"Settings": "Settings",
+	"Author Dashboard": "$t(common:Author) Dashboard",
+	"Admin Dashboard": "$t(common:Admin) Dashboard",
+	"Logout": "Logout"
 }

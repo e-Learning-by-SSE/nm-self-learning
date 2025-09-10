@@ -1,4 +1,7 @@
 {
+	"Author": "Autor:in",
+	"Author_other": "Autor:innen",
+	"Admin": "Admin",
 	"languageGerman": "Deutsch",
 	"languageEnglish": "Englisch",
 	"pickLanguage": "Sprache wählen",
@@ -27,5 +30,12 @@
 	"Upload Image": "Bild hochladen",
 	"Upload File": "Datei hochladen",
 	"Edit as JSON": "Als JSON bearbeiten",
-	"Abort Changes": "Änderungen verwerfen"
+	"Abort Changes": "Änderungen verwerfen",
+	"User Menu": "Benutzermenü",
+	"Open User Menu": "$t(common:User Menu) Öffnen",
+	"Profile": "Profil",
+	"Settings": "Einstellungen",
+	"Author Dashboard": "$t(common:Author_other)bereich",
+	"Admin Dashboard": "$t(common:Admin)bereich",
+	"Logout": "Abmelden"
 }
