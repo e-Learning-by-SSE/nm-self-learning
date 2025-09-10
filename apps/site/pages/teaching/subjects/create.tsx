@@ -38,10 +38,8 @@ export default function SubjectCreatePage() {
 		}
 	}
 
-	const errorMsg = t("Topics can only be created by administrators") + ".";
-
 	return (
-		<AdminGuard error={errorMsg}>
+		<AdminGuard error={t("Topics can only be created by administrators") + "."}>
 			<div className="flex flex-col bg-gray-50">
 				<SubjectEditor
 					initialSubject={{
