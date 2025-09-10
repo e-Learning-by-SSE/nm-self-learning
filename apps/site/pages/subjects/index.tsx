@@ -42,7 +42,7 @@ export default function Subjects({ subjects }: SubjectsProps) {
 	return (
 		<div className="bg-gray-50 py-16">
 			<div className="mx-auto max-w-screen-xl px-4 xl:px-0">
-				<h1 className="mb-16 text-4xl sm:text-6xl">{t("topic_other")}</h1>
+				<h1 className="mb-16 text-4xl sm:text-6xl">{t("Topic_other")}</h1>
 				<ItemCardGrid>
 					{subjects.map(subject => (
 						<SubjectCard key={subject.slug} subject={subject} />

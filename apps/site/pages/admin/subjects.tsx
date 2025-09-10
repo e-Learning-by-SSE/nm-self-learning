@@ -15,7 +15,7 @@ export default function SubjectsPage() {
 		<AdminGuard>
 			<CenteredSection className="bg-gray-50">
 				<div className="mb-16 flex items-center justify-between gap-4">
-					<h1 className="text-5xl">{t_common("topic_other")}</h1>
+					<h1 className="text-5xl">{t_common("Topic_other")}</h1>
 
 					<Link href="/teaching/subjects/create" className="btn-primary w-fit">
 						<PlusIcon className="icon" />
