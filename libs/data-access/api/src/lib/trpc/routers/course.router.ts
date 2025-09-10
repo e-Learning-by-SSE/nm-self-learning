@@ -18,6 +18,10 @@ import {
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
+import {
+	emitCourseGenerationError,
+	emitCourseGenerationResult
+} from "../../../../../../../apps/site/pages/api/course-generation-events";
 import { workerPoolManager } from "../../workers/worker-pool-manager";
 import { randomUUID } from "crypto";
 import { z } from "zod";
@@ -321,125 +325,132 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const course = await database.dynCourse.findUniqueOrThrow({
-				where: { courseId: input.courseId },
-				select: {
-					courseVersion: true,
-					teachingGoals: {
+			const generationId = randomUUID();
+
+			// Run the generation in the background, don't await it.
+			// The result will be sent via SSE.
+			const run = async () => {
+				try {
+					const course = await database.dynCourse.findUniqueOrThrow({
+						where: { courseId: input.courseId },
+						select: {
+							courseVersion: true,
+							teachingGoals: {
+								select: {
+									id: true,
+									repositoryId: true,
+									children: {
+										// Needed for nestedSkills
+										select: { id: true }
+									}
+								}
+							}
+						}
+					});
+
+					const dbSkills = await database.skill.findMany({
 						select: {
 							id: true,
 							repositoryId: true,
 							children: {
-								// Needed for nestedSkills
 								select: { id: true }
 							}
 						}
-					}
-				}
-			});
+					});
 
-			const dbSkills = await database.skill.findMany({
-				select: {
-					id: true,
-					repositoryId: true,
-					children: {
-						select: { id: true }
-					}
-				}
-			});
-
-			const userGlobalKnowledge = await database.student.findUnique({
-				where: { username: ctx.user.name },
-				select: {
-					received: {
+					const userGlobalKnowledge = await database.student.findUnique({
+						where: { username: ctx.user.name },
 						select: {
-							id: true
-						}
-					}
-				}
-			});
-
-			const lessons = (
-				await database.lesson.findMany({
-					select: {
-						lessonId: true,
-						requires: {
-							select: {
-								id: true
-							}
-						},
-						provides: {
-							select: {
-								id: true
+							received: {
+								select: {
+									id: true
+								}
 							}
 						}
+					});
+
+					const lessons = (
+						await database.lesson.findMany({
+							select: {
+								lessonId: true,
+								requires: {
+									select: {
+										id: true
+									}
+								},
+								provides: {
+									select: {
+										id: true
+									}
+								}
+							}
+						})
+					).map(lesson => ({
+						...lesson,
+						requires: lesson.requires ?? [],
+						provides: lesson.provides ?? []
+					}));
+
+					const pool = workerPoolManager.getPathGenerationPool();
+
+					const pathResult = (await pool.runTask({
+						type: "generatePath",
+						payload: {
+							dbSkills,
+							userGlobalKnowledge: userGlobalKnowledge?.received ?? [],
+							course: {
+								...course,
+								teachingGoals: course.teachingGoals ?? []
+							},
+							lessons,
+							knowledge: input.knowledge,
+							costOptions: DefaultCostParameter
+						}
+					})) as { path: Array<{ origin: { id: string } }> } | null;
+
+					if (!pathResult || !pathResult.path) {
+						throw new Error("Path generation failed.");
 					}
-				})
-			).map(lesson => ({
-				...lesson,
-				requires: lesson.requires ?? [],
-				provides: lesson.provides ?? []
-			}));
 
-			const pool = workerPoolManager.getPathGenerationPool();
+					const courseChapter = [
+						{
+							title: "Generated Course Content",
+							description:
+								"AI-generated learning path based on your current knowledge and learning goals.",
+							content: pathResult.path.map(unit => ({
+								lessonId: unit.origin?.id ?? ""
+							}))
+						} as CourseChapter
+					];
 
-			try {
-				const pathResult = (await pool.runTask({
-					type: "generatePath",
-					payload: {
-						dbSkills,
-						userGlobalKnowledge: userGlobalKnowledge?.received ?? [],
-						course: {
-							...course,
-							teachingGoals: course.teachingGoals ?? []
-						},
-						lessons,
-						knowledge: input.knowledge,
-						costOptions: DefaultCostParameter
-					}
-				})) as { path: Array<{ origin: { id: string } }> } | null;
+					const courseContent: CourseContent = courseChapter;
 
-				if (!pathResult || !pathResult.path) {
-					throw new TRPCError({
-						code: "INTERNAL_SERVER_ERROR",
-						message: "Could not generate path, see server logs for details."
+					const generatedCourse = await database.generatedLessonPath.create({
+						data: {
+							content: courseContent,
+							courseVersion: course.courseVersion,
+							slug: randomUUID(),
+							courseId: input.courseId,
+							meta: createCourseMeta({ content: courseContent }),
+							username: ctx.user.name,
+							createdAt: new Date(),
+							updatedAt: new Date()
+						}
+					});
+
+					emitCourseGenerationResult(generationId, { slug: generatedCourse.slug }, 500);
+				} catch (err) {
+					console.error(`[Course Generation] Error for ${generationId}:`, err);
+					const error = err as Error;
+					emitCourseGenerationError(generationId, {
+						message: error.message ?? "Unknown error"
 					});
 				}
+			};
 
-				const courseChapter = [
-					{
-						title: "Generated Course Content",
-						description:
-							"AI-generated learning path based on your current knowledge and learning goals.",
-						content: pathResult.path.map(unit => ({
-							lessonId: unit.origin?.id ?? ""
-						}))
-					} as CourseChapter
-				];
+			run();
 
-				const courseContent: CourseContent = courseChapter;
-
-				const generatedCourse = await database.generatedLessonPath.create({
-					data: {
-						content: courseContent,
-						courseVersion: course.courseVersion,
-						slug: randomUUID(),
-						courseId: input.courseId,
-						meta: createCourseMeta({ content: courseContent }),
-						username: ctx.user.name,
-						createdAt: new Date(),
-						updatedAt: new Date()
-					}
-				});
-
-				return generatedCourse;
-			} catch (err) {
-				console.error(`Error generating dynamic course: ${err}`);
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Could not generate path, see server logs for details."
-				});
-			}
+			return { generationId };
 		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
