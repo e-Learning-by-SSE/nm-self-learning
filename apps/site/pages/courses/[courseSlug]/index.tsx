@@ -9,10 +9,11 @@ import { AuthorsList, showToast, ButtonActions, OnDialogCloseFn } from "@self-le
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { useCourseGenerationSSE } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { useRouter } from "next/router";
@@ -513,18 +514,18 @@ function CoursePath({
 	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
 	const router = useRouter();
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [generationId, setGenerationId] = useState<string | null>(null);
 	const [isComplete, setIsComplete] = useState(false);
 
 	const generateDynamicCourse = async () => {
 		try {
 			setIsGenerating(true);
 			setIsComplete(false);
-			await mutateAsync({
+			const result = await mutateAsync({
 				courseId: course.courseId,
 				knowledge: []
 			});
-			await new Promise(resolve => setTimeout(resolve, 1000));
-			setIsComplete(true);
+			setGenerationId(result.generationId);
 		} catch (error) {
 			setIsGenerating(false);
 			console.error("Error generating course preview:", error);
@@ -548,13 +549,15 @@ function CoursePath({
 		<div>
 			{isGenerating && (
 				<GeneratingCourseDialog
-					isComplete={isComplete}
+					generationId={generationId}
 					onClose={() => {
 						setIsGenerating(false);
+						setGenerationId(null);
 						if (isComplete) {
 							router.reload();
 						}
 					}}
+					onComplete={() => setIsComplete(true)}
 				/>
 			)}
 			<h3 className="font-semibold text-lg">Kurspfad generieren</h3>
@@ -571,11 +574,23 @@ function CoursePath({
 
 function GeneratingCourseDialog({
 	onClose,
-	isComplete
+	generationId,
+	onComplete
 }: {
 	onClose: OnDialogCloseFn<string>;
-	isComplete: boolean;
+	generationId: string | null;
+	onComplete: () => void;
 }) {
+	const { event, isConnected, error } = useCourseGenerationSSE(generationId);
+	const [isComplete, setIsComplete] = useState(false);
+
+	useEffect(() => {
+		if (event?.type === "result") {
+			setIsComplete(true);
+			onComplete();
+		}
+	}, [event, onComplete]);
+
 	return (
 		<Dialog title="Kurspfad wird erstellt" onClose={onClose} style={{ minWidth: 480 }}>
 			<div className="flex flex-col items-center justify-center py-4">
@@ -596,6 +611,12 @@ function GeneratingCourseDialog({
 							KI erstellt deinen personalisierten Lerninhalt. Dies kann einen Moment
 							dauern.
 						</p>
+						{!isConnected && !error && (
+							<p className="text-center text-sm text-light mt-2">
+								Verbinde mit Server...
+							</p>
+						)}
+						{error && <p className="text-center text-sm text-red-500 mt-2">{error}</p>}
 					</>
 				) : (
 					<>

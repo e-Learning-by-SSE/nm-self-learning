@@ -1,8 +1,9 @@
+import { DefaultCostParameter } from "@e-learning-by-sse/nm-skill-lib";
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
-	dynCourseFormSchema,
 	courseFormSchema,
+	dynCourseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate,
@@ -20,22 +21,15 @@ import {
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { authorProcedure, authProcedure, isCourseAuthorProcedure, t } from "../trpc";
-import { UserFromSession } from "../context";
 import {
-	And,
-	CompositeUnit,
-	DefaultCostParameter,
-	Empty,
-	getPath,
-	isCompositeGuard,
-	LearningUnit as LibLearningUnit,
-	Unit,
-	Variable,
-	Skill as LibSkill
-} from "@e-learning-by-sse/nm-skill-lib";
+	emitCourseGenerationError,
+	emitCourseGenerationResult
+} from "../../../../../../../apps/site/pages/api/course-generation-events";
+import { workerPoolManager } from "../../workers/worker-pool-manager";
 import { randomUUID } from "crypto";
+import { z } from "zod";
+import { UserFromSession } from "../context";
+import { authorProcedure, authProcedure, isCourseAuthorProcedure, t } from "../trpc";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -395,179 +389,132 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const course = await database.dynCourse.findUniqueOrThrow({
-				where: { courseId: input.courseId },
-				select: {
-					courseVersion: true,
-					teachingGoals: {
+			const generationId = randomUUID();
+
+			/* Run the generation in the background
+			 The result will be sent via SSE.*/
+			const run = async () => {
+				try {
+					const course = await database.dynCourse.findUniqueOrThrow({
+						where: { courseId: input.courseId },
+						select: {
+							courseVersion: true,
+							teachingGoals: {
+								select: {
+									id: true,
+									//repositoryId: true,
+									children: {
+										// Needed for nestedSkills
+										select: { id: true }
+									}
+								}
+							}
+						}
+					});
+
+					const dbSkills = await database.skill.findMany({
 						select: {
 							id: true,
 							//repositoryId: true,
 							children: {
-								// Needed for nestedSkills
 								select: { id: true }
 							}
 						}
-					}
-				}
-			});
+					});
 
-			const dbSkills = await database.skill.findMany({
-				select: {
-					id: true,
-					//repositoryId: true,
-					children: {
-						select: { id: true }
-					}
-				}
-			});
-
-			const userGlobalKnowledge = await database.student.findUnique({
-				where: { username: ctx.user.name },
-				select: {
-					received: {
+					const userGlobalKnowledge = await database.student.findUnique({
+						where: { username: ctx.user.name },
 						select: {
-							id: true
+							received: {
+								select: {
+									id: true
+								}
+							}
 						}
+					});
+
+					const lessons = (
+						await database.lesson.findMany({
+							select: {
+								lessonId: true,
+								requires: {
+									select: {
+										id: true
+									}
+								},
+								provides: {
+									select: {
+										id: true
+									}
+								}
+							}
+						})
+					).map(lesson => ({
+						...lesson,
+						requires: lesson.requires ?? [],
+						provides: lesson.provides ?? []
+					}));
+
+					const pool = workerPoolManager.getPathGenerationPool();
+
+					const pathResult = (await pool.runTask({
+						type: "generatePath",
+						payload: {
+							dbSkills,
+							userGlobalKnowledge: userGlobalKnowledge?.received ?? [],
+							course: {
+								...course,
+								teachingGoals: course.teachingGoals ?? []
+							},
+							lessons,
+							knowledge: input.knowledge,
+							costOptions: DefaultCostParameter
+						}
+					})) as { path: Array<{ origin: { id: string } }> } | null;
+
+					if (!pathResult || !pathResult.path) {
+						throw new Error("Path generation failed.");
 					}
-				}
-			});
 
-			const userGlobalKnowledgeIds =
-				userGlobalKnowledge?.received.map(skill => skill.id) ?? [];
+					const courseChapter = [
+						{
+							title: "Generated Course Content",
+							description:
+								"AI-generated learning path based on your current knowledge and learning goals.",
+							content: pathResult.path.map(unit => ({
+								lessonId: unit.origin?.id ?? ""
+							}))
+						} as CourseChapter
+					];
 
-			const userKnowledge = [...input.knowledge, ...userGlobalKnowledgeIds];
+					const courseContent: CourseContent = courseChapter;
 
-			const libSkills: LibSkill[] = dbSkills.map(skill => ({
-				id: skill.id,
-				//repositoryId: skill.repositoryId,
-				children: skill.children.map(child => child.id)
-			}));
-
-			const findSkill = (id: string) => libSkills.find(skill => skill.id === id);
-
-			const goalLibSkills: LibSkill[] = course.teachingGoals.map(goal => ({
-				id: goal.id,
-				//repositoryId: goal.repositoryId,
-				children: goal.children.map(child => child.id)
-			}));
-
-			const knowledgeLibSkills: LibSkill[] = userKnowledge
-				.map(skillId => findSkill(skillId))
-				.filter((skill): skill is LibSkill => !!skill);
-
-			const lessons = await database.lesson.findMany({
-				select: {
-					lessonId: true,
-					requires: {
-						select: {
-							id: true
+					const generatedCourse = await database.generatedLessonPath.create({
+						data: {
+							content: courseContent,
+							courseVersion: course.courseVersion,
+							slug: randomUUID(),
+							courseId: input.courseId,
+							meta: createCourseMeta({ content: courseContent }),
+							username: ctx.user.name,
+							createdAt: new Date(),
+							updatedAt: new Date()
 						}
-					},
-					provides: {
-						select: {
-							id: true
-						}
-					}
-				}
-			});
+					});
 
-			const convertToExpression = (skillIds?: string[]): And | Empty => {
-				if (!skillIds || skillIds.length === 0) {
-					return new Empty();
+					emitCourseGenerationResult(generationId, { slug: generatedCourse.slug }, 500);
+				} catch (err) {
+					console.error(`[Course Generation] Error for ${generationId}:`, err);
+					const error = err as Error;
+					emitCourseGenerationError(generationId, {
+						message: error.message ?? "Unknown error"
+					});
 				}
-				const skills = skillIds
-					.map(id => findSkill(id))
-					.filter((s): s is LibSkill => s !== undefined);
-
-				if (skills.length === 0) {
-					return new Empty();
-				}
-				const variables = skills.map(skill => new Variable(skill));
-				return new And(variables);
 			};
 
-			const learningUnits: LibLearningUnit[] = lessons.map(lesson => ({
-				id: lesson.lessonId,
-				requires: convertToExpression(lesson.requires.map(req => req.id)),
-				provides: lesson.provides
-					.map(tg => findSkill(tg.id))
-					.filter((s): s is LibSkill => s !== undefined),
-				suggestedSkills: []
-			}));
+			run();
 
-			const guard: isCompositeGuard<LibLearningUnit> = (
-				element: Unit<LibLearningUnit>
-			): element is CompositeUnit<LibLearningUnit> => {
-				return false;
-			};
-
-			const fnCost = () => 1;
-			console.log(
-				"[courseRouter.generateCoursePreview]: Generating course preview for",
-				ctx.user.name,
-				"for courseId",
-				input.courseId
-			);
-			console.log(
-				"[courseRouter.generateCoursePreview]: Using knowledge skills",
-				input.knowledge,
-				"and goal skills",
-				course.teachingGoals.map(goal => goal.id)
-			);
-			console.log(
-				"[courseRouter.generateCoursePreview]: Using libSkills",
-				libSkills.map(skill => skill.id)
-			);
-			console.log(
-				"[courseRouter.generateCoursePreview]: Using learningUnits",
-				learningUnits.map(unit => unit.id)
-			);
-			console.log(
-				"[courseRouter.generateCoursePreview]: Using goalLibSkills",
-				goalLibSkills.map(skill => skill.id)
-			);
-			console.log(
-				"[courseRouter.generateCoursePreview]: Using knowledgeLibSkills",
-				knowledgeLibSkills.map(skill => skill.id)
-			);
-
-			const path = getPath({
-				skills: libSkills,
-				learningUnits: learningUnits,
-				goal: goalLibSkills,
-				knowledge: knowledgeLibSkills,
-				fnCost: fnCost,
-				isComposite: guard,
-				costOptions: DefaultCostParameter
-			});
-
-			const courseChapter = [
-				{
-					title: "",
-					description: "",
-					content: path?.path.map(unit => ({
-						lessonId: unit.origin?.id ?? ""
-					}))
-				} as CourseChapter
-			];
-
-			const courseContent: CourseContent = courseChapter;
-
-			const generatedCourse = database.generatedLessonPath.create({
-				data: {
-					content: courseContent,
-					courseVersion: course.courseVersion,
-					slug: randomUUID(),
-					courseId: input.courseId,
-					meta: createCourseMeta({ content: courseContent }),
-					username: ctx.user.name,
-					createdAt: new Date(),
-					updatedAt: new Date()
-				}
-			});
-
-			return generatedCourse;
+			return { generationId };
 		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
