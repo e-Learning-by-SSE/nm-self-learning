@@ -7,8 +7,8 @@ import { formatDateString } from "@self-learning/util/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { TRPCError } from "@trpc/server";
 import { llmConfigSchema } from "@self-learning/types";
+import { TRPCClientError } from "@trpc/client";
 
 export default function LlmConfigPage() {
 	const { register, handleSubmit, reset, watch, setValue } = useForm({
@@ -22,6 +22,9 @@ export default function LlmConfigPage() {
 	const formData = watch();
 	const [fetchingModels, setFetchingModels] = useState(false);
 	const [availableModels, setAvailableModels] = useState<string[]>([]);
+	const [errorMessage, setErrorMessage] = useState<{ code: string; message: string } | null>(
+		null
+	);
 	const [once, setOnce] = useState(false);
 	const { data: config, isLoading, refetch } = trpc.llmConfig.get.useQuery();
 	const saveConfig = trpc.llmConfig.save.useMutation();
@@ -55,20 +58,11 @@ export default function LlmConfigPage() {
 
 			refetch();
 		} catch (error) {
-			if (error instanceof TRPCError) {
-				showToast({
-					type: "error",
-					title: t(error.code),
-					subtitle: t(error.message)
-				});
-			} else {
-				showToast({
-					type: "error",
-					title: t("Save Failed"),
-					subtitle:
-						error instanceof Error ? error.message : t("Failed to save configuration")
-				});
-			}
+			setErrorMessage(
+				error instanceof TRPCClientError
+					? { code: error.data?.code, message: error.message }
+					: { code: "UNKNOWN", message: "Failed to save configuration" }
+			);
 		}
 	};
 
@@ -91,22 +85,11 @@ export default function LlmConfigPage() {
 				});
 			}
 		} catch (error) {
-			if (error instanceof TRPCError) {
-				showToast({
-					type: "error",
-					title: t(error.code),
-					subtitle: t(error.message)
-				});
-			} else {
-				showToast({
-					type: "error",
-					title: t("Fetch Models Failed"),
-					subtitle:
-						error instanceof Error
-							? t(error.message)
-							: t("Failed to fetch available models")
-				});
-			}
+			setErrorMessage(
+				error instanceof TRPCClientError
+					? { code: error.data?.code, message: error.message }
+					: { code: "UNKNOWN", message: "Failed to fetch available models" }
+			);
 		} finally {
 			setFetchingModels(false);
 		}
@@ -256,6 +239,18 @@ export default function LlmConfigPage() {
 								)}
 							</div>
 						</form>
+						{errorMessage && (
+							<div className="mt-4 p-4 bg-red-50 rounded-md">
+								<p className="text-sm text-red-700">
+									<strong>Code: </strong>
+									<span className="text-red-600">{errorMessage.code}</span>
+								</p>
+								<p className="text-sm text-red-700">
+									<strong>Message: </strong>
+									<span className="text-red-600">{errorMessage.message}</span>
+								</p>
+							</div>
+						)}
 
 						{config && (
 							<div className="mt-6 p-4 bg-green-50 rounded-md">

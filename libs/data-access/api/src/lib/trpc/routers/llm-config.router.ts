@@ -27,19 +27,11 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 		signal: controller.signal
 	});
 	clearTimeout(timeoutId);
-
 	if (!response.ok) {
-		if (response.status === 401) {
-			throw new TRPCError({
-				code: "UNAUTHORIZED",
-				message: "Invalid API key or unauthorized access"
-			});
-		} else {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Failed to connect to LLM server."
-			});
-		}
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: `${response.statusText}`
+		});
 	}
 
 	const data = await response.json();
