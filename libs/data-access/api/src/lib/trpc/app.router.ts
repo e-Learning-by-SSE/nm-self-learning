@@ -20,6 +20,7 @@ import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 import { llmConfigRouter } from "./routers/llm-config.router";
 import { userEventRouter } from "./routers/event-log.router";
+import { aiTutorRouter } from "./routers/ai-tutor.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -40,7 +41,8 @@ export const appRouter = t.router({
 	programming: programmingRouter,
 	skill: skillRouter,
 	events: userEventRouter,
-	llmConfig: llmConfigRouter
+	llmConfig: llmConfigRouter,
+	aiTutor: aiTutorRouter
 });
 
 // export type definition of API
