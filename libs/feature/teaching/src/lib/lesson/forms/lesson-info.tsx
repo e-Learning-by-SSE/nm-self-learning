@@ -31,7 +31,6 @@ export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 				<span className="font-semibold text-secondary">
 					{lesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
 				</span>
-
 				<h1 className="text-2xl">{lesson?.title}</h1>
 			</div>
 
