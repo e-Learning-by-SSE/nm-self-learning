@@ -10,7 +10,11 @@ import { llmConfigSchema, llmConfigSchemaForFetching, ollamaModelList } from "@s
  * @param apiKey Optional API key for authentication.
  * @param timeoutSeconds Optional timeout in seconds (default: 10).
  */
-async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutSeconds = 10) {
+export async function fetchAvailableModels(
+	serverUrl: string,
+	apiKey?: string,
+	timeoutSeconds = 10
+) {
 	const headers: Record<string, string> = {
 		"Content-Type": "application/json"
 	};

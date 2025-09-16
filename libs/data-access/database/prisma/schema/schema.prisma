@@ -276,3 +276,15 @@ model LlmConfiguration {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
+
+model aiTutorProfile {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  systemPrompt      String
+  model             String
+  avatarUrl         String?
+  author            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
