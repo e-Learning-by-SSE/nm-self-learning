@@ -89,8 +89,8 @@ function createCourseSummary(content: ToC.Content): Summary {
 		for (const lesson of chapter.content) {
 			lessons++;
 			duration +=
-				lesson.meta.mediaTypes.video?.duration ??
-				lesson.meta.mediaTypes.article?.estimatedDuration ??
+				lesson.meta?.mediaTypes.video?.duration ??
+				lesson.meta?.mediaTypes.article?.estimatedDuration ??
 				0;
 		}
 	}

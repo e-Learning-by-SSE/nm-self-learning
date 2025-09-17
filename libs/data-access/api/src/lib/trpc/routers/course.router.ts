@@ -6,10 +6,7 @@ import {
 	dynCourseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
-	mapCourseFormToUpdate,
-	mapRelaxedCourseFormToInsert,
-	mapRelaxedCourseFormToUpdate,
-	relaxedCourseFormSchema as relaxedCourseFormSchema
+	mapCourseFormToUpdate
 } from "@self-learning/teaching";
 import {
 	CourseChapter,
@@ -322,7 +319,7 @@ export const courseRouter = t.router({
 		}),
 	getCourse: authorProcedure
 		.input(z.object({ slug: z.string() }))
-		.output(relaxedCourseFormSchema)
+		.output(courseFormSchema)
 		.query(async ({ input }) => {
 			const course = await database.course.findUniqueOrThrow({
 				where: { slug: input.slug },
@@ -380,7 +377,6 @@ export const courseRouter = t.router({
 				}))
 			};
 		}),
-	// ----------- 391 ---------------------------------------------
 	generateDynCourse: authProcedure
 		.input(
 			z.object({
@@ -402,7 +398,6 @@ export const courseRouter = t.router({
 							teachingGoals: {
 								select: {
 									id: true,
-									//repositoryId: true,
 									children: {
 										// Needed for nestedSkills
 										select: { id: true }
@@ -415,7 +410,6 @@ export const courseRouter = t.router({
 					const dbSkills = await database.skill.findMany({
 						select: {
 							id: true,
-							//repositoryId: true,
 							children: {
 								select: { id: true }
 							}
@@ -565,8 +559,14 @@ export const courseRouter = t.router({
 					connect: input.teachingGoals.map(goal => ({
 						name: goal.name,
 						description: goal.description,
-						//repositoryId: goal.repositoryId,
 						id: goal.id
+					}))
+				},
+				requirements: {
+					connect: input.requirements.map(skill => ({
+						name: skill.name,
+						description: skill.description,
+						id: skill.id
 					}))
 				}
 			},
@@ -588,29 +588,25 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			// This directive is used here to intentionally ignore the "unused variable" warning from ESLint.
-			// In this case, the variable is required by the function signature (e.g., for destructuring or API compatibility),
-			// but is not actually used in the function body. Disabling the rule prevents unnecessary lint errors.
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { courseId, ...updateData } = input.course;
 			const updated = await database.dynCourse.update({
-				where: { courseId: input.courseId },
+				where: { courseId: courseId ?? "" },
 				data: {
 					...updateData,
 					courseVersion: Date.now().toString(),
 					slug: updateData.slug,
 					meta: {},
+
 					authors: {
-						connect: updateData.authors.map(author => ({ username: author.username }))
+						set: [],
+						connect: updateData.authors.map(author => ({
+							username: author.username
+						}))
 					},
 					teachingGoals: {
-						connect: updateData.teachingGoals.map(goal => ({
-							name: goal.name,
-							description: goal.description,
-							//repositoryId: goal.repositoryId,
-							id: goal.id
-						}))
-					}
+						set: updateData.teachingGoals.map(goal => ({ id: goal.id }))
+					},
+					requirements: { set: updateData.requirements.map(skill => ({ id: skill.id })) }
 				},
 				select: {
 					title: true,
@@ -622,9 +618,56 @@ export const courseRouter = t.router({
 			console.log("[courseRouter.editDynamic]: Course updated by", ctx.user?.name, updated);
 			return updated;
 		}),
-
-	// -----------------------------------------------------------
-
+	getDynCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(dynCourseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.dynCourse.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					teachingGoals: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requirements: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true
+				}
+			});
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle,
+				description: course.description,
+				imgUrl: course.imgUrl,
+				authors: course.authors.map(a => ({ username: a.username })),
+				teachingGoals: course.teachingGoals.map(goal => ({
+					id: goal.id,
+					name: goal.name,
+					description: goal.description,
+					authorId: goal.authorId,
+					children: goal.children.map(c => c.id),
+					parents: goal.parents.map(p => p.id)
+				})),
+				requirements: course.requirements.map(req => ({
+					id: req.id,
+					name: req.name,
+					description: req.description,
+					authorId: req.authorId,
+					children: req.children.map(c => c.id),
+					parents: req.parents.map(p => p.id)
+				}))
+			};
+		}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
 		if (!canCreate(ctx.user)) {
 			throw new TRPCError({
@@ -653,28 +696,6 @@ export const courseRouter = t.router({
 		});
 
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
-		return created;
-	}),
-	createMinimal: authProcedure.input(relaxedCourseFormSchema).mutation(async ({ input, ctx }) => {
-		if (!ctx.user.isAuthor) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message: "Creating a course requires user to be an author"
-			});
-		}
-
-		input.authors = [...input.authors, { username: ctx.user.name }];
-		const course = mapRelaxedCourseFormToInsert(input, getRandomId());
-
-		const created = await database.course.create({
-			data: course,
-			select: {
-				title: true,
-				slug: true,
-				courseId: true
-			}
-		});
-
 		return created;
 	}),
 	edit: authorProcedure
@@ -716,30 +737,6 @@ export const courseRouter = t.router({
 					courseId: true
 				}
 			});
-		}),
-	editMinimal: authorProcedure
-		.input(
-			z.object({
-				slug: z.string(),
-				course: relaxedCourseFormSchema
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const courseForDb = mapRelaxedCourseFormToUpdate(input.course, input.slug);
-
-			const updated = await database.course.update({
-				where: { slug: input.slug },
-				data: {
-					...courseForDb
-				},
-				select: {
-					title: true,
-					slug: true,
-					courseId: true
-				}
-			});
-			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
-			return updated;
 		}),
 	deleteCourse: authorProcedure
 		.input(z.object({ slug: z.string() }))

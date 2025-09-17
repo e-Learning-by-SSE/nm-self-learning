@@ -16,7 +16,7 @@ export default function EditCoursePage() {
 	const params = useParams();
 	const slug = params?.slug as string;
 
-	const { data: course, isLoading } = trpc.course.getCourse.useQuery(
+	const { data: course, isLoading } = trpc.course.getDynCourse.useQuery(
 		{ slug },
 		{ enabled: !!slug }
 	);

@@ -10,6 +10,7 @@ export const dynCourseFormSchema = z.object({
 	description: z.string().nullable(),
 	imgUrl: z.string().nullable(),
 	teachingGoals: z.array(skillFormSchema),
+	requirements: z.array(skillFormSchema),
 	authors: authorsRelationSchema
 });
 

@@ -1,6 +1,10 @@
-import { RelaxedCourseFormModel, relaxedCourseFormSchema } from "@self-learning/teaching";
+import {
+	DynCourseFormModel,
+	dynCourseFormSchema,
+	DynCourseSkillManager
+} from "@self-learning/teaching";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
 	InputWithButton,
 	LabeledField,
@@ -13,22 +17,27 @@ import { AuthorsForm } from "libs/feature/teaching/src/lib/author/authors-form";
 import { GreyBoarderButton, ImageOrPlaceholder, showToast } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LessonSkillManager } from "libs/feature/teaching/src/lib/lesson/forms/lesson-skill-manager";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 
 type Props = {
 	onCourseCreated: (slug: string) => void;
-	initialCourse?: RelaxedCourseFormModel;
+	initialCourse?: DynCourseFormModel;
 };
 
 export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props) {
 	const session = useRequiredSession();
-	const form = useForm<RelaxedCourseFormModel>({
-		resolver: zodResolver(relaxedCourseFormSchema),
+	const form = useForm<DynCourseFormModel>({
+		resolver: zodResolver(dynCourseFormSchema),
 		defaultValues: {
 			courseId: "",
-			requires: [], // needed for skill manager
-			provides: []
+			title: "",
+			slug: "",
+			description: "",
+			subtitle: "",
+			imgUrl: "",
+			subjectId: null,
+			teachingGoals: [],
+			requirements: []
 		}
 	});
 
@@ -38,8 +47,8 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 		formState: { errors }
 	} = form;
 
-	const { mutateAsync: create } = trpc.course.createMinimal.useMutation();
-	const { mutateAsync: edit } = trpc.course.editMinimal.useMutation();
+	const { mutateAsync: create } = trpc.course.createDynamic.useMutation();
+	const { mutateAsync: edit } = trpc.course.editDynamic.useMutation();
 
 	useEffect(() => {
 		if (session.data?.user?.name) {
@@ -53,9 +62,7 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 	useEffect(() => {
 		if (initialCourse) {
 			reset({
-				...initialCourse,
-				requires: initialCourse.requires ?? [],
-				provides: initialCourse.provides ?? []
+				...initialCourse
 			});
 		}
 	}, [initialCourse, reset]);
@@ -74,14 +81,14 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 					return;
 				}
 
-				const { title, slug, courseId } = await edit({
-					slug: initialCourse.slug,
+				const { title, slug } = await edit({
+					courseId: course.courseId ?? "",
 					course: course
 				});
 				showToast({ type: "success", title: "Kurs aktualisiert!", subtitle: title });
 				onCourseCreated(slug);
 			} else {
-				const { title, slug, courseId } = await create(course);
+				const { title, slug } = await create(course);
 				showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
 				onCourseCreated(slug);
 			}
@@ -115,7 +122,7 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 					<BasicInfo />
 				</div>
 				<div>
-					<LessonSkillManager />
+					<DynCourseSkillManager />
 				</div>
 			</form>
 		</FormProvider>
@@ -123,7 +130,7 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 }
 
 function BasicInfo() {
-	const form = useFormContext<RelaxedCourseFormModel>();
+	const form = useFormContext<DynCourseFormModel>();
 
 	const {
 		register,

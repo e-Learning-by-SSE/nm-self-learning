@@ -47,7 +47,16 @@ export const getServerSideProps = withTranslations(
 						name: true,
 						description: true,
 						children: true,
-						//repositoryId: true,
+						parents: true,
+						authorId: true
+					}
+				},
+				requirements: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
 						parents: true,
 						authorId: true
 					}
@@ -67,9 +76,16 @@ export const getServerSideProps = withTranslations(
 			parents: goal.parents.map(parent => parent.id)
 		}));
 
+		const requirements = dynCourse.requirements.map(goal => ({
+			...goal,
+			children: goal.children.map(child => child.id),
+			parents: goal.parents.map(parent => parent.id)
+		}));
+
 		const courseForProps = {
 			...dynCourse,
-			teachingGoals
+			teachingGoals,
+			requirements
 		};
 
 		return {

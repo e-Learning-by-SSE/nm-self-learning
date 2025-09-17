@@ -54,7 +54,8 @@ export default function CreateCoursePage() {
 						imgUrl: "",
 						subjectId: null,
 						authors: [{ username: author }],
-						teachingGoals: []
+						teachingGoals: [],
+						requirements: []
 					}}
 				/>
 			)}
