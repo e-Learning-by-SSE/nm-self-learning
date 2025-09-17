@@ -5,6 +5,7 @@ import { ImageCard } from "@self-learning/ui/common";
 import { ItemCardGrid } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
+import { useTranslation } from "next-i18next";
 
 async function getSubjects() {
 	return await database.subject.findMany({
@@ -26,7 +27,7 @@ type SubjectsProps = {
 	subjects: ResolvedValue<typeof getSubjects>;
 };
 
-export const getServerSideProps = withTranslations(["common"], async context => {
+export const getServerSideProps = withTranslations(["common"], async () => {
 	const subjects = await getSubjects();
 
 	return {
@@ -37,10 +38,11 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 });
 
 export default function Subjects({ subjects }: SubjectsProps) {
+	const { t } = useTranslation("common");
 	return (
 		<div className="bg-gray-50 py-16">
 			<div className="mx-auto max-w-screen-xl px-4 xl:px-0">
-				<h1 className="mb-16 text-4xl sm:text-6xl">Fachgebiete</h1>
+				<h1 className="mb-16 text-4xl sm:text-6xl">{t("Topic_other")}</h1>
 				<ItemCardGrid>
 					{subjects.map(subject => (
 						<SubjectCard key={subject.slug} subject={subject} />
@@ -52,6 +54,7 @@ export default function Subjects({ subjects }: SubjectsProps) {
 }
 
 function SubjectCard({ subject }: { subject: SubjectsProps["subjects"][0] }) {
+	const { t } = useTranslation("common");
 	return (
 		<Link href={`/subjects/${subject.slug}`}>
 			<ImageCard
@@ -64,9 +67,7 @@ function SubjectCard({ subject }: { subject: SubjectsProps["subjects"][0] }) {
 						<SparklesIcon className="h-5" />
 						<span>
 							{subject._count.specializations}{" "}
-							{subject._count.specializations === 1
-								? "Spezialisierung"
-								: "Spezialisierungen"}
+							{t("Focus", { count: subject._count.specializations })}
 						</span>
 					</span>
 				}

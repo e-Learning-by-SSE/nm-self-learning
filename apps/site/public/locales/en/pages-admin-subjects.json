@@ -1,0 +1,6 @@
+{
+    "Create Topic": "Create $t(common:Topic)",
+    "Topic created": "$t(common:Topic) created",
+    "Topic 'title' created": "$t(common:Topic) \"{{title}}\" created.",
+    "Topics can only be created by administrators": "$t(common:Topic_other) can only be created by administrators"
+}
