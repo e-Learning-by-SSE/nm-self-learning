@@ -57,6 +57,16 @@ export default function AdminPage() {
 					imageElement={<CodingSvg />}
 					title="REST API Dokumentation (OpenAPI)"
 				/>
+				<Card
+					href="/admin/llm-config"
+					imageElement={<CodingSvg />}
+					title="LLM Konfiguration"
+				/>
+				<Card
+					href="/admin/ai-tutor-profiles"
+					imageElement={<PersonalInformationSvg />}
+					title="AI Tutor Profiles"
+				/>
 			</div>
 			<div className="text-center text-sm text-gray-500 mt-8">
 				{`App Version: ${appVersion}`}
