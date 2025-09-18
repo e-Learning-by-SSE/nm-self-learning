@@ -1,23 +1,15 @@
 import { SkillFormModel } from "@self-learning/types";
 import { SectionHeader } from "@self-learning/ui/common";
-import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-//import { LinkedSkillRepositoryMemorized } from "../lesson/forms/lesson-skill-manager";
-//import { LabeledFieldSelectSkillsView } from "../skills/skill-dialog/select-skill-view";
 import { DynCourseFormModel } from "./dynCourse-form-model";
 import { LabeledFieldSelectSkillsView } from "../lesson/forms/lesson-skill-manager";
 
 export function DynCourseContentForm() {
 	const { watch, setValue } = useFormContext<DynCourseFormModel>();
-	//const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
 	const watchingSkills = {
 		teachingGoals: watch("teachingGoals")
 	};
-	/*
-	const selectRepository = (id: SkillRepositoryModel) => {
-		setSelectedRepository(id);
-	};
-*/
+
 	const addSkills = (skill: SkillFormModel[] | undefined) => {
 		if (!skill) return;
 		skill = skill.map(skill => ({ ...skill, children: [], parents: [] }));
@@ -34,7 +26,6 @@ export function DynCourseContentForm() {
 	return (
 		<section>
 			<SectionHeader title="Inhalt" subtitle="Der Inhalt des Kurses." />
-			{/* <LinkedSkillRepositoryMemorized selectRepository={selectRepository} /> */}
 			<div className="mb-4" />
 
 			<LabeledFieldSelectSkillsView

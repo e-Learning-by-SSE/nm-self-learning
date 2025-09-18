@@ -202,23 +202,10 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Kurse:"
 							/>
 
-							<Link href="/teaching/courses/new">
-								<IconButton
-									text="Kurs erstellen (173: url to new)"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
-							</Link>
-
 							<div className="flex flex-row items-center gap-4">
-								<Link href="/teaching/courses/create">
+								<Link href="/teaching/courses/new">
 									<IconButton
-										text="Kurs erstellen (391: url to create)"
-										icon={<PlusIcon className="icon h-5" />}
-									/>
-								</Link>
-								<Link href="/teaching/courses/dynamic/create">
-									<IconButton
-										text="Neuen Dynamischen Kurs erstellen"
+										text="Kurs erstellen"
 										icon={<PlusIcon className="icon h-5" />}
 									/>
 								</Link>
