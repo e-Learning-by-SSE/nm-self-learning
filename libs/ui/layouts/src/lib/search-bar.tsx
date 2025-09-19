@@ -13,7 +13,7 @@ import { useState } from "react";
 import { LoadingBox } from "@self-learning/ui/common";
 import { SearchResultInfo } from "./search-section";
 import { useRouter } from "next/router";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export function SearchInput({
 	searchQuery,
@@ -70,13 +70,13 @@ function getSearchSections({
 	courses?: SearchResultInfo[];
 	lessons?: SearchResultInfo[];
 	authors?: SearchResultInfo[];
-}) : {
+}): {
 	type: string;
 	title: string;
 	slug: string;
 	baselink: string;
 	show: boolean;
-	}[]{
+}[] {
 	const searchSections = [
 		...(courses?.map(({ title, slug }) => ({
 			type: "course",
@@ -119,15 +119,21 @@ export function SearchBar() {
 	};
 	const shouldFetch = filterText.length > 0 && isFocused;
 	const [selectedResult, setSelectedResult] = useState<SearchResultInfo>();
-	const { data: lessons, isLoading: lessonsLoading } =
-		trpc.lesson.findMany.useQuery(titleSearchParams, {enabled: shouldFetch });
-	const { data: authors, isLoading: authorsLoading } =
-		trpc.author.findMany.useQuery(authorSearchParams, {enabled: shouldFetch });
+	const { data: lessons, isLoading: lessonsLoading } = trpc.lesson.findMany.useQuery(
+		titleSearchParams,
+		{ enabled: shouldFetch }
+	);
+	const { data: authors, isLoading: authorsLoading } = trpc.author.findMany.useQuery(
+		authorSearchParams,
+		{ enabled: shouldFetch }
+	);
 	const authorResults = authors?.result.map(({ displayName: title, slug }) => {
 		return { title, slug };
 	});
-	const { data: courses, isLoading: coursesLoading } =
-		trpc.course.findMany.useQuery(titleSearchParams, {enabled: shouldFetch });
+	const { data: courses, isLoading: coursesLoading } = trpc.course.findMany.useQuery(
+		titleSearchParams,
+		{ enabled: shouldFetch }
+	);
 
 	const searchSections: {
 		type: string;
