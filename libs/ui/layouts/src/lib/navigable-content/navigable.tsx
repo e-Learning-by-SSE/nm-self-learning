@@ -5,31 +5,48 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * README
+ * Navigable Content is a group of helper components, which provide 
+ * ready-to-use solution for creating a document outline (good analogy: google doc, or just a e-book), where:
+ * - Outline/Selector: is Table of Contents, where you can see the outline of a document, and navigate through it.
+ * - Viewer is: Chapters of a book themselves. 
+ * It provides following functionality:
+ * - see what element is currently in focus
+ * - select any element and autoscroll to it
+ * - change element order by drag&drop
+ * - delete elements
+ * Navigable Content is created over some data of type T (continuing with a book example: list of book chapters)
  * @usage
- * - Select combination of two elements: @see NavigableContentViewer (Viewer) 
+ * - Select combination of two elements: @see NavigableContentViewer (Viewer - Displays ) 
  *     and @see NavigableContentOutline / @see NavigableContentSelector Outline/Selector. 
- * - You can use Outline/Selector separately from Viewer.
- * - T must have an unique `id: string` field.
- * - Create your container of T[].
+ * - Create your container of T[]. (T must have an unique `id: string` field.)
  * - Create TWO useState<number | undefined>(undefined):
  *   - activeIndex - holds current viewed element;
  *   - targetIndex - used to trigger scroll on click on the desired content.
+ *   - set `resetTargetIndex` to `() => setTargetIndex(nullptr)`
  * - RenderContent for Viewer is a view for each T.
- *   - if supplied item is undefined => content array is empty
+ *   - it receives T item and desides how to render it
+ *   - if supplied item is undefined => there is no items in T[] - you can render some placeholder
  * - RenderContent for Outline/Selector is a view for each T. 
- *   - if supplied item is undefined => content array is empty
- * @important look carefully which indexes have T[]! Can cause nasty errors!
+ * 	 - it receives T item and desides how to render it
+ *   - if supplied item is undefined => there is no items in T[] - you can render some placeholder
+ * @important look carefully which ids have T[]! Can cause nasty errors!
  * 
  * For simplicity of data management use @see useNavigableContent.
- *
- * `resetTargetIndex` - set it to `() => setTargetIndex(nullptr)`
  * 
  * @usage
  * ```
- * function Parent(content) : {content: string[] } {
+ * // Following a book analogy:
+ * 
+ * type Chapter = {
+ * 		id: string,
+ * 		name: string,
+ * 		content: string
+ * }
+ * 
+ * function Book(content) : {content: Chapter[] } {
 
 		const [targetTabIndex, setTargetTabIndex] = useState<number | undefined>(undefined);
-		const ctx = useNavigableContent(content, true, true);
+		const ctx = useNavigableContent(content, true, true); // include drag&drop and deletions - not really like a book - but imagine you are an author
 
 		render(
 	 		<div className="grid grid-cols-[1fr_300px] gap-8">
@@ -39,45 +56,44 @@ import { useCallback, useEffect, useRef, useState } from "react";
 					removeContent={ctx.removeContent}
 					activeIndex={ctx.activeIndex}
 					setTargetIndex={setTargetTabIndex}
-					RenderContent={ContentOutlineTab}
+					RenderContent={ChapterOutlineRenderer}
 				/>
 				<NavigableContentViewer
 					content={ctx.content}
 					targetIndex={targetTabIndex}
-					resetTargetIndex={() => setTargetTabIndex(undefined)} // way to prevent scroll on update behavior (and more)
+					resetTargetIndex={() => setTargetTabIndex(undefined)} // drops targetIndex when scroll is finished, so scroll is done once
 					setActiveIndex={ctx.setActiveIndex}
-					RenderContent={RenderContentType}
+					RenderContent={ChapterContentRenderer}
 				/>
 			</div>
 		)
  * }
 
-	function RenderContentType({
+	function ChapterContentRenderer({
 		index,
 		item
 	}: {
 		index?: number;
-		item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
+		item?: T;
 	}) {
-		if (!item || index === undefined || index === null)
-			return <> empty </>
-		if (item.type === "A")
-			return <> content A </>
-		if (item.type === "B") 
-			return <> content B </>
-		// Must not happen!
-		return <span className="text-red-500">Error: Unknown content type</span>;
+		if (item) {
+			// render chapter content here
+		} else {
+			return <span className="text-red-500">Book is empty :(</span>;
+		}
 	}
 
-	function ContentOutlineTab({
+	function ChapterOutlineRenderer({
 		item,
 		swappable,
 		remove,
 		select,
 		active
 	}: 
-		INavigableOutlineTab<FieldArrayWithId<{ content: LessonContent }, "content", "id">>
+		INavigableOutlineTab<T> // just convenience type
 	) {
+		// You are completely free how to render T, but make it compact and clean, 
+		// as this view is going to be composed into list
 		return (
 			<>
 				{item && (
@@ -94,7 +110,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 						)}
 					</div>
 				)}
-				{!item && "empty"}
+				{!item && "empty book"}
 			</>
 		);
 	}
