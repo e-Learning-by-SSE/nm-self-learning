@@ -84,7 +84,7 @@ export type ValueByContentType<CType extends LessonContentType["type"]> =
 
 export type MetaByContentType<CType extends LessonContentType["type"]> =
 	InferContentType<CType>["meta"];
-// TODO unused
+
 export function findContentType<CType extends LessonContentType["type"]>(
 	type: CType,
 	content: LessonContent
