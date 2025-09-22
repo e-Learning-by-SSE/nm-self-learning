@@ -8,7 +8,7 @@ import {
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getCourse, useLessonContext, useLessonOutline } from "@self-learning/lesson";
+import { getCourse, useLessonContext, useLessonOutlineContext } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	Article,
@@ -134,7 +134,7 @@ function MediaDisplay({
 	openedMedia: OpenedMediaInfo[];
 	addMediaDisplay: (idx: number) => void;
 }) {
-	const outline = useLessonOutline();
+	const outline = useLessonOutlineContext();
 
 	// If suppressed -> just follow user click
 	const tabUpdateSuppressRef = useRef<boolean>(false);

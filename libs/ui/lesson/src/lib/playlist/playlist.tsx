@@ -7,7 +7,7 @@ import {
 	PlayIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { useLessonOutline } from "@self-learning/lesson";
+import { useLessonOutlineContext } from "@self-learning/lesson";
 import {
 	CourseCompletion,
 	extractLessonIds,
@@ -166,7 +166,7 @@ function Lesson({
 	href: string;
 	isActive: boolean;
 }) {
-	const outline = useLessonOutline();
+	const outline = useLessonOutlineContext();
 	return (
 		<>
 			<Link
