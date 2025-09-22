@@ -60,7 +60,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 	}, [contentTabIndex, content.length]);
 
 	function addContent(type: LessonContentType["type"]) {
-		let newItem;
+		let newItem: LessonContentType;
 		switch (type) {
 			case "video":
 				newItem = {
@@ -95,7 +95,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 					`Unknown content type: ${type} - No action defined to add this type.`
 				);
 		}
-		append(newItem as LessonContentType);
+		append(newItem);
 	}
 
 	function swapContent(indexSrc: number, indexDest: number) {

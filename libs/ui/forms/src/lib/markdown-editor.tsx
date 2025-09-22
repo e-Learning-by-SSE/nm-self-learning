@@ -37,7 +37,6 @@ export function MarkdownField({
 	header?: string | { text: string; sz: string; btn_variant?: ButtonVariant };
 }) {
 	const [openEditor, setOpenEditor] = useState(false);
-	const style = compact ? "overflow-y-auto max-h-64" : "";
 
 	if (typeof header === "string") {
 		header = { text: header, sz: "xl" };
@@ -67,7 +66,11 @@ export function MarkdownField({
 					className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2 min-h-8"
 					onClick={() => setOpenEditor(true)}
 				>
-					<div className={`max-w-full ${inline ? "text-sm" : ""} ${style}`}>
+					<div
+						className={`max-w-full 
+							${inline ? "text-sm" : ""} 
+							${compact ? "overflow-y-auto max-h-64" : ""}`}
+					>
 						{content !== "" ? (
 							<MarkdownViewer content={content ?? ""} />
 						) : (
@@ -367,9 +370,9 @@ function CombinedImageButton({
 		width: number;
 	}> = [
 		{ key: "100", label: "XS", description: "100px", width: 2 },
-		{ key: "150", label: "S", description: "150px",  width: 3 },
-		{ key: "200", label: "M", description: "200px",  width: 4 },
-		{ key: "300", label: "L", description: "300px",  width: 6 },
+		{ key: "150", label: "S", description: "150px", width: 3 },
+		{ key: "200", label: "M", description: "200px", width: 4 },
+		{ key: "300", label: "L", description: "300px", width: 6 },
 		{ key: "400", label: "XL", description: "400px", width: 7 },
 		{ key: "500", label: "XXL", description: "500px", width: 8 },
 		{ key: "100%", label: "Full", description: "Volle Breite", width: 10 }
