@@ -9,7 +9,6 @@ import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 import { PagesMeta } from "../access-learning-diary";
 import { Tooltip } from "@self-learning/ui/common";
-import { Square3Stack3DIcon, Squares2X2Icon } from "@heroicons/react/20/solid";
 
 export function useDiaryPageRouter() {
 	const router = useRouter();
@@ -22,7 +21,7 @@ export function useDiaryPageRouter() {
 	return { changePage };
 }
 
-function useDiaryPage({ pages, diaryId }: { pages: { id: string }[]; diaryId: string }) {
+ export function useDiaryPage({ pages, diaryId }: { pages: { id: string }[]; diaryId: string }) {
 	const { changePage } = useDiaryPageRouter();
 
 	const currentPageIndex = pages.findIndex(page => page.id === diaryId);
