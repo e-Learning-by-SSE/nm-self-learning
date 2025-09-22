@@ -12,6 +12,7 @@ import superjson from "superjson";
 import { GlobalFeatures } from "../../_features";
 import "./styles.css";
 import { appWithTranslation } from "next-i18next";
+import nextI18NextConfig from "../next-i18next.config";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -37,7 +38,7 @@ export default withTRPC<AppRouter>({
 			}
 		};
 	}
-})(appWithTranslation(CustomApp));
+})(appWithTranslation(CustomApp, nextI18NextConfig));
 
 function CustomApp({ Component, pageProps }: AppProps) {
 	const Layout = (Component as any).getLayout
