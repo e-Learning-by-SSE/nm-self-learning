@@ -11,6 +11,7 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { getUserWithSettings } from "../crud-settings";
+import { TFunction, Trans, useTranslation } from "next-i18next";
 
 type SettingsProps = NonNullable<ResolvedValue<typeof getUserWithSettings>>;
 
@@ -25,13 +26,18 @@ export function PersonalSettingsForm({
 		defaultValues: personalSettings,
 		resolver: zodResolver(editPersonalSettingSchema)
 	});
+	const { t: t_common } = useTranslation("common");
+	const { t } = useTranslation("feature-settings");
 
 	return (
 		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-			<LabeledField label="Name" error={form.formState.errors.displayName?.message}>
+			<LabeledField
+				label={t_common("Name")}
+				error={form.formState.errors.displayName?.message}
+			>
 				<input {...form.register("displayName")} type="text" className="textfield" />
 			</LabeledField>
-			<LabeledField label="E-Mail">
+			<LabeledField label={t_common("Email")}>
 				<input
 					type="email"
 					disabled
@@ -44,7 +50,7 @@ export function PersonalSettingsForm({
 			</LabeledField>
 
 			<button className="btn-primary" disabled={!form.formState.isValid}>
-				Profile Speichern
+				{t("Save Profile")}
 			</button>
 		</form>
 	);
@@ -73,146 +79,86 @@ export function FeatureSettingsForm({
 		onChange({ enabledLearningStatistics: value });
 	};
 
+	const { t: t_common } = useTranslation("common");
+	const { t: t_tou } = useTranslation("terms-of-use");
+
 	return (
 		<div className="space-y-8">
 			<div className="space-y-2">
 				<ToggleSetting
 					value={enabledLearningStatistics}
 					onChange={onChangeStatistics}
-					label="Lernstatistiken"
+					label={t_common("Learning-Statistics_other")}
+					testid="statistics-toggle"
 				/>
 
 				<ExpandableSettingsSection
-					text="Erfassung und Speicherung von Sitzungsdaten zur Auswertung des persönlichen Lernverhaltens"
-					title="Check this for learning statistics"
-				>
-					<p>
-						Mit dieser Einstellung analysieren wir dein Lernverhalten, um dir
-						individuelles Feedback zu geben und personalisierte Statistiken anzuzeigen.
-						Hierbei wird nur dein Lernverhalten auf dieser Plattform erfasst und
-						gespeichert. Beispielsweise werden dann folgende Information erfasst:
-					</p>
-					<ul className="list-disc list-inside space-y-2 ml-6">
-						<li>
-							aufgerufene Kurse/Nanomodule und die damit verbundenen Verweildauern
-						</li>
-						<li>Starten, pausieren und anhalten von Videos</li>
-						<li>Abgabeversuche von Lernzielkontrollen</li>
-					</ul>
-					<p>
-						Diese Funktion dient deiner persönlichen Analyse und unterstützt dich dabei,
-						dein Lernverhalten zu optimieren. Für die folgenden Zwecke werden diese
-						Daten verwendet:
-						<ul className="list-disc list-inside space-y-2 ml-6">
-							<li>
-								<span className="font-bold">
-									Anzeige von eigenen Lernstatistiken:
-								</span>
-								<span className="italic">
-									{" "}
-									Du wirst in Zukunft einen Abschnitt erhalten, in dem du deine
-									Informationen einsehen kannst.
-								</span>
-							</li>
-							<li>
-								<span className="font-bold">Optimierung der Lernplattform:</span>
-								<span className="italic">
-									{" "}
-									Wir verwenden die Informationen um unsere Plattform weiter zu
-									verbessern.
-								</span>
-							</li>
-							<li>
-								<span className="font-bold">Personalisierung der Lerninhalte:</span>
-								<span className="italic">
-									{" "}
-									Das Verhalten der Plattform verändert sich möglicherweise, um
-									dir ein besseres Erlebnis zu bieten.
-								</span>
-							</li>
-							<li>
-								<span className="font-bold">
-									Bereitstellung von Daten für Forschungszwecke:
-								</span>
-								<span className="italic">
-									{" "}
-									Diese Daten werden pseudo-anonymisiert für Forschungszwecke
-									verwendet.
-								</span>
-							</li>
-							<li>
-								<span className="font-bold">
-									Bereitstellung von aggregierten Daten für Lehrende:
-								</span>
-								<span className="italic">
-									{" "}
-									Lehrende erhalten aggregierte Daten mit Übersichten zu den
-									eigenen Kursen.
-								</span>
-							</li>
-						</ul>
-						Dabei gilt, dass wir deine Informationen gegenüber anderen stets vertraulich
-						behandeln und keine Rückschlüsse auf deine Person zulassen. Weiterhin werden
-						keine Daten an Dritte weitergegeben und du kannst die gesammelten Daten
-						jederzeit löschen.
-					</p>
-				</ExpandableSettingsSection>
+					title_key={"Learning Statistics - Terms of Use - Title"}
+					hoover_key={"Learning Statistics - Terms of Use - Hoover Text"}
+					i18nKey="Learning Statistics - Terms of Use"
+					t={t_tou}
+				/>
 			</div>
 			<div className="space-y-2">
 				<ToggleSetting
 					value={enabledFeatureLearningDiary}
 					onChange={onChangeLtb}
-					label="Lerntagebuch"
+					label={t_common("Learning-Diary")}
+					testid="ltb-toggle"
 				/>
 
 				<ExpandableSettingsSection
-					text="Lernaktivitäten und Lernstrategien dokumentieren"
-					title="Check this for learning diary"
-				>
-					<p>
-						Werde mit dem interaktiven Lerntagebuch zur Expert*in deines eigenen
-						Lernens! Setze individuelle Ziele und dokumentiere deine Lernaktivitäten
-						sowie die Lernstrategien, die du zur Bearbeitung angewendet hast. Verfolge
-						deinen Fortschritt anschaulich: Durch die Auswertung deiner Lernstatistiken
-						erkennst du schnell, wo deine Stärken liegen und in welchen Bereichen du
-						dich optimieren oder verbessern kannst. Basierend auf den Lernstatistiken
-						werden dir neue, individuelle Lernpfade vorgeschlagen. Es werden keine Daten
-						an Dritte weitergegeben und du kannst die gesammelten Daten jederzeit
-						löschen.
-					</p>
-				</ExpandableSettingsSection>
+					title_key={"Learning-Diary - Terms of Use - Title"}
+					hoover_key={"Learning-Diary - Terms of Use - Hoover Text"}
+					i18nKey="Learning-Diary - Terms of Use"
+					t={t_tou}
+				/>
 			</div>
 		</div>
 	);
 }
 
 function ExpandableSettingsSection({
-	text,
-	title,
-	children
+	hoover_key,
+	title_key,
+	t,
+	i18nKey
 }: {
-	text: string;
-	title: string;
-	children?: React.ReactNode;
+	hoover_key: string;
+	title_key: string;
+	t: TFunction;
+	i18nKey: string;
 }) {
 	const [isExpanded, setIsExpanded] = useState(false);
 
 	const toggleExpanded = () => {
 		setIsExpanded(!isExpanded);
 	};
+	const { t: t_feature } = useTranslation("feature-settings");
 
 	const btnClass = "text-blue-500 hover:underline" + (isExpanded ? "" : " px-2");
 
 	return (
 		<section className="mt-5 rounded-lg bg-white p-3.5">
-			<span className="h-32 w-full font-medium" title={title}>
-				{text}
+			<span className="h-32 w-full font-medium" title={t(hoover_key)}>
+				{t(title_key)}
 			</span>
 
 			{isExpanded && <br />}
-			{isExpanded && children}
+			{isExpanded && (
+				<Trans
+					t={t}
+					i18nKey={i18nKey}
+					components={{
+						strong: <strong />,
+						ul: <ul className="list-disc list-inside space-y-2 ml-6" />,
+						i: <i />,
+						li: <li />
+					}}
+				/>
+			)}
 			<button className={btnClass} onClick={toggleExpanded}>
-				{isExpanded ? "Weniger anzeigen" : "Mehr anzeigen"}
+				{t_feature(isExpanded ? "Show less" : "Show more")}
 			</button>
 		</section>
 	);
@@ -221,15 +167,17 @@ function ExpandableSettingsSection({
 function ToggleSetting({
 	value,
 	onChange,
-	label
+	label,
+	testid
 }: {
 	value: boolean;
 	onChange: (value: boolean) => void;
 	label: string;
+	testid?: string;
 }) {
 	return (
 		<div className="flex items-center gap-2">
-			<Toggle value={value} onChange={onChange} label={label} />
+			<Toggle value={value} onChange={onChange} label={label} testid={testid} />
 		</div>
 	);
 }
