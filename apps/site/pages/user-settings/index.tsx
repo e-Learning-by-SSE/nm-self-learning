@@ -4,12 +4,14 @@ import {
 	DeleteMeForm,
 	FeatureSettingsForm,
 	getUserWithSettings,
-	PersonalSettingsForm
+	PersonalSettingsForm,
+	I18N_NAMESPACE as NS_SETTINGS
 } from "@self-learning/settings";
 import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
+import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -18,8 +20,8 @@ interface PageProps {
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth<PageProps>(async (context, user) => {
+	Array.from(new Set(["common", "pages-settings", ...NS_SETTINGS])),
+	withAuth<PageProps>(async (_context, user) => {
 		const settings = await getUserWithSettings(user.name);
 
 		if (!settings) {
@@ -39,6 +41,8 @@ export const getServerSideProps = withTranslations(
 export default function SettingsPage(props: PageProps) {
 	const [settings, setSettings] = useState(props.settings);
 	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+	const { t: t_common } = useTranslation("common");
+	const { t } = useTranslation("pages-settings");
 
 	const router = useRouter();
 
@@ -62,7 +66,7 @@ export default function SettingsPage(props: PageProps) {
 			console.error(error);
 
 			if (error instanceof TRPCClientError) {
-				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				showToast({ type: "error", title: t_common("Error"), subtitle: error.message });
 			}
 		}
 	};
@@ -86,20 +90,21 @@ export default function SettingsPage(props: PageProps) {
 			}
 		}
 	};
+
 	console.log("settings", settings);
 	return (
 		<CenteredSection className="bg-gray-50">
-			<h1 className="text-2xl font-bold">Einstellungen</h1>
-			<SettingSection title="Profil">
+			<h1 className="text-2xl font-bold">{t_common("Settings")}</h1>
+			<SettingSection title={t_common("Profile")}>
 				<PersonalSettingsForm
 					personalSettings={settings}
 					onSubmit={onPersonalSettingSubmit}
 				/>
 			</SettingSection>
-			<SettingSection title="Funktionen">
+			<SettingSection title={t("Feature_other")}>
 				<FeatureSettingsForm featureSettings={settings} onChange={onFeatureChange} />
 			</SettingSection>
-			<SettingSection title="Kritischer Bereich">
+			<SettingSection title={t("Critical Area")}>
 				<DeleteMeForm />
 			</SettingSection>
 		</CenteredSection>
