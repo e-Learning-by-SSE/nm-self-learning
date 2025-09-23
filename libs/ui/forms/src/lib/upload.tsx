@@ -21,6 +21,7 @@ import { inferRouterOutputs } from "@trpc/server";
 import { ReactElement, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
+import { useTranslation } from "next-i18next";
 
 const MediaType = {
 	image: "image",
@@ -48,6 +49,7 @@ export function Upload({
 	const [viewProgressDialog, setViewProgressDialog] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [fileName, setFileName] = useState("");
+	const { t } = useTranslation("common");
 
 	const accept = useMemo(() => {
 		const mediaTypes = {
@@ -145,10 +147,10 @@ export function Upload({
 			<div className="flex gap-1">
 				<label className="btn-primary w-full" htmlFor={id}>
 					{mediaType === "video"
-						? "Video hochladen"
+						? t("Upload Video")
 						: mediaType === "image"
-							? "Bild hochladen"
-							: "Datei hochladen"}
+							? t("Upload Image")
+							: t("Upload File")}
 				</label>
 
 				{!hideAssetPicker && (
@@ -219,10 +221,11 @@ async function uploadWithProgress(
 	// start upload
 	//Returns the filename containing only ASCII letters, numbers and dots.
 	//All other characters (including spaces and special characters) are replaced with underscores.
-	const sanitizedFilename = file.name.normalize("NFD")
-			.replace(/[\u0300-\u036f]/g, "")
-			.replace(/[^\x20-\x7E]/g, "")
-			.replace(/[^a-zA-Z0-9.]/g, "_");
+	const sanitizedFilename = file.name
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/[^\x20-\x7E]/g, "")
+		.replace(/[^a-zA-Z0-9.]/g, "_");
 	xhr.open("PUT", url, true);
 	xhr.setRequestHeader("X-FILENAME", sanitizedFilename);
 	xhr.send(file);
