@@ -56,8 +56,10 @@ export const aiTutorRouter = t.router({
 					message: error.message
 				});
 			}
+			const responseMessage = aiResponse.message.content;
+			const cleaned = responseMessage.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
 			return {
-				response: aiResponse.message.content,
+				response: cleaned,
 				valid: true
 			};
 		} catch (error) {
