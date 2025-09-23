@@ -1,14 +1,6 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
-import {
-	Dialog,
-	DialogActions,
-	DialogHandler,
-	dispatchDialog,
-	freeDialog,
-	ImageOrPlaceholder,
-	showToast
-} from "@self-learning/ui/common";
+import { Dialog, DialogActions, ImageOrPlaceholder, showToast } from "@self-learning/ui/common";
 import { CenteredContainer, redirectToLogin, useRequiredSession } from "@self-learning/ui/layouts";
 import {
 	AuthorSvg,
@@ -26,44 +18,17 @@ export function DeleteMeForm() {
 	const session = useRequiredSession();
 	const user = session.data?.user;
 	const { t } = useTranslation("feature-settings");
+	const [openStudentDeleteInfoDialog, setOpenStudentDeleteInfoDialog] = useState(false);
+	const [openDeleteMeDialog, setOpenDeleteMeDialog] = useState(false);
+	const [openDeleteAuthor, setDeleteAuthor] = useState(false);
 
 	if (!user) return null;
 
-	const afterPersonalDeleteInfoDialog = () => {
-		freeDialog("student-delete-form");
-		dispatchDialog(
-			<DeleteMeDialog
-				user={{ ...user }}
-				onClose={async accepted => {
-					if (accepted) {
-						try {
-							const success = await deleteMe();
-							if (success) {
-								showToast({
-									type: "success",
-									title: "Account gelöscht",
-									subtitle: "Sie wurden erfolgreich abgemeldet."
-								});
-							}
-							redirectToLogin();
-						} catch (error) {
-							showToast({
-								type: "error",
-								title: "Account konnte nicht gelöscht werden",
-								subtitle: "Bitte versuchen Sie es erneut."
-							});
-						}
-					}
-					freeDialog("student-delete-form");
-				}}
-			/>,
-			"student-delete-form"
-		);
-	};
-
-	const afterAllDeleteInfoDialog = () => {
-		freeDialog("student-delete-form");
-		// open mailto here
+	const acceptProfileDeletionInfo = (confirmed: boolean) => {
+		setOpenStudentDeleteInfoDialog(false);
+		if (confirmed) {
+			setOpenDeleteMeDialog(true);
+		}
 	};
 
 	return (
@@ -74,21 +39,10 @@ export function DeleteMeForm() {
 				</span>{" "}
 				{t("Be Careful! This changes cannot be undone.")}
 			</p>
-			<DialogHandler id="student-delete-form" />
 
 			<div className="mt-6 flex flex-col gap-4">
 				<button
-					onClick={() => {
-						dispatchDialog(
-							<StudentDeleteInfoDialog
-								onClose={() => {
-									freeDialog("student-delete-form");
-									afterPersonalDeleteInfoDialog();
-								}}
-							/>,
-							"student-delete-form"
-						);
-					}}
+					onClick={() => setOpenStudentDeleteInfoDialog(true)}
 					className="btn btn-danger w-full max-w-52"
 				>
 					{t("Delete User Data")}
@@ -96,21 +50,54 @@ export function DeleteMeForm() {
 
 				<button
 					onClick={() => {
-						dispatchDialog(
-							<AuthorDeleteDialog
-								onClose={() => {
-									freeDialog("student-delete-form");
-									afterAllDeleteInfoDialog();
-								}}
-							/>,
-							"student-delete-form"
-						);
+						setDeleteAuthor(true);
 					}}
-					disabled={!user.isAuthor}
 					className="btn btn-danger w-full max-w-52"
 				>
 					{t("Delete-Author-Profile")}
 				</button>
+			</div>
+
+			<div className="contents">
+				{openStudentDeleteInfoDialog && (
+					<StudentDeleteInfoDialog onClose={acceptProfileDeletionInfo} />
+				)}
+
+				{openDeleteMeDialog && (
+					<DeleteMeDialog
+						user={{ ...user }}
+						onClose={async accepted => {
+							setOpenDeleteMeDialog(false);
+							if (accepted) {
+								try {
+									const success = await deleteMe();
+									if (success) {
+										showToast({
+											type: "success",
+											title: "Account gelöscht",
+											subtitle: "Sie wurden erfolgreich abgemeldet."
+										});
+									}
+									redirectToLogin();
+								} catch (error) {
+									showToast({
+										type: "error",
+										title: "Account konnte nicht gelöscht werden",
+										subtitle: "Bitte versuchen Sie es erneut."
+									});
+								}
+							}
+						}}
+					/>
+				)}
+
+				{openDeleteAuthor && (
+					<AuthorDeleteDialog
+						onClose={() => {
+							setDeleteAuthor(false);
+						}}
+					/>
+				)}
 			</div>
 		</>
 	);
@@ -180,7 +167,7 @@ function DeleteMeDialog({
 	);
 }
 
-function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
+function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => void }) {
 	const session = useRequiredSession();
 	const user = session.data?.user;
 	const { t } = useTranslation("feature-settings");
@@ -196,7 +183,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 					minWidth: "300px"
 				}}
 				title={t("Delete User Data")}
-				onClose={onClose}
+				onClose={() => onClose(false)}
 			>
 				<CenteredContainer className="overflow-auto">
 					<div className="flex min-h-screen flex-col items-center space-y-6 bg-gray-50 p-6">
@@ -320,8 +307,8 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: () => void }) {
 					</div>
 				</CenteredContainer>
 				<div>
-					<DialogActions onClose={onClose}>
-						<button className="btn-primary" onClick={onClose}>
+					<DialogActions onClose={() => onClose(false)}>
+						<button className="btn-primary" onClick={() => onClose(true)}>
 							{t_common("Continue")}
 						</button>
 					</DialogActions>
