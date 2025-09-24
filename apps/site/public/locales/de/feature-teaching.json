@@ -1,0 +1,7 @@
+{
+    "Create Topic": "$t(common:Topic) erstellen",
+    "Edit Topic": "$t(common:Topic) bearbeiten",
+    "New Topic": "Neues $t(common:Topic)",
+    "Information about the topic": "$t(common:Information_other) über das $t(common:Topic)",
+    "Description of the topic": "Beschreibung des $t(common:Topic) in 2-3 Sätzen."
+}

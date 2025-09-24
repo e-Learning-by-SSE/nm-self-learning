@@ -12,6 +12,7 @@ import {
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm } from "react-hook-form";
+import { Trans, useTranslation } from "next-i18next";
 
 export function SubjectEditor({
 	initialSubject,
@@ -28,6 +29,8 @@ export function SubjectEditor({
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const cardImgUrl = form.watch("cardImgUrl");
 	const imgUrlBanner = form.watch("imgUrlBanner");
+	const { t } = useTranslation("feature-teaching");
+	const { t: t_common } = useTranslation("common");
 
 	const {
 		register,
@@ -42,13 +45,14 @@ export function SubjectEditor({
 						<>
 							<div>
 								<span className="font-semibold text-secondary">
-									Fachgebiet{" "}
-									{initialSubject.subjectId === "" ? "erstellen" : "bearbeiten"}
+									{initialSubject.subjectId === ""
+										? t("Create Topic")
+										: t("Edit Topic")}
 								</span>
 
 								<h1 className="text-2xl">
 									{initialSubject.subjectId === ""
-										? "Neues Fachgebiet"
+										? t("New Topic")
 										: initialSubject.title}
 								</h1>
 							</div>
@@ -56,16 +60,21 @@ export function SubjectEditor({
 							<OpenAsJsonButton form={form} validationSchema={subjectSchema} />
 
 							<button className="btn-primary w-full" type="submit">
-								{initialSubject.subjectId === "" ? "Erstellen" : "Speichern"}
+								{initialSubject.subjectId === ""
+									? t_common("create")
+									: t_common("save")}
 							</button>
 
 							<Form.SidebarSection>
 								<Form.SidebarSectionTitle
-									title="Informationen"
-									subtitle="Informationen über dieses Fachgebiet."
+									title={t_common("Information_other")}
+									subtitle={t("Information about the topic")}
 								></Form.SidebarSectionTitle>
 								<div className="flex flex-col gap-4">
-									<LabeledField label="Titel" error={errors.title?.message}>
+									<LabeledField
+										label={t_common("Title")}
+										error={errors.title?.message}
+									>
 										<input
 											className="textfield"
 											type={"text"}
@@ -74,7 +83,10 @@ export function SubjectEditor({
 										/>
 									</LabeledField>
 
-									<LabeledField label="Slug" error={errors.slug?.message}>
+									<LabeledField
+										label={t_common("Slug")}
+										error={errors.slug?.message}
+									>
 										<InputWithButton
 											input={
 												<input
@@ -89,18 +101,21 @@ export function SubjectEditor({
 													className="btn-stroked"
 													onClick={slugifyField}
 												>
-													Generieren
+													{t_common("Generate")}
 												</button>
 											}
 										/>
 										<FieldHint>
-											Der <strong>slug</strong> wird in der URL angezeigt.
-											Muss einzigartig sein.
+											<Trans
+												t={t_common}
+												i18nKey="Slug Description"
+												components={{ strong: <strong /> }}
+											/>
 										</FieldHint>
 									</LabeledField>
 
 									<LabeledField
-										label="Untertitel"
+										label={t_common("Subtitle")}
 										error={errors.subtitle?.message}
 									>
 										<textarea
@@ -108,9 +123,7 @@ export function SubjectEditor({
 											{...register("subtitle")}
 											rows={16}
 										/>
-										<FieldHint>
-											Beschreibung dieses Fachgebiets in 2-3 Sätzen.
-										</FieldHint>
+										<FieldHint>{t("Description of the topic")}</FieldHint>
 									</LabeledField>
 								</div>
 							</Form.SidebarSection>
@@ -119,8 +132,8 @@ export function SubjectEditor({
 				>
 					<section>
 						<SectionHeader
-							title="Bild (Banner)"
-							subtitle="Bild, das als Banner am Seitenbeginn angezeigt wird."
+							title={t_common("Banner Image")}
+							subtitle={t_common("Banner Image Description")}
 						/>
 
 						<Upload
@@ -137,8 +150,8 @@ export function SubjectEditor({
 
 					<section className="w-fit">
 						<SectionHeader
-							title="Bild (Karte)"
-							subtitle="Bild das auf Karten angezeigt wird."
+							title={t_common("Tile Image")}
+							subtitle={t_common("Tile Image Description")}
 						/>
 
 						<Upload
