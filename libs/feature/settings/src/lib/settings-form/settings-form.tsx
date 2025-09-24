@@ -6,12 +6,12 @@ import {
 	editPersonalSettingSchema,
 	ResolvedValue
 } from "@self-learning/types";
-import { OnDialogCloseFn, Toggle } from "@self-learning/ui/common";
+import { OnDialogCloseFn, Toggle, Trans } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { getUserWithSettings } from "../crud-settings";
-import { TFunction, Trans, useTranslation } from "next-i18next";
+import { TFunction, useTranslation } from "next-i18next";
 
 type SettingsProps = NonNullable<ResolvedValue<typeof getUserWithSettings>>;
 
@@ -44,7 +44,7 @@ export function PersonalSettingsForm({
 					className="textfield "
 					value={
 						personalSettings.email ??
-						"hier kannst du bald deine E-Mail Adresse hinterlegen"
+						t("You will soon be able to enter your email address here.")
 					}
 				/>
 			</LabeledField>
@@ -144,18 +144,11 @@ function ExpandableSettingsSection({
 				{t(title_key)}
 			</span>
 
-			{isExpanded && <br />}
 			{isExpanded && (
-				<Trans
-					t={t}
-					i18nKey={i18nKey}
-					components={{
-						strong: <strong />,
-						ul: <ul className="list-disc list-inside space-y-2 ml-6" />,
-						i: <i />,
-						li: <li />
-					}}
-				/>
+				<>
+					<br />
+					<Trans namespace="terms-of-use" i18nKey={i18nKey} />{" "}
+				</>
 			)}
 			<button className={btnClass} onClick={toggleExpanded}>
 				{t_feature(isExpanded ? "Show less" : "Show more")}
