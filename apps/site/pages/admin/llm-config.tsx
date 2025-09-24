@@ -55,6 +55,7 @@ export default function LlmConfigPage() {
 				title: t("Configuration Saved"),
 				subtitle: t("LLM configuration has been saved successfully!")
 			});
+			setErrorMessage(null);
 
 			refetch();
 		} catch (error) {
@@ -83,6 +84,7 @@ export default function LlmConfigPage() {
 						count: result.availableModels.length
 					})
 				});
+				setErrorMessage(null);
 			}
 		} catch (error) {
 			setErrorMessage(
@@ -90,6 +92,7 @@ export default function LlmConfigPage() {
 					? { code: error.data?.code, message: error.message }
 					: { code: "UNKNOWN", message: "Failed to fetch available models" }
 			);
+			setAvailableModels([]);
 		} finally {
 			setFetchingModels(false);
 		}
