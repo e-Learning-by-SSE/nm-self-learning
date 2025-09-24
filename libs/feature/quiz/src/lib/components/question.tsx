@@ -14,8 +14,6 @@ import { MDXRemote } from "next-mdx-remote";
 import { Hints } from "./hints";
 import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
-import { LessonType } from "@prisma/client";
-import { useState } from "react";
 import { useCookies } from "react-cookie";
 import { useEventLog } from "@self-learning/util/common";
 import {
@@ -45,17 +43,6 @@ export function Question({
 	const { newEvent: writeEvent } = useEventLog();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
-	const [currentStep, setCurrentStep] = useState(
-		evaluation?.isCorrect === true &&
-			question.type === "multiple-choice" &&
-			lesson.lessonType === LessonType.SELF_REGULATED
-			? 2
-			: 1
-	);
-	const totalSteps =
-		question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED
-			? 2
-			: 1;
 
 	const [_, setCookie] = useCookies(["quiz_answers_save"]);
 
@@ -77,11 +64,6 @@ export function Question({
 	}
 
 	async function setEvaluation(e: BaseEvaluation | null) {
-		setCurrentStep(
-			question.type === "multiple-choice" && lesson.lessonType === LessonType.SELF_REGULATED
-				? 2
-				: 1
-		);
 		setEvaluations(prev => ({
 			...prev,
 			[question.questionId]: e
@@ -93,22 +75,14 @@ export function Question({
 			courseId: courseId,
 			payload: {
 				questionId: question.questionId,
-				totalQuestionPool: totalSteps,
-				questionPoolIndex: currentStep,
+				totalQuestionPool: 1,
+				questionPoolIndex: 1,
 				type: question.type,
 				hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
 				attempts: 1,
 				solved: e?.isCorrect ?? false
 			}
 		});
-	}
-
-	function nextQuestionStep() {
-		if (currentStep < totalSteps) {
-			setCurrentStep(currentStep + 1);
-		} else {
-			goToNextQuestion();
-		}
 	}
 
 	return (
@@ -135,8 +109,7 @@ export function Question({
 							</button>
 							<CheckResult
 								setEvaluation={setEvaluation}
-								nextQuestionStep={nextQuestionStep}
-								isLastQuestionStep={currentStep === totalSteps}
+								nextQuestionStep={goToNextQuestion}
 							/>
 						</div>
 					</div>
@@ -150,11 +123,7 @@ export function Question({
 				</div>
 
 				<div className="flex max-w-full flex-col gap-8">
-					<QuestionAnswerRenderer
-						question={question}
-						lesson={lesson}
-						questionStep={currentStep}
-					/>
+					<QuestionAnswerRenderer question={question} lesson={lesson} />
 				</div>
 
 				{/* {question.withCertainty && <Certainty />} */}
@@ -167,12 +136,10 @@ export function Question({
 
 function CheckResult({
 	setEvaluation,
-	nextQuestionStep,
-	isLastQuestionStep
+	nextQuestionStep
 }: {
 	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
 	nextQuestionStep: () => void;
-	isLastQuestionStep: boolean;
 }) {
 	// We only use "multiple-choice" to get better types ... works for all question types
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
@@ -187,7 +154,7 @@ function CheckResult({
 		<span className="text-red-500">No question state found for this question.</span>;
 	}
 
-	const canGoToNextQuestion = currentEvaluation || !isLastQuestionStep;
+	const canGoToNextQuestion = !!currentEvaluation;
 
 	const renderInProgressButton = () => (
 		<button
@@ -213,30 +180,22 @@ function CheckResult({
 	return returnButton[completionState];
 }
 
-export function QuestionTab(props: {
-	evaluation: { isCorrect: boolean } | null;
-	index: number;
-	isMultiStep: boolean;
-}) {
+export function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; index: number }) {
 	const isCorrect = props.evaluation?.isCorrect === true;
 	const isIncorrect = props.evaluation?.isCorrect === false;
-
-	{
-		props.isMultiStep && <CheckCircleIcon className="h-5 text-secondary" />;
-	}
 
 	return (
 		<span className="flex items-center gap-4">
 			{isCorrect ? (
-				<QuestionTabIcon isMultiStep={props.isMultiStep}>
+				<QuestionTabIcon>
 					<CheckCircleIcon className="h-5 text-secondary" />
 				</QuestionTabIcon>
 			) : isIncorrect ? (
-				<QuestionTabIcon isMultiStep={props.isMultiStep}>
+				<QuestionTabIcon>
 					<XCircleIcon className="h-5 text-red-500" />
 				</QuestionTabIcon>
 			) : (
-				<QuestionTabIcon isMultiStep={props.isMultiStep}>
+				<QuestionTabIcon>
 					<CheckCircleIconOutline className="h-5 text-gray-400" />
 				</QuestionTabIcon>
 			)}
@@ -245,19 +204,6 @@ export function QuestionTab(props: {
 	);
 }
 
-function QuestionTabIcon({
-	children,
-	isMultiStep
-}: {
-	children: React.ReactNode;
-	isMultiStep: boolean;
-}) {
-	return isMultiStep ? (
-		<div className="flex overflow-hidden">
-			{children}
-			{children}
-		</div>
-	) : (
-		<div>{children}</div>
-	);
+function QuestionTabIcon({ children }: { children: React.ReactNode }) {
+	return <div>{children}</div>;
 }

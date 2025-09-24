@@ -1,5 +1,4 @@
 import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
-import { LessonType } from "@prisma/client";
 import { useMarkAsCompleted } from "@self-learning/completion";
 import { useLessonContext, ChapterName, LessonData, getCourse } from "@self-learning/lesson";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
@@ -145,10 +144,10 @@ export function QuizHeader({
 	const { newEvent } = useEventLog();
 	const [suppressDialog, setSuppressDialog] = useState(false);
 	const orderedQuestions = useMemo(() => {
-	return questionOrder
-		.map(Id => questions.find(q => q.questionId === Id))
-		.filter((q): q is NonNullable<typeof q> => !!q);
-}, [questionOrder, questions]);
+		return questionOrder
+			.map(Id => questions.find(q => q.questionId === Id))
+			.filter((q): q is NonNullable<typeof q> => !!q);
+	}, [questionOrder, questions]);
 	const isStandalone = !course;
 	const lessonUrl = isStandalone
 		? `/lessons/${lesson.slug}`
@@ -179,7 +178,7 @@ export function QuizHeader({
 
 	useEffect(() => {
 		// TODO diary: check if the useEffect is necessary
-		logQuizStart(lesson, orderedQuestions[currentIndex])
+		logQuizStart(lesson, orderedQuestions[currentIndex]);
 	}, [orderedQuestions, currentIndex, logQuizStart, lesson]);
 
 	return (
@@ -198,10 +197,6 @@ export function QuizHeader({
 							<QuestionTab
 								index={index}
 								evaluation={evaluations[question.questionId]}
-								isMultiStep={
-									lesson.lessonType === LessonType.SELF_REGULATED &&
-									question.type === "multiple-choice"
-								}
 							/>
 						</Tab>
 					</div>
