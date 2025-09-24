@@ -1,5 +1,6 @@
 {
     "Save Profile": "$t(common:Profile) Speichern",
+    "You will soon be able to enter your email address here.": "Hier kannst du bald deine $t(common:Email) Adresse eintragen.",
     "Be Careful! This changes cannot be undone.": "Sei vorsichtig! Diese Aktionen können nicht rückgängig gemacht werden.",
     "Delete-User-Data": "Nutzerdaten Löschen",
     "Delete Student User Data": "Studentische Nutzerdaten Löschen",
