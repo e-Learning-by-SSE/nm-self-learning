@@ -511,7 +511,7 @@ function CombinedImageButton({
 							className="w-full p-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-transparent"
 						/>
 						<div className="text-xs text-gray-500 mt-1">
-							Gib eine Bild-URL ein oder wähle ein Bild aus deinen Assets.
+							Gib eine Bild-URL ein oder lade ein Bild hoch
 						</div>
 					</div>
 
