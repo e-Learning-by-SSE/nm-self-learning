@@ -1,7 +1,7 @@
 {
     "Save Profile": "$t(common:Profile) Speichern",
     "Be Careful! This changes cannot be undone.": "Sei vorsichtig! Diese Aktionen können nicht rückgängig gemacht werden.",
-    "Delete User Data": "Nutzerdaten Löschen",
+    "Delete-User-Data": "Nutzerdaten Löschen",
     "Delete Student User Data": "Studentische Nutzerdaten Löschen",
     "What will be deleted?": "Was wird gelöscht?",
     "After this action, no data can be traced back to your name.": "Nach dieser Aktion gibt es keine Rückschlüsse mehr auf deinen Namen.",
@@ -15,5 +15,10 @@
     "Are you sure you want to delete your user data? Enter your name to confirm.": "Bist du dir sicher, dass du die studentischen Nutzerdaten zum Profil {{name}} löschen möchtest? Zum Bestätigen bitte den Namen des Accounts eingeben.",
     "Delete-Author-Profile": "Autorenprofil Löschen",
     "Show more": "Mehr anzeigen",
-    "Show less": "Weniger anzeigen"
+    "Show less": "Weniger anzeigen",
+    "Account Deleted": "Account Gelöscht",
+    "Your account data has been successfully deleted from the system.": "Deine Account-Daten wurden erfolgreich aus dem System gelöscht.",
+    "The Account Could Not Be Deleted": "Der Account konnte nicht gelöscht werden.",
+    "Please try again later or contact the system administrator.": "Bitte versuche es später erneut oder kontaktiere einen Administrator.",
+    "All data, including the created courses and learning units, will be deleted.": "<strong>Es werden alle Daten inklusive der erstellen $t(common:Course_other) und $t(common:Nano-Module_other) gelöscht. Wenn nur deine Nutzerdaten löschen möchtest, klicke auf <i>\"$t(Delete-User-Data)\"</i>.</strong><br/><red>Diese Funktion steht aktuell nicht zur Verfügung. Wenden sie sich an den Systemadministrator um ihre gesamten Daten zu löschen.</red>"
 }

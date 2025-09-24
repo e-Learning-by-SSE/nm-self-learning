@@ -1,7 +1,7 @@
 {
     "Save Profile": "Save $t(common:Profile)",
     "Be Careful! This changes cannot be undone.": "Be Careful! This changes cannot be undone.",
-    "Delete User Data": "Delete User Data",
+    "Delete-User-Data": "Delete User Data",
     "Delete Student User Data": "Delete Student User Data",
     "What will be deleted?": "What will be deleted?",
     "After this action, no data can be traced back to your name.": "After this action, no data can be traced back to your name.",
@@ -15,5 +15,10 @@
     "Are you sure you want to delete your user data? Enter your name to confirm.": "Are you sure you want to delete your user data for profile {{name}}? To confirm, please enter the name of the account.",
     "Delete-Author-Profile": "Delete Author $t(common:Profile)",
     "Show more": "Show more",
-    "Show less": "Show less"
+    "Show less": "Show less",
+    "Account Deleted": "Account Deleted",
+    "Your account data has been successfully deleted from the system.": "Your account data has been successfully deleted from the system.",
+    "The Account Could Not Be Deleted": "The Account Could Not Be Deleted",
+    "Please try again later or contact the system administrator.": "Please try again later or contact the system administrator.",
+    "All data, including the created courses and learning units, will be deleted.": "<strong>All data, including the created $t(common:Course_other) and $t(common:Nano-Module_other), will be deleted. If you only want to delete your user data, click on <i>\"$t(Delete-User-Data)\"</i>.</strong><br/><red>This function is currently not available. Please contact the system administrator to delete all your data.</red>"
 }
