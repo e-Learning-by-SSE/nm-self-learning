@@ -154,7 +154,7 @@ function CheckResult({
 		<span className="text-red-500">No question state found for this question.</span>;
 	}
 
-	const canGoToNextQuestion = currentEvaluation;
+	const canGoToNextQuestion = !!currentEvaluation;
 
 	const renderInProgressButton = () => (
 		<button
