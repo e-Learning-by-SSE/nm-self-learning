@@ -1,6 +1,12 @@
 "use client";
 import { trpc } from "@self-learning/api-client";
-import { Dialog, DialogActions, ImageOrPlaceholder, showToast } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	ImageOrPlaceholder,
+	showToast,
+	Trans
+} from "@self-learning/ui/common";
 import { CenteredContainer, redirectToLogin, useRequiredSession } from "@self-learning/ui/layouts";
 import {
 	AuthorSvg,
@@ -45,7 +51,7 @@ export function DeleteMeForm() {
 					onClick={() => setOpenStudentDeleteInfoDialog(true)}
 					className="btn btn-danger w-full max-w-52"
 				>
-					{t("Delete User Data")}
+					{t("Delete-Use-Data")}
 				</button>
 
 				<button
@@ -74,16 +80,20 @@ export function DeleteMeForm() {
 									if (success) {
 										showToast({
 											type: "success",
-											title: "Account gelöscht",
-											subtitle: "Sie wurden erfolgreich abgemeldet."
+											title: t("Account Deleted"),
+											subtitle: t(
+												"Your account data has been successfully deleted from the system."
+											)
 										});
 									}
 									redirectToLogin();
 								} catch (error) {
 									showToast({
 										type: "error",
-										title: "Account konnte nicht gelöscht werden",
-										subtitle: "Bitte versuchen Sie es erneut."
+										title: t("The Account Could Not Be Deleted"),
+										subtitle: t(
+											"Please try again later or contact the system administrator."
+										)
 									});
 								}
 							}
@@ -334,16 +344,14 @@ function AuthorDeleteDialog({ onClose }: { onClose: () => void }) {
 			>
 				<CenteredContainer>
 					<div className="flex flex-col items-center justify-center p-6 overflow-auto">
-						<p className="mb-4 text-lg font-semibold">
-							Es werden alle Daten inklusive der erstellen Kurse und Lerneinheiten
-							gelöscht. Wenn nur deine Nutzerdaten löschen möchtest, klicke auf
-							"Nutzerdaten löschen".{" "}
-						</p>
-						<p className="text-md "></p>
-						<span className="text-red-300">
-							Diese Funktion steht aktuell nicht zur Verfügung. Wenden sie sich an den
-							Systemadministrator um ihre gesamten Daten zu löschen.
-						</span>
+						<Trans
+							namespace="feature-settings"
+							i18nKey="All data, including the created courses and learning units, will be deleted."
+							components={{
+								strong: <p className="mb-4 text-lg font-semibold " />,
+								red: <p className="text-base text-red-300" />
+							}}
+						/>
 					</div>
 				</CenteredContainer>
 				<div className="absolute bottom-5 right-5">
