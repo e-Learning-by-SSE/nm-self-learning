@@ -5,10 +5,12 @@ import { PropsWithChildren } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 import { LessonLayoutProps } from "@self-learning/lesson";
+import { LessonType } from "@prisma/client";
 
 export default function MultipleChoiceAnswer({ lesson }: { lesson: LessonLayoutProps["lesson"] }) {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
 	const { config } = useQuiz();
+	const isJustified = lesson.lessonType === LessonType.SELF_REGULATED;
 
 	return (
 		<>
@@ -23,6 +25,7 @@ export default function MultipleChoiceAnswer({ lesson }: { lesson: LessonLayoutP
 							question.answers.find(a => a.answerId === answerId)?.isCorrect ?? false
 						}
 						isSelected={answer.value[answerId] === true}
+						justified={isJustified}
 						onToggle={() => {
 							const answerSetter = setAnswer;
 							answerSetter(old => ({
@@ -56,13 +59,15 @@ export function MultipleChoiceOption({
 	isSelected,
 	isUserAnswerCorrect,
 	onToggle,
-	disabled
+	disabled,
+	justified
 }: PropsWithChildren<{
 	showResult: boolean;
 	isSelected: boolean;
 	isCorrect: boolean;
 	isUserAnswerCorrect: boolean;
 	disabled: boolean;
+	justified: boolean;
 	onToggle: () => void;
 }>) {
 	let className = "bg-white";
@@ -74,22 +79,30 @@ export function MultipleChoiceOption({
 	}
 
 	return (
-		<button
-			className={`flex gap-8 rounded-lg border border-light-border bg-white px-8 py-2 text-start focus:outline-secondary ${className}`}
-			onClick={onToggle}
-			disabled={disabled}
-			data-testid="MultipleChoiceOption"
-		>
-			<input
-				type={"checkbox"}
-				checked={isSelected}
-				onChange={() => {
-					/** Bubbles up to button click. */
-				}}
+		<div className="rounded-lg border border-light-border bg-white">
+			<button
+				className={`flex gap-8 rounded-lg border border-light-border bg-white px-8 py-2 text-start focus:outline-secondary ${className}`}
+				onClick={onToggle}
 				disabled={disabled}
-				className="checkbox self-center"
-			/>
-			{children}
-		</button>
+				data-testid="MultipleChoiceOption"
+			>
+				<input
+					type={"checkbox"}
+					checked={isSelected}
+					onChange={() => {
+						/** Bubbles up to button click. */
+					}}
+					disabled={disabled}
+					className="checkbox self-center"
+				/>
+				{children}
+			</button>
+			{justified && (
+				<div className="rounded-b-lg py-2 px-8">
+					<div className="py-1">Bitte Begründe deine Antwort:</div>
+					<textarea className="w-full" placeholder="Begründung..."></textarea>
+				</div>
+			)}
+		</div>
 	);
 }
