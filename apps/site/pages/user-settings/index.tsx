@@ -58,7 +58,7 @@ export default function SettingsPage(props: PageProps) {
 			});
 			showToast({
 				type: "success",
-				title: "Informationen aktualisiert",
+				title: t_common("Information Updated"),
 				subtitle: update.displayName
 			});
 			router.replace(router.asPath);
@@ -84,7 +84,7 @@ export default function SettingsPage(props: PageProps) {
 			if (error instanceof Error) {
 				showToast({
 					type: "error",
-					title: "Aktuelle Einstellungen konnten nicht gespeichert werden!",
+					title: t_common("Settings Could not be Saved!"),
 					subtitle: error.message ?? ""
 				});
 			}
