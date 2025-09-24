@@ -94,7 +94,12 @@ export function DialogActions({
 	const { t } = useTranslation("common");
 	return (
 		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
-			<button type="button" className="btn btn-tertiary" onClick={() => onClose(undefined)}>
+			<button
+				type="button"
+				className="btn btn-tertiary"
+				onClick={() => onClose(undefined)}
+				data-testid="dialog-cancel-button"
+			>
 				<span className={"text-gray-600"}>{t("Cancel")}</span>
 			</button>
 			{children}
