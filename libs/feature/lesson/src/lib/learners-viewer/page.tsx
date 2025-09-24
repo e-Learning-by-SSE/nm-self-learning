@@ -30,11 +30,12 @@ import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-atte
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LessonCourseData, LessonData } from "../lesson-data-access";
 import { createLessonPropsFrom } from "./create-lesson-props";
 import { database } from "@self-learning/database";
 import { Session } from "next-auth";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export type LessonLearnersViewProps = {
 	lesson: LessonData & { performanceScore?: number | null };
@@ -84,18 +85,55 @@ export async function getSspLearnersView(
 }
 
 export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersViewProps) {
-	const [showDialog, setShowDialog] = useState(lesson.lessonType === LessonType.SELF_REGULATED);
+	/**
+	 * Using router and modal state to simulate 2 different URLs for back/forward navigation.
+	 * Alternative: Create 2 separate pages for the lesson and the self regulated question.
+	 */
+	const router = useRouter();
+	const path = usePathname();
+	const searchParams = useSearchParams();
+	const modalOpened = searchParams.get("modal");
+	const [showDialog, setShowDialog] = useState(
+		lesson.lessonType === LessonType.SELF_REGULATED && modalOpened !== "closed"
+	);
+
+	useEffect(() => {
+		if (lesson.lessonType === LessonType.SELF_REGULATED) {
+			if (!router.isReady) return;
+
+			if (modalOpened === "closed") {
+				setShowDialog(false);
+			}
+			if (modalOpened === null) {
+				// Probably the first time the page is loaded, so we open the dialog
+				router.replace({ pathname: path, query: { modal: "open" } }, undefined, {
+					shallow: true
+				});
+			}
+			if (modalOpened === "open") {
+				// Probably on back navigation, ensure dialog is open (and not closed by previous action)
+				setShowDialog(true);
+			}
+		}
+	}, [lesson.lessonType, modalOpened, router, path]);
 
 	const { content: video } = findContentType("video", lesson.content as LessonContent);
 	const { content: pdf } = findContentType("pdf", lesson.content as LessonContent);
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
+	const handleCloseDialog = () => {
+		setShowDialog(false);
+		router.push({ pathname: path, query: { modal: "closed" } }, undefined, {
+			shallow: true
+		});
+	};
+
 	if (showDialog && markdown.preQuestion) {
 		return (
 			<article className="flex flex-col gap-4">
 				<SelfRegulatedPreQuestion
-					setShowDialog={setShowDialog}
+					onClose={handleCloseDialog}
 					question={markdown.preQuestion}
 				/>
 			</article>
@@ -468,15 +506,15 @@ function MediaTypeSelector({
 
 function SelfRegulatedPreQuestion({
 	question,
-	setShowDialog
+	onClose
 }: {
 	question: CompiledMarkdown;
-	setShowDialog: Dispatch<SetStateAction<boolean>>;
+	onClose: () => void;
 }) {
 	const [userAnswer, setUserAnswer] = useState("");
 
 	const handleSubmit = () => {
-		setShowDialog(false);
+		onClose();
 		showToast({
 			title: "Super!",
 			subtitle:
@@ -486,7 +524,7 @@ function SelfRegulatedPreQuestion({
 	};
 
 	const handleSkipQuestion = () => {
-		setShowDialog(false);
+		onClose();
 		showToast({
 			title: "Schritt übersprungen",
 			subtitle: ".",

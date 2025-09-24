@@ -20,7 +20,7 @@ export default function SubjectsPage() {
 
 				<Link href="/teaching/subjects/create" className="btn-primary w-fit">
 					<PlusIcon className="icon" />
-					<span>Hinzufügen</span>
+					<span>Fachgebiet erstellen</span>
 				</Link>
 			</div>
 

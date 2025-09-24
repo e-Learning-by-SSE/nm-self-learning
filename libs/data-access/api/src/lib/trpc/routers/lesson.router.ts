@@ -5,6 +5,7 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
+import { TRPCError } from "@trpc/server";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -137,24 +138,43 @@ export const lessonRouter = t.router({
 		.input(z.object({ lessonId: z.string() }))
 		.query(async ({ input }) => {
 			const courses = await database.$queryRaw`
-							SELECT * FROM "Course"
-							WHERE EXISTS (
-									SELECT 1 FROM jsonb_array_elements("Course".content) AS chapter
-									CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
-									WHERE lesson->>'lessonId' = ${input.lessonId}
-								)
-							`;
+				SELECT *
+				FROM "Course"
+				WHERE EXISTS (SELECT 1
+							  FROM jsonb_array_elements("Course".content) AS chapter
+									   CROSS JOIN jsonb_array_elements(chapter - > 'content') AS lesson
+							  WHERE lesson ->>'lessonId' = ${input.lessonId})
+			`;
 			return courses as Course[];
 		}),
 	deleteLesson: authorProcedure
-		.input(z.object({ id: z.string() }))
+		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
-			return database.lesson.delete({
-				where: {
-					lessonId: input.id,
-					authors: { some: { username: ctx.user.name } }
+			if (ctx.user?.role === "ADMIN") {
+				await database.lesson.deleteMany({
+					where: {
+						lessonId: input.lessonId
+					}
+				});
+			} else {
+				const deleted = await database.lesson.deleteMany({
+					where: {
+						lessonId: input.lessonId,
+						authors: {
+							some: {
+								username: ctx.user?.name
+							}
+						}
+					}
+				});
+
+				if (deleted.count === 0) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "User is not an author of this lesson or lesson does not exist."
+					});
 				}
-			});
+			}
 		}),
 	validateAttempt: authProcedure
 		.input(

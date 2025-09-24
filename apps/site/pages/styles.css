@@ -98,12 +98,19 @@ video {
 	color: theme("colors.slate.800");
 }
 
-.btn {
-	@apply flex place-content-center items-center gap-2 rounded-lg px-8 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-25;
+/* Base button styles that all button variants inherit */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-tertiary,
+.btn-stroked {
+	@apply flex place-content-center items-center rounded-lg gap-2 px-8 py-2 text-sm font-semibold transition-colors disabled:opacity-25;
 }
 
+/* Primary button: green background, white text */
 .btn-primary {
-	@apply flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25;
+	@apply bg-emerald-500 text-white hover:bg-emerald-600;
 }
 
 .hover-highlight-scale {
@@ -123,32 +130,56 @@ video {
 	@apply active:shadow-inner active:translate-y-[1px] active:scale-[0.99];
 }
 
+.hover-highlight-scale {
+	@apply transition-transform hover:scale-105 duration-300;
+}
+
+.hover-highlight-ease {
+	@apply transition-transform duration-300 ease-in-out;
+}
+
+.btn-gamify {
+	@apply inline-block px-6 py-3 font-medium text-white rounded-md transition-all duration-300 ease-in-out hover-highlight-scale;
+	@apply bg-gradient-to-br from-purple-500/80 to-indigo-700/80 backdrop-blur-sm;
+	@apply border border-purple-400/30 shadow-sm;
+	@apply hover:shadow-md hover:from-purple-600/90 hover:to-indigo-800/90 hover:translate-y-[-1px];
+	@apply focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50;
+	@apply active:shadow-inner active:translate-y-[1px] active:scale-[0.99];
+}
+
+/* Secondary button: green outline, green text */
 .btn-secondary {
-	@apply glass flex place-content-center items-center gap-2 rounded-lg py-2 px-8 text-sm font-semibold transition-colors hover:bg-opacity-90;
+	@apply border border-emerald-500 bg-transparent text-emerald-600 hover:bg-emerald-50;
 }
 
-.btn-add {
-	@apply flex place-content-center items-center gap-4 rounded-lg border border-emerald-500 bg-transparent py-2 pl-4 pr-6 font-semibold text-emerald-600 transition-colors;
+/* Danger button: red background, white text */
+.btn-danger {
+	@apply bg-red-500 text-white hover:bg-red-600;
 }
 
-.btn-add:hover {
-	@apply bg-emerald-50;
+/* Tertiary button: gray outline, gray text (previously border button) */
+.btn-tertiary {
+	@apply border border-gray-200 bg-transparent text-black hover:bg-slate-50;
 }
 
+/* Stroked button: Gray outline, white background, black text  */
 .btn-stroked {
-	@apply flex place-content-center items-center gap-2 rounded-lg border border-gray-200 bg-white px-8 py-2 text-sm font-medium hover:bg-gray-200 disabled:opacity-25;
+	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium hover:bg-gray-200 disabled:opacity-25;
 }
 
-.btn-small {
-	@apply rounded border border-light-border p-1 disabled:text-slate-200;
+/* X Mark Button: Text Gray, Hover Gray  */
+.btn-x-mark {
+	@apply rounded-full text-gray-400 hover:bg-gray-50 hover:text-red-500 p-1;
 }
 
-.btn-small-highlight {
-	@apply p-1 disabled:text-slate-200 bg-emerald-500 text-white hover:bg-emerald-700 gap-2 rounded-lg px-2 py-2;
+/* Icon button with text that can be hidden on mobile */
+.btn-with-icon {
+	@apply flex items-center justify-center gap-2 py-2 px-4;
 }
 
-.btn-icon {
-	@apply h-fit rounded-lg border border-light-border bg-white px-2 py-2;
+/* Icon-only buttons (no border when only icon is shown) */
+.btn-icon-only {
+	@apply border-0 p-2;
 }
 
 .icon {

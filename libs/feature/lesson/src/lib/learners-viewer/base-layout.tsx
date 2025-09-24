@@ -1,9 +1,13 @@
+import { ResolvedValue } from "@self-learning/types";
 import Head from "next/head";
+import { getCourse, LessonData } from "../lesson-data-access";
 
 export type BaseLessonLayoutProps = {
 	title: string;
 	playlistArea: React.ReactNode;
 	children: React.ReactNode;
+	course?: ResolvedValue<typeof getCourse>;
+	lesson?: LessonData;
 };
 
 export function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {

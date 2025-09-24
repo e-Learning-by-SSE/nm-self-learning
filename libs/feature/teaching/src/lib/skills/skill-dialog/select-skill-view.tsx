@@ -1,6 +1,6 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
-import { getButtonSizeClass, IconButton, XButton } from "@self-learning/ui/common";
+import { IconButton, IconOnlyButton } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
@@ -26,7 +26,7 @@ export function LabeledFieldSelectSkillsView({
 			button={
 				<IconButton
 					text="Hinzufügen"
-					icon={<PlusIcon className={getButtonSizeClass("medium")} />}
+					icon={<PlusIcon className="h-5 w-5" />}
 					onClick={() => setSelectSkillModal(true)}
 					title={"Hinzufügen"}
 					data-testid="BenoetigteSkills-add"
@@ -63,7 +63,7 @@ export function SelectSkillsView({
 		<>
 			<IconButton
 				text="Hinzufügen"
-				icon={<PlusIcon className={getButtonSizeClass("medium")} />}
+				icon={<PlusIcon className="h-5 w-5" />}
 				onClick={() => setSelectSkillModal(true)}
 				title={"Hinzufügen"}
 				data-testid="BenoetigteSkills-add"
@@ -142,7 +142,7 @@ function InlineRemoveButton({
 				>
 					{label}
 				</button>
-				<XButton onClick={onRemove} title={"Skill entfernen"} className="p-2 mr-2" />
+				<IconOnlyButton onClick={onRemove} title={"Skill entfernen"} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" className="p-2 mr-2" />
 			</div>
 		</div>
 	);

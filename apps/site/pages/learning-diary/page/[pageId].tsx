@@ -27,7 +27,11 @@ export const getServerSideProps = withTranslations(
 		}
 
 		return {
-			props: { diaryId: pageId, pages, availableStrategies }
+			props: {
+				diaryId: pageId,
+				pages,
+				availableStrategies
+			}
 		};
 	})
 );

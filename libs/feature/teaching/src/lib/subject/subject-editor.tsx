@@ -43,7 +43,7 @@ export function SubjectEditor({
 							<div>
 								<span className="font-semibold text-secondary">
 									Fachgebiet{" "}
-									{initialSubject.subjectId === "" ? "erstellen" : "speichern"}
+									{initialSubject.subjectId === "" ? "erstellen" : "bearbeiten"}
 								</span>
 
 								<h1 className="text-2xl">

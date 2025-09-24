@@ -17,8 +17,8 @@ export const getServerSideProps = withTranslations(
 	})
 );
 
-export default function QuestionsPage(props: QuestionProps) {
-	return <QuizLearnersView {...props} />;
+export default function QuestionsPage({ course, lesson, quiz, markdown }: QuestionProps) {
+	return <QuizLearnersView course={course} lesson={lesson} quiz={quiz} markdown={markdown} />;
 }
 
 QuestionsPage.getLayout = LessonLayout;

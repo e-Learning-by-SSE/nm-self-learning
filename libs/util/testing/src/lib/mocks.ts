@@ -164,6 +164,7 @@ lorem ipsum dolor sit amet.`
 			overwrites?.quiz ??
 			({
 				questions: [],
+				questionOrder: [],
 				config: null
 			} satisfies Quiz),
 		meta: Prisma.JsonNull

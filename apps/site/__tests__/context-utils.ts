@@ -2,8 +2,9 @@ import { IncomingMessage, ServerResponse } from "http";
 import { GetServerSidePropsContext } from "next";
 
 // Mock the provided context of getServerSideProps
-type MockRequest = IncomingMessage & {
+export type MockRequest = IncomingMessage & {
 	cookies: Partial<{ [key: string]: string }>;
+	headers: Partial<{ [key: string]: string }>;
 };
 
 /**
@@ -17,7 +18,12 @@ export const createMockContext = (
 ): GetServerSidePropsContext => {
 	return {
 		req: {
-			cookies: {}
+			cookies: {},
+			headers: {},
+			method: "GET",
+			url: "/",
+			connection: {} as any,
+			socket: {} as any
 		} as MockRequest,
 		res: {} as ServerResponse,
 		params: {},

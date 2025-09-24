@@ -23,6 +23,7 @@ export async function getSspStandaloneLessonLayout(
 
 	return { lesson };
 }
+
 export function StandaloneLessonLayout(
 	Component: NextComponentType<NextPageContext, unknown, StandaloneLessonLayoutProps>,
 	pageProps: StandaloneLessonLayoutProps
@@ -30,7 +31,11 @@ export function StandaloneLessonLayout(
 	const playlistArea = <StandaloneLessonPlaylistArea {...pageProps} />;
 
 	return (
-		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+		<BaseLessonLayout
+			title={pageProps.lesson.title}
+			playlistArea={playlistArea}
+			lesson={pageProps.lesson}
+		>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);

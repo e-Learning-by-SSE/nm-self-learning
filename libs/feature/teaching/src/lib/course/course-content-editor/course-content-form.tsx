@@ -5,7 +5,9 @@ import {
 	ChevronLeftIcon,
 	LinkIcon,
 	PencilIcon,
-	PlusIcon
+	PlusIcon,
+	XMarkIcon,
+	TrashIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
@@ -15,7 +17,7 @@ import {
 	onLessonEditorSubmit
 } from "@self-learning/teaching";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
-import { OnDialogCloseFn, SectionHeader, XButton } from "@self-learning/ui/common";
+import { IconOnlyButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
@@ -110,7 +112,7 @@ export function CourseContentForm() {
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
 				<PlusIcon className="mr-2 h-5" />
-				<span>Kapitel hinzufügen</span>
+				<span>Kapitel erstellen</span>
 			</button>
 
 			{openNewChapterDialog && <ChapterDialog onClose={handleAddChapterDialogClose} />}
@@ -170,11 +172,11 @@ function LessonNode({
 
 			<div className="flex gap-4">
 				{(data?.meta as LessonMeta)?.hasQuiz && (
-					<span className="rounded-full bg-secondary px-3 py-[2px] text-xs font-medium text-white">
+					<span className="flex items-center justify-center rounded-full bg-secondary px-3 py-1 text-xs font-medium text-white min-h-[2rem]">
 						Lernkontrolle
 					</span>
 				)}
-				<XButton onClick={onRemove} title="Entfernen" size="medium" />
+				<IconOnlyButton onClick={onRemove} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" title="Entfernen" />
 			</div>
 		</span>
 	);
@@ -245,17 +247,54 @@ function ChapterNode({
 					<span className="tracking-tight text-secondary">{chapter.title}</span>
 				</span>
 
-				<button
-					type="button"
-					className="text-gray-400"
-					onClick={() => setExpanded(v => !v)}
-				>
-					{expanded ? (
-						<ChevronDownIcon className="h-5" />
-					) : (
-						<ChevronLeftIcon className="h-5" />
-					)}
-				</button>
+				<div className="flex items-center gap-2">
+					{/* Chapter-Management Icons */}
+					<button
+						type="button"
+						title="Nach oben"
+						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						onClick={() => moveChapter(index, "up")}
+					>
+						<ArrowUpIcon className="h-4 w-4" />
+					</button>
+					<button
+						type="button"
+						title="Nach unten"
+						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						onClick={() => moveChapter(index, "down")}
+					>
+						<ArrowDownIcon className="h-4 w-4" />
+					</button>
+					<button
+						type="button"
+						title="Beschreibung bearbeiten"
+						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						onClick={() => setEditChapterDialogOpen(true)}
+					>
+						<PencilIcon className="h-4 w-4" />
+					</button>
+					<button
+						type="button"
+						title="Kapitel entfernen"
+						className="rounded p-1 hover:bg-red-100 text-red-500"
+						onClick={onRemove}
+					>
+						<TrashIcon className="h-4 w-4" />
+					</button>
+
+					{/* Expand/Collapse Button */}
+					<button
+						type="button"
+						className="text-gray-400 ml-2"
+						onClick={() => setExpanded(v => !v)}
+					>
+						{expanded ? (
+							<ChevronDownIcon className="h-5" />
+						) : (
+							<ChevronLeftIcon className="h-5" />
+						)}
+					</button>
+				</div>
 			</span>
 
 			{expanded && (
@@ -275,56 +314,22 @@ function ChapterNode({
 						))}
 					</ul>
 
-					<div className="flex flex-wrap items-center justify-between gap-4 pl-4 pt-4">
-						<div className="flex gap-4">
-							<button
-								type="button"
-								title="Nach oben"
-								className="rounded p-1 hover:bg-gray-300"
-								onClick={() => moveChapter(index, "up")}
-							>
-								<ArrowUpIcon className="h-3" />
-							</button>
-							<button
-								type="button"
-								title="Nach unten"
-								className="rounded p-1 hover:bg-gray-300"
-								onClick={() => moveChapter(index, "down")}
-							>
-								<ArrowDownIcon className="h-3" />
-							</button>
-							<button
-								type="button"
-								className="btn-stroked"
-								onClick={() => setEditChapterDialogOpen(true)}
-							>
-								<PencilIcon className="icon" />
-								<span>Editieren</span>
-							</button>
-						</div>
-
-						<div className="flex gap-4">
-							<button
-								type="button"
-								className="btn-stroked"
-								onClick={() => setCreateLessonDialogOpen(true)}
-							>
-								<PlusIcon className="icon" />
-								<span>Neue Lerneinheit erstellen</span>
-							</button>
-
-							<button
-								type="button"
-								className="btn-stroked"
-								onClick={() => setLessonSelectorOpen(true)}
-							>
-								<LinkIcon className="icon" />
-								<span>Lerneinheit verknüpfen</span>
-							</button>
-						</div>
-
-						<button type="button" className="btn-stroked" onClick={onRemove}>
-							<span>Entfernen</span>
+					<div className="flex gap-3 justify-center pt-4">
+						<button
+							type="button"
+							className="btn-stroked"
+							onClick={() => setCreateLessonDialogOpen(true)}
+						>
+							<PlusIcon className="icon" />
+							<span>Lerneinheit erstellen</span>
+						</button>
+						<button
+							type="button"
+							className="btn-stroked"
+							onClick={() => setLessonSelectorOpen(true)}
+						>
+							<LinkIcon className="icon" />
+							<span>Lerneinheit verknüpfen</span>
 						</button>
 					</div>
 				</>

@@ -29,7 +29,7 @@ import { LoadingBox, Tab, Tabs, useIsFirstRender } from "@self-learning/ui/commo
 import { useEventLog } from "@self-learning/util/eventlog";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useMemo, useState } from "react";
 import { useAttemptSubmission } from "../quiz-submit-attempt";
 
 export type QuestionProps = {
@@ -60,7 +60,7 @@ export async function getSspQuizLearnersView(
 }
 
 export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionProps) {
-	const { questions, config } = quiz;
+	const { questionOrder, questions, config } = quiz;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
 	const { index } = router.query;
@@ -127,6 +127,7 @@ export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionPro
 						currentIndex={nextIndex - 1}
 						goToQuestion={goToQuestion}
 						questions={questions}
+						questionOrder={questionOrder}
 					/>
 
 					<Question
@@ -221,12 +222,14 @@ export function QuizHeader({
 	course,
 	questions,
 	currentIndex,
+	questionOrder,
 	goToQuestion
 }: {
 	lesson: QuestionProps["lesson"];
 	course: QuestionProps["course"];
 	currentIndex: number;
 	questions: QuizContent;
+	questionOrder: string[];
 	goToQuestion: (index: number) => void;
 }) {
 	const { evaluations, completionState, lessonAttemptId } = useQuiz();
@@ -234,7 +237,11 @@ export function QuizHeader({
 	const [suppressDialog, setSuppressDialog] = useState(false);
 
 	const { nextLesson } = useLessonContext(lesson.lessonId, course?.slug ?? "");
-
+	const orderedQuestions = useMemo(() => {
+		return questionOrder
+			.map(Id => questions.find(q => q.questionId === Id))
+			.filter((q): q is NonNullable<typeof q> => !!q);
+	}, [questionOrder, questions]);
 	const isStandalone = !course;
 	const lessonUrl = isStandalone
 		? `/lessons/${lesson.slug}`
@@ -270,8 +277,8 @@ export function QuizHeader({
 	const isFirstRender = useIsFirstRender();
 	useEffect(() => {
 		if (!isFirstRender) return;
-		void logQuizStart(lesson, questions[currentIndex]);
-	}, [currentIndex, isFirstRender, lesson, logQuizStart, questions]);
+		void logQuizStart(lesson, orderedQuestions[currentIndex]);
+	}, [currentIndex, isFirstRender, lesson, logQuizStart, orderedQuestions]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -283,7 +290,7 @@ export function QuizHeader({
 				</Link>
 			</div>
 			<Tabs onChange={goToQuestion} selectedIndex={currentIndex}>
-				{questions.map((question, index) => (
+				{orderedQuestions.map((question, index) => (
 					<div onClick={() => logQuizStart(lesson, question)} key={question.questionId}>
 						<Tab>
 							<QuestionTab

@@ -41,7 +41,7 @@ function LessonEditorDialog({
 }) {
 	return (
 		<Dialog
-			title={!initialLesson ? "Neue Lerneinheit erstellen" : "Lerneinheit anpassen"}
+			title={!initialLesson ? "Lerneinheit erstellen" : "Lerneinheit bearbeiten"}
 			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
 			style={{ height: "80vh", width: "80vw" }}
 		>
@@ -60,7 +60,13 @@ function LessonEditorDialog({
 					Im separaten Editor öffnen
 				</Link>
 			</div>
-			<LessonEditor onSubmit={onClose} initialLesson={initialLesson} isFullScreen={false} />
+			<div className={"overflow-y-auto"}>
+				<LessonEditor
+					onSubmit={onClose}
+					initialLesson={initialLesson}
+					isFullScreen={false}
+				/>
+			</div>
 		</Dialog>
 	);
 }
