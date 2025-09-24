@@ -1,7 +1,13 @@
 "use client";
 import { ChevronDownIcon, ItalicIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
-import { Dialog, DialogActions, IconButton, OnDialogCloseFn } from "@self-learning/ui/common";
+import {
+	ButtonVariant,
+	Dialog,
+	DialogActions,
+	IconButton,
+	OnDialogCloseFn
+} from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
 import { EditorField } from "./editor";
 import { AssetPickerButton } from "./upload";
@@ -19,23 +25,52 @@ export function MarkdownField({
 	content,
 	setValue,
 	inline,
-	placeholder
+	placeholder,
+	compact,
+	header
 }: {
 	content: string | undefined;
 	setValue: (v: string | undefined) => void;
 	inline?: boolean;
 	placeholder?: string;
+	compact?: boolean;
+	header?: string | { text: string; sz: string; btn_variant?: ButtonVariant };
 }) {
 	const [openEditor, setOpenEditor] = useState(false);
 
+	if (typeof header === "string") {
+		header = { text: header, sz: "xl" };
+	}
+
 	return (
-		<div>
+		<div className="flex gap-2 flex-col">
+			{header && (
+				<div className="flex">
+					<h3 className={`text-${header.sz}`}>{header.text}</h3>
+					<div className="flex w-full justify-end bottom-0 right-0">
+						{!inline && (
+							<IconButton
+								icon={<PencilIcon className="h-5 w-5" />}
+								variant={header.btn_variant || "stroked"}
+								text="Bearbeiten"
+								onClick={() => setOpenEditor(true)}
+								title="Beschreibung bearbeiten"
+							/>
+						)}
+					</div>
+				</div>
+			)}
+
 			<div className="flex items-center gap-2">
 				<div
 					className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2 min-h-8"
 					onClick={() => setOpenEditor(true)}
 				>
-					<div className={"max-w-full" + (inline && " text-sm")}>
+					<div
+						className={`max-w-full 
+							${inline ? "text-sm" : ""} 
+							${compact ? "overflow-y-auto max-h-64" : ""}`}
+					>
 						{content !== "" ? (
 							<MarkdownViewer content={content ?? ""} />
 						) : (
@@ -58,7 +93,7 @@ export function MarkdownField({
 				)}
 			</div>
 
-			{!inline && (
+			{!inline && !header && (
 				<div className="flex justify-end bottom-0 right-0 py-2">
 					<IconButton
 						icon={<PencilIcon className="h-5 w-5" />}
@@ -335,9 +370,9 @@ function CombinedImageButton({
 		width: number;
 	}> = [
 		{ key: "100", label: "XS", description: "100px", width: 2 },
-		{ key: "150", label: "S", description: "150px",  width: 3 },
-		{ key: "200", label: "M", description: "200px",  width: 4 },
-		{ key: "300", label: "L", description: "300px",  width: 6 },
+		{ key: "150", label: "S", description: "150px", width: 3 },
+		{ key: "200", label: "M", description: "200px", width: 4 },
+		{ key: "300", label: "L", description: "300px", width: 6 },
 		{ key: "400", label: "XL", description: "400px", width: 7 },
 		{ key: "500", label: "XXL", description: "500px", width: 8 },
 		{ key: "100%", label: "Full", description: "Volle Breite", width: 10 }
