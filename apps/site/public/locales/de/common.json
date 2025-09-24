@@ -60,5 +60,8 @@
     "Learning-Path_one": "Lernpfad",
     "Learning-Path_other": "Lernpfade",
     "Email": "E-Mail",
-    "Name": "Name"
+    "Name": "Name",
+    "Information Updated": "Informationen aktualisiert",
+    "Settings Could not be Saved!": "Einstellungen konnten nicht gespeichert werden!"
+
 }
