@@ -11,7 +11,7 @@ describe("FeatureSettingsForm", () => {
 			enabledLearningStatistics: false
 		};
 		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
-		const ltbCheckbox = screen.getByLabelText("Lerntagebuch");
+		const ltbCheckbox = screen.getByTestId("ltb-toggle");
 		await userEvent.click(ltbCheckbox);
 
 		await waitFor(() => {
@@ -30,8 +30,8 @@ describe("FeatureSettingsForm", () => {
 		};
 		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
 
-		const statisticsCheckbox = screen.getByLabelText("Lernstatistiken");
-		const ltbCheckbox = screen.getByLabelText("Lerntagebuch");
+		const statisticsCheckbox = screen.getByTestId("statistics-toggle");
+		const ltbCheckbox = screen.getByTestId("ltb-toggle");
 
 		await userEvent.click(ltbCheckbox);
 		await userEvent.click(statisticsCheckbox);

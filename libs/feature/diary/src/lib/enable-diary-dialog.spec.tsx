@@ -1,4 +1,3 @@
-import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { EnableLearningDiaryDialog } from "@self-learning/diary";
@@ -43,11 +42,11 @@ describe("EnableLearningDiaryDialog", () => {
 		const mockOnClose = jest.fn();
 		const mockOnSubmit = jest.fn();
 
-		const { getByText } = render(
+		const { getByTestId } = render(
 			<EnableLearningDiaryDialog onClose={mockOnClose} onSubmit={mockOnSubmit} />
 		);
 
-		const closeButton = getByText("Abbrechen");
+		const closeButton = getByTestId("dialog-cancel-button");
 		await userEvent.click(closeButton);
 		await waitFor(() => {
 			expect(mockOnSubmit).not.toHaveBeenCalled();
