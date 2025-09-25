@@ -38,28 +38,32 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 	return ollamaModelList.parse(data);
 }
 
+export async function fetchLlmConfig() {
+	const config = await database.llmConfiguration.findFirst({
+		where: { isActive: true },
+		select: {
+			serverUrl: true,
+			defaultModel: true,
+			updatedAt: true,
+			apiKey: true
+		}
+	});
+
+	return config;
+}
+
 export const llmConfigRouter = t.router({
 	get: adminProcedure.query(async () => {
-		const config = await database.llmConfiguration.findFirst({
-			where: { isActive: true },
-			select: {
-				id: true,
-				serverUrl: true,
-				defaultModel: true,
-				isActive: true,
-				createdAt: true,
-				updatedAt: true,
-				apiKey: true
-			}
-		});
-
+		const config = await fetchLlmConfig();
 		if (!config) {
 			return null;
 		}
 
+		const { apiKey, ...rest } = config;
+
 		return {
-			...config,
-			hasApiKey: !!config.apiKey
+			...rest,
+			hasApiKey: !!apiKey
 		};
 	}),
 
