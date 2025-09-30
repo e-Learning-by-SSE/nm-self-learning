@@ -1,6 +1,7 @@
 import { LearningHeatmap, TeacherView, VideoDuration } from "@self-learning/analysis";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 
 const PreviewTypes = ["Videos", "Heatmap", "Teacher"] as const;
 
@@ -26,6 +27,9 @@ export default function Page() {
 				return null;
 		}
 	};
+
+	// Total Time of the User spent Learning in Seconds 
+	// const { data, isLoading } = trpc.KPIRouter.getTotalTimeByIdInSeconds.useQuery();
 
 	return (
 		<div className="bg-gray-50">
