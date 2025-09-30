@@ -1,22 +1,18 @@
--- Creates a view to calculate total time spent by each user based on sessions
--- A session is defined as a series of events with no more than 30 minutes between them
+-- This is an empty migration.
 
---CREATE OR REPLACE VIEW kpi_total_time_spent AS
-
-DROP TABLE IF EXISTS kpi_total_time_spent;
-
-CREATE TABLE kpi_total_time_spent AS
+-- KPI View: Total Time Spent by User
+CREATE OR REPLACE VIEW kpi_total_time_spent AS
 WITH sessionized AS (
     SELECT
-        id,
-        username,
-        "createdAt",
+        e.id,
+        e.username,
+        e."createdAt",
         CASE
-            WHEN LAG("createdAt") OVER (PARTITION BY username ORDER BY "createdAt") IS NULL
-                 OR "createdAt" - LAG("createdAt") OVER (PARTITION BY username ORDER BY "createdAt") > INTERVAL '30 minutes'
+            WHEN LAG(e."createdAt") OVER (PARTITION BY e.username ORDER BY e."createdAt") IS NULL
+                 OR e."createdAt" - LAG(e."createdAt") OVER (PARTITION BY e.username ORDER BY e."createdAt") > INTERVAL '30 minutes'
             THEN 1 ELSE 0
         END AS is_new_session
-    FROM "EventLog"
+    FROM "EventLog" e
 ),
 session_ids AS (
     SELECT
@@ -37,7 +33,8 @@ session_durations AS (
     GROUP BY username, session_id
 )
 SELECT
-    username,
+    u.id AS id,  -- use stable User.id as primary key
     SUM(session_duration_seconds) AS total_time_spent_seconds
-FROM session_durations
-GROUP BY username;
+FROM session_durations sd
+JOIN "User" u ON u.name = sd.username
+GROUP BY u.id;

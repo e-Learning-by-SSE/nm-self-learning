@@ -1,7 +1,7 @@
 generator client {
   provider = "prisma-client-js"
   binaryTargets = ["native", "linux-musl"]
-  previewFeatures = ["prismaSchemaFolder"]
+  previewFeatures = ["prismaSchemaFolder", "views"]
 }
 
 datasource db {
@@ -275,4 +275,9 @@ model LlmConfiguration {
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+view kpi_total_time_spent {
+  id                      String @unique
+  total_time_spent_seconds Float
 }
