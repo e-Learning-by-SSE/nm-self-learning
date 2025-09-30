@@ -6,7 +6,7 @@ import { withTranslations } from "@self-learning/api";
 import { formatDateString } from "@self-learning/util/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { llmConfigSchema } from "@self-learning/types";
 import { TRPCClientError } from "@trpc/client";
 
@@ -55,6 +55,7 @@ export default function LlmConfigPage() {
 				title: t("Configuration Saved"),
 				subtitle: t("LLM configuration has been saved successfully!")
 			});
+			setErrorMessage(null);
 
 			refetch();
 		} catch (error) {
@@ -83,6 +84,7 @@ export default function LlmConfigPage() {
 						count: result.availableModels.length
 					})
 				});
+				setErrorMessage(null);
 			}
 		} catch (error) {
 			setErrorMessage(
@@ -90,6 +92,7 @@ export default function LlmConfigPage() {
 					? { code: error.data?.code, message: error.message }
 					: { code: "UNKNOWN", message: "Failed to fetch available models" }
 			);
+			setAvailableModels([]);
 		} finally {
 			setFetchingModels(false);
 		}
