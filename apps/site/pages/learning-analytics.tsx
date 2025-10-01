@@ -28,8 +28,10 @@ export default function Page() {
 		}
 	};
 
-	// Total Time of the User spent Learning in Seconds 
-	// const { data, isLoading } = trpc.KPIRouter.getTotalTimeByIdInSeconds.useQuery();
+	// Total Time of the User spent Learning in Seconds
+	// const { data: totalData, isLoading: isLoadingTotal } = trpc.KPIRouter.getUserTotalLearningTime.useQuery();
+	// Daily Time of the User spent Learning in Seconds
+	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.KPIRouter.getUserDailyLearningTime.useQuery();
 
 	return (
 		<div className="bg-gray-50">
