@@ -13,7 +13,7 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { useForm } from "react-hook-form";
 import { getUserWithSettings } from "../crud-settings";
 import { useTranslation } from "next-i18next";
-import { ExpandableSettingsSection } from "./setting-section";
+import { SettingsSection } from "./setting-section";
 
 function ToggleSetting({
 	value,
@@ -101,7 +101,6 @@ export function FeatureSettingsForm({
 
 	const { t: t_common } = useTranslation("common");
 	const { t: t_tou } = useTranslation("terms-of-use");
-	const { t: t_feature } = useTranslation("feature-settings");
 
 	return (
 		<div className="space-y-8">
@@ -113,22 +112,26 @@ export function FeatureSettingsForm({
 					testid="statistics-toggle"
 				/>
 
-				<ExpandableSettingsSection
-				    title={t_tou("Learning Statistics - Terms of Use - Hoover Text")}
+				<SettingsSection
+					hoover={t_tou("Learning Statistics - Terms of Use - Hoover Text")}
 					text={t_tou("Learning Statistics - Terms of Use - Title")}
 				>
 					<Trans namespace="terms-of-use" i18nKey="Learning Statistics - Terms of Use" />
-				</ExpandableSettingsSection>
+				</SettingsSection>
 			</div>
 			<div className="space-y-2">
-				<ToggleSetting value={learningDiary} onChange={onChangeLtb} label={t_common("Learning-Diary")}
-					testid="ltb-toggle" />
-					<ExpandableSettingsSection
-				    title={t_tou("Learning-Diary - Terms of Use - Hoover Text")}
+				<ToggleSetting
+					value={learningDiary}
+					onChange={onChangeLtb}
+					label={t_common("Learning-Diary")}
+					testid="ltb-toggle"
+				/>
+				<SettingsSection
+					hoover={t_tou("Learning-Diary - Terms of Use - Hoover Text")}
 					text={t_tou("Learning-Diary - Terms of Use - Title")}
 				>
 					<Trans namespace="terms-of-use" i18nKey="Learning-Diary - Terms of Use" />
-				</ExpandableSettingsSection>
+				</SettingsSection>
 			</div>
 		</div>
 	);
@@ -137,11 +140,7 @@ export function FeatureSettingsForm({
 // Gruppierung der NotificationTypes zu benutzerfreundlichen Settings
 const notificationSettingsGroups: Record<
 	string, // group key wie "streakReminder", "courseReminder"
-	{
-		title: string;
-		text: string;
-		correspondingNotifications: NotificationType[];
-	}
+	{ title: string; text: string; correspondingNotifications: NotificationType[] }
 > = {
 	courseReminder: {
 		title: "Kurs-Erinnerungen",
@@ -196,10 +195,7 @@ export function NotificationSettingsForm({
 				s => s.type === notificationType && s.channel === channel
 			);
 			if (updatedSetting) {
-				updatedSettings.push({
-					...updatedSetting,
-					enabled: newValue
-				});
+				updatedSettings.push({ ...updatedSetting, enabled: newValue });
 			}
 		});
 		onChange(updatedSettings);
@@ -211,7 +207,7 @@ export function NotificationSettingsForm({
 				<div key={groupKey} className="space-y-3">
 					<div className="space-y-2">
 						<h3 className="font-medium">{group.title}</h3>
-						<ExpandableSettingsSection title={group.title} text={group.text} />
+						<SettingsSection hoover={group.title} text={group.text} />
 					</div>
 
 					{/* Pro Channel ein Toggle */}

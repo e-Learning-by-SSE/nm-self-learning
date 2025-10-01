@@ -2,16 +2,15 @@
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { useTranslation } from "next-i18next";
 
-export function ExpandableSettingsSection({
-	title,
+export function SettingsSection({
 	text,
+	hoover,
 	children
 }: {
-	title: string;
+	hoover: string;
 	text: string;
 	children?: React.ReactNode;
 }) {
-
 	const { t: t_feature } = useTranslation("feature-settings");
 
 	return (
@@ -20,7 +19,7 @@ export function ExpandableSettingsSection({
 				{({ open }) => (
 					<>
 						<header className="flex items-center justify-between">
-							<span className="font-medium" title={title}>
+							<span className="font-medium" title={hoover}>
 								{text}
 							</span>
 							{children && (
