@@ -252,7 +252,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 
 	return (
 		<div className="mb-2 rounded-xl bg-gray-200 p-2">
-			<div className="flex flex-wrap gap-1">
+			<div className="flex flex-wrap gap-1 items-center">
 				{[
 					{ title: "Bold", format: "BOLD", content: <BoldIcon className={iconSize} /> },
 					{
@@ -335,15 +335,16 @@ function CombinedImageButton({
 		width: number;
 	}> = [
 		{ key: "100", label: "XS", description: "100px", width: 2 },
-		{ key: "150", label: "S", description: "150px",  width: 3 },
-		{ key: "200", label: "M", description: "200px",  width: 4 },
-		{ key: "300", label: "L", description: "300px",  width: 6 },
+		{ key: "150", label: "S", description: "150px", width: 3 },
+		{ key: "200", label: "M", description: "200px", width: 4 },
+		{ key: "300", label: "L", description: "300px", width: 6 },
 		{ key: "400", label: "XL", description: "400px", width: 7 },
 		{ key: "500", label: "XXL", description: "500px", width: 8 },
 		{ key: "100%", label: "Full", description: "Volle Breite", width: 10 }
 	];
 
 	const [selectedSize, setSelectedSize] = useState("300");
+	const [selectedUrl, setSelectedUrl] = useState("");
 	const [showImageOptions, setShowImageOptions] = useState(false);
 
 	const selectedSizeData = imageSizes.find(size => size.key === selectedSize) || imageSizes[3];
@@ -370,7 +371,7 @@ function CombinedImageButton({
 		}
 		const imageMarkdown = selectedText
 			? `![your-description {${attributes}}](${selectedText})`
-			: `![your-description {${attributes}}](link-to-your-img)`;
+			: `![your-description {${attributes}}](${selectedUrl || "your-image-url"})`;
 
 		editor.executeEdits("", [
 			{
@@ -417,7 +418,7 @@ function CombinedImageButton({
 		<div className="relative inline-block">
 			<button
 				type="button"
-				className="btn-icon"
+				className="btn-icon flex items-center justify-center"
 				onClick={() => setShowImageOptions(!showImageOptions)}
 				title="Bild einfügen"
 			>
@@ -495,6 +496,22 @@ function CombinedImageButton({
 						</div>
 						<div className="text-xs text-gray-500 mt-1">
 							Leer lassen für automatische Höhe
+						</div>
+					</div>
+
+					<div className="p-3 border-b border-gray-100">
+						<div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+							Bild-URL
+						</div>
+						<input
+							type="text"
+							placeholder="https://example.com/image.jpg"
+							value={selectedUrl}
+							onChange={e => setSelectedUrl(e.target.value)}
+							className="w-full p-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-transparent"
+						/>
+						<div className="text-xs text-gray-500 mt-1">
+							Gib eine Bild-URL ein oder lade ein Bild hoch
 						</div>
 					</div>
 
