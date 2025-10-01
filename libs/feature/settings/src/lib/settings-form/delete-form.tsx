@@ -51,7 +51,7 @@ export function DeleteMeForm() {
 					onClick={() => setOpenStudentDeleteInfoDialog(true)}
 					className="btn btn-danger w-full max-w-52"
 				>
-					{t("Delete-Use-Data")}
+					{t("Delete-User-Data")}
 				</button>
 
 				<button
