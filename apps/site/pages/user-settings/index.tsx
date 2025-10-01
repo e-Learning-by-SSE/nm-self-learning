@@ -7,7 +7,8 @@ import {
 	getExperimentStatus,
 	getUserWithSettings,
 	NotificationSettingsForm,
-	PersonalSettingsForm
+	PersonalSettingsForm,
+	I18N_NAMESPACE as NS_SETTINGS
 } from "@self-learning/profile";
 import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
@@ -15,6 +16,7 @@ import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { useLoginRedirect, withAuth } from "@self-learning/util/auth";
 import { isTruthy } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
+import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -24,8 +26,8 @@ interface PageProps {
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth<PageProps>(async (context, user) => {
+	Array.from(new Set(["common", "pages-settings", ...NS_SETTINGS])),
+	withAuth<PageProps>(async (_context, user) => {
 		const settings = await getUserWithSettings(user.name);
 		const experimentStatus = await getExperimentStatus(user.name);
 
@@ -53,7 +55,9 @@ export default function SettingsPage(props: PageProps) {
 	const { mutateAsync: updateNotificationSettings } =
 		trpc.notification.upsertNotificationSetting.useMutation();
 
-	const { data } = useRequiredSession();
+	const { data } = useRequiredSession();	const { t: t_common } = useTranslation("common");
+	const { t } = useTranslation("pages-settings");
+
 	const router = useRouter();
 
 	const { loginRedirect } = useLoginRedirect();
@@ -71,7 +75,7 @@ export default function SettingsPage(props: PageProps) {
 			setHasSettingsChanged(true);
 			showToast({
 				type: "success",
-				title: "Informationen aktualisiert",
+				title: t_common("Information Updated"),
 				subtitle: update.displayName
 			});
 			router.replace(router.asPath);
@@ -79,7 +83,7 @@ export default function SettingsPage(props: PageProps) {
 			console.error(error);
 
 			if (error instanceof TRPCClientError) {
-				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				showToast({ type: "error", title: t_common("Error"), subtitle: error.message });
 			}
 		}
 	};
@@ -113,7 +117,7 @@ export default function SettingsPage(props: PageProps) {
 			if (error instanceof Error) {
 				showToast({
 					type: "error",
-					title: "Aktuelle Einstellungen konnten nicht gespeichert werden!",
+					title: t_common("Settings Could not be Saved!"),
 					subtitle: error.message ?? ""
 				});
 			}
@@ -153,7 +157,7 @@ export default function SettingsPage(props: PageProps) {
 
 	return (
 		<CenteredSection className="bg-gray-50">
-			<h1 className="text-2xl font-bold">Einstellungen</h1>
+			<h1 className="text-2xl font-bold">{t_common("Settings")}</h1>
 
 			{hasSettingsChanged ? (
 				<div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -180,13 +184,13 @@ export default function SettingsPage(props: PageProps) {
 				</p>
 			)}
 
-			<SettingSection title="Profil">
+			<SettingSection title={t_common("Profile")}>
 				<PersonalSettingsForm
 					personalSettings={settings}
 					onSubmit={onPersonalSettingSubmit}
 				/>
 			</SettingSection>
-			<SettingSection title="Funktionen">
+			<SettingSection title={t("Feature_other")}>
 				<FeatureSettingsForm
 					featureSettings={settings.featureFlags}
 					onChange={onFeatureChange}
@@ -203,7 +207,7 @@ export default function SettingsPage(props: PageProps) {
 			<SettingSection title="Studienteilnahme">
 				{props.experimentStatus && <ExperimentShortInfo {...props.experimentStatus} />}
 			</SettingSection>
-			<SettingSection title="Kritischer Bereich">
+			<SettingSection title={t("Critical Area")}>
 				<DeleteMeForm />
 			</SettingSection>
 		</CenteredSection>

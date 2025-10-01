@@ -1,5 +1,6 @@
 "use client";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
+import { useTranslation } from "next-i18next";
 
 export function ExpandableSettingsSection({
 	title,
@@ -10,6 +11,9 @@ export function ExpandableSettingsSection({
 	text: string;
 	children?: React.ReactNode;
 }) {
+
+	const { t: t_feature } = useTranslation("feature-settings");
+
 	return (
 		<section className="mt-5 rounded-lg bg-white p-3.5">
 			<Disclosure>
@@ -21,7 +25,7 @@ export function ExpandableSettingsSection({
 							</span>
 							{children && (
 								<DisclosureButton className="text-blue-500 hover:underline px-2">
-									{open ? "Weniger anzeigen" : "Mehr anzeigen"}
+									{t_feature(open ? "Show less" : "Show more")}
 								</DisclosureButton>
 							)}
 						</header>

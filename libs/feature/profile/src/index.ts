@@ -12,3 +12,5 @@ export * from "./lib/dashboard/platform-competion-stats";
 export * from "./lib/experiment/participant-info";
 export * from "./lib/experiment/experiment-settings-info";
 export * from "./lib/experiment/experiment-meta";
+
+export const I18N_NAMESPACE = ["terms-of-use", "feature-settings"];

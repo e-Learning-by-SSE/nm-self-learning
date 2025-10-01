@@ -1,4 +1,5 @@
 import { DialogBackdrop, Dialog as HeadlessDialog, DialogPanel as HeadlessDialogPanel, DialogTitle as HeadlessDialogTitle, Transition, TransitionChild } from "@headlessui/react";
+import { useTranslation } from "next-i18next";
 import { CSSProperties, Fragment, ReactNode } from "react";
 import { EaseInTransitionChild } from "../transitions/ease-in-child";
 import { SpringTransitionChild } from "../transitions/spring-in-child";
@@ -253,10 +254,16 @@ export function DialogActions({
 	/** Should include the call to action button.  */
 	children?: React.ReactNode;
 }) {
+	const { t } = useTranslation("common");
 	return (
 		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
-			<button type="button" className="btn btn-tertiary" onClick={() => onClose(undefined)}>
-				<span className={"text-gray-600"}>{abortLabel}</span>
+			<button
+				type="button"
+				className="btn btn-tertiary"
+				onClick={() => onClose(undefined)}
+				data-testid="dialog-cancel-button"
+			>
+				<span className={"text-gray-600"}>{t("Cancel")}</span>
 			</button>
 			{children}
 		</div >

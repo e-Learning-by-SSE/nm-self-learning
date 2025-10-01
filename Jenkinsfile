@@ -209,6 +209,9 @@ pipeline {
                             sh 'git restore .'
                             sh 'git config user.name "ssejenkins"'
                             sh 'git config user.email "jenkins@sse.uni-hildesheim.de"'
+							// would be nicer if URL is not hardcoded here but comes directly from the checkout stage
+                            sh 'git remote set-url origin git@github.com:e-learning-by-sse/nm-self-learning.git'
+
 
                             // Postgres + Sidecar für Build und Tests
                             withPostgres([
@@ -221,8 +224,9 @@ pipeline {
                                 sh "npm version ${newVersion}"
                             }
 
-                            // Git-Tag pushen
-                            sh "git push origin v${newVersion}"
+                            sshagent(['STM-SSH-DEMO']) {
+                                 sh "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git push origin v${newVersion}"
+                            }
 
                             // Docker-Build und Publish
                             ssedocker {
