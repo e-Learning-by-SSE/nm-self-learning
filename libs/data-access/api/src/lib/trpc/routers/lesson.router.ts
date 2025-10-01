@@ -1,7 +1,8 @@
 import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { createLessonMeta, lessonSchema } from "@self-learning/types";
+import { createLessonMeta, EventTypeMap, lessonSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
+import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
@@ -174,6 +175,48 @@ export const lessonRouter = t.router({
 					});
 				}
 			}
+		}),
+	validateAttempt: authProcedure
+		.input(
+			z.object({
+				lessonId: z.string(),
+				lessonAttemptId: z.string()
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const data = await database.eventLog.findFirst({
+				where: {
+					username: ctx.user.name,
+					type: "LESSON_OPEN",
+					resourceId: input.lessonId
+				},
+				orderBy: { createdAt: "desc" },
+				select: { createdAt: true, payload: true }
+			});
+
+			if (!data) {
+				return { isValid: false, reason: "NO_OPEN_EVENT" };
+			}
+
+			const latestOpenEvent = {
+				...data,
+				payload: data.payload as EventTypeMap["LESSON_OPEN"]
+			};
+
+			const eventAttemptId = latestOpenEvent.payload.lessonAttemptId;
+
+			// Falls attemptId im Event gespeichert ist, vergleiche
+			if (eventAttemptId && eventAttemptId !== input.lessonAttemptId) {
+				return { isValid: false, reason: "STALE_ATTEMPT" };
+			}
+
+			// Falls das LESSON_OPEN Event älter als 2h ist, ungültig
+			const hoursSinceOpen = differenceInHours(new Date(), latestOpenEvent.createdAt);
+			if (hoursSinceOpen > 2) {
+				return { isValid: false, reason: "EXPIRED" };
+			}
+
+			return { isValid: true };
 		})
 });
 

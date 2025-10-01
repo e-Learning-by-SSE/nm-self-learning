@@ -1,11 +1,20 @@
-import { QuizContent } from "@self-learning/question-types";
-import { getRandomId } from "@self-learning/util/common";
 import { faker } from "@faker-js/faker";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
-import { createCourseContent, createCourseMeta, extractLessonIds } from "@self-learning/types";
+import { QuizContent } from "@self-learning/question-types";
+import {
+	createCourseContent,
+	createCourseMeta,
+	extractLessonIds,
+	LoginStreak
+} from "@self-learning/types";
+import { getRandomId } from "@self-learning/util/common";
 import { subHours } from "date-fns";
 import { defaultLicenseId } from "../license";
+import {
+	createLessonWithRandomContentAndDemoQuestions,
+	createUsers,
+	getDefaultNotificationData
+} from "../seed-functions";
 
 faker.seed(1);
 
@@ -40,6 +49,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				isCorrect: false
 			}
 		],
+		randomizeAnswers: false,
 		hints: [
 			{
 				hintId: "abc",
@@ -415,8 +425,6 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		displayName: "Albus Dumbledore",
 		role: "ADMIN",
 		image: "https://i.imgur.com/UWMVO8m.jpeg",
-		enabledFeatureLearningDiary: false,
-		enabledLearningStatistics: true,
 		accounts: {
 			create: [
 				{
@@ -441,6 +449,28 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 						subjectId: "informatik"
 					}
 				}
+			}
+		},
+		gamificationProfile: {
+			create: {
+				username: "dumbledore",
+				lastLogin: new Date(2025, 5, 14),
+				loginStreak: {
+					count: 3,
+					status: "broken"
+				} satisfies LoginStreak,
+				energy: 10
+			}
+		},
+		notificationSettings: {
+			createMany: {
+				data: getDefaultNotificationData(false)
+			}
+		},
+		featureFlags: {
+			create: {
+				username: "dumbledore",
+				learningStatistics: true
 			}
 		}
 	},
@@ -467,6 +497,11 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 				displayName: "Minerva McGonagall",
 				slug: "mcgonagall",
 				imgUrl: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg"
+			}
+		},
+		notificationSettings: {
+			createMany: {
+				data: getDefaultNotificationData(false)
 			}
 		}
 	}
@@ -521,6 +556,28 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 	student: {
 		create: {
 			username: student.username
+		}
+	},
+	gamificationProfile: {
+		create: {
+			username: student.username,
+			lastLogin: new Date(2025, 5, 14),
+			loginStreak: {
+				count: 3,
+				status: "active"
+			} satisfies LoginStreak,
+			energy: 3
+		}
+	},
+	notificationSettings: {
+		createMany: {
+			data: getDefaultNotificationData(false)
+		}
+	},
+	featureFlags: {
+		create: {
+			username: student.username,
+			learningStatistics: true
 		}
 	}
 }));

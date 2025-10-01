@@ -1,42 +1,23 @@
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import {
-	getStaticLessonProps,
-	getStaticPropsForLessonCourseLayout,
+	getSspLearnersView,
+	getSSpLessonCourseLayout,
 	LessonLayout,
 	LessonLearnersView,
-	LessonProps
+	LessonLearnersViewProps
 } from "@self-learning/lesson";
+import { withAuth } from "@self-learning/util/auth";
 
 export const getServerSideProps = withTranslations(["common"], async context => {
-	return withAuth(async _user => {
-		const props = await getStaticPropsForLessonCourseLayout(context.params);
-
+	return withAuth(async (_, user) => {
+		const props = await getSSpLessonCourseLayout(context.params);
 		if ("notFound" in props) return { notFound: true };
-
-		const { lesson } = props;
-		lesson.quiz = null; // Not needed on this page, but on /quiz
-		const lessonProps = await getStaticLessonProps(lesson);
-
-		return {
-			props: {
-				...props,
-				markdown: {
-					...lessonProps
-				}
-			}
-		};
+		return getSspLearnersView(props, user);
 	})(context);
 });
 
-export default function LessonPage({ lesson, course, markdown }: LessonProps) {
-	return (
-		<LessonLearnersView
-			lesson={lesson}
-			course={course}
-			markdown={markdown}
-			key={lesson.lessonId}
-		/>
-	);
+export default function LessonPage(props: LessonLearnersViewProps) {
+	return <LessonLearnersView {...props} key={props.lesson.lessonId} />;
 }
 
 LessonPage.getLayout = LessonLayout;

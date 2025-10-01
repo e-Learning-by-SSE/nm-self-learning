@@ -8,10 +8,10 @@ async function main() {
 			// Sub-goals of deprecated table
 			const subGoals = await tx.learningSubGoal.findMany({
 				include: {
-					learningGoal: true
+					LearningGoal: true
 				},
 				// Keep order of priorities by Parent Goal to retain order when inserting
-				orderBy: [{ learningGoal: { id: "asc" } }, { priority: "asc" }]
+				orderBy: [{ LearningGoal: { id: "asc" } }, { priority: "asc" }]
 			});
 
 			// Insert sub-goals as new goals into the learning goals table
@@ -32,8 +32,8 @@ async function main() {
 						status: subGoal.status,
 						createdAt: subGoal.createdAt,
 						lastProgressUpdate: subGoal.lastProgressUpdate,
-						username: subGoal.learningGoal.username,
-						learningDiaryPageId: subGoal.learningGoal.learningDiaryPageId,
+						username: subGoal.LearningGoal.username,
+						learningDiaryPageId: subGoal.LearningGoal.learningDiaryPageId,
 						parentId: subGoal.learningGoalId
 					}
 				});

@@ -63,7 +63,7 @@ function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
 				entryId: page?.id ?? "",
 				lessonId
 			});
-		} catch (e) {}
+		} catch (e) { }
 	}, [createLearningDiaryEntry, courseSlug, createLearningDiaryLearnedLesson, lessonId]);
 	useTimeout({ callback: log, delayInMilliseconds: 60000 });
 }
@@ -114,7 +114,7 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 	);
 }
 
-export function MobilePlayList({ content, course, lesson, completion, onSelect}: PlaylistProps & { onSelect: () => void }) {
+export function MobilePlayList({ content, course, lesson, completion, onSelect }: PlaylistProps & { onSelect: () => void }) {
 	const contentWithCompletion = useContentWithCompletion(content, completion);
 	useLearningDiaryRecording(course.slug, lesson.lessonId);
 	const courseCompletion = completion?.courseCompletion;
@@ -136,7 +136,7 @@ export function MobilePlayList({ content, course, lesson, completion, onSelect}:
 				</span>
 			</div>
 
-			<ProgressBar completionPercentage={completionPercentage} />
+			<ProgressBar progressPercentage={completionPercentage} />
 			<div className="flex flex-col gap-3 xl:gap-12 py-4" onClick={onSelect}>
 				{contentWithCompletion.map((chapter, index) => (
 					<Chapter
@@ -204,15 +204,13 @@ function Lesson({
 	return (
 		<Link
 			href={href}
-			className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
-				isActive ? "bg-gray-200 font-medium text-black" : "text-light"
-			}`}
+			className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${isActive ? "bg-gray-200 font-medium text-black" : "text-light"
+				}`}
 		>
 			<span
 				style={{ width: lesson.isCompleted ? "2px" : "1px" }}
-				className={`absolute h-full ${
-					lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
-				}`}
+				className={`absolute h-full ${lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
+					}`}
 			></span>
 			<span
 				className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm"
@@ -244,7 +242,10 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 				</span>
 			</div>
 
-			<ProgressBar completionPercentage={completionPercentage} />
+			<ProgressBar
+				text={`${completionPercentage}%`}
+				progressPercentage={completionPercentage}
+			/>
 
 			<Divider />
 
@@ -318,9 +319,8 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 			<span className="flex justify-between">
 				{lesson.meta.hasQuiz && (
 					<Link
-						href={`/courses/${course.slug}/${lesson.slug}${
-							router.pathname.endsWith("quiz") ? "" : "/quiz"
-						}`}
+						href={`/courses/${course.slug}/${lesson.slug}${router.pathname.endsWith("quiz") ? "" : "/quiz"
+							}`}
 						className="btn-primary text-sm"
 						data-testid="quizLink"
 					>

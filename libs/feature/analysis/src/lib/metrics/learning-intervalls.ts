@@ -1,6 +1,6 @@
-import { UserEvent } from "@self-learning/database";
 import { EventTypeKeys } from "@self-learning/types";
-import { addHours, startOfHour, format, addMilliseconds, isBefore, addDays } from "date-fns";
+import { addDays, addHours, addMilliseconds, format, isBefore, startOfHour } from "date-fns";
+import { UserEvent } from "./types";
 
 export type Interval = {
 	start: Date;
@@ -17,7 +17,7 @@ export type HeatmapEntry = {
 const EVENT_ENDINGS: EventTypeKeys[] = [
 	"USER_LOGOUT",
 	"COURSE_STOP",
-	"LESSON_STOP",
+	"LESSON_EXIT",
 	"LESSON_COMPLETE",
 	"LESSON_VIDEO_END",
 	"LESSON_VIDEO_STOP"

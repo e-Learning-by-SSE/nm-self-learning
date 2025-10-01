@@ -2,15 +2,17 @@ export function Toggle({
 	value,
 	onChange,
 	label,
-	disabled
+	disabled,
+	testid
 }: {
 	value: boolean;
 	onChange: (value: boolean) => void;
 	label: string;
 	disabled?: boolean;
+	testid?: string;
 }) {
 	return (
-		<label className="inline-flex cursor-pointer items-center">
+		<label className="inline-flex cursor-pointer items-center" data-testid={testid}>
 			<input
 				type="checkbox"
 				checked={value}

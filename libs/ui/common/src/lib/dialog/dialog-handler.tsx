@@ -1,3 +1,4 @@
+"use client";
 import React, { memo, useEffect, useState } from "react";
 
 const listenerMap: Map<string, Array<(state: State) => void>> = new Map();
@@ -25,6 +26,12 @@ export const dispatchDialog = (dialog: React.ReactNode, id: string) => {
  * Should be used if the same dialog is opened multiple times in one component
  * Reason React will not rerender the component if the same dialog is used
  * @deprecated
+ * Preferred usage:
+ * ```tsx
+ * const [open, setOpen] = useState(false);
+ * {open && <YourDialog/>}
+ * ```
+ * This may be used to open and close a Dialog at two different, not connected placed, but comes with the drawback of hard maintainable code.
  */
 export const freeDialog = (id: string) => {
 	memoryState = { isOpen: false, dialog: null };
@@ -62,6 +69,12 @@ function useDialog(id: string): State {
 
 /**
  * @deprecated
+ * Preferred usage:
+ * ```tsx
+ * const [open, setOpen] = useState(false);
+ * {open && <YourDialog/>}
+ * ```
+ * This may be used to open and close a Dialog at two different, not connected placed, but comes with the drawback of hard maintainable code.
  */
 export const DialogHandler = memo(DialogHandlerComponent);
 

@@ -1,5 +1,5 @@
 import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
-import { CodingSvg, EnvStudySvg } from "@self-learning/ui/static";
+import { CodingSvg, EnvStudySvg, ServerSvg } from "@self-learning/ui/static";
 import { SoftwareEngineerSvg } from "@self-learning/ui/static";
 import { PersonalInformationSvg } from "@self-learning/ui/static";
 import { TutorialSvg } from "@self-learning/ui/static";
@@ -57,7 +57,7 @@ export default function AdminPage() {
 					/>
 					<Card
 						href="/admin/llm-config"
-						imageElement={<CodingSvg />}
+						imageElement={<ServerSvg />}
 						title={t("LLM Configuration")}
 					/>
 				</div>
