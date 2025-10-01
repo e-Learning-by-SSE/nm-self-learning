@@ -255,10 +255,10 @@ export function DialogActions({
 }) {
 	return (
 		<div className="pointer-events-auto mt-8 flex justify-end gap-2">
-			<button className="btn btn-tertiary" onClick={() => onClose(undefined)}>
+			<button type="button" className="btn btn-tertiary" onClick={() => onClose(undefined)}>
 				<span className={"text-gray-600"}>{abortLabel}</span>
 			</button>
 			{children}
-		</div>
+		</div >
 	);
 }

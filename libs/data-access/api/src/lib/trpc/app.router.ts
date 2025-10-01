@@ -18,7 +18,7 @@ import { skillRouter } from "./routers/skill.router";
 import { specializationRouter } from "./routers/specialization.router";
 import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
-
+import { llmConfigRouter } from "./routers/llm-config.router";
 import { userEventRouter } from "./routers/event-log.router";
 import { notificationRouter } from "./routers/notification.router";
 import { gamificationRouter } from "./routers/achievement.router";
@@ -43,7 +43,8 @@ export const appRouter = t.router({
 	programming: programmingRouter,
 	skill: skillRouter,
 	events: userEventRouter,
-	notification: notificationRouter
+	notification: notificationRouter,
+	llmConfig: llmConfigRouter
 });
 
 // export type definition of API

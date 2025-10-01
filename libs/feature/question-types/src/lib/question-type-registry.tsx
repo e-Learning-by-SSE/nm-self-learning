@@ -241,19 +241,17 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
  */
 export function QuestionAnswerRenderer({
 	question,
-	lesson,
-	questionStep
+	lesson
 }: {
 	question: QuestionType;
 	lesson: LessonLayoutProps["lesson"];
-	questionStep: number;
 }) {
 	if (question.type === "programming") {
 		return <ProgrammingAnswer />;
 	}
 
 	if (question.type === "multiple-choice") {
-		return <MultipleChoiceAnswer questionStep={questionStep} lesson={lesson} />;
+		return <MultipleChoiceAnswer lesson={lesson} />;
 	}
 
 	if (question.type === "exact") {

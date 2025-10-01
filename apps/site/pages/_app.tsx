@@ -6,6 +6,7 @@ import { withTRPC } from "@trpc/next";
 import "katex/dist/katex.css";
 import { SessionProvider } from "next-auth/react";
 import { appWithTranslation } from "next-i18next";
+import nextI18NextConfig from "../next-i18next.config";
 import PlausibleProvider from "next-plausible";
 import { AppProps } from "next/app";
 import Head from "next/head";
@@ -39,7 +40,7 @@ export default withTRPC<AppRouter>({
 			}
 		};
 	}
-})(appWithTranslation(CustomApp));
+})(appWithTranslation(CustomApp, nextI18NextConfig));
 
 function CustomApp({ Component, pageProps }: AppProps) {
 	const Layout = (Component as any).getLayout

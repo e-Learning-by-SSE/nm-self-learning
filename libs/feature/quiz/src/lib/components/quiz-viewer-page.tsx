@@ -12,8 +12,10 @@ import {
 	LessonLayoutProps,
 	StandaloneLessonLayoutProps,
 	useLessonContext,
+	getCourse,
 	useLessonSession
 } from "@self-learning/lesson";
+import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import {
@@ -278,7 +280,7 @@ export function QuizHeader({
 	useEffect(() => {
 		if (!isFirstRender) return;
 		void logQuizStart(lesson, orderedQuestions[currentIndex]);
-	}, [currentIndex, isFirstRender, lesson, logQuizStart, orderedQuestions]);
+	}, [orderedQuestions, currentIndex, isFirstRender, lesson, logQuizStart]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -296,10 +298,6 @@ export function QuizHeader({
 							<QuestionTab
 								index={index}
 								evaluation={evaluations[question.questionId]}
-								isMultiStep={
-									lesson.lessonType === LessonType.SELF_REGULATED &&
-									question.type === "multiple-choice"
-								}
 							/>
 						</Tab>
 					</div>

@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 import { SearchBar } from "./search-bar";
 import { useLoginRedirect } from "@self-learning/util/auth";
 import { DropdownMenu } from "@self-learning/ui/common";
+import { useTranslation } from "next-i18next";
 
 export function Navbar() {
 	const session = useSession();
@@ -29,7 +30,7 @@ export function Navbar() {
 	return (
 		<Disclosure
 			as="nav"
-			className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white"
+			className="sticky top-0 z-30 w-full border-b border-b-gray-200 bg-white"
 		>
 			{({ open }) => (
 				<>
@@ -188,12 +189,14 @@ export function NavbarDropdownMenu({
 	isAdmin: boolean;
 	signOut: () => void;
 }) {
+	const { t } = useTranslation("common");
+
 	return (
 		<DropdownMenu
-			title="Nutzermenü"
+			title={t("User Menu")}
 			button={
 				<div className="flex items-center gap-2 py-2">
-					<span className="sr-only">Nutzermenü Öffnen</span>
+					<span className="sr-only">{t("Open User Menu")}</span>
 					{avatarUrl ? (
 						<img
 							className="h-[42px] w-[42px] rounded-full object-cover object-top"
@@ -214,7 +217,7 @@ export function NavbarDropdownMenu({
 				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<UserIcon className="h-5" />
-				<span>Profil</span>
+				<span>{t("Profile")}</span>
 			</Link>
 
 			<Link
@@ -222,7 +225,7 @@ export function NavbarDropdownMenu({
 				className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<AdjustmentsHorizontalIcon className="h-5" />
-				<span>Einstellungen</span>
+				<span>{t("Settings")}</span>
 			</Link>
 
 			{isAuthor && (
@@ -231,7 +234,7 @@ export function NavbarDropdownMenu({
 					className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 				>
 					<PencilSquareIcon className="h-5" />
-					<span>Autorenbereich</span>
+					<span>{t("Author Dashboard")}</span>
 				</Link>
 			)}
 
@@ -241,7 +244,7 @@ export function NavbarDropdownMenu({
 					className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 				>
 					<WrenchIcon className="h-5" />
-					<span>Adminbereich</span>
+					<span>{t("Admin Dashboard")}</span>
 				</Link>
 			)}
 
@@ -250,7 +253,7 @@ export function NavbarDropdownMenu({
 				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<ArrowRightStartOnRectangleIcon className="h-5" />
-				<span>Logout</span>
+				<span>{t("Logout")}</span>
 			</button>
 		</DropdownMenu>
 	);

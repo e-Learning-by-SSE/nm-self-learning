@@ -13,7 +13,7 @@ import { useState } from "react";
 import { LoadingBox } from "@self-learning/ui/common";
 import { SearchResultInfo } from "./search-section";
 import { useRouter } from "next/router";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export function SearchInput({
 	searchQuery,

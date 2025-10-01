@@ -156,3 +156,13 @@ enum ReminderStatus {
     FAILED
     SKIPPED
 }
+
+model LlmConfiguration {
+  id              String   @id @default(cuid())
+  serverUrl       String
+  apiKey          String?
+  defaultModel    String   
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
