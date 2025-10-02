@@ -1,6 +1,6 @@
 /* eslint-disable quotes */
 import { faker } from "@faker-js/faker";
-import { LessonType, Prisma, PrismaClient } from "@prisma/client";
+import { AccessLevel, LessonType, Prisma, PrismaClient } from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -22,10 +22,12 @@ const adminName = "dumbledore";
 
 export function createLessonWithRandomContentAndDemoQuestions({
 	title,
-	questions
+	questions,
+	courseId
 }: {
 	title: string;
 	questions: QuizContent;
+	courseId?: string;
 }) {
 	const content = [
 		{
@@ -49,6 +51,7 @@ export function createLessonWithRandomContentAndDemoQuestions({
 	] as LessonContent;
 
 	return createLesson({
+		courseId,
 		title,
 		subtitle: faker.lorem.paragraph(1),
 		description: faker.lorem.paragraphs(3),
@@ -66,7 +69,8 @@ export function createLesson({
 	questions,
 	licenseId,
 	lessonType,
-	selfRegulatedQuestion
+	selfRegulatedQuestion,
+	courseId
 }: {
 	title: string;
 	subtitle: string | null;
@@ -76,6 +80,7 @@ export function createLesson({
 	licenseId?: number | null;
 	lessonType?: LessonType;
 	selfRegulatedQuestion?: string;
+	courseId?: string;
 }) {
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
@@ -91,7 +96,8 @@ export function createLesson({
 			config: null
 		},
 		meta: {},
-		licenseId: licenseId ?? 0
+		licenseId: licenseId ?? 0,
+		courseId: courseId ?? null
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -147,6 +153,14 @@ export function createAuthor({
 					create: []
 				}
 			}
+		},
+		permissions: {
+			create: lessons.flatMap(l =>
+				l.content.map(lesson => ({
+					accessLevel: AccessLevel.FULL,
+					lessonId: lesson.lessonId
+				}))
+			)
 		}
 	};
 }
@@ -159,6 +173,7 @@ type Chapters = {
 }[];
 
 export function createCourse({
+	courseId,
 	subjectId,
 	specializationId,
 	title,
@@ -167,6 +182,7 @@ export function createCourse({
 	imgUrl,
 	chapters
 }: {
+	courseId: string;
 	subjectId: string;
 	specializationId: string;
 	title: string;
@@ -176,7 +192,7 @@ export function createCourse({
 	chapters: Chapters;
 }): Course {
 	const course = {
-		courseId: faker.string.alphanumeric(8),
+		courseId,
 		title: title,
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle ?? "",
@@ -194,7 +210,7 @@ export function createCourse({
 		),
 		meta: {}
 	};
-
+	// TODO Can be removed
 	course.meta = createCourseMeta(course);
 
 	const result = {

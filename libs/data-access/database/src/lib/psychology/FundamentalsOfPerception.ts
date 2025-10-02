@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createCourse,
 	createLesson,
@@ -6,12 +7,15 @@ import {
 	createVideo
 } from "../seed-functions";
 
+const courseId = faker.string.alphanumeric(8);
+
 const ch_Signaluebertragung = {
 	title: "Signalübertragung im Nervensystem",
 	description:
 		"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 	content: [
 		createLesson({
+			courseId,
 			title: "Struktur und Funktion des Nervensystems",
 			subtitle:
 				"Aktivierungsfrage: In welche zwei unterschiedlichen Systeme wird das periphere Nervensystem aufgeteilt?",
@@ -53,6 +57,7 @@ const ch_Signaluebertragung = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Die Nervenzelle",
 			subtitle: "Aktivierungsfrage: Welche Klassen von Neuronen gibt es?",
 			description:
@@ -90,6 +95,7 @@ const ch_Signaluebertragung = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Erregung und Erregungsleitung im Nervensystem",
 			subtitle: "Aktivierungsfrage: Was versteht man unter einem Aktionspotential?",
 			description:
@@ -129,6 +135,7 @@ const ch_Signaluebertragung = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Nervenleitung in myelinisierten Axonen",
 			subtitle: "Aktivierungsfrage: Was versteht man unter saltatorischer Erregungsleitung?",
 			description:
@@ -170,6 +177,7 @@ const ch_Signaluebertragung = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Synaptische Übertragung",
 			subtitle: "Aktivierungsfrage: Was versteht man unter synaptischer Übertragung?",
 			description:
@@ -206,6 +214,7 @@ const ch_Signaluebertragung = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Integration erregender und hemmender Impulse",
 			subtitle:
 				"Aktivierungsfrage: Was versteht man unter räumlicher und zeitlicher Summation?",
@@ -242,6 +251,7 @@ const ch_Signaluebertragung = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Neurotransmittersysteme und Neurorezeptoren",
 			subtitle: "Aktivierungsfrage: Wie funktionieren Neurotransmitter?",
 			description:
@@ -279,6 +289,7 @@ const ch_Signaluebertragung = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Drogen und synaptische Transmission",
 			subtitle: "Aktivierungsfrage: Welchen Einfluss haben Drogen auf die Transmission?",
 			description:
@@ -314,6 +325,7 @@ const ch_Signaluebertragung = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Nervennetze und Informationsverarbeitung",
 			subtitle:
 				"Aktivierungsfrage: Was versteht man unter einem monosynaptischen Reflexbogen?",
@@ -358,6 +370,7 @@ const ch_Organisation = {
 		"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 	content: [
 		createLesson({
+			courseId,
 			title: "Zentralnervensystem",
 			subtitle: "Aktivierungsfrage: Was versteht man unter dorsal und ventral?",
 			description:
@@ -393,6 +406,7 @@ const ch_Organisation = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Peripheres Nervensystem",
 			subtitle:
 				"Aktivierungsfrage: In welche zwei unterschiedlichen Systeme wird das periphere Nervensystem aufgeteilt?",
@@ -434,6 +448,7 @@ const ch_Organisation = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Verhaltenssteuerung durch das neuroendokrine System",
 			subtitle:
 				"Aktivierungsfrage: Wie wirkt sich das neuroendokrine System auf das Verhalten aus?",
@@ -476,6 +491,7 @@ const ch_StrukturGehirn = {
 		"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 	content: [
 		createLesson({
+			courseId,
 			title: "Die älteren Strukturen des Gehirns",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -507,6 +523,7 @@ const ch_StrukturGehirn = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Die neueren Strukturen: das Großhirn",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -538,6 +555,7 @@ const ch_StrukturGehirn = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Hirnasymmetrie und Sprachverarbeitung",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -569,6 +587,7 @@ const ch_StrukturGehirn = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Das geteilte Gehirn",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -600,6 +619,7 @@ const ch_StrukturGehirn = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Cerebrale Lateralisation",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -638,6 +658,7 @@ const ch_GenerelleEigenschaften = {
 		"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 	content: [
 		createLesson({
+			courseId,
 			title: "Reize und Rezeptoren beim Sehen",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -669,6 +690,7 @@ const ch_GenerelleEigenschaften = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Reize und Rezeptoren beim Hören",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -700,6 +722,7 @@ const ch_GenerelleEigenschaften = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Reize und Rezeptoren beim Fühlen",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -731,6 +754,7 @@ const ch_GenerelleEigenschaften = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Reize und Rezeptoren beim Riechen",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -762,6 +786,7 @@ const ch_GenerelleEigenschaften = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Reize und Rezeptoren beim Schmecken",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -793,6 +818,7 @@ const ch_GenerelleEigenschaften = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Reize und Rezeptoren bei der Körperbewegung",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -824,6 +850,7 @@ const ch_GenerelleEigenschaften = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Reize und Rezeptoren beim Gleichgewicht",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -855,6 +882,7 @@ const ch_GenerelleEigenschaften = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Reize und Rezeptoren bei den Empfindungen der Organe",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -893,6 +921,7 @@ const ch_ErlebenMessbarMachen = {
 		"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 	content: [
 		createLesson({
+			courseId,
 			title: "Wahrnehmungschwellen",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -975,6 +1004,7 @@ const ch_ErlebenMessbarMachen = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Weber`sches Gesetz",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -1006,6 +1036,7 @@ const ch_ErlebenMessbarMachen = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Fechner`sches Gesetz",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -1037,6 +1068,7 @@ const ch_ErlebenMessbarMachen = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Stevens`sche Potenzfunktion",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -1068,6 +1100,7 @@ const ch_ErlebenMessbarMachen = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Signalentdeckungstheorie (*signal detection theory*)",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -1099,6 +1132,7 @@ const ch_ErlebenMessbarMachen = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Adaptionsleveltheorie (*adaptation level theory*)",
 			subtitle: "Aktivierungsfrage: ...?",
 			description:
@@ -1141,6 +1175,7 @@ export const chapters = [
 ];
 
 export const course = createCourse({
+	courseId,
 	subjectId: "psychologie",
 	specializationId: "wahrnehmung",
 	title: "Grundlagen der Wahrnehmung",

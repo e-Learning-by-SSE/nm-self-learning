@@ -1,13 +1,15 @@
 import { QuizContent } from "@self-learning/question-types";
 import { getRandomId } from "@self-learning/util/common";
 import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { AccessLevel, Prisma, PrismaClient } from "@prisma/client";
 import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
 import { createCourseContent, createCourseMeta, extractLessonIds } from "@self-learning/types";
 import { subHours } from "date-fns";
 import { defaultLicenseId } from "../license";
 
 faker.seed(1);
+
+const courseId = faker.string.alphanumeric(8);
 
 const prisma = new PrismaClient();
 
@@ -179,18 +181,22 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Start a New React Project",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Add React to a Website",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Editor Setup",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "React Developer Tools",
 				questions: reactDemoQuestions
 			})
@@ -201,34 +207,42 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Your First Component",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Importing and Exporting Components",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Writing Markup with JSX",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "JavaScript in JSX with Curly Braces",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Passing Props to a Component",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Conditional Rendering",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Rendering Lists",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Keeping Components Pure",
 				questions: reactDemoQuestions
 			})
@@ -239,30 +253,37 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Responding to Events",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "State: A Component's Memory",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Render and Commit",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "State as a Snapshot",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Queueing a Series of State Updates",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Updating Objects in State",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Updating Arrays in State",
 				questions: reactDemoQuestions
 			})
@@ -273,30 +294,37 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Reacting to Input with State",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Choosing the State Structure",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Sharing State Between Components",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Preserving and Resetting State",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Extracting State Logic into a Reducer",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Passing Data Deeply with Context",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Scaling Up with Reducer and Context",
 				questions: reactDemoQuestions
 			})
@@ -307,38 +335,47 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Escape Hatches",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Referencing Values with Refs",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Manipulating the DOM with Refs",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Synchronizing with Effects",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "You Might Not Need an Effect",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Lifecycle of Reactive Effects",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Separating Events from Effects",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Removing Effect Dependencies",
 				questions: reactDemoQuestions
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
+				courseId,
 				title: "Reusing Logic with Custom Hooks",
 				questions: reactDemoQuestions
 			})
@@ -346,9 +383,11 @@ const reactLessons = [
 	}
 ];
 
+// Here I use single courseId because there is single course.
+// For multiple courses do not forget to create multiple ids!
 export const reactCourses: Prisma.CourseCreateManyInput[] = [
 	{
-		courseId: faker.random.alphaNumeric(8),
+		courseId,
 		title: "The Beginner's Guide to React",
 		slug: "the-beginners-guide-to-react",
 		subtitle: faker.lorem.paragraph(2),
@@ -408,6 +447,14 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 					}
 				}
 			}
+		},
+		permissions: {
+			create: reactLessons.flatMap(l =>
+				l.content.map(lesson => ({
+					accessLevel: AccessLevel.FULL,
+					lessonId: lesson.lessonId
+				}))
+			)
 		}
 	},
 	{
@@ -435,12 +482,13 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 			create: {
 				displayName: "Albus Dumbledore",
 				slug: "albus-dumbledore",
-				imgUrl: "https://i.imgur.com/UWMVO8m.jpeg",
-				subjectAdmin: {
-					create: {
-						subjectId: "informatik"
-					}
-				}
+				imgUrl: "https://i.imgur.com/UWMVO8m.jpeg"
+			}
+		},
+		permissions: {
+			create: {
+				accessLevel: AccessLevel.FULL,
+				subjectId: "informatik"
 			}
 		}
 	},
