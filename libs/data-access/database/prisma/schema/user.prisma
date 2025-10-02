@@ -43,6 +43,8 @@ model User {
     enabledLearningStatistics Boolean @default(false)
     enabledFeatureLearningDiary  Boolean  @default(false)
     registrationCompleted      Boolean  @default(false)
+
+    permissions        Permission[]
 }
 
 model VerificationToken {
@@ -52,3 +54,34 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+enum AccessLevel {
+    VIEW            
+    EDIT            // can edit 
+    FULL            // can edit and grant editing away (only on the same level)
+}
+
+model Permission {
+    id          String      @id @default(uuid())
+    userId      String
+
+    subjectId   String?
+    courseId    String?
+    lessonId    String?
+
+    accessLevel AccessLevel
+
+    createdAt   DateTime    @default(now())
+    expiresAt   DateTime?
+
+    user        User        @relation(fields: [userId], references: [id])
+    subject     Subject?    @relation(fields: [subjectId], references: [subjectId])
+    course      Course?     @relation(fields: [courseId], references: [courseId])
+    lesson      Lesson?     @relation(fields: [lessonId], references: [lessonId])
+
+    // Prohibit multiple permissions per one content
+    @@unique([userId, subjectId])
+    @@unique([userId, courseId])
+    @@unique([userId, lessonId])
+}
+
