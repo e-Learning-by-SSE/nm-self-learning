@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
+import { hasAccessLevel, PermissionResourceEnum } from "./permission.router";
 
 export const subjectRouter = t.router({
 	getAllWithSpecializations: t.procedure.query(() => {
@@ -31,14 +32,18 @@ export const subjectRouter = t.router({
 				title: true,
 				subtitle: true,
 				cardImgUrl: true,
-				subjectAdmin: {
+				permissions: {
 					select: {
-						username: true,
-						author: {
+						accessLevel: true,
+						user: {
 							select: {
-								slug: true,
-								displayName: true,
-								imgUrl: true
+								author: {
+									select: {
+										slug: true,
+										displayName: true,
+										imgUrl: true
+									}
+								}
 							}
 						}
 					}
@@ -103,23 +108,12 @@ export const subjectRouter = t.router({
 
 		return subject;
 	}),
-	update: authProcedure.input(subjectSchema).mutation(({ input, ctx }) => {
-		if (ctx.user.role !== "ADMIN") {
-			const subjectAdmin = database.subjectAdmin.findUnique({
-				where: {
-					subjectId_username: {
-						subjectId: input.subjectId,
-						username: ctx.user.name
-					}
-				}
+	update: authProcedure.input(subjectSchema).mutation(async ({ input, ctx }) => {
+		if (!(await canEdit(ctx.user, input.subjectId))) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions."
 			});
-
-			if (!subjectAdmin) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Requires ADMIN role or subjectAdmin."
-				});
-			}
 		}
 
 		return database.subject.update({
@@ -142,12 +136,10 @@ export const subjectRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const canEdit = await canEditSubject(input.subjectId, ctx.user);
-
-			if (!canEdit) {
+			if (!(await canEdit(ctx.user, input.subjectId))) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
+					message: "Insufficient permissions."
 				});
 			}
 
@@ -173,20 +165,7 @@ export const subjectRouter = t.router({
 		})
 });
 
-async function canEditSubject(subjectId: string, user: UserFromSession): Promise<boolean> {
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const subjectAdmin = await database.subjectAdmin.findUnique({
-		where: {
-			subjectId_username: { subjectId, username: user.name }
-		}
-	});
-
-	if (subjectAdmin) {
-		return true;
-	}
-
-	return false;
+async function canEdit(user: UserFromSession, subjectId: string): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	return await hasAccessLevel(user.id, PermissionResourceEnum.Enum.SUBJECT, subjectId, "EDIT");
 }

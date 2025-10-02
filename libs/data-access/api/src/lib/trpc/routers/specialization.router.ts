@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
+import { hasAccessLevel, PermissionResourceEnum } from "./permission.router";
 
 export const specializationRouter = t.router({
 	getById: authProcedure.input(z.object({ specializationId: z.string() })).query(({ input }) => {
@@ -48,12 +49,12 @@ export const specializationRouter = t.router({
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
-			const canCreate = await canCreateSpecializationInSubject(input.subjectId, ctx.user);
+			const canCreate = await canCreateOrEdit(ctx.user, input.subjectId);
 
 			if (!canCreate) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
+					message: `Requires ADMIN role or EDIT in ${input.subjectId}.`
 				});
 			}
 
@@ -86,16 +87,12 @@ export const specializationRouter = t.router({
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
-			const canEdit = await canEditSpecializationInSubject(
-				input.subjectId,
-				input.data.specializationId,
-				ctx.user
-			);
+			const canEdit = await canCreateOrEdit(ctx.user, input.subjectId);
 
 			if (!canEdit) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId} or specializationAdmin in ${input.data.specializationId}.`
+					message: `Requires ADMIN role or EDIT in ${input.subjectId}.`
 				});
 			}
 
@@ -124,10 +121,10 @@ export const specializationRouter = t.router({
 			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
 		)
 		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
-			if (!canEditSpecializationInSubject(subjectId, specializationId, ctx.user)) {
+			if (!(await canCreateOrEdit(ctx.user, subjectId))) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${subjectId} or specializationAdmin in ${specializationId}.`
+					message: `Requires ADMIN role or EDIT in ${subjectId}.`
 				});
 			}
 
@@ -155,10 +152,10 @@ export const specializationRouter = t.router({
 			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
 		)
 		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
-			if (!canEditSpecializationInSubject(subjectId, specializationId, ctx.user)) {
+			if (!(await canCreateOrEdit(ctx.user, subjectId))) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${subjectId} or specializationAdmin in ${specializationId}.`
+					message: `Requires ADMIN role or EDIT in ${subjectId}.`
 				});
 			}
 
@@ -183,47 +180,8 @@ export const specializationRouter = t.router({
 		})
 });
 
-async function canCreateSpecializationInSubject(
-	subjectId: string,
-	user: UserFromSession
-): Promise<boolean> {
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const subjectAdmin = await database.subjectAdmin.findUnique({
-		where: {
-			subjectId_username: { subjectId, username: user.name }
-		}
-	});
-
-	if (subjectAdmin) {
-		return true;
-	}
-
-	return false;
-}
-
-async function canEditSpecializationInSubject(
-	subjectId: string,
-	specializationId: string,
-	user: UserFromSession
-): Promise<boolean> {
-	const canCreate = await canCreateSpecializationInSubject(subjectId, user);
-
-	if (canCreate) {
-		return true;
-	}
-
-	const specializationAdmin = await database.specializationAdmin.findUnique({
-		where: {
-			specializationId_username: { specializationId, username: user.name }
-		}
-	});
-
-	if (specializationAdmin) {
-		return true;
-	}
-
-	return false;
+// Both require EDIT perm in respective subject as specializations do not have their perms
+async function canCreateOrEdit(user: UserFromSession, subjectId: string): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	return await hasAccessLevel(user.id, PermissionResourceEnum.Enum.SUBJECT, subjectId, "EDIT");
 }
