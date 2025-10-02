@@ -1,5 +1,5 @@
 import { AppRouter, withTranslations } from "@self-learning/api";
-import { Footer, Navbar } from "@self-learning/ui/layouts";
+import { Footer, Navbar, I18N_NAMESPACE as NS_LAYOUT } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
@@ -98,4 +98,4 @@ function CustomApp({ Component, pageProps }: AppProps) {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_LAYOUT])));

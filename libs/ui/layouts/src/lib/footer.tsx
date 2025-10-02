@@ -14,14 +14,19 @@ function FooterElement({
 	target?: string;
 	text: string;
 }) {
+	const { t, i18n } = useTranslation("platform-config");
+	if (!i18n.exists(href, { ns: "platform-config" })) {
+		return null;
+	}
 	return (
-		<Link href={href} target={target} className="text-sm font-medium hover:text-secondary">
-			{text}
+		<Link href={t(href)} target={target} className="text-sm font-medium hover:text-secondary">
+			{t(text)}
 		</Link>
 	);
 }
 
 export function Footer() {
+	const { t } = useTranslation("platform-config");
 	return (
 		<footer className="border-t-gray border-t bg-white px-6 py-2 text-light mt-auto">
 			<div
@@ -30,29 +35,15 @@ export function Footer() {
 			>
 				<div className="mb-2 text-center md:mb-0 md:text-left">
 					<Link href="https://sse.uni-hildesheim.de" className="inline-flex items-center">
-						<p className="mt-1 text-sm">
-							© 2023 Universität Hildesheim. Hosted by SSE
-						</p>
+						<p className="mt-1 text-sm">{t("COPYRIGHT_Label")}</p>
 						<LinkIcon height="18" className="ml-1 mt-1" />
 					</Link>
 				</div>
 				<div className="flex space-x-4">
-					<FooterElement
-						href="https://www.uni-hildesheim.de/digital-campus-learning/self-learning/"
-						text="About"
-					/>
-					<FooterElement
-						href="https://hilnet.uni-hildesheim.de/s/self-le-at-rning-development-blog/"
-						text="Blog"
-					/>
-					<FooterElement
-						href="https://uni-hildesheim.de/datenschutz"
-						text="Datenschutz"
-					/>
-					<FooterElement
-						href="https://www.uni-hildesheim.de/impressum/"
-						text="Impressum"
-					/>
+					<FooterElement href="ABOUT_URL" text="ABOUT_Label" />
+					<FooterElement href="BLOG_URL" text="BLOG_Label" />
+					<FooterElement href="PRIVACY_NOTICE_URL" text="PRIVACY_NOTICE_Label" />
+					<FooterElement href="IMPRINT_URL" text="IMPRINT_Label" />
 					<LanguageSwitcher />
 				</div>
 			</div>

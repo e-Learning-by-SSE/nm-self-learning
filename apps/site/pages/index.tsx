@@ -1,33 +1,40 @@
 import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
+import { Trans, useTranslation } from "next-i18next";
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(["common", "platform-config"]);
 
 export function LandingPage() {
+	const { t } = useTranslation("platform-config");
 	return (
 		<div className="flex h-full flex-col gap-16 px-4">
 			<div className="relative z-10 mx-auto grid max-w-screen-2xl items-start gap-8 py-8 lg:py-32 xl:grid-cols-2">
 				<div className="flex flex-col">
 					<h1 className="whitespace-nowrap text-4xl sm:text-6xl lg:text-9xl">
-						SELF-le@rning
+						{t("Platform_Name")}
 					</h1>
 					<h2 className="mt-4 text-2xl font-light text-slate-400 lg:text-3xl">
-						Universität Hildesheim
+						{t("Operator_Name")}
 					</h2>
 
 					<span className="mt-8 flex flex-col text-slate-600 md:text-xl">
 						<p className="mb-12 text-xl">
-							Willkommen auf der Selbstlernplattform der{" "}
-							<a
-								href={"https://www.uni-hildesheim.de/"}
-								target="_blank"
-								rel="noreferrer"
-								className="font-semibold text-secondary hover:underline"
-							>
-								Universität Hildesheim
-							</a>
-							!
+							<Trans
+								t={t}
+								i18nKey="Welcome_Message"
+								ns="platform-config"
+								components={{
+									a: (
+										<a
+											href={t("Operator_URL")}
+											target="_blank"
+											rel="noreferrer"
+											className="font-semibold text-secondary hover:underline"
+										/>
+									)
+								}}
+							/>
 						</p>
 
 						{/* <Image
@@ -39,32 +46,23 @@ export function LandingPage() {
 							alt=""
 						></Image> */}
 
-						<Link
-							href="/subjects"
-							className="w-fit rounded-lg bg-secondary px-16 py-6 text-center text-lg font-semibold text-white"
-						>
-							Lerninhalte entdecken
-						</Link>
-
-						<ul className="text-md mt-12 flex list-inside list-disc flex-col gap-6">
-							<li>
-								Auf der Plattform werden dir studiengangbezogene Lerninhalte in
-								individualisierten und flexiblen Lernpfaden, bestehend aus kleinen
-								Lerneinheiten, präsentiert.
-							</li>
-							<li>Diese kannst du in deinem eigenen Tempo lernen und wiederholen.</li>
-
-							<li>
-								Während du einen Lernpfad durchläufst, erhältst du Feedback zu
-								deinem Lernfortschritt und Hinweise, wie du Lernstrategien anwenden
-								kannst, um dein Lernen zu verbessern.
-							</li>
-
-							<li>
-								Unsere Mission ist, dass du durch die Plattform lernst, strategisch
-								und nachhaltig zu lernen.
-							</li>
-						</ul>
+						<Trans
+							t={t}
+							i18nKey="Platform_Description"
+							ns="platform-config"
+							components={{
+								Link: (
+									<Link
+										href="/subjects"
+										className="w-fit rounded-lg bg-secondary px-16 py-6 text-center text-lg font-semibold text-white"
+									/>
+								),
+								ul: (
+									<ul className="text-md mt-12 flex list-inside list-disc flex-col gap-6" />
+								),
+								li: <li />
+							}}
+						/>
 					</span>
 				</div>
 
