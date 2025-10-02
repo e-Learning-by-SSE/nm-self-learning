@@ -278,6 +278,14 @@ model LlmConfiguration {
 }
 
 view kpi_total_time_spent {
-  id                      String @unique
-  total_time_spent_seconds Float
+  id                        String @unique
+  username                  String
+  total_time_spent_seconds  Float
+}
+
+view kpi_learning_time_distribution {
+    id                          String @unique
+    username                    String
+    day                         DateTime
+    total_time_spent_seconds    Float
 }
