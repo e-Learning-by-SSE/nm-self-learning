@@ -1,30 +1,30 @@
 import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
-import { useTranslation } from "next-i18next";
-import { Trans } from "@self-learning/ui/common";
+import { Trans, useTranslation } from "next-i18next";
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(["common", "platform-config"]);
 
 export function LandingPage() {
-	const { t } = useTranslation("common");
 
+	const { t } = useTranslation("platform-config");
 	return (
 		<div className="flex h-full flex-col gap-16 px-4">
 			<div className="relative z-10 mx-auto grid max-w-screen-2xl items-start gap-8 py-8 lg:py-32 xl:grid-cols-2">
 				<div className="flex flex-col">
 					<h1 className="whitespace-nowrap text-4xl sm:text-6xl lg:text-9xl">
-						SELF-le@rning
+						{t("Platform_Name")}
 					</h1>
 					<h2 className="mt-4 text-2xl font-light text-slate-400 lg:text-3xl">
-						Universität Hildesheim
+						{t("Operator_Name")}
 					</h2>
 
 					<span className="mt-8 flex flex-col text-slate-600 md:text-xl">
 						<p className="mb-12 text-xl">
 							<Trans
+								t={t}
 								i18nKey="Welcome_Message"
-								namespace="platform-config"
+								ns="platform-config"
 								components={{
 									a: (
 										<a
@@ -48,8 +48,9 @@ export function LandingPage() {
 						></Image> */}
 
 						<Trans
+							t={t}
 							i18nKey="Platform_Description"
-							namespace="platform-config"
+							ns="platform-config"
 							components={{
 								Link: (
 									<Link
@@ -59,7 +60,8 @@ export function LandingPage() {
 								),
 								ul: (
 									<ul className="text-md mt-12 flex list-inside list-disc flex-col gap-6" />
-								)
+								),
+								li: <li />
 							}}
 						/>
 					</span>
