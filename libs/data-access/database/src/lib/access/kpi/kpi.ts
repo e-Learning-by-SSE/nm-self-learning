@@ -12,3 +12,10 @@ export function getUserDailyLearningTime(id: string) {
 		orderBy: { day: "asc" }
 	});
 }
+
+export function getUserDailyQuizStats(id: string) {
+	return database.kPIDailyQuizStats.findMany({
+		where: { id },
+		orderBy: { day: "asc" }
+	});
+}

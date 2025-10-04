@@ -1,4 +1,4 @@
--- KPI View: Total Time Spent by User
+-- Create KPI View for Total Learning Time
 CREATE OR REPLACE VIEW "KPITotalLearningTime" AS
 WITH sessionized AS (
     SELECT
@@ -39,7 +39,7 @@ JOIN "User" u ON u.name = sd.username
 GROUP BY u.id;
 
 
---- Learning Time Distribution
+--- Create KPI View for Daily Learning Time
 CREATE OR REPLACE VIEW "KPIDailyLearningTime" AS
 WITH sessionized AS (
     SELECT
@@ -73,9 +73,28 @@ session_durations AS (
 )
 SELECT
     u.id AS id,
-    u.name as username,
+    u.name AS username,
     DATE_TRUNC('day', session_start) AS day,
     SUM(session_duration_seconds) AS total_time_spent_seconds
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 GROUP BY u.id, day;
+
+--- Create KPI View for Daily Quiz Stats
+
+CREATE VIEW "KPIDailyQuizStats" AS
+SELECT
+    u.id AS id,
+    qa.username AS username,
+    DATE(qa."createdAt") AS day,
+    COUNT(qans."answerId") AS total_answers,
+    SUM(CASE WHEN qans."isCorrect" THEN 1 ELSE 0 END) AS correct_answers,
+    SUM(CASE WHEN NOT qans."isCorrect" THEN 1 ELSE 0 END) AS incorrect_answers,
+    ROUND(
+      (SUM(CASE WHEN qans."isCorrect" THEN 1 ELSE 0 END)::decimal / NULLIF(COUNT(qans."answerId"), 0)) * 100,
+      2
+    ) AS accuracy_percent
+FROM "QuizAttempt" qa
+JOIN "QuizAnswer" qans ON qa."attemptId" = qans."quizAttemptId"
+JOIN "User" u ON u.name = qa.username
+GROUP BY u.id, qa.username, day;

@@ -289,3 +289,13 @@ view KPIDailyLearningTime {
     day                         DateTime
     total_time_spent_seconds    Float
 }
+
+view KPIDailyQuizStats {
+  id               String @unique
+  username         String
+  day              DateTime
+  total_answers      Int
+  correct_answers    Int
+  incorrect_answers  Int
+  accuracy_percent Float
+}
