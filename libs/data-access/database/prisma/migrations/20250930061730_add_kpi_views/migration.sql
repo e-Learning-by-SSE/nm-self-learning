@@ -1,5 +1,5 @@
 -- KPI View: Total Time Spent by User
-CREATE OR REPLACE VIEW kpi_total_time_spent AS
+CREATE OR REPLACE VIEW "KPITotalLearningTime" AS
 WITH sessionized AS (
     SELECT
         e.id,
@@ -40,7 +40,7 @@ GROUP BY u.id;
 
 
 --- Learning Time Distribution
-CREATE OR REPLACE VIEW kpi_learning_time_distribution AS
+CREATE OR REPLACE VIEW "KPIDailyLearningTime" AS
 WITH sessionized AS (
     SELECT
         e.id,

@@ -277,13 +277,13 @@ model LlmConfiguration {
   updatedAt       DateTime  @updatedAt
 }
 
-view kpi_total_time_spent {
+view KPITotalLearningTime {
   id                        String @unique
   username                  String
   total_time_spent_seconds  Float
 }
 
-view kpi_learning_time_distribution {
+view KPIDailyLearningTime {
     id                          String @unique
     username                    String
     day                         DateTime
