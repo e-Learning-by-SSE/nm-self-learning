@@ -3,15 +3,15 @@ import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
-import { GetServerSideProps } from "next";
+import { VoidSvg } from "@self-learning/ui/static";
 import Link from "next/link";
-import { ReactComponent as VoidSvg } from "../../../svg/void.svg";
+import { withTranslations } from "@self-learning/api";
 
 type SubjectPageProps = {
 	subject: ResolvedValue<typeof getSubject>;
 };
 
-export const getServerSideProps: GetServerSideProps<SubjectPageProps> = async ({ params }) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
 	const subjectSlug = params?.subjectSlug;
 
 	if (typeof subjectSlug !== "string") {
@@ -21,12 +21,10 @@ export const getServerSideProps: GetServerSideProps<SubjectPageProps> = async ({
 	const subject = await getSubject(subjectSlug);
 
 	return {
-		props: {
-			subject: subject as ResolvedValue<typeof getSubject>
-		},
+		props: { subject: subject as ResolvedValue<typeof getSubject> },
 		notFound: !subject
 	};
-};
+});
 
 async function getSubject(subjectSlug: string) {
 	return await database.subject.findUnique({

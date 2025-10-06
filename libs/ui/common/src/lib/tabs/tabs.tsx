@@ -1,6 +1,7 @@
-import { Tab as HeadlessTab } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Tab as HeadlessTab, TabGroup, TabList } from "@headlessui/react";
 import { Fragment, ReactNode } from "react";
+import { IconOnlyButton } from "../button/button";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 export function Tabs({
 	children,
@@ -57,16 +58,9 @@ export function RemovableTab({
 }) {
 	return (
 		<Tab>
-			<span className="flex items-end gap-4">
+			<span className="flex items-end gap-4 hover:text-secondary">
 				<span>{children}</span>
-				<button
-					type="button"
-					title="Entfernen"
-					onClick={onRemove}
-					className="rounded-full pb-[3px] hover:bg-red-50 hover:text-red-500"
-				>
-					<XMarkIcon className="h-4" />
-				</button>
+				<IconOnlyButton icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" onClick={onRemove} title="Entfernen" className="flex items-center" />
 			</span>
 		</Tab>
 	);
@@ -82,9 +76,9 @@ export function VerticalTabs({
 	onChange: (index: number) => void;
 }) {
 	return (
-		<HeadlessTab.Group vertical={true} selectedIndex={selectedIndex} onChange={onChange}>
-			<HeadlessTab.List className="flex flex-col gap-2">{children}</HeadlessTab.List>
-		</HeadlessTab.Group>
+		<TabGroup vertical={true} selectedIndex={selectedIndex} onChange={onChange}>
+			<TabList className="flex flex-col gap-2">{children}</TabList>
+		</TabGroup>
 	);
 }
 

@@ -18,6 +18,7 @@ import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { withTranslations } from "@self-learning/api";
 
 export default function SpecializationManagementPage() {
 	const router = useRouter();
@@ -136,7 +137,7 @@ export default function SpecializationManagementPage() {
 					className="btn-primary absolute top-8 w-fit self-end"
 				>
 					<PencilIcon className="icon h-5" />
-					<span>Editieren</span>
+					<span>Bearbeiten</span>
 				</Link>
 			</TopicHeader>
 
@@ -152,12 +153,12 @@ export default function SpecializationManagementPage() {
 						href={`/teaching/courses/create?specializationId=${specialization.specializationId}&subjectId=${specialization.subjectId}`}
 					>
 						<PlusIcon className="icon h-5" />
-						<span>Neuen Kurs erstellen</span>
+						<span>Kurs erstellen</span>
 					</Link>
 
 					<button className="btn-stroked w-fit" onClick={() => setAddCourseDialog(true)}>
 						<LinkIcon className="icon h-5" />
-						<span>Existierenden Kurs hinzufügen</span>
+						<span>Kurs verknüpfen</span>
 					</button>
 
 					{addCourseDialog && (
@@ -236,3 +237,5 @@ export default function SpecializationManagementPage() {
 
 	return;
 }
+
+export const getServerSideProps = withTranslations(["common"]);

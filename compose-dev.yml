@@ -9,7 +9,7 @@ services:
             - type: bind
               source: /var/run/docker.sock
               target: /var/run/docker.sock
-            - codebase:/com.docker.devenvironments.code
+            - ./:/code
     dev-db:
         image: postgres:13
         #ports: # enable if you want to access it outside the dev environment
@@ -22,6 +22,3 @@ services:
             - dev_db_data:/var/lib/postgresql/data
 volumes:
     dev_db_data:
-    codebase: 
-      name: ${VOLUME_NAME}
-      external: true

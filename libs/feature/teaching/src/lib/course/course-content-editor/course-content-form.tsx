@@ -6,16 +6,21 @@ import {
 	LinkIcon,
 	PencilIcon,
 	PlusIcon,
-	XMarkIcon
+	XMarkIcon,
+	TrashIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
+import {
+	LessonFormModel,
+	onLessonCreatorSubmit,
+	onLessonEditorSubmit
+} from "@self-learning/teaching";
 import { CourseChapter, LessonContent, LessonMeta } from "@self-learning/types";
-import { OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
+import { IconOnlyButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
-import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
-import { EditLessonDialog } from "./dialogs/edit-lesson-dialog";
+import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
 import { useCourseContentForm } from "./use-content-form";
 
@@ -107,7 +112,7 @@ export function CourseContentForm() {
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
 				<PlusIcon className="mr-2 h-5" />
-				<span>Kapitel hinzufügen</span>
+				<span>Kapitel erstellen</span>
 			</button>
 
 			{openNewChapterDialog && <ChapterDialog onClose={handleAddChapterDialogClose} />}
@@ -125,33 +130,7 @@ function LessonNode({
 	onRemove: () => void;
 }) {
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
-	const [lessonEditorDialog, setLessonEditorDialog] = useState(false);
-	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
-
-	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
-		if (!updatedLesson) {
-			return setLessonEditorDialog(false);
-		}
-
-		try {
-			const result = await editLessonAsync({
-				lesson: updatedLesson,
-				lessonId: lesson.lessonId
-			});
-			showToast({
-				type: "success",
-				title: "Lerneinheit gespeichert!",
-				subtitle: result.title
-			});
-			setLessonEditorDialog(false);
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle: "Die Lernheit konnte nicht gespeichert werden."
-			});
-		}
-	};
+	const [lessonEditorDialogOpen, setLessonEditorDialogOpen] = useState(false);
 
 	return (
 		<span className="flex justify-between gap-4 rounded-lg bg-white px-4 py-2">
@@ -178,14 +157,14 @@ function LessonNode({
 				<button
 					type="button"
 					className="flex items-center whitespace-nowrap hover:text-secondary"
-					onClick={() => setLessonEditorDialog(true)}
+					onClick={() => setLessonEditorDialogOpen(true)}
 				>
 					<span className="text-sm">{data ? data.title : "Loading..."}</span>
 
-					{lessonEditorDialog && (
+					{lessonEditorDialogOpen && (
 						<EditExistingLessonDialog
+							setLessonEditorDialogOpen={setLessonEditorDialogOpen}
 							lessonId={lesson.lessonId}
-							onClose={handleEditDialogClose}
 						/>
 					)}
 				</button>
@@ -193,19 +172,11 @@ function LessonNode({
 
 			<div className="flex gap-4">
 				{(data?.meta as LessonMeta)?.hasQuiz && (
-					<span className="rounded-full bg-secondary px-3 py-[2px] text-xs font-medium text-white">
+					<span className="flex items-center justify-center rounded-full bg-secondary px-3 py-1 text-xs font-medium text-white min-h-[2rem]">
 						Lernkontrolle
 					</span>
 				)}
-
-				<button
-					type="button"
-					className="text-gray-400 hover:text-red-500"
-					title="Entfernen"
-					onClick={onRemove}
-				>
-					<XMarkIcon className="h-4 " />
-				</button>
+				<IconOnlyButton onClick={onRemove} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" title="Entfernen" />
 			</div>
 		</span>
 	);
@@ -230,11 +201,11 @@ function ChapterNode({
 	onRemove: () => void;
 	removeLesson: UseCourseContentForm["removeLesson"];
 }) {
+	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const [editChapterDialogOpen, setEditChapterDialogOpen] = useState(false);
 	const [expanded, setExpanded] = useState(true);
-	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	function onCloseLessonSelector(lesson?: LessonSummary) {
 		setLessonSelectorOpen(false);
@@ -244,33 +215,26 @@ function ChapterNode({
 		}
 	}
 
-	async function handleLessonEditorClosed(lesson?: LessonFormModel) {
-		if (!lesson) {
-			return setCreateLessonDialogOpen(false);
-		}
-
-		try {
-			console.log("Creating lesson...", lesson);
-			const result = await createLessonAsync(lesson);
-			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
-			onLessonAdded(index, { lessonId: result.lessonId });
-			setCreateLessonDialogOpen(false);
-		} catch (error) {
-			console.error(error);
-			showToast({
-				type: "error",
-				title: "Fehler",
-				subtitle: "Lerneinheit konnte nicht erstellt werden."
-			});
-		}
-	}
-
 	function handleEditChapterDialogClosed(updatedChapter?: CourseChapter) {
 		if (updatedChapter) {
 			onChapterUpdated(index, updatedChapter);
 		}
 
 		setEditChapterDialogOpen(false);
+	}
+
+	async function handleCreateDialogClose(lesson?: LessonFormModel) {
+		const createdLesson = await onLessonCreatorSubmit(
+			() => {
+				setCreateLessonDialogOpen(false);
+			},
+			createLessonAsync,
+			lesson
+		);
+
+		if (createdLesson) {
+			onLessonAdded(index, createdLesson);
+		}
 	}
 
 	return (
@@ -283,17 +247,54 @@ function ChapterNode({
 					<span className="tracking-tight text-secondary">{chapter.title}</span>
 				</span>
 
-				<button
-					type="button"
-					className="text-gray-400"
-					onClick={() => setExpanded(v => !v)}
-				>
-					{expanded ? (
-						<ChevronDownIcon className="h-5" />
-					) : (
-						<ChevronLeftIcon className="h-5" />
-					)}
-				</button>
+				<div className="flex items-center gap-2">
+					{/* Chapter-Management Icons */}
+					<button
+						type="button"
+						title="Nach oben"
+						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						onClick={() => moveChapter(index, "up")}
+					>
+						<ArrowUpIcon className="h-4 w-4" />
+					</button>
+					<button
+						type="button"
+						title="Nach unten"
+						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						onClick={() => moveChapter(index, "down")}
+					>
+						<ArrowDownIcon className="h-4 w-4" />
+					</button>
+					<button
+						type="button"
+						title="Beschreibung bearbeiten"
+						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						onClick={() => setEditChapterDialogOpen(true)}
+					>
+						<PencilIcon className="h-4 w-4" />
+					</button>
+					<button
+						type="button"
+						title="Kapitel entfernen"
+						className="rounded p-1 hover:bg-red-100 text-red-500"
+						onClick={onRemove}
+					>
+						<TrashIcon className="h-4 w-4" />
+					</button>
+
+					{/* Expand/Collapse Button */}
+					<button
+						type="button"
+						className="text-gray-400 ml-2"
+						onClick={() => setExpanded(v => !v)}
+					>
+						{expanded ? (
+							<ChevronDownIcon className="h-5" />
+						) : (
+							<ChevronLeftIcon className="h-5" />
+						)}
+					</button>
+				</div>
 			</span>
 
 			{expanded && (
@@ -313,56 +314,22 @@ function ChapterNode({
 						))}
 					</ul>
 
-					<div className="flex flex-wrap items-center justify-between gap-4 pl-4 pt-4">
-						<div className="flex gap-4">
-							<button
-								type="button"
-								title="Nach oben"
-								className="rounded p-1 hover:bg-gray-300"
-								onClick={() => moveChapter(index, "up")}
-							>
-								<ArrowUpIcon className="h-3" />
-							</button>
-							<button
-								type="button"
-								title="Nach unten"
-								className="rounded p-1 hover:bg-gray-300"
-								onClick={() => moveChapter(index, "down")}
-							>
-								<ArrowDownIcon className="h-3" />
-							</button>
-							<button
-								type="button"
-								className="btn-stroked"
-								onClick={() => setEditChapterDialogOpen(true)}
-							>
-								<PencilIcon className="icon" />
-								<span>Editieren</span>
-							</button>
-						</div>
-
-						<div className="flex gap-4">
-							<button
-								type="button"
-								className="btn-stroked"
-								onClick={() => setCreateLessonDialogOpen(true)}
-							>
-								<PlusIcon className="icon" />
-								<span>Neue Lerneinheit erstellen</span>
-							</button>
-
-							<button
-								type="button"
-								className="btn-stroked"
-								onClick={() => setLessonSelectorOpen(true)}
-							>
-								<LinkIcon className="icon" />
-								<span>Lerneinheit verknüpfen</span>
-							</button>
-						</div>
-
-						<button type="button" className="btn-stroked" onClick={onRemove}>
-							<span>Entfernen</span>
+					<div className="flex gap-3 justify-center pt-4">
+						<button
+							type="button"
+							className="btn-stroked"
+							onClick={() => setCreateLessonDialogOpen(true)}
+						>
+							<PlusIcon className="icon" />
+							<span>Lerneinheit erstellen</span>
+						</button>
+						<button
+							type="button"
+							className="btn-stroked"
+							onClick={() => setLessonSelectorOpen(true)}
+						>
+							<LinkIcon className="icon" />
+							<span>Lerneinheit verknüpfen</span>
 						</button>
 					</div>
 				</>
@@ -371,7 +338,9 @@ function ChapterNode({
 			{lessonSelectorOpen && (
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 			)}
-			{createLessonDialogOpen && <EditLessonDialog onClose={handleLessonEditorClosed} />}
+			{createLessonDialogOpen && (
+				<LessonEditorDialogWithGuard onClose={handleCreateDialogClose} />
+			)}
 			{editChapterDialogOpen && (
 				<ChapterDialog chapter={chapter} onClose={handleEditChapterDialogClosed} />
 			)}
@@ -381,42 +350,42 @@ function ChapterNode({
 
 function EditExistingLessonDialog({
 	lessonId,
-	onClose
+	setLessonEditorDialogOpen
 }: {
 	lessonId: string;
-	onClose: OnDialogCloseFn<LessonFormModel>;
+	setLessonEditorDialogOpen: (value: boolean) => void;
 }) {
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
+	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
+
+	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
+		await onLessonEditorSubmit(
+			() => {
+				setLessonEditorDialogOpen(false);
+			},
+			editLessonAsync,
+			updatedLesson
+		);
+	};
 
 	return data ? (
-		<EditLessonDialog
-			onClose={onClose}
+		<LessonEditorDialogWithGuard
+			onClose={handleEditDialogClose}
 			initialLesson={{
 				...data,
-				requirements: [
-					{
-						name: "",
-						description: null,
-						children: [],
-						id: "",
-						repositoryId: "",
-						parents: []
-					}
-				],
-				teachingGoals: [
-					{
-						description: null,
-						name: "",
-						id: "",
-						children: [],
-						repositoryId: "",
-						parents: []
-					}
-				],
+				requires: data.requires.map(req => ({
+					...req,
+					children: req.children.map(c => c.name),
+					parents: req.parents.map(p => p.name)
+				})),
+				provides: data.provides.map(goal => ({
+					...goal,
+					children: goal.children.map(c => c.name),
+					parents: goal.parents.map(p => p.name)
+				})),
 				// currently there is no license label in the UI so we don't need to set this; see sample implementation below
 				// licenseId: data.licenseId ?? trpc.licenseRouter.getDefault.useQuery().data?.licenseId ?? 0,
 				authors: data.authors.map(a => ({ username: a.username })),
-				// @ts-expect-error TODO @palfner-sse
 				content: (data.content ?? []) as LessonContent,
 				quiz: data.quiz as Quiz
 			}}

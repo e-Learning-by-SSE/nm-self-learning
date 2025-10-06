@@ -1,20 +1,17 @@
-import type { AppRouter } from "@self-learning/api";
-import { Navbar, Footer } from "@self-learning/ui/layouts";
+import { AppRouter, withTranslations } from "@self-learning/api";
+import { Footer, Navbar } from "@self-learning/ui/layouts";
 import { httpBatchLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
+import "katex/dist/katex.css";
 import { SessionProvider } from "next-auth/react";
+import PlausibleProvider from "next-plausible";
 import { AppProps } from "next/app";
 import Head from "next/head";
-import { Toaster } from "react-hot-toast";
-import { useRouter } from "next/router";
-// import { ReactQueryDevtools } from "react-query/devtools";
+import superjson from "superjson";
+import { GlobalFeatures } from "../../_features";
 import "./styles.css";
-import "katex/dist/katex.css";
-import { useEffect } from "react";
-import { init } from "@socialgouv/matomo-next";
-import PlausibleProvider from "next-plausible";
-import { MessagePortal } from "@self-learning/ui/notifications";
+import { appWithTranslation } from "next-i18next";
 
 export default withTRPC<AppRouter>({
 	config() {
@@ -29,6 +26,7 @@ export default withTRPC<AppRouter>({
 					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`
 				})
 			],
+			transformer: superjson,
 			queryClientConfig: {
 				defaultOptions: {
 					queries: {
@@ -39,46 +37,64 @@ export default withTRPC<AppRouter>({
 			}
 		};
 	}
-})(CustomApp);
+})(appWithTranslation(CustomApp));
 
 function CustomApp({ Component, pageProps }: AppProps) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const Layout = (Component as any).getLayout
-		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-		  (Component as any).getLayout(Component, pageProps)
+		? (Component as any).getLayout(Component, pageProps)
 		: null;
 
-	useEffect(() => {
-		const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
-		const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
-		if (MATOMO_URL && MATOMO_SITE_ID) {
-			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
-		}
-	}, []);
-	const globalMessage = process.env.NEXT_PUBLIC_SYSTEM_MSG;
+	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 	return (
-		<PlausibleProvider
-			domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
-			customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
-			trackLocalhost={process.env.NODE_ENV === "development" ? true : false}
-		>
-			<SessionProvider
-				session={pageProps.session}
-				basePath={useRouter().basePath + "/api/auth"}
+		<>
+			{process.env.NODE_ENV === "development" && (
+				<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
+			)}
+			<PlausibleProvider
+				domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
+				customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
+				trackLocalhost={process.env.NODE_ENV === "development"}
 			>
-				<Head>
-					<title>Self-Learning</title>
-				</Head>
-				{globalMessage && <MessagePortal htmlMessage={globalMessage} />}
-				<Navbar />
-				<main className="grid grow">
-					{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-				</main>
-				<Toaster containerStyle={{ top: 96 }} position="top-right" />
-				<Footer />
-				{/* <ReactQueryDevtools position="bottom-right" /> */}
-			</SessionProvider>
-		</PlausibleProvider>
+				<SessionProvider session={pageProps.session} basePath={basePath + "/api/auth"}>
+					<Head>
+						<title>Self-Learning</title>
+						{/* Favicon setup based on recommendation of:
+						 *  - https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
+						 *  - https://favicon.io/
+						 */}
+						<link
+							rel="apple-touch-icon"
+							sizes="180x180"
+							href={basePath + "/apple-touch-icon.png"}
+						/>
+						<link rel="icon" sizes="48x48" href={basePath + "/favicon.ico"} />
+						<link rel="icon" type="image/svg+xml" href={basePath + "/icon.svg"} />
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="32x32"
+							href={basePath + "/favicon-32x32.png"}
+						/>
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="16x16"
+							href={basePath + "/favicon-16x16.png"}
+						/>
+						{/* Only required for /pages, /app will handle this automatically */}
+						<link rel="manifest" href={basePath + "/api/manifest"} />
+					</Head>
+					<GlobalFeatures />
+					<Navbar />
+					<main className="grid grow">
+						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
+					</main>
+					<Footer />
+				</SessionProvider>
+			</PlausibleProvider>
+		</>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

@@ -10,7 +10,7 @@ import {
 	useSlugify
 } from "@self-learning/ui/forms";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm } from "react-hook-form";
 
 export function SubjectEditor({
@@ -43,7 +43,7 @@ export function SubjectEditor({
 							<div>
 								<span className="font-semibold text-secondary">
 									Fachgebiet{" "}
-									{initialSubject.subjectId === "" ? "erstellen" : "speichern"}
+									{initialSubject.subjectId === "" ? "erstellen" : "bearbeiten"}
 								</span>
 
 								<h1 className="text-2xl">

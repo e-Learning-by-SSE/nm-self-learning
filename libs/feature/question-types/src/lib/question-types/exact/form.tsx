@@ -1,8 +1,9 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
 import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ExactQuestion } from "./schema";
+import { IconOnlyButton } from "@self-learning/ui/common";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function ExactForm({
 	index
@@ -37,14 +38,13 @@ export default function ExactForm({
 				<div className="flex items-center gap-4">
 					<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
 
-					<button
-						type="button"
-						className="btn-stroked h-fit w-fit items-center"
+					<IconOnlyButton
+						icon={<PlusIcon className="h-5 w-5"/>}
+						variant = "primary"
 						onClick={addAnswer}
-					>
-						<PlusIcon className="h-5" />
-						<span>Antwort hinzufügen</span>
-					</button>
+						title={"Antwort hinzufügen"}
+						className={"h-fit w-fit items-center"}
+					/>
 				</div>
 
 				<span className="flex items-center gap-4">
@@ -73,13 +73,13 @@ export default function ExactForm({
 								placeholder="Antwort"
 								autoComplete="off"
 							/>
-							<button
-								type="button"
-								className="text-xs text-red-500"
+
+							<IconOnlyButton
+								icon={<TrashIcon className="h-5 w-5" />}
+								variant = "danger" 
 								onClick={() => removeAnswer(acceptedAnswerIndex)}
-							>
-								Entfernen
-							</button>
+								title={"Antwort entfernen"}
+							/>
 						</div>
 					))}
 				</div>

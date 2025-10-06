@@ -1,3 +1,4 @@
+"use client";
 import {
 	Dialog,
 	DialogActions,
@@ -33,7 +34,7 @@ export function SkillRepositoryOverview() {
 		<AuthorGuard>
 			<div className="flex min-h-[300px] flex-col">
 				<SearchField
-					placeholder="Suche nach Skill-Trees"
+					placeholder="Suche nach Skillkarten"
 					onChange={e => {
 						setDisplayName(e.target.value);
 					}}
@@ -77,7 +78,7 @@ export function SkillRepositoryOverview() {
 									<TableDataColumn>
 										<div className="flex flex-wrap gap-4">
 											<span className="text-sm font-medium hover:text-secondary">
-												Keine Skill Repositories vorhanden
+												Keine Skillkarten vorhanden
 											</span>
 										</div>
 									</TableDataColumn>
@@ -96,11 +97,14 @@ export function SkillRepositoryOverview() {
 
 function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
 	return (
-		<div className="flex flex-wrap justify-end gap-4">
+		<div className="flex flex-row justify-end gap-4">
 			<Link href={`/skills/repository/${repositoryId}`}>
-				<button type="button" className="btn-stroked w-fit self-end">
+				<button
+					type="button"
+					className="lg:flex rounded-lg lg:border lg:place-content-center lg:items-center border-gray-200 bg-white lg:w-fit lg:self-end p-2 lg:px-8 lg:py-2"
+				>
 					<PencilIcon className="icon" />
-					<span>Bearbeiten</span>
+					<span className="hidden lg:inline">Bearbeiten</span>
 				</button>
 			</Link>
 			<RepositoryDeleteOption repositoryId={repositoryId} />

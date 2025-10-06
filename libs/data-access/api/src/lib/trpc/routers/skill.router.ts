@@ -1,35 +1,98 @@
 import { authorProcedure, t } from "../trpc";
 import * as z from "zod";
-import { database } from "@self-learning/database";
+import { database, getSkillById } from "@self-learning/database";
 import {
-	ResolvedValue,
-	SkillFormModel,
 	createSkillFormModelFromSkillResolved,
 	skillCreationFormSchema,
+	SkillFormModel,
 	skillFormSchema,
 	skillRepositoryCreationSchema,
 	skillRepositorySchema
 } from "@self-learning/types";
 
-export type SkillResolved = ResolvedValue<typeof getSkillById>;
-export type SkillUnresolved = Omit<SkillResolved, "children" | "repository" | "parents">;
+async function updateSkill(skill: SkillFormModel) {
+	const children = skill.children.map(id => ({ id }));
+	const parents = skill.parents.map(id => ({ id }));
+
+	return await database.skill.update({
+		where: { id: skill.id },
+		data: {
+			name: skill.name,
+			description: skill.description,
+			children: { set: children },
+			parents: { set: parents },
+			repository: { connect: { id: skill.repositoryId } }
+		},
+		include: {
+			children: true,
+			repository: true,
+			parents: true
+		}
+	});
+}
+
+async function createSkill(input: {
+	skill: { children: string[]; name: string; description: string | null };
+	repoId: string;
+}) {
+	return await database.skill.create({
+		data: {
+			...input.skill,
+			repository: { connect: { id: input.repoId } },
+			children: {
+				connect: input.skill.children.map(id => ({ id }))
+			}
+		},
+		include: {
+			children: true,
+			repository: true,
+			parents: true
+		}
+	});
+}
+
+export async function getSkills(repoId: string) {
+	const skills = await database.skill.findMany({
+		where: { repositoryId: repoId },
+		select: {
+			id: true,
+			name: true,
+			description: true,
+			repositoryId: true,
+			children: { select: { id: true } },
+			parents: { select: { id: true } },
+			repository: true
+		}
+	});
+
+	const transformedSkill = skills.map(skill => {
+		return {
+			id: skill.id,
+			name: skill.name,
+			description: skill.description,
+			repositoryId: skill.repositoryId,
+			children: skill.children.map(child => child.id),
+			parents: skill.parents.map(parent => parent.id)
+		};
+	});
+	return transformedSkill;
+}
 
 export const skillRouter = t.router({
 	getRepositories: authorProcedure.query(async () => {
 		return await database.skillRepository.findMany();
 	}),
 	getRepositoriesByUser: authorProcedure.query(async ({ ctx }) => {
-		const { id: userId } = ctx.user;
 		const repositories = await database.skillRepository.findMany({
-			where: { ownerId: userId }
+			where: { ownerName: ctx.user.name }
 		});
 		return repositories;
 	}),
 	addRepo: authorProcedure
 		.input(z.object({ rep: skillRepositoryCreationSchema }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			return await database.skillRepository.create({
-				data: { ...input.rep }
+				data: { ...input.rep, ownerName: ctx.user.name }
 			});
 		}),
 	deleteRepository: authorProcedure
@@ -151,82 +214,3 @@ export const skillRouter = t.router({
 			});
 		})
 });
-
-function getSkillById(id: string) {
-	return database.skill.findUnique({
-		where: { id },
-		include: {
-			children: true,
-			repository: true,
-			parents: true
-		}
-	});
-}
-
-async function updateSkill(skill: SkillFormModel) {
-	const children = skill.children.map(id => ({ id }));
-	const parents = skill.parents.map(id => ({ id }));
-
-	return await database.skill.update({
-		where: { id: skill.id },
-		data: {
-			name: skill.name,
-			description: skill.description,
-			children: { set: children },
-			parents: { set: parents },
-			repository: { connect: { id: skill.repositoryId } }
-		},
-		include: {
-			children: true,
-			repository: true,
-			parents: true
-		}
-	});
-}
-
-async function createSkill(input: {
-	skill: { children: string[]; name: string; description: string | null };
-	repoId: string;
-}) {
-	return await database.skill.create({
-		data: {
-			...input.skill,
-			repository: { connect: { id: input.repoId } },
-			children: {
-				connect: input.skill.children.map(id => ({ id }))
-			}
-		},
-		include: {
-			children: true,
-			repository: true,
-			parents: true
-		}
-	});
-}
-
-export async function getSkills(repoId: string) {
-	const skills = await database.skill.findMany({
-		where: { repositoryId: repoId },
-		select: {
-			id: true,
-			name: true,
-			description: true,
-			repositoryId: true,
-			children: { select: { id: true } },
-			parents: { select: { id: true } },
-			repository: true
-		}
-	});
-
-	const transformedSkill = skills.map(skill => {
-		return {
-			id: skill.id,
-			name: skill.name,
-			description: skill.description,
-			repositoryId: skill.repositoryId,
-			children: skill.children.map(child => child.id),
-			parents: skill.parents.map(parent => parent.id)
-		};
-	});
-	return transformedSkill;
-}

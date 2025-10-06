@@ -1,15 +1,24 @@
 import { CenteredContainer } from "@self-learning/ui/layouts";
-import { CourseFormModel } from "../course-form-model";
 import { IncompleteNanoModuleExport } from "@self-learning/lia-exporter";
 import { useState } from "react";
 import { ErrorReportDialog } from "./error-report-dialog";
 import { ExportCourseProgressDialog } from "./export-progress-dialog";
 
+export type CourseExportType = {
+	slug: string;
+	imgUrl: string | null;
+	title: string;
+	specializations: {
+		title: string;
+	}[];
+	courseId: string;
+};
+
 export function ExportCourseDialog({
 	course,
 	onClose
 }: {
-	course: CourseFormModel;
+	course: CourseExportType;
 	onClose: () => void;
 }) {
 	const [errorReport, setErrorReport] = useState<IncompleteNanoModuleExport[]>([]);
@@ -26,6 +35,7 @@ export function ExportCourseDialog({
 		onClose();
 	}
 
+	console.log("errorReport", errorReport);
 	if (userClosed) return null;
 	return (
 		<CenteredContainer>
@@ -38,14 +48,11 @@ export function ExportCourseDialog({
 				/>
 			)}
 			{isFinished && errorReport.length > 0 && (
-				<>
-					{console.log("errorReport", errorReport)}
-					<ErrorReportDialog
-						report={errorReport}
-						course={course}
-						onClose={() => setUserClosed(true)}
-					/>
-				</>
+				<ErrorReportDialog
+					report={errorReport}
+					course={course}
+					onClose={() => setUserClosed(true)}
+				/>
 			)}
 		</CenteredContainer>
 	);

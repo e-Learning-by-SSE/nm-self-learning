@@ -2,14 +2,9 @@ import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ProgrammingQuestion } from "./schema";
+import { MarkdownListboxMenu } from "@self-learning/markdown";
 
-export default function ProgrammingForm({
-	question,
-	index
-}: {
-	question: ProgrammingQuestion;
-	index: number;
-}) {
+export default function ProgrammingForm({ index }: { index: number }) {
 	const { control, watch, getValues } = useFormContext<QuestionTypeForm<ProgrammingQuestion>>();
 	const { update } = useFieldArray({ control, name: "quiz.questions" });
 
@@ -59,14 +54,12 @@ export default function ProgrammingForm({
 			<span className="flex flex-wrap gap-4">
 				<div>
 					<LabeledField label="Modus">
-						<select
-							value={selectedMode}
-							onChange={v => switchMode(v.target.value as "standalone" | "callable")}
-							className="textfield w-64 rounded-lg px-8"
-						>
-							<option value="standalone">standalone</option>
-							<option value="callable">callable</option>
-						</select>
+						<MarkdownListboxMenu
+							title="Modus"
+							displayValue={selectedMode}
+							options={["standalone", "callable"]}
+							onChange={value => switchMode(value as "standalone" | "callable")}
+						/>
 					</LabeledField>
 				</div>
 
@@ -76,21 +69,18 @@ export default function ProgrammingForm({
 							control={control}
 							name={`quiz.questions.${index}.language`}
 							render={({ field }) => (
-								<select
-									value={field.value}
+								<MarkdownListboxMenu
+									title="Programmiersprache"
+									displayValue={field.value}
+									options={["java", "python", "typescript", "javascript"]}
 									onChange={field.onChange}
-									className="textfield w-64 rounded-lg px-8"
-								>
-									<option value="java">Java</option>
-									<option value="python">Python</option>
-									<option value="typescript">TypeScript</option>
-									<option value="javascript">JavaScript</option>
-								</select>
+								/>
 							)}
-						></Controller>
+						/>
 					</LabeledField>
 				</div>
 			</span>
+
 			<section className="grid grid-cols-2 gap-4">
 				{selectedMode === "standalone" && (
 					<>
@@ -168,7 +158,7 @@ function Explainer() {
 
 			<ul className="text-sm text-light">
 				<li>
-					<span className="font-bold">standlone</span>: Der Student entwickelt das
+					<span className="font-bold">standalone</span>: Der Student entwickelt das
 					vollstände Programm. Die Ausgabe des Programms wird mit einer vom Autor
 					vordefinierten Ausgabe verglichen, um die Korrektheit der Lösung zu ermitteln.
 				</li>

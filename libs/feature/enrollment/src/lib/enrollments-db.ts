@@ -1,5 +1,5 @@
 import { getCourseCompletionOfStudent } from "@self-learning/completion";
-import { database } from "@self-learning/database";
+import { createUserEvent, database } from "@self-learning/database";
 import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
 import { AlreadyExists } from "@self-learning/util/http";
 
@@ -43,7 +43,7 @@ export async function getEnrollmentDetails(username: string) {
 
 type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
 
-export type EnrollmentDetails = ArrayElement<Awaited<ResolvedValue<typeof getEnrollmentDetails>>>;
+export type EnrollmentDetails = ArrayElement<ResolvedValue<typeof getEnrollmentDetails>>;
 
 export async function getEnrollmentsOfUser(username: string): Promise<CourseEnrollment[]> {
 	return await database.enrollment.findMany({
@@ -80,7 +80,6 @@ export async function enrollUser({ courseId, username }: { courseId: string; use
 			`${username} is already enrolled in ${courseId} (since: ${course.enrollments[0].createdAt.toLocaleString()}).`
 		);
 	}
-
 	const enrollment = await database.enrollment.create({
 		select: {
 			createdAt: true,
@@ -99,6 +98,13 @@ export async function enrollUser({ courseId, username }: { courseId: string; use
 			username: username,
 			status: "ACTIVE"
 		}
+	});
+
+	await createUserEvent({
+		username,
+		type: "COURSE_ENROLL",
+		resourceId: courseId,
+		payload: undefined
 	});
 
 	return enrollment;

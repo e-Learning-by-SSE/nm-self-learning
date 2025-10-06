@@ -16,6 +16,7 @@ import { Fragment, useMemo, useState } from "react";
 import { License } from "@self-learning/types";
 import Link from "next/link";
 import { ShareIcon } from "@heroicons/react/24/outline";
+import { withTranslations } from "@self-learning/api";
 
 export default function LicensesPage() {
 	useRequiredSession();
@@ -45,7 +46,7 @@ export default function LicensesPage() {
 					<h1 className="text-5xl">Lizenzen</h1>
 					<button className="btn-primary" onClick={() => setEditTarget("new")}>
 						<PlusIcon className="icon h-5" />
-						<span>Lizenz hinzufügen</span>
+						<span>Lizenz erstellen</span>
 					</button>
 				</div>
 
@@ -126,7 +127,7 @@ function LicenseTable({
 											className="btn-stroked"
 											onClick={() => changeEditTarget(licenseId)}
 										>
-											Editieren
+											Bearbeiten
 										</button>
 									</div>
 								</TableDataColumn>
@@ -151,17 +152,17 @@ function LicenseFeatureIcons({
 	return (
 		<>
 			{defaultSuggestion && (
-				<Tooltip title="Standard Lizenz">
+				<Tooltip content="Standard Lizenz">
 					<CheckBadgeIcon className="icon h-5" />
 				</Tooltip>
 			)}
 			{oerCompatible && (
-				<Tooltip title="Erlaubt Exportfunktion">
+				<Tooltip content="Erlaubt Exportfunktion">
 					<ShareIcon className="icon h-5" />
 				</Tooltip>
 			)}
 			{!selectable && (
-				<Tooltip title="Lizenz ist nicht in neuen Lerneinheiten auswählbar.">
+				<Tooltip content="Lizenz ist nicht in neuen Lerneinheiten auswählbar.">
 					<NoSymbolIcon className="icon h-5" />
 				</Tooltip>
 			)}
@@ -220,3 +221,5 @@ export function LicenseDetail({ license }: { license: License }) {
 		</div>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

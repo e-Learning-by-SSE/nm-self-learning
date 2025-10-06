@@ -1,12 +1,14 @@
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { ReactComponent as EnvStudySvg } from "../../svg/environmental-study.svg";
-import { ReactComponent as SoftwareEngineerSvg } from "../../svg/software-engineer.svg";
-import { ReactComponent as PersonalInformationSvg } from "../../svg/teams.svg";
-import { ReactComponent as TutorialSvg } from "../../svg/tutorial.svg";
+import { CodingSvg, EnvStudySvg } from "@self-learning/ui/static";
+import { SoftwareEngineerSvg } from "@self-learning/ui/static";
+import { PersonalInformationSvg } from "@self-learning/ui/static";
+import { TutorialSvg } from "@self-learning/ui/static";
 import { Card } from "@self-learning/ui/common";
+import { withTranslations } from "@self-learning/api";
 
 export default function AdminPage() {
 	const session = useRequiredSession();
+	const appVersion = process.env.APP_VERSION || "Version not available";
 
 	if (session.data?.user.role !== "ADMIN") {
 		return <AdminGuard></AdminGuard>;
@@ -45,8 +47,22 @@ export default function AdminPage() {
 					imageElement={<PersonalInformationSvg />}
 					title="Lizenzen verwalten"
 				/>
+				<Card
+					href="/admin/users"
+					imageElement={<PersonalInformationSvg />}
+					title="Nutzer:innen verwalten"
+				/>
+				<Card
+					href="/admin/api-docs"
+					imageElement={<CodingSvg />}
+					title="REST API Dokumentation (OpenAPI)"
+				/>
+			</div>
+			<div className="text-center text-sm text-gray-500 mt-8">
+				{`App Version: ${appVersion}`}
 			</div>
 		</CenteredSection>
 	);
 }
 
+export const getServerSideProps = withTranslations(["common"]);

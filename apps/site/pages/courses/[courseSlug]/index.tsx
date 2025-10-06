@@ -1,10 +1,5 @@
-import { GetServerSideProps } from "next";
-import { MDXRemote } from "next-mdx-remote";
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo } from "react";
-
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
+import { LessonType } from "@prisma/client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
@@ -18,9 +13,13 @@ import {
 } from "@self-learning/types";
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
-import { CenteredContainer, CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
-import { LessonType } from "@prisma/client";
+import { MDXRemote } from "next-mdx-remote";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo } from "react";
+import { withTranslations } from "@self-learning/api";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -38,7 +37,7 @@ function mapToTocContent(
 				? {
 						...(lessonIdMap.get(lessonId) as LessonInfo),
 						lessonNr: lessonNr++
-				  }
+					}
 				: {
 						lessonId: "removed",
 						slug: "removed",
@@ -46,7 +45,7 @@ function mapToTocContent(
 						title: "Removed",
 						lessonType: LessonType.TRADITIONAL,
 						lessonNr: -1
-				  };
+					};
 
 			return lesson;
 		})
@@ -109,28 +108,23 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ params }) => {
+export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
 	const courseSlug = params?.courseSlug as string | undefined;
-
 	if (!courseSlug) {
 		throw new Error("No slug provided.");
 	}
 
 	const course = await getCourse(courseSlug);
-
 	if (!course) {
 		return { notFound: true };
 	}
 
 	const content = await mapCourseContent(course.content as CourseContent);
-
 	let markdownDescription = null;
 
-	if (course) {
-		if (course.description && course.description.length > 0) {
-			markdownDescription = await compileMarkdown(course.description);
-			course.description = null;
-		}
+	if (course.description && course.description.length > 0) {
+		markdownDescription = await compileMarkdown(course.description);
+		course.description = null;
 	}
 
 	const summary = createCourseSummary(content);
@@ -144,10 +138,10 @@ export const getServerSideProps: GetServerSideProps<CourseProps> = async ({ para
 		},
 		notFound: !course
 	};
-};
+});
 
 async function getCourse(courseSlug: string) {
-	return await database.course.findUnique({
+	return database.course.findUnique({
 		where: { slug: courseSlug },
 		include: {
 			authors: {
@@ -192,6 +186,8 @@ function CourseHeader({
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
 }) {
+	const { withAuth, isAuthenticated } = useAuthentication();
+
 	const enrollments = useEnrollments();
 	const { enroll } = useEnrollmentMutations();
 	const completion = useCourseCompletion(course.slug);
@@ -215,7 +211,7 @@ function CourseHeader({
 		return null;
 	}, [completion, content]);
 
-	const firstLessonFromChapter = content[0].content[0];
+	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 	return (
 		<section className="flex flex-col gap-16">
@@ -274,9 +270,13 @@ function CourseHeader({
 
 					{isEnrolled && (
 						<Link
-							href={`/courses/${course.slug}/${
-								nextLessonSlug ?? firstLessonFromChapter.slug
-							}`}
+							href={
+								firstLessonFromChapter
+									? `/courses/${course.slug}/${
+											nextLessonSlug ?? firstLessonFromChapter.slug
+										}`
+									: `/courses/${course.slug}`
+							}
 							className="btn-primary"
 						>
 							<span>
@@ -293,10 +293,19 @@ function CourseHeader({
 					{!isEnrolled && (
 						<button
 							className="btn-primary disabled:opacity-50"
-							onClick={() => enroll({ courseId: course.courseId })}
+							onClick={() => {
+								withAuth(() => {
+									enroll({ courseId: course.courseId });
+								});
+							}}
 						>
-							<span>Zum Lernplan hinzufügen</span>
-							<PlusCircleIcon className="h-5" />
+							{isAuthenticated && (
+								<>
+									<span>Zum Lernplan hinzufügen</span>
+									<PlusCircleIcon className="h-5" />
+								</>
+							)}
+							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
 				</div>
@@ -307,6 +316,20 @@ function CourseHeader({
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
 	const completion = useCourseCompletion(course.slug);
+	const hasContent = content.length > 0;
+
+	if (!hasContent) {
+		return (
+			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+				<h3 className="heading flex gap-4 text-2xl">
+					<span className="text-secondary">Kein Inhalt verfügbar</span>
+				</h3>
+				<span className="mt-4 text-light">
+					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
+				</span>
+			</div>
+		);
+	}
 
 	return (
 		<section className="flex flex-col gap-8">
@@ -346,6 +369,15 @@ function Lesson({
 	href: string;
 	isCompleted: boolean;
 }) {
+	const { isAuthenticated } = useAuthentication();
+
+	if (!isAuthenticated) {
+		return (
+			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
+				<LessonEntry lesson={lesson} />
+			</div>
+		);
+	}
 	return (
 		<Link
 			href={href}
@@ -353,13 +385,19 @@ function Lesson({
 				isCompleted ? "border-emerald-500" : "border-gray-300"
 			}`}
 		>
-			<span className="flex">
-				<span className="w-8 shrink-0 self-center font-medium text-secondary">
-					{lesson.lessonNr}
-				</span>
-				<span>{lesson.title}</span>
-			</span>
+			<LessonEntry lesson={lesson} />
 		</Link>
+	);
+}
+
+function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
+	return (
+		<span className="flex">
+			<span className="w-8 shrink-0 self-center font-medium text-secondary">
+				{lesson.lessonNr}
+			</span>
+			<span>{lesson.title}</span>
+		</span>
 	);
 }
 

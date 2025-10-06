@@ -10,7 +10,7 @@ import {
 	MediaFileReplacement
 } from "./liascript-api-utils";
 import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
-import { LessonContent as LessonExport } from "@self-learning/lesson";
+import { LessonData as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 
 import {
@@ -68,9 +68,8 @@ export async function exportCourseArchive(
 	// Download all media files located on our storage server
 
 	// Compute the total size of all media files
-	const { sizePerFile, totalSize, downloadSize } = await computeEstimatedDownloadSize(
-		exportCandidates
-	);
+	const { sizePerFile, totalSize, downloadSize } =
+		await computeEstimatedDownloadSize(exportCandidates);
 
 	// Download all media files, add them to the zip archive, and report progress
 	let alreadyLoaded = 0;

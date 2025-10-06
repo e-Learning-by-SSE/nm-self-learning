@@ -1,10 +1,4 @@
-import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import {
-	LabeledField,
-	MarkdownEditorDialog,
-	MarkdownField,
-	MarkdownViewer
-} from "@self-learning/ui/forms";
+import { LabeledField, MarkdownEditorDialog, MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
@@ -15,27 +9,26 @@ import {
 	DialogActions,
 	Divider,
 	OnDialogCloseFn,
-	showToast
+	SectionHeader,
+	showToast,
+	IconButton,
+	Toggle,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { getRandomId } from "@self-learning/util/common";
+import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
-export default function ArrangeForm({
-	index,
-	question
-}: {
-	index: number;
-	question: ArrangeQuestion;
-}) {
+export default function ArrangeForm({ index }: { index: number }) {
 	const { watch, setValue } = useFormContext<QuestionTypeForm<ArrangeQuestion>>();
 	const items = watch(`quiz.questions.${index}.items`);
 	const [addCategoryDialog, setAddCategoryDialog] = useState(false);
+	const categoryOrder = watch(`quiz.questions.${index}.categoryOrder`) ?? [];
+	const [editCategoryDialog, setEditCategoryDialog] = useState<string | null>(null);
 	const [editItemDialog, setEditItemDialog] = useState<{
 		item?: ArrangeItem;
 		containerId: string;
 	} | null>(null);
-
 	const onDragEnd: OnDragEndResponder = result => {
-		console.log(result);
 		const { source, destination } = result;
 
 		if (!destination) return;
@@ -53,7 +46,7 @@ export default function ArrangeForm({
 		if (!title || title.length === 0) return;
 
 		if (items[title]) {
-			showToast({ type: "warning", title: "Kategorie exisitert bereits", subtitle: title });
+			showToast({ type: "warning", title: "Kategorie existiert bereits", subtitle: title });
 			return;
 		}
 
@@ -61,6 +54,8 @@ export default function ArrangeForm({
 			...items,
 			[title]: []
 		});
+		const updatedOrder = [...categoryOrder, title];
+		setValue(`quiz.questions.${index}.categoryOrder`, updatedOrder);
 	};
 
 	const onEditItem: OnDialogCloseFn<ArrangeItem> = item => {
@@ -82,6 +77,26 @@ export default function ArrangeForm({
 		setValue(`quiz.questions.${index}.items`, value);
 	};
 
+	const onEditContainer: OnDialogCloseFn<string> = title => {
+		setEditCategoryDialog(null);
+		const currentContainerId = editCategoryDialog;
+		if (!title || !editCategoryDialog || currentContainerId === title || !currentContainerId) {
+			return;
+		}
+		if (items[title]) {
+			showToast({ type: "warning", title: "Kategorie existiert bereits", subtitle: title });
+			return;
+		}
+		const updatedItems = { ...items };
+		updatedItems[title] = updatedItems[currentContainerId];
+		delete updatedItems[currentContainerId];
+		setValue(
+			`quiz.questions.${index}.categoryOrder`,
+			categoryOrder.map(id => (id === currentContainerId ? title : id))
+		);
+		setValue(`quiz.questions.${index}.items`, updatedItems);
+	};
+
 	function onDeleteItem(containerId: string, itemId: string): void {
 		if (window.confirm("Element wirklich entfernen?")) {
 			setValue(`quiz.questions.${index}.items`, {
@@ -100,128 +115,151 @@ export default function ArrangeForm({
 			const value = { ...items };
 			delete value[containerId];
 			setValue(`quiz.questions.${index}.items`, value);
+			const updatedOrder = categoryOrder.filter(id => id !== containerId);
+			setValue(`quiz.questions.${index}.categoryOrder`, updatedOrder);
 		}
 	}
 
-	console.log(items);
-
 	return (
-		<div className="flex flex-col gap-8">
-			<button
-				type="button"
-				className="btn-primary w-fit"
-				onClick={() => setAddCategoryDialog(true)}
-			>
-				<PlusIcon className="icon h-5" />
-				<span>Kategorie hinzufügen</span>
-			</button>
-
+		<div className="flex flex-col gap-8 pr-4">
+			<SectionHeader
+				title="Kategorien"
+				button={
+					<IconButton
+						text="Kategorie Hinzufügen"
+						icon={<PlusIcon className="icon w-5" />}
+						onClick={() => setAddCategoryDialog(true)}
+					/>
+				}
+			/>
+			<div className="flex items-center gap-2">
+				<Toggle
+					value={watch(`quiz.questions.${index}.randomizeItems`)}
+					onChange={value => setValue(`quiz.questions.${index}.randomizeItems`, value)}
+					label="Antworten dem Nutzer zufällig anordnen"
+				/>
+			</div>
 			{addCategoryDialog && <AddCategoryDialog onClose={onAddCategory} />}
 			{editItemDialog && <EditItemDialog onClose={onEditItem} item={editItemDialog.item} />}
-
+			{editCategoryDialog && (
+				<EditCategoryDialog onClose={onEditContainer} category={editCategoryDialog} />
+			)}
 			<DragDropContext onDragEnd={onDragEnd}>
-				<ul className="grid auto-cols-fr grid-flow-col gap-4">
-					{Object.entries(items).map(([containerId, items]) => (
-						// eslint-disable-next-line react/jsx-no-useless-fragment
-						<Fragment key={containerId}>
-							{containerId === "_init" ? null : (
-								<li
-									key={containerId}
-									className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-gray-200 p-4"
-								>
-									<span className="flex items-center justify-between gap-4 font-semibold">
-										<span>{containerId}</span>
-										<div className="flex gap-2">
-											<button
-												type="button"
-												className="rounded-full bg-secondary p-2 hover:bg-emerald-600"
-												title="Element hinzufügen"
-												onClick={() => setEditItemDialog({ containerId })}
-											>
-												<PlusIcon className="h-5 text-white" />
-											</button>
+				<div className="grid w-full gap-4 sm:grid-cols-1 md:grid-cols-2">
+					{categoryOrder
+						.filter(containerId => containerId !== "_init" && items[containerId])
+						.map(containerId => (
+							// eslint-disable-next-line react/jsx-no-useless-fragment
+							<Fragment key={containerId}>
+								{containerId === "_init" ? null : (
+									<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4">
+										<span className="flex items-center justify-between gap-4 font-semibold">
+											<span>{containerId}</span>
+											<div className="flex gap-2">
+												<IconOnlyButton
+													icon={<PencilIcon className="h-5 w-5" />}
+													variant="tertiary"
+													onClick={() =>
+														setEditCategoryDialog(containerId)
+													}
+													title={"Kategorie bearbeiten"}
+												/>
+												<IconOnlyButton
+													icon={<PlusIcon className="h-5 w-5" />}
+													variant="primary"
+													onClick={() =>
+														setEditItemDialog({ containerId })
+													}
+													title={"Element hinzufügen"}
+												/>
+												<IconOnlyButton
+													icon={<TrashIcon className="h-5 w-5" />}
+													variant="danger"
+													onClick={() => onDeleteContainer(containerId)}
+													title={"Kategorie entfernen"}
+												/>
+											</div>
+										</span>
 
-											<button
-												type="button"
-												className="rounded-full p-2 hover:bg-red-50"
-												title="Kategorie entfernen"
-												onClick={() => onDeleteContainer(containerId)}
-											>
-												<XMarkIcon className="h-5 text-red-500" />
-											</button>
-										</div>
-									</span>
-
-									<Droppable droppableId={containerId}>
-										{provided => (
-											<ul
-												ref={provided.innerRef}
-												{...provided.droppableProps}
-												className="flex h-full min-h-[128px] flex-col gap-4 rounded-lg bg-gray-100 p-4"
-											>
-												{items.map((item, index) => (
-													<Draggable
-														key={item.id}
-														draggableId={item.id}
-														index={index}
-													>
-														{provided => (
-															<li
-																ref={provided.innerRef}
-																{...provided.draggableProps}
-																{...provided.dragHandleProps}
-																className="prose prose-emerald flex h-fit w-fit max-w-[50ch] flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
-															>
-																<div className="flex gap-2">
-																	<button
-																		type="button"
-																		className="rounded-full p-2 hover:bg-gray-100"
-																		title="Editieren"
-																		onClick={() =>
-																			setEditItemDialog({
-																				containerId,
-																				item
-																			})
-																		}
-																	>
-																		<PencilIcon className="h-5 text-gray-400" />
-																	</button>
-
-																	<button
-																		type="button"
-																		className="rounded-full p-2 hover:bg-red-50"
-																		title="Löschen"
-																		onClick={() =>
-																			onDeleteItem(
-																				containerId,
-																				item.id
-																			)
-																		}
-																	>
-																		<XMarkIcon className="h-5 text-red-500" />
-																	</button>
-																</div>
-
-																<Divider />
-
-																<MarkdownViewer
-																	content={item.content}
-																/>
-															</li>
-														)}
-													</Draggable>
-												))}
-												{provided.placeholder}
-											</ul>
-										)}
-									</Droppable>
-								</li>
-							)}
-						</Fragment>
-					))}
-				</ul>
+										<Droppable droppableId={containerId} direction="horizontal">
+											{provided => (
+												<ul
+													ref={provided.innerRef}
+													{...provided.droppableProps}
+													className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-gray-100 p-4"
+												>
+													{items[containerId].map((item, index) => (
+														<DraggableContent
+															key={item.id}
+															item={item}
+															index={index}
+															onDeleteItem={onDeleteItem}
+															setEditItemDialog={setEditItemDialog}
+															containerId={containerId}
+														/>
+													))}
+													{provided.placeholder}
+												</ul>
+											)}
+										</Droppable>
+									</div>
+								)}
+							</Fragment>
+						))}
+				</div>
 			</DragDropContext>
 		</div>
+	);
+}
+
+function DraggableContent({
+	item,
+	index,
+	setEditItemDialog,
+	containerId,
+	onDeleteItem
+}: {
+	item: ArrangeItem;
+	index: number;
+	setEditItemDialog: (value: { item?: ArrangeItem; containerId: string } | null) => void;
+	containerId: string;
+	onDeleteItem: (containerId: string, itemId: string) => void;
+}) {
+	return (
+		<Draggable key={item.id} draggableId={item.id} index={index}>
+			{provided => (
+				<li
+					ref={provided.innerRef}
+					{...provided.draggableProps}
+					{...provided.dragHandleProps}
+					className="flex h-fit w-fit flex-col gap-2 rounded-lg bg-white p-4 shadow-lg"
+				>
+					<div className="flex justify-end gap-2">
+						<IconOnlyButton
+							icon={<PencilIcon className="h-5 w-5" />}
+							variant="tertiary"
+							onClick={() =>
+								setEditItemDialog({
+									containerId,
+									item
+								})
+							}
+							title={"Bearbeiten"}
+						/>
+
+						<IconOnlyButton
+							icon={<XMarkIcon className="h-5 w-5" />}
+							variant="x-mark"
+							onClick={() => onDeleteItem(containerId, item.id)}
+							title="Löschen"
+						/>
+					</div>
+
+					<Divider />
+					<MarkdownViewer content={item.content} />
+				</li>
+			)}
+		</Draggable>
 	);
 }
 
@@ -259,6 +297,45 @@ function AddCategoryDialog({ onClose }: { onClose: OnDialogCloseFn<string> }) {
 	);
 }
 
+function EditCategoryDialog({
+	onClose,
+	category
+}: {
+	onClose: OnDialogCloseFn<string>;
+	category: string | undefined;
+}) {
+	const [title, setTitle] = useState(category);
+	return (
+		<Dialog title="Kategorie bearbeiten" onClose={onClose}>
+			<LabeledField label="Titel">
+				<input
+					type="text"
+					className="textfield"
+					value={title}
+					onChange={e => setTitle(e.target.value)}
+					onKeyDown={e => {
+						if (e.key === "Enter") {
+							onClose(title?.trim());
+							e.preventDefault();
+						}
+					}}
+				/>
+			</LabeledField>
+
+			<DialogActions onClose={onClose}>
+				<button
+					type="button"
+					className="btn-primary"
+					onClick={() => onClose(title?.trim())}
+					disabled={title?.length === 0}
+				>
+					Speichern
+				</button>
+			</DialogActions>
+		</Dialog>
+	);
+}
+
 function EditItemDialog({
 	item,
 	onClose
@@ -266,26 +343,22 @@ function EditItemDialog({
 	item?: ArrangeItem;
 	onClose: OnDialogCloseFn<ArrangeItem>;
 }) {
-	const [content, setContent] = useState(item?.content ?? "");
+	const [isEditorOpen, setIsEditorOpen] = useState(true);
 
 	return (
-		<Dialog className="w-[80vw]" title={item ? "Bearbeiten" : "Hinzufügen"} onClose={onClose}>
-			<MarkdownField content={content} setValue={setContent as any} />
-
-			<DialogActions onClose={onClose}>
-				<button
-					type="button"
-					className="btn-primary"
-					onClick={() =>
-						onClose({
-							id: item?.id ?? getRandomId(),
-							content
-						})
+		isEditorOpen && (
+			<MarkdownEditorDialog
+				title="Markdown bearbeiten"
+				initialValue={item?.content ?? ""}
+				onClose={newValue => {
+					setIsEditorOpen(false);
+					if (newValue !== undefined) {
+						onClose({ id: item?.id ?? getRandomId(), content: newValue });
+					} else {
+						onClose(undefined);
 					}
-				>
-					{item ? "Übernehmen" : "Hinzufügen"}
-				</button>
-			</DialogActions>
-		</Dialog>
+				}}
+			/>
+		)
 	);
 }

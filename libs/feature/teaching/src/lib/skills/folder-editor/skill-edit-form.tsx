@@ -4,9 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
-import { SkillResolved } from "@self-learning/api";
+import { SkillResolved } from "@self-learning/database";
 import { SkillDeleteOption } from "./skill-taskbar";
-import { showToast } from "@self-learning/ui/common";
+import { IconOnlyButton, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { SkillSelectHandler } from "./skill-display";
 import { XMarkIcon } from "@heroicons/react/24/solid";
@@ -25,7 +25,7 @@ export function SelectedSkillsInfoForm({
 	}
 }
 
-// export function MassSelectedInfo({
+// export function MassSelectedInfo(
 // 	skills,
 // 	onSelectItem
 // }: {
@@ -105,14 +105,14 @@ export function SkillInfoForm({
 							title="Bearbeiten"
 							subtitle="Informationen über den rechts ausgewählten Skill"
 						/>
-						<button
-							type="button"
-							className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
-							title="Ansicht ohne Veränderungen schließen"
+
+						<IconOnlyButton
+							icon={<XMarkIcon className="h-5" />}
+							variant="tertiary"
 							onClick={resetEditTarget}
-						>
-							<XMarkIcon className="h-5" />
-						</button>
+							title="Ansicht ohne Veränderungen schließen"
+							className="px-4"
+						/>
 					</div>
 					<div className="flex flex-col gap-4 border-b-2 border-light-border">
 						<LabeledField label="Name" error={errors.name?.message}>
@@ -135,6 +135,7 @@ export function SkillInfoForm({
 						<SkillDeleteOption
 							skillIds={[skill.id]}
 							onDeleteSuccess={resetEditTarget}
+							inline={false}
 						/>
 					</div>
 				</Form.SidebarSection>

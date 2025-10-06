@@ -8,6 +8,7 @@
 		"KEYCLOAK",
 		"Lernen",
 		"markdownify",
+		"Matomo",
 		"MATOMO",
 		"minio",
 		"Nanomodul",
@@ -18,10 +19,15 @@
 		"Selbstreguliertes",
 		"selflearn",
 		"studium",
+		"superjson",
+		"testid",
 		"trpc"
 	],
 	"cSpell.language": "en,de-de",
+	"cSpell.ignorePaths" : [
+		"package.json"
+	],
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.formatOnSave": true,
-	"editor.formatOnPaste": false
+	"editor.formatOnPaste": false,
 }

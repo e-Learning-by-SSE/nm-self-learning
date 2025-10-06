@@ -23,13 +23,14 @@ export const lessonSchema = z.object({
 	content: z.array(lessonContentSchema),
 	authors: authorsRelationSchema,
 	licenseId: z.number().nullable(),
-	requirements: z.array(skillFormSchema),
-	teachingGoals: z.array(skillFormSchema),
+	requires: z.array(skillFormSchema),
+	provides: z.array(skillFormSchema),
 	lessonType: z.nativeEnum(LessonType),
 	selfRegulatedQuestion: z.string().nullable(),
 	quiz: z
 		.object({
 			questions: z.array(z.any()),
+			questionOrder: z.array(z.string()),
 			config: z.any().nullable()
 		})
 		.nullable()
@@ -49,8 +50,8 @@ export function createEmptyLesson(): Lesson {
 		imgUrl: null,
 		quiz: null,
 		licenseId: null,
-		requirements: [],
-		teachingGoals: [],
+		requires: [],
+		provides: [],
 		content: [],
 		authors: [],
 		lessonType: LessonType.TRADITIONAL,

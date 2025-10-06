@@ -1,22 +1,21 @@
 import { LicenseForm } from "@self-learning/teaching";
-import { ImageOrPlaceholder } from "@self-learning/ui/common";
 import {
 	FieldHint,
 	Form,
 	InputWithButton,
+	LabeledCheckbox,
 	LabeledField,
 	MarkdownField,
-	Upload,
+	OpenAsJsonButton,
 	useSlugify
 } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { LessonType } from "@prisma/client";
-import { Dispatch } from "react";
-import SkillForm from "./skills-form";
+import { lessonSchema } from "@self-learning/types";
+import { LessonSkillManager } from "./lesson-skill-manager";
 
-export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<LessonType> }) {
+export function LessonInfoEditor({ lesson }: { lesson?: LessonFormModel }) {
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -28,10 +27,18 @@ export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<Le
 
 	return (
 		<Form.SidebarSection>
+			<div>
+				<span className="font-semibold text-secondary">
+					{lesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
+				</span>
+				<h1 className="text-2xl">{lesson?.title}</h1>
+			</div>
+
 			<Form.SidebarSectionTitle
 				title="Daten"
 				subtitle="Informationen über diese Lerneinheit"
 			/>
+			<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
 
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Titel" error={errors.title?.message}>
@@ -39,7 +46,7 @@ export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<Le
 						{...register("title")}
 						type="text"
 						className="textfield"
-						placeholder="Die Neue Lerneinheit"
+						placeholder="Die neue Lerneinheit"
 						onBlur={slugifyIfEmpty}
 					/>
 				</LabeledField>
@@ -55,8 +62,13 @@ export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<Le
 							/>
 						}
 						button={
-							<button type="button" className="btn-stroked" onClick={slugifyField}>
-								Generieren
+							<button
+								className="btn btn-tertiary"
+								type="button"
+								onClick={slugifyField}
+								title={"Slug generieren"}
+							>
+								<span className={"text-gray-600"}>Generieren</span>
 							</button>
 						}
 					/>
@@ -80,42 +92,45 @@ export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<Le
 					></Controller>
 				</LabeledField>
 
-				<LabeledField label="Lernmodell" error={errors.lessonType?.message}>
-					<select
-						{...register("lessonType")}
-						onChange={e => {
-							setLessonType(e.target.value as LessonType);
-						}}
-					>
-						<option value={""} hidden>
-							Bitte wählen...
-						</option>
-						<option value={LessonType.TRADITIONAL}>
-							Nanomodul-basiertes Lernen (Standard)
-						</option>
-						<option value={LessonType.SELF_REGULATED}>Selbstreguliertes Lernen</option>
-					</select>
-				</LabeledField>
-
-				<LabeledField label="Thumbnail" error={errors.imgUrl?.message}>
+				<LabeledField
+					label={"Beschreibung"}
+					error={errors.description?.message}
+					optional={true}
+				>
 					<Controller
 						control={control}
-						name="imgUrl"
+						name={"description"}
 						render={({ field }) => (
-							<Upload
-								key={"image"}
-								mediaType="image"
-								onUploadCompleted={field.onChange}
-								preview={
-									<ImageOrPlaceholder
-										src={field.value ?? undefined}
-										className="aspect-video w-full rounded-lg object-cover"
-									/>
-								}
-							/>
+							<MarkdownField
+								content={field.value as string}
+								setValue={field.onChange}
+								inline={true}
+								placeholder={"1-2 Sätze welche diese Lerneinheit beschreibt."}
+							></MarkdownField>
 						)}
-					/>
-					<FieldHint>Thumbnails werden momentan nicht in der UI angezeigt.</FieldHint>
+					></Controller>
+				</LabeledField>
+
+				<LabeledField
+					label={"Selbstreguliertes Lernen"}
+					error={errors.selfRegulatedQuestion?.message}
+					optional={false}
+				>
+					<Controller
+						control={control}
+						name={"lessonType"}
+						render={({ field }) => (
+							<LabeledCheckbox
+								label={"Aktivierungsfrage und sequenzielles Prüfen:"}
+								checked={field.value === "SELF_REGULATED"}
+								onChange={e => {
+									field.onChange(
+										e.target.checked ? "SELF_REGULATED" : "TRADITIONAL"
+									);
+								}}
+							></LabeledCheckbox>
+						)}
+					></Controller>
 				</LabeledField>
 
 				<AuthorsForm
@@ -123,9 +138,9 @@ export function LessonInfoEditor({ setLessonType }: { setLessonType: Dispatch<Le
 					emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
 				/>
 
-				<SkillForm />
-
 				<LicenseForm />
+
+				<LessonSkillManager />
 			</div>
 		</Form.SidebarSection>
 	);

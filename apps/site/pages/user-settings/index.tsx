@@ -1,62 +1,80 @@
-import { getAuthenticatedUser } from "@self-learning/api";
-import { StudentSettings } from "@self-learning/types";
-import { StudentSettingsForm } from "@self-learning/settings";
-import { CenteredSection } from "@self-learning/ui/layouts";
-import { GetServerSideProps } from "next";
-import { useCallback, useEffect, useState } from "react";
-import { database } from "@self-learning/database";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import {
+	DeleteMeForm,
+	FeatureSettingsForm,
+	getUserWithSettings,
+	PersonalSettingsForm
+} from "@self-learning/settings";
+import { ResolvedValue } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
+import { CenteredSection } from "@self-learning/ui/layouts";
+import { TRPCClientError } from "@trpc/client";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
-interface Props {
-	learningStatistics: boolean;
-	hasLearningDiary: boolean;
+interface PageProps {
+	settings: NonNullable<ResolvedValue<typeof getUserWithSettings>>;
 }
 
-async function getStudentSettings(username: string) {
-	return database.studentSettings.findFirst({
-		where: {
-			username
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<PageProps>(async (context, user) => {
+		const settings = await getUserWithSettings(user.name);
+
+		if (!settings) {
+			return {
+				notFound: true
+			};
 		}
-	});
-}
 
-export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
-	const user = await getAuthenticatedUser(ctx);
-	if (!user || !user.name) {
 		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
+			props: {
+				settings
 			}
 		};
-	}
-	const settings = await getStudentSettings(user.name);
+	})
+);
 
-	return {
-		props: {
-			learningStatistics: settings?.learningStatistics ?? false,
-			hasLearningDiary: settings?.hasLearningDiary ?? false
+export default function SettingsPage(props: PageProps) {
+	const [settings, setSettings] = useState(props.settings);
+	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+
+	const router = useRouter();
+
+	const onPersonalSettingSubmit: Parameters<
+		typeof PersonalSettingsForm
+	>[0]["onSubmit"] = async update => {
+		if (!update) return;
+		try {
+			setSettings(prev => {
+				const newSettings = { ...prev, ...update };
+				updateSettings({ user: newSettings });
+				return newSettings;
+			});
+			showToast({
+				type: "success",
+				title: "Informationen aktualisiert",
+				subtitle: update.displayName
+			});
+			router.replace(router.asPath);
+		} catch (error) {
+			console.error(error);
+
+			if (error instanceof TRPCClientError) {
+				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+			}
 		}
 	};
-};
 
-export default function Start(props: Props) {
-	return (
-		<CenteredSection className="bg-gray-50">
-			<StudentSettingPage {...props} />
-		</CenteredSection>
-	);
-}
-
-function StudentSettingPage(initialSettings: StudentSettings) {
-	const [settings, setSettings] = useState(initialSettings);
-	const { mutateAsync: updateSettings } = trpc.settings.updateSettings.useMutation();
-
-	const onSave = useCallback(async () => {
+	const onFeatureChange: Parameters<typeof FeatureSettingsForm>[0]["onChange"] = async update => {
 		try {
-			await updateSettings({
-				settings
+			if (!update) return;
+
+			setSettings(prev => {
+				const newSettings = { ...prev, ...update };
+				updateSettings({ user: newSettings });
+				return newSettings;
 			});
 		} catch (error) {
 			if (error instanceof Error) {
@@ -67,22 +85,32 @@ function StudentSettingPage(initialSettings: StudentSettings) {
 				});
 			}
 		}
-	}, [settings, updateSettings]);
-
-	const onChange = async (checkbox: string, value: boolean) => {
-		setSettings({ ...settings, [checkbox]: value });
-		onSave();
 	};
-
-	
-    useEffect(() => {
-            onSave();
-    }, [onSave, settings]);
-
+	console.log("settings", settings);
 	return (
-		<>
+		<CenteredSection className="bg-gray-50">
 			<h1 className="text-2xl font-bold">Einstellungen</h1>
-			<StudentSettingsForm {...settings} onChange={onChange} />
-		</>
+			<SettingSection title="Profil">
+				<PersonalSettingsForm
+					personalSettings={settings}
+					onSubmit={onPersonalSettingSubmit}
+				/>
+			</SettingSection>
+			<SettingSection title="Funktionen">
+				<FeatureSettingsForm featureSettings={settings} onChange={onFeatureChange} />
+			</SettingSection>
+			<SettingSection title="Kritischer Bereich">
+				<DeleteMeForm />
+			</SettingSection>
+		</CenteredSection>
+	);
+}
+
+function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
+	return (
+		<section className="space-y-4 mt-8 rounded-lg border bg-gray-100 p-6">
+			<h3>{title}</h3>
+			{children}
+		</section>
 	);
 }

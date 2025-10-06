@@ -1,15 +1,47 @@
-import { getAuthenticatedUser } from "@self-learning/api";
+import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
+import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { Card, ImageCard, ImageCardBadge, ImageOrPlaceholder } from "@self-learning/ui/common";
+import {
+	EnableLearningDiaryDialog,
+	LearningDiaryEntryStatusBadge,
+	StatusBadgeInfo
+} from "@self-learning/diary";
+import {
+	Card,
+	DialogHandler,
+	ImageCard,
+	ImageCardBadge,
+	ImageOrPlaceholder,
+	Toggle
+} from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { formatDateAgo } from "@self-learning/util/common";
-import { GetServerSideProps } from "next";
+import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
+import {
+	formatDateAgo,
+	formatDateStringShort,
+	formatTimeIntervalToString
+} from "@self-learning/util/common";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useReducer } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
+type LearningDiaryEntryLessonWithDetails = {
+	entryId: string;
+	lessonId: string;
+	title: string;
+	slug: string;
+	courseImgUrl?: string;
+	courseSlug: string;
+	touchedAt: Date;
+	completed: boolean;
+};
+
 type Props = {
 	student: Student;
+	recentLessons: LearningDiaryEntryLessonWithDetails[];
 };
 
 function getStudent(username: string) {
@@ -25,7 +57,9 @@ function getStudent(username: string) {
 				select: {
 					displayName: true,
 					name: true,
-					image: true
+					image: true,
+					enabledFeatureLearningDiary: true,
+					enabledLearningStatistics: true
 				}
 			},
 			completedLessons: {
@@ -49,10 +83,11 @@ function getStudent(username: string) {
 				}
 			},
 			enrollments: {
-				orderBy: { lastProgressUpdate: "desc" },
+				orderBy: { createdAt: "desc" },
 				select: {
 					progress: true,
 					status: true,
+					lastProgressUpdate: true,
 					course: {
 						select: {
 							slug: true,
@@ -62,13 +97,103 @@ function getStudent(username: string) {
 						}
 					}
 				}
+			},
+			learningDiaryEntrys: {
+				orderBy: { createdAt: "desc" },
+				take: 5,
+				select: {
+					createdAt: true,
+					id: true,
+					totalDurationLearnedMs: true,
+					hasRead: true,
+					isDraft: true,
+					course: {
+						select: {
+							courseId: true,
+							title: true,
+							imgUrl: true
+						}
+					},
+					lessonsLearned: true,
+					courseSlug: true
+				}
 			}
 		}
 	});
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
+export type DiaryLessonSchema = {
+	id: string;
+	courseSlug: string;
+	courseImgUrl: string | null;
+	entryId: string;
+	lessonId: string;
+	createdAt: Date;
+};
+
+async function loadMostRecentLessons({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}) {
+	const lessonsFromDiary: DiaryLessonSchema[] = student.learningDiaryEntrys.flatMap(entry =>
+		entry.lessonsLearned.map(lesson => ({
+			...lesson,
+			courseSlug: entry.courseSlug,
+			courseImgUrl: entry.course?.imgUrl,
+			entryId: lesson.id,
+			createdAt: entry.createdAt
+		}))
+	);
+
+	const sortedLessons = lessonsFromDiary.sort(
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+	);
+
+	const newestLessons = sortedLessons.slice(0, lessonLimit);
+	const lessonIds = newestLessons.map(lesson => lesson.lessonId);
+
+	const lessonsArray = await database.lesson.findMany({
+		where: { lessonId: { in: lessonIds } },
+		select: {
+			lessonId: true,
+			title: true,
+			slug: true,
+			completions: true
+		}
+	});
+
+	const lessonDetailsMap = new Map(lessonsArray.map(detail => [detail.lessonId, detail]));
+	const lessonsWithDetails = newestLessons.map(lesson => {
+		const lessonDetails = lessonDetailsMap.get(lesson.lessonId);
+
+		return {
+			lessonId: lesson.lessonId,
+			title: lessonDetails?.title || "",
+			slug: lessonDetails?.slug || "",
+			courseImgUrl: lesson.courseImgUrl || "",
+			courseSlug: lesson.courseSlug || "",
+			touchedAt: lesson.createdAt || null,
+			entryId: lesson.entryId || "",
+			compeleted: false
+		};
+	});
+
+	const completedLessonsTitleSet = new Set(
+		student.completedLessons.map(lesson => lesson.lesson.title)
+	);
+
+	return lessonsWithDetails.map(lesson => ({
+		...lesson,
+		completed: completedLessonsTitleSet.has(lesson.title)
+	}));
+}
+
+export const getServerSideProps = withTranslations(["common"], async ctx => {
 	const user = await getAuthenticatedUser(ctx);
+
 	if (!user || !user.name) {
 		return {
 			redirect: {
@@ -79,109 +204,279 @@ export const getServerSideProps: GetServerSideProps<Props> = async ctx => {
 	}
 
 	const student = await getStudent(user.name);
+	const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
 
 	return {
 		props: {
-			student: JSON.parse(JSON.stringify(student)) // using parse to deal with date type :(
+			student,
+			recentLessons
 		}
 	};
-};
+});
 
 export default function Start(props: Props) {
 	return <DashboardPage {...props} />;
 }
 
+type LtbState = {
+	enabled: boolean;
+	dialogOpen: boolean;
+};
+
+type LtbFeatureAction =
+	| { type: "TOGGLE_LTB"; enabled: boolean }
+	| { type: "OPEN_DIALOG" }
+	| { type: "CLOSE_DIALOG" };
+
+function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
+	switch (action.type) {
+		case "TOGGLE_LTB":
+			return { ...state, enabled: action.enabled };
+		case "OPEN_DIALOG":
+			return { ...state, dialogOpen: true };
+		case "CLOSE_DIALOG":
+			return { ...state, dialogOpen: false };
+		default:
+			return state;
+	}
+}
+
 function DashboardPage(props: Props) {
+	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+	const router = useRouter();
+	const [ltb, dispatch] = useReducer(ltbReducer, {
+		dialogOpen: false,
+		enabled: props.student.user.enabledFeatureLearningDiary
+	});
+
+	const openSettings = () => {
+		router.push("/user-settings");
+	};
+
+	const handleClickLtbToggle = async () => {
+		if (ltb.enabled) {
+			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
+			dispatch({ type: "TOGGLE_LTB", enabled: false });
+		} else {
+			dispatch({ type: "OPEN_DIALOG" });
+		}
+	};
+
+	const handleDialogSubmit: Parameters<
+		typeof EnableLearningDiaryDialog
+	>[0]["onSubmit"] = async update => {
+		await updateSettings({ user: { ...update } });
+		dispatch({ type: "TOGGLE_LTB", enabled: true });
+		dispatch({ type: "CLOSE_DIALOG" });
+	};
+
 	return (
 		<div className="bg-gray-50">
 			<CenteredSection>
-				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
-					<div className="rounded bg-white p-4 shadow">
-					
-							<h2 className="mb-4 text-xl">Letzter Kurs</h2>
-						<LastCourseProgress lastEnrollment={props.student.enrollments[0]} />
-					</div>
+				<div className="grid grid-cols-1 gap-8 lg:pt-10 lg:grid-cols-[2fr_1fr]">
+					<section className="flex items-center">
+						<ImageOrPlaceholder
+							src={props.student.user.image ?? undefined}
+							className="h-24 w-24 rounded-lg object-cover"
+						/>
+						<div className="flex flex-col gap-4 pl-8 pr-4">
+							<h1 className=" text-3xl lg:text-6xl">
+								{props.student.user.displayName}
+							</h1>
+							<span>
+								Du hast bereits{" "}
+								<span className="mx-1 font-semibold text-secondary">
+									{props.student._count.completedLessons}
+								</span>{" "}
+								{props.student._count.completedLessons === 1
+									? "Lerneinheit"
+									: "Lerneinheiten"}{" "}
+								abgeschlossen.
+							</span>
+						</div>
+					</section>
 
-					<div className="rounded bg-white p-4 shadow">
-						<h2 className="mb-4 text-xl">Zuletzt bearbeitete Lerneinheiten</h2>
-						<Activity completedLessons={props.student.completedLessons} />
+					<div className="grid grid-rows-2">
+						<div className="flex justify-end items-start">
+							<button
+								className="rounded-full p-2 hover:bg-gray-100"
+								title="Bearbeiten"
+								onClick={openSettings}
+							>
+								<CogIcon className="h-6 text-gray-500" />
+							</button>
+						</div>
+
+						<div className="flex items-end justify-end">
+							<Toggle
+								label="Lerntagebuch"
+								value={ltb.enabled}
+								onChange={handleClickLtbToggle}
+							/>
+						</div>
 					</div>
 				</div>
 
+				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
+					<div className="rounded bg-white p-4 shadow">
+						<h2 className="text-xl py-2 px-2">Letzter Kurs</h2>
+						<div className="mb-4 border-b border-light-border h-[6px]"></div>
+						<LastCourseProgress
+							lastEnrollment={
+								props.student.enrollments.sort(
+									(a, b) =>
+										new Date(a.lastProgressUpdate).getTime() -
+										new Date(b.lastProgressUpdate).getTime()
+								)[0]
+							}
+						/>
+					</div>
+
+					<div className="rounded bg-white p-4 shadow">
+						{ltb.enabled ? (
+							<>
+								<StatusBadgeInfo
+									header="Letzter Lerntagebucheintrag"
+									className="mb-4"
+								/>
+								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
+							</>
+						) : (
+							<>
+								<h2 className="text-xl py-2 px-2">
+									Zuletzt bearbeitete Lerneinheiten
+								</h2>
+								<div className="mb-4 border-b border-light-border h-[6px]"></div>
+								<LessonList lessons={props.recentLessons} />
+							</>
+						)}
+					</div>
+				</div>
 				<div className="grid grid-cols-1 gap-8 pt-10 xl:grid-cols-2">
 					<Card
 						href="/dashboard/courseOverview"
-						imageElement={<span>Belegte Kurse</span>}
-						title="Lerneinheiten verwalten"
+						imageElement={<OverviewSvg />}
+						title="Meine Kurse"
 					/>
+					{ltb.enabled && (
+						<>
+							<Card
+								href="/learning-diary"
+								imageElement={<MarketingSvg />}
+								title="Mein Lerntagebuch"
+							/>
 
-					<Card
-						href="/admin/courses"
-						imageElement={<span>Kurse verwalten</span>}
-						title="Kurse verwalten"
-					/>
-
-					<Card
-						href="/admin/subjects"
-						imageElement={<span>Lerntagebuch</span>}
-						title="Fachgebiete verwalten"
-					/>
-
-					<Card
-						href="/admin/authors"
-						imageElement={<span>Lernziele</span>}
-						title="Autoren verwalten"
-					/>
+							<Card
+								href="/learning-diary/goals"
+								imageElement={<TargetSvg />}
+								title="Meine Lernziele"
+							/>
+						</>
+					)}
 				</div>
 			</CenteredSection>
+			<DialogHandler id="studentSettingsDialogDashboard" />
+			{ltb.dialogOpen && (
+				<EnableLearningDiaryDialog
+					onClose={() => dispatch({ type: "CLOSE_DIALOG" })}
+					onSubmit={handleDialogSubmit}
+				/>
+			)}
 		</div>
 	);
 }
 
-function Activity({ completedLessons }: { completedLessons: Student["completedLessons"] }) {
+function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys"] }) {
 	return (
 		<>
-			{completedLessons.length === 0 ? (
+			{pages.length == 0 ? (
 				<span className="text-sm text-light">
-					Du bist momentan in keinem Kurs eingeschrieben.
+					Keine Lerntagebucheinträge vorhanden. Einträge werden erstellt, wenn du mit dem
+					Lernen beginnst.
 				</span>
 			) : (
-				<ul className="flex flex-col gap-2">
-					{completedLessons.map(lesson => (
-						<li
-							key={lesson.createdAt as unknown as string}
-							className="flex items-center rounded-lg border border-light-border"
-						>
-							<ImageOrPlaceholder
-								src={lesson.course?.imgUrl ?? undefined}
-								className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
-							/>
-
-							<div className="flex w-full flex-wrap items-center justify-between gap-2 px-4">
-								<div className="flex flex-col gap-1">
-									<Link
-										className="text-sm font-medium hover:text-secondary"
-										href={`/courses/${lesson.course?.slug}/${lesson.lesson.slug}`}
-									>
-										{lesson.lesson.title}
-									</Link>
-									{lesson.course && (
-										<span className="text-xs text-light">
-											in{" "}
-											<Link
-												className="text-secondary hover:underline"
-												href={`/courses/${lesson.course.slug}`}
-											>
-												{lesson.course.title}
-											</Link>
+				<>
+					<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
+						{pages.map((page, _) => (
+							<Link
+								className="text-sm font-medium"
+								href={`/learning-diary/page/${page.id}/`}
+								key={page.id}
+							>
+								<li
+									className="hover: flex items-center rounded-lg border border-light-border
+							p-3 transition-transform hover:bg-slate-100 hover:scale-105"
+								>
+									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
+										<div className="flex items-center gap-2">
+											<LearningDiaryEntryStatusBadge
+												isDraft={page.isDraft}
+												hasRead={page.hasRead}
+											/>
+											<div className="flex flex-col">
+												<span className="truncate max-w-full inline-block align-middle">
+													{page.course.title}
+												</span>
+												<span className="text-xs text-gray-400 truncate block max-w-full">
+													Verbrachte Zeit:{" "}
+													{formatTimeIntervalToString(
+														page.totalDurationLearnedMs ?? 0
+													)}
+												</span>
+											</div>
+										</div>
+										<span className="hidden text-xs text-light md:block">
+											{formatDateStringShort(page.createdAt)}
 										</span>
-									)}
+									</div>
+								</li>
+							</Link>
+						))}
+					</ul>
+				</>
+			)}
+		</>
+	);
+}
+
+function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[] }) {
+	return (
+		<>
+			{lessons.length === 0 ? (
+				<span className="text-sm text-light">
+					Du hast noch keine Lerneinheiten bearbeitet.
+				</span>
+			) : (
+				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
+					{lessons.map((lesson, index) => (
+						<Link
+							className="text-sm font-medium"
+							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
+							key={"course-" + index}
+						>
+							<li
+								className="hover: flex items-center rounded-lg border border-light-border
+							px-3 transition-transform hover:bg-slate-100"
+							>
+								<ImageOrPlaceholder
+									src={lesson.courseImgUrl}
+									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
+								/>
+								<div className="flex w-full grid-rows-2 justify-between gap-2 px-4">
+									<span className="flex gap-3 ">
+										<span className="truncate max-w-xs">{lesson.title}</span>
+
+										{lesson.completed && (
+											<CheckIcon className="icon h-5 text-green-500" />
+										)}
+									</span>
+
+									<span className="hidden text-xs text-light md:block">
+										{formatDateAgo(lesson.touchedAt)}
+									</span>
 								</div>
-								<span className="hidden text-sm text-light md:block">
-									{formatDateAgo(lesson.createdAt)}
-								</span>
-							</div>
-						</li>
+							</li>
+						</Link>
 					))}
 				</ul>
 			)}
@@ -211,13 +506,16 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 	if (!lastEnrollment) {
 		return (
 			<div>
-			<span className="text-sm text-light">
-				Du bist momentan in keinem Kurs eingeschrieben.
-			</span>
-			<Link href="/subjects" className="text-sm ml-1 text-light underline hover:text-secondary">
-			Leg los
-		</Link>
-		</div>
+				<span className="text-sm text-light">
+					Du bist momentan in keinem Kurs eingeschrieben.
+				</span>
+				<Link
+					href="/subjects"
+					className="text-sm ml-1 text-light underline hover:text-secondary"
+				>
+					Leg los
+				</Link>
+			</div>
 		);
 	}
 	return (

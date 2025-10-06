@@ -1,5 +1,10 @@
 const nxPreset = require("@nx/jest/preset").default;
 
+const path = require("path");
+
+const projectRoot = path.resolve(__dirname, "./");
+process.env.TZ = "Europe/Berlin";
+
 module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
@@ -23,6 +28,33 @@ module.exports = {
 	coverageDirectory: "output/test/coverage",
 	reporters: [
 		"default",
-		["jest-junit", { outputDirectory: "output/test", outputName: "junit.xml" }]
-	]
+		[
+			"jest-junit",
+			{
+				outputName: `junit-${new Date().getTime()}.xml`, // Setzt einen Zeitstempel, um Überschreiben zu vermeiden
+				outputDirectory: "output/test",
+				suiteName: "Test Suite",
+				classNameTemplate: "{classname}",
+				titleTemplate: "{title}",
+				ancestorSeparator: " › ",
+				usePathForSuiteName: "true"
+			}
+		]
+	],
+	transform: {
+		"^.+\\.[tj]sx?$": [
+			"@swc/jest",
+			{
+				jsc: {
+					parser: { syntax: "typescript", tsx: true },
+					transform: { react: { runtime: "automatic" } }
+				}
+			}
+		],
+		// "^.+\\.[tj]sx?$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.spec.json" }],
+		"^.+\\.svg$": path.join(projectRoot, "jest.svgTransform.js")
+	},
+	transformIgnorePatterns: [],
+	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
+	extensionsToTreatAsEsm: [".ts", ".tsx"]
 };

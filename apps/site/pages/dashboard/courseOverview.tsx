@@ -1,14 +1,45 @@
-import { GetServerSideProps } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
-import { getSession } from "next-auth/react";
-import { ProgressBar, Tab, Table, TableDataColumn, Tabs } from "@self-learning/ui/common";
+import {
+	ProgressBar,
+	SortIndicator,
+	Tab,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn,
+	Tabs
+} from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import { formatDateAgo } from "@self-learning/util/common";
+import { withAuth, withTranslations } from "@self-learning/api";
 
-function CourseOverview({ enrollments }: { enrollments: EnrollmentDetails[] | null }) {
+interface CourseOverviewProps {
+	enrollments: EnrollmentDetails[] | null;
+}
+
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<CourseOverviewProps>(async (context, user) => {
+		try {
+			return {
+				props: {
+					enrollments: await getEnrollmentDetails(user.name)
+				}
+			};
+		} catch (error) {
+			console.error("Error fetching enrollments:", error);
+			return {
+				props: {
+					enrollments: null
+				}
+			};
+		}
+	})
+);
+
+export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
 	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
@@ -131,13 +162,10 @@ function TabContent({
 }
 
 function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
-	const [sortedColumn, setSortedColumn] = useState<{
+	const [sortConfig, setSortConfig] = useState<{
 		key: string;
-		descendingOrder: boolean;
-	}>({
-		key: "title",
-		descendingOrder: true
-	});
+		direction: "ascending" | "descending";
+	}>({ key: "title", direction: "ascending" });
 
 	type Column = {
 		key: string;
@@ -174,49 +202,42 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 
 	function getSortingFunction(): Column["sortingFunction"] {
 		let sortingFunction = columns.find(
-			column => column.key === sortedColumn.key
+			column => column.key === sortConfig.key
 		)?.sortingFunction;
 
 		if (!sortingFunction) {
-			return (sortingFunction = (a: EnrollmentDetails, b: EnrollmentDetails) => 0);
+			return (sortingFunction = (_: EnrollmentDetails, __: EnrollmentDetails) => 0);
 		}
 
-		if (sortedColumn.descendingOrder) {
-			return (a: EnrollmentDetails, b: EnrollmentDetails) => -sortingFunction!(a, b);
+		if (sortConfig.direction === "descending") {
+			return (a: EnrollmentDetails, b: EnrollmentDetails) => -sortingFunction(a, b);
 		} else {
 			return sortingFunction;
 		}
 	}
+
+	const setSortOrder = (key: string) => {
+		setSortConfig({
+			key,
+			direction:
+				sortConfig.key === key && sortConfig.direction === "ascending"
+					? "descending"
+					: "ascending"
+		});
+	};
 
 	return (
 		<Table
 			head={
 				<>
 					{columns.map(column => (
-						<th
-							className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+						<TableHeaderColumn
+							onClick={() => setSortOrder(column.key)}
 							key={column.key}
-							onClick={() =>
-								setSortedColumn({
-									key: column.key,
-									descendingOrder:
-										sortedColumn.key == column.key
-											? !sortedColumn.descendingOrder
-											: true
-								})
-							}
 						>
-							<div className="">
-								<span>{column.label}</span>
-								{sortedColumn && sortedColumn.key === column.key ? (
-									<span className="">
-										{sortedColumn.descendingOrder ? " ▼" : " ▲"}
-									</span>
-								) : (
-									<span className="invisible"> ▲</span>
-								)}
-							</div>
-						</th>
+							{column.label}{" "}
+							<SortIndicator columnId={column.key} sortConfig={sortConfig} />
+						</TableHeaderColumn>
 					))}
 				</>
 			}
@@ -272,33 +293,3 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 		</Table>
 	);
 }
-
-export const getServerSideProps: GetServerSideProps = async context => {
-	const session = await getSession(context);
-
-	if (!session || !session.user) {
-		return {
-			redirect: {
-				destination: "/api/auth/signin",
-				permanent: false
-			}
-		};
-	}
-
-	try {
-		return {
-			props: {
-				enrollments: await getEnrollmentDetails(session.user.name)
-			}
-		};
-	} catch (error) {
-		console.error("Error fetching enrollments:", error);
-		return {
-			props: {
-				enrollments: null
-			}
-		};
-	}
-};
-
-export default CourseOverview;

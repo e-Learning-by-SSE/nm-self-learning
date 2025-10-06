@@ -1,4 +1,5 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
+import { LessonFormModel } from "@self-learning/teaching";
 import {
 	getContentTypeDisplayName,
 	LessonContent,
@@ -6,10 +7,11 @@ import {
 	LessonContentType,
 	ValueByContentType
 } from "@self-learning/types";
-import { RemovableTab, SectionHeader, Tabs } from "@self-learning/ui/common";
+import { RemovableTab, SectionHeader, Tabs, useIsFirstRender } from "@self-learning/ui/common";
+import { Form, LabeledField, MarkdownField } from "@self-learning/ui/forms";
 import { Reorder } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Control, useFieldArray, useFormContext } from "react-hook-form";
+import { Control, Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { ArticleInput } from "../content-types/article";
 import { IFrameInput } from "../content-types/iframe";
 import { PdfInput } from "../content-types/pdf";
@@ -132,6 +134,9 @@ export function LessonContentEditor() {
 
 	return (
 		<section>
+			<div className="mb-8">
+				<LessonDescriptionForm />
+			</div>
 			<SectionHeader
 				title="Inhalt"
 				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
@@ -225,5 +230,51 @@ function RenderContentType({ index, content }: { index: number; content: LessonC
 		<span className="text-red-500">
 			Error: Unknown content type ({(content as { type: string | undefined }).type})
 		</span>
+	);
+}
+
+export function LessonDescriptionForm() {
+	const form = useFormContext<LessonFormModel>();
+	const control = form.control;
+	const currentLessonType = form.watch("lessonType");
+	const suppressHighlight = useIsFirstRender();
+
+	return (
+		<section>
+			<div className="py-4">
+				{currentLessonType === "SELF_REGULATED" && (
+					<div
+						data-testid="aktivierungsfrage-element"
+						className={`p-4 rounded-md ${!suppressHighlight ? "animate-highlight" : ""}`}
+					>
+						<LabeledField label="Aktivierungsfrage" optional={false}>
+							<Controller
+								control={control}
+								name="selfRegulatedQuestion"
+								render={({ field }) => (
+									<MarkdownField
+										content={field.value as string}
+										setValue={field.onChange}
+									/>
+								)}
+							/>
+						</LabeledField>
+					</div>
+				)}
+			</div>
+			<SectionHeader
+				title="Beschreibung"
+				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
+			/>
+			<Form.MarkdownWithPreviewContainer>
+				<Controller
+					control={control}
+					name="description"
+					render={({ field }) => (
+						<MarkdownField content={field.value as string} setValue={field.onChange} />
+					)}
+				/>
+			</Form.MarkdownWithPreviewContainer>
+		</section>
 	);
 }

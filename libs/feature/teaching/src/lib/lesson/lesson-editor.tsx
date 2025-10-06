@@ -1,143 +1,146 @@
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { lessonSchema } from "@self-learning/types";
-import { SectionHeader, showToast } from "@self-learning/ui/common";
-import { Form, MarkdownField } from "@self-learning/ui/forms";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
-import { useEffect, useState } from "react";
-import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
-import { OpenAsJsonButton } from "../json-editor-dialog";
+import { createEmptyLesson, lessonSchema } from "@self-learning/types";
+import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
-import { LessonType } from "@prisma/client";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
+import { useRouter } from "next/router";
+
+export async function onLessonCreatorSubmit(
+	onClose: () => void,
+	createLessonAsync: (lesson: LessonFormModel) => Promise<{
+		title: string;
+		lessonId: string;
+		slug: string;
+	}>,
+	lesson?: LessonFormModel
+) {
+	try {
+		let result = null;
+		if (lesson) {
+			result = await createLessonAsync(lesson);
+			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
+		}
+		onClose();
+		return result;
+	} catch (error) {
+		console.error(error);
+		showToast({
+			type: "error",
+			title: "Fehler",
+			subtitle: "Lerneinheit konnte nicht erstellt werden."
+		});
+
+		return null;
+	}
+}
+
+export async function onLessonEditorSubmit(
+	onClose: () => void,
+	editLessonAsync: (lesson: {
+		lesson: LessonFormModel;
+		lessonId: string;
+	}) => Promise<{ title: string }>,
+	lesson?: LessonFormModel
+) {
+	try {
+		if (lesson) {
+			const result = await editLessonAsync({
+				lesson: lesson,
+				lessonId: lesson.lessonId as string
+			});
+			showToast({
+				type: "success",
+				title: "Lerneinheit gespeichert!",
+				subtitle: result.title
+			});
+		}
+		onClose();
+	} catch (error) {
+		showToast({
+			type: "error",
+			title: "Fehler",
+			subtitle: "Die Lernheit konnte nicht gespeichert werden."
+		});
+	}
+}
 
 export function LessonEditor({
-	lesson,
-	onConfirm
+	onSubmit,
+	initialLesson,
+	isFullScreen
 }: {
-	lesson: LessonFormModel;
-	onConfirm: (lesson: LessonFormModel) => void;
+	onSubmit: OnDialogCloseFn<LessonFormModel>;
+	initialLesson?: LessonFormModel;
+	isFullScreen: boolean;
 }) {
-	const isNew = lesson.lessonId === "";
+	const isNew = initialLesson === null || initialLesson === undefined;
+	const router = useRouter();
+	const session = useRequiredSession();
+	const [selectedTab, setSelectedTab] = useState(0);
 	const form = useForm<LessonFormModel>({
-		resolver: zodResolver(lessonSchema),
-		defaultValues: lesson
+		context: undefined,
+		defaultValues: initialLesson ?? {
+			...createEmptyLesson(),
+			// Add current user as author
+			authors: session.data?.user.isAuthor ? [{ username: session.data.user.name }] : []
+		},
+		resolver: zodResolver(lessonSchema)
 	});
 
-	const [selectedLessonType, setLessonType] = useState(lesson.lessonType);
-
-	useEffect(() => {
-		// Log an error, if given lesson data does not match the form's expected schema
-		// Only validate when the lesson is not new, because otherwise the form is empty
-		if (lesson.lessonId !== "") {
-			const validation = lessonSchema.safeParse(lesson);
-
-			if (!validation.success) {
-				console.error(
-					"The lesson object that was passed into the LessonEditor is invalid.",
-					validation.error
-				);
-			}
+	function onCancel() {
+		if (window.confirm("Änderungen verwerfen?")) {
+			router.push("/dashboard/author");
 		}
-	}, [lesson]);
+	}
 
 	return (
-		<div className="bg-gray-50">
-			<FormProvider {...form}>
-				<form
-					onSubmit={form.handleSubmit(
-						data => {
-							onConfirm(data);
-						},
-						onInvalid => {
-							console.log(
-								"Form could not be saved due to the following errors:",
-								onInvalid
-							);
-							showToast({
-								type: "error",
-								title: "Speichern fehlgeschlagen",
-								subtitle: "Das Formular enthält ungültige Werte."
-							});
-						}
-					)}
-					className="flex flex-col"
-				>
-					<SidebarEditorLayout
-						sidebar={
-							<>
-								<div>
-									<span className="font-semibold text-secondary">
-										Lerneinheit editieren
-									</span>
-
-									<h1 className="text-2xl">{lesson.title}</h1>
-								</div>
-
-								<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
-
-								<button className="btn-primary w-full" type="submit">
+		<FormProvider {...form}>
+			<form
+				id="lessonform"
+				onSubmit={form.handleSubmit(onSubmit, console.log)}
+				className="bg-gray-50"
+			>
+				<SidebarEditorLayout sidebar={<LessonInfoEditor lesson={initialLesson} />}>
+					<div>
+						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+							<Tab>Lerninhalt</Tab>
+							<Tab>Lernkontrolle</Tab>
+						</Tabs>
+						{selectedTab === 0 && <LessonContentEditor />}
+						{selectedTab === 1 && <QuizEditor />}
+					</div>
+					<div
+						className={`${
+							isFullScreen ? "fixed" : ""
+						} pointer-events-none bottom-0 flex w-full items-end justify-end`}
+					>
+						{!isFullScreen && (
+							<DialogActions onClose={onCancel}>
+								<button type="submit" className="btn-primary pointer-events-auto">
 									{isNew ? "Erstellen" : "Speichern"}
 								</button>
-
-								<LessonInfoEditor setLessonType={setLessonType} />
-							</>
-						}
-					>
-						<LessonDescriptionForm />
-						{selectedLessonType === LessonType.SELF_REGULATED && (
-							<LessonPreQuestionEditor />
+							</DialogActions>
 						)}
-						<LessonContentEditor />
-						<QuizEditor />
-					</SidebarEditorLayout>
-				</form>
-			</FormProvider>
-		</div>
-	);
-}
-
-function LessonDescriptionForm() {
-	const { control } = useFormContext<LessonFormModel>();
-
-	return (
-		<section>
-			<SectionHeader
-				title="Beschreibung"
-				subtitle="Ausführliche Beschreibung dieser Lerneinheit. Unterstützt Markdown."
-			/>
-			<Form.MarkdownWithPreviewContainer>
-				<Controller
-					control={control}
-					name="description"
-					render={({ field }) => (
-						<MarkdownField content={field.value as string} setValue={field.onChange} />
-					)}
-				></Controller>
-			</Form.MarkdownWithPreviewContainer>
-		</section>
-	);
-}
-
-function LessonPreQuestionEditor() {
-	const { control } = useFormContext<LessonFormModel>();
-
-	return (
-		<section>
-			<SectionHeader
-				title="Aktivierungsfrage"
-				subtitle="Die Aktivierungsfrage, die den Lernenden helfen soll, ihre Wissensbasis zu aktivieren."
-			/>
-			<Form.MarkdownWithPreviewContainer>
-				<Controller
-					control={control}
-					name="selfRegulatedQuestion"
-					render={({ field }) => (
-						<MarkdownField content={field.value as string} setValue={field.onChange} />
-					)}
-				></Controller>
-			</Form.MarkdownWithPreviewContainer>
-		</section>
+					</div>
+				</SidebarEditorLayout>
+				{isFullScreen && (
+					<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
+						<div className="z-50 pr-5 pb-5">
+							<DialogActions onClose={onCancel}>
+								<button type="submit" className="btn-primary pointer-events-auto">
+									{isNew ? "Erstellen" : "Speichern"}
+								</button>
+							</DialogActions>
+						</div>
+					</div>
+				)}
+			</form>
+		</FormProvider>
 	);
 }

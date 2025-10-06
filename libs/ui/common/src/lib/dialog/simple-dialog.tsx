@@ -1,7 +1,7 @@
-import { MarkdownViewer } from "@self-learning/ui/forms";
+"use client";
+import { Dialog, DialogActions } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import React, { useState } from "react";
-import { Dialog, DialogActions } from "@self-learning/ui/common";
 
 export type ButtonActions = "OK" | "CANCEL";
 

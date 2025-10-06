@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 
 export function useCountdownSeconds(timeoutInSeconds: number) {
@@ -11,4 +12,20 @@ export function useCountdownSeconds(timeoutInSeconds: number) {
 	}, [timeoutInSeconds]);
 
 	return timeLeft;
+}
+
+export function useTimeout({
+	callback,
+	delayInMilliseconds
+}: {
+	callback: () => void;
+	delayInMilliseconds: number;
+}) {
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			callback();
+		}, delayInMilliseconds);
+
+		return () => clearTimeout(timer);
+	}, [callback, delayInMilliseconds]);
 }

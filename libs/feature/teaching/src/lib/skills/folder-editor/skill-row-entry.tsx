@@ -170,10 +170,7 @@ function SkillRow({
 							updateSkillDisplay={updateSkillDisplay}
 							handleSelection={handleSelection}
 						/>
-						<SkillDeleteOption
-							skillIds={[skill.id]}
-							className="px-2 hover:text-secondary"
-						/>
+						<SkillDeleteOption skillIds={[skill.id]} inline={true} />
 					</div>
 				</div>
 			</TableDataColumn>

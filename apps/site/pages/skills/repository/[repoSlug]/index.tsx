@@ -1,6 +1,5 @@
-import { GetServerSideProps } from "next";
 import { database } from "@self-learning/database";
-import { getAuthenticatedUser } from "@self-learning/api";
+import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { getSkills } from "libs/data-access/api/src/lib/trpc/routers/skill.router"; // TODO change
 import { LoadingBox } from "@self-learning/ui/common";
@@ -13,9 +12,9 @@ interface CreateAndViewRepositoryProps {
 	initialSkills: SkillFormModel[];
 }
 
-async function createNewRepository(userId: string) {
+async function createNewRepository(userName: string) {
 	const newRep = {
-		ownerId: userId,
+		ownerName: userName,
 		name: `Neue Skillkarte: ${Date.now()}`,
 		description: "Beschreibung der Skillkarte"
 	};
@@ -32,7 +31,7 @@ async function createNewRepository(userId: string) {
 	};
 }
 
-export const getServerSideProps: GetServerSideProps<CreateAndViewRepositoryProps> = async ctx => {
+export const getServerSideProps = withTranslations(["common"], async ctx => {
 	const repoId = ctx.query.repoSlug as string;
 	const user = await getAuthenticatedUser(ctx);
 
@@ -48,7 +47,7 @@ export const getServerSideProps: GetServerSideProps<CreateAndViewRepositoryProps
 	if (!repoId || repoId === "") return { notFound: true };
 
 	if (repoId === "create") {
-		return await createNewRepository(user.id);
+		return await createNewRepository(user.name ?? "user-id");
 	}
 
 	const repo = await database.skillRepository.findUnique({ where: { id: repoId } });
@@ -56,8 +55,14 @@ export const getServerSideProps: GetServerSideProps<CreateAndViewRepositoryProps
 
 	const transformedSkill = await getSkills(repoId);
 
-	return { props: { repository: repo, initialSkills: transformedSkill }, notFound: false };
-};
+	return {
+		props: {
+			repository: repo,
+			initialSkills: transformedSkill
+		},
+		notFound: false
+	};
+});
 
 export default function CreateAndViewRepository({
 	repository,

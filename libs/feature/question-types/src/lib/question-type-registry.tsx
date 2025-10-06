@@ -1,12 +1,12 @@
 /*
 	ALL QUESTION TYPES MUST BE REGISTERED IN THIS FILE!
-	
+
 	1. Add the question's type to the `QuestionTypeUnion` type
-	   - This will enable type inference for the question type and the compiler will complain, if 
+	   - This will enable type inference for the question type and the compiler will complain, if
 		 some of the following steps are missing
 	   - Type must have the following structure:
 		 {
-		 	type: "my-question-type"; // String Literal, must be unique across all question types 
+		 	type: "my-question-type"; // String Literal, must be unique across all question types
 		 	question: BaseQuestion & { myCustomProperty: string }; // contains question statement and config
 		 	answer: MyAnswerType; // defines the intended shape of the student's answer
 		 	evaluation: BaseEvaluation & MyEvaluationType; // Defines shape of evaluation result, i.e., whether the answer is correct and feedback
@@ -20,7 +20,7 @@
 	   to the `QuestionAnswerRenderer` and `QuestionFormRenderer` component
 		- Advice: Use a `default export` to export these components to reduce boilerplate
 
-	4. Add the new question type to the `EVALUATION_FUNCTIONS`, `INITIAL_ANSWER_VALUE_FUNCTIONS` and 
+	4. Add the new question type to the `EVALUATION_FUNCTIONS`, `INITIAL_ANSWER_VALUE_FUNCTIONS` and
 	   `INITIAL_QUESTION_CONFIGURATION_FUNCTIONS` objects and implement the required functions.
 */
 
@@ -42,6 +42,8 @@ import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
 import { LessonLayoutProps } from "@self-learning/lesson";
+import { LanguageTree, languageTreeQuestionSchema } from "./question-types/language-tree/schema";
+import { evaluateLanguageTreeAnswer } from "./question-types/language-tree/evaluate";
 
 const ProgrammingAnswer = dynamic(() => import("./question-types/programming/component"), {
 	ssr: false
@@ -67,8 +69,21 @@ const ClozeAnswer = dynamic(() => import("./question-types/cloze/component"), { 
 const ClozeForm = dynamic(() => import("./question-types/cloze/form"), { ssr: false });
 const ArrangeAnswer = dynamic(() => import("./question-types/arrange/component"), { ssr: false });
 const ArrangeForm = dynamic(() => import("./question-types/arrange/form"), { ssr: false });
+const LanguageTextForm = dynamic(() => import("./question-types/language-tree/form"), {
+	ssr: false
+});
+const LanguageTextAnswer = dynamic(() => import("./question-types/language-tree/component"), {
+	ssr: false
+});
 
-export type QuestionTypeUnion = MultipleChoice | Exact | Text | Programming | Cloze | Arrange;
+export type QuestionTypeUnion =
+	| MultipleChoice
+	| Exact
+	| Text
+	| Programming
+	| Cloze
+	| Arrange
+	| LanguageTree;
 
 export const quizContentSchema = z.discriminatedUnion("type", [
 	multipleChoiceQuestionSchema,
@@ -76,7 +91,8 @@ export const quizContentSchema = z.discriminatedUnion("type", [
 	textQuestionSchema,
 	programmingQuestionSchema,
 	clozeQuestionSchema,
-	arrangeQuestionSchema
+	arrangeQuestionSchema,
+	languageTreeQuestionSchema
 ]);
 
 // export const quizAnswerSchema = z.discriminatedUnion("type", [
@@ -96,7 +112,8 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 	exact: evaluateExactAnswer,
 	programming: evaluateProgramming,
 	cloze: evaluateCloze,
-	arrange: evaluateArrange
+	arrange: evaluateArrange,
+	"language-tree": evaluateLanguageTreeAnswer
 };
 
 /**
@@ -105,7 +122,20 @@ export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: Evaluation
 export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 	[QType in QuestionType["type"]]: InitialAnswerFn<QType>;
 } = {
-	"multiple-choice": () => ({}),
+	"multiple-choice": question => {
+		const answer: MultipleChoice["answer"]["value"] = {};
+
+		// Check if randomization is enabled
+		const answersToProcess = question.randomizeAnswers
+			? [...question.answers].sort(() => Math.random() - 0.5)
+			: question.answers;
+
+		for (const { answerId } of answersToProcess) {
+			answer[answerId] = false;
+		}
+
+		return answer;
+	},
 	exact: () => "",
 	programming: question => ({
 		solution: question.custom.solutionTemplate,
@@ -125,11 +155,14 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 			answer._init.push(...items);
 		}
 
-		// randomize order
-		answer._init.sort(() => Math.random() - 0.5);
+		if (question.randomizeItems) {
+			// randomize order
+			answer._init.sort(() => Math.random() - 0.5);
+		}
 
 		return answer;
-	}
+	},
+	"language-tree": question => question.initialTree
 };
 
 /**
@@ -142,7 +175,8 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		...createBaseQuestion(),
 		type: "multiple-choice",
 		answers: [],
-		questionStep: 1
+		questionStep: 1,
+		randomizeAnswers: false
 	}),
 	exact: () => ({
 		...createBaseQuestion(),
@@ -172,7 +206,17 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	arrange: () => ({
 		...createBaseQuestion(),
 		type: "arrange",
-		items: {}
+		items: {},
+		randomizeItems: false,
+		categoryOrder: []
+	}),
+	"language-tree": () => ({
+		...createBaseQuestion(),
+		type: "language-tree",
+		caseSensitive: false,
+		customTextInputInParentNodes: true,
+		initialTree: "",
+		answer: []
 	})
 };
 
@@ -188,7 +232,8 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
 	text: "Freitext",
 	programming: "Programmierung",
 	cloze: "Lückentext",
-	arrange: "Ordnen"
+	arrange: "Ordnen",
+	"language-tree": "Sprachbaum"
 };
 
 /**
@@ -227,6 +272,10 @@ export function QuestionAnswerRenderer({
 		return <ArrangeAnswer />;
 	}
 
+	if (question.type === "language-tree") {
+		return <LanguageTextAnswer />;
+	}
+
 	return (
 		<span className="text-red-500">
 			Error: No implementation found for "{(question as { type: string }).type}".
@@ -253,7 +302,7 @@ export function QuestionFormRenderer({
 	}
 
 	if (question.type === "programming") {
-		return <ProgrammingForm question={question} index={index} />;
+		return <ProgrammingForm index={index} />;
 	}
 
 	if (question.type === "text") {
@@ -265,7 +314,11 @@ export function QuestionFormRenderer({
 	}
 
 	if (question.type === "arrange") {
-		return <ArrangeForm question={question} index={index} />;
+		return <ArrangeForm index={index} />;
+	}
+
+	if (question.type === "language-tree") {
+		return <LanguageTextForm index={index} />;
 	}
 
 	return (

@@ -38,7 +38,8 @@ describe("/teaching/lessons/edit - Lesson Editor", () => {
 
 	it("Update title", () => {
 		cy.get("h1").should("contain", "Test Course").should("be.visible");
-		cy.get("input[name=title]").clear().type("Updated Course");
+		cy.get("input[name=title]").clear();
+		cy.get("input[name=title]").type("Updated Course");
 		cy.get("button[type=submit]").first().click();
 		cy.byTestId("toast-success").should("be.visible");
 		cy.get("h1").should("contain", "Updated Course");

@@ -1,3 +1,4 @@
+"use client";
 import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { useCallback, useMemo, useState } from "react";
 import { DialogHandler, Divider } from "@self-learning/ui/common";
@@ -136,7 +137,7 @@ function SidebarContentEditor({
 }) {
 	return (
 		<>
-			<span className="text-2xl font-semibold text-secondary">Skillkarten editieren</span>
+			<span className="text-2xl font-semibold text-secondary">Skillkarte bearbeiten</span>
 
 			<RepositoryInfoMemorized repository={repository} />
 			<Divider />

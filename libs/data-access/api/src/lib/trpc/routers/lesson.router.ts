@@ -1,9 +1,10 @@
-import { Prisma } from "@prisma/client";
+import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { createLessonMeta, lessonSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
-import { authProcedure, t } from "../trpc";
+import { authorProcedure, authProcedure, t } from "../trpc";
+import { TRPCError } from "@trpc/server";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -13,6 +14,26 @@ export const lessonRouter = t.router({
 				authors: {
 					select: {
 						username: true
+					}
+				},
+				requires: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						repositoryId: true,
+						parents: true
+					}
+				},
+				provides: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						repositoryId: true,
+						parents: true
 					}
 				}
 			}
@@ -54,11 +75,11 @@ export const lessonRouter = t.router({
 					connect: input.authors.map(a => ({ username: a.username }))
 				},
 				licenseId: input.licenseId,
-				requirements: {
-					connect: input.requirements.map(r => ({ id: r.id }))
+				requires: {
+					connect: input.requires.map(r => ({ id: r.id }))
 				},
-				teachingGoals: {
-					connect: input.teachingGoals.map(r => ({ id: r.id }))
+				provides: {
+					connect: input.provides.map(r => ({ id: r.id }))
 				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
@@ -94,11 +115,11 @@ export const lessonRouter = t.router({
 						set: input.lesson.authors.map(a => ({ username: a.username }))
 					},
 					licenseId: input.lesson.licenseId,
-					requirements: {
-						set: input.lesson.requirements.map(r => ({ id: r.id }))
+					requires: {
+						set: input.lesson.requires.map(r => ({ id: r.id }))
 					},
-					teachingGoals: {
-						set: input.lesson.teachingGoals.map(r => ({ id: r.id }))
+					provides: {
+						set: input.lesson.provides.map(r => ({ id: r.id }))
 					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
 				},
@@ -111,6 +132,48 @@ export const lessonRouter = t.router({
 
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;
+		}),
+	findLinkedLessonEntities: authorProcedure
+		.input(z.object({ lessonId: z.string() }))
+		.query(async ({ input }) => {
+			const courses = await database.$queryRaw`
+				SELECT *
+				FROM "Course"
+				WHERE EXISTS (SELECT 1
+							  FROM jsonb_array_elements("Course".content) AS chapter
+									   CROSS JOIN jsonb_array_elements(chapter - > 'content') AS lesson
+							  WHERE lesson ->>'lessonId' = ${input.lessonId})
+			`;
+			return courses as Course[];
+		}),
+	deleteLesson: authorProcedure
+		.input(z.object({ lessonId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			if (ctx.user?.role === "ADMIN") {
+				await database.lesson.deleteMany({
+					where: {
+						lessonId: input.lessonId
+					}
+				});
+			} else {
+				const deleted = await database.lesson.deleteMany({
+					where: {
+						lessonId: input.lessonId,
+						authors: {
+							some: {
+								username: ctx.user?.name
+							}
+						}
+					}
+				});
+
+				if (deleted.count === 0) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "User is not an author of this lesson or lesson does not exist."
+					});
+				}
+			}
 		})
 });
 
@@ -135,7 +198,7 @@ export async function findLessons({
 					some: {
 						username: authorName
 					}
-			  }
+				}
 			: undefined
 	};
 

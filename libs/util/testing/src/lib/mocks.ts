@@ -1,7 +1,8 @@
-import { Lesson, Prisma } from "@prisma/client";
+import { Author, Course, Lesson, Prisma, Skill } from "@prisma/client";
 import { Quiz } from "@self-learning/quiz";
 import {
 	CourseContent,
+	CourseMeta,
 	createCourseMeta,
 	createLessonMeta,
 	LessonContent
@@ -22,9 +23,98 @@ export function createExampleCourse(
 		meta: {}
 	};
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	course.meta = createCourseMeta(course as any);
 
 	return course;
+}
+
+type ContentMockDefinition = {
+	chapterTitle: string;
+	lessons: string[];
+}[];
+
+export function createCourseMock({
+	courseId,
+	authors,
+	content,
+	slug,
+	title,
+	subtitle,
+	description,
+	meta
+}: {
+	courseId: string;
+	authors: string[];
+	content: ContentMockDefinition;
+	slug?: string;
+	title?: string;
+	subtitle?: string;
+	description?: string;
+	meta?: CourseMeta;
+}): Partial<Course> & { authors: Pick<Author, "username">[] } & { content: CourseContent } {
+	return {
+		courseId,
+		slug: slug ?? courseId,
+		title: title ?? courseId,
+		subtitle: subtitle ?? undefined,
+		description: description ?? null,
+		authors: authors.map(author => ({ username: author })),
+		content: content.map(chapter => ({
+			title: chapter.chapterTitle,
+			content: chapter.lessons.map(lessonId => ({ lessonId }))
+		})),
+		meta: meta ?? {
+			lessonCount: content.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
+		}
+	};
+}
+
+export function createLessonMock({
+	lessonId,
+	authors,
+	slug,
+	title,
+	requires,
+	provides
+}: {
+	lessonId: string;
+	authors: string[];
+	slug?: string;
+	title?: string;
+	requires?: Skill[];
+	provides?: Skill[];
+}): Partial<Lesson> &
+	Pick<Lesson, "lessonId"> & { authors: Pick<Author, "username">[] } & {
+		requires: Skill[];
+	} & { provides: Skill[] } {
+	const defaultSkill: Skill = {
+		id: "skill:1",
+		name: "Skill1",
+		description: "Skill1 description",
+		repositoryId: "repo:1"
+	};
+
+	return {
+		lessonId,
+		slug: slug ?? lessonId,
+		title: title ?? lessonId,
+		subtitle: null,
+		description: null,
+		content: [
+			{
+				type: "article",
+				value: { content: null }
+			}
+		],
+		quiz: "Quiz",
+		imgUrl: "imgUrl",
+		licenseId: 1,
+		requires: requires ?? [defaultSkill],
+		provides: provides ?? [defaultSkill],
+		authors: authors.map(author => ({ username: author })),
+		selfRegulatedQuestion: null
+	};
 }
 
 export function createExampleLessonsFromContent(
@@ -74,11 +164,13 @@ lorem ipsum dolor sit amet.`
 			overwrites?.quiz ??
 			({
 				questions: [],
+				questionOrder: [],
 				config: null
 			} satisfies Quiz),
 		meta: Prisma.JsonNull
 	};
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	lesson.meta = createLessonMeta(lesson as any);
 
 	return lesson;

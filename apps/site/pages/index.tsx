@@ -1,6 +1,8 @@
+import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
+import { withTranslations } from "@self-learning/api";
 
-import { ReactComponent as StudyingSvg } from "../svg/studying.svg";
+export const getServerSideProps = withTranslations(["common"]);
 
 export function LandingPage() {
 	return (

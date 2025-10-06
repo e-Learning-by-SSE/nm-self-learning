@@ -1,6 +1,7 @@
+"use client";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { CloudArrowDownIcon, StarIcon } from "@heroicons/react/24/outline";
-import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { StarIcon } from "@heroicons/react/24/outline";
+import { CloudArrowUpIcon, EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -17,7 +18,6 @@ import {
 import { formatDateAgo } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
-import { parseISO } from "date-fns";
 import { ReactElement, useEffect, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
@@ -444,8 +444,14 @@ async function uploadWithProgress(
 	xhr.upload.addEventListener("loadend", onComplete, false);
 
 	// start upload
+	//Returns the filename containing only ASCII letters, numbers and dots.
+	//All other characters (including spaces and special characters) are replaced with underscores.
+	const sanitizedFilename = file.name.normalize("NFD")
+			.replace(/[\u0300-\u036f]/g, "")
+			.replace(/[^\x20-\x7E]/g, "")
+			.replace(/[^a-zA-Z0-9.]/g, "_");
 	xhr.open("PUT", url, true);
-	xhr.setRequestHeader("X-FILENAME", file.name);
+	xhr.setRequestHeader("X-FILENAME", sanitizedFilename);
 	xhr.send(file);
 }
 
@@ -459,11 +465,11 @@ export function AssetPickerButton({
 	return (
 		<button
 			type="button"
-			className="h-fit rounded-lg border border-light-border bg-white px-2 py-2"
+			className="btn-icon"
 			title="Aus hochgeladenen Dateien auswählen"
 			onClick={() => setShowAssetPicker(true)}
 		>
-			<CloudArrowDownIcon className="h-5" />
+			<CloudArrowUpIcon className="h-5" />
 
 			{showAssetPicker && (
 				<AssetPickerDialog
@@ -597,11 +603,7 @@ function AssetPickerDialog({
 											</TableDataColumn>
 											<TableDataColumn>{asset.fileType}</TableDataColumn>
 											<TableDataColumn>
-												<span
-													title={parseISO(
-														asset.createdAt
-													).toLocaleString()}
-												>
+												<span title={asset.createdAt.toLocaleString()}>
 													{formatDateAgo(asset.createdAt)}
 												</span>
 											</TableDataColumn>

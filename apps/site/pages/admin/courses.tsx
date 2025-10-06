@@ -12,6 +12,7 @@ import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { withTranslations } from "@self-learning/api";
 
 export default function CoursesPage() {
 	const router = useRouter();
@@ -42,7 +43,7 @@ export default function CoursesPage() {
 
 				<Link href="/teaching/courses/create" className="btn-primary flex w-fit">
 					<PlusIcon className="h-5" />
-					<span>Kurs hinzufügen</span>
+					<span>Kurs erstellen</span>
 				</Link>
 			</div>
 
@@ -90,3 +91,5 @@ export default function CoursesPage() {
 		</CenteredSection>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

@@ -14,6 +14,7 @@ import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/
 import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
+import { withTranslations } from "@self-learning/api";
 
 export default function AuthorsPage() {
 	useRequiredSession();
@@ -131,7 +132,7 @@ export default function AuthorsPage() {
 													className="btn-stroked"
 													onClick={() => onEdit(name)}
 												>
-													Editieren
+													Bearbeiten
 												</button>
 											</div>
 										</TableDataColumn>
@@ -145,3 +146,5 @@ export default function AuthorsPage() {
 		</AdminGuard>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

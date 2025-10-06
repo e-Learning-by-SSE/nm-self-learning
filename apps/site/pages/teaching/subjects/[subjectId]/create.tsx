@@ -12,9 +12,10 @@ import {
 } from "@self-learning/ui/forms";
 import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
-import { OpenAsJsonButton } from "libs/feature/teaching/src/lib/json-editor-dialog";
+import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
+import { withTranslations } from "@self-learning/api";
 
 export default function SpecializationPage() {
 	useRequiredSession();
@@ -92,7 +93,7 @@ export function SpecializationEditor({
 									Spezialisierung{" "}
 									{initialSpecialization.specializationId === ""
 										? "erstellen"
-										: "speichern"}
+										: "bearbeiten"}
 								</span>
 
 								<h1 className="text-2xl">
@@ -208,3 +209,5 @@ export function SpecializationEditor({
 		</FormProvider>
 	);
 }
+
+export const getServerSideProps = withTranslations(["common"]);

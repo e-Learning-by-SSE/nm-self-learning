@@ -6,6 +6,7 @@ export async function createTestUser(username: string) {
 		name: username,
 		id: username,
 		displayName: username,
+		enabledLearningStatistics: true,
 		accounts: {
 			create: [
 				{
@@ -23,8 +24,8 @@ export async function createTestUser(username: string) {
 		}
 	};
 
-	await database.user.upsert({
-		where: { id: username },
+	return await database.user.upsert({
+		where: { name: username },
 		create: user,
 		update: {}
 	});

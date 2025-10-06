@@ -6,13 +6,127 @@ import {
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
-import { CourseContent, extractLessonIds, LessonMeta } from "@self-learning/types";
+import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, isCourseAuthorProcedure, t, UserFromSession } from "../trpc";
+import { authorProcedure, authProcedure, t } from "../trpc";
+import { UserFromSession } from "../context";
 
 export const courseRouter = t.router({
+	listAvailableCourses: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/courses",
+				tags: ["Courses"],
+				protect: true,
+				summary: "Search available courses"
+			}
+		})
+		.input(
+			paginationSchema.extend({
+				title: z
+					.string()
+					.describe(
+						"Title of the course to search for. Keep empty to list all; includes insensitive search and contains search."
+					)
+					.optional(),
+				specializationId: z
+					.string()
+					.describe("Filter by assigned specializations")
+					.optional(),
+				authorId: z.string().describe("Filter by author username").optional(),
+				pageSize: z.number().describe("Number of results per page").optional()
+			})
+		)
+		.output(
+			z.object({
+				result: z.array(z.object({ title: z.string(), slug: z.string() })),
+				pageSize: z.number(),
+				page: z.number(),
+				totalCount: z.number()
+			})
+		)
+		.query(async ({ input }) => {
+			const pageSize = input.pageSize ?? 20;
+
+			const where: Prisma.CourseWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined,
+				specializations: input.specializationId
+					? { some: { specializationId: input.specializationId } }
+					: undefined,
+				authors: input.authorId ? { some: { username: input.authorId } } : undefined
+			};
+
+			const result = await database.course.findMany({
+				select: {
+					slug: true,
+					title: true
+				},
+				...paginate(pageSize, input.page),
+				orderBy: { title: "asc" },
+				where
+			});
+
+			return {
+				result,
+				pageSize: pageSize,
+				page: input.page,
+				totalCount: result.length
+			} satisfies Paginated<{ title: string; slug: string }>;
+		}),
+	getCourseData: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/courses/{slug}",
+				tags: ["Courses"],
+				protect: true,
+				summary: "Get course description by slug"
+			}
+		})
+		.input(
+			z.object({
+				slug: z.string().describe("Unique slug of the course to get")
+			})
+		)
+		.output(
+			z.object({
+				title: z.string(),
+				subtitle: z.string(),
+				slug: z.string(),
+				lessons: z.number(),
+				description: z.string().nullable()
+			})
+		)
+		.query(async ({ input }) => {
+			const course = await database.course.findUnique({
+				where: {
+					slug: input.slug
+				}
+			});
+
+			if (!course) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course not found for slug: ${input.slug}`
+				});
+			}
+
+			return {
+				title: course.title,
+				subtitle: course.subtitle,
+				slug: course.slug,
+				lessons: (course.meta as CourseMeta).lessonCount,
+				description: course.description
+			};
+		}),
 	findMany: t.procedure
 		.input(
 			paginationSchema.extend({
@@ -33,7 +147,7 @@ export const courseRouter = t.router({
 							some: {
 								specializationId: input.specializationId
 							}
-					  }
+						}
 					: undefined
 			};
 
@@ -149,7 +263,7 @@ export const courseRouter = t.router({
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
 		return created;
 	}),
-	edit: isCourseAuthorProcedure
+	edit: authorProcedure
 		.input(
 			z.object({
 				courseId: z.string(),
@@ -159,8 +273,28 @@ export const courseRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId);
 
-			const updated = await database.course.update({
-				where: { courseId: input.courseId },
+			if (ctx.user.role === "ADMIN") {
+				return await database.course.update({
+					where: {
+						courseId: input.courseId
+					},
+					data: courseForDb,
+					select: {
+						title: true,
+						slug: true,
+						courseId: true
+					}
+				});
+			}
+			return await database.course.update({
+				where: {
+					courseId: input.courseId,
+					authors: {
+						some: {
+							username: ctx.user.name
+						}
+					}
+				},
 				data: courseForDb,
 				select: {
 					title: true,
@@ -168,9 +302,151 @@ export const courseRouter = t.router({
 					courseId: true
 				}
 			});
+		}),
+	deleteCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			return database.course.delete({
+				where: {
+					slug: input.slug,
+					authors: { some: { username: ctx.user.name } }
+				}
+			});
+		}),
+	findLinkedEntities: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ input }) => {
+			return database.course.findUnique({
+				where: {
+					slug: input.slug
+				},
+				select: {
+					subject: true,
+					specializations: {
+						include: {
+							subject: true
+						}
+					}
+				}
+			});
+		}),
 
-			console.log("[courseRouter.edit]: Course updated by", ctx.user?.name, updated);
-			return updated;
+	getProgress: authorProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/courses/{slug}/progress",
+				tags: ["Courses"],
+				protect: true,
+				summary: "Get course progress for a list of students (teachers/admins only)"
+			}
+		})
+		.input(
+			z.object({
+				slug: z.string().describe("Unique slug of the course"),
+				usernames: z
+					.string()
+					.optional()
+					.describe(
+						"Comma separated list of student usernames to get progress for, e.g. 'user1,user2'"
+					)
+			})
+		)
+		.output(
+			z.array(
+				z.object({
+					username: z.string(),
+					progress: z.number().min(0).max(100).nullable()
+				})
+			)
+		)
+		.query(async ({ input, ctx }) => {
+			const usernames = input.usernames
+				? input.usernames
+						.split(",")
+						.map(u => u.trim())
+						.filter(Boolean)
+				: [];
+
+			// check if course exists (404 if not)
+			const course = await database.course.findUnique({
+				where: { slug: input.slug },
+				select: { courseId: true, content: true }
+			});
+
+			if (!course) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course not found for slug: ${input.slug}`
+				});
+			}
+
+			// check if user is authorized (403 if not)
+			const userIsAuthor = await database.course.findFirst({
+				where: {
+					slug: input.slug,
+					authors: { some: { username: ctx.user.name } }
+				},
+				select: { courseId: true }
+			});
+
+			if (!userIsAuthor) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "You are not an author of this course."
+				});
+			}
+
+			const content = (course.content ?? []) as CourseContent;
+			const lessonIds = extractLessonIds(content);
+			const totalLessons = lessonIds.length;
+
+			if (totalLessons === 0) {
+				return usernames.map(username => ({
+					username,
+					progress: null
+				}));
+			}
+
+			// Find enrolled students from input usernames in this course
+			const enrollments = await database.enrollment.findMany({
+				where: {
+					courseId: course.courseId,
+					username: { in: usernames }
+				},
+				select: {
+					username: true
+				}
+			});
+
+			if (enrollments.length === 0) {
+				return [];
+			}
+
+			// Count completed lessons per student
+			const completedLessons = await database.completedLesson.groupBy({
+				by: ["username"],
+				where: {
+					courseId: course.courseId,
+					lessonId: { in: lessonIds },
+					username: { in: enrollments.map(e => e.username) }
+				},
+				_count: {
+					lessonId: true
+				}
+			});
+
+			return enrollments.map(enrollment => {
+				const completedCount =
+					completedLessons.find(c => c.username === enrollment.username)?._count
+						.lessonId ?? 0;
+				const progressPercent = Math.round((completedCount / totalLessons) * 100);
+				return {
+					username: enrollment.username,
+					progress: progressPercent
+				};
+			});
 		})
 });
 
