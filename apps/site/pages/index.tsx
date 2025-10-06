@@ -1,7 +1,8 @@
 import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
-import { Trans, useTranslation } from "next-i18next";
+import { useTranslation } from "next-i18next";
+import { Trans } from "@self-learning/ui/common";
 
 export const getServerSideProps = withTranslations(["common", "platform-config"]);
 
@@ -21,9 +22,8 @@ export function LandingPage() {
 					<span className="mt-8 flex flex-col text-slate-600 md:text-xl">
 						<p className="mb-12 text-xl">
 							<Trans
-								t={t}
 								i18nKey="Welcome_Message"
-								ns="platform-config"
+								namespace="platform-config"
 								components={{
 									a: (
 										<a
@@ -47,9 +47,8 @@ export function LandingPage() {
 						></Image> */}
 
 						<Trans
-							t={t}
 							i18nKey="Platform_Description"
-							ns="platform-config"
+							namespace="platform-config"
 							components={{
 								Link: (
 									<Link
@@ -59,8 +58,7 @@ export function LandingPage() {
 								),
 								ul: (
 									<ul className="text-md mt-12 flex list-inside list-disc flex-col gap-6" />
-								),
-								li: <li />
+								)
 							}}
 						/>
 					</span>
