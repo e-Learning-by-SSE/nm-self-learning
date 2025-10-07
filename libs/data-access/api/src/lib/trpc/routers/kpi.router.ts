@@ -4,7 +4,9 @@ import {
 	getUserTotalLearningTime,
 	getUserDailyLearningTime,
 	getUserDailyQuizStats,
-	getUserTotalLearningTimeByCourse
+	getUserTotalLearningTimeByCourse,
+	getUserAverageCourseCompletionRateByAuthorByCourse,
+	getUserAverageCourseCompletionRateByAuthor
 } from "@self-learning/database";
 
 export const KPIRouter = t.router({
@@ -31,5 +33,17 @@ export const KPIRouter = t.router({
 		.query(async ({ ctx, input }) => {
 			const userId = input ?? ctx.user.id; // use input if provided, else current user
 			return getUserTotalLearningTimeByCourse(userId);
+		}),
+	getUserAverageCourseCompletionRateByAuthorByCourse: authProcedure
+		.input(z.string().optional())
+		.query(async ({ ctx, input }) => {
+			const userId = input ?? ctx.user.id; // use input if provided, else current user
+			return getUserAverageCourseCompletionRateByAuthorByCourse(userId);
+		}),
+	getUserAverageCourseCompletionRateByAuthor: authProcedure
+		.input(z.string().optional())
+		.query(async ({ ctx, input }) => {
+			const userId = input ?? ctx.user.id; // use input if provided, else current user
+			return getUserAverageCourseCompletionRateByAuthor(userId);
 		})
 });

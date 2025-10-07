@@ -36,6 +36,10 @@ export default function Page() {
 	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.KPIRouter.getUserDailyQuizStats.useQuery();
 	// Total Time of the User spent Learning by Course in Seconds
 	// const { data: courseData, isLoading: isLoadingCourse } = trpc.KPIRouter.getUserTotalLearningTimeByCourse.useQuery();
+	// Average Course Completion Rate by Author by Course
+	// const { data: authorByCourseData, isLoading: isLoadingAuthorByCourse } = trpc.KPIRouter.getUserAverageCourseCompletionRateByAuthorByCourse.useQuery();
+	// Average Course Completion Rate by Author
+	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.KPIRouter.getUserAverageCourseCompletionRateByAuthor.useQuery();
 
 	return (
 		<div className="bg-gray-50">

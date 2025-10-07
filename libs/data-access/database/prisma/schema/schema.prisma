@@ -307,3 +307,19 @@ view KPITotalLearningTimeByCourse {
   courseTitle               String
   total_time_spent_seconds  Float
 }
+
+view KPIAverageCompletionRateByAuthorByCourse {
+  id                             String @unique
+  author_username                String  
+  courseId                       String
+  courseTitle                    String
+  total_enrollments              Int
+  completed_enrollments          Int
+  course_completion_rate_percent Float
+}
+
+view KPIAverageCompletionRateByAuthor {
+  id                                        String @unique
+  author_username                           String
+  author_average_completion_rate_percent    Float
+}
