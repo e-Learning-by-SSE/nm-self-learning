@@ -39,7 +39,7 @@ export default function AITutorProfileAdminPage() {
 	const saveProfile = trpc.aiTutorProfile.save.useMutation();
 	const deleteProfile = trpc.aiTutorProfile.delete.useMutation();
 	const { t: t_llm_config } = useTranslation("pages-admin-llm-config");
-	const { t } = useTranslation("pages-admin-ai-tutor0profiles");
+	const { t } = useTranslation("pages-admin-ai-tutor-profiles");
 
 	const formSubmit = async (data: typeof formData) => {
 		try {
