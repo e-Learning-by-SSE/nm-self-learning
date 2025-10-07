@@ -19,3 +19,10 @@ export function getUserDailyQuizStats(id: string) {
 		orderBy: { day: "asc" }
 	});
 }
+
+export function getUserTotalLearningTimeByCourse(id: string) {
+	return database.kPITotalLearningTimeByCourse.findMany({
+		where: { id },
+		orderBy: { courseId: "asc" }
+	});
+}

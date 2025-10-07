@@ -299,3 +299,11 @@ view KPIDailyQuizStats {
   incorrect_answers  Int
   accuracy_percent Float
 }
+
+view KPITotalLearningTimeByCourse {
+  id                        String @unique
+  username                  String
+  courseId                  String
+  courseTitle               String
+  total_time_spent_seconds  Float
+}

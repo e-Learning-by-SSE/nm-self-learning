@@ -98,3 +98,50 @@ FROM "QuizAttempt" qa
 JOIN "QuizAnswer" qans ON qa."attemptId" = qans."quizAttemptId"
 JOIN "User" u ON u.name = qa.username
 GROUP BY u.id, qa.username, day;
+
+--- Create KPI View for Total Learning Time by Course
+CREATE VIEW "KPITotalLearningTimeByCourse" AS
+WITH sessionized AS (
+    SELECT
+        id,
+        username,
+        "courseId",
+        "createdAt",
+        CASE
+            WHEN LAG("createdAt") OVER (PARTITION BY username, "courseId" ORDER BY "createdAt") IS NULL
+                 OR "createdAt" - LAG("createdAt") OVER (PARTITION BY username, "courseId" ORDER BY "createdAt") > INTERVAL '30 minutes'
+            THEN 1 ELSE 0
+        END AS is_new_session
+    FROM "EventLog"
+    WHERE "courseId" IS NOT NULL
+),
+session_ids AS (
+    SELECT
+        id,
+        username,
+        "courseId",
+        "createdAt",
+        SUM(is_new_session) OVER (PARTITION BY username, "courseId" ORDER BY "createdAt") AS session_id
+    FROM sessionized
+),
+session_durations AS (
+    SELECT
+        username,
+        "courseId",
+        session_id,
+        MIN("createdAt") AS session_start,
+        MAX("createdAt") AS session_end,
+        EXTRACT(EPOCH FROM (MAX("createdAt") - MIN("createdAt"))) AS session_duration_seconds
+    FROM session_ids
+    GROUP BY username, "courseId", session_id
+)
+SELECT
+    u.id AS id,
+    sd.username,
+    sd."courseId",
+    COALESCE(c.title, 'N/A') AS "courseTitle",
+    SUM(session_duration_seconds) AS total_time_spent_seconds
+FROM session_durations sd
+JOIN "User" u ON u.name = sd.username
+LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
+GROUP BY u.id, sd.username, sd."courseId", c.title;
