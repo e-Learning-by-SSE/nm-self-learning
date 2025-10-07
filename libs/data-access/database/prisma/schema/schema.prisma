@@ -277,15 +277,33 @@ model LlmConfiguration {
   updatedAt       DateTime  @updatedAt
 }
 
-view kpi_total_time_spent {
+view KPITotalLearningTime {
   id                        String @unique
   username                  String
   total_time_spent_seconds  Float
 }
 
-view kpi_learning_time_distribution {
+view KPIDailyLearningTime {
     id                          String @unique
     username                    String
     day                         DateTime
     total_time_spent_seconds    Float
+}
+
+view KPIDailyQuizStats {
+  id               String @unique
+  username         String
+  day              DateTime
+  total_answers      Int
+  correct_answers    Int
+  incorrect_answers  Int
+  accuracy_percent Float
+}
+
+view KPITotalLearningTimeByCourse {
+  id                        String @unique
+  username                  String
+  courseId                  String
+  courseTitle               String
+  total_time_spent_seconds  Float
 }
