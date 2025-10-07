@@ -24,6 +24,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { LessonData } from "./lesson-data-access";
 import { usePathname, useSearchParams } from "next/navigation";
+import { TranscriptDialog } from "./subtitles/transcript-dialog";
 
 export type LessonProps = {
 	lesson: LessonData;
@@ -71,6 +72,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 	const [showDialog, setShowDialog] = useState(
 		lesson.lessonType === LessonType.SELF_REGULATED && modalOpened !== "closed"
 	);
+	const [showTranscript, setShowTranscript] = useState(false);
 
 	useEffect(() => {
 		if (lesson.lessonType === LessonType.SELF_REGULATED) {
@@ -108,6 +110,18 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 
 	const preferredMediaType = usePreferredMediaType(lesson);
 
+	useEffect(() => {
+		if (preferredMediaType !== "video") {
+			setShowTranscript(false);
+		}
+	}, [preferredMediaType]);
+
+	useEffect(() => {
+		if (!video?.value?.subtitle) {
+			setShowTranscript(false);
+		}
+	}, [video?.value?.subtitle]);
+
 	const handleCloseDialog = () => {
 		setShowDialog(false);
 		router.push({ pathname: path, query: { modal: "closed" } }, undefined, {
@@ -129,17 +143,37 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 	return (
 		<article className="flex flex-col gap-4">
 			{preferredMediaType === "video" && (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
-					{video?.value.url ? (
-						<VideoPlayer
-							parentLessonId={lesson.lessonId}
-							url={video.value.url}
-							courseId={course?.courseId}
-						/>
-					) : (
-						<div className="py-16 text-center text-red-500">Error: Missing URL</div>
+				<>
+					<div className="aspect-video w-full xl:max-h-[75vh]">
+						{video?.value.url ? (
+							<VideoPlayer
+								parentLessonId={lesson.lessonId}
+								url={video.value.url}
+								courseId={course?.courseId}
+								subtitle={video.value.subtitle}
+							/>
+						) : (
+							<div className="py-16 text-center text-red-500">Error: Missing URL</div>
+						)}
+					</div>
+					{video?.value.subtitle && (
+						<>
+							<button
+								type="button"
+								className="text-lg text-center text-gray-500 hover:text-secondary"
+								onClick={() => setShowTranscript(true)}
+							>
+								Video Transkript anzeigen
+							</button>
+							{showTranscript && (
+								<TranscriptDialog
+									onClose={() => setShowTranscript(false)}
+									webVTTtranscript={video.value.subtitle.src}
+								/>
+							)}
+						</>
 					)}
-				</div>
+				</>
 			)}
 
 			<LessonHeader
@@ -352,14 +386,14 @@ export function LicenseLabel({
 }
 
 function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
+	if (authors.length === 0) {
+		return null;
+	}
+
 	return (
-		<>
-			{authors.length > 0 && (
-				<div className="mt-4">
-					<AuthorsList authors={authors} />
-				</div>
-			)}
-		</>
+		<div className="mt-4">
+			<AuthorsList authors={authors} />
+		</div>
 	);
 }
 
@@ -400,20 +434,20 @@ function MediaTypeSelector({
 		}
 	}, [index, selectedIndex, setSelectedIndex]);
 
+	if (lessonContent.length <= 1) {
+		return null;
+	}
+
 	return (
-		<>
-			{lessonContent.length > 1 && (
-				<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
-					{lessonContent.map((content, idx) => (
-						<Tab key={idx}>
-							<span data-testid="mediaTypeTab">
-								{getContentTypeDisplayName(content.type)}
-							</span>
-						</Tab>
-					))}
-				</Tabs>
-			)}
-		</>
+		<Tabs selectedIndex={selectedIndex} onChange={changeMediaType}>
+			{lessonContent.map((content, idx) => (
+				<Tab key={idx}>
+					<span data-testid="mediaTypeTab">
+						{getContentTypeDisplayName(content.type)}
+					</span>
+				</Tab>
+			))}
+		</Tabs>
 	);
 }
 
@@ -445,7 +479,7 @@ function SelfRegulatedPreQuestion({
 					type="button"
 					className="btn-primary"
 					onClick={onClose}
-					disabled={userAnswer.length == 0}
+					disabled={userAnswer.length === 0}
 				>
 					Antwort speichern
 				</button>

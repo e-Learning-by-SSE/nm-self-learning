@@ -141,7 +141,7 @@ export const meRouter = t.router({
 			throw new Error("User not found");
 		}
 
-		const sharedPrivateKey = "1a1alhi05+wZcfAaPA8R2GTM5ay2xUMsr/DKJJkS6Fw=";
+		const sharedPrivateKey = process.env["NEXTAUTH_SECRET"] ?? "default";
 
 		const token = jwt.sign(
 			{
