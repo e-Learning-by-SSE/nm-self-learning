@@ -32,6 +32,10 @@ export default function Page() {
 	// const { data: totalData, isLoading: isLoadingTotal } = trpc.KPIRouter.getUserTotalLearningTime.useQuery();
 	// Daily Time of the User spent Learning in Seconds
 	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.KPIRouter.getUserDailyLearningTime.useQuery();
+	// Daily Quiz Stats of the User
+	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.KPIRouter.getUserDailyQuizStats.useQuery();
+	// Total Time of the User spent Learning by Course in Seconds
+	// const { data: courseData, isLoading: isLoadingCourse } = trpc.KPIRouter.getUserTotalLearningTimeByCourse.useQuery();
 
 	return (
 		<div className="bg-gray-50">
