@@ -225,6 +225,14 @@ export function NavbarDropdownMenu({
 				<span>Einstellungen</span>
 			</Link>
 
+			<Link
+				href="/learning-analytics"
+				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
+			>
+				<AcademicCapIcon className="h-5" />
+				<span>Learning Analytics</span>
+			</Link>
+
 			{isAuthor && (
 				<Link
 					href="/dashboard/author"
