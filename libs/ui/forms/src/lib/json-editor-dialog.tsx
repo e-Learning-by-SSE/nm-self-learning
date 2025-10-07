@@ -1,10 +1,10 @@
 "use client";
-import { Dialog } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { EditorField } from "@self-learning/ui/forms";
 import { useMemo, useState } from "react";
 import { useFormContext, UseFormReturn } from "react-hook-form";
 import { ZodSchema } from "zod";
-import { StrokedButton } from "@self-learning/ui/common";
+import { useTranslation } from "next-i18next";
 
 export function JsonEditorDialog<T>({
 	onClose,
@@ -17,11 +17,12 @@ export function JsonEditorDialog<T>({
 	const [jsonValue, setJsonValue] = useState(JSON.stringify(getValues()));
 	const [initialJsonValue] = useState(JSON.stringify(getValues()));
 	const [error, setError] = useState<string | null>(null);
+	const { t } = useTranslation("common");
 
 	function handleOutsideClick(): (value: boolean) => void {
 		return () => {
 			if (initialJsonValue !== JSON.stringify(JSON.parse(jsonValue))) {
-				window.confirm("Änderungen verwerfen?");
+				window.confirm(`${t("Abort Changes")}?`);
 			}
 			onClose(undefined);
 		};
@@ -56,8 +57,8 @@ export function JsonEditorDialog<T>({
 				{/* Container to center the panel */}
 				<div className="flex min-h-full items-center justify-center">
 					{/* The actual dialog panel  */}
-					<Dialog.Panel className="mx-auto w-[50vw] rounded bg-white px-8 pb-8">
-						<Dialog.Title className="py-8 text-xl">Als JSON bearbeiten</Dialog.Title>
+					<DialogPanel className="mx-auto w-[50vw] rounded bg-white px-8 pb-8">
+						<DialogTitle className="py-8 text-xl">{t("Edit as JSON")}</DialogTitle>
 
 						{error && (
 							<div className="mb-8 max-h-32 overflow-auto">
@@ -77,10 +78,10 @@ export function JsonEditorDialog<T>({
 						<div className="mt-8 flex gap-4">
 							<button
 								type="button"
-								className="btn-primary  w-fit"
+								className="btn-primary w-fit"
 								onClick={closeWithReturn}
 							>
-								Übernehmen
+								{t("save")}
 							</button>
 
 							<button
@@ -88,10 +89,10 @@ export function JsonEditorDialog<T>({
 								className="btn-stroked w-fit"
 								onClick={() => onClose(undefined)}
 							>
-								Abbrechen
+								{t("Abort")}
 							</button>
 						</div>
-					</Dialog.Panel>
+					</DialogPanel>
 				</div>
 			</div>
 		</Dialog>
@@ -136,13 +137,14 @@ export function OpenAsJsonButton({
 	validationSchema?: ZodSchema;
 }) {
 	const { isJsonEditorOpen, openJsonEditor, onCloseJsonEditor } = useJsonEditor(form);
+	const { t } = useTranslation("common");
 
 	return (
-		<StrokedButton onClick={openJsonEditor}>
-			<span className={"text-gray-600"}>Als JSON bearbeiten</span>
+		<button className="btn btn-tertiary" onClick={openJsonEditor}>
+			<span className={"text-gray-600"}>{t("Edit as JSON")}</span>
 			{isJsonEditorOpen && (
 				<JsonEditorDialog onClose={onCloseJsonEditor} validationSchema={validationSchema} />
 			)}
-		</StrokedButton>
+		</button>
 	);
 }

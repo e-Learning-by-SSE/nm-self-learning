@@ -273,7 +273,7 @@ function DashboardPage(props: Props) {
 	return (
 		<div className="bg-gray-50">
 			<CenteredSection>
-				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-[2fr_1fr]">
+				<div className="grid grid-cols-1 gap-8 lg:pt-10 lg:grid-cols-[2fr_1fr]">
 					<section className="flex items-center">
 						<ImageOrPlaceholder
 							src={props.student.user.image ?? undefined}
@@ -356,26 +356,20 @@ function DashboardPage(props: Props) {
 					<Card
 						href="/dashboard/courseOverview"
 						imageElement={<OverviewSvg />}
-						title="Kursübersicht"
+						title="Meine Kurse"
 					/>
 					{ltb.enabled && (
 						<>
 							<Card
 								href="/learning-diary"
 								imageElement={<MarketingSvg />}
-								title="Lerntagebucheinträge verwalten"
-							/>
-
-							<Card
-								href="/learning-diary"
-								imageElement={<ProgressSvg />}
-								title="Übersicht des Lerntagebuchs"
+								title="Mein Lerntagebuch"
 							/>
 
 							<Card
 								href="/learning-diary/goals"
 								imageElement={<TargetSvg />}
-								title="Lernziele verwalten"
+								title="Meine Lernziele"
 							/>
 						</>
 					)}
@@ -397,7 +391,8 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 		<>
 			{pages.length == 0 ? (
 				<span className="text-sm text-light">
-					Du hast noch keinen Lerntagebucheintrag erstellt.
+					Keine Lerntagebucheinträge vorhanden. Einträge werden erstellt, wenn du mit dem
+					Lernen beginnst.
 				</span>
 			) : (
 				<>
@@ -448,7 +443,9 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 	return (
 		<>
 			{lessons.length === 0 ? (
-				<span className="text-sm text-light">Du hast keine Lerneinheiten bearbeitet.</span>
+				<span className="text-sm text-light">
+					Du hast noch keine Lerneinheiten bearbeitet.
+				</span>
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
 					{lessons.map((lesson, index) => (

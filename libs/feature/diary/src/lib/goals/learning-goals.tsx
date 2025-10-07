@@ -1,6 +1,6 @@
 "use client";
 import { PencilIcon } from "@heroicons/react/24/outline";
-import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import {
 	ButtonActions,
@@ -8,8 +8,8 @@ import {
 	DialogHandler,
 	dispatchDialog,
 	freeDialog,
+	IconOnlyButton,
 	LoadingBox,
-	PlusButton,
 	showToast,
 	SimpleDialog,
 	Tab,
@@ -17,7 +17,7 @@ import {
 } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
 import { useEffect, useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { convertLearningGoal, GoalFormModel, StatusUpdateCallback } from "../util/types";
 import { LearningGoalProvider, useLearningGoalContext } from "./goal-context";
 import { CreateGoalDialog, EditGoalDialog } from "./goal-editor";
@@ -367,11 +367,12 @@ function GoalRow({
 									className="px-2 hover:text-secondary"
 								/>
 							</div>
-							<PlusButton
+							<IconOnlyButton
+								icon={<PlusIcon className="h-3 w-3" />}
+								variant="primary"
 								title={t("create")}
 								onClick={() => onCreateGoal?.(goal)}
-								size="small"
-								additionalClassNames="w-14 text-center flex justify-center"
+								className="w-14 text-center flex justify-center"
 							/>
 						</div>
 					)}

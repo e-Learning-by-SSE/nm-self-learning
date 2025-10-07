@@ -8,7 +8,14 @@ jest.mock("@self-learning/database", () => ({
 	database: {
 		course: {
 			findUnique: jest.fn(),
+			findMany: jest.fn(),
+			findFirst: jest.fn()
+		},
+		enrollment: {
 			findMany: jest.fn()
+		},
+		completedLesson: {
+			groupBy: jest.fn()
 		}
 	}
 }));
@@ -207,6 +214,257 @@ describe("REST API of Course Router", () => {
 			});
 
 			expect(response.statusCode).toBe(401);
+		});
+	});
+
+	// testing of getProgress end-point
+	describe("[GET]: /courses/{slug}/progress", () => {
+		const courseMock = createCourseMock({
+			courseId: "course1",
+			slug: "test-course",
+			title: "Test Course",
+			authors: ["teacher1", "teacher2"], // Multiple authors
+			content: [
+				{
+					chapterTitle: "Chapter 1",
+					lessons: ["lesson1", "lesson2", "lesson3", "lesson4"]
+				}
+			]
+		});
+
+		// Test users
+		const courseAuthor1: UserFromSession = {
+			id: "1",
+			name: "teacher1", // First author - should have access
+			role: "USER",
+			isAuthor: true,
+			avatarUrl: null,
+			enabledFeatureLearningDiary: false,
+			enabledLearningStatistics: false
+		};
+
+		const courseAuthor2: UserFromSession = {
+			id: "2",
+			name: "teacher2", // Second author - should also have access
+			role: "USER",
+			isAuthor: true,
+			avatarUrl: null,
+			enabledFeatureLearningDiary: false,
+			enabledLearningStatistics: false
+		};
+
+		const nonAuthor: UserFromSession = {
+			id: "3",
+			name: "teacher3", // Not an author of this course - should be blocked
+			role: "USER",
+			isAuthor: true,
+			avatarUrl: null,
+			enabledFeatureLearningDiary: false,
+			enabledLearningStatistics: false
+		};
+
+		const adminNonAuthor: UserFromSession = {
+			id: "4",
+			name: "admin1", // Admin but NOT author of this course - should be blocked
+			role: "ADMIN",
+			isAuthor: true,
+			avatarUrl: null,
+			enabledFeatureLearningDiary: false,
+			enabledLearningStatistics: false
+		};
+
+		beforeEach(() => {
+			jest.clearAllMocks();
+
+			// Mock course.findFirst for authorization check
+			(database.course.findFirst as jest.Mock).mockImplementation(async query => {
+				// Check if the requesting user is one of the course authors
+				const requestingUser = query.where.authors?.some?.username;
+				const courseAuthors = ["teacher1", "teacher2"]; // Multiple authors
+
+				if (courseAuthors.includes(requestingUser)) {
+					return {
+						courseId: courseMock.courseId,
+						content: courseMock.content
+					};
+				}
+				return null; // User is not an author (includes admins who aren't authors)
+			});
+
+			// Mock course.findUnique for 404 check
+			(database.course.findUnique as jest.Mock).mockImplementation(async query => {
+				if (query.where.slug === "test-course") {
+					return {
+						courseId: courseMock.courseId,
+						content: courseMock.content
+					};
+				}
+				return null; // Course doesn't exist
+			});
+
+			// Mock enrollment.findMany for enrolled students check
+			(database.enrollment.findMany as jest.Mock).mockImplementation(async query => {
+				const requestedUsernames = query.where.username.in || [];
+				const allEnrollments = [
+					{ username: "student1" },
+					{ username: "student2" }
+					// Note: student3 is NOT enrolled
+				];
+
+				return allEnrollments.filter(enrollment =>
+					requestedUsernames.includes(enrollment.username)
+				);
+			});
+
+			// Mock completedLesson.groupBy for progress data
+			(database.completedLesson.groupBy as jest.Mock).mockImplementation(async query => {
+				const requestedUsernames = query.where.username?.in || [];
+
+				// Simulate different progress levels
+				const progressData = [
+					{ username: "student1", _count: { lessonId: 2 } }, // 2/4 = 50%
+					{ username: "student2", _count: { lessonId: 4 } } // 4/4 = 100%
+				];
+
+				return progressData.filter(data => requestedUsernames.includes(data.username));
+			});
+		});
+
+		it("should return progress for enrolled students only", async () => {
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "test-course", "progress"],
+					usernames: "student1,student2,student3" // student3 not enrolled
+				},
+				user: courseAuthor1 // First author
+			});
+
+			expect(response.statusCode).toBe(200);
+			expect(response.body).toEqual([
+				{ username: "student1", progress: 50 }, // 2/4 lessons = 50%
+				{ username: "student2", progress: 100 } // 4/4 lessons = 100%
+				// student3 not in results (not enrolled)
+			]);
+		});
+
+		it("should allow access for second course author", async () => {
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "test-course", "progress"],
+					usernames: "student1,student2"
+				},
+				user: courseAuthor2 // Second author should also have access
+			});
+
+			expect(response.statusCode).toBe(200);
+			expect(response.body).toEqual([
+				{ username: "student1", progress: 50 },
+				{ username: "student2", progress: 100 }
+			]);
+		});
+
+		it("should return empty array when no usernames provided", async () => {
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "test-course", "progress"]
+					// No usernames parameter
+				},
+				user: courseAuthor1
+			});
+
+			expect(response.statusCode).toBe(200);
+			expect(response.body).toEqual([]);
+		});
+
+		it("should return 403 for non-author users", async () => {
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "test-course", "progress"],
+					usernames: "student1,student2"
+				},
+				user: nonAuthor // This user is NOT an author of the course
+			});
+
+			expect(response.statusCode).toBe(403);
+			expect(response.body).toMatchObject({
+				code: "FORBIDDEN",
+				message: "You are not an author of this course."
+			});
+		});
+
+		it("should return 403 for admin users who are not course authors", async () => {
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "test-course", "progress"],
+					usernames: "student1,student2"
+				},
+				user: adminNonAuthor // Admin but NOT author of this course
+			});
+
+			expect(response.statusCode).toBe(403);
+			expect(response.body).toMatchObject({
+				code: "FORBIDDEN",
+				message: "You are not an author of this course."
+			});
+		});
+
+		it("should return 401 for unauthorized requests", async () => {
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "test-course", "progress"],
+					usernames: "student1,student2"
+				}
+				// No user provided at all
+			});
+
+			expect(response.statusCode).toBe(401);
+		});
+
+		it("should handle students with zero progress", async () => {
+			// Override the completedLesson mock for this test
+			(database.completedLesson.groupBy as jest.Mock).mockImplementationOnce(async () => {
+				return []; // No completed lessons
+			});
+
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "test-course", "progress"],
+					usernames: "student1"
+				},
+				user: courseAuthor1
+			});
+
+			expect(response.statusCode).toBe(200);
+			expect(response.body).toEqual([
+				{ username: "student1", progress: 0 } // 0/4 lessons = 0%
+			]);
+		});
+
+		it("should return 404 for non-existent course", async () => {
+			// Override the findUnique mock to return null (course doesn't exist)
+			(database.course.findUnique as jest.Mock).mockImplementationOnce(async () => null);
+
+			const response = await restQuery({
+				method: "GET",
+				query: {
+					trpc: ["courses", "non-existent-course", "progress"],
+					usernames: "student1,student2"
+				},
+				user: courseAuthor1
+			});
+
+			expect(response.statusCode).toBe(404);
+			expect(response.body).toMatchObject({
+				code: "NOT_FOUND",
+				message: "Course not found for slug: non-existent-course"
+			});
 		});
 	});
 });

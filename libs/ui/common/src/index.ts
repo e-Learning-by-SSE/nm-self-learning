@@ -7,7 +7,6 @@ export const DropdownDialog = {
 export * from "./lib/author/author-chip";
 export * from "./lib/alert/alert";
 export * from "./lib/button/button";
-export * from "./lib/button/icon-only-button";
 export * from "./lib/chip/image-chip";
 export * from "./lib/collapsible/collapsible-box";
 export * from "./lib/chip/text-chip";
@@ -38,3 +37,5 @@ export * from "./lib/combobox/searchable-combobox-with-add";
 export * from "./lib/dropdown-menu/dropdown-menu";
 export * from "./lib/dropdown-menu/combobox-menu";
 export * from "./lib/transition/minor-scale-fade-in";
+export * from "./lib/button/button";
+export * from "./lib/dropdown-menu/dropdown-menu";

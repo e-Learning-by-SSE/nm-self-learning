@@ -4,9 +4,9 @@ import {
 	dispatchDialog,
 	freeDialog,
 	IconButton,
+	IconOnlyButton,
 	showToast,
-	SimpleDialog,
-	TrashcanButton
+	SimpleDialog
 } from "@self-learning/ui/common";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
@@ -79,7 +79,7 @@ export function AddChildButton({
 
 	return (
 		<button
-			title="Neuen Skill in dieser Skillgruppe anlegen"
+			title="Neuen Skill in dieser Skillgruppe erstellen"
 			className="hover:text-secondary"
 			onClick={handleAddSkill}
 		>
@@ -127,7 +127,7 @@ export function SkillDeleteOption({
 	};
 
 	if (!inline) {
-		return <TrashcanButton onClick={handleDelete} />;
+		return <IconOnlyButton icon={<TrashIcon className="h-5 w-5" />}	variant = "danger"  onClick={handleDelete} />;
 	} else {
 		return (
 			<button type="button" className={"px-2 hover:text-secondary"} onClick={handleDelete}>
@@ -166,7 +166,7 @@ export function NewSkillButton({
 	};
 	return (
 		<IconButton
-			text="Skill hinzufügen"
+			text="Skill erstellen"
 			icon={<PlusIcon className="icon h-5" />}
 			onClick={onCreateSkill}
 		/>

@@ -129,7 +129,7 @@ function AuthorDashboardPage({ author }: Props) {
 							<section>
 								<SectionHeader
 									title="Fachgebiete"
-									subtitle="Administrator in den folgenden Fachgebieten:"
+									subtitle="Administrator der folgenden Fachgebiete:"
 								/>
 
 								<ul className="flex flex-wrap gap-4">
@@ -157,7 +157,7 @@ function AuthorDashboardPage({ author }: Props) {
 							<section>
 								<SectionHeader
 									title="Spezialisierungen"
-									subtitle="Administrator in den folgenden Spezialisierungen:"
+									subtitle="Administrator der folgenden Spezialisierungen:"
 								/>
 
 								<ul className="flex flex-wrap gap-4">
@@ -185,12 +185,12 @@ function AuthorDashboardPage({ author }: Props) {
 						<div className="flex justify-between gap-4">
 							<SectionHeader
 								title="Meine Kurse"
-								subtitle="Autor in den folgenden Kursen:"
+								subtitle="Autor der folgenden Kurse:"
 							/>
 
 							<Link href="/teaching/courses/create">
 								<IconButton
-									text="Neuen Kurs erstellen"
+									text="Kurs erstellen"
 									icon={<PlusIcon className="icon h-5" />}
 								/>
 							</Link>
@@ -276,7 +276,7 @@ function AuthorDashboardPage({ author }: Props) {
 
 							<Link href="/teaching/lessons/create">
 								<IconButton
-									text="Neue Lerneinheit erstellen"
+									text="Lerneinheit erstellen"
 									icon={<PlusIcon className="icon h-5" />}
 								/>
 							</Link>
@@ -289,13 +289,13 @@ function AuthorDashboardPage({ author }: Props) {
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Skillkarten"
-								subtitle="Besitzer der folgenden Repositories"
+								title="Meine Skillkarten"
+								subtitle="Autor der folgenden Skillkarten:"
 							/>
 							<Link href="/skills/repository/create">
 								<IconButton
 									icon={<PlusIcon className="icon h-5" />}
-									text="Skillkarten anlegen"
+									text="Skillkarte erstellen"
 								/>
 							</Link>
 						</div>
@@ -464,7 +464,7 @@ function Lessons({ authorName }: { authorName: string }) {
 			) : (
 				<>
 					<SearchField
-						placeholder="Suche nach Lerneinheit"
+						placeholder="Suche nach Lerneinheiten"
 						value={title}
 						onChange={e => {
 							router.push(

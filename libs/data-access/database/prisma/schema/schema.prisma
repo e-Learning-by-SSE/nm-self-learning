@@ -1,7 +1,7 @@
 generator client {
   provider = "prisma-client-js"
   binaryTargets = ["native", "linux-musl"]
-  previewFeatures = ["prismaSchemaFolder"]
+  previewFeatures = ["prismaSchemaFolder", "views"]
 }
 
 datasource db {
@@ -265,4 +265,27 @@ model EventLog {
   type        String
   payload     Json?
   // @@id([userId, createdAt, action]) // todo check if optimization is needed
+}
+
+model LlmConfiguration {
+  id              String   @id @default(cuid())
+  serverUrl       String
+  apiKey          String?
+  defaultModel    String   
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+view kpi_total_time_spent {
+  id                        String @unique
+  username                  String
+  total_time_spent_seconds  Float
+}
+
+view kpi_learning_time_distribution {
+    id                          String @unique
+    username                    String
+    day                         DateTime
+    total_time_spent_seconds    Float
 }

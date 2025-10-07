@@ -19,6 +19,7 @@ import { ParsedUrlQuery } from "querystring";
 import { useCallback, useEffect, useState } from "react";
 import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { SearchBar } from "./search-bar";
+import { useTranslation } from "next-i18next";
 
 export function Navbar() {
 	const session = useSession();
@@ -27,7 +28,7 @@ export function Navbar() {
 	return (
 		<Disclosure
 			as="nav"
-			className="sticky top-0 z-20 w-full border-b border-b-gray-200 bg-white"
+			className="sticky top-0 z-30 w-full border-b border-b-gray-200 bg-white"
 		>
 			{({ open }) => (
 				<>
@@ -105,7 +106,7 @@ export function Navbar() {
 								href="subjects"
 								className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
 							>
-								Fachgebiete Erkunden
+								Fachgebiete
 							</DisclosureButton>
 						</div>
 					</DisclosurePanel>
@@ -116,15 +117,13 @@ export function Navbar() {
 }
 
 function NavbarNavigationLink() {
-	const [navigation, setNavigation] = useState([
-		{ name: "Fachgebiete Erkunden", href: "/subjects" }
-	]);
+	const [navigation, setNavigation] = useState([{ name: "Fachgebiete", href: "/subjects" }]);
 	const router = useRouter();
 
 	const setNavigationLink = useCallback(
 		(query: ParsedUrlQuery) => {
 			let newNavigation: { name: string; href: string }[] = [];
-			newNavigation.push({ name: "Fachgebiete Erkunden", href: "/subjects" });
+			newNavigation.push({ name: "Fachgebiete", href: "/subjects" });
 
 			if (query.subjectSlug) {
 				newNavigation.push({
@@ -141,7 +140,7 @@ function NavbarNavigationLink() {
 			} else if (query.courseSlug) {
 				newNavigation = JSON.parse(localStorage.getItem("navigation") ?? "[]");
 				if (newNavigation.length < 1) {
-					newNavigation.push({ name: "Fachgebiete Erkunden", href: "/subjects" });
+					newNavigation.push({ name: "Fachgebiete", href: "/subjects" });
 					return;
 				}
 				newNavigation.push({
@@ -188,12 +187,14 @@ export function NavbarDropdownMenu({
 	isAdmin: boolean;
 	signOut: () => void;
 }) {
+	const { t } = useTranslation("common");
+
 	return (
 		<DropdownMenu
-			title="Nutzermenü"
+			title={t("User Menu")}
 			button={
 				<div className="flex items-center gap-2 py-2">
-					<span className="sr-only">Nutzermenü Öffnen</span>
+					<span className="sr-only">{t("Open User Menu")}</span>
 					{avatarUrl ? (
 						<img
 							className="h-[42px] w-[42px] rounded-full object-cover object-top"
@@ -214,7 +215,7 @@ export function NavbarDropdownMenu({
 				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<UserIcon className="h-5" />
-				<span>Profil</span>
+				<span>{t("Profile")}</span>
 			</Link>
 
 			<Link
@@ -222,7 +223,7 @@ export function NavbarDropdownMenu({
 				className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<AdjustmentsHorizontalIcon className="h-5" />
-				<span>Einstellungen</span>
+				<span>{t("Settings")}</span>
 			</Link>
 
 			<Link
@@ -239,7 +240,7 @@ export function NavbarDropdownMenu({
 					className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 				>
 					<PencilSquareIcon className="h-5" />
-					<span>Autorenbereich</span>
+					<span>{t("Author Dashboard")}</span>
 				</Link>
 			)}
 
@@ -249,7 +250,7 @@ export function NavbarDropdownMenu({
 					className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 				>
 					<WrenchIcon className="h-5" />
-					<span>Adminbereich</span>
+					<span>{t("Admin Dashboard")}</span>
 				</Link>
 			)}
 
@@ -258,7 +259,7 @@ export function NavbarDropdownMenu({
 				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<ArrowRightStartOnRectangleIcon className="h-5" />
-				<span>Logout</span>
+				<span>{t("Logout")}</span>
 			</button>
 		</DropdownMenu>
 	);

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
-import { DropdownMenu, StrokedButton } from "@self-learning/ui/common";
+import { DropdownMenu, IconButton } from "@self-learning/ui/common";
 import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export function HeatmapModal({ onClose }: { onClose: () => void }) {
@@ -23,7 +23,7 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 							Study Heatmaps
 						</Dialog.Title>
 
-						{/* Dropdown */}
+						{/* Dropdown positioned top-right */}
 						<div className="absolute top-8 right-8">
 							<DropdownMenu
 								title="Select Heatmap Type"
@@ -83,7 +83,12 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 
 					{/* Footer */}
 					<div className="mt-8 flex justify-end">
-						<StrokedButton onClick={onClose}>Close</StrokedButton>
+						<IconButton
+							icon={<></>}
+							text="Close"
+							variant="tertiary"
+							onClick={onClose}
+						/>
 					</div>
 				</Dialog.Panel>
 			</div>
