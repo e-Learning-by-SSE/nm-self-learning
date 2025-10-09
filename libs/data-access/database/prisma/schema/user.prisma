@@ -74,10 +74,10 @@ model Permission {
     createdAt   DateTime    @default(now())
     expiresAt   DateTime?
 
-    user        User        @relation(fields: [userId], references: [id])
-    subject     Subject?    @relation(fields: [subjectId], references: [subjectId])
-    course      Course?     @relation(fields: [courseId], references: [courseId])
-    lesson      Lesson?     @relation(fields: [lessonId], references: [lessonId])
+    user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    subject     Subject?    @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
+    course      Course?     @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    lesson      Lesson?     @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
 
     // Prohibit multiple permissions per one content
     @@unique([userId, subjectId])
