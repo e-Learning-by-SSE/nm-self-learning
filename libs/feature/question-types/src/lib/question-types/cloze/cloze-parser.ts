@@ -14,7 +14,7 @@ export type Gap = {
 
 //Cloze regex catches all cloze gaps in the text
 // eslint-disable-next-line no-useless-escape
-const clozeRegex = /(?:{[TC]\: \[((?:#*(?:[A-Za-zÄÜÖäüö]+|(?:\$\$.+\$\$)),* *)+)\]})/gm;
+const clozeRegex = /(?:{[TC]\: \[((?:#*(?:[\w-ÄäÜüÖö]+|(?:\$\$.+\$\$)),* *)+)\]})/gm;
 
 //Latex regex detects if latex is used in the cloze gap
 // eslint-disable-next-line no-useless-escape

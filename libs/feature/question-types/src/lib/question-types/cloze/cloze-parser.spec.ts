@@ -53,6 +53,12 @@ describe("Cloze Parser", () => {
 			// Is the same as inline snapshot above only exported as a file
 			expect(result).toMatchSnapshot();
 		});
+
+		it("should handle dashes in answer options correctly", () => {
+			const text = "{C: [#a-b, c-d]}";
+			const gaps = parseCloze(text);
+			expect(gaps).toHaveLength(1);
+		});
 	});
 
 	describe("insertPlaceholder", () => {
