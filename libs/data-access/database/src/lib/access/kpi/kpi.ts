@@ -26,3 +26,22 @@ export function getUserTotalLearningTimeByCourse(id: string) {
 		orderBy: { courseId: "asc" }
 	});
 }
+
+export function getUserAverageCourseCompletionRateByAuthorByCourse(id: string) {
+	return database.kPIAverageCompletionRateByAuthorByCourse.findMany({
+		where: { id }
+	});
+}
+
+export function getUserAverageCourseCompletionRateByAuthor(id: string) {
+	return database.kPIAverageCompletionRateByAuthor.findUnique({
+		where: { id }
+	});
+}
+
+export function getUserAverageCompletionRateByAuthorBySubject(id: string) {
+	return database.kPIAverageCompletionRateByAuthorBySubject.findMany({
+		where: { id },
+		orderBy: { subjectTitle: "asc" }
+	});
+}

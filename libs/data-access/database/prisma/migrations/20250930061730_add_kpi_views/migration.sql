@@ -145,3 +145,90 @@ FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
 GROUP BY u.id, sd.username, sd."courseId", c.title;
+
+-- Create KPI View for Average Completion Rate by Author by Course
+CREATE OR REPLACE VIEW "KPIAverageCompletionRateByAuthorByCourse" AS
+SELECT
+    u.id AS id,
+    a.username AS author_username,
+    c."courseId",
+    COALESCE(c.title, 'N/A') AS "courseTitle",
+    COUNT(e.username) AS total_enrollments,
+    SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS completed_enrollments,
+    COALESCE(
+        ROUND(
+            (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
+             / NULLIF(COUNT(e.username), 0)) * 100,
+        2),
+        0
+    ) AS course_completion_rate_percent
+FROM "_AuthorToCourse" ac
+JOIN "Author" a ON a.id = ac."A"
+JOIN "Course" c ON c."courseId" = ac."B"
+JOIN "User" u ON u."name" = a."username"
+LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
+GROUP BY a.username, u.id, c."courseId", c.title;
+
+-- Create KPI View for Average Completion Rate by Author
+CREATE OR REPLACE VIEW "KPIAverageCompletionRateByAuthor" AS
+WITH course_completion AS (
+    SELECT
+        a.username AS author_username,
+        u.id AS id,
+        c."courseId",
+        COUNT(e.username) AS total_enrollments,
+        SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS completed_enrollments,
+        CASE
+            WHEN COUNT(e.username) = 0 THEN 0
+            ELSE ROUND(
+                (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
+                 / COUNT(e.username)) * 100, 2
+            )
+        END AS course_completion_rate_percent
+    FROM "_AuthorToCourse" ac
+    JOIN "Author" a ON a.id = ac."A"
+    JOIN "Course" c ON c."courseId" = ac."B"
+    JOIN "User" u ON u."name" = a."username"
+    LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
+    GROUP BY a.username, u.id, c."courseId"
+)
+SELECT
+    id,
+    author_username,
+    ROUND(AVG(course_completion_rate_percent), 2) AS author_average_completion_rate_percent
+FROM course_completion
+GROUP BY author_username, id
+ORDER BY author_username;
+
+-- Create KPI View for Average Completion Rate by Author by Subject
+CREATE OR REPLACE VIEW "KPIAverageCompletionRateByAuthorBySubject" AS
+SELECT
+    u.id AS "id",
+    a.username AS author_username,
+    s."subjectId",
+    s.title AS "subjectTitle",
+
+    COUNT(DISTINCT c."courseId") AS total_courses_of_author_in_subject,
+    
+    COUNT(e."username") AS total_enrollments,
+
+    SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS completed_enrollments,
+
+    -- Completion rate across author’s courses in this subject
+    ROUND(
+        COALESCE(
+            (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
+             / NULLIF(COUNT(e."username"), 0)) * 100,
+            0
+        ),
+    2) AS subject_completion_rate_percent
+
+FROM "_AuthorToCourse" ac
+JOIN "Author" a ON a.id = ac."A"
+JOIN "Course" c ON c."courseId" = ac."B"
+JOIN "User" u ON u."name" = a."username"
+JOIN "Subject" s ON s."subjectId" = c."subjectId"
+LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
+
+GROUP BY u.id, a.username, s."subjectId", s.title
+ORDER BY a.username, s.title;
