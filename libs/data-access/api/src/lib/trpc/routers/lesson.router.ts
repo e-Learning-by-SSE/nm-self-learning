@@ -5,6 +5,8 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { createUserPermission, hasAccessLevel, PermissionResourceEnum } from "./permission.router";
+import { UserFromSession } from "../context";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -67,6 +69,12 @@ export const lessonRouter = t.router({
 			} satisfies Paginated<unknown>;
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
+		if (!(await canCreate(ctx.user, input.courseId))) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions."
+			});
+		}
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
@@ -91,6 +99,19 @@ export const lessonRouter = t.router({
 				title: true
 			}
 		});
+		// create FULL permission for all authors
+		const users = await database.user.findMany({
+			where: { name: { in: input.authors.map(a => a.username) } },
+			select: { id: true }
+		});
+		for (const user of users) {
+			await createUserPermission(
+				user.id,
+				PermissionResourceEnum.Enum.LESSON,
+				createdLesson.lessonId,
+				"FULL"
+			);
+		}
 
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		return createdLesson;
@@ -103,6 +124,12 @@ export const lessonRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			if (!(await canEdit(ctx.user, input.lessonId))) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions."
+				});
+			}
 			const updatedLesson = await database.lesson.update({
 				where: { lessonId: input.lessonId },
 				data: {
@@ -146,34 +173,20 @@ export const lessonRouter = t.router({
 			`;
 			return courses as Course[];
 		}),
-	deleteLesson: authorProcedure
+	deleteLesson: authProcedure
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
-			if (ctx.user?.role === "ADMIN") {
-				await database.lesson.deleteMany({
-					where: {
-						lessonId: input.lessonId
-					}
+			if (!(await canEdit(ctx.user, input.lessonId))) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions."
 				});
-			} else {
-				const deleted = await database.lesson.deleteMany({
-					where: {
-						lessonId: input.lessonId,
-						authors: {
-							some: {
-								username: ctx.user?.name
-							}
-						}
-					}
-				});
-
-				if (deleted.count === 0) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message: "User is not an author of this lesson or lesson does not exist."
-					});
-				}
 			}
+			return await database.lesson.delete({
+				where: {
+					lessonId: input.lessonId
+				}
+			});
 		})
 });
 
@@ -226,4 +239,15 @@ export async function findLessons({
 	]);
 
 	return { lessons, count };
+}
+
+async function canCreate(user: UserFromSession, courseId: string | null): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	if (!courseId) return false;
+	return await hasAccessLevel(user.id, PermissionResourceEnum.Enum.COURSE, courseId, "EDIT");
+}
+
+async function canEdit(user: UserFromSession, lessonId: string): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	return await hasAccessLevel(user.id, PermissionResourceEnum.Enum.LESSON, lessonId, "EDIT");
 }

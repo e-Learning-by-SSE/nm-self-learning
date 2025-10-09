@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createCourse,
 	createLesson,
@@ -6,6 +7,8 @@ import {
 	createTextQuestion
 } from "../seed-functions";
 
+const courseId = faker.string.alphanumeric(8);
+
 export const chapters = [
 	{
 		title: "Folgen und Reihen",
@@ -13,6 +16,7 @@ export const chapters = [
 			"In diesem Kapitel werden Folgen und Reihen behandelt. Es werden verschiedene Eigenschaften untersucht, wie etwa Monotonie, Beschränktheit und Konvergenz. Dabei stellt sich heraus, dass konvergente Folgen von besonderer Bedeutung sind - sie werden die Grundlage für die gesamte nachfolgende Theorie der Analysis bilden.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Folgen",
 				subtitle: "Konvergenz",
 				description: "",
@@ -56,6 +60,7 @@ export const chapters = [
 ];
 
 export const course = createCourse({
+	courseId,
 	subjectId: "mathematik",
 	specializationId: "analysis",
 	title: "Analysis",

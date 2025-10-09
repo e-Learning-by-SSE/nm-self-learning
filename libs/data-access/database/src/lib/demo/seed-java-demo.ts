@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createArticle,
 	createAuthor,
@@ -11,6 +12,8 @@ import {
 } from "../seed-functions";
 import { seedJavaDemoSkills } from "./seed-java-demo-skills";
 
+const courseId = faker.string.alphanumeric(8);
+
 const chapters = [
 	{
 		title: "Einführung",
@@ -18,6 +21,7 @@ const chapters = [
 			"Einführung und Motivation für den Einsatz von Java. Einrichtung einer Arbeitsumgebung zur Entwicklung von Java-Anwendungen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Einleitung & Motivation",
 				subtitle: "Einstieg in die Welt von Java",
 				description: "Download und Installation des JDKs",
@@ -48,6 +52,7 @@ const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Installation des JDKs",
 				subtitle: null,
 				description: "Download und Installation des JDKs",
@@ -87,6 +92,7 @@ const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Hello World",
 				subtitle: "Das erste Programm",
 				description: read("demo/java-hello-world-description.mdx"),
@@ -107,6 +113,7 @@ const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Compiler & Intepreter",
 				subtitle: "Vom Quellcode zur Ausführung eines Programms",
 				description:
@@ -154,6 +161,7 @@ const chapters = [
 
 const courses = [
 	createCourse({
+		courseId,
 		subjectId: "informatik",
 		specializationId: "softwareentwicklung",
 		title: "Objectorientierte Programmierung mit Java",

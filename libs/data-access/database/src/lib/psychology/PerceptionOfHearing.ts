@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createCourse,
 	createLesson,
@@ -6,6 +7,8 @@ import {
 	createVideo
 } from "../seed-functions";
 
+const courseId = faker.string.alphanumeric(8);
+
 export const chapters = [
 	{
 		title: "Gehör - das auditive System",
@@ -13,6 +16,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Aufbau und Funktion des Ohres",
 				subtitle:
 					"Aktivierungsfrage: Welche der genannten anatomischen Strukturen im Innenohr dient dem Hören?",
@@ -66,6 +70,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Psychophysische Grundlagen",
 				subtitle:
 					"Aktivierungsfrage: Was sind die psychischen Dimensionen akustischer Reize?",
@@ -118,6 +123,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Die Physik des Schalls",
 				subtitle: "Aktivierungsfrage: Was sind die physikalischen Merkmale von Schall?",
 				description:
@@ -182,6 +188,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Hörbahn und auditorischer Cortex",
 				subtitle: "Aktivierungsfrage zu Hörbahn und auditorischer Cortex",
 				description:
@@ -238,6 +245,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Hörtheorien - Periodizitätstheorie",
 				subtitle: "Aktivierungsfrage zu Hörtheorien - Periodizitätstheorie",
 				description:
@@ -289,6 +297,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Auditive Raumwahrnehmung",
 				subtitle: "Aktivierungsfrage zu auditiver Raumwahrnehmung",
 				description:
@@ -340,6 +349,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Auditive Wahrnehmungsorganisation",
 				subtitle: "Aktivierungsfrage zu auditiver Wahrnehmungsorganisation",
 				description:
@@ -398,6 +408,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Corpus geniculatum mediale",
 				subtitle: "Aktivierungsfrage zu: Corpus geniculatum mediale?",
 				description:
@@ -454,6 +465,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Auditorischer Cortex",
 				subtitle: "Aktivierungsfrage zu: Auditorischer Cortex?",
 				description:
@@ -512,6 +524,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Tonhöhe",
 				subtitle: "Aktivierungsfrage zu: Tonhöhe",
 				description:
@@ -563,6 +576,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Lautstärke",
 				subtitle: "Aktivierungsfrage zu: Lautstärke",
 				description:
@@ -614,6 +628,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Klangfarbe",
 				subtitle: "Aktivierungsfrage zu: Klangfarbe",
 				description:
@@ -672,6 +687,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Shepard Illusion",
 				subtitle: "Aktivierungsfrage zu: Shepard Illusion?",
 				description:
@@ -723,6 +739,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "McGurk-Effekt",
 				subtitle: "Aktivierungsfrage zu: McGurk-Effekt",
 				description:
@@ -778,6 +795,7 @@ export const chapters = [
 ];
 
 export const course = createCourse({
+	courseId,
 	subjectId: "psychologie",
 	specializationId: "wahrnehmung",
 	title: "Das Wahrnehmungssystem zum Hören",
