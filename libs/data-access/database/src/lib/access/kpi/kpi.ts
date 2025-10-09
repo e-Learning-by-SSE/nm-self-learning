@@ -38,3 +38,10 @@ export function getUserAverageCourseCompletionRateByAuthor(id: string) {
 		where: { id }
 	});
 }
+
+export function getUserAverageCompletionRateByAuthorBySubject(id: string) {
+	return database.kPIAverageCompletionRateByAuthorBySubject.findMany({
+		where: { id },
+		orderBy: { subjectTitle: "asc" }
+	});
+}

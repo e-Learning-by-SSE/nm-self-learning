@@ -323,3 +323,14 @@ view KPIAverageCompletionRateByAuthor {
   author_username                           String
   author_average_completion_rate_percent    Float
 }
+
+view KPIAverageCompletionRateByAuthorBySubject {
+  id                                 String @unique
+  author_username                    String
+  subjectId                          String
+  subjectTitle                       String
+  total_courses_of_author_in_subject Int
+  total_enrollments                  Int?
+  completed_enrollments              Int?
+  subject_completion_rate_percent    Float?
+}
