@@ -154,6 +154,11 @@ export function createAuthor({
 				}
 			}
 		},
+		student: {
+			create: {
+				username: userName
+			}
+		},
 		permissions: {
 			create: lessons.flatMap(l =>
 				l.content.map(lesson => ({

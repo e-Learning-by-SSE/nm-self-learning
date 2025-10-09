@@ -449,12 +449,18 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 			}
 		},
 		permissions: {
-			create: reactLessons.flatMap(l =>
-				l.content.map(lesson => ({
+			create: [
+				...reactLessons.flatMap(l =>
+					l.content.map(lesson => ({
+						accessLevel: AccessLevel.FULL,
+						lessonId: lesson.lessonId
+					}))
+				),
+				{
 					accessLevel: AccessLevel.FULL,
-					lessonId: lesson.lessonId
-				}))
-			)
+					subjectId: "informatik"
+				}
+			]
 		}
 	},
 	{
