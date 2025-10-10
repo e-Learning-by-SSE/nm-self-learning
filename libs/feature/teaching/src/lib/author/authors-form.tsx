@@ -39,6 +39,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 		window.confirm("Autor entfernen?") && remove(index);
 	}
 
+	console.log("AuthorsFOrm, authors", authors);
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle}>

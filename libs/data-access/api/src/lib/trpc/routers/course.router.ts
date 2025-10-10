@@ -4,6 +4,7 @@ import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
 	dynCourseFormSchema,
+	dynCourseGenPathFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
@@ -584,6 +585,62 @@ export const courseRouter = t.router({
 		.input(
 			z.object({
 				courseId: z.string(),
+				course: dynCourseFormSchema,
+				skillsChanged: z.boolean()
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { courseId, skillsChanged } = input;
+			const updateData = input.course;
+
+			const prismaUpdateData: any = {
+				...updateData,
+				slug: updateData.slug,
+				meta: {},
+
+				authors: {
+					set: [],
+					connect: updateData.authors.map(author => ({
+						username: author.username
+					}))
+				},
+				teachingGoals: {
+					set: updateData.teachingGoals.map(goal => ({ id: goal.id }))
+				},
+				requirements: {
+					set: updateData.requirements.map(skill => ({ id: skill.id }))
+				}
+			};
+
+			// ✅ Only update courseVersion if skillsChanged is true
+			if (skillsChanged) {
+				prismaUpdateData.courseVersion = Date.now().toString();
+			}
+
+			const updated = await database.dynCourse.update({
+				where: { courseId: courseId ?? "" },
+				data: prismaUpdateData,
+				select: {
+					title: true,
+					slug: true,
+					courseId: true
+				}
+			});
+
+			console.log(
+				"[courseRouter.editDynamic]: Course updated by",
+				ctx.user?.name,
+				"skillsChanged:",
+				skillsChanged,
+				updated
+			);
+
+			return updated;
+		}),
+	editDynamicOld: isCourseAuthorProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
 				course: dynCourseFormSchema
 			})
 		)
@@ -620,7 +677,7 @@ export const courseRouter = t.router({
 		}),
 	getDynCourse: authorProcedure
 		.input(z.object({ slug: z.string() }))
-		.output(dynCourseFormSchema)
+		.output(dynCourseGenPathFormSchema)
 		.query(async ({ input }) => {
 			const course = await database.dynCourse.findUniqueOrThrow({
 				where: { slug: input.slug },
@@ -638,9 +695,11 @@ export const courseRouter = t.router({
 							parents: true
 						}
 					},
-					specializations: true
+					specializations: true,
+					generatedLessonPaths: true
 				}
 			});
+
 			return {
 				courseId: course.courseId,
 				subjectId: course.subjectId,
@@ -649,7 +708,12 @@ export const courseRouter = t.router({
 				subtitle: course.subtitle,
 				description: course.description,
 				imgUrl: course.imgUrl,
-				authors: course.authors.map(a => ({ username: a.username })),
+				authors: course.authors.map(a => ({
+					username: a.username,
+					displayName: a.displayName ?? "",
+					imgUrl: a.imgUrl,
+					slug: a.slug
+				})),
 				teachingGoals: course.teachingGoals.map(goal => ({
 					id: goal.id,
 					name: goal.name,
@@ -665,8 +729,49 @@ export const courseRouter = t.router({
 					authorId: req.authorId,
 					children: req.children.map(c => c.id),
 					parents: req.parents.map(p => p.id)
-				}))
+				})),
+				createdAt: course.createdAt,
+				updatedAt: course.updatedAt,
+				generatedLessonPaths: course.generatedLessonPaths.map(glp => ({
+					courseId: glp.courseId,
+					lessonPathId: glp.lessonPathId
+				})),
+				courseVersion: course.courseVersion
 			};
+		}),
+	/*
+	hasGeneratedLessonPath: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const { courseId } = input;
+			const username = ctx.user.name;
+
+			const existingPath = await database.generatedLessonPath.findFirst({
+				where: { courseId, username },
+				select: { lessonPathId: true }
+			});
+
+			return !!existingPath;
+		}),*/
+	getGeneratedLessonPathOlddd: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const { courseId } = input;
+			const username = ctx.user.name;
+
+			const path = await database.generatedLessonPath.findFirst({
+				where: { courseId, username }
+			});
+
+			return path;
 		}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
 		if (!canCreate(ctx.user)) {

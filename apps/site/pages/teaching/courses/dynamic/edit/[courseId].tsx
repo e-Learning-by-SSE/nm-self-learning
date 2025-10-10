@@ -99,7 +99,8 @@ export const getServerSideProps = withTranslations(
 );
 
 export default function EditCoursePage({ course }: EditCourseProps) {
-	const { mutateAsync: updateCourse } = trpc.course.editDynamic.useMutation();
+	// TODO: make decision if changing skill changes course version or any change
+	const { mutateAsync: updateCourse } = trpc.course.editDynamicOld.useMutation();
 	const router = useRouter();
 
 	function onConfirm(updatedCourse: DynCourseFormModel) {

@@ -55,7 +55,9 @@ export default function CreateCoursePage() {
 						subjectId: null,
 						authors: [{ username: author }],
 						teachingGoals: [],
-						requirements: []
+						requirements: [],
+						createdAt: new Date(),
+						updatedAt: new Date()
 					}}
 				/>
 			)}

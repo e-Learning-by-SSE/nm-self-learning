@@ -1,6 +1,7 @@
 import {
 	DynCourseFormModel,
 	dynCourseFormSchema,
+	DynCourseGenPathFormModel,
 	DynCourseSkillManager
 } from "@self-learning/teaching";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
@@ -21,7 +22,7 @@ import { useRequiredSession } from "@self-learning/ui/layouts";
 
 type Props = {
 	onCourseCreated: (slug: string) => void;
-	initialCourse?: DynCourseFormModel;
+	initialCourse?: DynCourseGenPathFormModel;
 };
 
 export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props) {
@@ -44,7 +45,8 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 	const {
 		handleSubmit,
 		reset,
-		formState: { errors }
+		formState: { errors },
+		getValues
 	} = form;
 
 	const { mutateAsync: create } = trpc.course.createDynamic.useMutation();
@@ -81,6 +83,57 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 					return;
 				}
 
+				// 🔍 Detect changes in teachingGoals or requirements
+				const skillsChanged =
+					JSON.stringify(initialCourse.teachingGoals ?? []) !==
+						JSON.stringify(course.teachingGoals ?? []) ||
+					JSON.stringify(initialCourse.requirements ?? []) !==
+						JSON.stringify(course.requirements ?? []);
+
+				const { title, slug } = await edit({
+					courseId: course.courseId ?? "",
+					course: course,
+					skillsChanged // ✅ send to backend
+				});
+
+				showToast({
+					type: "success",
+					title: "Kurs aktualisiert!",
+					subtitle: skillsChanged
+						? `${title} (Ziele oder Anforderungen wurden geändert)`
+						: title
+				});
+				onCourseCreated(slug);
+			} else {
+				const { title, slug } = await create(course);
+				showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
+				onCourseCreated(slug);
+			}
+		} catch (error) {
+			console.error(error);
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: JSON.stringify(error, null, 2)
+			});
+		}
+	};
+
+	/*
+	const handleCourseSubmitOld = async () => {
+		const course = form.getValues();
+		try {
+			if (initialCourse) {
+				if (!initialCourse?.courseId) {
+					console.error("Editing course, but courseId is missing.");
+					showToast({
+						type: "error",
+						title: "Fehlende Kurs-ID",
+						subtitle: "Die Kurs-ID fehlt für das Update."
+					});
+					return;
+				}
+
 				const { title, slug } = await edit({
 					courseId: course.courseId ?? "",
 					course: course
@@ -101,7 +154,7 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 			});
 		}
 	};
-
+*/
 	useEffect(() => {
 		if (Object.keys(errors).length > 0) {
 			console.log("Form validation errors:", errors);

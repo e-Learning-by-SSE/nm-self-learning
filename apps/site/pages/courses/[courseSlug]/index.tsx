@@ -251,7 +251,7 @@ function CourseHeader({
 			(isGenerated && Array.isArray(course.content) && course.content.length !== 0));
 
 	return (
-		<section className="flex flex-col gap-16">
+		<section className="flex flex-col gap-16 bg-red-300">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 				<div className="flex flex-col justify-between gap-12">
 					<div className="flex min-w-[50%] flex-col-reverse gap-12 md:flex-col">
@@ -511,6 +511,7 @@ function CoursePath({
 	course: CombinedCourseResult;
 	needsARefresh: boolean;
 }) {
+	//const { mutateAsync } = trpc.dynCourse.generateDynCourse.useMutation();
 	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
 	const router = useRouter();
 	const [isGenerating, setIsGenerating] = useState(false);

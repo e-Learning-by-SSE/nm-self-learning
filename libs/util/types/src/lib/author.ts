@@ -16,6 +16,10 @@ export const authorSchema = z.object({
 	specializationAdmin: z.array(specializationSchema)
 });
 
+export const authorsSchema = authorSchema.extend({
+	username: z.string()
+});
+
 /**
  * This schema can be used to validate the author relations in another schema
  *
@@ -30,6 +34,11 @@ export const authorSchema = z.object({
 export const authorsRelationSchema = z.array(
 	z.object({
 		username: z.string()
+		/*
+		displayName: z.string().optional(),
+		slug: z.string().optional(),
+		imgUrl: z.string().optional()
+		*/
 	})
 );
 
