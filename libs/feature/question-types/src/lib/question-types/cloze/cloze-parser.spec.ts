@@ -59,6 +59,14 @@ describe("Cloze Parser", () => {
 			const gaps = parseCloze(text);
 			expect(gaps).toHaveLength(1);
 		});
+
+		it("should accept punctuation, whitespaces, and unicode", () => {
+			const text =
+				"{C: [#a, b, e.f, g-h, i!j, k?l, m@n, o#p, q$r, s%t, u^v, w&x, y*z, ÄäÜüÖöß, 😎, Text with whitespace]}";
+			const gaps = parseCloze(text);
+			expect(gaps).toHaveLength(1);
+			expect(gaps[0].values).toHaveLength(16);
+		});
 	});
 
 	describe("insertPlaceholder", () => {

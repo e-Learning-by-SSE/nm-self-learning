@@ -12,9 +12,10 @@ export type Gap = {
 // {T: [Text]}
 // {T: [Text, Alternative]}
 
-//Cloze regex catches all cloze gaps in the text
+// Cloze regex catches all cloze gaps in the text
+// [^,\[\]\s]+ matches any character except: , [ or ]
 // eslint-disable-next-line no-useless-escape
-const clozeRegex = /(?:{[TC]\: \[((?:#*(?:[\w-ÄäÜüÖö]+|(?:\$\$.+\$\$)),* *)+)\]})/gm;
+const clozeRegex = /(?:{[TC]\: \[((?:#*(?:[^,\[\]]+|(?:\$\$.+\$\$)),* *)+)\]})/gm;
 
 //Latex regex detects if latex is used in the cloze gap
 // eslint-disable-next-line no-useless-escape
