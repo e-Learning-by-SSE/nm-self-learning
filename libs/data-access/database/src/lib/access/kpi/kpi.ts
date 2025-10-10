@@ -1,47 +1,69 @@
 import { database } from "../../prisma";
 
-export function getUserTotalLearningTime(id: string) {
+/**
+ * Fetch total learning time KPI for a user.
+ */
+export async function getUserTotalLearningTime(userId: string) {
 	return database.kPITotalLearningTime.findUnique({
-		where: { id }
+		where: { id: userId }
 	});
 }
 
-export function getUserDailyLearningTime(id: string) {
+/**
+ * Fetch daily learning time data for a user, ordered by day ascending.
+ */
+export async function getUserDailyLearningTime(userId: string) {
 	return database.kPIDailyLearningTime.findMany({
-		where: { id },
+		where: { id: userId },
 		orderBy: { day: "asc" }
 	});
 }
 
-export function getUserDailyQuizStats(id: string) {
+/**
+ * Fetch daily quiz statistics for a user, ordered by day ascending.
+ */
+export async function getUserDailyQuizStats(userId: string) {
 	return database.kPIDailyQuizStats.findMany({
-		where: { id },
+		where: { id: userId },
 		orderBy: { day: "asc" }
 	});
 }
 
-export function getUserTotalLearningTimeByCourse(id: string) {
+/**
+ * Fetch total learning time per course for a user.
+ */
+export async function getUserTotalLearningTimeByCourse(userId: string) {
 	return database.kPITotalLearningTimeByCourse.findMany({
-		where: { id },
+		where: { id: userId },
 		orderBy: { courseId: "asc" }
 	});
 }
 
-export function getUserAverageCourseCompletionRateByAuthorByCourse(id: string) {
+/**
+ * Fetch average course completion rate by author and by course for a user.
+ */
+export async function getUserAverageCompletionRateByAuthorByCourse(userId: string) {
 	return database.kPIAverageCompletionRateByAuthorByCourse.findMany({
-		where: { id }
+		where: { id: userId },
+		orderBy: { courseId: "asc" }
 	});
 }
 
-export function getUserAverageCourseCompletionRateByAuthor(id: string) {
+/**
+ * Fetch average course completion rate aggregated by author for a user.
+ */
+export async function getUserAverageCompletionRateByAuthor(userId: string) {
 	return database.kPIAverageCompletionRateByAuthor.findUnique({
-		where: { id }
+		where: { id: userId }
 	});
 }
 
-export function getUserAverageCompletionRateByAuthorBySubject(id: string) {
+/**
+ * Fetch average completion rate per author and subject for a user.
+ */
+export async function getUserAverageCompletionRateByAuthorBySubject(userId: string) {
 	return database.kPIAverageCompletionRateByAuthorBySubject.findMany({
-		where: { id },
+		where: { id: userId },
 		orderBy: { subjectTitle: "asc" }
 	});
 }

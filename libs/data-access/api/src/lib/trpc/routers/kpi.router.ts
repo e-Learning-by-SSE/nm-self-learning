@@ -5,52 +5,32 @@ import {
 	getUserDailyLearningTime,
 	getUserDailyQuizStats,
 	getUserTotalLearningTimeByCourse,
-	getUserAverageCourseCompletionRateByAuthorByCourse,
-	getUserAverageCourseCompletionRateByAuthor,
+	getUserAverageCompletionRateByAuthorByCourse,
+	getUserAverageCompletionRateByAuthor,
 	getUserAverageCompletionRateByAuthorBySubject
 } from "@self-learning/database";
 
+/**
+ * Helper to create KPI query endpoints that accept an optional userId
+ * and default to the authenticated user's ID.
+ */
+function kpiQuery<T>(handler: (userId: string) => Promise<T>) {
+	return authProcedure.input(z.string().optional()).query(async ({ ctx, input }) => {
+		const userId = input ?? ctx.user.id;
+		return handler(userId);
+	});
+}
+
 export const KPIRouter = t.router({
-	getUserTotalLearningTime: authProcedure
-		.input(z.string().optional())
-		.query(async ({ ctx, input }) => {
-			const userId = input ?? ctx.user.id; // use input if provided, else current user
-			return getUserTotalLearningTime(userId);
-		}),
-	getUserDailyLearningTime: authProcedure
-		.input(z.string().optional())
-		.query(async ({ ctx, input }) => {
-			const userId = input ?? ctx.user.id; // use input if provided, else current user
-			return getUserDailyLearningTime(userId);
-		}),
-	getUserDailyQuizStats: authProcedure
-		.input(z.string().optional())
-		.query(async ({ ctx, input }) => {
-			const userId = input ?? ctx.user.id; // use input if provided, else current user
-			return getUserDailyQuizStats(userId);
-		}),
-	getUserTotalLearningTimeByCourse: authProcedure
-		.input(z.string().optional())
-		.query(async ({ ctx, input }) => {
-			const userId = input ?? ctx.user.id; // use input if provided, else current user
-			return getUserTotalLearningTimeByCourse(userId);
-		}),
-	getUserAverageCourseCompletionRateByAuthorByCourse: authProcedure
-		.input(z.string().optional())
-		.query(async ({ ctx, input }) => {
-			const userId = input ?? ctx.user.id; // use input if provided, else current user
-			return getUserAverageCourseCompletionRateByAuthorByCourse(userId);
-		}),
-	getUserAverageCourseCompletionRateByAuthor: authProcedure
-		.input(z.string().optional())
-		.query(async ({ ctx, input }) => {
-			const userId = input ?? ctx.user.id; // use input if provided, else current user
-			return getUserAverageCourseCompletionRateByAuthor(userId);
-		}),
-	getUserAverageCompletionRateByAuthorBySubject: authProcedure
-		.input(z.string().optional())
-		.query(async ({ ctx, input }) => {
-			const userId = input ?? ctx.user.id; // use input if provided, else current user
-			return getUserAverageCompletionRateByAuthorBySubject(userId);
-		})
+	getUserTotalLearningTime: kpiQuery(getUserTotalLearningTime),
+	getUserDailyLearningTime: kpiQuery(getUserDailyLearningTime),
+	getUserDailyQuizStats: kpiQuery(getUserDailyQuizStats),
+	getUserTotalLearningTimeByCourse: kpiQuery(getUserTotalLearningTimeByCourse),
+	getUserAverageCompletionRateByAuthorByCourse: kpiQuery(
+		getUserAverageCompletionRateByAuthorByCourse
+	),
+	getUserAverageCompletionRateByAuthor: kpiQuery(getUserAverageCompletionRateByAuthor),
+	getUserAverageCompletionRateByAuthorBySubject: kpiQuery(
+		getUserAverageCompletionRateByAuthorBySubject
+	)
 });
