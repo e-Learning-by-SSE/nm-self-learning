@@ -7,9 +7,9 @@ import Link from "next/link";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../author/authors-form";
 import { CourseFormModel } from "../course/course-form-model";
-import { DynCourseFormModel, dynCourseFormSchema } from "./dynCourse-form-model";
 import { CourseInfoForm } from "../course/course-info-form";
 import { DynCourseContentForm } from "./dynCourse-content-form";
+import { DynCourseFormModel, dynCourseFormSchema } from "@self-learning/types";
 
 export function DynCourseEditor({
 	course,
@@ -32,16 +32,14 @@ export function DynCourseEditor({
 					id="courseform"
 					onSubmit={e => {
 						if ((e.target as unknown as { id: string }).id === "courseform") {
-							form.handleSubmit(
-								data => {
-									try {
-										const validated = dynCourseFormSchema.parse(data);
-										onConfirm(validated);
-									} catch (error) {
-										console.error(error);
-									}
+							form.handleSubmit(data => {
+								try {
+									const validated = dynCourseFormSchema.parse(data);
+									onConfirm(validated);
+								} catch (error) {
+									console.error(error);
 								}
-							)(e);
+							})(e);
 						}
 					}}
 				>

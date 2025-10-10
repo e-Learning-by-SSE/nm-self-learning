@@ -1,7 +1,8 @@
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { DynCourseEditor, DynCourseFormModel } from "@self-learning/teaching";
+import { DynCourseEditor } from "@self-learning/teaching";
+import { DynCourseFormModel } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useRouter } from "next/router";
@@ -97,9 +98,9 @@ export const getServerSideProps = withTranslations(
 		};
 	})
 );
-
+// TODO: it is inconsistent with the rest of the project that we go here by courseId instead of slug
 export default function EditCoursePage({ course }: EditCourseProps) {
-	const { mutateAsync: updateCourse } = trpc.course.editDynamic.useMutation();
+	const { mutateAsync: updateCourse } = trpc.dynCourse.edit.useMutation();
 	const router = useRouter();
 
 	function onConfirm(updatedCourse: DynCourseFormModel) {
@@ -107,7 +108,10 @@ export default function EditCoursePage({ course }: EditCourseProps) {
 			try {
 				const { title } = await updateCourse({
 					courseId: course.courseId as string,
-					course: updatedCourse
+					course: updatedCourse,
+					// TODO: two options - change courseVer at any change in course (current approach)
+					//  or change it only if skills in course changed
+					skillsChanged: true
 				});
 				showToast({ type: "success", title: "Änderung gespeichert!", subtitle: title });
 				router.replace(router.asPath, undefined, { scroll: false });

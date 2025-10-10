@@ -1,8 +1,4 @@
-import {
-	DynCourseFormModel,
-	dynCourseFormSchema,
-	DynCourseSkillManager
-} from "@self-learning/teaching";
+import { DynCourseSkillManager } from "@self-learning/teaching";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useEffect } from "react";
 import {
@@ -18,10 +14,15 @@ import { GreyBoarderButton, ImageOrPlaceholder, showToast } from "@self-learning
 import { trpc } from "@self-learning/api-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	DynCourseFormModel,
+	dynCourseFormSchema,
+	DynCourseGenPathFormModel
+} from "@self-learning/types";
 
 type Props = {
 	onCourseCreated: (slug: string) => void;
-	initialCourse?: DynCourseFormModel;
+	initialCourse?: DynCourseGenPathFormModel;
 };
 
 export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props) {
@@ -47,8 +48,8 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 		formState: { errors }
 	} = form;
 
-	const { mutateAsync: create } = trpc.course.createDynamic.useMutation();
-	const { mutateAsync: edit } = trpc.course.editDynamic.useMutation();
+	const { mutateAsync: create } = trpc.dynCourse.create.useMutation();
+	const { mutateAsync: edit } = trpc.dynCourse.edit.useMutation();
 
 	useEffect(() => {
 		if (session.data?.user?.name) {
@@ -81,11 +82,25 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 					return;
 				}
 
+				const skillsChanged =
+					JSON.stringify(initialCourse.teachingGoals ?? []) !==
+						JSON.stringify(course.teachingGoals ?? []) ||
+					JSON.stringify(initialCourse.requirements ?? []) !==
+						JSON.stringify(course.requirements ?? []);
+
 				const { title, slug } = await edit({
 					courseId: course.courseId ?? "",
-					course: course
+					course: course,
+					skillsChanged
 				});
-				showToast({ type: "success", title: "Kurs aktualisiert!", subtitle: title });
+
+				showToast({
+					type: "success",
+					title: "Kurs aktualisiert!",
+					subtitle: skillsChanged
+						? `${title} (Ziele oder Anforderungen wurden geändert)`
+						: title
+				});
 				onCourseCreated(slug);
 			} else {
 				const { title, slug } = await create(course);

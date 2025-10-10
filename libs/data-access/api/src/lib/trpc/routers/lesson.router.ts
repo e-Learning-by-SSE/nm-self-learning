@@ -66,6 +66,14 @@ export const lessonRouter = t.router({
 				pageSize
 			} satisfies Paginated<unknown>;
 		}),
+	findByIds: authProcedure
+		.input(z.object({ lessonIds: z.array(z.string()) }))
+		.query(async ({ input, ctx }) => {
+			return database.lesson.findMany({
+				where: { lessonId: { in: input.lessonIds } },
+				select: { lessonId: true, title: true, slug: true, meta: true }
+			});
+		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
 		const createdLesson = await database.lesson.create({
 			data: {

@@ -2,7 +2,7 @@ import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useEditorTabs } from "@self-learning/ui/course";
+import { CoursePreview, useEditorTabs } from "@self-learning/ui/course";
 import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
 import { withTranslations } from "@self-learning/api";
 
@@ -38,15 +38,7 @@ export default function CoursePreviewPage() {
 						</Tab>
 					))}
 				</Tabs>
-				<div className="w-full h-[100px] flex items-center justify-center">
-					<div className="font-mono whitespace-pre text-sm pt-5">
-						{`  ^__^
- (oo)\\_______
-(__)\\       )\\/\\
-    ||----- |
-    ||     ||`}
-					</div>
-				</div>
+				<CoursePreview />
 			</div>
 		</AuthorGuard>
 	);

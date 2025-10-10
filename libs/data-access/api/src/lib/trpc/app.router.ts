@@ -20,12 +20,14 @@ import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 
 import { userEventRouter } from "./routers/event-log.router";
+import { dynCourseRouter } from "./routers/dyn-course.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
 	author: authorRouter,
 	completion: completionRouter,
 	course: courseRouter,
+	dynCourse: dynCourseRouter,
 	enrollment: enrollmentRouter,
 	learningGoal: learningGoalRouter,
 	learningLocation: learningLocationRouter,

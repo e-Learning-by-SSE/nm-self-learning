@@ -511,7 +511,7 @@ function CoursePath({
 	course: CombinedCourseResult;
 	needsARefresh: boolean;
 }) {
-	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
+	const { mutateAsync } = trpc.dynCourse.createNewLessonPath.useMutation();
 	const router = useRouter();
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [generationId, setGenerationId] = useState<string | null>(null);

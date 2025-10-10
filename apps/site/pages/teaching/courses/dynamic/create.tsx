@@ -1,12 +1,13 @@
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { DynCourseEditor, DynCourseFormModel } from "@self-learning/teaching";
+import { DynCourseEditor } from "@self-learning/teaching";
+import { DynCourseFormModel } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
 
 export default function CreateCoursePage() {
-	const { mutateAsync: createCourse } = trpc.course.createDynamic.useMutation();
+	const { mutateAsync: createCourse } = trpc.dynCourse.create.useMutation();
 	const { mutateAsync: addCourse } = trpc.specialization.addCourse.useMutation();
 	const router = useRouter();
 	const { subjectId, specializationId } = router.query;
@@ -55,7 +56,9 @@ export default function CreateCoursePage() {
 						subjectId: null,
 						authors: [{ username: author }],
 						teachingGoals: [],
-						requirements: []
+						requirements: [],
+						createdAt: new Date(),
+						updatedAt: new Date()
 					}}
 				/>
 			)}

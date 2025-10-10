@@ -1,7 +1,6 @@
-import { SkillFormModel } from "@self-learning/types";
+import { DynCourseFormModel, SkillFormModel } from "@self-learning/types";
 import { SectionHeader } from "@self-learning/ui/common";
 import { useFormContext } from "react-hook-form";
-import { DynCourseFormModel } from "./dynCourse-form-model";
 import { LabeledFieldSelectSkillsView } from "../lesson/forms/lesson-skill-manager";
 
 export function DynCourseContentForm() {
