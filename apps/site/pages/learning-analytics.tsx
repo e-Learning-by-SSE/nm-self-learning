@@ -29,23 +29,23 @@ export default function Page() {
 	};
 
 	// Total Time of the User spent Learning in Seconds
-	// const { data: totalData, isLoading: isLoadingTotal } = trpc.KPIRouter.getUserTotalLearningTime.useQuery();
+	// const { data: totalData, isLoading: isLoadingTotal } = trpc.metrics.getUserTotalLearningTime.useQuery();
 	// Daily Time of the User spent Learning in Seconds
-	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.KPIRouter.getUserDailyLearningTime.useQuery();
+	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.metrics.getUserDailyLearningTime.useQuery();
 	// Daily Quiz Stats of the User
-	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.KPIRouter.getUserDailyQuizStats.useQuery();
+	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.metrics.getUserDailyQuizStats.useQuery();
 	// Total Time of the User spent Learning by Course in Seconds
-	// const { data: courseData, isLoading: isLoadingCourse } = trpc.KPIRouter.getUserTotalLearningTimeByCourse.useQuery();
+	// const { data: courseData, isLoading: isLoadingCourse } = trpc.metrics.getUserTotalLearningTimeByCourse.useQuery();
 	// Average Course Completion Rate by Author by Course
-	// const { data: authorByCourseData, isLoading: isLoadingAuthorByCourse } = trpc.KPIRouter.getUserAverageCompletionRateByAuthorByCourse.useQuery();
+	// const { data: authorByCourseData, isLoading: isLoadingAuthorByCourse } = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery();
 	// Average Course Completion Rate by Author
-	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.KPIRouter.getUserAverageCompletionRateByAuthor.useQuery();
+	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery();
 	// Average Completion Rate by Author by Subject
-	// const { data: authorBySubjectData, isLoading: isLoadingAuthorBySubject } = trpc.KPIRouter.getUserAverageCompletionRateByAuthorBySubject.useQuery();
+	// const { data: authorBySubjectData, isLoading: isLoadingAuthorBySubject } = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery();
 	// Daily Learning Time by Course
-	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.KPIRouter.getUserDailyLearningTimeByCourse.useQuery();
+	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.metrics.getUserDailyLearningTimeByCourse.useQuery();
 	// Learning Streak
-	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.KPIRouter.getUserLearningStreak.useQuery();
+	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
 
 	return (
 		<div className="bg-gray-50">

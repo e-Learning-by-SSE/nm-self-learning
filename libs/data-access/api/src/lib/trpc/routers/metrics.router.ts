@@ -16,25 +16,25 @@ import {
  * Helper to create KPI query endpoints that accept an optional userId
  * and default to the authenticated user's ID.
  */
-function kpiQuery<T>(handler: (userId: string) => Promise<T>) {
+function metricsQuery<T>(handler: (userId: string) => Promise<T>) {
 	return authProcedure.input(z.string().optional()).query(async ({ ctx, input }) => {
 		const userId = input ?? ctx.user.id;
 		return handler(userId);
 	});
 }
 
-export const KPIRouter = t.router({
-	getUserTotalLearningTime: kpiQuery(getUserTotalLearningTime),
-	getUserDailyLearningTime: kpiQuery(getUserDailyLearningTime),
-	getUserDailyQuizStats: kpiQuery(getUserDailyQuizStats),
-	getUserTotalLearningTimeByCourse: kpiQuery(getUserTotalLearningTimeByCourse),
-	getUserAverageCompletionRateByAuthorByCourse: kpiQuery(
+export const MetricsRouter = t.router({
+	getUserTotalLearningTime: metricsQuery(getUserTotalLearningTime),
+	getUserDailyLearningTime: metricsQuery(getUserDailyLearningTime),
+	getUserDailyQuizStats: metricsQuery(getUserDailyQuizStats),
+	getUserTotalLearningTimeByCourse: metricsQuery(getUserTotalLearningTimeByCourse),
+	getUserAverageCompletionRateByAuthorByCourse: metricsQuery(
 		getUserAverageCompletionRateByAuthorByCourse
 	),
-	getUserAverageCompletionRateByAuthor: kpiQuery(getUserAverageCompletionRateByAuthor),
-	getUserAverageCompletionRateByAuthorBySubject: kpiQuery(
+	getUserAverageCompletionRateByAuthor: metricsQuery(getUserAverageCompletionRateByAuthor),
+	getUserAverageCompletionRateByAuthorBySubject: metricsQuery(
 		getUserAverageCompletionRateByAuthorBySubject
 	),
-	getUserDailyLearningTimeByCourse: kpiQuery(getUserDailyLearningTimeByCourse),
-	getUserLearningStreak: kpiQuery(getUserLearningStreak)
+	getUserDailyLearningTimeByCourse: metricsQuery(getUserDailyLearningTimeByCourse),
+	getUserLearningStreak: metricsQuery(getUserLearningStreak)
 });
