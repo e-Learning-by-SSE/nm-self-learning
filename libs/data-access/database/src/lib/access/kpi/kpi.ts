@@ -67,3 +67,10 @@ export async function getUserAverageCompletionRateByAuthorBySubject(userId: stri
 		orderBy: { subjectTitle: "asc" }
 	});
 }
+
+export async function getUserDailyLearningTimeByCourse(userId: string) {
+	return database.kPIDailyLearningTimeByCourse.findMany({
+		where: { id: userId },
+		orderBy: { day: "asc" }
+	});
+}

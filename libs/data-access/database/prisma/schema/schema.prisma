@@ -334,3 +334,13 @@ view KPIAverageCompletionRateByAuthorBySubject {
   completed_enrollments              Int?
   subject_completion_rate_percent    Float?
 }
+
+view KPIDailyLearningTimeByCourse {
+  id                      String @unique
+  username                String
+  courseId                String
+  courseTitle             String?
+  day                     DateTime
+  total_time_spent_seconds Float
+}
+

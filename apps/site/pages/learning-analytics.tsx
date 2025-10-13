@@ -42,6 +42,8 @@ export default function Page() {
 	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.KPIRouter.getUserAverageCompletionRateByAuthor.useQuery();
 	// Average Completion Rate by Author by Subject
 	// const { data: authorBySubjectData, isLoading: isLoadingAuthorBySubject } = trpc.KPIRouter.getUserAverageCompletionRateByAuthorBySubject.useQuery();
+	// Daily Learning Time by Course
+	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.KPIRouter.getUserDailyLearningTimeByCourse.useQuery();
 
 	return (
 		<div className="bg-gray-50">

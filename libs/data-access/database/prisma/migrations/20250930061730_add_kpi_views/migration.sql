@@ -232,3 +232,53 @@ LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
 
 GROUP BY u.id, a.username, s."subjectId", s.title
 ORDER BY a.username, s.title;
+
+-- Create KPI View for Daily Learning Time by Course
+CREATE OR REPLACE VIEW "KPIDailyLearningTimeByCourse" AS
+WITH sessionized AS (
+    SELECT
+        id,
+        username,
+        "courseId",
+        "createdAt",
+        CASE
+            WHEN LAG("createdAt") OVER (PARTITION BY username, "courseId" ORDER BY "createdAt") IS NULL
+                 OR "createdAt" - LAG("createdAt") OVER (PARTITION BY username, "courseId" ORDER BY "createdAt") > INTERVAL '30 minutes'
+            THEN 1 ELSE 0
+        END AS is_new_session
+    FROM "EventLog"
+    WHERE "courseId" IS NOT NULL
+),
+session_ids AS (
+    SELECT
+        id,
+        username,
+        "courseId",
+        "createdAt",
+        SUM(is_new_session) OVER (PARTITION BY username, "courseId" ORDER BY "createdAt") AS session_id
+    FROM sessionized
+),
+session_durations AS (
+    SELECT
+        username,
+        "courseId",
+        session_id,
+        MIN("createdAt") AS session_start,
+        MAX("createdAt") AS session_end,
+        EXTRACT(EPOCH FROM (MAX("createdAt") - MIN("createdAt"))) AS session_duration_seconds
+    FROM session_ids
+    GROUP BY username, "courseId", session_id
+)
+SELECT
+    u.id AS id,
+    sd.username,
+    sd."courseId",
+    COALESCE(c.title, 'N/A') AS "courseTitle",
+    DATE_TRUNC('day', session_start) AS day,
+    SUM(session_duration_seconds) AS total_time_spent_seconds
+FROM session_durations sd
+JOIN "User" u ON u.name = sd.username
+LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
+GROUP BY u.id, sd.username, sd."courseId", c.title, DATE_TRUNC('day', session_start)
+ORDER BY sd.username, c.title, day;
+
