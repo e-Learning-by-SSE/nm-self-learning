@@ -282,3 +282,43 @@ LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
 GROUP BY u.id, sd.username, sd."courseId", c.title, DATE_TRUNC('day', session_start)
 ORDER BY sd.username, c.title, day;
 
+-- Create KPI View for Learning Streaks
+CREATE OR REPLACE VIEW "KPILearningStreak" AS
+WITH user_days AS (
+    SELECT
+        username,
+        DATE("createdAt") AS day
+    FROM "EventLog"
+    GROUP BY username, DATE("createdAt")
+),
+streak_groups AS (
+    SELECT
+        username,
+        day,
+        DATE(day - (ROW_NUMBER() OVER (PARTITION BY username ORDER BY day)) * INTERVAL '1 day') AS streak_group
+    FROM user_days
+),
+streak_lengths AS (
+    SELECT
+        username,
+        streak_group,
+        COUNT(*) AS streak_length,
+        MAX(day) AS last_day
+    FROM streak_groups
+    GROUP BY username, streak_group
+)
+SELECT
+    u.id AS id,
+    u.name AS username,
+    COALESCE(MAX(sl.streak_length), 0) AS longest_streak,
+    COALESCE((
+        SELECT streak_length
+        FROM streak_lengths s2
+        WHERE s2.username = u.name
+          AND s2.last_day = (SELECT MAX(day) FROM user_days WHERE username = u.name)
+        LIMIT 1
+    ), 0) AS current_streak
+FROM "User" u
+LEFT JOIN streak_lengths sl ON sl.username = u.name
+GROUP BY u.id, u.name
+ORDER BY longest_streak DESC;

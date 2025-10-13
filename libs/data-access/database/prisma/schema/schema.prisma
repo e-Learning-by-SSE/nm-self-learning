@@ -344,3 +344,10 @@ view KPIDailyLearningTimeByCourse {
   total_time_spent_seconds Float
 }
 
+view KPILearningStreak {
+  id              String @unique
+  username        String
+  longest_streak  Int
+  current_streak  Int
+}
+

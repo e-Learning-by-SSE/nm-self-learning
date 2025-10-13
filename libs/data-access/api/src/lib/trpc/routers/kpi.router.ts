@@ -8,7 +8,8 @@ import {
 	getUserAverageCompletionRateByAuthorByCourse,
 	getUserAverageCompletionRateByAuthor,
 	getUserAverageCompletionRateByAuthorBySubject,
-	getUserDailyLearningTimeByCourse
+	getUserDailyLearningTimeByCourse,
+	getUserLearningStreak
 } from "@self-learning/database";
 
 /**
@@ -34,5 +35,6 @@ export const KPIRouter = t.router({
 	getUserAverageCompletionRateByAuthorBySubject: kpiQuery(
 		getUserAverageCompletionRateByAuthorBySubject
 	),
-	getUserDailyLearningTimeByCourse: kpiQuery(getUserDailyLearningTimeByCourse)
+	getUserDailyLearningTimeByCourse: kpiQuery(getUserDailyLearningTimeByCourse),
+	getUserLearningStreak: kpiQuery(getUserLearningStreak)
 });

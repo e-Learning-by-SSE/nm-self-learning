@@ -68,9 +68,21 @@ export async function getUserAverageCompletionRateByAuthorBySubject(userId: stri
 	});
 }
 
+/**
+ * Fetch daily learning time per course for a user, ordered by day ascending.
+ */
 export async function getUserDailyLearningTimeByCourse(userId: string) {
 	return database.kPIDailyLearningTimeByCourse.findMany({
 		where: { id: userId },
 		orderBy: { day: "asc" }
+	});
+}
+
+/**
+ * Fetch current learning streak for a user.
+ */
+export async function getUserLearningStreak(userId: string) {
+	return database.kPILearningStreak.findUnique({
+		where: { id: userId }
 	});
 }
