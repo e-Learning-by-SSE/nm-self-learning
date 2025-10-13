@@ -1,11 +1,11 @@
-/// Total time a user has spent learning across all courses ✔
+/// Total time a user has spent learning across all courses 
 view TotalLearningTime {
   id                        String  @unique
   username                  String
   totalTimeSeconds          Float   // Total time in seconds
 }
 
-/// Daily learning time per user ✔
+/// Daily learning time per user 
 view DailyLearningTime {
   id                        String  @unique
   username                  String
@@ -13,7 +13,7 @@ view DailyLearningTime {
   totalTimeSeconds          Float   // Time spent learning that day
 }
 
-/// Daily quiz statistics per user ✔
+/// Daily quiz statistics per user 
 view DailyQuizStats {
   id                        String  @unique
   username                  String
@@ -24,7 +24,7 @@ view DailyQuizStats {
   accuracyPercent           Float
 }
 
-/// Total learning time per course per user ✔
+/// Total learning time per course per user 
 view TotalLearningTimeByCourse {
   id                        String  @unique
   username                  String
@@ -33,7 +33,7 @@ view TotalLearningTimeByCourse {
   totalTimeSeconds          Float
 }
 
-/// Average completion rate per author per course ✔
+/// Average completion rate per author per course 
 view AverageCompletionRateByAuthorByCourse {
   id                        String  @unique
   authorUsername            String
@@ -44,14 +44,14 @@ view AverageCompletionRateByAuthorByCourse {
   completionRatePercent     Float
 }
 
-/// Average completion rate per author (across all courses) ✔
+/// Average completion rate per author (across all courses) 
 view AverageCompletionRateByAuthor {
   id                        String  @unique
   authorUsername            String
   averageCompletionPercent  Float
 }
 
-/// Average completion rate per author per subject ✔
+/// Average completion rate per author per subject 
 view AverageCompletionRateByAuthorBySubject {
   id                        String  @unique
   authorUsername            String
@@ -63,7 +63,7 @@ view AverageCompletionRateByAuthorBySubject {
   completionRatePercent     Float?
 }
 
-/// Daily learning time per course per user ✔
+/// Daily learning time per course per user 
 view DailyLearningTimeByCourse {
   id                        String  @unique
   username                  String
