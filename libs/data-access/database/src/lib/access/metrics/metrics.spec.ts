@@ -6,7 +6,9 @@ import {
 	getUserTotalLearningTimeByCourse,
 	getUserAverageCompletionRateByAuthorByCourse,
 	getUserAverageCompletionRateByAuthor,
-	getUserAverageCompletionRateByAuthorBySubject
+	getUserAverageCompletionRateByAuthorBySubject,
+	getUserDailyLearningTimeByCourse,
+	getUserLearningStreak
 } from "./metrics";
 
 jest.mock("../../prisma", () => ({
@@ -17,7 +19,9 @@ jest.mock("../../prisma", () => ({
 		totalLearningTimeByCourse: { findMany: jest.fn() },
 		averageCompletionRateByAuthorByCourse: { findMany: jest.fn() },
 		averageCompletionRateByAuthor: { findUnique: jest.fn() },
-		averageCompletionRateByAuthorBySubject: { findMany: jest.fn() }
+		averageCompletionRateByAuthorBySubject: { findMany: jest.fn() },
+		dailyLearningTimeByCourse: { findMany: jest.fn() },
+		learningStreak: { findUnique: jest.fn() }
 	}
 }));
 
@@ -119,6 +123,31 @@ describe("KPI Database Access Functions", () => {
 		expect(database.averageCompletionRateByAuthorBySubject.findMany).toHaveBeenCalledWith({
 			where: { id: userId },
 			orderBy: { subjectTitle: "asc" }
+		});
+		expect(result).toEqual(mockResult);
+	});
+
+	it("getUserDailyLearningTimeByCourse orders by courseId and day ascending", async () => {
+		const mockResult = [{ courseId: "C3", day: "2025-10-03", time: 45 }];
+		(database.dailyLearningTimeByCourse.findMany as jest.Mock).mockResolvedValue(mockResult);
+
+		const result = await getUserDailyLearningTimeByCourse(userId);
+
+		expect(database.dailyLearningTimeByCourse.findMany).toHaveBeenCalledWith({
+			where: { id: userId },
+			orderBy: [{ courseId: "asc" }, { day: "asc" }]
+		});
+		expect(result).toEqual(mockResult);
+	});
+
+	it("getUserLearningStreak queries correctly", async () => {
+		const mockResult = { id: userId, currentStreak: 5, longestStreak: 10 };
+		(database.learningStreak.findUnique as jest.Mock).mockResolvedValue(mockResult);
+
+		const result = await getUserLearningStreak(userId);
+
+		expect(database.learningStreak.findUnique).toHaveBeenCalledWith({
+			where: { id: userId }
 		});
 		expect(result).toEqual(mockResult);
 	});
