@@ -292,7 +292,8 @@ export function GenerateSubtile({
 				/>
 			)}
 			<button
-				className="btn-primary "
+				className="btn-primary"
+				type="button"
 				onClick={() => {
 					setShowDialog(true);
 				}}

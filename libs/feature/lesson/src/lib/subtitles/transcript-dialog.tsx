@@ -39,7 +39,7 @@ export function TranscriptDialog({
 				<button onClick={handleCopy} className="btn btn-primary">
 					Kopieren
 				</button>
-				<button onClick={onClose} className="btn bg-red-500 hover:bg-red-600">
+				<button onClick={onClose} className="btn bg-red-500 hover:bg-red-600 text-white">
 					Schließen
 				</button>
 			</div>

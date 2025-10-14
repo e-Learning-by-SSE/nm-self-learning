@@ -1,13 +1,6 @@
 "use client";
 
-import {
-	useMemo,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-	forwardRef
-} from "react";
+import { useCallback, useEffect, useRef, useState, forwardRef } from "react";
 import type { OnProgressProps } from "react-player/base";
 import ReactPlayer from "react-player/lazy";
 import { EventLog, EventTypeKeys } from "@self-learning/types";
@@ -44,25 +37,27 @@ export const VideoPlayer = forwardRef<ReactPlayer | null, VideoPlayerProps>(func
 ) {
 	const playerRef = useRef<ReactPlayer | null>(null);
 
-	const subtitleUrl = useMemo(() => {
-		if (subtitle?.src) {
-			const blob = new Blob([subtitle.src], { type: "text/vtt;charset=utf-8" });
-			return URL.createObjectURL(blob);
-		}
-		return null;
-	}, [subtitle]);
-
-	useEffect(() => {
-		if (!subtitleUrl) return;
-		return () => {
-			URL.revokeObjectURL(subtitleUrl);
-		};
-	}, [subtitleUrl]);
-
 	const { isClient } = useHydrationFix();
 	const { newEvent: writeEvent } = useEventLog();
 	const [isReady, setIsReady] = useState(false);
 	const [lastRenderTime, setLastRenderTime] = useState(Date.now());
+
+	const [subtitleUrl, setSubtitleUrl] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!subtitle?.src) {
+			setSubtitleUrl(null);
+			return;
+		}
+
+		const blob = new Blob([subtitle.src], { type: "text/vtt;charset=utf-8" });
+		const objectUrl = URL.createObjectURL(blob);
+		setSubtitleUrl(objectUrl);
+
+		return () => {
+			URL.revokeObjectURL(objectUrl);
+		};
+	}, [subtitle?.src]);
 
 	useEffect(() => {
 		setLastRenderTime(Date.now());
@@ -147,6 +142,8 @@ export const VideoPlayer = forwardRef<ReactPlayer | null, VideoPlayerProps>(func
 		},
 		[onProgress]
 	);
+
+	console.log("Rendering video player...", { subtitleUrl });
 
 	if (!isClient) return <p>The video player cannot render on the server side</p>;
 
