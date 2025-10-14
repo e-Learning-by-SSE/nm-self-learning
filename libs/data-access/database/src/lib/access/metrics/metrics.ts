@@ -86,3 +86,12 @@ export async function getUserLearningStreak(userId: string) {
 		where: { id: userId }
 	});
 }
+
+/**
+ * Fetch number of courses completed per subject for a user.
+ */
+export async function getUserCoursesCompletedBySubject(userId: string) {
+	return database.coursesCompletedBySubject.findMany({
+		where: { id: userId }
+	});
+}

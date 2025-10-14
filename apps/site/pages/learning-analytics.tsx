@@ -46,6 +46,8 @@ export default function Page() {
 	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.metrics.getUserDailyLearningTimeByCourse.useQuery();
 	// Learning Streak
 	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
+	// Courses Completed by Subject
+	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
 
 	return (
 		<div className="bg-gray-50">

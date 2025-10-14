@@ -9,7 +9,8 @@ import {
 	getUserAverageCompletionRateByAuthor,
 	getUserAverageCompletionRateByAuthorBySubject,
 	getUserDailyLearningTimeByCourse,
-	getUserLearningStreak
+	getUserLearningStreak,
+	getUserCoursesCompletedBySubject
 } from "@self-learning/database";
 
 /**
@@ -36,5 +37,6 @@ export const MetricsRouter = t.router({
 		getUserAverageCompletionRateByAuthorBySubject
 	),
 	getUserDailyLearningTimeByCourse: metricsQuery(getUserDailyLearningTimeByCourse),
-	getUserLearningStreak: metricsQuery(getUserLearningStreak)
+	getUserLearningStreak: metricsQuery(getUserLearningStreak),
+	getUserCoursesCompletedBySubject: metricsQuery(getUserCoursesCompletedBySubject)
 });

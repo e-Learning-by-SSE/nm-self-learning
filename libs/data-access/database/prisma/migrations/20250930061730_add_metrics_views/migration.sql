@@ -321,3 +321,21 @@ FROM "User" u
 LEFT JOIN streak_lengths sl ON sl.username = u.name
 GROUP BY u.id, u.name
 ORDER BY "longestStreakDays" DESC;
+
+-- Create KPI View for Courses Completed Per Subject
+CREATE OR REPLACE VIEW "CoursesCompletedBySubject" AS
+SELECT
+    u.id AS id,
+    u.name AS username,
+    s."subjectId",
+    s."title" AS subject_title,
+    COUNT(DISTINCT e."courseId") AS total_completed_courses,
+    STRING_AGG(DISTINCT c."title", ', ' ORDER BY c."title") AS completed_courses
+FROM "Enrollment" e
+JOIN "Course" c ON c."courseId" = e."courseId"
+JOIN "Subject" s ON s."subjectId" = c."subjectId"
+JOIN "User" u ON u.name = e."username"
+WHERE e."completedAt" IS NOT NULL
+   OR e."status" = 'COMPLETED'
+GROUP BY u.id, u.name, s."subjectId", s."title"
+ORDER BY u.name, s."title";

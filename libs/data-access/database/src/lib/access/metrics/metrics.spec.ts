@@ -8,7 +8,8 @@ import {
 	getUserAverageCompletionRateByAuthor,
 	getUserAverageCompletionRateByAuthorBySubject,
 	getUserDailyLearningTimeByCourse,
-	getUserLearningStreak
+	getUserLearningStreak,
+	getUserCoursesCompletedBySubject
 } from "./metrics";
 
 jest.mock("../../prisma", () => ({
@@ -147,6 +148,18 @@ describe("KPI Database Access Functions", () => {
 		const result = await getUserLearningStreak(userId);
 
 		expect(database.learningStreak.findUnique).toHaveBeenCalledWith({
+			where: { id: userId }
+		});
+		expect(result).toEqual(mockResult);
+	});
+
+	it("getUserCoursesCompletedBySubject queries correctly", async () => {
+		const mockResult = [{ subjectTitle: "Science", totalCompletedCourses: 3 }];
+		(database.coursesCompletedBySubject.findMany as jest.Mock).mockResolvedValue(mockResult);
+
+		const result = await getUserCoursesCompletedBySubject(userId);
+
+		expect(database.coursesCompletedBySubject.findMany).toHaveBeenCalledWith({
 			where: { id: userId }
 		});
 		expect(result).toEqual(mockResult);

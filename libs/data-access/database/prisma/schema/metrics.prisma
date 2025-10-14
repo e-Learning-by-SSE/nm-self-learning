@@ -80,3 +80,13 @@ view LearningStreak {
   longestStreakDays         Int
   currentStreakDays         Int
 }
+
+/// Number of courses completed per subject per user
+view CoursesCompletedBySubject {
+  id                      String    @unique
+  username                String
+  subjectId               String
+  subject_title           String
+  total_completed_courses Int
+  completed_courses       String?
+}
