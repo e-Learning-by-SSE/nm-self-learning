@@ -46,25 +46,48 @@ export const lessonRouter = t.router({
 		});
 	}),
 	findMany: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/lessons",
+				tags: ["Lessons"],
+				protect: true,
+				summary: "Search available lessons"
+			}
+		})
 		.input(
 			paginationSchema.extend({
 				title: z.string().optional(),
-				authorName: z.string().optional()
+				authorName: z.string().optional(),
+				pageSize: z.number().optional()
 			})
 		)
-		.query(async ({ input: { title, page, authorName } }) => {
-			const pageSize = 15;
+		.output(
+			z.object({
+				result: z.array(z.object({ title: z.string(), slug: z.string() })),
+				pageSize: z.number(),
+				page: z.number(),
+				totalCount: z.number()
+			})
+		)
+		.query(async ({ input: { title, page, authorName, pageSize } }) => {
+			const actualPageSize = pageSize ?? 15;
 			const { lessons, count } = await findLessons({
 				title,
 				authorName,
-				...paginate(pageSize, page)
+				...paginate(actualPageSize, page)
 			});
+
 			return {
-				result: lessons,
-				totalCount: count,
-				page,
-				pageSize
-			} satisfies Paginated<unknown>;
+				result: lessons.map(lesson => ({
+					title: lesson.title,
+					slug: lesson.slug
+				})),
+				pageSize: actualPageSize,
+				page: page,
+				totalCount: count
+			};
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
 		const createdLesson = await database.lesson.create({
@@ -174,57 +197,6 @@ export const lessonRouter = t.router({
 					});
 				}
 			}
-		}),
-	//
-	listAvailableLessons: authProcedure
-		.meta({
-			openapi: {
-				enabled: true,
-				method: "GET",
-				path: "/lessons",
-				tags: ["Lessons"],
-				protect: true,
-				summary: "Search available lessons"
-			}
-		})
-		.input(
-			paginationSchema.extend({
-				title: z
-					.string()
-					.describe(
-						"Title of the lesson to search for. Keep empty to list all; includes insensitive search and contains search."
-					)
-					.optional(),
-				authorName: z.string().describe("Filter by author username").optional(),
-				pageSize: z.number().describe("Number of results per page").optional()
-			})
-		)
-		.output(
-			z.object({
-				result: z.array(z.object({ title: z.string(), slug: z.string() })),
-				pageSize: z.number(),
-				page: z.number(),
-				totalCount: z.number()
-			})
-		)
-		.query(async ({ input }) => {
-			const pageSize = input.pageSize ?? 20;
-
-			const { lessons, count } = await findLessons({
-				title: input.title,
-				authorName: input.authorName,
-				...paginate(pageSize, input.page)
-			});
-
-			return {
-				result: lessons.map(lesson => ({
-					title: lesson.title,
-					slug: lesson.slug
-				})),
-				pageSize: pageSize,
-				page: input.page,
-				totalCount: count
-			};
 		}),
 
 	getLessonData: authProcedure
@@ -350,7 +322,6 @@ export const lessonRouter = t.router({
 				});
 			}
 
-			
 			// Find valid users
 			const validUsers = await database.user.findMany({
 				where: {
@@ -380,7 +351,9 @@ export const lessonRouter = t.router({
 			});
 
 			return validUsers.map(user => {
-				const completedCount = completedLessons.find(cl => cl.username === user.name) ? 1 : 0;
+				const completedCount = completedLessons.find(cl => cl.username === user.name)
+					? 1
+					: 0;
 				return {
 					username: user.name,
 					progress: completedCount
