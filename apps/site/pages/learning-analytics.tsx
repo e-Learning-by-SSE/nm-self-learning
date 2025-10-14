@@ -33,14 +33,26 @@ export default function LearningAnalyticsPage() {
 	const role = session?.user?.role; // "USER" for student, "ADMIN" for creator
 
 	// --- Erik’s KPI additions (keep for later use) ---
-	// const { data: totalData, isLoading: isLoadingTotal } =
-	// 	trpc.KPIRouter.getUserTotalLearningTime.useQuery();
-	// const { data: dailyData, isLoading: isLoadingDaily } =
-	// 	trpc.KPIRouter.getUserDailyLearningTime.useQuery();
-	// const { data: quizData, isLoading: isLoadingQuiz } =
-	// 	trpc.KPIRouter.getUserDailyQuizStats.useQuery();
-	// const { data: courseData, isLoading: isLoadingCourse } =
-	// 	trpc.KPIRouter.getUserTotalLearningTimeByCourse.useQuery();
+  // Total Time of the User spent Learning in Seconds
+	// const { data: totalData, isLoading: isLoadingTotal } = trpc.metrics.getUserTotalLearningTime.useQuery();
+	// Daily Time of the User spent Learning in Seconds
+	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.metrics.getUserDailyLearningTime.useQuery();
+	// Daily Quiz Stats of the User
+	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.metrics.getUserDailyQuizStats.useQuery();
+	// Total Time of the User spent Learning by Course in Seconds
+	// const { data: courseData, isLoading: isLoadingCourse } = trpc.metrics.getUserTotalLearningTimeByCourse.useQuery();
+	// Average Course Completion Rate by Author by Course
+	// const { data: authorByCourseData, isLoading: isLoadingAuthorByCourse } = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery();
+	// Average Course Completion Rate by Author
+	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery();
+	// Average Completion Rate by Author by Subject
+	// const { data: authorBySubjectData, isLoading: isLoadingAuthorBySubject } = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery();
+	// Daily Learning Time by Course
+	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.metrics.getUserDailyLearningTimeByCourse.useQuery();
+	// Learning Streak
+	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
+	// Courses Completed by Subject
+	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
 
 	if (!role) {
 		return <p className="p-6">Loading...</p>;

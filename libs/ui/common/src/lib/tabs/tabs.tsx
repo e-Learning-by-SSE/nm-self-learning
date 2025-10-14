@@ -60,7 +60,13 @@ export function RemovableTab({
 		<Tab>
 			<span className="flex items-end gap-4 hover:text-secondary">
 				<span>{children}</span>
-				<IconOnlyButton icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" onClick={onRemove} title="Entfernen" className="flex items-center" />
+				<IconOnlyButton
+					icon={<XMarkIcon className="h-5 w-5" />}
+					variant="x-mark"
+					onClick={onRemove}
+					title="Entfernen"
+					className="flex items-center"
+				/>
 			</span>
 		</Tab>
 	);

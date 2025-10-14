@@ -276,34 +276,3 @@ model LlmConfiguration {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
-
-view KPITotalLearningTime {
-  id                        String @unique
-  username                  String
-  total_time_spent_seconds  Float
-}
-
-view KPIDailyLearningTime {
-    id                          String @unique
-    username                    String
-    day                         DateTime
-    total_time_spent_seconds    Float
-}
-
-view KPIDailyQuizStats {
-  id               String @unique
-  username         String
-  day              DateTime
-  total_answers      Int
-  correct_answers    Int
-  incorrect_answers  Int
-  accuracy_percent Float
-}
-
-view KPITotalLearningTimeByCourse {
-  id                        String @unique
-  username                  String
-  courseId                  String
-  courseTitle               String
-  total_time_spent_seconds  Float
-}

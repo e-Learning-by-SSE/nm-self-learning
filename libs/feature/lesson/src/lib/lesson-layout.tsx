@@ -1,7 +1,7 @@
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseContent, LessonMeta, ResolvedValue } from "@self-learning/types";
+import { CourseContent, LessonContent, LessonMeta, ResolvedValue } from "@self-learning/types";
 import {
 	Playlist,
 	PlaylistContent,
@@ -11,8 +11,10 @@ import {
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { LessonData, getLesson } from "./lesson-data-access";
+import { LessonOutlineContext } from "./lesson-outline-context";
+import { useNavigableContent } from "@self-learning/ui/layouts";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import { useLessonNavigation } from "@self-learning/ui/lesson";
 
@@ -121,8 +123,18 @@ function BaseLessonLayout({
 	course,
 	lesson
 }: BaseLessonLayoutProps) {
+	const lessonContent = (lesson?.content || []) as LessonContent;
+	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
+	const ctx = useNavigableContent(lessonContent, false, false);
+
+	const contextValue = {
+		...ctx,
+		targetIndex,
+		setTargetIndex
+	};
+
 	return (
-		<>
+		<LessonOutlineContext.Provider value={contextValue}>
 			<div className="xl:hidden">
 				{course && lesson && <MobilePlaylistArea course={course} lesson={lesson} />}
 				<div className="p-5 pt-8 bg-gray-100 pb-16">
@@ -137,11 +149,11 @@ function BaseLessonLayout({
 				<div className="flex flex-col bg-gray-100">
 					<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
 						{playlistArea}
-						<div className="w-full pt-8 pb-16">{children}</div>
+						<div className="w-full pt-8 pb-8">{children}</div>
 					</div>
 				</div>
 			</div>
-		</>
+		</LessonOutlineContext.Provider>
 	);
 }
 
