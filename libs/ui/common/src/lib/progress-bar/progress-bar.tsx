@@ -1,5 +1,20 @@
 import { motion } from "framer-motion";
-import React from "react";
+
+/**
+ * Restricts output to a valid percentage (0-100) with 2 digits (except for 100).
+ * @param value Valid percentage value (0-100)
+ * @returns 0.00 - 99.99 or 100
+ */
+function formatPercentage(value: number): string {
+	// Ensure valid percentage (0 and 100)
+	const clamped = Math.min(100, Math.max(0, value));
+
+	// Keep 100 as-is
+	if (clamped === 100) return "100";
+
+	// If it's a decimal, limit to 2 digits
+	return clamped.toFixed(2);
+}
 
 export function ProgressBar({ completionPercentage }: { completionPercentage: number }) {
 	return (
@@ -18,7 +33,7 @@ export function ProgressBar({ completionPercentage }: { completionPercentage: nu
 				}`}
 				style={{ justifyContent: "flex-start" }}
 			>
-				{completionPercentage}%
+				{formatPercentage(completionPercentage)}%
 			</div>
 		</div>
 	);
