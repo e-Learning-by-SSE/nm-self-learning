@@ -66,7 +66,7 @@ describe("userEventRouter create", () => {
 		// also check manual validation
 
 		const schema = evenTypePayloadSchema.shape["ERROR"];
-		expect(() => schema.parse(result.payload)).not.toThrow();
+		expect(() => schema.parse(result!.payload)).not.toThrow();
 	});
 	it("should not pass incorrect payloads", async () => {
 		const { caller } = prepare();
