@@ -26,6 +26,7 @@ import io, { Socket } from "socket.io-client";
 import { Subtitle, SubtitleSrc, subtitleSrcSchema } from "@self-learning/types";
 import { ConvertTranscriptionToSubtitle } from "@self-learning/ui/lesson";
 import { useTranslation } from "next-i18next";
+import { keepPreviousData } from "@tanstack/react-query";
 
 const MediaType = {
 	image: "image",
@@ -510,7 +511,7 @@ function AssetPickerDialog({
 			page
 		},
 		{
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
