@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ContextHandler, restApiHandler, UserFromSession } from "@self-learning/api";
+import { ContextHandler, restApiHandler } from "@self-learning/api";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { ZodIssue } from "zod";
-import { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
 
 import { createRequest, createResponse } from "node-mocks-http";
 import { EventEmitter } from "events";
