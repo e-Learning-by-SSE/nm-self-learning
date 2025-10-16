@@ -15,6 +15,7 @@ import { appWithTranslation } from "next-i18next";
 import nextI18NextConfig from "../next-i18next.config";
 
 export default withTRPC<AppRouter>({
+	transformer: superjson,
 	config() {
 		return {
 			links: [
@@ -24,10 +25,10 @@ export default withTRPC<AppRouter>({
 						(opts.direction === "down" && opts.result instanceof Error)
 				}),
 				httpBatchLink({
-					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`
+					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`,
+					transformer: superjson
 				})
 			],
-			transformer: superjson,
 			queryClientConfig: {
 				defaultOptions: {
 					queries: {

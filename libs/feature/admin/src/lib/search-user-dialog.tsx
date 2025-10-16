@@ -8,6 +8,7 @@ import {
 	Paginator
 } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export function SearchUserDialog({
 	onClose,
@@ -26,7 +27,7 @@ export function SearchUserDialog({
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
