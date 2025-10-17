@@ -168,6 +168,7 @@
 		"url-loader": "^4.1.1"
 	},
     "overrides": {
-        "dompurify": ">=3.2.4"
+        "dompurify": ">=3.2.4",
+        "prismjs": ">=1.30.0"
   }
 }
