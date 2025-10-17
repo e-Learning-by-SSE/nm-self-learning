@@ -166,5 +166,8 @@
 		"tsx": "^4.19.0",
 		"typescript": "5.9.3",
 		"url-loader": "^4.1.1"
-	}
+	},
+    "overrides": {
+        "dompurify": ">=3.2.4"
+  }
 }
