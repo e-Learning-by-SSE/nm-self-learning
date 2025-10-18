@@ -2,7 +2,7 @@ import { ImageOrPlaceholder } from "@self-learning/ui/common";
 import { Form, InputWithButton, LabeledField, Upload, useSlugify } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 /**
  * Allows the user to edit basic information about a course,

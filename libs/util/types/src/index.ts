@@ -14,3 +14,4 @@ export * from "./lib/subtitle";
 export * from "./lib/learning-diary";
 export * from "./lib/settings";
 export * from "./lib/event-log";
+export * from "./lib/llm-config";

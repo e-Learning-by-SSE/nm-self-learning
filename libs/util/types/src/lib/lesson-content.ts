@@ -54,6 +54,10 @@ export const lessonContentSchema = z.discriminatedUnion("type", [
 	iframeSchema
 ]);
 
+export const CONTENT_TYPES = lessonContentSchema.options.map(
+	schema => schema.shape.type.value
+) satisfies readonly string[];
+
 export function getContentTypeDisplayName(contentType: LessonContentMediaType): string {
 	const names: { [contentType in LessonContentMediaType]: string } = {
 		video: "Video",
