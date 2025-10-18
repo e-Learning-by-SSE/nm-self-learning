@@ -580,6 +580,7 @@ export function LicenseLabel({
 
 function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 	return (
+		// eslint-disable-next-line react/jsx-no-useless-fragment
 		<>
 			{authors.length > 0 && (
 				<div className="mt-4">

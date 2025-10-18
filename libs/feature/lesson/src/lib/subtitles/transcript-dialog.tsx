@@ -1,6 +1,32 @@
 import { Dialog, showToast } from "@self-learning/ui/common";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { webvttToText } from "./webvtt_helper";
+
+export function ShowTranskript({ webVTTtranscript }: { webVTTtranscript: string | undefined }) {
+	const [showTranscript, setShowTranscript] = useState(false);
+
+	if (!webVTTtranscript) {
+		return null;
+	}
+
+	return (
+		<>
+			<button
+				type="button"
+				className="text-lg text-center text-gray-500 hover:text-secondary"
+				onClick={() => setShowTranscript(true)}
+			>
+				Video Transkript anzeigen
+			</button>
+			{showTranscript && (
+				<TranscriptDialog
+					onClose={() => setShowTranscript(false)}
+					webVTTtranscript={webVTTtranscript}
+				/>
+			)}
+		</>
+	);
+}
 
 export function TranscriptDialog({
 	onClose,
