@@ -338,4 +338,4 @@ JOIN "User" u ON u.name = e."username"
 WHERE e."completedAt" IS NOT NULL
    OR e."status" = 'COMPLETED'
 GROUP BY u.id, u.name, s."subjectId", s."title"
-ORDER BY u.name, s."title";
+ORDER BY u."name", s."title";
