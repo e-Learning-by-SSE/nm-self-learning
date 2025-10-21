@@ -245,14 +245,6 @@ export async function seedEventLogForWizardryCourse() {
 			skipDuplicates: true
 		});
 
-		// status	ACTIVE
-		// progress	0
-		// createdAt	2022-05-20 00:00:00
-		// lastProgressUpdate	2025-10-20 17:52:17.627
-		// completedAt
-		// courseId	Y1buIbID
-		// username	potter
-
 		const enrollment = await prisma.enrollment.findUnique({
 			where: {
 				courseId_username: {
@@ -280,6 +272,33 @@ export async function seedEventLogForWizardryCourse() {
 		}
 
 		console.log("✅ Event logs for Potter created successfully.");
+
+		const weasleyEnrollment = await prisma.enrollment.findUnique({
+			where: {
+				courseId_username: {
+					courseId: course.courseId,
+					username: "weasley"
+				}
+			}
+		});
+
+		if (!weasleyEnrollment) {
+			await prisma.enrollment.create({
+				data: {
+					courseId: course.courseId,
+					username: "weasley",
+					status: "ACTIVE",
+					progress: 45, // e.g., 45% progress
+					createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+					lastProgressUpdate: now
+				}
+			});
+			console.log("✅ Enrollment for Weasley created (ACTIVE).");
+		} else {
+			console.log("ℹ️ Enrollment for Weasley already exists, skipping creation.");
+		}
+
+		console.log("✅ Event logs for Weasley created successfully.");
 	} catch (error) {
 		console.error("❌ Error seeding event logs:", error);
 	} finally {
